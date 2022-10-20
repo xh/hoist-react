@@ -5,17 +5,23 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, Intent} from '@xh/hoist/core';
 import {Button} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {throwIf} from '@xh/hoist/utils/js';
 import {Children, cloneElement} from 'react';
 import './ButtonGroup.scss';
 
+export interface ButtonGroupProps extends BoxProps {
+    intent?: Intent,
+    minimal?: boolean,
+    outlined?: boolean
+}
+
 /**
  * A segmented group of buttons. Should receive a list of Buttons as a children.
  */
-export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory({
+export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>({
     displayName: 'ButtonGroup',
     className: 'xh-button-group',
     model: false,

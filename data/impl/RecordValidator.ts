@@ -41,7 +41,7 @@ export class RecordValidator extends HoistBase {
         return this.getValidationState();
     }
 
-    /** Map of field names -> field-level errors. */
+    /** Map of field names to field-level errors. */
     @computed.struct
     get errors(): RecordErrorMap {
         return this.getErrorMap();
@@ -89,7 +89,7 @@ export class RecordValidator extends HoistBase {
         return VS.Valid;
     }
 
-    /** Map of field names -> field-level errors. */
+    /** Map of field names to field-level errors. */
     getErrorMap(): RecordErrorMap {
         const ret = {};
         this._validators.forEach(v => ret[v.id] = v.errors);
@@ -104,6 +104,6 @@ export class RecordValidator extends HoistBase {
     }
 }
 
-/** Map of Field names -> Field-level error lists. */
+/** Map of Field names to Field-level error lists. */
 export type RecordErrorMap = Record<string, string[]>;
 

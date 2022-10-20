@@ -13,19 +13,20 @@ import classNames from 'classnames';
 import {isEmpty} from 'lodash';
 import {tab} from './Tab';
 import './Tabs.scss';
+import {TabContainerProps, TabModel} from '@xh/hoist/cmp/tab';
 
 /**
  * Mobile Implementation of TabContainer.
  *
- * @private
+ * @internal
  */
-export function tabContainerImpl({model, className}) {
+export function tabContainerImpl({model, className}: TabContainerProps) {
     const {activeTab, switcher} = model,
         tabs = model.tabs.filter(it => !it.excludeFromSwitcher),
-        impl = useLocalModel(LocalModel);
+        impl = useLocalModel(TabContainerLocalModel);
 
     throwIf(
-        switcher && !['top', 'bottom'].includes(switcher?.orientation),
+        switcher && !['top', 'bottom'].includes(switcher.orientation),
         "Mobile TabContainer tab switcher orientation must be 'top', or 'bottom'"
     );
 
@@ -50,7 +51,7 @@ export function tabContainerImpl({model, className}) {
     });
 }
 
-function renderTabModel(tabModel) {
+function renderTabModel(tabModel: TabModel) {
     const {id, title, icon} = tabModel;
 
     return {
@@ -66,7 +67,8 @@ function renderTabModel(tabModel) {
     };
 }
 
-class LocalModel extends HoistModel {
+class TabContainerLocalModel extends HoistModel {
+    xhImpl = true;
 
     swiper;
 

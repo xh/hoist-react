@@ -19,6 +19,26 @@ import classNames from 'classnames';
 import {compact, isEmpty, sortBy} from 'lodash';
 import './GroupingChooser.scss';
 
+export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> {
+    /** Text to represent empty state (i.e. value = null or []) */
+    emptyText?: string,
+
+    /** Min height in pixels of the popover menu itself. */
+    popoverMinHeight?: number,
+
+    /** Position for chooser popover, as per Blueprint docs. */
+    popoverPosition?: Position,
+
+    /** Title for popover (default "GROUP BY") or null to suppress. */
+    popoverTitle?: string,
+
+    /** Width in pixels of the popover menu itself. */
+    popoverWidth?: number,
+
+    /** True (default) to style target button as an input field - blends better in toolbars. */
+    styleButtonAsInput?: boolean
+}
+
 /**
  * Control for selecting a list of dimensions for grouping APIs, with built-in support for
  * drag-and-drop reordering and user-managed favorites.
@@ -86,26 +106,6 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
         });
     }
 });
-
-export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> {
-    /** Text to represent empty state (i.e. value = null or []) */
-    emptyText?: string,
-
-    /** Min height in pixels of the popover menu itself. */
-    popoverMinHeight?: number,
-
-    /** Position for chooser popover, as per Blueprint docs. */
-    popoverPosition?: Position,
-
-    /** Title for popover (default "GROUP BY") or null to suppress. */
-    popoverTitle?: string,
-
-    /** Width in pixels of the popover menu itself. */
-    popoverWidth?: number,
-
-    /** True (default) to style target button as an input field - blends better in toolbars. */
-    styleButtonAsInput?: boolean
-}
 
 //------------------
 // Editor

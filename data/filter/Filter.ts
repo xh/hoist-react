@@ -10,14 +10,14 @@ import {FilterTestFn} from './Types';
 
 /**
  * Base class for Hoist data package Filters.
- * @abstract - not to be created / used directly.
  *
- * @see FieldFilter - filters by comparing the value of a given field to one or more given
+ * See also:
+ *  - {@link FieldFilter} - filters by comparing the value of a given field to one or more given
  *      candidate values using one of several supported operators.
- * @see FunctionFilter - filters via a custom function specified by the developer or generated
+ *  - {@link FunctionFilter} - filters via a custom function specified by the developer or generated
  *      by a component such as StoreFilterField.
- * @see CompoundFilter - combines multiple filters (including other nested CompoundFilters) via
- *      an AND or OR operator.
+ *  - {@link CompoundFilter} - combines multiple filters (including other nested CompoundFilters)
+ *      via an `AND` or `OR` operator.
  */
 export abstract class Filter {
 
@@ -26,9 +26,8 @@ export abstract class Filter {
     /**
      * Return a function that can be used to test a record or object.
      *
-     * @param [store] - if provided, function returned will be appropriate
-     *      for testing records of this store. Otherwise, function returned will be appropriate
-     *      for testing anonymous objects.
+     * @param store - if provided, return will be appropriate for testing records of this store.
+     *      Otherwise, return will be appropriate for testing anonymous objects.
      */
     abstract getTestFn(store?: Store): FilterTestFn
 

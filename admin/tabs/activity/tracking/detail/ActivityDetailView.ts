@@ -55,7 +55,7 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(
         if (!gridModel.selectedRecord) return null;
 
         return panel({
-            model: {
+            modelConfig: {
                 side: 'bottom',
                 defaultSize: 370
             },

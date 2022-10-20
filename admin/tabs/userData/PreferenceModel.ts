@@ -17,6 +17,7 @@ import * as Col from '@xh/hoist/admin/columns';
 
 import {DifferModel} from '../../differ/DifferModel';
 import {RegroupDialogModel} from '../../regroup/RegroupDialogModel';
+import {getApp} from '@xh/hoist/admin/AppModel';
 
 export class PreferenceModel extends HoistModel {
 
@@ -41,6 +42,7 @@ export class PreferenceModel extends HoistModel {
             hidden = true;
 
         this.gridModel = new RestGridModel({
+            readonly: getApp().readonly,
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,

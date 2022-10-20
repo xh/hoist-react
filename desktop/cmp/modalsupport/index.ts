@@ -4,7 +4,6 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-export * from './Panel';
-export * from './PanelModel';
-export * from '../modalsupport/ModalSupportOptions';
+export * from './ModalSupport';
+export * from './ModalSupportModel';
 

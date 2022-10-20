@@ -13,13 +13,13 @@ import {jsonBlobPanel} from './JsonBlobPanel';
 
 export const userDataTab = hoistCmp.factory(
     () => tabContainer({
-        model: {
+        modelConfig: {
             route: 'default.userData',
             switcher: {orientation: 'left'},
             tabs: [
                 {id: 'prefs', title: 'Preferences', icon: Icon.bookmark(), content: preferencePanel},
-                {id: 'userPrefs', icon: Icon.users(), content: userPreferencePanel, reloadOnShow: true},
-                {id: 'jsonBlobs', title: 'JSON Blobs', icon: Icon.json(), content: jsonBlobPanel, reloadOnShow: true}
+                {id: 'userPrefs', icon: Icon.users(), content: userPreferencePanel, refreshMode: 'onShowAlways'},
+                {id: 'jsonBlobs', title: 'JSON Blobs', icon: Icon.json(), content: jsonBlobPanel, refreshMode: 'onShowAlways'}
             ]
         }
     })

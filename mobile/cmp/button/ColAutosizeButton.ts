@@ -5,18 +5,25 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel, GridAutosizeOptions} from '@xh/hoist/cmp/grid';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
+
+export interface ColAutosizeButtonProps extends ButtonProps {
+    /** GridModel of the grid for which this button should autosize columns. */
+    gridModel?: GridModel,
+
+    /** Options for the grid autosize. {@see GridModel#autosizeAsync()} */
+    autosizeOptions?: GridAutosizeOptions
+}
 
 /**
  * A convenience button to autosize visible Grid columns.
  */
-export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory({
+export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory<ColAutosizeButtonProps>({
     displayName: 'ColAutosizeButton',
     model: false,
 
@@ -42,12 +49,3 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory({
         return button({icon, onClick, ...props});
     }
 });
-ColAutosizeButton.propTypes = {
-    ...Button.propTypes,
-
-    /** GridModel of the grid for which this button should autosize columns. */
-    gridModel: PT.instanceOf(GridModel),
-
-    /** Options for the grid autosize. {@see GridModel#autosizeAsync()} */
-    autosizeOptions: PT.object
-};

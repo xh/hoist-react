@@ -12,22 +12,27 @@ import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
+import {getApp} from '@xh/hoist/admin/AppModel';
 
 export const memoryMonitorPanel = hoistCmp.factory({
     model: creates(MemoryMonitorModel),
 
     render({model}) {
+
+        const {readonly} = getApp();
         return panel({
             tbar: [
                 button({
                     text: 'Take Snapshot',
                     icon: Icon.camera(),
+                    omit: readonly,
                     onClick: () => model.takeSnapshotAsync()
                 }),
                 button({
                     text: 'Request GC',
                     icon: Icon.trash(),
                     intent: 'danger',
+                    omit: readonly,
                     onClick: () => model.requestGcAsync()
                 }),
                 filler(),
@@ -38,7 +43,7 @@ export const memoryMonitorPanel = hoistCmp.factory({
             items: [
                 grid(),
                 panel({
-                    model: {
+                    modelConfig: {
                         side: 'bottom',
                         defaultSize: 400
                     },

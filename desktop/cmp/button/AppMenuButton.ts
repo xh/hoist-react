@@ -14,31 +14,6 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import {ReactElement, isValidElement} from 'react';
 
-export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButtonProps>({
-    displayName: 'AppMenuButton',
-    model: false,
-    className: 'xh-app-menu',
-
-    render(props) {
-        const {
-            className, extraItems,
-            hideAboutItem, hideAdminItem, hideChangelogItem, hideFeedbackItem, hideImpersonateItem,
-            hideLogoutItem, hideOptionsItem, hideThemeItem, disabled, ...rest} = props;
-
-        return popover({
-            className,
-            disabled,
-            position: 'bottom-right',
-            minimal: true,
-            target: button({
-                icon: Icon.bars(),
-                disabled,
-                ...rest
-            }),
-            content: menu(buildMenuItems(props))
-        });
-    }
-});
 
 export interface AppMenuButtonProps extends ButtonProps {
     /**
@@ -80,6 +55,32 @@ export interface AppMenuButtonProps extends ButtonProps {
     hideThemeItem?: boolean,
 }
 
+export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButtonProps>({
+    displayName: 'AppMenuButton',
+    model: false,
+    className: 'xh-app-menu',
+
+    render(props) {
+        const {
+            className, extraItems,
+            hideAboutItem, hideAdminItem, hideChangelogItem, hideFeedbackItem, hideImpersonateItem,
+            hideLogoutItem, hideOptionsItem, hideThemeItem, disabled, ...rest} = props;
+
+        return popover({
+            className,
+            disabled,
+            position: 'bottom-right',
+            minimal: true,
+            target: button({
+                icon: Icon.bars(),
+                disabled,
+                ...rest
+            }),
+            content: menu(buildMenuItems(props))
+        });
+    }
+});
+
 //---------------------------
 // Implementation
 //---------------------------
@@ -97,7 +98,7 @@ function buildMenuItems(props: AppMenuButtonProps) {
     } = props;
 
     hideAboutItem = hideAboutItem || !XH.appContainerModel.hasAboutDialog();
-    hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdmin;
+    hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdminReader;
     hideChangelogItem = hideChangelogItem || !XH.changelogService.enabled;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
     hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);

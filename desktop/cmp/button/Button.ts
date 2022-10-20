@@ -11,9 +11,25 @@ import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ReactNode, ReactElement} from 'react';
-import type * as CSS from 'csstype';
+import {ReactNode, ReactElement, CSSProperties, MouseEvent} from 'react';
 import './Button.scss';
+
+export interface ButtonProps<M extends HoistModel = null> extends BoxProps<M> {
+    active?: boolean,
+    autoFocus?: boolean,
+    disabled?: boolean,
+    icon?: ReactElement;
+    intent?: Intent,
+    minimal?: boolean,
+    onClick?: (e: MouseEvent) => void,
+    outlined?: boolean,
+    rightIcon?: ReactElement;
+    style?: CSSProperties,
+    text?: ReactNode,
+    title?: string,
+    /** Alias for title. */
+    tooltip?: string
+}
 
 /**
  * Wrapper around Blueprint's Button component. Defaults to the `minimal` style for reduced chrome
@@ -90,20 +106,3 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
         });
     }
 });
-
-export interface ButtonProps<M extends HoistModel = null> extends BoxProps<M> {
-    active?: boolean,
-    autoFocus?: boolean,
-    disabled?: boolean,
-    icon?: ReactElement;
-    intent?: Intent,
-    minimal?: boolean,
-    onClick?: (e: MouseEvent) => void,
-    outlined?: boolean,
-    rightIcon?: ReactElement;
-    style?: CSS.Properties,
-    text?: ReactNode,
-    title?: string,
-    /** Alias for title. */
-    tooltip?: string
-}

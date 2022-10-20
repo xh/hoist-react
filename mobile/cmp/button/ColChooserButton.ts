@@ -7,10 +7,14 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
+
+export interface ColChooserButtonProps extends ButtonProps {
+    /** GridModel of the grid for which this button should show a chooser. */
+    gridModel?: GridModel
+}
 
 /**
  * A convenience button to trigger the display of a ColChooser for user selection,
@@ -18,7 +22,7 @@ import PT from 'prop-types';
  *
  * Requires a `GridModel.colChooserModel` config option, set to true for default implementation.
  */
-export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
+export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChooserButtonProps>({
     displayName: 'ColChooserButton',
     model: false,
 
@@ -40,9 +44,3 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory({
         return button({icon, onClick, ...props});
     }
 });
-ColChooserButton.propTypes = {
-    ...Button.propTypes,
-
-    /** GridModel of the grid for which this button should show a chooser. */
-    gridModel: PT.instanceOf(GridModel)
-};

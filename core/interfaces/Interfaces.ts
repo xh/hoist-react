@@ -16,6 +16,7 @@ export interface HoistUser {
     displayName: string;
     roles: string[];
     isHoistAdmin: boolean;
+    isHoistAdminReader: boolean;
     hasRole(s: string): boolean;
     hasGate(s: string): boolean;
 }
@@ -29,6 +30,11 @@ export type Intent = 'primary'|'success'|'warning'|'danger';
  * Values available for App Theme
  */
 export type Theme = 'system'|'dark'|'light';
+
+/**
+ * Side for layout related components such as Panel and TabContainer.
+ */
+export type Side = 'top'|'bottom'|'left'|'right';
 
 /**
  * Specification for debouncing in Hoist.

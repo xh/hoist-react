@@ -6,10 +6,10 @@
  */
 
 import {box, fragment} from '@xh/hoist/cmp/layout';
-import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {Children} from 'react';
+import {Children, ReactPortal} from 'react';
 import {createPortal} from 'react-dom';
 import {ModalSupportModel} from './ModalSupportModel';
 
@@ -27,7 +27,7 @@ import {ModalSupportModel} from './ModalSupportModel';
  */
 export const modalSupport = hoistCmp.factory({
     displayName: 'ModalSupport',
-    model: uses(ModalSupportModel, {fromContext: false, publishMode: ModelPublishMode.NONE}),
+    model: uses(ModalSupportModel, {fromContext: false, publishMode: 'none'}),
     render({model, children}) {
         return fragment(
             // Simple 'box' cmp, inside which to place the child cmp when `model.isModal = false`
@@ -39,13 +39,13 @@ export const modalSupport = hoistCmp.factory({
             // Render the child cmp inside the `model.hostNode` div.  This div is then placed
             // inside either the inlineContainer or modalContainer in reaction to the state of
             // `model.isModal`
-            createPortal(Children.only(children), model.hostNode)
+            createPortal(Children.only(children), model.hostNode) as ReactPortal
         );
     }
 });
 
 // Simple 'box' cmp, inside which to place the child cmp when `model.isModal = false`
-const inlineContainer = hoistCmp.factory({
+const inlineContainer = hoistCmp.factory<ModalSupportModel>({
     render({model}) {
         return box({
             className: 'xh-modal-support__inline',
@@ -63,11 +63,11 @@ const inlineContainer = hoistCmp.factory({
 });
 
 // Dialog cmp, inside which to place the child cmp when `model.isModal = true`
-const modalContainer = hoistCmp.factory({
+const modalContainer = hoistCmp.factory<ModalSupportModel>({
     render({model}) {
         if (!model.isModal) return null;
 
-        const {width, height, canOutsideClickClose} = model.options;
+        const {width, height, canOutsideClickClose} = model;
         return dialog({
             className: 'xh-modal-support__modal',
             style: {width, height},

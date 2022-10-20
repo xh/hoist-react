@@ -6,8 +6,10 @@
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
+
+export type LogoutButtonProps = ButtonProps;
 
 /**
  * Convenience Button preconfigured for use as a trigger for a logout operation.
@@ -15,7 +17,7 @@ import '@xh/hoist/mobile/register';
  * An onClick handler can be provided to implement additional operations on logout,
  * but should ensure it calls `XH.identityService.logoutAsync()`.
  */
-export const [LogoutButton, logoutButton] = hoistCmp.withFactory({
+export const [LogoutButton, logoutButton] = hoistCmp.withFactory<LogoutButtonProps>({
     displayName: 'LogoutButton',
     model: false,
 
@@ -28,4 +30,3 @@ export const [LogoutButton, logoutButton] = hoistCmp.withFactory({
         return button({icon, onClick, props});
     }
 });
-LogoutButton.propTypes = Button.propTypes;

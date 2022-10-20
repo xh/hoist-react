@@ -6,11 +6,24 @@
  */
 import {box, div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {hoistCmp, HoistModel, TaskObserver, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, HoistProps, TaskObserver, useLocalModel} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
+import {ReactNode} from 'react';
 import './Mask.scss';
+
+export interface MaskProps extends HoistProps {
+    /** Task(s) that should be monitored to determine if the mask should be displayed. */
+    bind?: TaskObserver|TaskObserver[],
+    /** True to display the mask. */
+    isDisplayed?: boolean,
+    /** Text to be displayed under the loading spinner image */
+    message?: ReactNode,
+    /** Callback when mask is tapped, relayed to underlying div element. */
+    onClick?: (e: MouseEvent) => void,
+    /** True (default) to display a spinning image. */
+    spinner?: boolean
+}
 
 /**
  * Mask with optional spinner and text.
@@ -20,7 +33,7 @@ import './Mask.scss';
  * Note that the Panel component's `mask` prop provides a common and convenient method for masking
  * sections of the UI without needing to manually create or manage this component.
  */
-export const [Mask, mask] = hoistCmp.withFactory({
+export const [Mask, mask] = hoistCmp.withFactory<MaskProps>({
     displayName: 'Mask',
     className: 'xh-mask',
 
@@ -52,24 +65,6 @@ export const [Mask, mask] = hoistCmp.withFactory({
         });
     }
 });
-
-Mask.propTypes = {
-
-    /** Task(s) that should be monitored to determine if the mask should be displayed. */
-    bind: PT.oneOfType([PT.instanceOf(TaskObserver), PT.arrayOf(PT.instanceOf(TaskObserver))]),
-
-    /** True to display the mask. */
-    isDisplayed: PT.bool,
-
-    /** Text to be displayed under the loading spinner image */
-    message: PT.string,
-
-    /** Callback when mask is tapped, relayed to underlying div element. */
-    onClick: PT.func,
-
-    /** True (default) to display a spinning image. */
-    spinner: PT.bool
-};
 
 class LocalMaskModel extends HoistModel {
     task;

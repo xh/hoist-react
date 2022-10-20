@@ -11,6 +11,10 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
 
+export interface ModalToggleButtonProps extends ButtonProps {
+    panelModel?: PanelModel
+}
+
 /**
  * A convenience button to toggle a Panel's modal view state.
 */
@@ -32,7 +36,3 @@ export const [ModalToggleButton, modalToggleButton] = hoistCmp.withFactory<Modal
         });
     }
 });
-
-export interface ModalToggleButtonProps extends ButtonProps {
-    panelModel?: PanelModel
-}

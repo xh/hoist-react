@@ -29,7 +29,7 @@ export const logViewer = hoistCmp.factory({
                     title: 'Available Server Logs',
                     icon: Icon.fileText(),
                     compactHeader: true,
-                    model: {
+                    modelConfig: {
                         side: 'left',
                         defaultSize: 380
                     },
