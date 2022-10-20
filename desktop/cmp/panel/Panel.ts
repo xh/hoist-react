@@ -27,19 +27,20 @@ import {modalSupport} from '../modalsupport/ModalSupport';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import './Panel.scss';
-import {PanelModel} from './PanelModel';
+import {PanelConfig, PanelModel} from './PanelModel';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
 
 
 interface PanelProps extends BoxProps<PanelModel> {
+
     /** True to style panel header (if displayed) with reduced padding and font-size. */
-    compactHeader?: boolean,
+    compactHeader?: boolean;
 
     /** Items to be added to the right-side of the panel's header. */
-    headerItems?: ReactNode[],
+    headerItems?: ReactNode[];
 
     /** An icon placed at the left-side of the panel's header. */
-    icon?: ReactElement,
+    icon?: ReactElement;
 
     /**
      * Specification of a context menu.
@@ -51,7 +52,7 @@ interface PanelProps extends BoxProps<PanelModel> {
      * Specification of hotkeys as prescribed by blueprint.
      * @see useHotkeys() for more information on accepted values for this prop.
      */
-    hotkeys?: HotkeyConfig[]
+    hotkeys?: HotkeyConfig[];
 
     /**
      * LoadingIndicator to render on this panel. Set to:
@@ -85,6 +86,8 @@ interface PanelProps extends BoxProps<PanelModel> {
 
     /** Title text added to the panel's header. */
     title?: ReactNode;
+
+    modelConfig?: PanelConfig;
 }
 
 
