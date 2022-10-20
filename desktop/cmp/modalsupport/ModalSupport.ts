@@ -67,7 +67,7 @@ const modalContainer = hoistCmp.factory<ModalSupportModel>({
     render({model}) {
         if (!model.isModal) return null;
 
-        const {width, height, canOutsideClickClose} = model.options;
+        const {width, height, canOutsideClickClose} = model;
         return dialog({
             className: 'xh-modal-support__modal',
             style: {width, height},

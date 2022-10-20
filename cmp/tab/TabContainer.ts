@@ -7,10 +7,13 @@
 import {hoistCmp, uses, XH, refreshContextView, BoxProps} from '@xh/hoist/core';
 import {tabContainerImpl as desktopTabContainerImpl} from '@xh/hoist/dynamics/desktop';
 import {tabContainerImpl as mobileTabContainerImpl} from '@xh/hoist/dynamics/mobile';
-import {TabContainerModel} from './TabContainerModel';
+import {TabContainerConfig, TabContainerModel} from './TabContainerModel';
 
 
-export type TabContainerProps = BoxProps<TabContainerModel>;
+export interface TabContainerProps extends BoxProps<TabContainerModel> {
+
+    modelConfig?: TabContainerConfig;
+}
 
 /**
  * Display a set of child Tabs and (optionally) a switcher control.

@@ -6,10 +6,16 @@
  */
 
 import {HoistModel} from '@xh/hoist/core';
-import {ModalSupportOptions} from '@xh/hoist/desktop/cmp/modalsupport';
 import '@xh/hoist/desktop/register';
 import {observable, makeObservable, action} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
+
+export interface ModalSupportConfig {
+
+    width?: string|number;
+    height?: string|number;
+    canOutsideClickClose?: boolean;
+}
 
 /**
  * Core Model for a ModalSupport component.
@@ -20,18 +26,26 @@ export class ModalSupportModel extends HoistModel {
 
     @observable
     isModal: boolean = false;
-    options: ModalSupportOptions;
+
+    width: string|number;
+    height: string|number;
+    canOutsideClickClose: boolean;
 
     inlineRef = createObservableRef<HTMLElement>();
     modalRef = createObservableRef<HTMLElement>();
     hostNode: HTMLElement;
 
-    constructor(opts: Partial<ModalSupportOptions> = new ModalSupportOptions()) {
+    constructor({
+        width = '90vw',
+        height = '90vh',
+        canOutsideClickClose = true
+    }: ModalSupportConfig = {}) {
         super();
         makeObservable(this);
         this.hostNode = this.createHostNode();
-
-        this.options = opts instanceof ModalSupportOptions ? opts : new ModalSupportOptions(opts);
+        this.width = width;
+        this.height = height;
+        this.canOutsideClickClose = canOutsideClickClose;
 
         const {inlineRef, modalRef, hostNode} = this;
         this.addReaction({

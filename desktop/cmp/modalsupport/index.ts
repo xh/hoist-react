@@ -6,5 +6,4 @@
  */
 export * from './ModalSupport';
 export * from './ModalSupportModel';
-export * from './ModalSupportOptions';
 
