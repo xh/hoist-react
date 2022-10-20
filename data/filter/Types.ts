@@ -49,12 +49,3 @@ export type FilterLike = Filter |
     FunctionFilterSpec |
     FilterTestFn |
     FilterLike[];
-
-/**
- * A variant of FilterLike, that excludes FunctionFilters.
- */
-export type FilterChooserFilterLike = CompoundFilter |
-    CompoundFilterSpec |
-    FieldFilter |
-    FieldFilterSpec |
-    FilterChooserFilterLike[];

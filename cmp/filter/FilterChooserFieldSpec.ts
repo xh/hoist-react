@@ -20,12 +20,12 @@ export interface FilterChooserFieldSpecConfig extends BaseFilterFieldSpecConfig 
      * Function to produce a suitably formatted string for display to the user
      * for any given field value.
      */
-    valueRenderer?: FilterChooserValueRendererCb,
+    valueRenderer?: FilterChooserValueRenderer,
     /**
      * Function to parse user's input from a FilterChooser control into a typed data value for
      * use in filtering comparisons.
      */
-    valueParser?: FilterChooserValueParserCb,
+    valueParser?: FilterChooserValueParser,
     /** Sample / representative value displayed by `FilterChooser` components to aid usability. */
     example?: string,
 }
@@ -36,15 +36,14 @@ export interface FilterChooserFieldSpecConfig extends BaseFilterFieldSpecConfig 
  *
  * Apps should NOT instantiate this class directly. Instead {@see FilterChooserModel.fieldSpecs}
  * for the relevant config to set these options.
- *
- * @internal
  */
 export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
 
-    valueRenderer: FilterChooserValueRendererCb;
-    valueParser: FilterChooserValueParserCb;
+    valueRenderer: FilterChooserValueRenderer;
+    valueParser: FilterChooserValueParser;
     example: string;
 
+    /** @internal */
     constructor({
         valueRenderer,
         valueParser,
@@ -123,7 +122,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
     parseValueParser(valueParser) {
         // Default numeric parser
         if (!valueParser && (this.fieldType === INT || this.fieldType === NUMBER)) {
-            return (input, op) => parseNumber(input);
+            return (input) => parseNumber(input);
         }
         return valueParser;
     }
@@ -151,17 +150,15 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
 }
 
 /**
- * @callback FilterChooserValueRendererCb
  * @param {*} value
  * @param {string} op
  * @returns {string} - formatted value suitable for display to the user.
  */
-type FilterChooserValueRendererCb = (value: any, op: FieldFilterOperator) => string;
+type FilterChooserValueRenderer = (value: any, op: FieldFilterOperator) => string;
 
 /**
- * @callback FilterChooserValueParserCb
  * @param {string} input
  * @param {string} op
  * @returns {*} - the parsed value.
  */
-type FilterChooserValueParserCb = (input: string, op: FieldFilterOperator) => any;
+type FilterChooserValueParser = (input: string, op: FieldFilterOperator) => any;

@@ -22,7 +22,7 @@ import {
     View,
     withFilterByTypes
 } from '@xh/hoist/data';
-import {FilterChooserFilterLike, FilterLike} from '@xh/hoist/data/filter/Types';
+import {CompoundFilterSpec, FieldFilterSpec, FilterLike} from '@xh/hoist/data/filter/Types';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -61,7 +61,7 @@ export interface FilterChooserConfig {
     fieldSpecDefaults?: FilterChooserFieldSpecConfig,
     /**
      * Store or cube View that should actually be filtered as this model's value changes.
-     * May be the same as `valueSource`. Leave undefined if you wish to combine this model's values
+     * This may be the same as `valueSource`. Leave undefined if you wish to combine this model's values
      * with other filters, send it to the server, or otherwise observe and handle value changes manually.
      */
     bind?: Store|View,
@@ -490,3 +490,11 @@ interface FilterChooserPersistOptions extends PersistOptions {
     /** True (default) to include favorites. */
     persistFavorites?: boolean;
 }
+
+/**
+ * A variant of FilterLike, that excludes FunctionFilters and FilterTestFn.
+ */
+type FilterChooserFilterLike = Filter |
+    CompoundFilterSpec |
+    FieldFilterSpec |
+    FilterChooserFilterLike[];

@@ -5,6 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import {Some} from '@xh/hoist/core';
 import {FieldFilter} from '@xh/hoist/data';
 import {fmtNumber} from '@xh/hoist/format';
 import {
@@ -89,7 +90,7 @@ export class QueryEngine {
     //------------------------------------------------------------------------
     // 2) No op yet, so field not fixed -- get field or value matches.
     //------------------------------------------------------------------------
-    openSearching(q): FilterChooserOption|FilterChooserOption[] {
+    openSearching(q): Some<FilterChooserOption> {
         // Suggest matching *fields* for the user to select on their way to a more targeted query.
         let ret = this.getFieldOpts(q.field);
 
@@ -113,7 +114,7 @@ export class QueryEngine {
     //--------------------------------------------------------
     // 3) Op is the psuedo 'is' operator and field is set
     //-------------------------------------------------------
-    withIsSearchingOnField(q): FilterChooserOption|FilterChooserOption[] {
+    withIsSearchingOnField(q): Some<FilterChooserOption> {
         const spec = find(this.fieldSpecs, s => caselessEquals(s.displayName, q.field));
         if (!spec) return msgOption(`No matching field found for '${q.field}'`);
 
@@ -139,7 +140,7 @@ export class QueryEngine {
     //----------------------------------------------------------------------------------
     // 4) We have an op and our field is set -- produce suggestions on that field
     //----------------------------------------------------------------------------------
-    valueSearchingOnField(q): FilterChooserOption|FilterChooserOption[] {
+    valueSearchingOnField(q): Some<FilterChooserOption> {
         const spec = find(this.fieldSpecs, s => caselessEquals(s.displayName, q.field));
 
         // Validation
@@ -195,7 +196,7 @@ export class QueryEngine {
     //------------------------------------------------------------------------------------------
     // 5) We have an op and a value but no field-- look in *all* fields for matching candidates
     //-------------------------------------------------------------------------------------------
-    valueSearchingOnAll(q): FilterChooserOption|FilterChooserOption[] {
+    valueSearchingOnAll(q): Some<FilterChooserOption> {
         let ret = flatMap(this.fieldSpecs, spec => this.getValueMatchesForField(q.op, q.value, spec));
         ret = this.sortAndTruncate(ret);
 

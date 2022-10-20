@@ -31,8 +31,7 @@ export interface FilterChooserOption {
 // Options are simple objects to support Select API.
 //----------------------------------------------------------
 /**
- * Create an option representing a detailed field suggestion
- * @returns {FilterChooserOption}
+ * Create an option representing a detailed field suggestion.
  */
 export function fieldOption({fieldSpec, isExact = false}): FilterChooserOption {
     const {displayName} = fieldSpec as FilterChooserFieldSpec;
@@ -46,8 +45,7 @@ export function fieldOption({fieldSpec, isExact = false}): FilterChooserOption {
 }
 
 /**
- * Create an option representing a minimal field suggestion
- * @returns {FilterChooserOption}
+ * Create an option representing a minimal field suggestion.
  */
 export function minimalFieldOption({fieldSpec}): FilterChooserOption {
     const {displayName} = fieldSpec as FilterChooserFieldSpec;
@@ -62,7 +60,6 @@ export function minimalFieldOption({fieldSpec}): FilterChooserOption {
 
 /**
  * Create an option representing an existing or suggested FieldFilter.
- * @returns {FilterChooserOption}
  */
 export function fieldFilterOption({filter, fieldSpec, isExact = false}): FilterChooserOption {
     let {fieldType, displayName} = fieldSpec as FilterChooserFieldSpec,
@@ -75,7 +72,7 @@ export function fieldFilterOption({filter, fieldSpec, isExact = false}): FilterC
     } else {
         displayOp = filter.op;
         fieldType = fieldType === FieldType.TAGS ? FieldType.STRING : fieldType;
-        displayValue = fieldSpec.renderValue(parseFieldValue(filter.value, fieldType, null));
+        displayValue = fieldSpec.renderValue(parseFieldValue(filter.value, fieldType, null), filter.op);
     }
 
     return {
@@ -93,7 +90,6 @@ export function fieldFilterOption({filter, fieldSpec, isExact = false}): FilterC
 
 /**
  * Create an option representing a compound filter. For display purposes only.
- * @returns {FilterChooserOption}
  */
 export function compoundFilterOption({filter, fieldNames}): FilterChooserOption {
     return {
@@ -106,7 +102,6 @@ export function compoundFilterOption({filter, fieldNames}): FilterChooserOption 
 
 /**
  * Create an option representing an [unselectable] message
- * @returns {FilterChooserOption}
  */
 export function msgOption(msg: string): FilterChooserOption {
     return {
