@@ -6,7 +6,7 @@
  */
 
 import {Filter} from './Filter';
-import {RawData, StoreRecord, Field, CompoundFilter, FieldFilter} from '../';
+import {RawData, StoreRecord, Field} from '../';
 
 export type CompoundFilterOperator = 'AND'|'OR'|'and'|'or';
 export interface CompoundFilterSpec {
