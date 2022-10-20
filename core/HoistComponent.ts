@@ -105,8 +105,8 @@ export type ComponentConfig<P extends HoistProps> =
  *   - `hoistComponent.withFactory` - returns a 2-element list containing both the newly defined
  *          Component and an elemFactory for it.
  */
-export function hoistComponent<T extends HoistProps>(config: ComponentConfig<T>): FunctionComponent<T>;
 export function hoistComponent<T extends HoistModel>(config: ComponentConfig<HoistProps<T>>): FunctionComponent<HoistProps<T>>;
+export function hoistComponent<T extends HoistProps>(config: ComponentConfig<T>): FunctionComponent<T>;
 
 export function hoistComponent(config: ComponentConfig<HoistProps>): FunctionComponent {
     // 0) Pre-process/parse args.
