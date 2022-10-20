@@ -19,7 +19,7 @@ import './Toolbar.scss';
 import {toolbarSeparator} from './ToolbarSep';
 
 
-export interface ToolBarProps extends HoistProps {
+export interface ToolbarProps extends HoistProps {
 
     /** Set to true to style toolbar with reduced height and font-size. */
     compact?: boolean,
@@ -52,7 +52,7 @@ export interface ToolBarProps extends HoistProps {
  * A toolbar with built-in styling and padding.
  * In horizontal toolbars, items which overflow can be collapsed into a drop-down menu.
  */
-export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolBarProps>({
+export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps>({
     displayName: 'Toolbar',
     model: false, memo: false, observer: false,
     className: 'xh-toolbar',
