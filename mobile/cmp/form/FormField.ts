@@ -20,8 +20,7 @@ import {Children, cloneElement, ReactNode, useContext} from 'react';
 import './FormField.scss';
 
 
-export interface FormFieldProps extends BaseFormFieldProps {
-}
+export interface FormFieldProps extends BaseFormFieldProps {}
 
 
 /**
@@ -220,7 +219,7 @@ function getValidChild(children) {
     return child;
 }
 
-function defaultReadonlyRenderer(value): ReactNode {
+function defaultReadonlyRenderer(value: any): ReactNode {
     if (isLocalDate(value)) return fmtDate(value);
     if (isDate(value)) return fmtDateTime(value);
     if (isFinite(value)) return fmtNumber(value);

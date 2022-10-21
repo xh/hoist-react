@@ -62,7 +62,7 @@ export class FormModel extends HoistModel {
 
     /** All FieldModel instances. */
     @managed
-    get fieldList(): FieldModel[] {
+    get fieldList(): BaseFieldModel[] {
         return values(this.fields);
     }
 
@@ -118,7 +118,7 @@ export class FormModel extends HoistModel {
         });
     }
 
-    getField(fieldName: string): FieldModel {
+    getField(fieldName: string): BaseFieldModel {
         return this.fields[fieldName];
     }
 
@@ -197,7 +197,7 @@ export class FormModel extends HoistModel {
      * and its limitations.
      */
     @computed
-    get focusedField(): FieldModel {
+    get focusedField(): BaseFieldModel {
         return this.fieldList.find(f => f.hasFocus);
     }
 

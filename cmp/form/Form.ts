@@ -30,7 +30,7 @@ export interface FormProps extends BoxProps<FormModel> {
      * Defaults for certain props on child/nested FormFields.
      * @see FormField (note there are both desktop and mobile implementations).
      */
-    fieldDefaults: Partial<BaseFormFieldProps>;
+    fieldDefaults?: Partial<BaseFormFieldProps>;
 }
 
 /**
