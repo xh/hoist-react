@@ -227,7 +227,7 @@ export class HoistInputModel extends HoistModel {
         this.hasFocus = false;
     }
 
-    onBlur = (e: MouseEvent) => {
+    onBlur = (e: FocusEvent) => {
         // Ignore focus jumping internally from *within* the control.
         if (!this.containsElement(e.relatedTarget as HTMLElement)) {
             this.noteBlurred();
@@ -246,7 +246,7 @@ export class HoistInputModel extends HoistModel {
         this.hasFocus = true;
     }
 
-    onFocus = () => this.noteFocused();
+    onFocus = (e: FocusEvent) => this.noteFocused();
 
 
     //----------------------

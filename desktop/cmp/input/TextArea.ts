@@ -5,61 +5,61 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
-import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import PT from 'prop-types';
+import {Ref} from 'react';
 import './TextArea.scss';
+
+export interface TextAreaProps extends HoistInputProps<TextAreaInputModel> {
+    value?: string,
+
+    /** True to focus the control on render. */
+    autoFocus?: boolean,
+
+    /** True to commit on every change/keystroke, default false. */
+    commitOnChange?: boolean,
+
+    /** True to take up the full width of container. */
+    fill?: boolean,
+
+    /** Ref handler that receives HTML <input> element backing this component. */
+    inputRef?: Ref<HTMLInputElement>,
+
+    /** Callback for normalized keydown event. */
+    onKeyDown?: (e: KeyboardEvent) => void,
+
+    /** True to select contents when control receives focus. */
+    selectOnFocus?: boolean,
+
+    /** True to allow browser spell check, default false. */
+    spellCheck?: boolean,
+
+    /** Text to display when control is empty. */
+    placeholder?: string
+}
 
 /**
  * A multi-line text input.
  */
-export const [TextArea, textArea] = hoistCmp.withFactory({
+export const [TextArea, textArea] = hoistCmp.withFactory<TextAreaProps>({
     displayName: 'TextArea',
     className: 'xh-text-area',
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, TextAreaInputModel);
     }
 });
-TextArea.propTypes = {
-    ...HoistInputPropTypes,
-    value: PT.string,
-
-    /** True to focus the control on render. */
-    autoFocus: PT.bool,
-
-    /** True to commit on every change/keystroke, default false. */
-    commitOnChange: PT.bool,
-
-    /** True to take up the full width of container. */
-    fill: PT.bool,
-
-    /** Ref handler that receives HTML <input> element backing this component. */
-    inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
-
-    /** Callback for normalized keydown event. */
-    onKeyDown: PT.func,
-
-    /** True to select contents when control receives focus. */
-    selectOnFocus: PT.bool,
-
-    /** True to allow browser spell check, default false. */
-    spellCheck: PT.bool,
-
-    /** Text to display when control is empty. */
-    placeholder: PT.string
-};
-TextArea.hasLayoutSupport = true;
+(TextArea as any).hasLayoutSupport = true;
 
 //-----------------------
 // Implementation
 //-----------------------
 class TextAreaInputModel extends HoistInputModel {
 
-    get commitOnChange() {
+    override get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
     }
 
@@ -72,7 +72,7 @@ class TextAreaInputModel extends HoistInputModel {
         this.componentProps.onKeyDown?.(ev);
     };
 
-    onFocus = (ev) => {
+    override onFocus = (ev) => {
         if (this.componentProps.selectOnFocus) {
             ev.target.select();
         }
@@ -80,8 +80,7 @@ class TextAreaInputModel extends HoistInputModel {
     };
 }
 
-
-const cmp = hoistCmp.factory(
+const cmp = hoistCmp.factory<TextAreaProps>(
     ({model, className, ...props}, ref) => {
         const {width, height, ...layoutProps} = getLayoutProps(props);
 

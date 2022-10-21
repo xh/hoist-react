@@ -4,16 +4,16 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, Some} from '@xh/hoist/core';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
-import {textInput} from '@xh/hoist/desktop/cmp/input';
+import {TextInputModel, textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {datePicker as bpDatePicker, popover} from '@xh/hoist/kit/blueprint';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {datePicker as bpDatePicker, popover, Position} from '@xh/hoist/kit/blueprint';
+import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {consumeEvent, warnIf, withDefault} from '@xh/hoist/utils/js';
@@ -21,46 +21,29 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {assign, castArray, clone, trim} from 'lodash';
 import moment from 'moment';
-import PT from 'prop-types';
-import {createRef} from 'react';
+import {createRef, ReactElement, ReactNode} from 'react';
 import './DateInput.scss';
 
-/**
- * A Calendar Control for choosing a Date.
- *
- * By default this control emits dates with the time component cleared (set to midnight), but this
- * can be customized via the timePrecision prop to support editing of a date and time together.
- *
- * The calendar popover can be opened via the built-in button or up/down arrow keyboard shortcuts.
- */
-export const [DateInput, dateInput] = hoistCmp.withFactory({
-    displayName: 'DateInput',
-    className: 'xh-date-input',
-    render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, DateInputModel);
-    }
-});
-DateInput.propTypes = {
-    ...HoistInputPropTypes,
-    value: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
+export interface DateInputProps extends HoistInputProps<DateInputModel> {
+    value?: Date|LocalDate,
 
     /** Props passed to ReactDayPicker component, as per DayPicker docs. */
-    dayPickerProps: PT.object,
+    dayPickerProps?: Record<string, any>,
 
     /** Enable using the DatePicker popover. Default true. */
-    enablePicker: PT.bool,
+    enablePicker?: boolean,
 
     /** Enable using the text control to enter date as text. Default true. */
-    enableTextInput: PT.bool,
+    enableTextInput?: boolean,
 
     /** True to show a "clear" button aligned to the right of the control. Default false. */
-    enableClear: PT.bool,
+    enableClear?: boolean,
 
     /**
      * MomentJS format string for date display. Defaults to `YYYY-MM-DD HH:mm:ss`,
      * with default presence of time components determined by the timePrecision prop.
      */
-    formatString: PT.string,
+    formatString?: string,
 
 
     /**
@@ -69,8 +52,7 @@ DateInput.propTypes = {
      * determined by the timePrecision prop.  Formats will be evaluated in priority order specified
      * as described here: https://momentjs.com/guides/#/parsing/multiple-formats/
      */
-    parseStrings: PT.oneOfType([PT.array, PT.string]),
-
+    parseStrings?: Some<string>,
 
     /**
      * Month to display in calendar popover on first render.
@@ -78,16 +60,16 @@ DateInput.propTypes = {
      * If unspecified will default to the month of the current value (if present) or closest
      * valid value.
      */
-    initialMonth: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
+    initialMonth?: Date|LocalDate,
 
     /** Icon to display inline on the left side of the input. */
-    leftIcon: PT.element,
+    leftIcon?: ReactElement,
 
     /**
      * Element to display inline on the right side of the input. Note if provided, this will
      * take the place of the (default) calendar-picker button and (optional) clear button.
      */
-    rightElement: PT.element,
+    rightElement?: ReactNode,
 
     /**
      * Maximum (inclusive) valid date that can be entered by the user via the calendar picker or
@@ -98,7 +80,7 @@ DateInput.propTypes = {
      * which will flag an invalid date in a Form. For Form usages, it may be advisable to set
      * validation constraints in addition to this property.
      */
-    maxDate: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
+    maxDate?: Date|LocalDate,
 
     /**
      * Maximum (inclusive) valid date that can be entered by the user via the calendar picker or
@@ -106,40 +88,34 @@ DateInput.propTypes = {
      *
      * See note re. validation on maxDate, above.
      */
-    minDate: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
+    minDate?: Date|LocalDate,
 
     /** Text to display when control is empty. */
-    placeholder: PT.string,
+    placeholder?: string,
 
     /**
      * Position for calendar popover, as per Blueprint docs.
      * @see https://blueprintjs.com/docs/#datetime/dateinput
      */
-    popoverPosition: PT.oneOf([
-        'top-left', 'top', 'top-right',
-        'right-top', 'right', 'right-bottom',
-        'bottom-right', 'bottom', 'bottom-left',
-        'left-bottom', 'left', 'left-top',
-        'auto'
-    ]),
+    popoverPosition?: Position,
 
     /** Boundary for calendar popover, as per Popper.js docs. Defaults to viewport. */
-    popoverBoundary: PT.oneOf(['scrollParent', 'viewport', 'window', PT.element]),
+    popoverBoundary?: 'scrollParent'|'viewport'|'window'|ReactElement,
 
     /** Modifiers for calendar popover, as per Blueprint docs. Defaults to null */
-    popoverModifiers: PT.object,
+    popoverModifiers?: Record<string, any>,
 
     /** Container DOM element to render the calendar popover inside. Defaults to document body. */
-    portalContainer: PT.instanceOf(window.HTMLElement),
+    portalContainer?: HTMLElement,
 
     /** True to select contents when control receives focus. */
-    selectOnFocus: PT.bool,
+    selectOnFocus?: boolean,
 
     /** True to show a bar with Today + Clear buttons at bottom of date picker popover. */
-    showActionsBar: PT.bool,
+    showActionsBar?: boolean,
 
     /** True to show the picker upon focusing the input. */
-    showPickerOnFocus: PT.bool,
+    showPickerOnFocus?: boolean,
 
     /**
      * True to parse any dates entered via the text input with moment's "strict" mode enabled.
@@ -147,31 +123,47 @@ DateInput.propTypes = {
      * If it does not, the input will be considered invalid and the value set to `null`.
      * @see https://momentjs.com/guides/#/parsing/strict-mode/
      */
-    strictInputParsing: PT.bool,
+    strictInputParsing?: boolean,
 
     /** Alignment of entry text within control, default 'left'. */
-    textAlign: PT.oneOf(['left', 'right']),
+    textAlign?: 'left'|'right',
 
     /**
      * Props passed to the TimePicker, as per Blueprint docs.
      * @see https://blueprintjs.com/docs/#datetime/dateinput
      */
-    timePickerProps: PT.object,
+    timePickerProps?: Record<string, any>,
 
     /**
      * The precision of time selection that accompanies the calendar.
      * If undefined, control will not show time. Ignored when valueType is localDate.
      */
-    timePrecision: PT.oneOf(['second', 'minute']),
+    timePrecision?: 'second'|'minute',
 
     /**
      * Type of value to publish. Defaults to 'date'. The use of 'localDate' is often a good
      * choice for use cases where there is no time component.
      * @see LocalDate - the class that will be published when localDate mode.
      */
-    valueType: PT.oneOf(['date', 'localDate'])
-};
-DateInput.hasLayoutSupport = true;
+    valueType?: 'date'|'localDate'
+}
+
+/**
+ * A Calendar Control for choosing a Date.
+ *
+ * By default this control emits dates with the time component cleared (set to midnight), but this
+ * can be customized via the timePrecision prop to support editing of a date and time together.
+ *
+ * The calendar popover can be opened via the built-in button or up/down arrow keyboard shortcuts.
+ */
+export const [DateInput, dateInput] = hoistCmp.withFactory<DateInputProps>({
+    displayName: 'DateInput',
+    className: 'xh-date-input',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref, DateInputModel);
+    }
+});
+(DateInput as any).hasLayoutSupport = true;
 
 //---------------------------------
 // Implementation
@@ -179,55 +171,68 @@ DateInput.hasLayoutSupport = true;
 class DateInputModel extends HoistInputModel {
     xhImpl = true;
 
-    @bindable popoverOpen = false;
+    @observable popoverOpen: boolean = false;
 
-    buttonRef = createRef();
-    popoverRef = createRef();
-    textInputRef = createRef();
+    buttonRef = createRef<HTMLElement>();
+    popoverRef = createRef<HTMLElement>();
+    textInputRef = createRef<TextInputModel>();
 
     // Prop-backed convenience getters
-    get maxDate() {
+    get maxDate(): Date {
         const {maxDate} = this.componentProps;
         if (!maxDate) return moment().add(100, 'years').toDate();
         return isLocalDate(maxDate) ? maxDate.date : maxDate;
     }
 
-    get minDate() {
+    get minDate(): Date {
         const {minDate} = this.componentProps;
         if (!minDate) return moment().subtract(100, 'years').toDate();
         return isLocalDate(minDate) ? minDate.date : minDate;
     }
 
-    get initialMonth() {
+    get initialMonth(): Date {
         const {initialMonth} = this.componentProps;
         return isLocalDate(initialMonth) ? initialMonth.date : initialMonth;
     }
 
-    get valueType()             {return withDefault(this.componentProps.valueType, 'date')}
-    get strictInputParsing()    {return withDefault(this.componentProps.strictInputParsing, false)}
-    get timePrecision()         {return this.valueType === 'localDate' ? null : this.componentProps.timePrecision}
+    get valueType(): 'date'|'localDate' {
+        return withDefault(this.componentProps.valueType, 'date');
+    }
+
+    get timePrecision():'second'|'minute' {
+        return this.valueType === 'localDate' ? null : this.componentProps.timePrecision;
+    }
+
+    get strictInputParsing(): boolean {
+        return withDefault(this.componentProps.strictInputParsing, false);
+    }
 
     constructor() {
         super();
         makeObservable(this);
     }
 
-    toExternal(internal) {
+    @action
+    setPopoverOpen(popoverOpen: boolean) {
+        this.popoverOpen = popoverOpen;
+    }
+
+    override toExternal(internal: Date): Date|LocalDate {
         if (this.valueType === 'localDate') return internal ? LocalDate.from(internal) : null;
         return internal;
     }
 
-    toInternal(external) {
-        if (this.valueType === 'localDate') return external ? external.date : null;
-        return external;
+    override toInternal(external: Date|LocalDate): Date {
+        if (this.valueType === 'localDate') return external ? (external as LocalDate).date : null;
+        return external as Date;
     }
 
     /**
      * Custom blur handler to account for focus potentially living in either input or popover.
      * We want to call noteBlurred when focus has left both.
      */
-    onBlur = () => {
-        const activeEl = document.activeElement,
+    override onBlur = () => {
+        const activeEl = document.activeElement as HTMLElement,
             popoverEl = this.popoverRef.current,
             popoverHasFocus = popoverEl && popoverEl.contains(activeEl),
             inputHasFocus = this.containsElement(activeEl);
@@ -237,7 +242,7 @@ class DateInputModel extends HoistInputModel {
         }
     };
 
-    noteBlurred() {
+    override noteBlurred() {
         super.noteBlurred();
         wait().then(() => {
             if (!this.hasFocus) {
@@ -369,7 +374,7 @@ class DateInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory(
+const cmp = hoistCmp.factory<DateInputProps>(
     ({model, className, ...props}, ref) => {
         warnIf(
             (props.enableClear || props.enablePicker) && props.rightElement,
