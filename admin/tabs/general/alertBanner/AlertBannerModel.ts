@@ -118,7 +118,8 @@ export class AlertBannerModel extends HoistModel {
     //----------------
     @action
     private syncPreview() {
-        const conf = XH.alertBannerService.genBannerConfig(this.formModel.getData());
+        const vals = this.formModel.values,
+            conf = XH.alertBannerService.genBannerSpec(vals.message, vals.intent, vals.iconName, vals.enableClose);
         this.bannerModel = new BannerModel(conf);
     }
 

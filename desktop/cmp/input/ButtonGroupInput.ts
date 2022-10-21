@@ -4,15 +4,31 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp} from '@xh/hoist/core';
-import {Button, ButtonGroup, buttonGroup} from '@xh/hoist/desktop/cmp/button';
+import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {hoistCmp, HoistModel, Intent} from '@xh/hoist/core';
+import {Button, buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty, filter, without, castArray} from 'lodash';
-import PT from 'prop-types';
 import {Children, cloneElement} from 'react';
+
+export interface ButtonGroupInputProps extends HoistInputProps, ButtonGroupProps<HoistModel> {
+    /**
+     * True to allow buttons to be unselected (aka inactivated). Defaults to false.
+     * Does not apply when enableMulti: true.
+     */
+    enableClear?: boolean;
+
+    /** True to allow entry/selection of multiple values - "tag picker" style. Defaults to false.*/
+    enableMulti?: boolean;
+
+    /** Intent applied to each button. */
+    intent?: Intent;
+
+    /** True to create outlined-style buttons. */
+    outlined?: boolean;
+}
 
 /**
  * A segmented group of buttons, one of which is depressed to indicate the input's current value.
@@ -21,7 +37,7 @@ import {Children, cloneElement} from 'react';
  * The buttons are automatically configured to set this value on click and appear pressed if the
  * ButtonGroupInput's value matches.
  */
-export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory({
+export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory<ButtonGroupInputProps>({
     displayName: 'ButtonGroupInput',
     className: 'xh-button-group-input',
     render(props, ref) {
@@ -32,29 +48,7 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory({
         return useHoistInputModel(cmp, props, ref, ButtonGroupInputModel);
     }
 });
-ButtonGroupInput.propTypes = {
-    ...HoistInputPropTypes,
-    ...ButtonGroup.propTypes,
-
-    /**
-     * True to allow buttons to be unselected (aka inactivated). Defaults to false.
-     * Does not apply when enableMulti: true.
-     */
-    enableClear: PT.bool,
-
-    /** True to allow entry/selection of multiple values - "tag picker" style. Defaults to false.*/
-    enableMulti: PT.bool,
-
-    /** Intent applied to each button. */
-    intent: PT.oneOf(['primary', 'success', 'warning', 'danger']),
-
-    /** True to create minimal-style buttons. */
-    minimal: PT.bool,
-
-    /** True to create outlined-style buttons. */
-    outlined: PT.bool
-};
-ButtonGroupInput.hasLayoutSupport = true;
+(ButtonGroupInput as any).hasLayoutSupport = true;
 
 
 //----------------------------------
@@ -63,28 +57,25 @@ ButtonGroupInput.hasLayoutSupport = true;
 class ButtonGroupInputModel extends HoistInputModel {
     xhImpl = true;
 
-    get enableMulti() {return !!this.componentProps.enableMulti}
-    get enableClear() {return !!this.componentProps.enableClear}
-
-    blur() {
-        this.enabledButtons.forEach(it => it.blur());
+    get enableMulti(): boolean {
+        return !!this.componentProps.enableMulti;
     }
 
-    focus() {
-        this.enabledButtons[0]?.focus();
+    get enableClear(): boolean {
+        return !!this.componentProps.enableClear;
     }
 
-    get enabledButtons() {
+    get enabledButtons(): HTMLButtonElement[] {
         const btns = this.domEl?.querySelectorAll('button') ?? [];
         return filter(btns, {disabled: false});
     }
 
-    isActive(value) {
+    isActive(value: any): boolean {
         const {renderValue} = this;
         return this.enableMulti ? renderValue?.includes(value) : renderValue === value;
     }
 
-    onButtonClick(value) {
+    onButtonClick(value: any) {
         const isActive = this.isActive(value);
         if (this.enableMulti) {
             const current = this.renderValue ? castArray(this.renderValue) : [];
@@ -95,9 +86,20 @@ class ButtonGroupInputModel extends HoistInputModel {
         }
         this.noteValueChange(value);
     }
+
+    //-----------------
+    // Overrides
+    //-----------------
+    override blur() {
+        this.enabledButtons.forEach(it => it.blur());
+    }
+
+    override focus() {
+        this.enabledButtons[0]?.focus();
+    }
 }
 
-const cmp = hoistCmp.factory(
+const cmp = hoistCmp.factory<ButtonGroupInputModel>(
     ({model, className, ...props}, ref) => {
         const {
             children,
@@ -117,7 +119,7 @@ const cmp = hoistCmp.factory(
             outlined,
             // ...and ButtonGroup gets all the rest
             ...buttonGroupProps
-        } = getNonLayoutProps(props);
+        } = getNonLayoutProps(props) as ButtonGroupInputProps;
 
         const buttons = Children.map(children, button => {
             if (!button) return null;
@@ -145,7 +147,7 @@ const cmp = hoistCmp.factory(
 
         return buttonGroup({
             items: buttons,
-            ...buttonGroupProps,
+            ...(buttonGroupProps as ButtonGroupProps),
             minimal: withDefault(minimal, outlined, false),
             ...getLayoutProps(props),
             onBlur: model.onBlur,

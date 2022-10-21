@@ -94,7 +94,8 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                 onInteraction: (nextOpenState, e) => {
                     if (isOpen && nextOpenState === false) {
                         // Prevent clicks with Select controls from closing popover
-                        const selectPortal = document.getElementById(Select.MENU_PORTAL_ID)?.contains(e?.target),
+                        const id = (Select as any).MENU_PORTAL_ID,
+                            selectPortal = document.getElementById(id)?.contains(e?.target),
                             selectClick = e?.target?.classList.contains('xh-select__single-value');
 
                         if (!selectPortal && !selectClick) {

@@ -7,6 +7,10 @@
 
 import PT from 'prop-types';
 
+/**
+ * Todo: Remove this once all inputs are in Typescript! I'm only keeping this file around to allow the
+ * client to build while some inputs (i.e. mobile) are yet to be converted to Typescript.
+ */
 export const HoistInputPropTypes = {
 
     /**

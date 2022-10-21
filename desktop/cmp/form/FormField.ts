@@ -239,8 +239,7 @@ const editableChild = hoistCmp.factory<Partial<FormFieldProps>>({
     model: false,
 
     render({model, child, childIsSizeable, childId, disabled, displayNotValid, leftErrorIcon, commitOnChange}) {
-        const {props} = child,
-            {propTypes} = child.type;
+        const {props} = child;
 
 
         // Overrides -- be sure not to clobber selected properties on child
@@ -267,11 +266,11 @@ const editableChild = hoistCmp.factory<Partial<FormFieldProps>>({
             }
         }
 
-        if (displayNotValid && propTypes?.leftIcon && leftErrorIcon) {
+        if (displayNotValid && leftErrorIcon) {
             overrides.leftIcon = Icon.warningCircle();
         }
 
-        if (propTypes?.commitOnChange && !isUndefined(commitOnChange)) {
+        if (!isUndefined(commitOnChange)) {
             overrides.commitOnChange = commitOnChange;
         }
         return cloneElement(child, overrides);

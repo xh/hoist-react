@@ -12,7 +12,7 @@ import {button, buttonGroup, colChooserButton, exportButton} from '@xh/hoist/des
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {groupingChooser} from '@xh/hoist/desktop/cmp/grouping';
-import {dateInput, select} from '@xh/hoist/desktop/cmp/input';
+import {dateInput, DateInputProps, select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -137,4 +137,4 @@ const aggregateView = hoistCmp.factory<ActivityTrackingModel>(
     }
 );
 
-const dateInputProps = {popoverPosition: 'bottom', valueType: 'localDate', width: 120};
+const dateInputProps = {popoverPosition: 'bottom', valueType: 'localDate', width: 120} as DateInputProps;

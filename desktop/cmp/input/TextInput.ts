@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
-import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -15,22 +15,10 @@ import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
-import PT from 'prop-types';
+import {ReactElement, ReactNode, Ref} from 'react';
 
-/**
- * A single-line text input with additional support for embedded icons/elements.
- */
-export const [TextInput, textInput] = hoistCmp.withFactory({
-    displayName: 'TextInput',
-    className: 'xh-text-input',
-    render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, TextInputModel);
-    }
-});
-TextInput.propTypes = {
-    ...HoistInputPropTypes,
-
-    value: PT.string,
+export interface TextInputProps extends HoistInputProps {
+    value?: string;
 
     /**
      *  HTML `autocomplete` attribute to set on underlying <input> element.
@@ -42,56 +30,66 @@ TextInput.propTypes = {
      * @see https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofilling-form-controls%3A-the-autocomplete-attribute
      * @see https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion
      */
-    autoComplete: PT.string,
+    autoComplete?: string; // Todo: Is it worth importing / listing out valid values?
 
     /** True to focus the control on render. */
-    autoFocus: PT.bool,
+    autoFocus?: boolean;
 
     /** True to commit on every change/keystroke, default false. */
-    commitOnChange: PT.bool,
+    commitOnChange?: boolean;
 
     /** True to show a "clear" button as the right element. default false */
-    enableClear: PT.bool,
+    enableClear?: boolean;
 
     /** Ref handler that receives HTML <input> element backing this component. */
-    inputRef: PT.oneOfType([PT.instanceOf(Function), PT.instanceOf(Object)]),
+    inputRef?: Ref<HTMLInputElement>;
 
     /** Icon to display inline on the left side of the input. */
-    leftIcon: PT.element,
+    leftIcon?: ReactElement;
 
     /** Callback for normalized keydown event. */
-    onKeyDown: PT.func,
+    onKeyDown?: (e: KeyboardEvent) => void;
 
     /** Text to display when control is empty. */
-    placeholder: PT.string,
+    placeholder?: string;
 
     /** Element to display inline on the right side of the input. */
-    rightElement: PT.element,
+    rightElement?: ReactNode;
 
     /** True to display with rounded caps. */
-    round: PT.bool,
+    round?: boolean;
 
     /** True to select contents when control receives focus. */
-    selectOnFocus: PT.bool,
+    selectOnFocus?: boolean;
 
     /** Alignment of entry text within control, default 'left'. */
-    textAlign: PT.oneOf(['left', 'right']),
+    textAlign?: 'left'|'right';
 
     /** True to allow browser spell check, default false. */
-    spellCheck: PT.bool,
+    spellCheck?: boolean;
 
     /** Underlying HTML <input> element type. */
-    type: PT.oneOf(['text', 'password'])
-};
-TextInput.hasLayoutSupport = true;
+    type?: 'text'|'password';
+}
 
+/**
+ * A single-line text input with additional support for embedded icons/elements.
+ */
+export const [TextInput, textInput] = hoistCmp.withFactory<TextInputProps>({
+    displayName: 'TextInput',
+    className: 'xh-text-input',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref, TextInputModel);
+    }
+});
+(TextInput as any).hasLayoutSupport = true;
 
 //-----------------------
 // Implementation
 //-----------------------
-class TextInputModel extends HoistInputModel {
+export class TextInputModel extends HoistInputModel {
 
-    get commitOnChange() {
+    override get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
     }
 
@@ -101,21 +99,21 @@ class TextInputModel extends HoistInputModel {
         this.noteValueChange(value);
     };
 
-    onKeyDown = (ev) => {
+    onKeyDown = (ev: KeyboardEvent) => {
         if (ev.key === 'Enter') this.doCommit();
         this.componentProps.onKeyDown?.(ev);
     };
 
-    onFocus = (ev) => {
-        if (this.componentProps.selectOnFocus && ev.target.nodeName === 'INPUT') {
-            ev.target.select();
+    override onFocus = (ev: FocusEvent) => {
+        const target = ev.target as HTMLElement;
+        if (this.componentProps.selectOnFocus && target.nodeName === 'INPUT') {
+            (target as HTMLInputElement).select();
         }
-
         this.noteFocused();
     };
 }
 
-const cmp = hoistCmp.factory(
+const cmp = hoistCmp.factory<TextInputModel>(
     ({model, className, ...props}, ref) => {
         const {width, flex, ...layoutProps} = getLayoutProps(props);
 
@@ -162,7 +160,7 @@ const cmp = hoistCmp.factory(
     }
 );
 
-const clearButton = hoistCmp.factory(
+const clearButton = hoistCmp.factory<TextInputModel>(
     ({model}) => button({
         icon: Icon.cross(),
         tabIndex: -1,

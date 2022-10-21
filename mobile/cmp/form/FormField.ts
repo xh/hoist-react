@@ -164,8 +164,7 @@ const editableChild = hoistCmp.factory<Partial<FormFieldProps>>({
     model: false,
 
     render({model, child, childIsSizeable, disabled, commitOnChange, width, height, flex}) {
-        const {props} = child,
-            {propTypes} = child.type;
+        const {props} = child;
 
         // Overrides -- be sure not to clobber selected properties on child
         const overrides: Partial<FormFieldProps> = {
@@ -189,7 +188,7 @@ const editableChild = hoistCmp.factory<Partial<FormFieldProps>>({
             }
         }
 
-        if (propTypes?.commitOnChange && !isUndefined(commitOnChange)) {
+        if (!isUndefined(commitOnChange)) {
             overrides.commitOnChange = commitOnChange;
         }
 
