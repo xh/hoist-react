@@ -1,4 +1,4 @@
-import AppComponent from './AppComponent';
+import {AppComponent} from './AppComponent';
 import {apiDeprecated} from '../utils/js';
 
 //--------------------------------------------------------------------
