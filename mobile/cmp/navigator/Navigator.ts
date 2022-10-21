@@ -4,18 +4,23 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import {navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
-import PT from 'prop-types';
 import {swiper} from './impl/swipe/Swiper';
 import {NavigatorModel} from './NavigatorModel';
+
+export interface NavigatorProps extends HoistProps<NavigatorModel> {
+    /** Set animation style or turn off, default 'slide'. */
+    animation: 'slide'|'lift'|'fade'|'none';
+}
+
 
 /**
  * Top-level Component within an application, responsible for rendering a stack of
  * pages and managing transitions between pages.
  */
-export const [Navigator, navigator] = hoistCmp.withFactory({
+export const [Navigator, navigator] = hoistCmp.withFactory<NavigatorProps>({
     displayName: 'Navigator',
     model: uses(NavigatorModel),
     className: 'xh-navigator',
@@ -34,13 +39,3 @@ export const [Navigator, navigator] = hoistCmp.withFactory({
         );
     }
 });
-
-Navigator.propTypes = {
-    /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(NavigatorModel), PT.object]),
-
-    /** Set animation style or turn off, default 'slide' */
-    animation: PT.oneOf(['slide', 'lift', 'fade', 'none'])
-};
-
-

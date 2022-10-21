@@ -10,74 +10,81 @@ import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {find, isEqual, keys, merge} from 'lodash';
 import {page} from './impl/Page';
-import {PageModel} from './PageModel';
+import {PageConfig, PageModel} from './PageModel';
+
+
+export interface NavigatorConfig {
+
+    /** Configs for PageModels, representing all supported pages within this Navigator/App. */
+    pages: PageConfig[];
+
+    /**
+     * True to enable activity tracking of page views (default false).
+     * Viewing of each page will be tracked with the `oncePerSession` flag, to avoid duplication.
+     */
+    track?: boolean;
+
+    /** True to enable 'swipe to go back' functionality. */
+    swipeToGoBack?: boolean;
+
+    /** True to enable 'pull down to refresh' functionality. */
+    pullDownToRefresh?: boolean;
+
+    /**
+     * Strategy for rendering pages. Can be set per-page via `PageModel.renderMode`.
+     * See enum for description of supported modes.
+     */
+    renderMode?: RenderMode;
+
+    /**
+     * Strategy for refreshing pages. Can be set per-page via `PageModel.refreshMode`.
+     * See enum for description of supported modes.
+     */
+    refreshMode?: RefreshMode;
+}
 
 /**
  * Model for handling stack-based navigation between Onsen pages.
  * Provides support for routing based navigation.
  */
 export class NavigatorModel extends HoistModel {
-    /** @member {boolean} */
-    @bindable disableAppRefreshButton;
+    @bindable disableAppRefreshButton: boolean;
 
-    /** @member {PageModel[]} */
-    @observable.ref stack = [];
+    @observable.ref
+    stack: PageModel[] = [];
 
-    /** @member {Object[]} */
-    pages = [];
+    pages: PageConfig[] = [];
 
-    /** @member {boolean} */
-    track;
+    track: boolean;
+    swipeToGoBack: boolean;
+    pullDownToRefresh: boolean;
+    renderMode: RenderMode;
+    refreshMode: RefreshMode;
 
-    /** @member {boolean} */
-    swipeToGoBack;
+    private _navigator = null;
+    private _callback: () => void;
+    private _prevKeyStack: string[];
 
-    /** @member {boolean} */
-    pullDownToRefresh;
-
-    /** @member {RenderMode} */
-    renderMode;
-
-    /** @member {RefreshMode} */
-    refreshMode;
-
-    _navigator = null;
-    _callback = null;
-
-    /** @type String */
-    get activePageId() {
+    get activePageId(): string {
         return this.activePage?.id;
     }
 
-    /** @type PageModel */
-    get activePage() {
+    get activePage(): PageModel {
         const {stack} = this;
         return stack[stack.length - 1];
     }
 
-    /**
-     * @param {Object[]} pages - configs for PageModels, representing all supported
-     *      pages within this Navigator/App.
-     * @param {boolean} [track] - True to enable activity tracking of page views (default false).
-     *      Viewing of each page will be tracked with the `oncePerSession` flag, to avoid duplication.
-     * @param {boolean} [swipeToGoBack] - True to enable 'swipe to go back' functionality.
-     * @param {boolean} [pullDownToRefresh] - True to enable 'pull down to refresh' functionality.
-     * @param {RenderMode} [renderMode] - strategy for rendering pages. Can be set per-page
-     *      via `PageModel.renderMode`. See enum for description of supported modes.
-     * @param {RefreshMode} [refreshMode] - strategy for refreshing pages. Can be set per-page
-     *      via `PageModel.refreshMode`. See enum for description of supported modes.
-     */
     constructor({
         pages,
         track = false,
         swipeToGoBack = true,
         pullDownToRefresh = true,
-        renderMode = RenderMode.LAZY,
-        refreshMode = RefreshMode.ON_SHOW_LAZY
-    }) {
+        renderMode = 'lazy',
+        refreshMode = 'onShowLazy'
+    }: NavigatorConfig) {
         super();
         makeObservable(this);
-        warnIf(renderMode === RenderMode.ALWAYS, 'RenderMode.ALWAYS is not supported in Navigator. Pages are always can\'t exist before being mounted.');
+        warnIf(renderMode === 'always', 'RenderMode.ALWAYS is not supported in Navigator. Pages can\'t exist before being mounted.');
 
         ensureNotEmpty(pages, 'NavigatorModel needs at least one page.');
         ensureUniqueBy(pages, 'id', 'Multiple NavigatorModel PageModels have the same id.');
@@ -91,7 +98,7 @@ export class NavigatorModel extends HoistModel {
 
         this.addReaction({
             track: () => XH.routerState,
-            run: this.onRouteChange
+            run: () => this.onRouteChange()
         });
 
         this.addReaction({
@@ -114,24 +121,21 @@ export class NavigatorModel extends HoistModel {
     }
 
     /**
-     * @param {function} callback - function to execute (once) after the next page transition.
+     * @param callback - function to execute (once) after the next page transition.
      */
-    setCallback(callback) {
+    setCallback(callback: () => void) {
         this._callback = callback;
     }
 
-    /**
-     * @param {PageModel[]} stack
-     */
     @action
-    setStack(stack) {
+    setStack(stack: PageModel[]) {
         this.stack = stack;
     }
 
     //--------------------
     // Implementation
     //--------------------
-    onRouteChange({init}) {
+    private onRouteChange(init = null) {
         if (!this._navigator || !XH.routerState) return;
 
         // Break the current route name into parts, and collect any params for each part.
@@ -184,7 +188,7 @@ export class NavigatorModel extends HoistModel {
         this.setStack(stack);
     }
 
-    async onStackChangeAsync() {
+    private async onStackChangeAsync() {
         await this.updateNavigatorPagesAsync();
 
         // Ensure only the last page is visible after a page transition.
@@ -196,7 +200,7 @@ export class NavigatorModel extends HoistModel {
         });
     }
 
-    async updateNavigatorPagesAsync() {
+    private async updateNavigatorPagesAsync() {
         // Sync Onsen Navigator's pages with our stack
         if (!this._navigator) return;
         const {stack} = this,
@@ -233,7 +237,7 @@ export class NavigatorModel extends HoistModel {
         if (init) {
             if (!this._navigator) {
                 this._navigator = navigator;
-                this.onRouteChange({init});
+                this.onRouteChange(init);
             }
             return null;
         }
@@ -263,11 +267,8 @@ export class NavigatorModel extends HoistModel {
     @action
     onPageChange = () => {
         this.disableAppRefreshButton = this.activePage?.disableAppRefreshButton;
-        this.doCallback();
+        this._callback?.();
+        this._callback = null;
     };
 
-    doCallback() {
-        if (this._callback) this._callback();
-        this._callback = null;
-    }
 }

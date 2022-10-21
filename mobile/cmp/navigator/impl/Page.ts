@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, ModelPublishMode, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
+import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {page as onsenPage} from '@xh/hoist/kit/onsen';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
@@ -15,14 +15,14 @@ import './Page.scss';
  * Wrapper for contents to be shown within a Navigator. This Component is used by Navigator's
  * internal implementation to:
  *
- *      - Mount/unmount its contents according to `PageModel.renderMode`.
- *      - Track and trigger refreshes according to `PageModel.refreshMode`.
+ *  - Mount/unmount its contents according to `PageModel.renderMode`.
+ *  - Track and trigger refreshes according to `PageModel.refreshMode`.
  *
- * @private
+ * @internal
  */
 export const page = hoistCmp.factory({
     displayName: 'Page',
-    model: uses(PageModel, {publishMode: ModelPublishMode.LIMITED}),
+    model: uses(PageModel, {publishMode: 'limited'}),
 
     render({model}) {
         const {content, props, isActive, renderMode, refreshContextModel} = model,
@@ -33,8 +33,8 @@ export const page = hoistCmp.factory({
         if (
             !isActive &&
             (
-                (renderMode === RenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode === RenderMode.LAZY && !wasActivated.current)
+                (renderMode === 'unmountOnHide') ||
+                (renderMode === 'lazy' && !wasActivated.current)
             )
         ) {
             // Note: We must render an empty placeholder page to work with the Navigator.

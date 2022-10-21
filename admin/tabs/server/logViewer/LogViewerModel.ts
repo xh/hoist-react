@@ -6,7 +6,7 @@
  */
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {UrlStore} from '@xh/hoist/data';
+import {RecordActionSpec, UrlStore} from '@xh/hoist/data';
 import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable, observable} from '@xh/hoist/mobx';
@@ -44,7 +44,7 @@ export class LogViewerModel extends HoistModel {
         recordsRequired: true,
         actionFn: () => this.deleteSelectedAsync(),
         displayFn: () => ({hidden: getApp().readonly})
-    };
+    } as RecordActionSpec;
 
     downloadFileAction = {
         text: 'Download',

@@ -2,12 +2,13 @@ import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
+import {SwiperModel} from './SwiperModel';
 
 /**
  * Indicator for the pulldownToRefresh affordance
  * @private
  */
-export const refreshIndicator = hoistCmp.factory(
+export const refreshIndicator = hoistCmp.factory<SwiperModel>(
     ({model}) => {
         const {refreshStarted, refreshProgress, refreshCompleted} = model,
             top = -40 + (refreshProgress * 85),

@@ -11,7 +11,7 @@ import {SwiperModel} from './SwiperModel';
 /**
  * Wrap the Onsen Navigator with drag gesture handling.
  *
- * @private
+ * @internal
  */
 export const swiper = hoistCmp.factory({
     model: creates(SwiperModel),

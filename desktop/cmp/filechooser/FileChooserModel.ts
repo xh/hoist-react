@@ -9,7 +9,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isEmpty} from 'codemirror/src/util/misc';
 import filesize from 'filesize';
 import {find, uniqBy, without} from 'lodash';
@@ -17,14 +17,13 @@ import {find, uniqBy, without} from 'lodash';
 export class FileChooserModel extends HoistModel {
 
     @observable.ref
-    files = [];
+    files: File[] = [];
 
-    @bindable
-    lastRejectedCount;
+    @observable
+    lastRejectedCount: number;
 
-    /** @member {GridModel} */
     @managed
-    gridModel;
+    gridModel: GridModel;
 
     constructor() {
         super();
@@ -38,15 +37,14 @@ export class FileChooserModel extends HoistModel {
         });
     }
 
+
     /**
      * Add Files to the selection. Typically called by the component's embedded react-dropzone.
      * Files will be de-duplicated by name, with a newly added file taking precedence over any
      * existing file with the same name.
-     *
-     * @param {File[]} filesToAdd
      */
     @action
-    addFiles(filesToAdd) {
+    addFiles(filesToAdd: File[]) {
         this.files = uniqBy([
             ...filesToAdd,
             ...this.files
@@ -54,16 +52,15 @@ export class FileChooserModel extends HoistModel {
     }
 
     @action
-    setSingleFile(file) {
+    setSingleFile(file: File) {
         this.files = [file];
     }
 
     /**
      * Remove a single file from the current selection.
-     * @param {string} name - name of the file to remove.
      */
     @action
-    removeFileByName(name) {
+    removeFileByName(name: string) {
         const toRemove = find(this.files, {name});
         if (toRemove) this.files = without(this.files, toRemove);
     }
@@ -74,11 +71,10 @@ export class FileChooserModel extends HoistModel {
         this.files = [];
     }
 
-
     //------------------------
     // Implementation
     //------------------------
-    createGridModel() {
+    private createGridModel(): GridModel {
         return new GridModel({
             hideHeaders: true,
             store: {
@@ -119,6 +115,7 @@ export class FileChooserModel extends HoistModel {
         });
     }
 
+    @action
     onDrop(accepted, rejected, enableMulti) {
         if (!isEmpty(accepted)) {
             if (!enableMulti) {
@@ -127,7 +124,7 @@ export class FileChooserModel extends HoistModel {
                 this.addFiles(accepted);
             }
         }
-        this.setLastRejectedCount(rejected.length);
+        this.lastRejectedCount = rejected.length;
     }
 
     onFilesChange(files) {
