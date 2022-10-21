@@ -81,6 +81,7 @@ export class DifferModel extends HoistModel {
 
         this.url = entityName + 'DiffAdmin';
 
+        const rendererIsComplex = true;
         this.gridModel = new GridModel({
             store: {
                 idSpec: data => {
@@ -107,17 +108,19 @@ export class DifferModel extends HoistModel {
                     hidden: true
                 },
                 ...this.columnFields.map(it => {
-                    const colDef = {renderer: this.fieldRenderer, maxWidth: 200};
+                    const colDef = {renderer: this.fieldRenderer, rendererIsComplex, maxWidth: 200};
                     return isString(it) ? {field: it, ...colDef} : {...colDef, ...it};
                 }),
                 {
                     field: 'localValue',
                     flex: true,
+                    rendererIsComplex,
                     renderer: this.valueRenderer
                 },
                 {
                     field: 'remoteValue',
                     flex: true,
+                    rendererIsComplex,
                     renderer: this.valueRenderer
                 }
             ],
