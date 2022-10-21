@@ -2,12 +2,13 @@ import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
+import {SwiperModel} from './SwiperModel';
 
 /**
  * Indicator for the swipeToGoBack affordance
- * @private
+ * @internal
  */
-export const backIndicator = hoistCmp.factory(
+export const backIndicator = hoistCmp.factory<SwiperModel>(
     ({model}) => {
         const {backStarted, backProgress, backCompleted}  = model,
             left = -40 + (backProgress * 60),

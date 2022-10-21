@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -14,16 +14,45 @@ import {filterConsecutiveToolbarSeparators} from '@xh/hoist/utils/impl';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty} from 'lodash';
-import PT from 'prop-types';
 import {Children} from 'react';
 import './Toolbar.scss';
 import {toolbarSeparator} from './ToolbarSep';
+
+
+export interface ToolbarProps extends HoistProps {
+
+    /** Set to true to style toolbar with reduced height and font-size. */
+    compact?: boolean,
+
+    /** Set to true to vertically align the items of this toolbar. */
+    vertical?: boolean,
+
+    /**
+     * Place items that overflow in a menu. Only available for horizontal toolbars.
+     * Default to false. NOTE, the move of components into a menu when they overflow will trigger a
+     * remount of those components.
+     */
+    enableOverflowMenu?: boolean,
+
+    /**
+     * For horizontal toolbars that overflow, manages which direction the items collapse from.
+     * Defaults to 'end'.
+     */
+    collapseFrom?: 'start' | 'end',
+
+    /**
+     * For horizontal toolbars that overflow, manages the minimum number of visible items
+     * that should never collapse into the overflow menu.
+     */
+    minVisibleItems?: number
+}
+
 
 /**
  * A toolbar with built-in styling and padding.
  * In horizontal toolbars, items which overflow can be collapsed into a drop-down menu.
  */
-export const [Toolbar, toolbar] = hoistCmp.withFactory({
+export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps>({
     displayName: 'Toolbar',
     model: false, memo: false, observer: false,
     className: 'xh-toolbar',
@@ -62,36 +91,6 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
         });
     }
 });
-
-Toolbar.propTypes = {
-    /** Custom classes that will be applied to this component */
-    className: PT.string,
-
-    /** Set to true to style toolbar with reduced height and font-size. */
-    compact: PT.bool,
-
-    /** Set to true to vertically align the items of this toolbar */
-    vertical: PT.bool,
-
-    /**
-     * Place items that overflow in a menu. Only available for horizontal toolbars.
-     * Default to false. NOTE, the move of components into a menu when they overflow will trigger a
-     * remount of those components.
-     */
-    enableOverflowMenu: PT.bool,
-
-    /**
-     * For horizontal toolbars that overflow, manages which direction the items collapse from.
-     * Valid values are 'start' or 'end'. Defaults to 'end'.
-     */
-    collapseFrom: PT.string,
-
-    /**
-     * For horizontal toolbars that overflow, manages the minimum number of visible items
-     * that should never collapse into the overflow menu.
-     */
-    minVisibleItems: PT.number
-};
 
 //-----------------
 // Implementation

@@ -4,12 +4,30 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, PersistenceProvider, TaskObserver, XH} from '@xh/hoist/core';
-import {combineValueFilters, FieldFilter, parseFilter, withFilterByTypes} from '@xh/hoist/data';
+import {
+    HoistModel,
+    managed,
+    PersistenceProvider,
+    PersistOptions,
+    TaskObserver,
+    XH
+} from '@xh/hoist/core';
+import {
+    combineValueFilters,
+    CompoundFilter,
+    FieldFilter,
+    Filter,
+    parseFilter,
+    Store,
+    View,
+    withFilterByTypes
+} from '@xh/hoist/data';
+import {CompoundFilterSpec, FieldFilterSpec, FilterLike} from '@xh/hoist/data/filter/Types';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
+import {ReactNode} from 'react';
 import {
     cloneDeep,
     compact,
@@ -28,93 +46,95 @@ import {
     uniqBy
 } from 'lodash';
 
-import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
-import {compoundFilterOption, fieldFilterOption} from './impl/Option';
+import {FilterChooserFieldSpec, FilterChooserFieldSpecConfig} from './FilterChooserFieldSpec';
+import {compoundFilterOption, fieldFilterOption, FilterChooserOption} from './impl/Option';
 import {QueryEngine} from './impl/QueryEngine';
+
+export interface FilterChooserConfig {
+    /**
+     * Specifies the fields this model supports for filtering and customizes how their available values
+     * will be parsed and displayed. If a `valueSource` is provided, these may be specified as field
+     * names in that source or omitted entirely, indicating that all fields should be filter-enabled.
+     */
+    fieldSpecs?: (FilterChooserFieldSpecConfig|string)[],
+    /** Default properties to be assigned to all FilterChooserFieldSpecs created by this model. */
+    fieldSpecDefaults?: FilterChooserFieldSpecConfig,
+    /**
+     * Store or cube View that should actually be filtered as this model's value changes.
+     * This may be the same as `valueSource`. Leave undefined if you wish to combine this model's values
+     * with other filters, send it to the server, or otherwise observe and handle value changes manually.
+     */
+    bind?: Store|View,
+    /**
+     * Store or cube View to be used to lookup matching Field-level defaults for `fieldSpecs` and to
+     * provide suggested data values (if so configured) from user input. Defaults to `bind` if provided.
+     */
+    valueSource?: Store|View,
+    /**
+     * Configuration for a filter appropriate to be rendered and managed by FilterChooser, or a function
+     * to produce the same. Note that FilterChooser currently can only edit and create a flat collection
+     * of FieldFilters, to be 'AND'ed together.
+     */
+    initialValue?: FilterChooserFilterLike|(() => FilterChooserFilterLike),
+    /**
+     * Initial favorites as an array of filter configurations, or a function to produce such an array.
+     */
+    initialFavorites?: FilterChooserFilterLike[]|(() => FilterChooserFilterLike[]),
+    /**
+     * true to offer all field suggestions when the control is focussed with an empty query,
+     * to aid discoverability.
+     */
+    suggestFieldsWhenEmpty?: boolean,
+    /**
+     * true (default) to sort field suggestions by displayed label. Set to false to preserve
+     * the order provided to `fieldSpecs`.
+     */
+    sortFieldSuggestions?: boolean,
+    /**
+     * Maximum number of filter tags to render before disabling the control.
+     * Limits the performance impact of rendering large filters.
+     */
+    maxTags?: number,
+    /** Maximum number of dropdown options to show before truncating. */
+    maxResults?: number,
+    /**
+     * Blurb displayed above field suggestions when the control is focused but user has yet
+     * to enter a query, or null to suppress default. */
+    introHelpText?: ReactNode,
+    /** Options governing persistence. */
+    persistWith?: FilterChooserPersistOptions,
+}
 
 export class FilterChooserModel extends HoistModel {
 
-    /** @member {Filter} */
-    @observable.ref value = null;
+    @observable.ref value: Filter = null;
+    @observable.ref favorites: Filter[] = [];
+    bind: Store|View;
+    valueSource: Store|View;
 
-    /** @member {Filter[]} */
-    @observable.ref favorites = [];
+    @managed fieldSpecs: FilterChooserFieldSpec[] = [];
 
-    /** @member {(Store|View)} */
-    bind;
+    suggestFieldsWhenEmpty: boolean;
+    sortFieldSuggestions: boolean;
+    maxTags: number;
+    maxResults: number;
+    introHelpText: ReactNode;
 
-    /** @member {(Store|View)} */
-    valueSource;
+    @managed provider: PersistenceProvider;
+    persistValue: boolean = false;
+    persistFavorites: boolean = false;
 
-    /** @member {FilterChooserFieldSpec[]} */
-    @managed fieldSpecs = [];
-
-    /** @member {boolean} */
-    suggestFieldsWhenEmpty;
-
-    /** @member {boolean} */
-    sortFieldSuggestions;
-
-    /** @member {number} */
-    maxTags;
-
-    /** @member {number} */
-    maxResults;
-
-    /** @member {(string|ReactNode)} */
-    introHelpText;
-
-    /** @member {PersistenceProvider} */
-    @managed provider;
-    persistValue = false;
-    persistFavorites = false;
-
-    /** @member {TaskObserver} - tracks execution of filtering operation on bound object.*/
+    /** Tracks execution of filtering operation on bound object.*/
     @managed filterTask = TaskObserver.trackAll();
 
     // Implementation fields for Control
-    @observable.ref selectOptions;
-    @observable.ref selectValue;
+    @managed queryEngine: QueryEngine;
+    @observable.ref selectOptions: FilterChooserOption[];
+    @observable.ref selectValue: string[];
     @observable favoritesIsOpen = false;
     @observable unsupportedFilter = false;
-    inputRef = createObservableRef();
+    inputRef = createObservableRef<HTMLElement>();
 
-    @managed queryEngine;
-
-    /**
-     * @param c - FilterChooserModel configuration.
-     * @param {(string[]|Object[]} [c.fieldSpecs] - specifies the fields this model
-     *      supports for filtering and customizes how their available values will be parsed and
-     *      displayed. Should be configs for a `FilterChooserFieldSpec`. If a `valueSource`
-     *      is provided, these may be specified as field names in that source or omitted entirely,
-     *      indicating that all fields should be filter-enabled.
-     * @param {Object} [c.fieldSpecDefaults] - default properties to be assigned to all
-     *      FilterChooserFieldSpecs created by this model.
-     * @param {(Store|View)} [c.bind] - Store or cube View that should actually be filtered
-     *      as this model's value changes. May be the same as `valueSource`. Leave undefined if you
-     *      wish to combine this model's values with other filters, send it to the server,
-     *      or otherwise observe and handle value changes manually.
-     * @param {(Store|View)} [c.valueSource] - Store or cube View to be used to lookup matching
-     *      Field-level defaults for `fieldSpecs` and to provide suggested data values (if so
-     *      configured) from user input. Defaults to `bind` if provided.
-     * @param {(Filter|* |[]|function)} [c.initialValue] - Configuration for a filter appropriate
-     *      to be rendered and managed by FilterChooser, or a function to produce the same.
-     *      Note that FilterChooser currently can only edit and create a flat collection of
-     *      FieldFilters, to be 'AND'ed together.
-     * @param {(Filter[]|function)} [c.initialFavorites] - initial favorites as an array of filter
-     *      configurations, or a function to produce such an array.
-     * @param {boolean} [c.suggestFieldsWhenEmpty] - true to offer all field suggestions when the
-     *      control is focussed with an empty query, to aid discoverability.
-     * @param {boolean} [c.sortFieldSuggestions] - true (default) to sort field suggestions by
-     *      displayed label. Set to false to preserve the order provided to `fieldSpecs`.
-     * @param {number} [c.maxTags] - maximum number of filter tags to render before disabling the
-     *      control. Limits the performance impact of rendering large filters.
-     * @param {number} [c.maxResults] - maximum number of dropdown options to show before
-     *      truncating.
-     * @param {(string|ReactNode)} introHelpText - blurb displayed above field suggestions when the
-     *      control is focused but user has yet to enter a query, or null to suppress default.
-     * @param {FilterChooserPersistOptions} [c.persistWith] - options governing persistence.
-     */
     constructor({
         fieldSpecs,
         fieldSpecDefaults,
@@ -127,9 +147,8 @@ export class FilterChooserModel extends HoistModel {
         maxTags = 100,
         maxResults = 50,
         persistWith,
-        introHelpText,
-        ...rest
-    } = {}) {
+        introHelpText
+    }: FilterChooserConfig = {}) {
         super();
         makeObservable(this);
 
@@ -144,7 +163,7 @@ export class FilterChooserModel extends HoistModel {
         this.queryEngine = new QueryEngine(this);
 
         let value = isFunction(initialValue) ? initialValue() : initialValue,
-            favorites = isFunction(initialFavorites) ? initialFavorites() : initialFavorites;
+            favorites = (isFunction(initialFavorites) ? initialFavorites() : initialFavorites).map(f => parseFilter(f));
 
         // Read state from provider -- fail gently
         if (persistWith) {
@@ -189,9 +208,6 @@ export class FilterChooserModel extends HoistModel {
     /**
      * Set the value displayed by this control.
      *
-     * @param {(Filter|* |[])} value -  Configuration for a filter appropriate to be
-     *      shown in this field.
-     *
      * Supports one or more FieldFilters to be 'AND'ed together, or
      * an 'AND' CompoundFilter containing such a collection of FieldFilters.
      *
@@ -202,10 +218,10 @@ export class FilterChooserModel extends HoistModel {
      * Any other Filter is unsupported and will cause the control to show a placeholder error.
      */
     @action
-    setValue(value) {
+    setValue(rawValue: FilterLike) {
         const {bind, maxTags} = this;
         try {
-            value = parseFilter(value);
+            const value = parseFilter(rawValue);
             if (this.value?.equals(value)) return;
 
             // 1) Ensure FilterChooser can handle the requested value.
@@ -266,13 +282,13 @@ export class FilterChooserModel extends HoistModel {
     //---------------------------
     // Value Handling/Processing
     //---------------------------
-    setSelectValue(selectValue) {
+    setSelectValue(selectValue: string[]) {
         // Rehydrate stringified values
-        selectValue = compact(flatten(selectValue)).map(JSON.parse);
+        const parsedValues = compact(flatten(selectValue)).map(it => JSON.parse(it));
 
         // Separate actual selected filters from field suggestion.
         // (the former is just a transient value on the select control only)
-        const [filters, suggestions] = partition(selectValue, 'op');
+        const [filters, suggestions] = partition(parsedValues, 'op');
 
         // Round-trip actual filters through main value setter above.
         this.setValue(combineValueFilters(filters));
@@ -283,7 +299,7 @@ export class FilterChooserModel extends HoistModel {
 
     // Transfer the value filter to the canonical set of individual filters for display.
     // Filters with arrays values will be split.
-    toDisplayFilters(filter) {
+    toDisplayFilters(filter: Filter) {
         if (!filter) return [];
 
         let ret;
@@ -292,12 +308,12 @@ export class FilterChooserModel extends HoistModel {
         };
 
         // 1) Flatten CompoundFilters across disparate fields to FieldFilters.
-        if (filter.isCompoundFilter && !filter.field) {
+        if (filter instanceof CompoundFilter && !filter.field) {
             ret = filter.filters;
-        } else  {
+        } else {
             ret = [filter];
         }
-        if (ret.some(f => !f.isFieldFilter && !f.isCompoundFilter)) {
+        if (ret.some(f => !(f instanceof FieldFilter) && !(f instanceof CompoundFilter))) {
             unsupported('Filters must be FieldFilters or CompoundFilters.');
         }
 
@@ -322,7 +338,7 @@ export class FilterChooserModel extends HoistModel {
     //-------------
     // Querying
     //---------------
-    async queryAsync(query) {
+    async queryAsync(query: string): Promise<FilterChooserOption[]> {
         return this.queryEngine.queryAsync(query);
     }
 
@@ -330,7 +346,7 @@ export class FilterChooserModel extends HoistModel {
     // Autocomplete
     //--------------------
     autoComplete(value) {
-        const rsSelectCmp = this.inputRef.current?.reactSelectRef?.current;
+        const rsSelectCmp = (this.inputRef.current as any)?.reactSelectRef?.current;
         if (!rsSelectCmp) return;
 
         const currentVal = rsSelectCmp.select.state.inputValue,
@@ -353,11 +369,11 @@ export class FilterChooserModel extends HoistModel {
     //---------------------------------
     // Options
     //---------------------------------
-    createFilterOption(filter) {
-        if (filter.isFieldFilter) {
+    createFilterOption(filter: Filter): FilterChooserOption {
+        if (filter instanceof FieldFilter) {
             return fieldFilterOption({filter, fieldSpec: this.getFieldSpec(filter.field)});
-        } else if (filter.isCompoundFilter) {
-            const fieldNames = uniq(filter.filters.map(it => this.getFieldSpec(it.field)?.displayName));
+        } else if (filter instanceof CompoundFilter) {
+            const fieldNames = uniq(filter.filters.map(it => this.getFieldSpec((it as FieldFilter).field)?.displayName));
             return compoundFilterOption({filter, fieldNames});
         }
     }
@@ -383,30 +399,34 @@ export class FilterChooserModel extends HoistModel {
     }
 
     @action
-    setFavorites(favorites) {
+    setFavorites(favorites: Filter[]) {
         this.favorites = favorites.filter(f => this.validateFilter(f));
     }
 
     @action
-    addFavorite(filter) {
+    addFavorite(filter: Filter) {
         if (isEmpty(filter) || this.isFavorite(filter)) return;
         this.favorites = [...this.favorites, filter];
     }
 
     @action
-    removeFavorite(filter) {
+    removeFavorite(filter: Filter) {
         this.favorites = this.favorites.filter(f => !f.equals(filter));
     }
 
-    isFavorite(filter) {
+    findFavorite(filter: Filter): Filter {
         return this.favorites?.find(f => f.equals(filter));
+    }
+
+    isFavorite(filter: Filter): boolean {
+        return !!this.findFavorite(filter);
     }
 
     //-------------------------
     // Persistence handling
     //-------------------------
     get persistState() {
-        const ret = {};
+        const ret = {} as any;
         if (this.persistValue) ret.value = this.value;
         if (this.persistFavorites) ret.favorites = this.favorites;
         return ret;
@@ -415,7 +435,7 @@ export class FilterChooserModel extends HoistModel {
     //--------------------------------
     // FilterChooserFieldSpec handling
     //--------------------------------
-    parseFieldSpecs(specs, fieldSpecDefaults) {
+    parseFieldSpecs(specs: (FilterChooserFieldSpecConfig|string)[], fieldSpecDefaults: FilterChooserFieldSpecConfig): FilterChooserFieldSpec[] {
         const {valueSource} = this;
 
         throwIf(
@@ -436,13 +456,13 @@ export class FilterChooserModel extends HoistModel {
         });
     }
 
-    getFieldSpec(fieldName) {
+    getFieldSpec(fieldName: string): FilterChooserFieldSpec {
         return this.fieldSpecs.find(it => it.field === fieldName);
     }
 
-    validateFilter(f) {
+    validateFilter(f: Filter): boolean {
         if (f === null) return true;
-        if (f.isFieldFilter) {
+        if (f instanceof FieldFilter) {
             if (!this.getFieldSpec(f.field)) {
                 console.error(`Invalid Filter for FilterChooser: ${f.field}`);
                 return false;
@@ -450,7 +470,7 @@ export class FilterChooserModel extends HoistModel {
             return true;
         }
 
-        if (f.isCompoundFilter) {
+        if (f instanceof CompoundFilter) {
             return f.filters.every(it => this.validateFilter(it));
         }
 
@@ -458,14 +478,23 @@ export class FilterChooserModel extends HoistModel {
         return false;
     }
 
-    getDefaultIntroHelpText() {
+    getDefaultIntroHelpText(): string {
         return 'Select or enter a field name (below) or begin typing to match available field values.';
     }
 }
 
+interface FilterChooserPersistOptions extends PersistOptions {
+    /** True (default) to save value to state. */
+    persistValue?: boolean;
+
+    /** True (default) to include favorites. */
+    persistFavorites?: boolean;
+}
+
 /**
- * @typedef {Object} FilterChooserPersistOptions
- * @extends PersistOptions
- * @property {boolean} [persistValue] - true (default) to save value to state.
- * @property {boolean} [persistFavorites] - true (default) to include favorites.
+ * A variant of FilterLike, that excludes FunctionFilters and FilterTestFn.
  */
+type FilterChooserFilterLike = Filter |
+    CompoundFilterSpec |
+    FieldFilterSpec |
+    FilterChooserFilterLike[];

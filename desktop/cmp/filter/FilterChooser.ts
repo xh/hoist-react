@@ -6,7 +6,7 @@
  */
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {box, div, hbox, hframe, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -16,21 +16,39 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEmpty, sortBy} from 'lodash';
-import PT from 'prop-types';
-
+import {ReactElement} from 'react';
 import './FilterChooser.scss';
+
+export interface FilterChooserProps extends BoxProps<FilterChooserModel> {
+    /** True to focus the control on render. */
+    autoFocus?: boolean,
+    /** True to disable user interaction. */
+    disabled?: boolean,
+    /** True to show a "clear" button at the right of the control.  Defaults to true. */
+    enableClear?: boolean,
+    /** Icon to display inline on the left side of the input. */
+    leftIcon?: ReactElement,
+    /** Max-height of dropdown. Either a number in pixels or a valid CSS string, such as '80vh'. */
+    maxMenuHeight?: number|string,
+    /** Placement of the dropdown menu relative to the input control. */
+    menuPlacement?: 'auto'|'top'|'bottom',
+    /** Width in pixels for the dropdown menu - if unspecified, defaults to control width. */
+    menuWidth?: number,
+    /** Text to display when control is empty. */
+    placeholder?: string
+}
 
 /**
  * A Select based control for searching and choosing filters.
  * @see FilterChooserModel
  */
-export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
+export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooserProps>({
     model: uses(FilterChooserModel),
     className: 'xh-filter-chooser',
     render({model, className, ...props}, ref) {
         const [layoutProps, chooserProps] = splitLayoutProps(props),
             {inputRef, suggestFieldsWhenEmpty, selectOptions, unsupportedFilter, favoritesIsOpen} = model,
-            {autoFocus, enableClear, leftIcon, maxMenuHeight, menuPlacement, menuWidth} = chooserProps,
+            {autoFocus, enableClear, leftIcon, maxMenuHeight, menuPlacement, menuWidth} = chooserProps as FilterChooserProps,
             disabled = unsupportedFilter || chooserProps.disabled,
             placeholder = unsupportedFilter ?
                 'Unsupported filter (click to clear)' :
@@ -89,33 +107,6 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory({
         });
     }
 });
-
-FilterChooser.propTypes = {
-    /** True to focus the control on render. */
-    autoFocus: PT.bool,
-
-    /** True to disable user interaction. */
-    disabled: PT.bool,
-
-    /** True to show a "clear" button at the right of the control.  Defaults to true. */
-    enableClear: PT.bool,
-
-    /** Icon to display inline on the left side of the input. */
-    leftIcon: PT.element,
-
-    /** Max-height of dropdown. Either a number in pixels or a valid CSS string, such as '80vh'. */
-    maxMenuHeight: PT.oneOfType([PT.number, PT.string]),
-
-    /** Placement of the dropdown menu relative to the input control. */
-    menuPlacement: PT.oneOf(['auto', 'top', 'bottom']),
-
-    /** Width in pixels for the dropdown menu - if unspecified, defaults to control width. */
-    menuWidth: PT.number,
-
-    /** Text to display when control is empty. */
-    placeholder: PT.string
-};
-
 
 //-----------------
 // Options
@@ -198,7 +189,7 @@ function favoritesIcon(model) {
     });
 }
 
-const favoritesMenu = hoistCmp.factory({
+const favoritesMenu = hoistCmp.factory<FilterChooserModel>({
     render({model}) {
         const options = getFavoritesOptions(model),
             isFavorite = model.isFavorite(model.value),
@@ -228,7 +219,7 @@ const favoritesMenu = hoistCmp.factory({
     }
 });
 
-const favoriteMenuItem = hoistCmp.factory({
+const favoriteMenuItem = hoistCmp.factory<FilterChooserModel>({
     render({model, value, labels}) {
         return menuItem({
             text: hbox(labels.map(label => favoriteTag({label}))),
