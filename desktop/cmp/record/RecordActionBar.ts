@@ -15,10 +15,10 @@ import {isEmpty} from 'lodash';
 import {recordActionButton, RecordActionButtonProps} from './impl/RecordActionButton';
 
 export interface RecordActionBarProps extends ButtonGroupProps {
-    /** RecordAction configs. */
+    /** Actions to include. */
     actions: RecordActionSpec[];
 
-    /** The data StoreRecord to associate with the actions. Required if selModel is omitted. */
+    /** The StoreRecord to associate with the actions. Required if selModel is omitted. */
     record?: StoreRecord;
 
     /** The selection model used to determine the selected records. Required if record is omitted. */

@@ -14,7 +14,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 export interface AppMenuButtonProps extends ButtonProps {
 
     /** Array of app-specific MenuItems or configs to create them. */
-    extraItems?: any[];
+    extraItems?: any[];   // TODO: Type menu items
 
     /**
      * True to hide the Impersonate item.  Always hidden for users w/o HOIST_ADMIN role or

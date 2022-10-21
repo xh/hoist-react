@@ -14,14 +14,16 @@ import {first} from 'lodash';
 
 /** @internal */
 export interface RecordActionButtonProps extends ButtonProps {
+    /** The action to run. */
     action?: RecordAction;
+
+    /** Set to true to use minimal button style and hide action text */
+    minimal?: boolean;
+
     record?: StoreRecord;
     selModel?: StoreSelectionModel;
     gridModel?: GridModel;
     column?: Column;
-
-    /** Set to true to use minimal button style and hide action text */
-    minimal?: boolean;
 }
 
 /**

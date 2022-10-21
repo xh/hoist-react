@@ -37,16 +37,16 @@ export class LogViewerModel extends HoistModel {
         return this.filesGridModel.selectedRecord;
     }
 
-    deleteFileAction = {
+    deleteFileAction: RecordActionSpec = {
         text: 'Delete',
         icon: Icon.delete(),
         intent: 'danger',
         recordsRequired: true,
         actionFn: () => this.deleteSelectedAsync(),
         displayFn: () => ({hidden: getApp().readonly})
-    } as RecordActionSpec;
+    };
 
-    downloadFileAction = {
+    downloadFileAction: RecordActionSpec = {
         text: 'Download',
         icon: Icon.download(),
         recordsRequired: 1,

@@ -20,7 +20,7 @@ export interface LeftRightChooserConfig {
     onChange?: () => void;
 
     /** Placeholder group value when an item has no group. */
-    ungroupedName: string;
+    ungroupedName?: string;
 
     /** True to display the count of items on each side in the header. */
     showCounts?: boolean;
