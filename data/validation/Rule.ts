@@ -6,7 +6,7 @@
  */
 import {castArray} from 'lodash';
 import {StoreRecord} from '../StoreRecord';
-import {BaseFieldModel} from '../../cmp/form/field/FieldModel';
+import {BaseFieldModel} from '../../cmp/form';
 import {Field} from '../Field';
 
 /**

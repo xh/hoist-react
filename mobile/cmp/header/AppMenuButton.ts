@@ -6,26 +6,62 @@
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {Button} from '@xh/hoist/mobile/cmp/button';
+import {ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {menuButton} from '@xh/hoist/mobile/cmp/menu';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
+
+export interface AppMenuButtonProps extends ButtonProps {
+
+    /** Array of app-specific MenuItems or configs to create them. */
+    extraItems?: any[];   // TODO: Type menu items
+
+    /**
+     * True to hide the Impersonate item.  Always hidden for users w/o HOIST_ADMIN role or
+     * if impersonation is disabled.
+     */
+    hideImpersonateItem?: boolean;
+
+    /** True to hide the Feedback item. */
+    hideFeedbackItem?: boolean;
+
+    /** True to hide the Logout button. Defaulted to appSpec.isSSO. */
+    hideLogoutItem?: boolean;
+
+    /** True to hide the Options button. */
+    hideOptionsItem?: boolean;
+
+    /** True to hide the Theme Toggle button. */
+    hideThemeItem?: boolean;
+
+    /** True to hide the About button */
+    hideAboutItem?: boolean;
+}
 
 /**
- * An top-level application drop down menu, which installs a standard set of menu items for common
+ * A top-level application drop down menu, which installs a standard set of menu items for common
  * application actions. Application specific items can be displayed before these standard items.
  *
  * The standard items which are visible will be based on user roles and application configuration,
  * or they can each be explicitly hidden.
  */
-export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
+export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButtonProps>({
     displayName: 'AppMenuButton',
     model: false,
     className: 'xh-app-menu-button',
 
     render(props) {
-        const {className, extraItems, hideImpersonateItem, hideFeedbackItem, hideLogoutItem, hideOptionsItem, hideThemeItem, hideAboutItem, ...rest} = props;
+        const {
+            className,
+            extraItems,
+            hideImpersonateItem,
+            hideFeedbackItem,
+            hideLogoutItem,
+            hideOptionsItem,
+            hideThemeItem,
+            hideAboutItem,
+            ...rest
+        } = props;
 
         return menuButton({
             className,
@@ -36,33 +72,6 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory({
     }
 });
 
-AppMenuButton.propTypes = {
-    ...Button.propTypes,
-
-    /** Array of app-specific MenuItems or configs to create them */
-    extraItems: PT.array,
-
-    /**
-     * True to hide the Impersonate Item.
-     * Always hidden for users w/o HOIST_ADMIN role or if impersonation is disabled.
-     */
-    hideImpersonateItem: PT.bool,
-
-    /** True to hide the Feedback Item. */
-    hideFeedbackItem: PT.bool,
-
-    /** True to hide the Logout button. Defaulted to appSpec.isSSO. */
-    hideLogoutItem: PT.bool,
-
-    /** True to hide the Options button. */
-    hideOptionsItem: PT.bool,
-
-    /** True to hide the Theme Toggle button. */
-    hideThemeItem: PT.bool,
-
-    /** True to hide the About button */
-    hideAboutItem: PT.bool
-};
 
 //---------------------------
 // Implementation
@@ -75,9 +84,9 @@ function buildMenuItems({
     hideLogoutItem,
     hideAboutItem,
     extraItems = []
-}) {
-    hideAboutItem = hideAboutItem || !XH.acm.hasAboutDialog();
-    hideOptionsItem = hideOptionsItem || !XH.acm.optionsDialogModel.hasOptions;
+}:AppMenuButtonProps) {
+    hideAboutItem = hideAboutItem || !XH.appContainerModel.hasAboutDialog();
+    hideOptionsItem = hideOptionsItem || !XH.appContainerModel.optionsDialogModel.hasOptions;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
     hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
 

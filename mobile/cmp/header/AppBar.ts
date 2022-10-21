@@ -5,15 +5,56 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, useContextModel, XH} from '@xh/hoist/core';
-import {button, navigatorBackButton, refreshButton} from '@xh/hoist/mobile/cmp/button';
+import {hoistCmp, HoistProps, useContextModel, XH} from '@xh/hoist/core';
+import {
+    button,
+    navigatorBackButton,
+    NavigatorBackButtonProps,
+    refreshButton,
+    RefreshButtonProps
+} from '@xh/hoist/mobile/cmp/button';
 import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
-import PT from 'prop-types';
-
+import {ReactElement, ReactNode} from 'react';
 import './AppBar.scss';
-import {appMenuButton} from './AppMenuButton';
+import {appMenuButton, AppMenuButtonProps} from './AppMenuButton';
+
+
+export interface AppBarProps extends HoistProps {
+    /** App icon to display to the left of the title. */
+    icon?: ReactElement;
+
+    /** Title to display to the center the AppBar. Defaults to XH.clientAppName. */
+    title?: ReactNode;
+
+    /** Items to be added to the left side of the AppBar, before the title buttons. */
+    leftItems?: ReactNode[];
+
+    /** Items to be added to the right side of the AppBar, before the refresh button. */
+    rightItems?: ReactNode[];
+
+    /** True to hide the AppMenuButton. */
+    hideAppMenuButton?: boolean;
+
+    /** Set to true to hide the Back button. */
+    hideBackButton?: boolean;
+
+    /** Set to true to hide the Refresh button. */
+    hideRefreshButton?: boolean;
+
+    /** Allows overriding the default properties of the App Menu button. @see MenuButton */
+    appMenuButtonProps?: AppMenuButtonProps;
+
+    /** Position of the AppMenuButton. */
+    appMenuButtonPosition?: 'left'|'right';
+
+    /** Allows overriding the default properties of the Back button. @see NavigatorBackButton */
+    backButtonProps?: NavigatorBackButtonProps;
+
+    /** Allows overriding the default properties of the Refresh button. @see RefreshButton */
+    refreshButtonProps?: RefreshButtonProps;
+}
 
 /**
  * A standard application navigation bar which displays the current page title and a standard set of
@@ -23,7 +64,7 @@ import {appMenuButton} from './AppMenuButton';
  * The standard buttons which are visible will be based on user roles and application configuration,
  * or they can each be explicitly hidden.
  */
-export const [AppBar, appBar] = hoistCmp.withFactory({
+export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
     displayName: 'AppBar',
     className: 'xh-appbar',
     model: false,
@@ -95,38 +136,3 @@ export const [AppBar, appBar] = hoistCmp.withFactory({
         });
     }
 });
-
-AppBar.propTypes = {
-    /** App icon to display to the left of the title. */
-    icon: PT.element,
-
-    /** Title to display to the center the AppBar. Defaults to XH.clientAppName. */
-    title: PT.node,
-
-    /** Items to be added to the left side of the AppBar, before the title buttons. */
-    leftItems: PT.node,
-
-    /** Items to be added to the right side of the AppBar, before the refresh button. */
-    rightItems: PT.node,
-
-    /** True to hide the AppMenuButton. */
-    hideAppMenuButton: PT.bool,
-
-    /** Set to true to hide the Back button. */
-    hideBackButton: PT.bool,
-
-    /** Set to true to hide the Refresh button. */
-    hideRefreshButton: PT.bool,
-
-    /** Allows overriding the default properties of the App Menu button. @see MenuButton */
-    appMenuButtonProps: PT.object,
-
-    /** Position of the AppMenuButton. */
-    appMenuButtonPosition: PT.oneOf(['left', 'right']),
-
-    /** Allows overriding the default properties of the Back button. @see NavigatorBackButton */
-    backButtonProps: PT.object,
-
-    /** Allows overriding the default properties of the Refresh button. @see RefreshButton */
-    refreshButtonProps: PT.object
-};

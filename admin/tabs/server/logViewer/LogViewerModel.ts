@@ -6,7 +6,7 @@
  */
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {UrlStore} from '@xh/hoist/data';
+import {RecordActionSpec, UrlStore} from '@xh/hoist/data';
 import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable, observable} from '@xh/hoist/mobx';
@@ -37,7 +37,7 @@ export class LogViewerModel extends HoistModel {
         return this.filesGridModel.selectedRecord;
     }
 
-    deleteFileAction = {
+    deleteFileAction: RecordActionSpec = {
         text: 'Delete',
         icon: Icon.delete(),
         intent: 'danger',
@@ -46,7 +46,7 @@ export class LogViewerModel extends HoistModel {
         displayFn: () => ({hidden: getApp().readonly})
     };
 
-    downloadFileAction = {
+    downloadFileAction: RecordActionSpec = {
         text: 'Download',
         icon: Icon.download(),
         recordsRequired: 1,

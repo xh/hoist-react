@@ -7,19 +7,31 @@
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {RecordAction, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import classNames from 'classnames';
 import {first} from 'lodash';
-import PT from 'prop-types';
+
+
+/** @internal */
+export interface RecordActionButtonProps extends ButtonProps {
+    /** The action to run. */
+    action?: RecordAction;
+
+    /** Set to true to use minimal button style and hide action text */
+    minimal?: boolean;
+
+    record?: StoreRecord;
+    selModel?: StoreSelectionModel;
+    gridModel?: GridModel;
+    column?: Column;
+}
 
 /**
  * Button component used by RecordActionBar and in grid action columns.
  *
- * Not intended for use by applications.
- *
- * @private
+ * @internal
  */
-export const [RecordActionButton, recordActionButton] = hoistCmp.withFactory({
+export const [RecordActionButton, recordActionButton] = hoistCmp.withFactory<RecordActionButtonProps>({
     displayName: 'RecordActionButton',
     className: 'xh-record-action-button',
 
@@ -60,22 +72,3 @@ export const [RecordActionButton, recordActionButton] = hoistCmp.withFactory({
     }
 });
 
-RecordActionButton.propTypes = {
-    /** The action */
-    action: PT.instanceOf(RecordAction).isRequired,
-
-    /** The data StoreRecord this action is acting on. */
-    record: PT.oneOfType([PT.object, StoreRecord]),
-
-    /** The selection model used to determine the selected records */
-    selModel: PT.instanceOf(StoreSelectionModel),
-
-    /** The grid model which contains the records we may act on */
-    gridModel: PT.instanceOf(GridModel),
-
-    /** The column in a grid where this button is displayed */
-    column: PT.instanceOf(Column),
-
-    /** Set to true to use minimal button style and hide action text */
-    minimal: PT.bool
-};

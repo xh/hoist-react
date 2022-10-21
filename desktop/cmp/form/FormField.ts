@@ -5,9 +5,9 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
-import {FieldModel, FormContext} from '@xh/hoist/cmp/form';
-import {box, div, label as labelEl, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, ModelPublishMode, uses, XH} from '@xh/hoist/core';
+import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
+import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -17,9 +17,55 @@ import {errorIf, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getReactElementName} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
-import PT from 'prop-types';
-import React, {Children, cloneElement, useContext, useState} from 'react';
+import {Children, cloneElement, ReactNode, useContext, useState} from 'react';
 import './FormField.scss';
+import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
+
+export interface FormFieldProps extends BaseFormFieldProps {
+
+    /**
+     * Focus or toggle input when label is clicked.
+     * Defaulted from containing Form, or true.
+     */
+    clickableLabel?: boolean;
+
+    /**
+     * Layout field inline with label to the left.
+     * Defaulted from containing Form, or false.
+     */
+    inline?: boolean;
+
+    /** Alignment of label text, default 'left'. */
+    labelTextAlign?: 'left'|'right';
+
+    /** Width of the label in pixels. */
+    labelWidth?: number;
+
+    /**
+     * Signal a validation error by inserting a warning glyph in the far left side of the
+     * Input, if supported. (Currently TextField and NumberInput only.)
+     * Defaulted from containing Form, or false.
+     */
+    leftErrorIcon?: boolean;
+
+    /**
+     * Display validation messages in a tooltip, as opposed to inline within the component.
+     * Defaulted from containing Form, or false.
+     */
+    minimal?: boolean;
+
+    /**
+     * Minimal validation tooltip will try to fit within the corresponding boundary.
+     * @see https://blueprintjs.com/docs/#core/components/popover
+     */
+    tooltipBoundary?: PopperBoundary;
+    /**
+     * Position for minimal validation tooltip.
+     * @see https://blueprintjs.com/docs/#core/components/popover
+     */
+    tooltipPosition?: PopoverPosition;
+}
+
 
 /**
  * Standardised wrapper around a HoistInput component for use in a form. FormField provides
@@ -40,12 +86,12 @@ import './FormField.scss';
  * adjust their child inputs to fill their available space (if appropriate given the input type),
  * so the recommended approach is to specify any sizing on the FormField (as opposed to the input).
  */
-export const [FormField, formField] = hoistCmp.withFactory({
+export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
     displayName: 'FormField',
     className: 'xh-form-field',
     model: uses(FieldModel, {
         fromContext: false,
-        publishMode: ModelPublishMode.NONE,
+        publishMode: 'none',
         optional: true
     }),
 
@@ -180,89 +226,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
     }
 });
 
-FormField.propTypes = {
-
-    /**
-     * Focus or toggle input when label is clicked.
-     * Defaulted from containing Form, or true.
-     */
-    clickableLabel: PT.bool,
-
-    /**
-     * CommitOnChange property for underlying HoistInput (for inputs that support).
-     * Defaulted from containing Form.
-     */
-    commitOnChange: PT.bool,
-
-    /** True to disable user interaction. Defaulted from backing FieldModel. */
-    disabled: PT.bool,
-
-    /** Property name on bound FormModel from which to read/write data. */
-    field: PT.string,
-
-    /** Additional description or info to be displayed alongside the input control. */
-    info: PT.node,
-
-    /**
-     * Layout field inline with label to the left.
-     * Defaulted from containing Form, or false.
-     */
-    inline: PT.bool,
-
-    /**
-     * Label for form field. Defaults to Field displayName. Set to null to hide.
-     * Can be defaulted from contained Form (specifically, to null to hide all labels).
-     */
-    label: PT.node,
-
-    /** Alignment of label text, default 'left'. */
-    labelTextAlign: PT.oneOf(['left', 'right']),
-
-    /** Width of the label in pixels. */
-    labelWidth: PT.number,
-
-    /**
-     * Signal a validation error by inserting a warning glyph in the far left side of the
-     * Input, if supported. (Currently TextField and NumberInput only.)
-     * Defaulted from containing Form, or false.
-     */
-    leftErrorIcon: PT.bool,
-
-    /**
-     * Display validation messages in a tooltip, as opposed to inline within the component.
-     * Defaulted from containing Form, or false.
-     */
-    minimal: PT.bool,
-
-    /**
-     * Optional function for use in readonly mode. Called with the Field's current value and should
-     * return an element suitable for presentation to the end-user. Defaulted from containing Form.
-     */
-    readonlyRenderer: PT.func,
-
-    /** The indicator to display next to a required field. Defaults to `*`. */
-    requiredIndicator: PT.string,
-
-    /**
-     * Minimal validation tooltip will try to fit within the corresponding boundary.
-     * @see https://blueprintjs.com/docs/#core/components/popover
-     */
-    tooltipBoundary: PT.oneOf(['scrollParent', 'viewport', 'window']),
-
-    /**
-     * Position for minimal validation tooltip.
-     * @see https://blueprintjs.com/docs/#core/components/popover
-     */
-    tooltipPosition: PT.oneOf([
-        'top-left', 'top', 'top-right',
-        'right-top', 'right', 'right-bottom',
-        'bottom-right', 'bottom', 'bottom-left',
-        'left-bottom', 'left', 'left-top',
-        'auto', 'auto-start', 'auto-end'
-    ])
-};
-
-const readonlyChild = hoistCmp.factory({
+const readonlyChild = hoistCmp.factory<Partial<FormFieldProps>>({
     model: false,
 
     render({model, readonlyRenderer}) {
@@ -271,7 +235,7 @@ const readonlyChild = hoistCmp.factory({
     }
 });
 
-const editableChild = hoistCmp.factory({
+const editableChild = hoistCmp.factory<Partial<FormFieldProps>>({
     model: false,
 
     render({model, child, childIsSizeable, childId, disabled, displayNotValid, leftErrorIcon, commitOnChange}) {
@@ -280,12 +244,12 @@ const editableChild = hoistCmp.factory({
 
 
         // Overrides -- be sure not to clobber selected properties on child
-        const overrides = {
+        const overrides: Partial<FormFieldProps> = {
             model,
             bind: 'value',
             id: childId,
             disabled: props.disabled || disabled,
-            ref: composeRefs(model?._boundInputRef, child.ref)
+            ref: composeRefs(model?.boundInputRef, child.ref)
         };
 
 
@@ -338,7 +302,7 @@ function getValidChild(children) {
     return child;
 }
 
-function defaultReadonlyRenderer(value) {
+function defaultReadonlyRenderer(value: any): ReactNode {
     if (isLocalDate(value)) return fmtDate(value);
     if (isDate(value)) return fmtDateTime(value);
     if (isFinite(value)) return fmtNumber(value);
@@ -350,17 +314,16 @@ function defaultReadonlyRenderer(value) {
     return span(value != null ? value.toString() : null);
 }
 
-function getErrorTooltipContent(errors) {
-    if (!errors || !errors.length) return null;
+function getErrorTooltipContent(errors: string[]): ReactNode {
+    if (isEmpty(errors)) return null;
     if (errors.length === 1) return errors[0];
-    return (
-        <ul className="xh-form-field-error-tooltip">
-            {errors.map((it, idx) => <li key={idx}>{it}</li>)}
-        </ul>
-    );
+    return ul({
+        className: 'xh-form-field-error-tooltip',
+        items: errors.map((it, idx) => li({key: idx, item: it}))
+    });
 }
 
-function defaultProp(name, props, formContext, defaultVal) {
+function defaultProp(name: string, props: Partial<FormFieldProps>, formContext: FormContextType, defaultVal: any): any {
     const fieldDefault = formContext.fieldDefaults ? formContext.fieldDefaults[name] : null;
     return withDefault(props[name], fieldDefault, defaultVal);
 }

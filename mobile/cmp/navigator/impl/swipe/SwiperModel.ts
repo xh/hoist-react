@@ -7,7 +7,7 @@ import {NavigatorModel} from '../../NavigatorModel';
 import './Swiper.scss';
 
 /**
- * @private
+ * @internal
  */
 export class SwiperModel extends HoistModel {
 
@@ -77,7 +77,7 @@ export class SwiperModel extends HoistModel {
                 this.backEnd();
                 return;
             }
-            this.backProgress = Math.clamp(deltaX / 150, 0, 1);
+            this.backProgress = (Math as any).clamp(deltaX / 150, 0, 1);
             consumeEvent(e);
             return;
         }
@@ -88,7 +88,7 @@ export class SwiperModel extends HoistModel {
                 this.refreshEnd();
                 return;
             }
-            this.refreshProgress = Math.clamp(deltaY / 150, 0, 1);
+            this.refreshProgress = (Math as any).clamp(deltaY / 150, 0, 1);
             consumeEvent(e);
             return;
         }
