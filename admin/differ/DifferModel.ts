@@ -17,6 +17,7 @@ import {cloneDeep, isEqual, isString, isNil, omit, remove, trimEnd} from 'lodash
 import {hspacer} from '../../cmp/layout';
 
 import {DifferDetailModel} from './DifferDetailModel';
+import {RecordActionSpec} from '@xh/hoist/data';
 
 /**
  * @internal
@@ -46,7 +47,7 @@ export class DifferModel extends HoistModel {
 
     get readonly() {return this.parentModel?.gridModel.readonly}
 
-    applyRemoteAction = {
+    applyRemoteAction: RecordActionSpec = {
         text: 'Apply Remote',
         icon: Icon.cloudDownload(),
         // Account for use in both action column (record only) and context menu (selectedRecords).

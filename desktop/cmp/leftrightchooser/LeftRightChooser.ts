@@ -6,14 +6,16 @@
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {hframe, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {cloneDeep} from 'lodash';
-import PT from 'prop-types';
 import {chooserToolbar} from './impl/ChooserToolbar';
 import {description} from './impl/Description';
 import './LeftRightChooser.scss';
 import {LeftRightChooserModel} from './LeftRightChooserModel';
+
+export type LeftRightChooserProps = BoxProps<LeftRightChooserModel>;
+
 
 /**
  * A component for moving a list of items between two arbitrary groups. By convention, the left
@@ -21,7 +23,7 @@ import {LeftRightChooserModel} from './LeftRightChooserModel';
  * A nested panel is also available to display a more in-depth description for any selected item.
  * @see LeftRightChooserModel
  */
-export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
+export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory<LeftRightChooserProps>({
     displayName: 'LeftRightChooser',
     model: uses(LeftRightChooserModel),
     className: 'xh-lr-chooser',
@@ -33,7 +35,7 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
                     defaultColDef: {
                         resizable: false
                     }
-                }
+                } as any
             },
             leftGridOptions = cloneDeep(gridOptions),
             rightGridOptions = cloneDeep(gridOptions);
@@ -58,7 +60,3 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory({
         });
     }
 });
-LeftRightChooser.propTypes = {
-    /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(LeftRightChooserModel), PT.object])
-};

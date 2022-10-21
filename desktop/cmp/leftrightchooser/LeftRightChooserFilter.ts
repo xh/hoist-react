@@ -4,20 +4,29 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, lookup, useLocalModel, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, HoistProps, lookup, useLocalModel, uses} from '@xh/hoist/core';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {escapeRegExp} from 'lodash';
-import PT from 'prop-types';
 import {LeftRightChooserModel} from './LeftRightChooserModel';
+
+export interface LeftRightChooserFilterProps extends HoistProps<LeftRightChooserModel>{
+
+    /** Names of fields in chooser on which to filter. Defaults to ['text', 'group'] */
+    fields?: string[];
+
+    /** True to prevent regex start line anchor from being added. */
+    anyMatch?: boolean;
+}
+
 
 /**
  * A Component that can bind to a LeftRightChooser and filter both lists
  * based on simple text matching in selected fields.
  */
-export const [LeftRightChooserFilter, leftRightChooserFilter] = hoistCmp.withFactory({
+export const [LeftRightChooserFilter, leftRightChooserFilter] = hoistCmp.withFactory<LeftRightChooserFilterProps>({
     displayName: 'LeftRightChooserFilter',
     model: uses(LeftRightChooserModel),
 
@@ -34,24 +43,12 @@ export const [LeftRightChooserFilter, leftRightChooserFilter] = hoistCmp.withFac
     }
 });
 
-LeftRightChooserFilter.propTypes = {
-
-    /** Names of fields in chooser on which to filter. Defaults to ['text', 'group'] */
-    fields: PT.arrayOf(PT.string),
-
-    /** True to prevent regex start line anchor from being added. */
-    anyMatch: PT.bool,
-
-    /** A LeftRightChooserModel to bind to. */
-    model: PT.object
-};
-
 
 class LeftRightChooserFilterLocalModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {LeftRightChooserModel} */
-    @lookup(LeftRightChooserModel) model;
+    @lookup(LeftRightChooserModel)
+    model: LeftRightChooserModel;
 
     @bindable
     value = null;
@@ -65,7 +62,7 @@ class LeftRightChooserFilterLocalModel extends HoistModel {
         });
     }
 
-    runFilter() {
+    private runFilter() {
         const {fields = ['text', 'group'], anyMatch = false} = this.componentProps;
         let searchTerm = escapeRegExp(this.value);
 
@@ -84,7 +81,7 @@ class LeftRightChooserFilterLocalModel extends HoistModel {
         this.model.setDisplayFilter(filter);
     }
 
-    destroy() {
+    override destroy() {
         // This unusual bit of code is extremely important -- the model we are linking to might
         // survive the display of this component and should be restored. (This happens with GridColumnChooser)
         this.model.setDisplayFilter(null);

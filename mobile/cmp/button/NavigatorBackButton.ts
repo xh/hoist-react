@@ -6,14 +6,16 @@
  */
 import {hoistCmp, useContextModel, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
 import '@xh/hoist/mobile/register';
+
+export type NavigatorBackButtonProps = ButtonProps;
 
 /**
  * Convenience Button preconfigured to use navigate back one page.
  */
-export const [NavigatorBackButton, navigatorBackButton] = hoistCmp.withFactory({
+export const [NavigatorBackButton, navigatorBackButton] = hoistCmp.withFactory<NavigatorBackButtonProps>({
     displayName: 'NavigatorBackButton',
     model: false,
 
@@ -28,4 +30,3 @@ export const [NavigatorBackButton, navigatorBackButton] = hoistCmp.withFactory({
         return button({icon, onClick, ...props});
     }
 });
-NavigatorBackButton.propTypes = Button.propTypes;

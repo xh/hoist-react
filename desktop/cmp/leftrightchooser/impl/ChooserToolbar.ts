@@ -9,9 +9,10 @@ import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
+import {LeftRightChooserModel} from '../LeftRightChooserModel';
 
-/** @private */
-export const chooserToolbar = hoistCmp.factory(
+/** @internal */
+export const chooserToolbar = hoistCmp.factory<LeftRightChooserModel>(
     ({model}) => {
         const leftSel = model.leftModel.selModel,
             rightSel = model.rightModel.selModel;
