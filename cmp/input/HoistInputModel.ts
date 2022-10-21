@@ -306,7 +306,7 @@ export class HoistInputModel extends HoistModel {
         if (onCommit) onCommit(newValue, currentValue);
     }
 
-    containsElement(elem: HTMLElement) {
+    containsElement(elem: HTMLElement): boolean {
         const {domEl} = this;
         if (domEl) {
             while (elem) {
@@ -324,7 +324,7 @@ export class HoistInputModel extends HoistModel {
  * Places model in context and composes appropriate
  * CSS class names for current model state.
  *
- * @param component - react component to render
+ * @param component - component to render
  * @param props - props passed to containing component
  * @param {Object} ref - forwardRef passed to containing component
  * @param {Class} modelSpec - specify to use particular subclass of HoistInputModel

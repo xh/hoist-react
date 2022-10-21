@@ -15,36 +15,36 @@ import {isArray} from 'lodash';
 import {ReactNode} from 'react';
 import './Slider.scss';
 
-export interface SliderProps extends HoistInputProps<SliderInputModel> {
-    value?: Some<number>,
+export interface SliderProps extends HoistInputProps {
+    value?: Some<number>;
 
     /** Maximum value */
-    max?: number,
+    max?: number;
 
     /** Minimum value */
-    min?: number,
+    min?: number;
 
     /**
      * Callback to render each label, passed the number value for that label point.
      * If true, labels will use number value formatted to labelStepSize decimal places.
      * If false, labels will not be shown.
      */
-    labelRenderer?: boolean|((value: number) => ReactNode),
+    labelRenderer?: boolean|((value: number) => ReactNode);
 
     /** Increment between successive labels. Must be greater than zero. Defaults to 1. */
-    labelStepSize?: number,
+    labelStepSize?: number;
 
     /** Increment between values. Must be greater than zero. Defaults to 1. */
-    stepSize?: number,
+    stepSize?: number;
 
     /**
      * True to render a solid bar between min and current values (for simple slider) or between
      * handles (for range slider). Defaults to true.
      */
-    showTrackFill?: boolean,
+    showTrackFill?: boolean;
 
     /** True to render in a vertical orientation. */
-    vertical?: boolean
+    vertical?: boolean;
 }
 
 /**
@@ -77,7 +77,7 @@ class SliderInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<SliderProps>(
+const cmp = hoistCmp.factory<SliderInputModel>(
     ({model, className, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props),
             sliderType = isArray(model.renderValue) ? bpRangeSlider : bpSlider;

@@ -13,17 +13,22 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {filter, isObject} from 'lodash';
 import './RadioInput.scss';
 
-export interface RadioInputProps extends HoistInputProps<RadioInputModel> {
+export interface RadioInputProps extends HoistInputProps {
     /** True to display each radio button inline with each other. */
-    inline?: boolean,
+    inline?: boolean;
 
     /** Placement of each option's label relative its radio button, default right. */
-    labelSide?: 'left'|'right'
+    labelSide?: 'left'|'right';
 
     /** Array of available options */
-    options: RadioOption[]|any[]
+    options: (RadioOption|any)[];
 }
 
+export interface RadioOption {
+    value: any,
+    label?: string,
+    disabled?: boolean
+}
 /**
  * An input for managing Radio Buttons.
  */
@@ -82,7 +87,7 @@ class RadioInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<RadioInputProps>(
+const cmp = hoistCmp.factory<RadioInputModel>(
     ({model, className, ...props}, ref) => {
         const {normalizedOptions} = model,
             labelSide = withDefault(props.labelSide, 'right');
@@ -110,9 +115,3 @@ const cmp = hoistCmp.factory<RadioInputProps>(
         });
     }
 );
-
-interface RadioOption {
-    value?: any,
-    label?: string,
-    disabled?: boolean
-}

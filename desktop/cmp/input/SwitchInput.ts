@@ -12,20 +12,20 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {ReactNode} from 'react';
 import './SwitchInput.scss';
 
-export interface SwitchInputProps extends HoistInputProps<SwitchInputModel> {
-    value?: boolean,
+export interface SwitchInputProps extends HoistInputProps {
+    value?: boolean;
 
     /** True if the control should appear as an inline element (defaults to true). */
-    inline?: boolean,
+    inline?: boolean;
 
     /**
      * Label displayed adjacent to the control itself.
      * Can be used with or without an additional overall label as provided by FormField.
      */
-    label?: string|ReactNode,
+    label?: ReactNode;
 
     /** Placement of the inline label relative to the control itself, default right. */
-    labelSide?: 'left'|'right'
+    labelSide?: 'left'|'right';
 }
 
 /**
@@ -46,7 +46,7 @@ class SwitchInputModel extends HoistInputModel {
     // Class defined for debug / labelling purposes - no overrides needed.
 }
 
-const cmp = hoistCmp.factory<SwitchInputProps>(
+const cmp = hoistCmp.factory<SwitchInputModel>(
     ({model, className, ...props}, ref) => {
         const labelSide = withDefault(props.labelSide, 'right');
 

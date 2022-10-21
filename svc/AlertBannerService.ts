@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, p} from '@xh/hoist/cmp/layout';
-import {HoistService, managed, XH} from '@xh/hoist/core';
+import {BannerSpec, HoistService, Intent, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -57,13 +57,12 @@ export class AlertBannerService extends HoistService {
         ) {
             XH.hideBanner('xhAlertBanner');
         } else {
-            const conf = this.genBannerConfig({message, intent, iconName, enableClose});
+            const conf = this.genBannerSpec(message, intent, iconName, enableClose);
             XH.showBanner({...conf, onClose});
         }
     }
 
-    /** Called from admin {@see AlertBannerModel} to support preview. */
-    genBannerConfig({message, intent, iconName, enableClose}) {
+    genBannerSpec(message: string, intent: Intent, iconName: string, enableClose: boolean): BannerSpec {
         const icon = iconName ? Icon.icon({iconName, size: 'lg'}) : null,
             msgLines = compact(map(message.split('\n'), trim)),
             showFullAlert = () => XH.alert({

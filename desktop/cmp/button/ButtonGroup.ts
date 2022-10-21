@@ -12,16 +12,16 @@ import {CSSProperties} from 'react';
 
 export interface ButtonGroupProps<M extends HoistModel = null> extends HoistProps<M> {
     /** True to have all buttons fill available width equally. */
-    fill?: boolean,
+    fill?: boolean;
 
     /** True to render each button with minimal surrounding chrome (default false). */
-    minimal?: boolean,
+    minimal?: boolean;
 
     /** Style block. */
-    style?: CSSProperties,
+    style?: CSSProperties;
 
     /** True to render in a vertical orientation. */
-    vertical?: boolean,
+    vertical?: boolean;
 }
 
 /**

@@ -14,7 +14,8 @@ import {
     reactAsyncSelect,
     reactCreatableSelect,
     reactSelect,
-    reactWindowedSelect
+    reactWindowedSelect,
+    SelectProps as ReactSelectProps
 } from '@xh/hoist/kit/react-select';
 import {action, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -36,33 +37,33 @@ import {ReactElement, ReactNode} from 'react';
 import {components} from 'react-select';
 import './Select.scss';
 
-export interface SelectProps extends HoistInputProps<SelectInputModel> {
+export interface SelectProps extends HoistInputProps {
     /** True to focus the control on render. */
-    autoFocus?: boolean,
+    autoFocus?: boolean;
 
     /**
      * Function to return a "create a new option" string prompt. Requires `enableCreate` true.
      * Passed current query input.
      */
-    createMessageFn?: (query: string) => string,
+    createMessageFn?: (query: string) => string;
 
     /** True (default) to close the menu after each selection. */
-    closeMenuOnSelect?: boolean,
+    closeMenuOnSelect?: boolean;
 
     /** True to show a "clear" button at the right of the control. */
-    enableClear?: boolean,
+    enableClear?: boolean;
 
     /** True to accept and commit input values not present in options or returned by a query. */
-    enableCreate?: boolean,
+    enableCreate?: boolean;
 
     /**
      * True (default) to enable type-to-search keyboard input. False to disable keyboard input,
      * showing the dropdown menu on click.
      */
-    enableFilter?: boolean,
+    enableFilter?: boolean;
 
     /** True to allow entry/selection of multiple values - "tag picker" style. */
-    enableMulti?: boolean,
+    enableMulti?: boolean;
 
     /**
      * True to use react-windowed-select for improved performance on large option lists.
@@ -74,7 +75,7 @@ export interface SelectProps extends HoistInputProps<SelectInputModel> {
      *
      * Applications should use this option with care.
      */
-    enableWindowed?: boolean,
+    enableWindowed?: boolean;
 
     /**
      * Function called to filter available options for a given query string input.
@@ -84,53 +85,53 @@ export interface SelectProps extends HoistInputProps<SelectInputModel> {
      * Provided function should take an option and a query value and return a boolean.
      * Defaults to a case-insensitive match on word starts.
      */
-    filterFn?: (opt: SelectOption, inputVal: string) => boolean,
+    filterFn?: (opt: SelectOption, inputVal: string) => boolean;
 
     /**
      * True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select.
      * Defaults to true on tablets, false on desktop.
      */
-    hideDropdownIndicator?: boolean,
+    hideDropdownIndicator?: boolean;
 
     /** True to suppress the default check icon rendered for the currently selected option. */
-    hideSelectedOptionCheck?: boolean,
+    hideSelectedOptionCheck?: boolean;
 
     /**
      * True to hide options in the drop down menu if they have been selected.
      * Defaults to same as enableMulti.
      */
-    hideSelectedOptions?: boolean,
+    hideSelectedOptions?: boolean;
 
     /** Field on provided options for sourcing each option's display text (default `label`). */
     labelField?: string,
 
     /** Icon to display inline on the left side of the input. */
-    leftIcon?: ReactElement,
+    leftIcon?: ReactElement;
 
     /** Function to return loading message during an async query. Passed current query input. */
-    loadingMessageFn?: (query: string) => string,
+    loadingMessageFn?: (query: string) => string;
 
     /** Maximum height of the menu before scrolling. Defaults to 300px. */
-    maxMenuHeight?: number,
+    maxMenuHeight?: number;
 
     /** Placement of the dropdown menu relative to the input control. */
-    menuPlacement?: 'auto'|'top'|'bottom',
+    menuPlacement?: 'auto'|'top'|'bottom';
 
     /** Width in pixels for the dropdown menu - if unspecified, defaults to control width. */
-    menuWidth?: number,
+    menuWidth?: number;
 
     /** Function to return message indicating no options loaded. Passed current query input. */
-    noOptionsMessageFn?: (query: string) => string,
+    noOptionsMessageFn?: (query: string) => string;
 
     /** True to auto-open the dropdown menu on input focus. */
-    openMenuOnFocus?: boolean,
+    openMenuOnFocus?: boolean;
 
     /**
      * Function to render options in the dropdown list. Called for each option object (which
      * will contain at minimum a value and label field, as well as any other fields present in
      * the source objects).
      */
-    optionRenderer?: (SelectOption) => ReactNode,
+    optionRenderer?: (SelectOption) => ReactNode;
 
     /**
      * Preset list of options for selection. Elements can be either a primitive or an object.
@@ -144,15 +145,15 @@ export interface SelectProps extends HoistInputProps<SelectInputModel> {
      * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
      * of up-front in this prop.
      */
-    options?: any[]|SelectOption[],
+    options?: (SelectOption|any)[];
 
     /** Text to display when control is empty. */
-    placeholder?: string,
+    placeholder?: string;
 
     /**
      * Delay (in ms) to buffer calls to the async queryFn. Defaults to 300.
      */
-    queryBuffer?: number,
+    queryBuffer?: number;
 
     /**
      * Async function to return a list of options for a given query string input.
@@ -162,20 +163,26 @@ export interface SelectProps extends HoistInputProps<SelectInputModel> {
      * confused with `filterFn`, which should be used to filter through local options when
      * not in async mode.
      */
-    queryFn?: (query:string) => Promise<SelectOption[]>,
+    queryFn?: (query: string) => Promise<SelectOption[]>;
 
     /**
      * Escape-hatch props passed directly to react-select. Use with care - not all props
      * in the react-select API are guaranteed to be supported by this Hoist component,
      * and providing them directly can interfere with the implementation of this class.
      */
-    rsOptions?: Record<string, any>,
+    rsOptions?: ReactSelectProps;
 
     /** True to select contents when control receives focus. */
-    selectOnFocus?: boolean,
+    selectOnFocus?: boolean;
 
     /** Field on provided options for sourcing each option's value (default `value`). */
-    valueField?: string
+    valueField?: string;
+}
+
+interface SelectOption {
+    value: any,
+    label?: string,
+    options?: (SelectOption|any)[]
 }
 
 /**
@@ -628,7 +635,7 @@ class SelectInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<SelectProps>(
+const cmp = hoistCmp.factory<SelectInputModel>(
     ({model, className, ...props}, ref) => {
         const {width, height, ...layoutProps} = getLayoutProps(props),
             rsProps = {
@@ -672,7 +679,7 @@ const cmp = hoistCmp.factory<SelectProps>(
                 filterOption: model.filterOption,
 
                 ref: model.reactSelectRef
-            } as Record<string, any>;
+            } as any;
 
         if (model.manageInputValue) {
             rsProps.inputValue = model.inputValue || '';
@@ -728,9 +735,3 @@ const cmp = hoistCmp.factory<SelectProps>(
         });
     }
 );
-
-interface SelectOption {
-    value?: any,
-    label?: string,
-    options?: any[]|SelectOption[]
-}

@@ -12,29 +12,29 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import {ReactNode} from 'react';
 
-export interface CheckboxProps extends HoistInputProps<CheckboxInputModel> {
-    value?: boolean,
+export interface CheckboxProps extends HoistInputProps {
+    value?: boolean;
 
     /** True to focus the control on render. */
-    autoFocus?: boolean,
+    autoFocus?: boolean;
 
     /** True (default) if the control should appear as an inline element. */
-    inline?: boolean,
+    inline?: boolean;
 
     /**
      * Label displayed adjacent to the control itself.
      * Can be used with or without an additional overall label as provided by FormField.
      */
-    label?: string|ReactNode,
+    label?: ReactNode;
 
     /**
      * True to render null or undefined as a distinct visual state.  If false (default),
      * these values will appear unchecked and visually indistinct from false.
      */
-    displayUnsetState?: boolean,
+    displayUnsetState?: boolean;
 
     /** Placement of the inline label relative to the control itself, default right. */
-    labelSide?: 'left'|'right'
+    labelSide?: 'left'|'right';
 }
 
 /**
@@ -56,7 +56,7 @@ class CheckboxInputModel extends HoistInputModel {
     // Class defined for debug / labelling purposes - no overrides needed.
 }
 
-const cmp = hoistCmp.factory<CheckboxProps>(
+const cmp = hoistCmp.factory<CheckboxInputModel>(
     ({model, className, ...props}, ref) => {
         const {renderValue} = model,
             labelSide = withDefault(props.labelSide, 'right'),

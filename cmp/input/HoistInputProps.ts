@@ -5,37 +5,34 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {BoxProps, HoistModel} from '@xh/hoist/core';
+import {BoxProps} from '@xh/hoist/core';
 import {CSSProperties} from 'react';
 
-export interface HoistInputProps<M extends HoistModel> extends BoxProps<M> {
+export interface HoistInputProps extends BoxProps {
     /**
      * Field or model property name from which this component should read and write its value
      * in controlled mode. Can be set by parent FormField.
      */
-    bind?: string,
-
-    /** CSS class name. **/
-    className?: string,
+    bind?: string;
 
     /** True to disable user interaction. Can be set by parent FormField. */
-    disabled?: boolean,
+    disabled?: boolean;
 
     /** DOM ID of this input. */
-    id?: string,
+    id?: string;
 
     /** Called when value changes - passed new and prior values. */
-    onChange?: (value: any, oldValue: any) => void,
+    onChange?: (value: any, oldValue: any) => void;
 
     /** Called when value is committed to backing model - passed new and prior values. */
-    onCommit?: (value: any, oldValue: any) => void,
+    onCommit?: (value: any, oldValue: any) => void;
 
     /** Style block. */
-    style?: CSSProperties,
+    style?: CSSProperties;
 
     /** Tab order for focus control, or -1 to skip. If unset, browser layout-based order. */
-    tabIndex?: number,
+    tabIndex?: number;
 
     /** Value of the control, if provided directly. */
-    value?: any
+    value?: any;
 }

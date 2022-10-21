@@ -6,13 +6,14 @@
  */
 import {XH} from '@xh/hoist/core';
 import {switchInput, SwitchInputProps} from '@xh/hoist/desktop/cmp/input';
+import {FormFieldProps} from '@xh/hoist/desktop/cmp/form';
 import '@xh/hoist/desktop/register';
 
 interface AutoRefreshAppOptionSpec {
-    /** Props for nested FormField - todo: replace with FormFieldProps */
-    formFieldProps?: Record<string, any>,
+    /** Props for nested FormField. */
+    formFieldProps?: FormFieldProps;
     /** Props for nested SwitchInput */
-    inputProps?: SwitchInputProps
+    inputProps?: SwitchInputProps;
 }
 
 /**

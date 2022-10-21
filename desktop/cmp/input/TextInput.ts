@@ -17,8 +17,8 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import {ReactElement, ReactNode, Ref} from 'react';
 
-export interface TextInputProps extends HoistInputProps<TextInputModel> {
-    value?: string,
+export interface TextInputProps extends HoistInputProps {
+    value?: string;
 
     /**
      *  HTML `autocomplete` attribute to set on underlying <input> element.
@@ -30,46 +30,46 @@ export interface TextInputProps extends HoistInputProps<TextInputModel> {
      * @see https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofilling-form-controls%3A-the-autocomplete-attribute
      * @see https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion
      */
-    autoComplete?: string, // Todo: Is it worth importing / listing out valid values?
+    autoComplete?: string; // Todo: Is it worth importing / listing out valid values?
 
     /** True to focus the control on render. */
-    autoFocus?: boolean,
+    autoFocus?: boolean;
 
     /** True to commit on every change/keystroke, default false. */
-    commitOnChange?: boolean,
+    commitOnChange?: boolean;
 
     /** True to show a "clear" button as the right element. default false */
-    enableClear?: boolean,
+    enableClear?: boolean;
 
     /** Ref handler that receives HTML <input> element backing this component. */
-    inputRef?: Ref<HTMLInputElement>,
+    inputRef?: Ref<HTMLInputElement>;
 
     /** Icon to display inline on the left side of the input. */
-    leftIcon?: ReactElement,
+    leftIcon?: ReactElement;
 
     /** Callback for normalized keydown event. */
-    onKeyDown?: (e: KeyboardEvent) => void,
+    onKeyDown?: (e: KeyboardEvent) => void;
 
     /** Text to display when control is empty. */
-    placeholder?: string,
+    placeholder?: string;
 
     /** Element to display inline on the right side of the input. */
-    rightElement?: ReactNode,
+    rightElement?: ReactNode;
 
     /** True to display with rounded caps. */
-    round?: boolean,
+    round?: boolean;
 
     /** True to select contents when control receives focus. */
-    selectOnFocus?: boolean,
+    selectOnFocus?: boolean;
 
     /** Alignment of entry text within control, default 'left'. */
-    textAlign?: 'left'|'right',
+    textAlign?: 'left'|'right';
 
     /** True to allow browser spell check, default false. */
-    spellCheck?: boolean,
+    spellCheck?: boolean;
 
     /** Underlying HTML <input> element type. */
-    type?: 'text'|'password'
+    type?: 'text'|'password';
 }
 
 /**
@@ -113,7 +113,7 @@ export class TextInputModel extends HoistInputModel {
     };
 }
 
-const cmp = hoistCmp.factory<TextInputProps>(
+const cmp = hoistCmp.factory<TextInputModel>(
     ({model, className, ...props}, ref) => {
         const {width, flex, ...layoutProps} = getLayoutProps(props);
 

@@ -14,32 +14,32 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {Ref} from 'react';
 import './TextArea.scss';
 
-export interface TextAreaProps extends HoistInputProps<TextAreaInputModel> {
-    value?: string,
+export interface TextAreaProps extends HoistInputProps {
+    value?: string;
 
     /** True to focus the control on render. */
-    autoFocus?: boolean,
+    autoFocus?: boolean;
 
     /** True to commit on every change/keystroke, default false. */
-    commitOnChange?: boolean,
+    commitOnChange?: boolean;
 
     /** True to take up the full width of container. */
-    fill?: boolean,
+    fill?: boolean;
 
     /** Ref handler that receives HTML <input> element backing this component. */
-    inputRef?: Ref<HTMLInputElement>,
+    inputRef?: Ref<HTMLInputElement>;
 
     /** Callback for normalized keydown event. */
-    onKeyDown?: (e: KeyboardEvent) => void,
+    onKeyDown?: (e: KeyboardEvent) => void;
 
     /** True to select contents when control receives focus. */
-    selectOnFocus?: boolean,
+    selectOnFocus?: boolean;
 
     /** True to allow browser spell check, default false. */
-    spellCheck?: boolean,
+    spellCheck?: boolean;
 
     /** Text to display when control is empty. */
-    placeholder?: string
+    placeholder?: string;
 }
 
 /**
@@ -80,7 +80,7 @@ class TextAreaInputModel extends HoistInputModel {
     };
 }
 
-const cmp = hoistCmp.factory<TextAreaProps>(
+const cmp = hoistCmp.factory<TextAreaInputModel>(
     ({model, className, ...props}, ref) => {
         const {width, height, ...layoutProps} = getLayoutProps(props);
 

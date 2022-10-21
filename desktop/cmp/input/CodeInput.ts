@@ -39,68 +39,68 @@ import {findDOMNode} from 'react-dom';
 import {ReactElement} from 'react';
 import './CodeInput.scss';
 
-export interface CodeInputProps extends HoistInputProps<CodeInputModel> {
+export interface CodeInputProps extends HoistInputProps {
     /** True to focus the control on render. */
-    autoFocus?: boolean,
+    autoFocus?: boolean;
 
     /** True to commit on every change/keystroke, default false. */
-    commitOnChange?: boolean,
+    commitOnChange?: boolean;
 
     /**
      * Configuration object with any properties supported by the CodeMirror API.
      * @see {@link https://codemirror.net/doc/manual.html#api_configuration|CodeMirror Docs}
      */
-    editorProps?: Record<string, any>,
+    editorProps?: Record<string, any>;
 
     /**
      * True to enable case-insensitive searching within the input. Default false, except in
      * fullscreen mode, where search will be shown unless explicitly *disabled*. Note that
      * enabling search forces the display of a toolbar, regardless of `showToolbar` prop.
      */
-    enableSearch?: boolean,
+    enableSearch?: boolean;
 
     /**
      * Callback to autoformat the code. Given the unformatted code, this should return a
      * properly-formatted copy.
      */
-    formatter?: (str: string) => string,
+    formatter?: (str: string) => string;
 
     /**
      * A CodeMirror linter to provide error detection and hinting in the gutter.
      */
-    linter?: (text: string) => any[],
+    linter?: (text: string) => any[];
 
     /**
      * A CodeMirror language mode - default none (plain-text). See the CodeMirror docs
      * ({@link https://codemirror.net/mode/}) regarding available modes.
      * Applications must import any mode they wish to enable.
      */
-    mode?: string
+    mode?: string;
 
     /**
      * True to prevent user modification of editor contents, while still allowing user to
      * focus, select, and copy contents.
      */
-    readonly?: boolean,
+    readonly?: boolean;
 
     /** True to display a copy button at bottom-right of input. */
-    showCopyButton?: boolean,
+    showCopyButton?: boolean;
 
     /**
      * True (default) to display autoformat button at bottom-right of input. Requires a
      * `formatter` to be configured and content to be editable (!readonly, !disabled).
      */
-    showFormatButton?: boolean,
+    showFormatButton?: boolean;
 
     /** True (default) to display fullscreen button at bottom-right of input. */
-    showFullscreenButton?: boolean,
+    showFullscreenButton?: boolean;
 
     /**
      * True to display action buttons and/or find functionality in a dedicated bottom toolbar.
      * Default is false unless enableSearch==true or in fullscreen mode. When false, enabled
      * action buttons show only when the input focused and float in the bottom-right corner.
      */
-    showToolbar?: boolean
+    showToolbar?: boolean;
 }
 
 /**
@@ -128,7 +128,8 @@ export const [CodeInput, codeInput] = hoistCmp.withFactory<CodeInputProps>({
 class CodeInputModel extends HoistInputModel {
     xhImpl = true;
 
-    @managed modalSupportModel: ModalSupportModel = new ModalSupportModel();
+    @managed
+    modalSupportModel: ModalSupportModel = new ModalSupportModel();
 
     /** A CodeMirror editor instance. */
     editor: any;
@@ -225,7 +226,7 @@ class CodeInputModel extends HoistInputModel {
         });
     }
 
-    onLinked() {
+    override onLinked() {
         this.addReaction({
             track: () => XH.darkTheme,
             run: () => {

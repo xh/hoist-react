@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, Intent} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, Intent} from '@xh/hoist/core';
 import {Button, buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
@@ -13,21 +13,21 @@ import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty, filter, without, castArray} from 'lodash';
 import {Children, cloneElement} from 'react';
 
-export interface ButtonGroupInputProps extends HoistInputProps<ButtonGroupInputModel>, ButtonGroupProps<ButtonGroupInputModel> {
+export interface ButtonGroupInputProps extends HoistInputProps, ButtonGroupProps<HoistModel> {
     /**
      * True to allow buttons to be unselected (aka inactivated). Defaults to false.
      * Does not apply when enableMulti: true.
      */
-    enableClear?: boolean,
+    enableClear?: boolean;
 
     /** True to allow entry/selection of multiple values - "tag picker" style. Defaults to false.*/
-    enableMulti?: boolean,
+    enableMulti?: boolean;
 
     /** Intent applied to each button. */
-    intent?: Intent,
+    intent?: Intent;
 
     /** True to create outlined-style buttons. */
-    outlined?: boolean
+    outlined?: boolean;
 }
 
 /**
@@ -99,7 +99,7 @@ class ButtonGroupInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<ButtonGroupInputProps>(
+const cmp = hoistCmp.factory<ButtonGroupInputModel>(
     ({model, className, ...props}, ref) => {
         const {
             children,

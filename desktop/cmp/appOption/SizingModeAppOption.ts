@@ -7,16 +7,17 @@
 import {AppOptionSpec, SizingMode, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput, ButtonGroupInputProps} from '@xh/hoist/desktop/cmp/input';
-import '@xh/hoist/desktop/register';
 import {startCase, values} from 'lodash';
+import {FormFieldProps} from '@xh/hoist/desktop/cmp/form';
+import '@xh/hoist/desktop/register';
 
 interface SizingModeAppOptionSpec {
     /** Supported SizingModes */
-    modes?: SizingMode[],
-    /** Props for nested FormField - todo: replace with FormFieldProps */
-    formFieldProps?: Record<string, any>,
+    modes?: SizingMode[];
+    /** Props for nested FormField */
+    formFieldProps?: FormFieldProps;
     /** Props for nested ButtonGroupInput */
-    inputProps?: ButtonGroupInputProps
+    inputProps?: ButtonGroupInputProps;
 }
 
 /**

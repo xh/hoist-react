@@ -16,59 +16,59 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber, round} from 'lodash';
 import {ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
 
-export interface NumberInputProps extends HoistInputProps<NumberInputModel> {
-    value?: number,
+export interface NumberInputProps extends HoistInputProps {
+    value?: number;
 
     /** True to focus the control on render. */
-    autoFocus?: boolean,
+    autoFocus?: boolean;
 
     /** True to commit on every change/keystroke, default false. */
-    commitOnChange?: boolean,
+    commitOnChange?: boolean;
 
     /** True to insert commas in displayed value. */
-    displayWithCommas?: boolean,
+    displayWithCommas?: boolean;
 
     /** True to convert entries suffixed with k/m/b to thousands/millions/billions. */
-    enableShorthandUnits?: boolean,
+    enableShorthandUnits?: boolean;
 
     /** True to take up the full width of container. */
-    fill?: boolean,
+    fill?: boolean;
 
     /** Ref handler that receives HTML <input> element backing this component. */
-    inputRef?: Ref<HTMLInputElement>,
+    inputRef?: Ref<HTMLInputElement>;
 
     /** Icon to display inline on the left side of the input. */
-    leftIcon?: ReactElement,
+    leftIcon?: ReactElement;
 
     /**
      * Minimum value. Note that this will govern the smallest value that this control can produce
      * via user input. Smaller values passed to it via props or a bound model will still be displayed.
      */
-    min?: number,
+    min?: number;
 
     /**
      * Maximum value. Note that this will govern the largest value that this control can produce
      * via user input. Larger values passed to it via props or a bound model will still be displayed.
      */
-    max?: number,
+    max?: number;
 
     /** Minor step size for increment/decrement handling. */
-    minorStepSize?: number,
+    minorStepSize?: number;
 
     /** Major step size for increment/decrement handling. */
-    majorStepSize?: number,
+    majorStepSize?: number;
 
     /** Callback for normalized keydown event. */
-    onKeyDown?: (e: KeyboardEvent) => void,
+    onKeyDown?: (e: KeyboardEvent) => void;
 
     /** Text to display when control is empty. */
-    placeholder?: string,
+    placeholder?: string;
 
     /** Max decimal precision of the value, defaults to 4. */
-    precision?: number,
+    precision?: number;
 
     /** Element to display inline on the right side of the input. */
-    rightElement?: ReactNode,
+    rightElement?: ReactNode;
 
     /**
      * Scale factor to apply when converting between the internal and external value. Useful for
@@ -76,25 +76,25 @@ export interface NumberInputProps extends HoistInputProps<NumberInputModel> {
      * the external value the input is bound to should be 0.2. Must be a factor of 10.
      * Defaults to 1 (no scaling applied).
      */
-    scaleFactor?: number,
+    scaleFactor?: number;
 
     /** True to select contents when control receives focus. */
-    selectOnFocus?: boolean,
+    selectOnFocus?: boolean;
 
     /** Standard step size for increment/decrement handling. */
-    stepSize?: number,
+    stepSize?: number;
 
     /** Alignment of entry text within control, default 'right'. */
-    textAlign?: 'left'|'right',
+    textAlign?: 'left'|'right';
 
     /**
      * Text appended to the rendered value within control when not editing.
      * Can be used to append e.g. "%" or a unit without need for an external right label.
      */
-    valueLabel?: string,
+    valueLabel?: string;
 
     /** True to pad with trailing zeros out to precision, default false. */
-    zeroPad?: boolean
+    zeroPad?: boolean;
 }
 
 /**
@@ -221,7 +221,7 @@ class NumberInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<NumberInputProps>(
+const cmp = hoistCmp.factory<NumberInputModel>(
     ({model, className, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props),
             renderValue = model.formatRenderValue(model.renderValue);
