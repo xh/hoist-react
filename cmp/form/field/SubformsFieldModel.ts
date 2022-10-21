@@ -5,13 +5,27 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {managed, XH} from '@xh/hoist/core';
-import {ValidationState} from '@xh/hoist/data';
+import {RawData, ValidationState} from '@xh/hoist/data';
 import {action, computed, makeObservable, override} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {clone, defaults, isEqual, flatMap, isArray, partition, without} from 'lodash';
 import {executeIfFunction, withDefault} from '../../../utils/js';
 import {FormModel} from '../FormModel';
-import {BaseFieldModel} from './BaseFieldModel';
+import {BaseFieldModel, BaseFieldConfig} from './BaseFieldModel';
+import {FormConfig} from '../FormModel';
+
+export interface SubformsFieldConfig extends BaseFieldConfig {
+
+    /** Config for FormModel representing a subform. */
+    subforms: FormConfig;
+
+    /**
+     * Initial value of this field.  If a function, will be
+     * executed dynamically when form is initialized to provide value.
+     */
+    initialValue?: any[];
+}
+
 
 /**
  * A data field in a form whose value is a collection of FormModels (subforms).
@@ -30,58 +44,53 @@ import {BaseFieldModel} from './BaseFieldModel';
 export class SubformsFieldModel extends BaseFieldModel {
 
     // (Sub)FormModels created by this model, tracked to support cleanup.
-    @managed _createdModels = [];
-    _modelConfig = null;
+    @managed
+    private createdModels: FormModel[] = [];
+    private formConfig: FormConfig = null;
+    private origInitialValues: any[];
 
-    /**
-     * @param {Object} c - FieldModel configuration.
-     * @param {Object} c.subforms - config for FormModel representing a subform.
-     * @param {Object[]} [c.initialValue] - initial value of this field.  If a function, will be
-     *      executed dynamically when form is initialized to provide value.
-     * @param {...} c.rest - arguments for BaseFieldModel
-     */
-    constructor({subforms, initialValue = [],  ...rest}) {
-        super({...rest});
+    constructor({subforms, initialValue = [],  ...rest}: SubformsFieldConfig) {
+        super(rest);
         makeObservable(this);
-        this._modelConfig = subforms;
-        this._origInitialValue = initialValue;
+        this.formConfig = subforms;
+        this.origInitialValues = initialValue;
         this.init(initialValue);
     }
 
     //-----------------------------
     // Overrides
     //-----------------------------
-    get hasFocus() {return false}
-    focus() {}
-    blur() {}
+    override get hasFocus(): boolean {return false}
+    override focus() {}
+    override blur() {}
 
-    getDataOrProxy() {
+    override getDataOrProxy() {
         return this.value.map(s => s.values);
     }
 
-    getData() {
+    override getData(): any[] {
         return this.value.map(s => s.getData());
     }
 
     @override
-    init(value) {
-        value = executeIfFunction(withDefault(value, this._origInitialValue));
+    override init(value: any) {
+        value = executeIfFunction(withDefault(value, this.origInitialValues));
         this.initialValue = this.parseValue(value);
         this.reset();
         this.cleanupModels();
     }
 
     @override
-    setValue(v) {
+    override setValue(v: any) {
         super.setValue(this.parseValue(v));
         this.cleanupModels();
     }
 
-    get formModel() {
+    override get formModel(): FormModel {
         return super.formModel;  // Need to define setter/getter pair together - see below.
     }
 
-    set formModel(formModel) {
+    override set formModel(formModel: FormModel) {
         super.formModel = formModel;
         this.value.forEach(s => s.parent = formModel);
 
@@ -95,19 +104,19 @@ export class SubformsFieldModel extends BaseFieldModel {
     }
 
     @computed
-    get allErrors() {
+    override get allErrors(): string[] {
         const subErrs = flatMap(this.value, s => s.allErrors);
         return [...this.errors, ...subErrs];
     }
 
     @override
-    reset() {
+    override reset() {
         super.reset();
         this.value.forEach(s => s.reset());
     }
 
     @override
-    displayValidation(includeSubforms = true) {
+    override displayValidation(includeSubforms: boolean = true) {
         super.displayValidation(includeSubforms);
         if (includeSubforms) {
             this.value.forEach(s => s.displayValidation());
@@ -115,12 +124,12 @@ export class SubformsFieldModel extends BaseFieldModel {
     }
 
     @computed
-    get isValidationPending() {
+    override get isValidationPending(): boolean {
         return this.value.some(m => m.isValidationPending) || super.isValidationPending;
     }
 
     @computed
-    get isDirty() {
+    override get isDirty(): boolean {
         // Catch changed values within subforms, as well as adds/deletes/sorts
         const {value, initialValue} = this;
         return (
@@ -130,11 +139,21 @@ export class SubformsFieldModel extends BaseFieldModel {
     }
 
     @override
-    async validateAsync({display = true} = {}) {
-        const promises = this.value.map(m => m.validateAsync({display}));
+    override async validateAsync(opts: {display?: boolean} = {}): Promise<boolean> {
+        const {display = true} = opts,
+            promises = this.value.map(m => m.validateAsync({display}));
         promises.push(super.validateAsync({display}));
         await Promise.all(promises);
         return this.isValid;
+    }
+
+    protected override deriveValidationState(): ValidationState {
+        const states = this.value.map(s => s.validationState);
+        states.push(super.deriveValidationState());
+
+        if (states.includes('NotValid')) return 'NotValid';
+        if (states.includes('Unknown')) return 'Unknown';
+        return 'Valid';
     }
 
     //-----------------------------
@@ -143,12 +162,13 @@ export class SubformsFieldModel extends BaseFieldModel {
     /**
      * Add a new record (subform) to this field.
      *
-     * @param {Object} [initialValues] - object containing initial values for new record.
-     * @param {number} [index] - index in collection where subform should be inserted.
+     * @param initialValues - object containing initial values for new record.
+     * @param index - index in collection where subform should be inserted.
      */
     @action
-    add({initialValues = {}, index = this.value.length} = {}) {
-        const newSubforms = this.parseValue([initialValues]),
+    add(opts: {initialValues?: RawData, index?: number} = {}) {
+        const {initialValues = {}, index = this.value.length} = opts,
+            newSubforms = this.parseValue([initialValues]),
             newValue = clone(this.value);
 
         newValue.splice(index, 0, ...newSubforms);
@@ -157,7 +177,7 @@ export class SubformsFieldModel extends BaseFieldModel {
     }
 
     @action
-    remove(formModel) {
+    remove(formModel: FormModel) {
         this.value = without(this.value, formModel);
         this.cleanupModels();
     }
@@ -165,35 +185,25 @@ export class SubformsFieldModel extends BaseFieldModel {
     //-----------------------
     // Implementation
     //----------------------
-    parseValue(externalVal) {
+    private parseValue(externalVal: any[]): FormModel[] {
         throwIf(!isArray(externalVal), 'Value of a SubformsField must be an array.');
 
-        const {_modelConfig, _createdModels} = this;
+        const {formConfig, createdModels} = this;
         return externalVal.map(v => {
-            const initialValues = defaults({}, v, _modelConfig.initialValues),
-                ret = new FormModel({..._modelConfig, initialValues});
+            const initialValues = defaults({}, v, formConfig.initialValues),
+                ret = new FormModel({...formConfig, initialValues});
 
             ret.parent = this.formModel;
-            _createdModels.push(ret);
+            createdModels.push(ret);
             return ret;
         });
     }
 
-    cleanupModels() {
+    private cleanupModels() {
         // destroy any models we know we are finished with early..
-        const {_createdModels, initialValue, value} = this,
-            [keep, destroy] = partition(_createdModels, m => initialValue.includes(m) || value.includes(m));
-        this._createdModels = keep;
+        const {createdModels, initialValue, value} = this,
+            [keep, destroy] = partition(createdModels, m => initialValue.includes(m) || value.includes(m));
+        this.createdModels = keep;
         XH.safeDestroy(destroy);
-    }
-
-    deriveValidationState() {
-        const VS = ValidationState,
-            states = this.value.map(s => s.validationState);
-        states.push(super.deriveValidationState());
-
-        if (states.includes(VS.NotValid)) return VS.NotValid;
-        if (states.includes(VS.Unknown)) return VS.Unknown;
-        return VS.Valid;
     }
 }

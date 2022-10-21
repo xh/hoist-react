@@ -4,15 +4,34 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {elemFactory, hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
+import {BoxProps, elemFactory, hoistCmp, uses} from '@xh/hoist/core';
 import equal from 'fast-deep-equal';
-import PT from 'prop-types';
 import {createContext, useContext} from 'react';
 import {useCached} from '@xh/hoist/utils/react';
 import {FormModel} from './FormModel';
+import {BaseFormFieldProps} from './BaseFormFieldProps';
 
-export const FormContext = createContext({});
+/** @internal */
+export interface FormContextType {
+    /** Defaults props to be applied to contained fields. */
+    fieldDefaults?: Partial<BaseFormFieldProps>,
+
+    /** Reference to associated FormModel. */
+    model?: FormModel;
+}
+
+/** @internal */
+export const FormContext = createContext<FormContextType>({});
 const formContextProvider = elemFactory(FormContext.Provider);
+
+
+export interface FormProps extends BoxProps<FormModel> {
+    /**
+     * Defaults for certain props on child/nested FormFields.
+     * @see FormField (note there are both desktop and mobile implementations).
+     */
+    fieldDefaults?: Partial<BaseFormFieldProps>;
+}
 
 /**
  * Wrapper component for a data-input form. This is the top-level entry point (along with its model
@@ -28,9 +47,9 @@ const formContextProvider = elemFactory(FormContext.Provider);
  * @see FormField - field-level wrapper component, which labels and displays info for a...
  * @see HoistInput - superclass for the data entry components themselves.
  */
-export const [Form, form] = hoistCmp.withFactory({
+export const [Form, form] = hoistCmp.withFactory<FormProps>({
     displayName: 'Form',
-    model: uses(FormModel, {publishMode: ModelPublishMode.NONE}),
+    model: uses(FormModel, {publishMode:  'none'}),
 
     render({model, fieldDefaults = {}, children}) {
         // gather own and inherited field defaults...
@@ -45,14 +64,3 @@ export const [Form, form] = hoistCmp.withFactory({
         return formContextProvider({value: formContext, items: children});
     }
 });
-
-Form.propTypes = {
-    /**
-     * Defaults for certain props on child/nested FormFields.
-     * @see FormField (note there are both desktop and mobile implementations).
-     */
-    fieldDefaults: PT.object,
-
-    /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(FormModel), PT.object])
-};
