@@ -51,9 +51,9 @@ class RadioInputModel extends HoistInputModel {
         return options.map(o => {
             if (isObject(o)) {
                 const {label, value, disabled} = o as RadioOption;
-                return {value: this.toInternal(value), label, disabled}
+                return {value: this.toInternal(value), label, disabled};
             } else {
-                return {value: this.toInternal(o), label: o.toString()}
+                return {value: this.toInternal(o), label: o.toString()};
             }
         });
     }

@@ -44,7 +44,7 @@ export interface SelectProps extends HoistInputProps<SelectInputModel> {
      * Function to return a "create a new option" string prompt. Requires `enableCreate` true.
      * Passed current query input.
      */
-    createMessageFn: (query: string) => string,
+    createMessageFn?: (query: string) => string,
 
     /** True (default) to close the menu after each selection. */
     closeMenuOnSelect?: boolean,
@@ -84,7 +84,7 @@ export interface SelectProps extends HoistInputProps<SelectInputModel> {
      * Provided function should take an option and a query value and return a boolean.
      * Defaults to a case-insensitive match on word starts.
      */
-    filterFn: (opt: SelectOption, inputVal: string) => boolean,
+    filterFn?: (opt: SelectOption, inputVal: string) => boolean,
 
     /**
      * True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select.
@@ -105,10 +105,10 @@ export interface SelectProps extends HoistInputProps<SelectInputModel> {
     labelField?: string,
 
     /** Icon to display inline on the left side of the input. */
-    leftIcon: ReactElement,
+    leftIcon?: ReactElement,
 
     /** Function to return loading message during an async query. Passed current query input. */
-    loadingMessageFn: (query: string) => string,
+    loadingMessageFn?: (query: string) => string,
 
     /** Maximum height of the menu before scrolling. Defaults to 300px. */
     maxMenuHeight?: number,
@@ -120,7 +120,7 @@ export interface SelectProps extends HoistInputProps<SelectInputModel> {
     menuWidth?: number,
 
     /** Function to return message indicating no options loaded. Passed current query input. */
-    noOptionsMessageFn: (query: string) => string,
+    noOptionsMessageFn?: (query: string) => string,
 
     /** True to auto-open the dropdown menu on input focus. */
     openMenuOnFocus?: boolean,
@@ -130,7 +130,7 @@ export interface SelectProps extends HoistInputProps<SelectInputModel> {
      * will contain at minimum a value and label field, as well as any other fields present in
      * the source objects).
      */
-    optionRenderer: (SelectOption) => ReactNode,
+    optionRenderer?: (SelectOption) => ReactNode,
 
     /**
      * Preset list of options for selection. Elements can be either a primitive or an object.
@@ -144,7 +144,7 @@ export interface SelectProps extends HoistInputProps<SelectInputModel> {
      * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
      * of up-front in this prop.
      */
-    options: any[]|SelectOption[],
+    options?: any[]|SelectOption[],
 
     /** Text to display when control is empty. */
     placeholder?: string,
@@ -162,7 +162,7 @@ export interface SelectProps extends HoistInputProps<SelectInputModel> {
      * confused with `filterFn`, which should be used to filter through local options when
      * not in async mode.
      */
-    queryFn: (query:string) => Promise<SelectOption[]>,
+    queryFn?: (query:string) => Promise<SelectOption[]>,
 
     /**
      * Escape-hatch props passed directly to react-select. Use with care - not all props

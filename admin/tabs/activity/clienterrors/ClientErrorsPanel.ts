@@ -9,14 +9,13 @@ import {hspacer} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, buttonGroup, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
-import {dateInput} from '@xh/hoist/desktop/cmp/input';
+import {dateInput, DateInputProps} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {clientErrorDetail} from './ClientErrorDetail';
 import {ClientErrorsModel} from './ClientErrorsModel';
-
 
 export const clientErrorsPanel = hoistCmp.factory({
     model: creates(ClientErrorsModel),
@@ -75,4 +74,4 @@ const tbar = hoistCmp.factory<ClientErrorsModel>(
     }
 );
 
-const dateInputProps = {popoverPosition: 'bottom', valueType: 'localDate', width: 120};
+const dateInputProps = {popoverPosition: 'bottom', valueType: 'localDate', width: 120} as DateInputProps;

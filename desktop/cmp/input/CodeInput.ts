@@ -63,12 +63,12 @@ export interface CodeInputProps extends HoistInputProps<CodeInputModel> {
      * Callback to autoformat the code. Given the unformatted code, this should return a
      * properly-formatted copy.
      */
-    formatter: (str: string) => string,
+    formatter?: (str: string) => string,
 
     /**
      * A CodeMirror linter to provide error detection and hinting in the gutter.
      */
-    linter: (text: string) => any[],
+    linter?: (text: string) => any[],
 
     /**
      * A CodeMirror language mode - default none (plain-text). See the CodeMirror docs
