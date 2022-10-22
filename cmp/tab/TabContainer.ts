@@ -11,7 +11,6 @@ import {TabContainerConfig, TabContainerModel} from './TabContainerModel';
 
 
 export interface TabContainerProps extends BoxProps<TabContainerModel> {
-
     modelConfig?: TabContainerConfig;
 }
 

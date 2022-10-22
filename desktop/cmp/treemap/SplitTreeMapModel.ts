@@ -12,7 +12,7 @@ import {RawData, StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {ReactNode} from 'react';
 import {uniq} from 'lodash';
 
-import {TreeMapAlgorithm, TreeMapColorMode, TreeMapModel, TreeMapModelConfig} from './TreeMapModel';
+import {TreeMapAlgorithm, TreeMapColorMode, TreeMapModel, TreeMapConfig} from './TreeMapModel';
 
 /**
  * Core Model for a SplitTreeMap.
@@ -24,21 +24,21 @@ import {TreeMapAlgorithm, TreeMapColorMode, TreeMapModel, TreeMapModelConfig} fr
  * Additionally, accepts and passes along all settings for TreeMapModel.
  * @see TreeMapModel
  */
-interface SplitTreeMapModelConfig extends TreeMapModelConfig {
+interface SplitTreeMapConfig extends TreeMapConfig {
     /**
      * Filter used to allocate records between the primary and secondary maps.
      * Defaults to: `record[valueField] >= 0`.
      */
-    mapFilter?: SplitTreeMapFilterFn,
+    mapFilter?: SplitTreeMapFilterFn;
 
     /** Function to render region titles. */
-    mapTitleFn?: SplitTreeMapTitleFn,
+    mapTitleFn?: SplitTreeMapTitleFn;
 
     /** True to insert a four pixel buffer between the two maps. */
-    showSplitter?: boolean,
+    showSplitter?: boolean;
 
     /** Layout orientation to use. */
-    orientation?: SplitTreeMapOrientation,
+    orientation?: SplitTreeMapOrientation;
 }
 
 export class SplitTreeMapModel extends HoistModel {
@@ -57,7 +57,7 @@ export class SplitTreeMapModel extends HoistModel {
     //------------------------
     @observable orientation: SplitTreeMapOrientation;
 
-    constructor(config: SplitTreeMapModelConfig) {
+    constructor(config: SplitTreeMapConfig) {
         super();
         makeObservable(this);
 

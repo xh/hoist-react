@@ -9,6 +9,14 @@ import classNames from 'classnames';
 import {div} from '@xh/hoist/cmp/layout';
 import './Badge.scss';
 
+
+export interface BadgeProps extends BoxProps {
+    /** Sets fontsize to half that of parent element (default false). */
+    compact?: boolean;
+
+    intent?: Intent
+}
+
 /**
  * Badge indicator, generally displayed inline with text/title, showing a count or other small
  * indicator that something is new or has content.
@@ -36,10 +44,3 @@ export const [Badge, badge] = hoistCmp.withFactory<BadgeProps>({
         });
     }
 });
-
-export interface BadgeProps extends BoxProps {
-    /** Sets fontsize to half that of parent element (default false). */
-    compact?: boolean;
-
-    intent?: Intent
-}

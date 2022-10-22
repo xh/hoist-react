@@ -266,25 +266,25 @@ export interface StoreRecordConfig {
      * `Field.parseVal()`. Note this must be a new object dedicated to this StoreRecord.
      * This object will be enhanced with an id and frozen.
      */
-    data: any,
+    data: RawData;
 
     /**
      * The original data for the StoreRecord, prior to any Store pre-processing.
      * This data is for reference only and will not be altered by this object.
      */
-    raw?: any,
+    raw?: RawData;
 
     /**
      * The version of the data that was last loaded via the Store load APIs. Pass `null` to
      * signal that this is a "new" StoreRecord that has been added since the last load.
      */
-    committedData? : any,
+    committedData? : RawData;
 
-    parent?: StoreRecord,
+    parent?: StoreRecord;
 
     /**
      * True to indicate this is a summary StoreRecord, used to show aggregate, grand-total level
      * information in grids when enabled.
      */
-    isSummary?: boolean
+    isSummary?: boolean;
 }

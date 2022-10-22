@@ -6,6 +6,7 @@
  */
 import {debounce as lodashDebounce, isFinite} from 'lodash';
 import ResizeObserver from 'resize-observer-polyfill';
+import {SyntheticEvent} from 'react';
 
 /**
  * Is this element visible and not within a hidden sub-tree (e.g. hidden tab)?
@@ -94,7 +95,7 @@ export function observeVisibleChange(fn: (visible: boolean) => any, node: Elemen
  * A convenience handler that will call 'stopPropagation'
  * and 'preventDefault' on an event.
  */
-export function consumeEvent(e: Event) {
+export function consumeEvent(e: Event|SyntheticEvent) {
     e.stopPropagation();
     e.preventDefault();
 }
@@ -102,6 +103,6 @@ export function consumeEvent(e: Event) {
 /**
  * A convenience handler that will 'stopPropagation' on an event.
  */
-export function stopPropagation(e: Event) {
+export function stopPropagation(e: Event| SyntheticEvent) {
     e.stopPropagation();
 }

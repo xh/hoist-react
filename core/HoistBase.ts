@@ -256,19 +256,19 @@ export interface ReactionSpec<T> extends IReactionOptions<T, any> {
      * Function returning data to observe - first arg to the underlying reaction() call.
      * Specify this or `when`.
      */
-    track?: () => T
+    track?: () => T;
 
     /**
      * Function determining when reaction should fire - first arg to the underlying when() call.
      * Specify this or `track`.
      */
-    when?: () => boolean
+    when?: () => boolean;
 
     /** Function to run - second arg to underlying reaction()/when() call. */
-    run?: (data?: T) => any
+    run?: (data?: T) => any;
 
     /** Specify to debounce run function */
-    debounce?: DebounceSpec
+    debounce?: DebounceSpec;
 }
 
 /**

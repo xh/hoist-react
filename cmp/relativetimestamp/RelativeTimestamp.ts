@@ -14,6 +14,52 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import moment from 'moment';
 
+interface RelativeTimestampProps extends BoxProps {
+    /**
+     * Property on context model containing timestamp.
+     * Specify as an alternative to direct `timestamp` prop (and minimize parent re-renders).
+     */
+    bind?: string;
+
+    /** Date or milliseconds representing the starting time / time to compare. See also `bind`. */
+    timestamp?: Date|number;
+
+    /** Formatting options */
+    options?: RelativeTimestampOptions;
+}
+
+
+export interface RelativeTimestampOptions {
+
+    /** Allow dates greater than Date.now().*/
+    allowFuture?: boolean;
+
+    /** Use shorter timestamp text, default true for mobile clients. */
+    short?: boolean;
+
+    /** Label preceding timestamp.*/
+    prefix?: string;
+
+    /** Appended to future timestamps. */
+    futureSuffix?: string;
+
+    /** Appended to past timestamps. */
+    pastSuffix?: string;
+
+    /** String to return when timestamps are within `epsilon`. */
+    equalString?: string;
+
+    /** Threshold interval (in seconds) for `equalString`. **/
+    epsilon?: number;
+
+    /** String to return when timestamp is empty/falsy. */
+    emptyResult?: string;
+
+    /** Time to which the input timestamp is compared. */
+    relativeTo?: Date|number;
+}
+
+
 /**
  * A component to display the approximate amount of time between a given timestamp and now in a
  * friendly, human readable format (e.g. '6 minutes ago' or 'two hours from now').
@@ -39,20 +85,6 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<Relat
         });
     }
 });
-
-interface RelativeTimestampProps extends BoxProps {
-    /**
-     * Property on context model containing timestamp.
-     * Specify as an alternative to direct `timestamp` prop (and minimize parent re-renders).
-     */
-    bind?: string;
-
-    /** Date or milliseconds representing the starting time / time to compare. See also `bind`. */
-    timestamp?: Date|number;
-
-    /** Formatting options */
-    options?: RelativeTimestampOptions
-}
 
 class RelativeTimestampLocalModel extends HoistModel {
     xhImpl = true;
@@ -93,37 +125,6 @@ class RelativeTimestampLocalModel extends HoistModel {
     }
 }
 
-
-export interface RelativeTimestampOptions {
-
-    /** Allow dates greater than Date.now().*/
-    allowFuture?: boolean;
-
-    /** Use shorter timestamp text, default true for mobile clients. */
-    short?: boolean;
-
-    /** Label preceding timestamp.*/
-    prefix?: string;
-
-    /** Appended to future timestamps. */
-    futureSuffix?: string;
-
-    /** Appended to past timestamps. */
-    pastSuffix?: string;
-
-    /** String to return when timestamps are within `epsilon`. */
-    equalString?: string;
-
-    /** Threshold interval (in seconds) for `equalString`. **/
-    epsilon?: number;
-
-    /** String to return when timestamp is empty/falsy. */
-    emptyResult?: string;
-
-    /** Time to which the input timestamp is compared. */
-    relativeTo?: Date|number;
-
-}
 /**
  * Returns a string describing the approximate amount of time between a given timestamp and the
  * present moment in a friendly, human readable format.

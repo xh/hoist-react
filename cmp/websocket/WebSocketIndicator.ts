@@ -9,6 +9,12 @@ import {BoxProps, hoistCmp, XH} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 
+
+export interface WebSocketIndicatorProps extends BoxProps {
+    /** True to display status as an icon only, without text label. */
+    iconOnly?: boolean;
+}
+
 /**
  * Provides a visual indicator of connection status for @see {@link WebSocketService}.
  */
@@ -49,8 +55,3 @@ export const [WebSocketIndicator, webSocketIndicator] = hoistCmp.withFactory<Web
         });
     }
 });
-
-export interface WebSocketIndicatorProps extends BoxProps {
-    /** True to display status as an icon only, without text label. */
-    iconOnly?: boolean
-}

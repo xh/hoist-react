@@ -12,7 +12,7 @@ import {Icon} from '@xh/hoist/icon';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
 
 export interface ModalToggleButtonProps extends ButtonProps {
-    panelModel?: PanelModel
+    panelModel?: PanelModel;
 }
 
 /**

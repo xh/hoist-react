@@ -16,17 +16,17 @@ import './LoadingIndicator.scss';
 
 export interface LoadingIndicatorProps extends HoistProps {
     /** TaskObserver(s) that should be monitored to determine if the Indicator should be displayed. */
-    bind?: TaskObserver|TaskObserver[],
+    bind?: TaskObserver|TaskObserver[];
     /** Position of the indicator relative to its containing component. */
     corner: 'tl'|'tr'|'bl'|'br',
     /** True to display the indicator. */
-    isDisplayed?: boolean,
+    isDisplayed?: boolean;
     /** Max characters allowed in message, after which it will be elided. Default 30. */
-    maxMessageLength?: number,
+    maxMessageLength?: number;
     /** Optional text to be displayed - can also be sourced from bound TaskObserver. */
-    message?: string,
+    message?: string;
     /** True (default) to display with an animated spinner. */
-    spinner?: boolean
+    spinner?: boolean;
 }
 
 /**

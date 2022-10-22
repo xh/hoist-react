@@ -180,9 +180,9 @@ export interface SelectProps extends HoistInputProps {
 }
 
 interface SelectOption {
-    value: any,
-    label?: string,
-    options?: (SelectOption|any)[]
+    value: any;
+    label?: string;
+    options?: (SelectOption|any)[];
 }
 
 /**

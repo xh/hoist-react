@@ -12,10 +12,10 @@ import {ReactNode} from 'react';
 
 export interface RestoreDefaultsButtonProps extends ButtonProps {
     /** Message for confirm dialog shown prior to clearing user customizations. */
-    warningMessage: ReactNode,
+    warningMessage: ReactNode;
 
     /** Title for confirm dialog shown prior to clearing user customizations. */
-    warningTitle: string
+    warningTitle: string;
 }
 
 /**

@@ -10,6 +10,22 @@ import {Store} from '@xh/hoist/data';
 import {fmtNumber} from '@xh/hoist/format';
 import {pluralize, singularize} from '@xh/hoist/utils/js';
 
+
+export interface StoreCountLabelProps extends BoxProps {
+
+    /** Store to which this component should bind. */
+    store?: Store;
+
+    /**
+     * True to count nested child records.
+     * If false (default) only root records will be included in count.
+     */
+    includeChildren?: boolean;
+
+    /** Units label appropriate for records being counted (e.g. "user" yields "50 users"). */
+    unit?: string;
+}
+
 /**
  * Displays the number of (post-filtered) records loaded into a Store.
  */
@@ -30,18 +46,3 @@ export const [StoreCountLabel, storeCountLabel] = hoistCmp.withFactory<StoreCoun
         return box({...props, ref, item});
     }
 });
-
-export interface StoreCountLabelProps extends BoxProps {
-
-    /** Store to which this component should bind. */
-    store?: Store;
-
-    /**
-     * True to count nested child records.
-     * If false (default) only root records will be included in count.
-     */
-    includeChildren?: boolean;
-
-    /** Units label appropriate for records being counted (e.g. "user" yields "50 users"). */
-    unit?: string;
-}

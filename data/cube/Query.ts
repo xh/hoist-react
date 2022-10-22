@@ -41,7 +41,7 @@ export interface QueryConfig {
      * One or more filters or configs to create one.  If an array, a single 'AND' filter will
      * be created.
      */
-    filter?: FilterLike
+    filter?: FilterLike;
 
     /**
      * IncludeRoot?: True to include a synthetic root node in the return with grand total

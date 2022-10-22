@@ -13,8 +13,8 @@ import {ExportOptions} from '@xh/hoist/svc';
 import {button, ButtonProps} from './Button';
 
 export interface ExportButtonProps extends ButtonProps {
-    gridModel?: GridModel,
-    exportOptions?: ExportOptions
+    gridModel?: GridModel;
+    exportOptions?: ExportOptions;
 }
 
 /**

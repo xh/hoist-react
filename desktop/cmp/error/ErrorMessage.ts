@@ -18,24 +18,24 @@ export interface ErrorMessageProps extends HoistProps {
      * If provided, will render a "Retry" button that calls this function.
      * Use `actionButtonProps` for further control over this button.
      */
-    actionFn?: (e: MouseEvent) => void,
+    actionFn?: (e: MouseEvent) => void;
     /**
      * If provided, component will render an inline action button - prompting to user to take some
      * action that might resolve the error, such as retrying a failed data load.
      */
-    actionButtonProps?: ButtonProps,
+    actionButtonProps?: ButtonProps;
     /**
      * Error to display. If undefined, this component will look for an error property on its model.
      * If no error is found, this component will not be displayed.
      */
-    error?: Error|string|Record<string, any>,
+    error?: Error|string|Record<string, any>;
     /**
      * Message to display for the error.
      * Defaults to the error, or any 'message' property contained within it.
      */
-    message?: ReactNode,
+    message?: ReactNode;
     /** Optional title to display above the message. */
-    title?: ReactNode
+    title?: ReactNode;
 }
 
 /**

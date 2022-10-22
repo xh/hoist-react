@@ -18,7 +18,7 @@ import './Dock.scss';
 
 interface DockViewProps extends HoistProps<DockViewModel> {
     /** True to style docked headers with reduced padding and font-size. */
-    compactHeaders?: boolean
+    compactHeaders?: boolean;
 }
 
 /**

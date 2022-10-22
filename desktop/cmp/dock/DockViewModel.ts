@@ -14,35 +14,35 @@ import {DockContainerModel} from './DockContainerModel';
 
 export interface DockViewConfig {
     /** Unique identifier for this DockViewModel. */
-    id: string,
+    id: string;
     /** Parent DockContainerModel. Provided by the container when constructing the model - no need to specify manually. */
-    containerModel: DockContainerModel,
+    containerModel: DockContainerModel;
     /** Title text added to the header. */
-    title?: string,
+    title?: string;
     /** An icon placed at the left-side of the header. */
-    icon?: ReactElement,
+    icon?: ReactElement;
     /** Content to be rendered by this DockView. */
-    content: Content,
+    content: Content;
     /** Width in pixels. If not set, width will be determined by the content. */
-    width?: number,
+    width?: number;
     /** Height in pixels. If not set, height will be determined by the content. */
-    height?: number,
+    height?: number;
     /** Width of collapsed header in pixels. If not set, width will be determined by the length of the title. */
-    collapsedWidth?: number,
+    collapsedWidth?: number;
     /** Strategy for rendering this DockView. If null, will default to its container's mode. */
-    renderMode?: RenderMode,
+    renderMode?: RenderMode;
     /** Strategy for refreshing this DockView. If null, will default to its container's mode. */
-    refreshMode?: RefreshMode,
+    refreshMode?: RefreshMode;
     /** true to exclude this DockView.  */
-    omit?: boolean,
+    omit?: boolean;
     /** true (default) to initialise in dock, false to use Dialog. Respects allowDialog. */
-    docked?: boolean,
+    docked?: boolean;
     /** true to initialise collapsed, false (default) for expanded. */
-    collapsed?: boolean,
+    collapsed?: boolean;
     /** true (default) to allow removing from the dock entirely. */
-    allowClose?: boolean,
+    allowClose?: boolean;
     /** true (default) to allow popping out of the dock and displaying in a modal Dialog. */
-    allowDialog?: boolean
+    allowDialog?: boolean;
 }
 
 /**

@@ -11,19 +11,19 @@ import '@xh/hoist/mobile/register';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {CSSProperties, ReactNode, ReactElement} from 'react';
+import {CSSProperties, ReactNode, ReactElement, MouseEvent} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = null> extends BoxProps<M> {
-    active?: boolean,
-    disabled?: boolean,
+    active?: boolean;
+    disabled?: boolean;
     icon?: ReactElement;
-    intent?: Intent,
-    minimal?: boolean,
-    onClick?: (e: MouseEvent) => void,
-    outlined?: boolean,
-    style?: CSSProperties,
-    text?: ReactNode
+    intent?: Intent;
+    minimal?: boolean;
+    onClick?: (e: MouseEvent) => void;
+    outlined?: boolean;
+    style?: CSSProperties;
+    text?: ReactNode;
 }
 
 /**

@@ -21,22 +21,22 @@ import './GroupingChooser.scss';
 
 export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> {
     /** Text to represent empty state (i.e. value = null or []) */
-    emptyText?: string,
+    emptyText?: string;
 
     /** Min height in pixels of the popover menu itself. */
-    popoverMinHeight?: number,
+    popoverMinHeight?: number;
 
     /** Position for chooser popover, as per Blueprint docs. */
-    popoverPosition?: Position,
+    popoverPosition?: Position;
 
     /** Title for popover (default "GROUP BY") or null to suppress. */
-    popoverTitle?: string,
+    popoverTitle?: string;
 
     /** Width in pixels of the popover menu itself. */
-    popoverWidth?: number,
+    popoverWidth?: number;
 
     /** True (default) to style target button as an input field - blends better in toolbars. */
-    styleButtonAsInput?: boolean
+    styleButtonAsInput?: boolean;
 }
 
 /**

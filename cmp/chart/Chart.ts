@@ -29,6 +29,16 @@ import './Chart.scss';
 installZoomoutGesture(Highcharts);
 installCopyToClipboard(Highcharts);
 
+export interface ChartProps extends BoxProps<ChartModel> {
+
+    /**
+     * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will
+     * respect this ratio within the available space.  Otherwise, the chart will stretch on both
+     * dimensions to take up all available space.
+     */
+    aspectRatio?: number;
+}
+
 /**
  * Wrapper Component for a Highcharts chart. Provides basic rendering / lifecycle management
  * as well as configuration and theme defaults. The chart's core configuration should be sourced
@@ -79,15 +89,6 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
     }
 });
 
-export interface ChartProps extends BoxProps<ChartModel> {
-
-    /**
-     * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will
-     * respect this ratio within the available space.  Otherwise, the chart will stretch on both
-     * dimensions to take up all available space.
-     */
-    aspectRatio?: number;
-}
 
 class ChartLocalModel extends HoistModel {
     xhImpl = true;

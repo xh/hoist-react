@@ -14,7 +14,7 @@ import {BaseFormFieldProps} from './BaseFormFieldProps';
 /** @internal */
 export interface FormContextType {
     /** Defaults props to be applied to contained fields. */
-    fieldDefaults?: Partial<BaseFormFieldProps>,
+    fieldDefaults?: Partial<BaseFormFieldProps>;
 
     /** Reference to associated FormModel. */
     model?: FormModel;

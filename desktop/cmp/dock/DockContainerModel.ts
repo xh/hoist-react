@@ -12,13 +12,13 @@ import {DockViewModel, DockViewConfig} from './DockViewModel';
 
 interface DockContainerConfig {
     /** DockViewModel configs to be displayed. */
-    views?: DockViewConfig[],
+    views?: DockViewConfig[];
     /** Direction in which docked views build up as they are added to the container. */
-    direction?: DockViewDirection,
+    direction?: DockViewDirection;
     /** Strategy for rendering DockViews. Can also be set per-view via `DockViewModelConfig.renderMode` */
-    renderMode?: RenderMode,
+    renderMode?: RenderMode;
     /** Strategy for refreshing DockViews. Can also be set per-view via `DockViewModelConfig.refreshMode` */
-    refreshMode?: RefreshMode,
+    refreshMode?: RefreshMode;
 }
 
 /**

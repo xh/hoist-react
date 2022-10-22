@@ -8,7 +8,7 @@ import {HoistModel} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, cloneDeep, merge} from 'lodash';
 
-interface ChartModelConfig {
+interface ChartConfig {
 
     /** The initial highchartsConfig for this chart. */
     highchartsConfig: any;
@@ -49,7 +49,7 @@ export class ChartModel extends HoistModel {
         series = [],
         showContextMenu = true,
         xhImpl = false
-    }: ChartModelConfig) {
+    }: ChartConfig) {
         super();
         makeObservable(this);
         this.xhImpl = xhImpl;

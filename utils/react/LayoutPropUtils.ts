@@ -47,7 +47,7 @@ export interface LayoutProps {
     top?: string|number;
     left?: string|number;
     position?: string;
-    display?: string
+    display?: string;
 }
 
 // TODO: Define this as the inverse of object above

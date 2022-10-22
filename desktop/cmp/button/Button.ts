@@ -15,20 +15,20 @@ import {ReactNode, ReactElement, CSSProperties, MouseEvent} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = null> extends BoxProps<M> {
-    active?: boolean,
-    autoFocus?: boolean,
-    disabled?: boolean,
+    active?: boolean;
+    autoFocus?: boolean;
+    disabled?: boolean;
     icon?: ReactElement;
-    intent?: Intent,
-    minimal?: boolean,
-    onClick?: (e: MouseEvent) => void,
-    outlined?: boolean,
+    intent?: Intent;
+    minimal?: boolean;
+    onClick?: (e: MouseEvent) => void;
+    outlined?: boolean;
     rightIcon?: ReactElement;
-    style?: CSSProperties,
-    text?: ReactNode,
-    title?: string,
+    style?: CSSProperties;
+    text?: ReactNode;
+    title?: string;
     /** Alias for title. */
-    tooltip?: string
+    tooltip?: string;
 }
 
 /**

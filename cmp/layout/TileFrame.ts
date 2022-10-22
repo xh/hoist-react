@@ -14,6 +14,34 @@ import {Children} from 'react';
 
 import './TileFrame.scss';
 
+
+export interface TileFrameProps extends BoxProps {
+    /**
+     * Desired tile width / height ratio (i.e. desiredRatio: 2 == twice as wide as tall).
+     * The container will strive to meet this ratio, but the final ratio may vary.
+     * Defaults to 1 (i.e. square tiles)
+     */
+    desiredRatio?: number;
+
+    /** The space between tiles (in px) */
+    spacing?: number;
+
+    /** Min tile width (in px). */
+    minTileWidth?: number;
+
+    /** Max tile width (in px). */
+    maxTileWidth?: number;
+
+    /** Min tile height (in px).*/
+    minTileHeight?: number;
+
+    /** Max tile height (in px).*/
+    maxTileHeight?: number;
+
+    /** Callback triggered when the layout configuration changes.*/
+    onLayoutChange?: (layout: {rows: number, cols: number, tileWidth: number, tileHeight: number}) => any;
+}
+
 /**
  * This component renders its children as equally-sized tiles, resized and arranged to fill the
  * available space within the container while maintaining even padding between tiles and keeping
@@ -81,34 +109,6 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
         return frame({ref, ...props, items});
     }
 });
-
-export interface TileFrameProps extends BoxProps {
-
-    /**
-     * Desired tile width / height ratio (i.e. desiredRatio: 2 == twice as wide as tall).
-     * The container will strive to meet this ratio, but the final ratio may vary.
-     * Defaults to 1 (i.e. square tiles)
-     */
-    desiredRatio?: number;
-
-    /** The space between tiles (in px) */
-    spacing?: number;
-
-    /** Min tile width (in px). */
-    minTileWidth?: number;
-
-    /** Max tile width (in px). */
-    maxTileWidth?: number;
-
-    /** Min tile height (in px).*/
-    minTileHeight?: number;
-
-    /** Max tile height (in px).*/
-    maxTileHeight?: number;
-
-    /** Callback triggered when the layout configuration changes.*/
-    onLayoutChange?: (layout: {rows: number, cols: number, tileWidth: number, tileHeight: number}) => any;
-}
 
 class TileFrameLocalModel extends HoistModel {
     xhImpl = true;

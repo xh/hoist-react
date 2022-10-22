@@ -110,9 +110,7 @@ export interface MessageSpec {
 
     /** Config for input to be displayed (as a prompt). */
     input?: {
-        /**
-         * An element specifying a HoistInput, defaults to a platform appropriate TextInput.
-         */
+        /** An element specifying a HoistInput, defaults to a platform appropriate TextInput. */
         item?: ReactElement,
 
         /** Validation constraints to apply. */
@@ -252,5 +250,4 @@ export interface TrackOptions {
 
     /** Optional flag to omit sending message. */
     omit?: boolean;
-
 }

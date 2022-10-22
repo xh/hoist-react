@@ -11,7 +11,7 @@ import {DockContainerModel} from './DockContainerModel';
 
 export interface DockContainerProps extends HoistProps<DockContainerModel> {
     /** True to style docked headers with reduced padding and font-size. */
-    compactHeaders?: boolean
+    compactHeaders?: boolean;
 }
 
 /**

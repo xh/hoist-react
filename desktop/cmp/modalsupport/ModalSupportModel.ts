@@ -11,7 +11,6 @@ import {observable, makeObservable, action} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
 export interface ModalSupportConfig {
-
     width?: string|number;
     height?: string|number;
     canOutsideClickClose?: boolean;

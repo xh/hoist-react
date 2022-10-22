@@ -15,7 +15,7 @@ import {button, ButtonProps} from './Button';
 
 export interface DashCanvasAddViewButtonProps extends ButtonProps {
     /** DashCanvasModel for which this button should allow the user to add views. */
-    dashCanvasModel?: DashCanvasModel
+    dashCanvasModel?: DashCanvasModel;
 }
 
 /**

@@ -21,21 +21,21 @@ import './FilterChooser.scss';
 
 export interface FilterChooserProps extends BoxProps<FilterChooserModel> {
     /** True to focus the control on render. */
-    autoFocus?: boolean,
+    autoFocus?: boolean;
     /** True to disable user interaction. */
-    disabled?: boolean,
+    disabled?: boolean;
     /** True to show a "clear" button at the right of the control.  Defaults to true. */
-    enableClear?: boolean,
+    enableClear?: boolean;
     /** Icon to display inline on the left side of the input. */
-    leftIcon?: ReactElement,
+    leftIcon?: ReactElement;
     /** Max-height of dropdown. Either a number in pixels or a valid CSS string, such as '80vh'. */
-    maxMenuHeight?: number|string,
+    maxMenuHeight?: number|string;
     /** Placement of the dropdown menu relative to the input control. */
-    menuPlacement?: 'auto'|'top'|'bottom',
+    menuPlacement?: 'auto'|'top'|'bottom';
     /** Width in pixels for the dropdown menu - if unspecified, defaults to control width. */
-    menuWidth?: number,
+    menuWidth?: number;
     /** Text to display when control is empty. */
-    placeholder?: string
+    placeholder?: string;
 }
 
 /**

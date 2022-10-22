@@ -14,10 +14,10 @@ import {withDefault} from '@xh/hoist/utils/js';
 
 export interface ColAutosizeButtonProps extends ButtonProps {
     /** GridModel of the grid for which this button should autosize columns. */
-    gridModel?: GridModel,
+    gridModel?: GridModel;
 
     /** Options for the grid autosize. {@see GridModel#autosizeAsync()} */
-    autosizeOptions?: GridAutosizeOptions
+    autosizeOptions?: GridAutosizeOptions;
 }
 
 /**

@@ -12,6 +12,12 @@ import compactSpinnerImg from './spinner-20px.png';
 // @ts-ignore
 import spinnerImg from './spinner-50px.png';
 
+
+export interface SpinnerProps extends HoistProps {
+    /** True to return a smaller 20px image vs default 50px. */
+    compact?: boolean;
+}
+
 /**
  * Returns an img-based spinner in one of two sizes - default 50px spinner or smaller 20px spinner
  * when `compact: true`. Used for the platform-specific `Mask` and `LoadingIndicator` components.
@@ -38,8 +44,3 @@ export const [Spinner, spinner] = hoistCmp.withFactory<SpinnerProps>({
         });
     }
 });
-
-export interface SpinnerProps extends HoistProps {
-    /** True to return a smaller 20px image vs default 50px. */
-    compact?: boolean;
-}

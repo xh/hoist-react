@@ -56,51 +56,63 @@ export interface FilterChooserConfig {
      * will be parsed and displayed. If a `valueSource` is provided, these may be specified as field
      * names in that source or omitted entirely, indicating that all fields should be filter-enabled.
      */
-    fieldSpecs?: (FilterChooserFieldSpecConfig|string)[],
+    fieldSpecs?: (FilterChooserFieldSpecConfig|string)[];
+
     /** Default properties to be assigned to all FilterChooserFieldSpecs created by this model. */
-    fieldSpecDefaults?: FilterChooserFieldSpecConfig,
+    fieldSpecDefaults?: FilterChooserFieldSpecConfig;
+
     /**
      * Store or cube View that should actually be filtered as this model's value changes.
      * This may be the same as `valueSource`. Leave undefined if you wish to combine this model's values
      * with other filters, send it to the server, or otherwise observe and handle value changes manually.
      */
-    bind?: Store|View,
+    bind?: Store|View;
+
     /**
      * Store or cube View to be used to lookup matching Field-level defaults for `fieldSpecs` and to
      * provide suggested data values (if so configured) from user input. Defaults to `bind` if provided.
      */
-    valueSource?: Store|View,
+    valueSource?: Store|View;
+
     /**
      * Configuration for a filter appropriate to be rendered and managed by FilterChooser, or a function
      * to produce the same. Note that FilterChooser currently can only edit and create a flat collection
      * of FieldFilters, to be 'AND'ed together.
      */
-    initialValue?: FilterChooserFilterLike|(() => FilterChooserFilterLike),
+    initialValue?: FilterChooserFilterLike|(() => FilterChooserFilterLike);
+
     /**
      * Initial favorites as an array of filter configurations, or a function to produce such an array.
      */
-    initialFavorites?: FilterChooserFilterLike[]|(() => FilterChooserFilterLike[]),
+    initialFavorites?: FilterChooserFilterLike[]|(() => FilterChooserFilterLike[]);
+
     /**
      * true to offer all field suggestions when the control is focussed with an empty query,
      * to aid discoverability.
      */
-    suggestFieldsWhenEmpty?: boolean,
+    suggestFieldsWhenEmpty?: boolean;
+
     /**
      * true (default) to sort field suggestions by displayed label. Set to false to preserve
      * the order provided to `fieldSpecs`.
      */
-    sortFieldSuggestions?: boolean,
+    sortFieldSuggestions?: boolean;
+
     /**
      * Maximum number of filter tags to render before disabling the control.
      * Limits the performance impact of rendering large filters.
      */
-    maxTags?: number,
+
+    maxTags?: number;
+
     /** Maximum number of dropdown options to show before truncating. */
-    maxResults?: number,
+    maxResults?: number;
+
     /**
      * Blurb displayed above field suggestions when the control is focused but user has yet
      * to enter a query, or null to suppress default. */
-    introHelpText?: ReactNode,
+    introHelpText?: ReactNode;
+
     /** Options governing persistence. */
     persistWith?: FilterChooserPersistOptions,
 }

@@ -13,9 +13,9 @@ import {Children, cloneElement} from 'react';
 import './ButtonGroup.scss';
 
 export interface ButtonGroupProps extends BoxProps {
-    intent?: Intent,
-    minimal?: boolean,
-    outlined?: boolean
+    intent?: Intent;
+    minimal?: boolean;
+    outlined?: boolean;
 }
 
 /**

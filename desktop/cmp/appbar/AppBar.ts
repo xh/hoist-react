@@ -17,6 +17,35 @@ import {isEmpty} from 'lodash';
 import {ReactNode, ReactElement} from 'react';
 import './AppBar.scss';
 
+export interface AppBarProps extends HoistProps {
+    /** Position of the AppMenuButton. */
+    appMenuButtonPosition?: 'left'|'right';
+
+    /** Allows overriding the default properties of the App Menu button. @see AppMenuButton */
+    appMenuButtonProps?: AppMenuButtonProps;
+
+    /** True to hide the AppMenuButton. */
+    hideAppMenuButton?: boolean;
+
+    /** True to hide the Refresh button. */
+    hideRefreshButton?: boolean;
+
+    /** True to hide the "What's New?" button, even if an unread changelog entry is available. */
+    hideWhatsNewButton?: boolean;
+
+    /** Icon to display to the left of the title. */
+    icon?: ReactElement;
+
+    /** Items to be added to the left side of the AppBar, immediately after the title. */
+    leftItems?: ReactNode[];
+
+    /** Items to be added to the right side of the AppBar, before the standard buttons. */
+    rightItems?: ReactNode[];
+
+    /** Title to display to the left side of the AppBar. Defaults to XH.clientAppName. */
+    title?: ReactNode;
+}
+
 /**
  * A standard application navigation bar which displays the application name and a standard set of
  * buttons for common application actions. Application specific items can be displayed on the left
@@ -77,32 +106,3 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
         });
     }
 });
-
-export interface AppBarProps extends HoistProps {
-    /** Position of the AppMenuButton. */
-    appMenuButtonPosition?: 'left'|'right',
-
-    /** Allows overriding the default properties of the App Menu button. @see AppMenuButton */
-    appMenuButtonProps?: AppMenuButtonProps,
-
-    /** True to hide the AppMenuButton. */
-    hideAppMenuButton?: boolean,
-
-    /** True to hide the Refresh button. */
-    hideRefreshButton?: boolean,
-
-    /** True to hide the "What's New?" button, even if an unread changelog entry is available. */
-    hideWhatsNewButton?: boolean,
-
-    /** Icon to display to the left of the title. */
-    icon?: ReactElement;
-
-    /** Items to be added to the left side of the AppBar, immediately after the title. */
-    leftItems?: ReactNode[],
-
-    /** Items to be added to the right side of the AppBar, before the standard buttons. */
-    rightItems?: ReactNode[],
-
-    /** Title to display to the left side of the AppBar. Defaults to XH.clientAppName. */
-    title?: ReactNode
-}

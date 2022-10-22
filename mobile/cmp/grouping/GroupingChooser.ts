@@ -21,13 +21,13 @@ import './GroupingChooser.scss';
 
 export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> {
     /** Text to represent empty state (i.e. value = null or [])*/
-    emptyText?: string,
+    emptyText?: string;
     /** Title for popover (default "GROUP BY") or null to suppress. */
-    popoverTitle?: string,
+    popoverTitle?: string;
     /** Min height in pixels of the popover inner content (excl. header & toolbar). */
-    popoverMinHeight?: number,
+    popoverMinHeight?: number;
     /** Width in pixels of the popover menu itself. */
-    popoverWidth?: number
+    popoverWidth?: number;
 }
 
 /**

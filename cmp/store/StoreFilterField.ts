@@ -11,39 +11,6 @@ import {storeFilterFieldImpl as desktopStoreFilterFieldImpl} from '@xh/hoist/dyn
 import {storeFilterFieldImpl as mobileStoreFilterFieldImpl} from '@xh/hoist/dynamics/mobile';
 import {StoreFilterFieldImplModel} from './impl/StoreFilterFieldImplModel';
 
-/**
- * A text input Component that generates a filter function based on simple word-boundary matching of
- * its value to the value of configured fields on a candidate object. If any field values match, the
- * object itself is considered a match.
- *
- * This component is designed to be bound to a Store via either its `store` OR `gridModel` props.
- * (If not configured to bind to a specific Store or GridModel, this component will bind by default
- * to the store of the nearest GridModel found in context.) Binding in this way allows the component
- * to auto-generate the fields in the store to be included in the filter and to automatically
- * apply the filter to the Store.
- *
- * In cases where the application is combining this filter with other filters, or applying
- * additional application logic, the filter can be managed manually by setting `autoApply` to
- * `false` and using the `onFilterChange` callback instead.
- *
- * Fields to be searched can be automatically determined from the bound Store or GridModel, and/or
- * customized via the include/excludeFields props. See prop comments for details.
- *
- * This component supports all props available to TextInput and will pass them along to its
- * underlying TextInput.
- */
-export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory<StoreFilterFieldProps>({
-    displayName: 'StoreFilterField',
-    className: 'xh-store-filter-field',
-
-    render(props) {
-        const model = useLocalModel(StoreFilterFieldImplModel);
-        return XH.isMobileApp ?
-            mobileStoreFilterFieldImpl({...props, model, bind: 'filterText'}) :
-            desktopStoreFilterFieldImpl({...props, model, bind: 'filterText'});
-    }
-});
-
 // TODO: extend TextInputProps
 export interface StoreFilterFieldProps extends HoistProps {
     /**
@@ -112,3 +79,37 @@ export interface StoreFilterFieldProps extends HoistProps {
     /** Width of the input in pixels. */
     width?: number
 }
+
+
+/**
+ * A text input Component that generates a filter function based on simple word-boundary matching of
+ * its value to the value of configured fields on a candidate object. If any field values match, the
+ * object itself is considered a match.
+ *
+ * This component is designed to be bound to a Store via either its `store` OR `gridModel` props.
+ * (If not configured to bind to a specific Store or GridModel, this component will bind by default
+ * to the store of the nearest GridModel found in context.) Binding in this way allows the component
+ * to auto-generate the fields in the store to be included in the filter and to automatically
+ * apply the filter to the Store.
+ *
+ * In cases where the application is combining this filter with other filters, or applying
+ * additional application logic, the filter can be managed manually by setting `autoApply` to
+ * `false` and using the `onFilterChange` callback instead.
+ *
+ * Fields to be searched can be automatically determined from the bound Store or GridModel, and/or
+ * customized via the include/excludeFields props. See prop comments for details.
+ *
+ * This component supports all props available to TextInput and will pass them along to its
+ * underlying TextInput.
+ */
+export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory<StoreFilterFieldProps>({
+    displayName: 'StoreFilterField',
+    className: 'xh-store-filter-field',
+
+    render(props) {
+        const model = useLocalModel(StoreFilterFieldImplModel);
+        return XH.isMobileApp ?
+            mobileStoreFilterFieldImpl({...props, model, bind: 'filterText'}) :
+            desktopStoreFilterFieldImpl({...props, model, bind: 'filterText'});
+    }
+});

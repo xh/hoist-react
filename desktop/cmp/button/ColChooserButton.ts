@@ -19,7 +19,7 @@ export interface ColChooserButtonProps extends ButtonProps {
     gridModel?: GridModel,
 
     /** Position for chooser popover, as per Blueprint docs. */
-    popoverPosition?: Position
+    popoverPosition?: Position;
 }
 
 /**

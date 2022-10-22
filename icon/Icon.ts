@@ -25,9 +25,6 @@ export interface IconSpec extends BoxProps {
      */
     prefix?: 'far'|'fas'|'fal'|'fab';
 
-    /** Additional css class(es) to apply. */
-    className?: string;
-
     intent?: Intent;
 
     /** Optional tooltip string. */

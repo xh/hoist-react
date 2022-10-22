@@ -22,7 +22,7 @@ export interface Loadable {
     lastLoadRequested: Date;
 
     /** Date when last load was completed. */
-    lastLoadCompleted: Date
+    lastLoadCompleted: Date;
 
     /** Any exception that occurred during last load. */
     lastLoadException: any;

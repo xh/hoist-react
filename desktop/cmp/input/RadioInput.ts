@@ -25,9 +25,9 @@ export interface RadioInputProps extends HoistInputProps {
 }
 
 export interface RadioOption {
-    value: any,
-    label?: string,
-    disabled?: boolean
+    value: any;
+    label?: string;
+    disabled?: boolean;
 }
 /**
  * An input for managing Radio Buttons.

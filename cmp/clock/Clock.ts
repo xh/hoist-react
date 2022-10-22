@@ -13,6 +13,30 @@ import {MINUTES, ONE_SECOND} from '@xh/hoist/utils/datetime';
 import {isNumber} from 'lodash';
 import {getLayoutProps} from '../../utils/react';
 
+export interface ClockProps extends BoxProps {
+
+    /** String to display if the timezone is invalid or an offset cannot be fetched. */
+    errorString?: string;
+
+    /** A moment.js format string. @see {@link https://momentjs.com/docs/#/displaying/format/} */
+    format?: string;
+
+    /** Prefix prepended to the displayed time. */
+    prefix?: string;
+
+    /** Suffix appended to the displayed time. */
+    suffix?: string;
+
+    /**
+     * Timezone ID. The user's local system time will be used if omitted.
+     * @see {@link https://docs.oracle.com/middleware/12212/wcs/tag-ref/MISC/TimeZones.html}
+     */
+    timezone?: string;
+
+    /** Frequency (ms) for updating the displayed time. Defaults to once a second. */
+    updateInterval?: number;
+}
+
 /**
  * A component to display the current time.
  *
@@ -33,30 +57,6 @@ export const [Clock, clock] = hoistCmp.withFactory<ClockProps>({
         });
     }
 });
-
-export interface ClockProps extends BoxProps {
-
-    /** String to display if the timezone is invalid or an offset cannot be fetched. */
-    errorString?: string,
-
-    /** A moment.js format string. @see {@link https://momentjs.com/docs/#/displaying/format/} */
-    format?: string,
-
-    /** Prefix prepended to the displayed time. */
-    prefix?: string,
-
-    /** Suffix appended to the displayed time. */
-    suffix?: string,
-
-    /**
-     * Timezone ID. The user's local system time will be used if omitted.
-     * @see {@link https://docs.oracle.com/middleware/12212/wcs/tag-ref/MISC/TimeZones.html}
-     */
-    timezone?: string,
-
-    /** Frequency (ms) for updating the displayed time. Defaults to once a second. */
-    updateInterval?: number
-}
 
 class ClockLocalModel extends HoistModel {
     xhImpl = true;

@@ -33,7 +33,7 @@ export interface ViewConfig {
      * underlying Cube is changed. False (default) to have this view run its query once to capture
      * a snapshot without further updates based on Cube changes.
      */
-    connect?: boolean
+    connect?: boolean;
 }
 
 export interface DimensionValue {

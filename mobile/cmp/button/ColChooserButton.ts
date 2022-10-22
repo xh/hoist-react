@@ -13,7 +13,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 
 export interface ColChooserButtonProps extends ButtonProps {
     /** GridModel of the grid for which this button should show a chooser. */
-    gridModel?: GridModel
+    gridModel?: GridModel;
 }
 
 /**

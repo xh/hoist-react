@@ -8,13 +8,14 @@ import {XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/mobile/cmp/input';
+import {FormFieldProps} from '@xh/hoist/mobile/cmp/form';
 import '@xh/hoist/mobile/register';
 
 interface ThemeAppOptionSpec {
-    /** Props for nested FormField - todo: replace with FormFieldProps */
-    formFieldProps?: Record<string, any>,
+    /** Props for nested FormField */
+    formFieldProps?: FormFieldProps;
     /** Props for nested ButtonGroupInput - todo: replace with ButtonGroupInputProps */
-    inputProps?: Record<string, any>
+    inputProps?: Record<string, any>;
 }
 
 /**

@@ -20,14 +20,16 @@ export interface FilterChooserFieldSpecConfig extends BaseFilterFieldSpecConfig 
      * Function to produce a suitably formatted string for display to the user
      * for any given field value.
      */
-    valueRenderer?: FilterChooserValueRenderer,
+    valueRenderer?: FilterChooserValueRenderer;
+
     /**
      * Function to parse user's input from a FilterChooser control into a typed data value for
      * use in filtering comparisons.
      */
-    valueParser?: FilterChooserValueParser,
+    valueParser?: FilterChooserValueParser;
+
     /** Sample / representative value displayed by `FilterChooser` components to aid usability. */
-    example?: string,
+    example?: string;
 }
 
 /**

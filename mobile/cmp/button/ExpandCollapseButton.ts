@@ -14,7 +14,7 @@ import {isEmpty} from 'lodash';
 
 export interface ExpandCollapseButtonProps extends ButtonProps {
     /** GridModel of the grid for which this button should show a chooser. */
-    gridModel?: GridModel
+    gridModel?: GridModel;
 }
 
 /**

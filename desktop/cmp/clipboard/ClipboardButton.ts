@@ -13,9 +13,9 @@ import copy from 'clipboard-copy';
 
 export interface ClipboardButtonProps extends ButtonProps {
     /** Function returning the text to copy. May be async. */
-    getCopyText: () => string|Promise<string>,
+    getCopyText: () => string|Promise<string>;
     /** Message to be displayed in a toast when copy is complete. */
-    successMessage?: string
+    successMessage?: string;
 }
 
 /**

@@ -22,37 +22,37 @@ export interface AppMenuButtonProps extends ButtonProps {
      *  + `MenuDividers` or the special string token '-'.
      *  + React Elements or strings, which will be interpreted as the `text` property for a MenuItem.
      */
-    extraItems?: (Record<string, any>|string|ReactElement)[] // Todo: Use MenuItemSpec type rather than Record<string,any>
+    extraItems?: (Record<string, any>|string|ReactElement)[]; // Todo: Use MenuItemSpec type rather than Record<string,any>
 
     /** True to hide the About button */
-    hideAboutItem?: boolean,
+    hideAboutItem?: boolean;
 
     /** True to hide the Admin Item. Always hidden for users w/o HOIST_ADMIN role. */
-    hideAdminItem?: boolean,
+    hideAdminItem?: boolean;
 
     /**
      * True to hide the Changelog (release notes) item.
      * Always hidden when ChangelogService not enabled / populated.
      */
-    hideChangelogItem?: boolean,
+    hideChangelogItem?: boolean;
 
     /** True to hide the Feedback Item. */
-    hideFeedbackItem?: boolean,
+    hideFeedbackItem?: boolean;
 
     /**
      * True to hide the Impersonate Item.
      * Always hidden for users w/o HOIST_ADMIN role or if impersonation is disabled.
      */
-    hideImpersonateItem?: boolean,
+    hideImpersonateItem?: boolean;
 
     /** True to hide the Logout button. Defaulted to appSpec.isSSO. */
-    hideLogoutItem?: boolean,
+    hideLogoutItem?: boolean;
 
     /** True to hide the Options button. */
-    hideOptionsItem?: boolean,
+    hideOptionsItem?: boolean;
 
     /** True to hide the Theme Toggle button. */
-    hideThemeItem?: boolean,
+    hideThemeItem?: boolean;
 }
 
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButtonProps>({

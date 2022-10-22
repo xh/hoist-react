@@ -15,15 +15,15 @@ export interface FilterChooserOption {
      * Indicates if option allows user to select a fully-formed filter, or a field to use for
      * filtering, or if option is an unselectable informational message.
      */
-    type: 'filter'|'field'|'msg'|'minimalField',
+    type: 'filter'|'field'|'msg'|'minimalField';
     /** Unique value for the underlying Select. */
-    value: string,
+    value: string;
     /** Unique display for the underlying Select. */
-    label: string,
+    label: string
     /** If based on a matching process, was this an exact match? */
-    isExact: boolean,
+    isExact: boolean;
     /** Additional properties specific to the option type */
-    [key: string]: any
+    [key: string]: any;
 }
 
 // ---------------------------------------------------------

@@ -6,27 +6,27 @@
  */
 import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {hoistCmp, HoistModel, HoistProps, TaskObserver, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, HoistProps, Some, TaskObserver, useLocalModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
-import {ReactNode} from 'react';
+import {ReactNode, MouseEvent} from 'react';
 import classNames from 'classnames';
 import './Mask.scss';
 
 export interface MaskProps extends HoistProps {
     /** Task(s) that should be monitored to determine if the mask should be displayed. */
-    bind?: TaskObserver|TaskObserver[],
+    bind?: Some<TaskObserver>;
     /** True (default) to contain mask within its parent, false to fill the viewport. */
-    inline?: boolean,
+    inline?: boolean;
     /** True to display mask. */
-    isDisplayed?: boolean,
+    isDisplayed?: boolean;
     /** Optional text to be displayed. */
-    message?: ReactNode,
+    message?: ReactNode;
     /** Click handler **/
-    onClick?: (e: MouseEvent) => void,
+    onClick?: (e: MouseEvent) => void;
     /** True to display a spinning image.  Default false. */
-    spinner?: boolean
+    spinner?: boolean;
 }
 
 /**
