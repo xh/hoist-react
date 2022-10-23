@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {HoistProps} from '@xh/hoist/core';
 import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
 
 
@@ -49,9 +50,6 @@ export interface LayoutProps {
     position?: string;
     display?: string;
 }
-
-// TODO: Define this as the inverse of object above
-export type NonLayoutProps = any;
 
 /**
  * These utils support accepting the CSS styles enumerated below as top-level props of a Component,
@@ -113,18 +111,18 @@ export function getLayoutProps(props: any): LayoutProps {
 /**
  * Return all non-layout related props found in props.
  */
-export function getNonLayoutProps(props: any): NonLayoutProps {
-    return omit(props, allKeys) as NonLayoutProps;
+export function getNonLayoutProps<T extends HoistProps>(props: T): T {
+    return omit(props, allKeys) as T;
 }
 
 /**
  * Split a set of props into layout and non-layout props.
  */
-export function splitLayoutProps(props: any): [LayoutProps, NonLayoutProps] {
+export function splitLayoutProps<T extends HoistProps>(props: T): [LayoutProps, T] {
     const layoutProps = getLayoutProps(props);
     return [
         layoutProps,
-        (isEmpty(layoutProps) ? props : getNonLayoutProps(props)) as NonLayoutProps
+        (isEmpty(layoutProps) ? props : getNonLayoutProps(props))
     ];
 }
 
