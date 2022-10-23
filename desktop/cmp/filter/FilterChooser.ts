@@ -48,7 +48,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooser
     render({model, className, ...props}, ref) {
         const [layoutProps, chooserProps] = splitLayoutProps(props),
             {inputRef, suggestFieldsWhenEmpty, selectOptions, unsupportedFilter, favoritesIsOpen} = model,
-            {autoFocus, enableClear, leftIcon, maxMenuHeight, menuPlacement, menuWidth} = chooserProps as FilterChooserProps,
+            {autoFocus, enableClear, leftIcon, maxMenuHeight, menuPlacement, menuWidth} = chooserProps,
             disabled = unsupportedFilter || chooserProps.disabled,
             placeholder = unsupportedFilter ?
                 'Unsupported filter (click to clear)' :
