@@ -24,7 +24,7 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import debouncePromise from 'debounce-promise';
 import {escapeRegExp, isEqual, isNil, isPlainObject, keyBy, merge} from 'lodash';
-import {Children, ReactNode} from 'react';
+import {Children, ReactNode, ReactPortal} from 'react';
 import ReactDom from 'react-dom';
 import './Select.scss';
 
@@ -189,6 +189,7 @@ export const [Select, select] = hoistCmp.withFactory<SelectProps>({
 // Implementation
 //-----------------------
 class SelectInputModel extends HoistInputModel {
+    xhImpl = true;
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
@@ -652,7 +653,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(
                     })
                 }),
                 model.getOrCreateFullscreenPortalDiv()
-            ) as any;
+            ) as ReactPortal;
         } else {
             return box({
                 item: factory(rsProps),

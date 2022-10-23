@@ -23,7 +23,9 @@ export const [Label, label] = hoistCmp.withFactory<LabelProps>({
     }
 });
 
-class LabelInputModel extends HoistInputModel {}
+class LabelInputModel extends HoistInputModel {
+    xhImpl = true;
+}
 
 //-----------------------
 // Implementation

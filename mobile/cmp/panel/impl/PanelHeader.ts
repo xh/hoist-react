@@ -7,12 +7,13 @@
 import {div, filler, hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {isEmpty} from 'lodash';
+import {PanelProps} from '../Panel';
 
 /**
  * A standardized header for a Panel component
- * @private
+ * @internal
  */
-export const panelHeader = hoistCmp.factory({
+export const panelHeader = hoistCmp.factory<PanelProps>({
     displayName: 'PanelHeader',
     className: 'xh-panel-header',
     model: false, memo: false, observer: false,

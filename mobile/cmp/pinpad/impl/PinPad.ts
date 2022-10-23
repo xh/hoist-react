@@ -18,7 +18,7 @@ import './PinPad.scss';
 /**
  * Mobile Implementation of PinPad.
  *
- * @private
+ * @internal
  */
 export const pinPadImpl = hoistCmp.factory({
     model: uses(PinPadModel),
@@ -38,7 +38,7 @@ export const pinPadImpl = hoistCmp.factory({
     }
 });
 
-const header = hoistCmp.factory(
+const header = hoistCmp.factory<PinPadModel>(
     ({model}) => div({
         className: 'xh-pinpad__header',
         items: [
@@ -48,7 +48,7 @@ const header = hoistCmp.factory(
     })
 );
 
-const display = hoistCmp.factory(
+const display = hoistCmp.factory<PinPadModel>(
     ({model}) => hbox({
         className: 'xh-pinpad__display',
         items: model.displayedDigits.map(
@@ -57,7 +57,7 @@ const display = hoistCmp.factory(
     })
 );
 
-const digit = hoistCmp.factory(
+const digit = hoistCmp.factory<PinPadModel>(
     ({num, index, model}) => {
         const isActive = index === model.activeIndex;
         let className = 'xh-pinpad__display__digit';
@@ -70,14 +70,14 @@ const digit = hoistCmp.factory(
     }
 );
 
-const errorDisplay = hoistCmp.factory(
+const errorDisplay = hoistCmp.factory<PinPadModel>(
     ({model}) => div({
         className: 'xh-pinpad__error',
         item: p(model.errorText)
     })
 );
 
-const keypad = hoistCmp.factory(
+const keypad = hoistCmp.factory<PinPadModel>(
     ({model}) => vbox({
         className: 'xh-pinpad__keyboard',
         items: [
@@ -93,7 +93,7 @@ const keypad = hoistCmp.factory(
     })
 );
 
-const keypadRow = hoistCmp.factory(
+const keypadRow = hoistCmp.factory<PinPadModel>(
     ({keys, model}) => hbox({
         className: 'xh-pinpad__keyboard__row',
         items: keys.map(

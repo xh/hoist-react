@@ -76,6 +76,7 @@ export const [TextInput, textInput] = hoistCmp.withFactory<TextInputProps>({
 // Implementation
 //-----------------------
 class TextInputModel extends HoistInputModel {
+    xhImpl = true;
 
     get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);

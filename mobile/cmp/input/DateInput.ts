@@ -92,6 +92,7 @@ export const [DateInput, dateInput] = hoistCmp.withFactory<DateInputProps>({
 // Implementation
 //---------------------------------
 class DateInputModel extends HoistInputModel {
+    xhImpl = true;
 
     @observable popoverOpen = false;
 

@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, TaskObserver, useContextModel} from '@xh/hoist/core';
+import {hoistCmp, TaskObserver, useContextModel, Some, HoistProps, ElemFactory} from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
@@ -13,16 +13,54 @@ import '@xh/hoist/mobile/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {omitBy} from 'lodash';
-import PT from 'prop-types';
-import {isValidElement} from 'react';
+import {isValidElement, ReactNode, ReactElement} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import './Panel.scss';
+
+export interface PanelProps extends HoistProps  {
+    /** A toolbar to be docked at the bottom of the panel. */
+    bbar?: Some<ReactNode>;
+
+    /** Items to be added to the right-side of the panel's header. */
+    headerItems?: ReactNode[];
+
+    /** An icon placed at the left-side of the panel's header. */
+    icon?: ReactElement;
+
+    /**
+     * Mask to render on this panel. Set to:
+     *   + a ReactElement specifying a Mask instance,
+     *   + true for a default mask,
+     *   + one or more TaskObservers for a default load mask bound to the tasks
+     *   + the string 'onLoad' for a default load mask bound to the loading of the current model.
+     */
+    mask?: Some<TaskObserver>|ReactElement|boolean|'onLoad';
+
+    /**
+     * LoadingIndicator to render on this panel. Set to:
+     *   + a ReactElement specifying a LoadingIndicator,
+     *   + true for a default LoadingIndicator,
+     *   + one or more TaskObservers for a default LoadingIndicator bound to the tasks
+     *   + the string 'onLoad' for a default LoadingIndicator bound to the loading of the current model.
+     */
+    loadingIndicator?: Some<TaskObserver>|ReactElement|boolean|'onLoad';
+
+    /** Allow the panel to scroll vertically */
+    scrollable?: boolean;
+
+    /** A toolbar to be docked at the top of the panel. */
+    tbar?: Some<ReactNode>;
+
+    /** Title text added to the panel's header. */
+    title?: ReactNode;
+}
+
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
  */
-export const [Panel, panel] = hoistCmp.withFactory({
+export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
     displayName: 'Panel',
     className: 'xh-panel',
     model: false,
@@ -81,49 +119,12 @@ export const [Panel, panel] = hoistCmp.withFactory({
     }
 });
 
-Panel.propTypes = {
-    /** A toolbar to be docked at the bottom of the panel. */
-    bbar: PT.oneOfType([PT.element, PT.array]),
-
-    /** Items to be added to the right-side of the panel's header. */
-    headerItems: PT.node,
-
-    /** An icon placed at the left-side of the panel's header. */
-    icon: PT.element,
-
-    /**
-     * Mask to render on this panel. Set to:
-     *   + a ReactElement specifying a Mask instance,
-     *   + true for a default mask,
-     *   + one or more TaskObservers for a default load mask bound to the tasks
-     *   + the string 'onLoad' for a default load mask bound to the loading of the current model.
-     */
-    mask: PT.oneOfType([PT.element, PT.instanceOf(TaskObserver), PT.arrayOf(PT.instanceOf(TaskObserver)), PT.bool, PT.string]),
-
-    /**
-     * LoadingIndicator to render on this panel. Set to:
-     *   + a ReactElement specifying a LoadingIndicator,
-     *   + true for a default LoadingIndicator,
-     *   + one or more TaskObservers for a default LoadingIndicator bound to the tasks
-     *   + the string 'onLoad' for a default LoadingIndicator bound to the loading of the current model.
-     */
-    loadingIndicator: PT.oneOfType([PT.element, PT.instanceOf(TaskObserver), PT.arrayOf(PT.instanceOf(TaskObserver)), PT.bool, PT.string]),
-
-    /** Allow the panel to scroll vertically */
-    scrollable: PT.bool,
-
-    /** A toolbar to be docked at the top of the panel. */
-    tbar: PT.oneOfType([PT.element, PT.array]),
-
-    /** Title text added to the panel's header. */
-    title: PT.oneOfType([PT.string, PT.node])
-};
 
 //------------------------
 // Implementation
 //------------------------
 function parseLoadDecorator(prop, name, contextModel) {
-    const cmp = (name === 'mask' ? mask : loadingIndicator);
+    const cmp: ElemFactory = (name === 'mask' ? mask : loadingIndicator);
     if (!prop)                                  return null;
     if (prop === true)                          return cmp({isDisplayed: true});
     if (isValidElement(prop))                   return prop;

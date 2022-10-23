@@ -53,6 +53,7 @@ export const [SearchInput, searchInput] = hoistCmp.withFactory<SearchInputProps>
 // Implementation
 //-----------------------
 class SearchInputModel extends HoistInputModel {
+    xhImpl = true;
 
     get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);

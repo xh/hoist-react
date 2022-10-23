@@ -5,17 +5,51 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, fragment} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
+import {Content, hoistCmp, HoistModel, HoistProps, useLocalModel, XH} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {createObservableRef, elementFromContent} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isNil} from 'lodash';
-import PT from 'prop-types';
+import {ReactElement, ReactPortal} from 'react';
 import ReactDom from 'react-dom';
 import {usePopper} from 'react-popper';
 
 import './Popover.scss';
+
+export interface PopoverProps extends HoistProps  {
+    /** Component to display inside the popover */
+    content: Content;
+
+    /** The target to which the popover content is attached */
+    target: ReactElement;
+
+    /** Whether the popover is visible. Passing this prop puts the popover in controlled mode */
+    isOpen?: boolean;
+
+    /**
+     * Callback invoked in controlled mode when the popover open state _would_ change due to
+     * user interaction.
+     */
+    onInteraction?: (nextOpenState: boolean) => void;
+
+    /** True to disable user interaction */
+    disabled?: boolean;
+
+    /** Whether to display a semi-transparent backdrop behind the popover */
+    backdrop?: boolean;
+
+    /** The position (relative to the target) at which the popover should appear. Default 'auto' */
+    position?: 'top-left'|'top'|'top-right'|'right-top'|'right'|'right-bottom'|'bottom-right'|
+        'bottom'|'bottom-left'|'left-bottom'| 'left'| 'left-top'|'auto';
+
+    /** Optional className applied to the popover content wrapper. */
+    popoverClassName?: string;
+
+    /** Escape hatch to provide additional options to the PopperJS implementation */
+    popperOptions?: Record<string, any>;
+}
+
 
 /**
  * Popovers display floating content next to a target element.
@@ -25,7 +59,7 @@ import './Popover.scss';
  *
  * @see https://popper.js.org/
  */
-export const [Popover, popover] = hoistCmp.withFactory({
+export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
     displayName: 'Popover',
     className: 'xh-popover',
 
@@ -39,7 +73,7 @@ export const [Popover, popover] = hoistCmp.withFactory({
         popoverClassName,
         popperOptions
     }) {
-        const impl = useLocalModel(LocalModel),
+        const impl = useLocalModel(PopoverModel),
             popper = usePopper(impl.targetEl, impl.contentEl, {
                 placement: impl.menuPositionToPlacement(position),
                 strategy: 'fixed',
@@ -48,7 +82,7 @@ export const [Popover, popover] = hoistCmp.withFactory({
                     options: {
                         padding: 10,
                         boundary: 'viewport'
-                    }
+                    } as any
                 }],
                 ...popperOptions
             });
@@ -85,54 +119,17 @@ export const [Popover, popover] = hoistCmp.withFactory({
                         ]
                     }),
                     impl.getOrCreatePortalDiv()
-                )
+                ) as ReactPortal
             ]
         });
     }
 });
 
-Popover.propTypes = {
-    /** Component to display inside the popover */
-    content: PT.oneOfType([PT.element, PT.object, PT.func]),
+class PopoverModel extends HoistModel {
+    xhImpl = true;
 
-    /** The target to which the popover content is attached */
-    target: PT.oneOfType([PT.element, PT.object, PT.func]),
-
-    /** Whether the popover is visible. Passing this prop puts the popover in controlled mode */
-    isOpen: PT.bool,
-
-    /**
-     * Callback invoked in controlled mode when the popover open state _would_ change due to user interaction.
-     * Receives (nextOpenState: boolean)
-     */
-    onInteraction: PT.func,
-
-    /** True to disable user interaction */
-    disabled: PT.bool,
-
-    /** Whether to display a semi-transparent backdrop behind the popover */
-    backdrop: PT.bool,
-
-    /** The position (relative to the target) at which the popover should appear. Default 'auto' */
-    position: PT.oneOf([
-        'top-left', 'top', 'top-right',
-        'right-top', 'right', 'right-bottom',
-        'bottom-right', 'bottom', 'bottom-left',
-        'left-bottom', 'left', 'left-top',
-        'auto'
-    ]),
-
-    /** Optional className applied to the popover content wrapper. */
-    popoverClassName: PT.string,
-
-    /** Escape hatch to provide additional options to the PopperJS implementation */
-    popperOptions: PT.object
-};
-
-class LocalModel extends HoistModel {
-
-    targetRef = createObservableRef();
-    contentRef = createObservableRef();
+    targetRef = createObservableRef<HTMLElement>();
+    contentRef = createObservableRef<HTMLElement>();
     @observable isOpen;
 
     _onInteraction;

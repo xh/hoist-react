@@ -5,16 +5,21 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import classNames from 'classnames';
-import PT from 'prop-types';
 import './Toolbar.scss';
+
+
+export interface ToolbarProps extends HoistProps {
+    /** Set to true to vertically align the items of this toolbar */
+    vertical?: boolean;
+}
 
 /**
  * A toolbar with built-in styling and padding.
  */
-export const [Toolbar, toolbar] = hoistCmp.withFactory({
+export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps>({
     displayName: 'Toolbar',
     className: 'xh-toolbar',
     model: false, memo: false, observer: false,
@@ -26,12 +31,4 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory({
             ...rest
         });
     }
-
 });
-Toolbar.propTypes = {
-    /** Custom classes that will be applied to this component */
-    className: PT.string,
-
-    /** Set to true to vertically align the items of this toolbar */
-    vertical: PT.bool
-};

@@ -29,7 +29,9 @@ export const [Checkbox, checkbox] = hoistCmp.withFactory<CheckboxProps>({
     }
 });
 
-class CheckboxInputModel extends HoistInputModel {}
+class CheckboxInputModel extends HoistInputModel {
+    xhImpl = true;
+}
 
 //----------------------------------
 // Implementation

@@ -29,7 +29,9 @@ export const [SwitchInput, switchInput] = hoistCmp.withFactory<SwitchInputProps>
     }
 });
 
-class SwitchInputModel extends HoistInputModel {}
+class SwitchInputModel extends HoistInputModel {
+    xhImpl = true;
+}
 
 //-----------------------
 // Implementation
