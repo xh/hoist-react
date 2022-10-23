@@ -44,6 +44,7 @@ export const [RadioInput, radioInput] = hoistCmp.withFactory<RadioInputProps>({
 // Implementation
 //-----------------------
 class RadioInputModel extends HoistInputModel {
+    xhImpl = true;
 
     get enabledInputs(): HTMLInputElement[] {
         const btns = this.domEl?.querySelectorAll('input') ?? [];

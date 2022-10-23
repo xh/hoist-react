@@ -43,7 +43,7 @@ export const [SwitchInput, switchInput] = hoistCmp.withFactory<SwitchInputProps>
 // Implementation
 //-----------------------
 class SwitchInputModel extends HoistInputModel {
-    // Class defined for debug / labelling purposes - no overrides needed.
+    xhImpl = true;
 }
 
 const cmp = hoistCmp.factory<SwitchInputModel>(

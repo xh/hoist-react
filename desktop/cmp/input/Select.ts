@@ -213,6 +213,7 @@ export const [Select, select] = hoistCmp.withFactory<SelectProps>({
 // Implementation
 //-----------------------
 class SelectInputModel extends HoistInputModel {
+    xhImpl = true;
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.

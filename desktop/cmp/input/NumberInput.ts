@@ -125,6 +125,7 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>
 // Implementation
 //-----------------------
 class NumberInputModel extends HoistInputModel {
+    xhImpl = true;
 
     constructor() {
         super();
