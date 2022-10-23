@@ -4,37 +4,37 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputProps, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
-import PT from 'prop-types';
 import './SwitchInput.scss';
+
+export interface SwitchInputProps extends HoistInputProps {
+
+    value?: string;
+
+    /** Onsen modifier string */
+    modifier?: string;
+}
 
 /**
  * Switch (toggle) control for non-nullable boolean values.
  */
-export const [SwitchInput, switchInput] = hoistCmp.withFactory({
+export const [SwitchInput, switchInput] = hoistCmp.withFactory<SwitchInputProps>({
     displayName: 'SwitchInput',
     className: 'xh-switch-input',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref);
+        return useHoistInputModel(cmp, props, ref, SwitchInputModel);
     }
 });
-SwitchInput.propTypes = {
-    ...HoistInputPropTypes,
 
-    value: PT.string,
-
-    /** Onsen modifier string */
-    modifier: PT.string
-};
-
+class SwitchInputModel extends HoistInputModel {}
 
 //-----------------------
 // Implementation
 //-----------------------
-const cmp = hoistCmp.factory(
+const cmp = hoistCmp.factory<SwitchInputModel>(
     ({model, className, ...props}, ref) => {
 
         return switchControl({

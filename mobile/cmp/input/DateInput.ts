@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
@@ -16,43 +16,33 @@ import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import moment from 'moment';
-import PT from 'prop-types';
 import './DateInput.scss';
+import {ReactElement} from 'react';
 
-/**
- * A Calendar Control for choosing a Date.
- */
-export const [DateInput, dateInput] = hoistCmp.withFactory({
-    displayName: 'DateInput',
-    className: 'xh-date-input',
-    render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
-    }
-});
-DateInput.propTypes = {
-    ...HoistInputPropTypes,
-    value: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
+
+export interface DateInputProps extends HoistInputProps {
+    value?: Date|LocalDate;
 
     /** True to show a "clear" button aligned to the right of the control. Default false. */
-    enableClear: PT.bool,
+    enableClear?: boolean;
 
     /**
      * MomentJS format string for date display and parsing. Defaults to `YYYY-MM-DD`.
      */
-    formatString: PT.string,
+    formatString?: string;
 
     /**
      * Month to display in calendar popover on first render.
      *
      * If unspecified, will default to the month of the current value (if present), or today.
      */
-    initialMonth: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
+    initialMonth?: Date|LocalDate;
 
     /** Icon to display inline on the left side of the input. */
-    leftIcon: PT.element,
+    leftIcon?: ReactElement;
 
     /** Icon to display inline on the right side of the input. Defaults to a calendar icon */
-    rightIcon: PT.element,
+    rightIcon?: ReactElement;
 
     /**
      * Maximum (inclusive) valid date. Controls which dates can be selected via the calendar
@@ -62,7 +52,7 @@ DateInput.propTypes = {
      * invalid date entry in place but flag as invalid via FormField. For cases where it is
      * possible to use FormField, that is often a better choice.
      */
-    maxDate: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
+    maxDate?: Date|LocalDate;
 
     /**
      * Minimum (inclusive) valid date. Controls which dates can be selected via the calendar
@@ -70,26 +60,38 @@ DateInput.propTypes = {
      *
      * See note re. validation on maxDate, above.
      */
-    minDate: PT.oneOfType([PT.instanceOf(Date), PT.instanceOf(LocalDate)]),
+    minDate?: Date|LocalDate;
 
     /** Text to display when control is empty. */
-    placeholder: PT.string,
+    placeholder?: string;
 
     /** Props passed to SingleDatePicker component, as per SingleDatePicker docs. */
-    singleDatePickerProps: PT.object,
+    singleDatePickerProps?: Record<string, any>;
 
     /** Alignment of entry text within control, default 'left'. */
-    textAlign: PT.oneOf(['left', 'right']),
+    textAlign?: 'left'|'right';
 
     /** Type of value to publish. Defaults to 'date'. */
-    valueType: PT.oneOf(['date', 'localDate'])
-};
-DateInput.hasLayoutSupport = true;
+    valueType?: 'date'|'LocalDate';
+}
+
+/**
+ * A Calendar Control for choosing a Date.
+ */
+export const [DateInput, dateInput] = hoistCmp.withFactory<DateInputProps>({
+    displayName: 'DateInput',
+    className: 'xh-date-input',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref, DateInputModel);
+    }
+});
+
+(DateInput as any).hasLayoutSupport = true;
 
 //---------------------------------
 // Implementation
 //---------------------------------
-class Model extends HoistInputModel {
+class DateInputModel extends HoistInputModel {
 
     @observable popoverOpen = false;
 
@@ -178,7 +180,7 @@ class Model extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory(
+const cmp = hoistCmp.factory<DateInputModel>(
     ({model, className, ...props}, ref) => {
 
         const layoutProps = getLayoutProps(props),

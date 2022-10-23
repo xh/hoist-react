@@ -4,56 +4,55 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import PT from 'prop-types';
 import './SearchInput.scss';
+
+export interface SearchInputProps extends HoistInputProps {
+    value?: string;
+
+    /** True to commit on every change/keystroke, default false. */
+    commitOnChange?: boolean;
+
+    /** Onsen modifier string */
+    modifier?: string;
+
+    /** Function which receives keydown event */
+    onKeyDown?: (e: KeyboardEvent) => void
+
+    /** Text to display when control is empty */
+    placeholder?: string;
+
+    /** Whether text in field is selected when field receives focus */
+    selectOnFocus?: boolean;
+
+    /** Whether to allow browser spell check, defaults to false */
+    spellCheck?: boolean;
+
+    /** Alignment of entry text within control, default 'left'. */
+    textAlign?: 'left' | 'right';
+}
 
 /**
  * A Search Input
  */
-export const [SearchInput, searchInput] = hoistCmp.withFactory({
+export const [SearchInput, searchInput] = hoistCmp.withFactory<SearchInputProps>({
     displayName: 'SearchInput',
     className: 'xh-search-input',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
+        return useHoistInputModel(cmp, props, ref, SearchInputModel);
     }
 });
-SearchInput.propTypes = {
-    ...HoistInputPropTypes,
-    value: PT.string,
-
-    /** True to commit on every change/keystroke, default false. */
-    commitOnChange: PT.bool,
-
-    /** Onsen modifier string */
-    modifier: PT.string,
-
-    /** Function which receives keydown event */
-    onKeyDown: PT.func,
-
-    /** Text to display when control is empty */
-    placeholder: PT.string,
-
-    /** Whether text in field is selected when field receives focus */
-    selectOnFocus: PT.bool,
-
-    /** Whether to allow browser spell check, defaults to false */
-    spellCheck: PT.bool,
-
-    /** Alignment of entry text within control, default 'left'. */
-    textAlign: PT.oneOf(['left', 'right'])
-};
-SearchInput.hasLayoutSupport = true;
+(SearchInput as any).hasLayoutSupport = true;
 
 //-----------------------
 // Implementation
 //-----------------------
-class Model extends HoistInputModel {
+class SearchInputModel extends HoistInputModel {
 
     get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
@@ -76,7 +75,7 @@ class Model extends HoistInputModel {
     };
 }
 
-const cmp = hoistCmp.factory(
+const cmp = hoistCmp.factory<SearchInputModel>(
     ({model, className, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props);
 

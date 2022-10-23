@@ -37,6 +37,8 @@ import {ReactElement, ReactNode} from 'react';
 import {components} from 'react-select';
 import './Select.scss';
 
+export const MENU_PORTAL_ID = 'xh-select-input-portal';
+
 export interface SelectProps extends HoistInputProps {
     /** True to focus the control on render. */
     autoFocus?: boolean;
@@ -205,7 +207,6 @@ export const [Select, select] = hoistCmp.withFactory<SelectProps>({
         return useHoistInputModel(cmp, props, ref, SelectInputModel);
     }
 });
-(Select as any).MENU_PORTAL_ID = 'xh-select-input-portal';
 (Select as any).hasLayoutSupport = true;
 
 //-----------------------
@@ -624,7 +625,7 @@ class SelectInputModel extends HoistInputModel {
     };
 
     getOrCreatePortalDiv() {
-        const id = (Select as any).MENU_PORTAL_ID;
+        const id = MENU_PORTAL_ID;
         let portal = document.getElementById(id);
         if (!portal) {
             portal = document.createElement('div');

@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -14,22 +14,10 @@ import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
-import PT from 'prop-types';
 import './TextInput.scss';
 
-/**
- * A Text Input
- */
-export const [TextInput, textInput] = hoistCmp.withFactory({
-    displayName: 'TextInput',
-    className: 'xh-text-input',
-    render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
-    }
-});
-TextInput.propTypes = {
-    ...HoistInputPropTypes,
-    value: PT.string,
+export interface TextInputProps extends HoistInputProps {
+    value?: string;
 
     /**
      *  HTML `autocomplete` attribute to set on underlying <input> element.
@@ -41,41 +29,53 @@ TextInput.propTypes = {
      * @see https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofilling-form-controls%3A-the-autocomplete-attribute
      * See https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion
      */
-    autoComplete: PT.string,
+    autoComplete?: string;
 
     /** True to commit on every change/keystroke, default false. */
-    commitOnChange: PT.bool,
+    commitOnChange?: boolean;
 
     /** True to show a "clear" button aligned to the right of the control. Defaults to false. */
-    enableClear: PT.bool,
+    enableClear?: boolean;
 
     /** Onsen modifier string */
-    modifier: PT.string,
+    modifier?: string;
 
     /** Function which receives keydown event */
-    onKeyDown: PT.func,
+    onKeyDown?: (e: KeyboardEvent) => void;
 
     /** Text to display when control is empty */
-    placeholder: PT.string,
+    placeholder?: string;
 
     /** Whether text in field is selected when field receives focus */
-    selectOnFocus: PT.bool,
+    selectOnFocus?: boolean;
 
     /** Whether to allow browser spell check, defaults to false */
-    spellCheck: PT.bool,
+    spellCheck?: boolean;
 
     /** Alignment of entry text within control, default 'left'. */
-    textAlign: PT.oneOf(['left', 'right']),
+    textAlign?: 'left'|'right';
 
     /** Underlying HTML <input> element type. */
-    type: PT.oneOf(['text', 'password'])
-};
-TextInput.hasLayoutSupport = true;
+    type?: 'text'|'password';
+}
+
+
+/**
+ * A Text Input
+ */
+export const [TextInput, textInput] = hoistCmp.withFactory<TextInputProps>({
+    displayName: 'TextInput',
+    className: 'xh-text-input',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref, TextInputModel);
+    }
+});
+(TextInput as any).hasLayoutSupport = true;
 
 //-----------------------
 // Implementation
 //-----------------------
-class Model extends HoistInputModel {
+class TextInputModel extends HoistInputModel {
 
     get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
@@ -105,7 +105,7 @@ class Model extends HoistInputModel {
     };
 }
 
-const cmp = hoistCmp.factory(
+const cmp = hoistCmp.factory<TextInputModel>(
     ({model, className, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props);
 
@@ -142,7 +142,7 @@ const cmp = hoistCmp.factory(
     }
 );
 
-const clearButton = hoistCmp.factory(
+const clearButton = hoistCmp.factory<TextInputModel>(
     ({model}) => button({
         className: 'xh-text-input__clear-button',
         icon: Icon.cross(),

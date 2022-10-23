@@ -4,16 +4,27 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
-import {Button, buttonGroup} from '@xh/hoist/mobile/cmp/button';
+import {Button, buttonGroup, ButtonGroupProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, isEmpty, without} from 'lodash';
-import PT from 'prop-types';
 import {Children, cloneElement} from 'react';
 import './ButtonGroupInput.scss';
+
+export interface ButtonGroupInputProps extends HoistInputProps, ButtonGroupProps {
+
+    /**
+     * True to allow buttons to be unselected (aka inactivated). Used when enableMulti is false.
+     * Defaults to false.
+     */
+    enableClear?: boolean;
+
+    /** True to allow entry/selection of multiple values - "tag picker" style. Defaults to false.*/
+    enableMulti?: boolean;
+}
 
 /**
  * A segmented group of buttons, one of which is depressed to indicate the input's current value.
@@ -22,7 +33,7 @@ import './ButtonGroupInput.scss';
  * The buttons are automatically configured to set this value on click and appear pressed if the
  * ButtonGroupInput's value matches.
  */
-export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory({
+export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory<ButtonGroupInputProps>({
     displayName: 'ButtonGroupInput',
     className: 'xh-button-group-input',
     render(props, ref) {
@@ -30,27 +41,16 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory({
             props.enableMulti && !props.enableClear,
             'enableClear prop cannot be set to false when enableMulti is true.  Setting ignored.'
         );
-        return useHoistInputModel(cmp, props, ref, Model);
+        return useHoistInputModel(cmp, props, ref, ButtonGroupInputModel);
     }
 });
-ButtonGroupInput.propTypes = {
-    ...HoistInputPropTypes,
-
-    /**
-     * True to allow buttons to be unselected (aka inactivated). Used when enableMulti is false.
-     * Defaults to false.
-     */
-    enableClear: PT.bool,
-
-    /** True to allow entry/selection of multiple values - "tag picker" style. Defaults to false.*/
-    enableMulti: PT.bool
-};
-ButtonGroupInput.hasLayoutSupport = true;
+(ButtonGroupInput as any).hasLayoutSupport = true;
 
 //----------------------------------
 // Implementation
 //----------------------------------
-class Model extends HoistInputModel {
+class ButtonGroupInputModel extends HoistInputModel {
+    xhImpl = true;
 
     get enableMulti() {return !!this.componentProps.enableMulti}
     get enableClear() {return !!this.componentProps.enableClear}
@@ -62,6 +62,7 @@ class Model extends HoistInputModel {
     focus() {
         this.domEl?.focus();
     }
+
     isActive(value) {
         const {internalValue} = this;
         return this.enableMulti ? internalValue?.includes(value) : internalValue === value;
@@ -80,7 +81,7 @@ class Model extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory(
+const cmp = hoistCmp.factory<ButtonGroupInputModel>(
     ({model, className, ...props}, ref) => {
 
         const {children, disabled, enableClear, enableMulti, tabIndex = 0, ...rest} = getNonLayoutProps(props);

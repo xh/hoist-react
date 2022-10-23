@@ -4,55 +4,53 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div, textarea as textareaTag} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import PT from 'prop-types';
 import './TextArea.scss';
+
+
+export interface TextAreaProps extends HoistInputProps {
+    value?: string;
+
+    /** True to commit on every change/keystroke, default false. */
+    commitOnChange?: boolean;
+
+    /** Height of the control in pixels. */
+    height?: number;
+
+    /** Function which receives keydown event */
+    onKeyDown?: (e: KeyboardEvent) => void;
+
+    /** Text to display when control is empty */
+    placeholder?: string;
+
+    /** Whether text in field is selected when field receives focus */
+    selectOnFocus?: boolean;
+
+    /** Whether to allow browser spell check, defaults to true */
+    spellCheck?: boolean;
+}
 
 /**
  * A multi-line text input.
  */
-export const [TextArea, textArea] = hoistCmp.withFactory({
+export const [TextArea, textArea] = hoistCmp.withFactory<TextAreaProps>({
     displayName: 'TextArea',
     className: 'xh-textarea',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
+        return useHoistInputModel(cmp, props, ref, TextAreaInputModel);
     }
 });
-TextArea.propTypes = {
-    ...HoistInputPropTypes,
-    value: PT.string,
-
-    /** True to commit on every change/keystroke, default false. */
-    commitOnChange: PT.bool,
-
-    /** Height of the control in pixels. */
-    height: PT.number,
-
-    /** Function which receives keydown event */
-    onKeyDown: PT.func,
-
-    /** Text to display when control is empty */
-    placeholder: PT.string,
-
-    /** Whether text in field is selected when field receives focus */
-    selectOnFocus: PT.bool,
-
-    /** Whether to allow browser spell check, defaults to true */
-    spellCheck: PT.bool
-};
-TextArea.hasLayoutSupport = true;
-
+(TextArea as any).hasLayoutSupport = true;
 
 //-----------------------
 // Implementation
 //-----------------------
-
-class Model extends HoistInputModel {
+class TextAreaInputModel extends HoistInputModel {
     get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
     }
@@ -77,7 +75,7 @@ class Model extends HoistInputModel {
     };
 }
 
-const cmp = hoistCmp.factory(
+const cmp = hoistCmp.factory<TextAreaInputModel>(
     ({model, className, ...props}, ref) => {
         const {width, height, ...layoutProps} = getLayoutProps(props);
 

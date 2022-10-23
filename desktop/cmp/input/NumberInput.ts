@@ -216,7 +216,7 @@ class NumberInputModel extends HoistInputModel {
         super.noteFocused();
         if (this.componentProps.selectOnFocus) {
             // Deferred to allow any value conversion to complete and flush into input.
-            wait().then(() => this.inputRef.current?.select());
+            wait().then(() => this.inputEl?.select());
         }
     }
 }
@@ -229,7 +229,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(
         // BP workaround -- min, max, and stepsize can block Blueprint from rendering
         // intended value in underlying control -- ensure it is always shown.
         useLayoutEffect(() => {
-            const input = model.inputRef.current;
+            const input = model.inputEl;
             if (input) input.value = renderValue;
         });
 

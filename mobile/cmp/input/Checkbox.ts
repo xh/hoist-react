@@ -4,36 +4,37 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {checkbox as onsenCheckbox} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
-import PT from 'prop-types';
 import './Checkbox.scss';
+
+export interface CheckboxProps extends HoistInputProps {
+
+    value?: string;
+
+    /** Onsen modifier string */
+    modifier?: string;
+}
 
 /**
  * Checkbox control for boolean values.
  */
-export const [Checkbox, checkbox] = hoistCmp.withFactory({
+export const [Checkbox, checkbox] = hoistCmp.withFactory<CheckboxProps>({
     displayName: 'Checkbox',
     className: 'xh-check-box',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref);
+        return useHoistInputModel(cmp, props, ref, CheckboxInputModel);
     }
 });
-Checkbox.propTypes = {
-    ...HoistInputPropTypes,
 
-    value: PT.string,
-
-    /** Onsen modifier string */
-    modifier: PT.string
-};
+class CheckboxInputModel extends HoistInputModel {}
 
 //----------------------------------
 // Implementation
 //----------------------------------
-const cmp = hoistCmp.factory(
+const cmp = hoistCmp.factory<CheckboxInputModel>(
     ({model, className, ...props}, ref) => {
         return onsenCheckbox({
             checked: !!model.renderValue,

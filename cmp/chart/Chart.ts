@@ -83,7 +83,7 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
             })
         });
 
-        return XH.isDesktop ?
+        return !XH.isMobileApp ?
             useContextMenu(coreContents, impl.contextMenu) :
             coreContents;
     }

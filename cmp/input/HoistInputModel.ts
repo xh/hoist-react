@@ -87,13 +87,12 @@ export class HoistInputModel extends HoistModel {
      * on the appropriate element during rendering.  Otherwise the dom will be
      * searched for the first rendered <input>.
      */
-    get inputEl(): HTMLInputElement {
-        return (this.inputRef.current ?? this.domEl?.querySelector('input')) as HTMLInputElement;
+    get inputEl(): HTMLInputElement|HTMLTextAreaElement {
+        return (this.inputRef.current ?? this.domEl?.querySelector('input')) as
+            (HTMLInputElement | HTMLTextAreaElement);
     }
 
-    /**
-     * Bound model, if any.
-     */
+    /** Bound model, if any.*/
     get model(): HoistModel {
         return this.componentProps.model;
     }
@@ -102,7 +101,7 @@ export class HoistInputModel extends HoistModel {
     // Implementation State
     //------------------------
     @observable.ref internalValue: any = null;          // Cached internal value
-    inputRef = createObservableRef<HTMLInputElement>(); // ref to internal <input> element, if any
+    inputRef = createObservableRef<HTMLElement>();      // ref to internal <input> element, if any
     domRef = createObservableRef<HTMLElement>();        // ref to outermost element, or class Component.
     isDirty: boolean = false;
 

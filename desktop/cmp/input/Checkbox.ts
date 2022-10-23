@@ -52,9 +52,7 @@ export const [Checkbox, checkbox] = hoistCmp.withFactory<CheckboxProps>({
 //----------------------------------
 // Implementation
 //----------------------------------
-class CheckboxInputModel extends HoistInputModel {
-    // Class defined for debug / labelling purposes - no overrides needed.
-}
+class CheckboxInputModel extends HoistInputModel {}
 
 const cmp = hoistCmp.factory<CheckboxInputModel>(
     ({model, className, ...props}, ref) => {

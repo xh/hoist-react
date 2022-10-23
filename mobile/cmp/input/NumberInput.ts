@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
@@ -13,55 +13,43 @@ import {wait} from '@xh/hoist/promise';
 import {debounced, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber, round} from 'lodash';
-import PT from 'prop-types';
 import './NumberInput.scss';
 
-/**
- * Number input, with optional support for formatting of display value, shorthand units, and more.
- */
-export const [NumberInput, numberInput] = hoistCmp.withFactory({
-    displayName: 'NumberInput',
-    className: 'xh-number-input',
-    render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, Model);
-    }
-});
-NumberInput.propTypes = {
-    ...HoistInputPropTypes,
-    value: PT.number,
+export interface NumberInputProps extends HoistInputProps {
+    value?: number;
 
     /** True to commit on every change/keystroke, default false. */
-    commitOnChange: PT.bool,
+    commitOnChange?: boolean;
 
     /** True to insert commas in displayed value. */
-    displayWithCommas: PT.bool,
+    displayWithCommas?: boolean;
 
     /** True to convert entries suffixed with k/m/b to thousands/millions/billions. */
-    enableShorthandUnits: PT.bool,
+    enableShorthandUnits?: boolean;
 
     /**
      * Minimum value. Note that this will govern the smallest value that this control can produce
      * via user input. Smaller values passed to it via props or a bound model will still be displayed.
      */
-    min: PT.number,
+    min?: number;
 
     /**
      * Maximum value. Note that this will govern the largest value that this control can produce
      * via user input. Larger values passed to it via props or a bound model will still be displayed.
      */
-    max: PT.number,
+    max?: number;
 
     /** Onsen modifier string. */
-    modifier: PT.string,
+    modifier?: string;
 
     /** Function which receives keydown event. */
-    onKeyDown: PT.func,
+    onKeyDown?: (e:KeyboardEvent) => void;
 
     /** Text to display when control is empty. */
-    placeholder: PT.string,
+    placeholder?: string;
 
     /** Max decimal precision of the value, defaults to 4. */
-    precision: PT.number,
+    precision?: number;
 
     /**
      * Scale factor to apply when converting between the internal and external value. Useful for
@@ -69,29 +57,40 @@ NumberInput.propTypes = {
      * the external value the input is bound to should be 0.2. Must be a factor of 10.
      * Defaults to 1 (no scaling applied).
      */
-    scaleFactor: PT.number,
+    scaleFactor?: number;
 
     /** True to select contents when control receives focus. */
-    selectOnFocus: PT.bool,
+    selectOnFocus?: boolean;
 
     /** Alignment of entry text within control, default 'right'. */
-    textAlign: PT.oneOf(['left', 'right']),
+    textAlign?: 'left'|'right';
 
     /**
      * Text appended to the rendered value within control when not editing.
      * Can be used to append e.g. "%" or a unit without need for an external right label.
      */
-    valueLabel: PT.string,
+    valueLabel?: string;
 
     /** True to pad with trailing zeros out to precision, default false. */
-    zeroPad: PT.bool
-};
-NumberInput.hasLayoutSupport = true;
+    zeroPad?: boolean;
+}
+
+/**
+ * Number input, with optional support for formatting of display value, shorthand units, and more.
+ */
+export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>({
+    displayName: 'NumberInput',
+    className: 'xh-number-input',
+    render(props, ref) {
+        return useHoistInputModel(cmp, props, ref, NumberInputModel);
+    }
+});
+(NumberInput as any).hasLayoutSupport = true;
 
 //-----------------------
 // Implementation
 //-----------------------
-class Model extends HoistInputModel {
+class NumberInputModel extends HoistInputModel {
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
@@ -202,7 +201,7 @@ class Model extends HoistInputModel {
         value = value.toString();
         value = value.replace(/,/g, '');
 
-        if (Model.shorthandValidator.test(value)) {
+        if (NumberInputModel.shorthandValidator.test(value)) {
             const num = +value.substring(0, value.length - 1),
                 lastChar = value.charAt(value.length - 1).toLowerCase();
 
@@ -222,7 +221,7 @@ class Model extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory(
+const cmp = hoistCmp.factory<NumberInputModel>(
     ({model, className, enableShorthandUnits, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props),
             {hasFocus} = model,

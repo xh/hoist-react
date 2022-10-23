@@ -8,7 +8,7 @@ import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {box, div, filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
-import {select, Select} from '@xh/hoist/desktop/cmp/input';
+import {select, MENU_PORTAL_ID} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -94,7 +94,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                 onInteraction: (nextOpenState, e) => {
                     if (isOpen && nextOpenState === false) {
                         // Prevent clicks with Select controls from closing popover
-                        const id = (Select as any).MENU_PORTAL_ID,
+                        const id = MENU_PORTAL_ID,
                             selectPortal = document.getElementById(id)?.contains(e?.target),
                             selectClick = e?.target?.classList.contains('xh-select__single-value');
 

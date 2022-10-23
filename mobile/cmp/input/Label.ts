@@ -4,27 +4,26 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistInputPropTypes, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
-import PT from 'prop-types';
 import './Label.scss';
+
+export type LabelProps = HoistInputProps;
 
 /**
  * A simple label for a form.
  */
-export const [Label, label] = hoistCmp.withFactory({
+export const [Label, label] = hoistCmp.withFactory<LabelProps>({
     displayName: 'Label',
     className: 'xh-input-label',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref);
+        return useHoistInputModel(cmp, props, ref, LabelInputModel);
     }
 });
-Label.propTypes = {
-    ...HoistInputPropTypes,
-    children: PT.node
-};
+
+class LabelInputModel extends HoistInputModel {}
 
 //-----------------------
 // Implementation
