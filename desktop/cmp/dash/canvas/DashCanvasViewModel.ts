@@ -14,7 +14,6 @@ import {ReactNode} from 'react';
  * Model for a content item within a DashCanvas.
  */
 export class DashCanvasViewModel extends DashViewModel {
-    ref = createObservableRef<HTMLElement>();
 
     /** Hide the Header Panel for the view? Default false. */
     @observable hidePanelHeader: boolean;
@@ -27,6 +26,8 @@ export class DashCanvasViewModel extends DashViewModel {
 
     /** Additional items to include in header. */
     @observable.ref headerItems: ReactNode[] = [];
+
+    ref = createObservableRef<HTMLElement>();
 
     constructor(cfg: DashViewConfig) {
         super(cfg);
