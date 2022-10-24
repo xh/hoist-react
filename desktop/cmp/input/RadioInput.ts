@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HSide} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
 import {computed, makeObservable} from '@xh/hoist/mobx';
@@ -17,8 +17,8 @@ export interface RadioInputProps extends HoistInputProps {
     /** True to display each radio button inline with each other. */
     inline?: boolean;
 
-    /** Placement of each option's label relative its radio button, default right. */
-    labelSide?: 'left'|'right';
+    /** Placement of each option's label relative its radio button, default 'right'. */
+    labelSide?: HSide;
 
     /** Array of available options */
     options: (RadioOption|any)[];

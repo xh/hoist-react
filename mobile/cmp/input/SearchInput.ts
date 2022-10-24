@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HSide} from '@xh/hoist/core';
 import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -34,7 +34,7 @@ export interface SearchInputProps extends HoistInputProps {
     spellCheck?: boolean;
 
     /** Alignment of entry text within control, default 'left'. */
-    textAlign?: 'left' | 'right';
+    textAlign?: HSide;
 }
 
 /**

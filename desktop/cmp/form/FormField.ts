@@ -7,7 +7,7 @@
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses, XH} from '@xh/hoist/core';
+import {hoistCmp, HSide, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -36,7 +36,7 @@ export interface FormFieldProps extends BaseFormFieldProps {
     inline?: boolean;
 
     /** Alignment of label text, default 'left'. */
-    labelTextAlign?: 'left'|'right';
+    labelTextAlign?: HSide;
 
     /** Width of the label in pixels. */
     labelWidth?: number;

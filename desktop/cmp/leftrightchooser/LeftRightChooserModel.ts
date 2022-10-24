@@ -6,7 +6,7 @@
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div} from '@xh/hoist/cmp/layout';
-import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {HoistModel, HSide, managed, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {computed, makeObservable} from '@xh/hoist/mobx';
@@ -54,8 +54,8 @@ export interface LeftRightChooserItem {
     /** Grid group in which to show the item. */
     group?: string;
 
-    /** Initial side of the item - one of ['left', 'right'] - default left. */
-    side?: 'left'|'right';
+    /** Initial side of the item - default 'left'. */
+    side?: HSide;
 
     /** True to prevent the user from moving the item between sides. */
     locked?: boolean;
@@ -83,7 +83,7 @@ export class LeftRightChooserModel extends HoistModel {
     private _hasGrouping: boolean;
     private _ungroupedName: string;
     private _data: LeftRightChooserItem[];
-    private _lastSelectedSide: 'left'|'right';
+    private _lastSelectedSide: HSide;
 
     /**
      * Filter for data rows to determine if they should be shown.
@@ -224,7 +224,7 @@ export class LeftRightChooserModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
-    private getTextColRenderer(side: 'left'|'right') {
+    private getTextColRenderer(side: HSide) {
         const groupingEnabled = side === 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
             lockSvg = Icon.lock({prefix: 'fal'});
 

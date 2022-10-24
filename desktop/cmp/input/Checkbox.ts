@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HSide} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -33,8 +33,8 @@ export interface CheckboxProps extends HoistInputProps {
      */
     displayUnsetState?: boolean;
 
-    /** Placement of the inline label relative to the control itself, default right. */
-    labelSide?: 'left'|'right';
+    /** Placement of the inline label relative to the control itself, default 'right'. */
+    labelSide?: HSide;
 }
 
 /**

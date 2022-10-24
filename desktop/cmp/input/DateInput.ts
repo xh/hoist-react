@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, Some} from '@xh/hoist/core';
+import {hoistCmp, HSide, Some} from '@xh/hoist/core';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {TextInputModel, textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -129,7 +129,7 @@ export interface DateInputProps extends HoistInputProps {
     strictInputParsing?: boolean;
 
     /** Alignment of entry text within control, default 'left'. */
-    textAlign?: 'left'|'right';
+    textAlign?: HSide;
 
     /**
      * Props passed to the TimePicker, as per Blueprint docs.
