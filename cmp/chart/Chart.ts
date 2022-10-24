@@ -26,6 +26,9 @@ import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
 import './Chart.scss';
 
+// Note that since this import is Typescript only, it is okay to import from the desktop package.
+import {UseContextMenuSpec} from '@xh/hoist/desktop/hooks';
+
 installZoomoutGesture(Highcharts);
 installCopyToClipboard(Highcharts);
 
@@ -97,7 +100,7 @@ class ChartLocalModel extends HoistModel {
     model: ChartModel;
 
     chartRef = createObservableRef<HTMLElement>();
-    contextMenu;
+    contextMenu: UseContextMenuSpec;
     prevSeriesConfig;
 
     onLinked() {
@@ -405,6 +408,6 @@ class ChartLocalModel extends HoistModel {
                 icon: Icon.fileCsv(),
                 actionFn: () => this.chart.downloadCSV()
             }
-        ];
+        ] as UseContextMenuSpec;
     }
 }

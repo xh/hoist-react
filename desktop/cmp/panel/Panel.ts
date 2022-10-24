@@ -18,7 +18,7 @@ import {
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
+import {useContextMenu, UseContextMenuSpec, useHotkeys} from '@xh/hoist/desktop/hooks';
 import '@xh/hoist/desktop/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, omitBy} from 'lodash';
@@ -29,7 +29,6 @@ import {resizeContainer} from './impl/ResizeContainer';
 import './Panel.scss';
 import {PanelConfig, PanelModel} from './PanelModel';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
-
 
 interface PanelProps extends BoxProps<PanelModel> {
 
@@ -46,7 +45,7 @@ interface PanelProps extends BoxProps<PanelModel> {
      * Specification of a context menu.
      * @see useContextMenu() for more information on accepted values for this prop.
      */
-    contextMenu?: any;   // TODO: assign type when available.
+    contextMenu?: UseContextMenuSpec;
 
     /**
      * Specification of hotkeys as prescribed by blueprint.

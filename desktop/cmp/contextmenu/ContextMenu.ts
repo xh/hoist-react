@@ -6,13 +6,27 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
+import {menu, menuDivider, MenuDivider, menuItem, MenuItem} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {isEmpty} from 'lodash';
-import PT from 'prop-types';
-import {isValidElement} from 'react';
+import {isValidElement, ReactNode} from 'react';
 import {ContextMenuItem} from './ContextMenuItem';
+
+export interface ContextMenuProps {
+    menuItems: ContextMenuItemLike[]
+}
+
+/**
+ * The special string token '-' will be replaced with a MenuDivider.
+ * ReactNodes or other strings will be interpreted as the `text` property for a MenuItem.
+ */
+export type ContextMenuItemLike = ContextMenuItem|
+    Partial<ContextMenuItem>|
+    MenuDivider|
+    MenuItem|
+    '-'|
+    ReactNode
 
 /**
  * ContextMenu
@@ -27,26 +41,16 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory({
     displayName: 'ContextMenu',
     memo: false, model: false, observer: false,
 
-    render({menuItems}) {
+    render({menuItems}: ContextMenuProps) {
         menuItems = parseMenuItems(menuItems);
         return isEmpty(menuItems) ? null : menu(menuItems);
     }
 });
 
-ContextMenu.propTypes = {
-    /**
-     * Array of:
-     *  + `ContextMenuItems` or configs to create them.
-     *  + `MenuDividers` or the special string token '-'.
-     *  + React Elements or strings, which will be interpreted as the `text` property for a MenuItem.
-     */
-    menuItems: PT.arrayOf(PT.oneOfType([PT.object, PT.string, PT.element])).isRequired
-};
-
 //---------------------------
 // Implementation
 //---------------------------
-function parseMenuItems(items) {
+function parseMenuItems(items: ContextMenuItemLike[]): ContextMenuItemLike[] {
     items = items.map(item => {
         if (item === '-' || isValidElement(item)) return item;
 
@@ -63,9 +67,8 @@ function parseMenuItems(items) {
         .map(item => {
             if (item === '-') return menuDivider();
             if (isValidElement(item)) {
-                return ['Blueprint4.MenuItem', 'Blueprint4.MenuDivider'].includes(item.type.displayName) ?
-                    item :
-                    menuItem({text: item});
+                if (item instanceof MenuItem || item instanceof MenuDivider) return item;
+                return menuItem({text: item});
             }
 
             const items = item.items ? parseMenuItems(item.items) : null;

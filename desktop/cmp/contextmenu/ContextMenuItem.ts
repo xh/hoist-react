@@ -4,10 +4,11 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
+import {Intent, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {assign} from 'lodash';
+import {ReactElement} from 'react';
 
 /**
  *  Basic Model for an item displayed within a generic ContextMenu.
@@ -15,24 +16,27 @@ import {assign} from 'lodash';
  */
 export class ContextMenuItem {
 
-    text;
-    icon;
-    intent;
-    actionFn;
-    items;
-    disabled;
-    hidden;
+    /** Label to be displayed. */
+    text: string;
 
-    /**
-     * @param {Object} c - ContextMenuItem configuration.
-     * @param {string} c.text - label to be displayed.
-     * @param {Element} [c.icon] - icon to be displayed.
-     * @param {string} [c.intent] - intent to be used for rendering the action.
-     * @param {function} [c.actionFn] - Executed when the user clicks the menuitem.
-     * @param {Object[]} [c.items] - child menu items.
-     * @param {boolean} [c.disabled] - true to disable this item.
-     * @param {boolean} [c.hidden] - true to hide this item.
-     */
+    /** Icon to be displayed. */
+    icon: ReactElement;
+
+    /** Intent to be used for rendering the action. */
+    intent: Intent;
+
+    /** Executed when the user clicks the menuitem. */
+    actionFn: () => void;
+
+    /** Child menu items. */
+    items: Partial<ContextMenuItem>[];
+
+    /** True to disable this item. */
+    disabled: boolean;
+
+    /** True to hide this item. */
+    hidden: boolean;
+
     constructor({
         text,
         icon = null,
@@ -41,7 +45,7 @@ export class ContextMenuItem {
         items = null,
         disabled = false,
         hidden = false
-    }) {
+    }: Partial<ContextMenuItem>) {
         this.text = text;
         this.icon = icon;
         this.intent = intent;
@@ -52,9 +56,10 @@ export class ContextMenuItem {
     }
 
     /**
-     * Standard Framework Menu Items
+     * Standard Framework Menu Items.
+     * // Todo: Are these used anywhere? Should they return instances instead of partials?
      */
-    static reloadApp(defs) {
+    static reloadApp(defs: Partial<ContextMenuItem>): Partial<ContextMenuItem> {
         return assign({
             text: 'Reload App',
             icon: Icon.refresh(),
@@ -62,16 +67,16 @@ export class ContextMenuItem {
         }, defs);
     }
 
-    static about(defs) {
+    static about(defs: Partial<ContextMenuItem>): Partial<ContextMenuItem> {
         return assign({
             text: 'About',
             icon: Icon.info(),
-            hidden: !XH.acm.hasAboutDialog(),
+            hidden: !XH.appContainerModel.hasAboutDialog(),
             actionFn: () => XH.showAboutDialog()
         }, defs);
     }
 
-    static logout(defs) {
+    static logout(defs: Partial<ContextMenuItem>): Partial<ContextMenuItem> {
         return assign({
             text: 'Logout',
             icon: Icon.logout(),

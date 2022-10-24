@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {isBoolean, isEmpty, isNil, isNumber} from 'lodash';
+import {isBoolean, isEmpty, isNil, isNumber, isString} from 'lodash';
 import {ReactElement} from 'react';
 import {Intent} from '../core';
 import {StoreRecord} from './StoreRecord';
@@ -39,7 +39,7 @@ export class RecordAction {
     tooltip: string;
     actionFn: (data: ActionFnData) => void;
     displayFn: (data: DisplayFnData) => Record<string, any>;
-    items: RecordAction[];
+    items: (RecordAction|string)[];
     disabled: boolean;
     hidden: boolean;
     recordsRequired: boolean|number;
@@ -65,11 +65,15 @@ export class RecordAction {
         this.className = className;
         this.tooltip = tooltip;
         this.actionFn = actionFn;
-        this.items = items;
         this.disabled = disabled;
         this.hidden = hidden;
         this.displayFn = displayFn;
         this.recordsRequired = recordsRequired;
+
+        this.items = items.map(it => {
+            if (isString(it)) return it;
+            return it instanceof RecordAction ? it : new RecordAction(it);
+        });
     }
 
     /**
@@ -157,7 +161,7 @@ export interface RecordActionSpec {
     displayFn?: (data: DisplayFnData) => Record<string, any>;
 
     /** Sub-actions for this action. */
-    items?: RecordAction[];
+    items?: RecordActionLike[];
 
     /** True to disable this item. */
     disabled?: boolean;
@@ -175,6 +179,8 @@ export interface RecordActionSpec {
      */
     recordsRequired?: boolean | number;
 }
+
+export type RecordActionLike = RecordAction|RecordActionSpec|'-';
 
 /**
  * Data passed to the Action Function of a RecordAction
