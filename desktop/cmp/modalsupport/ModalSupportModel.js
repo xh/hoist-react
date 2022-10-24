@@ -10,6 +10,7 @@ import {ModalSupportOptions} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
+import {observable} from 'mobx';
 
 /**
  * Core Model for a ModalSupport component.
@@ -23,8 +24,10 @@ export class ModalSupportModel extends HoistModel {
 
     inlineRef = createObservableRef();
     modalRef = createObservableRef();
-    hostNode;
+    @observable.ref hostNode = null;
     options;
+
+    #disposer;
 
     /**
      * @param {ModalSupportOptions|Object} opts
@@ -32,19 +35,29 @@ export class ModalSupportModel extends HoistModel {
     constructor(opts = new ModalSupportOptions()) {
         super();
         makeObservable(this);
+        this.options = opts instanceof ModalSupportOptions ? opts : new ModalSupportOptions(opts);
+    }
+
+    init() {
         this.hostNode = this.createHostNode();
 
-        this.options = opts instanceof ModalSupportOptions ? opts : new ModalSupportOptions(opts);
-
         const {inlineRef, modalRef, hostNode} = this;
-        this.addReaction({
+
+        this.#disposer = this.addReaction({
             track: () => [inlineRef.current, modalRef.current, this.isModal],
             run: () => {
                 const dest = this.isModal ? modalRef : inlineRef;
                 dest.current?.appendChild(hostNode);
                 window.dispatchEvent(new Event('resize'));
-            }
+            },
+            fireImmediately: true
         });
+    }
+
+    clear() {
+        this.#disposer();
+        this.hostNode.remove();
+        this.hostNode = null;
     }
 
     /**
@@ -58,18 +71,7 @@ export class ModalSupportModel extends HoistModel {
         return hostNode;
     }
 
-    /**
-     * Toggle the current state of `isModal`
-     */
     toggleIsModal() {
         this.setIsModal(!this.isModal);
-    }
-
-    /**
-     * Destroy the `hostNode` DOM Element
-     */
-    destroy() {
-        this.hostNode.remove();
-        super.destroy();
     }
 }

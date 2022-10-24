@@ -2,6 +2,11 @@
 
 ## v54.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fix bug where constructing a `PanelModel` with `ModalSupport` could cause unexpected layout issues
+  with other top-level DOM elements.
+
 
 ## v53.0.0 - 2022-10-19
 
