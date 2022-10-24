@@ -72,7 +72,7 @@ export interface DateInputProps extends HoistInputProps {
     textAlign?: 'left'|'right';
 
     /** Type of value to publish. Defaults to 'date'. */
-    valueType?: 'date'|'LocalDate';
+    valueType?: 'date'|'localDate';
 }
 
 /**

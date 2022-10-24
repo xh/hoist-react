@@ -24,12 +24,6 @@ export interface PageConfig {
     /** Unique ID. Must match a configured Router5 route name. */
     id: string;
 
-    /**
-     * Parent NavigatorModel. Provided by the navigator when constructing these models -
-     * no need to specify manually.
-     */
-    navigatorModel: NavigatorModel;
-
     /** Content to be rendered on this page. */
     content: Content;
 
@@ -56,6 +50,12 @@ export interface PageConfig {
 
     /** Hide any visible app refresh button when at this Page. */
     disableAppRefreshButton?: boolean;
+
+    /**
+     * Parent NavigatorModel. Provided by the navigator when constructing these models -
+     * no need to specify manually.
+     */
+    navigatorModel?: NavigatorModel;
 }
 
 /**
