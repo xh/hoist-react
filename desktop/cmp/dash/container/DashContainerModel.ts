@@ -343,7 +343,7 @@ export class DashContainerModel extends DashModel<DashContainerViewSpec, DashVie
     }
 
     // Get the view instance with the given DashViewModel.id
-    private getItemByViewModel(id) {
+    private getItemByViewModel(id: string) {
         return this.getItems().find(it => it.instance?._reactComponent?.props?.id === id);
     }
 

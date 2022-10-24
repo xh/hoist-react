@@ -7,6 +7,9 @@
 
 import {PersistOptions} from '@xh/hoist/core';
 
+/**
+ * Base interface for {@see DashCanvasConfig} and {@see DashContainerConfig}.
+ */
 export interface DashConfig<VSPEC, VSTATE> {
 
     /**
@@ -44,5 +47,5 @@ export interface DashConfig<VSPEC, VSTATE> {
      * context menu items. Extra menu items will appear in the menu section below the 'Add' action,
      * including when the dash container is empty.
      */
-    extraMenuItems: any[];  // TODO: correct type.
+    extraMenuItems?: any[];  // TODO: correct type.
 }
