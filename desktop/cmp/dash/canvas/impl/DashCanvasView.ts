@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {box} from '@xh/hoist/cmp/layout';
-import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {ContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
 import {elementFromContent, useOnResize} from '@xh/hoist/utils/react';
@@ -23,12 +23,13 @@ import {DashCanvasViewModel} from '../DashCanvasViewModel';
  *   - Track and trigger refreshes according to `DashCanvasViewSpec.refreshMode`.
  *   - Stretch its contents using a flex layout.
  *
- * @private
+ * @internal
  */
 export const dashCanvasView = hoistCmp.factory({
     displayName: 'DashCanvasView',
     className: 'xh-dash-tab',
-    model: uses(DashCanvasViewModel, {publishMode: ModelPublishMode.LIMITED}),
+    model: uses(DashCanvasViewModel, {publishMode: 'limited'}),
+
     render({model, className}) {
         const {viewSpec, ref, hidePanelHeader, headerItems, autoHeight} = model,
             headerProps = hidePanelHeader ? {} : {
@@ -53,7 +54,7 @@ export const dashCanvasView = hoistCmp.factory({
     }
 });
 
-const headerMenu = hoistCmp.factory(
+const headerMenu = hoistCmp.factory<DashCanvasViewModel>(
     ({model}) => {
         if (model.hideMenuButton) return null;
 
@@ -137,5 +138,4 @@ const headerMenu = hoistCmp.factory(
 const getDuplicateLayout = (layout, model) => {
     const {w: width, h: height, x: startX, y: startY} = layout;
     return {...layout, ...model.containerModel.getNextAvailablePosition({width, height, startX, startY})};
-
 };

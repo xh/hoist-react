@@ -10,6 +10,7 @@ import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
+import {DashContainerModel} from '../DashContainerModel';
 
 /**
  * Context menu for title bar/tabs of a stack in a DashContainer.
@@ -17,8 +18,7 @@ import {isEmpty} from 'lodash';
  * Available view specs are listed in their defined order, optionally
  * grouped by their `groupName` property
  *
- * @see DashContainerModel
- * @private
+ * @internal
  */
 export const dashContainerContextMenu = hoistCmp.factory({
     model: null, observer: null,
@@ -30,11 +30,9 @@ export const dashContainerContextMenu = hoistCmp.factory({
 
 /**
  * 'Add View' menu button to display in an empty DashContainer.
- *
- * @see DashContainerModel
- * @private
+ * @internal
  */
-export const dashContainerAddViewButton = hoistCmp.factory({
+export const dashContainerAddViewButton = hoistCmp.factory<DashContainerModel>({
     render({model}) {
         const {viewState, addViewButtonText} = model,
             menuItems = createAddMenuItems({dashContainerModel: model, stack: viewState[0]});

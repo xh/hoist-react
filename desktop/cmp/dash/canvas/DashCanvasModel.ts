@@ -4,12 +4,12 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
+import {PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
-import {DashCanvasViewModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
+import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, makeObservable, computed, observable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
@@ -21,75 +21,90 @@ import {
     some,
     sortBy,
     pick,
-    isEqual
+    isEqual, startCase
 } from 'lodash';
-import {computed} from 'mobx';
+
+export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCanvasItemState> {
+
+    /** Total number of columns (x coordinates for views correspond with column numbers). */
+    columns?: number;
+
+    /** Height of each row in pixels (y coordinates for views correspond with row numbers). */
+    rowHeight?: number;
+
+    /** Whether views should "compact" vertically to condense vertical space. */
+    compact?: boolean;
+
+    /** Between items [x,y] in pixels. */
+    margin?: [number, number];
+
+    /** Maximum number of rows permitted for this container. */
+    maxRows?: number;
+
+    /** Padding inside the container [x, y] in pixels. */
+    containerPadding?: [number, number];
+}
+
+export interface DashCanvasItemState {
+    layout: DashCanvasItemLayout;
+    title: string;
+    viewSpecId: string;
+    state: DashViewState;
+}
+
+export interface DashCanvasItemLayout {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+}
 
 /**
  * Model for {@see DashCanvas}, managing all configurable options for the component and publishing
  * the observable state of its current widgets and their layout.
  */
-export class DashCanvasModel extends HoistModel {
+export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasItemState, DashCanvasViewModel> {
 
-    //---------------------------
-    // Observable Persisted State
-    //---------------------------
-    /** @member {DashCanvasItemState[]} */
-    @observable.ref state;
 
     //-----------------------------
-    // Observable Transient State
+    // Settable State
     //------------------------------
-    /** @member {Object[]} */
-    @managed @observable.ref viewModels = [];
-    /** @member {Object[]} */
-    @observable.ref layout = [];
-    /** @member {boolean} */
-    @bindable layoutLocked;
-    /** @member {boolean} */
-    @bindable contentLocked;
-    /** @member {boolean} */
-    @bindable renameLocked;
-    /** @member {number} */
-    @bindable columns;
-    /** @member {number} */
-    @bindable rowHeight;
-    /** @member {boolean} */
-    @bindable compact;
-    /** @member {number[]} - [marginX, marginY] */
-    @bindable margin;
-    /** @member {number[]} - [paddingX, paddingY] */
-    @bindable containerPadding;
+    @observable columns: number;
+    @observable rowHeight: number;
+    @observable compact: boolean;
+    @observable.ref margin: [number, number]; // [x, y]
+    @observable.ref containerPadding: [number, number]; // [x, y]
 
-    /** @returns {number} - current number of rows in canvas */
-    get rows() {
+    @action setColumns(v: number) {this.columns = v}
+    @action setRowHeight(v: number) {this.rowHeight = v}
+    @action setCompact(v: boolean) {this.compact = v}
+    @action setMargin(v: [number, number]) {this.margin = v}
+    @action setContainerPadding(v: [number, number]) {this.containerPadding = v}
+
+
+    //-----------------------------
+    // Public properties
+    //-----------------------------
+    maxRows: number;
+
+    /** Current number of rows in canvas */
+    get rows(): number {
         return this.layout.reduce((prev, cur) => Math.max(prev, cur.y + cur.h), 0);
     }
 
-    //------------------------
-    // Immutable public properties
-    //------------------------
-    /** @member {DashCanvasViewSpec[]} */
-    viewSpecs = [];
-    /** @member {string} */
-    emptyText;
-    /** @member {string} */
-    addViewButtonText;
+    get isEmpty(): boolean {
+        return this.layout.length === 0;
+    }
 
-
-    //------------------------
+    //----------------------------
     // Implementation properties
-    //------------------------
-    /** @member {RefObject<DOMElement>} */
-    ref = createObservableRef();
-    /** @member {boolean} */
-    scrollbarVisible;
-    /** @returns {boolean} */
-    isLoadingState;
-    /** @returns {boolean} */
-    isResizing;
+    //----------------------------
+    @observable.ref layout: any[] = [];
+    ref = createObservableRef<HTMLElement>();
+    isResizing: boolean;
+    private scrollbarVisible: boolean;
+    private isLoadingState: boolean;
 
-    /** @returns {Object[]} */
     get rglLayout() {
         return this.layout.map(it => ({
             ...it,
@@ -97,29 +112,6 @@ export class DashCanvasModel extends HoistModel {
         }));
     }
 
-    /**
-     * @param {Object} c - DashCanvasModel configuration.
-     * @param {DashCanvasViewSpec[]} c.viewSpecs - A collection of viewSpecs, each describing a
-     *      type of view that can be displayed in this container
-     * @param {Object} [c.viewSpecDefaults] - Properties to be set on all viewSpecs. Merges deeply.
-     * @param {DashCanvasItemState[]} [c.initialState] - Default state for this container.
-     * @param {boolean} [c.layoutLocked] - Prevent re-arranging views by dragging and dropping.
-     * @param {boolean} [c.contentLocked] - Prevent adding and removing views.
-     * @param {boolean} [c.renameLocked] - Prevent renaming views.
-     * @param {PersistOptions} [c.persistWith] - Options governing persistence
-     * @param {number} c.columns - Total number of columns (x coordinates for views correspond with column numbers)
-     * @param {number} c.rowHeight - Height of each row in pixels (y coordinates for views correspond with row numbers)
-     * @param {boolean} c.compact - Whether views should "compact" vertically to condense vertical space
-     * @param {number[]} c.margin - Between items [x,y] in pixels
-     * @param {number} c.maxRows - Maximum number of rows permitted for this container
-     * @param {number[]} c.containerPadding - Padding inside the container [x, y] in pixels
-     * @param {string} [c.emptyText] - text to display when the container is empty
-     * @param {string} [c.addViewButtonText] - text to display on the add view button
-     * @param {Array} [c.extraMenuItems] - Array of RecordActions, configs or token strings, with
-     *      which to create additional context menu items. Extra menu items will appear
-     *      in the container's context menu below the 'Add' action, and in the 'Options' context
-     *      menus for individual views within the container
-     */
     constructor({
         viewSpecs,
         viewSpecDefaults,
@@ -137,13 +129,25 @@ export class DashCanvasModel extends HoistModel {
         maxRows = Infinity,
         containerPadding = null,
         extraMenuItems
-    }) {
+    }: DashCanvasConfig) {
         super();
         makeObservable(this);
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
-            return new DashCanvasViewSpec(defaultsDeep({}, cfg, viewSpecDefaults));
+            return defaultsDeep({}, cfg, viewSpecDefaults, {
+                title: startCase(cfg.id),
+                omit: false,
+                unique: false,
+                allowAdd: true,
+                allowRemove: true,
+                allowRename: true,
+                height: 5,
+                width: 5,
+                hidePanelHeader: false,
+                hideMenuButton: false,
+                autoHeight: false
+            });
         });
 
         this.restoreState = {
@@ -157,7 +161,6 @@ export class DashCanvasModel extends HoistModel {
         this.rowHeight = rowHeight;
         this.maxRows = maxRows;
         this.containerPadding = containerPadding;
-        this.maxRows = maxRows;
         this.margin = margin;
         this.containerPadding = containerPadding;
         this.compact = compact;
@@ -187,7 +190,7 @@ export class DashCanvasModel extends HoistModel {
         });
 
         this.addReaction({
-            when: () => this.ref.current,
+            when: () => !!this.ref.current,
             run: () => {
                 const {current: node} = this.ref;
                 this.scrollbarVisible = node.offsetWidth > node.clientWidth;
@@ -195,10 +198,6 @@ export class DashCanvasModel extends HoistModel {
         });
     }
 
-    /** @returns {boolean} */
-    get isEmpty() {
-        return this.layout.length === 0;
-    }
 
     /** Removes all views from the canvas */
     @action
@@ -230,24 +229,31 @@ export class DashCanvasModel extends HoistModel {
 
     /**
      * Adds a view to the DashCanvas
-     * @param {string} specId - DashCanvasViewSpec id to add to the container
-     * @param {string} [title] - title for the view
-     * @param {string} [position] - 'first', 'last', 'nextAvailable', or 'previousViewId'
-     * @param {Object} [state] - initial state for the view
-     * @returns {DashCanvasViewModel}
+     * @param specId - DashCanvasViewSpec id to add to the container
+     * @param opts.title - title for the view
+     * @param opts.position - 'first', 'last', 'nextAvailable', or [previousViewId]
+     * @param opts.state - initial state for the view
      */
     @action
-    addView(specId, {title, position = 'nextAvailable', state} = {}) {
+    addView(
+        specId: string,
+        opts: {
+            title?: string,
+            position?: 'first'|'last'|'nextAvailable'|string,
+            state?: any
+        } = {}
+    ): DashCanvasViewModel {
+        const {title, position = 'nextAvailable', state} = opts;
         const layout = this.getLayoutFromPosition(position, specId);
         return this.addViewInternal(specId, {title, layout, state});
     }
 
     /**
      * Remove a view from the DashCanvas
-     * @param {string} id - DashCanvasViewModel id to remove from the container
+     * @param DashCanvasViewModel id to remove from the container
      */
     @action
-    removeView(id) {
+    removeView(id: string) {
         const removeLayout = this.getViewLayout(id),
             removeView = this.getView(id);
 
@@ -258,21 +264,18 @@ export class DashCanvasModel extends HoistModel {
 
     /**
      * Replace a view in the DashCanvas with a different view, keeping the existing layout
-     * @param {string} id - id of view model to be replaced
-     * @param {string} newSpecId - id of view spec to insert
+     * @param id - id of view model to be replaced
+     * @param newSpecId - id of view spec to insert
      */
     @action
-    replaceView(id, newSpecId) {
+    replaceView(id: string, newSpecId: string) {
         const layout = this.getViewLayout(id);
         this.removeView(id);
         this.addViewInternal(newSpecId, {layout});
     }
 
-    /**
-     * Rename a view in the DashCanvas
-     * @param {string} id
-     */
-    renameView(id) {
+    /** Rename a view in the DashCanvas. */
+    renameView(id: string) {
         const view = this.getView(id),
             allowRename = view?.viewSpec?.allowRename && !this.renameLocked;
 
@@ -291,18 +294,15 @@ export class DashCanvasModel extends HoistModel {
         });
     }
 
-    /**
-     * Scrolls a DashCanvasView into view
-     * @param {string} id
-     */
-    ensureViewVisible(id) {
+    /** Scrolls a DashCanvasView into view. */
+    ensureViewVisible(id: string) {
         this.getView(id)?.ensureVisible();
     }
 
     //------------------------
     // Implementation
     //------------------------
-    getLayoutFromPosition(position, specId) {
+    private getLayoutFromPosition(position: string, specId: string) {
         switch (position) {
             case 'first':
                 return {x: 0, y: -1};
@@ -311,7 +311,7 @@ export class DashCanvasModel extends HoistModel {
             case 'nextAvailable':
                 return this.getNextAvailablePosition(this.getSpec(specId));
             default: {
-                const previousView = this.getView(position);
+                const previousView = this.getViewLayout(position);
                 throwIf(!previousView, `Position must be either 'first', 'last', 'nextAvailable' or a valid viewId`);
                 const {x, y} = previousView;
                 return {x, y};
@@ -320,7 +320,7 @@ export class DashCanvasModel extends HoistModel {
     }
 
     @action
-    addViewInternal(specId, {layout, title, state, previousViewId}) {
+    private addViewInternal(specId: string, {layout, title, state, previousViewId}: any) {
         const viewSpec = this.getSpec(specId),
             instances = this.getViewsBySpecId(specId);
 
@@ -359,7 +359,7 @@ export class DashCanvasModel extends HoistModel {
     }
 
     @action
-    setLayout(layout) {
+    private setLayout(layout) {
         layout = sortBy(layout, 'i');
         const layoutChanged = !isEqual(layout, this.layout);
         if (!layoutChanged) return;
@@ -378,7 +378,7 @@ export class DashCanvasModel extends HoistModel {
     }
 
     @action
-    loadState(state) {
+    private loadState(state) {
         this.isLoadingState = true;
         try {
             this.clear();
@@ -397,12 +397,12 @@ export class DashCanvasModel extends HoistModel {
     }
 
     @action
-    publishState() {
+    private publishState() {
         this.state = this.buildState();
         this.provider?.write({state: this.state});
     }
 
-    buildState() {
+    private buildState() {
         const {viewState} = this;
 
         return this.layout.map(it => {
@@ -416,12 +416,12 @@ export class DashCanvasModel extends HoistModel {
         });
     }
 
-    genViewId() {
+    private genViewId() {
         return `${XH.genId()}_${Date.now()}`;
     }
 
     @computed.struct
-    get viewState() {
+    private get viewState() {
         const ret = {};
         this.viewModels.forEach(({id, viewSpec, title, viewState}) => {
             ret[id] = {
@@ -433,31 +433,31 @@ export class DashCanvasModel extends HoistModel {
         return ret;
     }
 
-    getView(id) {
+    private getView(id: string) {
         return find(this.viewModels, {id});
     }
 
-    getViewLayout(id) {
+    private getViewLayout(id: string) {
         return find(this.layout, {i: id});
     }
 
-    setViewLayout(layout) {
+    private setViewLayout(layout) {
         this.setLayout(uniqBy([layout, ...this.layout], 'i'));
     }
 
-    getSpec(id) {
+    private getSpec(id) {
         return find(this.viewSpecs, {id});
     }
 
-    hasSpec(id) {
+    private hasSpec(id) {
         return some(this.viewSpecs, {id});
     }
 
-    getViewsBySpecId(id) {
+    private getViewsBySpecId(id) {
         return this.viewModels.filter(it => it.viewSpec.id === id);
     }
 
-    getNextAvailablePosition({width, height, startX = 0, startY = 0, defaultX = 0, endY = null}) {
+    private getNextAvailablePosition({width, height, startX = 0, startY = 0, defaultX = 0, endY = null}: any) {
         const {rows, columns} = this,
             occupied = times(columns, () => Array(rows).fill(false));
 
@@ -492,19 +492,3 @@ export class DashCanvasModel extends HoistModel {
         return {x: defaultX, y: endY ?? rows};
     }
 }
-
-/**
- * @typedef {Object} DashCanvasItemState
- * @property {DashCanvasItemLayout} layout
- * @property {string} title
- * @property {string} viewSpecId
- * @property {Object} state
- */
-
-/**
- * @typedef {Object} DashCanvasItemLayout
- * @property {number} x
- * @property {number} y
- * @property {number} w
- * @property {number} h
- */
