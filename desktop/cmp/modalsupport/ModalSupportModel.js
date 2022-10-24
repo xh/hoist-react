@@ -10,7 +10,6 @@ import {ModalSupportOptions} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {observable} from 'mobx';
 
 /**
  * Core Model for a ModalSupport component.
@@ -24,10 +23,8 @@ export class ModalSupportModel extends HoistModel {
 
     inlineRef = createObservableRef();
     modalRef = createObservableRef();
-    @observable.ref hostNode = null;
+    hostNode;
     options;
-
-    #disposer;
 
     /**
      * @param {ModalSupportOptions|Object} opts
@@ -35,29 +32,19 @@ export class ModalSupportModel extends HoistModel {
     constructor(opts = new ModalSupportOptions()) {
         super();
         makeObservable(this);
-        this.options = opts instanceof ModalSupportOptions ? opts : new ModalSupportOptions(opts);
-    }
-
-    init() {
         this.hostNode = this.createHostNode();
 
-        const {inlineRef, modalRef, hostNode} = this;
+        this.options = opts instanceof ModalSupportOptions ? opts : new ModalSupportOptions(opts);
 
-        this.#disposer = this.addReaction({
+        const {inlineRef, modalRef, hostNode} = this;
+        this.addReaction({
             track: () => [inlineRef.current, modalRef.current, this.isModal],
             run: () => {
                 const dest = this.isModal ? modalRef : inlineRef;
                 dest.current?.appendChild(hostNode);
                 window.dispatchEvent(new Event('resize'));
-            },
-            fireImmediately: true
+            }
         });
-    }
-
-    clear() {
-        this.#disposer();
-        this.hostNode.remove();
-        this.hostNode = null;
     }
 
     /**
@@ -67,11 +54,15 @@ export class ModalSupportModel extends HoistModel {
         const hostNode = document.createElement('div');
         hostNode.style.all = 'inherit';
         hostNode.classList.add('xh-modal-support__host');
-        document.body.appendChild(hostNode);
         return hostNode;
     }
 
     toggleIsModal() {
         this.setIsModal(!this.isModal);
+    }
+
+    destroy() {
+        this.hostNode.remove();
+        super.destroy();
     }
 }

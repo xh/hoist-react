@@ -9,7 +9,7 @@ import {box, fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {Children, useEffect} from 'react';
+import {Children} from 'react';
 import {createPortal} from 'react-dom';
 import {ModalSupportModel} from './ModalSupportModel';
 
@@ -29,12 +29,6 @@ export const modalSupport = hoistCmp.factory({
     displayName: 'ModalSupport',
     model: uses(ModalSupportModel, {fromContext: false, publishMode: ModelPublishMode.NONE}),
     render({model, children}) {
-        // Initialize the `model.hostNode` div and accompanying reactions when the component mounts
-        useEffect(() => {
-            model.init();
-            return () => model.clear();
-        }, []);
-
         return fragment(
             // Simple 'box' cmp, inside which to place the child cmp when `model.isModal = false`
             inlineContainer({model}),
@@ -45,7 +39,7 @@ export const modalSupport = hoistCmp.factory({
             // Render the child cmp inside the `model.hostNode` div.  This div is then placed
             // inside either the inlineContainer or modalContainer in reaction to the state of
             // `model.isModal`
-            model.hostNode ? createPortal(Children.only(children), model.hostNode) : null
+            createPortal(Children.only(children), model.hostNode)
         );
     }
 });
