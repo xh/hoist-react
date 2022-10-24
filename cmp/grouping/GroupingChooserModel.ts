@@ -7,7 +7,7 @@
 
 import {HoistModel, managed, PersistenceProvider, PersistOptions, XH} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {CubeField, genDisplayName} from '@xh/hoist/data';
+import {genDisplayName} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {cloneDeep, difference, isFunction, isArray, isEmpty, isEqual, isString, keys, sortBy} from 'lodash';
@@ -16,8 +16,9 @@ interface GroupingChooserConfig {
     /**
      * Dimensions available for selection. When using GroupingChooser to create Cube queries,
      * it is recommended to pass the `dimensions` from the related cube (or a filtered subset thereof).
+     * (Note that CubeField meets the DimensionSpec interface).
      */
-    dimensions?: (DimensionSpec[]|CubeField[]|string[]);
+    dimensions?: (DimensionSpec|string)[];
 
     /** Initial value as an array of dimension names, or a function to produce such an array. */
     initialValue?: string[]|(() => string[]);
@@ -33,6 +34,26 @@ interface GroupingChooserConfig {
 
     /** Maximum number of dimensions allowed in a single grouping. */
     maxDepth?: number;
+}
+
+/**
+ * Metadata for dimensions that are available for selection via a GroupingChooser control.
+ * Note that {@link CubeField} instances satisfy this interface.
+ */
+export interface DimensionSpec {
+    /** Shortname or code (almost always a `CubeField.name`). */
+    name: string;
+
+    /** User-friendly / longer name for display. */
+    displayName?: string;
+}
+
+export interface GroupingChooserPersistOptions extends PersistOptions {
+    /** True (default) to save value to state. */
+    persistValue?: boolean;
+
+    /** True (default) to include favorites. */
+    persistFavorites?: boolean;
 }
 
 export class GroupingChooserModel extends HoistModel {
@@ -163,13 +184,13 @@ export class GroupingChooserModel extends HoistModel {
     // Value handling
     //-------------------------
     @action
-    addPendingDim(dimName) {
+    addPendingDim(dimName: string) {
         if (!dimName) return;
         this.pendingValue = [...this.pendingValue, dimName];
     }
 
     @action
-    replacePendingDimAtIdx(dimName, idx) {
+    replacePendingDimAtIdx(dimName: string, idx: number) {
         if (!dimName) return this.removePendingDimAtIdx(idx);
         const pendingValue = [...this.pendingValue];
         pendingValue[idx] = dimName;
@@ -177,14 +198,14 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     @action
-    removePendingDimAtIdx(idx) {
+    removePendingDimAtIdx(idx: number) {
         const pendingValue = [...this.pendingValue];
         pendingValue.splice(idx, 1);
         this.pendingValue = pendingValue;
     }
 
     @action
-    movePendingDimToIndex(dimName, toIdx) {
+    movePendingDimToIndex(dimName: string, toIdx: number) {
         const pendingValue = [...this.pendingValue],
             dim = pendingValue.find(it => it === dimName),
             fromIdx = pendingValue.indexOf(dim);
@@ -208,8 +229,8 @@ export class GroupingChooserModel extends HoistModel {
         return value.every(dim => this.dimensionNames.includes(dim));
     }
 
-    normalizeDimensions(dims) {
-        dims = dims || [];
+    normalizeDimensions(dims: (DimensionSpec|string)[]): Record<string, DimensionSpec> {
+        dims = dims ?? [];
         const ret = {};
         dims.forEach(it => {
             const dim = this.createDimension(it);
@@ -218,17 +239,17 @@ export class GroupingChooserModel extends HoistModel {
         return ret;
     }
 
-    createDimension(src) {
+    createDimension(src: DimensionSpec|string) {
         src = isString(src) ? {name: src} : src;
         throwIf(!src.hasOwnProperty('name'), "Dimensions provided as Objects must define a 'name' property.");
         return {displayName: genDisplayName(src.name), ...src};
     }
 
-    getValueLabel(value) {
+    getValueLabel(value:string[]) {
         return value.map(dimName => this.getDimDisplayName(dimName)).join(' › ');
     }
 
-    getDimDisplayName(dimName) {
+    getDimDisplayName(dimName: string) {
         return this.dimensions[dimName].displayName;
     }
 
@@ -252,22 +273,22 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     @action
-    setFavorites(favorites) {
+    setFavorites(favorites: string[][]) {
         this.favorites = favorites.filter(v => this.validateValue(v));
     }
 
     @action
-    addFavorite(value) {
+    addFavorite(value: string[]) {
         if (isEmpty(value) || this.isFavorite(value)) return;
         this.favorites = [...this.favorites, value];
     }
 
     @action
-    removeFavorite(value) {
+    removeFavorite(value: string[]) {
         this.favorites = this.favorites.filter(v => !isEqual(v, value));
     }
 
-    isFavorite(value) {
+    isFavorite(value: string[]) {
         return this.favorites?.find(v => isEqual(v, value));
     }
 
@@ -281,24 +302,4 @@ export class GroupingChooserModel extends HoistModel {
         return ret;
     }
 
-}
-
-/**
- * Metadata for dimensions that are available for selection via a GroupingChooser control.
- * Note that {@link CubeField} instances satisfy this interface.
- */
-interface DimensionSpec {
-    /** Shortname or code (almost always a `CubeField.name`). */
-    name?: string;
-
-    /** User-friendly / longer name for display. */
-    displayName?: string;
-}
-
-interface GroupingChooserPersistOptions extends PersistOptions {
-    /** True (default) to save value to state. */
-    persistValue?: boolean;
-
-    /** True (default) to include favorites. */
-    persistFavorites?: boolean;
 }

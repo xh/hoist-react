@@ -67,7 +67,7 @@ export interface DashContainerConfig extends DashConfig<DashViewSpec, DashViewSt
  * The children of `row` and `column` containers can be sized by providing width or height values.
  * Numeric values represent relative sizes, expressed as a percentage of the available space.
  * Pixel values can be provided as a string (e.g. '100px'), which will be converted to a relative
- * size at parse time. Any unaccounted for space will be divided equally across the remaing children.
+ * size at parse time. Any unaccounted for space will be divided equally across the remaining children.
  *
  * We differ from GoldenLayout by offering a new type `view`. These should be configured as
  * id references to the provided DashContainerViewSpec, e.g. {type: `view`, id: ViewSpec.id}. These should
