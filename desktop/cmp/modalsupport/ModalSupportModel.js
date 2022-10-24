@@ -54,20 +54,13 @@ export class ModalSupportModel extends HoistModel {
         const hostNode = document.createElement('div');
         hostNode.style.all = 'inherit';
         hostNode.classList.add('xh-modal-support__host');
-        document.body.appendChild(hostNode);
         return hostNode;
     }
 
-    /**
-     * Toggle the current state of `isModal`
-     */
     toggleIsModal() {
         this.setIsModal(!this.isModal);
     }
 
-    /**
-     * Destroy the `hostNode` DOM Element
-     */
     destroy() {
         this.hostNode.remove();
         super.destroy();
