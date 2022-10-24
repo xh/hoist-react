@@ -5,10 +5,8 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {
-    HoistModel,
     managed,
     PersistenceProvider,
-    PersistOptions,
     RefreshMode,
     RenderMode,
     TaskObserver,
@@ -18,12 +16,11 @@ import {modelLookupContextProvider} from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {cloneDeep, defaultsDeep, find, isFinite, isNil, reject, startCase} from 'lodash';
-import {ReactNode} from 'react';
 import {createRoot} from 'react-dom/client';
 import {DashViewModel, DashViewState} from '../DashViewModel';
 import {DashContainerViewSpec} from './DashContainerViewSpec';
@@ -31,36 +28,16 @@ import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
 import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
 import {convertGLToState, convertStateToGL, goldenLayoutConfig, getViewModelId} from './impl/DashContainerUtils';
 import {dashContainerView} from './impl/DashContainerView';
+import {DashViewSpec, DashModel, DashConfig} from '../';
 
 
-export interface DashContainerConfig {
-
-    /**
-     * A collection of viewSpecs, each describing a type of view that can be displayed in this
-     * container.
-     */
-    viewSpecs: DashContainerViewSpec[];
-
-    /** Properties to be set on all viewSpecs.  Merges deeply. */
-    viewSpecDefaults?: Partial<DashContainerViewSpec>;
-
-    /** Default layout state for this container.*/
-    initialState?: Record<string, any>[];
+export interface DashContainerConfig extends DashConfig<DashViewSpec, DashViewState>{
 
     /** Strategy for rendering DashContainerViews. Can also be set per-view in `viewSpecs`*/
     renderMode?: RenderMode;
 
     /** Strategy for refreshing DashContainerViews. Can also be set per-view in `viewSpecs`*/
     refreshMode?: RefreshMode;
-
-    /** Prevent re-arranging views by dragging and dropping.*/
-    layoutLocked?: boolean;
-
-    /** Prevent adding and removing views. */
-    contentLocked?: boolean;
-
-    /** Prevent renaming views. */
-    renameLocked?: boolean;
 
     /** True to include a button in each stack header showing the dash context menu. */
     showMenuButton?: boolean;
@@ -70,22 +47,6 @@ export interface DashContainerConfig {
      * @see http://golden-layout.com/docs/Config.html
      */
     goldenLayoutSettings?: Record<string, any>;
-
-    /** Options governing persistence. */
-    persistWith?: PersistOptions;
-
-    /** Text to display when the container is empty. */
-    emptyText?: string;
-
-    /** Text to display on the add view button. */
-    addViewButtonText?: string;
-
-    /**
-     * Array of RecordActions, configs or token strings, with which to create additional dash
-     * context menu items. Extra menu items will appear in the menu section below the 'Add' action,
-     * including when the dash container is empty.
-     */
-    extraMenuItems: any[];  // TODO: correct type.
 }
 
 
@@ -145,46 +106,35 @@ export interface DashContainerConfig {
  * @see http://golden-layout.com/docs/ItemConfig.html
  * @see http://golden-layout.com/tutorials/getting-started-react.html
  */
-export class DashContainerModel extends HoistModel {
+export class DashContainerModel extends DashModel<DashContainerViewSpec, DashViewState, DashViewModel> {
 
-    //---------------------------
-    // Observable Persisted State
-    //---------------------------
-    @observable.ref state: DashViewState[];
+    //---------------------
+    // Settable State
+    //----------------------
+    @observable showMenuButton: boolean;
+
+    @action setShowMenuButton(v: boolean) {
+        this.showMenuButton = v;
+    }
 
     //-----------------------------
-    // Observable Transient State
-    //------------------------------
-    @observable.ref goldenLayout: GoldenLayout;
-    @managed @observable.ref viewModels: DashViewModel[] = [];
-    @bindable layoutLocked: boolean;
-    @bindable contentLocked: boolean;
-    @bindable renameLocked: boolean;
-    @bindable showMenuButton: boolean;
+    // Public properties
+    //-----------------------------
+    renderMode: RenderMode;
+    refreshMode: RefreshMode;
+    goldenLayoutSettings: Record<string, any>;
 
-    //------------------------
-    // Immutable public properties
-    //------------------------
-    readonly viewSpecs: DashContainerViewSpec[] = [];
-    readonly renderMode: RenderMode;
-    readonly refreshMode: RefreshMode;
-    readonly goldenLayoutSettings: Record<string, any>;
-    readonly emptyText: string;
-    readonly addViewButtonText: string;
-    readonly extraMenuItems: ReactNode[];
+    get isEmpty(): boolean {
+        return this.goldenLayout && this.viewModels.length === 0;
+    }
 
-    //------------------------
+    //---------------------------
     // Implementation properties
-    //------------------------
+    //----------------------------
+    @observable.ref goldenLayout: GoldenLayout;
     containerRef = createObservableRef<HTMLElement>();
     modelLookupContext;
     @managed loadingStateTask = TaskObserver.trackLast();
-    private restoreState: any;
-    private provider: PersistenceProvider;
-
-    get isEmpty() {
-        return this.goldenLayout && this.viewModels.length === 0;
-    }
 
     constructor({
         viewSpecs,

@@ -4,12 +4,12 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, PersistenceProvider, PersistOptions, XH} from '@xh/hoist/core';
+import {PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
-import {DashCanvasViewModel, DashCanvasViewSpec, DashViewState} from '../';
+import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, makeObservable, computed, observable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
@@ -23,34 +23,8 @@ import {
     pick,
     isEqual, startCase
 } from 'lodash';
-import {computed} from 'mobx';
 
-
-export interface DashCanvasConfig {
-
-    /**
-     * A collection of viewSpecs, each describing a type of view that can be displayed in
-     * this container.
-     */
-    viewSpecs: DashCanvasViewSpec[];
-
-    /** Properties to be set on all viewSpecs. Merges deeply.*/
-    viewSpecDefaults?: Partial<DashCanvasViewSpec>;
-
-    /** Default state for this container. */
-    initialState?: DashCanvasItemState[];
-
-    /** Prevent re-arranging views by dragging and dropping. */
-    layoutLocked?: boolean;
-
-    /** Prevent adding and removing views. */
-    contentLocked?: boolean;
-
-    /** Prevent renaming views. */
-    renameLocked?: boolean;
-
-    /** Options governing persistence. */
-    persistWith?: PersistOptions;
+export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCanvasItemState> {
 
     /** Total number of columns (x coordinates for views correspond with column numbers). */
     columns?: number;
@@ -69,20 +43,6 @@ export interface DashCanvasConfig {
 
     /** Padding inside the container [x, y] in pixels. */
     containerPadding?: [number, number];
-
-    /** Text to display when the container is empty. */
-    emptyText?: string;
-
-    /** Text to display on the add view button. */
-    addViewButtonText?: string;
-
-    /**
-     *  Array of RecordActions, configs or token strings, with
-     *  which to create additional context menu items. Extra menu items will appear
-     *  in the container's context menu below the 'Add' action, and in the 'Options' context
-     *  menus for individual views within the container
-     */
-    extraMenuItems?: any[]; // todo apply menu typing;
 }
 
 export interface DashCanvasItemState {
@@ -103,53 +63,47 @@ export interface DashCanvasItemLayout {
  * Model for {@see DashCanvas}, managing all configurable options for the component and publishing
  * the observable state of its current widgets and their layout.
  */
-export class DashCanvasModel extends HoistModel {
+export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasItemState, DashCanvasViewModel> {
 
-    //---------------------------
-    // Observable Persisted State
-    //---------------------------
-    @observable.ref state: DashCanvasItemState[];
 
     //-----------------------------
-    // Observable Transient State
+    // Settable State
     //------------------------------
-    @managed @observable.ref viewModels: DashCanvasViewModel[] = [];
-    @observable.ref layout: any[] = [];
-    @bindable layoutLocked: boolean;
-    @bindable contentLocked: boolean;
-    @bindable renameLocked: boolean;
-    @bindable columns: number;
-    @bindable rowHeight: number;
-    @bindable compact: boolean;
+    @observable columns: number;
+    @observable rowHeight: number;
+    @observable compact: boolean;
+    @observable.ref margin: [number, number]; // [x, y]
+    @observable.ref containerPadding: [number, number]; // [x, y]
 
-    /** @member [marginX, marginY] */
-    @bindable margin: [number, number];
-    /** @member [paddingX, paddingY] */
-    @bindable containerPadding: [number, number];
+    @action setColumns(v: number) {this.columns = v}
+    @action setRowHeight(v: number) {this.rowHeight = v}
+    @action setCompact(v: boolean) {this.compact = v}
+    @action setMargin(v: [number, number]) {this.margin = v}
+    @action setContainerPadding(v: [number, number]) {this.containerPadding = v}
+
+
+    //-----------------------------
+    // Public properties
+    //-----------------------------
+    maxRows: number;
 
     /** Current number of rows in canvas */
     get rows(): number {
         return this.layout.reduce((prev, cur) => Math.max(prev, cur.y + cur.h), 0);
     }
 
-    //------------------------
-    // Immutable public properties
-    //------------------------
-    readonly viewSpecs: DashCanvasViewSpec[] = [];
-    readonly emptyText: string;
-    readonly addViewButtonText: string;
-    readonly maxRows: number;
-    readonly extraMenuItems: any[];
+    get isEmpty(): boolean {
+        return this.layout.length === 0;
+    }
 
-    //------------------------
+    //----------------------------
     // Implementation properties
-    //------------------------
+    //----------------------------
+    @observable.ref layout: any[] = [];
     ref = createObservableRef<HTMLElement>();
     isResizing: boolean;
     private scrollbarVisible: boolean;
     private isLoadingState: boolean;
-    private restoreState: any;
-    private provider: PersistenceProvider;
 
     get rglLayout() {
         return this.layout.map(it => ({
@@ -244,9 +198,6 @@ export class DashCanvasModel extends HoistModel {
         });
     }
 
-    get isEmpty(): boolean {
-        return this.layout.length === 0;
-    }
 
     /** Removes all views from the canvas */
     @action
