@@ -11,13 +11,15 @@ import '@xh/hoist/desktop/register';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
-import PT from 'prop-types';
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import './DashCanvas.scss';
+import {HoistProps} from '../../../../core';
 import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
+
+export type DashCanvasProps = HoistProps<DashCanvasModel>;
 
 /**
  * Dashboard-style container that allows users to drag-and-drop child widgets into flexible layouts.
@@ -30,10 +32,11 @@ import {dashCanvasView} from './impl/DashCanvasView';
  *
  * @see DashCanvasModel
  */
-export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
+export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
     displayName: 'DashCanvas',
     className: 'xh-dash-canvas',
     model: uses(DashCanvasModel),
+
     render({className, model}) {
         const isDraggable = !model.layoutLocked,
             isResizable = !model.layoutLocked;
@@ -75,11 +78,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory({
     }
 });
 
-DashCanvas.propTypes = {
-    model: PT.oneOfType([PT.instanceOf(DashCanvasModel), PT.object])
-};
-
-const emptyContainerOverlay = hoistCmp.factory(
+const emptyContainerOverlay = hoistCmp.factory<DashCanvasModel>(
     ({model}) => {
         const {isEmpty, emptyText} = model;
         if (!isEmpty) return null;

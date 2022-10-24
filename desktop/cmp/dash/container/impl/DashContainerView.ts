@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {frame} from '@xh/hoist/cmp/layout';
-import {hoistCmp, ModelPublishMode, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
+import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
 import {DashViewModel} from '../../DashViewModel';
@@ -18,12 +18,12 @@ import {DashViewModel} from '../../DashViewModel';
  *   - Track and trigger refreshes according to `DashViewSpec.refreshMode`.
  *   - Stretch its contents using a flex layout.
  *
- * @private
+ * @internal
  */
 export const dashContainerView = hoistCmp.factory({
     displayName: 'DashContainerView',
     className: 'xh-dash-tab',
-    model: uses(DashViewModel, {publishMode: ModelPublishMode.LIMITED}),
+    model: uses(DashViewModel, {publishMode: 'limited'}),
 
     render({model, className}) {
         const {isActive, renderMode, refreshContextModel, viewSpec} = model,
@@ -37,8 +37,8 @@ export const dashContainerView = hoistCmp.factory({
         if (
             !isActive &&
             (
-                (renderMode === RenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode === RenderMode.LAZY && !wasActivated.current)
+                (renderMode === 'unmountOnHide') ||
+                (renderMode === 'lazy' && !wasActivated.current)
             )
         ) {
             return null;

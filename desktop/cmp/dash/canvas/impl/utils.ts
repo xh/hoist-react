@@ -6,10 +6,11 @@
  */
 
 import {Icon} from '@xh/hoist/icon';
+import {DashCanvasModel} from '../DashCanvasModel';
 
 /**
  * Used to create view menu items (for adding or replacing views)
- * @private
+ * @internal
  */
 export function createViewMenuItems({
     dashCanvasModel,
@@ -84,11 +85,11 @@ export function createViewMenuItems({
 /**
  * Used to set the {x, y} position for the next added item based on the mouse location when
  * context menu is triggered
- * @param {number} x - clientX position
- * @param {number} y - clientY position
- * @param {DashCanvasModel} dashCanvasModel
+ * @param x - clientX position
+ * @param y - clientY position
+ * @param dashCanvasModel
  */
-const calcAddPosition = (x, y, dashCanvasModel) => {
+const calcAddPosition = (x: number, y: number, dashCanvasModel: DashCanvasModel) => {
     const calcXY = (positionParams, top, left, w=0, h=0) => {
         const calcGridColWidth = (positionParams) => {
             const { margin, containerPadding, containerWidth, cols } = positionParams;

@@ -16,9 +16,7 @@ import {isEmpty} from 'lodash';
  *
  * Available view specs are listed in their defined order, optionally
  * grouped by their 'groupName' property
- *
- * @see DashCanvasModel
- * @private
+ * @internal
  */
 export const dashCanvasContextMenu = hoistCmp.factory({
     model: null, observer: null,
