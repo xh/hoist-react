@@ -4,23 +4,23 @@
 
 ### 🐞 Bug Fixes
 
-* Fix bug where constructing a `PanelModel` with `ModalSupport` could cause unexpected layout issues
-  with other top-level DOM elements.
-
+* Fixed layout issues caused by top-level DOM elements created by `ModalSupport`
+  and `ColumnWidthCalculator` (grid auto-sizing). Resolved occasional gaps between select inputs and
+  their drop-down menus.
 
 ## v53.0.0 - 2022-10-19
 
 ### 🎁 New Features
 
-* New application permission role: `HOIST_ADMIN_READER`.
-* All Hoist Framework Admin tabs are now readable (read only) by users who have this new role: `HOIST_ADMIN_READER`.
-* Actions (edit, delete, etc) in the Hoist Framework Admin tabs are available only to users who have the `HOIST_ADMIN` role.
-* The `HOIST_ADMIN` role inherits the new `HOIST_ADMIN_READER` role.
-* The `HOIST_ADMIN_READER` role can be assigned to users in the `roles` soft-config.
+* The Hoist Admin Console is now accessible in a read-only capacity to users assigned the
+  new `HOIST_ADMIN_READER` role.
+* The pre-existing `HOIST_ADMIN` role inherits this new role, and is still required to take any
+  actions that modify data.
 
 ### 💥 Breaking Changes
-* Upgrading to Hoist-React v53+ requires an upgrade of Hoist-Core to v14.4.0+
-  to take advantage of the new `HOIST_ADMIN_READER` role.
+
+* Requires `hoist-core >= 14.4` to support the new `HOIST_ADMIN_READER` role described above. (Core
+  upgrade _not_ required otherwise.)
 
 ## v52.0.2 - 2022-10-13
 

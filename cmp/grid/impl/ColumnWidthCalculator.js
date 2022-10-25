@@ -82,7 +82,7 @@ export class ColumnWidthCalculator {
                     levelMaxes = await Promise.all(levelTasks);
                 return max(levelMaxes);
             } else {
-                return this.calcLevelWidthAsync(gridModel, records, column, options);
+                return await this.calcLevelWidthAsync(gridModel, records, column, options);
             }
         } catch (e) {
             console.warn(`Error calculating max data width for column "${column.colId}".`, e);
