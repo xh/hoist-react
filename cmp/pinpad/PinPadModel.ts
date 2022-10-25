@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, bindable, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable, computed, makeObservable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {times} from 'lodash';
 
@@ -23,10 +23,15 @@ export interface PinPadConfig {
 
 export class PinPadModel extends HoistModel {
 
-    @bindable disabled: boolean;
-    @bindable headerText: string;
-    @bindable subHeaderText: string;
-    @bindable errorText: string;
+    @observable disabled: boolean;
+    @observable headerText: string;
+    @observable subHeaderText: string;
+    @observable errorText: string;
+
+    @action setDisabled(v: boolean) {this.disabled = v}
+    @action setHeaderText(v: string) {this.headerText = v}
+    @action setSubHeaderText(v: string) {this.subHeaderText = v}
+    @action setErrorText(v: string) {this.errorText = v}
 
     ref = createObservableRef();
 

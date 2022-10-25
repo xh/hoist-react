@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HSide} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {input} from '@xh/hoist/kit/onsen';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -53,7 +53,7 @@ export interface TextInputProps extends HoistInputProps {
     spellCheck?: boolean;
 
     /** Alignment of entry text within control, default 'left'. */
-    textAlign?: 'left'|'right';
+    textAlign?: HSide;
 
     /** Underlying HTML <input> element type. */
     type?: 'text'|'password';

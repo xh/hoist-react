@@ -5,7 +5,6 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {
-    HoistModel,
     managed,
     PersistenceProvider,
     RefreshMode,
@@ -17,18 +16,39 @@ import {modelLookupContextProvider} from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {cloneDeep, defaultsDeep, find, isFinite, isNil, reject} from 'lodash';
+import {cloneDeep, defaultsDeep, find, isFinite, isNil, reject, startCase} from 'lodash';
 import {createRoot} from 'react-dom/client';
-import {DashViewModel} from '../DashViewModel';
+import {DashViewModel, DashViewState} from '../DashViewModel';
 import {DashContainerViewSpec} from './DashContainerViewSpec';
 import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
 import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
-import {convertGLToState, convertStateToGL, getViewModelId} from './impl/DashContainerUtils';
+import {convertGLToState, convertStateToGL, goldenLayoutConfig, getViewModelId} from './impl/DashContainerUtils';
 import {dashContainerView} from './impl/DashContainerView';
+import {DashViewSpec, DashModel, DashConfig} from '../';
+
+
+export interface DashContainerConfig extends DashConfig<DashViewSpec, DashViewState>{
+
+    /** Strategy for rendering DashContainerViews. Can also be set per-view in `viewSpecs`*/
+    renderMode?: RenderMode;
+
+    /** Strategy for refreshing DashContainerViews. Can also be set per-view in `viewSpecs`*/
+    refreshMode?: RefreshMode;
+
+    /** True to include a button in each stack header showing the dash context menu. */
+    showMenuButton?: boolean;
+
+    /**
+     * Custom settings to be passed to the GoldenLayout instance.
+     * @see http://golden-layout.com/docs/Config.html
+     */
+    goldenLayoutSettings?: Record<string, any>;
+}
+
 
 /**
  * Model for a DashContainer, representing its contents and layout state.
@@ -47,7 +67,7 @@ import {dashContainerView} from './impl/DashContainerView';
  * The children of `row` and `column` containers can be sized by providing width or height values.
  * Numeric values represent relative sizes, expressed as a percentage of the available space.
  * Pixel values can be provided as a string (e.g. '100px'), which will be converted to a relative
- * size at parse time. Any unaccounted for space will be divided equally across the remaing children.
+ * size at parse time. Any unaccounted for space will be divided equally across the remaining children.
  *
  * We differ from GoldenLayout by offering a new type `view`. These should be configured as
  * id references to the provided DashContainerViewSpec, e.g. {type: `view`, id: ViewSpec.id}. These should
@@ -86,81 +106,42 @@ import {dashContainerView} from './impl/DashContainerView';
  * @see http://golden-layout.com/docs/ItemConfig.html
  * @see http://golden-layout.com/tutorials/getting-started-react.html
  */
-export class DashContainerModel extends HoistModel {
+export class DashContainerModel extends DashModel<DashContainerViewSpec, DashViewState, DashViewModel> {
 
-    //---------------------------
-    // Observable Persisted State
-    //---------------------------
-    /** @member {Object[]} */
-    @observable.ref state;
+    //---------------------
+    // Settable State
+    //----------------------
+    @observable showMenuButton: boolean;
+
+    @action setShowMenuButton(v: boolean) {
+        this.showMenuButton = v;
+    }
 
     //-----------------------------
-    // Observable Transient State
-    //------------------------------
-    /** @member {GoldenLayout} */
-    @observable.ref goldenLayout;
-    /** @member {DashViewModel[]} */
-    @managed @observable.ref viewModels = [];
-    /** @member {boolean} */
-    @bindable layoutLocked;
-    /** @member {boolean} */
-    @bindable contentLocked;
-    /** @member {boolean} */
-    @bindable renameLocked;
-    /** @member {boolean} */
-    @bindable showMenuButton;
+    // Public properties
+    //-----------------------------
+    renderMode: RenderMode;
+    refreshMode: RefreshMode;
+    goldenLayoutSettings: Record<string, any>;
 
-    //------------------------
-    // Immutable public properties
-    //------------------------
-    /** @member {DashContainerViewSpec[]} */
-    viewSpecs = [];
-    /** @member {RenderMode} */
-    renderMode;
-    /** @member {RefreshMode} */
-    refreshMode;
-    /** @member {Object} */
-    goldenLayoutSettings;
-    emptyText;
-    addViewButtonText;
+    get isEmpty(): boolean {
+        return this.goldenLayout && this.viewModels.length === 0;
+    }
 
-    //------------------------
+    //---------------------------
     // Implementation properties
-    //------------------------
-    @managed loadingStateTask = TaskObserver.trackLast();
-    containerRef = createObservableRef();
+    //----------------------------
+    @observable.ref goldenLayout: GoldenLayout;
+    containerRef = createObservableRef<HTMLElement>();
     modelLookupContext;
+    @managed loadingStateTask = TaskObserver.trackLast();
 
-    /**
-     * @param {Object} c - DashContainerModel configuration.
-     * @param {DashContainerViewSpec[]} c.viewSpecs - A collection of viewSpecs, each describing a type of view
-     *      that can be displayed in this container
-     * @param {Object} [c.viewSpecDefaults] - Properties to be set on all viewSpecs.  Merges deeply.
-     * @param {Object[]} [c.initialState] - Default layout state for this container.
-     * @param {RenderMode} [c.renderMode] - strategy for rendering DashContainerViews. Can be set
-     *      per-view via `DashContainerViewSpec.renderMode`. See enum for description of supported modes.
-     * @param {RefreshMode} [c.refreshMode] - strategy for refreshing DashContainerViews. Can be set
-     *      per-view via `DashContainerViewSpec.refreshMode`. See enum for description of supported modes.
-     * @param {boolean} [c.layoutLocked] - prevent re-arranging views by dragging and dropping.
-     * @param {boolean} [c.contentLocked] - prevent adding and removing views.
-     * @param {boolean} [c.renameLocked] - prevent renaming views.
-     * @param {boolean} [c.showMenuButton] - true to include a button in each stack header showing
-     *      the dash context menu.
-     * @param {Object} [c.goldenLayoutSettings] - custom settings to be passed to the GoldenLayout instance.
-     *      @see http://golden-layout.com/docs/Config.html
-     * @param {PersistOptions} [c.persistWith] - options governing persistence
-     * @param {string} [c.emptyText] - text to display when the container is empty
-     * @param {string} [c.addViewButtonText] - text to display on the add view button
-     * @param {Array} [c.extraMenuItems] - array of RecordActions, configs or token strings, with
-     *      which to create additional dash context menu items. Extra menu items will appear
-     *      in the menu section below the 'Add' action, including when the dash container is empty.
-     */
     constructor({
         viewSpecs,
         viewSpecDefaults,
         initialState = [],
-        renderMode = RenderMode.LAZY,
-        refreshMode = RefreshMode.ON_SHOW_LAZY,
+        renderMode = 'lazy',
+        refreshMode = 'onShowLazy',
         layoutLocked = false,
         contentLocked = false,
         renameLocked = false,
@@ -170,13 +151,20 @@ export class DashContainerModel extends HoistModel {
         emptyText = 'No views have been added to the container.',
         addViewButtonText = 'Add View',
         extraMenuItems
-    }) {
+    }: DashContainerConfig) {
         super();
         makeObservable(this);
         viewSpecs = viewSpecs.filter(it => !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
-            return new DashContainerViewSpec(defaultsDeep({}, cfg, viewSpecDefaults));
+            return defaultsDeep({}, cfg, viewSpecDefaults, {
+                title: startCase(cfg.id),
+                omit: false,
+                unique: false,
+                allowAdd: true,
+                allowRemove: true,
+                allowRename: true
+            });
         });
 
         this.restoreState = {initialState, layoutLocked, contentLocked, renameLocked};
@@ -236,7 +224,7 @@ export class DashContainerModel extends HoistModel {
 
     /**
      * Load state into the DashContainer, recreating its layout and contents
-     * @param {object} state - State to load
+     * @param state - State to load
      */
     async loadStateAsync(state) {
         const containerEl = this.containerRef.current;
@@ -256,11 +244,11 @@ export class DashContainerModel extends HoistModel {
     /**
      * Add a view to the container.
      *
-     * @param {string} specId - DashContainerViewSpec id to add to the container
-     * @param {object} [container] - GoldenLayout container to add it to. If not provided, will be added to the root container.
-     * @param {number} [index] - An optional index that determines at which position the new item should be added.
+     * @param specId - DashContainerViewSpec id to add to the container
+     * @param container - GoldenLayout container to add it to. If not provided, will be added to the root container.
+     * @param index - An optional index that determines at which position the new item should be added.
      */
-    addView(specId, container, index) {
+    addView(specId: string, container?: any, index?: number) {
         const {goldenLayout} = this;
         if (!goldenLayout) return;
 
@@ -274,34 +262,38 @@ export class DashContainerModel extends HoistModel {
         if (!container) container = goldenLayout.root.contentItems[0];
 
         if (!isFinite(index)) index = container.contentItems.length;
-        container.addChild(viewSpec.goldenLayoutConfig, index);
+        container.addChild(goldenLayoutConfig(viewSpec), index);
         wait(1).then(() => this.onStackActiveItemChange(container));
     }
 
     /**
      * Remove a view from the container.
-     * @param {string} id - DashViewModel id to remove from the container
+     * @param id - DashViewModel id to remove from the container
      */
-    removeView(id) {
+    removeView(id: string) {
         const view = this.getItemByViewModel(id);
         if (!view) return;
         view.parent.removeChild(view);
     }
 
     /**
-     * Enable the rename field for a given view
-     * @param {string} id - DashViewModel id to rename
+     * Initiate field renaming for a given view
+     * @param id - DashViewModel id to rename
      */
-    renameView(id) {
+    renameView(id: string) {
         const view = this.getItemByViewModel(id);
         if (!view) return;
         this.showTitleForm(view.tab.element);
     }
 
+    onResize() {
+        this.goldenLayout?.updateSize();
+    }
+
     //------------------------
     // Implementation
     //------------------------
-    updateState() {
+    private updateState() {
         const {goldenLayout, containerRef} = this;
         if (!goldenLayout?.isInitialised || !containerRef.current) return;
 
@@ -317,7 +309,7 @@ export class DashContainerModel extends HoistModel {
 
     @debounced(1000)
     @action
-    publishState() {
+    private publishState() {
         const {goldenLayout} = this;
         if (!goldenLayout) return;
 
@@ -325,21 +317,13 @@ export class DashContainerModel extends HoistModel {
         this.provider?.write({state: this.state});
     }
 
-    onItemDestroyed(item) {
+    private onItemDestroyed(item) {
         if (!item.isComponent) return;
         const id = getViewModelId(item);
         if (id) this.removeViewModel(id);
     }
 
-    onResize() {
-        this.goldenLayout?.updateSize();
-    }
-
-    setModelLookupContext(modelLookupContext) {
-        this.modelLookupContext = modelLookupContext;
-    }
-
-    getViewSpec(id) {
+    private getViewSpec(id: string) {
         return this.viewSpecs.find(it => it.id === id);
     }
 
@@ -347,29 +331,25 @@ export class DashContainerModel extends HoistModel {
     // Items
     //-----------------
     // Get all items currently rendered in the container
-    getItems() {
+    private getItems() {
         const {goldenLayout} = this;
         if (!goldenLayout) return [];
         return goldenLayout.root.getItemsByType('component');
     }
 
     // Get all view instances with a given DashViewSpec.id
-    getItemsBySpecId(id) {
+    private getItemsBySpecId(id: string) {
         return this.getItems().filter(it => it.config.component === id);
     }
 
     // Get the view instance with the given DashViewModel.id
-    getItemByViewModel(id) {
+    private getItemByViewModel(id: string) {
         return this.getItems().find(it => it.instance?._reactComponent?.props?.id === id);
     }
 
     //-----------------
     // Views
     //-----------------
-    get isEmpty() {
-        return this.goldenLayout && this.viewModels.length === 0;
-    }
-
     get viewState() {
         const ret = {};
         this.viewModels.map(({id, icon, title, viewState}) => {
@@ -378,17 +358,17 @@ export class DashContainerModel extends HoistModel {
         return ret;
     }
 
-    getViewModel(id) {
+    private getViewModel(id: string) {
         return find(this.viewModels, {id});
     }
 
     @action
-    addViewModel(viewModel) {
+    private addViewModel(viewModel: DashViewModel) {
         this.viewModels = [...this.viewModels, viewModel];
     }
 
     @action
-    removeViewModel(id) {
+    private removeViewModel(id: string) {
         const viewModel = this.getViewModel(id);
         XH.safeDestroy(viewModel);
         this.viewModels = reject(this.viewModels, {id});
@@ -397,7 +377,7 @@ export class DashContainerModel extends HoistModel {
     //-----------------
     // Context Menu
     //-----------------
-    onStackCreated(stack) {
+    private onStackCreated(stack) {
         // Listen to active item change to support RenderMode
         stack.on('activeContentItemChanged', () => this.onStackActiveItemChange(stack));
 
@@ -413,12 +393,12 @@ export class DashContainerModel extends HoistModel {
         // Add context menu listener for adding components
         const $el = stack.header.element;
         $el.off('contextmenu').contextmenu(e => {
-            this.showContextMenu(e, $el, {stack});
+            this.showContextMenu(e, $el, stack);
             return false;
         });
     }
 
-    showContextMenu(e, $target, {stack, viewModel, index}) {
+    private showContextMenu(e: MouseEvent, $target: any, stack: any, viewModel?: DashViewModel, index?: number) {
         if (this.contentLocked) return;
 
         // If event does not contain co-ordinates, fallback to showing context menu below target
@@ -441,13 +421,13 @@ export class DashContainerModel extends HoistModel {
     //-----------------
     // Active View
     //-----------------
-    refreshActiveViews() {
+    private refreshActiveViews() {
         if (!this.goldenLayout) return;
         const stacks = this.goldenLayout.root.getItemsByType('stack');
         stacks.forEach(stack => this.onStackActiveItemChange(stack));
     }
 
-    onStackActiveItemChange(stack) {
+    private onStackActiveItemChange(stack: any) {
         if (!this.goldenLayout) return;
 
         const items = stack.getItemsByType('component'),
@@ -465,7 +445,7 @@ export class DashContainerModel extends HoistModel {
     //-----------------
     // Tab Headers
     //-----------------
-    updateTabHeaders() {
+    private updateTabHeaders() {
         const items = this.getItems();
         items.forEach(item => {
             const viewModel = this.getViewModel(getViewModelId(item));
@@ -480,7 +460,7 @@ export class DashContainerModel extends HoistModel {
 
             $el.off('contextmenu').contextmenu(e => {
                 const index = stack.contentItems.indexOf(item);
-                this.showContextMenu(e, $el, {stack, viewModel, index});
+                this.showContextMenu(e, $el, stack, viewModel, index);
                 return false;
             });
 
@@ -508,7 +488,7 @@ export class DashContainerModel extends HoistModel {
         });
     }
 
-    insertTitleForm($el, viewModel) {
+    private insertTitleForm($el, viewModel: DashViewModel) {
         const formSelector = '.title-form';
         if ($el.find(formSelector).length) return;
 
@@ -533,7 +513,7 @@ export class DashContainerModel extends HoistModel {
         });
     }
 
-    showTitleForm($tabEl) {
+    private showTitleForm($tabEl) {
         if (this.renameLocked) return;
 
         const $titleEl = $tabEl.find('.lm_title').first(),
@@ -545,14 +525,14 @@ export class DashContainerModel extends HoistModel {
         $inputEl.focus().select();
     }
 
-    hideTitleForm($tabEl) {
+    private hideTitleForm($tabEl) {
         $tabEl.removeClass('show-title-form');
     }
 
     //-----------------
     // Misc
     //-----------------
-    createGoldenLayout(containerEl, state) {
+    private createGoldenLayout(containerEl: HTMLElement, state: any): GoldenLayout {
         const {viewSpecs} = this,
             ret = new GoldenLayout({
                 content: convertStateToGL(cloneDeep(state), this),
@@ -605,14 +585,14 @@ export class DashContainerModel extends HoistModel {
     }
 
     @action
-    destroyGoldenLayout() {
+    private destroyGoldenLayout() {
         XH.safeDestroy(this.goldenLayout);
         XH.safeDestroy(this.viewModels);
         this.goldenLayout = null;
         this.viewModels = [];
     }
 
-    destroy() {
+    override destroy() {
         this.destroyGoldenLayout();
         super.destroy();
     }

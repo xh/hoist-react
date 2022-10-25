@@ -4,28 +4,32 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
+import {DashViewConfig, DashViewModel} from '../DashViewModel';
 import '@xh/hoist/desktop/register';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {action, makeObservable, observable} from 'mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {ReactNode} from 'react';
 
 /**
  * Model for a content item within a DashCanvas.
- * @extends DashViewModel
  */
 export class DashCanvasViewModel extends DashViewModel {
-    /** @member {RefObject<DOMElement>} */
-    ref = createObservableRef();
-    /** @member {boolean} */
-    @observable hidePanelHeader;
-    /** @member {boolean} */
-    @observable hideMenuButton;
-    /** @member {Array} */
-    @observable.ref headerItems = [];
-    /** @member {boolean} */
-    @observable autoHeight;
 
-    constructor(cfg) {
+    /** Hide the Header Panel for the view? Default false. */
+    @observable hidePanelHeader: boolean;
+
+    /** Hide the menu button for the view? Default false. */
+    @observable hideMenuButton: boolean;
+
+    /** Should the view resize its height to fit its contents? */
+    @observable autoHeight: boolean;
+
+    /** Additional items to include in header. */
+    @observable.ref headerItems: ReactNode[] = [];
+
+    ref = createObservableRef<HTMLElement>();
+
+    constructor(cfg: DashViewConfig) {
         super(cfg);
         makeObservable(this);
         this.hidePanelHeader = !!cfg.viewSpec.hidePanelHeader;
@@ -42,24 +46,20 @@ export class DashCanvasViewModel extends DashViewModel {
     ensureVisible() {
         const {ref} = this;
         this.addReaction({
-            when: () => ref.current,
+            when: () => !!ref.current,
             run: () => ref.current.scrollIntoView({behavior: 'smooth', block: 'nearest'})
         });
     }
 
-    /**
-     * Specify array of items to be added to the right-side of the panel header
-     * @param {ReactNode[]} items
-     */
+    /** Specify array of items to be added to the right-side of the panel header. */
     @action
-    setHeaderItems(items) {
+    setHeaderItems(items: ReactNode[]) {
         this.headerItems = items;
     }
 
     //------------------------
     // Implementation
     //------------------------
-
     onContentsResized({height}) {
         if (!this.autoHeight || this.containerModel.isResizing) return;
 

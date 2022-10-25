@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HSide} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {singleDatePicker} from '@xh/hoist/kit/react-dates';
@@ -69,10 +69,10 @@ export interface DateInputProps extends HoistInputProps {
     singleDatePickerProps?: Record<string, any>;
 
     /** Alignment of entry text within control, default 'left'. */
-    textAlign?: 'left'|'right';
+    textAlign?: HSide;
 
     /** Type of value to publish. Defaults to 'date'. */
-    valueType?: 'date'|'LocalDate';
+    valueType?: 'date'|'localDate';
 }
 
 /**

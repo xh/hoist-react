@@ -6,7 +6,7 @@
  */
 
 import {span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide, XH} from '@xh/hoist/core';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
 import {appMenuButton, AppMenuButtonProps, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {whatsNewButton} from '@xh/hoist/desktop/cmp/button/WhatsNewButton';
@@ -19,7 +19,7 @@ import './AppBar.scss';
 
 export interface AppBarProps extends HoistProps {
     /** Position of the AppMenuButton. */
-    appMenuButtonPosition?: 'left'|'right';
+    appMenuButtonPosition?: HSide;
 
     /** Allows overriding the default properties of the App Menu button. @see AppMenuButton */
     appMenuButtonProps?: AppMenuButtonProps;

@@ -17,9 +17,10 @@ export const panelHeader = hoistCmp.factory({
     displayName: 'PanelHeader',
     model: false,
     className: 'xh-panel-header',
+
     render({className, ...props}) {
         const panelModel = useContextModel(PanelModel),
-            {collapsed, isModal, vertical, side} = panelModel,
+            {collapsed, collapsible, isModal, vertical, side} = panelModel,
             {title, icon, compact} = props,
             headerItems = props.headerItems ?? [];
 
@@ -28,7 +29,7 @@ export const panelHeader = hoistCmp.factory({
         const onDoubleClick = () => {
             if (isModal) {
                 panelModel.toggleIsModal();
-            } else {
+            } else if (collapsible) {
                 panelModel.toggleCollapsed();
             }
         };

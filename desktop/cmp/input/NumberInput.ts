@@ -6,7 +6,7 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HSide} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {fmtNumber, parseNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
@@ -85,7 +85,7 @@ export interface NumberInputProps extends HoistInputProps {
     stepSize?: number;
 
     /** Alignment of entry text within control, default 'right'. */
-    textAlign?: 'left'|'right';
+    textAlign?: HSide;
 
     /**
      * Text appended to the rendered value within control when not editing.

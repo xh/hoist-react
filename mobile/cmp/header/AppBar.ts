@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, useContextModel, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide, useContextModel, XH} from '@xh/hoist/core';
 import {
     button,
     navigatorBackButton,
@@ -47,7 +47,7 @@ export interface AppBarProps extends HoistProps {
     appMenuButtonProps?: AppMenuButtonProps;
 
     /** Position of the AppMenuButton. */
-    appMenuButtonPosition?: 'left'|'right';
+    appMenuButtonPosition?: HSide;
 
     /** Allows overriding the default properties of the Back button. @see NavigatorBackButton */
     backButtonProps?: NavigatorBackButtonProps;

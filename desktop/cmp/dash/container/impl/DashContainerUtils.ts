@@ -7,6 +7,7 @@
 import {serializeIcon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isFinite, isNil, isPlainObject, isString, round} from 'lodash';
+import {DashContainerViewSpec} from '../DashContainerViewSpec';
 
 /**
  * Lookup the DashViewModel id of a rendered view
@@ -37,7 +38,7 @@ function convertGLToStateInner(configItems = [], contentItems = [], dashContaine
                 viewSpec = dashContainerModel.getViewSpec(viewSpecId),
                 viewModelId = getViewModelId(contentItem),
                 viewModel = dashContainerModel.getViewModel(viewModelId),
-                view = {type: 'view', id: viewSpecId};
+                view = {type: 'view', id: viewSpecId} as any;
 
             if (viewModel.icon !== viewSpec.icon) view.icon = serializeIcon(viewModel.icon);
             if (viewModel.title !== viewSpec.title) view.title = viewModel.title;
@@ -46,7 +47,7 @@ function convertGLToStateInner(configItems = [], contentItems = [], dashContaine
             ret.push(view);
         } else {
             const {type, width, height, activeItemIndex, content} = configItem,
-                container = {type};
+                container = {type} as any;
 
             if (isFinite(width)) container.width = round(width, 2);
             if (isFinite(height)) container.height = round(height, 2);
@@ -77,13 +78,23 @@ export function convertStateToGL(state = [], dashContainerModel) {
     return !ret.length ? [{type: 'stack'}] : ret;
 }
 
-function convertStateToGLInner(items = [], viewSpecs = [], containerSize, containerItem) {
+export function goldenLayoutConfig(spec: DashContainerViewSpec): any {
+    const {id, title, allowRemove} = spec;
+    return {
+        component: id,
+        type: 'react-component',
+        title,
+        isClosable: allowRemove
+    };
+}
+
+function convertStateToGLInner(items = [], viewSpecs = [], containerSize, containerItem?) {
     // If placed in a row or column, size its content according to its container
     const dimension = getContainerDimension(containerItem?.type);
     if (dimension) items = sizeItemsToContainer(items, containerSize, dimension);
 
     // Convert each item into a GoldenLayout config
-    return items.map(item => {
+    return items.map((item: any) => {
         const {type, width, height} = item;
 
         throwIf(type === 'component' || type === 'react-component',
@@ -98,7 +109,7 @@ function convertStateToGLInner(items = [], viewSpecs = [], containerSize, contai
                 return null;
             }
 
-            const ret = viewSpec.goldenLayoutConfig;
+            const ret = goldenLayoutConfig(viewSpec);
 
             if (!isNil(item.icon)) ret.icon = item.icon;
             if (!isNil(item.title)) ret.title = item.title;

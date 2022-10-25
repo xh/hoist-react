@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HSide} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
@@ -63,7 +63,7 @@ export interface NumberInputProps extends HoistInputProps {
     selectOnFocus?: boolean;
 
     /** Alignment of entry text within control, default 'right'. */
-    textAlign?: 'left'|'right';
+    textAlign?: HSide;
 
     /**
      * Text appended to the rendered value within control when not editing.

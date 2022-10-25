@@ -64,7 +64,6 @@ export class ModalSupportModel extends HoistModel {
         const hostNode = document.createElement('div');
         hostNode.style.all = 'inherit';
         hostNode.classList.add('xh-modal-support__host');
-        document.body.appendChild(hostNode);
         return hostNode;
     }
 

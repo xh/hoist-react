@@ -14,8 +14,7 @@ import {dashContainerContextMenu} from './DashContainerContextMenu';
  * Button and popover for displaying the context menu. Apps can control whether this button is
  * displayed via DashContainerModel's `showMenuButton` config.
  *
- * @see DashContainerModel
- * @private
+ * @internal
  */
 export const dashContainerMenuButton = hoistCmp.factory({
     model: null,

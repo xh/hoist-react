@@ -7,7 +7,7 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HSide} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -63,7 +63,7 @@ export interface TextInputProps extends HoistInputProps {
     selectOnFocus?: boolean;
 
     /** Alignment of entry text within control, default 'left'. */
-    textAlign?: 'left'|'right';
+    textAlign?: HSide;
 
     /** True to allow browser spell check, default false. */
     spellCheck?: boolean;
