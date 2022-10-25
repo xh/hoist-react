@@ -79,43 +79,47 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
     }
 });
 
-/**
- * Row heights (in pixels) enumerated here and available for global override if required
- * by stomping on these values directly. To override for individual grids, supply a custom
- * `getRowHeight` function as a direct prop to this component, or via `Grid.agOptions`.
- */
-AgGrid.ROW_HEIGHTS = {large: 32, standard: 28, compact: 24, tiny: 18};
-AgGrid.ROW_HEIGHTS_MOBILE = {large: 38, standard: 34, compact: 30, tiny: 26};
-AgGrid.getRowHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS)[mode];
+(function(AgGrid: any) {
+    /**
+     * Row heights (in pixels) enumerated here and available for global override if required
+     * by stomping on these values directly. To override for individual grids, supply a custom
+     * `getRowHeight` function as a direct prop to this component, or via `Grid.agOptions`.
+     */
+    AgGrid.ROW_HEIGHTS = {large: 32, standard: 28, compact: 24, tiny: 18};
+    AgGrid.ROW_HEIGHTS_MOBILE = {large: 38, standard: 34, compact: 30, tiny: 26};
+    AgGrid.getRowHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS)[mode];
 
-/**
- * Full-width group row heights (in pixels). To override for individual grids, use
- * `GridModel.groupRowHeight`. Group rows that do not use the full width of the row will take the
- * same height as the data rows.
- */
-AgGrid.GROUP_ROW_HEIGHTS = {large: 28, standard: 24, compact: 22, tiny: 18};
-AgGrid.GROUP_ROW_HEIGHTS_MOBILE = {large: 38, standard: 34, compact: 30, tiny: 26};
-AgGrid.getGroupRowHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.GROUP_ROW_HEIGHTS_MOBILE : AgGrid.GROUP_ROW_HEIGHTS)[mode];
+    /**
+     * Full-width group row heights (in pixels). To override for individual grids, use
+     * `GridModel.groupRowHeight`. Group rows that do not use the full width of the row will take the
+     * same height as the data rows.
+     */
+    AgGrid.GROUP_ROW_HEIGHTS = {large: 28, standard: 24, compact: 22, tiny: 18};
+    AgGrid.GROUP_ROW_HEIGHTS_MOBILE = {large: 38, standard: 34, compact: 30, tiny: 26};
+    AgGrid.getGroupRowHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.GROUP_ROW_HEIGHTS_MOBILE : AgGrid.GROUP_ROW_HEIGHTS)[mode];
 
-/**
- * Header heights (in pixels)
- */
-AgGrid.HEADER_HEIGHTS = {large: 28, standard: 24, compact: 22, tiny: 20};
-AgGrid.HEADER_HEIGHTS_MOBILE = {large: 42, standard: 38, compact: 34, tiny: 30};
-AgGrid.getHeaderHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
+    /**
+     * Header heights (in pixels)
+     */
+    AgGrid.HEADER_HEIGHTS = {large: 28, standard: 24, compact: 22, tiny: 20};
+    AgGrid.HEADER_HEIGHTS_MOBILE = {large: 42, standard: 38, compact: 34, tiny: 30};
+    AgGrid.getHeaderHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
+
+})(AgGrid);
+
+
 
 class AgGridLocalModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {AgGridModel} */
-    @lookup(AgGridModel) model;
+    @lookup(AgGridModel) model: AgGridModel;
 
     get headerHeight() {
         const {hideHeaders, sizingMode} = this.model;
-        return hideHeaders ? 0 : AgGrid.getHeaderHeightForSizingMode(sizingMode);
+        return hideHeaders ? 0 : (AgGrid as any).getHeaderHeightForSizingMode(sizingMode);
     }
 
-    onLinked() {
+    override onLinked() {
         const {model} = this;
 
         throwIf(model.agApi,
@@ -138,10 +142,10 @@ class AgGridLocalModel extends HoistModel {
     };
 
     getRowHeight = () => {
-        return AgGrid.getRowHeightForSizingMode(this.model.sizingMode);
+        return (AgGrid as any).getRowHeightForSizingMode(this.model.sizingMode);
     };
 
-    destroy() {
+    override destroy() {
         this.model?.handleGridUnmount();
         super.destroy();
     }

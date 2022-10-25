@@ -21,6 +21,62 @@ import {
     startCase
 } from 'lodash';
 
+export interface AgGridModelConfig {
+
+    sizingMode?: SizingMode;
+
+    /** True to highlight the currently hovered row. */
+    showHover?: boolean;
+
+    /** True to render row borders. */
+    rowBorders?: boolean;
+
+    /** True to render row borders. */
+    cellBorders?: boolean;
+
+    /** True to render cell borders. */
+    stripeRows?: boolean;
+
+    /** True to highlight the focused cell with a border. */
+    showCellFocus?: boolean;
+
+    /** True to suppress display of the grid's header row. */
+    hideHeaders?: boolean;
+
+    /** @internal */
+    xhImpl?: boolean;
+
+}
+
+/**
+ * @see https://www.ag-grid.com/javascript-grid-column-definitions/#saving-and-restoring-column-state
+ */
+export interface AgGridColumnState {
+    isPivot: boolean;
+
+    /** State of each column in the grid. */
+    columns: any[];
+}
+export interface AgGridColumnSortState {
+    colId: string;
+    sort: string;
+    sortIndex: number;
+}
+
+export interface AgGridMiscState {
+    /** Identifier of the currently open tool panel in the side bar*/
+    panelId: string;
+}
+export interface AgGridState {
+    columnState?: AgGridColumnState;
+    sortState?: AgGridColumnSortState[];
+    expandState?: any;
+    filterState?: any[];
+    miscState?: AgGridMiscState;
+    errors?: Record<string, string>;
+}
+
+
 /**
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
  * ag-Grid API and Column API references for interacting with ag-Grid.
@@ -35,38 +91,32 @@ export class AgGridModel extends HoistModel {
     //------------------------
     // Grid Style
     //------------------------
-    /** @member {SizingMode} */
-    @bindable sizingMode;
-    /** @member {boolean} */
-    @bindable rowBorders;
-    /** @member {boolean} */
-    @bindable stripeRows;
-    /** @member {boolean} */
-    @bindable cellBorders;
-    /** @member {boolean} */
-    @bindable showHover;
-    /** @member {boolean} */
-    @bindable showCellFocus;
-    /** @member {boolean} */
-    @bindable hideHeaders;
+    @observable sizingMode: SizingMode;
+    @observable rowBorders: boolean;
+    @observable stripeRows: boolean;
+    @observable cellBorders: boolean;
+    @observable showHover: boolean;
+    @observable showCellFocus: boolean;
+    @observable hideHeaders: boolean;
+
+    @action setSizingMode(v: SizingMode) {this.sizingMode = v}
+    @action setRowBorders(v: boolean) {this.rowBorders = v}
+    @action setStripeRows(v: boolean) {this.stripeRows = v}
+    @action setCellBorders(v: boolean) {this.cellBorders = v}
+    @action setShowHover(v: boolean) {this.showHover = v}
+    @action setShowCellFocus(v: boolean) {this.showCellFocus = v}
+    @action setHideHeaders(v: boolean) {this.hideHeaders = v}
+
 
     /** @member {GridApi} */
     @observable.ref agApi = null;
     /** @member {ColumnApi} */
     @observable.ref agColumnApi = null;
 
-    /**
-     * @param {Object} [c] - AgGridModel configuration.
-     * @param {SizingMode} [c.sizingMode] - one of tiny, compact, standard, large
-     * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
-     * @param {boolean} [c.rowBorders] - true to render row borders.
-     * @param {boolean} [c.cellBorders] - true to render cell borders.
-     * @param {boolean} [c.stripeRows] - true (default) to use alternating backgrounds for rows.
-     * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
-     * @param {boolean} [c.hideHeaders] - true to suppress display of the grid's header row.
-     */
+    private _prevSortBy: any;
+
     constructor({
-        sizingMode = SizingMode.STANDARD,
+        sizingMode = 'standard',
         showHover = false,
         rowBorders = false,
         cellBorders = false,
@@ -74,7 +124,7 @@ export class AgGridModel extends HoistModel {
         showCellFocus = false,
         hideHeaders = false,
         xhImpl = false
-    } = {}) {
+    }: AgGridModelConfig = {}) {
         super();
         makeObservable(this);
         this.xhImpl = xhImpl;
@@ -103,11 +153,9 @@ export class AgGridModel extends HoistModel {
         });
     }
 
-    /**
-     * @returns {boolean} - true if the grid fully initialized and its state can be queried/mutated
-     */
+    /** True if the grid fully initialized and its state can be queried/mutated. */
     @computed
-    get isReady() {
+    get isReady(): boolean {
         return !isNil(this.agApi) && !isNil(this.agColumnApi);
     }
 
@@ -115,15 +163,19 @@ export class AgGridModel extends HoistModel {
      * Retrieves the current state of the grid via ag-Grid APIs. This state is returned in a
      * serializable form and can be later restored via setState.
      *
-     * @param {Object} [opts] - options for which state is retrieved.
-     * @param {boolean} [opts.excludeColumnState] - true to exclude the column state
-     * @param {boolean} [opts.excludeSort] - true to exclude the sort state
-     * @param {boolean} [opts.excludeExpand] - true to exclude the expand state
-     * @param {boolean} [opts.excludeFilter] - true to exclude the filter state
-     * @param {boolean} [opts.excludeMiscState] - true to exclude any additional miscellaneous state
-     * @returns {AgGridState} - the current state of the grid
+     * @param excludeColumn - true to exclude the column state
+     * @param excludeSort - true to exclude the sort state
+     * @param excludeExpand - true to exclude the expand state
+     * @param excludeFilter - true to exclude the filter state
+     * @param excludeMisc - true to exclude any additional miscellaneous state
      */
-    getState(opts = {}) {
+    getState(opts: {
+        excludeColumnState?: boolean,
+        excludeSortState?: boolean,
+        excludeExpandState?: boolean,
+        excludeFilterState?: boolean,
+        excludeMiscState?: boolean
+    } = {}): AgGridState {
         this.throwIfNotReady();
 
         const errors = {},
@@ -164,10 +216,8 @@ export class AgGridModel extends HoistModel {
      * recommended that applications wait until the data has been loaded in the grid before setting
      * the state if including those elements. This method can be called immediately after the data
      * has been loaded via agApi.setRowData
-     *
-     * @param {AgGridState} state
      */
-    setState(state) {
+    setState(state: AgGridState) {
         this.throwIfNotReady();
 
         const {columnState, sortState, expandState, filterState, miscState} = state;
@@ -178,10 +228,7 @@ export class AgGridModel extends HoistModel {
         if (miscState) this.setMiscState(miscState);
     }
 
-    /**
-     * @returns {AgGridMiscState}
-     */
-    getMiscState() {
+    getMiscState(): AgGridMiscState {
         this.throwIfNotReady();
 
         return {
@@ -191,9 +238,8 @@ export class AgGridModel extends HoistModel {
 
     /**
      * Sets the grid state which doesn't fit into the other buckets.
-     * @param {AgGridMiscState} miscState
      */
-    setMiscState(miscState) {
+    setMiscState(miscState: AgGridMiscState) {
         this.throwIfNotReady();
 
         const {agApi} = this,
@@ -207,10 +253,10 @@ export class AgGridModel extends HoistModel {
     }
 
     /**
-     * @returns {Object[]} - current filter state of the grid.
-     *      @see https://www.ag-grid.com/javascript-grid-filtering/#get-set-all-filter-models
+     * @returns Current filter state of the grid.
+     * @see https://www.ag-grid.com/javascript-grid-filtering/#get-set-all-filter-models
      */
-    getFilterState() {
+    getFilterState(): any[] {
         this.throwIfNotReady();
 
         const {agApi} = this;
@@ -220,10 +266,8 @@ export class AgGridModel extends HoistModel {
     /**
      * Sets the grid filter state.
      * Note that this state may be data-dependent, depending on the types of filter being used.
-     *
-     * @param {Object[]} filterState
      */
-    setFilterState(filterState) {
+    setFilterState(filterState: any[]) {
         this.throwIfNotReady();
 
         const {agApi} = this;
@@ -233,10 +277,10 @@ export class AgGridModel extends HoistModel {
     }
 
     /**
-     * @returns {Object[]} - current sort state of the grid.
-     *      @see https://www.ag-grid.com/javascript-grid-sorting/#sorting-api
+     * @returns current sort state of the grid.
+     * @see https://www.ag-grid.com/javascript-grid-sorting/#sorting-api
      */
-    getSortState() {
+    getSortState(): AgGridColumnSortState[] {
         this.throwIfNotReady();
 
         const {agColumnApi} = this,
@@ -267,9 +311,8 @@ export class AgGridModel extends HoistModel {
 
     /**
      * Sets the grid sort state.
-     * @param {Object[]} sortState
      */
-    setSortState(sortState) {
+    setSortState(sortState: AgGridColumnSortState[]) {
         this.throwIfNotReady();
 
         const sortedColumnState = cloneDeep(sortState),
@@ -285,7 +328,7 @@ export class AgGridModel extends HoistModel {
         // ag-Grid does not allow "secondary" columns to be manipulated by applyColumnState
         // so this approach is required for setting sort config on secondary columns.
         if (isPivot && havePivotCols && !isEmpty(secondaryColumnState)) {
-            // 1st clear all pre-exisiting primary column sorts
+            // 1st clear all pre-existing primary column sorts
             // with an explicit clear of the auto_group column,
             // which is not cleared by the defaultState config.
             colApi.applyColumnState({
@@ -317,7 +360,8 @@ export class AgGridModel extends HoistModel {
                 } else {
                     console.warn(
                         'Could not find a secondary column to associate with the pivot column path',
-                        state.colId);
+                        state.colId
+                    );
                 }
             });
         }
@@ -331,10 +375,8 @@ export class AgGridModel extends HoistModel {
         agApi.onSortChanged();
     }
 
-    /**
-     * @returns {AgGridColumnState} - current column state of the grid, including pivot mode
-     */
-    getColumnState() {
+    /** @returns current column state of the grid, including pivot mode */
+    getColumnState(): AgGridColumnState {
         this.throwIfNotReady();
 
         const {agColumnApi} = this,
@@ -350,11 +392,8 @@ export class AgGridModel extends HoistModel {
         };
     }
 
-    /**
-     * Sets the columns state of the grid
-     * @param {AgGridColumnState} colState
-     */
-    setColumnState(colState) {
+    /** Sets the columns state of the grid. */
+    setColumnState(colState: AgGridColumnState) {
         this.throwIfNotReady();
 
         const {agColumnApi} = this,
@@ -379,9 +418,8 @@ export class AgGridModel extends HoistModel {
 
     /**
      * Sets the sort state on the grid's column state
-     * @param {GridSorter[]} sortBy
      */
-    applySortBy(sortBy) {
+    applySortBy(sortBy: any[]) {    // TODO: GridSorter.
         this.throwIfNotReady();
         const {agColumnApi, agApi} = this,
             prevSortBy = this._prevSortBy;
@@ -420,10 +458,8 @@ export class AgGridModel extends HoistModel {
         this._prevSortBy = sortBy;
     }
 
-    /**
-     * @returns {Object} - the current row expansion state of the grid in a serializable form
-     */
-    getExpandState() {
+    /** @returns the current row expansion state of the grid in a serializable form. */
+    getExpandState(): any {
         this.throwIfNotReady();
 
         const expandState = {};
@@ -452,9 +488,9 @@ export class AgGridModel extends HoistModel {
 
     /**
      * Sets the grid row expansion state
-     * @param {Object} expandState - grid expand state retrieved via getExpandState()
+     * @param expandState - grid expand state retrieved via getExpandState()
      */
-    setExpandState(expandState) {
+    setExpandState(expandState: any) {
         this.throwIfNotReady();
 
         const {agApi} = this;
@@ -474,8 +510,8 @@ export class AgGridModel extends HoistModel {
         }
     }
 
-    /** @returns {(string[])} - list of selected row node ids */
-    getSelectedRowNodeIds() {
+    /** @returns list of selected row node ids */
+    getSelectedRowNodeIds(): string[] {
         this.throwIfNotReady();
         return this.agApi.getSelectedNodes().map(it => it.id);
     }
@@ -483,9 +519,10 @@ export class AgGridModel extends HoistModel {
     /**
      * Sets the selected row node ids. Any rows currently selected which are not in the list will be
      * deselected.
-     * @param ids {(string[])} - row node ids to mark as selected
+     *
+     * @param ids - row node ids to mark as selected
      */
-    setSelectedRowNodeIds(ids) {
+    setSelectedRowNodeIds(ids: string[]) {
         this.throwIfNotReady();
 
         const {agApi} = this;
@@ -497,10 +534,10 @@ export class AgGridModel extends HoistModel {
     }
 
     /**
-     * @returns {string} - the id of the first row in the grid, after sorting and filtering, which
+     * @returns the id of the first row in the grid, after sorting and filtering, which
      *      has data associated with it (i.e. not a group or other synthetic row).
      */
-    getFirstSelectableRowNodeId() {
+    getFirstSelectableRowNodeId(): string {
         return this.getFirstSelectableRowNode()?.id;
     }
 
@@ -571,7 +608,7 @@ export class AgGridModel extends HoistModel {
         this.agColumnApi = null;
     }
 
-    getPinnedRowData(side) {
+    private getPinnedRowData(side) {
         const {agApi} = this,
             count = agApi[`getPinned${side}RowCount`](),
             ret = [];
@@ -585,11 +622,11 @@ export class AgGridModel extends HoistModel {
 
     }
 
-    getPivotColumnId(column) {
+    private getPivotColumnId(column) {
         return [column.colDef.pivotKeys, column.colDef.pivotValueColumn.colId];
     }
 
-    getGroupNodePath(node) {
+    private getGroupNodePath(node) {
         const buildNodePath = (node, path = []) => {
             // ag-Grid will always have a root node with the id ROOT_NODE_ID in the node parent hierarchy
             // so we need to make sure we don't consider it as part of the path here
@@ -604,34 +641,7 @@ export class AgGridModel extends HoistModel {
         return buildNodePath(node);
     }
 
-    throwIfNotReady() {
+    private throwIfNotReady() {
         throwIf(!this.isReady, 'AgGrid is not ready! Make sure to check \'isReady\' before attempting this operation!');
     }
 }
-
-/**
- * @typedef {Object} AgGridColumnState
- * @property {boolean} isPivot - true if pivot mode is enabled
- * @property {Object[]} columns - state of each column in the grid
- *      @see https://www.ag-grid.com/javascript-grid-column-definitions/#saving-and-restoring-column-state
- */
-
-/**
- * @typedef {Object} AgGridColumnSortState
- * @property {string} colId
- * @property {string} direction
- */
-
-/**
- * @typedef {Object} AgGridMiscState
- * @property {string} panelId - identifier of the currently open tool panel in the side bar
- */
-
-/**
- * @typedef {Object} AgGridState
- * @property {AgGridColumnState} [columnState]
- * @property {AgGridColumnSortState[]} [sortState]
- * @property {Object} [expandState]
- * @property {Object[]} [filterState]
- * @property {AgGridMiscState} [miscState]
- */
