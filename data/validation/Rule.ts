@@ -40,7 +40,7 @@ export type Constraint<T=any> = (fieldState: FieldState<T>, allValues: Record<st
  * @param allValues - current values for all fields in form, keyed by field name.
  * @returns true if this rule is currently active.
  */
-export type When = (field: Field|BaseFieldModel, allValues: Record<string, any>) => boolean;
+export type When = (field: Field & BaseFieldModel, allValues: Record<string, any>) => boolean;
 
 
 export interface FieldState<T=any> {
