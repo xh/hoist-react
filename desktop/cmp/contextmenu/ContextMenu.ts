@@ -4,29 +4,17 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, MenuItem} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {menu, menuDivider, MenuDivider, menuItem, MenuItem} from '@xh/hoist/kit/blueprint';
+import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
-import {isEmpty} from 'lodash';
-import {isValidElement, ReactNode} from 'react';
-import {ContextMenuItem} from './ContextMenuItem';
+import {cloneDeep, isEmpty, isString} from 'lodash';
+import {isValidElement, ReactElement, ReactNode} from 'react';
 
 export interface ContextMenuProps {
-    menuItems: ContextMenuItemLike[]
+    menuItems: (MenuItem|ReactNode)[]
 }
-
-/**
- * The special string token '-' will be replaced with a MenuDivider.
- * ReactNodes or other strings will be interpreted as the `text` property for a MenuItem.
- */
-export type ContextMenuItemLike = ContextMenuItem|
-    Partial<ContextMenuItem>|
-    MenuDivider|
-    MenuItem|
-    '-'|
-    ReactNode
 
 /**
  * ContextMenu
@@ -50,14 +38,12 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory({
 //---------------------------
 // Implementation
 //---------------------------
-function parseMenuItems(items: ContextMenuItemLike[]): ContextMenuItemLike[] {
+function parseMenuItems(items: any[]): ReactNode[] {
     items = items.map(item => {
-        if (item === '-' || isValidElement(item)) return item;
+        if (isString(item) || isValidElement(item)) return item;
 
-        if (!(item instanceof ContextMenuItem)) {
-            item = new ContextMenuItem(item);
-        }
-        if (item.prepareFn) item.prepareFn(item);
+        item = cloneDeep(item);
+        item.prepareFn?.(item);
         return item;
     });
 
@@ -66,11 +52,9 @@ function parseMenuItems(items: ContextMenuItemLike[]): ContextMenuItemLike[] {
         .filter(filterConsecutiveMenuSeparators())
         .map(item => {
             if (item === '-') return menuDivider();
-            if (isValidElement(item)) {
-                if (item instanceof MenuItem || item instanceof MenuDivider) return item;
-                return menuItem({text: item});
+            if (isString(item) || isValidElement(item)) {
+                return item;
             }
-
             const items = item.items ? parseMenuItems(item.items) : null;
             return menuItem({
                 text: item.text,

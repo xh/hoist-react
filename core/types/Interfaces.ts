@@ -221,3 +221,40 @@ export interface TrackOptions {
     /** Optional flag to omit sending message. */
     omit?: boolean;
 }
+
+
+/**
+ *  Basic interface for a MenuItem to appear in a menu.
+ *
+ *  MenuItems can be displayed within a context menu, or shown when clicking on a button.
+ */
+export interface MenuItem {
+
+    /** Label to be displayed. */
+    text: string;
+
+    /** Icon to be displayed. */
+    icon?: ReactElement;
+
+    /** Intent to be used for rendering the action. */
+    intent?: Intent;
+
+    /** Executed when the user clicks the menu item. */
+    actionFn?: () => void;
+
+    /** Executed before the item is shown.  Use to adjust properties dynamically*/
+    prepareFn?: (me: MenuItem) => void;
+
+    /**
+     * Child menu items.
+     *
+     * React Nodes may be used to specify non-active dividers.
+     */
+    items?: (MenuItem|ReactNode)[];
+
+    /** True to disable this item. */
+    disabled?: boolean;
+
+    /** True to hide this item. */
+    hidden?: boolean;
+}

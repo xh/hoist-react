@@ -18,7 +18,7 @@ import {
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {useContextMenu, UseContextMenuSpec, useHotkeys} from '@xh/hoist/desktop/hooks';
+import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import '@xh/hoist/desktop/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, omitBy} from 'lodash';
@@ -29,6 +29,7 @@ import {resizeContainer} from './impl/ResizeContainer';
 import './Panel.scss';
 import {PanelConfig, PanelModel} from './PanelModel';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
+import { ContextMenuItem } from '../contextmenu/ContextMenuItem';
 
 interface PanelProps extends BoxProps<PanelModel> {
 
@@ -43,9 +44,10 @@ interface PanelProps extends BoxProps<PanelModel> {
 
     /**
      * Specification of a context menu.
-     * @see useContextMenu() for more information on accepted values for this prop.
+     * Array of ContextMenuItems or a function that receives the triggering event
+     * and returns such an array.  A ContextMenu element may also be provided.
      */
-    contextMenu?: UseContextMenuSpec;
+    contextMenu?: ContextMenuItem[]|((e: MouseEvent) => ContextMenuItem[])|ReactElement
 
     /**
      * Specification of hotkeys as prescribed by blueprint.

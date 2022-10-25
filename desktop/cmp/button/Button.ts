@@ -26,7 +26,8 @@ export interface ButtonProps<M extends HoistModel = null> extends BoxProps<M> {
     rightIcon?: ReactElement;
     style?: CSSProperties;
     text?: ReactNode;
-    title?: string;
+    title?: ReactNode;
+
     /** Alias for title. */
     tooltip?: string;
 }

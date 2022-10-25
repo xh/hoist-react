@@ -13,25 +13,22 @@ import classNames from 'classnames';
 import {isEmpty, isFunction} from 'lodash';
 import PT from 'prop-types';
 import {isValidElement} from 'react';
-import {MenuItem} from '../MenuItem';
 
 import './Menu.scss';
 
 /**
- * Menu Component.
- *
- * Not typically created directly, but instead created via a MenuButton or similar affordance.
+ * Internal Menu Component for MenuButton.
  *
  * Note that the Menu itself does not maintain open / close state - it is the responsibility
  * of the triggering component to manage this state. Pass an `onDismiss` callback to
  * facilitate closing the menu from within this component.
  *
- * @see MenuButton
- * @private
+ * @internal
  */
 export const [Menu, menu] = hoistCmp.withFactory({
     displayName: 'Menu',
     className: 'xh-menu',
+
     render({menuItems, onDismiss, title, ...props}, ref) {
         const impl = useLocalModel(LocalModel),
             items = impl.parseMenuItems(menuItems, onDismiss);
@@ -57,18 +54,8 @@ export const [Menu, menu] = hoistCmp.withFactory({
     }
 });
 
-Menu.propTypes = {
-    /** Array of MenuItems or configs to create them */
-    menuItems: PT.arrayOf(PT.oneOfType([PT.instanceOf(MenuItem), PT.object])).isRequired,
-
-    /** Callback triggered when use dismisses the menu */
-    onDismiss: PT.func.isRequired,
-
-    /** Optional title to display above the menu */
-    title: PT.node
-};
-
-class LocalModel extends HoistModel {
+class MenuModel extends HoistModel {
+    xhImpl = true;
 
     @bindable pressedIdx;
 
