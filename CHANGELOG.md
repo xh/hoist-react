@@ -7,6 +7,8 @@
 * Fixed layout issues caused by top-level DOM elements created by `ModalSupport`
   and `ColumnWidthCalculator` (grid auto-sizing). Resolved occasional gaps between select inputs and
   their drop-down menus.
+* Fix desktop styling bug where buttons inside a `Toast` could be rendered with a different color
+  than the rest of the toast contents.
 
 ## v53.0.0 - 2022-10-19
 
