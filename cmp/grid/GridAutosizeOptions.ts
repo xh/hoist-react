@@ -6,11 +6,12 @@
  */
 
 import {Column} from './columns';
+import {GridAutosizeMode} from './enums/GridAutosizeMode';
 
 export interface GridAutosizeOptions {
 
     /** Mode governing when resize occurs. Defaults to GridAutosizeMode.ON_SIZING_MODE_CHANGE.*/
-    mode: string;
+    mode: GridAutosizeMode;
 
     /**
      * Additional pixels to add to the size of each column beyond its absolute minimum.

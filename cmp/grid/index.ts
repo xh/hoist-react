@@ -1,8 +1,8 @@
 export * from './columns';
 
 export * from './enums/TreeStyle';
+export * from './enums/GridAutosizeMode';
 
-export * from './GridAutosizeMode';
 export * from './helpers/GridCountLabel';
 
 export * from './renderers/MultiFieldRenderer';

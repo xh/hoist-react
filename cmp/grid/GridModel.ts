@@ -8,13 +8,14 @@ import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column, ColumnGroup, GridAutosizeMode, TreeStyle} from '@xh/hoist/cmp/grid';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {FieldType, Store, StoreSelectionModel} from '@xh/hoist/data';
+import {HoistModel, managed, SizingMode, Some, TaskObserver, VSide, XH} from '@xh/hoist/core';
+import {FieldType, RawData, Store, StoreConfig, StoreSelectionConfig, StoreSelectionModel} from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
+import { ExportOptions } from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
     deepFreeze,
@@ -49,197 +50,90 @@ import {
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
 import {GridSorter} from './impl/GridSorter';
 import {managedRenderer} from './impl/Utils';
+import {GridAutosizeOptions} from "@xh/hoist/cmp/grid/GridAutosizeOptions";
+import { ReactNode } from 'react';
 
-/**
- * Core Model for a Grid, specifying the grid's data store, column definitions,
- * sorting/grouping/selection state, and context menu configuration.
- *
- * This is the primary application entry-point for specifying Grid component options and behavior.
- *
- * This model also supports nested tree data. To show a tree:
- *   1) Bind this model to a store with hierarchical records.
- *   2) Set `treeMode: true` on this model.
- *   3) Include a single column with `isTreeColumn: true`. This column will provide expand /
- *      collapse controls and indent child columns in addition to displaying its own data.
- *
- */
-export class GridModel extends HoistModel {
 
-    static DEFAULT_RESTORE_DEFAULTS_WARNING =
-        fragment(
-            'This action will clear any customizations you have made to this grid, including filters, column selection, ordering, and sizing.', br(), br(),
-            'OK to proceed?'
-        );
+export interface GridModelConfig {
 
-    static DEFAULT_AUTOSIZE_MODE = GridAutosizeMode.ON_SIZING_MODE_CHANGE;
+    /** Columns for this grid. */
+    columns?: (ColumnConfig|ColumnGroupConfig)[];
 
-    //------------------------
-    // Immutable public properties
-    //------------------------
-    /** @member {Store} */
-    store;
-    /** @member {StoreSelectionModel} */
-    selModel;
-    /** @member {boolean} */
-    treeMode;
-    /** @member {ColChooserModel} */
-    colChooserModel;
-    /** @member {GridFilterModel} */
-    @managed filterModel;
-    /** @member {function} */
-    rowClassFn;
-    /** @member {Object.<string, RowClassRuleFn>} */
-    rowClassRules;
-    /** @member {(Array|function)} */
-    contextMenu;
-    /** @member {number} */
-    groupRowHeight;
-    /** @member {Grid~groupRowRendererFn} */
-    groupRowRenderer;
-    /** @member {GridGroupSortFn} */
-    groupSortFn;
-    /** @member {boolean} */
-    showGroupRowCounts;
-    /** @member {boolean} */
-    enableColumnPinning;
-    /** @member {boolean} */
-    enableExport;
-    /** @member {ExportOptions} */
-    exportOptions;
-    /** @member {boolean} */
-    useVirtualColumns;
-    /** @member {GridAutosizeOptions} */
-    autosizeOptions;
-    /** @member {function} */
-    restoreDefaultsFn;
-    /** @member {ReactNode} */
-    restoreDefaultsWarning;
-    /** @member {boolean} */
-    fullRowEditing;
-    /** @member {boolean} */
-    hideEmptyTextBeforeLoad;
-    /** @member {boolean} */
-    highlightRowOnClick;
-
-    /** @member {AgGridModel} */
-    @managed agGridModel;
-
-    //------------------------
-    // Observable API
-    //------------------------
-    /** @member {Object[]} - {@link Column} and {@link ColumnGroup} objects */
-    @observable.ref columns = [];
-    /** @member {ColumnState[]} */
-    @observable.ref columnState = [];
-    /** @member {Object} */
-    @observable.ref expandState = {};
-    /** @member {AutosizeState} */
-    @observable.ref autosizeState = {};
-    /** @member {GridSorter[]} */
-    @observable.ref sortBy = [];
-    /** @member {string[]} */
-    @observable.ref groupBy = null;
-    /** @member {(string|boolean)} */
-    @observable showSummary = false;
-    /** @member {(ReactNode|string)} */
-    @observable emptyText;
-    /** @member {TreeStyle} */
-    @observable treeStyle;
+    /**  Column configs to be set on all columns.  Merges deeply. */
+    colDefaults?: Partial<ColumnConfig>;
 
     /**
-     * @member {boolean} - Flag to track inline editing at a granular level.
-     *      Will toggle each time row or cell editing is activated or ended.
+     * A Store instance, or a config with which to create a Store. If not supplied,
+     * store fields will be inferred from columns config.
      */
-    @observable isEditing = false;
+    store?: Store|StoreConfig;
+
+    /** True if grid is a tree grid (default false). */
+    treeMode?: boolean;
+
+    /** Location for a docked summary row. Requires `store.SummaryRecord` to be populated. */
+     showSummary?: boolean|VSide;
+
+     /** Object providing selection behavior of Grid. */
+     selModel?: StoreSelectionModel|StoreSelectionConfig|'single'|'multiple'|'disabled';
+
+    /** Config with which to create a GridFilterModel, or `true` to enable default. Desktop only.*/
+    filterModel?: GridFilterConfig|boolean;
+
+    /** Config with which to create aColChooserModel, or boolean `true` to enable default.*/
+    colChooserModel?: any|boolean;
 
     /**
-     * @member {boolean} - Flag to track inline editing at a general level.
-     *      Will not change during transient navigation from cell to cell or row to row,
-     *      but rather is debounced such that grid editing will need to "settle" for a
-     *      short time before toggling.
+     * Async function to be called when the user triggers GridModel.restoreDefaultsAsync(). This
+     * function will be called after the built-in defaults have been restored, and can be
+     * used to restore application specific defaults.
      */
-    @observable isInEditingMode = false;
-
-    static defaultContextMenu = [
-        'filter',
-        '-',
-        'copy',
-        'copyWithHeaders',
-        'copyCell',
-        '-',
-        'expandCollapseAll',
-        '-',
-        'exportExcel',
-        'exportCsv',
-        '-',
-        'restoreDefaults',
-        '-',
-        'colChooser',
-        'autosizeColumns'
-    ];
-
-    /** @private - initial state provided to ctor - powers restoreDefaults(). */
-    _defaultState;
-
-    /** @member {GridPersistenceModel} */
-    @managed persistenceModel;
+    restoreDefaultsFn?: () => Promise<void>;
 
     /**
-     * Is autosizing enabled on this grid?
-     *
-     * To disable autosizing, set autosizeOptions.mode to GridAutosizeMode.DISABLED.
-     * @returns {boolean}
+     * Confirmation warning to be presented to user before restoring default grid state. Set to
+     * null to skip user confirmation.
      */
-    get autosizeEnabled() {
-        return this.autosizeOptions.mode !== GridAutosizeMode.DISABLED;
-    }
+    restoreDefaultsWarning?: ReactNode;
 
-    /** @member {TaskObserver} - tracks execution of filtering operations.*/
-    @managed filterTask = TaskObserver.trackAll();
-
-
-    /** @member {TaskObserver} - tracks execution of autosize operations. */
-    @managed autosizeTask = TaskObserver.trackAll();
-
-    /** @package - used internally by any GridFindField that is bound to this GridModel. */
-    @bindable xhFindQuery = null;
+    /** Options governing persistence. */
+    persistWith?: GridModelPersistOptions;
 
     /**
-     * @param {Object} c - GridModel configuration.
-     * @param {Object[]} c.columns - {@link Column} or {@link ColumnGroup} configs
-     * @param {Object} [c.colDefaults] - Column configs to be set on all columns.  Merges deeply.
-     * @param {(Store|Object)} [c.store] - a Store instance, or a config with which to create a
-     *      Store. If not supplied, store fields will be inferred from columns config.
-     * @param {boolean} [c.treeMode] - true if grid is a tree grid (default false).
-     * @param {(string|boolean)} [c.showSummary] - location for a docked summary row. Requires
-     *      `store.SummaryRecord` to be populated. Valid values are true/'top', 'bottom', or false.
-     * @param {(StoreSelectionModel|Object|String)} [c.selModel] - StoreSelectionModel, or a
-     *      config or string `mode` with which to create one.
-     * @param {(GridFilterModelConfig|boolean)} [c.filterModel] - config with which to create a
-     *      GridFilterModel, or boolean `true` to enable default. Desktop only.
-     * @param {(ColChooserModelConfig|boolean)} [c.colChooserModel] - config with which to create a
-     *      ColChooserModel, or boolean `true` to enable default.
-     * @param {function} [c.restoreDefaultsFn] - Async function to be called when the user triggers
-     *      GridModel.restoreDefaultsAsync(). This function will be called after the built-in
-     *      defaults have been restored, and can be used to restore application specific defaults.
-     * @param {?ReactNode} [c.restoreDefaultsWarning] - Confirmation warning to be presented to
-     *      user before restoring default grid state. Set to null to skip user confirmation.
-     * @param {GridModelPersistOptions} [c.persistWith] - options governing persistence.
-     * @param {(ReactNode|string)} [c.emptyText] - text/element to display if grid has no records.
-     *      Defaults to null, in which case no empty text will be shown.
-     * @param {boolean} [c.hideEmptyTextBeforeLoad] - true (default) to hide empty text until
-     *      after the Store has been loaded at least once.
-     * @param {(string|string[]|Object|Object[])} [c.sortBy] - colId(s) or sorter config(s) with
-     *      colId and sort direction.
-     * @param {(string|string[])} [c.groupBy] - Column ID(s) by which to do full-width grouping.
-     * @param {boolean} [c.showGroupRowCounts] - true (default) to show a count of group member
-     *      rows within each full-width group row.
-     * @param {SizingMode} [c.sizingMode] - one of tiny, compact, standard, large. If undefined,
-     *     will default and bind to `XH.sizingMode`.
-     * @param {boolean} [c.showHover] - true to highlight the currently hovered row.
-     * @param {boolean} [c.rowBorders] - true to render row borders.
-     * @param {string} [c.treeStyle] - enable treeMode-specific styles (row background highlights
-     *      and borders). {@see TreeStyle} enum for description of supported modes.
+     * Text/element to display if grid has no records. Defaults to null, in which case no empty
+     * text will be shown.
+     */
+    emptyText?: ReactNode;
+
+    /** True (default) to hide empty text until after the Store has been loaded at least once. */
+    hideEmptyTextBeforeLoad?: boolean;
+
+    /** Initial sort to apply to grid data. */
+    sortyBy?: Some<GridSorterSpec>;
+
+    /** Column ID(s) by which to do full-width grouping. */
+    groupBy?: Some<string>;
+
+    /** True (default) to show a count of group member rows within each full-width group row. */
+    showGroupRowCounts?: boolean;
+
+    /** Size of text in grid.  If undefined, will default and bind to `XH.sizingMode`. */
+    sizingMode?: SizingMode;
+
+    /** True to highlight the currently hovered row. */
+    showHover?: boolean;
+
+    /** True to render row borders. */
+    rowBorders?: boolean;
+
+    /** Specify treeMode-specific styling. */
+    treeStyle: TreeStyle;
+
+    stripeRow?: boolean;
+
+    cellBorders?: boolean
+
+
      * @param {boolean} [c.stripeRows] - true to use alternating backgrounds for rows.
      * @param {boolean} [c.cellBorders] - true to render cell borders.
      * @param {boolean} [c.showCellFocus] - true to highlight the focused cell with a border.
@@ -310,6 +204,128 @@ export class GridModel extends HoistModel {
      *     designed for early client-access and testing, but are not yet part of the Hoist API.
      * @param {*} [c...rest] - additional data to attach to this model instance.
      */
+
+}
+
+
+/**
+ * Core Model for a Grid, specifying the grid's data store, column definitions,
+ * sorting/grouping/selection state, and context menu configuration.
+ *
+ * This is the primary application entry-point for specifying Grid component options and behavior.
+ *
+ * This model also supports nested tree data. To show a tree:
+ *   1) Bind this model to a store with hierarchical records.
+ *   2) Set `treeMode: true` on this model.
+ *   3) Include a single column with `isTreeColumn: true`. This column will provide expand /
+ *      collapse controls and indent child columns in addition to displaying its own data.
+ *
+ */
+export class GridModel extends HoistModel {
+
+    static DEFAULT_RESTORE_DEFAULTS_WARNING =
+        fragment(
+            'This action will clear any customizations you have made to this grid, including filters, column selection, ordering, and sizing.', br(), br(),
+            'OK to proceed?'
+        );
+
+    static DEFAULT_AUTOSIZE_MODE: GridAutosizeMode = 'onSizingModeChange';
+
+
+    //------------------------
+    // Immutable public properties
+    //------------------------
+    store: Store;
+    selModel: StoreSelectionModel;
+    treeMode: boolean;
+    colChooserModel: HoistModel;
+    rowClassFn: (d: RawData) => string;
+    rowClassRules: Record<string, RowClassRuleFn>;
+    contextMenu: any;
+    groupRowHeight: number;
+    groupRowRenderer: GroupRowRendererFn;
+    groupSortFn: GridGroupSortFn;
+    showGroupRowCounts: boolean;
+    enableColumnPinning: boolean;
+    enableExport: boolean;
+    exportOptions: ExportOptions;
+    useVirtualColumns: boolean;
+    autosizeOptions: GridAutosizeOptions;
+    restoreDefaultsFn: () => Promise<void>;
+    restoreDefaultsWarning: ReactNode;
+    fullRowEditing: boolean;
+    hideEmptyTextBeforeLoad: boolean;
+    highlightRowOnClick: boolean;
+
+    @managed filterModel: GridFilterModel;
+    @managed agGridModel: AgGridModel;
+
+    //------------------------
+    // Observable API
+    //------------------------
+    @observable.ref columns: (ColumnGroup|Column)[] = [];
+    @observable.ref columnState: ColumnState[] = [];
+    @observable.ref expandState: any = {};
+    @observable.ref autosizeState: AutosizeState = {};
+    @observable.ref sortBy: GridSorter[] = [];
+    @observable.ref groupBy: string[] = null;
+    @observable showSummary: boolean = false;
+    @observable.ref emptyText: ReactNode;
+    @observable treeStyle: TreeStyle;
+
+    /**
+     * Flag to track inline editing at a granular level. Will toggle each time row
+     * or cell editing is activated or ended.
+     */
+    @observable isEditing = false;
+
+    /**
+     * Flag to track inline editing at a general level.
+     * Will not change during transient navigation from cell to cell or row to row,
+     * but rather is debounced such that grid editing will need to "settle" for a
+     * short time before toggling.
+     */
+    @observable isInEditingMode: boolean = false;
+
+    static defaultContextMenu = [
+        'filter',
+        '-',
+        'copy',
+        'copyWithHeaders',
+        'copyCell',
+        '-',
+        'expandCollapseAll',
+        '-',
+        'exportExcel',
+        'exportCsv',
+        '-',
+        'restoreDefaults',
+        '-',
+        'colChooser',
+        'autosizeColumns'
+    ];
+
+    private _defaultState; // initial state provided to ctor - powers restoreDefaults().
+    @managed persistenceModel: GridPersistenceModel;
+
+    /**
+     * Is autosizing enabled on this grid?
+     * To disable autosizing, set autosizeOptions.mode to GridAutosizeMode.DISABLED.
+     */
+    get autosizeEnabled(): boolean {
+        return this.autosizeOptions.mode !== 'disabled';
+    }
+
+    /** Tracks execution of filtering operations.*/
+    @managed filterTask = TaskObserver.trackAll();
+
+
+    /** Tracks execution of autosize operations. */
+    @managed autosizeTask = TaskObserver.trackAll();
+
+    /** @internal - used internally by any GridFindField that is bound to this GridModel. */
+    @bindable xhFindQuery = null;
+
     constructor({
         store,
         columns,

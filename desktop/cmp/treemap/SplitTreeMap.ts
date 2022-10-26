@@ -111,7 +111,7 @@ const mapTitle = hoistCmp.factory<SplitTreeMapModel>(
 
         const container = titleOrientation === 'horizontal' ? hbox : vbox,
             dim = titleOrientation === 'horizontal' ? 'height' : 'width',
-            size = AgGrid.getHeaderHeightForSizingMode(XH.sizingMode);
+            size = (AgGrid as any).getHeaderHeightForSizingMode(XH.sizingMode);
 
         return container({
             style: {[dim]: `${size}px`},

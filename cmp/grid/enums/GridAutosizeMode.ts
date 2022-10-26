@@ -32,5 +32,7 @@ export const GridAutosizeMode = Object.freeze({
      * Also offers the affordances provided by ON_DEMAND.
      */
     MANAGED: 'managed'
-
 });
+
+// eslint-disable-next-line
+export type GridAutosizeMode = typeof GridAutosizeMode[keyof typeof GridAutosizeMode];
