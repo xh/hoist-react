@@ -8,7 +8,7 @@ import {statsPanel} from '@xh/hoist/inspector/stats/StatsPanel';
 import './Inspector.scss';
 
 /**
- * {@see InspectorService} for an explanation of the Hoist Inspector tool.
+ * See {@link InspectorService} for an explanation of the Hoist Inspector tool.
  */
 export const inspectorPanel = hoistCmp.factory({
     displayName: 'InspectorPanel',

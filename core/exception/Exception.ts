@@ -4,7 +4,8 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {XH} from '../';
+import {FetchOptions} from '@xh/hoist/svc';
+import {PlainObject, XH} from '../';
 import {isString} from 'lodash';
 
 /**
@@ -18,12 +19,10 @@ export class Exception {
 
     /**
      * Create and return a Javascript Error object.
-     * @see {XH.exception} - an alias for this factory off of `XH`.
-     * @param {(Object|string)} cfg - additional properties to add to the returned Error.
-     *      If a string, will become the 'message' value.
-     * @returns {Error}
+     * See {@link XH.exception} - an alias for this factory off of `XH`.
+     * @param cfg - properties to add to the returned Error, or a string to use as message.
      */
-    static create(cfg) {
+    static create(cfg: PlainObject|string): Error {
         return this.createInternal({
             name: 'Exception',
             message: 'An unknown error occurred'
@@ -32,9 +31,8 @@ export class Exception {
 
     /**
      * Create an Error for when an operation (e.g. a Promise) times out.
-     * @param {number} interval - time elapsed (in ms) before this timeout was thrown.
-     * @param {...*} [rest] - additional properties to add to the returned Error.
-     * @returns {Error}
+     * @param interval - time elapsed (in ms) before this timeout was thrown.
+     * @param rest - additional properties to add to the returned Error.
      */
     static timeout({interval, ...rest}) {
         const displayInterval = (interval % 1000) ? `${interval}ms` : `${interval/1000}s`;
@@ -50,14 +48,13 @@ export class Exception {
 
     /**
      * Create an Error to throw when a fetch call returns a !ok response.
-     * @param {Object} fetchOptions - original options provided to `FetchService.fetch()`.
-     * @param {Response} response - return value of native fetch, with the addition of an optional
+     * @param fetchOptions - original options provided to `FetchService.fetch()`.
+     * @param response - return value of native fetch, with the addition of an optional
      *      `responseText` property containing the already-awaited output of `response.text()`. If
      *      `responseText` is determined to be a JSON object containing a `name` property, it will
      *      be treated as a serialized exception and used to construct the returned Error.
-     * @returns {Error}
      */
-    static fetchError(fetchOptions, response) {
+    static fetchError(fetchOptions: FetchOptions, response) {
         const httpStatus = response.status,
             defaults = {
                 name: 'HTTP Error ' + (httpStatus || ''),
@@ -96,11 +93,10 @@ export class Exception {
 
     /**
      * Create an Error to throw when a fetch call is aborted.
-     * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
-     * @param {Response} response - resolved value from native fetch
-     * @returns {Error}
+     * @param fetchOptions - original options the app passed to FetchService.
+     * @param e - Error thrown by native fetch
      */
-    static fetchAborted(fetchOptions, response) {
+    static fetchAborted(fetchOptions: FetchOptions, e) {
         return this.createInternal({
             name: 'Fetch Aborted',
             message: `Fetch request aborted, url: "${fetchOptions.url}"`,
@@ -113,12 +109,11 @@ export class Exception {
 
     /**
      * Create an Error to throw when a fetch call times out.
-     * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
-     * @param {Error} e - exception thrown by timeout of underlying Promise.
-     * @param {string} [message] - optional custom message
-     * @returns {Error}
+     * @param fetchOptions - original options the app passed when calling FetchService.
+     * @param e - exception thrown by timeout of underlying Promise.
+     * @param message - optional custom message
      */
-    static fetchTimeout(fetchOptions, e, message) {
+    static fetchTimeout(fetchOptions: FetchOptions, e, message: string): Error {
         const {interval} = e;
         return this.createInternal({
             name: 'Fetch Timeout',
@@ -133,11 +128,10 @@ export class Exception {
 
     /**
      * Create an Error for when the server called by fetch does not respond
-     * @param {Object} fetchOptions - original options the app passed to FetchService.fetch
-     * @param {Error} e - Error object created by native fetch
-     * @returns {Error}
+     * @param fetchOptions - original options the app passed to FetchService.fetch
+     * @param e - Error thrown by native fetch
      */
-    static serverUnavailable(fetchOptions, e) {
+    static serverUnavailable(fetchOptions: FetchOptions, e) {
         const protocolPattern = /^[a-z]+:\/\//i,
             originPattern = /^[a-z]+:\/\/[^/]+/i,
             match = fetchOptions.url.match(originPattern),
@@ -156,10 +150,11 @@ export class Exception {
         });
     }
 
+
     //-----------------------
     // Implementation
     //-----------------------
-    static createInternal(defaults, override={}) {
+    private static createInternal(defaults, override={}) {
         if (isString(override)) {
             override = {message: override};
         }

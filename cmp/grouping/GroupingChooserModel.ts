@@ -12,7 +12,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {cloneDeep, difference, isFunction, isArray, isEmpty, isEqual, isString, keys, sortBy} from 'lodash';
 
-interface GroupingChooserConfig {
+export interface GroupingChooserConfig {
     /**
      * Dimensions available for selection. When using GroupingChooser to create Cube queries,
      * it is recommended to pass the `dimensions` from the related cube (or a filtered subset thereof).

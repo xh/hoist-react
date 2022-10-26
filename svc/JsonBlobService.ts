@@ -7,9 +7,7 @@
 import {XH, HoistService} from '@xh/hoist/core';
 
 /**
- * Service to read and set user-specific named json values.
- *
- * Server-side support is provided by hoist-core.
+ * Service to read and set chunks of user-specific JSON persisted via Hoist Core's JSONBlob class.
  */
 export class JsonBlobService extends HoistService {
 
@@ -24,7 +22,7 @@ export class JsonBlobService extends HoistService {
      * Return the list of blobs visible to the current user.
      *
      * @param type - reference key for which type of data to list.
-     * @param [includeValue] - true to include the full value string for each blob.
+     * @param includeValue - true to include the full value string for each blob.
      */
     async listAsync(
         {type, includeValue}: { type: string, includeValue?: boolean }
@@ -35,9 +33,7 @@ export class JsonBlobService extends HoistService {
         });
     }
 
-    /**
-     * Saves a new json blob to the server.
-     */
+    /** Persist a new JSONBlob back to the server. */
     async createAsync(
         {type, name, value, meta, description}: {type: string, name: string, description?: string, value: any, meta?: any}
     ) {
@@ -49,9 +45,7 @@ export class JsonBlobService extends HoistService {
         });
     }
 
-    /**
-     * Modifies an existing json blob
-     */
+    /** Modify an existing JSONBlob, as identified by its unique token. */
     async updateAsync(
         token: string,
         {name, value, meta, description}: {name?: string, value?: any, meta?: any, description?: string}
@@ -65,9 +59,7 @@ export class JsonBlobService extends HoistService {
         });
     }
 
-    /**
-     * Archives a json blob
-     */
+    /** Archive (soft-delete) an existing JSONBlob, as identified by its unique token. */
     async archiveAsync(token: string) {
         return XH.fetchJson({
             url: 'xh/archiveJsonBlob',
