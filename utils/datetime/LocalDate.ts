@@ -59,7 +59,7 @@ export class LocalDate {
      * `get()` takes an explicit 'YYYYMMDD' or 'YYYY-MM-DD' format and is the safest way to get
      * a LocalDate.
      *
-     * @params any string, timestamp, or date parsable by moment.js.
+     * @param val - any string, timestamp, or date parsable by moment.js.
      */
     static from(val: MomentInput|LocalDate): LocalDate {
         if (isNil(val)) return val;

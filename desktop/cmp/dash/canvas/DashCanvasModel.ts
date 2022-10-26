@@ -60,7 +60,7 @@ export interface DashCanvasItemLayout {
 }
 
 /**
- * Model for {@see DashCanvas}, managing all configurable options for the component and publishing
+ * Model for {@link DashCanvas}, managing all configurable options for the component and publishing
  * the observable state of its current widgets and their layout.
  */
 export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasItemState, DashCanvasViewModel> {
@@ -230,9 +230,8 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
     /**
      * Adds a view to the DashCanvas
      * @param specId - DashCanvasViewSpec id to add to the container
-     * @param opts.title - title for the view
-     * @param opts.position - 'first', 'last', 'nextAvailable', or [previousViewId]
-     * @param opts.state - initial state for the view
+     * @param opts - additional options. Note `position` will accept another view's ID in addition
+     *      to the enumerated values: the new view will be added in that view's current position.
      */
     @action
     addView(
@@ -250,7 +249,7 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
 
     /**
      * Remove a view from the DashCanvas
-     * @param DashCanvasViewModel id to remove from the container
+     * @param id - DashCanvasViewModel id to remove from the container
      */
     @action
     removeView(id: string) {

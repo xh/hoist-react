@@ -20,7 +20,11 @@ export type Side = 'top'|'bottom'|'left'|'right';
 export type VSide = 'top'|'bottom';
 export type HSide = 'left'|'right';
 
+/** Convenience type for common pattern of accepting a single T, or an array of Ts. */
 export type Some<T> = T|T[];
+
+/** Convenience type for a "plain", string-keyed object holding any kind of values. */
+export type PlainObject = Record<string, any>;
 
 /**
  * Specification for debouncing in Hoist.

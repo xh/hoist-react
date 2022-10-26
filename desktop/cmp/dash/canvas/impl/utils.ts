@@ -83,11 +83,11 @@ export function createViewMenuItems({
 }
 
 /**
- * Used to set the {x, y} position for the next added item based on the mouse location when
+ * Used to set the `{x, y}` position for the next added item based on the mouse location when a
  * context menu is triggered
  * @param x - clientX position
  * @param y - clientY position
- * @param dashCanvasModel
+ * @param dashCanvasModel - backing model
  */
 const calcAddPosition = (x: number, y: number, dashCanvasModel: DashCanvasModel) => {
     const calcXY = (positionParams, top, left, w=0, h=0) => {

@@ -57,7 +57,7 @@ export interface DashContainerConfig extends DashConfig<DashViewSpec, DashViewSt
  * and tracking / loading state.
  *
  * State should be structured as nested arrays of container objects, according to
- * GoldenLayout`s content config. Supported container types are `row`, `column` and `stack`.
+ * GoldenLayout's content config. Supported container types are `row`, `column` and `stack`.
  * Child containers and views should be provided as an array under the `contents` key.
  *
  *      + `row` lay out its children horizontally.
@@ -70,14 +70,13 @@ export interface DashContainerConfig extends DashConfig<DashViewSpec, DashViewSt
  * size at parse time. Any unaccounted for space will be divided equally across the remaining children.
  *
  * We differ from GoldenLayout by offering a new type `view`. These should be configured as
- * id references to the provided DashContainerViewSpec, e.g. {type: `view`, id: ViewSpec.id}. These should
- * be used instead of the `component` and `react-component` types provided by GoldenLayout.
+ * id references to the provided DashContainerViewSpec, e.g. `{type: `view`, id: ViewSpec.id}`.
+ * Use instead of the `component` and `react-component` types provided by GoldenLayout.
  *
- * Note that loading state will destroy and reinitialize all components. Therefore,
- * it is recommended you do so sparingly.
+ * Note that loading state will destroy and reinitialize all components - do so sparingly!
  *
- * e.g.
- *
+ * @example
+ * ```
  * [{
  *     type: 'row',
  *     contents: [
@@ -102,6 +101,7 @@ export interface DashContainerConfig extends DashConfig<DashViewSpec, DashViewSt
  *         }
  *     ]
  * }]
+ * ```
  *
  * @see http://golden-layout.com/docs/ItemConfig.html
  * @see http://golden-layout.com/tutorials/getting-started-react.html
