@@ -134,7 +134,7 @@ export interface StoreTransaction {
     add?: (RawData|ChildRawData)[];
 
     /** IDs of existing records to be removed. Any descendents will also be removed. */
-    remove?: string[];
+    remove?: StoreRecordId[];
 
     /**
      *  Update to the dedicated summary row for this store.  If the store has its
@@ -463,7 +463,7 @@ export class Store extends HoistBase {
      *      record should be added, if any.
      */
     @action
-    addRecords(data: RawData[]|RawData, parentId: StoreRecordId) {
+    addRecords(data: RawData[]|RawData, parentId?: StoreRecordId) {
         data = castArray(data);
         if (isEmpty(data)) return;
 

@@ -7,7 +7,15 @@
 import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {hoistCmp, HoistModel, HoistProps, TaskObserver, useLocalModel} from '@xh/hoist/core';
+import {
+    Corner,
+    hoistCmp,
+    HoistModel,
+    HoistProps,
+    Some,
+    TaskObserver,
+    useLocalModel
+} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
@@ -16,9 +24,9 @@ import './LoadingIndicator.scss';
 
 export interface LoadingIndicatorProps extends HoistProps {
     /** TaskObserver(s) that should be monitored to determine if the Indicator should be displayed. */
-    bind?: TaskObserver|TaskObserver[];
+    bind?: Some<TaskObserver>;
     /** Position of the indicator relative to its containing component. */
-    corner: 'tl'|'tr'|'bl'|'br',
+    corner: Corner,
     /** True to display the indicator. */
     isDisplayed?: boolean;
     /** Max characters allowed in message, after which it will be elided. Default 30. */
