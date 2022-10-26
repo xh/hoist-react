@@ -15,7 +15,7 @@ import {isEmpty, forOwn, includes} from 'lodash';
  * Service to display an application changelog (aka release notes) to end users, if so configured.
  *
  * Changelog entries are maintained in a CHANGELOG.md file within the project root, formatted as
- * per https://keepachangelog.com. Requires @xh/hoist-dev-utils v5.7+ to parse the markdown source
+ * per https://keepachangelog.com. Requires hoist-dev-utils v5.7+ to parse the markdown source
  * into JSON and make available via the special `@xh/app-changelog.json` import above.
  *
  * If a changelog is available, the top-level app menu will include an item to view the log in a

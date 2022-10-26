@@ -54,11 +54,12 @@ export class PrefService extends HoistService {
 
     /**
      * Get the value for a given key, either the user-specific value (if set) or the default.
-     * Typically accessed via convenience alias `XH.getPref()`.
+     * Typically accessed via the convenience alias {@link XH.getPref}.
      *
-     * @param [defaultValue] - value to return if the preference key is not found - i.e.
+     * @param key - unique key used to identify the pref.
+     * @param defaultValue - value to return if the preference key is not found - i.e.
      *      the config has not been created on the server - instead of throwing. Use sparingly!
-     *      In general it's better to not provide defaults here, but instead keep entries up-to-date
+     *      In general, it's better to not provide defaults here, but instead keep entries updated
      *      via the Admin client and have it be obvious when one is missing.
      */
     get(key: string, defaultValue?: any) {
@@ -75,7 +76,7 @@ export class PrefService extends HoistService {
 
     /**
      * Set a preference value for the current user.
-     * Typically accessed via convenience alias `XH.setPref()`.
+     * Typically accessed via the convenience alias {@link XH.setPref}.
      *
      * Values are validated client-side to ensure they (probably) are of the correct data type.
      *
@@ -127,7 +128,7 @@ export class PrefService extends HoistService {
 
     /**
      * Reset *all* preferences, reverting their effective values back to defaults.
-     * @returns {Promise} - resolves when preferences have been cleared and defaults reloaded.
+     * @returns a Promise that resolves when preferences have been cleared and defaults reloaded.
      */
     async clearAllAsync() {
         this.clearLocalValues();
@@ -142,7 +143,6 @@ export class PrefService extends HoistService {
      * Push any pending buffered updates to persist newly set values to server or local storage.
      * Called automatically by this app on page unload to avoid dropping changes when e.g. a user
      * changes and option and then immediately hits a (browser) refresh.
-     * @returns {Promise}
      */
     async pushPendingAsync() {
         const updates = this._updates;

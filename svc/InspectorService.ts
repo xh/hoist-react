@@ -15,7 +15,7 @@ import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
  * count / memory usage stats, also updated on model changes and periodically in the background.
  *
  * When running in a Desktop application, activating this service will trigger the display of the
- * Hoist Inspector UI - {@see inspectorPanel}. A built-in control to activate/deactivate this
+ * Hoist Inspector UI - {@link inspectorPanel}. A built-in control to activate/deactivate this
  * service is provided within the Desktop versionBar component.
  *
  * This service may be completely disabled via an optional `xhInspectorConfig` appConfig, although

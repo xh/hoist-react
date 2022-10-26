@@ -26,8 +26,7 @@ export function isDisplayed(elem: HTMLElement): boolean {
  *
  * @param fn - function to be called with the co-ordinates of the node.
  * @param node - The DOM node to observe
- * @param [c] - configuration object
- * @param  [c.debounce] - milliseconds to debounce
+ * @param opts - extra options, currently supporting a `debounce` specified in ms.
  * @returns ResizeObserver used to implement this function. Be sure to call disconnect()
  *      on this when finished.
  *
@@ -36,7 +35,7 @@ export function isDisplayed(elem: HTMLElement): boolean {
  * to a previous size.  This is to improve performance by avoiding responding to
  * visibility changes.
  *
- *  For a hook that conveniently wraps this function see useOnResize().
+ * For a hook that conveniently wraps this function see {@link useOnResize}.
  */
 export function observeResize(
     fn: (size: DOMRect) => any,
@@ -73,7 +72,7 @@ export function observeResize(
  * @returns ResizeObserver used to implement this function. Be sure to call disconnect() on this
  *      when finished.
  *
- * For a hook that conveniently wraps this function see useOnVisibleChange().
+ * For a hook that conveniently wraps this function see {@link useOnVisibleChange}.
  */
 export function observeVisibleChange(fn: (visible: boolean) => any, node: Element): ResizeObserver {
     let prevVisible = null;

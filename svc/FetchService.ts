@@ -4,13 +4,13 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH, Exception} from '@xh/hoist/core';
+import {HoistService, XH, Exception, PlainObject} from '@xh/hoist/core';
 import {isLocalDate, SECONDS, ONE_MINUTE, olderThan} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, omitBy} from 'lodash';
-import {stringify} from 'qs';
-import {never} from '@xh/hoist/promise';
+import {IStringifyOptions, stringify} from 'qs';
+import {never, PromiseTimeoutSpec} from '@xh/hoist/promise';
 
 /**
  * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
@@ -42,20 +42,17 @@ export class FetchService extends HoistService {
 
     /**
      * Set default headers to be sent with all subsequent requests.
-     * @param Headers to be sent with all fetch requests, or a function to generate.
+     * @param headers - to be sent with all fetch requests, or a function to generate.
      */
-    setDefaultHeaders(headers: object|(()=>object)) {
+    setDefaultHeaders(headers: PlainObject|(()=>PlainObject)) {
         this.defaultHeaders = headers;
     }
 
     /**
-     * Set the default timeout for all requests on this service.
-     * If not set this value is 30 SECONDS.
-     *
-     * @param timeout - ms to wait for response before rejecting with a timeout
-     *      exception. May also be specified an Object or null. See {@see FetchOptions}.
+     * Set the timeout (default 30 seconds) to be used for all requests made via this service that
+     * do not themselves spec a custom timeout.
      */
-    setDefaultTimeout(timeout: number|object) {
+    setDefaultTimeout(timeout: PromiseTimeoutSpec) {
         this.defaultTimeout = timeout;
     }
 
@@ -130,14 +127,6 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
-
-    /**
-     * Call fetch with support for aborting via AbortController API.
-     *
-     * The fetch may be aborted due to timeout, or a repeated call with the same `autoAbortKey`.
-     *
-     * @param fn - function receiving an abort controller, and returning a Promise
-     */
     private async managedFetchAsync(opts: FetchOptions, fn: (ctl: AbortController)=>any) {
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
@@ -281,59 +270,58 @@ export class FetchService extends HoistService {
 
 /**
  * Standard options to pass through to fetch, with some additions.
- * [See MDN for available options]{@link https://developer.mozilla.org/en-US/docs/Web/API/Request}.
+ * See MDN for available options - {@link https://developer.mozilla.org/en-US/docs/Web/API/Request}.
  */
 export interface FetchOptions {
-    /** url for the request. Relative urls will be appended to XH.baseUrl.*/
+    /** URL for the request. Relative urls will be appended to XH.baseUrl. */
     url: string;
 
-    /** data to send in the request body (for POSTs/PUTs of JSON).*/
-    body?: object;
+    /** Data to send in the request body (for POSTs/PUTs of JSON).*/
+    body?: PlainObject;
 
     /**
-     * parameters to encode and append as a query string, or send with the request body
+     * Parameters to encode and append as a query string, or send with the request body
      * (for POSTs/PUTs sending form-url-encoded).
      */
-    params?: object;
+    params?: PlainObject;
 
     /**
-     * HTTP Request method to use for the request. If not specified,
-     * the method will be set to POST if there are params, otherwise GET.
+     * HTTP Request method to use for the request. If not specified, the method will be set to POST
+     * if there are params, otherwise GET.
      */
     method?: string;
 
     /**
-     *  Headers to send with this request. A Content-Type header will be set if not provided by
-     *  the caller directly or via one of the xxxJson convenience methods.
+     * Headers to send with this request. A Content-Type header will be set if not provided by
+     * the caller directly or via one of the xxxJson convenience methods.
      */
-    headers?: object;
+    headers?: PlainObject;
 
     /**
-     * ms to wait for response before rejecting with a timeout
-     * exception. Defaults to 30 seconds, but may be specified as null to specify no timeout.
+     * MS to wait for response before rejecting with a timeout exception. Defaults to 30 seconds,
+     * but may be specified as null to specify no timeout.
      */
-    timeout?: number|object;
+    timeout?: PromiseTimeoutSpec;
 
     /**
-     * optional metadata about the underlying request. Passed through
-     * for downstream processing by utils such as {@see ExceptionHandler}.
+     * Optional metadata about the underlying request. Passed through for downstream processing by
+     * utils such as {@link ExceptionHandler}.
      */
-    loadSpec?: object;
+    loadSpec?: PlainObject;
 
     /**
-     * options to pass to the underlying fetch request.
+     * Options to pass to the underlying fetch request.
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
      */
-    fetchOpts?: object;
+    fetchOpts?: PlainObject;
 
     /**
-     * options to pass to the param converter library, qs.  The default qsOpts are:
-     * `{arrayFormat: 'repeat', allowDots: true}`.
+     * Options for qs, the library used to encode query strings.
      */
-    qsOpts?: object;
+    qsOpts?: Partial<IStringifyOptions>;
 
     /**
-     * if set, any pending requests made with the same autoAbortKey will be immediately
+     * If set, any pending requests made with the same autoAbortKey will be immediately
      * aborted in favor of the new request.
      */
     autoAbortKey?: string;

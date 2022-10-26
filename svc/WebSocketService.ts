@@ -21,9 +21,9 @@ import {find, pull} from 'lodash';
  * messages as requested - e.g. when a particular query or dataset of interest is updated.
  *
  * Callers can register a callback via `subscribe()` to receive incoming messages on a requested
- * topic. The {@see WebSocketSubscription} returned from `subscribe()` can be used to later
+ * topic. The {@link WebSocketSubscription} returned from `subscribe()` can be used to later
  * `unsubscribe()` if updates are no longer desired. `HoistModel` and `HoistComponent` callers are
- * encouraged to save a reference to their subscription via a {@see managed} property to have
+ * encouraged to save a reference to their subscription via a {@link managed} property to have
  * callbacks unsubscribed automatically when the component/model is unmounted/destroyed.
  *
  * This service also provides a `sendMessage()` method to push messages back to the server over the
@@ -33,7 +33,7 @@ import {find, pull} from 'lodash';
  * Note this service requires the server-side application to be configured to listen to inbound
  * websocket connections. See `WebSocketService.groovy` in hoist-core for additional documentation.
  *
- * Also {@see WebSocketIndicator}, a simple component for visually displaying connection status.
+ * See {@link WebSocketIndicator}, a simple component for displaying connection status.
  */
 export class WebSocketService extends HoistService {
 
@@ -93,10 +93,10 @@ export class WebSocketService extends HoistService {
      * Subscribe a callback to receive inbound messages for a given topic on a going-forward basis.
      *
      * @param topic - application-specific topic of interest.
-     * @param handler to call for each incoming message on the requested topic.
-     * @returns subscription reference that can be used to unsubscribe
-     *      to future messages for the same topic/handler. Callers should take care to save this
-     *      reference and use it to cleanup their subs on destroy.
+     * @param fn - handler to call for each incoming message on the requested topic.
+     * @returns subscription reference that can be used to unsubscribe to future messages for the
+     *      same topic/handler. Callers should take care to save this reference and use it to
+     *      dispose of their subs on destroy.
      */
     subscribe(topic: string, fn: (msg: WebSocketMessage) => any): WebSocketSubscription {
         const subs = this.getSubsForTopic(topic),
@@ -112,8 +112,7 @@ export class WebSocketService extends HoistService {
     /**
      * Cancel a subscription for a given topic/handler.
      *
-     *  @param subscription - the object returned by `subscribe()` when the
-     *      subscription was initially established.
+     * @param subscription - WebSocketSubscription returned when the subscription was established.
      */
     unsubscribe(subscription: WebSocketSubscription) {
         const subs = this.getSubsForTopic(subscription.topic);

@@ -36,13 +36,13 @@ const {AUTO, BOOL, DATE, INT, LOCAL_DATE, NUMBER, STRING, PWD} = FieldType;
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
- * @see Column API for options to control exported values and formats.
+ * See the Column API for options to control exported values and formats.
  */
 export class GridExportService extends HoistService {
     xhImpl = true;
 
     /**
-     * Export a GridModel to a file. Typically called via `GridModel.exportAsync()`.
+     * Export the data within a GridModel to a file. Typically called via `GridModel.exportAsync()`.
      */
     async exportAsync(
         gridModel: GridModel,
@@ -151,13 +151,7 @@ export class GridExportService extends HoistService {
 
     /**
      * Get the exportable value for a given cell.
-     *
-     * This method is used internally by this service, but also made available
-     * publicly for use by grid clipboard functionality.
-     *
-     * @param [c.node] - rendered ag-Grid row, if available.  Necessary for exporting agGrid aggregates.
-     * @param [c.forExcel] - for posting to server-side excel export, default false.
-     * @returns value suitable for export to excel, csv, or clipboard.
+     * Used internally by this service + public to support Grid's "copy cell" context menu action.
      */
     getExportableValueForCell(
         {gridModel, record, column, node, forExcel = false}:

@@ -15,10 +15,9 @@ import classNames from 'classnames';
  * (or otherwise most appropriate) rendered component.
  *
  * @param baseName - base class name for the component.
- * @param props - component props
- * @param [extraNames] - optional, additional class names to append.
- *
- * @returns Concatenated space-delimited class name appropriate for html className attribute
+ * @param props - component props.
+ * @param extraNames - optional, additional class names to append.
+ * @returns concatenated, space-delimited class name appropriate for html className attribute.
  */
 export function getClassName(baseName: string, props: any, ...extraNames: string[]): string {
     return classNames(baseName, props.className, ...extraNames);
