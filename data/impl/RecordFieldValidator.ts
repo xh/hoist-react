@@ -30,13 +30,13 @@ export class RecordFieldValidator extends HoistBase {
     /** True if the field is confirmed to be Valid. */
     @computed
     get isValid(): boolean {
-        return this.validationState === ValidationState.Valid;
+        return this.validationState === 'Valid';
     }
 
     /** True if the field is confirmed to be NotValid. */
     @computed
     get isNotValid(): boolean {
-        return this.validationState === ValidationState.NotValid;
+        return this.validationState === 'NotValid';
     }
 
     /** The current validation state of the field. */

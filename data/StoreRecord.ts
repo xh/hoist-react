@@ -127,17 +127,17 @@ export class StoreRecord {
 
     /** True if the record is confirmed to be Valid. */
     get isValid(): boolean {
-        return this.validationState === ValidationState.Valid;
+        return this.validationState === 'Valid';
     }
 
     /** True if the record is confirmed to be NotValid. */
     get isNotValid(): boolean {
-        return this.validationState === ValidationState.NotValid;
+        return this.validationState === 'NotValid';
     }
 
     /** The current validation state of the record. */
     get validationState(): ValidationState {
-        return this.validator?.validationState ?? ValidationState.Unknown;
+        return this.validator?.validationState ?? 'Unknown';
     }
 
     /** Map of field names to list of errors. */

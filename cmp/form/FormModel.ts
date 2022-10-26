@@ -230,7 +230,7 @@ export class FormModel extends HoistModel {
 
     /** True if all fields are valid. */
     get isValid(): boolean {
-        return this.validationState == ValidationState.Valid;
+        return this.validationState == 'Valid';
     }
 
     /** List of all validation errors for this form. */
