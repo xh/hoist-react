@@ -6,15 +6,14 @@
  */
 import {ContextMenu} from '@blueprintjs/core';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {elemFactory, hoistCmp, uses, XH} from '@xh/hoist/core';
-import '@xh/hoist/desktop/register';
+import {elemFactory, hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
+import '@xh/hoist/desktop/register';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import './DashCanvas.scss';
-import {HoistProps} from '../../../../core';
 import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
@@ -24,7 +23,7 @@ export type DashCanvasProps = HoistProps<DashCanvasModel>;
 /**
  * Dashboard-style container that allows users to drag-and-drop child widgets into flexible layouts.
  *
- * Unlike its cousin {@see DashContainer}, this component scales the width only of its child
+ * Unlike its cousin {@link DashContainer}, this component scales the width only of its child
  * widgets as its overall size changes, leaving heights unchanged and scrolling internally as
  * necessary. This makes it a good candidate for report-style dashboards containing lots of content
  * that is unlikely to fit or compress nicely on smaller screens. Consider DashContainer when

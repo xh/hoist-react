@@ -8,7 +8,7 @@
 import {PersistOptions} from '@xh/hoist/core';
 
 /**
- * Base interface for {@see DashCanvasConfig} and {@see DashContainerConfig}.
+ * Base interface for {@link DashCanvasConfig} and {@link DashContainerConfig}.
  */
 export interface DashConfig<VSPEC, VSTATE> {
 
