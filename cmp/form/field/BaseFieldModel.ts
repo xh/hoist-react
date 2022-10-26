@@ -206,7 +206,7 @@ export abstract class BaseFieldModel extends HoistModel {
         // (We want that for a value change, but not reset/init)  Force the recompute only if needed.
         this._errors.fill(null);
         wait().then(() => {
-            if (!this.isValidationPending && this.validationState === ValidationState.Unknown) {
+            if (!this.isValidationPending && this.validationState === 'Unknown') {
                 this.computeValidationAsync();
             }
         });

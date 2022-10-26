@@ -7,7 +7,6 @@
 import {castArray} from 'lodash';
 import {StoreRecord} from '../StoreRecord';
 import {BaseFieldModel} from '../../cmp/form';
-import {Field} from '../Field';
 
 /**
  * Immutable object representing a validation rule.
@@ -36,12 +35,12 @@ export type Constraint<T=any> = (fieldState: FieldState<T>, allValues: Record<st
 /**
  * Function to determine when to perform validation on a value.
  *
- * @param field - the field (for a StoreRecord) or BaseFieldModel (for a Form) being evaluated.
- * @param allValues - current values for all fields in form, keyed by field name.
+ * @param entity - the entity being evaluated.  Typically a field for store validation or
+ *      a BaseFieldModel for Form validation.
+ * @param allValues - current values for all fields in form or record, keyed by field name.
  * @returns true if this rule is currently active.
  */
-export type When = (field: Field & BaseFieldModel, allValues: Record<string, any>) => boolean;
-
+export type When = (entity: any, allValues: Record<string, any>) => boolean;
 
 export interface FieldState<T=any> {
     /** Current value of the field */
