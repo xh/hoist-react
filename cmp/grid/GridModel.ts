@@ -1122,9 +1122,9 @@ export class GridModel extends HoistModel {
      * Return matching leaf-level Column or ColumnState object from the provided collection for the
      * given colId, if any. Used as a utility function to find both types of objects.
      */
-    findColumn(cols: Column[], colId: string): Column {
+    findColumn(cols: (Column|ColumnGroup)[], colId: string): Column {
         for (let col of cols) {
-            if (col.children) {
+            if (col instanceof ColumnGroup) {
                 const ret = this.findColumn(col.children, colId);
                 if (ret) return ret;
             } else {

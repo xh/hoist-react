@@ -7,7 +7,7 @@
 import {ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {PlainObject} from '@xh/hoist/core';
 import {BaseFilterFieldSpec} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
-import {FieldFilterOperator, parseFilter} from '@xh/hoist/data';
+import {FieldFilterOperator, parseFilter, View} from '@xh/hoist/data';
 import {castArray, compact, flatten, isDate, isEmpty, uniqBy} from 'lodash';
 import {GridFilterModel} from './GridFilterModel';
 
@@ -54,7 +54,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
     loadValuesFromSource() {
         const {filterModel, field, source} = this,
             columnFilters = filterModel.getColumnFilters(field),
-            sourceStore = source.isView ? source.cube.store : source,
+            sourceStore = source instanceof View ? source.cube.store : source,
             allRecords = sourceStore.allRecords;
 
         // Apply external filters *not* pertaining to this field to the sourceStore

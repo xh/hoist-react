@@ -85,7 +85,7 @@ export class GridFilterModel extends HoistModel {
     setColumnFilters(field: string, filter: FilterLike) {
         // If current bound filter is a CompoundFilter for a single column, wrap it
         // in an 'AND' CompoundFilter so new columns get 'ANDed' alongside it.
-        let currFilter = this.filter as FilterLike;
+        let currFilter = this.filter as any;
         if (currFilter instanceof CompoundFilter && currFilter.field) {
             currFilter = {filters: [currFilter], op: 'AND'};
         }
@@ -125,7 +125,8 @@ export class GridFilterModel extends HoistModel {
     }
 
     getColumnFilters(field: string): FieldFilter[] {
-        return flattenFilter(this.filter).filter(it => it.field === field);
+        return flattenFilter(this.filter)
+            .filter(it => it instanceof FieldFilter && it.field === field) as FieldFilter[];
     }
 
     /** @returns The CompoundFilter that wraps the filters for specified field. */

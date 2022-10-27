@@ -11,7 +11,7 @@ import {clone, isEmpty, isFunction, isString} from 'lodash';
 import {ReactNode} from 'react';
 import {GridModel} from '../GridModel';
 import {ColumnHeaderClassFn, ColumnHeaderNameFn } from '../Types';
-import {ColumnConfig, getAgHeaderClassFn} from './Column';
+import {Column, ColumnConfig, getAgHeaderClassFn} from './Column';
 
 export interface ColumnGroupConfig {
     /** Column or ColumnGroup configs for children of this group.*/
@@ -43,7 +43,7 @@ export interface ColumnGroupConfig {
  */
 export class ColumnGroup {
 
-    children:  (ColumnGroupConfig|ColumnConfig)[];
+    children:  (ColumnGroup|Column)[];
     gridModel: GridModel;
     groupId: string;
     headerName: ReactNode|ColumnHeaderNameFn;
