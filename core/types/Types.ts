@@ -20,6 +20,10 @@ export type Side = 'top'|'bottom'|'left'|'right';
 export type VSide = 'top'|'bottom';
 export type HSide = 'left'|'right';
 
+export type HAlign = 'left'|'right'|'center';
+export type VAlign = 'top'|'bottom'|'center';
+
+
 /** Convenience type for common pattern of accepting a single T, or an array of Ts. */
 export type Some<T> = T|T[];
 

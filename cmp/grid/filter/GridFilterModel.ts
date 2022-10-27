@@ -15,29 +15,6 @@ import {find, isString, isNil, castArray, uniq, every, compact} from 'lodash';
 import {GridFilterFieldSpec} from './GridFilterFieldSpec';
 import {GridModel} from '../GridModel';
 
-export interface GridFilterModelConfig {
-
-    gridModel: GridModel;
-
-    /**
-     * Store / Cube View to be filtered as column filters are applied. Also used to provide
-     * suggested values (if configured).
-     */
-    bind?: Store | View;
-
-    /** True (default) to update filters immediately after each change made in the column-based filter UI.*/
-    commitOnChange?: boolean;
-
-    /**
-     * Specifies the fields this model supports for filtering. Should be configs for {
-     * @see GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or omitted
-     * entirely to indicate that all fields should be filter-enabled.
-     */
-    fieldSpecs?: (string | GridFilterFieldSpec)[]
-
-    /** Default properties to be assigned to all `GridFilterFieldSpecs` created by this model. */
-    fieldSpecDefaults?: Partial<GridFilterFieldSpec>;
-}
 
 /**
  * Model for managing a Grid's column filters.
@@ -129,7 +106,7 @@ export class GridFilterModel extends HoistModel {
             .filter(it => it instanceof FieldFilter && it.field === field) as FieldFilter[];
     }
 
-    /** @returns The CompoundFilter that wraps the filters for specified field. */
+    /** The CompoundFilter that wraps the filters for specified field. */
     getColumnCompoundFilter(field: string): CompoundFilter {
         return this.getOuterCompoundFilter(this.filter, field);
     }
@@ -146,13 +123,11 @@ export class GridFilterModel extends HoistModel {
         return value === this.BLANK_STR ? null : value;
     }
 
-    /** @package */
     @action
     openDialog() {
         this.dialogOpen = true;
     }
 
-    /** @package */
     @action
     closeDialog() {
         this.dialogOpen = false;
@@ -197,4 +172,32 @@ export class GridFilterModel extends HoistModel {
         const results = compact(filter.filters.map(it => this.getOuterCompoundFilter(it, field)));
         return results.length === 1 ? results[0] : null;
     }
+}
+
+
+/**
+ * @internal
+ */
+interface GridFilterModelConfig {
+
+    gridModel: GridModel;
+
+    /**
+     * Store / Cube View to be filtered as column filters are applied. Also used to provide
+     * suggested values (if configured).
+     */
+    bind?: Store | View;
+
+    /** True (default) to update filters immediately after each change made in the column-based filter UI.*/
+    commitOnChange?: boolean;
+
+    /**
+     * Specifies the fields this model supports for filtering. Should be configs for {
+     * @see GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or omitted
+     * entirely to indicate that all fields should be filter-enabled.
+     */
+    fieldSpecs?: (string | GridFilterFieldSpec)[]
+
+    /** Default properties to be assigned to all `GridFilterFieldSpecs` created by this model. */
+    fieldSpecDefaults?: Partial<GridFilterFieldSpec>;
 }

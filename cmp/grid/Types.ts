@@ -5,8 +5,9 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import {GridFilterFieldSpec, GridFilterFieldSpecConfig} from '@xh/hoist/cmp/grid/filter/GridFilterFieldSpec';
 import {HSide, PersistOptions, PlainObject, SizingMode, Some} from '@xh/hoist/core';
-import {Store, StoreRecord} from '@xh/hoist/data';
+import {Store, StoreRecord, View} from '@xh/hoist/data';
 import {ReactElement, ReactNode } from 'react';
 import {Column} from './columns/Column';
 import {ColumnGroup} from './columns/ColumnGroup';
@@ -97,19 +98,24 @@ export interface GridModelPersistOptions extends PersistOptions {
 }
 
 
-/**
- * @typedef {Object} GridFilterModelConfig
- * @property {(Store|View)} [c.bind] - Store / Cube View to be filtered as column filters are
- *      applied. Defaulted to the gridModel's store.
- * @property {boolean} [c.commitOnChange] - true (default) to update filters immediately after
- *      each change made in the column-based filter UI.
- * @property {(string[]|Object[])} [c.fieldSpecs] - specifies the fields this model supports
- *      for filtering. Should be configs for {@see GridFilterFieldSpec}, string names to match with
- *      Fields in bound Store/View, or omitted entirely to indicate that all fields should be
- *      filter-enabled.
- * @property {Object} [c.fieldSpecDefaults] - default properties to be assigned to all
- *      `GridFilterFieldSpecs` created by this model.
- */
+export interface GridFilterModelConfig {
+    /**
+     * Store / Cube View to be filtered as column filters are applied. Defaulted to the
+     * gridModel's store.
+     */
+    bind?: Store|View;
+
+    /**
+     * Specifies the fields this model supports for filtering. Should be configs for
+     * {@see GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or omitted
+     * entirely to indicate that all fields should be filter-enabled.
+     */
+    fieldSpecs?: (string|GridFilterFieldSpecConfig)[];
+
+    /** Default properties to be assigned to all fieldSpecs created by this model. */
+    fieldSpecDefaults?: GridFilterFieldSpecConfig
+}
+
 
 /**
  * @typedef {Object} ColChooserModelConfig
@@ -219,7 +225,7 @@ export interface CellContext {
 }
 
 export interface HeaderContext {
-    column: Column;
+    column: Column|ColumnGroup;
     gridModel: GridModel;
 
     /** ag-Grid header renderer params */

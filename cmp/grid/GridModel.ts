@@ -6,7 +6,7 @@
  */
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {Column,
-    ColumnConfig, ColumnGroup, ColumnGroupConfig, GridAutosizeMode, GridGroupSortFn, TreeStyle} from '@xh/hoist/cmp/grid';
+    ColumnSpec, ColumnGroup, ColumnGroupSpec, GridAutosizeMode, GridGroupSortFn, TreeStyle} from '@xh/hoist/cmp/grid';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {
@@ -74,16 +74,16 @@ import {GridSorter} from './impl/GridSorter';
 import {managedRenderer} from './impl/Utils';
 import {GridAutosizeOptions} from "@xh/hoist/cmp/grid/GridAutosizeOptions";
 import {ReactNode} from 'react';
-import {GridModelPersistOptions, RowClassFn, RowClassRuleFn} from './Interfaces';
+import {GridFilterModelConfig, GridModelPersistOptions, RowClassFn, RowClassRuleFn} from './Types';
 
 
 export interface GridConfig {
 
     /** Columns for this grid. */
-    columns?: (ColumnConfig | ColumnGroupConfig)[];
+    columns?: (ColumnSpec | ColumnGroupSpec)[];
 
     /**  Column configs to be set on all columns.  Merges deeply. */
-    colDefaults?: Partial<ColumnConfig>;
+    colDefaults?: Partial<ColumnSpec>;
 
     /**
      * A Store instance, or a config with which to create a Store. If not supplied,
@@ -101,7 +101,7 @@ export interface GridConfig {
     selModel?: StoreSelectionModel | StoreSelectionConfig | 'single' | 'multiple' | 'disabled';
 
     /** Config with which to create a GridFilterModel, or `true` to enable default. Desktop only.*/
-    filterModel?: GridFilterConfig | boolean;
+    filterModel?: GridFilterModelConfig | boolean;
 
     /** Config with which to create aColChooserModel, or boolean `true` to enable default.*/
     colChooserModel?: any | boolean;
@@ -356,7 +356,7 @@ export class GridModel extends HoistModel {
     clicksToExpand: number;
     clicksToEdit: number;
     lockColumnGroups: boolean;
-    colDefaults: Partial<ColumnConfig>;
+    colDefaults: Partial<ColumnSpec>;
     experimental: PlainObject;
     onKeyDown: (e: KeyboardEvent) => void;
     onRowClicked: (e: any) => void;
@@ -943,7 +943,7 @@ export class GridModel extends HoistModel {
 
     /** @param colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
-    setColumns(colConfigs: (ColumnConfig | ColumnGroupConfig)[]) {
+    setColumns(colConfigs: (ColumnSpec | ColumnGroupSpec)[]) {
         this.validateColConfigs(colConfigs);
         colConfigs = this.enhanceColConfigsFromStore(colConfigs);
 

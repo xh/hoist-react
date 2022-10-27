@@ -4,18 +4,18 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {PlainObject, Some} from '@xh/hoist/core';
+import {HAlign, PlainObject, Some} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString} from 'lodash';
 import {ReactNode} from 'react';
 import {GridModel} from '../GridModel';
 import {ColumnHeaderClassFn, ColumnHeaderNameFn } from '../Types';
-import {Column, ColumnConfig, getAgHeaderClassFn} from './Column';
+import {Column, ColumnSpec, getAgHeaderClassFn} from './Column';
 
-export interface ColumnGroupConfig {
+export interface ColumnGroupSpec {
     /** Column or ColumnGroup configs for children of this group.*/
-    children: (ColumnGroupConfig|ColumnConfig)[];
+    children: (ColumnGroupSpec|ColumnSpec)[];
     /** Unique identifier for the ColumnGroup within its grid. */
     groupId?: string;
     /** Display text for column group header. */
@@ -23,7 +23,7 @@ export interface ColumnGroupConfig {
     /** CSS classes to add to the header. */
     headerClass?: Some<string>|ColumnHeaderClassFn;
     /** Horizontal alignment of header contents. */
-    headerAlign?: 'left'|'right'|'center';
+    headerAlign?: HAlign;
 
     /**
      * "Escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note
@@ -43,12 +43,12 @@ export interface ColumnGroupConfig {
  */
 export class ColumnGroup {
 
-    children:  (ColumnGroup|Column)[];
-    gridModel: GridModel;
-    groupId: string;
-    headerName: ReactNode|ColumnHeaderNameFn;
-    headerClass: Some<string>|ColumnHeaderClassFn;
-    headerAlign: 'left'|'right'|'center';
+    readonly children:  (ColumnGroup|Column)[];
+    readonly gridModel: GridModel;
+    readonly groupId: string;
+    readonly headerName: ReactNode|ColumnHeaderNameFn;
+    readonly headerClass: Some<string>|ColumnHeaderClassFn;
+    readonly headerAlign: HAlign;
 
     /**
      * "Escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note
@@ -58,16 +58,26 @@ export class ColumnGroup {
      */
     agOptions?: PlainObject;
 
-    constructor({
-        children,
-        groupId,
-        headerName,
-        headerClass,
-        headerAlign,
-        agOptions,
-        align,
-        ...rest
-    }:ColumnGroupConfig, gridModel) {
+    /**
+     * Not for application use. ColumnGroups are created internally by Hoist.
+     *
+     * Applications specify column groups by providing ColumnGroupSpec objects to the
+     * GridModel API.
+     *
+     * @internal
+     */
+    constructor(config:ColumnGroupSpec, gridModel: GridModel, children: (Column|ColumnGroup)[]) {
+        const {
+            children: childrenSpecs,
+            groupId,
+            headerName,
+            headerClass,
+            headerAlign,
+            agOptions,
+            align,
+            ...rest
+        } = config;
+
         throwIf(isEmpty(children), 'Must specify children for a ColumnGroup');
         throwIf(isEmpty(groupId) && !isString(headerName), 'Must specify groupId or a string headerName for a ColumnGroup');
 
