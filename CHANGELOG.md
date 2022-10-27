@@ -9,6 +9,8 @@
   their drop-down menus.
 * Fix desktop styling bug where buttons inside a `Toast` could be rendered with a different color
   than the rest of the toast contents.
+* Fix `GridModel` bug where `Store` would fail to recognize dot-separated field names as paths
+  when provided as part of a field spec in object form.
 
 ## v53.0.0 - 2022-10-19
 
