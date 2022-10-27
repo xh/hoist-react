@@ -31,12 +31,22 @@ import {managedRenderer} from '../impl/Utils';
 import {
     ColumnCellClassFn,
     ColumnCellClassRuleFn,
-    ColumnComparator, ColumnEditableFn, ColumnEditorFn, ColumnExportValueFn, ColumnGetValueFn,
+    ColumnComparator,
+    ColumnEditableFn,
+    ColumnEditorFn,
+    ColumnExportValueFn,
+    ColumnGetValueFn,
     ColumnHeaderClassFn,
     ColumnHeaderNameFn,
-    ColumnRenderer, ColumnSetValueFn, ColumnSortValueFn, ColumnTooltipElementFn, ColumnTooltipFn
+    ColumnRenderer,
+    ColumnSetValueFn,
+    ColumnSortSpec,
+    ColumnSortValueFn,
+    ColumnTooltipElementFn,
+    ColumnTooltipFn
 } from '../Types';
 import {ExcelFormat} from './ExcelFormat';
+import {FunctionComponent} from 'react';
 
 export interface ColumnConfig {
 
@@ -45,7 +55,7 @@ export interface ColumnConfig {
      * for store field.  If object form is used, the provided properties will be used for
      * auto-creating any fields needed on the Grid's store.
      */
-    field?: string|FieldConfig;
+    field?: string | FieldConfig;
 
     /**
      * Unique identifier for the Column within its grid. Defaults to field name - one of these
@@ -67,130 +77,276 @@ export interface ColumnConfig {
      * `headerName`, `chooserName`, and `exportName` configs. See those configs for additional
      * details and options they support.
      */
-    displayName?: string:
+    displayName?: string;
 
+    /**
+     * User-facing text/element displayed in the Column header, or a function to produce the same.
+     * Defaulted from `displayName`.
+     */
+    headerName?: ColumnHeaderNameFn | ReactNode
+
+    /** Tooltip text for grid header.*/
+    headerTooltip?: string;
+
+    /**
+     * True if this column header will host an expand/collapse all icon. `Column.isTreeColumn`
+     * must be enabled. Defaults to true.
+     */
+    headerHasExpandCollapse?: boolean;
+
+    /** Horizontal alignment of header contents. Defaults to same as cell alignment. */
+    headerAlign?: 'left' | 'right' | 'center';
+
+    /** CSS classes to add to the header. Supports both string values or a function to generate strings.*/
+    headerClass?: ColumnHeaderClassFn | Some<string>;
+
+    /**
+     * Additional CSS classes to add to each cell in the column. Supports both string values or
+     * function to generate.NOTE that, once added, classes will *not* be removed if the data changes.
+     * Use `cellClassRules` instead if StoreRecord data can change across refreshes
+     */
+    cellClass?: ColumnCellClassFn | Some<string>;
+
+    /**
+     * CSS class names to functions determining if they should be added or removed from the cell.
+     * See Ag-Grid docs on "cell styles" for details.
+     */
+    cellClassRules?: Record<string, ColumnCellClassRuleFn>
+
+    /** True to suppress default display of the column.*/
+    hidden?: boolean;
+
+    /**
+     * Flex columns stretch to fill the width of the grid after all columns with a set pixel-width
+     * have been sized. If multiple columns have a flex value set, their width will be set in
+     * proportion to their flex values. A flex value of `true` is equivalent to 1. Consider pairing
+     * a flex setting with min/max pixel widths to avoid your column being squeezed down to the
+     * default 50px minimum or stretching so wide that it compromises the overall legibility of
+     * the grid.
+     */
+    flex?: boolean | number;
+
+    /** Default width in pixels.*/
+    width?: number;
+
+    /**
+     * Minimum width in pixels - grid will block user-driven as well as auto-flex resizing below
+     * this value. (Note this is *not* a substitute for width.)
+     */
+    minWidth?: number;
+
+    /**
+     * Maximum width in pixels - grid will block user-driven as well as auto-flex resizing above
+     * this value.
+     */
+    maxWidth?: number;
+
+    /**
+     * Row height required by column in pixels - grids can use this to determine an appropriate
+     * row height when the column is visible.
+     */
+    rowHeight: number;
+
+    /** Horizontal alignment of cell contents. Default is 'left'. */
+    align: 'left' | 'right' | 'center';
+
+    /**
+     * The sorting options for this column to be applied by successive clicks on the column header.
+     * Specify null to clear the sort on this column.
+     */
+    sortingOrder?: ('asc' | 'desc' | ColumnSortSpec | null)[];
+
+    /**
+     * True to enable absolute value sorting for this column.  If false (default) absolute value
+     * sorts will be ignored when cycling through the sortingOrder.
+     */
+    absSort?: boolean;
+
+    /**
+     * Alternate field name to reference or function to call when producing a value for this column
+     * to be sorted by.
+     */
+    sortValue?: string | ColumnSortValueFn;
+
+    /** Function to compare cell values for sorting.*/
+    comparator?: ColumnComparator;
+
+    /** False to prevent user from drag-and-drop resizing. */
+    resizable?: boolean;
+
+    /** false to prevent user from sorting on this column. */
+    sortable?: boolean;
+
+    /** False to prevent user from drag-and-drop re-ordering. */
+    movable?: boolean;
+
+    /**
+     * True to enable an Excel-like column header filter menu. Menu option defaults vary based
+     * on the underlying Field.type, but include a checkbox-list "values filter" and a custom
+     * input filter for more complex queries.
+     */
+    filterable?: boolean;
+
+    /**
+     * False to always show column. Will appear in column chooser but always locked in the
+     * displayed collection of columns.
+     */
+    hideable?: boolean;
+
+    /**
+     * Set to true/'left' or 'right' to pin (aka "lock") the column to the side of the grid,
+     * ensuring it's visible while horizontally scrolling.
+     */
+    pinned?: boolean | HSide;
+
+    /** Function returning a React Element for each cell value in this Column.*/
+    renderer?: ColumnRenderer;
+
+    /**
+     * True if this renderer relies on more than just the value of the field associated with this
+     * column. Set to true to ensure that the cells for this column are updated any time the
+     * record is changed, but note this can negatively affect update performance. Default false.
+     */
+    rendererIsComplex?: boolean;
+
+    /**
+     * Set to true to call attention to cell changes by flashing the cell's background color.
+     * Note: incompatible with rendererIsComplex.
+     */
+    highlightOnChange?: boolean;
+
+    /**
+     * True displays the raw value, or tooltip function, which is based on AG Grid tooltip
+     * callback. Incompatible with `tooltipElement`.
+     */
+    tooltip?: boolean | ColumnTooltipFn;
+
+    /** Function returning a React node to display as a tooltip. Takes precedence over `tooltip`.*/
+    tooltipElement?: ColumnTooltipElementFn;
+
+    /**
+     * Name to display within the column chooser component. Defaults to `displayName`, can be
+     * longer / less abbreviated than `headerName` might be.
+     */
+    chooserName?: string;
+
+    /**
+     * Group name to display within the column chooser component.  Chooser will automatically group
+     * its "available columns" grid if any cols provide.
+     */
+    chooserGroup?: string;
+
+    /**
+     * Additional descriptive text to display within the column chooser. Appears when the column
+     * is selected within the chooser UI.
+     */
+    chooserDescription?: string;
+
+    /**
+     * True to hide the column from the column chooser completely. Useful for hiding
+     * structural columns the user is not expected to adjust.
+     */
+    excludeFromChooser?: boolean;
+
+    /**
+     * Name to use as a header within a file export. Defaults to `headerName`. Useful when
+     * `headerName` contains markup or other characters not suitable for use within an Excel or
+     * CSV file header.
+     */
+    exportName?: string;
+
+    /**
+     * Alternate field name to reference or function to call when producing a value for a file
+     * export. {@link GridExportService}
+     */
+    exportValue?: string | ColumnExportValueFn;
+
+    /** True to drop this column from a file export. */
+    excludeFromExport?: boolean;
+
+    /** Structured format string for Excel-based exports, or a function to produce one. {@link ExcelFormat} */
+    excelFormat?: string | (() => string);
+
+    /**
+     * Width in characters for Excel-based exports. Typically used with ExcelFormat.LONG_TEXT to
+     * enable text wrapping.
+     */
+    excelWidth?: number;
+
+    /** Allow autosizing this column.*/
+    autosizable?: boolean;
+
+    /** True to include the header width when autosizing. */
+    autosizeIncludeHeader?: boolean;
+
+    /** True to always include the width of the sort icon when calculating the header width.*/
+    autosizeIncludeHeaderIcons?: boolean;
+
+    /** Minimum width in pixels when autosizing.*/
+    autosizeMinWidth?: number;
+
+    /** Maximum width in pixels when autosizing.*/
+    autosizeMaxWidth?: number;
+
+    /**
+     * Additional pixels to add to the size of each column beyond its absolute minimum. If
+     * specified, it will override the value of `GridAutosizeOptions.bufferPx` which is applied
+     * to all columns.
+     */
+    autosizeBufferPx?: number;
 
 
     /**
-     * @param {(Column~headerNameFn|element)} [c.headerName] - user-facing text/element displayed
-     *      in the Column header, or a function to produce the same. Defaulted from `displayName`.
-     * @param {string} [c.headerTooltip] - tooltip text for grid header.
-     * @param {boolean} [c.headerHasExpandCollapse] - true if this column header will host an
-     *      expand/collapse all icon. `Column.isTreeColumn` must be enabled. Defaults to true.
-     * @param {string} [c.headerAlign] - horizontal alignment of header contents. Defaults to same
-     *      as cell alignment.
-     * @param {(Column~headerClassFn|string|string[])} [c.headerClass] - CSS classes to add to the
-     *      header. Supports both string values or a function to generate strings.
-     * @param {(Column~cellClassFn|string|string[])} [c.cellClass] - additional CSS classes to add
-     *      to each cell in the column. Supports both string values or function to generate.
-     *      NOTE that, once added, classes will *not* be removed if the data changes.
-     *      Use `cellClassRules` instead if StoreRecord data can change across refreshes.
-     * @param {Object.<string, Column~cellClassRuleFn>} [c.cellClassRules] - object keying CSS
-     *      class names to functions determining if they should be added or removed from the cell.
-     *      See Ag-Grid docs on "cell styles" for details.
-     * @param {boolean} [c.hidden] - true to suppress default display of the column.
-     * @param {string} [c.align] - horizontal alignment of cell contents.
-     *      Valid values are:  'left' (default), 'right' or 'center'.
-     * @param {number} [c.width] - default width in pixels.
-     * @param {number} [c.minWidth] - minimum width in pixels - grid will block user-driven as well
-     *      as auto-flex resizing below this value. (Note this is *not* a substitute for width.)
-     * @param {number} [c.maxWidth] - maximum width in pixels - grid will block user-driven as well
-     *      as auto-flex resizing above this value.
-     * @param {(boolean|number)} [c.flex] - flex columns stretch to fill the width of the grid
-     *      after all columns with a set pixel-width have been sized. If multiple columns have a
-     *      flex value set, their width will be set in proportion to their flex values. A flex value
-     *      of `true` is equivalent to 1. Consider pairing a flex setting with min/max pixel widths
-     *      to avoid your column being squeezed down to the default 50px minimum or stretching so
-     *      wide that it compromises the overall legibility of the grid.
-     * @param {number} [c.rowHeight] - row height required by column in pixels - grids can use this
-     *      to determine an appropriate row height when the column is visible.
-     * @param {(string[]|Column~SortSpec[])} [c.sortingOrder] - the sorting options for this column
-     *      to be applied by successive clicks on the column header. Values may be one of 'asc',
-     *      'desc', a SortSpec, or null. Specify null to clear the sort on this column.
-     * @param {boolean} [c.absSort] - true to enable absolute value sorting for this column.  If
-     *      false (default) absolute value sorts will be ignored when cycling through the
-     *     sortingOrder.
-     * @param {(string|Column~sortValueFn)} [c.sortValue] - alternate field name to reference or
-     *      function to call when producing a value for this column to be sorted by.
-     * @param {Column~comparatorFn} [c.comparator] - function to comparing cell values for sorting.
-     * @param {boolean} [c.resizable] - false to prevent user from drag-and-drop resizing.
-     * @param {boolean} [c.movable] - false to prevent user from drag-and-drop re-ordering.
-     * @param {boolean} [c.sortable] - false to prevent user from sorting on this column.
-     * @param {boolean} [c.filterable] - true to enable an Excel-like column header filter menu.
-     *      Menu option defaults vary based on the underlying Field.type, but include a
-     *      checkbox-list "values filter" and a custom input filter for more complex queries.
-     * @param {boolean} [c.hideable] - false to always show column. Will appear in column chooser
-     *       but always locked in the displayed collection of columns.
-     * @param {(boolean|string)} [c.pinned] - set to true/'left' or 'right' to pin (aka "lock") the
-     *      column to the side of the grid, ensuring it's visible while horizontally scrolling.
-     * @param {Column~rendererFn} [c.renderer] - function returning a React Element for each
-     *      cell value in this Column.
-     * @param {boolean} [c.rendererIsComplex] - true if this renderer relies on more than
-     *      just the value of the field associated with this column. Set to true to ensure that
-     *      the cells for this column are updated any time the record is changed, but note this can
-     *      negatively affect update performance. Default false.
-     * @param {boolean} highlightOnChange - set to true to call attention to cell changes by
-     *      flashing the cell's background color. Note: incompatible with rendererIsComplex.
-     * @param {(boolean|Column~tooltipFn)} [c.tooltip] - 'true' displays the raw value, or
-     *      tooltip function, which is based on AG Grid tooltip callback. Incompatible with
-     *      `tooltipElement`.
-     * @param {Column~tooltipElementFn} [c.tooltipElement] - function which returns a React
-     *     component to display as a tooltip. Will take precedence over `tooltip`.
-     * @param {string} [c.chooserName] - name to display within the column chooser component.
-     *      Defaults to `displayName`, can be longer / less abbreviated than `headerName` might be.
-     * @param {string} [c.chooserGroup] - group name to display within the column chooser
-     *     component.
-     *      Chooser will automatically group its "available columns" grid if any cols provide.
-     * @param {string} [c.chooserDescription] - additional descriptive text to display within the
-     *      column chooser. Appears when the column is selected within the chooser UI.
-     * @param {boolean} [c.excludeFromChooser] - true to hide the column from the column chooser
-     *      completely. Useful for hiding structural columns the user is not expected to adjust.
-     * @param {string} [c.exportName] - name to use as a header within a file export. Defaults to
-     *      `headerName`. Useful when `headerName` contains markup or other characters not suitable
-     *      for use within an Excel or CSV file header.
-     * @param {(string|Column~exportValueFn)} [c.exportValue] - alternate field name to reference or
-     *      function to call when producing a value for a file export. {@see GridExportService}
-     * @param {(ExcelFormat|function)} [c.excelFormat] - structured format string for Excel-based
-     *      exports, or a function to produce one. {@see ExcelFormat}
-     * @param {number} [c.excelWidth] - width in characters for Excel-based exports. Typically
-     *     used with ExcelFormat.LONG_TEXT to enable text wrapping.
-     * @param {boolean} [c.excludeFromExport] - true to drop this column from a file export.
-     * @param {boolean} [c.autosizable] - allow autosizing this column.
-     * @param {boolean} [c.autosizeIncludeHeader] - true to include the header width when
-     *     autosizing.
-     * @param {boolean} [c.autosizeIncludeHeaderIcons] - true to always include the width of the
-     *     sort icon when calculating the header width.
-     * @param {number} [c.autosizeMinWidth] - minimum width in pixels when autosizing.
-     * @param {number} [c.autosizeMaxWidth] - maximum width in pixels when autosizing.
-     * @param {number} [c.autosizeBufferPx] - additional pixels to add to the size of each column
-     *      beyond its absolute minimum. If specified, it will override the value of
-     *      `GridAutosizeOptions.bufferPx` which is applied to all columns.
-     * @param {boolean} [c.autoHeight] - true to dynamically grow the row height based on the
-     *      content of this column's cell.  If true, text will also be set to wrap within cells.
-     * @param {(boolean|Column~editableFn)} [c.editable] - true to make cells in this column
-     *     editable, or a function to determine on a record-by-record basis.
-     * @param {Column~editorFn} [c.editor] - Cell editor Component or a function to create one.
-     *      Adding an editor will also install a cellClassRule and tooltip to display the
-     *      validation state of the cell in question.
-     * @param {boolean} [c.editorIsPopup] - true if this cell editor should be rendered as a popup
-     *      over the cell instead of within the actual cell element. Popup editors will have their
-     *      width set to match the cell by default. Typically used with textarea cell editors.
-     * @param {Column~setValueFn} [c.setValueFn] - function for updating StoreRecord field for this
-     *      column after inline editing.
-     * @param {Column~getValueFn} [c.getValueFn] - function for getting the column value
-     * @param {boolean} [c.enableDotSeparatedFieldPath] - true (default) to enable configuration
-     *      of field name as a dot-separated path - e.g. `'country.name'` - where the default
-     *      `getValueFn` will expect the field to be an object and render a nested property.
-     *      False to support field names that contain dots *without* triggering this behavior.
-     * @param {Object} [c.agOptions] - "escape hatch" object to pass directly to Ag-Grid for
-     *      desktop implementations. Note these options may be used / overwritten by the framework
-     *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
-     *      @see {@link https://www.ag-grid.com/javascript-grid-column-properties/|AG-Grid docs}
-     * @param {...*} [rest] - additional properties to store on the column
+     * True to dynamically grow the row height based on the content of this column's cell.  If
+     * true, text will also be set to wrap within cells.
      */
+    autoHeight?: boolean;
+
+
+    /**
+     * True to make cells in this column editable, or a function to determine on a
+     * record-by-record basis.
+     */
+    editable?: boolean | ColumnEditableFn;
+
+    /**
+     * Cell editor Component or a function to create one.  Adding an editor will also
+     * install a cellClassRule and tooltip to display thevalidation state of the cell in question.
+     */
+    editor?: FunctionComponent | ColumnEditorFn;
+
+    /**
+     * True if this cell editor should be rendered as a popup over the cell instead of within the
+     * actual cell element. Popup editors will have their width set to match the cell by default.
+     * Typically used with textarea cell editors.
+     */
+    editorIsPopup?: boolean;
+
+    /** Function for updating StoreRecord field for this column after inline editing. */
+    setValueFn?: ColumnSetValueFn;
+
+    /** Function for getting the column value. */
+    getValueFn?: ColumnGetValueFn;
+
+    /**
+     * True (default) to enable configuration of field name as a dot-separated path - e.g.
+     * `'country.name'` - where the default `getValueFn` will expect the field to be an object and
+     * render a nested property.  False to support field names that contain dots *without*
+     * triggering this behavior.
+     */
+    enableDotSeperatedFieldPath?: boolean;
+
+    /**
+     * "escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note these
+     * options may be used / overwritten by the framework itself, and are not all guaranteed to be
+     * compatible with its usages of Ag-Grid.
+     * See {@link https://www.ag-grid.com/javascript-grid-column-properties/|AG-Grid docs}
+     */
+    agOptions?: PlainObject;
+
+    /** Additional data to attach to this model instance. */
+    [x: string]: any;
 }
-
-
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
@@ -235,7 +391,7 @@ export class Column {
     headerName: ColumnHeaderNameFn|ReactNode;
     headerTooltip: string;
     headerHasExpandCollapse: boolean;
-    headerAlign: 'left'|'right';
+    headerAlign: 'left'|'right'|'center';
     headerClass: ColumnHeaderClassFn|Some<string>;
     cellClass: ColumnCellClassFn|Some<string>;
     cellClassRules: Record<string, ColumnCellClassRuleFn>
@@ -246,10 +402,9 @@ export class Column {
     minWidth: number;
     maxWidth: number;
     rowHeight: number;
-    /** @member {{(string[]|Column~SortSpec[])}} */
-    sortingOrder;
+    sortingOrder: ('asc'|'desc'|ColumnSortSpec|null)[];
     absSort: boolean;
-    sortValue: ColumnSortValueFn;
+    sortValue: string|ColumnSortValueFn;
     comparator: ColumnComparator;
     resizable: boolean;
     sortable: boolean;
@@ -266,7 +421,7 @@ export class Column {
     chooserGroup: string;
     chooserDescription: string;
     excludeFromChooser: boolean;
-    exportName: string;
+    exportName: string|ColumnHeaderNameFn
     exportValue: string|ColumnExportValueFn;
     excludeFromExport: boolean;
     excelFormat: string|(() => string);
@@ -278,7 +433,7 @@ export class Column {
     autosizeMaxWidth: number;
     autosizeBufferPx: number;
     autoHeight: boolean;
-    editable: ColumnEditableFn;
+    editable: boolean|ColumnEditableFn;
     editor: ColumnEditorFn;
     editorIsPopup: boolean;
     setValueFn: ColumnSetValueFn;
@@ -346,7 +501,7 @@ export class Column {
         enableDotSeparatedFieldPath,
         agOptions,
         ...rest
-    }, gridModel) {
+    }: ColumnConfig, gridModel) {
         Object.assign(this, rest);
 
         this.field = this.parseField(field);
@@ -434,7 +589,7 @@ export class Column {
         // ExportName must be non-empty string. Default to headerName if unspecified (it supports
         // the function form of headerName) and fallback to colId. Note GridExportService can
         // fallback again to colId internally if headerName is or returns an Element.
-        this.exportName = exportName || this.headerName || this.colId;
+        this.exportName = exportName || this.headerName as any || this.colId;
         this.exportValue = exportValue;
         this.excludeFromExport = withDefault(excludeFromExport, !this.field);
 
@@ -586,7 +741,7 @@ export class Column {
         if (tooltipSpec || editor) {
             // ag-Grid requires a return from getter, but value we actually use is computed below
             ret.tooltipValueGetter = () => 'tooltip';
-            ret.tooltipComponent = forwardRef((props, ref) => {
+            ret.tooltipComponent = forwardRef((props: PlainObject, ref) => {
                 const {location} = props;
                 useImperativeHandle(ref, () => ({
                     getReactContainerClasses() {
@@ -600,7 +755,7 @@ export class Column {
 
                 if (location === 'header') return div(this.headerTooltip);
 
-                if (!record?.isRecord) return null;
+                if (!(record instanceof StoreRecord)) return null;
 
                 // Override with validation errors, if present
                 if (editor) {
@@ -708,7 +863,7 @@ export class Column {
         }
 
         if (editor) {
-            ret.cellEditor = forwardRef((agParams, ref) => {
+            ret.cellEditor = forwardRef((agParams: PlainObject, ref) => {
                 const props = {
                     record: agParams.data,
                     gridModel,

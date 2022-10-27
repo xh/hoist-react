@@ -5,7 +5,8 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
-import {Column, ColumnGroup, ColumnGroupConfig, GridAutosizeMode, GridGroupSortFn, TreeStyle} from '@xh/hoist/cmp/grid';
+import {Column,
+    ColumnConfig, ColumnGroup, ColumnGroupConfig, GridAutosizeMode, GridGroupSortFn, TreeStyle} from '@xh/hoist/cmp/grid';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {

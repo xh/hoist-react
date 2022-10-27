@@ -11,7 +11,7 @@ import {clone, isEmpty, isFunction, isString} from 'lodash';
 import {ReactNode} from 'react';
 import {GridModel} from '../GridModel';
 import {ColumnHeaderClassFn, ColumnHeaderNameFn } from '../Types';
-import {getAgHeaderClassFn} from './Column';
+import {ColumnConfig, getAgHeaderClassFn} from './Column';
 
 export interface ColumnGroupConfig {
     /** Column or ColumnGroup configs for children of this group.*/

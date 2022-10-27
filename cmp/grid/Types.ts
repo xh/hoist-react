@@ -263,7 +263,8 @@ export interface TooltipMetadata {
  */
 export type ColumnHeaderNameFn = (
     params: {
-        column: Column,
+        column?: Column,
+        columnGroup?: ColumnGroup,
         gridModel: GridModel,
         agParams: PlainObject
     }
