@@ -5,16 +5,17 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase, managed, TaskObserver} from '@xh/hoist/core';
+import {TaskObserver} from '@xh/hoist/core';
 import {ValidationState} from '@xh/hoist/data';
-import {computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {compact, flatten, isEmpty, isNil} from 'lodash';
+import {runInAction} from 'mobx';
 
 /**
  * Computes validation state for a Field on a StoreRecord instance
  * @private
  */
-export class RecordFieldValidator extends HoistBase {
+export class RecordFieldValidator {
 
     /** @member {StoreRecord} */
     record;
@@ -70,9 +71,9 @@ export class RecordFieldValidator extends HoistBase {
     // An array with the result of evaluating each rule. Each element will be array of strings
     // containing any validation errors for the rule. If validation for the rule has not
     // completed will contain null
-    @observable _errors;
+    @observable.ref _errors;
 
-    @managed _validationTask = TaskObserver.trackLast();
+    _validationTask = TaskObserver.trackLast();
     _validationRunId = 0;
 
     /**
@@ -81,7 +82,6 @@ export class RecordFieldValidator extends HoistBase {
      * @param {Field} c.field - Field to validate
      */
     constructor({record, field}) {
-        super();
         makeObservable(this);
         this.record = record;
         this.field = field;
@@ -115,30 +115,38 @@ export class RecordFieldValidator extends HoistBase {
     // Implementation
     //---------------------------------------
     async evaluateAsync() {
-        const runId = ++this._validationRunId;
+        const runId = ++this._validationRunId,
+            errors = new Array(this.rules.length);
+
         const promises = this.rules.map(async (rule, idx) => {
             const result = await this.evaluateRuleAsync(rule);
             if (runId === this._validationRunId) {
-                runInAction(() => this._errors[idx] = result);
+                errors[idx] = result;
             }
         });
+
         await Promise.all(promises).linkTo(this._validationTask);
+
+        runInAction(() => this._errors = errors);
+        return errors;
     }
 
     async evaluateRuleAsync(rule) {
-        const {record, field} = this;
+        const {record, field} = this,
+            values = record.getValues(),
+            {name, displayName} = field,
+            value = record.get(name);
+
         if (this.ruleIsActive(rule)) {
             const promises = rule.check.map(async (constraint) => {
-                const {name, displayName} = field,
-                    value = record.get(name),
-                    fieldState = {value, name, displayName, record};
-
-                return await constraint(fieldState, record.getValues());
+                const fieldState = {value, name, displayName, record};
+                return await constraint(fieldState, values);
             });
 
             const ret = await Promise.all(promises);
             return compact(flatten(ret));
         }
+
         return [];
     }
 

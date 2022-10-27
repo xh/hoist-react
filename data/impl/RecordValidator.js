@@ -5,17 +5,17 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase} from '@xh/hoist/core';
 import {ValidationState} from '@xh/hoist/data';
-import {computed, makeObservable} from '@xh/hoist/mobx';
-import {find, map, some, sumBy} from 'lodash';
-import {RecordFieldValidator} from './RecordFieldValidator';
+import {computed} from '@xh/hoist/mobx';
+import {compact, flatten, isEmpty, map, mapValues, values} from 'lodash';
+import {makeObservable, observable, runInAction} from 'mobx';
+import {TaskObserver} from '../../core';
 
 /**
  * Computes validation state for a StoreRecord
  * @private
  */
-export class RecordValidator extends HoistBase {
+export class RecordValidator {
 
     /** @member {StoreRecord} */
     record;
@@ -52,28 +52,30 @@ export class RecordValidator extends HoistBase {
     /** @return {number} - count of all validation errors for the record. */
     @computed
     get errorCount() {
-        return sumBy(this._validators, 'errorCount');
+        return flatten(values(this._fieldErrors)).length;
     }
 
     /** @return {boolean} - true if any fields are currently recomputing their validation state. */
     @computed
     get isPending() {
-        return some(this._validators, it => it.isPending);
+        return this._validationTask.isPending;
     }
 
     _validators = [];
+    @observable.ref _fieldErrors = {};
+    _validationTask = TaskObserver.trackLast();
+    _validationRunId = 0;
 
     /**
      * @param {Object} c - RecordValidator configuration.
      * @param {StoreRecord} c.record - record to validate
      */
     constructor({record}) {
-        super();
-        makeObservable(this);
         this.record = record;
+        makeObservable(this);
 
-        const {fields} = this.record.store;
-        this._validators = fields.map(field => new RecordFieldValidator({record, field}));
+        // const {fields} = this.record.store;
+        // this._validators = fields.map(field => new RecordFieldValidator({record, field}));
     }
 
     /**
@@ -81,8 +83,33 @@ export class RecordValidator extends HoistBase {
      * @returns {Promise<boolean>}
      */
     async validateAsync() {
-        const promises = map(this._validators, v => v.validateAsync());
-        await Promise.all(promises);
+        const runId = ++this._validationRunId,
+            fieldErrors = {},
+            {record} = this,
+            fieldsToValidate = record.store.fields.filter(it => !isEmpty(it.rules));
+
+        runInAction(() => this._fieldErrors = {});
+
+        const promises = fieldsToValidate.map(field => {
+            fieldErrors[field.name] = [];
+
+            const rulePromises = field.rules.map(async (rule) => {
+                const result = await this.evaluateRuleAsync(record, field, rule);
+                fieldErrors[field.name].push(result);
+            });
+
+            return Promise.all(rulePromises);
+        });
+
+        await Promise.all(promises).linkTo(this._validationTask);
+
+        runInAction(() => {
+            // TODO: Is this the correct place for this?
+            if (runId !== this._validationRunId) return;
+
+            this._fieldErrors = mapValues(fieldErrors, it => compact(flatten(it)));
+        });
+
         return this.isValid;
     }
 
@@ -97,17 +124,30 @@ export class RecordValidator extends HoistBase {
 
     /** @return {RecordErrorMap} - map of field names -> field-level errors. */
     getErrorMap() {
-        const ret = {};
-        this._validators.forEach(v => ret[v.id] = v.errors);
-        return ret;
+        return this._fieldErrors;
     }
 
-    /**
-     * @param {string} id - ID of RecordFieldValidator (should match field.name)
-     * @return {RecordFieldValidator}
-     */
-    findFieldValidator(id) {
-        return find(this._validators, {id});
+    async evaluateRuleAsync(record, field, rule) {
+        const values = record.getValues(),
+            {name, displayName} = field,
+            value = record.get(name);
+
+        if (this.ruleIsActive(record, field, rule)) {
+            const promises = rule.check.map(async (constraint) => {
+                const fieldState = {value, name, displayName, record};
+                return await constraint(fieldState, values);
+            });
+
+            const ret = await Promise.all(promises);
+            return compact(flatten(ret));
+        }
+
+        return [];
+    }
+
+    ruleIsActive(record, field, rule) {
+        const {when} = rule;
+        return !when || when(field, record.getValues());
     }
 }
 
