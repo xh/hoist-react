@@ -59,7 +59,6 @@ export interface FieldState<T=any> {
     fieldModel?: BaseFieldModel;
 }
 
-
 export interface RuleSpec {
 
     /** Function(s) to perform validation. */

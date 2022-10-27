@@ -11,7 +11,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {flatMap, forEach, forOwn, map, mapValues, pickBy, some, values} from 'lodash';
 import {BaseFieldConfig, BaseFieldModel} from './field/BaseFieldModel';
 import {FieldModel} from './field/FieldModel';
-import {SubformsFieldModel, SubformsFieldConfig} from './field/SubformsFieldModel';
+import {SubformsFieldModel} from './field/SubformsFieldModel';
 
 
 export interface FormConfig {
@@ -19,7 +19,7 @@ export interface FormConfig {
     /**
      * FieldModels, or configurations to create them, for all data fields managed by this FormModel.
      */
-    fields?: (BaseFieldModel|BaseFieldConfig|SubformsFieldModel|SubformsFieldConfig)[];
+    fields?: (BaseFieldModel|BaseFieldConfig)[];
 
     /** Map of initial values for fields in this model. */
     initialValues?: RawData;

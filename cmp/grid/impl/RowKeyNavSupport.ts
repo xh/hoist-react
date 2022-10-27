@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import { GridModel } from "../GridModel";
+import { GridModel } from '../GridModel';
 
 /**
  * Add support for row based navigation to GridModel.

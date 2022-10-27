@@ -20,7 +20,7 @@ export const boolCheck = {
 export const number: ColumnSpec = {
     align: 'right',
     renderer: numberRenderer({})
-} as ColumnSpec
+} as ColumnSpec;
 
 export const fileExt: ColumnSpec = {
     headerName: '',

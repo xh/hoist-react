@@ -6,47 +6,41 @@
  */
 import {isNumber, isNil, isString} from 'lodash';
 
+export type GridSorterLike = GridSorterSpec | string | GridSorter;
 
-export interface GridSorterConfig {
+export interface GridSorterSpec {
     colId: string;
-
+    sort?: 'asc'|'desc'|'ASC'|'DESC';
+    abs?: boolean;
 }
-
 
 export class GridSorter {
 
-    colId;
-    sort;
-    abs;
+    colId: string;
+    sort: 'asc'|'desc';
+    abs: boolean;
 
     /**
      * Create a new GridSorter. Accepts a GridSorter configuration or a pipe delimited string
      * generated using GridSorter.toString().
-     *
-     * @param {Object|String} [cfg] - GridSorter configuration or string representation.
      */
-    static parse(cfg) {
+    static parse(cfg: string|GridSorterSpec) {
         if (isString(cfg)) {
-            const [colId, sort, abs] = cfg.split('|').map(s => s.trim());
+            const [colId, sort, abs] = cfg.split('|').map(s => s.trim()) as any;
             cfg = {colId, sort, abs};
         }
         return new GridSorter(cfg);
     }
 
-    /**
-     * @param {Object} c - GridSorter configuration.
-     * @param {string} c.colId - Column ID on which to sort.
-     * @param {string} c.sort - direction of sort. Either 'asc' or 'desc'.
-     * @param {boolean} [c.abs] - true to sort by absolute value.
-     */
-    constructor({
-        colId,
-        sort = 'asc',
-        abs = false
-    }) {
+    constructor(spec: GridSorterSpec) {
+        const {colId, sort = 'asc', abs = false} = spec;
         this.colId = colId;
-        this.sort = isString(sort) ? sort.toLowerCase() : null;
         this.abs = !!abs;
+        let sortString: any = isString(sort) ? sort.toLowerCase() : null;
+        if (sortString !== 'asc' && sortString != 'desc') {
+            sortString = 'asc';
+        }
+        this.sort = sortString;
     }
 
     /** Generate a delimited string representation suitable for consumption by parse().*/

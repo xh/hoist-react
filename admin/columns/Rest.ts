@@ -4,27 +4,25 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {FieldType} from '@xh/hoist/data';
+import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 
-const {DATE, STRING} = FieldType;
-
 export const dateCreated = {
-    field: {name: 'dateCreated', type: DATE},
+    field: {name: 'dateCreated', type: 'date'},
     ...Col.dateTime
-};
+} as ColumnSpec;
 
 export const dateCreatedWithSec = {
-    field: {name: 'dateCreated', type: DATE},
+    field: {name: 'dateCreated', type: 'date'},
     ...Col.dateTimeSec
-};
+} as ColumnSpec;
 
 export const lastUpdated = {
-    field: {name: 'lastUpdated', type: DATE},
+    field: {name: 'lastUpdated', type: 'date'},
     ...Col.dateTime
-};
+} as ColumnSpec;
 
 export const lastUpdatedBy = {
-    field: {name: 'lastUpdatedBy', type: STRING},
+    field: {name: 'lastUpdatedBy', type: 'string'},
     width: 160
-};
+} as ColumnSpec;

@@ -107,8 +107,6 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory({
 
 })(AgGrid);
 
-
-
 class AgGridLocalModel extends HoistModel {
     xhImpl = true;
 

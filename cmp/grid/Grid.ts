@@ -15,7 +15,7 @@ import {
     HoistModel,
     lookup,
     PlainObject,
-    ReactionSpec, SizingMode,
+    SizingMode,
     useLocalModel,
     uses,
     XH
@@ -47,7 +47,6 @@ import {
     maxBy,
     merge
 } from 'lodash';
-import PT from 'prop-types';
 import {createRef, isValidElement} from 'react';
 import './Grid.scss';
 import {GridModel} from './GridModel';
@@ -66,14 +65,14 @@ export interface GridProps extends BoxProps<GridModel> {
      *
      * Note that changes to these options after the component's initial render will be ignored.
      */
-    agOptions: PlainObject,
+    agOptions?: PlainObject,
 
     /**
      * Callback when the grid has initialized. The component will call this with the ag-Grid
      * event after running its internal handler to associate the ag-Grid APIs with its model.
      */
-    onGridReady: (e: PlainObject) => void;
-};
+    onGridReady?: (e: PlainObject) => void;
+}
 
 
 /**
@@ -441,7 +440,7 @@ class GridLocalModel extends HoistModel {
                 ]);
             },
             fireImmediately: true
-        }
+        };
     }
 
     columnsReaction() {
@@ -547,10 +546,10 @@ class GridLocalModel extends HoistModel {
         return {
             track: () => [model.isReady, store.validator.errors],
             run: () => {
-                const {isReady, columns, agApi} = model;
+                const {isReady, agApi} = model;
                 if (!isReady) return;
 
-                const refreshCols = columns.filter(c => c.editor || c.rendererIsComplex);
+                const refreshCols = model.getLeafColumns().filter(c => c.editor || c.rendererIsComplex);
                 if (!isEmpty(refreshCols)) {
                     const colIds = refreshCols.map(c => c.colId);
                     agApi.refreshCells({columns: colIds, force: true});
@@ -850,9 +849,3 @@ class GridLocalModel extends HoistModel {
         }
     };
 }
-
-/**
- * @callback Grid~groupRowRendererFn - renderer for a group row
- * @param {ICellRendererParams} context - The group renderer params from ag-Grid.
- * @returns {Element} - the formatted value for display.
- */

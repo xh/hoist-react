@@ -4,47 +4,45 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {FieldType} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-
-const {BOOL, AUTO, JSON, STRING} = FieldType;
+import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 
 export const owner = {
-    field: {name: 'owner', type: STRING},
+    field: {name: 'owner', type: 'string'},
     width: 200
-};
+} as ColumnSpec;
 
 export const token = {
-    field: {name: 'token', type: STRING},
+    field: {name: 'token', type: 'string'},
     width: 100
-};
+} as ColumnSpec;
 
 export const meta = {
-    field: {name: 'meta', type: JSON},
+    field: {name: 'meta', type: 'json'},
     width: 200
-};
+} as ColumnSpec;
 
 export const acl = {
     field: {
         name: 'acl',
-        type: STRING,
+        type: 'string',
         displayName: 'ACL'
     },
     width: 80
-};
+} as ColumnSpec;
 
 export const archived = {
-    field: {name: 'archived', type: BOOL},
+    field: {name: 'archived', type: 'bool'},
     ...Col.boolCheck,
     width: 100
-};
+} as ColumnSpec;
 
 export const archivedDate = {
-    field: {name: 'archivedDate', type: AUTO},
+    field: {name: 'archivedDate', type: 'auto'},
     ...Col.dateTime,
     renderer: archivedDateRenderer
-};
+} as ColumnSpec;
 
 export function archivedDateRenderer(v) {
     return v > 0 ? fmtDateTime(v) : '-';

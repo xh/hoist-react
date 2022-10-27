@@ -20,6 +20,7 @@ import {isNil, truncate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
 import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
 import {getApp} from '@xh/hoist/admin/AppModel';
+import { FieldConfig } from '@xh/hoist/data';
 
 
 export class ConfigPanelModel extends HoistModel {
@@ -55,14 +56,14 @@ export class ConfigPanelModel extends HoistModel {
                 reloadLookupsOnLoad: true,
                 fieldDefaults: {disableXssProtection: true},
                 fields: [
-                    {...Col.name.field, required},
-                    {...Col.groupName.field, lookupName: 'groupNames', required, enableCreate},
-                    {...Col.valueType.field, lookupName: 'valueTypes', editable: 'onAdd', required},
-                    {...Col.value.field, typeField: 'valueType', required},
-                    {...Col.clientVisible.field, defaultValue: false, required},
-                    {...Col.note.field},
-                    {...Col.lastUpdated.field, editable: false},
-                    {...Col.lastUpdatedBy.field, editable: false}
+                    {...Col.name.field as FieldConfig, required},
+                    {...Col.groupName.field as FieldConfig, lookupName: 'groupNames', required, enableCreate},
+                    {...Col.valueType.field as FieldConfig, lookupName: 'valueTypes', editable: 'onAdd', required},
+                    {...Col.value.field as FieldConfig, typeField: 'valueType', required},
+                    {...Col.clientVisible.field as FieldConfig, defaultValue: false, required},
+                    {...Col.note.field as FieldConfig},
+                    {...Col.lastUpdated.field as FieldConfig, editable: false},
+                    {...Col.lastUpdatedBy.field as FieldConfig, editable: false}
                 ]
             }),
             actionWarning: {

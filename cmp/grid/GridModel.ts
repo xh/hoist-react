@@ -5,8 +5,15 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
-import {Column,
-    ColumnSpec, ColumnGroup, ColumnGroupSpec, GridAutosizeMode, GridGroupSortFn, TreeStyle} from '@xh/hoist/cmp/grid';
+import {
+    Column,
+    ColumnSpec,
+    ColumnGroup,
+    ColumnGroupSpec,
+    GridAutosizeMode,
+    GridGroupSortFn,
+    TreeStyle
+} from '@xh/hoist/cmp/grid';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {
@@ -23,7 +30,6 @@ import {
 import {
     FieldType,
     FieldConfig,
-    RawData,
     Store,
     StoreConfig,
     StoreRecord,
@@ -70,11 +76,20 @@ import {
     pull
 } from 'lodash';
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
-import {GridSorter} from './impl/GridSorter';
+import {GridSorter, GridSorterLike} from './impl/GridSorter';
 import {managedRenderer} from './impl/Utils';
-import {GridAutosizeOptions} from "@xh/hoist/cmp/grid/GridAutosizeOptions";
+import {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
 import {ReactNode} from 'react';
-import {GridFilterModelConfig, GridModelPersistOptions, RowClassFn, RowClassRuleFn} from './Types';
+import {
+    AutosizeState,
+    ColChooserConfig,
+    ColumnState,
+    GridFilterModelConfig,
+    GridModelPersistOptions,
+    GroupRowRenderer,
+    RowClassFn,
+    RowClassRuleFn
+} from './Types';
 
 
 export interface GridConfig {
@@ -104,7 +119,7 @@ export interface GridConfig {
     filterModel?: GridFilterModelConfig | boolean;
 
     /** Config with which to create aColChooserModel, or boolean `true` to enable default.*/
-    colChooserModel?: any | boolean;
+    colChooserModel?: ColChooserConfig | boolean;
 
     /**
      * Async function to be called when the user triggers GridModel.restoreDefaultsAsync(). This
@@ -132,7 +147,7 @@ export interface GridConfig {
     hideEmptyTextBeforeLoad?: boolean;
 
     /** Initial sort to apply to grid data. */
-    sortyBy?: Some<GridSorterSpec>;
+    sortBy?: Some<GridSorterLike>;
 
     /** Column ID(s) by which to do full-width grouping. */
     groupBy?: Some<string>;
@@ -150,7 +165,7 @@ export interface GridConfig {
     rowBorders?: boolean;
 
     /** Specify treeMode-specific styling. */
-    treeStyle: TreeStyle;
+    treeStyle?: TreeStyle;
 
     /** True to use alternating backgrounds for rows. */
     stripeRow?: boolean;
@@ -193,7 +208,7 @@ export interface GridConfig {
     groupRowHeight?: number;
 
     /** Function used to render group rows. */
-    groupRowRenderer?: GroupRowRendererFn;
+    groupRowRenderer?: GroupRowRenderer;
 
     /**
      * Function to use to sort full-row groups.  Called with two group values to compare
@@ -339,7 +354,7 @@ export class GridModel extends HoistModel {
     rowClassRules: Record<string, RowClassRuleFn>;
     contextMenu: any;
     groupRowHeight: number;
-    groupRowRenderer: GroupRowRendererFn;
+    groupRowRenderer: GroupRowRenderer;
     groupSortFn: GridGroupSortFn;
     showGroupRowCounts: boolean;
     enableColumnPinning: boolean;
@@ -897,26 +912,26 @@ export class GridModel extends HoistModel {
      * This method is a no-op if provided any sorters without a corresponding column.
      */
     @action
-    setSortBy(sorters: Some<GridSorter|GridSorterSpec>) {
+    setSortBy(sorters: Some<GridSorterLike>) {
         if (!sorters) {
             this.sortBy = [];
             return;
         }
 
         sorters = castArray(sorters);
-        sorters = sorters.map(it => {
+        const newSorters = sorters.map(it => {
             if (it instanceof GridSorter) return it;
             return GridSorter.parse(it);
         });
 
         // Allow sorts associated with Hoist columns as well as ag-Grid dynamic grouping columns
-        const invalidSorters = sorters.filter(it => !it.colId?.startsWith('ag-Grid') && !this.findColumn(this.columns, it.colId));
+        const invalidSorters = newSorters.filter(it => !it.colId?.startsWith('ag-Grid') && !this.findColumn(this.columns, it.colId));
         if (invalidSorters.length) {
             console.warn('GridSorter colId not found in grid columns', invalidSorters);
             return;
         }
 
-        this.sortBy = sorters;
+        this.sortBy = newSorters;
     }
 
     override async doLoadAsync(loadSpec) {
@@ -958,7 +973,7 @@ export class GridModel extends HoistModel {
             });
     }
 
-    setColumnState(colState: ColumnState[]) {
+    setColumnState(colState: Partial<ColumnState>[]) {
         colState = this.cleanColumnState(colState);
         colState = this.removeTransientWidths(colState);
         this.applyColumnStateChanges(colState);
@@ -1041,17 +1056,17 @@ export class GridModel extends HoistModel {
      *     columns are represented in these changes then the sort order will be applied as well.
      */
     @action
-    applyColumnStateChanges(colStateChanges: ColumnState[]) {
+    applyColumnStateChanges(colStateChanges: Partial<ColumnState>[]) {
         if (isEmpty(colStateChanges)) return;
 
         let columnState = cloneDeep(this.columnState);
 
-        throwIf(colStateChanges.some(({colId}) => !this.findColumn(columnState, colId)),
+        throwIf(colStateChanges.some(({colId}) => !find(columnState, {colId})),
             'Invalid columns detected in column changes!');
 
         // 1) Update any width, visibility or pinned changes
         colStateChanges.forEach(change => {
-            const col = this.findColumn(columnState, change.colId);
+            const col = find(columnState, {colId: change.colId});
 
             if (!isNil(change.width)) col.width = change.width;
             if (!isNil(change.hidden)) col.hidden = change.hidden;
@@ -1061,7 +1076,7 @@ export class GridModel extends HoistModel {
 
         // 2) If the changes provided is a full list of leaf columns, synchronize the sort order
         if (colStateChanges.length === this.getLeafColumns().length) {
-            columnState = colStateChanges.map(c => this.findColumn(columnState, c.colId));
+            columnState = colStateChanges.map(c => find(columnState, {colId: c.colId}));
         }
 
         if (!equal(this.columnState, columnState)) {
@@ -1118,10 +1133,7 @@ export class GridModel extends HoistModel {
         return state ? state.pinned : null;
     }
 
-    /**
-     * Return matching leaf-level Column or ColumnState object from the provided collection for the
-     * given colId, if any. Used as a utility function to find both types of objects.
-     */
+    /** Return matching leaf-level Column object from the provided collection.*/
     findColumn(cols: (Column|ColumnGroup)[], colId: string): Column {
         for (let col of cols) {
             if (col instanceof ColumnGroup) {
@@ -1145,7 +1157,7 @@ export class GridModel extends HoistModel {
         return find(this.columnState, {colId});
     }
 
-    buildColumn(config) {
+    buildColumn(config: ColumnGroupSpec|ColumnSpec) {
         // Merge leaf config with defaults.
         // Ensure *any* tooltip setting on column itself always wins.
         if (this.colDefaults && !config.children) {
@@ -1161,8 +1173,8 @@ export class GridModel extends HoistModel {
         if (omit) return null;
 
         if (config.children) {
-            const children = compact(config.children.map(c => this.buildColumn(c)));
-            return !isEmpty(children) ? new ColumnGroup({...config, children}, this) : null;
+            const children = compact(config.children.map(c => this.buildColumn(c))) as (ColumnGroup | Column)[];
+            return !isEmpty(children) ? new ColumnGroup(config as ColumnGroupSpec, this, children) : null;
         }
 
         return new Column(config, this);
@@ -1190,7 +1202,7 @@ export class GridModel extends HoistModel {
 
         let colIds, includeColFn = (col) => true;
         if (isFunction(columns)) {
-            includeColFn = columns as ((col) => boolean)
+            includeColFn = columns as ((col) => boolean);
             colIds = this.columnState.map(it => it.colId);
         } else {
             colIds = columns ?? this.columnState.map(it => it.colId);
@@ -1400,18 +1412,18 @@ export class GridModel extends HoistModel {
         // 3) Create and set columns with (possibly) enhanced configs.
         this.setColumns(colConfigs);
 
-        let ret: Store
+        let newStore: Store;
         // 4) Create store if needed
         if (isPlainObject(store)) {
             store = this.enhanceStoreConfigFromColumns(store);
-            ret = new Store({loadTreeData: this.treeMode, ...store});
-            ret.xhImpl = this.xhImpl;
-            this.markManaged(ret);
+            newStore = new Store({loadTreeData: this.treeMode, ...store});
+            newStore.xhImpl = this.xhImpl;
+            this.markManaged(newStore);
         } else {
-            ret = store as Store;
+            newStore = store as Store;
         }
 
-        this.store = ret;
+        this.store = newStore;
     }
 
     private validateStoreConfig(store) {
@@ -1619,7 +1631,7 @@ export class GridModel extends HoistModel {
         };
     }
 
-    private parseChooserModel(chooserModel) {
+    private parseChooserModel(chooserModel): HoistModel {
         const modelClass = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModel;
 
         if (isPlainObject(chooserModel)) {

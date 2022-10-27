@@ -162,7 +162,7 @@ export class GridExportService extends HoistService {
             hasCustomGetValueFn = getValueFn !== defaultGetValueFn;
 
         // 0) Main processing
-        let value = getValueFn({record, field, column, gridModel});
+        let value = getValueFn({record, field, column, gridModel, store: record.store, agParams: null});
         // Modify value using exportValue
         if (isString(exportValue) && record.data[exportValue] !== null) {
             // If exportValue points to a different field
@@ -178,10 +178,10 @@ export class GridExportService extends HoistService {
         if (isNil(value)) return null;
 
         // 1) Support per-cell excelFormat and data types
-        let {excelFormat} = column,
-            cellHasExcelFormat = isFunction(excelFormat);
-
-        if (cellHasExcelFormat) {
+        let {excelFormat} = column;
+        let cellHasExcelFormat = false;
+        if (isFunction(excelFormat)) {
+            cellHasExcelFormat = true;
             excelFormat = excelFormat(value, {record, column, gridModel}) ?? ExcelFormat.DEFAULT;
         }
 

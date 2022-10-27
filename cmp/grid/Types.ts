@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {GridFilterFieldSpec, GridFilterFieldSpecConfig} from '@xh/hoist/cmp/grid/filter/GridFilterFieldSpec';
+import {GridFilterFieldSpecConfig} from '@xh/hoist/cmp/grid/filter/GridFilterFieldSpec';
 import {HSide, PersistOptions, PlainObject, SizingMode, Some} from '@xh/hoist/core';
 import {Store, StoreRecord, View} from '@xh/hoist/data';
 import {ReactElement, ReactNode } from 'react';
@@ -17,15 +17,16 @@ export interface ColumnState {
     colId: string;
     width: number;
     hidden: boolean;
+
     /** has this column been resized manually? */
-    manuallySized: boolean;
+    manuallySized?: boolean;
     /** Side if pinned, null if not. */
-    pinned: HSide;
+    pinned?: HSide;
 }
 
 export interface AutosizeState {
     /** Sizing mode used last time the columns were autosized. */
-    sizingMode: SizingMode;
+    sizingMode?: SizingMode;
 }
 
 /**
@@ -118,17 +119,38 @@ export interface GridFilterModelConfig {
 
 
 /**
- * @typedef {Object} ColChooserModelConfig
- * @property {boolean} [commitOnChange] - Immediately render changed columns on grid (default true).
- *      Set to false to enable Save button for committing changes on save. Desktop only.
- * @property {boolean} [showRestoreDefaults] - show Restore Defaults button (default true).
- *      Set to false to hide Restore Grid Defaults button, which immediately
- *      commits grid defaults (all column, grouping, and sorting states).
- * @property {boolean} [autosizeOnCommit] - Autosize grid columns after committing changes
- *      (default false for desktop, true for mobile)
- * @property {number} [width] - chooser width for popover and dialog. Desktop only.
- * @property {number} [height] - chooser height for popover and dialog. Desktop only.
+ * Renderer for a group row
+ * @param context - The group renderer params from ag-Grid. (ICellRendererParams)
+ * @returns the formatted value for display.
  */
+export type GroupRowRenderer = (context: PlainObject) => ReactNode;
+
+
+export interface ColChooserConfig {
+    /**
+     * Immediately render changed columns on grid (default true).
+     * Set to false to enable Save button for committing changes on save. Desktop only.
+     */
+    commitOnChange?: boolean;
+
+    /**
+     * Show Restore Defaults button (default true). Set to false to hide Restore Grid
+     * Defaults button, which immediately commits grid defaults (all column, grouping,
+     * and sorting states).
+     */
+    showRestoreDefaults?: boolean;
+
+    /**
+     * Autosize grid columns after committing changes (default false for desktop, true for mobile).
+     */
+    autosizeOnCommit?: boolean;
+
+    /** Chooser width for popover and dialog. Desktop only. */
+    width?: number;
+
+    /** Chooser height for popover and dialog. Desktop only. */
+    height?: number;
+}
 
 /**
  * Sort comparator function for a grid column. Note that this comparator will also be called if
@@ -182,6 +204,15 @@ export type ColumnRenderer<T=any> = (value: T, context: CellContext) => ReactNod
 export type ColumnExportValueFn<T=any> = (value: T, context: CellContext) => any;
 
 /**
+ * Function to return an excel format for a grid cell.
+ * @param value - cell data value (column + row).
+ * @param context - additional data about the column, row and GridModel.
+ * @returns excel format
+ */
+export type ColumnExcelFormatFn<T=any> = (value: T, context: CellContext) => string;
+
+
+/**
  * Function to return a value for sorting.
  * @param value - cell data value (column + row).
  * @param context - additional data about the column, row and GridModel.
@@ -221,7 +252,7 @@ export interface CellContext {
     gridModel: GridModel;
 
     /** ag-Grid cell renderer params */
-    agParams: PlainObject;
+    agParams?: PlainObject;
 }
 
 export interface HeaderContext {
@@ -229,7 +260,7 @@ export interface HeaderContext {
     gridModel: GridModel;
 
     /** ag-Grid header renderer params */
-    agParams: PlainObject;
+    agParams?: PlainObject;
 }
 
 /**

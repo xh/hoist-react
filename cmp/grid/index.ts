@@ -7,6 +7,7 @@
 export * from './enums/TreeStyle';
 export * from './enums/GridAutosizeMode';
 export * from './enums/ExcelFormat';
+export * from './GridAutosizeOptions';
 export * from './Types';
 
 export * from './columns';

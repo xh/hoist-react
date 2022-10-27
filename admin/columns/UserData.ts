@@ -4,64 +4,62 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {FieldType} from '@xh/hoist/data';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {truncate} from 'lodash';
-
-const {AUTO, BOOL, STRING} = FieldType;
+import { ColumnSpec } from '@xh/hoist/cmp/grid/columns';
 
 export const value = {
-    field: {name: 'value', type: AUTO},
+    field: {name: 'value', type: 'auto'},
     width: 200,
     autosizeMaxWidth: 400,
     renderer: truncateValue
-};
+} as ColumnSpec;
 
 export const defaultValue = {
-    field: {name: 'defaultValue', type: AUTO},
+    field: {name: 'defaultValue', type: 'auto'},
     width: 200,
     autosizeMaxWidth: 400,
     renderer: truncateIfJson
-};
+} as ColumnSpec;
 
 export const userValue = {
-    field: {name: 'userValue', type: AUTO},
+    field: {name: 'userValue', type: 'auto'},
     flex: true,
     minWidth: 200,
     renderer: truncateIfJson
-};
+} as ColumnSpec;
 
 export const valueType = {
     field: {
         name: 'valueType',
-        type: STRING,
+        type: 'string',
         displayName: 'Type'
     },
     width: 80,
     align: 'center'
-};
+} as ColumnSpec;
 
 export const groupName = {
     field: {
         name: 'groupName',
-        type: STRING,
+        type: 'string',
         displayName: 'Group'
     },
     width: 100
-};
+} as ColumnSpec;
 
 export const clientVisible = {
-    field: {name: 'clientVisible', type: BOOL},
+    field: {name: 'clientVisible', type: 'bool'},
     ...Col.boolCheck,
     displayName: 'Client?',
     width: 75
-};
+} as ColumnSpec;
 
 export const local = {
-    field: {name: 'local', type: BOOL},
+    field: {name: 'local', type: 'bool'},
     ...Col.boolCheck,
     width: 75
-};
+} as ColumnSpec;
 
 function truncateIfJson(value, {record}) {
     return record.data.type === 'json' ? truncateValue(value) : value?.toString();

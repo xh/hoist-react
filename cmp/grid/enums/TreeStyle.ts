@@ -30,7 +30,6 @@ export const TreeStyle = Object.freeze({
 export type TreeStyle = typeof TreeStyle[keyof typeof TreeStyle];
 
 
-
 export function getTreeStyleClasses(treeStyle) {
     switch (treeStyle) {
         case TreeStyle.HIGHLIGHTS:

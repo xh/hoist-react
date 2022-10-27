@@ -69,7 +69,8 @@ export class LogViewerModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {store, selModel} = this.filesGridModel;
+        const store = this.filesGridModel.store as UrlStore,
+            selModel = this.filesGridModel.selModel;
         try {
             await store.loadAsync(loadSpec);
             if (selModel.isEmpty) {

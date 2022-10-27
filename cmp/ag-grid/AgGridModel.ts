@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, SizingMode} from '@xh/hoist/core';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,

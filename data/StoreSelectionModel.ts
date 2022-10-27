@@ -12,7 +12,7 @@ import {Store} from './Store';
 import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 
 export interface StoreSelectionConfig {
-    store: Store;
+    store?: Store;
     mode?: 'single'|'multiple'|'disabled';
     xhImpl?: boolean;
 }

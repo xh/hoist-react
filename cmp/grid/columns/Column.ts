@@ -6,7 +6,7 @@
  */
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
 import {HAlign, HSide, PlainObject, Some, XH} from '@xh/hoist/core';
-import {FieldConfig, genDisplayName, StoreRecord} from '@xh/hoist/data';
+import {CubeFieldConfig, FieldConfig, genDisplayName, StoreRecord} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {
@@ -24,7 +24,7 @@ import {
     isString,
     toString
 } from 'lodash';
-import {createElement, forwardRef, isValidElement, ReactElement, ReactNode, useImperativeHandle} from 'react';
+import {createElement, forwardRef, isValidElement, ReactNode, useImperativeHandle} from 'react';
 import { GridModel } from '../GridModel';
 import {GridSorter} from '../impl/GridSorter';
 import {managedRenderer} from '../impl/Utils';
@@ -33,7 +33,7 @@ import {
     ColumnCellClassRuleFn,
     ColumnComparator,
     ColumnEditableFn,
-    ColumnEditorFn,
+    ColumnEditorFn, ColumnExcelFormatFn,
     ColumnExportValueFn,
     ColumnGetValueFn,
     ColumnHeaderClassFn,
@@ -56,7 +56,7 @@ export interface ColumnSpec {
      * for store field.  If object form is used, the provided properties will be used for
      * auto-creating any fields needed on the Grid's store.
      */
-    field?: string|FieldConfig;
+    field?: string|FieldConfig|CubeFieldConfig;
 
     /**
      * Unique identifier for the Column within its grid. Defaults to field name - one of these
@@ -266,7 +266,7 @@ export interface ColumnSpec {
     excludeFromExport?: boolean;
 
     /** Structured format string for Excel-based exports, or a function to produce one. {@link ExcelFormat} */
-    excelFormat?: string | (() => string);
+    excelFormat?: string|ColumnExcelFormatFn;
 
     /**
      * Width in characters for Excel-based exports. Typically used with ExcelFormat.LONG_TEXT to
@@ -383,66 +383,67 @@ export class Column {
         {sort: 'desc', abs: false}
     ];
 
-    readonly field: string;
-    readonly enableDotSeparatedFieldPath: boolean;
-    readonly fieldPath: Some<string>
-    readonly colId: string;
-    readonly isTreeColumn: boolean;
-    readonly displayName: string;
-    readonly headerName: ColumnHeaderNameFn|ReactNode;
-    readonly headerTooltip: string;
-    readonly headerHasExpandCollapse: boolean;
-    readonly headerAlign: HAlign;
-    readonly headerClass: ColumnHeaderClassFn|Some<string>;
-    readonly cellClass: ColumnCellClassFn|Some<string>;
-    readonly cellClassRules: Record<string, ColumnCellClassRuleFn>
-    readonly align: HAlign;
-    readonly hidden: boolean;
-    readonly flex: boolean|number;
-    readonly width: number;
-    readonly minWidth: number;
-    readonly maxWidth: number;
-    readonly rowHeight: number;
-    readonly sortingOrder: ('asc'|'desc'|ColumnSortSpec|null)[];
-    readonly absSort: boolean;
-    readonly sortValue: string|ColumnSortValueFn;
-    readonly comparator: ColumnComparator;
-    readonly resizable: boolean;
-    readonly sortable: boolean;
-    readonly movable: boolean;
-    readonly filterable: boolean;
-    readonly hideable: boolean;
-    readonly pinned: boolean|HSide;
-    readonly renderer: ColumnRenderer;
-    readonly rendererIsComplex: boolean;
-    readonly highlightOnChange: boolean;
-    readonly tooltip: boolean|ColumnTooltipFn;
-    readonly tooltipElement: ColumnTooltipElementFn;
-    readonly chooserName: string;
-    readonly chooserGroup: string;
-    readonly chooserDescription: string;
-    readonly excludeFromChooser: boolean;
-    readonly exportName: string|ColumnHeaderNameFn
-    readonly exportValue: string|ColumnExportValueFn;
-    readonly excludeFromExport: boolean;
-    readonly excelFormat: string|(() => string);
-    readonly excelWidth: number;
-    readonly autosizable: boolean;
-    readonly autosizeIncludeHeader: boolean;
-    readonly autosizeIncludeHeaderIcons: boolean;
-    readonly autosizeMinWidth: number;
-    readonly autosizeMaxWidth: number;
-    readonly autosizeBufferPx: number;
-    readonly autoHeight: boolean;
-    readonly editable: boolean|ColumnEditableFn;
-    readonly editor: ColumnEditorFn;
-    readonly editorIsPopup: boolean;
-    readonly setValueFn: ColumnSetValueFn;
-    readonly getValueFn: ColumnGetValueFn;
-    readonly gridModel: GridModel;
-    readonly agOptions: PlainObject;
+     field: string;
+     enableDotSeparatedFieldPath: boolean;
+     fieldPath: Some<string>;
+     colId: string;
+     isTreeColumn: boolean;
+     displayName: string;
+     headerName: ColumnHeaderNameFn|ReactNode;
+     headerTooltip: string;
+     headerHasExpandCollapse: boolean;
+     headerAlign: HAlign;
+     headerClass: ColumnHeaderClassFn|Some<string>;
+     cellClass: ColumnCellClassFn|Some<string>;
+     cellClassRules: Record<string, ColumnCellClassRuleFn>;
+     align: HAlign;
+     hidden: boolean;
+     flex: boolean|number;
+     width: number;
+     minWidth: number;
+     maxWidth: number;
+     rowHeight: number;
+     sortingOrder: ('asc'|'desc'|ColumnSortSpec|null)[];
+     absSort: boolean;
+     sortValue: string|ColumnSortValueFn;
+     comparator: ColumnComparator;
+     resizable: boolean;
+     sortable: boolean;
+     movable: boolean;
+     filterable: boolean;
+     hideable: boolean;
+     pinned: HSide;
+     renderer: ColumnRenderer;
+     rendererIsComplex: boolean;
+     highlightOnChange: boolean;
+     tooltip: boolean|ColumnTooltipFn;
+     tooltipElement: ColumnTooltipElementFn;
+     chooserName: string;
+     chooserGroup: string;
+     chooserDescription: string;
+     excludeFromChooser: boolean;
+     exportName: string|ColumnHeaderNameFn;
+     exportValue: string|ColumnExportValueFn;
+     excludeFromExport: boolean;
+     excelFormat: string|ColumnExcelFormatFn;
+     excelWidth: number;
+     autosizable: boolean;
+     autosizeIncludeHeader: boolean;
+     autosizeIncludeHeaderIcons: boolean;
+     autosizeMinWidth: number;
+     autosizeMaxWidth: number;
+     autosizeBufferPx: number;
+     autoHeight: boolean;
+     editable: boolean|ColumnEditableFn;
+     editor: ColumnEditorFn;
+     editorIsPopup: boolean;
+     setValueFn: ColumnSetValueFn;
+     getValueFn: ColumnGetValueFn;
+     gridModel: GridModel;
+     agOptions: PlainObject;
 
-    private fieldSpec: FieldConfig;
+    fieldSpec: FieldConfig;
+    manuallySized: boolean;
 
     /**
      * Not for application use. Columns are created internally by Hoist.
@@ -638,7 +639,7 @@ export class Column {
     }
 
     /** A Column definition appropriate for AG-Grid. */
-    getAgSpec(): PlainObject {
+    getAgSpec() {
         const {gridModel, field, headerName, displayName, agOptions} = this,
             ret: any = {
                 xhColumn: this,
