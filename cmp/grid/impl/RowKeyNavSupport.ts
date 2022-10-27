@@ -5,14 +5,16 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import { GridModel } from "../GridModel";
+
 /**
  * Add support for row based navigation to GridModel.
  */
 export class RowKeyNavSupport {
 
-    gridModel;
+    gridModel: GridModel;
 
-    constructor(gridModel) {
+    constructor(gridModel: GridModel) {
         this.gridModel = gridModel;
     }
 

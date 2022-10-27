@@ -199,7 +199,7 @@ export function ensureNotEmpty(obj: any, exceptionMessage?: string) {
  * @param arr - the array to test.
  * @param exceptionMessage - error to throw if non-unique values found.
  */
-export function ensureUnique(arr: [], exceptionMessage?: string) {
+export function ensureUnique(arr: any[], exceptionMessage?: string) {
     exceptionMessage = exceptionMessage ?? 'All items in the provided array must be unique.';
     throwIf(arr.length != uniq(arr).length, exceptionMessage);
 }

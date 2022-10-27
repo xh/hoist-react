@@ -358,7 +358,7 @@ export class XHClass {
         return this.acm.sizingModeModel.setSizingMode(sizingMode);
     }
 
-    get sizingMode(): string {
+    get sizingMode(): SizingMode {
         return this.acm.sizingModeModel.sizingMode;
     }
 

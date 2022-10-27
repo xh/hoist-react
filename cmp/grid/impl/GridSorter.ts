@@ -6,6 +6,13 @@
  */
 import {isNumber, isNil, isString} from 'lodash';
 
+
+export interface GridSorterConfig {
+    colId: string;
+
+}
+
+
 export class GridSorter {
 
     colId;
@@ -42,11 +49,8 @@ export class GridSorter {
         this.abs = !!abs;
     }
 
-    /**
-     * Generate a delimited string representation suitable for consumption by parse().
-     * @returns {string}
-     */
-    toString() {
+    /** Generate a delimited string representation suitable for consumption by parse().*/
+    toString(): string {
         return [
             this.colId,
             this.sort,
@@ -54,9 +58,7 @@ export class GridSorter {
         ].filter(Boolean).join('|');
     }
 
-    /**
-     * Comparator to use with instances of GridSorter.
-     */
+    /** Comparator to use with instances of GridSorter.*/
     comparator(v1, v2) {
         if (this.abs) {
             v1 = isNumber(v1) ? Math.abs(v1) : v1;
@@ -65,9 +67,7 @@ export class GridSorter {
         return GridSorter.defaultComparator(v1, v2);
     }
 
-    /**
-     * Static comparator to use when a GridSorter instance is not available.
-     */
+    /** Static comparator to use when a GridSorter instance is not available.*/
     static defaultComparator(v1, v2) {
         if (isNil(v1) && isNil(v2)) return 0;
         if (isNil(v1)) return -1;

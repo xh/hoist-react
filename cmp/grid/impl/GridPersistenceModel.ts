@@ -4,44 +4,38 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, PersistenceProvider, XH} from '@xh/hoist/core';
+import {HoistModel, managed, PersistenceProvider, PlainObject, XH} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
+import { GridModel } from '../GridModel';
+import { GridModelPersistOptions } from '../Types';
 
 
 /**
  * Model to manage persisting state from GridModel.
- * @private
+ * @internal
  */
 export class GridPersistenceModel extends HoistModel {
     xhImpl = true;
 
     VERSION = 1;  // Increment to abandon state.
 
-    /** @member {GridModel} */
-    gridModel;
+    gridModel: GridModel;
 
-    /** @member {Object} */
     @observable.ref
-    state;
+    state: PlainObject;
 
-    /** @member {PersistenceProvider} */
     @managed
-    provider;
+    provider: PersistenceProvider;
 
-    /**
-     *
-     * @param {GridModel} gridModel
-     * @param {GridModelPersistOptions} persistWith
-     */
     constructor(
-        gridModel,
+        gridModel: GridModel,
         {
             persistColumns = true,
             persistGrouping = true,
             persistSort = true,
             ...persistWith
-        }
+        }: GridModelPersistOptions
     ) {
         super();
         makeObservable(this);
@@ -154,7 +148,8 @@ export class GridPersistenceModel extends HoistModel {
     }
 
     legacyState() {
-        const {provider, VERSION} = this;
+        const {VERSION} = this,
+            provider = this.provider as any;
         if (VERSION === 1) {
             let legacyKey = provider.legacyStateKey ?? provider.key;
             if (legacyKey) {

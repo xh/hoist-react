@@ -2,6 +2,7 @@ export * from './columns';
 
 export * from './enums/TreeStyle';
 export * from './enums/GridAutosizeMode';
+export * from './Types';
 
 export * from './helpers/GridCountLabel';
 

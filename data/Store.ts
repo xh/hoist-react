@@ -34,7 +34,7 @@ export type RawData = Record<string, any>;
 export interface StoreConfig {
 
     /** Field names, configs, or instances. */
-    fields: string[]|FieldConfig[]|Field[];
+    fields?: string[]|FieldConfig[]|Field[];
 
     /**
      * Default configs applied to `Field` instances constructed internally by this Store.
@@ -208,7 +208,7 @@ export class Store extends HoistBase {
     @observable.ref
     private _current: RecordSet;
     @observable.ref
-    private _filtered: RecordSet;
+     _filtered: RecordSet;
 
     private _dataDefaults = null;
     private _created = Date.now();

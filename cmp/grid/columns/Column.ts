@@ -5,8 +5,8 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
-import {XH} from '@xh/hoist/core';
-import {genDisplayName} from '@xh/hoist/data';
+import {HSide, PlainObject, Some, XH} from '@xh/hoist/core';
+import {FieldConfig, genDisplayName, StoreRecord} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {
@@ -24,191 +24,54 @@ import {
     isString,
     toString
 } from 'lodash';
-import {createElement, forwardRef, isValidElement, useImperativeHandle} from 'react';
+import {createElement, forwardRef, isValidElement, ReactElement, ReactNode, useImperativeHandle} from 'react';
+import { GridModel } from '../GridModel';
 import {GridSorter} from '../impl/GridSorter';
 import {managedRenderer} from '../impl/Utils';
+import {
+    ColumnCellClassFn,
+    ColumnCellClassRuleFn,
+    ColumnComparator, ColumnEditableFn, ColumnEditorFn, ColumnExportValueFn, ColumnGetValueFn,
+    ColumnHeaderClassFn,
+    ColumnHeaderNameFn,
+    ColumnRenderer, ColumnSetValueFn, ColumnSortValueFn, ColumnTooltipElementFn, ColumnTooltipFn
+} from '../Types';
 import {ExcelFormat} from './ExcelFormat';
 
-/**
- * Cross-platform definition and API for a standardized Grid column.
- * Provided to GridModels as plain configuration objects.
- */
-export class Column {
-
-    static DEFAULT_WIDTH = 60;
-    static FLEX_COL_MIN_WIDTH = 30;
+export interface ColumnConfig {
 
     /**
-     * A convenience sort order. Default for non-numeric, non-date columns.
+     * Name of data store field to display within the column, or object containing properties
+     * for store field.  If object form is used, the provided properties will be used for
+     * auto-creating any fields needed on the Grid's store.
      */
-    static ASC_FIRST = [
-        {sort: 'asc', abs: false},
-        {sort: 'desc', abs: false}
-    ];
+    field?: string|FieldConfig;
 
     /**
-     * A convenience sort order. Default for numeric and date columns.
+     * Unique identifier for the Column within its grid. Defaults to field name - one of these
+     * two properties must be specified.
      */
-    static DESC_FIRST = [
-        {sort: 'desc', abs: false},
-        {sort: 'asc', abs: false}
-    ];
+    colId?: string;
 
     /**
-     * A convenience sort order. Default for numeric and date columns where absSort: true.
+     * True if this column will host the expand/collapse arrow controls for a hierarchical
+     * Tree Grid. For when `GridModel.treeMode` is enabled, one column in that grid should have
+     * this flag enabled.
      */
-    static ABS_DESC_FIRST = [
-        {sort: 'desc', abs: true},
-        {sort: 'asc', abs: false},
-        {sort: 'desc', abs: false}
-    ];
-
-    /** @member {string} - name of backing Store Field, if any. */
-    field;
-    /** @member {boolean} */
-    enableDotSeparatedFieldPath;
-    /** @member {(string|string[])} */
-    fieldPath;
-    /** @member {string} */
-    colId;
-    /** @member {boolean} */
-    isTreeColumn;
-
-    /** @member {string} */
-    displayName;
-    /** @member {(Column~headerNameFn|element)} */
-    headerName;
-    /** @member {string} */
-    headerTooltip;
-    /** @member {boolean} */
-    headerHasExpandCollapse;
-    /** @member {string} */
-    headerAlign;
-    /** @member {(Column~headerClassFn|string|string[])} */
-    headerClass;
-
-    /** @member {(Column~cellClassFn|string|string[])} */
-    cellClass;
-    /** @member {Object.<string, Column~cellClassRuleFn>} */
-    cellClassRules;
-    /** @member {string} */
-    align;
-
-    /** @member {boolean} */
-    hidden;
-    /** @member {(boolean|number)} */
-    flex;
-    /** @member {number} */
-    width;
-    /** @member {number} */
-    minWidth;
-    /** @member {number} */
-    maxWidth;
-
-    /** @member {number} */
-    rowHeight;
-
-    /** @member {{(string[]|Column~SortSpec[])}} */
-    sortingOrder;
-    /** @member {boolean} */
-    absSort;
-    /** @member {(string|Column~sortValueFn)} */
-    sortValue;
-    /** @member {Column~comparatorFn} */
-    comparator;
-
-    /** @member {boolean} */
-    resizable;
-    /** @member {boolean} */
-    sortable;
-    /** @member {boolean} */
-    movable;
-    /** @member {boolean} */
-    filterable;
-    /** @member {boolean} */
-    hideable;
-    /** @member {string} */
-    pinned;
-
-    /** @member {Column~rendererFn} */
-    renderer;
-    /** @member {boolean} */
-    rendererIsComplex;
-    /** @member {boolean} */
-    highlightOnChange;
-
-    /** @member {(boolean|Column~tooltipFn)} */
-    tooltip;
-    /** @member {Column~tooltipElementFn} */
-    tooltipElement;
-
-    /** @member {string} */
-    chooserName;
-    /** @member {string} */
-    chooserGroup;
-    /** @member {string} */
-    chooserDescription;
-    /** @member {boolean} */
-    excludeFromChooser;
-
-    /** @member {string} */
-    exportName;
-    /** @member {(string|Column~exportValueFn)} */
-    exportValue;
-    /** @member {boolean} */
-    excludeFromExport;
-    /** @member {(ExcelFormat|function)} */
-    excelFormat;
-    /** @member {number} */
-    excelWidth;
-
-    /** @member {boolean} */
-    autosizable;
-    /** @member {boolean} */
-    autosizeIncludeHeader;
-    /** @member {boolean} */
-    autosizeIncludeHeaderIcons;
-    /** @member {number} */
-    autosizeMinWidth;
-    /** @member {number} */
-    autosizeMaxWidth;
-    /** @member {number} */
-    autosizeBufferPx;
-
-    /** @member {boolean} */
-    autoHeight;
-
-    /** @member {(boolean|Column~editableFn)} */
-    editable;
-    /** @member {Column~editorFn} */
-    editor;
-    /** @member {boolean} */
-    editorIsPopup;
-    /** @member {Column~setValueFn} */
-    setValueFn;
-    /** @member {Column~getValueFn} */
-    getValueFn;
-
-    /** @member {GridModel} */
-    gridModel;
-    /** @member {Object} */
-    agOptions;
+    isTreeColumn?: boolean;
 
     /**
-     * @param {Object} c - Column configuration.
-     * @param {(string|Object)} [c.field] - name of data store field to display within the column,
-     *      or object containing properties for store field.  If object form is used, the provided
-     *      properties will be used for auto-creating any fields needed on the Grid's store.
-     * @param {string} [c.colId] - unique identifier for the Column within its grid.
-     *      Defaults to field name - one of these two properties must be specified.
-     * @param {boolean} [c.isTreeColumn] - true if this column will host the expand/collapse arrow
-     *      controls for a hierarchical Tree Grid. For when `GridModel.treeMode` is enabled, one
-     *      column in that grid should have this flag enabled.
-     * @param {string} [c.displayName] - primary user-facing name for this Column. Sourced from
-     *      the corresponding data `Field.displayName` from the parent `GridModel.store` config, if
-     *      available, or defaulted via transform of `field` string config. Used as default value
-     *      for more specialized `headerName`, `chooserName`, and `exportName` configs. See those
-     *      configs for additional details and options they support.
+     * Primary user-facing name for this Column. Sourced from the corresponding data
+     * `Field.displayName` from the parent `GridModel.store` config, if available, or defaulted
+     * via transform of `field` string config. Used as default value for more specialized
+     * `headerName`, `chooserName`, and `exportName` configs. See those configs for additional
+     * details and options they support.
+     */
+    displayName?: string:
+
+
+
+    /**
      * @param {(Column~headerNameFn|element)} [c.headerName] - user-facing text/element displayed
      *      in the Column header, or a function to produce the same. Defaulted from `displayName`.
      * @param {string} [c.headerTooltip] - tooltip text for grid header.
@@ -324,8 +187,107 @@ export class Column {
      *      itself, and are not all guaranteed to be compatible with its usages of Ag-Grid.
      *      @see {@link https://www.ag-grid.com/javascript-grid-column-properties/|AG-Grid docs}
      * @param {...*} [rest] - additional properties to store on the column
-     * @param {GridModel} gridModel - the model which owns this column.
      */
+}
+
+
+
+/**
+ * Cross-platform definition and API for a standardized Grid column.
+ * Provided to GridModels as plain configuration objects.
+ */
+export class Column {
+
+    static DEFAULT_WIDTH = 60;
+    static FLEX_COL_MIN_WIDTH = 30;
+
+    /**
+     * A convenience sort order. Default for non-numeric, non-date columns.
+     */
+    static ASC_FIRST = [
+        {sort: 'asc', abs: false},
+        {sort: 'desc', abs: false}
+    ];
+
+    /**
+     * A convenience sort order. Default for numeric and date columns.
+     */
+    static DESC_FIRST = [
+        {sort: 'desc', abs: false},
+        {sort: 'asc', abs: false}
+    ];
+
+    /**
+     * A convenience sort order. Default for numeric and date columns where absSort: true.
+     */
+    static ABS_DESC_FIRST = [
+        {sort: 'desc', abs: true},
+        {sort: 'asc', abs: false},
+        {sort: 'desc', abs: false}
+    ];
+
+    field: string;
+    enableDotSeparatedFieldPath: boolean;
+    fieldPath: Some<string>
+    colId: string;
+    isTreeColumn: boolean;
+    displayName: string;
+    headerName: ColumnHeaderNameFn|ReactNode;
+    headerTooltip: string;
+    headerHasExpandCollapse: boolean;
+    headerAlign: 'left'|'right';
+    headerClass: ColumnHeaderClassFn|Some<string>;
+    cellClass: ColumnCellClassFn|Some<string>;
+    cellClassRules: Record<string, ColumnCellClassRuleFn>
+    align: 'left'|'right'|'center';
+    hidden: boolean;
+    flex: boolean|number;
+    width: number;
+    minWidth: number;
+    maxWidth: number;
+    rowHeight: number;
+    /** @member {{(string[]|Column~SortSpec[])}} */
+    sortingOrder;
+    absSort: boolean;
+    sortValue: ColumnSortValueFn;
+    comparator: ColumnComparator;
+    resizable: boolean;
+    sortable: boolean;
+    movable: boolean;
+    filterable: boolean;
+    hideable: boolean;
+    pinned: boolean|HSide;
+    renderer: ColumnRenderer;
+    rendererIsComplex: boolean;
+    highlightOnChange: boolean;
+    tooltip: boolean|ColumnTooltipFn;
+    tooltipElement: ColumnTooltipElementFn;
+    chooserName: string;
+    chooserGroup: string;
+    chooserDescription: string;
+    excludeFromChooser: boolean;
+    exportName: string;
+    exportValue: string|ColumnExportValueFn;
+    excludeFromExport: boolean;
+    excelFormat: string|(() => string);
+    excelWidth: number;
+    autosizable: boolean;
+    autosizeIncludeHeader: boolean;
+    autosizeIncludeHeaderIcons: boolean;
+    autosizeMinWidth: number;
+    autosizeMaxWidth: number;
+    autosizeBufferPx: number;
+    autoHeight: boolean;
+    editable: ColumnEditableFn;
+    editor: ColumnEditorFn;
+    editorIsPopup: boolean;
+    setValueFn: ColumnSetValueFn;
+    getValueFn: ColumnGetValueFn;
+    gridModel: GridModel;
+    agOptions: PlainObject;
+
+    private fieldSpec: FieldConfig;
+
     constructor({
         field,
         colId,
@@ -502,11 +464,8 @@ export class Column {
         warnIf(this.agOptions.valueGetter, `Column '${this.colId}' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`);
     }
 
-    /**
-     * @param {StoreRecord} record
-     * @returns {boolean} - true if this column supports editing its field for the given StoreRecord.
-     */
-    isEditableForRecord(record) {
+    /** @returns true if this column supports editing its field for the given StoreRecord. */
+    isEditableForRecord(record: StoreRecord): boolean {
         const {editable, gridModel} = this;
         if (!record) return false;
         return isFunction(editable) ?
@@ -514,10 +473,10 @@ export class Column {
             editable;
     }
 
-    /** @returns {Object} - a Column definition appropriate for AG-Grid. */
-    getAgSpec() {
+    /** A Column definition appropriate for AG-Grid. */
+    getAgSpec(): PlainObject {
         const {gridModel, field, headerName, displayName, agOptions} = this,
-            ret = {
+            ret: any = {
                 xhColumn: this,
                 field,
                 colId: this.colId,
@@ -659,13 +618,13 @@ export class Column {
                 }
 
                 const {store} = record,
-                    val = this.getValueFn({record, column: this, gridModel, agParams, store});
+                    val = this.getValueFn({record, field, column: this, gridModel, agParams, store});
 
                 const ret = isFunction(tooltipSpec) ?
                     tooltipSpec(val, {record, column: this, gridModel, agParams}) :
                     val;
 
-                return isValidElement(ret) ? ret : toString(ret);
+                return (isValidElement(ret) ? ret : toString(ret)) as any;
             });
         }
 
@@ -758,7 +717,7 @@ export class Column {
                     ref
                 };
                 // Can be a component or elem factory/ ad-hoc render function.
-                if (editor.isHoistComponent) return createElement(editor, props);
+                if ((editor as any).isHoistComponent) return createElement(editor, props);
                 if (isFunction(editor)) return editor(props);
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
@@ -879,171 +838,4 @@ export function getAgHeaderClassFn(column) {
     };
 }
 
-/**
- * @callback Column~comparatorFn - sort comparator function for a grid column. Note that this
- *      comparator will also be called if agGrid-provided column filtering is enabled: it is used
- *      to sort values shown for set filter options. In that case, some extra params will be null.
- * @param {*} valueA - cell data valueA to be compared
- * @param {*} valueB - cell data valueB to be compared
- * @param {string} sortDir - either 'asc' or 'desc'
- * @param {boolean} abs - true to sort by absolute value
- * @param {Object} params - extra parameters devs might want
- * @param {?StoreRecord} params.recordA - data record for valueA
- * @param {?StoreRecord} params.recordB - data record for valueB
- * @param {?Object} params.agNodeA - row node provided by ag-grid
- * @param {?Object} params.agNodeB - row node provided by ag-grid
- * @param {Column} params.column - column for the cell being rendered
- * @param {GridModel} params.gridModel - gridModel for the grid
- * @param {function} params.defaultComparator - default comparator provided by Hoist for this
- *     column. accepts two arguments: (a, b)
- */
-
-/**
- * @callback Column~rendererFn - renderer function for a grid cell.
- * @param {*} value - cell data value (column + row).
- * @param {CellContext} context - additional data about the column, row and GridModel.
- *      Note that columns with renderers that access/rely on record fields other than the primary
- *      value should also have their `rendererIsComplex` flag set to true to ensure they are
- *      re-run whenever the record (and not just the primary value) changes.
- * @returns {Element} - the formatted value for display.
- */
-
-/**
- * @callback Column~exportValueFn - function to return a value for export.
- * @param {*} value - cell data value (column + row).
- * @param {CellContext} context - additional data about the column, row and GridModel.
- * @returns {*} - value for export.
- */
-
-/**
- * @callback Column~sortValueFn - function to return a value for sorting.
- * @param {*} value - cell data value (column + row).
- * @param {CellContext} context - additional data about the column, row and GridModel.
- * @returns {*} - value for sort.
- */
-
-/**
- * @callback Column~cellClassFn - function to generate grid cell CSS classes.
- * @param {*} value - cell data value (column + row).
- * @param {CellContext} context - additional data about the column, row and GridModel.
- * @returns {(string|string[])} - CSS class(es) to use.
- */
-
-/**
- * @callback Column~cellClassRuleFn - function to determine if a particular CSS class should be
- *      added/removed from a cell, via cellClassRules config.
- * @param {CellClassParams} agParams - as provided by Ag-Grid.
- * @param {*} agParams.value - the current cell value.
- * @param {?StoreRecord} agParams.data - the backing Hoist record for the row, if any.
- * @returns {boolean} - true if the class to which this function is keyed should be added, false if
- *      it should be removed.
- */
-
-/**
- * @callback Column~headerClassFn - function to generate header CSS classes.
- * @param {HeaderContext} context - contains data about the column and GridModel.
- * @returns {(string|string[])} - CSS class(es) to use.
- */
-
-/**
- * @typedef {Object} CellContext
- * @property {StoreRecord} record - row-level data record.
- * @property {Column} column - column for the cell being rendered.
- * @property {GridModel} gridModel - gridModel for the grid.
- * @property {ICellRendererParams} [agParams] - the ag-grid cell renderer params.
- */
-
-/**
- * @typedef {Object} HeaderContext
- * @property {Column} column - column for the header being rendered.
- * @property {GridModel} gridModel - gridModel for the grid.
- * @property {ICellRendererParams} [agParams] - the ag-grid header renderer params.
- */
-
-/**
- * @callback Column~tooltipFn - normalized renderer function to produce a grid column tooltip.
- * @param {*} value - cell data value (column + row).
- * @param {TooltipMetadata} metadata - additional data about the column and row.
- * @returns {string} - the formatted value for display.
- */
-
-/**
- * @typedef {Object} TooltipMetadata
- * @property {StoreRecord} record - row-level data record.
- * @property {Column} column - column for the cell being rendered.
- * @property {GridModel} gridModel - gridModel for the grid.
- * @property {ITooltipParams} [agParams] - the ag-grid tooltip params.
- */
-
-/**
- * @callback Column~tooltipElementFn - function for a grid cell tooltip returning a React element.
- * @param {*} value - tooltip value.
- * @param {TooltipMetadata} metadata - additional data about the column and row.
- * @returns {Element} - the React element to show as a tooltip.
- */
-
-/**
- * @callback Column~headerNameFn - function to generate a Column header name.
- *      Note that using function for the header name will ignore any ag-Grid functionality for
- *      decorating the header name, the return value of the function will be used as-is.
- *      The function should be treated like an autorun - any subsequent changes to observable
- *      properties referenced during the previous execution of the function will trigger a re-render
- *      of the column header.
- * @param {Column} [column] - column for the header name being generated.
- * @param {ColumnGroup} [columnGroup] - column group for the header name being generated.
- * @param {GridModel} gridModel - gridModel for the grid.
- * @param {Object} [agParams] - the ag-Grid header value getter params. Not present when called
- *      during ColumnHeader rendering.
- * @returns {element} - the header name to render in the Column header
- */
-
-/**
- * @callback Column~editableFn - function to determine if a Column should be editable or not.
- *      This function will be called whenever the user takes some action which would initiate inline
- *      editing of a cell before the actual inline editing session is started.
- * @param {Object} params
- * @param {StoreRecord} params.record - row-level data record.
- * @param {Store} params.store - Store containing the grid data.
- * @param {Column} params.column - column for the cell being edited.
- * @param {GridModel} params.gridModel - gridModel for the grid.
- * @returns {boolean} - true if cell is editable
- */
-
-/**
- * @callback Column~editorFn - grid cell editor component, or function to return one.
- *      This value will be used to create a new Component whenever editing is initiated on a cell.
- * @param {Object} params
- * @param {StoreRecord} params.record - row-level data record.
- * @param {Column} params.column - column for the cell being edited.
- * @param {GridModel} params.gridModel - gridModel for the grid.
- * @returns {Element} - the React element to use as the cell editor.
- */
-
-/**
- * @callback Column~setValueFn - function to update the value of a StoreRecord field after inline editing
- * @param {Object} params
- * @param {*} params.value - the new value for the field.
- * @param {StoreRecord} params.record - row-level data record.
- * @param {Store} params.store - Store containing the grid data.
- * @param {Column} params.column - column for the cell being edited.
- * @param {GridModel} params.gridModel - gridModel for the grid.
- * @param {ValueSetterParams} [params.agParams] - the ag-Grid value setter params.
- */
-
-/**
- * @callback Column~getValueFn - function to get the value of a StoreRecord field
- * @param {Object} params
- * @param {StoreRecord} params.record - row-level data record.
- * @param {string} params.field - name of data store field displayed in the column.
- * @param {Store} params.store - Store containing the grid data.
- * @param {Column} params.column - column for the cell being edited.
- * @param {GridModel} params.gridModel - gridModel for the grid.
- * @param {ValueGetterParams} [params.agParams] - the ag-Grid value getter params.
- */
-
-/**
- * @typedef {Object} Column~SortSpec - specifies how to perform sorting in a given column
- * @param {string} sort - direction to sort, either 'asc' or 'desc', or null to remove sort.
- * @param {boolean} [abs] - true to sort by absolute value
- */
 

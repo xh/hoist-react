@@ -4,9 +4,12 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {ColumnRenderer} from '@xh/hoist/cmp/grid';
+import {PlainObject} from '@xh/hoist/core';
 import {BaseFilterFieldSpec} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
-import {parseFilter} from '@xh/hoist/data';
+import {FieldFilterOperator, parseFilter} from '@xh/hoist/data';
 import {castArray, compact, flatten, isDate, isEmpty, uniqBy} from 'lodash';
+import {GridFilterModel} from './GridFilterModel';
 
 /**
  * Apps should NOT instantiate this class directly. Instead {@see GridFilterModel.fieldSpecs}
@@ -14,20 +17,11 @@ import {castArray, compact, flatten, isDate, isEmpty, uniqBy} from 'lodash';
  */
 export class GridFilterFieldSpec extends BaseFilterFieldSpec {
 
-    /** @member {GridFilterModel} */
-    filterModel;
-
-    /** @member {Column~rendererFn} */
-    renderer;
-
-    /** @member {object} */
-    inputProps;
-
-    /** @member {string} */
-    defaultOp;
-
-    /** @member {int} */
-    valueCount;
+    filterModel: GridFilterModel;
+    renderer: ColumnRenderer;
+    inputProps: PlainObject;
+    defaultOp: FieldFilterOperator;
+    valueCount: number;
 
     /**
      * @param {Object} c - GridFilterFieldSpec configuration.
