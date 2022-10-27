@@ -132,7 +132,7 @@ export function hoistComponent(config: ComponentConfig<HoistProps>): FunctionCom
     );
 
     // 2) Decorate with function wrappers with behaviors.
-    let ret:any  = render;
+    let ret: any = render;
     if (modelSpec) {
         ret = wrapWithModel(ret,  modelSpec, displayName);
     }
@@ -338,6 +338,7 @@ function lookupModel(spec, props, modelLookup, displayName) {
             return {model: new selector(model), isLinked: true, fromContext: false};
         }
         if (isPlainObject(modelConfig)) {  // 1b) new location
+            delete props.modelConfig;
             return {model: new selector(modelConfig), isLinked: true, fromContext: false};
         }
     }
