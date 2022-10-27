@@ -15,10 +15,10 @@ export type Intent = 'primary'|'success'|'warning'|'danger';
 /** Values available for App Theme. */
 export type Theme = 'system'|'dark'|'light';
 
-/** Side for layout related components such as Panel and TabContainer. */
 export type Side = 'top'|'bottom'|'left'|'right';
 export type VSide = 'top'|'bottom';
 export type HSide = 'left'|'right';
+export type Corner = 'tl'|'tr'|'bl'|'br';
 
 export type HAlign = 'left'|'right'|'center';
 export type VAlign = 'top'|'bottom'|'center';
@@ -26,6 +26,8 @@ export type VAlign = 'top'|'bottom'|'center';
 
 /** Convenience type for common pattern of accepting a single T, or an array of Ts. */
 export type Some<T> = T|T[];
+
+export type Awaitable<T> = Promise<T>|T
 
 /** Convenience type for a "plain", string-keyed object holding any kind of values. */
 export type PlainObject = Record<string, any>;

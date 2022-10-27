@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {Awaitable, Some} from '../../core';
 import {castArray} from 'lodash';
 import {StoreRecord} from '../StoreRecord';
 import {BaseFieldModel} from '../../cmp/form';
@@ -27,9 +28,10 @@ export class Rule {
  *
  * @param fieldState - context w/value for the constraint's target Field.
  * @param allValues - current values for all fields in form, keyed by field name.
- * @returns String or array of strings describing errors, or null or undefined if rule passes successfully.
+ * @returns String(s) or array of strings describing errors, or null or undefined if rule passes
+ * successfully. May return a Promise of strings for async validation.
  */
-export type Constraint<T=any> = (fieldState: FieldState<T>, allValues: Record<string, any>) => string|string[];
+export type Constraint<T=any> = (fieldState: FieldState<T>, allValues: Record<string, any>) => Awaitable<Some<string>>;
 
 
 /**
@@ -62,7 +64,7 @@ export interface FieldState<T=any> {
 export interface RuleSpec {
 
     /** Function(s) to perform validation. */
-    check: Constraint|Constraint[];
+    check: Some<Constraint>;
 
     /**
      *  Function to determine when this rule is active.

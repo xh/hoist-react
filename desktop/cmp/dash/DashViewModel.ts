@@ -8,7 +8,7 @@ import {HoistModel, managed, ManagedRefreshContextModel, RefreshMode, RenderMode
 import '@xh/hoist/desktop/register';
 import {makeObservable, action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {ReactElement, ReactNode} from 'react';
+import {ReactElement} from 'react';
 import {DashViewSpec} from './DashViewSpec';
 
 export type DashViewState = Record<string, any>;
@@ -80,8 +80,9 @@ export class DashViewModel extends HoistModel {
         this.icon = v;
     }
 
+    // TODO: Add menu type
     @action
-    setExtraMenuItems(v: ReactNode[]) {
+    setExtraMenuItems(v: any[]) {
         this.extraMenuItems = v;
     }
 

@@ -47,9 +47,9 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
 
 export interface DashCanvasItemState {
     layout: DashCanvasItemLayout;
-    title: string;
+    title?: string;
     viewSpecId: string;
-    state: DashViewState;
+    state?: DashViewState;
 }
 
 export interface DashCanvasItemLayout {
