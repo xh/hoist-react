@@ -11,7 +11,7 @@ import {
     AverageStrictAggregator,
     ChildCountAggregator,
     Field,
-    FieldConfig,
+    FieldSpec,
     LeafCountAggregator,
     MaxAggregator,
     MinAggregator,
@@ -23,7 +23,7 @@ import {
 } from '@xh/hoist/data';
 import {isString} from 'lodash';
 
-export interface CubeFieldConfig extends FieldConfig {
+export interface CubeFieldSpec extends FieldSpec {
 
     /** True to allow this field to be used for grouping.*/
     isDimension?: boolean;
@@ -88,7 +88,7 @@ export class CubeField extends Field {
         isLeafDimension = false,
         parentDimension = null,
         ...fieldArgs
-    }: CubeFieldConfig) {
+    }: CubeFieldSpec) {
         super(fieldArgs);
         this.isDimension = isDimension;
 

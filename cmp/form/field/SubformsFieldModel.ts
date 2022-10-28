@@ -4,8 +4,8 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {managed, XH} from '@xh/hoist/core';
-import {RawData, ValidationState} from '@xh/hoist/data';
+import {managed, PlainObject, XH} from '@xh/hoist/core';
+import {ValidationState} from '@xh/hoist/data';
 import {action, computed, makeObservable, override} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {clone, defaults, isEqual, flatMap, isArray, partition, without} from 'lodash';
@@ -166,7 +166,7 @@ export class SubformsFieldModel extends BaseFieldModel {
      * @param index - index in collection where subform should be inserted.
      */
     @action
-    add(opts: {initialValues?: RawData, index?: number} = {}) {
+    add(opts: {initialValues?: PlainObject, index?: number} = {}) {
         const {initialValues = {}, index = this.value.length} = opts,
             newSubforms = this.parseValue([initialValues]),
             newValue = clone(this.value);

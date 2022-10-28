@@ -7,6 +7,7 @@
 import {div, span} from '@xh/hoist/cmp/layout';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {isString, partition} from 'lodash';
+import { ReactNode } from 'react';
 
 /**
  * A grid rendererFn that renders a collection of additional SubFields in a row beneath the main column field.
@@ -26,7 +27,7 @@ import {isString, partition} from 'lodash';
  *      {boolean|string} [label] - true to include the Column's headerName as label, or string
  *      {string} [position] - Where to render the SubField, either 'top' or 'bottom'. Default 'bottom'
  */
-export function multiFieldRenderer(value, context) {
+export function multiFieldRenderer(value, context): ReactNode {
     const {column} = context,
         {multiFieldConfig} = column;
 

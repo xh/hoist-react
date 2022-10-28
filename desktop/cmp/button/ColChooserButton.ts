@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooser';
+import {colChooser, ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooser';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
@@ -36,7 +36,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
     render({icon, title, gridModel, popoverPosition, disabled, ...rest}, ref) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
-        const colChooserModel = gridModel?.colChooserModel;
+        const colChooserModel = gridModel?.colChooserModel as ColChooserModel;
 
         if (!gridModel) {
             console.error("No GridModel available to ColChooserButton.  Provide via a 'gridModel' prop, or context.");

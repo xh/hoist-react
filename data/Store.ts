@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase, managed, XH} from '@xh/hoist/core';
+import {HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
@@ -20,7 +20,7 @@ import {
     isString,
     remove as lodashRemove
 } from 'lodash';
-import {Field, FieldConfig} from './Field';
+import {Field, FieldSpec} from './Field';
 import {parseFilter} from './filter/Utils';
 import {RecordSet} from './impl/RecordSet';
 import {StoreValidator} from './impl/StoreValidator';
@@ -29,16 +29,14 @@ import {instanceManager} from '../core/impl/InstanceManager';
 import {Filter} from './filter/Filter';
 import { FilterLike } from './filter/Types';
 
-export type RawData = Record<string, any>;
-
 export interface StoreConfig {
 
     /** Field names, configs, or instances. */
-    fields: string[]|FieldConfig[]|Field[];
+    fields?: string[]|FieldSpec[]|Field[];
 
     /**
      * Default configs applied to `Field` instances constructed internally by this Store.
-     * @see FieldConfig
+     * @see FieldSpec
      */
     fieldDefaults?: any;
 
@@ -55,14 +53,14 @@ export interface StoreConfig {
     /**
      * Initial data to load in to the Store.
      */
-    data?: RawData[];
+    data?: PlainObject[];
 
     /**
      * Function to run on each individual data object presented to `loadData()` prior to creating
      * a `StoreRecord` from that object. This function must return an object, cloning the original
      * object if edits are necessary.
      */
-    processRawData?: (data: RawData) => RawData;
+    processRawData?: (data: PlainObject) => PlainObject;
 
     /**
      * One or more filters or configs to create one. If an array, a single 'AND' filter
@@ -128,10 +126,10 @@ export interface StoreTransaction {
      * will be preserved. If the record is a child, the new updated instance will be assigned to
      * the same parent. (Meaning: parent/child relationships *cannot* be modified via updates.)
      */
-    update?: RawData[];
+    update?: PlainObject[];
 
     /** Raw data of new records to be added, */
-    add?: (RawData|ChildRawData)[];
+    add?: (PlainObject|ChildRawData)[];
 
     /** IDs of existing records to be removed. Any descendents will also be removed. */
     remove?: StoreRecordId[];
@@ -141,7 +139,7 @@ export interface StoreTransaction {
      *  `loadRootAsSummary` flag set to true, the summary record should instead be provided via the
      *  `update` property.
      */
-    rawSummaryData?: RawData;
+    rawSummaryData?: PlainObject;
 }
 
 export interface ChildRawData {
@@ -152,10 +150,10 @@ export interface ChildRawData {
      * Data for the child records to be added. Can include a `children` property to be processed
      * into new (grand)child records.
      */
-    rawData: RawData[];
+    rawData: PlainObject[];
 }
 
-export type StoreRecordIdSpec = string | ((data: RawData) => StoreRecordId)
+export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId)
 
 /**
  * A managed and observable set of local, in-memory Records.
@@ -165,7 +163,7 @@ export class Store extends HoistBase {
     get isStore() {return true}
 
     fields: Field[] = null;
-    idSpec: (data: RawData) => StoreRecordId;
+    idSpec: (data: PlainObject) => StoreRecordId;
     processRawData: (raw:any) => any;
 
     @observable
@@ -208,7 +206,7 @@ export class Store extends HoistBase {
     @observable.ref
     private _current: RecordSet;
     @observable.ref
-    private _filtered: RecordSet;
+     _filtered: RecordSet;
 
     private _dataDefaults = null;
     private _created = Date.now();
@@ -285,7 +283,7 @@ export class Store extends HoistBase {
      */
     @action
     @logWithDebug
-    loadData(rawData: RawData[], rawSummaryData?: RawData) {
+    loadData(rawData: PlainObject[], rawSummaryData?: PlainObject) {
         // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary
         if (rawData.length !== 0 && this.loadRootAsSummary) {
             throwIf(
@@ -331,7 +329,7 @@ export class Store extends HoistBase {
      */
     @action
     @logWithDebug
-    updateData(rawData: RawData[]|StoreTransaction): any {
+    updateData(rawData: PlainObject[]|StoreTransaction): any {
         if (isEmpty(rawData)) return null;
 
         const changeLog: any = {};
@@ -463,7 +461,7 @@ export class Store extends HoistBase {
      *      record should be added, if any.
      */
     @action
-    addRecords(data: RawData[]|RawData, parentId?: StoreRecordId) {
+    addRecords(data: Some<PlainObject>, parentId?: StoreRecordId) {
         data = castArray(data);
         if (isEmpty(data)) return;
 
@@ -519,7 +517,7 @@ export class Store extends HoistBase {
      *      e.g. `{id: 4, quantity: 100}, {id: 5, quantity: 99, customer: 'bob'}`.
      */
     @action
-    modifyRecords(modifications: RawData[]|RawData) {
+    modifyRecords(modifications: Some<PlainObject>) {
         modifications = castArray(modifications);
         if (isEmpty(modifications)) return;
 
@@ -891,7 +889,7 @@ export class Store extends HoistBase {
     //---------------------------------------
     // StoreRecord Generation
     //---------------------------------------
-    private createRecord(raw: RawData, parent: StoreRecord, isSummary: boolean = false): StoreRecord {
+    private createRecord(raw: PlainObject, parent: StoreRecord, isSummary: boolean = false): StoreRecord {
         const id = this.idSpec(raw);
 
         // Potentially re-use existing record if raw data is reference equal and tree path identical
@@ -918,7 +916,7 @@ export class Store extends HoistBase {
         return ret;
     }
 
-    private createRecords(rawData: RawData[], parent: StoreRecord, recordMap = new Map()) {
+    private createRecords(rawData: PlainObject[], parent: StoreRecord, recordMap = new Map()) {
         const {loadTreeData, loadTreeDataFrom} = this;
         rawData.forEach(raw => {
             const rec = this.createRecord(raw, parent),
@@ -938,7 +936,7 @@ export class Store extends HoistBase {
         return recordMap;
     }
 
-    private parseRaw(data: RawData): RawData {
+    private parseRaw(data: PlainObject): PlainObject {
         // a) create/prepare the data object
         const ret = Object.create(this._dataDefaults);
 

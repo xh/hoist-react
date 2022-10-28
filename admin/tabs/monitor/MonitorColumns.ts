@@ -4,93 +4,91 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {FieldType} from '@xh/hoist/data';
 import {numberRenderer} from '@xh/hoist/format';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-
-const {DATE, INT, NUMBER, STRING} = FieldType;
+import { ColumnSpec } from '@xh/hoist/cmp/grid/columns';
 
 const mbCol = {width: 150, renderer: numberRenderer({precision: 2, useCommas: true})},
     pctCol = {width: 150, renderer: numberRenderer({precision: 2, useCommas: true, label: '%'})};
 
 export const metricUnit = {
-    field: {name: 'metricUnit', type: STRING},
+    field: {name: 'metricUnit', type: 'string'},
     headerName: 'Units',
     width: 100
-};
+} as ColumnSpec;
 
 export const warnThreshold = {
-    field: {name: 'warnThreshold', type: INT},
+    field: {name: 'warnThreshold', type: 'int'},
     ...Col.number,
     headerName: 'Warn',
     width: 130
-};
+} as ColumnSpec;
 
 export const failThreshold = {
-    field: {name: 'failThreshold', type: INT},
+    field: {name: 'failThreshold', type: 'int'},
     ...Col.number,
     headerName: 'Fail',
     width: 130
-};
+} as ColumnSpec;
 
 export const sortOrder = {
-    field: {name: 'sortOrder', type: INT},
+    field: {name: 'sortOrder', type: 'int'},
     ...Col.number,
     headerName: 'Sort',
     width: 100
-};
+} as ColumnSpec;
 
 export const code = {
-    field: {name: 'code', type: STRING},
+    field: {name: 'code', type: 'string'},
     width: 150
-};
+} as ColumnSpec;
 
 export const timestamp = {
-    field: {name: 'timestamp', type: DATE},
+    field: {name: 'timestamp', type: 'date'},
     ...Col.dateTime
-};
+} as ColumnSpec;
 
 export const totalHeapMb = {
     field: {
         name: 'totalHeapMb',
-        type: NUMBER,
+        type: 'number',
         displayName: 'Total (mb)'
     },
     ...mbCol
-};
+} as ColumnSpec;
 
 export const maxHeapMb = {
     field: {
         name: 'maxHeapMb',
-        type: NUMBER,
+        type: 'number',
         displayName: 'Max (mb)'
     },
     ...mbCol
-};
+} as ColumnSpec;
 
 export const freeHeapMb = {
     field: {
         name: 'freeHeapMb',
-        type: NUMBER,
+        type: 'number',
         displayName: 'Free (mb)'
     },
     ...mbCol
-};
+} as ColumnSpec;
 
 export const usedHeapMb = {
     field: {
         name: 'usedHeapMb',
-        type: NUMBER,
+        type: 'number',
         displayName: 'Used (mb)'
     },
     ...mbCol
-};
+} as ColumnSpec;
 
 export const usedPctTotal = {
     field: {
         name: 'usedPctTotal',
-        type: NUMBER,
+        type: 'number',
         displayName: 'Used (pct Total)'
     },
     ...pctCol
-};
+} as ColumnSpec;

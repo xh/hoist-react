@@ -5,8 +5,8 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase} from '@xh/hoist/core';
-import {Cube, CubeField, Filter, Query, RawData, Store, StoreRecord, StoreRecordId} from '@xh/hoist/data';
+import {HoistBase, PlainObject} from '@xh/hoist/core';
+import {Cube, CubeField, Filter, Query, Store, StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf, logWithDebug} from '@xh/hoist/utils/js';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
@@ -61,7 +61,7 @@ export class View extends HoistBase {
      * containing an array of hierarchical data objects.
      */
     @observable.ref
-    result: {rows: RawData[], leafMap: Map<StoreRecordId, LeafRow>} = null;
+    result: {rows: PlainObject[], leafMap: Map<StoreRecordId, LeafRow>} = null;
 
     /** Stores to which results of this view should be (re)loaded. */
     stores: Store[] = null;
@@ -75,7 +75,7 @@ export class View extends HoistBase {
     lastUpdated: number;
 
     // Implementation
-    private _rows: RawData[] = null;
+    private _rows: PlainObject[] = null;
     private _rowCache: Map<StoreRecordId, BaseRow> = null;
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
     private _recordMap: Map<StoreRecordId, StoreRecord> = null;

@@ -1,7 +1,7 @@
 import {isFunction} from 'lodash';
 
 /**
- * @private
+ * @internal
  */
 export function managedRenderer(fn, identifier) {
     if (!isFunction(fn)) return fn;

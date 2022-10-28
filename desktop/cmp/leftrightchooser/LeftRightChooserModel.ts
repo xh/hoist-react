@@ -10,7 +10,7 @@ import {HoistModel, HSide, managed, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {computed, makeObservable} from '@xh/hoist/mobx';
-import {FilterTestFn, StoreRecord} from '@xh/hoist/data';
+import {FilterTestFn, StoreConfig, StoreRecord} from '@xh/hoist/data';
 
 export interface LeftRightChooserConfig {
 
@@ -151,7 +151,7 @@ export class LeftRightChooserModel extends HoistModel {
                 {name: 'locked', type: 'bool'},
                 {name: 'exclude', type: 'bool'}
             ]
-        };
+        } as StoreConfig;
 
         const leftTextCol = {
                 field: 'text',

@@ -5,6 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
+import {FieldSpec} from '@xh/hoist/data';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
 import {getApp} from '@xh/hoist/admin/AppModel';
@@ -27,13 +28,13 @@ const modelSpec = {
         reloadLookupsOnLoad: true,
         fieldDefaults: {disableXssProtection: true},
         fields: [
-            {...Col.name.field, displayName: 'Pref', lookupName: 'names', editable: 'onAdd', required},
-            {...Col.groupName.field, lookupName: 'groupNames', editable: false},
-            {...Col.type.field, editable: false},
-            {...Col.username.field, required},
-            {...Col.userValue.field, typeField: 'type', required},
-            {...Col.lastUpdated.field, editable: false},
-            {...Col.lastUpdatedBy.field, editable: false}
+            {...Col.name.field as FieldSpec, displayName: 'Pref', lookupName: 'names', editable: 'onAdd', required},
+            {...Col.groupName.field as FieldSpec, lookupName: 'groupNames', editable: false},
+            {...Col.type.field as FieldSpec, editable: false},
+            {...Col.username.field as FieldSpec, required},
+            {...Col.userValue.field as FieldSpec, typeField: 'type', required},
+            {...Col.lastUpdated.field as FieldSpec, editable: false},
+            {...Col.lastUpdatedBy.field as FieldSpec, editable: false}
         ]
     },
     sortBy: 'name',

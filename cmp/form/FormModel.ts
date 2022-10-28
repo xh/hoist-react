@@ -4,14 +4,14 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed} from '@xh/hoist/core';
-import {RawData, ValidationState} from '@xh/hoist/data';
+import {HoistModel, managed, PlainObject} from '@xh/hoist/core';
+import {ValidationState} from '@xh/hoist/data';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {flatMap, forEach, forOwn, map, mapValues, pickBy, some, values} from 'lodash';
 import {BaseFieldConfig, BaseFieldModel} from './field/BaseFieldModel';
 import {FieldModel} from './field/FieldModel';
-import {SubformsFieldModel, SubformsFieldConfig} from './field/SubformsFieldModel';
+import {SubformsFieldModel} from './field/SubformsFieldModel';
 
 
 export interface FormConfig {
@@ -19,10 +19,10 @@ export interface FormConfig {
     /**
      * FieldModels, or configurations to create them, for all data fields managed by this FormModel.
      */
-    fields?: (BaseFieldModel|BaseFieldConfig|SubformsFieldModel|SubformsFieldConfig)[];
+    fields?: (BaseFieldModel|BaseFieldConfig)[];
 
     /** Map of initial values for fields in this model. */
-    initialValues?: RawData;
+    initialValues?: PlainObject;
 
     disabled?: boolean;
     readonly?: boolean;
@@ -130,7 +130,7 @@ export class FormModel extends HoistModel {
      *
      * @param dirtyOnly - true to include only dirty field values in the return
      */
-    getData(dirtyOnly: boolean = false): RawData {
+    getData(dirtyOnly: boolean = false): PlainObject {
         const fields = dirtyOnly ? pickBy(this.fields, f => f.isDirty) : this.fields;
         return mapValues(fields, v =>  v.getData());
     }
@@ -156,7 +156,7 @@ export class FormModel extends HoistModel {
      * @param initialValues - map of field name to value.
      */
     @action
-    init(initialValues: RawData = {}) {
+    init(initialValues: PlainObject = {}) {
         forOwn(this.fields, m => m.init(initialValues[m.name]));
     }
 
@@ -166,7 +166,7 @@ export class FormModel extends HoistModel {
      * @param values - map of field name to value.
      */
     @action
-    setValues(values: RawData) {
+    setValues(values: PlainObject) {
         const {fields} = this;
         forEach(values, (v, k) => fields[k]?.setValue(v));
     }

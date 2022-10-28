@@ -4,72 +4,70 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {FieldType} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-
-const {BOOL, DATE, INT, STRING} = FieldType;
+import { ColumnSpec } from '@xh/hoist/cmp/grid/columns';
 
 export const isOpen = {
-    field: {name: 'isOpen', type: BOOL},
+    field: {name: 'isOpen', type: 'bool'},
     headerName: '',
     align: 'center',
     width: 40,
     renderer: v => v ?
         Icon.circle({prefix: 'fas', className: 'xh-green'}) :
         Icon.circle({prefix: 'fal', className: 'xh-red'})
-};
+} as ColumnSpec;
 
 export const key = {
-    field: {name: 'key', type: STRING},
+    field: {name: 'key', type: 'string'},
     width: 160
-};
+} as ColumnSpec;
 
 export const createdTime = {
     field: {
         name: 'createdTime',
-        type: DATE,
+        type: 'date',
         displayName: 'Created'
     },
     ...Col.compactDate
-};
+} as ColumnSpec;
 
 export const sentMessageCount = {
     field: {
         name: 'sentMessageCount',
-        type: INT,
+        type: 'int',
         displayName: 'Sent'
     },
     ...Col.number,
     width: 90
-};
+} as ColumnSpec;
 
 export const lastSentTime = {
     field: {
         name: 'lastSentTime',
-        type: DATE,
+        type: 'date',
         displayName: 'Last Sent'
     },
     ...Col.compactDate,
     width: 140
-};
+} as ColumnSpec;
 
 export const receivedMessageCount = {
     field: {
         name: 'receivedMessageCount',
-        type: INT,
+        type: 'int',
         displayName: 'Received'
     },
     ...Col.number,
     width: 90
-};
+} as ColumnSpec;
 
 export const lastReceivedTime = {
     field: {
         name: 'lastReceivedTime',
-        type: DATE,
+        type: 'date',
         displayName: 'Last Received'
     },
     ...Col.compactDate,
     width: 140
-};
+} as ColumnSpec;

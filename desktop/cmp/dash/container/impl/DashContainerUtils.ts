@@ -39,7 +39,6 @@ function convertGLToStateInner(configItems = [], contentItems = [], dashContaine
                 viewModelId = getViewModelId(contentItem),
                 viewModel = dashContainerModel.getViewModel(viewModelId),
                 view = {type: 'view', id: viewSpecId} as any;
-
             if (viewModel.icon !== viewSpec.icon) view.icon = serializeIcon(viewModel.icon);
             if (viewModel.title !== viewSpec.title) view.title = viewModel.title;
             if (!isEmpty(viewModel.viewState)) view.state = viewModel.viewState;

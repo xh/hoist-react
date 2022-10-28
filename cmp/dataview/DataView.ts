@@ -6,19 +6,20 @@
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
-import {hoistCmp, HoistModel, useLocalModel, uses, lookup} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses, lookup, PlainObject, BoxProps} from '@xh/hoist/core';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {isFunction} from 'lodash';
-import PT from 'prop-types';
 
 import './DataView.scss';
 import {DataViewModel} from './DataViewModel';
+
+export type DataViewProps = BoxProps<DataViewModel>;
 
 /**
  * A DataView is a specialized version of the Grid component. It displays its data within a
  * single column, using a configured component for rendering each item.
  */
-export const [DataView, dataView] = hoistCmp.withFactory({
+export const [DataView, dataView] = hoistCmp.withFactory<DataViewProps>({
     displayName: 'DataView',
     model: uses(DataViewModel),
     className: 'xh-data-view',
@@ -37,18 +38,11 @@ export const [DataView, dataView] = hoistCmp.withFactory({
     }
 });
 
-DataView.propTypes = {
-    /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(DataViewModel), PT.object])
-};
-
 class DataViewLocalModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {DataViewModel} */
-    @lookup(DataViewModel) model;
-
-    agOptions;
+    @lookup(DataViewModel) model: DataViewModel;
+    agOptions: PlainObject;
 
     onLinked() {
         const {model} = this;
@@ -67,7 +61,7 @@ class DataViewLocalModel extends HoistModel {
                 // For group rows, return groupRowHeight if specified, or use standard height
                 // (DataView does not participate in grid sizing modes.)
                 if (agParams.node?.group) {
-                    return groupRowHeight ?? AgGrid.getRowHeightForSizingMode('standard');
+                    return groupRowHeight ?? (AgGrid as any).getRowHeightForSizingMode('standard');
                 }
 
                 // Return (required) itemHeight for data rows.

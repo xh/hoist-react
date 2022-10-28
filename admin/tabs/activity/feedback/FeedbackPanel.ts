@@ -9,6 +9,7 @@ import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {deleteAction, restGrid} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
 import {getApp} from '@xh/hoist/admin/AppModel';
+import {FieldSpec} from '@xh/hoist/data';
 
 export const feedbackPanel = hoistCmp.factory(
     () => restGrid({model: {...modelSpec, readonly: getApp().readonly}})
@@ -22,13 +23,13 @@ const modelSpec = {
     store: {
         url: 'rest/feedbackAdmin',
         fields: [
-            {...Col.username.field},
-            {...Col.msg.field},
-            {...Col.browser.field},
-            {...Col.device.field},
-            {...Col.appVersion.field, displayName: 'Version'},
-            {...Col.appEnvironment.field},
-            {...Col.dateCreated.field, displayName: 'Date'}
+            Col.username.field,
+            Col.msg.field,
+            Col.browser.field,
+            Col.device.field,
+            Col.appEnvironment.field,
+            {...Col.appVersion.field as FieldSpec, displayName: 'Version'},
+            {...Col.dateCreated.field as FieldSpec, displayName: 'Date'}
         ]
     },
     toolbarActions: [deleteAction],
