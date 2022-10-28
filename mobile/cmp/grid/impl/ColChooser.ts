@@ -38,7 +38,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory({
 
     render({model, className}) {
         const {isOpen, gridModel, pinnedColumn, visibleColumns, hiddenColumns, showRestoreDefaults} = model,
-            impl = useLocalModel(LocalModel);
+            impl = useLocalModel(ColChooserLocalModel);
 
         return dialogPanel({
             isOpen,
@@ -158,7 +158,7 @@ const draggableRow = hoistCmp.factory({
     }
 });
 
-const row = hoistCmp.factory({
+const row = hoistCmp.factory<ColChooserLocalModel>({
     render({model, col, isDragging, ...props}, ref) {
         if (!col) return null;
 
@@ -204,9 +204,9 @@ const row = hoistCmp.factory({
 });
 
 
-class LocalModel extends HoistModel {
-
-    @lookup(ColChooserModel) model;
+class ColChooserLocalModel extends HoistModel {
+    xhImpl = true;
+    @lookup(ColChooserModel) model: ColChooserModel;
 
     onDragEnd = (result) => {
         const {model} = this,

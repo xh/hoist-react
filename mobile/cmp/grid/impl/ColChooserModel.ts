@@ -4,9 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {HoistModel, HSide, XH} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {bindable, action, makeObservable, observable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {clone, find, sortBy} from 'lodash';
 
@@ -14,16 +15,17 @@ import {clone, find, sortBy} from 'lodash';
  * State management for the ColChooser component.
  *
  * It is not necessary to manually create instances of this class within an application.
- * @private
+ * @internal
  */
 export class ColChooserModel extends HoistModel {
+    xhImpl = true;
 
-    gridModel;
-    showRestoreDefaults;
-    autosizeOnCommit;
+    gridModel: GridModel;
+    showRestoreDefaults: boolean;
+    autosizeOnCommit: boolean;
 
-    @bindable.ref columns = [];
-    @bindable pinFirst;
+    @observable.ref columns: ColMeta[] = [];
+    @bindable pinFirst: boolean;
 
     @observable isOpen = false;
 
@@ -80,6 +82,7 @@ export class ColChooserModel extends HoistModel {
         this.isOpen = false;
     }
 
+    @action
     updatePinnedColumn() {
         // Loop through and, if applicable, pin the first
         // non-excluded visible column encountered
@@ -88,25 +91,27 @@ export class ColChooserModel extends HoistModel {
             if (it.exclude) return it;
             if (!it.hidden && shouldPinFirst) {
                 shouldPinFirst = false;
-                return {...it, pinned: 'left'};
+                return {...it, pinned: 'left' as HSide};
             } else {
                 return {...it, pinned: null};
             }
         });
 
-        this.setColumns(columns);
+        this.columns = columns;
     }
 
-    setHidden(colId, hidden) {
+    @action
+    setHidden(colId: string, hidden: boolean) {
         const columns = this.columns.map(col => {
             return (col.colId === colId && !col.locked && !col.exclude) ?
                 {...col, hidden} :
                 col;
         });
-        this.setColumns(columns);
+        this.columns = columns;
     }
 
-    moveToIndex(colId, toIdx) {
+    @action
+    moveToIndex(colId: string, toIdx: number) {
         const columns = clone(this.columns),
             col = find(columns, {colId});
 
@@ -114,7 +119,7 @@ export class ColChooserModel extends HoistModel {
 
         const fromIdx = columns.indexOf(col);
         columns.splice(toIdx, 0, columns.splice(fromIdx, 1)[0]);
-        this.setColumns(columns);
+        this.columns = columns;
     }
 
     commit() {
@@ -140,7 +145,8 @@ export class ColChooserModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
-    syncChooserData() {
+    @action
+    private syncChooserData() {
         const {gridModel} = this,
             cols = gridModel.getLeafColumns();
 
@@ -162,19 +168,30 @@ export class ColChooserModel extends HoistModel {
             };
         });
 
-        this.setColumns([
+        this.columns =[
             ...this.getVisible(columns),
             ...this.getHidden(columns)
-        ]);
+        ];
 
-        this.setPinFirst(columns.length && columns[0].pinned);
+        this.pinFirst = columns.length && columns[0].pinned;
     }
 
-    getVisible(cols) {
+    private getVisible(cols) {
         return cols.filter(it => !it.hidden);
     }
 
-    getHidden(cols) {
+    private getHidden(cols) {
         return cols.filter(it => it.hidden);
     }
+}
+
+
+interface ColMeta {
+    originalIdx: number;
+    colId: string;
+    text: string;
+    hidden: boolean;
+    exclude: boolean;
+    locked: boolean;
+    pinned: HSide;
 }
