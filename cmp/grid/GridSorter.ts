@@ -16,15 +16,16 @@ export interface GridSorterSpec {
 
 export class GridSorter {
 
-    colId: string;
-    sort: 'asc'|'desc';
-    abs: boolean;
+    readonly colId: string;
+    readonly sort: 'asc'|'desc';
+    readonly abs: boolean;
 
     /**
      * Create a new GridSorter. Accepts a GridSorter configuration or a pipe delimited string
      * generated using GridSorter.toString().
      */
-    static parse(cfg: string|GridSorterSpec) {
+    static parse(cfg: GridSorterLike) {
+        if (cfg instanceof GridSorter) return cfg;
         if (isString(cfg)) {
             const [colId, sort, abs] = cfg.split('|').map(s => s.trim()) as any;
             cfg = {colId, sort, abs};

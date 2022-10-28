@@ -916,10 +916,7 @@ export class GridModel extends HoistModel {
         }
 
         sorters = castArray(sorters);
-        const newSorters = sorters.map(it => {
-            if (it instanceof GridSorter) return it;
-            return GridSorter.parse(it);
-        });
+        const newSorters = sorters.map(it => GridSorter.parse(it));
 
         // Allow sorts associated with Hoist columns as well as ag-Grid dynamic grouping columns
         const invalidSorters = newSorters.filter(it => !it.colId?.startsWith('ag-Grid') && !this.findColumn(this.columns, it.colId));

@@ -21,7 +21,7 @@ import {
     set,
     startCase
 } from 'lodash';
-import {GridSorter} from '../grid/GridSorter';
+import {GridSorter, GridSorterLike} from '../grid/GridSorter';
 
 export interface AgGridModelConfig {
 
@@ -421,16 +421,16 @@ export class AgGridModel extends HoistModel {
     /**
      * Sets the sort state on the grid's column state
      */
-    applySortBy(value: Some<GridSorter>) {
+    applySortBy(value: Some<GridSorterLike>) {
         this.throwIfNotReady();
-        const sortBy = castArray(value);
+        const sortBy = castArray(value).map(it => GridSorter.parse(it));
         const {agColumnApi, agApi} = this,
             prevSortBy = this._prevSortBy;
         let togglingAbsSort = false;
 
         if (isEqual(prevSortBy, sortBy)) return;
 
-        // Preclear if only toggling abs for any sort. Ag-Grid doesn't handle abs and would skip
+        // Pre-clear if only toggling abs for any sort. Ag-Grid doesn't handle abs and would skip
         if (sortBy.some(curr =>
             prevSortBy?.some(prev => curr.sort === prev.sort && curr.colId === prev.colId && curr.abs != prev.abs)
         )) {
