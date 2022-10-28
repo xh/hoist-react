@@ -4,9 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {PlainObject} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
-import {RawData, Store} from './Store';
+import {Store} from './Store';
 import {ValidationState} from './validation/ValidationState';
 import {RecordValidator} from './impl/RecordValidator';
 import {Field} from './Field';
@@ -33,7 +34,7 @@ export class StoreRecord {
     treePath: StoreRecordId[];
 
     /** Raw data loaded into via Store.loadData() or Store.updateData(). */
-    raw: RawData;
+    raw: PlainObject;
 
     /**
      * An object containing the current field values for this record.
@@ -43,7 +44,7 @@ export class StoreRecord {
      *
      * Call {@link getValues} for an object providing an explicit enumeration of all field values.
      */
-    data: Record<string, any>;
+    data: PlainObject;
 
     /**
      * An object containing the fully committed field values for this record.
@@ -266,19 +267,19 @@ export interface StoreRecordConfig {
      * `Field.parseVal()`. Note this must be a new object dedicated to this StoreRecord.
      * This object will be enhanced with an id and frozen.
      */
-    data: RawData;
+    data: PlainObject;
 
     /**
      * The original data for the StoreRecord, prior to any Store pre-processing.
      * This data is for reference only and will not be altered by this object.
      */
-    raw?: RawData;
+    raw?: PlainObject;
 
     /**
      * The version of the data that was last loaded via the Store load APIs. Pass `null` to
      * signal that this is a "new" StoreRecord that has been added since the last load.
      */
-    committedData? : RawData;
+    committedData? : PlainObject;
 
     parent?: StoreRecord;
 

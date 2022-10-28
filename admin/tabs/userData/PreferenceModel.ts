@@ -18,7 +18,7 @@ import * as Col from '@xh/hoist/admin/columns';
 import {DifferModel} from '../../differ/DifferModel';
 import {RegroupDialogModel} from '../../regroup/RegroupDialogModel';
 import {getApp} from '@xh/hoist/admin/AppModel';
-import {FieldConfig} from '@xh/hoist/data';
+import {FieldSpec} from '@xh/hoist/data';
 
 export class PreferenceModel extends HoistModel {
 
@@ -53,14 +53,14 @@ export class PreferenceModel extends HoistModel {
                 reloadLookupsOnLoad: true,
                 fieldDefaults: {disableXssProtection: true},
                 fields: [
-                    {...Col.name.field as FieldConfig, required},
-                    {...Col.groupName.field as FieldConfig, lookupName: 'groupNames', required, enableCreate},
-                    {...Col.type.field as FieldConfig, lookupName: 'types', editable: 'onAdd', required},
-                    {...Col.defaultValue.field as FieldConfig, typeField: 'type', required},
+                    {...Col.name.field as FieldSpec, required},
+                    {...Col.groupName.field as FieldSpec, lookupName: 'groupNames', required, enableCreate},
+                    {...Col.type.field as FieldSpec, lookupName: 'types', editable: 'onAdd', required},
+                    {...Col.defaultValue.field as FieldSpec, typeField: 'type', required},
                     Col.notes.field,
-                    {...Col.local.field as FieldConfig, defaultValue: false, required},
-                    {...Col.lastUpdated.field as FieldConfig, editable: false},
-                    {...Col.lastUpdatedBy.field as FieldConfig, editable: false}
+                    {...Col.local.field as FieldSpec, defaultValue: false, required},
+                    {...Col.lastUpdated.field as FieldSpec, editable: false},
+                    {...Col.lastUpdatedBy.field as FieldSpec, editable: false}
                 ]
             },
             sortBy: 'name',

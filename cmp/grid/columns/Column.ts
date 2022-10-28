@@ -6,7 +6,7 @@
  */
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
 import {HAlign, HSide, PlainObject, Some, XH} from '@xh/hoist/core';
-import {CubeFieldConfig, FieldConfig, genDisplayName, StoreRecord} from '@xh/hoist/data';
+import {CubeFieldSpec, FieldSpec, genDisplayName, StoreRecord} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {
@@ -25,7 +25,7 @@ import {
     toString
 } from 'lodash';
 import {createElement, forwardRef, isValidElement, ReactNode, useImperativeHandle} from 'react';
-import { GridModel } from '../GridModel';
+import {GridModel} from '../GridModel';
 import {GridSorter} from '../impl/GridSorter';
 import {managedRenderer} from '../impl/Utils';
 import {
@@ -56,7 +56,7 @@ export interface ColumnSpec {
      * for store field.  If object form is used, the provided properties will be used for
      * auto-creating any fields needed on the Grid's store.
      */
-    field?: string|FieldConfig|CubeFieldConfig;
+    field?: string|FieldSpec|CubeFieldSpec;
 
     /**
      * Unique identifier for the Column within its grid. Defaults to field name - one of these
@@ -383,66 +383,66 @@ export class Column {
         {sort: 'desc', abs: false}
     ];
 
-     field: string;
-     enableDotSeparatedFieldPath: boolean;
-     fieldPath: Some<string>;
-     colId: string;
-     isTreeColumn: boolean;
-     displayName: string;
-     headerName: ColumnHeaderNameFn|ReactNode;
-     headerTooltip: string;
-     headerHasExpandCollapse: boolean;
-     headerAlign: HAlign;
-     headerClass: ColumnHeaderClassFn|Some<string>;
-     cellClass: ColumnCellClassFn|Some<string>;
-     cellClassRules: Record<string, ColumnCellClassRuleFn>;
-     align: HAlign;
-     hidden: boolean;
-     flex: boolean|number;
-     width: number;
-     minWidth: number;
-     maxWidth: number;
-     rowHeight: number;
-     sortingOrder: ('asc'|'desc'|ColumnSortSpec|null)[];
-     absSort: boolean;
-     sortValue: string|ColumnSortValueFn;
-     comparator: ColumnComparator;
-     resizable: boolean;
-     sortable: boolean;
-     movable: boolean;
-     filterable: boolean;
-     hideable: boolean;
-     pinned: HSide;
-     renderer: ColumnRenderer;
-     rendererIsComplex: boolean;
-     highlightOnChange: boolean;
-     tooltip: boolean|ColumnTooltipFn;
-     tooltipElement: ColumnTooltipElementFn;
-     chooserName: string;
-     chooserGroup: string;
-     chooserDescription: string;
-     excludeFromChooser: boolean;
-     exportName: string|ColumnHeaderNameFn;
-     exportValue: string|ColumnExportValueFn;
-     excludeFromExport: boolean;
-     excelFormat: string|ColumnExcelFormatFn;
-     excelWidth: number;
-     autosizable: boolean;
-     autosizeIncludeHeader: boolean;
-     autosizeIncludeHeaderIcons: boolean;
-     autosizeMinWidth: number;
-     autosizeMaxWidth: number;
-     autosizeBufferPx: number;
-     autoHeight: boolean;
-     editable: boolean|ColumnEditableFn;
-     editor: ColumnEditorFn;
-     editorIsPopup: boolean;
-     setValueFn: ColumnSetValueFn;
-     getValueFn: ColumnGetValueFn;
-     gridModel: GridModel;
-     agOptions: PlainObject;
+    field: string;
+    enableDotSeparatedFieldPath: boolean;
+    fieldPath: Some<string>;
+    colId: string;
+    isTreeColumn: boolean;
+    displayName: string;
+    headerName: ColumnHeaderNameFn|ReactNode;
+    headerTooltip: string;
+    headerHasExpandCollapse: boolean;
+    headerAlign: HAlign;
+    headerClass: ColumnHeaderClassFn|Some<string>;
+    cellClass: ColumnCellClassFn|Some<string>;
+    cellClassRules: Record<string, ColumnCellClassRuleFn>;
+    align: HAlign;
+    hidden: boolean;
+    flex: boolean|number;
+    width: number;
+    minWidth: number;
+    maxWidth: number;
+    rowHeight: number;
+    sortingOrder: ('asc'|'desc'|ColumnSortSpec|null)[];
+    absSort: boolean;
+    sortValue: string|ColumnSortValueFn;
+    comparator: ColumnComparator;
+    resizable: boolean;
+    sortable: boolean;
+    movable: boolean;
+    filterable: boolean;
+    hideable: boolean;
+    pinned: HSide;
+    renderer: ColumnRenderer;
+    rendererIsComplex: boolean;
+    highlightOnChange: boolean;
+    tooltip: boolean|ColumnTooltipFn;
+    tooltipElement: ColumnTooltipElementFn;
+    chooserName: string;
+    chooserGroup: string;
+    chooserDescription: string;
+    excludeFromChooser: boolean;
+    exportName: string|ColumnHeaderNameFn;
+    exportValue: string|ColumnExportValueFn;
+    excludeFromExport: boolean;
+    excelFormat: string|ColumnExcelFormatFn;
+    excelWidth: number;
+    autosizable: boolean;
+    autosizeIncludeHeader: boolean;
+    autosizeIncludeHeaderIcons: boolean;
+    autosizeMinWidth: number;
+    autosizeMaxWidth: number;
+    autosizeBufferPx: number;
+    autoHeight: boolean;
+    editable: boolean|ColumnEditableFn;
+    editor: ColumnEditorFn;
+    editorIsPopup: boolean;
+    setValueFn: ColumnSetValueFn;
+    getValueFn: ColumnGetValueFn;
+    gridModel: GridModel;
+    agOptions: PlainObject;
 
-    fieldSpec: FieldConfig;
+    fieldSpec: FieldSpec;
     manuallySized: boolean;
 
     /**
@@ -511,7 +511,7 @@ export class Column {
             enableDotSeparatedFieldPath,
             agOptions,
             ...rest
-        } = spec;
+        }: ColumnSpec = spec;
         Object.assign(this, rest);
 
         this.field = this.parseField(field);

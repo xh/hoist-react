@@ -13,6 +13,42 @@ import equal from 'fast-deep-equal';
 import {isDate, isString, toNumber, isFinite, startCase, isFunction, castArray} from 'lodash';
 import DOMPurify from 'dompurify';
 
+/**
+ * Constructor arguments for a Hoist data package Field.
+ */
+export interface FieldSpec {
+
+    /** Unique key representing this field. */
+    name: string;
+
+    /** default `'auto` indicates no conversion.*/
+    type?: FieldType;
+
+    /**
+     *  User-facing / longer name for display, defaults to `name`
+     *  transformed via `genDisplayName()` (e.g. 'myField' translates to 'My Field').
+     */
+    displayName?: string;
+
+    /** Value to be used for records with a null, or non-existent value. */
+    defaultValue?: any;
+
+    /** Rules to apply to this field. */
+    rules?: RuleLike[];
+
+    /**
+     * True to disable built-in XSS (cross-site scripting) protection, applied by default to all
+     * incoming String values using {@link https://github.com/cure53/DOMPurify | DOMPurify}.
+     *
+     * DOMPurify provides fast escaping of dangerous HTML, scripting, and other content that can be
+     * used to execute XSS attacks, while allowing common and expected HTML and style tags.
+     *
+     * Please contact XH if you find yourself needing to disable this protection!
+     */
+    disableXssProtection ?: boolean;
+}
+
+
 /** Metadata for an individual data field within a {@link StoreRecord}. */
 export class Field {
 
@@ -32,7 +68,7 @@ export class Field {
         defaultValue = null,
         rules = [],
         disableXssProtection = XH.appSpec.disableXssProtection
-    }: FieldConfig) {
+    }: FieldSpec) {
         this.name = name;
         this.type = type;
         this.displayName = withDefault(displayName, genDisplayName(name));
@@ -140,39 +176,4 @@ export type FieldType = typeof FieldType[keyof typeof FieldType];
  */
 export function genDisplayName(fieldName: string): string {
     return fieldName === 'id' ? 'ID' : startCase(fieldName);
-}
-
-/**
- * Constructor arguments for a Hoist data package Field.
- */
-export interface FieldConfig {
-
-    /** Unique key representing this field. */
-    name: string;
-
-    /** default `'auto` indicates no conversion.*/
-    type?: FieldType;
-
-    /**
-     *  User-facing / longer name for display, defaults to `name`
-     *  transformed via `genDisplayName()` (e.g. 'myField' translates to 'My Field').
-     */
-    displayName?: string;
-
-    /** Value to be used for records with a null, or non-existent value. */
-    defaultValue?: any;
-
-    /** Rules to apply to this field. */
-    rules?: RuleLike[];
-
-    /**
-     * True to disable built-in XSS (cross-site scripting) protection, applied by default to all
-     * incoming String values using {@link https://github.com/cure53/DOMPurify | DOMPurify}.
-     *
-     * DOMPurify provides fast escaping of dangerous HTML, scripting, and other content that can be
-     * used to execute XSS attacks, while allowing common and expected HTML and style tags.
-     *
-     * Please contact XH if you find yourself needing to disable this protection!
-     */
-    disableXssProtection ?: boolean;
 }

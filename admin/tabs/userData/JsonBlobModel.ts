@@ -17,7 +17,7 @@ import {getApp} from '@xh/hoist/admin/AppModel';
 
 
 import {DifferModel} from '../../differ/DifferModel';
-import { FieldConfig } from '@xh/hoist/data';
+import {FieldSpec} from '@xh/hoist/data';
 
 export class JsonBlobModel extends HoistModel {
 
@@ -49,19 +49,19 @@ export class JsonBlobModel extends HoistModel {
                 reloadLookupsOnLoad: true,
                 fieldDefaults: {disableXssProtection: true},
                 fields: [
-                    {...JBCol.token.field as FieldConfig, editable: false},
+                    {...JBCol.token.field as FieldSpec, editable: false},
                     JBCol.owner.field,
                     JBCol.acl.field,
-                    {...Col.name.field as FieldConfig, required},
-                    {...Col.type.field as FieldConfig, lookupName: 'types', required, enableCreate},
-                    {...Col.value.field as FieldConfig, type: 'json', required},
+                    {...Col.name.field as FieldSpec, required},
+                    {...Col.type.field as FieldSpec, lookupName: 'types', required, enableCreate},
+                    {...Col.value.field as FieldSpec, type: 'json', required},
                     JBCol.meta.field,
                     Col.description.field,
-                    {...JBCol.archived.field as FieldConfig, defaultValue: false, required},
-                    {...JBCol.archivedDate.field as FieldConfig, editable: false},
-                    {...Col.dateCreated.field as FieldConfig, editable: false},
-                    {...Col.lastUpdated.field as FieldConfig, editable: false},
-                    {...Col.lastUpdatedBy.field as FieldConfig, editable: false}
+                    {...JBCol.archived.field as FieldSpec, defaultValue: false, required},
+                    {...JBCol.archivedDate.field as FieldSpec, editable: false},
+                    {...Col.dateCreated.field as FieldSpec, editable: false},
+                    {...Col.lastUpdated.field as FieldSpec, editable: false},
+                    {...Col.lastUpdatedBy.field as FieldSpec, editable: false}
                 ]
             },
             toolbarActions: [

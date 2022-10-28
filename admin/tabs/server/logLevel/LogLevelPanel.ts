@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
-import {FieldConfig} from '@xh/hoist/data';
+import {FieldSpec} from '@xh/hoist/data';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
 import * as LogLevelCol from './LogLevelColumns';
@@ -24,12 +24,12 @@ const modelSpec = {
         url: 'rest/logLevelAdmin',
         fieldDefaults: {disableXssProtection: true},
         fields: [
-            {...LogLevelCol.logName.field as FieldConfig, required: true},
-            {...LogLevelCol.level.field as FieldConfig, lookupName: 'levels'},
-            {...LogLevelCol.defaultLevel.field as FieldConfig, editable: false},
-            {...LogLevelCol.effectiveLevel.field as FieldConfig, editable: false},
-            {...Col.lastUpdated.field as FieldConfig, editable: false},
-            {...Col.lastUpdatedBy.field as FieldConfig, editable: false}
+            {...LogLevelCol.logName.field as FieldSpec, required: true},
+            {...LogLevelCol.level.field as FieldSpec, lookupName: 'levels'},
+            {...LogLevelCol.defaultLevel.field as FieldSpec, editable: false},
+            {...LogLevelCol.effectiveLevel.field as FieldSpec, editable: false},
+            {...Col.lastUpdated.field as FieldSpec, editable: false},
+            {...Col.lastUpdatedBy.field as FieldSpec, editable: false}
         ]
     },
     unit: 'log level',

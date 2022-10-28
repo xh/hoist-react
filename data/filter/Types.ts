@@ -5,8 +5,9 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import {PlainObject} from '@xh/hoist/core';
 import {Filter} from './Filter';
-import {RawData, StoreRecord, Field} from '../';
+import {StoreRecord, Field} from '../';
 
 export type CompoundFilterOperator = 'AND'|'OR'|'and'|'or';
 export interface CompoundFilterSpec {
@@ -41,7 +42,7 @@ export interface FunctionFilterSpec {
  * @param candidate - single Hoist StoreRecord or plain JS Object to evaluate.
  * @returns  true if the candidate passes and should be included in filtered results.
  */
-export type FilterTestFn = (candidate: RawData|StoreRecord) => boolean;
+export type FilterTestFn = (candidate: PlainObject|StoreRecord) => boolean;
 
 export type FilterLike = Filter |
     CompoundFilterSpec |

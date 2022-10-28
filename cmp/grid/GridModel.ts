@@ -29,21 +29,22 @@ import {
 } from '@xh/hoist/core';
 import {
     FieldType,
-    FieldConfig,
+    FieldSpec,
     Store,
     StoreConfig,
     StoreRecord,
     StoreRecordId,
     StoreRecordOrId,
     StoreSelectionConfig,
-    StoreSelectionModel
+    StoreSelectionModel,
+    StoreTransaction
 } from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import { ExportOptions } from '@xh/hoist/svc/GridExportService';
+import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
     deepFreeze,
@@ -112,7 +113,7 @@ export interface GridConfig {
     /** Location for a docked summary row. Requires `store.SummaryRecord` to be populated. */
     showSummary?: boolean | VSide;
 
-    /** Object providing selection behavior of Grid. */
+    /** Specification of selection behavior. Defaults to 'single' (desktop) and 'disabled' (mobile) */
     selModel?: StoreSelectionModel | StoreSelectionConfig | 'single' | 'multiple' | 'disabled';
 
     /** Config with which to create a GridFilterModel, or `true` to enable default. Desktop only.*/
@@ -315,7 +316,7 @@ export interface GridConfig {
     experimental?: PlainObject;
 
     /** Additional data to attach to this model instance. */
-    [x:string]: any;
+    [x: string]: any;
 }
 
 
@@ -387,13 +388,13 @@ export class GridModel extends HoistModel {
     //------------------------
     // Observable API
     //------------------------
-    @observable.ref columns: (ColumnGroup|Column)[] = [];
+    @observable.ref columns: (ColumnGroup | Column)[] = [];
     @observable.ref columnState: ColumnState[] = [];
     @observable.ref expandState: any = {};
     @observable.ref autosizeState: AutosizeState = {};
     @observable.ref sortBy: GridSorter[] = [];
     @observable.ref groupBy: string[] = null;
-    @observable showSummary: boolean|VSide = false;
+    @observable showSummary: boolean | VSide = false;
     @observable.ref emptyText: ReactNode;
     @observable treeStyle: TreeStyle;
 
@@ -450,66 +451,62 @@ export class GridModel extends HoistModel {
     /** @internal - used internally by any GridFindField that is bound to this GridModel. */
     @bindable xhFindQuery = null;
 
-    constructor({
-        store,
-        columns,
-        colDefaults = {},
-        treeMode = false,
-        showSummary = false,
-        selModel,
-        filterModel,
-        colChooserModel,
-        emptyText = null,
-        hideEmptyTextBeforeLoad = true,
-        sortBy = [],
-        groupBy = null,
-        showGroupRowCounts = true,
-        externalSort = false,
-
-        persistWith,
-
-        sizingMode,
-        showHover = false,
-        rowBorders = XH.isMobileApp,
-        rowClassFn = null,
-        rowClassRules = {},
-        cellBorders = false,
-        treeStyle = 'highlights',
-        stripeRows = (!treeMode || treeStyle === 'none'),
-        showCellFocus = false,
-        hideHeaders = false,
-
-        lockColumnGroups = true,
-        enableColumnPinning = true,
-        enableExport = false,
-        exportOptions = {},
-
-        groupRowHeight,
-        groupRowRenderer,
-        groupSortFn,
-
-        onKeyDown,
-        onRowClicked,
-        onRowDoubleClicked,
-        onCellClicked,
-        onCellDoubleClicked,
-        onCellContextMenu,
-        clicksToExpand = XH.isMobileApp ? 1 : 2,
-
-        contextMenu,
-        useVirtualColumns = false,
-        autosizeOptions = {},
-        restoreDefaultsFn,
-        restoreDefaultsWarning = GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
-        fullRowEditing = false,
-        clicksToEdit = 2,
-        highlightRowOnClick = XH.isMobileApp,
-        experimental,
-        xhImpl,
-        ...rest
-    }: GridConfig) {
+    constructor(config: GridConfig) {
         super();
         makeObservable(this);
+        let {
+            store,
+            columns,
+            colDefaults = {},
+            treeMode = false,
+            showSummary = false,
+            selModel,
+            filterModel,
+            colChooserModel,
+            emptyText = null,
+            hideEmptyTextBeforeLoad = true,
+            sortBy = [],
+            groupBy = null,
+            showGroupRowCounts = true,
+            externalSort = false,
+            persistWith,
+            sizingMode,
+            showHover = false,
+            rowBorders = XH.isMobileApp,
+            rowClassFn = null,
+            rowClassRules = {},
+            cellBorders = false,
+            treeStyle = 'highlights',
+            stripeRows = (!treeMode || treeStyle === 'none'),
+            showCellFocus = false,
+            hideHeaders = false,
+            lockColumnGroups = true,
+            enableColumnPinning = true,
+            enableExport = false,
+            exportOptions = {},
+            groupRowHeight,
+            groupRowRenderer,
+            groupSortFn,
+            onKeyDown,
+            onRowClicked,
+            onRowDoubleClicked,
+            onCellClicked,
+            onCellDoubleClicked,
+            onCellContextMenu,
+            clicksToExpand = XH.isMobileApp ? 1 : 2,
+            contextMenu,
+            useVirtualColumns = false,
+            autosizeOptions = {},
+            restoreDefaultsFn,
+            restoreDefaultsWarning = GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
+            fullRowEditing = false,
+            clicksToEdit = 2,
+            highlightRowOnClick = XH.isMobileApp,
+            experimental,
+            xhImpl,
+            ...rest
+        }: GridConfig = config;
+
         this.xhImpl = xhImpl;
 
         this._defaultState = {columns, sortBy, groupBy};
@@ -656,7 +653,7 @@ export class GridModel extends HoistModel {
      * @param type - type of export - either 'excel' or 'csv'.
      * @param params - passed to agGrid's export functions.
      */
-    localExport(filename: string, type: 'excel'|'csv', params: PlainObject = {}) {
+    localExport(filename: string, type: 'excel' | 'csv', params: PlainObject = {}) {
         const {agApi} = this.agGridModel;
         if (!agApi) return;
         params = defaults(
@@ -940,15 +937,13 @@ export class GridModel extends HoistModel {
     }
 
     /** Load the underlying store. */
-    loadData(...args) {
-        // @ts-ignore
-        return this.store.loadData(...args);
+    loadData(rawData: any[], rawSummaryData?: PlainObject) {
+        return this.store.loadData(rawData, rawSummaryData);
     }
 
     /** Update the underlying store. */
-    updateData(...args) {
-        // @ts-ignore
-        return this.store.updateData(...args);
+    updateData(rawData: PlainObject[]|StoreTransaction) {
+        return this.store.updateData(rawData);
     }
 
     /** Clear the underlying store, removing all rows. */
@@ -1548,7 +1543,7 @@ export class GridModel extends HoistModel {
             storeFieldNames = fields.map(it => it.name ?? it),
             leafColsByFieldName = this.leafColsByFieldName();
 
-        const newFields: FieldConfig[] = [];
+        const newFields: FieldSpec[] = [];
         forEach(leafColsByFieldName, (col, name) => {
             if (name !== 'id' && !storeFieldNames.includes(name)) {
                 newFields.push({name, displayName: col.displayName, ...col.fieldSpec});

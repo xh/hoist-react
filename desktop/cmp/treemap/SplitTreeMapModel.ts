@@ -4,11 +4,11 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, Theme} from '@xh/hoist/core';
+import {HoistModel, managed, PlainObject, Theme} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {action, observable, computed, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {RawData, StoreRecord, StoreRecordId} from '@xh/hoist/data';
+import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {ReactNode} from 'react';
 import {uniq} from 'lodash';
 
@@ -181,7 +181,7 @@ export class SplitTreeMapModel extends HoistModel {
  * Return true if record belongs to / should appear within the primary map, falsy to
  * have it allocated to the secondary map.
  */
-type SplitTreeMapFilterFn = (record: RawData|StoreRecord) => boolean;
+type SplitTreeMapFilterFn = (record: PlainObject|StoreRecord) => boolean;
 
 /**
  * Function to generate the region title to display.

@@ -9,7 +9,7 @@ import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {Cube, CubeFieldConfig, FieldConfig} from '@xh/hoist/data';
+import {Cube, CubeFieldSpec, FieldSpec} from '@xh/hoist/data';
 import {fmtDate, fmtNumber} from '@xh/hoist/format';
 import {action, computed, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
@@ -66,18 +66,18 @@ export class ActivityTrackingModel extends HoistModel {
 
         this.cube = new Cube({
             fields: [
-                Col.browser.field as CubeFieldConfig,
-                Col.category.field as CubeFieldConfig,
-                Col.data.field as CubeFieldConfig,
-                {...Col.dateCreated.field as FieldConfig, displayName: 'Timestamp'},
-                Col.day.field as CubeFieldConfig,
-                Col.device.field as CubeFieldConfig,
-                Col.elapsed.field as CubeFieldConfig,
-                Col.entryCount.field as CubeFieldConfig,
-                Col.impersonating.field as CubeFieldConfig,
-                Col.msg.field as CubeFieldConfig,
-                Col.userAgent.field as CubeFieldConfig,
-                Col.username.field as CubeFieldConfig,
+                Col.browser.field as CubeFieldSpec,
+                Col.category.field as CubeFieldSpec,
+                Col.data.field as CubeFieldSpec,
+                {...Col.dateCreated.field as FieldSpec, displayName: 'Timestamp'},
+                Col.day.field as CubeFieldSpec,
+                Col.device.field as CubeFieldSpec,
+                Col.elapsed.field as CubeFieldSpec,
+                Col.entryCount.field as CubeFieldSpec,
+                Col.impersonating.field as CubeFieldSpec,
+                Col.msg.field as CubeFieldSpec,
+                Col.userAgent.field as CubeFieldSpec,
+                Col.username.field as CubeFieldSpec,
                 {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
                 {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'}
             ]
