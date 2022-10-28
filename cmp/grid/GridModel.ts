@@ -1633,7 +1633,7 @@ export class GridModel extends HoistModel {
         return chooserModel ? this.markManaged(new modelClass({gridModel: this})) : null;
     }
 
-    private isGroupSpec(col: ColumnGroup|ColumnSpec): col is ColumnGroupSpec {
+    private isGroupSpec(col: ColumnGroupSpec|ColumnSpec): col is ColumnGroupSpec {
         return 'children' in col;
     }
 
