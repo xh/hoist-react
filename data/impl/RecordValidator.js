@@ -7,7 +7,7 @@
 
 import {ValidationState} from '@xh/hoist/data';
 import {computed} from '@xh/hoist/mobx';
-import {compact, flatten, isEmpty, map, mapValues, values} from 'lodash';
+import {compact, flatten, isEmpty, mapValues, values} from 'lodash';
 import {makeObservable, observable, runInAction} from 'mobx';
 import {TaskObserver} from '../../core';
 
@@ -52,6 +52,7 @@ export class RecordValidator {
     /** @return {number} - count of all validation errors for the record. */
     @computed
     get errorCount() {
+        if (!this._fieldErrors) return 0;
         return flatten(values(this._fieldErrors)).length;
     }
 
@@ -61,7 +62,6 @@ export class RecordValidator {
         return this._validationTask.isPending;
     }
 
-    _validators = [];
     @observable.ref _fieldErrors = {};
     _validationTask = TaskObserver.trackLast();
     _validationRunId = 0;
@@ -73,9 +73,6 @@ export class RecordValidator {
     constructor({record}) {
         this.record = record;
         makeObservable(this);
-
-        // const {fields} = this.record.store;
-        // this._validators = fields.map(field => new RecordFieldValidator({record, field}));
     }
 
     /**
@@ -88,7 +85,7 @@ export class RecordValidator {
             {record} = this,
             fieldsToValidate = record.store.fields.filter(it => !isEmpty(it.rules));
 
-        runInAction(() => this._fieldErrors = {});
+        runInAction(() => this._fieldErrors = null);
 
         const promises = fieldsToValidate.map(field => {
             fieldErrors[field.name] = [];
@@ -116,15 +113,20 @@ export class RecordValidator {
     /** @return {ValidationState} - the current validation state for the record. */
     getValidationState() {
         const VS = ValidationState,
-            states = map(this._validators, v => v.validationState);
-        if (states.includes(VS.NotValid)) return VS.NotValid;
-        if (states.includes(VS.Unknown)) return VS.Unknown;
+            {_fieldErrors} = this;
+
+        // While executing any rules we are in an unknown validation state
+        if (_fieldErrors === null) return VS.Unknown;
+
+        // Record is invalid if we have any errors on any fields
+        if (values(_fieldErrors).some(errors => !isEmpty(errors))) return VS.NotValid;
+
         return VS.Valid;
     }
 
     /** @return {RecordErrorMap} - map of field names -> field-level errors. */
     getErrorMap() {
-        return this._fieldErrors;
+        return this._fieldErrors ?? {};
     }
 
     async evaluateRuleAsync(record, field, rule) {

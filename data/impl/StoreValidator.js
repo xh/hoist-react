@@ -87,7 +87,6 @@ export class StoreValidator extends HoistBase {
      * @returns {Promise<boolean>}
      */
     async validateAsync() {
-        logDebug('validateAsync()', this);
         const promises = map(this.validators, v => v.validateAsync());
         await Promise.all(promises);
         return this.isValid;
@@ -95,8 +94,11 @@ export class StoreValidator extends HoistBase {
 
     /** @return {ValidationState} - the current validation state for the store. */
     getValidationState() {
-        const VS = ValidationState,
-            states = map(this.validators, v => v.validationState);
+        const VS = ValidationState;
+
+        if (this._validators === null) return VS.Unknown;
+
+        const states = map(this.validators, v => v.validationState);
         if (states.includes(VS.NotValid)) return VS.NotValid;
         if (states.includes(VS.Unknown)) return VS.Unknown;
         return VS.Valid;
@@ -117,22 +119,14 @@ export class StoreValidator extends HoistBase {
         return this._validators?.get(id);
     }
 
-    async validateRecordsAsync(records) {
-        const promises = records.map(rec => this._validators.get(rec.id).validateAsync());
-        return Promise.all(promises);
-    }
-
     //---------------------------------------
     // Implementation
     //---------------------------------------
     get uncommittedRecords() {
-        console.debug('Building Uncommitted Records List');
         return this.store.allRecords.filter(it => !it.isCommitted);
     }
 
     async syncValidatorsAsync() {
-        console.debug('Syncing Validators');
-
         const curValidators = this._validators;
         runInAction(() => this._validators = null);
 
@@ -146,7 +140,7 @@ export class StoreValidator extends HoistBase {
             let recordValidator = curValidators.get(record.id),
                 needsValidation = false;
 
-            if (recordValidator) {
+            if (!this.store.validationIsComplex && recordValidator) {
                 if (record !== recordValidator.record) {
                     recordValidator.record = record;
                     needsValidation = true;
