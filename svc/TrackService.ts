@@ -10,7 +10,7 @@ import {isString} from 'lodash';
 
 /**
  * Primary service for tracking any activity that an application's admins want to track.
- * Activities are presented to admins in the Admin App's Client Activity > Activity grid.
+ * Activities are available for viewing/querying in the Admin Console's Client Activity tab.
  * Client metadata is set automatically by the server's parsing of request headers.
  */
 export class TrackService extends HoistService {

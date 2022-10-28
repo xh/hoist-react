@@ -5,12 +5,15 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
 import {XH} from '@xh/hoist/core';
 import {stripTags} from '@xh/hoist/utils/js';
 import {forOwn, groupBy, isEmpty, isArray, isFunction, isNil, isString, map, max, min, sortBy, takeRight} from 'lodash';
 import {isValidElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {forEachAsync} from '@xh/hoist/utils/async';
+import {GridModel} from '../GridModel';
+import {StoreRecord} from '@xh/hoist/data';
 
 /**
  * Calculates the column width required to display column.  Used by GridAutoSizeService.
@@ -18,27 +21,24 @@ import {forEachAsync} from '@xh/hoist/utils/async';
  * Uses Canvas, off-screen DOM, and heuristics to estimate the actual size requirement
  * for a set of records when rendered in a column.
  *
- * @private
+ * @internal
  */
 export class ColumnWidthCalculator {
 
     /** Max number value to calculate size per column */
     SIZE_CALC_SAMPLES = 10;
 
-    _canvasContext;
-    _headerEl;
-    _cellEl;
-    _rowEl;
+    private _canvasContext;
+    private _headerEl;
+    private _cellEl;
+    private _rowEl;
 
-    /**
-     *
-     * @param {GridModel} gridModel
-     * @param {StoreRecord[]} records
-     * @param {string} colId
-     * @param {GridAutosizeOptions} options
-     * @returns {*}
-     */
-    async calcWidthAsync(gridModel, records, colId, options) {
+    async calcWidthAsync(
+        gridModel: GridModel,
+        records: StoreRecord[],
+        colId: string,
+        options: GridAutosizeOptions
+    ) {
         const column = gridModel.findColumn(gridModel.columns, colId),
             {autosizeMinWidth, autosizeMaxWidth} = column;
 
@@ -147,7 +147,7 @@ export class ColumnWidthCalculator {
         let ret = 0;
         await forEachAsync(sample, ({value, records}) => {
             // Get unique combinations of row and cell classes applied
-            const classNames = new Set();
+            const classNames = new Set<string>();
             if (rowClassFn || cellClassFn || !isEmpty(rowClassRules) || !isEmpty(cellClassRules)) {
                 records.forEach(record => {
                     const rawValue = getValueFn({record, field, column, gridModel, store}),

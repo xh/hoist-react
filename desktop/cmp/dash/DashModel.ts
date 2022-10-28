@@ -8,7 +8,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {HoistModel, managed, PersistenceProvider} from '@xh/hoist/core';
 
 /**
- * Base Model for {@see DashCanvasModel} and {@see DashContainerModel}.
+ * Base Model for {@link DashCanvasModel} and {@link DashContainerModel}.
  */
 export abstract class DashModel<VSPEC, VSTATE, VMODEL> extends HoistModel {
 

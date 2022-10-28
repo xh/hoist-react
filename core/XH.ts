@@ -16,7 +16,7 @@ import {
     SizingMode,
     HoistServiceClass,
     initServicesAsync,
-    Theme
+    Theme, PlainObject
 } from './';
 import {Store} from '@xh/hoist/data';
 import {instanceManager} from './impl/InstanceManager';
@@ -358,7 +358,7 @@ export class XHClass {
         return this.acm.sizingModeModel.setSizingMode(sizingMode);
     }
 
-    get sizingMode(): string {
+    get sizingMode(): SizingMode {
         return this.acm.sizingModeModel.sizingMode;
     }
 
@@ -406,7 +406,7 @@ export class XHClass {
     }
 
     /** Add a routeName to the current route, preserving params */
-    appendRoute(routeName: string, newParams?: object) {
+    appendRoute(routeName: string, newParams?: PlainObject) {
         return this.routerModel.appendRoute(routeName, newParams);
     }
 
@@ -527,7 +527,7 @@ export class XHClass {
      *      via `Exception.create()`.
      * @param options - provides further control over how the exception is shown and/or logged.
      */
-    handleException(exception: Error|object|string, options?: ExceptionHandlerOptions) {
+    handleException(exception: Error|PlainObject|string, options?: ExceptionHandlerOptions) {
         this.exceptionHandler.handleException(exception, options);
     }
 
@@ -541,7 +541,7 @@ export class XHClass {
      *      via `Exception.create()`.
      * @param options - provides further control over how the exception is shown and/or logged.
      */
-    showException(exception: Error|object|string, options?: ExceptionHandlerOptions) {
+    showException(exception: Error|PlainObject|string, options?: ExceptionHandlerOptions) {
         this.exceptionHandler.showException(exception, options);
     }
 
@@ -549,7 +549,7 @@ export class XHClass {
      * Create a new exception - See {@link Exception} for Hoist extensions to JS Errors.
      * @param cfg - properties to add to the returned Error. If a string, will be the `message`.
      */
-    exception(cfg: object|string): Error {
+    exception(cfg: PlainObject|string): Error {
         return Exception.create(cfg);
     }
 

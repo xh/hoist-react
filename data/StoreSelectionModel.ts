@@ -11,6 +11,13 @@ import {castArray, compact, remove, isEqual, union, map} from 'lodash';
 import {Store} from './Store';
 import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 
+export interface StoreSelectionConfig {
+    store?: Store;
+    mode?: 'single'|'multiple'|'disabled';
+    xhImpl?: boolean;
+}
+
+
 /**
  * Model for managing store selections.
  * Typically accessed from a GridModel to observe/control Grid selection.
@@ -27,11 +34,10 @@ export class StoreSelectionModel extends HoistModel {
         return this.mode !== 'disabled';
     }
 
-    constructor(config: {store: Store, mode?: 'single'|'multiple'|'disabled', xhImpl?: boolean}) {
+    constructor({store, mode = 'single', xhImpl = false}: StoreSelectionConfig) {
         super();
         makeObservable(this);
 
-        const {store, mode = 'single', xhImpl = false} = config;
         this.xhImpl = xhImpl;
         this.store = store;
         this.mode = mode;

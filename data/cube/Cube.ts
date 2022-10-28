@@ -5,13 +5,13 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase, managed} from '@xh/hoist/core';
+import {HoistBase, managed, PlainObject} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
-import {CubeField, CubeFieldConfig} from './CubeField';
+import {CubeField, CubeFieldSpec} from './CubeField';
 import {Query, QueryConfig} from './Query';
 import {View} from './View';
-import {RawData, Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
+import {Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
 import {StoreRecord} from '../StoreRecord';
 import {AggregateRow} from './row/AggregateRow';
 import {BucketRow} from './row/BucketRow';
@@ -21,22 +21,22 @@ import {defaultsDeep, isEmpty} from 'lodash';
 
 
 export interface CubeConfig {
-    fields: CubeField[]|CubeFieldConfig[];
+    fields: CubeField[]|CubeFieldSpec[];
 
     /** Default configs applied to all `CubeField`s constructed internally by this Cube. */
-    fieldDefaults?: Partial<CubeFieldConfig>;
+    fieldDefaults?: Partial<CubeFieldSpec>;
 
     /** Array of initial raw data. */
-    data?: RawData[];
+    data?: PlainObject[];
 
     /** See {@link StoreConfig.idSpec} */
     idSpec?: StoreRecordIdSpec;
 
     /** See {@link StoreConfig.processRawData} */
-    processRawData?: (data: RawData) => RawData;
+    processRawData?: (data: PlainObject) => PlainObject;
 
     /** Convenience bucket for app-specific metadata associated with the loaded dataset. */
-    info?: Record<string, any>;
+    info?: PlainObject;
 
     /**
      * Optional function to be called for each aggregate node to determine if it should be "locked",
@@ -197,7 +197,7 @@ export class Cube extends HoistBase {
      * @param rawData - flat array of lowest/leaf level data rows.
      * @param info - optional metadata to associate with this cube/dataset.
      */
-    async loadDataAsync(rawData: RawData[], info: Record<string, any> = {}): Promise<void> {
+    async loadDataAsync(rawData: PlainObject[], info: Record<string, any> = {}): Promise<void> {
         this.store.loadData(rawData);
         this.setInfo(info);
         await forEachAsync(
@@ -217,7 +217,7 @@ export class Cube extends HoistBase {
      *      into adds and updates, with updates determined by matching existing records by ID.
      * @param infoUpdates - new key-value pairs to be applied to existing info on this cube.
      */
-    async updateDataAsync(rawData: RawData[]|StoreTransaction, infoUpdates: Record<string, any>): Promise<void> {
+    async updateDataAsync(rawData: PlainObject[]|StoreTransaction, infoUpdates: PlainObject): Promise<void> {
         // 1) Process data
         const changeLog = this.store.updateData(rawData);
 

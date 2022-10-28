@@ -6,17 +6,37 @@
  */
 import {GridModel} from '../GridModel';
 import {box} from '@xh/hoist/cmp/layout';
-import {hoistCmp, useContextModel} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, useContextModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
-import PT from 'prop-types';
+
+export interface GridCountLabelProps extends BoxProps {
+    /** GridModel to which this component should bind. */
+    gridModel?: GridModel;
+
+    /**
+     * True to count nested child records.
+     * If false (default) only root records will be included in count.
+     */
+    includeChildren?: boolean,
+
+    /**
+     * Control display of selection count after overall records count: auto (default) to display
+     * count when > 1, or always/never to show/hide regardless of current count.
+     */
+    showSelectionCount?: 'always'|'never'|'auto',
+
+    /** Units label appropriate for records being counted (e.g. "user" -> "50 users"). */
+    unit?: string
+}
+
 
 /**
  * Displays the number of records loaded into a grid's store + (configurable) selection count.
  *
- * Alternative to more general {@see StoreCountLabel}.
+ * Alternative to more general {@link StoreCountLabel}.
  */
-export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory({
+export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLabelProps>({
     displayName: 'GridCountLabel',
     className: 'xh-grid-count-label',
 
@@ -58,23 +78,3 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory({
         });
     }
 });
-GridCountLabel.propTypes = {
-
-    /** GridModel to which this component should bind. */
-    gridModel: PT.instanceOf(GridModel),
-
-    /**
-     * True to count nested child records.
-     * If false (default) only root records will be included in count.
-     */
-    includeChildren: PT.bool,
-
-    /**
-     * Control display of selection count after overall records count: auto (default) to display
-     * count when > 1, or always/never to show/hide regardless of current count.
-     */
-    showSelectionCount: PT.oneOf(['always', 'never', 'auto']),
-
-    /** Units label appropriate for records being counted (e.g. "user" -> "50 users"). */
-    unit: PT.string
-};

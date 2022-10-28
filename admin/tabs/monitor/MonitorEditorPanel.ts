@@ -5,6 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
+import {FieldSpec} from '@xh/hoist/data';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
@@ -27,17 +28,17 @@ const modelSpec = {
         url: 'rest/monitorAdmin',
         fieldDefaults: {disableXssProtection: true},
         fields: [
-            {...MCol.code.field, required},
-            {...MCol.metricUnit.field},
-            {...MCol.warnThreshold.field},
-            {...MCol.failThreshold.field},
-            {...MCol.sortOrder.field},
+            {...MCol.code.field as FieldSpec, required},
+            MCol.metricUnit.field,
+            MCol.warnThreshold.field,
+            MCol.failThreshold.field,
+            MCol.sortOrder.field,
 
-            {...Col.name.field, required},
-            {...Col.notes.field},
-            {...Col.active.field, defaultValue: true, required},
-            {...Col.lastUpdated.field, editable: false},
-            {...Col.lastUpdatedBy.field, editable: false},
+            {...Col.name.field as FieldSpec, required},
+            Col.notes.field,
+            {...Col.active.field as FieldSpec, defaultValue: true, required},
+            {...Col.lastUpdated.field as FieldSpec, editable: false},
+            {...Col.lastUpdatedBy.field as FieldSpec, editable: false},
 
             {name: 'metricType', type: 'string', lookupName: 'metricTypes', required},
             {name: 'params', type: 'json'}

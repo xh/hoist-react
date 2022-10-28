@@ -6,7 +6,7 @@
  */
 import {XH, hoistCmp, HoistModel, creates, managed} from '@xh/hoist/core';
 import {div, span} from '@xh/hoist/cmp/layout';
-import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import {observable, action, computed, makeObservable} from '@xh/hoist/mobx';
 import {Column} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {columnHeaderFilter, ColumnHeaderFilterModel} from '@xh/hoist/dynamics/desktop';
@@ -16,7 +16,7 @@ import {olderThan} from '@xh/hoist/utils/datetime';
 import {filter, size, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString} from 'lodash';
 import classNames from 'classnames';
 
-import {GridSorter} from './GridSorter';
+import {GridSorter} from '../GridSorter';
 
 /**
  * A custom ag-Grid header component.
@@ -24,7 +24,7 @@ import {GridSorter} from './GridSorter';
  * Relays sorting events directly to the controlling GridModel. Supports absolute value sorting
  * by checking `Column.absSort` to determine next sortBy and by rendering custom sort icons.
  *
- * @private
+ * @internal
  */
 export const columnHeader = hoistCmp.factory({
     displayName: 'ColumnHeader',
@@ -143,13 +143,15 @@ class ColumnHeaderModel extends HoistModel {
     @managed columnHeaderFilterModel;
 
     // AG Filtering
-    @bindable isAgFiltered = false;
+    @observable isAgFiltered = false;
+    @action setIsAgFiltered(v: boolean) {this.isAgFiltered = v}
+
     agFilterButtonRef = createObservableRef();
 
-    _doubleClick = false;
-    _lastTouch = null;
-    _lastTouchStart = null;
-    _lastMouseDown = null;
+    private _doubleClick = false;
+    private _lastTouch = null;
+    private _lastTouchStart = null;
+    private _lastMouseDown = null;
 
     constructor() {
         super();
@@ -166,7 +168,7 @@ class ColumnHeaderModel extends HoistModel {
             this.columnHeaderFilterModel = new ColumnHeaderFilterModel({filterModel, column: xhColumn});
             this.enableFilter = true;
         } else {
-            this.isAgFiltered = agColumn.isFilterActive();
+            this.setIsAgFiltered(agColumn.isFilterActive());
             agColumn.addEventListener('filterChanged', this.onFilterChanged);
         }
     }
@@ -252,7 +254,7 @@ class ColumnHeaderModel extends HoistModel {
             this.autosize();
         } else {
             this._doubleClick = false;
-            this.updateSort();
+            this.updateSort(false);
         }
 
         this._lastTouch = Date.now();

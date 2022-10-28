@@ -23,11 +23,6 @@ import {wait} from '@xh/hoist/promise';
  * NOTE this is NOT for use cases where the `fn` arg is itself async - i.e. it does not await the
  * call to `fn` and is instead for the opposite use case, where fn is *synchronous*. If looking to
  * run an async operation over a collection, consider a simple and blocking for...of loop.
- *
- * @param collection - items to iterate over
- * @param fn - called with each item.
- * @param [opts] - additional options.
- * @returns {Promise<void>}
  */
 export async function forEachAsync<T>(
     collection: Iterable<T>,
@@ -50,15 +45,13 @@ export async function forEachAsync<T>(
  * As with `forEachAsync()` above, but in the form of a `while` loop.
  * @param conditionFn - called before each iteration; return true to continue loop.
  * @param fn - called without arguments for each iteration.
- * @param [opts] - additional options.
- * @returns {Promise<void>}
+ * @param opts - additional options.
  */
 export async function whileAsync(
     conditionFn: () => boolean,
     fn: () => void,
     opts?: AsyncLoopOptions
 ) {
-
     const {waitAfter = 50, waitFor = 0} = opts ?? {};
 
     // Fallback to basic loop when doc hidden: no user benefit, and throttling causes outsize waits

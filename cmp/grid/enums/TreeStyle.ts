@@ -24,8 +24,10 @@ export const TreeStyle = Object.freeze({
     COLORS_AND_BORDERS: 'colorsAndBorders',
 
     NONE: 'none'
-
 });
+
+// eslint-disable-next-line
+export type TreeStyle = typeof TreeStyle[keyof typeof TreeStyle];
 
 
 export function getTreeStyleClasses(treeStyle) {

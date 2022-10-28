@@ -51,7 +51,7 @@ export class InstancesModel extends HoistModel {
     get ownPropsOnly() {return this.propQuickFilters?.includes('ownPropsOnly')}
 
     get selectedInstances(): HoistBase[] {
-        return this.instancesGridModel.selectedIds.map(it => this.getInstance(it));
+        return this.instancesGridModel.selectedIds.map((it:string) => this.getInstance(it));
     }
 
     constructor() {

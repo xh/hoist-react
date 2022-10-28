@@ -56,7 +56,7 @@ export class ActivityDetailModel extends HoistModel {
 
         this.formModel = new FormModel({
             readonly: true,
-            fields: this.gridModel.columns.map(it => ({name: it.field, displayName: it.headerName}))
+            fields: this.gridModel.getLeafColumns().map(it => ({name: it.field, displayName: it.headerName as string}))
         });
 
         this.addReaction({

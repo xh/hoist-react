@@ -7,30 +7,28 @@
 
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
-import {FieldFilter, flattenFilter, withFilterByField, withFilterByTypes} from '@xh/hoist/data';
+import {CompoundFilter, FieldFilter, Filter,
+    FilterLike, flattenFilter, Store, View, withFilterByField, withFilterByTypes} from '@xh/hoist/data';
 import {wait} from '@xh/hoist/promise';
 import {find, isString, isNil, castArray, uniq, every, compact} from 'lodash';
 
 import {GridFilterFieldSpec} from './GridFilterFieldSpec';
+import {GridModel} from '../GridModel';
+
 
 /**
  * Model for managing a Grid's column filters.
- * @package
+ * @internal
  */
 export class GridFilterModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {GridModel} */
-    gridModel;
-    /** @member {(Store|View)} */
-    bind;
-    /** @member {boolean} */
-    @bindable commitOnChange;
-    /** @member {GridFilterFieldSpec[]} */
-    @managed fieldSpecs = [];
+    gridModel: GridModel;
+    bind: Store|View;
+    @bindable commitOnChange: boolean;
+    @managed fieldSpecs: GridFilterFieldSpec[] = [];
 
-    /** @returns {Filter} */
-    get filter() {
+    get filter(): Filter {
         return this.bind.filter;
     }
 
@@ -40,27 +38,13 @@ export class GridFilterModel extends HoistModel {
     // Display for nil or empty values
     BLANK_STR = '[blank]';
 
-    /**
-     * @param {Object} c - GridFilterModel configuration.
-     * @param {GridModel} c.gridModel - GridModel instance which owns this model.
-     * @param {(Store|View)} c.bind - Store / Cube View to be filtered as column filters are
-     *      applied. Also used to provide suggested values (if configured).
-     * @param {boolean} [c.commitOnChange] - true (default) to update filters immediately after
-     *      each change made in the column-based filter UI.
-     * @param {(string[]|Object[])} [c.fieldSpecs] - specifies the fields this model supports
-     *      for filtering. Should be configs for {@see GridFilterFieldSpec}, string names to match
-     *      with Fields in bound Store/View, or omitted entirely to indicate that all fields should
-     *      be filter-enabled.
-     * @param {Object} [c.fieldSpecDefaults] - default properties to be assigned to all
-     *      `GridFilterFieldSpecs` created by this model.
-     */
     constructor({
         gridModel,
         bind,
         commitOnChange = true,
         fieldSpecs,
         fieldSpecDefaults
-    }) {
+    }: GridFilterModelConfig) {
         super();
         makeObservable(this);
         this.gridModel = gridModel;
@@ -71,15 +55,15 @@ export class GridFilterModel extends HoistModel {
 
     /**
      * Set / replace the filters for a given field.
-     * @param {string} field - field to identify this filter
-     * @param {(Filter|Object|[])} filter - Filter(s), or config to create. If null, the filter will be removed
+     * @param field - field to identify this filter
+     * @param filter - Filter to apply. If null, the filter will be removed
      */
     @action
-    setColumnFilters(field, filter) {
+    setColumnFilters(field: string, filter: FilterLike) {
         // If current bound filter is a CompoundFilter for a single column, wrap it
         // in an 'AND' CompoundFilter so new columns get 'ANDed' alongside it.
-        let currFilter = this.filter;
-        if (currFilter?.isCompoundFilter && currFilter.field) {
+        let currFilter = this.filter as any;
+        if (currFilter instanceof CompoundFilter && currFilter.field) {
             currFilter = {filters: [currFilter], op: 'AND'};
         }
 
@@ -90,19 +74,20 @@ export class GridFilterModel extends HoistModel {
     /**
      * Appends the value of a new filter into the existing filter on the same field and operator.
      * If such no filter exists, one will be created. Only applicable for filters with multi-value operators.
-     * @param {string} field - field to identify this filter
-     * @param {(Filter|Object)} filter - Filter, or config to create. If null, the filter will be removed
+     * @param field - field to identify this filter
+     * @param filter - Filter to apply. If null, the filter will be removed
      */
     @action
-    mergeColumnFilters(field, filter) {
-        const {op} = filter;
+    mergeColumnFilters(field: string, filter: FilterLike) {
+        let newFilter: any = filter;
+        const {op} = newFilter;
         if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
             const currFilters = flattenFilter(this.filter),
-                match = find(currFilters, {field, op});
+                match = find(currFilters, {field, op}) as any;
 
             if (match) {
-                filter.value = uniq([
-                    ...castArray(filter.value),
+                newFilter.value = uniq([
+                    ...castArray(newFilter.value),
                     ...castArray(match.value)
                 ]);
             }
@@ -116,27 +101,17 @@ export class GridFilterModel extends HoistModel {
         this.setFilter(ret);
     }
 
-    /**
-     * @param {string} field
-     * @returns {FieldFilter[]} - all FieldFilters for specified field
-     */
-    getColumnFilters(field) {
-        return flattenFilter(this.filter).filter(it => it.field === field);
+    getColumnFilters(field: string): FieldFilter[] {
+        return flattenFilter(this.filter)
+            .filter(it => it instanceof FieldFilter && it.field === field) as FieldFilter[];
     }
 
-    /**
-     * @param {string} field
-     * @returns {CompoundFilter} - the CompoundFilter that wraps the filters for specified field
-     */
-    getColumnCompoundFilter(field) {
+    /** The CompoundFilter that wraps the filters for specified field. */
+    getColumnCompoundFilter(field: string): CompoundFilter {
         return this.getOuterCompoundFilter(this.filter, field);
     }
 
-    /**
-     * @param {string} field
-     * @returns {GridFilterFieldSpec}
-     */
-    getFieldSpec(field) {
+    getFieldSpec(field: string): GridFilterFieldSpec {
         return this.fieldSpecs.find(it => it.field === field);
     }
 
@@ -148,13 +123,11 @@ export class GridFilterModel extends HoistModel {
         return value === this.BLANK_STR ? null : value;
     }
 
-    /** @package */
     @action
     openDialog() {
         this.dialogOpen = true;
     }
 
-    /** @package */
     @action
     closeDialog() {
         this.dialogOpen = false;
@@ -163,13 +136,13 @@ export class GridFilterModel extends HoistModel {
     //--------------------------------
     // Implementation
     //--------------------------------
-    setFilter(filter) {
+    private setFilter(filter) {
         wait()
             .then(() => this.bind.setFilter(filter))
             .linkTo(this.gridModel.filterTask);
     }
 
-    parseFieldSpecs(specs, fieldSpecDefaults) {
+    private parseFieldSpecs(specs, fieldSpecDefaults) {
         const {bind} = this;
 
         // If no specs provided, include all source fields.
@@ -186,7 +159,7 @@ export class GridFilterModel extends HoistModel {
         });
     }
 
-    getOuterCompoundFilter(filter, field) {
+    private getOuterCompoundFilter(filter, field) {
         if (!filter?.isCompoundFilter) return null;
 
         // This is the outer compound filter if all its children
@@ -199,4 +172,32 @@ export class GridFilterModel extends HoistModel {
         const results = compact(filter.filters.map(it => this.getOuterCompoundFilter(it, field)));
         return results.length === 1 ? results[0] : null;
     }
+}
+
+
+/**
+ * @internal
+ */
+interface GridFilterModelConfig {
+
+    gridModel: GridModel;
+
+    /**
+     * Store / Cube View to be filtered as column filters are applied. Also used to provide
+     * suggested values (if configured).
+     */
+    bind?: Store | View;
+
+    /** True (default) to update filters immediately after each change made in the column-based filter UI.*/
+    commitOnChange?: boolean;
+
+    /**
+     * Specifies the fields this model supports for filtering. Should be configs for {
+     * @see GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or omitted
+     * entirely to indicate that all fields should be filter-enabled.
+     */
+    fieldSpecs?: (string | GridFilterFieldSpec)[]
+
+    /** Default properties to be assigned to all `GridFilterFieldSpecs` created by this model. */
+    fieldSpecDefaults?: Partial<GridFilterFieldSpec>;
 }

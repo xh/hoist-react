@@ -6,47 +6,46 @@
  */
 import {isNumber, isNil, isString} from 'lodash';
 
+export type GridSorterLike = GridSorterSpec | string | GridSorter;
+
+export interface GridSorterSpec {
+    colId: string;
+    sort?: 'asc'|'desc'|'ASC'|'DESC';
+    abs?: boolean;
+}
+
 export class GridSorter {
 
-    colId;
-    sort;
-    abs;
+    readonly colId: string;
+    readonly sort: 'asc'|'desc';
+    readonly abs: boolean;
 
     /**
      * Create a new GridSorter. Accepts a GridSorter configuration or a pipe delimited string
      * generated using GridSorter.toString().
-     *
-     * @param {Object|String} [cfg] - GridSorter configuration or string representation.
      */
-    static parse(cfg) {
+    static parse(cfg: GridSorterLike) {
+        if (cfg instanceof GridSorter) return cfg;
         if (isString(cfg)) {
-            const [colId, sort, abs] = cfg.split('|').map(s => s.trim());
+            const [colId, sort, abs] = cfg.split('|').map(s => s.trim()) as any;
             cfg = {colId, sort, abs};
         }
         return new GridSorter(cfg);
     }
 
-    /**
-     * @param {Object} c - GridSorter configuration.
-     * @param {string} c.colId - Column ID on which to sort.
-     * @param {string} c.sort - direction of sort. Either 'asc' or 'desc'.
-     * @param {boolean} [c.abs] - true to sort by absolute value.
-     */
-    constructor({
-        colId,
-        sort = 'asc',
-        abs = false
-    }) {
+    constructor(spec: GridSorterSpec) {
+        const {colId, sort = 'asc', abs = false} = spec;
         this.colId = colId;
-        this.sort = isString(sort) ? sort.toLowerCase() : null;
         this.abs = !!abs;
+        let sortString: any = isString(sort) ? sort.toLowerCase() : null;
+        if (sortString !== 'asc' && sortString != 'desc') {
+            sortString = 'asc';
+        }
+        this.sort = sortString;
     }
 
-    /**
-     * Generate a delimited string representation suitable for consumption by parse().
-     * @returns {string}
-     */
-    toString() {
+    /** Generate a delimited string representation suitable for consumption by parse().*/
+    toString(): string {
         return [
             this.colId,
             this.sort,
@@ -54,9 +53,7 @@ export class GridSorter {
         ].filter(Boolean).join('|');
     }
 
-    /**
-     * Comparator to use with instances of GridSorter.
-     */
+    /** Comparator to use with instances of GridSorter.*/
     comparator(v1, v2) {
         if (this.abs) {
             v1 = isNumber(v1) ? Math.abs(v1) : v1;
@@ -65,9 +62,7 @@ export class GridSorter {
         return GridSorter.defaultComparator(v1, v2);
     }
 
-    /**
-     * Static comparator to use when a GridSorter instance is not available.
-     */
+    /** Static comparator to use when a GridSorter instance is not available.*/
     static defaultComparator(v1, v2) {
         if (isNil(v1) && isNil(v2)) return 0;
         if (isNil(v1)) return -1;

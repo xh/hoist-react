@@ -7,14 +7,14 @@
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, creates} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {observable, action, makeObservable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isFunction} from 'lodash';
 
 /**
  * A custom ag-Grid group header component.
  *
- * @private
+ * @internal
  */
 export const columnGroupHeader = hoistCmp.factory({
     displayName: 'ColumnGroupHeader',
@@ -57,13 +57,13 @@ export const columnGroupHeader = hoistCmp.factory({
 class ColumnGroupHeaderModel extends HoistModel {
     xhImpl = true;
 
-    @bindable isExpanded = true;
+    @observable isExpanded = true;
+    @action setIsExpanded(v: boolean) {this.isExpanded = v}
 
     get isExpandable() {
         return this.agColumnGroup.isExpandable();
     }
 
-    /** @member {ColumnGroup} */
     get agColumnGroup() {
         return this.componentProps.columnGroup.providedColumnGroup;
     }

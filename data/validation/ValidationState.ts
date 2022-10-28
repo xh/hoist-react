@@ -5,11 +5,11 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-export const ValidationState = {
+export const ValidationState = Object.freeze({
     Unknown: 'Unknown',
     NotValid: 'NotValid',
     Valid: 'Valid'
-};
+});
 // eslint-disable-next-line
 export type ValidationState = typeof ValidationState[keyof typeof ValidationState];
 

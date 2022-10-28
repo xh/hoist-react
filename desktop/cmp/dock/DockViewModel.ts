@@ -16,7 +16,7 @@ export interface DockViewConfig {
     /** Unique identifier for this DockViewModel. */
     id: string;
     /** Parent DockContainerModel. Provided by the container when constructing the model - no need to specify manually. */
-    containerModel: DockContainerModel;
+    containerModel?: DockContainerModel;
     /** Title text added to the header. */
     title?: string;
     /** An icon placed at the left-side of the header. */

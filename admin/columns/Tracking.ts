@@ -4,81 +4,79 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {FieldType} from '@xh/hoist/data';
 import {RangeAggregator} from '@xh/hoist/admin/tabs/activity/aggregators/RangeAggregator';
 import {Icon} from '@xh/hoist/icon';
 import {fmtDate, fmtSpan, numberRenderer} from '@xh/hoist/format';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {isFinite} from 'lodash';
-
-const {BOOL, INT, JSON, LOCAL_DATE, STRING} = FieldType;
+import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 
 export const appEnvironment = {
     field: {
         name: 'appEnvironment',
-        type: STRING,
+        type: 'string',
         displayName: 'Environment'
     },
     width: 130
-};
+} as ColumnSpec;
 
 export const appVersion = {
-    field: {name: 'appVersion', type: STRING},
+    field: {name: 'appVersion', type: 'string'},
     width: 130
-};
+} as ColumnSpec;
 
 export const browser = {
     field: {
         name: 'browser',
-        type: STRING,
+        type: 'string',
         isDimension: true,
         aggregator: 'UNIQUE'
     },
     width: 100
-};
+} as ColumnSpec;
 
 export const category = {
     field: {
         name: 'category',
-        type: STRING,
+        type: 'string',
         isDimension: true,
         aggregator: 'UNIQUE'
     },
     width: 100
-};
+} as ColumnSpec;
 
 export const data = {
-    field: {name: 'data', type: JSON},
+    field: {name: 'data', type: 'json'},
     flex: true,
     minWidth: 120,
     autosizeMaxWidth: 400
-};
+} as ColumnSpec;
 
 export const day = {
     field: {
         name: 'day',
-        type: LOCAL_DATE,
+        type: 'localDate',
         isDimension: true,
         aggregator: new RangeAggregator()
     },
     ...Col.localDate,
     displayName: 'App Day'
-};
+} as ColumnSpec;
 
 export const device = {
     field: {
         name: 'device',
-        type: STRING,
+        type: 'string',
         isDimension: true,
         aggregator: 'UNIQUE'
     },
     width: 100
-};
+} as ColumnSpec;
 
 export const elapsed = {
     field: {
         name: 'elapsed',
-        type: INT,
+        type: 'int',
         aggregator: 'AVG'
     },
     width: 130,
@@ -88,44 +86,44 @@ export const elapsed = {
         nullDisplay: '-',
         formatConfig: {thousandSeparated: false, mantissa: 0}
     })
-};
+} as ColumnSpec;
 
 export const entryCount = {
     field: {
         name: 'entryCount',
-        type: INT,
+        type: 'int',
         displayName: 'Entries',
         aggregator: 'LEAF_COUNT'
     },
     width: 80,
     align: 'right'
-};
+} as ColumnSpec;
 
 export const entryId = {
     field: {
         name: 'id',
-        type: INT,
+        type: 'int',
         displayName: 'Entry ID'
     },
     width: 100,
     align: 'right'
-};
+} as ColumnSpec;
 
 export const error = {
     field: {
         name: 'error',
-        type: STRING,
+        type: 'string',
         displayName: 'Error Details'
     },
     flex: true,
     minWidth: 150,
     renderer: (e) => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
-};
+} as ColumnSpec;
 
 export const msg = {
     field: {
         name: 'msg',
-        type: STRING,
+        type: 'string',
         displayName: 'Message',
         isDimension: true,
         aggregator: 'UNIQUE'
@@ -133,30 +131,30 @@ export const msg = {
     minWidth: 120,
     autosizeMaxWidth: 400,
     flex: true
-};
+} as ColumnSpec;
 
 export const url = {
     field: {
         name: 'url',
-        type: STRING,
+        type: 'string',
         displayName: 'URL'
     },
     width: 250,
     autosizeMaxWidth: 400
-};
+} as ColumnSpec;
 
 export const userAgent = {
     field: {
         name: 'userAgent',
-        type: STRING,
+        type: 'string',
         isDimension: true,
         aggregator: 'UNIQUE'
     },
     width: 130
-};
+} as ColumnSpec;
 
 export const userAlertedFlag = {
-    field: {name: 'userAlerted', type: BOOL},
+    field: {name: 'userAlerted', type: 'bool'},
     headerName: Icon.window(),
     headerTooltip: 'Indicates if the user was shown an interactive alert when this error was triggered.',
     resizable: false,
@@ -164,10 +162,10 @@ export const userAlertedFlag = {
     width: 50,
     exportName: 'User Alerted?',
     renderer: v => v ? Icon.window() : null
-};
+} as ColumnSpec;
 
 export const userMessageFlag = {
-    field: {name: 'userMessageFlag', type: BOOL},
+    field: {name: 'userMessageFlag', type: 'bool'},
     headerName: Icon.comment(),
     headerTooltip: 'Indicates if the user provided a message along with the automated error report.',
     excludeFromExport: true,
@@ -178,12 +176,12 @@ export const userMessageFlag = {
         const {msg} = record.data;
         return msg ? Icon.comment() : null;
     }
-};
+} as ColumnSpec;
 
 export const dateRange = {
     field: {
         name: 'day',
-        type: JSON,
+        type: 'json',
         displayName: 'App Day'
     },
     ...Col.localDate,
@@ -191,7 +189,7 @@ export const dateRange = {
     renderer: dateRangeRenderer,
     exportValue: dateRangeRenderer,
     comparator: dateRangeComparator
-};
+} as ColumnSpec;
 
 //-----------------------
 // Implementation

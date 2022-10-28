@@ -75,7 +75,8 @@ export function deepFreeze(obj: object) {
  * Output a deep copy of an object or array up to a given depth, beyond which nested contents will
  * be replaced by a placeholder string.
  *
- * @param [depth] - maximum depth within the object tree that will be returned.
+ * @param obj - source object to trim
+ * @param depth - maximum depth within the object tree that will be returned.
  */
 export function trimToDepth(obj: any, depth: number = 1): any {
     // Return primitives and nils directly - handles recursive calls below.
@@ -155,8 +156,6 @@ export interface APIWarnOptions {
 
 /**
  * Document and prevent usage of a removed parameter.
- *
- * @param name - the name of the removed parameter
  */
 export function apiRemoved(name: string, opts: APIWarnOptions = {}) {
     if ('test' in opts && isUndefined(opts.test)) return;
@@ -185,10 +184,9 @@ export function apiDeprecated(name: string, opts: APIWarnOptions = {}) {
 
 /**
  * Throw an exception if the provided object or collection is empty, as per lodash isEmpty().
- * @link https://lodash.com/docs/latest#isEmpty
  *
  * @param obj - object or array to test.
- * @param [exceptionMessage] - error to throw if empty.
+ * @param exceptionMessage - error to throw if empty.
  */
 export function ensureNotEmpty(obj: any, exceptionMessage?: string) {
     exceptionMessage = exceptionMessage ?? 'The provided object or collection cannot be empty.';
@@ -199,9 +197,9 @@ export function ensureNotEmpty(obj: any, exceptionMessage?: string) {
  * Throw an exception if an array contains any duplicate, non-unique items.
  *
  * @param arr - the array to test.
- * @param [exceptionMessage] - error to throw if non-unique values found.
+ * @param exceptionMessage - error to throw if non-unique values found.
  */
-export function ensureUnique(arr: [], exceptionMessage?: string) {
+export function ensureUnique(arr: any[], exceptionMessage?: string) {
     exceptionMessage = exceptionMessage ?? 'All items in the provided array must be unique.';
     throwIf(arr.length != uniq(arr).length, exceptionMessage);
 }
@@ -211,7 +209,7 @@ export function ensureUnique(arr: [], exceptionMessage?: string) {
  *
  * @param arr - the array to test.
  * @param uniqueKey - the property that must hold a unique value for each item.
- * @param [exceptionMessage] - error to throw if non-unique values found.
+ * @param exceptionMessage - error to throw if non-unique values found.
  */
 export function ensureUniqueBy(arr: any[], uniqueKey: string, exceptionMessage?: string) {
     exceptionMessage = exceptionMessage ?? `Multiple items in the provided array have the same ${uniqueKey} - must be unique.`;
@@ -228,9 +226,9 @@ export function singularize(s: string) {
 /**
  * Returns the plural version of the singular word passed to it.
  *
- * @param string - the string to pluralize.
- * @param [count] - if provided, will pluralize to match this number
- * @param [includeCount] - include count in the output
+ * @param s - the string to pluralize.
+ * @param count - if provided, will pluralize to match this number
+ * @param includeCount - include count in the output
  */
 export function pluralize(s: string, count?: number, includeCount?: boolean) {
     return _inflection.pluralize(s, count, includeCount);

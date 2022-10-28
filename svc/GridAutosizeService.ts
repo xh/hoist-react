@@ -21,7 +21,7 @@ import {StoreRecord} from '@xh/hoist/data';
  * In order to do this efficiently, this service uses heuristics and generally assumes each
  * column consists of similarly formatted strings.
  *
- * {@see GridModel.autosizeOptions} for configurable options.
+ * @see GridAutosizeOptions
  */
 export class GridAutosizeService extends HoistService {
     xhImpl = true;

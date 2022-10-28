@@ -7,8 +7,19 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {getTreeStyleClasses, GridAutosizeMode} from '@xh/hoist/cmp/grid';
+import {Column} from './columns/Column';
 import {div, fragment, frame} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, lookup, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {
+    BoxProps,
+    hoistCmp,
+    HoistModel,
+    lookup,
+    PlainObject,
+    SizingMode,
+    useLocalModel,
+    uses,
+    XH
+} from '@xh/hoist/core';
 import {
     colChooser as desktopColChooser,
     gridFilterDialog,
@@ -36,13 +47,33 @@ import {
     maxBy,
     merge
 } from 'lodash';
-import PT from 'prop-types';
 import {createRef, isValidElement} from 'react';
 import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
+import { RecordSet } from '@xh/hoist/data/impl/RecordSet';
+
+export interface GridProps extends BoxProps<GridModel> {
+    /**
+     * Options for ag-Grid's API.
+     *
+     * This constitutes an 'escape hatch' for applications that need to get to the underlying
+     * ag-Grid API. It should be used with care. Settings made here might be overwritten and/or
+     * interfere with the implementation of this component and its use of the ag-Grid API.
+     *
+     * Note that changes to these options after the component's initial render will be ignored.
+     */
+    agOptions?: PlainObject,
+
+    /**
+     * Callback when the grid has initialized. The component will call this with the ag-Grid
+     * event after running its internal handler to associate the ag-Grid APIs with its model.
+     */
+    onGridReady?: (e: PlainObject) => void;
+}
+
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -53,24 +84,18 @@ import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
  * selection API, and more.
  *
  * For advanced ag-Grid use-cases that are not well supported by this component, note that the
- * {@see AgGrid} Hoist component provides much thinner and less opinionated wrapper around ag-Grid
+ * {@link AgGrid} Hoist component provides much thinner and less opinionated wrapper around ag-Grid
  * while still retaining consistent styling and some additional conveniences. However a number of
  * core Hoist integrations and features will *not* be available with that thinner wrapper.
  *
  * @see {@link https://www.ag-grid.com/javascript-grid-reference-overview/|ag-Grid Docs}
  * @see GridModel
  */
-export const [Grid, grid] = hoistCmp.withFactory({
+export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     displayName: 'Grid',
     model: uses(GridModel),
     className: 'xh-grid',
 
-    /**
-     * @param {GridModel} model
-     * @param {string} className
-     * @param props
-     * @param ref
-     */
     render({model, className, ...props}, ref) {
         const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} = model,
             impl = useLocalModel(GridLocalModel),
@@ -97,30 +122,7 @@ export const [Grid, grid] = hoistCmp.withFactory({
     }
 });
 
-Grid.MULTIFIELD_ROW_HEIGHT = 38;
-
-Grid.propTypes = {
-    /**
-     * Options for ag-Grid's API.
-     *
-     * This constitutes an 'escape hatch' for applications that need to get to the underlying
-     * ag-Grid API. It should be used with care. Settings made here might be overwritten and/or
-     * interfere with the implementation of this component and its use of the ag-Grid API.
-     *
-     * Note that changes to these options after the component's initial render will be ignored.
-     */
-    agOptions: PT.object,
-
-    /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(GridModel), PT.object]),
-
-    /**
-     * Callback when the grid has initialized. The component will call this with the ag-Grid
-     * event after running its internal handler to associate the ag-Grid APIs with its model.
-     */
-    onGridReady: PT.func
-};
-
+(Grid as any).MULTIFIELD_ROW_HEIGHT = 38;
 
 //------------------------
 // Implementation
@@ -128,14 +130,13 @@ Grid.propTypes = {
 class GridLocalModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {GridModel} */
-    @lookup(GridModel) model;
-    /** @member {Object} */
-    agOptions;
-    /** @member {RefObject} */
-    viewRef = createRef();
-    /** @member {number} */
-    fixedRowHeight;
+    @lookup(GridModel)
+    private model: GridModel;
+    agOptions: PlainObject;
+    viewRef = createRef<HTMLElement>();
+    private fixedRowHeight: number;
+    private rowKeyNavSupport: RowKeyNavSupport;
+    private prevRs: RecordSet;
 
     getRowHeight(node) {
         const {model, agOptions} = this,
@@ -146,16 +147,16 @@ class GridLocalModel extends HoistModel {
             return (
                 groupRowHeight ??
                 groupDisplayType === 'groupRows' ?
-                    AgGrid.getGroupRowHeightForSizingMode(sizingMode) :
-                    AgGrid.getRowHeightForSizingMode(sizingMode)
+                    (AgGrid as any).getGroupRowHeightForSizingMode(sizingMode) :
+                    (AgGrid as any).getRowHeightForSizingMode(sizingMode)
             );
         }
         return this.fixedRowHeight;
     }
 
-    /** @returns {boolean} - true if any root-level records have children */
+    /** @returns true if any root-level records have children */
     @computed
-    get isHierarchical() {
+    get isHierarchical(): boolean {
         const {model} = this;
         return model.treeMode && model.store.allRootCount !== model.store.allCount;
     }
@@ -167,7 +168,7 @@ class GridLocalModel extends HoistModel {
         return emptyText;
     }
 
-    onLinked() {
+    override onLinked() {
         this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(this.model) : null;
         this.addReaction(
             this.selectionReaction(),
@@ -253,7 +254,7 @@ class GridLocalModel extends HoistModel {
             stopEditingWhenCellsLoseFocus: true,
             suppressLastEmptyLineOnPaste: true,
             suppressClipboardApi: true
-        };
+        } as any;
 
         // Platform specific defaults
         if (XH.isMobileApp) {
@@ -351,7 +352,7 @@ class GridLocalModel extends HoistModel {
 
             let childItems;
             if (!isEmpty(displaySpec.items)) {
-                const menu = new StoreContextMenu({items: displaySpec.items, gridModel: this.gridModel});
+                const menu = new StoreContextMenu({items: displaySpec.items, gridModel: this.model});
                 childItems = this.buildMenuItems(menu.items, record, selectedRecords, column, actionParams);
             }
 
@@ -432,9 +433,9 @@ class GridLocalModel extends HoistModel {
         const {model} = this;
         return {
             track: () => [model.getVisibleLeafColumns(), model.sizingMode],
-            run: ([visibleCols, sizingMode]) => {
+            run: ([visibleCols, sizingMode]: [Column[], SizingMode]) => {
                 this.fixedRowHeight = max([
-                    AgGrid.getRowHeightForSizingMode(sizingMode),
+                    (AgGrid as any).getRowHeightForSizingMode(sizingMode),
                     maxBy(visibleCols, 'rowHeight')?.rowHeight
                 ]);
             },
@@ -545,10 +546,10 @@ class GridLocalModel extends HoistModel {
         return {
             track: () => [model.isReady, store.validator.errors],
             run: () => {
-                const {isReady, columns, agApi} = model;
+                const {isReady, agApi} = model;
                 if (!isReady) return;
 
-                const refreshCols = columns.filter(c => c.editor || c.rendererIsComplex);
+                const refreshCols = model.getLeafColumns().filter(c => c.editor || c.rendererIsComplex);
                 if (!isEmpty(refreshCols)) {
                     const colIds = refreshCols.map(c => c.colId);
                     agApi.refreshCells({columns: colIds, force: true});
@@ -564,7 +565,7 @@ class GridLocalModel extends HoistModel {
         if (!modalSupportModel) return null;
 
         return {
-            track: () => modalSupportModel.isModal,
+            track: () => (modalSupportModel as any).isModal,
             run: () => this.model.agApi.redrawRows(),
             debounce: 0
         };
@@ -612,7 +613,7 @@ class GridLocalModel extends HoistModel {
         }
 
         // Only include lists in transaction if non-empty (ag-grid is not internally optimized)
-        const ret = {};
+        const ret: any = {};
         if (!isEmpty(add)) ret.add = add;
         if (!isEmpty(update)) ret.update = update;
         if (!isEmpty(remove)) ret.remove = remove;
@@ -624,7 +625,7 @@ class GridLocalModel extends HoistModel {
         const {model} = this,
             {agGridModel, store, agApi} = model,
             newRs = store._filtered,
-            prevRs = this._prevRs,
+            prevRs = this.prevRs,
             prevCount = prevRs ? prevRs.count : 0;
 
         let transaction = null;
@@ -677,7 +678,7 @@ class GridLocalModel extends HoistModel {
 
         model.noteAgExpandStateChange();
 
-        this._prevRs = newRs;
+        this.prevRs = newRs;
     }
 
     syncSelection() {
@@ -758,7 +759,7 @@ class GridLocalModel extends HoistModel {
         return gridModel.groupSortFn(nodeA.key, nodeB.key, nodeA.field, {gridModel, nodeA, nodeB});
     };
 
-    doWithPreservedState({expansion, filters}, fn) {
+    doWithPreservedState({expansion, filters}: PlainObject, fn) {
         const {agGridModel} = this.model,
             expandState = expansion ? agGridModel.getExpandState() : null,
             filterState = filters ? this.readFilterState() : null;
@@ -848,9 +849,3 @@ class GridLocalModel extends HoistModel {
         }
     };
 }
-
-/**
- * @callback Grid~groupRowRendererFn - renderer for a group row
- * @param {ICellRendererParams} context - The group renderer params from ag-Grid.
- * @returns {Element} - the formatted value for display.
- */

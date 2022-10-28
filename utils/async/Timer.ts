@@ -19,12 +19,12 @@ import {isBoolean, isFinite, isFunction, isNil, isString, pull} from 'lodash';
  * the duration of asynchronous tasks by returning a Promise from runFn.
  *
  * This object seeks to mirror the API and semantics of the server-side equivalent 'Timer'
- * as closely as possible. However there are important differences due to the synchronous
- * nature of javascript.  In particular, there is no support for 'runImmediatelyAndBlock'
- * and the 'timeout' argument will not be able to interrupt synchronous activity of the runFn.
+ * as closely as possible. However, there are important differences due to the synchronous
+ * nature of javascript. In particular, there is no support for 'runImmediatelyAndBlock', and the
+ * 'timeout' argument will not be able to interrupt synchronous activity of the runFn.
  *
- * All public properties should be considered read-only.  See setInterval() to change
- * the interval of this timer dynamically.
+ * All public properties should be considered read-only. See `setInterval()` to change the interval
+ * of this timer dynamically.
  */
 export class Timer {
 
@@ -42,9 +42,7 @@ export class Timer {
     isRunning: boolean = false;
     lastRun: Date = null;
 
-    /**
-     * Create a new Timer.
-     */
+    /** Create a new Timer. */
     static create({
         runFn,
         interval,
@@ -82,7 +80,7 @@ export class Timer {
     /**
      * Change the interval of this timer.
      *
-     * @param interval between runs, in milliseconds. if <=0 job will not run.
+     * @param interval - ms to wait between runs or any value `<=0` to pause the timer.
      */
     setInterval(interval: number) {
         this.interval = this.parseDynamicVal(interval);
@@ -175,9 +173,9 @@ export interface TimerSpec {
 
     /**
      * Interval between runs, in milliseconds.
-     * If <=0 job will not run.  If specified as a function, will be re-evaluated after every
-     * timer run.  If specified as a string, value will be assumed to be a config, and will be
-     * looked up before every run.
+     * If a number and `<=0` job will not run.
+     * If a function, will be re-evaluated after every timer run.
+     * If a string, will be interpreted as an AppConfig key and looked up to determine the value.
      */
     interval: number|(() => number)|string;
 

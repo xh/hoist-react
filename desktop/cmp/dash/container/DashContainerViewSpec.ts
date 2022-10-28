@@ -8,8 +8,7 @@ import {DashViewSpec} from '@xh/hoist/desktop/cmp/dash/DashViewSpec';
 import {RefreshMode, RenderMode} from '@xh/hoist/core';
 
 /**
- * Spec used to generate DashContainerViews and DashContainerViewModels within a
- * {@see DashContainer}.
+ * Spec used to generate DashContainerViews and DashContainerViewModels.
  */
 export interface DashContainerViewSpec extends DashViewSpec {
 

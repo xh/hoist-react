@@ -1,7 +1,7 @@
 import {HoistModel, lookup, XH} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {consumeEvent} from '@xh/hoist/utils/js';
-import {isFinite} from 'lodash';
+import {isFinite, clamp} from 'lodash';
 import {NavigatorModel} from '../../NavigatorModel';
 
 import './Swiper.scss';
@@ -77,7 +77,7 @@ export class SwiperModel extends HoistModel {
                 this.backEnd();
                 return;
             }
-            this.backProgress = (Math as any).clamp(deltaX / 150, 0, 1);
+            this.backProgress = clamp(deltaX / 150, 0, 1);
             consumeEvent(e);
             return;
         }
@@ -88,7 +88,7 @@ export class SwiperModel extends HoistModel {
                 this.refreshEnd();
                 return;
             }
-            this.refreshProgress = (Math as any).clamp(deltaY / 150, 0, 1);
+            this.refreshProgress = clamp(deltaY / 150, 0, 1);
             consumeEvent(e);
             return;
         }

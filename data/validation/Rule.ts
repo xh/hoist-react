@@ -4,10 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {Awaitable, Some} from '../../core';
 import {castArray} from 'lodash';
 import {StoreRecord} from '../StoreRecord';
 import {BaseFieldModel} from '../../cmp/form';
-import {Field} from '../Field';
 
 /**
  * Immutable object representing a validation rule.
@@ -28,20 +28,21 @@ export class Rule {
  *
  * @param fieldState - context w/value for the constraint's target Field.
  * @param allValues - current values for all fields in form, keyed by field name.
- * @returns String or array of strings describing errors, or null or undefined if rule passes successfully.
+ * @returns String(s) or array of strings describing errors, or null or undefined if rule passes
+ * successfully. May return a Promise of strings for async validation.
  */
-export type Constraint<T=any> = (fieldState: FieldState<T>, allValues: Record<string, any>) => string|string[];
+export type Constraint<T=any> = (fieldState: FieldState<T>, allValues: Record<string, any>) => Awaitable<Some<string>>;
 
 
 /**
  * Function to determine when to perform validation on a value.
  *
- * @param field - the field (for a StoreRecord) or BaseFieldModel (for a Form) being evaluated.
- * @param allValues - current values for all fields in form, keyed by field name.
+ * @param entity - the entity being evaluated.  Typically a field for store validation or
+ *      a BaseFieldModel for Form validation.
+ * @param allValues - current values for all fields in form or record, keyed by field name.
  * @returns true if this rule is currently active.
  */
-export type When = (field: Field|BaseFieldModel, allValues: Record<string, any>) => boolean;
-
+export type When = (entity: any, allValues: Record<string, any>) => boolean;
 
 export interface FieldState<T=any> {
     /** Current value of the field */
@@ -60,11 +61,10 @@ export interface FieldState<T=any> {
     fieldModel?: BaseFieldModel;
 }
 
-
 export interface RuleSpec {
 
     /** Function(s) to perform validation. */
-    check: Constraint|Constraint[];
+    check: Some<Constraint>;
 
     /**
      *  Function to determine when this rule is active.

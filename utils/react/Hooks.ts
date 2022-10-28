@@ -35,7 +35,7 @@ export function useOnUnmount(fn: () => void) {
  * @see observeResize() for more details.
  *
  * @param fn - receives a DOMRect containing the dimensions of the DOM element.
- * @param [opts.debounce] - milliseconds to debounce
+ * @param opts - extra options, currently supporting a `debounce` specified in ms.
  * @returns callback ref to be placed on target component
  */
 export function useOnResize(
@@ -82,16 +82,14 @@ export function useOnScroll(fn: (ev: Event) => any): (node: any) => void {
 }
 
 /**
- * Hook to return a cached version of a value.
+ * Hook to return a cached version of a value - similar useCallback() and useMemo().
+ * Useful for providing stable object references across renders.
  *
- * This hook is similar useCallback() and useMemo() and useful for providing stable object
- * references across renders.
- *
- * @param {*} value - value to be cached and potentially returned in this and subsequent calls.
- *      Typically an object.
- * @param {function} [equalsFn] - A function taking the previously cached value, and the currently
- *      presented value.  If evaluates to true, the cached value will be returned rather
- *      than the presented value.  If null, any cached value will always be returned.
+ * @param value - value (typically an object) to be cached and potentially returned to this and
+ *      subsequent calls.
+ * @param equalsFn - A function taking the previously cached value and the currently presented
+ *      value. If evaluates to true, the cached value will be returned rather than the presented
+ *      value. If null, any cached value will always be returned.
  */
 export function useCached<T>(value: T, equalsFn: (prev: T, curr: T) => boolean): T {
     const cache = useRef(value),

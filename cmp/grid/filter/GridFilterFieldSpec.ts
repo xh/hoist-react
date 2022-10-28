@@ -4,48 +4,56 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {BaseFilterFieldSpec} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
-import {parseFilter} from '@xh/hoist/data';
+import {ColumnRenderer} from '@xh/hoist/cmp/grid';
+import {HoistInputProps} from '@xh/hoist/cmp/input';
+import {PlainObject} from '@xh/hoist/core';
+import {
+    BaseFilterFieldSpec,
+    BaseFilterFieldSpecConfig
+} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
+import {FieldFilterOperator, parseFilter, View} from '@xh/hoist/data';
 import {castArray, compact, flatten, isDate, isEmpty, uniqBy} from 'lodash';
+import {GridFilterModel} from './GridFilterModel';
+
+
+export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
+    /** GridFilterModel instance which owns this fieldSpec. */
+    filterModel?: GridFilterModel;
+    /**
+     * function returning a formatted string for each value in this values filter display.
+     * If not provided, the Column's renderer will be used.
+     */
+    renderer?: ColumnRenderer;
+
+    /**
+     * Props to pass through to the HoistInput components used on the custom filter tab. Note
+     * that the HoistInput component used is decided by fieldType.
+     */
+    inputProps?: HoistInputProps;
+
+    /** Default operator displayed in custom filter tab. */
+    defaultOp?: FieldFilterOperator
+}
 
 /**
- * Apps should NOT instantiate this class directly. Instead {@see GridFilterModel.fieldSpecs}
- * for the relevant config to set these options.
+ * Apps should NOT instantiate this class directly. Provide a config for this object
+ * to the GridModel's `filterModel` property instead.
  */
 export class GridFilterFieldSpec extends BaseFilterFieldSpec {
 
-    /** @member {GridFilterModel} */
-    filterModel;
+    filterModel: GridFilterModel;
+    renderer: ColumnRenderer;
+    inputProps: PlainObject;
+    defaultOp: FieldFilterOperator;
+    valueCount: number;
 
-    /** @member {Column~rendererFn} */
-    renderer;
-
-    /** @member {object} */
-    inputProps;
-
-    /** @member {string} */
-    defaultOp;
-
-    /** @member {int} */
-    valueCount;
-
-    /**
-     * @param {Object} c - GridFilterFieldSpec configuration.
-     * @param {GridFilterModel} c.filterModel - GridFilterModel instance which owns this fieldSpec.
-     * @param {Column~rendererFn} [c.renderer] - function returning a formatted string for each
-     *      value in this values filter display. If not provided, the Column's renderer will be used.
-     * @param {Object} [c.inputProps] - Props to pass through to the HoistInput components used on
-     *      the custom filter tab. Note that the HoistInput component used is decided by fieldType.
-     * @param {string} [c.defaultOp] - Default operator displayed in custom filter tab.
-     * @param {*} [c...rest] - arguments for BaseFilterFieldSpec.
-     */
     constructor({
         filterModel,
         renderer,
         inputProps,
         defaultOp,
         ...rest
-    }) {
+    }:GridFilterFieldSpecConfig) {
         super(rest);
 
         this.filterModel = filterModel;
@@ -60,7 +68,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
     loadValuesFromSource() {
         const {filterModel, field, source} = this,
             columnFilters = filterModel.getColumnFilters(field),
-            sourceStore = source.isView ? source.cube.store : source,
+            sourceStore = source instanceof View ? source.cube.store : source,
             allRecords = sourceStore.allRecords;
 
         // Apply external filters *not* pertaining to this field to the sourceStore
