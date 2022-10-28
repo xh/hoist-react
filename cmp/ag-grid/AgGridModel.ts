@@ -4,10 +4,11 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, SizingMode} from '@xh/hoist/core';
+import {HoistModel, SizingMode, Some} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
+    castArray,
     cloneDeep,
     concat,
     find,
@@ -20,6 +21,7 @@ import {
     set,
     startCase
 } from 'lodash';
+import {GridSorter} from '../grid/GridSorter';
 
 export interface AgGridModelConfig {
 
@@ -113,7 +115,7 @@ export class AgGridModel extends HoistModel {
     /** @member {ColumnApi} */
     @observable.ref agColumnApi = null;
 
-    private _prevSortBy: any;
+    private _prevSortBy: GridSorter[];
 
     constructor({
         sizingMode = 'standard',
@@ -419,8 +421,9 @@ export class AgGridModel extends HoistModel {
     /**
      * Sets the sort state on the grid's column state
      */
-    applySortBy(sortBy: any[]) {    // TODO: GridSorter.
+    applySortBy(value: Some<GridSorter>) {
         this.throwIfNotReady();
+        const sortBy = castArray(value);
         const {agColumnApi, agApi} = this,
             prevSortBy = this._prevSortBy;
         let togglingAbsSort = false;

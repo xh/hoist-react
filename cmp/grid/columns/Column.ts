@@ -26,7 +26,7 @@ import {
 } from 'lodash';
 import {createElement, forwardRef, isValidElement, ReactNode, useImperativeHandle} from 'react';
 import {GridModel} from '../GridModel';
-import {GridSorter} from '../impl/GridSorter';
+import {GridSorter} from '../GridSorter';
 import {managedRenderer} from '../impl/Utils';
 import {
     ColumnCellClassFn,

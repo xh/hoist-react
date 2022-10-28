@@ -16,7 +16,7 @@ import {olderThan} from '@xh/hoist/utils/datetime';
 import {filter, size, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString} from 'lodash';
 import classNames from 'classnames';
 
-import {GridSorter} from './GridSorter';
+import {GridSorter} from '../GridSorter';
 
 /**
  * A custom ag-Grid header component.

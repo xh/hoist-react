@@ -77,9 +77,9 @@ import {
     pull
 } from 'lodash';
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
-import {GridSorter, GridSorterLike} from './impl/GridSorter';
+import {GridSorter, GridSorterLike} from './GridSorter';
+import {GridAutosizeOptions} from './GridAutosizeOptions';
 import {managedRenderer} from './impl/Utils';
-import {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
 import {ReactNode} from 'react';
 import {
     AutosizeState,

@@ -9,9 +9,9 @@ import {
     GridModel,
     GroupRowRenderer,
     RowClassFn,
-    RowClassRuleFn
+    RowClassRuleFn,
+    GridSorterLike
 } from '@xh/hoist/cmp/grid';
-import {GridSorterLike} from '@xh/hoist/cmp/grid/impl/GridSorter';
 import {HoistModel, LoadSpec, managed, PlainObject, Some} from '@xh/hoist/core';
 import {
     Store,
