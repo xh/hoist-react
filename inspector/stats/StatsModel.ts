@@ -34,7 +34,7 @@ export class StatsModel extends HoistModel {
         });
 
         this.gridModel = new GridModel({
-            colChooser: true,
+            colChooserModel: true,
             persistWith: this.persistWith,
             autosizeOptions: {mode: GridAutosizeMode.MANAGED},
             store: {

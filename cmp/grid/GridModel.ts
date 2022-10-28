@@ -169,7 +169,7 @@ export interface GridConfig {
     treeStyle?: TreeStyle;
 
     /** True to use alternating backgrounds for rows. */
-    stripeRow?: boolean;
+    stripeRows?: boolean;
 
     /** True to render cell borders. */
     cellBorders?: boolean;
@@ -315,8 +315,8 @@ export interface GridConfig {
      */
     experimental?: PlainObject;
 
-    /** Additional data to attach to this model instance. */
-    [x: string]: any;
+    /** @internal */
+    xhImpl?: boolean;
 }
 
 
@@ -1152,7 +1152,7 @@ export class GridModel extends HoistModel {
     buildColumn(config: ColumnGroupSpec|ColumnSpec) {
         // Merge leaf config with defaults.
         // Ensure *any* tooltip setting on column itself always wins.
-        if (this.colDefaults && !config.children) {
+        if (this.colDefaults && !this.isGroupSpec(config)) {
             let colDefaults = {...this.colDefaults};
             if (config.tooltip || config.tooltipElement) {
                 colDefaults.tooltip = null;
@@ -1164,7 +1164,7 @@ export class GridModel extends HoistModel {
         const omit = isFunction(config.omit) ? config.omit() : config.omit;
         if (omit) return null;
 
-        if (config.children) {
+        if (this.isGroupSpec(config)) {
             const children = compact(config.children.map(c => this.buildColumn(c))) as (ColumnGroup | Column)[];
             return !isEmpty(children) ? new ColumnGroup(config as ColumnGroupSpec, this, children) : null;
         }
@@ -1631,6 +1631,10 @@ export class GridModel extends HoistModel {
         }
 
         return chooserModel ? this.markManaged(new modelClass({gridModel: this})) : null;
+    }
+
+    private isGroupSpec(col: ColumnGroup|ColumnSpec): col is ColumnGroupSpec {
+        return 'children' in col;
     }
 
     defaultGroupSortFn = (a, b) => {

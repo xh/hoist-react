@@ -296,13 +296,11 @@ export interface ColumnSpec {
      */
     autosizeBufferPx?: number;
 
-
     /**
      * True to dynamically grow the row height based on the content of this column's cell.  If
      * true, text will also be set to wrap within cells.
      */
     autoHeight?: boolean;
-
 
     /**
      * True to make cells in this column editable, or a function to determine on a
@@ -335,7 +333,10 @@ export interface ColumnSpec {
      * render a nested property.  False to support field names that contain dots *without*
      * triggering this behavior.
      */
-    enableDotSeperatedFieldPath?: boolean;
+    enableDotSeparatedFieldPath?: boolean;
+
+    /** True to skip this column when adding to grid.  */
+    omit?: boolean|(() => boolean);
 
     /**
      * "escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note these
@@ -344,9 +345,6 @@ export interface ColumnSpec {
      * See {@link https://www.ag-grid.com/javascript-grid-column-properties/|AG-Grid docs}
      */
     agOptions?: PlainObject;
-
-    /** Additional data to attach to this model instance. */
-    [x: string]: any;
 }
 
 /**
@@ -545,7 +543,6 @@ export class Column {
         this.align = align;
 
         this.hidden = withDefault(hidden, false);
-        warnIf(rest.hide, `Column ${this.colId} configured with {hide: true} - use "hidden" instead.`);
 
         warnIf(
             flex && width,

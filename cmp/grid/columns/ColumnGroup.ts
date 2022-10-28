@@ -33,8 +33,8 @@ export interface ColumnGroupSpec {
      */
     agOptions?: PlainObject;
 
-    /** Additional data to attach to this model instance. */
-    [x:string]: any;
+    /** True to skip this column when adding to grid. */
+    omit?: boolean|(() => boolean);
 }
 
 /**
@@ -74,7 +74,6 @@ export class ColumnGroup {
             headerClass,
             headerAlign,
             agOptions,
-            align,
             ...rest
         } = config;
 
