@@ -335,7 +335,7 @@ export interface ColumnSpec {
      */
     enableDotSeparatedFieldPath?: boolean;
 
-    /** True to skip this column when adding to grid.  */
+    /** True to skip this column when adding to grid. */
     omit?: boolean|(() => boolean);
 
     /**

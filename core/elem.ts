@@ -59,8 +59,6 @@ export type ElemFactory<P=HoistProps> =
     ((arg: ElemSpec<P>|ReactNode|ReactNode[]) => ReactElement<P>) &
     ((...args: ReactNode[]) => ReactElement<P>);
 
-export type SimpleElemFactory<P=HoistProps> = ((arg: ElemSpec<P>) => ReactElement<P>);
-
 /**
  * Create a React Element from a Component type and an ElementSpec
  *
