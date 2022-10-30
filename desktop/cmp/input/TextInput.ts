@@ -15,7 +15,7 @@ import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
-import {ReactElement, ReactNode, Ref} from 'react';
+import {ReactElement, ReactNode, Ref, FocusEvent} from 'react';
 
 export interface TextInputProps extends HoistInputProps {
     value?: string;

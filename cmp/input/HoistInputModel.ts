@@ -9,7 +9,7 @@ import {FieldModel} from '@xh/hoist/cmp/form';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
-import {ForwardedRef, ReactElement, ReactInstance, useImperativeHandle} from 'react';
+import {ForwardedRef, ReactElement, ReactInstance, useImperativeHandle, FocusEvent} from 'react';
 import {findDOMNode} from 'react-dom';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import './HoistInput.scss';
