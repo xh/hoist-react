@@ -21,9 +21,6 @@ export interface SearchInputProps extends HoistInputProps {
     /** Onsen modifier string */
     modifier?: string;
 
-    /** Function which receives keydown event */
-    onKeyDown?: (e: KeyboardEvent) => void
-
     /** Text to display when control is empty */
     placeholder?: string;
 

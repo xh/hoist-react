@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {IButtonProps} from '@blueprintjs/core';
 import composeRefs from '@seznam/compose-react-refs';
 import {BoxProps, hoistCmp, HoistModel, Intent} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
@@ -14,7 +15,7 @@ import classNames from 'classnames';
 import {ReactNode, ReactElement, CSSProperties, MouseEvent} from 'react';
 import './Button.scss';
 
-export interface ButtonProps<M extends HoistModel = null> extends BoxProps<M> {
+export interface ButtonProps<M extends HoistModel = null> extends BoxProps<M>, IButtonProps {
     active?: boolean;
     autoFocus?: boolean;
     disabled?: boolean;
@@ -27,8 +28,13 @@ export interface ButtonProps<M extends HoistModel = null> extends BoxProps<M> {
     style?: CSSProperties;
     text?: ReactNode;
     title?: string;
+    value?: any;
+
+    tabIndex?: number;  // TODO: where does this come from?
+
     /** Alias for title. */
     tooltip?: string;
+
 }
 
 /**

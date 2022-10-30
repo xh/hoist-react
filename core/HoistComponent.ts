@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {CreatesSpec, UsesSpec, elemFactory, ElemFactory, HoistProps} from './';
+import {CreatesSpec, UsesSpec, elemFactory, ElemFactory, HoistProps, DefaultHoistProps} from './';
 import {
     useModelLinker,
     localModelContext,
@@ -105,7 +105,7 @@ export type ComponentConfig<P extends HoistProps> =
  *   - `hoistComponent.withFactory` - returns a 2-element list containing both the newly defined
  *          Component and an elemFactory for it.
  */
-export function hoistComponent<M extends HoistModel>(config: ComponentConfig<HoistProps<M>>): FunctionComponent<HoistProps<M>>;
+export function hoistComponent<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): FunctionComponent<DefaultHoistProps<M>>;
 export function hoistComponent<P extends HoistProps>(config: ComponentConfig<P>): FunctionComponent<P>;
 
 export function hoistComponent(config: ComponentConfig<HoistProps>): FunctionComponent {
@@ -168,14 +168,14 @@ export function hoistComponent(config: ComponentConfig<HoistProps>): FunctionCom
  */
 export const hoistCmp = hoistComponent;
 
-export function hoistComponentFactory<M extends HoistModel>(config: ComponentConfig<HoistProps<M>>): ElemFactory<HoistProps<M>, FunctionComponent<HoistProps<M>>>;
+export function hoistComponentFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): ElemFactory<DefaultHoistProps<M>, FunctionComponent<DefaultHoistProps<M>>>;
 export function hoistComponentFactory<P extends HoistProps>(config: ComponentConfig<P>): ElemFactory<P, FunctionComponent<P>>;
 
 export function hoistComponentFactory(config: ComponentConfig<HoistProps>): ElemFactory {
     return elemFactory(hoistComponent(config));
 }
 
-export function hoistComponentWithFactory<M extends HoistModel>(config: ComponentConfig<HoistProps<M>>): [FunctionComponent<HoistProps<M>>, ElemFactory<HoistProps<M>>];
+export function hoistComponentWithFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): [FunctionComponent<DefaultHoistProps<M>>, ElemFactory<DefaultHoistProps<M>>];
 export function hoistComponentWithFactory<P extends HoistProps>(config: ComponentConfig<P>):[FunctionComponent<P>, ElemFactory<P, FunctionComponent<P>>];
 
 export function hoistComponentWithFactory(config: ComponentConfig<HoistProps>): [FunctionComponent, ElemFactory] {

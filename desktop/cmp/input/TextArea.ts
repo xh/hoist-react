@@ -29,9 +29,6 @@ export interface TextAreaProps extends HoistInputProps {
     /** Ref handler that receives HTML <input> element backing this component. */
     inputRef?: Ref<HTMLInputElement>;
 
-    /** Callback for normalized keydown event. */
-    onKeyDown?: (e: KeyboardEvent) => void;
-
     /** True to select contents when control receives focus. */
     selectOnFocus?: boolean;
 

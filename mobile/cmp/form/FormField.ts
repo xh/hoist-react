@@ -7,7 +7,7 @@
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
+import {DefaultHoistProps, hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
@@ -151,7 +151,7 @@ export const [FormField, formField] = hoistCmp.withFactory({
     }
 });
 
-const readonlyChild = hoistCmp.factory<Partial<HoistProps>>({
+const readonlyChild = hoistCmp.factory({
     model: false,
 
     render({model, readonlyRenderer}) {
@@ -160,14 +160,14 @@ const readonlyChild = hoistCmp.factory<Partial<HoistProps>>({
     }
 });
 
-const editableChild = hoistCmp.factory<Partial<FormFieldProps>>({
+const editableChild = hoistCmp.factory({
     model: false,
 
     render({model, child, childIsSizeable, disabled, commitOnChange, width, height, flex}) {
         const {props} = child;
 
         // Overrides -- be sure not to clobber selected properties on child
-        const overrides: Partial<FormFieldProps> = {
+        const overrides: DefaultHoistProps = {
             model,
             bind: 'value',
             disabled: props.disabled || disabled,

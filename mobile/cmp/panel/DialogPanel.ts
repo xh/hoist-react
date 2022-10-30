@@ -8,9 +8,9 @@ import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import './DialogPanel.scss';
-import {panel} from './Panel';
+import {panel, PanelProps} from './Panel';
 
-export interface DialogPanelProps extends HoistProps {
+export interface DialogPanelProps extends PanelProps {
     /** Is the dialog panel shown.  */
     isOpen?: boolean;
 }
@@ -22,7 +22,7 @@ export interface DialogPanelProps extends HoistProps {
  * These views do not participate in navigation or routing, and are used for showing fullscreen
  * views outside of the Navigator / TabContainer context.
  */
-export const [DialogPanel, dialogPanel] = hoistCmp.withFactory<HoistProps>({
+export const [DialogPanel, dialogPanel] = hoistCmp.withFactory<DialogPanelProps>({
     displayName: 'DialogPanel',
     className: 'xh-dialog xh-dialog-panel',
     memo: false, model: false, observer: false,

@@ -47,9 +47,6 @@ export interface TextInputProps extends HoistInputProps {
     /** Icon to display inline on the left side of the input. */
     leftIcon?: ReactElement;
 
-    /** Callback for normalized keydown event. */
-    onKeyDown?: (e: KeyboardEvent) => void;
-
     /** Text to display when control is empty. */
     placeholder?: string;
 

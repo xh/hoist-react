@@ -31,7 +31,7 @@ import {PanelConfig, PanelModel} from './PanelModel';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
 
 
-interface PanelProps extends BoxProps<PanelModel> {
+interface PanelProps extends Omit<BoxProps<PanelModel>, 'title'> {
 
     /** True to style panel header (if displayed) with reduced padding and font-size. */
     compactHeader?: boolean;

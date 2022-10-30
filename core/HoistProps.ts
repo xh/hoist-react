@@ -6,6 +6,8 @@
  */
 import {HoistModel} from '@xh/hoist/core/model';
 import {LayoutProps} from '@xh/hoist/utils/react';
+import {CSSProperties, ForwardedRef, HTMLAttributes, ReactNode, Ref} from 'react';
+import { PlainObject } from './types/Types';
 
 /**
  * Props interface for Hoist Components.
@@ -28,7 +30,7 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
      * when first mounted.  Should be used only on a component that specifies the 'uses()' directive
      * with the `createFromConfig` set as true. See the `uses()` directive for more information.
      */
-    modelConfig?: Record<string, any>;
+    modelConfig?: PlainObject;
 
     /**
      * ClassName for the component.  Includes the classname as provided in props, enhanced with
@@ -36,9 +38,35 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
      */
     className?: string;
 
-    /** All other props. */
+
+    /** React Ref for this component. */
+    ref?: ForwardedRef<any>;
+
+    /** React key for this component. */
+    key?: string | number;
+
+    /**
+     *  React Children.  Not specified directly by users of the associated component, but
+     *  populated on props by React internally, before rendering.  Applications will
+     *  typically provide children to a component via JSX or the `item(s)` property passed to
+     *  an element factory.
+     */
+    children?: ReactNode;
+}
+
+/**
+ * A version of Hoist props that allows dynamic keys/properties.   This is the interface that
+ * Hoist uses for components that do not explicitly specify the type of props they expect.
+ *
+ * This behavior is useful for file or package-local components that do not require an explicit
+ * props API.
+ */
+
+export interface DefaultHoistProps<M extends HoistModel = HoistModel> {
+
     [x:string]: any;
 }
+
 
 /**
  * Props for Components that support standard Layout attributes
@@ -46,4 +74,8 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
  * Most component will typically separate these props out and pass them along to another component
  * which also supports this interface.  Eventually, they should be passed to a Box class.
  */
-export interface BoxProps<M extends HoistModel = HoistModel> extends HoistProps<M>, LayoutProps {}
+export interface BoxProps<M extends HoistModel = HoistModel>
+    extends HoistProps<M>,
+    LayoutProps,
+    HTMLAttributes<HTMLDivElement>
+{}

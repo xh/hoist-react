@@ -22,9 +22,6 @@ export interface TextAreaProps extends HoistInputProps {
     /** Height of the control in pixels. */
     height?: number;
 
-    /** Function which receives keydown event */
-    onKeyDown?: (e: KeyboardEvent) => void;
-
     /** Text to display when control is empty */
     placeholder?: string;
 

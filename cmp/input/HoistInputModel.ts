@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {ElemFactory, HoistModel, HoistModelClass, HoistProps, useLocalModel} from '@xh/hoist/core';
+import {DefaultHoistProps, ElemFactory, HoistModel, HoistModelClass, HoistProps, useLocalModel} from '@xh/hoist/core';
 import {FieldModel} from '@xh/hoist/cmp/form';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
@@ -13,6 +13,7 @@ import {ForwardedRef, ReactElement, ReactInstance, useImperativeHandle, FocusEve
 import {findDOMNode} from 'react-dom';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import './HoistInput.scss';
+import {HoistInputProps} from './HoistInputProps';
 
 
 /**
@@ -330,7 +331,7 @@ export class HoistInputModel extends HoistModel {
  */
 export function useHoistInputModel(
     component: ElemFactory,
-    props: HoistProps,
+    props: HoistInputProps,
     ref: ForwardedRef<any>,
     modelSpec?: HoistModelClass<HoistInputModel>
 ): ReactElement {

@@ -32,7 +32,6 @@ export const impersonationBar = hoistCmp.factory({
                 select({
                     bind: 'pendingTarget',
                     options: targets,
-                    commitOnChange: true,
                     enableCreate: true,
                     enableFilter: true,
                     enableFullscreen: true,

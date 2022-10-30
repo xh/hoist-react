@@ -5,11 +5,11 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, Intent} from '@xh/hoist/core';
-import {Button} from '@xh/hoist/mobile/cmp/button';
+import {BoxProps, hoistCmp, Intent, XH} from '@xh/hoist/core';
+import {Button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {throwIf} from '@xh/hoist/utils/js';
-import {Children, cloneElement} from 'react';
+import {Children, cloneElement, isValidElement} from 'react';
 import './ButtonGroup.scss';
 
 export interface ButtonGroupProps extends BoxProps {
@@ -31,17 +31,19 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
 
         const items = Children.map(children, button => {
             if (!button) return null;
-            throwIf(button.type !== Button, 'ButtonGroup child must be a Button.');
-
-            const btnIntent = intent ?? button.props.intent,
-                btnMinimal = minimal ?? button.props.minimal,
-                btnOutlined = outlined ?? button.props.outlined;
+            if (!isValidElement(button) || button.type !== Button) {
+                throw XH.exception('ButtonGroup child must be a Button.')
+            }
+            const props = button.props as ButtonProps,
+                btnIntent = intent ?? props.intent,
+                btnMinimal = minimal ?? props.minimal,
+                btnOutlined = outlined ?? props.outlined;
 
             return cloneElement(button, {
                 intent: btnIntent,
                 minimal: btnMinimal,
                 outlined: btnOutlined
-            });
+            } as ButtonProps);
         });
 
         return hbox({

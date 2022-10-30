@@ -57,13 +57,14 @@ export type ElemSpec<P> = P & {
  * A factory function that can create a ReactElement using native JS (i.e. not JSX).
  *
  * One critical aspect of this function is that its arguments may be *either* a single
- * ElementSpec or either an array or rest arguments representing just the children to be
- * passed to the new Element.  This latter case is fully equivalent to specifying `{items: [...]}`
+ * ElementSpec or rest arguments representing just the children to be passed to the new Element.
+ * This latter case is fully equivalent to specifying `{items: [...]}`
  * and is useful when no attributes need to be applied directly to the Element.
  */
 export type ElemFactory<P=any, T extends string|JSXElementConstructor<any>=any> =
     ((arg: ElemSpec<P>) => ReactElement<P, T>) &
     ((...args: ReactNode[]) => ReactElement<P, T>);
+
 
 /**
  * Create a React Element from a Component type and an ElementSpec

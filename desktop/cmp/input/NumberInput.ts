@@ -58,9 +58,6 @@ export interface NumberInputProps extends HoistInputProps {
     /** Major step size for increment/decrement handling. */
     majorStepSize?: number;
 
-    /** Callback for normalized keydown event. */
-    onKeyDown?: (e: KeyboardEvent) => void;
-
     /** Text to display when control is empty. */
     placeholder?: string;
 

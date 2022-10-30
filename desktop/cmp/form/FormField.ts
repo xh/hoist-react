@@ -7,7 +7,7 @@
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HSide, uses, XH} from '@xh/hoist/core';
+import {DefaultHoistProps, hoistCmp, HSide, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -226,7 +226,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
     }
 });
 
-const readonlyChild = hoistCmp.factory<Partial<FormFieldProps>>({
+const readonlyChild = hoistCmp.factory({
     model: false,
 
     render({model, readonlyRenderer}) {
@@ -235,7 +235,7 @@ const readonlyChild = hoistCmp.factory<Partial<FormFieldProps>>({
     }
 });
 
-const editableChild = hoistCmp.factory<Partial<FormFieldProps>>({
+const editableChild = hoistCmp.factory({
     model: false,
 
     render({model, child, childIsSizeable, childId, disabled, displayNotValid, leftErrorIcon, commitOnChange}) {
@@ -243,13 +243,13 @@ const editableChild = hoistCmp.factory<Partial<FormFieldProps>>({
 
 
         // Overrides -- be sure not to clobber selected properties on child
-        const overrides: Partial<FormFieldProps> = {
+        const overrides = {
             model,
             bind: 'value',
             id: childId,
             disabled: props.disabled || disabled,
             ref: composeRefs(model?.boundInputRef, child.ref)
-        };
+        } as DefaultHoistProps;
 
 
         // If a sizeable child input doesn't specify its own dimensions,
