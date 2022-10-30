@@ -105,8 +105,8 @@ export type ComponentConfig<P extends HoistProps> =
  *   - `hoistComponent.withFactory` - returns a 2-element list containing both the newly defined
  *          Component and an elemFactory for it.
  */
-export function hoistComponent<T extends HoistModel>(config: ComponentConfig<HoistProps<T>>): FunctionComponent<HoistProps<T>>;
-export function hoistComponent<T extends HoistProps>(config: ComponentConfig<T>): FunctionComponent<T>;
+export function hoistComponent<M extends HoistModel>(config: ComponentConfig<HoistProps<M>>): FunctionComponent<HoistProps<M>>;
+export function hoistComponent<P extends HoistProps>(config: ComponentConfig<P>): FunctionComponent<P>;
 
 export function hoistComponent(config: ComponentConfig<HoistProps>): FunctionComponent {
     // 0) Pre-process/parse args.
@@ -168,15 +168,15 @@ export function hoistComponent(config: ComponentConfig<HoistProps>): FunctionCom
  */
 export const hoistCmp = hoistComponent;
 
-export function hoistComponentFactory<T extends HoistModel>(config: ComponentConfig<HoistProps<T>>): ElemFactory<HoistProps<T>>;
-export function hoistComponentFactory<T extends HoistProps>(config: ComponentConfig<T>): ElemFactory<T>;
+export function hoistComponentFactory<M extends HoistModel>(config: ComponentConfig<HoistProps<M>>): ElemFactory<HoistProps<M>, FunctionComponent<HoistProps<M>>>;
+export function hoistComponentFactory<P extends HoistProps>(config: ComponentConfig<P>): ElemFactory<P, FunctionComponent<P>>;
 
 export function hoistComponentFactory(config: ComponentConfig<HoistProps>): ElemFactory {
     return elemFactory(hoistComponent(config));
 }
 
-export function hoistComponentWithFactory<T extends HoistModel>(config: ComponentConfig<HoistProps<T>>): [FunctionComponent<HoistProps<T>>, ElemFactory<HoistProps<T>>];
-export function hoistComponentWithFactory<T extends HoistProps>(config: ComponentConfig<T>):[FunctionComponent<T>, ElemFactory<T>];
+export function hoistComponentWithFactory<M extends HoistModel>(config: ComponentConfig<HoistProps<M>>): [FunctionComponent<HoistProps<M>>, ElemFactory<HoistProps<M>>];
+export function hoistComponentWithFactory<P extends HoistProps>(config: ComponentConfig<P>):[FunctionComponent<P>, ElemFactory<P, FunctionComponent<P>>];
 
 export function hoistComponentWithFactory(config: ComponentConfig<HoistProps>): [FunctionComponent, ElemFactory] {
     const ret = hoistComponent(config);

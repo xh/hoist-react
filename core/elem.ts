@@ -5,8 +5,14 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {castArray, isArray, isNil, isPlainObject} from 'lodash';
-import {createElement, ComponentClass, FunctionComponent, isValidElement, ReactNode, ReactElement} from 'react';
-import {HoistProps} from './';
+import {
+    createElement,
+    isValidElement,
+    ReactNode,
+    ReactElement,
+    JSXElementConstructor
+} from 'react';
+import {Some} from './';
 
 
 /**
@@ -37,13 +43,13 @@ import {HoistProps} from './';
 export type ElemSpec<P> = P & {
 
     /** Child Element(s). Equivalent provided as Rest Arguments to React.createElement.*/
-    items?: ReactNode|ReactNode[];
+    items?: Some<ReactNode>;
 
     /**  Equivalent to `items`, offered for code clarity when only one child is needed. */
-    item?: ReactNode|ReactNode[];
+    item?: Some<ReactNode>;
 
     /** True to exclude the Element. */
-    omit?: boolean
+    omit?: boolean;
 }
 
 
@@ -55,9 +61,9 @@ export type ElemSpec<P> = P & {
  * passed to the new Element.  This latter case is fully equivalent to specifying `{items: [...]}`
  * and is useful when no attributes need to be applied directly to the Element.
  */
-export type ElemFactory<P=HoistProps> =
-    ((arg: ElemSpec<P>|ReactNode|ReactNode[]) => ReactElement<P>) &
-    ((...args: ReactNode[]) => ReactElement<P>);
+export type ElemFactory<P=any, T extends string|JSXElementConstructor<any>=any> =
+    ((arg: ElemSpec<P>) => ReactElement<P, T>) &
+    ((...args: ReactNode[]) => ReactElement<P, T>);
 
 /**
  * Create a React Element from a Component type and an ElementSpec
@@ -65,10 +71,10 @@ export type ElemFactory<P=HoistProps> =
  * @param type - React Component or string representing an HTML element.
  * @param spec - element spec.
  */
-export function elem<P=HoistProps>(
-    type: ComponentClass<P>|FunctionComponent<P>|string,
+export function elem<P=any, T extends string|JSXElementConstructor<any>=any>(
+    type: T,
     spec: ElemSpec<P>
-): ReactElement<P> {
+): ReactElement<P, T> {
     const {omit, item, items, ...props} = spec;
 
     // 1) Convenience omission syntax.
@@ -86,7 +92,7 @@ export function elem<P=HoistProps>(
         }
     });
 
-    return createElement(type, props as P, ...children);
+    return createElement(type, props as P, ...children) as any;
 }
 
 /**
@@ -98,9 +104,11 @@ export function elem<P=HoistProps>(
  * HoistComponent -- `hoistCmp.withFactory` will generate and return the factory for you.
  * Use this function for generating factories for Components provided by external APIs.
  */
-export function elemFactory<P=HoistProps>(type: FunctionComponent<P>|ComponentClass<P>|string): ElemFactory<P> {
+export function elemFactory<P=any, T extends string|JSXElementConstructor<any>=any>(
+    type: T
+): ElemFactory<P, T> {
     const ret = function(...args) {
-        return elem(type, normalizeArgs(args));
+        return elem<P, T>(type, normalizeArgs(args));
     };
     ret.isElemFactory = true;
     return ret;
