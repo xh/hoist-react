@@ -5,13 +5,13 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, ChildrenProps, hoistCmp} from '@xh/hoist/core';
+import {BoxProps, ChildrenProps, hoistCmp, HoistProps} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import classNames from 'classnames';
 import './Toolbar.scss';
 
 
-export interface ToolbarProps extends BoxProps, ChildrenProps {
+export interface ToolbarProps extends HoistProps, BoxProps, ChildrenProps {
     /** Set to true to vertically align the items of this toolbar */
     vertical?: boolean;
 }

@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hspacer} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistModel, Intent} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistModel, HoistProps, Intent} from '@xh/hoist/core';
 import {button as onsenButton} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {apiDeprecated} from '@xh/hoist/utils/js';
@@ -14,7 +14,7 @@ import classNames from 'classnames';
 import {ReactNode, ReactElement} from 'react';
 import './Button.scss';
 
-export interface ButtonProps<M extends HoistModel=HoistModel> extends BoxProps<M> {
+export interface ButtonProps<M extends HoistModel=HoistModel> extends HoistProps<M>, BoxProps {
     active?: boolean;
     disabled?: boolean;
     icon?: ReactElement;

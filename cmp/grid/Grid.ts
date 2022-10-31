@@ -13,6 +13,7 @@ import {
     BoxProps,
     hoistCmp,
     HoistModel,
+    HoistProps,
     lookup,
     PlainObject,
     SizingMode,
@@ -55,7 +56,7 @@ import {columnHeader} from './impl/ColumnHeader';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 import { RecordSet } from '@xh/hoist/data/impl/RecordSet';
 
-export interface GridProps extends BoxProps<GridModel> {
+export interface GridProps extends HoistProps<GridModel>, BoxProps {
     /**
      * Options for ag-Grid's API.
      *

@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {box, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, managed, useLocalModel, XH, lookup, BoxProps} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, managed, useLocalModel, XH, lookup, BoxProps, HoistProps} from '@xh/hoist/core';
 import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
 import {action, observable, makeObservable, computed} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -14,7 +14,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import moment from 'moment';
 
-interface RelativeTimestampProps extends BoxProps {
+interface RelativeTimestampProps extends HoistProps, BoxProps {
     /**
      * Property on context model containing timestamp.
      * Specify as an alternative to direct `timestamp` prop (and minimize parent re-renders).

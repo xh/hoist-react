@@ -8,13 +8,14 @@ import {
     ButtonGroupProps as BpButtonGroupProps
 } from '@blueprintjs/core/lib/esm/components/button/buttonGroup';
 import {hbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, ChildrenProps, hoistCmp, Intent, XH} from '@xh/hoist/core';
+import {BoxProps, ChildrenProps, hoistCmp, HoistProps, Intent, XH} from '@xh/hoist/core';
 import {Button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {Children, cloneElement, isValidElement} from 'react';
 import './ButtonGroup.scss';
 
 export interface ButtonGroupProps extends
+    HoistProps,
     Omit<BoxProps, 'onChange'>,
     ChildrenProps,
     Omit<BpButtonGroupProps, 'children'> {

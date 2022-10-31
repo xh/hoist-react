@@ -8,6 +8,7 @@ import {box, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {
     BoxProps,
     hoistCmp,
+    HoistProps,
     refreshContextView,
     RenderMode,
     Some,
@@ -31,7 +32,7 @@ import {PanelConfig, PanelModel} from './PanelModel';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
 
 
-interface PanelProps extends Omit<BoxProps<PanelModel>, 'title'> {
+interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'title'> {
 
     /** True to style panel header (if displayed) with reduced padding and font-size. */
     compactHeader?: boolean;

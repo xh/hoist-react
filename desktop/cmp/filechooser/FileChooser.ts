@@ -6,7 +6,7 @@
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {div, hbox, input} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, Some, uses} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistProps, Some, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
 import classNames from 'classnames';
@@ -15,7 +15,7 @@ import './FileChooser.scss';
 import {FileChooserModel} from './FileChooserModel';
 
 
-export interface FileChooserProps extends BoxProps<FileChooserModel> {
+export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps {
 
     /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
     accept?: Some<string>;

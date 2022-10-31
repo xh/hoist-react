@@ -6,7 +6,7 @@
  */
 import {ButtonProps as BpButtonProps} from '@blueprintjs/core';
 import composeRefs from '@seznam/compose-react-refs';
-import {BoxProps, hoistCmp, HoistModel, Intent} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistModel, HoistProps, Intent} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -16,7 +16,8 @@ import {ReactNode, ReactElement} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = null> extends
-    BoxProps<M>,
+    HoistProps<M>,
+    BoxProps,
     Omit<BpButtonProps, 'onClick'>
 {
     active?: boolean;

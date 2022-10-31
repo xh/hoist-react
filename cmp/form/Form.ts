@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {BoxProps, DefaultHoistProps, elemFactory, hoistCmp, uses} from '@xh/hoist/core';
+import {BoxProps, DefaultHoistProps, elemFactory, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import equal from 'fast-deep-equal';
 import {createContext, useContext} from 'react';
 import {useCached} from '@xh/hoist/utils/react';
@@ -25,7 +25,7 @@ export const FormContext = createContext<FormContextType>({});
 const formContextProvider = elemFactory(FormContext.Provider);
 
 
-export interface FormProps extends BoxProps<FormModel> {
+export interface FormProps extends HoistProps<FormModel>, BoxProps {
     /**
      * Defaults for certain props on child/nested FormFields.
      * @see FormField (note there are both desktop and mobile implementations).

@@ -6,7 +6,7 @@
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {box, div, fragment, hbox, hframe, p, placeholder, vbox, vframe} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, uses, XH} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import '@xh/hoist/desktop/register';
@@ -18,7 +18,7 @@ import './SplitTreeMap.scss';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
 import {treeMap} from './TreeMap';
 
-export type SplitTreeMapProps = BoxProps<SplitTreeMapModel>;
+export interface SplitTreeMapProps extends HoistProps<SplitTreeMapModel>, BoxProps {}
 
 /**
  * A component which divides data across two TreeMaps.

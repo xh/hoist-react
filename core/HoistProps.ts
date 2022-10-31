@@ -45,17 +45,6 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
     key?: string | number;
 }
 
-export interface ChildrenProps {
-    /**
-     *  React Children.  Not specified directly by users of the associated component, but
-     *  populated on props by React internally, before rendering.  Applications will
-     *  typically provide children to a component via JSX or the `item(s)` property passed to
-     *  an element factory.
-     */
-    children?: ReactNode;
-}
-
-
 /**
  * A version of Hoist props that allows dynamic keys/properties.   This is the interface that
  * Hoist uses for components that do not explicitly specify the type of props they expect.
@@ -76,8 +65,14 @@ export interface DefaultHoistProps<M extends HoistModel = HoistModel> extends Ho
  * Most component will typically separate these props out and pass them along to another component
  * which also supports this interface.  Eventually, they should be passed to a Box class.
  */
-export interface BoxProps<M extends HoistModel = HoistModel>
-    extends HoistProps<M>,
-    LayoutProps,
-    HTMLAttributes<HTMLDivElement>
-{}
+export interface BoxProps extends LayoutProps, HTMLAttributes<HTMLDivElement> {}
+
+export interface ChildrenProps {
+    /**
+     *  React Children.  Not specified directly by users of the associated component, but
+     *  populated on props by React internally, before rendering.  Applications will
+     *  typically provide children to a component via JSX or the `item(s)` property passed to
+     *  an element factory.
+     */
+    children?: ReactNode;
+}
