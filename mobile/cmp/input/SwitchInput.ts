@@ -5,13 +5,16 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputProps, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, StyleProps} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import './SwitchInput.scss';
 
-export interface SwitchInputProps extends HoistInputProps {
-
+export interface SwitchInputProps extends
+    HoistProps,
+    HoistInputProps,
+    StyleProps
+{
     value?: string;
 
     /** Onsen modifier string */

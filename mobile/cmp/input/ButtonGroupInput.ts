@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, XH} from '@xh/hoist/core';
+import {hoistCmp, XH, HoistProps} from '@xh/hoist/core';
 import {Button, buttonGroup, ButtonGroupProps, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
@@ -14,8 +14,11 @@ import {castArray, isEmpty, without} from 'lodash';
 import {Children, cloneElement, isValidElement, ReactNode} from 'react';
 import './ButtonGroupInput.scss';
 
-export interface ButtonGroupInputProps extends HoistInputProps, Omit<ButtonGroupProps, 'onChange'> {
-
+export interface ButtonGroupInputProps extends
+    HoistProps,
+    HoistInputProps,
+    ButtonGroupProps
+{
     /**
      * True to allow buttons to be unselected (aka inactivated). Used when enableMulti is false.
      * Defaults to false.

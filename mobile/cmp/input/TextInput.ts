@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HSide} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {input} from '@xh/hoist/kit/onsen';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -16,7 +16,12 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import './TextInput.scss';
 
-export interface TextInputProps extends HoistInputProps {
+export interface TextInputProps extends
+    HoistProps,
+    HoistInputProps,
+    StyleProps,
+    LayoutProps
+{
     value?: string;
 
     /**

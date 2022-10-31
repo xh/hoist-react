@@ -5,8 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core/model';
-import {LayoutProps} from '@xh/hoist/utils/react';
-import {ForwardedRef, HTMLAttributes, ReactNode} from 'react';
+import {CSSProperties, ForwardedRef, HTMLAttributes, ReactNode} from 'react';
 import {PlainObject} from './types/Types';
 
 /**
@@ -43,6 +42,14 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
 
     /** React key for this component. */
     key?: string | number;
+
+    /**
+     *  React Children.  Not specified directly by users of the associated component, but
+     *  populated on props by React internally, before rendering.  Applications will
+     *  typically provide children to a component via JSX or the `item(s)` property passed to
+     *  an element factory.
+     */
+    children?: ReactNode;
 }
 
 /**
@@ -65,14 +72,53 @@ export interface DefaultHoistProps<M extends HoistModel = HoistModel> extends Ho
  * Most component will typically separate these props out and pass them along to another component
  * which also supports this interface.  Eventually, they should be passed to a Box class.
  */
-export interface BoxProps extends LayoutProps, HTMLAttributes<HTMLDivElement> {}
+export interface BoxProps extends
+    LayoutProps,
+    Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {}
 
-export interface ChildrenProps {
-    /**
-     *  React Children.  Not specified directly by users of the associated component, but
-     *  populated on props by React internally, before rendering.  Applications will
-     *  typically provide children to a component via JSX or the `item(s)` property passed to
-     *  an element factory.
-     */
-    children?: ReactNode;
+export interface StyleProps {
+    style?: CSSProperties;
+}
+
+export interface LayoutProps {
+
+    margin?: string|number;
+    marginTop?: string|number;
+    marginRight?: string|number;
+    marginBottom?: string|number;
+    marginLeft?: string|number;
+
+    padding?: string|number;
+    paddingTop?: string|number;
+    paddingRight?: string|number;
+    paddingBottom?: string|number;
+    paddingLeft?: string|number;
+
+    height?: string|number;
+    minHeight?: string|number;
+    maxHeight?: string|number;
+    width?: string|number;
+    minWidth?: string|number;
+    maxWidth?: string|number;
+
+    flex?: string|number;
+    flexBasis?: string|number;
+    flexDirection?: string|number;
+    flexGrow?: string|number;
+    flexShrink?: string|number;
+    flexWrap?: string|number;
+
+    alignItems?: string;
+    alignSelf?: string;
+    alignContent?: string;
+    justifyContent?: string;
+
+    overflow?: string;
+    overflowX?: string;
+    overflowY?: string;
+
+    top?: string|number;
+    left?: string|number;
+    position?: string;
+    display?: string;
 }

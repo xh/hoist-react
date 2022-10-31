@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HSide, Some} from '@xh/hoist/core';
+import {hoistCmp, HSide, Some, HoistProps, LayoutProps} from '@xh/hoist/core';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {TextInputModel, textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -27,7 +27,11 @@ import {PopperBoundary} from '@blueprintjs/core';
 import {ITimePickerProps} from '@blueprintjs/datetime';
 import {DayPickerProps, DayModifiers} from 'react-day-picker';
 
-export interface DateInputProps extends HoistInputProps {
+export interface DateInputProps extends
+    HoistProps,
+    LayoutProps,
+    HoistInputProps
+{
     value?: Date|LocalDate;
 
     /** Props passed to ReactDayPicker component, as per DayPicker docs. */

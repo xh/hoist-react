@@ -6,7 +6,7 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, placeholder} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistModel, HoistProps, lookup, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, LayoutProps, HoistProps, lookup, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import '@xh/hoist/desktop/register';
@@ -26,7 +26,9 @@ import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import './TreeMap.scss';
 import {TreeMapModel} from './TreeMapModel';
 
-export interface TreeMapProps extends HoistProps<TreeMapModel>, BoxProps {}
+export interface TreeMapProps extends
+    HoistProps<TreeMapModel>,
+    LayoutProps {}
 
 /**
  * Component for rendering a TreeMap.

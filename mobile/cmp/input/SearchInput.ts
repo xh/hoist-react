@@ -5,14 +5,17 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HSide} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide} from '@xh/hoist/core';
 import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import './SearchInput.scss';
 
-export interface SearchInputProps extends HoistInputProps {
+export interface SearchInputProps extends
+    HoistProps,
+    HoistInputProps
+{
     value?: string;
 
     /** True to commit on every change/keystroke, default false. */

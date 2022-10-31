@@ -18,7 +18,10 @@ import './SplitTreeMap.scss';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
 import {treeMap} from './TreeMap';
 
-export interface SplitTreeMapProps extends HoistProps<SplitTreeMapModel>, BoxProps {}
+export interface SplitTreeMapProps extends
+    HoistProps<SplitTreeMapModel>,
+    BoxProps {}
+
 
 /**
  * A component which divides data across two TreeMaps.

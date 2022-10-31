@@ -19,7 +19,10 @@ import './Toolbar.scss';
 import {toolbarSeparator} from './ToolbarSep';
 
 
-export interface ToolbarProps extends HoistProps, BoxProps {
+export interface ToolbarProps extends
+    HoistProps,
+    BoxProps
+{
 
     /** Set to true to style toolbar with reduced height and font-size. */
     compact?: boolean,

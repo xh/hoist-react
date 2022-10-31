@@ -6,7 +6,7 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, LayoutProps, HoistProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -14,7 +14,12 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {Ref} from 'react';
 import './TextArea.scss';
 
-export interface TextAreaProps extends HoistInputProps {
+export interface TextAreaProps extends
+    HoistProps,
+    HoistInputProps,
+    LayoutProps,
+    StyleProps
+{
     value?: string;
 
     /** True to focus the control on render. */
@@ -28,6 +33,9 @@ export interface TextAreaProps extends HoistInputProps {
 
     /** Ref handler that receives HTML <input> element backing this component. */
     inputRef?: Ref<HTMLInputElement>;
+
+    /** Callback for normalized keydown event. */
+    onKeyDown?: (e: KeyboardEvent) => void;
 
     /** True to select contents when control receives focus. */
     selectOnFocus?: boolean;

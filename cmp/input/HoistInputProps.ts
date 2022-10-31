@@ -5,9 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {BoxProps, HoistProps} from '@xh/hoist/core';
-
-export interface HoistInputProps extends HoistProps, Omit<BoxProps, 'onChange'> {
+export interface HoistInputProps {
     /**
      * Field or model property name from which this component should read and write its value
      * in controlled mode. Can be set by parent FormField.

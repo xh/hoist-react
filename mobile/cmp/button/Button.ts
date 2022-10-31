@@ -5,25 +5,31 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hspacer} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistModel, HoistProps, Intent} from '@xh/hoist/core';
+import {LayoutProps, StyleProps, hoistCmp, HoistModel, HoistProps, Intent} from '@xh/hoist/core';
 import {button as onsenButton} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ReactNode, ReactElement} from 'react';
+import {ReactNode, ReactElement, MouseEvent} from 'react';
 import './Button.scss';
 
-export interface ButtonProps<M extends HoistModel=HoistModel> extends HoistProps<M>, BoxProps {
+export interface ButtonProps<M extends HoistModel=HoistModel> extends
+    HoistProps<M>,
+    LayoutProps,
+    StyleProps
+{
     active?: boolean;
     disabled?: boolean;
     icon?: ReactElement;
     intent?: Intent;
     minimal?: boolean;
+    onClick?: (e: MouseEvent) => void;
     outlined?: boolean;
     text?: ReactNode;
     value?: any;
-    modifier?: any;
+    modifier?: string;
+    tabIndex?: number;
 }
 
 /**

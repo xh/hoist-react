@@ -10,6 +10,7 @@ import {menuButton, MenuButtonProps} from '@xh/hoist/mobile/cmp/menu';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 
+// TODO: should *not* need to also extend HoistProps
 export interface AppMenuButtonProps extends MenuButtonProps, HoistProps {
 
     /** Array of app-specific MenuItems or configs to create them. */

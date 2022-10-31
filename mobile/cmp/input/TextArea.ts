@@ -6,14 +6,19 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div, textarea as textareaTag} from '@xh/hoist/cmp/layout';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import './TextArea.scss';
 
 
-export interface TextAreaProps extends HoistInputProps {
+export interface TextAreaProps extends
+    HoistProps,
+    HoistInputProps,
+    StyleProps,
+    LayoutProps
+{
     value?: string;
 
     /** True to commit on every change/keystroke, default false. */
