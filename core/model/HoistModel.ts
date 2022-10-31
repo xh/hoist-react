@@ -6,7 +6,7 @@
  */
 import {forOwn, has, isFunction} from 'lodash';
 import {warnIf} from '@xh/hoist/utils/js';
-import {DefaultHoistProps, HoistBase, HoistProps, managed} from '../';
+import {DefaultHoistProps, HoistBase, managed} from '../';
 import {ModelSelector} from './';
 import {LoadSupport, LoadSpec, Loadable} from '../load';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';

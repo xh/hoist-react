@@ -4,7 +4,15 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {CreatesSpec, UsesSpec, elemFactory, ElemFactory, HoistProps, DefaultHoistProps} from './';
+import {
+    CreatesSpec,
+    UsesSpec,
+    elemFactory,
+    ElemFactory,
+    HoistProps,
+    DefaultHoistProps,
+    ChildrenProps
+} from './';
 import {
     useModelLinker,
     localModelContext,
@@ -108,7 +116,7 @@ export type ComponentConfig<P extends HoistProps> =
 export function hoistComponent<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): FunctionComponent<DefaultHoistProps<M>>;
 export function hoistComponent<P extends HoistProps>(config: ComponentConfig<P>): FunctionComponent<P>;
 
-export function hoistComponent(config: ComponentConfig<HoistProps>): FunctionComponent {
+export function hoistComponent(config: ComponentConfig<DefaultHoistProps>): FunctionComponent {
     // 0) Pre-process/parse args.
     if (isFunction(config)) config = {render: config, displayName: config.name};
 
@@ -168,15 +176,15 @@ export function hoistComponent(config: ComponentConfig<HoistProps>): FunctionCom
  */
 export const hoistCmp = hoistComponent;
 
-export function hoistComponentFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): ElemFactory<DefaultHoistProps<M>, FunctionComponent<DefaultHoistProps<M>>>;
-export function hoistComponentFactory<P extends HoistProps>(config: ComponentConfig<P>): ElemFactory<P, FunctionComponent<P>>;
+export function hoistComponentFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): ElemFactory<DefaultHoistProps<M>, FunctionComponent<DefaultHoistProps<M>>, false>;
+export function hoistComponentFactory<P extends HoistProps>(config: ComponentConfig<P>): ElemFactory<P, FunctionComponent<P>, P extends ChildrenProps ? true : false>;
 
-export function hoistComponentFactory(config: ComponentConfig<HoistProps>): ElemFactory {
+export function hoistComponentFactory(config: ComponentConfig<DefaultHoistProps>): ElemFactory {
     return elemFactory(hoistComponent(config));
 }
 
-export function hoistComponentWithFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): [FunctionComponent<DefaultHoistProps<M>>, ElemFactory<DefaultHoistProps<M>>];
-export function hoistComponentWithFactory<P extends HoistProps>(config: ComponentConfig<P>):[FunctionComponent<P>, ElemFactory<P, FunctionComponent<P>>];
+export function hoistComponentWithFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): [FunctionComponent<DefaultHoistProps<M>>, ElemFactory<DefaultHoistProps<M>, FunctionComponent<DefaultHoistProps<M>>, false>];
+export function hoistComponentWithFactory<P extends HoistProps>(config: ComponentConfig<P>):[FunctionComponent<P>, ElemFactory<P, FunctionComponent<P>, P extends ChildrenProps ? true : false>];
 
 export function hoistComponentWithFactory(config: ComponentConfig<HoistProps>): [FunctionComponent, ElemFactory] {
     const ret = hoistComponent(config);

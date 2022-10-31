@@ -4,14 +4,13 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {ButtonProps} from '@xh/hoist/mobile/cmp/button';
-import {menuButton} from '@xh/hoist/mobile/cmp/menu';
+import {menuButton, MenuButtonProps} from '@xh/hoist/mobile/cmp/menu';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 
-export interface AppMenuButtonProps extends ButtonProps {
+export interface AppMenuButtonProps extends MenuButtonProps, HoistProps {
 
     /** Array of app-specific MenuItems or configs to create them. */
     extraItems?: any[];   // TODO: Type menu items

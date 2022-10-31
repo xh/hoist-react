@@ -5,16 +5,16 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp} from '@xh/hoist/core';
-import {Button, buttonGroup, ButtonGroupProps} from '@xh/hoist/mobile/cmp/button';
+import {hoistCmp, XH} from '@xh/hoist/core';
+import {Button, buttonGroup, ButtonGroupProps, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, isEmpty, without} from 'lodash';
-import {Children, cloneElement} from 'react';
+import {Children, cloneElement, isValidElement, ReactNode} from 'react';
 import './ButtonGroupInput.scss';
 
-export interface ButtonGroupInputProps extends HoistInputProps, ButtonGroupProps {
+export interface ButtonGroupInputProps extends HoistInputProps, Omit<ButtonGroupProps, 'onChange'> {
 
     /**
      * True to allow buttons to be unselected (aka inactivated). Used when enableMulti is false.
@@ -86,13 +86,16 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(
 
         const {children, disabled, enableClear, enableMulti, tabIndex = 0, ...rest} = getNonLayoutProps(props);
 
-        const buttons = Children.map(children, button => {
+        const buttons = Children.map(children as ReactNode[], button => {
             if (!button) return null;
+
+            if (!isValidElement(button) || button.type !== Button) {
+                throw XH.exception('ButtonGroupInput child must be a Button.');
+            }
 
             const {value} = button.props,
                 btnDisabled = disabled || button.props.disabled;
 
-            throwIf(button.type !== Button, 'ButtonGroupInput child must be a Button.');
             throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
 
             const isActive = model.isActive(value);
@@ -101,7 +104,7 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(
                 active: isActive,
                 disabled: withDefault(btnDisabled, false),
                 onClick: () => model.onButtonClick(value)
-            });
+            } as ButtonProps);
         });
 
         return buttonGroup({

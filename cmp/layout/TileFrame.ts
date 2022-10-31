@@ -69,12 +69,11 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
     }: TileFrameProps, ref) {
         const localModel = useLocalModel(TileFrameLocalModel),
             [width, setWidth] = useState<number>(),
-            [height, setHeight] = useState<number>();
-
-        children = Children.toArray(children);
+            [height, setHeight] = useState<number>(),
+            childrenArr = Children.toArray(children);
 
         localModel.setParams({
-            count: children.length,
+            count: childrenArr.length,
             width,
             height,
             desiredRatio,
@@ -99,7 +98,7 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
         );
 
         const items = localModel.layout ?
-            children.map((item, idx) => box({
+            childrenArr.map((item, idx) => box({
                 style: localModel.getTileStyle(idx),
                 className: 'xh-tile-frame__tile',
                 item

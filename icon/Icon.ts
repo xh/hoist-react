@@ -12,7 +12,7 @@ import {last, pickBy, split, toLower} from 'lodash';
 import {iconCmp} from './impl/IconCmp';
 import {enhanceFaClasses, iconHtml} from './impl/IconHtml';
 import {ReactElement} from 'react';
-import {BoxProps, HoistProps, Intent} from '@xh/hoist/core';
+import {HoistProps, Intent} from '@xh/hoist/core';
 
 export interface IconProps extends HoistProps, Partial<Omit<FontAwesomeIconProps, 'ref'>> {
 

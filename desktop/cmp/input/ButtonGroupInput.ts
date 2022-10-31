@@ -13,7 +13,7 @@ import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty, filter, without, castArray} from 'lodash';
 import {Children, cloneElement, isValidElement} from 'react';
 
-export interface ButtonGroupInputProps extends HoistInputProps, ButtonGroupProps<HoistModel> {
+export interface ButtonGroupInputProps extends HoistInputProps, Omit<ButtonGroupProps<HoistModel>, 'onChange'> {
     /**
      * True to allow buttons to be unselected (aka inactivated). Defaults to false.
      * Does not apply when enableMulti: true.
@@ -125,7 +125,7 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(
             if (!button) return null;
 
             if (!isValidElement(button) || button.type !== Button) {
-                throw XH.exception('ButtonGroupInput child must be a Button.')
+                throw XH.exception('ButtonGroupInput child must be a Button.');
             }
 
             const {value, intent: btnIntent} = button.props,

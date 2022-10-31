@@ -6,8 +6,8 @@
  */
 import {HoistModel} from '@xh/hoist/core/model';
 import {LayoutProps} from '@xh/hoist/utils/react';
-import {CSSProperties, ForwardedRef, HTMLAttributes, ReactNode, Ref} from 'react';
-import { PlainObject } from './types/Types';
+import {ForwardedRef, HTMLAttributes, ReactNode} from 'react';
+import {PlainObject} from './types/Types';
 
 /**
  * Props interface for Hoist Components.
@@ -38,13 +38,14 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
      */
     className?: string;
 
-
     /** React Ref for this component. */
     ref?: ForwardedRef<any>;
 
     /** React key for this component. */
     key?: string | number;
+}
 
+export interface ChildrenProps {
     /**
      *  React Children.  Not specified directly by users of the associated component, but
      *  populated on props by React internally, before rendering.  Applications will
@@ -54,6 +55,7 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
     children?: ReactNode;
 }
 
+
 /**
  * A version of Hoist props that allows dynamic keys/properties.   This is the interface that
  * Hoist uses for components that do not explicitly specify the type of props they expect.
@@ -62,7 +64,7 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
  * props API.
  */
 
-export interface DefaultHoistProps<M extends HoistModel = HoistModel> {
+export interface DefaultHoistProps<M extends HoistModel = HoistModel> extends HoistProps<M>{
 
     [x:string]: any;
 }

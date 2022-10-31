@@ -176,7 +176,7 @@ class DateInputModel extends HoistInputModel {
 
     @observable popoverOpen: boolean = false;
 
-    buttonRef = createRef<HTMLElement>();
+    buttonRef = createRef<HTMLButtonElement>();
     popoverRef = createRef<HTMLElement>();
     textInputRef = createRef<TextInputModel>();
 

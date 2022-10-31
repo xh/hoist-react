@@ -5,9 +5,14 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
-import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
+import {
+    FieldModel,
+    FormContext,
+    FormContextType,
+    BaseFormFieldProps
+} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
-import {DefaultHoistProps, hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
+import {DefaultHoistProps, hoistCmp, uses, XH} from '@xh/hoist/core';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
@@ -160,7 +165,7 @@ const readonlyChild = hoistCmp.factory({
     }
 });
 
-const editableChild = hoistCmp.factory({
+const editableChild = hoistCmp.factory<FieldModel>({
     model: false,
 
     render({model, child, childIsSizeable, disabled, commitOnChange, width, height, flex}) {

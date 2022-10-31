@@ -235,7 +235,7 @@ const readonlyChild = hoistCmp.factory({
     }
 });
 
-const editableChild = hoistCmp.factory({
+const editableChild = hoistCmp.factory<FieldModel>({
     model: false,
 
     render({model, child, childIsSizeable, childId, disabled, displayNotValid, leftErrorIcon, commitOnChange}) {

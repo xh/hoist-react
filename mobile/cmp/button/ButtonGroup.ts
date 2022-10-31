@@ -4,15 +4,21 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {
+    ButtonGroupProps as BpButtonGroupProps
+} from '@blueprintjs/core/lib/esm/components/button/buttonGroup';
 import {hbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, Intent, XH} from '@xh/hoist/core';
+import {BoxProps, ChildrenProps, hoistCmp, Intent, XH} from '@xh/hoist/core';
 import {Button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
-import {throwIf} from '@xh/hoist/utils/js';
 import {Children, cloneElement, isValidElement} from 'react';
 import './ButtonGroup.scss';
 
-export interface ButtonGroupProps extends BoxProps {
+export interface ButtonGroupProps extends
+    Omit<BoxProps, 'onChange'>,
+    ChildrenProps,
+    Omit<BpButtonGroupProps, 'children'> {
+
     intent?: Intent;
     minimal?: boolean;
     outlined?: boolean;
@@ -32,7 +38,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
         const items = Children.map(children, button => {
             if (!button) return null;
             if (!isValidElement(button) || button.type !== Button) {
-                throw XH.exception('ButtonGroup child must be a Button.')
+                throw XH.exception('ButtonGroup child must be a Button.');
             }
             const props = button.props as ButtonProps,
                 btnIntent = intent ?? props.intent,

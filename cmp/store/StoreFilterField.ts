@@ -9,7 +9,6 @@ import {
     DefaultHoistProps,
     hoistCmp,
     HoistModel,
-    HoistProps,
     useLocalModel,
     XH
 } from '@xh/hoist/core';

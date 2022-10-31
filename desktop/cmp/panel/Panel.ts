@@ -6,7 +6,7 @@
  */
 import {box, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {
-    BoxProps, ElemFactory,
+    BoxProps,
     hoistCmp,
     refreshContextView,
     RenderMode,
@@ -211,7 +211,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
 });
 
 function parseLoadDecorator(prop, name, contextModel) {
-    const cmp: ElemFactory = (name === 'mask' ? mask : loadingIndicator);
+    const cmp = (name === 'mask' ? mask : loadingIndicator) as any;
     if (!prop)                                  return null;
     if (isValidElement(prop))                   return prop;
     if (prop === true)                          return cmp({isDisplayed: true});

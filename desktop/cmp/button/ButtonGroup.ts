@@ -5,21 +5,17 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {ButtonGroupProps as BpButtonGroupProps} from '@blueprintjs/core';
-import {hoistCmp, HoistModel, HoistProps} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {CSSProperties} from 'react';
 
-export interface ButtonGroupProps<M extends HoistModel = null> extends HoistProps<M>, Omit<BpButtonGroupProps, 'children'> {
+export interface ButtonGroupProps<M extends HoistModel = null> extends BoxProps<M>, Omit<BpButtonGroupProps, 'children'|'onChange'> {
     /** True to have all buttons fill available width equally. */
     fill?: boolean;
 
     /** True to render each button with minimal surrounding chrome (default false). */
     minimal?: boolean;
-
-    /** Style block. */
-    style?: CSSProperties;
 
     /** True to render in a vertical orientation. */
     vertical?: boolean;

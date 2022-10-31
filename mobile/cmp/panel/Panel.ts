@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, TaskObserver, useContextModel, Some, HoistProps, ElemFactory} from '@xh/hoist/core';
+import {hoistCmp, TaskObserver, useContextModel, Some, HoistProps, ElemFactory, ChildrenProps} from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
@@ -17,7 +17,7 @@ import {isValidElement, ReactNode, ReactElement} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import './Panel.scss';
 
-export interface PanelProps extends HoistProps  {
+export interface PanelProps extends HoistProps, ChildrenProps  {
     /** A toolbar to be docked at the bottom of the panel. */
     bbar?: Some<ReactNode>;
 
@@ -124,7 +124,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
 // Implementation
 //------------------------
 function parseLoadDecorator(prop, name, contextModel) {
-    const cmp: ElemFactory = (name === 'mask' ? mask : loadingIndicator);
+    const cmp = (name === 'mask' ? mask : loadingIndicator) as any;
     if (!prop)                                  return null;
     if (prop === true)                          return cmp({isDisplayed: true});
     if (isValidElement(prop))                   return prop;

@@ -15,7 +15,7 @@ import {toast} from './Toast';
  * This component uses a queue based approach, ensuring only one toast is showing at a time.
  * @internal
  */
-export const toastSource = hoistCmp.factory<ToastSourceModel>({
+export const toastSource = hoistCmp.factory({
     displayName: 'ToastSource',
     model: uses(ToastSourceModel),
 

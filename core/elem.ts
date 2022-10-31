@@ -61,10 +61,10 @@ export type ElemSpec<P> = P & {
  * This latter case is fully equivalent to specifying `{items: [...]}`
  * and is useful when no attributes need to be applied directly to the Element.
  */
-export type ElemFactory<P=any, T extends string|JSXElementConstructor<any>=any> =
-    ((arg: ElemSpec<P>) => ReactElement<P, T>) &
-    ((...args: ReactNode[]) => ReactElement<P, T>);
-
+export type ElemFactory<P=any, T extends string|JSXElementConstructor<any>=any, WC extends boolean=true> =
+    WC extends true ?
+        (((arg?: ElemSpec<P>) => ReactElement<P, T>) & ((...args: ReactNode[]) => ReactElement<P, T>)) :
+        ((arg?: ElemSpec<P>) => ReactElement<P, T>)
 
 /**
  * Create a React Element from a Component type and an ElementSpec

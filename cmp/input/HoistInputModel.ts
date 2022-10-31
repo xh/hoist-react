@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {DefaultHoistProps, ElemFactory, HoistModel, HoistModelClass, HoistProps, useLocalModel} from '@xh/hoist/core';
+import {HoistModel, HoistModelClass, useLocalModel} from '@xh/hoist/core';
 import {FieldModel} from '@xh/hoist/cmp/form';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
@@ -330,7 +330,7 @@ export class HoistInputModel extends HoistModel {
  * @param {Class} modelSpec - specify to use particular subclass of HoistInputModel
  */
 export function useHoistInputModel(
-    component: ElemFactory,
+    component: any,
     props: HoistInputProps,
     ref: ForwardedRef<any>,
     modelSpec?: HoistModelClass<HoistInputModel>
