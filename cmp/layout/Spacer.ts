@@ -4,14 +4,16 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, BoxProps} from '@xh/hoist/core';
+import {hoistCmp, BoxProps, HoistProps} from '@xh/hoist/core';
 import {box} from './Box';
+
+export interface SpacerProps extends HoistProps, BoxProps {}
 
 /**
  * A component for inserting a fixed-sized spacer along the main axis of its parent container.
  * Convenience ElemFactories hspacer() and vspacer() each take a pixel size directly.
  */
-export const [Spacer, spacer] = hoistCmp.withFactory({
+export const [Spacer, spacer] = hoistCmp.withFactory<SpacerProps>({
     displayName: 'Spacer',
     model: false, observer: false,
 
@@ -45,5 +47,5 @@ export const [Filler, filler] = hoistCmp.withFactory<BoxProps>({
 //--------------------------------
 // Convenience Factories
 //--------------------------------
-export function hspacer(width = 10)  {return spacer({width})}
-export function vspacer(height = 10) {return spacer({height})}
+export function hspacer(width: number = 10)  {return spacer({width})}
+export function vspacer(height: number = 10) {return spacer({height})}

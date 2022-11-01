@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box} from '@xh/hoist/cmp/layout';
-import {hoistCmp, Some} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, Some} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -15,7 +15,11 @@ import {isArray} from 'lodash';
 import {ReactNode} from 'react';
 import './Slider.scss';
 
-export interface SliderProps extends HoistInputProps {
+export interface SliderProps extends
+    HoistProps,
+    HoistInputProps,
+    LayoutProps
+{
     value?: Some<number>;
 
     /** Maximum value */

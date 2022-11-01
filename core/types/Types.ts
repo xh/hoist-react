@@ -4,7 +4,7 @@
 *
 * Copyright © 2022 Extremely Heavy Industries Inc.
 */
-import {ElemFactory} from '@xh/hoist/core';
+import {ElementFactory} from '@xh/hoist/core';
 import {Component, FunctionComponent, ReactElement} from 'react';
 import {DebounceSettings} from 'lodash';
 
@@ -49,4 +49,4 @@ export type DebounceSpec = number|(DebounceSettings & {interval: number});
  * Can be a ReactElement, HoistComponent or function. If a function, it may be an ElemFactory or any
  * function that returns a ReactElement. In either case, the function will be called with no arguments.
  */
-export type Content = ReactElement|FunctionComponent|Component|ElemFactory|(() => ReactElement);
+export type Content = ReactElement|FunctionComponent|Component|ElementFactory|(() => ReactElement);

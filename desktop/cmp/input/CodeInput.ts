@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, managed, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, managed, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
@@ -39,7 +39,11 @@ import {findDOMNode} from 'react-dom';
 import {ReactElement} from 'react';
 import './CodeInput.scss';
 
-export interface CodeInputProps extends HoistInputProps {
+export interface CodeInputProps extends
+    HoistProps,
+    HoistInputProps,
+    LayoutProps
+{
     /** True to focus the control on render. */
     autoFocus?: boolean;
 

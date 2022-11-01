@@ -5,11 +5,11 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {BoxProps} from '@xh/hoist/core';
+import {BoxProps, HoistProps} from '@xh/hoist/core';
 import {ReactNode} from 'react';
 import {FieldModel} from './field/FieldModel';
 
-export interface BaseFormFieldProps extends BoxProps<FieldModel> {
+export interface BaseFormFieldProps extends HoistProps<FieldModel>, BoxProps {
 
     /**
      * CommitOnChange property for underlying HoistInput (for inputs that support).

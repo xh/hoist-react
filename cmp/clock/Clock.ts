@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {box, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, managed, BoxProps, useLocalModel, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, managed, BoxProps, useLocalModel, XH, HoistProps} from '@xh/hoist/core';
 import {fmtDate, TIME_FMT} from '@xh/hoist/format';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -13,7 +13,7 @@ import {MINUTES, ONE_SECOND} from '@xh/hoist/utils/datetime';
 import {isNumber} from 'lodash';
 import {getLayoutProps} from '../../utils/react';
 
-export interface ClockProps extends BoxProps {
+export interface ClockProps extends HoistProps, BoxProps {
 
     /** String to display if the timezone is invalid or an offset cannot be fetched. */
     errorString?: string;

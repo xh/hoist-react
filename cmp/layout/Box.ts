@@ -4,10 +4,12 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, BoxProps} from '@xh/hoist/core';
+import {hoistCmp, BoxProps, HoistProps} from '@xh/hoist/core';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {merge} from 'lodash';
 import {div} from './Tags';
+
+export interface BoxComponentProps extends HoistProps, BoxProps {}
 
 /**
  * A Component that supports flexbox-based layout of its contents.
@@ -19,7 +21,7 @@ import {div} from './Tags';
  *
  * VBox and HBox variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-export const [Box, box] = hoistCmp.withFactory<BoxProps>({
+export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
     displayName: 'Box',
     model: false, memo: false, observer: false,
 
@@ -43,7 +45,7 @@ export const [Box, box] = hoistCmp.withFactory<BoxProps>({
     }
 });
 
-export const [VBox, vbox] = hoistCmp.withFactory<BoxProps>({
+export const [VBox, vbox] = hoistCmp.withFactory<BoxComponentProps>({
     displayName: 'VBox',
     model: false, memo: false, observer: false,
     className: 'xh-vbox',
@@ -57,7 +59,7 @@ export const [VBox, vbox] = hoistCmp.withFactory<BoxProps>({
     }
 });
 
-export const [HBox, hbox] = hoistCmp.withFactory<BoxProps>({
+export const [HBox, hbox] = hoistCmp.withFactory<BoxComponentProps>({
     displayName: 'HBox',
     model: false, memo: false, observer: false,
     className: 'xh-hbox',

@@ -6,7 +6,7 @@
  */
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {box, div, hbox, hframe, vbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, uses, LayoutProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -19,7 +19,7 @@ import {isEmpty, sortBy} from 'lodash';
 import {ReactElement} from 'react';
 import './FilterChooser.scss';
 
-export interface FilterChooserProps extends BoxProps<FilterChooserModel> {
+export interface FilterChooserProps extends HoistProps<FilterChooserModel>, LayoutProps {
     /** True to focus the control on render. */
     autoFocus?: boolean;
     /** True to disable user interaction. */

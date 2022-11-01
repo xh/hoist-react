@@ -4,21 +4,42 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, PlainObject, useLocalModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {popover} from '@xh/hoist/mobile/cmp/popover';
 import '@xh/hoist/mobile/register';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
-import PT from 'prop-types';
+import {observable, action, makeObservable} from '@xh/hoist/mobx';
+import {ReactNode} from 'react';
 import {menu} from './impl/Menu';
 
 import {MenuItem} from './MenuItem';
 
+
+export interface MenuButtonProps extends Omit<ButtonProps, 'title'> {
+
+    /** Array of MenuItems or configs to create them */
+    menuItems?: (MenuItem|PlainObject)[];
+
+    /** Position of menu relative to button */
+    menuPosition?: 'top-left'|'top'|'top-right'|'right-top'|'right'|'right-bottom'|'bottom-right'|
+        'bottom'|'bottom-left'|'left-bottom'|'left'|'left-top'|'auto';
+
+    /** Optional title to display above the menu */
+    title?: ReactNode;
+
+    /** True to disable user interaction */
+    disabled?: boolean;
+
+    /** Props passed to the internal popover */
+    popoverProps?: PlainObject;
+}
+
+
 /**
  * Convenience Button preconfigured for use as a trigger for a dropdown menu operation.
  */
-export const [MenuButton, menuButton] = hoistCmp.withFactory({
+export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
     displayName: 'MenuButton',
     className: 'xh-menu-button',
 
@@ -31,7 +52,7 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory({
         icon = Icon.bars(),
         ...props
     }) {
-        const impl = useLocalModel(LocalModel);
+        const impl = useLocalModel(MenuButtonLocalModel);
 
         return popover({
             isOpen: impl.isOpen,
@@ -46,33 +67,11 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory({
     }
 });
 
-MenuButton.propTypes = {
-    ...Button.propTypes,
+class MenuButtonLocalModel extends HoistModel {
+    xhImpl = true;
 
-    /** Array of MenuItems or configs to create them */
-    menuItems: PT.arrayOf(PT.oneOfType([PT.instanceOf(MenuItem), PT.object])).isRequired,
-
-    /** Position of menu relative to button */
-    menuPosition: PT.oneOf([
-        'top-left', 'top', 'top-right',
-        'right-top', 'right', 'right-bottom',
-        'bottom-right', 'bottom', 'bottom-left',
-        'left-bottom', 'left', 'left-top',
-        'auto'
-    ]),
-
-    /** Optional title to display above the menu */
-    title: PT.node,
-
-    /** True to disable user interaction */
-    disabled: PT.bool,
-
-    /** Props passed to the internal popover */
-    popoverProps: PT.object
-};
-
-class LocalModel extends HoistModel {
-    @bindable isOpen = false;
+    @observable isOpen = false;
+    @action setIsOpen(v: boolean) {this.isOpen = true}
 
     constructor() {
         super();

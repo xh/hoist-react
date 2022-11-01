@@ -6,8 +6,9 @@
  */
 import {box, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {
-    BoxProps, ElemFactory,
+    BoxProps,
     hoistCmp,
+    HoistProps,
     refreshContextView,
     RenderMode,
     Some,
@@ -31,8 +32,10 @@ import {PanelConfig, PanelModel} from './PanelModel';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
 
 
-interface PanelProps extends BoxProps<PanelModel> {
-
+interface PanelProps extends
+    HoistProps<PanelModel>,
+    Omit<BoxProps, 'title'>
+{
     /** True to style panel header (if displayed) with reduced padding and font-size. */
     compactHeader?: boolean;
 
@@ -211,7 +214,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
 });
 
 function parseLoadDecorator(prop, name, contextModel) {
-    const cmp: ElemFactory = (name === 'mask' ? mask : loadingIndicator);
+    const cmp = (name === 'mask' ? mask : loadingIndicator) as any;
     if (!prop)                                  return null;
     if (isValidElement(prop))                   return prop;
     if (prop === true)                          return cmp({isDisplayed: true});

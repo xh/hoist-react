@@ -75,7 +75,7 @@ const inputCmp = hoistCmp.factory<MessageModel>(
             fieldDefaults: {commitOnChange: true, minimal: true, label: null},
             item: formField({
                 field: 'value',
-                item: withDefault(input.item, textInput({autoFocus: true}))
+                item: withDefault(input.item, textInput())
             })
         });
     }

@@ -4,8 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, BoxProps} from '@xh/hoist/core';
+import {hoistCmp, BoxProps, HoistProps} from '@xh/hoist/core';
 import {box} from './Box';
+
+export interface FrameProps extends HoistProps, BoxProps {}
 
 /**
  * A Box class that flexes to grow and stretch within its *own* parent via flex:'auto', useful for
@@ -15,7 +17,7 @@ import {box} from './Box';
  *
  * VFrame and HFrame variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-export const [Frame, frame] = hoistCmp.withFactory<BoxProps>({
+export const [Frame, frame] = hoistCmp.withFactory<FrameProps>({
     displayName: 'Frame',
     model: false, memo: false, observer: false,
 
@@ -24,7 +26,7 @@ export const [Frame, frame] = hoistCmp.withFactory<BoxProps>({
     }
 });
 
-export const [VFrame, vframe] = hoistCmp.withFactory<BoxProps>({
+export const [VFrame, vframe] = hoistCmp.withFactory<FrameProps>({
     displayName: 'VFrame',
     model: false, memo: false, observer: false,
     className: 'xh-vframe',
@@ -39,7 +41,7 @@ export const [VFrame, vframe] = hoistCmp.withFactory<BoxProps>({
     }
 });
 
-export const [HFrame, hframe] = hoistCmp.withFactory<BoxProps>({
+export const [HFrame, hframe] = hoistCmp.withFactory<FrameProps>({
     displayName: 'HFrame',
     model: false, memo: false, observer: false,
     className: 'xh-hframe',

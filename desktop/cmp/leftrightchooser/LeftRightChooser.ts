@@ -6,7 +6,7 @@
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {hframe, vbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, uses} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {cloneDeep} from 'lodash';
 import {chooserToolbar} from './impl/ChooserToolbar';
@@ -14,7 +14,7 @@ import {description} from './impl/Description';
 import './LeftRightChooser.scss';
 import {LeftRightChooserModel} from './LeftRightChooserModel';
 
-export type LeftRightChooserProps = BoxProps<LeftRightChooserModel>;
+export interface LeftRightChooserProps extends HoistProps<LeftRightChooserModel>, BoxProps {}
 
 
 /**

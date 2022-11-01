@@ -6,14 +6,14 @@
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
-import {hoistCmp, HoistModel, useLocalModel, uses, lookup, PlainObject, BoxProps} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses, lookup, PlainObject, HoistProps, BoxProps} from '@xh/hoist/core';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {isFunction} from 'lodash';
 
 import './DataView.scss';
 import {DataViewModel} from './DataViewModel';
 
-export type DataViewProps = BoxProps<DataViewModel>;
+export interface DataViewProps extends HoistProps<DataViewModel>, BoxProps {}
 
 /**
  * A DataView is a specialized version of the Grid component. It displays its data within a

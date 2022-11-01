@@ -11,8 +11,9 @@ import {Column} from './columns/Column';
 import {div, fragment, frame} from '@xh/hoist/cmp/layout';
 import {
     BoxProps,
-    hoistCmp,
+    hoistCmpWithFactory,
     HoistModel,
+    HoistProps,
     lookup,
     PlainObject,
     SizingMode,
@@ -53,9 +54,9 @@ import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
-import { RecordSet } from '@xh/hoist/data/impl/RecordSet';
+import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
 
-export interface GridProps extends BoxProps<GridModel> {
+export interface GridProps extends HoistProps<GridModel>, BoxProps {
     /**
      * Options for ag-Grid's API.
      *
@@ -91,7 +92,7 @@ export interface GridProps extends BoxProps<GridModel> {
  * @see {@link https://www.ag-grid.com/javascript-grid-reference-overview/|ag-Grid Docs}
  * @see GridModel
  */
-export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
+export const [Grid, grid] = hoistCmpWithFactory<GridProps>({
     displayName: 'Grid',
     model: uses(GridModel),
     className: 'xh-grid',

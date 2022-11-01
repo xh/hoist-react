@@ -27,6 +27,6 @@ export const [LogoutButton, logoutButton] = hoistCmp.withFactory<LogoutButtonPro
         ...props
     }) {
         if (XH.appSpec.isSSO) return null;
-        return button({icon, onClick, props});
+        return button({icon, onClick, ...props});
     }
 });

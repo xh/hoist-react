@@ -4,52 +4,8 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistProps} from '@xh/hoist/core';
+import {HoistProps, LayoutProps} from '@xh/hoist/core';
 import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
-
-
-export interface LayoutProps {
-
-    margin?: string|number;
-    marginTop?: string|number;
-    marginRight?: string|number;
-    marginBottom?: string|number;
-    marginLeft?: string|number;
-
-    padding?: string|number;
-    paddingTop?: string|number;
-    paddingRight?: string|number;
-    paddingBottom?: string|number;
-    paddingLeft?: string|number;
-
-    height?: string|number;
-    minHeight?: string|number;
-    maxHeight?: string|number;
-    width?: string|number;
-    minWidth?: string|number;
-    maxWidth?: string|number;
-
-    flex?: string|number;
-    flexBasis?: string|number;
-    flexDirection?: string|number;
-    flexGrow?: string|number;
-    flexShrink?: string|number;
-    flexWrap?: string|number;
-
-    alignItems?: string;
-    alignSelf?: string;
-    alignContent?: string;
-    justifyContent?: string;
-
-    overflow?: string;
-    overflowX?: string;
-    overflowY?: string;
-
-    top?: string|number;
-    left?: string|number;
-    position?: string;
-    display?: string;
-}
 
 /**
  * These utils support accepting the CSS styles enumerated below as top-level props of a Component,

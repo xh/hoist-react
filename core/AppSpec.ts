@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {XH, HoistAppModel, ElemFactory, HoistProps} from '@xh/hoist/core';
+import {XH, HoistAppModel, ElementFactory, HoistProps} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil, isString} from 'lodash';
 import {Component, ComponentClass, FunctionComponent} from 'react';
@@ -78,14 +78,14 @@ export class AppSpec<T extends HoistAppModel=HoistAppModel> {
      * receive a single prop -- onReactivate -- a callback called when the user has acknowledged
      * the suspension and wishes to reload the app.
      */
-    idlePanel?: ElemFactory|FunctionComponent|Component;
+    idlePanel?: ElementFactory|FunctionComponent|Component;
 
     /**
      * Optional custom Component to display when the user is denied access to app. Intended for
      * apps that implement custom auth flows. See also `lockoutMessage` for a more lightweight
      * customization option.
      */
-    lockoutPanel?: ElemFactory|FunctionComponent|Component;
+    lockoutPanel?: ElementFactory|FunctionComponent|Component;
 
     /** Optional message to show on login form (for non-SSO apps). */
     loginMessage?: string;
