@@ -17,13 +17,15 @@ import {RestField} from './RestField';
  */
 export class RestStore extends UrlStore {
 
-    _lookupsLoaded = false;
+    reloadLookupsOnLoad: boolean;
+
+    private lookupsLoaded = false;
 
     /**
      * @param {Object} c - RestStore configuration.
      * @param {string} c.url - URL from which to load data.
      * @param {?string} [c.dataRoot] - Key of root node for records in returned data object. Null if data objects are at the root
-     * @param {boolean} [c.reloadLookupsOnLoad] - Whether lookups should be loaded each time
+     * @param [c.reloadLookupsOnLoad] - Whether lookups should be loaded each time
      *      new data is loaded or updated by this client.
      * @param {...*} - Additional arguments to pass to UrlStore.
      */
@@ -36,7 +38,7 @@ export class RestStore extends UrlStore {
         return RestField;
     }
 
-    async doLoadAsync(loadSpec) {
+    override async doLoadAsync(loadSpec) {
         await this.ensureLookupsLoadedAsync();
         return super.doLoadAsync(loadSpec);
     }
@@ -119,7 +121,7 @@ export class RestStore extends UrlStore {
     }
 
     async ensureLookupsLoadedAsync() {
-        if (!this._lookupsLoaded || this.reloadLookupsOnLoad) {
+        if (!this.lookupsLoaded || this.reloadLookupsOnLoad) {
             const lookupFields = this.fields.filter(it => !!it.lookupName);
             if (lookupFields.length) {
                 const lookupData = await XH.fetchJson({url: `${this.url}/lookupData`});
@@ -127,7 +129,7 @@ export class RestStore extends UrlStore {
                     f.lookup = lookupData[f.lookupName];
                 });
             }
-            this._lookupsLoaded = true;
+            this.lookupsLoaded = true;
         }
     }
 }

@@ -7,6 +7,7 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
+import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -15,8 +16,7 @@ import {createRef} from 'react';
 
 export class RestFormModel extends HoistModel {
 
-    /** @member {RestGridModel} */
-    parent = null;
+    parent: RestGridModel = null;
 
     // Mutable State
     @observable.ref currentRecord = null;
@@ -24,14 +24,13 @@ export class RestFormModel extends HoistModel {
     @observable isAdd = null;
     @observable isOpen = false;
 
-    /** @member {FormModel} */
     @managed
     @observable
-    formModel;
+    formModel: FormModel;
 
     @observable types = {};
 
-    dialogRef = createRef();
+    dialogRef = createRef<HTMLElement>();
 
     get actionWarning()     {return this.parent.actionWarning}
     get actions()           {return this.parent.formActions}
@@ -125,7 +124,7 @@ export class RestFormModel extends HoistModel {
     //---------------------
     // Implementation
     //---------------------
-    initForm(rec) {
+    initForm(rec?) {
         this.currentRecord = !isNil(rec) ? rec : {id: null};
         this.isAdd = isNil(rec) || isNil(rec.id);
         this.isOpen = true;

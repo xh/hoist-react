@@ -6,7 +6,7 @@
  */
 
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {pluralize, throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -65,11 +65,10 @@ export class RestGridModel extends HoistModel {
     //----------------
     // Properties
     //----------------
-    /** @member {boolean} */
-    readonly;
+    readonly: boolean;
 
     /** @member {RestGridEditor[]} */
-    editors;
+    editors: PlainObject[];
 
     toolbarActions;
     menuActions;

@@ -7,17 +7,44 @@
 
 import {grid} from '@xh/hoist/cmp/grid';
 import {fragment} from '@xh/hoist/cmp/layout';
-import {hoistCmp, ModelPublishMode, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, ModelPublishMode, PlainObject, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
-import PT from 'prop-types';
-import {cloneElement, isValidElement} from 'react';
+import {cloneElement, isValidElement, ReactElement} from 'react';
 
 import {restForm} from './impl/RestForm';
 import {restGridToolbar} from './impl/RestGridToolbar';
 import {RestGridModel} from './RestGridModel';
 
-export const [RestGrid, restGrid] = hoistCmp.withFactory({
+
+export interface RestGridProps extends HoistProps<RestGridModel> {
+    /**
+     * This constitutes an 'escape hatch' for applications that need to get to the underlying
+     * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
+     * interfere with the implementation of this component and its use of the ag-Grid API.
+     */
+    agOptions?: PlainObject,
+
+    /** Primary component model instance. */
+    model: PlainObject|RestGridModel;
+
+    /** Optional components rendered adjacent to the top toolbar's action buttons */
+    extraToolbarItems?: () => ReactElement|ReactElement[];
+
+    /**
+     * Mask to render on this Component. Defaults to true, which renders a standard
+     * Hoist mask. Also can be set to false for no mask, or passed an element
+     * specifying a Mask instance.
+     */
+    mask?: ReactElement|boolean;
+
+    /**
+     * Classname to be passed to RestForm
+     */
+    formClassName?: string;
+}
+
+export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
     displayName: 'RestGrid',
     model: uses(RestGridModel, {publishMode: ModelPublishMode.LIMITED}),
     className: 'xh-rest-grid',
@@ -46,31 +73,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory({
 });
 
 RestGrid.propTypes = {
-    /**
-     *
-     * This constitutes an 'escape hatch' for applications that need to get to the underlying
-     * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
-     * interfere with the implementation of this component and its use of the ag-Grid API.
-     */
-    agOptions: PT.object,
 
-    /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(RestGridModel), PT.object]),
-
-    /** Optional components rendered adjacent to the top toolbar's action buttons */
-    extraToolbarItems: PT.oneOfType([PT.func, PT.array]),
-
-    /**
-     * Mask to render on this Component. Defaults to true, which renders a standard
-     * Hoist mask. Also can be set to false for no mask, or passed an element
-     * specifying a Mask instance.
-     */
-    mask: PT.oneOfType([PT.element, PT.bool]),
-
-    /**
-     * Classname to be passed to RestForm
-     */
-    formClassName: PT.string
 };
 
 
