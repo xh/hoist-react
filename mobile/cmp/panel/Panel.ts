@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, BoxProps, TaskObserver, useContextModel, Some, HoistProps, ElemFactory} from '@xh/hoist/core';
+import {hoistCmp, BoxProps, TaskObserver, useContextModel, Some, HoistProps, ElementFactory, hoistCmpWithFactory} from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
@@ -63,7 +63,7 @@ export interface PanelProps extends
  * A Panel container builds on the lower-level layout components to offer a header element
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
  */
-export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
+export const [Panel, panel] = hoistCmpWithFactory<PanelProps>({
     displayName: 'Panel',
     className: 'xh-panel',
     model: false,
@@ -98,7 +98,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         }
 
         // 2) Set coreContents element based on scrollable.
-        const coreContentsEl = scrollable ? div : vbox as ElemFactory,
+        const coreContentsEl = scrollable ? div : vbox as ElementFactory,
             coreContents = coreContentsEl({
                 className: 'xh-panel__content',
                 items: children
@@ -127,7 +127,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
 // Implementation
 //------------------------
 function parseLoadDecorator(prop, name, contextModel) {
-    const cmp = (name === 'mask' ? mask : loadingIndicator) as any;
+    const cmp = (name === 'mask' ? mask : loadingIndicator) as ElementFactory;
     if (!prop)                                  return null;
     if (prop === true)                          return cmp({isDisplayed: true});
     if (isValidElement(prop))                   return prop;

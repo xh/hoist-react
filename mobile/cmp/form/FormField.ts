@@ -47,7 +47,7 @@ export interface FormFieldProps extends BaseFormFieldProps {}
  * adjust their child inputs to fill their available space (if appropriate given the input type),
  * so the recommended approach is to specify any sizing on the FormField (as opposed to the input).
  */
-export const [FormField, formField] = hoistCmp.withFactory({
+export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
     displayName: 'FormField',
     className: 'xh-form-field',
     model: uses(FieldModel, {
