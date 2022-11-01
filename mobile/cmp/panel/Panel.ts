@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, BoxProps, TaskObserver, useContextModel, Some, HoistProps, ElementFactory, hoistCmpWithFactory} from '@xh/hoist/core';
+import {BoxProps, TaskObserver, useContextModel, Some, HoistProps, ElementFactory, hoistCmpWithFactory} from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
