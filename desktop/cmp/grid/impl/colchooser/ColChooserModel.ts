@@ -4,21 +4,20 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import { GridModel } from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 
 /**
  * State management for the ColChooser component.
- *
- * It is not necessary to manually create instances of this class within an application.
- * @private
+ * @internal
  */
 export class ColChooserModel extends HoistModel {
     xhImpl = true;
 
-    gridModel;
-    @managed lrModel;
+    gridModel: GridModel;
+    @managed lrModel: LeftRightChooserModel;
 
     // Show in dialog
     @observable isOpen = false;
@@ -26,9 +25,11 @@ export class ColChooserModel extends HoistModel {
     // Show in popover
     @observable isPopoverOpen = false;
 
-    commitOnChange;
-    showRestoreDefaults;
-    autosizeOnCommit;
+    commitOnChange: boolean;
+    showRestoreDefaults: boolean;
+    autosizeOnCommit: boolean;
+    width: number;
+    height: number;
 
     constructor({
         gridModel,
@@ -123,7 +124,7 @@ export class ColChooserModel extends HoistModel {
                 exclude: it.excludeFromChooser,
                 locked: visible && !it.hideable,
                 side: visible ? 'right' : 'left'
-            };
+            } as const;
         });
 
         lrModel.setData(data);

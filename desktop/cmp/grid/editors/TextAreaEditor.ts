@@ -7,11 +7,13 @@
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {textArea} from '../../input';
-import {EditorPropTypes} from './EditorPropTypes';
+import {EditorProps} from './EditorProps';
 import './Editors.scss';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
 
-export const [TextAreaEditor, textAreaEditor] = hoistCmp.withFactory({
+export type TextAreaEditorProps = EditorProps;
+
+export const [TextAreaEditor, textAreaEditor] = hoistCmp.withFactory<TextAreaEditorProps>({
     displayName: 'TextAreaEditor',
     className: 'xh-textarea-editor',
     memo: false,
@@ -29,6 +31,3 @@ export const [TextAreaEditor, textAreaEditor] = hoistCmp.withFactory({
         return useInlineEditorModel(textArea, props, ref);
     }
 });
-TextAreaEditor.propTypes = {
-    ...EditorPropTypes
-};

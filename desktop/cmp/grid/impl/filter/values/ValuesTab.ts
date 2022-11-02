@@ -18,7 +18,7 @@ import {ValuesTabModel} from './ValuesTabModel';
 
 /**
  * Tab for managing value based filters for Column.
- * @private
+ * @internal
  */
 export const valuesTab = hoistCmp.factory({
     model: uses(ValuesTabModel),
@@ -45,7 +45,7 @@ const tbar = hoistCmp.factory(
     }
 );
 
-const body = hoistCmp.factory(
+const body = hoistCmp.factory<ValuesTabModel>(
     ({model}) => {
         const {isCustomFilter} = model.headerFilterModel;
         if (isCustomFilter) return customFilterPlaceholder();
@@ -56,7 +56,7 @@ const body = hoistCmp.factory(
     }
 );
 
-const customFilterPlaceholder = hoistCmp.factory(
+const customFilterPlaceholder = hoistCmp.factory<ValuesTabModel>(
     ({model}) => {
         return placeholder(
             div({
@@ -75,7 +75,7 @@ const customFilterPlaceholder = hoistCmp.factory(
     }
 );
 
-const hiddenValuesMessage = hoistCmp.factory(
+const hiddenValuesMessage = hoistCmp.factory<ValuesTabModel>(
     ({model}) => {
         return div({
             omit: !model.hasHiddenValues,

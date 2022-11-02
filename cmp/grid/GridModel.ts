@@ -42,7 +42,7 @@ import {
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
+import {action, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -449,7 +449,9 @@ export class GridModel extends HoistModel {
     @managed autosizeTask = TaskObserver.trackAll();
 
     /** @internal - used internally by any GridFindField that is bound to this GridModel. */
-    @bindable xhFindQuery = null;
+    @observable xhFindQuery:string = null;
+    @action setXhFindQuery(v: string) {this.xhFindQuery = v}
+
 
     constructor(config: GridConfig) {
         super();

@@ -18,7 +18,7 @@ import {CustomTabModel} from './CustomTabModel';
 
 /**
  * Tab for managing value based filters for Column.
- * @private
+ * @internal
  */
 export const customTab = hoistCmp.factory({
     model: uses(CustomTabModel),
@@ -49,7 +49,7 @@ export const customTab = hoistCmp.factory({
     }
 });
 
-const tbar = hoistCmp.factory(
+const tbar = hoistCmp.factory<CustomTabModel>(
     ({model}) => {
         return toolbar({
             className: 'xh-custom-filter-tab__tbar',

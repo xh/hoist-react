@@ -7,11 +7,13 @@
 import {hoistCmp} from '@xh/hoist/core';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
-import {EditorPropTypes} from './EditorPropTypes';
+import {EditorProps} from './EditorProps';
 import './Editors.scss';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
 
-export const [TextEditor, textEditor] = hoistCmp.withFactory({
+export type TextEditorProps = EditorProps;
+
+export const [TextEditor, textEditor] = hoistCmp.withFactory<TextEditorProps>({
     displayName: 'TextEditor',
     className: 'xh-text-editor',
     memo: false,
@@ -20,6 +22,3 @@ export const [TextEditor, textEditor] = hoistCmp.withFactory({
         return useInlineEditorModel(textInput, props, ref);
     }
 });
-TextEditor.propTypes = {
-    ...EditorPropTypes
-};

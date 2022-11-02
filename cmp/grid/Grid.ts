@@ -10,10 +10,10 @@ import {getTreeStyleClasses, GridAutosizeMode} from '@xh/hoist/cmp/grid';
 import {Column} from './columns/Column';
 import {div, fragment, frame} from '@xh/hoist/cmp/layout';
 import {
-    BoxProps,
     hoistCmpWithFactory,
     HoistModel,
     HoistProps,
+    LayoutProps,
     lookup,
     PlainObject,
     SizingMode,
@@ -56,7 +56,10 @@ import {columnHeader} from './impl/ColumnHeader';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
 
-export interface GridProps extends HoistProps<GridModel>, BoxProps {
+export interface GridProps extends
+    HoistProps<GridModel>,
+    LayoutProps
+{
     /**
      * Options for ag-Grid's API.
      *

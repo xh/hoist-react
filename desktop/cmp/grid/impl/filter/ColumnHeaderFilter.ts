@@ -22,12 +22,11 @@ import {ColumnHeaderFilterModel} from './ColumnHeaderFilterModel';
  * Component to manage column filters from header. Will appear as a "filter" icon if filters are
  * present and provides an appropriate dialog UI for managing the filters when clicked.
  *
- * @private
+ * @internal
  */
 export const columnHeaderFilter = hoistCmp.factory({
     model: uses(ColumnHeaderFilterModel),
 
-    /** @param {ColumnHeaderFilterModel} model */
     render({model}) {
         const {isOpen, hasFilter} = model;
         return popover({
@@ -69,7 +68,7 @@ const content = hoistCmp.factory({
     }
 });
 
-const bbar = hoistCmp.factory({
+const bbar = hoistCmp.factory<ColumnHeaderFilterModel>({
     render({model}) {
         const {commitOnChange} = model;
         return toolbar(
@@ -93,7 +92,7 @@ const bbar = hoistCmp.factory({
     }
 });
 
-const switcher = hoistCmp.factory(
+const switcher = hoistCmp.factory<ColumnHeaderFilterModel>(
     ({model}) => {
         const {fieldType, enableValues} = model.fieldSpec,
             {tabs} = model.tabContainerModel;
@@ -106,7 +105,7 @@ const switcher = hoistCmp.factory(
     }
 );
 
-const switcherButton = hoistCmp.factory(
+const switcherButton = hoistCmp.factory<ColumnHeaderFilterModel>(
     ({model, id, title}) => {
         const {tabContainerModel} = model,
             {activeTabId} = tabContainerModel;

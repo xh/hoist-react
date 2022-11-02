@@ -133,15 +133,15 @@ export class GridFilterModel extends HoistModel {
         this.dialogOpen = false;
     }
 
-    //--------------------------------
-    // Implementation
-    //--------------------------------
-    private setFilter(filter) {
+    setFilter(filter) {
         wait()
             .then(() => this.bind.setFilter(filter))
             .linkTo(this.gridModel.filterTask);
     }
 
+    //--------------------------------
+    // Implementation
+    //--------------------------------
     private parseFieldSpecs(specs, fieldSpecDefaults) {
         const {bind} = this;
 

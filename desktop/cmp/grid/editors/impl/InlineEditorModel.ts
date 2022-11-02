@@ -4,13 +4,15 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, useLocalModel} from '@xh/hoist/core';
+import {HoistInputModel} from '@xh/hoist/cmp/input';
+import {ElementFactory, HoistModel, PlainObject, useLocalModel} from '@xh/hoist/core';
+import {EditorProps} from '@xh/hoist/desktop/cmp/grid/editors/EditorProps';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isNil} from 'lodash';
-import {useImperativeHandle} from 'react';
+import {ForwardedRef, ReactElement, useImperativeHandle} from 'react';
 
 /**
  * Hook to render a component to be used for inline cell editing in ag-grid.
@@ -19,12 +21,15 @@ import {useImperativeHandle} from 'react';
  * Implements the lifecycle methods required by ag-grid cell editors.
  * See https://www.ag-grid.com/react-grid/react-hooks/#hooks-with-lifecycle-methods for details.
  *
- * @param {function} component - React Component to render - should be a HoistInput
- * @param {Object} props - props passed to containing component
- * @param {Object} ref - forwardRef passed to containing component
- * @returns {ReactElement} - React Element to be rendered
+ * @param component - ElementFactory for HoistInput to render.
+ * @param props - props passed to containing component
+ * @param ref - forwardRef passed to containing component
  */
-export function useInlineEditorModel(component, props, ref) {
+export function useInlineEditorModel(
+    component: ElementFactory,
+    props: EditorProps,
+    ref: ForwardedRef<any>
+): ReactElement {
     const {className, inputProps, agParams} = props,
         impl = useLocalModel(() => new InlineEditorModel(agParams));
 
@@ -56,15 +61,16 @@ export function useInlineEditorModel(component, props, ref) {
  * Local Model supporting inline cell editor components. Provides base functionality required by
  * ag-grid plus extension points for editors needing more complex behaviors.
  *
- * @private - created via {@see useInlineEditorModel}
+ * @internal - created via {@link useInlineEditorModel}
  */
 class InlineEditorModel extends HoistModel {
+    xhImpl = true;
+
     @bindable value;
 
-    ref = createObservableRef();
+    ref = createObservableRef<HoistInputModel>();
 
-    /** @member {ICellEditorParams} */
-    agParams;
+    agParams: PlainObject; // ICellEditorParams
 
     get inputEl() {
         return this.ref.current?.inputEl;
@@ -102,9 +108,9 @@ class InlineEditorModel extends HoistModel {
     //-----------------------
     // Implementation
     //-----------------------
-    focusOnRenderReaction() {
+    private focusOnRenderReaction() {
         return {
-            when: () => this.inputEl,
+            when: () => !!this.inputEl,
             run: () => wait(10).then(() => this.focus())
         };
     }

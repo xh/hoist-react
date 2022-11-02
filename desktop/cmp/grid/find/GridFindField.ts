@@ -6,16 +6,46 @@
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {hbox, span, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, useLocalModel} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistProps, useLocalModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {consumeEvent} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import PT from 'prop-types';
 import './GridFindField.scss';
 import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
+
+export interface GridFindFieldProps extends
+    BoxProps,
+    HoistProps
+{
+
+    /**
+     * GridModel whose data this control should search. This component will, by default, use the
+     * fields for all *visible* columns when matching, as well as any groupBy field.
+     */
+    gridModel?: GridModel;
+
+
+    /** Mode to use when searching (default 'startWord'). */
+    matchMode?: 'start'|'startWord'|'any';
+
+    /**
+     * Delay (in ms) to buffer searching the grid after the value changes from user input.
+     * Default 200ms. Set to 0 to filter immediately on each keystroke.
+     */
+    queryBuffer?: number;
+
+    /**
+     * Names of field(s) to include in search. Cannot be used with `excludeFields`.
+     */
+    includeFields?: string[];
+
+    /** Names of field(s) to exclude from search. Cannot be used with `includeFields`. */
+    excludeFields?: string[];
+}
+
 
 /**
  * A text input Component that enables users to search through a Grid and select rows that match
@@ -33,7 +63,7 @@ import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
  * This component supports all props available to TextInput and will pass them along to its
  * underlying TextInput.
  */
-export const [GridFindField, gridFindField] = hoistCmp.withFactory({
+export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindFieldProps>({
     displayName: 'GridFindField',
     className: 'xh-grid-find-field',
     render({className, model, ...props}) {
@@ -110,30 +140,3 @@ const controls = hoistCmp.factory(
         });
     }
 );
-
-GridFindField.propTypes = {
-    /**
-     * GridModel whose data this control should search. This component will, by default, use the
-     * fields for all *visible* columns when matching, as well as any groupBy field.
-     */
-    gridModel: PT.instanceOf(GridModel),
-
-
-    /** Mode to use when searching (default 'startWord'). */
-    matchMode: PT.oneOf(['start', 'startWord', 'any']),
-
-    /**
-     * Delay (in ms) to buffer searching the grid after the value changes from user input.
-     * Default 200ms. Set to 0 to filter immediately on each keystroke.
-     */
-    queryBuffer: PT.number,
-
-    /**
-     * Names of field(s) to include in search. Cannot be used with `excludeFields`.
-     */
-    includeFields: PT.arrayOf(PT.string),
-
-    /** Names of field(s) to exclude from search. Cannot be used with `includeFields`. */
-    excludeFields: PT.arrayOf(PT.string)
-
-};

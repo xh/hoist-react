@@ -4,21 +4,24 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-
+import {Column, GridModel} from '@xh/hoist/cmp/grid';
+import {DefaultHoistProps, HoistProps, PlainObject} from '@xh/hoist/core';
+import {StoreRecord} from '@xh/hoist/data';
 import '@xh/hoist/desktop/register';
-import PT from 'prop-types';
 
-export const EditorPropTypes = {
+export interface EditorProps extends HoistProps {
 
     /** Column in StoreRecord being edited. */
-    column: PT.object,
+    column: Column;
 
     /** Owning GridModel of record being edited.  */
-    gridModel: PT.object,
+    gridModel: GridModel;
 
     /** StoreRecord being edited. */
-    record: PT.object,
+    record: StoreRecord;
 
     /** Props to pass through to the underlying HoistInput component */
-    inputProps: PT.object
-};
+    inputProps: DefaultHoistProps;
+
+    agParams: PlainObject;
+}

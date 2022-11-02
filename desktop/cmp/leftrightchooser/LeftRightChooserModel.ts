@@ -14,7 +14,7 @@ import {FilterTestFn, StoreConfig, StoreRecord} from '@xh/hoist/data';
 
 export interface LeftRightChooserConfig {
 
-    data: LeftRightChooserItem[];
+    data?: LeftRightChooserItem[];
 
     /** Callback for when items change sides. */
     onChange?: () => void;
