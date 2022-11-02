@@ -42,7 +42,7 @@ export const restForm = hoistCmp.factory({
     }
 });
 
-const formDisplay = hoistCmp.factory(
+const formDisplay = hoistCmp.factory<RestFormModel>(
     ({model}) => {
         const formFields = model.editors.map(editor => restFormField({editor}));
 
@@ -62,7 +62,7 @@ const formDisplay = hoistCmp.factory(
     }
 );
 
-const tbar = hoistCmp.factory(
+const tbar = hoistCmp.factory<RestFormModel>(
     ({model}) => {
         const {formModel, actions, currentRecord, gridModel} = model;
         return toolbar(
