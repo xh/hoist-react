@@ -9,6 +9,36 @@ import '@xh/hoist/desktop/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import {PlainObject} from '@xh/hoist/core';
 
+export interface RestFieldSpec extends FieldSpec {
+
+    /**
+     *  False to disable editing and present field as readonly data. True (default) to enable
+     *  editing, or token 'onAdd' to enable editing only when first creating a record.
+     */
+    editable?: boolean|'onAdd';
+
+    /** True to require a non-null value for additions and edits.*/
+    required?: boolean;
+
+    /** Array of available option values. */
+    lookup?: PlainObject[]|string[];
+
+    /** Name of server-provided options to populate lookup.*/
+    lookupName?: string;
+
+    /** For lookups, true to accept custom values not found within provided lookup options. */
+    enableCreate?: boolean;
+
+    /**
+     * Name of another field within this this record that specifies the value type for this field.
+     * (See `Field.type`.)
+     */
+    typeField?: string;
+
+    /** All Arguments for the field*/
+    fieldArgs?: PlainObject;
+}
+
 /**
  * Extended field for RestGrid.
  */
@@ -21,19 +51,6 @@ export class RestField extends Field {
     enableCreate: boolean;
     typeField: string;
 
-    /**
-     * @param [editable] - false to disable editing and present field as
-     *      readonly data. True (default) to enable editing, or special string token 'onAdd'
-     *      to enable editing only when first creating a new record.
-     * @param [required] - true to require a non-null value for additions and edits.
-     * @param [lookup] - Array of available option values.
-     * @param [lookupName] - Name of server-provided options to populate lookup.
-     * @param [enableCreate] - For lookups, true to accept custom values not found within
-     *      provided lookup options.
-     * @param [typeField] - Name of another field within this this record that specifies
-     *      the value type for this field. (See `Field.type`.)
-     * @param [fieldArgs] - All arguments for Field.
-     */
     constructor({
         editable,
         required,
@@ -41,9 +58,9 @@ export class RestField extends Field {
         lookupName,
         enableCreate,
         typeField,
-        ...fieldArgs
-    }) {
-        super(fieldArgs as FieldSpec);
+        ...rest
+    }: RestFieldSpec) {
+        super(rest);
         this.editable = withDefault(editable, true);
         this.required = withDefault(required, false);
         this.lookup = lookup;

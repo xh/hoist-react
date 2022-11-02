@@ -28,6 +28,7 @@ import {
     isNumber,
     isPlainObject,
     isString,
+    keysIn,
     toString
 } from 'lodash';
 import {createElement, forwardRef, isValidElement, ReactNode, useImperativeHandle} from 'react';
@@ -462,6 +463,7 @@ export class Column {
     actionsShowOnHoverOnly?: boolean;
     fieldSpec: FieldSpec;
     manuallySized: boolean;
+    omit: boolean|(() => boolean);
 
     gridModel: GridModel;
     agOptions: PlainObject;
@@ -533,7 +535,7 @@ export class Column {
             enableDotSeparatedFieldPath,
             actionsShowOnHoverOnly,
             actions,
-
+            omit,
             agOptions,
             appData,
             ...rest
@@ -568,6 +570,7 @@ export class Column {
         this.cellClassRules = cellClassRules || {};
 
         this.align = align;
+        this.omit = omit;
 
         this.hidden = withDefault(hidden, false);
 
@@ -657,8 +660,9 @@ export class Column {
         warnIf(this.agOptions.valueGetter, `Column '${ this.colId }' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`);
 
         if (!isEmpty(rest)) {
+            const keys = keysIn(rest);
             throw XH.exception(
-                'The use of rest arguments passed to Columns is no longer supported.  use the `appData` property instead. '
+                `Key(s) '${keys}' not supported in Column.  For custom data, use the 'appData' property.`
             );
         }
     }

@@ -32,7 +32,7 @@ import {PanelConfig, PanelModel} from './PanelModel';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
 
 
-interface PanelProps extends
+export interface PanelProps extends
     HoistProps<PanelModel>,
     Omit<BoxProps, 'title'>
 {

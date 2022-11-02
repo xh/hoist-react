@@ -7,8 +7,9 @@
 
 import {grid} from '@xh/hoist/cmp/grid';
 import {fragment} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, ModelPublishMode, PlainObject, uses} from '@xh/hoist/core';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {hoistCmp, HoistProps, PlainObject, uses} from '@xh/hoist/core';
+import {MaskProps} from '@xh/hoist/desktop/cmp/mask';
+import {panel, PanelProps} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
 import {cloneElement, isValidElement, ReactElement} from 'react';
 
@@ -17,16 +18,16 @@ import {restGridToolbar} from './impl/RestGridToolbar';
 import {RestGridModel} from './RestGridModel';
 
 
-export interface RestGridProps extends HoistProps<RestGridModel> {
+export interface RestGridProps extends
+    HoistProps<RestGridModel>,
+    Omit<PanelProps, 'model'|'modelConfig'>
+{
     /**
      * This constitutes an 'escape hatch' for applications that need to get to the underlying
      * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
      * interfere with the implementation of this component and its use of the ag-Grid API.
      */
     agOptions?: PlainObject,
-
-    /** Primary component model instance. */
-    model: PlainObject|RestGridModel;
 
     /** Optional components rendered adjacent to the top toolbar's action buttons */
     extraToolbarItems?: () => ReactElement|ReactElement[];
@@ -38,15 +39,13 @@ export interface RestGridProps extends HoistProps<RestGridModel> {
      */
     mask?: ReactElement|boolean;
 
-    /**
-     * Classname to be passed to RestForm
-     */
+    /** Classname to be passed to RestForm. */
     formClassName?: string;
 }
 
 export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
     displayName: 'RestGrid',
-    model: uses(RestGridModel, {publishMode: ModelPublishMode.LIMITED}),
+    model: uses(RestGridModel, {publishMode: 'limited'}),
     className: 'xh-rest-grid',
 
     render({
@@ -72,14 +71,10 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
     }
 });
 
-RestGrid.propTypes = {
-
-};
-
 
 function getMaskFromProp(model, mask) {
     if (isValidElement(mask)) {
-        mask = cloneElement(mask, {bind: model.loadModel});
+        mask = cloneElement<MaskProps>(mask, {bind: model.loadModel});
     } else if (mask === true) {
         mask = model.loadModel;
     }

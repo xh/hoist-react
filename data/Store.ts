@@ -32,7 +32,7 @@ import { FilterLike } from './filter/Types';
 export interface StoreConfig {
 
     /** Field names, configs, or instances. */
-    fields?: string[]|FieldSpec[]|Field[];
+    fields?: (string|FieldSpec|Field)[];
 
     /**
      * Default configs applied to `Field` instances constructed internally by this Store.

@@ -58,6 +58,7 @@ import {
 import equal from 'fast-deep-equal';
 import {
     castArray,
+    clone,
     cloneDeep,
     compact,
     defaults,
@@ -71,6 +72,7 @@ import {
     isPlainObject,
     isString,
     isUndefined,
+    keysIn,
     max,
     min,
     omit,
@@ -315,6 +317,9 @@ export interface GridConfig {
      */
     experimental?: PlainObject;
 
+    /** Extra app-specific data for the GridModel. */
+    appData?: PlainObject;
+
     /** @internal */
     xhImpl?: boolean;
 }
@@ -380,7 +385,7 @@ export class GridModel extends HoistModel {
     onCellClicked: (e: any) => void;
     onCellDoubleClicked: (e: any) => void;
     onCellContextMenu: (e: any) => void;
-
+    appData: PlainObject;
 
     @managed filterModel: GridFilterModel;
     @managed agGridModel: AgGridModel;
@@ -505,6 +510,7 @@ export class GridModel extends HoistModel {
             clicksToEdit = 2,
             highlightRowOnClick = XH.isMobileApp,
             experimental,
+            appData,
             xhImpl,
             ...rest
         }: GridConfig = config;
@@ -590,12 +596,20 @@ export class GridModel extends HoistModel {
         this.onCellClicked = onCellClicked;
         this.onCellDoubleClicked = onCellDoubleClicked;
         this.onCellContextMenu = onCellContextMenu;
+        this.appData = appData ? clone(appData) : {};
 
         this.addReaction({
             track: () => this.isEditing,
             run: (isEditing) => this.isInEditingMode = isEditing,
             debounce: 500
         });
+
+        if (!isEmpty(rest)) {
+            const keys = keysIn(rest);
+            throw XH.exception(
+                `Key(s) '${keys}' not supported in GridModel.  For custom data, use the 'appData' property.`
+            );
+        }
     }
 
     /**
