@@ -28,10 +28,10 @@ import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
 import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
 import {convertGLToState, convertStateToGL, goldenLayoutConfig, getViewModelId} from './impl/DashContainerUtils';
 import {dashContainerView} from './impl/DashContainerView';
-import {DashViewSpec, DashModel, DashConfig} from '../';
+import {DashModel, DashConfig} from '../';
 
 
-export interface DashContainerConfig extends DashConfig<DashViewSpec, DashViewState>{
+export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, DashViewState>{
 
     /** Strategy for rendering DashContainerViews. Can also be set per-view in `viewSpecs`*/
     renderMode?: RenderMode;

@@ -4,42 +4,40 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {FieldType} from '@xh/hoist/data';
-
-const {STRING} = FieldType;
+import {ColumnSpec} from '@xh/hoist/cmp/grid';
 
 export const logName = {
     field: {
         name: 'name',
-        type: STRING,
+        type: 'string',
         displayName: 'Log Name'
     },
     width: 400
-};
+} as ColumnSpec;
 
 export const level = {
     field: {
         name: 'level',
-        type: STRING,
+        type: 'string',
         displayName: 'Override'
     },
     width: 110
-};
+} as ColumnSpec;
 
 export const defaultLevel = {
     field: {
         name: 'defaultLevel',
-        type: STRING,
+        type: 'string',
         displayName: 'Initial'
     },
     width: 110
-};
+} as ColumnSpec;
 
 export const effectiveLevel = {
     field: {
         name: 'effectiveLevel',
-        type: STRING,
+        type: 'string',
         displayName: 'Effective'
     },
     width: 110
-};
+} as ColumnSpec;

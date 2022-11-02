@@ -8,7 +8,6 @@
 import {div, filler} from '@xh/hoist/cmp/layout';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {FieldType} from '@xh/hoist/data';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -98,7 +97,7 @@ const switcher = hoistCmp.factory<ColumnHeaderFilterModel>(
             {tabs} = model.tabContainerModel;
 
         return buttonGroup({
-            omit: !enableValues || fieldType === FieldType.BOOL,
+            omit: !enableValues || fieldType === 'bool',
             className: 'xh-column-header-filter__tab-switcher',
             items: tabs.map(it => switcherButton({...it}))
         });

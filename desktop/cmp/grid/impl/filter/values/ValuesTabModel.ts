@@ -4,9 +4,9 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, SizingMode} from '@xh/hoist/core';
-import {FieldFilterSpec, FieldType} from '@xh/hoist/data';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {HoistModel, managed} from '@xh/hoist/core';
+import {FieldFilterSpec} from '@xh/hoist/data';
 import {
     ColumnHeaderFilterModel
 } from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
@@ -121,7 +121,7 @@ export class ValuesTabModel extends HoistModel {
 
         const {fieldType} = this.headerFilterModel;
         let arr, op;
-        if (fieldType === FieldType.TAGS) {
+        if (fieldType === 'tags') {
             arr = included;
             op = 'includes';
         } else {
@@ -142,7 +142,7 @@ export class ValuesTabModel extends HoistModel {
             {fieldType} = this.headerFilterModel;
 
         if (isEmpty(columnFilters)) {
-            this.pendingValues = fieldType === FieldType.TAGS ? [] : values;
+            this.pendingValues = fieldType === 'tags' ? [] : values;
             return;
         }
 
@@ -179,7 +179,7 @@ export class ValuesTabModel extends HoistModel {
         const {BLANK_STR} = this.gridFilterModel,
             {align, headerAlign, displayName} = this.headerFilterModel.column,
             {fieldType} = this.headerFilterModel,
-            renderer = this.fieldSpec.renderer ?? (fieldType !== FieldType.TAGS ? this.headerFilterModel.column.renderer : null);
+            renderer = this.fieldSpec.renderer ?? (fieldType !== 'tags' ? this.headerFilterModel.column.renderer : null);
 
         return new GridModel({
             store: {
@@ -192,8 +192,8 @@ export class ValuesTabModel extends HoistModel {
             selModel: 'disabled',
             emptyText: 'No records found...',
             contextMenu: null,
-            autosizeOptions: {mode: GridAutosizeMode.DISABLED},
-            sizingMode: SizingMode.COMPACT,
+            autosizeOptions: {mode: 'disabled'},
+            sizingMode: 'compact',
             stripeRows: false,
             sortBy: 'value',
             colDefaults: {sortable: false},

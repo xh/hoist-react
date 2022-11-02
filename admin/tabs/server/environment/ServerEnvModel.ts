@@ -6,10 +6,7 @@
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {FieldType} from '@xh/hoist/data';
 import {forOwn} from 'lodash';
-
-const {STRING} = FieldType;
 
 /**
  * Model/tab to list server-side environment variables and JVM system properties, as loaded from
@@ -29,16 +26,16 @@ export class ServerEnvModel extends HoistModel {
             store: {idSpec: XH.genId},
             columns: [
                 {
-                    field: {name: 'type', type: STRING},
+                    field: {name: 'type', type: 'string'},
                     hidden: true
                 },
                 {
-                    field: {name: 'name', type: STRING},
+                    field: {name: 'name', type: 'string'},
                     width: 300,
                     cellClass: 'xh-font-family-mono'
                 },
                 {
-                    field: {name: 'value', type: STRING},
+                    field: {name: 'value', type: 'string'},
                     flex: 1,
                     cellClass: 'xh-font-family-mono',
                     autoHeight: true

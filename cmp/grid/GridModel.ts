@@ -28,7 +28,6 @@ import {
     XH
 } from '@xh/hoist/core';
 import {
-    FieldType,
     FieldSpec,
     Store,
     StoreConfig,
@@ -641,7 +640,7 @@ export class GridModel extends HoistModel {
         this.filterModel?.clear();
         this.persistenceModel?.clear();
 
-        if (this.autosizeOptions.mode === GridAutosizeMode.MANAGED) {
+        if (this.autosizeOptions.mode === 'managed') {
             await this.autosizeAsync();
         }
 
@@ -1514,8 +1513,8 @@ export class GridModel extends HoistModel {
 
         if (isEmpty(fieldsByName)) return colConfigs;
 
-        const numTypes = [FieldType.INT, FieldType.NUMBER],
-            dateTypes = [FieldType.DATE, FieldType.LOCAL_DATE];
+        const numTypes = ['int', 'number'],
+            dateTypes = ['date', 'localDate'];
         return colConfigs.map(col => {
             // Recurse into children for column groups
             if (col.children) {

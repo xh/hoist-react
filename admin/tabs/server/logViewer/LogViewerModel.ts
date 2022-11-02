@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec, UrlStore} from '@xh/hoist/data';
 import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
@@ -167,7 +167,7 @@ export class LogViewerModel extends HoistModel {
                     omit: !supportFileAttrs
                 }
             ],
-            autosizeOptions: {mode: GridAutosizeMode.MANAGED},
+            autosizeOptions: {mode: 'managed'},
             contextMenu: [
                 this.downloadFileAction,
                 this.deleteFileAction,
