@@ -3,7 +3,8 @@
 ## v53.1.0 - 2022-11-03
 
 ### 🎁 New Features
-* PanelModel now supports `modalSupport.defaultModal` property
+* `PanelModel` now supports `modalSupport.defaultModal` option to allow rendering a Panel in an
+initially modal state.
 
 ### 🐞 Bug Fixes
 * Fixed layout issues caused by top-level DOM elements created by `ModalSupport`
