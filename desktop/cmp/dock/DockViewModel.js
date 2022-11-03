@@ -111,7 +111,10 @@ export class DockViewModel extends HoistModel {
         this.refreshContextModel = new ManagedRefreshContextModel(this);
 
         this.modalSupportModel = new ModalSupportModel({
-            width: width ?? null, height: height ?? null, canOutsideClickClose: false
+            width: width ?? null,
+            height: height ?? null,
+            startModal: !docked,
+            canOutsideClickClose: false
         });
     }
 
