@@ -21,7 +21,6 @@ import {
     ModelLookup,
     ModelLookupContext,
     modelLookupContextProvider,
-    ModelPublishMode,
     ModelSpec,
     uses,
     formatSelector,
@@ -244,7 +243,7 @@ function wrapWithClassName(render, baseName) {
 }
 
 function wrapWithModel(render, spec, displayName) {
-    return spec.publishMode === ModelPublishMode.NONE ?
+    return spec.publishMode === 'none' ?
         wrapWithSimpleModel(render, spec, displayName) :
         wrapWithPublishedModel(render, spec, displayName);
 }
@@ -272,7 +271,7 @@ function wrapWithSimpleModel(render, spec, displayName) {
 //------------------------------------------------------------------------------------
 function wrapWithPublishedModel(render, spec, displayName) {
     return (props, ref) => {
-        const publishDefault = (spec.publishMode === ModelPublishMode.DEFAULT);  // otherwise LIMITED
+        const publishDefault = (spec.publishMode === 'default');  // otherwise LIMITED
 
         // Get the model and context
         const modelLookup = useContext(ModelLookupContext),
