@@ -12,6 +12,11 @@
 * Fix `GridModel` bug where `Store` would fail to recognize dot-separated field names as paths
   when provided as part of a field spec in object form.
 
+### ⚙️ Technical
+
+* Snap info (if available) from the `navigator.connection` global within the built-in call to track
+  each application load.
+
 ## v53.0.0 - 2022-10-19
 
 ### 🎁 New Features
