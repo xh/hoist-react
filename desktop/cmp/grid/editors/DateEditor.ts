@@ -5,18 +5,18 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, PlainObject} from '@xh/hoist/core';
-import {dateInput} from '@xh/hoist/desktop/cmp/input';
+import {dateInput, DateInputProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {warnIf} from '@xh/hoist/utils/js';
-import {getOffsetRectRelativeToArbitraryNode} from 'popper.js/dist/popper-utils';
+import {getOffsetRectRelativeToArbitraryNode, Popper} from 'popper.js/dist/popper-utils';
 import {CSSProperties} from 'react';
 import {EditorProps} from './EditorProps';
 import './Editors.scss';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
 
-export type DataEditorProps = EditorProps;
+export type DateEditorProps = EditorProps<DateInputProps>;
 
-export const [DateEditor, dateEditor] = hoistCmp.withFactory<DataEditorProps>({
+export const [DateEditor, dateEditor] = hoistCmp.withFactory<DateEditorProps>({
     displayName: 'DateEditor',
     className: 'xh-date-editor',
     memo: false,
@@ -44,7 +44,7 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory<DataEditorProps>({
                 popoverModifiers: {
                     computeStyle: {
                         enabled: true,
-                        fn: (data, options) => computeStyleInAgGrid(data, options, portalContainer),
+                        fn: (data: Popper.Data, options) => computeStyleInAgGrid(data, options, portalContainer),
                         order: 850
                     },
                     // Turn off other modifiers
@@ -75,7 +75,7 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory<DataEditorProps>({
  * @argument options - Modifiers configuration and options
  * @returns the data object, properly modified
  */
-function computeStyleInAgGrid(data: PlainObject, options: PlainObject, portalContainer): PlainObject {
+function computeStyleInAgGrid(data: Popper.Data, options: PlainObject, portalContainer: HTMLElement): Popper.Data {
     const styles = {
         position: data.offsets.popper.position,
         top: 0,

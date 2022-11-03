@@ -23,9 +23,9 @@ import {assign, castArray, clone, trim} from 'lodash';
 import moment from 'moment';
 import {createRef, ReactElement, ReactNode} from 'react';
 import './DateInput.scss';
-import {PopperBoundary} from '@blueprintjs/core';
+import {PopperBoundary, PopperModifiers} from '@blueprintjs/core';
 import {ITimePickerProps} from '@blueprintjs/datetime';
-import {DayPickerProps, DayModifiers} from 'react-day-picker';
+import {DayPickerProps} from 'react-day-picker';
 
 export interface DateInputProps extends
     HoistProps,
@@ -110,7 +110,7 @@ export interface DateInputProps extends
     popoverBoundary?: PopperBoundary;
 
     /** Modifiers for calendar popover, as per Blueprint docs. Defaults to null */
-    popoverModifiers?: DayModifiers;
+    popoverModifiers?: PopperModifiers;
 
     /** Container DOM element to render the calendar popover inside. Defaults to document body. */
     portalContainer?: HTMLElement;

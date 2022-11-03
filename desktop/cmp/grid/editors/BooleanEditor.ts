@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
-import {checkbox} from '@xh/hoist/desktop/cmp/input';
+import {checkbox, CheckboxProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {wait} from '@xh/hoist/promise';
 import {useImperativeHandle} from 'react';
@@ -13,7 +13,7 @@ import {EditorProps} from './EditorProps';
 import './Editors.scss';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
 
-export interface BooleanEditorProps extends EditorProps {
+export interface BooleanEditorProps extends EditorProps<CheckboxProps> {
     /**
      * True to change underlying record state immediately upon user editing gesture (i.e. clicking,
      * hitting return). Defaults to true.

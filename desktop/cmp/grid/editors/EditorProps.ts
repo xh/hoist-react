@@ -5,11 +5,12 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
-import {DefaultHoistProps, HoistProps, PlainObject} from '@xh/hoist/core';
+import {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistProps, PlainObject} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import '@xh/hoist/desktop/register';
 
-export interface EditorProps extends HoistProps {
+export interface EditorProps<InputPropsT extends HoistInputProps> extends HoistProps {
 
     /** Column in StoreRecord being edited. */
     column: Column;
@@ -21,7 +22,7 @@ export interface EditorProps extends HoistProps {
     record: StoreRecord;
 
     /** Props to pass through to the underlying HoistInput component */
-    inputProps: DefaultHoistProps;
+    inputProps: InputPropsT;
 
     agParams: PlainObject;
 }
