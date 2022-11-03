@@ -13,8 +13,11 @@ import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {isArray, isNil} from 'lodash';
 import { CustomTabModel } from './CustomTabModel';
 
+
+type OperatorOptionValue = 'blank'|'not blank'|FieldFilterOperator;
+
 /**
- * @private
+ * @internal
  */
 export class CustomRowModel extends HoistModel {
     xhImpl = true;
@@ -22,7 +25,7 @@ export class CustomRowModel extends HoistModel {
     parentModel: CustomTabModel;
     headerFilterModel: ColumnHeaderFilterModel;
 
-    @bindable op: 'blank'|'not blank'|FieldFilterOperator;
+    @bindable op: OperatorOptionValue;
     @bindable inputVal: any;
 
     /** FieldFilter config output of this row. */
@@ -62,7 +65,7 @@ export class CustomRowModel extends HoistModel {
             }),
             {label: 'Is blank', value: 'blank'},
             {label: 'Is not blank', value: 'not blank'}
-        ];
+        ] as {label: string, value: OperatorOptionValue}[];
     }
 
     get commitOnChange() {
@@ -81,7 +84,7 @@ export class CustomRowModel extends HoistModel {
         super();
         makeObservable(this);
 
-        let newOp = op as FieldFilterOperator|'blank'|'not blank';
+        let newOp = op as OperatorOptionValue;
         if (isNil(value)) {
             if (op === '=') newOp = 'blank';
             if (op === '!=') newOp = 'not blank';

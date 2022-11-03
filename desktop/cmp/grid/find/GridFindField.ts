@@ -6,9 +6,9 @@
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {hbox, span, vbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, LayoutProps, useLocalModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {textInput} from '@xh/hoist/desktop/cmp/input';
+import {textInput, TextInputProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {consumeEvent} from '@xh/hoist/utils/js';
@@ -17,8 +17,8 @@ import './GridFindField.scss';
 import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
 
 export interface GridFindFieldProps extends
-    BoxProps,
-    HoistProps
+    TextInputProps,
+    LayoutProps
 {
 
     /**

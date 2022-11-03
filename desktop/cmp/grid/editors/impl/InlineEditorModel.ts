@@ -27,7 +27,7 @@ import {ForwardedRef, ReactElement, useImperativeHandle} from 'react';
  */
 export function useInlineEditorModel(
     component: ElementFactory,
-    props: EditorProps,
+    props: EditorProps<any>,
     ref: ForwardedRef<any>
 ): ReactElement {
     const {className, inputProps, agParams} = props,
