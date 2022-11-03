@@ -4,31 +4,44 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
-import {UrlStore} from '@xh/hoist/data';
+import {PlainObject, XH} from '@xh/hoist/core';
+import {
+    StoreRecord,
+    UrlStore,
+    UrlStoreConfig
+} from '@xh/hoist/data';
 import '@xh/hoist/desktop/register';
 import {filter, keyBy, mapValues} from 'lodash';
-import {RestField} from './RestField';
+import {RestField, RestFieldSpec} from './RestField';
+
+
+export interface RestStoreConfig extends UrlStoreConfig {
+
+    /** Field names, configs, or instances. */
+    fields?: (string|RestFieldSpec|RestField)[];
+
+    /** Whether lookups should be loaded each time new data is loaded or updated by this client. */
+    reloadLookupsOnLoad?: boolean;
+}
+
 
 /**
  * Store with additional support for RestGrid.
- *
  * Provides support for lookups, and CRUD operations on records.
  */
 export class RestStore extends UrlStore {
 
-    _lookupsLoaded = false;
+    declare fields: RestField[];
+    reloadLookupsOnLoad: boolean;
+    private lookupsLoaded = false;
 
-    /**
-     * @param {Object} c - RestStore configuration.
-     * @param {string} c.url - URL from which to load data.
-     * @param {?string} [c.dataRoot] - Key of root node for records in returned data object. Null if data objects are at the root
-     * @param {boolean} [c.reloadLookupsOnLoad] - Whether lookups should be loaded each time
-     *      new data is loaded or updated by this client.
-     * @param {...*} - Additional arguments to pass to UrlStore.
-     */
-    constructor({url, dataRoot = 'data', reloadLookupsOnLoad = false, ...urlStoreArgs}) {
-        super({url, dataRoot, ...urlStoreArgs});
+    constructor({
+        url,
+        dataRoot = 'data',
+        reloadLookupsOnLoad = false,
+        ...rest
+    }: RestStoreConfig) {
+        super({url, dataRoot, ...rest});
         this.reloadLookupsOnLoad = reloadLookupsOnLoad;
     }
 
@@ -36,12 +49,12 @@ export class RestStore extends UrlStore {
         return RestField;
     }
 
-    async doLoadAsync(loadSpec) {
+    override async doLoadAsync(loadSpec) {
         await this.ensureLookupsLoadedAsync();
         return super.doLoadAsync(loadSpec);
     }
 
-    async deleteRecordAsync(rec) {
+    async deleteRecordAsync(rec: StoreRecord) {
         const {url} = this;
 
         return XH.fetchJson({
@@ -54,7 +67,7 @@ export class RestStore extends UrlStore {
         );
     }
 
-    async bulkDeleteRecordsAsync(records) {
+    async bulkDeleteRecordsAsync(records: StoreRecord[]) {
         const {url} = this,
             ids = records.map(it => it.id),
             resp = await XH.fetchJson({
@@ -68,17 +81,17 @@ export class RestStore extends UrlStore {
         return resp;
     }
 
-    async addRecordAsync(rec) {
+    async addRecordAsync(rec: {id: string, data: PlainObject}) {
         return this.saveRecordInternalAsync(rec, true)
             .linkTo(this.loadModel);
     }
 
-    async saveRecordAsync(rec) {
+    async saveRecordAsync(rec: {id: string, data: PlainObject}) {
         return this.saveRecordInternalAsync(rec, false)
             .linkTo(this.loadModel);
     }
 
-    async bulkUpdateRecordsAsync(ids, newParams) {
+    async bulkUpdateRecordsAsync(ids: string[], newParams: PlainObject) {
         const {url} = this,
             resp = await XH.fetchService.putJson({
                 url: `${url}/bulkUpdate`,
@@ -91,7 +104,7 @@ export class RestStore extends UrlStore {
         return resp;
     }
 
-    editableDataForRecord(record) {
+    editableDataForRecord(record: {id: string, data: PlainObject}): PlainObject {
         const {data} = record,
             editable = keyBy(filter(this.fields, 'editable'), 'name');
         return mapValues(editable, (v, k) => data[k]);
@@ -100,7 +113,7 @@ export class RestStore extends UrlStore {
     //--------------------------------
     // Implementation
     //--------------------------------
-    async saveRecordInternalAsync(rec, isAdd) {
+    private async saveRecordInternalAsync(rec: {id: string, data: PlainObject}, isAdd) {
         let {url, dataRoot} = this;
         if (!isAdd) url += '/' + rec.id;
 
@@ -118,8 +131,8 @@ export class RestStore extends UrlStore {
         return this.getById(responseData.id);
     }
 
-    async ensureLookupsLoadedAsync() {
-        if (!this._lookupsLoaded || this.reloadLookupsOnLoad) {
+    private async ensureLookupsLoadedAsync() {
+        if (!this.lookupsLoaded || this.reloadLookupsOnLoad) {
             const lookupFields = this.fields.filter(it => !!it.lookupName);
             if (lookupFields.length) {
                 const lookupData = await XH.fetchJson({url: `${this.url}/lookupData`});
@@ -127,7 +140,7 @@ export class RestStore extends UrlStore {
                     f.lookup = lookupData[f.lookupName];
                 });
             }
-            this._lookupsLoaded = true;
+            this.lookupsLoaded = true;
         }
     }
 }

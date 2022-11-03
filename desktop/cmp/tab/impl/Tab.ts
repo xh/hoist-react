@@ -6,7 +6,7 @@
  */
 import {frame} from '@xh/hoist/cmp/layout';
 import {TabModel} from '@xh/hoist/cmp/tab';
-import {hoistCmp, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
+import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
 
@@ -34,8 +34,8 @@ export const tab = hoistCmp.factory({
         if (
             !isActive &&
             (
-                (renderMode === RenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode === RenderMode.LAZY && !wasActivated.current)
+                (renderMode === 'unmountOnHide') ||
+                (renderMode === 'lazy' && !wasActivated.current)
             )
         ) {
             return null;

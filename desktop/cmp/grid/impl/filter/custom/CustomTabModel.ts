@@ -5,25 +5,24 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
+import {CompoundFilterOperator, FilterLike} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {compact, isEmpty} from 'lodash';
+import { ColumnHeaderFilterModel } from '../ColumnHeaderFilterModel';
 
 import {CustomRowModel} from './CustomRowModel';
 
 export class CustomTabModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {ColumnHeaderFilterModel} */
-    headerFilterModel;
+    headerFilterModel: ColumnHeaderFilterModel;
 
-    @bindable op = 'AND';
-    @observable.ref rowModels = [];
+    @bindable op: CompoundFilterOperator = 'AND';
+    @observable.ref rowModels: CustomRowModel[] = [];
 
-    /**
-     * @member {Object} - Filter config output by this model
-     */
+    /** Filter config output by this model. */
     @computed.struct
-    get filter() {
+    get filter(): FilterLike {
         const {op, rowModels} = this,
             filters = compact(rowModels.map(it => it.value));
         if (isEmpty(filters)) return null;
@@ -43,7 +42,7 @@ export class CustomTabModel extends HoistModel {
         return this.headerFilterModel.columnFilters;
     }
 
-    constructor(headerFilterModel) {
+    constructor(headerFilterModel: ColumnHeaderFilterModel) {
         super();
         makeObservable(this);
         this.headerFilterModel = headerFilterModel;
@@ -56,12 +55,12 @@ export class CustomTabModel extends HoistModel {
     @action
     reset() {
         XH.safeDestroy(this.rowModels);
-        this.rowModels = [new CustomRowModel({parentModel: this})];
+        this.rowModels = [new CustomRowModel(this)];
     }
 
     @action
     addEmptyRow() {
-        this.rowModels = [...this.rowModels, new CustomRowModel({parentModel: this})];
+        this.rowModels = [...this.rowModels, new CustomRowModel(this)];
     }
 
     @action
@@ -74,24 +73,19 @@ export class CustomTabModel extends HoistModel {
     // Implementation
     //-------------------
     @action
-    doSyncWithFilter() {
-        const {columnFilters, columnCompoundFilter} = this,
+    private doSyncWithFilter() {
+        const {columnFilters} = this,
             rowModels = [];
 
         // Create rows based on filter.
         columnFilters.forEach(filter => {
             const {op, value} = filter;
-            rowModels.push(new CustomRowModel({parentModel: this, op, value}));
+            rowModels.push(new CustomRowModel(this, op, value));
         });
-
-        // Rehydrate operator from CompoundFilter
-        if (columnCompoundFilter) {
-            this.op = columnCompoundFilter.op;
-        }
 
         // Add an empty pending row
         if (isEmpty(rowModels)) {
-            rowModels.push(new CustomRowModel({parentModel: this}));
+            rowModels.push(new CustomRowModel(this));
         }
 
         this.rowModels = rowModels;

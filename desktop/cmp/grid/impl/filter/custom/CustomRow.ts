@@ -6,6 +6,7 @@
  */
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
+import {FieldFilterOperator} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {dateInput, numberInput, select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
@@ -15,12 +16,11 @@ import {CustomRowModel} from './CustomRowModel';
 
 /**
  * Row with operator and value combination for CustomTab.
- * @private
+ * @internal
  */
 export const customRow = hoistCmp.factory({
     model: uses(CustomRowModel),
 
-    /** @param {CustomRowModel} model */
     render({model}) {
         const {options, op, hideInput} = model;
         return div({
@@ -63,7 +63,7 @@ export const customRow = hoistCmp.factory({
 //-------------------
 // Implementation
 //-------------------
-const inputField = hoistCmp.factory(
+const inputField = hoistCmp.factory<CustomRowModel>(
     ({model}) => {
         const {fieldSpec, commitOnChange, op} = model,
             props = {
@@ -85,7 +85,7 @@ const inputField = hoistCmp.factory(
                 ...props,
                 valueType: fieldSpec.fieldType
             });
-        } else if (fieldSpec.supportsSuggestions(op)) {
+        } else if (fieldSpec.supportsSuggestions(op as FieldFilterOperator)) {
             return select({
                 ...props,
                 options: fieldSpec.values,

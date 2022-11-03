@@ -5,10 +5,10 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {form, FormModel} from '@xh/hoist/cmp/form';
-import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
+import {GridFilterModel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses} from '@xh/hoist/core';
-import {parseFilter, required, withFilterByTypes} from '@xh/hoist/data';
+import {CompoundFilter, FieldFilter, parseFilter, required, withFilterByTypes} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
@@ -26,7 +26,7 @@ import './GridFilterDialog.scss';
  * Applications should not create this component - it is created automatically for Grids with
  * a GridFilterModel, and is available via the `gridFilter` StoreContextMenu action.
  *
- * @private
+ * @internal
  */
 export const gridFilterDialog = hoistCmp.factory({
     model: uses(GridFilterModel),
@@ -91,10 +91,8 @@ const bbar = hoistCmp.factory(
 class GridFilterDialogLocalModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {GridFilterModel} */
-    @lookup(GridFilterModel) model;
+    @lookup(GridFilterModel) model: GridFilterModel;
 
-    /** @member {FormModel} */
     @managed
     formModel = new FormModel({
         fields: [
@@ -120,7 +118,7 @@ class GridFilterDialogLocalModel extends HoistModel {
         ]
     });
 
-    onLinked() {
+    override onLinked() {
         this.addReaction({
             track: () => this.model.dialogOpen,
             run: (open) => {
@@ -151,7 +149,7 @@ class GridFilterDialogLocalModel extends HoistModel {
     }
 
     loadForm() {
-        const filter = withFilterByTypes(this.model.filter, null, 'FunctionFilter');
+        const filter = withFilterByTypes(this.model.filter, null, 'FunctionFilter') as CompoundFilter|FieldFilter;
         this.formModel.init({
             filter: JSON.stringify(filter?.toJSON() ?? null, undefined, 2)
         });

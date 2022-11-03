@@ -5,29 +5,32 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
+import {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
+import {
+    ColumnHeaderFilterModel
+} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {isArray, isNil} from 'lodash';
+import { CustomTabModel } from './CustomTabModel';
+
+
+type OperatorOptionValue = 'blank'|'not blank'|FieldFilterOperator;
 
 /**
- * @private
+ * @internal
  */
 export class CustomRowModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {CustomTabModel} */
-    parentModel;
+    parentModel: CustomTabModel;
+    headerFilterModel: ColumnHeaderFilterModel;
 
-    /** @member {ColumnHeaderFilterModel} */
-    headerFilterModel;
+    @bindable op: OperatorOptionValue;
+    @bindable inputVal: any;
 
-    @bindable op;
-    @bindable inputVal;
-
-    /**
-     * @member {Object} - FieldFilter config output of this row
-     */
+    /** FieldFilter config output of this row. */
     @computed.struct
-    get value() {
+    get value(): FieldFilterSpec  {
         const {field} = this.fieldSpec;
 
         let op = this.op,
@@ -62,7 +65,7 @@ export class CustomRowModel extends HoistModel {
             }),
             {label: 'Is blank', value: 'blank'},
             {label: 'Is not blank', value: 'not blank'}
-        ];
+        ] as {label: string, value: OperatorOptionValue}[];
     }
 
     get commitOnChange() {
@@ -77,22 +80,19 @@ export class CustomRowModel extends HoistModel {
         return ['blank', 'not blank'].includes(this.op);
     }
 
-    constructor({
-        parentModel,
-        op,
-        value
-    }) {
+    constructor(parentModel: CustomTabModel, op?: FieldFilterOperator, value?: any) {
         super();
         makeObservable(this);
 
+        let newOp = op as OperatorOptionValue;
         if (isNil(value)) {
-            if (op === '=') op = 'blank';
-            if (op === '!=') op = 'not blank';
+            if (op === '=') newOp = 'blank';
+            if (op === '!=') newOp = 'not blank';
         }
 
         this.parentModel = parentModel;
         this.headerFilterModel = parentModel.headerFilterModel;
-        this.op = op ?? this.fieldSpec.defaultOp;
+        this.op = newOp ?? this.fieldSpec.defaultOp;
         this.inputVal = value;
     }
 
@@ -100,7 +100,7 @@ export class CustomRowModel extends HoistModel {
         this.parentModel.removeRow(this);
     }
 
-    getOperatorLabel(op) {
+    getOperatorLabel(op: FieldFilterOperator) {
         switch (op) {
             case '=':
                 return 'Equals';

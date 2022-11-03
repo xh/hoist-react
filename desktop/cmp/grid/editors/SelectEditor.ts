@@ -5,13 +5,15 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
-import {select} from '@xh/hoist/desktop/cmp/input';
+import {select, SelectProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
-import {EditorPropTypes} from './EditorPropTypes';
+import {EditorProps} from './EditorProps';
 import './Editors.scss';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
 
-export const [SelectEditor, selectEditor] = hoistCmp.withFactory({
+export type SelectEditorProps = EditorProps<SelectProps>;
+
+export const [SelectEditor, selectEditor] = hoistCmp.withFactory<SelectEditorProps>({
     displayName: 'SelectEditor',
     className: 'xh-select-editor',
     memo: false,
@@ -40,6 +42,3 @@ export const [SelectEditor, selectEditor] = hoistCmp.withFactory({
         return useInlineEditorModel(select, props, ref);
     }
 });
-SelectEditor.propTypes = {
-    ...EditorPropTypes
-};

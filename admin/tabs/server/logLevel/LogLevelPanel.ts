@@ -13,7 +13,7 @@ import {getApp} from '@xh/hoist/admin/AppModel';
 
 
 export const logLevelPanel = hoistCmp.factory(
-    () => restGrid({model: {...modelSpec, readonly: getApp().readonly}})
+    () => restGrid({modelConfig: {...modelSpec, readonly: getApp().readonly}})
 );
 
 const modelSpec = {

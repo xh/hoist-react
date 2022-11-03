@@ -4,9 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, SizingMode} from '@xh/hoist/core';
-import {FieldType} from '@xh/hoist/data';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {HoistModel, managed} from '@xh/hoist/core';
+import {FieldFilterSpec} from '@xh/hoist/data';
+import {ColumnHeaderFilterModel} from '../ColumnHeaderFilterModel';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, difference, isEmpty, partition, uniq, without} from 'lodash';
@@ -14,32 +15,25 @@ import {castArray, difference, isEmpty, partition, uniq, without} from 'lodash';
 export class ValuesTabModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {ColumnHeaderFilterModel} */
-    headerFilterModel;
+    headerFilterModel: ColumnHeaderFilterModel;
 
-    /**
-     * @member {GridModel} - Checkbox grid to display enumerated set of values
-     */
-    @managed @observable.ref gridModel;
+    /** Checkbox grid to display enumerated set of values */
+    @managed @observable.ref gridModel: GridModel;
 
-    /**
-     * @member {*[]} List of currently checked values in the list
-     */
-    @observable.ref pendingValues = [];
+    /** List of currently checked values in the list*/
+    @observable.ref pendingValues: any[] = [];
 
-    /** @member {?string} Bound search term for `StoreFilterField` */
-    @bindable filterText = null;
+    /** Bound search term for `StoreFilterField` */
+    @bindable filterText: string = null;
 
-    /**
-     * @member {Object} - FieldFilter config output by this model
-     */
+    /** FieldFilter output by this model. */
     @computed.struct
-    get filter() {
+    get filter(): FieldFilterSpec {
         return this.getFilter();
     }
 
     @computed
-    get allVisibleRecsChecked() {
+    get allVisibleRecsChecked(): boolean {
         if (!this.gridModel) return false;
 
         const {records} = this.gridModel.store;
@@ -80,7 +74,7 @@ export class ValuesTabModel extends HoistModel {
         return this.values.length < this.valueCount;
     }
 
-    constructor(headerFilterModel) {
+    constructor(headerFilterModel: ColumnHeaderFilterModel) {
         super();
         makeObservable(this);
 
@@ -104,7 +98,7 @@ export class ValuesTabModel extends HoistModel {
     }
 
     @action
-    setRecsChecked(isChecked, values) {
+    setRecsChecked(isChecked: boolean, values: any[]) {
         values = castArray(values);
         this.pendingValues = isChecked ?
             uniq([...this.pendingValues, ...values]) :
@@ -114,7 +108,7 @@ export class ValuesTabModel extends HoistModel {
     //-------------------
     // Implementation
     //-------------------
-    getFilter() {
+    private getFilter() {
         const {gridFilterModel, pendingValues, values, valueCount, field} = this,
             included = pendingValues.map(it => gridFilterModel.fromDisplayValue(it)),
             excluded = difference(values, pendingValues).map(it => gridFilterModel.fromDisplayValue(it));
@@ -125,7 +119,7 @@ export class ValuesTabModel extends HoistModel {
 
         const {fieldType} = this.headerFilterModel;
         let arr, op;
-        if (fieldType === FieldType.TAGS) {
+        if (fieldType === 'tags') {
             arr = included;
             op = 'includes';
         } else {
@@ -141,12 +135,12 @@ export class ValuesTabModel extends HoistModel {
     }
 
     @action
-    doSyncWithFilter() {
+    private doSyncWithFilter() {
         const {values, columnFilters, gridFilterModel} = this,
             {fieldType} = this.headerFilterModel;
 
         if (isEmpty(columnFilters)) {
-            this.pendingValues = fieldType === FieldType.TAGS ? [] : values;
+            this.pendingValues = fieldType === 'tags' ? [] : values;
             return;
         }
 
@@ -170,7 +164,7 @@ export class ValuesTabModel extends HoistModel {
         }
     }
 
-    syncGrid() {
+    private syncGrid() {
         const {values, pendingValues} = this;
         const data = values.map(value => {
             const isChecked = pendingValues.includes(value);
@@ -179,11 +173,11 @@ export class ValuesTabModel extends HoistModel {
         this.gridModel.loadData(data);
     }
 
-    createGridModel() {
+    private createGridModel() {
         const {BLANK_STR} = this.gridFilterModel,
             {align, headerAlign, displayName} = this.headerFilterModel.column,
             {fieldType} = this.headerFilterModel,
-            renderer = this.fieldSpec.renderer ?? (fieldType !== FieldType.TAGS ? this.headerFilterModel.column.renderer : null);
+            renderer = this.fieldSpec.renderer ?? (fieldType !== 'tags' ? this.headerFilterModel.column.renderer : null);
 
         return new GridModel({
             store: {
@@ -196,8 +190,8 @@ export class ValuesTabModel extends HoistModel {
             selModel: 'disabled',
             emptyText: 'No records found...',
             contextMenu: null,
-            autosizeOptions: {mode: GridAutosizeMode.DISABLED},
-            sizingMode: SizingMode.COMPACT,
+            autosizeOptions: {mode: 'disabled'},
+            sizingMode: 'compact',
             stripeRows: false,
             sortBy: 'value',
             colDefaults: {sortable: false},

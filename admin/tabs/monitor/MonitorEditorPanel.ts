@@ -14,7 +14,7 @@ import {getApp} from '@xh/hoist/admin/AppModel';
 
 
 export const monitorEditorPanel = hoistCmp.factory(
-    () => restGrid({model: {...modelSpec, readonly: getApp().readonly}})
+    () => restGrid({modelConfig: {...modelSpec, readonly: getApp().readonly}})
 );
 
 const required = true,

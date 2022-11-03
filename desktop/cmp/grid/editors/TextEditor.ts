@@ -5,21 +5,20 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
-import {numberInput} from '@xh/hoist/desktop/cmp/input';
+import {textInput, TextInputProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
-import {EditorPropTypes} from './EditorPropTypes';
+import {EditorProps} from './EditorProps';
 import './Editors.scss';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
 
-export const [NumberEditor, numberEditor] = hoistCmp.withFactory({
-    displayName: 'NumberEditor',
-    className: 'xh-number-editor',
+export type TextEditorProps = EditorProps<TextInputProps>;
+
+export const [TextEditor, textEditor] = hoistCmp.withFactory<TextEditorProps>({
+    displayName: 'TextEditor',
+    className: 'xh-text-editor',
     memo: false,
     observer: false,
     render(props, ref) {
-        return useInlineEditorModel(numberInput, props, ref);
+        return useInlineEditorModel(textInput, props, ref);
     }
 });
-NumberEditor.propTypes = {
-    ...EditorPropTypes
-};

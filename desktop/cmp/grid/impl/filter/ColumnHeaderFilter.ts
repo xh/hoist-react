@@ -8,7 +8,6 @@
 import {div, filler} from '@xh/hoist/cmp/layout';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {FieldType} from '@xh/hoist/data';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -22,12 +21,11 @@ import {ColumnHeaderFilterModel} from './ColumnHeaderFilterModel';
  * Component to manage column filters from header. Will appear as a "filter" icon if filters are
  * present and provides an appropriate dialog UI for managing the filters when clicked.
  *
- * @private
+ * @internal
  */
 export const columnHeaderFilter = hoistCmp.factory({
     model: uses(ColumnHeaderFilterModel),
 
-    /** @param {ColumnHeaderFilterModel} model */
     render({model}) {
         const {isOpen, hasFilter} = model;
         return popover({
@@ -69,7 +67,7 @@ const content = hoistCmp.factory({
     }
 });
 
-const bbar = hoistCmp.factory({
+const bbar = hoistCmp.factory<ColumnHeaderFilterModel>({
     render({model}) {
         const {commitOnChange} = model;
         return toolbar(
@@ -93,20 +91,20 @@ const bbar = hoistCmp.factory({
     }
 });
 
-const switcher = hoistCmp.factory(
+const switcher = hoistCmp.factory<ColumnHeaderFilterModel>(
     ({model}) => {
         const {fieldType, enableValues} = model.fieldSpec,
             {tabs} = model.tabContainerModel;
 
         return buttonGroup({
-            omit: !enableValues || fieldType === FieldType.BOOL,
+            omit: !enableValues || fieldType === 'bool',
             className: 'xh-column-header-filter__tab-switcher',
             items: tabs.map(it => switcherButton({...it}))
         });
     }
 );
 
-const switcherButton = hoistCmp.factory(
+const switcherButton = hoistCmp.factory<ColumnHeaderFilterModel>(
     ({model, id, title}) => {
         const {tabContainerModel} = model,
             {activeTabId} = tabContainerModel;

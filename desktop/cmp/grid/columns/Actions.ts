@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import { ColumnSpec } from '@xh/hoist/cmp/grid/columns';
 import {RecordAction} from '@xh/hoist/data';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
@@ -13,18 +14,11 @@ import {isEmpty} from 'lodash';
 
 import './Actions.scss';
 
+
 /**
  * A column definition partial for adding an "action column" to a grid. An action column displays
  * one or more record-aware buttons within a button group, providing the user with an easy
  * way to perform push-button operations on a given record.
- *
- * Configure the actions to display within your column by layering on an `actions` array of config
- * objects with the partial below. See the related classes for full details on how to configure,
- * prepare, and handle these actions.
- *
- * Note that an action column can be configured with `actionsShowOnHoverOnly: true` to hide the
- * buttons for all rows except the currently hovered row. This can be a used to avoid overloading
- * the user's attention with a wall of buttons when there are many rows + multiple actions per row.
  *
  * Another useful pattern is to create re-usable `RecordAction` configs and pass those both to this
  * column config as well as a `StoreContextMenu`. This offers the user two ways of accessing actions
@@ -54,8 +48,8 @@ export const actionCol = {
         const {actions, actionsShowOnHoverOnly, gridModel} = column;
         if (isEmpty(actions)) return null;
 
-        const buttons = actions.map(action => {
-            action = new RecordAction(action);
+        const buttons = actions.map(actionSpec => {
+            const action = new RecordAction(actionSpec);
 
             const {icon, intent, className, disabled, tooltip, hidden} = action.getDisplaySpec({record, selectedRecords: [record], gridModel, column});
             throwIf(!icon, 'An icon is required for any RecordAction rendered within a grid action column.');
@@ -84,17 +78,17 @@ export const actionCol = {
             items: buttons
         });
     }
-};
+} as ColumnSpec;
 
 /**
  * Calculates the width for an action column
- * @param {number} count - number of actions
- * @param {number} [cellPadding] - desired left and right padding (in pixels) for the action cell.
- * @param {number} [buttonWidth] - width (in pixels) of the action buttons.
+ * @param count - number of actions
+ * @param cellPadding - desired left and right padding (in pixels) for the action cell.
+ * @param buttonWidth - width (in pixels) of the action buttons.
  *      Default small minimal buttons with an icon will be 24px
- * @returns {number} - the width in pixels
+ * @returns the width in pixels
  */
-export function calcActionColWidth(count, cellPadding = 5, buttonWidth = 24) {
+export function calcActionColWidth(count: number, cellPadding: number = 5, buttonWidth: number = 24): number {
     // add 1 to cellPadding to account for 1px transparent border in default theme
     return (count * buttonWidth) + ((cellPadding + 1) * 2);
 }

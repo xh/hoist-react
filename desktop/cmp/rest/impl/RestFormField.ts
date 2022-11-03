@@ -17,15 +17,13 @@ import {
 import {assign, isNil} from 'lodash';
 import {RestFormModel} from './RestFormModel';
 
+/**
+ * @internal
+ */
 export const restFormField = hoistCmp.factory({
     displayName: 'RestFormField',
     model: uses(RestFormModel),
 
-    /**
-     * @param {RestFormModel} model
-     * @param {RestGridEditor} editor
-     * @param props
-     */
     render({model, editor, ...props}) {
         const {field} = editor,
             fieldModel = model.getFormFieldModel(field),

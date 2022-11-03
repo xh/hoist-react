@@ -5,11 +5,13 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import { Column } from '@xh/hoist/cmp/grid';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isEmpty} from 'lodash';
+import {GridFilterModel, GridFilterFieldSpec} from '@xh/hoist/cmp/grid';
 import {customTab} from './custom/CustomTab';
 import {CustomTabModel} from './custom/CustomTabModel';
 import {valuesTab} from './values/ValuesTab';
@@ -18,21 +20,15 @@ import {ValuesTabModel} from './values/ValuesTabModel';
 export class ColumnHeaderFilterModel extends HoistModel {
     xhImpl = true;
 
-    /** @member {GridFilterModel} */
-    gridFilterModel;
-    /** @member {Column} */
-    column;
-    /** @member {GridFilterFieldSpec} */
-    fieldSpec;
+    column: Column;
+    gridFilterModel: GridFilterModel;
+    fieldSpec: GridFilterFieldSpec;
 
     @observable isOpen = false;
 
-    /** @member {TabContainerModel} */
-    @managed tabContainerModel;
-    /** @member {ValuesTabModel} */
-    @managed valuesTabModel;
-    /** @member {CustomTabModel} */
-    @managed customTabModel;
+    @managed tabContainerModel: TabContainerModel;
+    @managed valuesTabModel: ValuesTabModel;
+    @managed customTabModel: CustomTabModel;
 
     get field() {
         return this.fieldSpec.field;
@@ -166,7 +162,7 @@ export class ColumnHeaderFilterModel extends HoistModel {
     // Implementation
     //-------------------
     @action
-    syncWithFilter() {
+    private syncWithFilter() {
         const {isCustomFilter, valuesTabModel, customTabModel, tabContainerModel} = this,
             useCustomTab = isCustomFilter || !valuesTabModel,
             toTab = useCustomTab ? customTabModel : valuesTabModel,
@@ -178,17 +174,17 @@ export class ColumnHeaderFilterModel extends HoistModel {
         tabContainerModel.activateTab(toTabId);
     }
 
-    setColumnFilters(filters) {
+    private setColumnFilters(filters) {
         this.gridFilterModel.setColumnFilters(this.field, filters);
     }
 
-    doCommitOnChange(tab) {
+    private doCommitOnChange(tab) {
         if (!this.commitOnChange) return;
         if (this.tabContainerModel.activeTabId !== tab) return;
         this.commit(false);
     }
 
-    resetTabModels() {
+    private resetTabModels() {
         this.customTabModel.reset();
         this.valuesTabModel?.reset();
     }

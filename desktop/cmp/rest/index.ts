@@ -6,5 +6,6 @@
  */
 
 export * from './data/RestStore';
+export * from './Actions';
 export * from './RestGridModel';
 export * from './RestGrid';

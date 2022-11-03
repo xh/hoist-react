@@ -1,11 +1,8 @@
 import {ChartModel} from '@xh/hoist/cmp/chart';
-import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH} from '@xh/hoist/core';
-import {FieldType} from '@xh/hoist/data';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
-
-const {NUMBER} = FieldType;
 
 /**
  * Displays a small grid/chart combo with a timeseries of the app's model count and memory usage.
@@ -36,15 +33,15 @@ export class StatsModel extends HoistModel {
         this.gridModel = new GridModel({
             colChooserModel: true,
             persistWith: this.persistWith,
-            autosizeOptions: {mode: GridAutosizeMode.MANAGED},
+            autosizeOptions: {mode: 'managed'},
             store: {
                 fields: [
-                    {name: 'timestamp', displayName: 'Time', type: NUMBER},
-                    {name: 'syncRun', displayName: 'Sync', type: NUMBER},
-                    {name: 'modelCount', displayName: '# Models', type: NUMBER},
-                    {name: 'modelCountChange', displayName: '#Δ', type: NUMBER},
-                    {name: 'totalJSHeapSize', type: NUMBER},
-                    {name: 'usedJSHeapSize', type: NUMBER}
+                    {name: 'timestamp', displayName: 'Time', type: 'number'},
+                    {name: 'syncRun', displayName: 'Sync', type: 'number'},
+                    {name: 'modelCount', displayName: '# Models', type: 'number'},
+                    {name: 'modelCountChange', displayName: '#Δ', type: 'number'},
+                    {name: 'totalJSHeapSize', type: 'number'},
+                    {name: 'usedJSHeapSize', type: 'number'}
                 ]
             },
             sortBy: ['timestamp|desc'],

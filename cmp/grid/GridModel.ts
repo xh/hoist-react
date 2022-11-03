@@ -28,7 +28,6 @@ import {
     XH
 } from '@xh/hoist/core';
 import {
-    FieldType,
     FieldSpec,
     Store,
     StoreConfig,
@@ -42,7 +41,7 @@ import {
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
+import {action, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -58,6 +57,7 @@ import {
 import equal from 'fast-deep-equal';
 import {
     castArray,
+    clone,
     cloneDeep,
     compact,
     defaults,
@@ -71,6 +71,7 @@ import {
     isPlainObject,
     isString,
     isUndefined,
+    keysIn,
     max,
     min,
     omit,
@@ -315,6 +316,9 @@ export interface GridConfig {
      */
     experimental?: PlainObject;
 
+    /** Extra app-specific data for the GridModel. */
+    appData?: PlainObject;
+
     /** @internal */
     xhImpl?: boolean;
 }
@@ -380,7 +384,7 @@ export class GridModel extends HoistModel {
     onCellClicked: (e: any) => void;
     onCellDoubleClicked: (e: any) => void;
     onCellContextMenu: (e: any) => void;
-
+    appData: PlainObject;
 
     @managed filterModel: GridFilterModel;
     @managed agGridModel: AgGridModel;
@@ -449,7 +453,9 @@ export class GridModel extends HoistModel {
     @managed autosizeTask = TaskObserver.trackAll();
 
     /** @internal - used internally by any GridFindField that is bound to this GridModel. */
-    @bindable xhFindQuery = null;
+    @observable xhFindQuery:string = null;
+    @action setXhFindQuery(v: string) {this.xhFindQuery = v}
+
 
     constructor(config: GridConfig) {
         super();
@@ -503,6 +509,7 @@ export class GridModel extends HoistModel {
             clicksToEdit = 2,
             highlightRowOnClick = XH.isMobileApp,
             experimental,
+            appData,
             xhImpl,
             ...rest
         }: GridConfig = config;
@@ -588,12 +595,20 @@ export class GridModel extends HoistModel {
         this.onCellClicked = onCellClicked;
         this.onCellDoubleClicked = onCellDoubleClicked;
         this.onCellContextMenu = onCellContextMenu;
+        this.appData = appData ? clone(appData) : {};
 
         this.addReaction({
             track: () => this.isEditing,
             run: (isEditing) => this.isInEditingMode = isEditing,
             debounce: 500
         });
+
+        if (!isEmpty(rest)) {
+            const keys = keysIn(rest);
+            throw XH.exception(
+                `Key(s) '${keys}' not supported in GridModel.  For custom data, use the 'appData' property.`
+            );
+        }
     }
 
     /**
@@ -625,7 +640,7 @@ export class GridModel extends HoistModel {
         this.filterModel?.clear();
         this.persistenceModel?.clear();
 
-        if (this.autosizeOptions.mode === GridAutosizeMode.MANAGED) {
+        if (this.autosizeOptions.mode === 'managed') {
             await this.autosizeAsync();
         }
 
@@ -1498,8 +1513,8 @@ export class GridModel extends HoistModel {
 
         if (isEmpty(fieldsByName)) return colConfigs;
 
-        const numTypes = [FieldType.INT, FieldType.NUMBER],
-            dateTypes = [FieldType.DATE, FieldType.LOCAL_DATE];
+        const numTypes = ['int', 'number'],
+            dateTypes = ['date', 'localDate'];
         return colConfigs.map(col => {
             // Recurse into children for column groups
             if (col.children) {

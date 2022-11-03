@@ -21,7 +21,6 @@ import {
     ModelLookup,
     ModelLookupContext,
     modelLookupContextProvider,
-    ModelPublishMode,
     ModelSpec,
     uses,
     formatSelector,
@@ -206,8 +205,10 @@ export function hoistCmpFactory(config) {
  * Used by Hoist for exporting Component artifacts that support both JSX and elementFactory based development.
  * Not typically used by applications.
  */
-export function hoistCmpWithFactory<P extends HoistProps>(config: ComponentConfig<P, true>):[FunctionComponent<P>, EF<P, true>];
-export function hoistCmpWithFactory<P extends HoistProps>(config: ComponentConfig<P, false>):[FunctionComponent<P>, EF<P, false>];
+export function hoistCmpWithFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>, true>): F_AND_EF<DefaultHoistProps<M>, true>;
+export function hoistCmpWithFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>, false>): F_AND_EF<DefaultHoistProps<M>, false>;
+export function hoistCmpWithFactory<P extends HoistProps>(config: ComponentConfig<P, true>): F_AND_EF<P, true>;
+export function hoistCmpWithFactory<P extends HoistProps>(config: ComponentConfig<P, false>):F_AND_EF<P, false>;
 export function hoistCmpWithFactory<P>(config: ComponentConfig<P>): [FunctionComponent, ElementFactory] {
     const cmp = hoistComponent(config),
         factory = (config as any).factoryAcceptsChildren ? fullElementFactory(cmp) : simpleElementFactory(cmp);
@@ -222,11 +223,18 @@ hoistComponent.factory = hoistCmpFactory;
 hoistComponent.withFactory = hoistCmpWithFactory;
 
 
+//--------------------------------------
+// Implementation -- Short cut types
+//--------------------------------------
+// ElementFactory for a set of props
+type EF<P extends HoistProps,  FULL extends boolean> = FULL extends true ? FullElementFactory<P, FunctionComponent<P>> : SimpleElementFactory<P, FunctionComponent<P>>
+// Component and ElementFactory for a set of props
+type F_AND_EF<P extends HoistProps,  FULL extends boolean> = [FunctionComponent<P>, EF<P, FULL>]
+
+
 //------------------------------------
 // Implementation -- Core Wrappers
 //------------------------------------
-type EF<P extends HoistProps,  FULL extends boolean> = FULL extends true ? FullElementFactory<P, FunctionComponent<P>> : SimpleElementFactory<P, FunctionComponent<P>>
-
 function wrapWithClassName(render, baseName) {
     return (props, ref) => {
         props.className = classNames(baseName, props.className);
@@ -235,7 +243,7 @@ function wrapWithClassName(render, baseName) {
 }
 
 function wrapWithModel(render, spec, displayName) {
-    return spec.publishMode === ModelPublishMode.NONE ?
+    return spec.publishMode === 'none' ?
         wrapWithSimpleModel(render, spec, displayName) :
         wrapWithPublishedModel(render, spec, displayName);
 }
@@ -263,7 +271,7 @@ function wrapWithSimpleModel(render, spec, displayName) {
 //------------------------------------------------------------------------------------
 function wrapWithPublishedModel(render, spec, displayName) {
     return (props, ref) => {
-        const publishDefault = (spec.publishMode === ModelPublishMode.DEFAULT);  // otherwise LIMITED
+        const publishDefault = (spec.publishMode === 'default');  // otherwise LIMITED
 
         // Get the model and context
         const modelLookup = useContext(ModelLookupContext),

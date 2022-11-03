@@ -6,7 +6,7 @@
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH} from '@xh/hoist/core';
-import {FieldType} from '@xh/hoist/data';
+import {TextInputModel} from '@xh/hoist/desktop/cmp/input';
 import {action, comparer, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {errorIf, stripTags, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -24,37 +24,33 @@ import {
 } from 'lodash';
 
 /**
- * @private
+ * @internal
  */
 export class GridFindFieldImplModel extends HoistModel {
+    xhImpl = true;
 
-    /** @member {GridModel} */
-    gridModel;
+    gridModel: GridModel;
 
-    /** @member {string} */
-    get matchMode() {return this.componentProps.matchMode ?? 'startWord'}
-    /** @member {number} */
-    get queryBuffer() {return this.componentProps.queryBuffer ?? 200}
-    /** @member {string[]} */
-    get includeFields() {return this.componentProps.includeFields}
-    /** @member {string[]} */
-    get excludeFields() {return this.componentProps.excludeFields}
+    get matchMode(): string {return this.componentProps.matchMode ?? 'startWord'}
+    get queryBuffer(): number {return this.componentProps.queryBuffer ?? 200}
+    get includeFields(): string[] {return this.componentProps.includeFields}
+    get excludeFields(): string[] {return this.componentProps.excludeFields}
 
     @observable.ref results;
-    inputRef = createObservableRef();
+    inputRef = createObservableRef<TextInputModel>();
     _records = null;
 
-    get count() {
+    get count(): number {
         return this.results?.length;
     }
 
-    get selectedIdx() {
+    get selectedIdx(): number {
         if (!this.count) return null;
         const matchIdx = this.results.indexOf(this.gridModel.selectedId);
         return matchIdx > -1 ? matchIdx : null;
     }
 
-    get countLabel() {
+    get countLabel(): string {
         if (isNil(this.results)) return null;
         const {count, selectedIdx} = this,
             match = isFinite(selectedIdx) ? selectedIdx + 1 : 0;
@@ -66,12 +62,12 @@ export class GridFindFieldImplModel extends HoistModel {
     }
 
     @computed
-    get hasQuery() {
+    get hasQuery(): boolean {
         return !isNil(this.query) && this.query.length > 0;
     }
 
     @computed
-    get hasResults() {
+    get hasResults(): boolean {
         return !isNil(this.results) && !isEmpty(this.results);
     }
 
@@ -92,7 +88,7 @@ export class GridFindFieldImplModel extends HoistModel {
         makeObservable(this);
     }
 
-    onLinked() {
+    override onLinked() {
         const gridModel = this.gridModel = withDefault(this.componentProps.gridModel, this.lookupModel(GridModel));
         errorIf(
             !gridModel?.selModel?.isEnabled,
@@ -156,7 +152,7 @@ export class GridFindFieldImplModel extends HoistModel {
     // Implementation
     //------------------------
     @action
-    updateResults(autoSelect) {
+    private updateResults(autoSelect = false) {
         // Track ids of matching records
         const {query, gridModel} = this,
             activeFields = this.getActiveFields();
@@ -179,7 +175,7 @@ export class GridFindFieldImplModel extends HoistModel {
         }
     }
 
-    getRecords() {
+    private getRecords() {
         if (!this._records) {
             const records = this.sortRecordsRecursive([...this.gridModel.store.rootRecords]);
             this._records = this.sortRecordsByGroupBy(records);
@@ -188,9 +184,9 @@ export class GridFindFieldImplModel extends HoistModel {
     }
 
     // Sort records with GridModel's sortBy(s) using the Column's comparator
-    sortRecordsRecursive(records) {
+    private sortRecordsRecursive(records) {
         const {gridModel} = this,
-            {sortBy, treeMode, agApi} = gridModel,
+            {sortBy, treeMode, agApi, store} = gridModel,
             ret = [];
 
         [...sortBy].reverse().forEach(it => {
@@ -201,9 +197,10 @@ export class GridFindFieldImplModel extends HoistModel {
                 compFn = column.getAgSpec().comparator.bind(column),
                 direction = it.sort === 'desc' ? -1 : 1;
 
+            const ctx = {field, column, gridModel, store, agParams: null};
             records.sort((a, b) => {
-                const valueA = getValueFn({record: a, field, column, gridModel}),
-                    valueB = getValueFn({record: b, field, column, gridModel}),
+                const valueA = getValueFn({record: a, ...ctx}),
+                    valueB = getValueFn({record: b, ...ctx}),
                     nodeA = agApi?.getRowNode(a.agId),
                     nodeB = agApi?.getRowNode(b.agId);
 
@@ -223,18 +220,20 @@ export class GridFindFieldImplModel extends HoistModel {
     }
 
     // Sort records with GridModel's groupBy(s) using the GridModel's groupSortFn
-    sortRecordsByGroupBy(records) {
+    private sortRecordsByGroupBy(records) {
         const {gridModel} = this,
-            {agApi, groupBy, groupSortFn} = gridModel;
+            {agApi, groupBy, groupSortFn, store} = gridModel;
 
         [...groupBy].reverse().forEach(groupField => {
             const column = gridModel.getColumn(groupField);
             if (!column) return;
 
-            const {field, getValueFn} = column;
+            const {field, getValueFn} = column,
+                ctx = {field, column, gridModel, store, agParams: null};
+
             records.sort((a, b) => {
-                const valueA = getValueFn({record: a, field, column, gridModel}),
-                    valueB = getValueFn({record: b, field, column, gridModel}),
+                const valueA = getValueFn({record: a, ...ctx}),
+                    valueB = getValueFn({record: b, ...ctx}),
                     nodeA = agApi?.getRowNode(a.agId),
                     nodeB = agApi?.getRowNode(b.agId);
 
@@ -245,7 +244,7 @@ export class GridFindFieldImplModel extends HoistModel {
         return records;
     }
 
-    getRegex(searchTerm) {
+    private getRegex(searchTerm) {
         searchTerm = escapeRegExp(searchTerm);
         switch (this.matchMode) {
             case 'any':
@@ -258,7 +257,7 @@ export class GridFindFieldImplModel extends HoistModel {
         throw XH.exception('Unknown matchMode in GridFindField');
     }
 
-    getActiveFields() {
+    private getActiveFields() {
         const {gridModel, includeFields, excludeFields} = this,
             groupBy = gridModel.groupBy,
             visibleCols = gridModel.getVisibleLeafColumns();
@@ -297,21 +296,20 @@ export class GridFindFieldImplModel extends HoistModel {
         return ret;
     }
 
-    getValGetters(fieldName) {
+    private getValGetters(fieldName) {
         const {gridModel} = this,
             {store} = gridModel,
-            field = store.getField(fieldName),
-            {DATE, LOCAL_DATE} = FieldType;
+            field = store.getField(fieldName);
 
         // See corresponding method in StoreFilterFieldImplModel for notes on this implementation.
-        if (field?.type === DATE || field?.type === LOCAL_DATE) {
+        if (field?.type === 'date' || field?.type === 'localDate') {
             const cols = filter(gridModel.getVisibleLeafColumns(), {field: fieldName});
             if (!cols) return [];
 
             return cols.map(column => {
                 const {renderer, getValueFn} = column;
                 return (record) => {
-                    const ctx = {record, field, column, gridModel, store},
+                    const ctx = {record, field: fieldName, column, gridModel, store, agParams: null},
                         ret = getValueFn(ctx);
 
                     return renderer ? stripTags(renderer(ret, ctx)) : ret;

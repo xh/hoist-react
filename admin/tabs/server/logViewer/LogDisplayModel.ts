@@ -33,7 +33,7 @@ export class LogDisplayModel extends HoistModel {
     @bindable pattern = '';
 
     @managed
-    timer = null;
+    timer: Timer = null;
 
     @managed
     gridModel: GridModel;

@@ -6,7 +6,7 @@
  */
 import {DockViewModel} from '@xh/hoist/desktop/cmp/dock';
 import {div, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, refreshContextView, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {modalSupport} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport';
 import '@xh/hoist/desktop/register';
@@ -37,8 +37,8 @@ export const dockView = hoistCmp.factory<DockViewProps>({
         if (!wasActivated.current && isActive) wasActivated.current = true;
 
         const unmount = !isActive && (
-            (renderMode === RenderMode.UNMOUNT_ON_HIDE) ||
-            (renderMode === RenderMode.LAZY && !wasActivated.current)
+            (renderMode === 'unmountOnHide') ||
+            (renderMode === 'lazy' && !wasActivated.current)
         );
 
         const header = headerCmp({compactHeaders}),

@@ -8,7 +8,6 @@
 import {parseFieldValue} from '@xh/hoist/data';
 import {isNil} from 'lodash';
 import {FilterChooserFieldSpec} from '../FilterChooserFieldSpec';
-import {FieldType} from '../../../data';
 
 export interface FilterChooserOption {
     /**
@@ -71,7 +70,7 @@ export function fieldFilterOption({filter, fieldSpec, isExact = false}): FilterC
         displayValue = (filter.op === '!=' ? 'not blank' : 'blank');
     } else {
         displayOp = filter.op;
-        fieldType = fieldType === FieldType.TAGS ? FieldType.STRING : fieldType;
+        fieldType = fieldType === 'tags' ? 'string' : fieldType;
         displayValue = fieldSpec.renderValue(parseFieldValue(filter.value, fieldType, null), filter.op);
     }
 

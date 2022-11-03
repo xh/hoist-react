@@ -5,12 +5,15 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {filler} from '@xh/hoist/cmp/layout';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {leftRightChooser, leftRightChooserFilter} from '@xh/hoist/desktop/cmp/leftrightchooser';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
+import {ColChooserModel} from './ColChooserModel';
+
+export interface ColChooserProps extends HoistProps<ColChooserModel> {}
 
 /**
  * Hoist UI for user selection and discovery of available Grid columns, enabled via the
@@ -23,9 +26,9 @@ import {Icon} from '@xh/hoist/icon';
  * as custom column display names and descriptions, grouped display of the available column library,
  * and a quick filter for long lists.
  *
- * It is not necessary to manually create instances of this component within an application.
+ * @internal
  */
-export const colChooser = hoistCmp.factory({
+export const colChooser = hoistCmp.factory<ColChooserProps>({
     className: 'xh-col-chooser',
 
     render({model, className}) {
