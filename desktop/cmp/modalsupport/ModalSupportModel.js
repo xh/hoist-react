@@ -35,7 +35,7 @@ export class ModalSupportModel extends HoistModel {
         this.hostNode = this.createHostNode();
 
         this.options = opts instanceof ModalSupportOptions ? opts : new ModalSupportOptions(opts);
-        this.isModal = this.options.startModal;
+        this.isModal = this.options.defaultModal;
 
         const {inlineRef, modalRef, hostNode} = this;
         this.addReaction({

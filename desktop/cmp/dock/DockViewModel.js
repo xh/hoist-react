@@ -113,7 +113,7 @@ export class DockViewModel extends HoistModel {
         this.modalSupportModel = new ModalSupportModel({
             width: width ?? null,
             height: height ?? null,
-            startModal: !docked,
+            defaultModal: !docked,
             canOutsideClickClose: false
         });
     }

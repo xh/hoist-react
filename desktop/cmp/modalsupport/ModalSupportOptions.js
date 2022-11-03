@@ -14,7 +14,7 @@ export class ModalSupportOptions {
     /** @member {?String|number} */
     height;
     /** @member {boolean} */
-    startModal;
+    defaultModal;
     /** @member boolean */
     canOutsideClickClose;
     /**
@@ -22,18 +22,18 @@ export class ModalSupportOptions {
      * @param {Object} opts
      * @param {String|number} [width] - css width
      * @param {String|number} [height] - css height
-     * @param {boolean} [startModal] - begin in modal mode?
+     * @param {boolean} [defaultModal] - begin in modal mode?
      * @param {boolean} [canOutsideClickClose]
      */
     constructor({
         width = '90vw',
         height = '90vh',
-        startModal = false,
+        defaultModal = false,
         canOutsideClickClose = true
     } = {}) {
         this.width = width;
         this.height = height;
-        this.startModal = startModal;
+        this.defaultModal = defaultModal;
         this.canOutsideClickClose = canOutsideClickClose;
     }
 }
