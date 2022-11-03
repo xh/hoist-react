@@ -17,6 +17,9 @@ import {
 import {assign, isNil} from 'lodash';
 import {RestFormModel} from './RestFormModel';
 
+/**
+ * @internal
+ */
 export const restFormField = hoistCmp.factory({
     displayName: 'RestFormField',
     model: uses(RestFormModel),

@@ -62,6 +62,15 @@ import {HoistAppModel, RouterModel, BannerSpec, ToastSpec, MessageSpec, HoistUse
 
 const MIN_HOIST_CORE_VERSION = '14.4';
 
+
+declare const xhAppCode: string;
+declare const xhAppName: string;
+declare const xhAppVersion: string;
+declare const xhAppBuild: string;
+declare const xhBaseUrl: string;
+declare const xhIsDevelopmentMode: boolean;
+
+
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.
  *
@@ -87,30 +96,24 @@ export class XHClass {
     // See @xh/hoist-dev-utils/configureWebpack.
     //----------------------------------------------------------------------------------------------
     /** short internal code for the application. */
-    // @ts-ignore
     appCode: string = xhAppCode;
 
     /** user-facing display name for the app. See also `XH.clientAppName`. */
-    // @ts-ignore
     appName: string = xhAppName;
 
     /** semVer or Snapshot version of the client build. */
-    // @ts-ignore
     appVersion: string = xhAppVersion;
 
     /**
      * optional identifier for the client build (e.g. a git commit hash or a
      * build ID from a CI system). Varies depending on how builds are configured.
      */
-    // @ts-ignore
     appBuild: string = xhAppBuild;
 
     /** root URL context/path - prepended to all relative fetch requests. */
-    // @ts-ignore
     baseUrl: string = xhBaseUrl;
 
     /** true if app is running in a local development environment. */
-    // @ts-ignore
     isDevelopmentMode: boolean = xhIsDevelopmentMode;
 
     //----------------------------------------------------------------------------------------------

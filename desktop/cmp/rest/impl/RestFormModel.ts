@@ -15,6 +15,9 @@ import {isFunction, isNil, merge} from 'lodash';
 import {createRef} from 'react';
 import { RestField } from '../data/RestField';
 
+/**
+ * @internal
+ */
 export class RestFormModel extends HoistModel {
 
     parent: RestGridModel = null;
@@ -131,8 +134,7 @@ export class RestFormModel extends HoistModel {
 
         // Compute types. Then monitor form for changes to dynamic types
         this.editors.forEach(e => this.calcType(e.field));
-        const restFields = this.store.fields as RestField[],
-            dynamicTypeFields = restFields.filter(it => it.typeField);
+        const dynamicTypeFields = this.store.fields.filter(it => it.typeField);
         dynamicTypeFields.forEach(f => {
             const source = formModel.fields[f.typeField],
                 target = formModel.fields[f.name];

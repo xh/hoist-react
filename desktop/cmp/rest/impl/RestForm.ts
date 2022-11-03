@@ -17,6 +17,9 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 import './RestForm.scss';
 import {restFormField} from './RestFormField';
 
+/**
+ * @internal
+ */
 export const restForm = hoistCmp.factory({
     displayName: 'RestForm',
     model: uses(RestFormModel),

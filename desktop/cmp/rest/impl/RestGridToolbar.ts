@@ -14,6 +14,9 @@ import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {castArray, isEmpty, isFunction} from 'lodash';
 import {RestGridModel} from '../RestGridModel';
 
+/**
+ * @internal
+ */
 export const restGridToolbar = hoistCmp.factory({
     model: uses(RestGridModel, {publishMode: 'limited'}),
 

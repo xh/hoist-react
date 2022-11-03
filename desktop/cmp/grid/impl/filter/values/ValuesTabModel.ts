@@ -7,9 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {FieldFilterSpec} from '@xh/hoist/data';
-import {
-    ColumnHeaderFilterModel
-} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
+import {ColumnHeaderFilterModel} from '../ColumnHeaderFilterModel';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, difference, isEmpty, partition, uniq, without} from 'lodash';

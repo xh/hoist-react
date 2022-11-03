@@ -83,12 +83,6 @@ export class CustomTabModel extends HoistModel {
             rowModels.push(new CustomRowModel(this, op, value));
         });
 
-        // Rehydrate operator from CompoundFilter
-        // TODO: What is this? Cruft?
-        // if (this.columnCompoundFilter) {
-        //    this.op = this.columnCompoundFilter.op;
-        // }
-
         // Add an empty pending row
         if (isEmpty(rowModels)) {
             rowModels.push(new CustomRowModel(this));

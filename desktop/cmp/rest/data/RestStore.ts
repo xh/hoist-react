@@ -31,8 +31,8 @@ export interface RestStoreConfig extends UrlStoreConfig {
  */
 export class RestStore extends UrlStore {
 
+    declare fields: RestField[];
     reloadLookupsOnLoad: boolean;
-
     private lookupsLoaded = false;
 
     constructor({
@@ -133,8 +133,7 @@ export class RestStore extends UrlStore {
 
     private async ensureLookupsLoadedAsync() {
         if (!this.lookupsLoaded || this.reloadLookupsOnLoad) {
-            const fields = this.fields as RestField[],
-                lookupFields = fields.filter(it => !!it.lookupName);
+            const lookupFields = this.fields.filter(it => !!it.lookupName);
             if (lookupFields.length) {
                 const lookupData = await XH.fetchJson({url: `${this.url}/lookupData`});
                 lookupFields.forEach(f => {
