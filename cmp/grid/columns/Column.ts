@@ -649,7 +649,7 @@ export class Column {
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
         this.actions = actions;
-        this.actionsShowOnHoverOnly  = this.actionsShowOnHoverOnly ?? false;
+        this.actionsShowOnHoverOnly  = actionsShowOnHoverOnly ?? false;
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
