@@ -32,7 +32,10 @@ export const menu = hoistCmp.factory({
         const impl = useLocalModel(LocalMenuModel),
             items = impl.parseMenuItems(menuItems, onDismiss);
 
-        if (isEmpty(items)) return null;
+        if (isEmpty(items)) {
+            onDismiss();
+            return null;
+        }
 
         return vbox({
             ref,
@@ -107,5 +110,5 @@ class LocalMenuModel extends HoistModel {
 }
 
 function isMenuItem(item: MenuItemLike): item is MenuItem {
-    return !isString(item) && isValidElement(item);
+    return !isString(item) && !isValidElement(item);
 }
