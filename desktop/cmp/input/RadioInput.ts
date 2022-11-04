@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HSide} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
 import {computed, makeObservable} from '@xh/hoist/mobx';
@@ -13,7 +13,10 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {filter, isObject} from 'lodash';
 import './RadioInput.scss';
 
-export interface RadioInputProps extends HoistInputProps {
+export interface RadioInputProps extends
+    HoistProps,
+    HoistInputProps
+{
     /** True to display each radio button inline with each other. */
     inline?: boolean;
 

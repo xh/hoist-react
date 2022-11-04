@@ -6,7 +6,6 @@
  */
 import {ExcelFormat} from '@xh/hoist/cmp/grid';
 import {HoistService, XH} from '@xh/hoist/core';
-import {FieldType} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
@@ -31,8 +30,6 @@ import {span, a} from '@xh/hoist/cmp/layout';
 import {wait} from '@xh/hoist/promise';
 import {GridModel, Column} from '@xh/hoist/cmp/grid';
 import {StoreRecord} from '@xh/hoist/data';
-
-const {AUTO, BOOL, DATE, INT, LOCAL_DATE, NUMBER, STRING, PWD} = FieldType;
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -188,13 +185,13 @@ export class GridExportService extends HoistService {
         const exportFieldType = this.getExportFieldType(column);
 
         let cellSpecificType = null;
-        if (exportFieldType === AUTO || isFunction(exportValue) || hasCustomGetValueFn) {
+        if (exportFieldType === 'auto' || isFunction(exportValue) || hasCustomGetValueFn) {
             cellSpecificType = this.getCellSpecificType(value, exportFieldType);
         }
 
         // 2) Dates: Provide the date data string expected by the server endpoint
         // Also functions as a consistent human-friendly date format for CSV and clipboard
-        if (exportFieldType === DATE || cellSpecificType === DATE) {
+        if (exportFieldType === 'date' || cellSpecificType === 'date') {
             value = fmtDate(value, 'YYYY-MM-DD HH:mm:ss');
         }
 
@@ -258,7 +255,7 @@ export class GridExportService extends HoistService {
         const {field, exportValue, gridModel} = column,
             typeField = isString(exportValue) ? exportValue : field;
 
-        return gridModel.store.getField(typeField)?.type ?? AUTO;
+        return gridModel.store.getField(typeField)?.type ?? 'auto';
     }
 
     private getColumnMetadata(columns) {
@@ -269,10 +266,10 @@ export class GridExportService extends HoistService {
             // Set default excelFormat for dates and localDates on the client
             if (isNil(excelFormat) || excelFormat === ExcelFormat.DEFAULT) {
                 switch (type) {
-                    case LOCAL_DATE:
+                    case 'localDate':
                         excelFormat = ExcelFormat.DATE_FMT;
                         break;
-                    case DATE:
+                    case 'date':
                         excelFormat = ExcelFormat.DATETIME_FMT;
                         break;
                     default:
@@ -394,11 +391,11 @@ export class GridExportService extends HoistService {
     private getCellSpecificType(v, colType) {
         const ifTypeNot = (allowedTypes, retType) => allowedTypes.includes(colType) ? null : retType;
 
-        if (isBoolean(v))   return ifTypeNot([BOOL], BOOL);
-        if (isNumber(v))    return ifTypeNot([NUMBER, INT], NUMBER);
-        if (isLocalDate(v)) return ifTypeNot([LOCAL_DATE], LOCAL_DATE);
-        if (isDate(v))      return ifTypeNot([DATE], DATE);
-        if (isString(v))    return ifTypeNot([PWD, STRING, AUTO], AUTO);
+        if (isBoolean(v))   return ifTypeNot(['bool'], 'bool');
+        if (isNumber(v))    return ifTypeNot(['number', 'int'], 'number');
+        if (isLocalDate(v)) return ifTypeNot(['localDate'], 'localDate');
+        if (isDate(v))      return ifTypeNot(['date'], 'date');
+        if (isString(v))    return ifTypeNot(['pwd', 'string', 'auto'], 'auto');
 
         return null;
     }

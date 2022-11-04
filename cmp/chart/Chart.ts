@@ -7,7 +7,7 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {placeholder} from '../layout';
-import {lookup, hoistCmp, HoistModel, useLocalModel, uses, XH, BoxProps} from '@xh/hoist/core';
+import {lookup, hoistCmp, HoistModel, useLocalModel, uses, XH, BoxProps, HoistProps} from '@xh/hoist/core';
 import {useContextMenu} from '@xh/hoist/dynamics/desktop';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {runInAction} from '@xh/hoist/mobx';
@@ -29,7 +29,7 @@ import './Chart.scss';
 installZoomoutGesture(Highcharts);
 installCopyToClipboard(Highcharts);
 
-export interface ChartProps extends BoxProps<ChartModel> {
+export interface ChartProps extends HoistProps<ChartModel>, BoxProps {
 
     /**
      * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will

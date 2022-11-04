@@ -121,32 +121,31 @@ export function parseFieldValue(
         return DOMPurify.sanitize(v);
     };
 
-    const FT = FieldType;
     switch (type) {
-        case FT.TAGS:
+        case 'tags':
             val = castArray(val);
             val = val.map(v => {
                 v = sanitizeValue(v);
                 return v.toString();
             });
             return val;
-        case FT.AUTO:
-        case FT.JSON:
+        case 'auto':
+        case 'json':
             return sanitizeValue(val);
-        case FT.INT:
+        case 'int':
             val = toNumber(val);
             return isFinite(val) ? Math.trunc(val) : null;
-        case FT.NUMBER:
+        case 'number':
             return toNumber(val);
-        case FT.BOOL:
+        case 'bool':
             return !!val;
-        case FT.PWD:
-        case FT.STRING:
+        case 'pwd':
+        case 'string':
             val = sanitizeValue(val);
             return val.toString();
-        case FT.DATE:
+        case 'date':
             return isDate(val) ? val : new Date(val);
-        case FT.LOCAL_DATE:
+        case 'localDate':
             return isLocalDate(val) ? val : LocalDate.get(val);
     }
 

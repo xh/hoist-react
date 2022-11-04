@@ -211,7 +211,7 @@ export class NavigatorModel extends HoistModel {
 
         // Skip transition animation if the active page is going to be unmounted
         let options;
-        if (this.activePage?.renderMode === RenderMode.UNMOUNT_ON_HIDE) {
+        if (this.activePage?.renderMode === 'unmountOnHide') {
             options = {animation: 'none'};
         }
 

@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
-import {elem, hoistCmp, XH} from '@xh/hoist/core';
+import {elem, hoistCmp, HoistProps, LayoutProps, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {
@@ -39,7 +39,11 @@ import './Select.scss';
 
 export const MENU_PORTAL_ID = 'xh-select-input-portal';
 
-export interface SelectProps extends HoistInputProps {
+export interface SelectProps extends
+    HoistProps,
+    HoistInputProps,
+    LayoutProps
+{
     /** True to focus the control on render. */
     autoFocus?: boolean;
 

@@ -11,6 +11,7 @@ import '@xh/hoist/desktop/register';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {Children, ReactPortal} from 'react';
 import {createPortal} from 'react-dom';
+import './ModalSupport.scss';
 import {ModalSupportModel} from './ModalSupportModel';
 
 /**

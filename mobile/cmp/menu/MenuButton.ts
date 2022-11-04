@@ -4,35 +4,35 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, useLocalModel, MenuItem} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, PlainObject, MenuItem, useLocalModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button, Button} from '@xh/hoist/mobile/cmp/button';
+import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {popover} from '@xh/hoist/mobile/cmp/popover';
 import '@xh/hoist/mobile/register';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';
-import {menu} from './impl/Menu';
-import {ButtonProps} from "@xh/hoist/desktop/cmp/button";
 import {ReactNode} from 'react';
+import {menu} from './impl/Menu';
 
 
-export interface MenuButtonProps extends ButtonProps {
+export interface MenuButtonProps extends Omit<ButtonProps, 'title'> {
 
-    /** Array of MenuItems to display. */
-    menuItems?: (MenuItem|ReactNode)[];
+    /** Array of MenuItems or configs to create them */
+    menuItems?: (MenuItem|PlainObject)[];
 
     /** Position of menu relative to button */
-    menuPosition: 'top-left'|'top'|'top-right'|'right-top'|'right'|'right-bottom'|'bottom-right'|'bottom'|
-        'bottom-left'|'left-bottom'|'left'|'left-top'|'auto';
+    menuPosition?: 'top-left'|'top'|'top-right'|'right-top'|'right'|'right-bottom'|'bottom-right'|
+        'bottom'|'bottom-left'|'left-bottom'|'left'|'left-top'|'auto';
 
     /** Optional title to display above the menu */
-    title: ReactNode;
+    title?: ReactNode;
 
     /** True to disable user interaction */
-    disabled: boolean;
+    disabled?: boolean;
 
     /** Props passed to the internal popover */
-    popoverProps: Record<string, any>;
-};
+    popoverProps?: PlainObject;
+}
+
 
 /**
  * Convenience Button preconfigured for use as a trigger for a dropdown menu operation.
@@ -50,7 +50,7 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
         icon = Icon.bars(),
         ...props
     }) {
-        const impl = useLocalModel(MenuButtonModel);
+        const impl = useLocalModel(MenuButtonLocalModel);
 
         return popover({
             isOpen: impl.isOpen,
@@ -65,7 +65,7 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
     }
 });
 
-class MenuButtonModel extends HoistModel {
+class MenuButtonLocalModel extends HoistModel {
     xhImpl = true;
 
     @observable isOpen = false;

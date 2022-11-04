@@ -5,15 +5,18 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistModel, Intent} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, Intent, XH} from '@xh/hoist/core';
 import {Button, buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty, filter, without, castArray} from 'lodash';
-import {Children, cloneElement} from 'react';
+import {Children, cloneElement, isValidElement} from 'react';
 
-export interface ButtonGroupInputProps extends HoistInputProps, ButtonGroupProps<HoistModel> {
+export interface ButtonGroupInputProps extends
+    Omit<ButtonGroupProps<HoistModel>, 'onChange'>,
+    HoistInputProps
+{
     /**
      * True to allow buttons to be unselected (aka inactivated). Defaults to false.
      * Does not apply when enableMulti: true.
@@ -124,10 +127,13 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(
         const buttons = Children.map(children, button => {
             if (!button) return null;
 
+            if (!isValidElement(button) || button.type !== Button) {
+                throw XH.exception('ButtonGroupInput child must be a Button.');
+            }
+
             const {value, intent: btnIntent} = button.props,
                 btnDisabled = disabled || button.props.disabled;
 
-            throwIf(button.type !== Button, 'ButtonGroupInput child must be a Button.');
             throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
 
             const isActive = model.isActive(value);
@@ -142,7 +148,7 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(
                 // Workaround for https://github.com/palantir/blueprint/issues/3971
                 key: `${isActive} ${value}`,
                 autoFocus: isActive && model.hasFocus
-            });
+            } as ButtonGroupProps);
         });
 
         return buttonGroup({

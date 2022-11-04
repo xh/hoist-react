@@ -64,7 +64,7 @@ const diffTable = hoistCmp.factory<DifferDetailModel>(
         const rows = fields.map(field => {
             const cls = model.createDiffClass(field, local, remote),
                 localCell = local ? toString(local[field]) : '',
-                remoteCell = remote ? {className: cls, item: toString(remote[field])} : '';
+                remoteCell = remote ? {className: cls, item: toString(remote[field])} : null;
             return tr(td(field), td(localCell), td(remoteCell));
         });
 

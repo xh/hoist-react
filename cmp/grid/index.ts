@@ -17,6 +17,8 @@ export * from './helpers/GridCountLabel';
 
 export * from './renderers/MultiFieldRenderer';
 export * from './renderers/TagsRenderer';
+export * from './filter/GridFilterModel';
+export * from './filter/GridFilterFieldSpec';
 
 export * from './Grid';
 export * from './GridModel';

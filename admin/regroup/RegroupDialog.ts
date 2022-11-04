@@ -30,7 +30,6 @@ export const regroupDialog = hoistCmp.factory({
             items: [
                 dialogBody(
                     select({
-                        label: 'Group Name:',
                         bind: 'groupName',
                         enableCreate: true,
                         options: model.options,

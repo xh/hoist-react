@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, BoxProps} from '@xh/hoist/core';
+import {hoistCmp, BoxProps, HoistProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -19,7 +19,10 @@ import './Toolbar.scss';
 import {toolbarSeparator} from './ToolbarSep';
 
 
-export interface ToolbarProps extends BoxProps {
+export interface ToolbarProps extends
+    HoistProps,
+    BoxProps
+{
 
     /** Set to true to style toolbar with reduced height and font-size. */
     compact?: boolean,

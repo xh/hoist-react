@@ -1,4 +1,4 @@
-import {boolCheckCol, GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
+import {boolCheckCol, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {a} from '@xh/hoist/cmp/layout';
 import {HoistBase, hoistCmp, HoistModel, persist, XH} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
@@ -161,7 +161,7 @@ export class InstancesModel extends HoistModel {
     private createInstancesGridModel() {
         return new GridModel({
             persistWith: {...this.persistWith, path: 'instancesGrid', persistGrouping: false},
-            autosizeOptions: {mode: GridAutosizeMode.MANAGED},
+            autosizeOptions: {mode: 'managed'},
             emptyText: 'No matching (and alive) instances found.',
             store: {
                 fields: [
@@ -233,10 +233,10 @@ export class InstancesModel extends HoistModel {
     }
 
     private createPropertiesGridModel() {
-        const iconCol = {width: 40, align: 'center', resizable: false};
+        const iconCol = {width: 40, align: 'center', resizable: false} as ColumnSpec;
         return new GridModel({
             persistWith: {...this.persistWith, path: 'propertiesGrid'},
-            autosizeOptions: {mode: GridAutosizeMode.MANAGED},
+            autosizeOptions: {mode: 'managed'},
             sortBy: 'displayProperty',
             groupBy: 'displayGroup',
             showGroupRowCounts: false,

@@ -6,13 +6,14 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
-import {getTreeStyleClasses, GridAutosizeMode} from '@xh/hoist/cmp/grid';
+import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {Column} from './columns/Column';
 import {div, fragment, frame} from '@xh/hoist/cmp/layout';
 import {
-    BoxProps,
-    hoistCmp,
+    hoistCmpWithFactory,
     HoistModel,
+    HoistProps,
+    LayoutProps,
     lookup,
     PlainObject,
     SizingMode,
@@ -53,9 +54,12 @@ import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
-import { RecordSet } from '@xh/hoist/data/impl/RecordSet';
+import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
 
-export interface GridProps extends BoxProps<GridModel> {
+export interface GridProps extends
+    HoistProps<GridModel>,
+    LayoutProps
+{
     /**
      * Options for ag-Grid's API.
      *
@@ -91,7 +95,7 @@ export interface GridProps extends BoxProps<GridModel> {
  * @see {@link https://www.ag-grid.com/javascript-grid-reference-overview/|ag-Grid Docs}
  * @see GridModel
  */
-export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
+export const [Grid, grid] = hoistCmpWithFactory<GridProps>({
     displayName: 'Grid',
     model: uses(GridModel),
     className: 'xh-grid',
@@ -532,7 +536,7 @@ class GridLocalModel extends HoistModel {
             track: () => model.sizingMode,
             run: () => {
                 const {mode} = model.autosizeOptions;
-                if (mode === GridAutosizeMode.MANAGED || mode === GridAutosizeMode.ON_SIZING_MODE_CHANGE) {
+                if (mode === 'managed' || mode === 'onSizingModeChange') {
                     model.autosizeAsync({showMask: true});
                 }
             }
@@ -663,7 +667,7 @@ class GridLocalModel extends HoistModel {
             wait().then(() => this.syncSelection());
         }
 
-        if (model.autosizeOptions.mode === GridAutosizeMode.MANAGED) {
+        if (model.autosizeOptions.mode === 'managed') {
             // If sizingMode different to autosizeState, autosize all columns...
             if (model.autosizeState.sizingMode !== model.sizingMode) {
                 model.autosizeAsync();

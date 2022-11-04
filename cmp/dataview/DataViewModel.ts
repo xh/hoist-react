@@ -213,7 +213,7 @@ export class DataViewModel extends HoistModel {
         return this.gridModel.preSelectFirstAsync();
     }
 
-    selectFirstAsync(opts: {ensureVisible?: boolean}) {
+    selectFirstAsync(opts: {ensureVisible?: boolean} = {}) {
         return this.gridModel.selectFirstAsync(opts);
     }
 

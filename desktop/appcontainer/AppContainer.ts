@@ -44,6 +44,7 @@ import {messageSource} from './MessageSource';
 import {optionsDialog} from './OptionsDialog';
 import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
+import {ReactElement} from 'react';
 
 installDesktopImpls({
     tabContainerImpl,
@@ -125,7 +126,7 @@ const appContainerView = hoistCmp.factory({
 
     render({model}) {
         const {appSpec, appModel} = XH;
-        let ret = viewport(
+        let ret: ReactElement = viewport(
             vframe(
                 impersonationBar(),
                 bannerList(),

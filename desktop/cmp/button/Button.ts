@@ -4,32 +4,40 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {ButtonProps as BpButtonProps} from '@blueprintjs/core';
 import composeRefs from '@seznam/compose-react-refs';
-import {BoxProps, hoistCmp, HoistModel, Intent} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, HoistProps, LayoutProps, StyleProps, Intent} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ReactNode, ReactElement, CSSProperties, MouseEvent} from 'react';
+import {ReactNode, ReactElement} from 'react';
 import './Button.scss';
 
-export interface ButtonProps<M extends HoistModel = null> extends BoxProps<M> {
+export interface ButtonProps<M extends HoistModel = null> extends
+    HoistProps<M>,
+    StyleProps,
+    LayoutProps,
+    BpButtonProps
+{
     active?: boolean;
     autoFocus?: boolean;
     disabled?: boolean;
     icon?: ReactElement;
     intent?: Intent;
     minimal?: boolean;
-    onClick?: (e: MouseEvent) => void;
     outlined?: boolean;
     rightIcon?: ReactElement;
-    style?: CSSProperties;
     text?: ReactNode;
-    title?: ReactNode;
+    title?: string;
+    value?: any;
+
+    tabIndex?: number;  // TODO: where does this come from?
 
     /** Alias for title. */
     tooltip?: string;
+
 }
 
 /**

@@ -5,15 +5,26 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, useContextModel, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, useContextModel, uses} from '@xh/hoist/core';
 import {dialog as onsenDialog} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
+import {ReactElement, ReactNode} from 'react';
 import './Dialog.scss';
+
+export interface DialogProps extends HoistProps {
+    isOpen?: boolean;
+    isCancelable?: boolean;
+    onCancel?: () => void;
+    icon?: ReactElement;
+    title?: ReactNode;
+    content?: ReactNode;
+    buttons?: ReactNode[];
+}
 
 /**
  * A wrapper around Onsen's dialog, with support for standard layout + styling, titles and buttons
  */
-export const [Dialog, dialog] = hoistCmp.withFactory({
+export const [Dialog, dialog] = hoistCmp.withFactory<DialogProps>({
     displayName: 'Dialog',
     className: 'xh-dialog',
     model: false,

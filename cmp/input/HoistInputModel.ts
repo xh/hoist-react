@@ -4,16 +4,15 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {ElemFactory, HoistModel, HoistModelClass, HoistProps, useLocalModel} from '@xh/hoist/core';
+import {DefaultHoistProps, HoistModel, HoistModelClass, useLocalModel} from '@xh/hoist/core';
 import {FieldModel} from '@xh/hoist/cmp/form';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
-import {ForwardedRef, ReactElement, ReactInstance, useImperativeHandle} from 'react';
+import {ForwardedRef, ReactElement, ReactInstance, useImperativeHandle, FocusEvent} from 'react';
 import {findDOMNode} from 'react-dom';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import './HoistInput.scss';
-
 
 /**
  * A Local Model supporting Input components in Hoist.  This class provides common functionality
@@ -329,8 +328,8 @@ export class HoistInputModel extends HoistModel {
  * @param {Class} modelSpec - specify to use particular subclass of HoistInputModel
  */
 export function useHoistInputModel(
-    component: ElemFactory,
-    props: HoistProps,
+    component: any,
+    props: DefaultHoistProps,
     ref: ForwardedRef<any>,
     modelSpec?: HoistModelClass<HoistInputModel>
 ): ReactElement {

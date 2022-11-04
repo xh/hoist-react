@@ -28,7 +28,6 @@ import {
     XH
 } from '@xh/hoist/core';
 import {
-    FieldType,
     FieldSpec,
     Store,
     StoreConfig,
@@ -42,7 +41,7 @@ import {
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
+import {action, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -58,6 +57,7 @@ import {
 import equal from 'fast-deep-equal';
 import {
     castArray,
+    clone,
     cloneDeep,
     compact,
     defaults,
@@ -71,6 +71,7 @@ import {
     isPlainObject,
     isString,
     isUndefined,
+    keysIn,
     max,
     min,
     omit,
@@ -169,7 +170,7 @@ export interface GridConfig {
     treeStyle?: TreeStyle;
 
     /** True to use alternating backgrounds for rows. */
-    stripeRow?: boolean;
+    stripeRows?: boolean;
 
     /** True to render cell borders. */
     cellBorders?: boolean;
@@ -315,8 +316,11 @@ export interface GridConfig {
      */
     experimental?: PlainObject;
 
-    /** Additional data to attach to this model instance. */
-    [x: string]: any;
+    /** Extra app-specific data for the GridModel. */
+    appData?: PlainObject;
+
+    /** @internal */
+    xhImpl?: boolean;
 }
 
 
@@ -380,7 +384,7 @@ export class GridModel extends HoistModel {
     onCellClicked: (e: any) => void;
     onCellDoubleClicked: (e: any) => void;
     onCellContextMenu: (e: any) => void;
-
+    appData: PlainObject;
 
     @managed filterModel: GridFilterModel;
     @managed agGridModel: AgGridModel;
@@ -449,7 +453,9 @@ export class GridModel extends HoistModel {
     @managed autosizeTask = TaskObserver.trackAll();
 
     /** @internal - used internally by any GridFindField that is bound to this GridModel. */
-    @bindable xhFindQuery = null;
+    @observable xhFindQuery:string = null;
+    @action setXhFindQuery(v: string) {this.xhFindQuery = v}
+
 
     constructor(config: GridConfig) {
         super();
@@ -503,6 +509,7 @@ export class GridModel extends HoistModel {
             clicksToEdit = 2,
             highlightRowOnClick = XH.isMobileApp,
             experimental,
+            appData,
             xhImpl,
             ...rest
         }: GridConfig = config;
@@ -588,12 +595,20 @@ export class GridModel extends HoistModel {
         this.onCellClicked = onCellClicked;
         this.onCellDoubleClicked = onCellDoubleClicked;
         this.onCellContextMenu = onCellContextMenu;
+        this.appData = appData ? clone(appData) : {};
 
         this.addReaction({
             track: () => this.isEditing,
             run: (isEditing) => this.isInEditingMode = isEditing,
             debounce: 500
         });
+
+        if (!isEmpty(rest)) {
+            const keys = keysIn(rest);
+            throw XH.exception(
+                `Key(s) '${keys}' not supported in GridModel.  For custom data, use the 'appData' property.`
+            );
+        }
     }
 
     /**
@@ -625,7 +640,7 @@ export class GridModel extends HoistModel {
         this.filterModel?.clear();
         this.persistenceModel?.clear();
 
-        if (this.autosizeOptions.mode === GridAutosizeMode.MANAGED) {
+        if (this.autosizeOptions.mode === 'managed') {
             await this.autosizeAsync();
         }
 
@@ -1152,7 +1167,7 @@ export class GridModel extends HoistModel {
     buildColumn(config: ColumnGroupSpec|ColumnSpec) {
         // Merge leaf config with defaults.
         // Ensure *any* tooltip setting on column itself always wins.
-        if (this.colDefaults && !config.children) {
+        if (this.colDefaults && !this.isGroupSpec(config)) {
             let colDefaults = {...this.colDefaults};
             if (config.tooltip || config.tooltipElement) {
                 colDefaults.tooltip = null;
@@ -1164,7 +1179,7 @@ export class GridModel extends HoistModel {
         const omit = isFunction(config.omit) ? config.omit() : config.omit;
         if (omit) return null;
 
-        if (config.children) {
+        if (this.isGroupSpec(config)) {
             const children = compact(config.children.map(c => this.buildColumn(c))) as (ColumnGroup | Column)[];
             return !isEmpty(children) ? new ColumnGroup(config as ColumnGroupSpec, this, children) : null;
         }
@@ -1498,8 +1513,8 @@ export class GridModel extends HoistModel {
 
         if (isEmpty(fieldsByName)) return colConfigs;
 
-        const numTypes = [FieldType.INT, FieldType.NUMBER],
-            dateTypes = [FieldType.DATE, FieldType.LOCAL_DATE];
+        const numTypes = ['int', 'number'],
+            dateTypes = ['date', 'localDate'];
         return colConfigs.map(col => {
             // Recurse into children for column groups
             if (col.children) {
@@ -1543,7 +1558,7 @@ export class GridModel extends HoistModel {
         const newFields: FieldSpec[] = [];
         forEach(leafColsByFieldName, (col, name) => {
             if (name !== 'id' && !storeFieldNames.includes(name)) {
-                newFields.push({name, displayName: col.displayName, ...col.fieldSpec});
+                newFields.push({displayName: col.displayName, ...col.fieldSpec, name});
             }
         });
 
@@ -1631,6 +1646,10 @@ export class GridModel extends HoistModel {
         }
 
         return chooserModel ? this.markManaged(new modelClass({gridModel: this})) : null;
+    }
+
+    private isGroupSpec(col: ColumnGroupSpec|ColumnSpec): col is ColumnGroupSpec {
+        return 'children' in col;
     }
 
     defaultGroupSortFn = (a, b) => {

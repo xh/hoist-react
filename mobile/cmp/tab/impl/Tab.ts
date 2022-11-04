@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {TabModel} from '@xh/hoist/cmp/tab';
-import {hoistCmp, ModelPublishMode, refreshContextView, RenderMode, uses} from '@xh/hoist/core';
+import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {page} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {elementFromContent} from '@xh/hoist/utils/react';
@@ -23,7 +23,7 @@ import './Tabs.scss';
  */
 export const tab = hoistCmp.factory({
     displayName: 'Tab',
-    model: uses(TabModel, {publishMode: ModelPublishMode.LIMITED}),
+    model: uses(TabModel, {publishMode: 'limited'}),
 
     render({model}) {
         let {content, isActive, renderMode, refreshContextModel} = model,
@@ -34,8 +34,8 @@ export const tab = hoistCmp.factory({
         if (
             !isActive &&
             (
-                (renderMode === RenderMode.UNMOUNT_ON_HIDE) ||
-                (renderMode === RenderMode.LAZY && !wasActivated.current)
+                (renderMode === 'unmountOnHide') ||
+                (renderMode === 'lazy' && !wasActivated.current)
             )
         ) {
             // Note: We must render an empty placeholder page to work with Onsen's tabbar.

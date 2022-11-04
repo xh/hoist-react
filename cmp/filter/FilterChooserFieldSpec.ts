@@ -6,14 +6,12 @@
  */
 import {BaseFilterFieldSpec, BaseFilterFieldSpecConfig} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
 import {FieldFilterOperator} from '@xh/hoist/data/filter/Types';
-import {FieldType, parseFieldValue, View} from '@xh/hoist/data';
+import {parseFieldValue, View} from '@xh/hoist/data';
 import {fmtDate, parseNumber} from '@xh/hoist/format';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
 import {isValidElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
-
-const {INT, NUMBER} = FieldType;
 
 export interface FilterChooserFieldSpecConfig extends BaseFilterFieldSpecConfig {
     /**
@@ -76,7 +74,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         );
 
         throwIf(
-            !this.valueParser && this.fieldType === FieldType.DATE,
+            !this.valueParser && this.fieldType === 'date',
             "Must provide an appropriate valueParser arg for fields with type 'date'"
         );
     }
@@ -103,7 +101,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
                 return this.valueParser(value, op);
             }
 
-            const fieldType = this.fieldType === FieldType.TAGS ? FieldType.STRING : this.fieldType;
+            const fieldType = this.fieldType === 'tags' ? 'string' : this.fieldType;
             return parseFieldValue(value, fieldType, undefined);
         } catch (e) {
             return undefined;
@@ -123,7 +121,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
 
     parseValueParser(valueParser) {
         // Default numeric parser
-        if (!valueParser && (this.fieldType === INT || this.fieldType === NUMBER)) {
+        if (!valueParser && (this.fieldType === 'int' || this.fieldType === 'number')) {
             return (input) => parseNumber(input);
         }
         return valueParser;
@@ -139,7 +137,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         sourceStore.allRecords.forEach(rec => {
             const val = rec.get(field);
             if (!isNil(val)) {
-                if (sourceStore.getField(field).type === FieldType.TAGS) {
+                if (sourceStore.getField(field).type === 'tags') {
                     val.forEach(it => values.add(it));
                 } else {
                     values.add(val);

@@ -26,7 +26,6 @@ export const [ExpandCollapseButton, expandCollapseButton] = hoistCmp.withFactory
     render({
         gridModel,
         onClick,
-        autosizeOptions = {},
         ...props
     }) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));

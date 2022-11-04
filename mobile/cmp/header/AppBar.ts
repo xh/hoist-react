@@ -100,7 +100,7 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
                             omit: hideAppMenuButton || appMenuButtonPosition != 'left',
                             menuPosition: 'bottom-right',
                             ...appMenuButtonProps
-                        }),
+                        } as AppMenuButtonProps),
                         ...leftItems || []
                     ]
                 }),
@@ -129,7 +129,7 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
                             omit: hideAppMenuButton || appMenuButtonPosition != 'right',
                             menuPosition: 'bottom-left',
                             ...appMenuButtonProps
-                        })
+                        } as AppMenuButtonProps)
                     ]
                 })
             ]

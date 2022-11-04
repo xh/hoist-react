@@ -6,11 +6,11 @@
  */
 import {GridModel} from '../GridModel';
 import {box} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, useContextModel} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistProps, useContextModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
 
-export interface GridCountLabelProps extends BoxProps {
+export interface GridCountLabelProps extends HoistProps, BoxProps {
     /** GridModel to which this component should bind. */
     gridModel?: GridModel;
 

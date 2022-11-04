@@ -5,16 +5,20 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {hspacer} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistModel, Intent} from '@xh/hoist/core';
+import {LayoutProps, StyleProps, hoistCmp, HoistModel, HoistProps, Intent} from '@xh/hoist/core';
 import {button as onsenButton} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {CSSProperties, ReactNode, ReactElement, MouseEvent} from 'react';
+import {ReactNode, ReactElement, MouseEvent} from 'react';
 import './Button.scss';
 
-export interface ButtonProps<M extends HoistModel = null> extends BoxProps<M> {
+export interface ButtonProps<M extends HoistModel=HoistModel> extends
+    HoistProps<M>,
+    LayoutProps,
+    StyleProps
+{
     active?: boolean;
     disabled?: boolean;
     icon?: ReactElement;
@@ -22,15 +26,17 @@ export interface ButtonProps<M extends HoistModel = null> extends BoxProps<M> {
     minimal?: boolean;
     onClick?: (e: MouseEvent) => void;
     outlined?: boolean;
-    style?: CSSProperties;
     text?: ReactNode;
+    value?: any;
+    modifier?: string;
+    tabIndex?: number;
 }
 
 /**
  * Wrapper around Onsen's Button component. Adds layout support for top-level sizing and
  * margin/padding props. Relays all other props supported by Onsen's Button.
  */
-export const [Button, button] = hoistCmp.withFactory({
+export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
     displayName: 'Button',
     model: false,
     className: 'xh-button',

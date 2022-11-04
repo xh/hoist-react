@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HSide} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, StyleProps, LayoutProps, HSide} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {singleDatePicker} from '@xh/hoist/kit/react-dates';
@@ -20,7 +20,12 @@ import './DateInput.scss';
 import {ReactElement} from 'react';
 
 
-export interface DateInputProps extends HoistInputProps {
+export interface DateInputProps extends
+    HoistProps,
+    HoistInputProps,
+    StyleProps,
+    LayoutProps
+{
     value?: Date|LocalDate;
 
     /** True to show a "clear" button aligned to the right of the control. Default false. */

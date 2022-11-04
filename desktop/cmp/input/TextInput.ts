@@ -7,7 +7,7 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HSide} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -15,9 +15,14 @@ import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
-import {ReactElement, ReactNode, Ref} from 'react';
+import {ReactElement, ReactNode, Ref, FocusEvent} from 'react';
 
-export interface TextInputProps extends HoistInputProps {
+export interface TextInputProps extends
+    HoistProps,
+    HoistInputProps,
+    LayoutProps,
+    StyleProps
+{
     value?: string;
 
     /**

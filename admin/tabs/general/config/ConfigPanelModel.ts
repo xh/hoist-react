@@ -22,7 +22,6 @@ import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
 import {getApp} from '@xh/hoist/admin/AppModel';
 import {FieldSpec} from '@xh/hoist/data';
 
-
 export class ConfigPanelModel extends HoistModel {
 
     persistWith = {localStorageKey: 'xhAdminConfigState'};
@@ -31,11 +30,11 @@ export class ConfigPanelModel extends HoistModel {
     regroupDialogModel = new RegroupDialogModel(this);
 
     @managed
-    gridModel;
+    gridModel: RestGridModel;
 
     @managed
     @observable.ref
-    differModel;
+    differModel: DifferModel;
 
     constructor() {
         super();

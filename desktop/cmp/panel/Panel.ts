@@ -6,10 +6,10 @@
  */
 import {box, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {
-    BoxProps, ElemFactory,
+    BoxProps,
     hoistCmp,
+    HoistProps,
     refreshContextView,
-    RenderMode,
     Some,
     TaskObserver,
     useContextModel,
@@ -31,8 +31,10 @@ import {PanelConfig, PanelModel} from './PanelModel';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
 import { ContextMenuItem } from '../contextmenu/ContextMenuItem';
 
-interface PanelProps extends BoxProps<PanelModel> {
-
+export interface PanelProps extends
+    HoistProps<PanelModel>,
+    Omit<BoxProps, 'title'>
+{
     /** True to style panel header (if displayed) with reduced padding and font-size. */
     compactHeader?: boolean;
 
@@ -160,7 +162,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         }
 
         let coreContents = null;
-        if (!collapsed || renderMode === RenderMode.ALWAYS || (renderMode === RenderMode.LAZY && wasDisplayed.current)) {
+        if (!collapsed || renderMode === 'always' || (renderMode === 'lazy' && wasDisplayed.current)) {
             const parseToolbar = (barSpec) => {
                 return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
             };
@@ -212,7 +214,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
 });
 
 function parseLoadDecorator(prop, name, contextModel) {
-    const cmp: ElemFactory = (name === 'mask' ? mask : loadingIndicator);
+    const cmp = (name === 'mask' ? mask : loadingIndicator) as any;
     if (!prop)                                  return null;
     if (isValidElement(prop))                   return prop;
     if (prop === true)                          return cmp({isDisplayed: true});

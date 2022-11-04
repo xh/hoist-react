@@ -6,7 +6,13 @@
  */
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
 import {HAlign, HSide, PlainObject, Some, XH} from '@xh/hoist/core';
-import {CubeFieldSpec, FieldSpec, genDisplayName, StoreRecord} from '@xh/hoist/data';
+import {
+    CubeFieldSpec,
+    FieldSpec,
+    genDisplayName,
+    RecordActionSpec,
+    StoreRecord
+} from '@xh/hoist/data';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {
@@ -22,6 +28,7 @@ import {
     isNumber,
     isPlainObject,
     isString,
+    keysIn,
     toString
 } from 'lodash';
 import {createElement, forwardRef, isValidElement, ReactNode, useImperativeHandle} from 'react';
@@ -296,13 +303,11 @@ export interface ColumnSpec {
      */
     autosizeBufferPx?: number;
 
-
     /**
      * True to dynamically grow the row height based on the content of this column's cell.  If
      * true, text will also be set to wrap within cells.
      */
     autoHeight?: boolean;
-
 
     /**
      * True to make cells in this column editable, or a function to determine on a
@@ -335,7 +340,22 @@ export interface ColumnSpec {
      * render a nested property.  False to support field names that contain dots *without*
      * triggering this behavior.
      */
-    enableDotSeperatedFieldPath?: boolean;
+    enableDotSeparatedFieldPath?: boolean;
+
+    /** True to skip this column when adding to grid. */
+    omit?: boolean|(() => boolean);
+
+    /**
+     * Actions to display as clickable buttons in this column. For action columns only.
+     */
+    actions?: RecordActionSpec[],
+
+    /**
+     * For action columns, hide the Buttons for all rows except the currently hovered row. This can
+     * be a used to avoid overloading the user's attention with a wall of buttons when there are
+     * many rows + multiple actions per row. Defaults to false;
+     */
+    actionsShowOnHoverOnly?: boolean;
 
     /**
      * "escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note these
@@ -345,8 +365,8 @@ export interface ColumnSpec {
      */
     agOptions?: PlainObject;
 
-    /** Additional data to attach to this model instance. */
-    [x: string]: any;
+    /** Extra, app-specific data for the column. */
+    appData?: PlainObject
 }
 
 /**
@@ -439,11 +459,15 @@ export class Column {
     editorIsPopup: boolean;
     setValueFn: ColumnSetValueFn;
     getValueFn: ColumnGetValueFn;
-    gridModel: GridModel;
-    agOptions: PlainObject;
-
+    actions?: RecordActionSpec[];
+    actionsShowOnHoverOnly?: boolean;
     fieldSpec: FieldSpec;
     manuallySized: boolean;
+    omit: boolean|(() => boolean);
+
+    gridModel: GridModel;
+    agOptions: PlainObject;
+    appData: PlainObject;
 
     /**
      * Not for application use. Columns are created internally by Hoist.
@@ -509,10 +533,13 @@ export class Column {
             setValueFn,
             getValueFn,
             enableDotSeparatedFieldPath,
+            actionsShowOnHoverOnly,
+            actions,
+            omit,
             agOptions,
+            appData,
             ...rest
         }: ColumnSpec = spec;
-        Object.assign(this, rest);
 
         this.field = this.parseField(field);
         this.enableDotSeparatedFieldPath = withDefault(enableDotSeparatedFieldPath, true);
@@ -543,17 +570,17 @@ export class Column {
         this.cellClassRules = cellClassRules || {};
 
         this.align = align;
+        this.omit = omit;
 
         this.hidden = withDefault(hidden, false);
-        warnIf(rest.hide, `Column ${this.colId} configured with {hide: true} - use "hidden" instead.`);
 
         warnIf(
             flex && width,
-            `Column specified with both flex && width. Width will be ignored. [colId=${this.colId}]`
+            `Column specified with both flex && width. Width will be ignored. [colId=${ this.colId }]`
         );
         warnIf(
             width && !isFinite(width),
-            `Column width not specified as a number. Default width will be applied. [colId=${this.colId}]`
+            `Column width not specified as a number. Default width will be applied. [colId=${ this.colId }]`
         );
 
         this.flex = withDefault(flex, false);
@@ -588,7 +615,7 @@ export class Column {
         this.tooltipElement = tooltipElement;
         warnIf(
             tooltip && tooltipElement,
-            `Column specified with both tooltip && tooltipElement. Tooltip will be ignored. [colId=${this.colId}]`
+            `Column specified with both tooltip && tooltipElement. Tooltip will be ignored. [colId=${ this.colId }]`
         );
 
         this.chooserName = chooserName || this.displayName;
@@ -621,12 +648,23 @@ export class Column {
         this.setValueFn = withDefault(setValueFn, this.defaultSetValueFn);
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
+        this.actions = actions;
+        this.actionsShowOnHoverOnly  = actionsShowOnHoverOnly ?? false;
+
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
+        this.appData = appData ? clone(appData) : {};
 
         // Warn if using the ag-Grid valueSetter or valueGetter and recommend using our callbacks
-        warnIf(this.agOptions.valueSetter, `Column '${this.colId}' uses valueSetter through agOptions. Remove and use custom setValueFn if needed.`);
-        warnIf(this.agOptions.valueGetter, `Column '${this.colId}' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`);
+        warnIf(this.agOptions.valueSetter, `Column '${ this.colId }' uses valueSetter through agOptions. Remove and use custom setValueFn if needed.`);
+        warnIf(this.agOptions.valueGetter, `Column '${ this.colId }' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`);
+
+        if (!isEmpty(rest)) {
+            const keys = keysIn(rest);
+            throw XH.exception(
+                `Key(s) '${keys}' not supported in Column.  For custom data, use the 'appData' property.`
+            );
+        }
     }
 
     /** Does column support editing its field for the given StoreRecord? */
