@@ -7,7 +7,6 @@
 import {PlainObject} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {RecordActionLike} from '@xh/hoist/data';
-import '@xh/hoist/desktop/register';
 
 /**
  * If a String, value can be '-' for a separator, or a token supported by ag-Grid

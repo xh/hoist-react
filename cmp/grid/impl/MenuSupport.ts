@@ -7,7 +7,6 @@
 import {PlainObject, Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {RecordAction, Store, StoreRecord} from '@xh/hoist/data';
-import '@xh/hoist/desktop/register';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import copy from 'clipboard-copy';
@@ -73,7 +72,7 @@ function buildMenuItems(
 
         let subMenu;
         if (!isEmpty(displaySpec.items)) {
-            subMenu = this.buildMenuItems(displaySpec.items, record, gridModel, column, agParams);
+            subMenu = buildMenuItems(displaySpec.items, record, gridModel, column, agParams);
         }
 
         const icon = isValidElement(displaySpec.icon) ? convertIconToHtml(displaySpec.icon) : null;

@@ -141,7 +141,7 @@ export class RecordAction {
         this.displayFn = displayFn;
         this.recordsRequired = recordsRequired;
 
-        this.items = items.map(it => {
+        this.items = items?.map(it => {
             if (isString(it)) return it;
             return it instanceof RecordAction ? it : new RecordAction(it);
         });
