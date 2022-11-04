@@ -13,6 +13,7 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 export interface ModalSupportConfig {
     width?: string|number;
     height?: string|number;
+    defaultModal?: boolean;
     canOutsideClickClose?: boolean;
 }
 
@@ -37,6 +38,7 @@ export class ModalSupportModel extends HoistModel {
     constructor({
         width = '90vw',
         height = '90vh',
+        defaultModal = false,
         canOutsideClickClose = true
     }: ModalSupportConfig = {}) {
         super();
@@ -44,6 +46,7 @@ export class ModalSupportModel extends HoistModel {
         this.hostNode = this.createHostNode();
         this.width = width;
         this.height = height;
+        this.isModal = defaultModal;
         this.canOutsideClickClose = canOutsideClickClose;
 
         const {inlineRef, modalRef, hostNode} = this;
