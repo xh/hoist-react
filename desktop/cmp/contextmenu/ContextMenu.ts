@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, MenuItem} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, MenuItem, MenuItemLike} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
@@ -12,8 +12,14 @@ import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {cloneDeep, isEmpty, isString} from 'lodash';
 import {isValidElement, ReactElement, ReactNode} from 'react';
 
-export interface ContextMenuProps {
-    menuItems: (MenuItem|ReactNode)[]
+/**
+ * A context menu is specified as  an array of items, a function to generate one from a click, or
+ * a full element representing a contextMenu Component.
+ */
+export type ContextMenuSpec = MenuItemLike[]|((e: MouseEvent) => MenuItemLike[])|ReactElement;
+
+export interface ContextMenuProps  extends HoistProps {
+    menuItems: MenuItemLike[]
 }
 
 /**
@@ -22,15 +28,15 @@ export interface ContextMenuProps {
  * Not typically used directly by applications.  To add a Context Menu to an application
  * see ContextMenuHost, or the 'contextMenu` prop on panel.
  *
- * @see StoreContextMenu to specify a context menu on store enabled components.
+ * See {@link GridContextMenu} to specify a context menu on Grid and DataView components.
  * That API will receive specific information about the current selection
  */
-export const [ContextMenu, contextMenu] = hoistCmp.withFactory({
+export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>({
     displayName: 'ContextMenu',
     memo: false, model: false, observer: false,
 
-    render({menuItems}: ContextMenuProps) {
-        menuItems = parseMenuItems(menuItems);
+    render({menuItems}) {
+        menuItems = parseItems(menuItems);
         return isEmpty(menuItems) ? null : menu(menuItems);
     }
 });
@@ -38,9 +44,9 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory({
 //---------------------------
 // Implementation
 //---------------------------
-function parseMenuItems(items: any[]): ReactNode[] {
+function parseItems(items: MenuItemLike[]): ReactNode[] {
     items = items.map(item => {
-        if (isString(item) || isValidElement(item)) return item;
+        if (!isMenuItem(item)) return item;
 
         item = cloneDeep(item);
         item.prepareFn?.(item);
@@ -48,14 +54,15 @@ function parseMenuItems(items: any[]): ReactNode[] {
     });
 
     return items
-        .filter(it => !it.hidden)
+        .filter(it => isMenuItem(it) && !it.hidden && !it.omit)
         .filter(filterConsecutiveMenuSeparators())
         .map(item => {
+            // Process dividers
             if (item === '-') return menuDivider();
-            if (isString(item) || isValidElement(item)) {
-                return item;
-            }
-            const items = item.items ? parseMenuItems(item.items) : null;
+            if (!isMenuItem(item)) return item;
+
+            // Process items
+            const items = item.items ? parseItems(item.items) : null;
             return menuItem({
                 text: item.text,
                 icon: item.icon,
@@ -65,4 +72,9 @@ function parseMenuItems(items: any[]): ReactNode[] {
                 items
             });
         });
+}
+
+
+function isMenuItem(item: MenuItemLike): item is MenuItem {
+    return !isString(item) && !isValidElement(item);
 }

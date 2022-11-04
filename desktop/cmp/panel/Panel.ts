@@ -29,7 +29,7 @@ import {resizeContainer} from './impl/ResizeContainer';
 import './Panel.scss';
 import {PanelConfig, PanelModel} from './PanelModel';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
-import { ContextMenuItem } from '../contextmenu/ContextMenuItem';
+import {ContextMenuSpec} from '../contextmenu/ContextMenu';
 
 export interface PanelProps extends
     HoistProps<PanelModel>,
@@ -44,12 +44,8 @@ export interface PanelProps extends
     /** An icon placed at the left-side of the panel's header. */
     icon?: ReactElement;
 
-    /**
-     * Specification of a context menu.
-     * Array of ContextMenuItems or a function that receives the triggering event
-     * and returns such an array.  A ContextMenu element may also be provided.
-     */
-    contextMenu?: ContextMenuItem[]|((e: MouseEvent) => ContextMenuItem[])|ReactElement
+    /** Context Menu to show on context clicking this panel. */
+    contextMenu?: ContextMenuSpec;
 
     /**
      * Specification of hotkeys as prescribed by blueprint.

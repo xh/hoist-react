@@ -21,7 +21,7 @@ import './Actions.scss';
  * way to perform push-button operations on a given record.
  *
  * Another useful pattern is to create re-usable `RecordAction` configs and pass those both to this
- * column config as well as a `StoreContextMenu`. This offers the user two ways of accessing actions
+ * column config as well as the grid's contextMenu. This offers the user two ways of accessing actions
  * without duplicating the action definitions.
  *
  * See the `calcActionColWidth` helper function exported below - this returns a pixel width

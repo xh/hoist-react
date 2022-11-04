@@ -9,6 +9,7 @@ export * from './enums/GridAutosizeMode';
 export * from './enums/ExcelFormat';
 export * from './GridAutosizeOptions';
 export * from './GridSorter';
+export * from './GridContextMenu';
 export * from './Types';
 
 export * from './columns';

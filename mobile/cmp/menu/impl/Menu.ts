@@ -5,14 +5,13 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, MenuItem, MenuItemLike} from '@xh/hoist/core';
 import {listItem} from '@xh/hoist/kit/onsen';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {observable, action, makeObservable} from '@xh/hoist/mobx';
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import classNames from 'classnames';
-import {isEmpty, isFunction} from 'lodash';
-import PT from 'prop-types';
-import {isValidElement} from 'react';
+import {cloneDeep, isEmpty, isString} from 'lodash';
+import {isValidElement, ReactNode} from 'react';
 
 import './Menu.scss';
 
@@ -20,21 +19,20 @@ import './Menu.scss';
  * Internal Menu Component for MenuButton.
  *
  * Note that the Menu itself does not maintain open / close state - it is the responsibility
- * of the triggering component to manage this state. Pass an `onDismiss` callback to
+ * of the triggering component to manage this state. Requires an `onDismiss` callback to
  * facilitate closing the menu from within this component.
  *
  * @internal
  */
-export const [Menu, menu] = hoistCmp.withFactory({
+export const menu = hoistCmp.factory({
     displayName: 'Menu',
     className: 'xh-menu',
 
     render({menuItems, onDismiss, title, ...props}, ref) {
-        const impl = useLocalModel(LocalModel),
+        const impl = useLocalModel(LocalMenuModel),
             items = impl.parseMenuItems(menuItems, onDismiss);
 
         if (isEmpty(items)) return null;
-        throwIf(!isFunction(onDismiss), 'Menu requires an `onDismiss` callback function');
 
         return vbox({
             ref,
@@ -54,30 +52,36 @@ export const [Menu, menu] = hoistCmp.withFactory({
     }
 });
 
-class MenuModel extends HoistModel {
+class LocalMenuModel extends HoistModel {
     xhImpl = true;
 
-    @bindable pressedIdx;
+    @observable pressedIdx: number;
+    @action setPressedIdx(v: number) {this.pressedIdx = v}
 
     constructor() {
         super();
         makeObservable(this);
     }
 
-    parseMenuItems(items, onDismiss) {
+    parseMenuItems(items: MenuItemLike[], onDismiss: () => void): ReactNode[] {
         const {pressedIdx} = this;
+
+        items = items.map(item => {
+            if (!isMenuItem(item)) return item;
+
+            item = cloneDeep(item);
+            item.prepareFn?.(item);
+            return item;
+        });
+
         return items
-            .filter(it => !it.omit)
-            .map(item => {
-                if (item === '-' || isValidElement(item)) return item;
-                if (!(item instanceof MenuItem)) {
-                    item = new MenuItem(item);
-                }
-                if (item.prepareFn) item.prepareFn(item);
-                return item;
-            })
-            .filter(it => !it.hidden)
+            .filter(it => isMenuItem(it) && !it.omit && !it.hidden)
+            .filter(filterConsecutiveMenuSeparators())
             .map((item, idx) => {
+                // Process dividers
+                if (!isMenuItem(item)) return item;
+
+                // Process items
                 const {text, icon, actionFn, hidden} = item,
                     labelItems = icon ? [icon, hspacer(10), text] : [text];
 
@@ -100,4 +104,8 @@ class MenuModel extends HoistModel {
                 });
             });
     }
+}
+
+function isMenuItem(item: MenuItemLike): item is MenuItem {
+    return !isString(item) && isValidElement(item);
 }

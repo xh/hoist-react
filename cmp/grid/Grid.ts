@@ -7,6 +7,7 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
+import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
 import {Column} from './columns/Column';
 import {div, fragment, frame} from '@xh/hoist/cmp/layout';
 import {
@@ -24,37 +25,32 @@ import {
 import {
     colChooser as desktopColChooser,
     gridFilterDialog,
-    StoreContextMenu,
     ModalSupportModel
 } from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
-import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {consumeEvent, isDisplayed, logDebug, logWithDebug} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {
     compact,
     debounce,
-    isArray,
     isEmpty,
     isEqual,
-    isFunction,
     isNil,
-    isString,
     max,
     maxBy,
     merge
 } from 'lodash';
-import {createRef, isValidElement} from 'react';
+import {createRef} from 'react';
 import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
+import { Icon } from '@xh/hoist/icon';
 
 export interface GridProps extends
     HoistProps<GridModel>,
@@ -298,92 +294,26 @@ class GridLocalModel extends HoistModel {
 
     getContextMenuItems = (params) => {
         const {model, agOptions} = this,
-            {selModel, contextMenu} = model;
+            {contextMenu} = model;
         if (!contextMenu || XH.isMobileApp || model.isEditing) return null;
 
-        let menu = null;
-        if (isFunction(contextMenu)) {
-            menu = contextMenu(params, model);
-        } else if (isArray(contextMenu) && !isEmpty(contextMenu)) {
-            menu = new StoreContextMenu({items: contextMenu, gridModel: model});
-        }
-        if (!menu) return null;
+        const ret = getAgGridMenuItems(params, model, contextMenu);
+        if (isEmpty(ret)) return null;
 
-        const record = params.node?.data,
-            colId = params.column?.colId,
-            column = !isNil(colId) ? model.getColumn(colId) : null,
-            {selectedRecords} = model;
-
-
+        // Before returning menu, manipulate selection if needed.
         if (!agOptions.suppressRowClickSelection) {
+            const record = params.node?.data,
+                {selModel} = model;
+
             // Adjust selection to target record -- and sync to grid immediately.
-            if (record && !selectedRecords.includes(record)) {
+            if (record && !selModel.selectedRecords.includes(record)) {
                 selModel.select(record);
             }
-
             if (!record) selModel.clear();
         }
 
-        return this.buildMenuItems(menu.items, record, selModel.selectedRecords, column, params);
+        return ret;
     };
-
-    buildMenuItems(recordActions, record, selectedRecords, column, agParams) {
-        const items = [];
-
-        recordActions.forEach(action => {
-            if (isNil(action)) return;
-
-            if (action === '-') {
-                items.push('separator');
-                return;
-            }
-
-            if (isString(action)) {
-                items.push(action);
-                return;
-            }
-
-            const actionParams = {
-                record,
-                selectedRecords,
-                gridModel: this.model,
-                column,
-                agParams
-            };
-
-            const displaySpec = action.getDisplaySpec(actionParams);
-            if (displaySpec.hidden) return;
-
-            let childItems;
-            if (!isEmpty(displaySpec.items)) {
-                const menu = new StoreContextMenu({items: displaySpec.items, gridModel: this.model});
-                childItems = this.buildMenuItems(menu.items, record, selectedRecords, column, actionParams);
-            }
-
-            let icon = displaySpec.icon;
-            if (isValidElement(icon)) {
-                icon = convertIconToHtml(icon);
-            }
-
-            const cssClasses = ['xh-grid-menu-option'];
-            if (displaySpec.intent) cssClasses.push(`xh-grid-menu-option--intent-${displaySpec.intent}`);
-            if (displaySpec.className) cssClasses.push(displaySpec.className);
-
-            items.push({
-                name: displaySpec.text,
-                shortcut: displaySpec.secondaryText,
-                icon,
-                cssClasses,
-                subMenu: childItems,
-                tooltip: displaySpec.tooltip,
-                disabled: displaySpec.disabled,
-                // Avoid specifying action if no handler, allows submenus to remain open if accidentally clicked
-                action: action.actionFn ? () => action.call(actionParams) : undefined
-            });
-        });
-
-        return items.filter(filterConsecutiveMenuSeparators());
-    }
 
     //------------------------
     // Reactions to model

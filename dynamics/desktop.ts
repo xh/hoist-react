@@ -24,7 +24,6 @@ export let gridFilterDialog = null;
 export let storeFilterFieldImpl = null;
 export let pinPadImpl = null;
 
-export let StoreContextMenu = null;
 export let ColChooserModel = null;
 export let ColumnHeaderFilterModel = null;
 export let useContextMenu = null;
@@ -45,7 +44,6 @@ export function installDesktopImpls(impls) {
     columnHeaderFilter = impls.columnHeaderFilter;
     gridFilterDialog = impls.gridFilterDialog;
 
-    StoreContextMenu = impls.StoreContextMenu;
     ColChooserModel = impls.ColChooserModel;
     ColumnHeaderFilterModel = impls.ColumnHeaderFilterModel;
     useContextMenu = impls.useContextMenu;

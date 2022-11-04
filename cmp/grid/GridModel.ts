@@ -92,6 +92,7 @@ import {
     RowClassFn,
     RowClassRuleFn
 } from './Types';
+import {GridContextMenuSpec} from './GridContextMenu';
 
 
 export interface GridConfig {
@@ -266,10 +267,10 @@ export interface GridConfig {
     clicksToExpand?: number;
 
     /**
-     * Array of RecordActions, configs or token strings with which to create grid context
-     * menu items.  May also be specified as a function returning a StoreContextMenu. Desktop only.
+     * Array of RecordActions, dividers, or token strings with which to create a context menu.
+     * May also be specified as a function returning same.
      */
-    contextMenu?: any;  // TODO: update to menu type.
+    contextMenu?: GridContextMenuSpec;
 
     /**
      * Governs if the grid should reuse a limited set of DOM elements for columns visible in the
@@ -357,7 +358,7 @@ export class GridModel extends HoistModel {
     colChooserModel: HoistModel;
     rowClassFn: RowClassFn;
     rowClassRules: Record<string, RowClassRuleFn>;
-    contextMenu: any;
+    contextMenu: GridContextMenuSpec;
     groupRowHeight: number;
     groupRowRenderer: GroupRowRenderer;
     groupSortFn: GridGroupSortFn;
