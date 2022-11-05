@@ -5,12 +5,15 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {
-    ColumnRenderer, ColumnSpec,
+    ColumnRenderer,
+    ColumnSpec,
+    GridConfig,
     GridModel,
     GroupRowRenderer,
     RowClassFn,
     RowClassRuleFn,
-    GridSorterLike
+    GridSorterLike,
+    GridContextMenuSpec
 } from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, PlainObject, Some} from '@xh/hoist/core';
 import {
@@ -33,15 +36,15 @@ import {isFunction, isNumber} from 'lodash';
  *  GridModel. Note this is for advanced usage - not all configs supported, and many will
  *  override DataView defaults in ways that will break this component.
  */
-export interface DataViewConfig {
+export interface DataViewConfig extends GridConfig {  // TODO: Accept grid keys without publicizing them?
     /** A Store instance, or a config to create one. */
-    store?: Store | StoreConfig;
+    store?: Store|StoreConfig;
 
     /** Renderer to use for each data row. */
     renderer?: ColumnRenderer;
 
     /** Row height (in px) for each item displayed in the view, or a function which returns a number.*/
-    itemHeight?: number | ItemHeightFn;
+    itemHeight?: number|ItemHeightFn;
 
     /** Field(s) by which to do full-width row grouping. */
     groupBy?: Some<string>;
@@ -56,7 +59,7 @@ export interface DataViewConfig {
     sortBy?: Some<GridSorterLike>;
 
     /** Specification of selection behavior. Defaults to 'single' (desktop) and 'disabled' (mobile) */
-    selModel?: StoreSelectionModel | StoreSelectionConfig | 'single' | 'multiple' | 'disabled';
+    selModel?: StoreSelectionModel|StoreSelectionConfig|'single'|'multiple'|'disabled';
 
     /** Text/HTML to display if view has no records.*/
     emptyText?: string;
@@ -71,10 +74,10 @@ export interface DataViewConfig {
     stripeRows?: boolean;
 
     /**
-     * Array of RecordActions, configs or token strings with which to create grid context menu
-     * items. May also be specified as a function returning a StoreContextMenu. Desktop only.
+     * Array of RecordActions, dividers, or token strings with which to create a context menu.
+     * May also be specified as a function returning same.
      */
-    contextMenu?: any;  // TODO: type menus.
+    contextMenu?: GridContextMenuSpec;
 
     /**
      * Closure to generate CSS class names for a row.
@@ -100,8 +103,6 @@ export interface DataViewConfig {
      * the row's data. (Note that this may be null - e.g. for clicks on full-width group rows.)
      */
     onRowDoubleClicked?: (e: any) => void;
-
-    [x: string]: any;
 }
 
 export type ItemHeightFn = (

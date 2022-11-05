@@ -24,7 +24,7 @@ import './GridFilterDialog.scss';
  * Dialog for showing a read-only JSON representation of the currently applied grid filters.
  *
  * Applications should not create this component - it is created automatically for Grids with
- * a GridFilterModel, and is available via the `gridFilter` StoreContextMenu action.
+ * a GridFilterModel, and is available via the `gridFilter` action.
  *
  * @internal
  */

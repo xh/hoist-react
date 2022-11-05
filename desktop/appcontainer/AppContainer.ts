@@ -10,7 +10,6 @@ import {elem, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {errorBoundary} from '@xh/hoist/appcontainer/ErrorBoundary';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
 import {suspendPanel} from '@xh/hoist/desktop/appcontainer/SuspendPanel';
-import {StoreContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
 import {
     colChooserDialog as colChooser
@@ -56,7 +55,6 @@ installDesktopImpls({
     gridFilterDialog,
     ColChooserModel,
     ColumnHeaderFilterModel,
-    StoreContextMenu,
     useContextMenu,
     ModalSupportModel
 });

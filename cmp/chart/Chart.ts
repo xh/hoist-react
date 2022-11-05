@@ -97,7 +97,7 @@ class ChartLocalModel extends HoistModel {
     model: ChartModel;
 
     chartRef = createObservableRef<HTMLElement>();
-    contextMenu;
+    contextMenu: any;
     prevSeriesConfig;
 
     onLinked() {

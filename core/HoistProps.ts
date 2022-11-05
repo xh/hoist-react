@@ -74,7 +74,7 @@ export interface DefaultHoistProps<M extends HoistModel = HoistModel> extends Ho
  */
 export interface BoxProps extends
     LayoutProps,
-    Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {}
+    Omit<HTMLAttributes<HTMLDivElement>, 'onChange'|'contextMenu'> {}
 
 export interface StyleProps {
     style?: CSSProperties;

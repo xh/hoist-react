@@ -5,15 +5,86 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {isBoolean, isEmpty, isNil, isNumber} from 'lodash';
+import {isBoolean, isEmpty, isNil, isNumber, isString} from 'lodash';
 import {ReactElement} from 'react';
-import {Intent} from '../core';
+import {Intent, PlainObject} from '../core';
 import {StoreRecord} from './StoreRecord';
 import {GridModel, Column} from '../cmp/grid';
 
+export interface RecordActionSpec {
+    /** Label to be displayed. */
+    text?: string;
+
+    /** Additional label to be displayed, usually in a minimal fashion.*/
+    secondaryText?: string;
+
+    /** Icon to be displayed.*/
+    icon?: ReactElement;
+
+    /** Intent to be used for rendering the action.*/
+    intent?: Intent;
+
+    /** Css class name to be added when rendering the action. */
+    className?: string
+
+    /** Tooltip to display when hovering over the action. */
+    tooltip?: string;
+
+    /** Function called on action execution. */
+    actionFn?: (data: ActionFnData) => void;
+
+    /** Function called prior to showing this item. */
+    displayFn?: (data: DisplayFnData) => PlainObject;
+
+    /** Sub-actions for this action. */
+    items?: RecordActionLike[];
+
+    /** True to disable this item. */
+    disabled?: boolean;
+
+    /** True to hide this item. */
+    hidden?: boolean;
+
+    /**
+     * Count of records that must be 'active' (selected and / or clicked upon) for the action to be
+     * enabled.
+     *  - int: specifies exactly n number of records. Defaults to 1 for single record actions.
+     *      Can specify 0 to only enable action if *no* records are active.
+     *  - true: specifies a non-zero number of records.
+     *  - false: specifies any number of records (0 - infinity, inclusive). Always active.
+     */
+    recordsRequired?: boolean|number;
+}
+
+export type RecordActionLike = RecordAction|RecordActionSpec|'-';
+
+/**
+ * Data passed to the Action Function of a RecordAction
+ */
+export interface ActionFnData {
+
+    /** The triggering action itself. */
+    action?: RecordAction;
+
+    /** Row data object (entire row, if any).*/
+    record?: any;
+
+    /** All currently selected records (if any).*/
+    selectedRecords?: StoreRecord[];
+
+    /** Grid model where action occurred (if any). */
+    gridModel?: GridModel;
+
+    /** Column where action occurred (if any). */
+    column?: Column;
+
+    /** Additional data provided by the context where this action presides */
+    [x:string]: any;
+}
+
 /**
  * A RecordAction encapsulates a shared set of configuration for items within components such as
- * StoreContextMenu and RecordActionBar (aka grid context menus and action columns).
+ * a Grid Context Menu nd RecordActionBar (aka grid context menus and action columns).
  *
  * Components passed these actions will render them with an appropriate UI (e.g. menu item, button)
  * and call their `actionFn` when clicked, passing it a data object (if available) sourced from the
@@ -27,7 +98,7 @@ import {GridModel, Column} from '../cmp/grid';
  * Applications should ensure these callbacks handle their `record` param in a null-safe manner.
  *
  * @see RecordActionBar
- * @see StoreContextMenu
+ * @see GridContextMenuSpec
  */
 export class RecordAction {
 
@@ -39,7 +110,7 @@ export class RecordAction {
     tooltip: string;
     actionFn: (data: ActionFnData) => void;
     displayFn: (data: DisplayFnData) => Record<string, any>;
-    items: RecordAction[];
+    items: (RecordAction|string)[];
     disabled: boolean;
     hidden: boolean;
     recordsRequired: boolean|number;
@@ -65,11 +136,15 @@ export class RecordAction {
         this.className = className;
         this.tooltip = tooltip;
         this.actionFn = actionFn;
-        this.items = items;
         this.disabled = disabled;
         this.hidden = hidden;
         this.displayFn = displayFn;
         this.recordsRequired = recordsRequired;
+
+        this.items = items?.map(it => {
+            if (isString(it)) return it;
+            return it instanceof RecordAction ? it : new RecordAction(it);
+        });
     }
 
     /**
@@ -123,7 +198,7 @@ export class RecordAction {
         this.actionFn({action: this, record, selectedRecords, store, gridModel, column, ...rest});
     }
 
-    private meetsRecordRequirement(count) {
+    private meetsRecordRequirement(count: number) {
         const required = this.recordsRequired;
         return isNil(required) ||
             (isBoolean(required) && (!required || required && count > 0)) ||
@@ -131,74 +206,6 @@ export class RecordAction {
     }
 }
 
-export interface RecordActionSpec {
-    /** Label to be displayed. */
-    text?: string;
-
-    /** Additional label to be displayed, usually in a minimal fashion.*/
-    secondaryText?: string;
-
-    /** Icon to be displayed.*/
-    icon?: ReactElement;
-
-    /** Intent to be used for rendering the action.*/
-    intent?: Intent;
-
-    /** Css class name to be added when rendering the action. */
-    className?: string
-
-    /** Tooltip to display when hovering over the action. */
-    tooltip?: string;
-
-    /** Function called on action execution. */
-    actionFn?: (data: ActionFnData) => void;
-
-    /** Function called prior to showing this item. */
-    displayFn?: (data: DisplayFnData) => Record<string, any>;
-
-    /** Sub-actions for this action. */
-    items?: RecordAction[];
-
-    /** True to disable this item. */
-    disabled?: boolean;
-
-    /** True to hide this item. */
-    hidden?: boolean;
-
-    /**
-     * Count of records that must be 'active' (selected and / or clicked upon) for the action to be
-     * enabled.
-     *  - int: specifies exactly n number of records. Defaults to 1 for single record actions.
-     *      Can specify 0 to only enable action if *no* records are active.
-     *  - true: specifies a non-zero number of records.
-     *  - false: specifies any number of records (0 - infinity, inclusive). Always active.
-     */
-    recordsRequired?: boolean | number;
-}
-
-/**
- * Data passed to the Action Function of a RecordAction
- */
-export interface ActionFnData {
-
-    /** The triggering action itself. */
-    action?: RecordAction;
-
-    /** Row data object (entire row, if any).*/
-    record?: any;
-
-    /** All currently selected records (if any).*/
-    selectedRecords?: StoreRecord[];
-
-    /** Grid model where action occurred (if any). */
-    gridModel?: GridModel;
-
-    /** Column where action occurred (if any). */
-    column?: Column;
-
-    /** Additional data provided by the context where this action presides */
-    [x:string]: any;
-}
 
 interface DisplayFnData extends ActionFnData {
     /** Default display config for the action */
