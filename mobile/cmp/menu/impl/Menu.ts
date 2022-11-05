@@ -11,7 +11,7 @@ import {observable, action, makeObservable} from '@xh/hoist/mobx';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import classNames from 'classnames';
 import {cloneDeep, isEmpty, isString} from 'lodash';
-import {isValidElement, ReactNode} from 'react';
+import {isValidElement, ReactNode, useEffect} from 'react';
 
 import './Menu.scss';
 
@@ -32,10 +32,9 @@ export const menu = hoistCmp.factory({
         const impl = useLocalModel(LocalMenuModel),
             items = impl.parseMenuItems(menuItems, onDismiss);
 
-        if (isEmpty(items)) {
-            onDismiss();
-            return null;
-        }
+        useEffect(() => {
+            if (isEmpty(items)) onDismiss();
+        });
 
         return vbox({
             ref,
