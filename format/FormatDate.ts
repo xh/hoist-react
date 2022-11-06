@@ -39,7 +39,7 @@ export interface DateFormatOptions extends FormatOptions<DateLike> {
  */
 export function fmtDate(v: DateLike, opts?: DateFormatOptions|string): ReactNode {
     opts = isString(opts) ? {fmt: opts} : {...opts};
-    if (v == null) opts?.nullDisplay ?? '';
+    if (v == null) return opts?.nullDisplay ?? '';
 
     defaults(opts, {fmt: DATE_FMT, tooltip: null});
     saveOriginal(v, opts);
