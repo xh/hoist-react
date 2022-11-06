@@ -19,7 +19,7 @@ import {RefCallback, RefObject} from 'react';
  * https://reactjs.org/docs/refs-and-the-dom.html
  */
 export function createObservableRef<T>(): RefObject<T> & RefCallback<T> {
-    const ret = action(v => ret._current.set(v));
+    const ret = action(v => ret._current.set(v)) as any;
     ret._current = observable.box(null, {deep: false});
     Object.defineProperty(ret, 'current', {get: () => ret._current.get()});
     return ret;

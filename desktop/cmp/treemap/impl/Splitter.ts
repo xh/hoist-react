@@ -12,7 +12,7 @@ import './Splitter.scss';
 
 
 /**
- * @private
+ * @internal
  */
 export const splitter = hoistCmp.factory({
     displayName: 'TreeMap Splitter',

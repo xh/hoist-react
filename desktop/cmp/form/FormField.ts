@@ -17,7 +17,7 @@ import {errorIf, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getReactElementName} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
-import {Children, cloneElement, ReactNode, useContext, useState} from 'react';
+import {Children, cloneElement, ReactElement, ReactNode, useContext, useState} from 'react';
 import './FormField.scss';
 import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
 
@@ -158,7 +158,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
         // generate actual element child to render
-        let childEl =  !child || readonly ?
+        let childEl: ReactElement =  !child || readonly ?
             readonlyChild({model, readonlyRenderer}) :
             editableChild({
                 model,

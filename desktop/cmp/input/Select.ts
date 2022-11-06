@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
-import {elem, hoistCmp, HoistProps, LayoutProps, XH} from '@xh/hoist/core';
+import {elem, hoistCmp, HoistProps, LayoutProps, PlainObject, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {
@@ -14,8 +14,7 @@ import {
     reactAsyncSelect,
     reactCreatableSelect,
     reactSelect,
-    reactWindowedSelect,
-    SelectProps as ReactSelectProps
+    reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
 import {action, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -176,7 +175,7 @@ export interface SelectProps extends
      * in the react-select API are guaranteed to be supported by this Hoist component,
      * and providing them directly can interfere with the implementation of this class.
      */
-    rsOptions?: ReactSelectProps;
+    rsOptions?: PlainObject;
 
     /** True to select contents when control receives focus. */
     selectOnFocus?: boolean;

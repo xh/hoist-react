@@ -6,9 +6,13 @@
  */
 import {span} from '@xh/hoist/cmp/layout';
 import {defaults, isFinite, isFunction, isNil, isPlainObject, isString} from 'lodash';
+import Numbro from 'numbro';
 import numbro from 'numbro';
-import {fmtSpan} from './FormatMisc';
-import {createRenderer, saveOriginal} from './FormatUtils';
+import {ReactNode} from 'react';
+import {fmtSpan, FormatOptions} from './FormatMisc';
+import {createRenderer} from './FormatUtils';
+import {saveOriginal} from './impl/Utils';
+
 
 const THOUSAND = 1000,
     MILLION  = 1000000,
@@ -19,60 +23,109 @@ const UP_TICK = '▴',
     DOWN_TICK = '▾',
     LEDGER_ALIGN_PLACEHOLDER = '<span style="visibility:hidden">)</span>',
     LEDGER_ALIGN_PLACEHOLDER_EL = span({style: {visibility: 'hidden'}, item: ')'}),
-    DEFAULT_COLOR_SPEC = {pos: 'xh-pos-val', neg: 'xh-neg-val', neutral: 'xh-neutral-val'};
+    DEFAULT_COLOR_SPEC = {pos: 'xh-pos-val', neg: 'xh-neg-val', neutral: 'xh-neutral-val'} as ColorSpec;
+
+export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'tooltip'> {
+    /** A valid numbro format object or string. */
+    formatConfig?: string|Numbro.Format;
+
+    /** Desired number of decimal places. */
+    precision?: number|'auto';
+
+    /** True to pad with trailing zeros out to given precision. */
+    zeroPad?: boolean;
+
+    /** True to use ledger format.*/
+    ledger?: boolean;
+
+    /**
+     * True to add placeholder after positive ledgers to align vertically with negative ledgers
+     * in columns.
+     */
+    forceLedgerAlign?: boolean;
+
+    /** True to prepend positive numbers with a '+'. */
+    withPlusSign?: boolean;
+
+    /** True to prepend an up / down arrow. */
+    withSignGlyph?: boolean;
+
+    /** True to include comma delimiters. */
+    withCommas?: boolean;
+
+    /** Set to true to omit comma if value has exactly 4 digits (i.e. 1500 instead of 1,500). */
+    omitFourDigitComma?: boolean;
+
+    /** Prefix to prepend to value (between the number and its sign). */
+    prefix?: string;
+
+    /** Label to append to value, or true to append a default label for the formattter
+     * e.g. 'm' for fmtMillions.
+     */
+    label?: string|boolean;
+
+    /** CSS class of label span. */
+    labelCls?: string;
+
+    /**
+     * Color output based on the sign of the value. True to use red/green/grey defaults, or provide
+     * an object with alternate CSS classes.
+     */
+    colorSpec?: boolean|ColorSpec;
+
+    /**
+     * True to enable default tooltip with minimally formatted original value, or a function to
+     * generate a custom tooltip string.
+     */
+    tooltip?: boolean|((v: number) => string);
+}
+
+
+/** Config for pos/neg/neutral color classes. */
+export interface ColorSpec {
+
+    /** CSS color class to wrap around values > 0. */
+    pos?: string;
+
+    /** CSS class to wrap around values < 0. */
+    neg?: string;
+
+    /** CSS class to wrap around zero values. */
+    neutral?: string;
+}
+
 
 /**
  * Standard number formatting for Hoist
- *
- * @param {number} v - value to format.
- * @param {Object} [opts]
- * @param {string} [opts.nullDisplay] - display string for null values.
- * @param {Object} [opts.formatConfig] - a valid numbro format object.
- * @param {(number|'auto')} [opts.precision] - desired number of decimal places.
- * @param {boolean} [opts.zeroPad] - true to pad with trailing zeros out to given precision.
- * @param {boolean} [opts.ledger] - true to use ledger format.
- * @param {boolean} [opts.forceLedgerAlign] - true to add placeholder after positive ledgers to
- *      align vertically with negative ledgers in columns.
- * @param {boolean} [opts.withPlusSign] - true to prepend positive numbers with a '+'.
- * @param {boolean} [opts.withSignGlyph] - true to prepend an up / down arrow.
- * @param {boolean} [opts.withCommas] - true to include comma delimiters.
- * @param {boolean} [opts.omitFourDigitComma] - set this to true to omit comma if value has exactly
- *      4 digits (i.e. 1500 instead of 1,500).
- * @param {string?} [opts.prefix] - prefix to prepend to value (between the number and its sign).
- * @param {string?} [opts.label] - label to append to value.
- * @param {string} [opts.labelCls] - CSS class of label <span>,
- * @param {(boolean|fmtNumber~ColorSpec)} [opts.colorSpec] - color output based on the sign of the
- *      value. True to use red/green/grey defaults, or provide an object with alternate CSS classes.
- * @param {(boolean|fmtNumber~tooltipFn)} [opts.tooltip] - true to enable default tooltip with
- *      minimally formatted original value, or a function to generate a custom tooltip string.
- * @param {boolean} [opts.asHtml] - return an HTML string rather than a React element.
- * @param {number} [opts.originalValue] - holds the unaltered original value to be formatted.
- *      Not typically used by applications.
  *
  * This method delegates to numbro, @see http://numbrojs.com for more details.
  *
  * Hierarchy of params is by specificity: formatPattern => precision.
  * If no options are given, a heuristic based auto-rounding will occur.
+ *
+ * @returns a ReactNode, for an HTML string see {@link fmtDateAsHtml}
  */
-export function fmtNumber(v, {
-    nullDisplay = '',
-    formatConfig = null,
-    precision = 'auto',
-    zeroPad = (precision != 'auto'),
-    ledger = false,
-    forceLedgerAlign = true,
-    withPlusSign = false,
-    withSignGlyph = false,
-    withCommas = true,
-    omitFourDigitComma = false,
-    prefix = null,
-    label = null,
-    labelCls = 'xh-units-label',
-    colorSpec = false,
-    tooltip = null,
-    asHtml = false,
-    originalValue = v
-} = {}) {
+export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
+    let {
+        nullDisplay = '',
+        formatConfig = null,
+        precision = 'auto',
+        zeroPad = (precision != 'auto'),
+        ledger = false,
+        forceLedgerAlign = true,
+        withPlusSign = false,
+        withSignGlyph = false,
+        withCommas = true,
+        omitFourDigitComma = false,
+        prefix = null,
+        label = null,
+        labelCls = 'xh-units-label',
+        colorSpec = false,
+        tooltip = null,
+        asHtml = false,
+        originalValue = v
+    } = opts ?? {};
+
     if (isInvalidInput(v)) return nullDisplay;
 
     formatConfig = formatConfig || buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma);
@@ -86,19 +139,16 @@ export function fmtNumber(v, {
     }
 
     // As an optimization, return the string form if we do not *need* to wrap in markup.
-    const opts = {str, sign, ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip, originalValue},
+    const delOpts = {ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip, originalValue},
         asString = !withSignGlyph && !colorSpec && !tooltip && (!ledger || !forceLedgerAlign) && (!label || !labelCls);
 
-    return asHtml || asString ? fmtNumberString(v, opts) : fmtNumberElement(v, opts);
+    return asHtml || asString ? fmtNumberString(v, str, sign, delOpts) : fmtNumberElement(v, str, sign, delOpts);
 }
 
 /**
  * Render number in thousands.
- *
- * @param {number} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
-export function fmtThousands(v, opts)  {
+export function fmtThousands(v: number, opts?: NumberFormatOptions): ReactNode {
     opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
@@ -109,11 +159,8 @@ export function fmtThousands(v, opts)  {
 
 /**
  * Render number in millions.
- *
- * @param {number} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
-export function fmtMillions(v, opts)  {
+export function fmtMillions(v: number, opts?: NumberFormatOptions): ReactNode  {
     opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
@@ -126,11 +173,8 @@ export function fmtMillions(v, opts)  {
 
 /**
  * Render number in billions.
- *
- * @param {number} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
-export function fmtBillions(v, opts)  {
+export function fmtBillions(v: number, opts?: NumberFormatOptions): ReactNode  {
     opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
@@ -143,11 +187,8 @@ export function fmtBillions(v, opts)  {
 /**
  * Render a quantity value, handling highly variable amounts by using units of millions (m) and
  * billions (b) as needed.'
- *
- * @param {number} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
-export function fmtQuantity(v, opts = {}) {
+export function fmtQuantity(v: number, opts?: NumberFormatOptions) {
     opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
@@ -167,12 +208,9 @@ export function fmtQuantity(v, opts = {}) {
 }
 
 /**
- * Render market price
- *
- * @param {number} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method.
+ * Render market price.
  */
-export function fmtPrice(v, opts) {
+export function fmtPrice(v: number, opts?: NumberFormatOptions): ReactNode {
     opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
@@ -188,11 +226,8 @@ export function fmtPrice(v, opts) {
 /**
  * Render a number as a percent. Value will be multiplied by 100 to calculated the percentage.
  * This behavior purposefully matches Microsoft Excel's percentage formatting.
- *
- * @param {number} v - value to format.
- * @param {Object} [opts] - @see {@link fmtNumber} method.
  */
-export function fmtPercent(v, opts = {}) {
+export function fmtPercent(v: number, opts?: NumberFormatOptions): ReactNode {
     opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
@@ -221,8 +256,8 @@ export function fmtNumberTooltip(v, {ledger = false} = {}) {
 //---------------
 // Implementation
 //---------------
-function fmtNumberElement(v, opts = {}) {
-    const {str, sign, ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip} = opts;
+function fmtNumberElement(v: number, str: string,  sign: '+'|'-', opts?: NumberFormatOptions) {
+    const {ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip} = opts ?? {};
 
     // CSS classes
     const cls = [];
@@ -263,8 +298,8 @@ function fmtNumberElement(v, opts = {}) {
     });
 }
 
-function fmtNumberString(v, opts = {}) {
-    const {str, sign, ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, prefix} = opts,
+function fmtNumberString(v: number, str: string, sign: '+'|'-', opts?: NumberFormatOptions): string {
+    const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, prefix} = opts,
         asHtml = true;
     let ret = '';
 
@@ -297,34 +332,34 @@ function fmtNumberString(v, opts = {}) {
     }
 
     if (colorSpec) {
-        ret = fmtSpan(ret, {className: valueColor(v, colorSpec), asHtml});
+        ret = fmtSpan(ret, {className: valueColor(v, colorSpec), asHtml}) as string;
     }
 
     if (tooltip) {
-        ret = fmtSpan(ret, {className: 'xh-title-tip', title: processToolTip(tooltip, opts), asHtml});
+        ret = fmtSpan(ret, {className: 'xh-title-tip', title: processToolTip(tooltip, opts), asHtml}) as string;
     }
 
     return ret;
 }
 
-function signGlyph(v, asHtml) {
+function signGlyph(v: number, asHtml: boolean = false) {
     if (!isFinite(v)) return '';
     return v === 0 ? fmtSpan(UP_TICK, {className: 'xh-transparent', asHtml}) : v > 0 ? UP_TICK : DOWN_TICK;
 }
 
-function valueColor(v, colorSpec) {
+function valueColor(v: number, colorSpec: ColorSpec|boolean) {
     if (!isFinite(v) || !colorSpec) return '';
 
-    colorSpec = isPlainObject(colorSpec) ? colorSpec : DEFAULT_COLOR_SPEC;
+    colorSpec = isPlainObject(colorSpec) ? colorSpec as ColorSpec : DEFAULT_COLOR_SPEC;
     if (v < 0) return colorSpec.neg;
     if (v > 0) return colorSpec.pos;
     return colorSpec.neutral;
 }
 
-function buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma) {
+function buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma): Numbro.Format {
     const num = Math.abs(v);
 
-    const config = {};
+    const config: Numbro.Format = {};
     let mantissa = undefined;
 
     if (precision % 1 === 0) {
@@ -373,10 +408,10 @@ export const numberRenderer = createRenderer(fmtNumber),
 const shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
 /**
- * @param {string} value - A string that represents a shorthand numerical value
- * @returns {number} - The number represented by the shorthand string, or NaN
+ * @param value - A value that represents a shorthand numerical value
+ * @returns The number represented by the shorthand string, or NaN
  */
-export function parseNumber(value) {
+export function parseNumber(value: any): number {
     if (isNil(value) || value === '') return null;
 
     value = value.toString();
@@ -400,16 +435,3 @@ export function parseNumber(value) {
 
     return parseFloat(value);
 }
-
-/**
- * @callback fmtNumber~tooltipFn - renderer for a custom tooltip.
- * @param {number} originalValue - number to be formatted.
- * @returns {string} - the formatted value for display.
- */
-
-/**
- * @typedef fmtNumber~ColorSpec - config for pos/neg/neutral color classes.
- * @property {string} [pos] - CSS color class to wrap around values > 0.
- * @property {string} [neg] - CSS class to wrap around values < 0.
- * @property {string} [neutral] - CSS class to wrap around zero values.
- */

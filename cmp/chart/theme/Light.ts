@@ -5,14 +5,15 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-// Dark theme color vars - see and sync with vars.scss.
-const bg = '#13181B',               // --xh-black
-    altBg = '#151e23',              // --xh-grid-bg-odd
-    borderColor = '#37474f',        // --xh-border-color
-    altBorderColor = '#293233',     // --xh-grid-border-color
-    textColor = '#ffffff',          // --xh-text-color
+// Light theme color vars - see and sync with vars.scss.
+const bg = '#ffffff',
+    altBg = '#f5f5f5',              // --xh-grid-bg-odd
+    borderColor = '#bdbdbd',        // --xh-border-color
+    altBorderColor = '#e6e6e6',     // --xh-grid-border-color
+    textColor = '#263238',          // --xh-text-color
     textColorMuted = '#757575',     // --xh-text-color-muted
     accentColor = '#039be5';        // --xh-blue-light
+
 
 // Font-related vars.
 const fontFamily = '-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif',
@@ -20,14 +21,9 @@ const fontFamily = '-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans"
     labelFontPx = '10px';
 
 /**
- * @private
+ * @internal
  */
-export const DarkTheme = {
-    colors: [
-        '#2b908f', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066',
-        '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'
-    ],
-
+export const LightTheme = {
     chart: {
         backgroundColor: bg,
         style: {fontFamily},
@@ -60,7 +56,7 @@ export const DarkTheme = {
             }
         },
         lineColor: borderColor,
-        minorGridLineColor: '#505053',
+        // minorGridLineColor: '#505053',
         tickColor: borderColor,
         tickLength: 5,
         title: {style: {color: textColor}}
@@ -77,7 +73,7 @@ export const DarkTheme = {
         },
         lineColor: borderColor,
         lineWidth: 1,
-        minorGridLineColor: '#505053',
+        // minorGridLineColor: '#505053',
         tickColor: borderColor,
         tickLength: 5,
         tickWidth: 1,
@@ -90,26 +86,7 @@ export const DarkTheme = {
         style: {color: textColor}
     },
 
-    // TODO - review / determine if we want these
-    plotOptions: {
-        series: {
-            dataLabels: {
-                color: textColor
-            },
-            marker: {
-                lineColor: '#333'
-            }
-        },
-        boxplot: {
-            fillColor: '#505053'
-        },
-        candlestick: {
-            lineColor: textColor
-        },
-        errorbar: {
-            color: textColor
-        }
-    },
+    // TODO - plotOptions?
 
     legend: {
         itemStyle: {
@@ -131,7 +108,7 @@ export const DarkTheme = {
 
     navigation: {
         buttonOptions: {
-            symbolStroke: textColor,
+            symbolStroke: textColorMuted,
             symbolStrokeWidth: 2,
             symbolSize: 12,
             theme: {
@@ -209,8 +186,7 @@ export const DarkTheme = {
         maskFill: 'rgba(255,255,255,0.1)',
         series: {
             color: '#7798BF',
-            lineColor: '#A6C7ED',
-            fillOpacity: 0.2
+            lineColor: '#A6C7ED'
         },
         xAxis: {
             gridLineColor: altBorderColor
@@ -218,13 +194,13 @@ export const DarkTheme = {
     },
 
     scrollbar: {
-        barBackgroundColor: '#263238',  // --xh-scrollbar-thumb
-        barBorderColor: '#263238',
-        buttonArrowColor: accentColor,
-        buttonBackgroundColor: '#263238',
-        buttonBorderColor: borderColor,
-        rifleColor: accentColor,
-        trackBackgroundColor: bg,
+        barBackgroundColor: '#90a4ae',  // --xh-scrollbar-thumb
+        barBorderColor: '#cfd8dc',
+        buttonArrowColor: 'white',
+        buttonBackgroundColor: '#90a4ae',
+        buttonBorderColor: '#cfd8dc',
+        rifleColor: 'white',
+        trackBackgroundColor: '#cfd8dc',  // xh-scrollbar-bg
         trackBorderColor: borderColor
     }
 };

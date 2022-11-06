@@ -12,6 +12,7 @@ import {Filter} from './Filter';
 import {FieldFilter} from './FieldFilter';
 import {FunctionFilter} from './FunctionFilter';
 import {CompoundFilter} from './CompoundFilter';
+import {Some} from '@xh/hoist/core';
 
 /**
  * Parse a filter from an object or array representation.
@@ -63,7 +64,7 @@ export function parseFilter(spec: FilterLike): Filter {
  * @param newFilter - New filter(s) to add.
  * @param field - StoreRecord Field name used to identify filters for replacement
  */
-export function withFilterByField(filter: Filter, newFilter: FilterLike, field: string): Filter {
+export function withFilterByField(filter: FilterLike, newFilter: FilterLike, field: string): Filter {
     const isCompoundFilter = filter instanceof CompoundFilter,
         currFilters = isCompoundFilter ? filter.filters : [filter],
         ret = currFilters.filter((it: any) => it && it.field !== field) as FilterLike[];
@@ -80,7 +81,7 @@ export function withFilterByField(filter: Filter, newFilter: FilterLike, field: 
  * @param newFilter - New filter(s) to add
  * @param key - FunctionFilter key used to identify filters for replacement
  */
-export function withFilterByKey(filter: Filter, newFilter: FilterLike, key: string): Filter {
+export function withFilterByKey(filter: FilterLike, newFilter: FilterLike, key: string): Filter {
     const isCompoundFilter = filter instanceof CompoundFilter,
         currFilters = isCompoundFilter ? filter.filters : [filter],
         ret = currFilters.filter((it: any) => it && it.key !== key) as FilterLike[];
@@ -97,7 +98,7 @@ export function withFilterByKey(filter: Filter, newFilter: FilterLike, key: stri
  * @param newFilter - New filter(s) to add.
  * @param types - Filter type(s) used to identify filters for replacement
  */
-export function withFilterByTypes(filter: Filter, newFilter: FilterLike, types: string|string[]): Filter {
+export function withFilterByTypes(filter: FilterLike, newFilter: FilterLike, types: Some<string>): Filter {
     const isCompoundFilter = filter instanceof CompoundFilter,
         currFilters = isCompoundFilter ? filter.filters : [filter] as FilterLike[];
 

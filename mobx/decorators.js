@@ -42,7 +42,7 @@ export function bindable(target, property, descriptor) {
     return settable(target, property, observable(target, property, descriptor));
 }
 bindable.ref = function(target, property, descriptor) {
-    return settable(target, property, observable.ref(target, property, descriptor));
+    return settable(target, property, observable.ref(target, property));
 };
 
 

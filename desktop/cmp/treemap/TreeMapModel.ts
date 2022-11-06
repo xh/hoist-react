@@ -146,7 +146,7 @@ export class TreeMapModel extends HoistModel {
 
     _filter;
 
-    constructor(config: TreeMapConfig) {
+    constructor(config?: TreeMapConfig) {
         super();
         makeObservable(this);
 
@@ -159,8 +159,8 @@ export class TreeMapModel extends HoistModel {
             labelField = 'name',
             valueField = 'value',
             heatField = 'value',
-            valueRenderer = numberRenderer({asHtml: true}),
-            heatRenderer = numberRenderer({asHtml: true}),
+            valueRenderer = numberRenderer({asHtml: true}) as TreeMapValueRendererFn,
+            heatRenderer = numberRenderer({asHtml: true}) as TreeMapValueRendererFn,
             maxHeat,
             maxDepth,
             algorithm = 'squarified',
@@ -171,7 +171,7 @@ export class TreeMapModel extends HoistModel {
             tooltip = true,
             emptyText,
             filter
-        } = config ?? {};
+        }: TreeMapConfig = config ?? {};
 
         this.gridModel = gridModel;
         this.store = store ? store : gridModel ? gridModel.store : null;

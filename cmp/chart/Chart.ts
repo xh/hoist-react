@@ -7,7 +7,7 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {placeholder} from '../layout';
-import {lookup, hoistCmp, HoistModel, useLocalModel, uses, XH, BoxProps, HoistProps} from '@xh/hoist/core';
+import {lookup, hoistCmp, HoistModel, useLocalModel, uses, XH, BoxProps, HoistProps, PlainObject} from '@xh/hoist/core';
 import {useContextMenu} from '@xh/hoist/dynamics/desktop';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {runInAction} from '@xh/hoist/mobx';
@@ -237,7 +237,7 @@ class ChartLocalModel extends HoistModel {
     //----------------------
     // Highcharts Config
     //----------------------
-    getMergedConfig() {
+    getMergedConfig(): PlainObject {
         const propsConf = this.getModelConfig(),
             themeConf = this.getThemeConfig(),
             defaultConf = this.getDefaultConfig();

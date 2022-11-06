@@ -10,7 +10,7 @@ import {parseFieldValue, View} from '@xh/hoist/data';
 import {fmtDate, parseNumber} from '@xh/hoist/format';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
-import {isValidElement} from 'react';
+import {isValidElement, ReactNode} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 
 export interface FilterChooserFieldSpecConfig extends BaseFilterFieldSpecConfig {
@@ -149,16 +149,6 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
     }
 }
 
-/**
- * @param {*} value
- * @param {string} op
- * @returns {string} - formatted value suitable for display to the user.
- */
-type FilterChooserValueRenderer = (value: any, op: FieldFilterOperator) => string;
+type FilterChooserValueRenderer = (value: any, op: FieldFilterOperator) => ReactNode;
 
-/**
- * @param {string} input
- * @param {string} op
- * @returns {*} - the parsed value.
- */
 type FilterChooserValueParser = (input: string, op: FieldFilterOperator) => any;

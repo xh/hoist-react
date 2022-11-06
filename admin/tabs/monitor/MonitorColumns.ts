@@ -6,10 +6,10 @@
  */
 import {numberRenderer} from '@xh/hoist/format';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import { ColumnSpec } from '@xh/hoist/cmp/grid/columns';
+import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 
-const mbCol = {width: 150, renderer: numberRenderer({precision: 2, useCommas: true})},
-    pctCol = {width: 150, renderer: numberRenderer({precision: 2, useCommas: true, label: '%'})};
+const mbCol = {width: 150, renderer: numberRenderer({precision: 2, withCommas: true})},
+    pctCol = {width: 150, renderer: numberRenderer({precision: 2, withCommas: true, label: '%'})};
 
 export const metricUnit = {
     field: {name: 'metricUnit', type: 'string'},

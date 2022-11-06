@@ -23,7 +23,7 @@ export function useContextMenu(child?: ReactElement, spec?: ContextMenuSpec): Re
     if (!child || isUndefined(spec)) return child;
 
     const onContextMenu = (e: MouseEvent) => {
-        let contextMenuOutput: ContextMenuSpec = spec;
+        let contextMenuOutput: any = spec;
 
         // 0) Skip if already consumed, otherwise consume (Adapted from Blueprint 'ContextMenuTarget')
         if (e.defaultPrevented) return;

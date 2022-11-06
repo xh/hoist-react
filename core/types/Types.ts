@@ -5,6 +5,8 @@
 * Copyright © 2022 Extremely Heavy Industries Inc.
 */
 import {ElementFactory} from '@xh/hoist/core';
+import {LocalDate} from '@xh/hoist/utils/datetime';
+import {MomentInput} from 'moment';
 import {Component, FunctionComponent, ReactElement} from 'react';
 import {DebounceSettings} from 'lodash';
 
@@ -50,3 +52,6 @@ export type DebounceSpec = number|(DebounceSettings & {interval: number});
  * function that returns a ReactElement. In either case, the function will be called with no arguments.
  */
 export type Content = ReactElement|FunctionComponent|Component|ElementFactory|(() => ReactElement);
+
+
+export type DateLike = Date|LocalDate|MomentInput;

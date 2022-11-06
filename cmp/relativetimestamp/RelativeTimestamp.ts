@@ -131,7 +131,7 @@ class RelativeTimestampLocalModel extends HoistModel {
  */
 export function getRelativeTimestamp(timestamp: Date|number, options: RelativeTimestampOptions = {}) {
     const relTo = options.relativeTo,
-        relFmt = relTo ? fmtCompactDate(relTo) : null,
+        relFmt = relTo ? fmtCompactDate(relTo, {asHtml: true}) as string : null,
         relFmtIsTime = relFmt?.includes(':');
 
     options = {

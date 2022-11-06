@@ -24,7 +24,7 @@ const MAX_VERSION = '28.*.*';
  * Expose application versions of ag-Grid to Hoist.
  * Typically called in the Bootstrap.js. of the application.
  */
-export function installAgGrid(ComponentReactWrapper, version) {
+export function installAgGrid(ComponentReactWrapper, version: string) {
     if (!checkVersion(version, MIN_VERSION, MAX_VERSION)) {
         console.error(
             `This version of Hoist requires an ag-Grid version between ${MIN_VERSION} and ` +

@@ -192,7 +192,7 @@ class NumberInputModel extends HoistInputModel {
 
         const {valueLabel, displayWithCommas} = componentProps,
             zeroPad = withDefault(componentProps.zeroPad, false),
-            formattedVal = fmtNumber(value, {precision, zeroPad, label: valueLabel, labelCls: null, asHtml: true});
+            formattedVal = fmtNumber(value, {precision, zeroPad, label: valueLabel, labelCls: null, asHtml: true}) as string;
 
         return displayWithCommas ? formattedVal : formattedVal.replace(/,/g, '');
     }

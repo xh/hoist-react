@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH, lookup} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {FieldType, withFilterByKey} from '@xh/hoist/data';
+import {CompoundFilter, FilterLike, Store, withFilterByKey} from '@xh/hoist/data';
 import {action, makeObservable, comparer} from '@xh/hoist/mobx';
 import {stripTags, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
@@ -23,17 +23,15 @@ import {
 } from 'lodash';
 
 /**
- * @private
+ * @internal
  */
 export class StoreFilterFieldImplModel extends HoistModel {
     xhImpl = true;
 
     @lookup('*') model;
 
-    /** @type {GridModel} */
-    gridModel;
-    /** @type {Store} */
-    store;
+    gridModel: GridModel;
+    store: Store;
 
     filter;
     bufferedApplyFilter;
@@ -104,8 +102,8 @@ export class StoreFilterFieldImplModel extends HoistModel {
 
         // If current Store filter is an 'OR' CompoundFilter, wrap it in an 'AND'
         // CompoundFilter so this FunctionFilter gets 'ANDed' alongside it.
-        let currFilter = store.filter;
-        if (currFilter?.isCompoundFilter && currFilter.op === 'OR') {
+        let currFilter = store.filter as FilterLike;
+        if (currFilter instanceof CompoundFilter && currFilter.op === 'OR') {
             currFilter = {filters: [currFilter], op: 'AND'};
         }
 
@@ -200,8 +198,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
     }
 
     getValGetters(fieldName) {
-        const {gridModel} = this,
-            {DATE, LOCAL_DATE} = FieldType;
+        const {gridModel} = this;
 
         // If a GridModel has been configured, the user is looking at rendered values in a grid and
         // would reasonably expect the filter to work off what they see. Rendering can be expensive,
@@ -214,7 +211,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
             const {store} = gridModel,
                 field = store.getField(fieldName);
 
-            if (field?.type === DATE || field?.type === LOCAL_DATE) {
+            if (field?.type === 'date' || field?.type === 'localDate') {
                 const cols = filter(gridModel.getVisibleLeafColumns(), {field: fieldName});
 
                 // Empty return if no columns - even if this field has been force-included,
@@ -224,7 +221,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
                 return cols.map(column => {
                     const {renderer, getValueFn} = column;
                     return (record) => {
-                        const ctx = {record, field, column, gridModel, store},
+                        const ctx = {record, field: field.name, column, gridModel, store, agParams: null},
                             ret = getValueFn(ctx);
 
                         return renderer ? stripTags(renderer(ret, ctx)) : ret;

@@ -59,7 +59,7 @@ async function convertChartToPngAsync(chart) {
     return ret;
 }
 
-const domurl = window.URL || window.webkitURL || window;
+const domurl = window.URL || window.webkitURL || window as any;
 function memoryCleanup(svgUrl) {
     try {
         domurl.revokeObjectURL(svgUrl);
