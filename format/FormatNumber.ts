@@ -240,17 +240,17 @@ export function fmtPercent(v: number, opts?: NumberFormatOptions): ReactNode {
  * Render a minimally formatted, full precision number, suitable for use in tooltips.
  * Only ledger opt is supported.
  *
- * @param {number} v - value to format.
- * @param {Object} [opts]
- * @param {boolean} [opts.ledger] - true to use ledger format.
+ * @param v - value to format.
+ * @param opts.ledger - true to use ledger format, default false
  */
-export function fmtNumberTooltip(v, {ledger = false} = {}) {
+export function fmtNumberTooltip(v: number, opts?: {ledger?: boolean}): string {
     return fmtNumber(v, {
-        ledger,
+        ledger: opts?.ledger,
         forceLedgerAlign: false,
         precision: MAX_NUMERIC_PRECISION,
-        zeroPad: false
-    });
+        zeroPad: false,
+        asHtml: true
+    }) as string;
 }
 
 //---------------

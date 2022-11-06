@@ -145,7 +145,7 @@ export interface APIWarnOptions {
      * If provided and undefined, this method will be a no-op.
      * Useful for testing if a parameter has been provided in caller.
      */
-    test?: boolean;
+    test?: any;
 
     /** Version when this API will no longer be supported or this warning should be removed. */
     v?: string;

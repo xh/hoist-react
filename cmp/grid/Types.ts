@@ -277,7 +277,7 @@ export type ColumnTooltipFn<T=any> = (value: T, metadata: TooltipMetadata) => st
  * @param metadata - additional data about the column and row.
  * @returns the formatted value for display.
  */
-export type ColumnTooltipElementFn<T=any> = (value: T, metadata: TooltipMetadata) => ReactElement;
+export type ColumnTooltipElementFn<T=any> = (value: T, metadata: TooltipMetadata) => ReactNode;
 
 export interface TooltipMetadata {
     record: StoreRecord;
