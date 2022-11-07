@@ -7,7 +7,12 @@
 
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
-import {RecordActionSpec, RecordAction, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
+import {
+    RecordActionSpec,
+    RecordAction,
+    StoreRecord,
+    StoreSelectionModel
+} from '@xh/hoist/data';
 import {buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -16,7 +21,7 @@ import {recordActionButton, RecordActionButtonProps} from './impl/RecordActionBu
 
 export interface RecordActionBarProps extends ButtonGroupProps {
     /** Actions to include. */
-    actions: RecordActionSpec[];
+    actions: (RecordActionSpec|RecordAction)[];
 
     /** The StoreRecord to associate with the actions. Required if selModel is omitted. */
     record?: StoreRecord;
@@ -62,7 +67,7 @@ export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordAct
         return buttonGroup({
             vertical,
             items: actions.filter(Boolean).map(action => recordActionButton({
-                action: new RecordAction(action),
+                action: action instanceof RecordAction ? action : new RecordAction(action),
                 record,
                 selModel,
                 gridModel,

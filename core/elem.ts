@@ -48,25 +48,15 @@ export type ElementSpec<P> = P & {
     omit?: boolean;
 }
 
+export type ElementFactory<P = any, T extends string|JSXElementConstructor<any> = any> =
+    SimpleElementFactory<P, T> | FullElementFactory<P, T>;
 
-/**
- * A factory function that can create a ReactElement using native JS (i.e. not JSX).
- * This is the base interfaces
- */
-export interface ElementFactory<P = any, T extends string|JSXElementConstructor<any> = any> {
-    (...args: any[]):  ReactElement<P, T>;
-}
-
-export interface SimpleElementFactory<P=any, T extends string|JSXElementConstructor<any>=any> extends ElementFactory<P, T> {
+export interface SimpleElementFactory<P=any, T extends string|JSXElementConstructor<any>=any> {
     (arg?: ElementSpec<P>): ReactElement<P, T>;
 }
 
-export interface ChildOnlyElementFactory<P=any, T extends string|JSXElementConstructor<any>=any> extends ElementFactory<P, T> {
-    (...args: ReactNode[]): ReactElement<P, T>;
-}
-
 export type FullElementFactory<P=any, T extends string|JSXElementConstructor<any>=any> =
-    SimpleElementFactory<P, T> & ChildOnlyElementFactory<P, T>;
+    ((arg?: ElementSpec<P>) => ReactElement<P, T>) & ((...args: ReactNode[]) => ReactElement<P, T>);
 
 
 /**
@@ -99,6 +89,14 @@ export function createElement<P=any, T extends string|JSXElementConstructor<any>
     return reactCreateElement(type, props as P, ...children) as any;
 }
 
+/**
+ *  Create a factory function that can create a ReactElement from an ElementSpec.
+ *  This is the element factory that is appropriate for components that receive a mixture of
+ *  children and attributes and should be the one created for most components.
+ *
+ *  For components that are often provided *only* with children (e.g. container components such as
+ *  toolbars, or table cells), see {@link fullElementFactory}.
+ */
 export function simpleElementFactory<P=any, T extends string|JSXElementConstructor<any>=any>(
     type: T
 ): SimpleElementFactory<P, T> {
@@ -108,6 +106,16 @@ export function simpleElementFactory<P=any, T extends string|JSXElementConstruct
     ret.isElemFactory = true;
     return ret;
 }
+
+/**
+ *  Create a factory function that can create a ReactElement from either an ElementSpec, *OR* an
+ *  argument list or array of react nodes (children).  Use this function for components that are
+ *  often provided *only* with children (e.g. container components such as toolbars, or table
+ *  cells), asit provides a more minimal style
+ *
+ *  For a simpler alternative that should be used from most components see
+ *  {@link simpleElementFactory}
+ */
 
 export function fullElementFactory<P=any, T extends string|JSXElementConstructor<any>=any>(
     type: T
@@ -124,12 +132,12 @@ export function fullElementFactory<P=any, T extends string|JSXElementConstructor
 //-------------------------------------
 
 /**
- * @Deprecated -- use simpleElementFactory or fullElementFactory instead.
+ * @deprecated -- use simpleElementFactory or fullElementFactory instead.
  */
 export const elemFactory = fullElementFactory;
 
 /**
- * @Deprecated -- use createElement instead
+ * @deprecated -- use createElement instead
  */
 export const elem = createElement;
 

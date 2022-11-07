@@ -12,14 +12,14 @@ import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-import {getApp} from '@xh/hoist/admin/AppModel';
+import {App} from '@xh/hoist/admin/AppModel';
 
 export const memoryMonitorPanel = hoistCmp.factory({
     model: creates(MemoryMonitorModel),
 
     render({model}) {
 
-        const {readonly} = getApp();
+        const {readonly} = App;
         return panel({
             tbar: [
                 button({

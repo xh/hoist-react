@@ -15,9 +15,7 @@ import {monitorTab} from './tabs/monitor/MonitorTab';
 import {serverTab} from './tabs/server/ServerTab';
 import {userDataTab} from './tabs/userData/UserDataTab';
 
-export function getApp(): AppModel {
-    return XH.appModel as AppModel;
-}
+export let App: AppModel;
 
 export class AppModel extends HoistAppModel {
 
@@ -28,6 +26,7 @@ export class AppModel extends HoistAppModel {
 
     constructor() {
         super();
+        App = this;
 
         this.tabModel = new TabContainerModel({
             route: 'default',

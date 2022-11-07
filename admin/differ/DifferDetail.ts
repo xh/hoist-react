@@ -15,7 +15,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {keys, toString, filter, startsWith} from 'lodash';
 import {strong} from '../../cmp/layout';
 import {DifferDetailModel} from './DifferDetailModel';
-import {getApp} from '@xh/hoist/admin/AppModel';
+import {App} from '@xh/hoist/admin/AppModel';
 import './Differ.scss';
 
 export const differDetail = hoistCmp.factory({
@@ -31,7 +31,7 @@ export const differDetail = hoistCmp.factory({
             onClose: () => model.close(),
             item: panel({
                 item: diffTable(),
-                bbar: getApp().readonly ? [] : [
+                bbar: App.readonly ? [] : [
                     filler(),
                     button({
                         text: 'Cancel',

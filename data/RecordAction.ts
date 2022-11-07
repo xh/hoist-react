@@ -109,7 +109,7 @@ export class RecordAction {
     className: string;
     tooltip: string;
     actionFn: (data: ActionFnData) => void;
-    displayFn: (data: DisplayFnData) => Record<string, any>;
+    displayFn: (data: DisplayFnData) => PlainObject;
     items: (RecordAction|string)[];
     disabled: boolean;
     hidden: boolean;

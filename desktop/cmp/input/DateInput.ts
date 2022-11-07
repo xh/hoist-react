@@ -468,7 +468,7 @@ const cmp = hoistCmp.factory<DateInputModel>(
 
                 item: div({
                     item: textInput({
-                        value: model.formatDate(renderValue),
+                        value: model.formatDate(renderValue) as string,
                         className: classNames(className, !enableTextInput && !disabled ? 'xh-date-input--picker-only' : null),
                         onCommit: model.onInputCommit,
                         onChange: model.onInputChange,

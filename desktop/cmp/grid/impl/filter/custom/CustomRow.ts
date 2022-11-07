@@ -83,7 +83,7 @@ const inputField = hoistCmp.factory<CustomRowModel>(
         } else if (fieldSpec.isDateBasedFieldType) {
             return dateInput({
                 ...props,
-                valueType: fieldSpec.fieldType
+                valueType: fieldSpec.fieldType as 'localDate'|'date'
             });
         } else if (fieldSpec.supportsSuggestions(op as FieldFilterOperator)) {
             return select({

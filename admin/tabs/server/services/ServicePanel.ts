@@ -13,14 +13,14 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {toolbarSeparator} from '@xh/hoist/desktop/cmp/toolbar';
 import {ServiceModel} from './ServiceModel';
-import {getApp} from '@xh/hoist/admin/AppModel';
+import {App} from '@xh/hoist/admin/AppModel';
 
 
 export const servicePanel = hoistCmp.factory({
     model: creates(ServiceModel),
 
     render({model}) {
-        const {readonly} = getApp();
+        const {readonly} = App;
 
         return panel({
             mask: 'onLoad',

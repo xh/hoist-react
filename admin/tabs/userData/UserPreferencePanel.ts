@@ -8,11 +8,11 @@ import {hoistCmp} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
-import {getApp} from '@xh/hoist/admin/AppModel';
+import {App} from '@xh/hoist/admin/AppModel';
 
 
 export const userPreferencePanel = hoistCmp.factory(
-    () => restGrid({model: {...modelSpec, readonly: getApp().readonly}})
+    () => restGrid({modelConfig: {...modelSpec, readonly: App.readonly}})
 );
 
 const required = true,

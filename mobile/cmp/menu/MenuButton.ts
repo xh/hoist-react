@@ -30,7 +30,7 @@ export interface MenuButtonProps extends Omit<ButtonProps, 'title'> {
     disabled?: boolean;
 
     /** Props passed to the internal popover. */
-    popoverProps?: PopoverProps;
+    popoverProps?: Partial<PopoverProps>;
 }
 
 
