@@ -6,6 +6,7 @@
  */
 import {HoistModel} from '@xh/hoist/core/model';
 import {CSSProperties, ForwardedRef, HTMLAttributes, ReactNode} from 'react';
+import { ElementSpec } from './elem';
 import {PlainObject} from './types/Types';
 
 /**
@@ -14,7 +15,7 @@ import {PlainObject} from './types/Types';
  * This interface brings in additional properties that are added to the props
  * collection by HoistComponent.
  */
-export interface HoistProps<M extends HoistModel = HoistModel> {
+export interface HoistProps<M extends HoistModel = HoistModel> extends ElementSpec {
 
     /**
      * Associated HoistModel for this Component.  Depending on the component, may be specified as

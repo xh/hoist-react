@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {elemFactory, XH} from '@xh/hoist/core';
+import {fullElementFactory, XH} from '@xh/hoist/core';
 import {Component} from 'react';
 
 /**
@@ -33,4 +33,4 @@ export class ErrorBoundary extends Component {
         return {caughtError: e};
     }
 }
-export const errorBoundary = elemFactory(ErrorBoundary);
+export const errorBoundary = fullElementFactory(ErrorBoundary);

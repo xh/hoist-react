@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {castArray, isArray, isNil, isPlainObject} from 'lodash';
+import {castArray, isNil, isPlainObject} from 'lodash';
 import {
     createElement as reactCreateElement,
     isValidElement,
@@ -36,7 +36,7 @@ import {Some} from './';
  *
  * @see {@link elem} - a generic function that also consumes this format.
  */
-export type ElementSpec<P> = P & {
+export interface ElementSpec {
 
     /** Child Element(s). Equivalent provided as Rest Arguments to React.createElement.*/
     items?: Some<ReactNode>;
@@ -48,14 +48,17 @@ export type ElementSpec<P> = P & {
     omit?: boolean;
 }
 
+export type WithElementSpec<P> = P & ElementSpec;
+
 export type ElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
     SimpleElementFactory<P, T> | FullElementFactory<P, T>;
 
 export type SimpleElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
-    (arg?: ElementSpec<P>) => ReactElement<P, T>;
+    (arg?: (P extends ElementSpec ? P : WithElementSpec<P>)) => ReactElement<P, T>;
 
 export type FullElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
-    ((arg?: ElementSpec<P>) => ReactElement<P, T>) & ((...args: ReactNode[]) => ReactElement<P, T>);
+    ((arg?: (P extends ElementSpec ? P : WithElementSpec<P>)) => ReactElement<P, T>) &
+    ((...args: ReactNode[]) => ReactElement<P, T>);
 
 /**
  * Create a React Element from a Component type and an ElementSpec
@@ -65,7 +68,7 @@ export type FullElementFactory<P = any, T extends string|JSXElementConstructor<P
  */
 export function createElement<P=any, T extends string|JSXElementConstructor<any>=any>(
     type: T,
-    spec: ElementSpec<P>
+    spec: (P extends ElementSpec ? P : WithElementSpec<P>)
 ): ReactElement<P, T> {
     const {omit, item, items, ...props} = spec;
 
@@ -99,7 +102,7 @@ export function simpleElementFactory<P=any, T extends string|JSXElementConstruct
     type: T
 ): SimpleElementFactory<P, T> {
     const ret = function(...args) {
-        return createElement<P, T>(type, normalizeArgs(args));
+        return createElement<P, T>(type, normalizeArgs(args, type, true));
     };
     ret.isElemFactory = true;
     return ret;
@@ -119,7 +122,7 @@ export function fullElementFactory<P=any, T extends string|JSXElementConstructor
     type: T
 ): FullElementFactory<P, T> {
     const ret = function(...args) {
-        return createElement<P, T>(type, normalizeArgs(args));
+        return createElement<P, T>(type, normalizeArgs(args, type, false));
     };
     ret.isElemFactory = true;
     return ret;
@@ -142,15 +145,26 @@ export const elem = createElement;
 //------------------------
 // Implementation
 //------------------------
-function normalizeArgs(args) {
+function normalizeArgs(args: any[], type: any, simple: boolean) {
     const len = args.length;
     if (len === 0) return {};
     if (len === 1) {
         const arg = args[0];
         if (isPlainObject(arg) && !isValidElement(arg)) return arg;
-        if (isArray(arg)) return {items: arg};
+
+        if (simple) childrenPassedToSimpleFactory(type);
+        return {items: arg};
     }
-    // Assume > 1 args or single, non-config, non-array args are children.
+    // Assume > 1 args are children.
+    if (simple) childrenPassedToSimpleFactory(type);
     return {items: args};
 }
 
+function childrenPassedToSimpleFactory(type) {
+    const typeName = type.displayName ?? type.toString();
+    console.warn(
+        `Your application passed raw children to a 'SimpleElementFactory' for Component '${typeName}'.  This may not be ` +
+        'supported in future versions of Hoist.  Please call factory with an object implementing ' +
+        'ElementSpec or create your factory with `fullElementFactory` instead.'
+    );
+}

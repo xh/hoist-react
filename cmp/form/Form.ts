@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {BoxProps, DefaultHoistProps, elemFactory, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import {BoxProps, DefaultHoistProps, simpleElementFactory, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import equal from 'fast-deep-equal';
 import {createContext, useContext} from 'react';
 import {useCached} from '@xh/hoist/utils/react';
@@ -22,7 +22,7 @@ export interface FormContextType {
 
 /** @internal */
 export const FormContext = createContext<FormContextType>({});
-const formContextProvider = elemFactory(FormContext.Provider);
+const formContextProvider = simpleElementFactory(FormContext.Provider);
 
 
 export interface FormProps extends HoistProps<FormModel>, BoxProps {

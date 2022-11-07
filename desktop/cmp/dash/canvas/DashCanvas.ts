@@ -6,7 +6,7 @@
  */
 import {ContextMenu} from '@blueprintjs/core';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {elemFactory, hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
+import {simpleElementFactory, hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
@@ -122,4 +122,4 @@ const onContextMenu = (e, model) => {
     }
 };
 
-const reactGridLayout = elemFactory(WidthProvider(ReactGridLayout));
+const reactGridLayout = simpleElementFactory(WidthProvider(ReactGridLayout));
