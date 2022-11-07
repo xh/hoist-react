@@ -6,7 +6,7 @@
  */
 import {ContextMenu} from '@blueprintjs/core';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {elemFactory, hoistCmp, hoistCmpWithFactory, HoistProps, uses, XH} from '@xh/hoist/core';
+import {elemFactory, hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
@@ -31,7 +31,7 @@ export type DashCanvasProps = HoistProps<DashCanvasModel>;
  *
  * @see DashCanvasModel
  */
-export const [DashCanvas, dashCanvas] = hoistCmpWithFactory<DashCanvasProps>({
+export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
     displayName: 'DashCanvas',
     className: 'xh-dash-canvas',
     model: uses(DashCanvasModel),

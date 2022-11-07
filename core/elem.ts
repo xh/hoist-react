@@ -48,16 +48,14 @@ export type ElementSpec<P> = P & {
     omit?: boolean;
 }
 
-export type ElementFactory<P = any, T extends string|JSXElementConstructor<any> = any> =
+export type ElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
     SimpleElementFactory<P, T> | FullElementFactory<P, T>;
 
-export interface SimpleElementFactory<P=any, T extends string|JSXElementConstructor<any>=any> {
-    (arg?: ElementSpec<P>): ReactElement<P, T>;
-}
+export type SimpleElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
+    (arg?: ElementSpec<P>) => ReactElement<P, T>;
 
-export type FullElementFactory<P=any, T extends string|JSXElementConstructor<any>=any> =
+export type FullElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
     ((arg?: ElementSpec<P>) => ReactElement<P, T>) & ((...args: ReactNode[]) => ReactElement<P, T>);
-
 
 /**
  * Create a React Element from a Component type and an ElementSpec

@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, vbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, TaskObserver, useContextModel, Some, HoistProps, ElementFactory, hoistCmpWithFactory} from '@xh/hoist/core';
+import {BoxProps, TaskObserver, useContextModel, Some, HoistProps, ElementFactory, hoistCmp} from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
@@ -63,7 +63,7 @@ export interface PanelProps extends
  * A Panel container builds on the lower-level layout components to offer a header element
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
  */
-export const [Panel, panel] = hoistCmpWithFactory<PanelProps>({
+export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
     displayName: 'Panel',
     className: 'xh-panel',
     model: false,

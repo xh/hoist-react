@@ -11,7 +11,7 @@ import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
 import {Column} from './columns/Column';
 import {div, fragment, frame} from '@xh/hoist/cmp/layout';
 import {
-    hoistCmpWithFactory,
+    hoistCmp,
     HoistModel,
     HoistProps,
     LayoutProps,
@@ -91,7 +91,7 @@ export interface GridProps extends
  * @see {@link https://www.ag-grid.com/javascript-grid-reference-overview/|ag-Grid Docs}
  * @see GridModel
  */
-export const [Grid, grid] = hoistCmpWithFactory<GridProps>({
+export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     displayName: 'Grid',
     model: uses(GridModel),
     className: 'xh-grid',

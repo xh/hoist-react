@@ -7,13 +7,13 @@
 import {box, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {
     BoxProps,
-    hoistCmpWithFactory,
     HoistProps,
     refreshContextView,
     Some,
     TaskObserver,
     useContextModel,
-    uses
+    uses,
+    hoistCmp
 } from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
@@ -99,14 +99,13 @@ export interface PanelProps extends
  *
  * A Panel will accept a ref argument to provide access to its top level DOM element.
  */
-export const [Panel, panel] = hoistCmpWithFactory<PanelProps>({
+export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
     displayName: 'Panel',
     model: uses(PanelModel, {
         fromContext: false,
         publishMode: 'limited',
         createDefault: () => new PanelModel({collapsible: false, resizable: false, xhImpl: true})
     }),
-    factoryAcceptsChildren: true,
     className: 'xh-panel',
 
     render({model, className,  ...props}, ref) {

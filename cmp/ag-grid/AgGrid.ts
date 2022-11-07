@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {placeholder, frame} from '@xh/hoist/cmp/layout';
-import {HoistModel, LayoutProps, HoistProps, useLocalModel, uses, elem, XH, lookup, hoistCmpWithFactory} from '@xh/hoist/core';
+import {HoistModel, LayoutProps, useLocalModel, uses, hoistCmp, elem, XH, lookup, DefaultHoistProps} from '@xh/hoist/core';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
@@ -15,7 +15,7 @@ import {AgGridModel} from './AgGridModel';
 import {AgGridReact} from '@xh/hoist/kit/ag-grid';
 
 export interface AgGridProps extends
-    HoistProps<AgGridModel>,
+    DefaultHoistProps<AgGridModel>,
     LayoutProps {}
 
 
@@ -37,7 +37,7 @@ export interface AgGridProps extends
  * underlying component not yet supported by the Hoist layer - most notably pivoting - where the
  * managed option would conflict with or complicate access to those features.
  */
-export const [AgGrid, agGrid] = hoistCmpWithFactory<AgGridProps>({
+export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
     displayName: 'AgGrid',
     className: 'xh-ag-grid',
     model: uses(AgGridModel),

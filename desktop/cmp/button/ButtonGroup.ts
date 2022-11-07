@@ -29,7 +29,7 @@ export interface ButtonGroupProps<M extends HoistModel = null> extends
 /**
  * Wrapper around Blueprint's ButtonGroup component, with LayoutSupport.
  */
-export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>({
+export const [ButtonGroup, buttonGroup] = hoistCmp.withFullFactory<ButtonGroupProps>({
     displayName: 'ButtonGroup',
     model: false,
     className: 'xh-button-group',

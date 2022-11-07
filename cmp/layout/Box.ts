@@ -21,7 +21,7 @@ export interface BoxComponentProps extends HoistProps, BoxProps {}
  *
  * VBox and HBox variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
+export const [Box, box] = hoistCmp.withFullFactory<BoxComponentProps>({
     displayName: 'Box',
     model: false, memo: false, observer: false,
 
@@ -45,7 +45,7 @@ export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
     }
 });
 
-export const [VBox, vbox] = hoistCmp.withFactory<BoxComponentProps>({
+export const [VBox, vbox] = hoistCmp.withFullFactory<BoxComponentProps>({
     displayName: 'VBox',
     model: false, memo: false, observer: false,
     className: 'xh-vbox',
@@ -59,7 +59,7 @@ export const [VBox, vbox] = hoistCmp.withFactory<BoxComponentProps>({
     }
 });
 
-export const [HBox, hbox] = hoistCmp.withFactory<BoxComponentProps>({
+export const [HBox, hbox] = hoistCmp.withFullFactory<BoxComponentProps>({
     displayName: 'HBox',
     model: false, memo: false, observer: false,
     className: 'xh-hbox',

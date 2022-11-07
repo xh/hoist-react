@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, filler} from '@xh/hoist/cmp/layout';
-import {hoistCmp, hoistCmpWithFactory, HoistModel, HoistProps, lookup, useLocalModel, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, HoistProps, lookup, useLocalModel, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -33,7 +33,7 @@ export interface ColChooserProps extends HoistProps<ColChooserModel> {}
  *
  * It is not necessary to manually create instances of this component within an application.
  */
-export const [ColChooser, colChooser] = hoistCmpWithFactory<ColChooserProps>({
+export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
     displayName: 'ColChooser',
     model: uses(ColChooserModel),
     className: 'xh-col-chooser',

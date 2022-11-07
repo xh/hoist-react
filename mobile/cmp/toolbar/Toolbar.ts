@@ -19,7 +19,7 @@ export interface ToolbarProps extends HoistProps, BoxProps {
 /**
  * A toolbar with built-in styling and padding.
  */
-export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps>({
+export const [Toolbar, toolbar] = hoistCmp.withFullFactory<ToolbarProps>({
     displayName: 'Toolbar',
     className: 'xh-toolbar',
     model: false, memo: false, observer: false,
