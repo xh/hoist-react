@@ -1,5 +1,53 @@
 # Changelog
 
+## v54.0.0-SNAPSHOT - unreleased
+
+For version 54, hoist-react has been fully rewritten in TypeScript.  All core Hoist components and
+APIs now have typescript APIs and applications authors have the option to fully leverage typescript
+by writing their own applications in typescript as well
+
+Runtime support for Typescript is provided by configuring Hoist's existing WebPack/Babel build to
+recognize and transpile typescript files (i.e. '.ts'/'.tsx') via the
+`@babel/plugin-transform-typescript` plugin. This plugin is specified in an upgraded version of
+`hoist-dev-utils` now pulled in by the hoist. Development time support for typescript is provided
+by the user's development environment. IntelliJ and vscode can easily be configured to provide
+typescript based error checking and intelligent auto-completion hints.
+
+The goal of this release is to be backward compatible with v53 to the greatest degree possible, and we
+expect that most applications will just run with minimal or no changes.  However, some breaking
+changes  were required, and these may require application adjustements.  Please review below.
+
+### 🎁 New Features
+* New typescript interface `HoistProps` and per-component extensions to specify props for all
+components  The `PropTypes` library is no longer included with hoist-react.
+* Enhanced type-script aware implementations of `ElementFactory` including separate factories for
+standard components (`simpleElementFactory`) and components that often take children only
+(`fullElementFactory`).
+
+### 💥 Breaking Changes
+* The constructors for `GridModel` and `Column` no long accept arbitrary rest (e.g '...rest')
+arguments for applying app-specific data to the object.  Instead, use the new `appData` property
+on these objects.
+
+### ⚙️ Deprecations
+* The use of `elemFactory` function is now deprecated.  Applications should specify
+`simpleElementFactory` (typically) or `fullElementFactory` (if necessary) instead.
+* The use of the `model` prop to provide a *configuration* of a model to be created on-the-fly
+by Hoist is deprecated. Applications should use the `modelConfig` key instead. The `model` key is
+still the fully supported way for providing an existing model *instance* as a prop.
+
+###  ⚙️ Technical
+* For applications moving to Typescript, there is a newly recommended pattern for getting typed
+references to the appModel and application specific services.  This involves actually
+placing services on the AppModel, and exporting a reference to the AppModel.  See toolbox examples
+for more details.  Note that for backward compatibility, these changes are *not* required for
+existing javascript applications.
+
+
+### 📚 Libraries
+* hoist-dev-utils `6.x -> 7.0`
+
+
 ## v53.1.0 - 2022-11-03
 
 ### 🎁 New Features
