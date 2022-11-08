@@ -1,9 +1,12 @@
 # Changelog
 
-## v54.0.0-SNAPSHOT - unreleased
+## v53.1.0 - 2022-11-03
+
+### 🎁 New Features
+* `PanelModel` now supports `modalSupport.defaultModal` option to allow rendering a Panel in an
+initially modal state.
 
 ### 🐞 Bug Fixes
-
 * Fixed layout issues caused by top-level DOM elements created by `ModalSupport`
   and `ColumnWidthCalculator` (grid auto-sizing). Resolved occasional gaps between select inputs and
   their drop-down menus.
@@ -11,6 +14,11 @@
   than the rest of the toast contents.
 * Fix `GridModel` bug where `Store` would fail to recognize dot-separated field names as paths
   when provided as part of a field spec in object form.
+
+### ⚙️ Technical
+
+* Snap info (if available) from the `navigator.connection` global within the built-in call to track
+  each application load.
 
 ## v53.0.0 - 2022-10-19
 
