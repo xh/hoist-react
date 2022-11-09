@@ -9,7 +9,7 @@ import {HoistBase} from '@xh/hoist/core';
 import {computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {isEmpty, map, some, sumBy} from 'lodash';
 import {runInAction} from 'mobx';
-import {logDebug} from '../../utils/js';
+import {logDebug, findIn} from '../../utils/js';
 import {ValidationState} from '../validation/ValidationState';
 
 import {RecordValidator} from './RecordValidator';
@@ -56,12 +56,11 @@ export class StoreValidator extends HoistBase {
     /** @return {boolean} - true if any records are currently recomputing their validation state. */
     @computed
     get isPending() {
-        return some(this.validators, it => it.isPending);
+        return findIn(this._validators, it => it.isPending);
     }
 
     get validators() {
-        if (!this._validators) return [];
-        return Array.from(this._validators.values());
+        return this.mapValidators();
     }
 
     /** @member {Map<StoreRecordId, RecordValidator>} */
@@ -87,18 +86,15 @@ export class StoreValidator extends HoistBase {
      * @returns {Promise<boolean>}
      */
     async validateAsync() {
-        const promises = map(this.validators, v => v.validateAsync());
+        const promises = this.mapValidators(v => v.validateAsync());
         await Promise.all(promises);
         return this.isValid;
     }
 
     /** @return {ValidationState} - the current validation state for the store. */
     getValidationState() {
-        const VS = ValidationState;
-
-        if (this._validators === null) return VS.Unknown;
-
-        const states = map(this.validators, v => v.validationState);
+        const VS = ValidationState,
+            states = this.mapValidators(v => v.validationState);
         if (states.includes(VS.NotValid)) return VS.NotValid;
         if (states.includes(VS.Unknown)) return VS.Unknown;
         return VS.Valid;
@@ -107,7 +103,7 @@ export class StoreValidator extends HoistBase {
     /** @return {StoreErrorMap} - map of StoreRecord IDs -> StoreRecord-level error maps. */
     getErrorMap() {
         const ret = {};
-        this.validators.forEach(v => ret[v.id] = v.errors);
+        this._validators.forEach(v => ret[v.id] = v.errors);
         return ret;
     }
 
@@ -116,7 +112,7 @@ export class StoreValidator extends HoistBase {
      * @return {RecordValidator}
      */
     findRecordValidator(id) {
-        return this._validators?.get(id);
+        return this._validators.get(id);
     }
 
     //---------------------------------------
@@ -127,43 +123,45 @@ export class StoreValidator extends HoistBase {
     }
 
     async syncValidatorsAsync() {
-        const curValidators = this._validators;
-        runInAction(() => this._validators = null);
-
-        const updatedValidators = new Map(),
+        const isComplex = this.store.validationIsComplex,
+            currValidators = this._validators,
+            newValidators = new Map(),
             promises = [];
 
         this.uncommittedRecords.forEach(record => {
-            // Re-use existing validators so we keep the last validation results for the record and
-            // avoid any unnecessary gc churn
+            const id = {record};
 
-            let recordValidator = curValidators.get(record.id),
-                needsValidation = false;
+            // Re-use existing validators to preserve validation state and avoid churn.
+            let validator = currValidators.get(record.id);
 
-            if (!this.store.validationIsComplex && recordValidator) {
-                if (record !== recordValidator.record) {
-                    recordValidator.record = record;
-                    needsValidation = true;
-                }
+            // 1) If exists validator for an unchanged record, no need to validate
+            if (!isComplex && validator?.record == record) {
+                newValidators.set(id, validator)
+                return;
+            }
+
+            // 2) Otherwise create/update the validator, and trigger validation
+            if (!validator) {
+                validator = new RecordValidator({record});
             } else {
-                recordValidator = new RecordValidator({record});
-                needsValidation = true;
+                validator.record = record;
             }
-
-            if (needsValidation) {
-                promises.push(recordValidator.validateAsync());
-            }
-
-            updatedValidators.set(record.id, recordValidator);
+            newValidators.set(id, validator);
+            promises.push(validator.validateAsync());
         });
 
-        runInAction(() => this._validators = updatedValidators);
+        runInAction(() => this._validators = newValidators);
 
         if (!isEmpty(promises)) {
             logDebug(`Validating ${promises.length} records`, this);
             await Promise.all(promises);
         }
     }
+
+    mapValidators(fn = undefined) {
+        return Array.from(this._validators.values(), fn);
+    }
+
 }
 
 /**

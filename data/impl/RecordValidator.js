@@ -20,6 +20,10 @@ export class RecordValidator {
     /** @member {StoreRecord} */
     record;
 
+    @observable.ref _fieldErrors = {};
+    _validationTask = TaskObserver.trackLast();
+    _validationRunId = 0;
+
     /** @member {StoreRecordId} */
     get id() {
         return this.record.id;
@@ -46,13 +50,12 @@ export class RecordValidator {
     /** @return {RecordErrorMap} - map of field names -> field-level errors. */
     @computed.struct
     get errors() {
-        return this.getErrorMap();
+        return this._fieldErrors ?? {};
     }
 
     /** @return {number} - count of all validation errors for the record. */
     @computed
     get errorCount() {
-        if (!this._fieldErrors) return 0;
         return flatten(values(this._fieldErrors)).length;
     }
 
@@ -61,10 +64,6 @@ export class RecordValidator {
     get isPending() {
         return this._validationTask.isPending;
     }
-
-    @observable.ref _fieldErrors = {};
-    _validationTask = TaskObserver.trackLast();
-    _validationRunId = 0;
 
     /**
      * @param {Object} c - RecordValidator configuration.
@@ -80,12 +79,10 @@ export class RecordValidator {
      * @returns {Promise<boolean>}
      */
     async validateAsync() {
-        const runId = ++this._validationRunId,
+        let runId = ++this._validationRunId,
             fieldErrors = {},
             {record} = this,
             fieldsToValidate = record.store.fields.filter(it => !isEmpty(it.rules));
-
-        runInAction(() => this._fieldErrors = null);
 
         const promises = fieldsToValidate.map(field => {
             fieldErrors[field.name] = [];
@@ -100,12 +97,10 @@ export class RecordValidator {
 
         await Promise.all(promises).linkTo(this._validationTask);
 
-        runInAction(() => {
-            // TODO: Is this the correct place for this?
-            if (runId !== this._validationRunId) return;
+        if (runId !== this._validationRunId) return;
+        fieldErrors = mapValues(fieldErrors, it => compact(flatten(it)))
 
-            this._fieldErrors = mapValues(fieldErrors, it => compact(flatten(it)));
-        });
+        runInAction(() => this._fieldErrors = fieldErrors);
 
         return this.isValid;
     }
@@ -115,18 +110,11 @@ export class RecordValidator {
         const VS = ValidationState,
             {_fieldErrors} = this;
 
-        // While executing any rules we are in an unknown validation state
-        if (_fieldErrors === null) return VS.Unknown;
+        if (_fieldErrors === null) return VS.Unknown; // Before executing any rules
 
-        // Record is invalid if we have any errors on any fields
-        if (values(_fieldErrors).some(errors => !isEmpty(errors))) return VS.NotValid;
-
-        return VS.Valid;
-    }
-
-    /** @return {RecordErrorMap} - map of field names -> field-level errors. */
-    getErrorMap() {
-        return this._fieldErrors ?? {};
+        return (values(_fieldErrors).some(errors => !isEmpty(errors))) ?
+            VS.NotValid :
+            VS.Valid;
     }
 
     async evaluateRuleAsync(record, field, rule) {

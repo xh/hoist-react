@@ -131,7 +131,7 @@ export class Store extends HoistBase {
      *      Should not be used if a processRawData function that depends on external state is
      *      provided, as this function will be circumvented on subsequent reloads.  Default false.
      * @param {boolean} [c.validationIsComplex] - set to true to always validate all uncommitted
-     *      records on every change to uncommitted records (add, modify, or remove). Default true.
+     *      records on every change to uncommitted records (add, modify, or remove). Default false.
      * @param {Object} [c.experimental] - flags for experimental features. These features are
      *     designed for early client-access and testing, but are not yet part of the Hoist API.
      * @param {Object[]} [c.data] - source data to load.
@@ -149,7 +149,7 @@ export class Store extends HoistBase {
         freezeData = true,
         idEncodesTreePath = false,
         reuseRecords = false,
-        validationIsComplex = true,
+        validationIsComplex = false,
         experimental,
         data
     }) {

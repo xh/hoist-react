@@ -1,5 +1,16 @@
 # Changelog
 
+## v53.2.0 - 2022-11-03
+
+### ⚙️ Technical
+* Major performance improvements to validation of records in stores.  This is a critical fix for
+applications that do bulk insertion of hundreds of rows in editable grids.
+* This change includes a New flag `Store.validationIsComplex` which governs whether non-changed
+uncommitted records need to be revalidated when any record in the store is changed.  This flag
+defaults to `false`, which  should be  correct for most applications.  Set to `true` for stores with
+validations that depend on other editable record values in the store (e.g. unique constraints).
+
+
 ## v53.1.0 - 2022-11-03
 
 ### 🎁 New Features
