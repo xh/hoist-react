@@ -15,6 +15,8 @@ import {isString} from 'lodash';
  */
 export class TrackService extends HoistService {
 
+    static instance: TrackService;
+
     private _oncePerSessionSent = {};
 
     /** Track User Activity. */

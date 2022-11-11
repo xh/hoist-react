@@ -18,6 +18,8 @@ import {version as reactVersion} from 'react';
 
 export class EnvironmentService extends HoistService {
 
+    static instance: EnvironmentService;
+
     /**
      * Version of this application currently running on the Hoist UI server.
      * Unlike all other EnvironmentService state, this is refreshed by default on a configured

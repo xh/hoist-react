@@ -11,6 +11,8 @@ import {XH, HoistService} from '@xh/hoist/core';
  */
 export class JsonBlobService extends HoistService {
 
+    static instance: JsonBlobService;
+
     async getAsync(token) {
         return XH.fetchJson({
             url: 'xh/getJsonBlob',

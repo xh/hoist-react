@@ -38,6 +38,8 @@ import {StoreRecord} from '@xh/hoist/data';
 export class GridExportService extends HoistService {
     xhImpl = true;
 
+    static instance: GridExportService;
+
     /**
      * Export the data within a GridModel to a file. Typically called via `GridModel.exportAsync()`.
      */

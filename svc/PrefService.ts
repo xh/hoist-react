@@ -29,6 +29,8 @@ import {cloneDeep, debounce, forEach, isEmpty, isEqual, isNil, pickBy} from 'lod
  */
 export class PrefService extends HoistService {
 
+    static instance: PrefService;
+
     private _data = {};
     private _updates = {};
     private _localStorageKey = 'localPrefs';

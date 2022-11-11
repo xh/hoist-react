@@ -23,8 +23,9 @@ import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
  * also be limited to users with a particular app role, using the same config.
  */
 export class InspectorService extends HoistService {
-
     xhImpl = true;
+
+    static instance: InspectorService;
 
     persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}`};
 

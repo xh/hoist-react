@@ -25,6 +25,8 @@ import {keys} from 'lodash';
  */
 export class ConfigService extends HoistService {
 
+    static instance: ConfigService;
+
     private _data = {};
 
     override async initAsync() {

@@ -20,6 +20,8 @@ import {compact, map, trim} from 'lodash';
 export class AlertBannerService extends HoistService {
     xhImpl = true;
 
+    static instance: AlertBannerService;
+
     @managed
     private timer: Timer;
 

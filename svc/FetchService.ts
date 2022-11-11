@@ -34,6 +34,8 @@ import {never, PromiseTimeoutSpec} from '@xh/hoist/promise';
  */
 export class FetchService extends HoistService {
 
+    static instance: FetchService;
+
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
     private autoAborters = {};

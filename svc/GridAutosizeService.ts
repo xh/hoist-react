@@ -26,6 +26,8 @@ import {StoreRecord} from '@xh/hoist/data';
 export class GridAutosizeService extends HoistService {
     xhImpl = true;
 
+    static instance: GridAutosizeService;
+
     private _columnWidthCalculator = new ColumnWidthCalculator();
 
     /**

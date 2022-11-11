@@ -19,6 +19,8 @@ import store from 'store2';
  */
 export class LocalStorageService extends HoistService {
 
+    static instance: LocalStorageService;
+
     constructor() {
         super();
         if (this.isFake) {

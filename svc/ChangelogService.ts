@@ -33,6 +33,9 @@ import {isEmpty, forOwn, includes} from 'lodash';
 export class ChangelogService extends HoistService {
     xhImpl = true;
 
+    static instance: ChangelogService;
+
+
     // Optional JSON AppConfig key to soft-configure this service - see this.config for shape.
     SVC_CONFIG_KEY: string = 'xhChangelogConfig';
     // Optional string Preference key to track last read log entry + enable unread notifications.

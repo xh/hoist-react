@@ -37,6 +37,8 @@ import {find, pull} from 'lodash';
  */
 export class WebSocketService extends HoistService {
 
+    static instance: WebSocketService;
+
     HEARTBEAT_TOPIC = 'xhHeartbeat';
     REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
     FORCE_APP_SUSPEND_TOPIC = 'xhForceAppSuspend';

@@ -29,6 +29,8 @@ import {logDebug, withDefault} from '@xh/hoist/utils/js';
 export class AutoRefreshService extends HoistService {
     xhImpl = true;
 
+    static instance: AutoRefreshService;
+
     @managed
     private timer: Timer;
     private initTime: number;

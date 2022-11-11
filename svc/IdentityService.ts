@@ -16,6 +16,8 @@ import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
  */
 export class IdentityService extends HoistService {
 
+    static instance: IdentityService;
+
     private _authUser: HoistUser;
     private _apparentUser: HoistUser;
 

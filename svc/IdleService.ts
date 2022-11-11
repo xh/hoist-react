@@ -21,6 +21,8 @@ import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
 export class IdleService extends HoistService {
     xhImpl = true;
 
+    static instance: IdleService;
+
     @managed
     private timer: Timer = null;
     private timeout = null;
