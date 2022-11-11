@@ -4,8 +4,8 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {elemFactory} from '@xh/hoist/core';
+import {elementFactory} from '@xh/hoist/core';
 import Dropzone from 'react-dropzone';
 
 export {Dropzone};
-export const dropzone = elemFactory(Dropzone);
+export const dropzone = elementFactory(Dropzone);

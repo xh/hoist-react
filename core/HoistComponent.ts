@@ -9,10 +9,10 @@ import {
     UsesSpec,
     HoistProps,
     DefaultHoistProps,
-    SimpleElementFactory,
-    simpleElementFactory,
-    FullElementFactory,
-    fullElementFactory,
+    StandardElementFactory,
+    elementFactory,
+    ContainerElementFactory,
+    containerElementFactory,
     ElementFactory
 } from './';
 import {
@@ -110,10 +110,10 @@ export type ComponentConfig<P extends HoistProps> =
  *
  * This function also has several related functions
  *
- *   - `hoistCmp.factory`/`hoistCmp.fullFactory` - return an elementFactory for a newly defined Component.
+ *   - `hoistCmp.factory`/`hoistCmp.containerFactory` - return an elementFactory for a newly defined Component.
  *           instead of the Component itself.
  *
- *   - `hoistCmp.withFactory`/`hoistCmp.withFullFactory`  - return a 2-element list containing both the newly
+ *   - `hoistCmp.withFactory`/`hoistCmp.withContainerFactory`  - return a 2-element list containing both the newly
  *          defined Component and an elementFactory for it.
  */
 export function hoistCmp<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): FC<DefaultHoistProps<M>>;
@@ -183,10 +183,10 @@ export const hoistComponent = hoistCmp;
  *
  * Most typically used by application, this provides a simple element factory.
  */
-export function hoistCmpFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): SimpleElementFactory<DefaultHoistProps<M>, FC<DefaultHoistProps<M>>>;
-export function hoistCmpFactory<P extends HoistProps>(config: ComponentConfig<P>): SimpleElementFactory<P, FC<P>>;
+export function hoistCmpFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): StandardElementFactory<DefaultHoistProps<M>, FC<DefaultHoistProps<M>>>;
+export function hoistCmpFactory<P extends HoistProps>(config: ComponentConfig<P>): StandardElementFactory<P, FC<P>>;
 export function hoistCmpFactory(config) {
-    return simpleElementFactory(hoistCmp(config));
+    return elementFactory(hoistCmp(config));
 }
 hoistCmp.factory = hoistCmpFactory;
 
@@ -196,12 +196,12 @@ hoistCmp.factory = hoistCmpFactory;
  * Useful for containers (e.g. toolbars, layout boxes, etc.) that may
  * frequently contain children only, and may benefit from a leaner specification.
  */
-export function hoistCmpFullFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): FullElementFactory<DefaultHoistProps<M>, FC<DefaultHoistProps<M>>>;
-export function hoistCmpFullFactory<P extends HoistProps>(config: ComponentConfig<P>): FullElementFactory<P, FC<P>>;
-export function hoistCmpFullFactory(config) {
-    return fullElementFactory(hoistCmp(config));
+export function hoistCmpContainerFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): ContainerElementFactory<DefaultHoistProps<M>, FC<DefaultHoistProps<M>>>;
+export function hoistCmpContainerFactory<P extends HoistProps>(config: ComponentConfig<P>): ContainerElementFactory<P, FC<P>>;
+export function hoistCmpContainerFactory(config) {
+    return containerElementFactory(hoistCmp(config));
 }
-hoistCmp.fullFactory = hoistCmpFullFactory;
+hoistCmp.containerFactory = hoistCmpContainerFactory;
 
 /**
  * Returns a 2-element list containing both the newly defined Component and an elementFactory for it.
@@ -209,9 +209,9 @@ hoistCmp.fullFactory = hoistCmpFullFactory;
  *
  * Not typically used by applications.
  */
-export function hoistCmpWithFactory<P extends HoistProps>(config: ComponentConfig<P>): [FC<P>, SimpleElementFactory<P, FC<P>>] {
+export function hoistCmpWithFactory<P extends HoistProps>(config: ComponentConfig<P>): [FC<P>, StandardElementFactory<P, FC<P>>] {
     const cmp = hoistCmp<P>(config);
-    return [cmp, simpleElementFactory(cmp)];
+    return [cmp, elementFactory(cmp)];
 }
 hoistCmp.withFactory = hoistCmpWithFactory;
 
@@ -224,11 +224,11 @@ hoistCmp.withFactory = hoistCmpWithFactory;
  *
  * Not typically used by applications.
  */
-export function hoistCmpWithFullFactory<P extends HoistProps>(config: ComponentConfig<P>): [FC<P>, FullElementFactory<P, FC<P>>] {
+export function hoistCmpWithContainerFactory<P extends HoistProps>(config: ComponentConfig<P>): [FC<P>, ContainerElementFactory<P, FC<P>>] {
     const cmp = hoistCmp<P>(config);
-    return [cmp, fullElementFactory(cmp)];
+    return [cmp, containerElementFactory(cmp)];
 }
-hoistCmp.withFullFactory = hoistCmpWithFullFactory;
+hoistCmp.withContainerFactory = hoistCmpWithContainerFactory;
 
 
 //------------------------------------

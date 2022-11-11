@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {placeholder, frame} from '@xh/hoist/cmp/layout';
-import {HoistModel, LayoutProps, useLocalModel, uses, hoistCmp, elem, XH, lookup, DefaultHoistProps} from '@xh/hoist/core';
+import {HoistModel, LayoutProps, useLocalModel, uses, hoistCmp, createElement, XH, lookup, DefaultHoistProps} from '@xh/hoist/core';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
@@ -71,7 +71,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
                 isDesktop && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover'
             ),
             ...layoutProps,
-            item: elem(AgGridReact, {
+            item: createElement(AgGridReact, {
                 // Default some ag-grid props, but allow overriding.
                 getRowHeight: impl.getRowHeight,
                 // Pass others on directly.

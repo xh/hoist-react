@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {elemFactory} from '@xh/hoist/core';
+import {elementFactory, containerElementFactory} from '@xh/hoist/core';
 import ons from 'onsenui';
 import 'onsenui/css/onsen-css-components.css';
 import 'onsenui/css/onsenui.css';
@@ -51,20 +51,29 @@ export {
 };
 
 
+//-----------------
+// Leaf Components
+//-----------------
 export const
-    bottomToolbar = elemFactory(BottomToolbar),
-    button = elemFactory(Button),
-    checkbox = elemFactory(Checkbox),
-    dialog = elemFactory(Dialog),
-    gestureDetector = elemFactory(GestureDetector),
-    input = elemFactory(Input),
-    listItem = elemFactory(ListItem),
-    navigator = elemFactory(Navigator),
-    page = elemFactory(Page),
-    searchInput = elemFactory(SearchInput),
-    select = elemFactory(Select),
-    switchControl = elemFactory(Switch),
-    tab = elemFactory(Tab),
-    tabbar = elemFactory(Tabbar),
-    toast = elemFactory(Toast),
-    toolbar = elemFactory(Toolbar);
+    button = elementFactory(Button),
+    checkbox = elementFactory(Checkbox),
+    gestureDetector = elementFactory(GestureDetector),
+    input = elementFactory(Input),
+    navigator = elementFactory(Navigator),
+    searchInput = elementFactory(SearchInput),
+    select = elementFactory(Select),
+    switchControl = elementFactory(Switch);
+
+
+//---------------------
+// Container Components
+//----------------------
+export const
+    dialog = containerElementFactory(Dialog),
+    listItem = containerElementFactory(ListItem),
+    page = containerElementFactory(Page),
+    tab = containerElementFactory(Tab),
+    tabbar = containerElementFactory(Tabbar),
+    toast = containerElementFactory(Toast),
+    toolbar = containerElementFactory(Toolbar),
+    bottomToolbar = containerElementFactory(BottomToolbar);

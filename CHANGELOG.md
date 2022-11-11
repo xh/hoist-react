@@ -15,33 +15,32 @@ typescript based error checking and intelligent auto-completion hints.
 
 The goal of this release is to be backward compatible with v53 to the greatest degree possible, and we
 expect that most applications will just run with minimal or no changes.  However, some breaking
-changes  were required, and these may require application adjustements.  Please review below.
+changes  were required, and these may require application adjustments.  Please review below.
 
 ### 🎁 New Features
 * New typescript interface `HoistProps` and per-component extensions to specify props for all
-components  The `PropTypes` library is no longer included with hoist-react.
+components  This replaces the use of the `PropTypes` library, which is  no longer included with
+hoist-react.
 * Enhanced type-script aware implementations of `ElementFactory` including separate factories for
-standard components (`simpleElementFactory`) and components that often take children only
-(`fullElementFactory`).
+standard components (`elementFactory`) and components that often take children only
+(`containerElementFactory`).
+* References to singleton instances of services and the app model can now be gained via the static
+`instance` property on the class name of the singleton  e.g. `ConfigService.instance`.  Referencing
+these singletons via `XH` is still supported, but this provides an additional, type-script friendly
+way to gain access to these instances in code.
+
 
 ### 💥 Breaking Changes
 * The constructors for `GridModel` and `Column` no long accept arbitrary rest (e.g '...rest')
 arguments for applying app-specific data to the object.  Instead, use the new `appData` property
 on these objects.
-
-### ⚙️ Deprecations
-* The use of `elemFactory` function is now deprecated.  Applications should specify
-`simpleElementFactory` (typically) or `fullElementFactory` (if necessary) instead.
+* The`elemFactory` function has been removed.  Applications should specify
+`elementFactory` (typically) or `containerElementFactory` (if necessary) instead.
 * The use of the `model` prop to provide a *configuration* of a model to be created on-the-fly
 by Hoist is deprecated. Applications should use the `modelConfig` key instead. The `model` key is
 still the fully supported way for providing an existing model *instance* as a prop.
-
-###  ⚙️ Technical
-* For applications moving to Typescript, there is a newly recommended pattern for getting typed
-references to the appModel and application specific services.  This involves actually
-placing services on the AppModel, and exporting a reference to the AppModel.  See toolbox examples
-for more details.  Note that for backward compatibility, these changes are *not* required for
-existing javascript applications.
+* PropTypes support has been removed in favor of the type script interfaces discussed above.  Apps
+importing Hoist Proptypes instances should simply remove these compile-time references.
 
 
 ### 📚 Libraries

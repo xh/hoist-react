@@ -6,7 +6,7 @@
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
-import {elem, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
+import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {errorBoundary} from '@xh/hoist/appcontainer/ErrorBoundary';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
 import {suspendPanel} from '@xh/hoist/desktop/appcontainer/SuspendPanel';
@@ -130,7 +130,7 @@ const appContainerView = hoistCmp.factory({
                 bannerList(),
                 refreshContextView({
                     model: model.refreshContextModel,
-                    item: frame(elem(appSpec.componentClass, {model: appModel}))
+                    item: frame(createElement(appSpec.componentClass, {model: appModel}))
                 }),
                 inspectorPanel(),
                 versionBar()

@@ -51,12 +51,12 @@ export interface ElementSpec {
 export type WithElementSpec<P> = P & ElementSpec;
 
 export type ElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
-    SimpleElementFactory<P, T> | FullElementFactory<P, T>;
+    StandardElementFactory<P, T> | ContainerElementFactory<P, T>;
 
-export type SimpleElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
+export type StandardElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
     (arg?: (P extends ElementSpec ? P : WithElementSpec<P>)) => ReactElement<P, T>;
 
-export type FullElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
+export type ContainerElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
     ((arg?: (P extends ElementSpec ? P : WithElementSpec<P>)) => ReactElement<P, T>) &
     ((...args: ReactNode[]) => ReactElement<P, T>);
 
@@ -96,15 +96,15 @@ export function createElement<P=any, T extends string|JSXElementConstructor<any>
  *  children and attributes and should be the one created for most components.
  *
  *  For components that are often provided *only* with children (e.g. container components such as
- *  toolbars, or table cells), see {@link fullElementFactory}.
+ *  toolbars, or table cells), see {@link containerElementFactory}.
  */
-export function simpleElementFactory<P=any, T extends string|JSXElementConstructor<any>=any>(
+export function elementFactory<P=any, T extends string|JSXElementConstructor<any>=any>(
     type: T
-): SimpleElementFactory<P, T> {
+): StandardElementFactory<P, T> {
     const ret = function(...args) {
         return createElement<P, T>(type, normalizeArgs(args, type, true));
     };
-    ret.isElemFactory = true;
+    ret.isElementFactory = true;
     return ret;
 }
 
@@ -115,32 +115,19 @@ export function simpleElementFactory<P=any, T extends string|JSXElementConstruct
  *  cells), asit provides a more minimal style
  *
  *  For a simpler alternative that should be used from most components see
- *  {@link simpleElementFactory}
+ *  {@link elementFactory}
  */
 
-export function fullElementFactory<P=any, T extends string|JSXElementConstructor<any>=any>(
+export function containerElementFactory<P=any, T extends string|JSXElementConstructor<any>=any>(
     type: T
-): FullElementFactory<P, T> {
+): ContainerElementFactory<P, T> {
     const ret = function(...args) {
         return createElement<P, T>(type, normalizeArgs(args, type, false));
     };
-    ret.isElemFactory = true;
+    ret.isElementFactory = true;
     return ret;
 }
 
-//------------------------------------
-// Aliases for backward compatibility
-//-------------------------------------
-
-/**
- * @deprecated -- use simpleElementFactory or fullElementFactory instead.
- */
-export const elemFactory = fullElementFactory;
-
-/**
- * @deprecated -- use createElement instead
- */
-export const elem = createElement;
 
 //------------------------
 // Implementation
@@ -163,8 +150,8 @@ function normalizeArgs(args: any[], type: any, simple: boolean) {
 function childrenPassedToSimpleFactory(type) {
     const typeName = type.displayName ?? type.toString();
     console.warn(
-        `Your application passed raw children to a 'SimpleElementFactory' for Component '${typeName}'.  This may not be ` +
-        'supported in future versions of Hoist.  Please call factory with an object implementing ' +
-        'ElementSpec or create your factory with `fullElementFactory` instead.'
+        `Your application passed raw children to a 'StandardElementFactory' for Component '${ typeName }'.  This may not be ` +
+        'supported in future versions of StandardElementFactory.  Please call factory with an object implementing ' +
+        'ElementSpec or create your factory with `containerElementFactory` instead.'
     );
 }

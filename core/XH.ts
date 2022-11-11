@@ -8,18 +8,19 @@ import {
     HoistService,
     AppSpec,
     AppState,
-    elem,
+    createElement,
     Exception,
     ExceptionHandlerOptions,
     ExceptionHandler,
     TrackOptions,
     SizingMode,
     HoistServiceClass,
-    initServicesAsync,
-    Theme, PlainObject
+    Theme,
+    PlainObject
 } from './';
 import {Store} from '@xh/hoist/data';
 import {instanceManager} from './impl/InstanceManager';
+import {installServicesAsync} from './impl/InstallServices';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable, reaction as mobxReaction} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
@@ -45,7 +46,6 @@ import {
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {
-    apiDeprecated,
     checkMinVersion,
     getClientDeviceInfo,
     throwIf
@@ -262,25 +262,25 @@ export class XHClass {
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
 
         const root = createRoot(document.getElementById('xh-root')),
-            rootView = elem(appSpec.containerClass, {model: this.appContainerModel});
+            rootView = createElement(appSpec.containerClass, {model: this.appContainerModel});
         root.render(rootView);
-
-        return new Promise<T>((resolve, reject) => this.resolveRender = resolve);
     }
-
-    private resolveRender: (m: any) => void;
 
     /**
-     * Install HoistServices on this object.
-     * @deprecated - use initServicesAsync() instead.
+     * Install HoistServices on XH.
+     *
+     * @param serviceClasses - Classes extending HoistService
+     *
+     * This method will create, initialize, and install the services classes listed on XH.
+     * All services will be initialized concurrently. To guarantee execution order of service
+     * initialization, make multiple calls to this method with await.
+     *
+     * Applications must choose a unique name of the form xxxService to avoid naming collisions on
+     * the target. If naming collisions are detected, an error will be thrown.
      */
     async installServicesAsync(...serviceClasses: HoistServiceClass[]) {
-        apiDeprecated('installServicesAsync',
-            {msg: 'Use HoistAppModel.initServicesAsync instead.', v: 'v53'}
-        );
-        return initServicesAsync(serviceClasses, this);
+        return installServicesAsync(serviceClasses);
     }
-
 
     /**
      * Transition the application state.
@@ -683,8 +683,8 @@ export class XHClass {
         }
 
         try {
-            await initServicesAsync(FetchService, this);
-            await initServicesAsync(TrackService, this);
+            await installServicesAsync(FetchService);
+            await installServicesAsync(TrackService);
 
             // pre-flight allows clean recognition when we have no server.
             try {
@@ -740,7 +740,7 @@ export class XHClass {
         try {
 
             // Install identity service and confirm access
-            await initServicesAsync(IdentityService, this);
+            await this.installServicesAsync(IdentityService);
             const access = this.checkAccess();
             if (!access.hasAccess) {
                 this.accessDeniedMessage = access.message || 'Access denied.';
@@ -750,9 +750,9 @@ export class XHClass {
 
             // Complete initialization process
             this.setAppState('INITIALIZING');
-            await initServicesAsync(LocalStorageService, this);
-            await initServicesAsync(
-                [EnvironmentService, PrefService, ConfigService, JsonBlobService], this
+            await this.installServicesAsync(LocalStorageService);
+            await this.installServicesAsync(
+                EnvironmentService, PrefService, ConfigService, JsonBlobService
             );
 
             // Confirm hoist-core version after environment service loaded
@@ -764,10 +764,10 @@ export class XHClass {
                 `);
             }
 
-            await initServicesAsync([
+            await this.installServicesAsync(
                 AlertBannerService, AutoRefreshService, ChangelogService, IdleService,
                 InspectorService, GridAutosizeService, GridExportService, WebSocketService
-            ], this);
+            );
             this.acm.init();
 
             this.setDocTitle();
@@ -776,8 +776,7 @@ export class XHClass {
             await wait(XH.isDevelopmentMode ? 300 : 1);
 
             const modelClass:any  = this.appSpec.modelClass;
-            this.appModel = new modelClass();
-            this.resolveRender(this.appModel);
+            this.appModel = modelClass.instance =  new modelClass();
             await this.appModel.initAsync();
             this.startRouter();
             this.startOptionsDialog();

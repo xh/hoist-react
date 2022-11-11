@@ -7,7 +7,7 @@
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {errorBoundary} from '@xh/hoist/appcontainer/ErrorBoundary';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
-import {elem, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
+import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 import {colChooser} from '@xh/hoist/mobile/cmp/grid/impl/ColChooser';
 import {ColChooserModel} from '@xh/hoist/mobile/cmp/grid/impl/ColChooserModel';
@@ -109,7 +109,7 @@ const appContainerView = hoistCmp.factory<AppContainerModel>({
                 bannerList(),
                 refreshContextView({
                     model: model.refreshContextModel,
-                    item: frame(elem(XH.appSpec.componentClass, {model: XH.appModel}))
+                    item: frame(createElement(XH.appSpec.componentClass, {model: XH.appModel}))
                 }),
                 versionBar()
             ),

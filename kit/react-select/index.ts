@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {elemFactory} from '@xh/hoist/core';
+import {elementFactory} from '@xh/hoist/core';
 import Select from 'react-select';
 import AsyncSelect from 'react-select/async';
 import AsyncCreatable from 'react-select/async-creatable';
@@ -20,8 +20,8 @@ export {
 };
 
 export const
-    reactSelect = elemFactory(Select),
-    reactCreatableSelect = elemFactory(Creatable),
-    reactAsyncSelect = elemFactory(AsyncSelect),
-    reactAsyncCreatableSelect = elemFactory(AsyncCreatable),
-    reactWindowedSelect = elemFactory(WindowedSelect);
+    reactSelect = elementFactory(Select),
+    reactCreatableSelect = elementFactory(Creatable),
+    reactAsyncSelect = elementFactory(AsyncSelect),
+    reactAsyncCreatableSelect = elementFactory(AsyncCreatable),
+    reactWindowedSelect = elementFactory(WindowedSelect);

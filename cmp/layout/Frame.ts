@@ -17,7 +17,7 @@ export interface FrameProps extends HoistProps, BoxProps {}
  *
  * VFrame and HFrame variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-export const [Frame, frame] = hoistCmp.withFullFactory<FrameProps>({
+export const [Frame, frame] = hoistCmp.withContainerFactory<FrameProps>({
     displayName: 'Frame',
     model: false, memo: false, observer: false,
 
@@ -26,7 +26,7 @@ export const [Frame, frame] = hoistCmp.withFullFactory<FrameProps>({
     }
 });
 
-export const [VFrame, vframe] = hoistCmp.withFullFactory<FrameProps>({
+export const [VFrame, vframe] = hoistCmp.withContainerFactory<FrameProps>({
     displayName: 'VFrame',
     model: false, memo: false, observer: false,
     className: 'xh-vframe',
@@ -41,7 +41,7 @@ export const [VFrame, vframe] = hoistCmp.withFullFactory<FrameProps>({
     }
 });
 
-export const [HFrame, hframe] = hoistCmp.withFullFactory<FrameProps>({
+export const [HFrame, hframe] = hoistCmp.withContainerFactory<FrameProps>({
     displayName: 'HFrame',
     model: false, memo: false, observer: false,
     className: 'xh-hframe',

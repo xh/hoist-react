@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
-import {elem, hoistCmp, HoistProps, LayoutProps, PlainObject, XH} from '@xh/hoist/core';
+import {createElement, hoistCmp, HoistProps, LayoutProps, PlainObject, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {
@@ -576,7 +576,7 @@ class SelectInputModel extends HoistInputModel {
             this._valueContainerCmp = leftIcon ?
                 (props) => fragment(
                     span({className: 'xh-select__control__left-icon', item: leftIcon}),
-                    elem(components.ValueContainer, props)
+                    createElement(components.ValueContainer, props)
                 ) :
                 components.ValueContainer;
         }

@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
-import {AppOptionSpec, HoistModel, HoistServiceClass, initServicesAsync} from './';
+import {AppOptionSpec, HoistModel} from './';
 import {Route} from 'router5';
 import {ReactNode} from 'react';
 /**
@@ -66,22 +66,6 @@ export class HoistAppModel extends HoistModel {
      */
     getAppOptions(): AppOptionSpec[] {
         return [];
-    }
-
-    /**
-     * Initialize and install Hoist services for this application.
-     *
-     * @param serviceClasses - Classes extending HoistService
-     *
-     * This method will create, initialize, and install the services classes listed on this model.
-     * All services will be initialized concurrently. To guarantee execution order of service
-     * initialization, make multiple calls to this method with await.
-     *
-     * Applications must choose a unique name of the form xxxService to avoid naming collisions.
-     * If naming collisions are detected, an error will be thrown.
-     */
-    async initServicesAsync(...serviceClasses: HoistServiceClass[]) {
-        return initServicesAsync(serviceClasses, this);
     }
 
     /**

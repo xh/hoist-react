@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {simpleElementFactory, hoistCmp} from '@xh/hoist/core';
+import {elementFactory, hoistCmp} from '@xh/hoist/core';
 import {enhanceFaClasses} from './IconHtml';
 
 /**
@@ -23,4 +23,4 @@ export const iconCmp = hoistCmp.factory({
         return fontAwesomeIcon({icon: [prefix, iconName], className, title, ...rest});
     }
 });
-const fontAwesomeIcon = simpleElementFactory(FontAwesomeIcon);
+const fontAwesomeIcon = elementFactory(FontAwesomeIcon);

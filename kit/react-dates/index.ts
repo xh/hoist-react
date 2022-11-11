@@ -4,11 +4,11 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {elemFactory} from '@xh/hoist/core';
+import {elementFactory} from '@xh/hoist/core';
 import {SingleDatePicker} from 'react-dates';
 import 'react-dates/initialize';
 import 'react-dates/lib/css/_datepicker.css';
 
 export {SingleDatePicker};
 
-export const singleDatePicker = elemFactory(SingleDatePicker);
+export const singleDatePicker = elementFactory(SingleDatePicker);

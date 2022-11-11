@@ -10,7 +10,7 @@ import {hoistCmp} from '@xh/hoist/core';
 /**
  * Dialog Body for Blueprint, wrapped as a Hoist Component.
  */
-export const [DialogBody, dialogBody] = hoistCmp.withFullFactory({
+export const [DialogBody, dialogBody] = hoistCmp.withContainerFactory({
     displayName: 'DialogBody',
     className: 'bp4-dialog-body',
     observer: false, model: false, memo: false,
@@ -23,7 +23,7 @@ export const [DialogBody, dialogBody] = hoistCmp.withFullFactory({
 /**
  * Dialog Footer for Blueprint, wrapped as Hoist Component.
  */
-export const [DialogFooter, dialogFooter] = hoistCmp.withFullFactory({
+export const [DialogFooter, dialogFooter] = hoistCmp.withContainerFactory({
     displayName: 'DialogFooter',
     className: 'bp4-dialog-footer',
     observer: false, model: false, memo: false,
@@ -36,7 +36,7 @@ export const [DialogFooter, dialogFooter] = hoistCmp.withFullFactory({
 /**
  * Dialog Footer Actions for Blueprint, wrapped as HoistComponent.
  */
-export const [DialogFooterActions, dialogFooterActions] = hoistCmp.withFullFactory({
+export const [DialogFooterActions, dialogFooterActions] = hoistCmp.withContainerFactory({
     displayName: 'DialogFooterActions',
     className: 'bp4-dialog-footer-actions',
     observer: false, model: false, memo: false,

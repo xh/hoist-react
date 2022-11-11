@@ -17,7 +17,7 @@ export interface PlaceholderProps extends HoistProps, BoxProps {}
  * Intended as an alternative to masking or other approaches when a portion of an application's
  * layout is not yet ready to be rendered - e.g. a detail panel without a current record selection.
  */
-export const [Placeholder, placeholder] = hoistCmp.withFullFactory<PlaceholderProps>({
+export const [Placeholder, placeholder] = hoistCmp.withContainerFactory<PlaceholderProps>({
     displayName: 'Placeholder',
     model: false, memo: false, observer: false,
     className: 'xh-placeholder',

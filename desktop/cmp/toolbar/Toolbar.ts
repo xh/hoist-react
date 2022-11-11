@@ -55,7 +55,7 @@ export interface ToolbarProps extends
  * A toolbar with built-in styling and padding.
  * In horizontal toolbars, items which overflow can be collapsed into a drop-down menu.
  */
-export const [Toolbar, toolbar] = hoistCmp.withFullFactory<ToolbarProps>({
+export const [Toolbar, toolbar] = hoistCmp.withContainerFactory<ToolbarProps>({
     displayName: 'Toolbar',
     model: false, memo: false, observer: false,
     className: 'xh-toolbar',

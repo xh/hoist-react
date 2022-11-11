@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {elemFactory} from '@xh/hoist/core';
+import {elementFactory} from '@xh/hoist/core';
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd';
 
 export {
@@ -14,6 +14,6 @@ export {
 };
 
 export const
-    dragDropContext = elemFactory(DragDropContext),
-    droppable = elemFactory(Droppable),
-    draggable = elemFactory(Draggable);
+    dragDropContext = elementFactory(DragDropContext),
+    droppable = elementFactory(Droppable),
+    draggable = elementFactory(Draggable);

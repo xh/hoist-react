@@ -50,7 +50,7 @@ import {
     Tree
 } from '@blueprintjs/core';
 import {DatePicker} from '@blueprintjs/datetime';
-import {elemFactory} from '@xh/hoist/core';
+import {elementFactory, containerElementFactory} from '@xh/hoist/core';
 
 //---------------------
 // Re-exports
@@ -99,45 +99,53 @@ export {
     Tree
 };
 
+//----------------------------
+// Primarily leaf Components
+//-----------------------------
 export const
-    alert = elemFactory(Alert),
-    button = elemFactory(Button),
-    buttonGroup = elemFactory(ButtonGroup),
-    callout = elemFactory(Callout),
-    card = elemFactory(Card),
-    controlGroup = elemFactory(ControlGroup),
-    checkbox = elemFactory(Checkbox),
-    datePicker = elemFactory(DatePicker),
-    dialog = elemFactory(Dialog),
-    drawer = elemFactory(Drawer),
-    editableText = elemFactory(EditableText),
-    fileInput = elemFactory(FileInput),
-    formGroup = elemFactory(FormGroup),
-    hotkey = elemFactory(Hotkey),
-    hotkeys = elemFactory(Hotkeys),
-    inputGroup = elemFactory(InputGroup),
-    label = elemFactory(Label),
-    menu = elemFactory(Menu),
-    menuDivider = elemFactory(MenuDivider),
-    menuItem = elemFactory(MenuItem),
-    navbar = elemFactory(Navbar),
-    navbarHeading = elemFactory(NavbarHeading),
-    navbarGroup = elemFactory(NavbarGroup),
-    navbarDivider = elemFactory(NavbarDivider),
-    numericInput = elemFactory(NumericInput),
-    overflowList = elemFactory(OverflowList),
-    overlay = elemFactory(Overlay),
-    popover = elemFactory(Popover),
-    radio = elemFactory(Radio),
-    radioGroup = elemFactory(RadioGroup),
-    rangeSlider = elemFactory(RangeSlider),
-    slider = elemFactory(Slider),
-    switchControl = elemFactory(Switch),
-    tabs = elemFactory(Tabs),
-    tab = elemFactory(Tab),
-    tag = elemFactory(Tag),
-    tagInput = elemFactory(TagInput),
-    text = elemFactory(Text),
-    textArea = elemFactory(TextArea),
-    tooltip = elemFactory(Tooltip),
-    tree = elemFactory(Tree);
+    alert = elementFactory(Alert),
+    button = elementFactory(Button),
+    controlGroup = elementFactory(ControlGroup),
+    checkbox = elementFactory(Checkbox),
+    dialog = elementFactory(Dialog),
+    datePicker = elementFactory(DatePicker),
+    menuDivider = elementFactory(MenuDivider),
+    menuItem = elementFactory(MenuItem),
+    navbarDivider = elementFactory(NavbarDivider),
+    numericInput = elementFactory(NumericInput),
+    overflowList = elementFactory(OverflowList),
+    popover = elementFactory(Popover),
+    radio = elementFactory(Radio),
+    rangeSlider = elementFactory(RangeSlider),
+    slider = elementFactory(Slider),
+    switchControl = elementFactory(Switch),
+    textArea = elementFactory(TextArea),
+    tree = elementFactory(Tree),
+    tagInput = elementFactory(TagInput),
+    fileInput = elementFactory(FileInput),
+    overlay = elementFactory(Overlay),
+    tooltip = elementFactory(Tooltip);
+
+//-----------------------
+// Container Components
+//-----------------------
+export const
+    buttonGroup = containerElementFactory(ButtonGroup),
+    callout = containerElementFactory(Callout),
+    card = containerElementFactory(Card),
+    drawer = containerElementFactory(Drawer),
+    editableText = containerElementFactory(EditableText),
+    formGroup = containerElementFactory(FormGroup),
+    hotkey = containerElementFactory(Hotkey),
+    hotkeys = containerElementFactory(Hotkeys),
+    inputGroup = containerElementFactory(InputGroup),
+    label = containerElementFactory(Label),
+    menu = containerElementFactory(Menu),
+    navbar = containerElementFactory(Navbar),
+    navbarHeading = containerElementFactory(NavbarHeading),
+    navbarGroup = containerElementFactory(NavbarGroup),
+    radioGroup = containerElementFactory(RadioGroup),
+    tabs = containerElementFactory(Tabs),
+    tab = containerElementFactory(Tab),
+    tag = containerElementFactory(Tag),
+    text = containerElementFactory(Text);

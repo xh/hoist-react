@@ -32,7 +32,7 @@ export function elementFromContent(content: Content, addProps?: object): ReactEl
     let c = content as any;
     if (isNil(c)) return null;
 
-    if (c.isElemFactory) {
+    if (c.isElementFactory) {
         return c(addProps);
     }
 
