@@ -47,7 +47,7 @@ export interface FormProps extends HoistProps<FormModel>, BoxProps {
  * @see FormField - field-level wrapper component, which labels and displays info for a...
  * @see HoistInput - superclass for the data entry components themselves.
  */
-export const [Form, form] = hoistCmp.withFactory<FormProps>({
+export const [Form, form] = hoistCmp.withContainerFactory<FormProps>({
     displayName: 'Form',
     model: uses(FormModel, {publishMode:  'none'}),
 
