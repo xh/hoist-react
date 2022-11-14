@@ -76,6 +76,6 @@ export class HoistService extends HoistBase implements Loadable {
     }
 }
 
-export interface HoistServiceClass {
-    new(): HoistService;
+export interface HoistServiceClass<T extends HoistService = HoistService> {
+    new(): T;
 }

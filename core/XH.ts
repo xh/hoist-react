@@ -50,7 +50,7 @@ import {
     getClientDeviceInfo,
     throwIf
 } from '@xh/hoist/utils/js';
-import {compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
+import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import {createRoot} from 'react-dom/client';
 import parser from 'ua-parser-js';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
@@ -136,6 +136,18 @@ export class XHClass {
     prefService: PrefService;
     trackService: TrackService;
     webSocketService: WebSocketService;
+
+    /** Get a reference to a singleton service by camel case name.*/
+
+    getService(name: string): HoistService;
+
+    /** Get a reference to a singleton service by full class. */
+    getService<T extends HoistService>(cls: HoistServiceClass<T>): T;
+
+    getService(arg: any) {
+        const name = isString(arg) ? arg : camelCase(arg.name);
+        return this[name];
+    }
 
     //----------------------------------------------------------------------------------------------
     // Aliased methods
@@ -275,8 +287,8 @@ export class XHClass {
      * All services will be initialized concurrently. To guarantee execution order of service
      * initialization, make multiple calls to this method with await.
      *
-     * Applications must choose a unique name of the form xxxService to avoid naming collisions on
-     * the target. If naming collisions are detected, an error will be thrown.
+     * Applications must choose a unique name of the form xxxService to avoid naming collisions.
+     * If naming collisions are detected, an error will be thrown.
      */
     async installServicesAsync(...serviceClasses: HoistServiceClass[]) {
         return installServicesAsync(serviceClasses);
@@ -683,8 +695,8 @@ export class XHClass {
         }
 
         try {
-            await installServicesAsync(FetchService);
-            await installServicesAsync(TrackService);
+            await this.installServicesAsync(FetchService);
+            await this.installServicesAsync(TrackService);
 
             // pre-flight allows clean recognition when we have no server.
             try {
