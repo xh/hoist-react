@@ -165,7 +165,3 @@ export class StoreValidator extends HoistBase {
         return Array.from(this._validators.values(), fn);
     }
 }
-
-/**
- * @typedef {Object.<StoreRecordId, RecordErrorMap>} StoreErrorMap - map of StoreRecord IDs -> StoreRecord-level error maps.
- */

@@ -136,7 +136,3 @@ export class RecordValidator {
         return !when || when(field, record.getValues());
     }
 }
-
-/**
- * @typedef {Object.<string, string[]>} RecordErrorMap - map of Field names -> Field-level error lists.
- */
