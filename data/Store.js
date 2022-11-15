@@ -13,11 +13,13 @@ import {
     castArray,
     defaultsDeep,
     differenceBy,
+    flatMapDeep,
     isArray,
     isEmpty,
     isFunction,
     isNil,
     isString,
+    values,
     remove as lodashRemove
 } from 'lodash';
 import {Field} from './Field';
@@ -59,6 +61,9 @@ export class Store extends HoistBase {
 
     /** @member {boolean} */
     freezeData;
+
+    /** @member {boolean} */
+    validationIsComplex;
 
     /** @member {Filter}  */
     @observable.ref filter;
@@ -127,6 +132,8 @@ export class Store extends HoistBase {
      *      object creation, and raw data processing when reloading reference-identical data.
      *      Should not be used if a processRawData function that depends on external state is
      *      provided, as this function will be circumvented on subsequent reloads.  Default false.
+     * @param {boolean} [c.validationIsComplex] - set to true to always validate all uncommitted
+     *      records on every change to uncommitted records (add, modify, or remove). Default false.
      * @param {Object} [c.experimental] - flags for experimental features. These features are
      *     designed for early client-access and testing, but are not yet part of the Hoist API.
      * @param {Object[]} [c.data] - source data to load.
@@ -144,6 +151,7 @@ export class Store extends HoistBase {
         freezeData = true,
         idEncodesTreePath = false,
         reuseRecords = false,
+        validationIsComplex = false,
         experimental,
         data
     }) {
@@ -161,6 +169,7 @@ export class Store extends HoistBase {
         this.freezeData = freezeData;
         this.idEncodesTreePath = idEncodesTreePath;
         this.reuseRecords = reuseRecords;
+        this.validationIsComplex = validationIsComplex;
         this.lastUpdated = Date.now();
 
         this.resetRecords();
@@ -692,6 +701,21 @@ export class Store extends HoistBase {
         return this._current.maxDepth;  // maxDepth should not be effected by filtering.
     }
 
+    /** @return {StoreErrorMap} - Map of StoreRecord IDs to StoreRecord-level error maps. */
+    get errors() {
+        return this.validator.errors;
+    }
+
+    /** @return {number} - count of all validation errors for the store. */
+    get errorCount() {
+        return this.validator.errorCount;
+    }
+
+    /** @return {string[]} - Array of all errors for this store. */
+    get allErrors() {
+        return flatMapDeep(this.errors, values);
+    }
+
     /**
      * Get a record by ID, or null if no matching record found.
      *
@@ -1006,4 +1030,12 @@ function isChildDataObject(obj) {
  * @property {string} parentId - id of the pre-existing parent record.
  * @property {Object} rawData - data for the child records to be added. Can include a `children`
  *      property that will be processed into new (grand)child records.
+ */
+
+/**
+ * @typedef {Object.<string, string[]>} RecordErrorMap - map of Field names -> Field-level error lists.
+ */
+
+/**
+ * @typedef {Object.<StoreRecordId, RecordErrorMap>} StoreErrorMap - map of StoreRecord IDs -> StoreRecord-level error maps.
  */
