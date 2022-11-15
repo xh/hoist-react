@@ -13,17 +13,20 @@ import {
     castArray,
     defaultsDeep,
     differenceBy,
+    flatMapDeep,
     isArray,
     isEmpty,
     isFunction,
     isNil,
     isString,
-    remove as lodashRemove
+    values,
+    remove as lodashRemove,
+    uniq
 } from 'lodash';
 import {Field, FieldSpec} from './Field';
 import {parseFilter} from './filter/Utils';
 import {RecordSet} from './impl/RecordSet';
-import {StoreValidator} from './impl/StoreValidator';
+import {StoreErrorMap, StoreValidator} from './impl/StoreValidator';
 import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 import {instanceManager} from '../core/impl/InstanceManager';
 import {Filter} from './filter/Filter';
@@ -107,6 +110,12 @@ export interface StoreConfig {
     reuseRecords?: boolean;
 
     /**
+     * Set to true to always validate all uncommitted records on every change to
+     * uncommitted records (add, modify, or remove). Default false.
+     */
+    validationIsComplex?: boolean;
+
+    /**
      *  Flags for experimental features. These features are designed for early client-access and
      *  testing, but are not yet part of the Hoist API.
      */
@@ -175,6 +184,7 @@ export class Store extends HoistBase {
     idEncodesTreePath: boolean;
     freezeData: boolean;
     reuseRecords: boolean;
+    validationIsComplex: boolean;
 
     @observable.ref
     filter: Filter;
@@ -226,6 +236,7 @@ export class Store extends HoistBase {
         freezeData = true,
         idEncodesTreePath = false,
         reuseRecords = false,
+        validationIsComplex = false,
         experimental,
         data
     }: StoreConfig) {
@@ -243,6 +254,7 @@ export class Store extends HoistBase {
         this.freezeData = freezeData;
         this.idEncodesTreePath = idEncodesTreePath;
         this.reuseRecords = reuseRecords;
+        this.validationIsComplex = validationIsComplex;
         this.lastUpdated = Date.now();
 
         this.resetRecords();
@@ -740,6 +752,20 @@ export class Store extends HoistBase {
     @computed
     get maxDepth(): number {
         return this._current.maxDepth;  // maxDepth should not be effected by filtering.
+    }
+
+    get errors(): StoreErrorMap {
+        return this.validator.errors;
+    }
+
+    /** Count of all validation errors for the store. */
+    get errorCount(): number {
+        return this.validator.errorCount;
+    }
+
+    /** Array of all errors for this store. */
+    get allErrors(): string[] {
+        return uniq(flatMapDeep(this.errors, values));
     }
 
     /**

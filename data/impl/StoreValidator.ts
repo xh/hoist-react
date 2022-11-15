@@ -5,10 +5,10 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {XH, HoistBase} from '@xh/hoist/core';
-import {computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {find, sumBy, map, some} from 'lodash';
-
+import {HoistBase} from '@xh/hoist/core';
+import {computed, makeObservable, runInAction, observable} from '@xh/hoist/mobx';
+import {sumBy, chunk} from 'lodash';
+import {findIn} from '@xh/hoist/utils/js';
 import {RecordErrorMap, RecordValidator} from './RecordValidator';
 import {ValidationState} from '../validation/ValidationState';
 import {Store} from '../Store';
@@ -49,17 +49,20 @@ export class StoreValidator extends HoistBase {
     /** Count of all validation errors for the store. */
     @computed
     get errorCount(): number {
-        return sumBy(this._validators, 'errorCount');
+        return sumBy(this.validators, 'errorCount');
     }
 
     /** True if any records are currently recomputing their validation state. */
     @computed
-    get isPending(): boolean {
-        return some(this._validators, it => it.isPending);
+    get isPending() {
+        return !!findIn(this._validators, it => it.isPending);
     }
 
-    @observable.ref
-    private _validators: RecordValidator[] = [];
+    get validators() {
+        return this.mapValidators();
+    }
+
+    @observable.ref _validators = new Map<StoreRecordId, RecordValidator>();
 
     constructor(config: {store: Store}) {
         super();
@@ -76,18 +79,16 @@ export class StoreValidator extends HoistBase {
      * Recompute validations for the store and return true if valid.
      */
     async validateAsync(): Promise<boolean> {
-        const promises = map(this._validators, v => v.validateAsync());
-        await Promise.all(promises);
+        await this.validateInChunksAsync(this.validators);
         return this.isValid;
     }
 
     /** @returns The current validation state for the store. */
     getValidationState(): ValidationState {
-        const VS = ValidationState,
-            states = map(this._validators, v => v.validationState);
-        if (states.includes(VS.NotValid)) return VS.NotValid;
-        if (states.includes(VS.Unknown)) return VS.Unknown;
-        return VS.Valid;
+        const states = this.mapValidators(v => v.validationState);
+        if (states.includes('NotValid')) return 'NotValid';
+        if (states.includes('Unknown')) return 'Unknown';
+        return 'Valid';
     }
 
     /** @returns map of StoreRecord IDs to StoreRecord-level error maps. */
@@ -101,7 +102,7 @@ export class StoreValidator extends HoistBase {
      * @param id - ID of RecordValidator (should match record.id)
      */
     findRecordValidator(id: StoreRecordId): RecordValidator {
-        return find(this._validators, {id});
+        return this._validators.get(id);
     }
 
     //---------------------------------------
@@ -111,10 +112,47 @@ export class StoreValidator extends HoistBase {
         return this.store.allRecords.filter(it => !it.isCommitted);
     }
 
-    private async syncValidatorsAsync(): Promise<boolean> {
-        XH.safeDestroy(this._validators);
-        this._validators = this.uncommittedRecords.map(record => new RecordValidator({record}));
-        return this.validateAsync();
+    private async syncValidatorsAsync() {
+        const isComplex = this.store.validationIsComplex,
+            currValidators = this._validators,
+            newValidators = new Map(),
+            toValidate = [];
+
+        this.uncommittedRecords.forEach(record => {
+            const {id} = record;
+
+            // Re-use existing validators to preserve validation state and avoid churn.
+            let validator = currValidators.get(id);
+
+            // 1) If exists validator for an unchanged record, no need to validate
+            if (!isComplex && validator?.record == record) {
+                newValidators.set(id, validator);
+                return;
+            }
+
+            // 2) Otherwise create/update the validator, and trigger validation
+            if (!validator) {
+                validator = new RecordValidator({record});
+            } else {
+                validator.record = record;
+            }
+            newValidators.set(id, validator);
+            toValidate.push(validator);
+        });
+
+        await this.validateInChunksAsync(toValidate);
+        runInAction(() => this._validators = newValidators);
+    }
+
+    private async validateInChunksAsync(validators: RecordValidator[]) {
+        const validateChunks = chunk(validators, 100);
+        for (let chunk of validateChunks) {
+            await Promise.all(chunk.map(v => v.validateAsync()));
+        }
+    }
+
+    private mapValidators<T=RecordValidator>(fn:(v:RecordValidator)=>T = undefined): T[] {
+        return Array.from(this._validators.values(), fn);
     }
 }
 

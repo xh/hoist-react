@@ -237,7 +237,7 @@ export function pluralize(s: string, count?: number, includeCount?: boolean) {
 /**
  * Remove when lodash adds Set/Map support.
  */
-export function findIn<T>(collection: Set<T>|Map<string, T>, fn: (it: T) => boolean): T {
+export function findIn<T>(collection: Set<T>|Map<unknown, T>, fn: (it: T) => boolean): T {
     for (let it of collection.values()) {
         if (fn(it)) return it;
     }

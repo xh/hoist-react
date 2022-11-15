@@ -6,7 +6,7 @@
  */
 import {PlainObject} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil} from 'lodash';
+import {isNil, flatMap} from 'lodash';
 import {Store} from './Store';
 import {ValidationState} from './validation/ValidationState';
 import {RecordValidator} from './impl/RecordValidator';
@@ -144,6 +144,11 @@ export class StoreRecord {
     /** Map of field names to list of errors. */
     get errors(): Record<string, string[]>  {
         return this.validator?.errors ?? {};
+    }
+
+    /** Array of all errors for this record. */
+    get allErrors() {
+        return flatMap(this.errors);
     }
 
     /** Count of all validation errors for the record. */

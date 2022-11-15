@@ -4,20 +4,22 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-
-import {HoistBase} from '@xh/hoist/core';
-import {StoreRecord, StoreRecordId, ValidationState} from '@xh/hoist/data';
-import {computed, makeObservable} from '@xh/hoist/mobx';
-import {find, map, some, sumBy} from 'lodash';
-import {RecordFieldValidator} from './RecordFieldValidator';
+import {Field, Rule, StoreRecord, StoreRecordId, ValidationState} from '@xh/hoist/data';
+import {computed, observable, makeObservable, runInAction} from '@xh/hoist/mobx';
+import {compact, flatten, isEmpty, mapValues, values} from 'lodash';
+import {TaskObserver} from '../../core';
 
 /**
  * Computes validation state for a StoreRecord.
  * @internal
  */
-export class RecordValidator extends HoistBase {
+export class RecordValidator {
 
     record: StoreRecord;
+
+    @observable.ref _fieldErrors: RecordErrorMap = null;
+    _validationTask = TaskObserver.trackLast();
+    _validationRunId = 0;
 
     get id(): StoreRecordId {
         return this.record.id;
@@ -44,66 +46,86 @@ export class RecordValidator extends HoistBase {
     /** Map of field names to field-level errors. */
     @computed.struct
     get errors(): RecordErrorMap {
-        return this.getErrorMap();
+        return this._fieldErrors ?? {};
     }
 
     /** Count of all validation errors for the record. */
     @computed
     get errorCount(): number {
-        return sumBy(this._validators, 'errorCount');
+        return flatten(values(this._fieldErrors)).length;
     }
 
     /** True if any fields are currently recomputing their validation state. */
     @computed
     get isPending(): boolean {
-        return some(this._validators, it => it.isPending);
+        return this._validationTask.isPending;
     }
 
     private _validators = [];
 
     constructor(config: {record: StoreRecord}) {
-        super();
+        this.record = config.record;
         makeObservable(this);
-        const {record} = config;
-        this.record = record;
-
-        const {fields} = this.record.store;
-        this._validators = fields.map(field => new RecordFieldValidator({record, field}));
     }
 
     /**
      * Recompute validations for the record and return true if valid.
      */
     async validateAsync(): Promise<boolean> {
-        const promises = map(this._validators, v => v.validateAsync());
-        await Promise.all(promises);
+        let runId = ++this._validationRunId,
+            fieldErrors = {},
+            {record} = this,
+            fieldsToValidate = record.store.fields.filter(it => !isEmpty(it.rules));
+
+        const promises = fieldsToValidate.flatMap(field => {
+            fieldErrors[field.name] = [];
+            return field.rules.map(async (rule) => {
+                const result = await this.evaluateRuleAsync(record, field, rule);
+                fieldErrors[field.name].push(result);
+            });
+        });
+        await Promise.all(promises).linkTo(this._validationTask);
+
+        if (runId !== this._validationRunId) return;
+        fieldErrors = mapValues(fieldErrors, it => compact(flatten(it)));
+
+        runInAction(() => this._fieldErrors = fieldErrors);
+
         return this.isValid;
     }
 
     /** The current validation state for the record. */
     getValidationState(): ValidationState {
-        const VS = ValidationState,
-            states = map(this._validators, v => v.validationState);
-        if (states.includes(VS.NotValid)) return VS.NotValid;
-        if (states.includes(VS.Unknown)) return VS.Unknown;
-        return VS.Valid;
+        const {_fieldErrors} = this;
+
+        if (_fieldErrors === null) return 'Unknown'; // Before executing any rules
+
+        return (values(_fieldErrors).some(errors => !isEmpty(errors))) ?
+            'NotValid' :
+            'Valid';
     }
 
-    /** Map of field names to field-level errors. */
-    getErrorMap(): RecordErrorMap {
-        const ret = {};
-        this._validators.forEach(v => ret[v.id] = v.errors);
-        return ret;
+    async evaluateRuleAsync(record: StoreRecord, field: Field, rule: Rule): Promise<string[]> {
+        const values = record.getValues(),
+            {name, displayName} = field,
+            value = record.get(name);
+
+        if (this.ruleIsActive(record, field, rule)) {
+            const promises = rule.check.map(async (constraint) => {
+                const fieldState = {value, name, displayName, record};
+                return await constraint(fieldState, values);
+            });
+
+            const ret = await Promise.all(promises);
+            return compact(flatten(ret));
+        }
     }
 
-    /**
-     * @param id - ID of RecordFieldValidator (should match field.name)
-     */
-    findFieldValidator(id: string): RecordFieldValidator {
-        return find(this._validators, {id});
+    ruleIsActive(record: StoreRecord, field: Field, rule: Rule) {
+        const {when} = rule;
+        return !when || when(field, record.getValues());
     }
 }
 
 /** Map of Field names to Field-level error lists. */
 export type RecordErrorMap = Record<string, string[]>;
-

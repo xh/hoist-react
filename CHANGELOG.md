@@ -19,33 +19,47 @@ changes  were required, and these may require application adjustments.  Please r
 
 ### 🎁 New Features
 * New typescript interface `HoistProps` and per-component extensions to specify props for all
-components  This replaces the use of the `PropTypes` library, which is  no longer included with
-hoist-react.
+  components  This replaces the use of the `PropTypes` library, which is no longer included with
+  hoist-react.
 * Enhanced type-script aware implementations of `ElementFactory` including separate factories for
-standard components (`elementFactory`) and components that often take children only
-(`containerElementFactory`).
+  standard components (`elementFactory`) and components that often take children only
+  (`containerElementFactory`).
 * References to singleton instances of services and the app model can now be gained via the static
-`instance` property on the class name of the singleton  e.g. `ConfigService.instance`.  Referencing
-these singletons via `XH` is still supported, but this provides an additional, type-script friendly
-way to gain access to these instances in code.
+  `instance` property on the class name of the singleton  e.g. `ConfigService.instance`.  Referencing
+  these singletons via `XH` is still supported, but this provides an additional, type-script friendly
+  way to gain access to these instances in code.
 
 
 ### 💥 Breaking Changes
 * The constructors for `GridModel` and `Column` no long accept arbitrary rest (e.g '...rest')
-arguments for applying app-specific data to the object.  Instead, use the new `appData` property
-on these objects.
+  arguments for applying app-specific data to the object.  Instead, use the new `appData` property
+  on these objects.
 * The`elemFactory` function has been removed.  Applications should specify
-`elementFactory` (typically) or `containerElementFactory` (if necessary) instead.
+  `elementFactory` (typically) or `containerElementFactory` (if necessary) instead.
 * The use of the `model` prop to provide a *configuration* of a model to be created on-the-fly
-by Hoist is deprecated. Applications should use the `modelConfig` key instead. The `model` key is
-still the fully supported way for providing an existing model *instance* as a prop.
+  by Hoist is deprecated. Applications should use the `modelConfig` key instead. The `model` key is
+  still the fully supported way for providing an existing model *instance* as a prop.
 * PropTypes support has been removed in favor of the type script interfaces discussed above.  Apps
-importing Hoist Proptypes instances should simply remove these compile-time references.
+  importing Hoist Proptypes instances should simply remove these compile-time references.
 
 
 ### 📚 Libraries
 * hoist-dev-utils `6.x -> 7.0`
 
+
+## v53.2.0 - 2022-11-15
+
+### 🎁 New Features
+* New convenience methods `Store.errors`, `Store.errorCount`, and `StoreRecord.allErrors` for getting
+  easy access to validation errors in Stores.
+* A new flag `Store.validationIsComplex` which governs whether non-changed
+  uncommitted records need to be revalidated when any record in the store is changed.  This flag
+  defaults to `false`, which  should be correct for most applications.  Set to `true` for stores with
+  validations that depend on other editable record values in the store (e.g. unique constraints).
+
+### ⚙️ Technical
+* Major performance improvements to validation of records in stores.  This is a critical fix for
+  applications that do bulk insertion of hundreds of rows or greater in editable grids.
 
 ## v53.1.0 - 2022-11-03
 
