@@ -20,7 +20,8 @@ import {
     isNil,
     isString,
     values,
-    remove as lodashRemove
+    remove as lodashRemove,
+    uniq
 } from 'lodash';
 import {Field} from './Field';
 import {parseFilter} from './filter/Utils';
@@ -713,7 +714,7 @@ export class Store extends HoistBase {
 
     /** @return {string[]} - Array of all errors for this store. */
     get allErrors() {
-        return flatMapDeep(this.errors, values);
+        return uniq(flatMapDeep(this.errors, values));
     }
 
     /**
