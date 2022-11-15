@@ -20,7 +20,7 @@ export class RecordValidator {
     /** @member {StoreRecord} */
     record;
 
-    @observable.ref _fieldErrors = {};
+    @observable.ref _fieldErrors = null;
     _validationTask = TaskObserver.trackLast();
     _validationRunId = 0;
 
