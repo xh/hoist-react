@@ -7,7 +7,7 @@
 
 import {HoistBase} from '@xh/hoist/core';
 import {computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {isEmpty, map, some, sumBy} from 'lodash';
+import {sumBy, chunk} from 'lodash';
 import {runInAction} from 'mobx';
 import {logDebug, findIn} from '../../utils/js';
 import {ValidationState} from '../validation/ValidationState';
@@ -86,8 +86,7 @@ export class StoreValidator extends HoistBase {
      * @returns {Promise<boolean>}
      */
     async validateAsync() {
-        const promises = this.mapValidators(v => v.validateAsync());
-        await Promise.all(promises);
+        await this.validateInChunksAsync(this.validators);
         return this.isValid;
     }
 
@@ -126,17 +125,17 @@ export class StoreValidator extends HoistBase {
         const isComplex = this.store.validationIsComplex,
             currValidators = this._validators,
             newValidators = new Map(),
-            promises = [];
+            toValidate = [];
 
         this.uncommittedRecords.forEach(record => {
-            const id = {record};
+            const {id} = record;
 
             // Re-use existing validators to preserve validation state and avoid churn.
-            let validator = currValidators.get(record.id);
+            let validator = currValidators.get(id);
 
             // 1) If exists validator for an unchanged record, no need to validate
             if (!isComplex && validator?.record == record) {
-                newValidators.set(id, validator)
+                newValidators.set(id, validator);
                 return;
             }
 
@@ -147,21 +146,24 @@ export class StoreValidator extends HoistBase {
                 validator.record = record;
             }
             newValidators.set(id, validator);
-            promises.push(validator.validateAsync());
+            toValidate.push(validator);
         });
 
+        await this.validateInChunksAsync(toValidate);
         runInAction(() => this._validators = newValidators);
+    }
 
-        if (!isEmpty(promises)) {
-            logDebug(`Validating ${promises.length} records`, this);
-            await Promise.all(promises);
+    async validateInChunksAsync(validators) {
+        logDebug(`Validating ${validators.length} records`, this);
+        const validateChunks = chunk(validators, 100);
+        for (let chunk of validateChunks) {
+            await Promise.all(chunk.map(v => v.validateAsync()));
         }
     }
 
     mapValidators(fn = undefined) {
         return Array.from(this._validators.values(), fn);
     }
-
 }
 
 /**

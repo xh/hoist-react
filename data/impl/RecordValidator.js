@@ -84,21 +84,17 @@ export class RecordValidator {
             {record} = this,
             fieldsToValidate = record.store.fields.filter(it => !isEmpty(it.rules));
 
-        const promises = fieldsToValidate.map(field => {
+        const promises = fieldsToValidate.flatMap(field => {
             fieldErrors[field.name] = [];
-
-            const rulePromises = field.rules.map(async (rule) => {
+            return field.rules.map(async (rule) => {
                 const result = await this.evaluateRuleAsync(record, field, rule);
                 fieldErrors[field.name].push(result);
             });
-
-            return Promise.all(rulePromises);
         });
-
         await Promise.all(promises).linkTo(this._validationTask);
 
         if (runId !== this._validationRunId) return;
-        fieldErrors = mapValues(fieldErrors, it => compact(flatten(it)))
+        fieldErrors = mapValues(fieldErrors, it => compact(flatten(it)));
 
         runInAction(() => this._fieldErrors = fieldErrors);
 
