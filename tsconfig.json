@@ -4,8 +4,10 @@
     "target": "ES2022",
     "module": "ES2022",
     "moduleResolution": "Node",
+    "skipLibCheck": true,
     "allowSyntheticDefaultImports":  true,
     "resolveJsonModule":  true,
+    "noEmit": true,
     "jsx": "react",
     "paths": {
       "@xh/hoist/*": ["./*"]
@@ -14,5 +16,6 @@
       "dom",
       "es2022"
     ]
-  }
+  },
+  "exclude": ["node_modules"]
 }
