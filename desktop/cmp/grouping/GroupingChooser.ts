@@ -263,7 +263,7 @@ const addDimensionControl = hoistCmp.factory<GroupingChooserModel>({
 /**
  * Extract integer values from CSS transform string.
  * Works for both `translate` and `translate3d`
- * e.g. `translate3d(250px, 150px, 0px)` => [250, 150, 0]
+ * e.g. `translate3d(250px, 150px, 0px)` is equivalent to [250, 150, 0]
  */
 function parseTransform(transformStr) {
     return transformStr?.

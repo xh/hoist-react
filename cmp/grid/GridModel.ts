@@ -262,7 +262,7 @@ export interface GridConfig {
     /**
      * Number of clicks required to expand / collapse a parent row in a tree grid. Defaults
      * to 2 for desktop, 1 for mobile. Any other value prevents clicks on row body from
-     * expanding / collapsing (requires click on tree col > control).
+     * expanding / collapsing (requires click on tree col affordance to expand/collapse).
      */
     clicksToExpand?: number;
 
@@ -691,16 +691,17 @@ export class GridModel extends HoistModel {
      * Select records in the grid.
      *
      * @param records - one or more record(s) / ID(s) to select.
-     * @param options.ensureVisible - true to make selection visible if it is within a
-     *      collapsed node or outside of the visible scroll window. Default true.
-     * @param options.clearSelection - true to clear previous selection (rather than
-     *      add to it). Default true.
+     * @param options - additional options containing the following keys:
+     *      ensureVisible - true to make selection visible if it is within a
+     *          collapsed node or outside of the visible scroll window. Default true.
+     *      clearSelection - true to clear previous selection (rather than
+     *          add to it). Default true.
      */
     async selectAsync(
         records: Some<StoreRecordOrId>,
-        opts: {ensureVisible?: boolean, clearSelection?: boolean} = {}
+        opts?: {ensureVisible?: boolean, clearSelection?: boolean}
     ) {
-        const {ensureVisible = true, clearSelection = true} = opts;
+        const {ensureVisible = true, clearSelection = true} = opts ?? {};
         this.selModel.select(records, clearSelection);
         if (ensureVisible) await this.ensureSelectionVisibleAsync();
     }
@@ -708,15 +709,15 @@ export class GridModel extends HoistModel {
     /**
      * Select the first row in the grid.
      *
-     * See {@link preSelectFirstAsync()} for a useful variant of this method.  preSelectFirstAsync()
+     * See {@link preSelectFirstAsync} for a useful variant of this method.  preSelectFirstAsync()
      * will not change the selection if there is already a selection, which is what applications
      * typically want to do when loading/reloading a grid.
      *
-     * @param options.ensureVisible - true to make selection visible if it is within a
+     * @param opts - set key 'ensureVisible' to true to make selection visible if it is within a
      *      collapsed node or outside of the visible scroll window. Default true.
      */
-    async selectFirstAsync(opts: {ensureVisible?: boolean} = {}) {
-        const {ensureVisible = true} = opts;
+    async selectFirstAsync(opts?: {ensureVisible?: boolean}) {
+        const {ensureVisible = true} = opts ?? {};
         await this.whenReadyAsync();
         if (!this.isReady) return;
 

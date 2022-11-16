@@ -22,11 +22,11 @@ export interface GridCountLabelProps extends HoistProps, BoxProps {
 
     /**
      * Control display of selection count after overall records count: auto (default) to display
-     * count when > 1, or always/never to show/hide regardless of current count.
+     * count when greater than 1, or always/never to show/hide regardless of current count.
      */
     showSelectionCount?: 'always'|'never'|'auto',
 
-    /** Units label appropriate for records being counted (e.g. "user" -> "50 users"). */
+    /** Units label appropriate for records being counted (e.g. "user" will yield, e.g. "50 users"). */
     unit?: string
 }
 

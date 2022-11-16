@@ -84,10 +84,10 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
 /** Config for pos/neg/neutral color classes. */
 export interface ColorSpec {
 
-    /** CSS color class to wrap around values > 0. */
+    /** CSS color class to wrap around positive values */
     pos?: string;
 
-    /** CSS class to wrap around values < 0. */
+    /** CSS class to wrap around negative values */
     neg?: string;
 
     /** CSS class to wrap around zero values. */
@@ -100,7 +100,7 @@ export interface ColorSpec {
  *
  * This method delegates to numbro, @see http://numbrojs.com for more details.
  *
- * Hierarchy of params is by specificity: formatPattern => precision.
+ * Hierarchy of params is by specificity: formatPattern, precision.
  * If no options are given, a heuristic based auto-rounding will occur.
  *
  * @returns a ReactNode, for an HTML string see {@link fmtDateAsHtml}
@@ -241,7 +241,7 @@ export function fmtPercent(v: number, opts?: NumberFormatOptions): ReactNode {
  * Only ledger opt is supported.
  *
  * @param v - value to format.
- * @param opts.ledger - true to use ledger format, default false
+ * @param opts - set key 'ledger' to true to use ledger format, default false
  */
 export function fmtNumberTooltip(v: number, opts?: {ledger?: boolean}): string {
     return fmtNumber(v, {

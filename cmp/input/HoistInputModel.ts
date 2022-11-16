@@ -324,8 +324,8 @@ export class HoistInputModel extends HoistModel {
  *
  * @param component - component to render
  * @param props - props passed to containing component
- * @param {Object} ref - forwardRef passed to containing component
- * @param {Class} modelSpec - specify to use particular subclass of HoistInputModel
+ * @param ref - forwardRef passed to containing component
+ * @param modelSpec - specify to use particular subclass of HoistInputModel
  */
 export function useHoistInputModel(
     component: any,

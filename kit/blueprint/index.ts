@@ -17,7 +17,7 @@ import {
     PopoverInteractionKind,
     Position,
     Toaster,
-    ToasterPosition,
+    type ToasterPosition,
     useHotkeys
 } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';

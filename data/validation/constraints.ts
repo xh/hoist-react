@@ -38,10 +38,8 @@ export const validEmail: Constraint<string> = ({value, displayName}) => {
     if (!isValid) return `${displayName} is not a properly formatted address.`;
 };
 
-/**
- * Validate length of a string.
- */
-export function lengthIs(c: {min?: number, max?: number}): Constraint<string> {
+/** Validate length of a string.*/
+export function lengthIs(c: LengthIsOptions): Constraint<string> {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
 
@@ -50,19 +48,14 @@ export function lengthIs(c: {min?: number, max?: number}): Constraint<string> {
         if (max != null && value.length > max) return `${displayName} must contain no more than ${max} characters.`;
     };
 }
+export interface LengthIsOptions {
+    min?: number;
+    max?: number;
+}
 
-/**
- * Validate a number.
- *
- * @param c.min - minimum value (value must be gte)
- * @param c.max - maximum value (value must be lte)
- * @param c.gt - greater than
- * @param c.lt - less than
- * @param c.notZero - true to disallow 0.
- */
-export function numberIs(
-    c: {min?: number, max?: number, gt?: number, lt?: number, notZero?: boolean}
-): Constraint<number> {
+
+/** Validate amount of a number */
+export function numberIs(c: NumberIsOptions): Constraint<number> {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
 
@@ -74,21 +67,19 @@ export function numberIs(
         if (isFinite(lt) && value >= lt) return `${displayName} must be less than ${lt}.`;
     };
 }
+export interface NumberIsOptions {
+     /** Minimum value (value must be gte).*/
+     min?: number;
+    /** Maximum value (value must be lte).*/
+     max?: number;
+     gt?: number;
+     lt?: number;
+     /** True to disallow 0. */
+     notZero?: boolean;
+}
 
-/**
- * Validate a date or LocalDate against allowed min/max boundaries.
- *
- * @param c.min - earliest allowed value for the date to be checked.
- *      Supports strings 'now' (instant rule is run) and 'today' (any time on the current day).
- * @param c.max - latest allowed value for the date to be checked.
- *      Supports strings 'now' (instant rule is run) and 'today' (any time on the current day).
- * @param c.fmt - custom date format to be used in validation message.
- */
-export function dateIs(c: {
-    min?: Date|LocalDate|'now'|'today',
-    max?: Date|LocalDate|'now'|'today',
-    fmt?: string
-}): Constraint<Date|LocalDate> {
+/** Validate a date or LocalDate against allowed min/max boundaries. */
+export function dateIs(c: DateIsOptions): Constraint<Date|LocalDate> {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
 
@@ -134,6 +125,21 @@ export function dateIs(c: {
         }
         return error ? `${displayName} must not be ${error}` : null;
     };
+}
+
+export interface DateIsOptions {
+    /**
+     * Earliest allowed value for the date to be checked.
+     * Supports values 'now' (instant rule is run) and 'today' (any time on the current day).
+     */
+    min?: Date|LocalDate|'now'|'today';
+    /**
+     * Latest allowed value for the date to be checked.
+     * Supports values 'now' (instant rule is run) and 'today' (any time on the current day).
+     */
+    max?: Date|LocalDate|'now'|'today';
+    /** Custom date format to be used in validation message. */
+    fmt?: string;
 }
 
 /**

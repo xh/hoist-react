@@ -208,19 +208,11 @@ export class TabContainerModel extends HoistModel {
         }
     }
 
-    /**
-     * Add a Tab for display.
-     * @param tab - TabModel or config for TabModel to be added.
-     * @param opts.index - index in tab collection where tab is to be added.
-     * @param opts.activateImmediately - true to immediately activate new tab.
-     */
+    /** Add a Tab for display.*/
     @action
-    addTab(
-        tab: TabModel|TabConfig,
-        opts: {index?: number, activateImmediately?: boolean} = {}
-    ): TabModel {
+    addTab(tab: TabModel|TabConfig, opts?: AddTabOptions): TabModel {
         const {tabs} = this,
-            {index = tabs.length, activateImmediately = false} = opts;
+            {index = tabs.length, activateImmediately = false} = opts ?? {};
         this.setTabs([...tabs.slice(0, index), tab, ...tabs.slice(index)]);
         if (activateImmediately) {
             this.activateTab(tab.id);
@@ -395,4 +387,12 @@ export class TabContainerModel extends HoistModel {
             });
         }
     }
+}
+
+
+export interface AddTabOptions {
+    /** Index in tab collection where tab is to be added. */
+    index?: number;
+    /** True to immediately activate new tab. */
+    activateImmediately?: boolean;
 }

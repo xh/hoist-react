@@ -105,7 +105,7 @@ export interface CompactDateFormatOptions extends FormatOptions<DateLike> {
     nearFmt?: string;
 
     /**
-     * Format for dates > number of months specified by the distantThreshold, defaults to
+     * Format for dates beyond number of months specified by the distantThreshold, defaults to
      * 'YYYY-MM-DD'.
      */
     distantFmt?: string;

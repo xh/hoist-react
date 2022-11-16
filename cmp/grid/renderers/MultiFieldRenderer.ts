@@ -4,32 +4,24 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {isString, partition} from 'lodash';
-import { ReactNode } from 'react';
+import {ReactNode} from 'react';
 
 /**
  * A grid rendererFn that renders a collection of additional SubFields in a row beneath the main column field.
  *
- * Requires the column to also specify a multiFieldConfig, with the following params:
+ * Requires the column to also specify a multiFieldConfig in its `appData`.
  *
- *      {SubField[]} subFields - Array of SubField specifications to render
- *      {Column~rendererFn} [mainRenderer] - renderer for primary field.
- *      {string} [delimiter] - string rendered between consecutive SubFields
- *
- * SubFields act as pointers to other columns that exist in the GridModel's columns collection (often hidden).
- * They will be rendered using the same rendererFn, headerName and value as the column they point to.
- *
- * SubFields are defined as objects with the following props:
- *
- *      {string} colId - Column ID to render.
- *      {boolean|string} [label] - true to include the Column's headerName as label, or string
- *      {string} [position] - Where to render the SubField, either 'top' or 'bottom'. Default 'bottom'
+ * The configs `subFields` act as pointers to other columns that exist in the GridModel's columns collection
+ * (often hidden). They will be rendered using the same rendererFn, headerName and value as the column
+ * they refer to.
  */
 export function multiFieldRenderer(value, context): ReactNode {
     const {column} = context,
-        {multiFieldConfig} = column;
+        {multiFieldConfig} = column.appData;
 
     throwIf(!multiFieldConfig, 'Columns using multiFieldRenderer must specify a multiFieldConfig');
     warnIf(!column.rowHeight, 'MultiFieldRenderer works best with rowHeight: Grid.MULTIFIELD_ROW_HEIGHT');
@@ -67,6 +59,27 @@ export function multiFieldRenderer(value, context): ReactNode {
             })
         ]
     });
+}
+
+export interface MultiFieldConfig {
+    /** Array of SubField specifications to render. */
+    subFields: MultiFieldSubField[];
+
+    /** Renderer for primary field. */
+    mainRenderer?: ColumnRenderer;
+
+    /** string rendered between consecutive SubFields. */
+    delimiter?: string;
+}
+
+export interface MultiFieldSubField {
+    colId: string;
+
+    /** True to include the Column's headerName as label, or string. */
+    label?: boolean|'string';
+
+    /** Where to render the sub field. Default 'bottom'. */
+    position?: 'top'|'bottom';
 }
 
 //------------------

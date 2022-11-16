@@ -80,7 +80,7 @@ export class FormModel extends HoistModel {
      * of another. This proxy is also passed to validation rules to facilitate reactive cross-field
      * validation - e.g. marking a field as invalid due to a change in another.
      *
-     * See {@link getData()} instead if you need to get or react to the values of *any/all* fields.
+     * See {@link getData} instead if you need to get or react to the values of *any/all* fields.
      */
     get values(): Record<string, any> {
         return this.valuesProxy;
@@ -241,11 +241,12 @@ export class FormModel extends HoistModel {
     /**
      * Recompute all validations and return true if the form is valid.
      *
-     * @param c.display - true to trigger the display of validation errors (if any)
-     *      by bound FormField components after validation is complete.
+     * @param opts - set 'display' to true to trigger the display of
+     *  validation errors (if any) by bound FormField components after validation
+     *  is complete.
      */
-    async validateAsync(opts: {display?: boolean} = {}): Promise<boolean> {
-        const {display = true} = opts,
+    async validateAsync(opts?: {display?: boolean}): Promise<boolean> {
+        const {display = true} = opts ?? {},
             promises = map(this.fields, m => m.validateAsync({display}));
         await Promise.all(promises);
         return this.isValid;

@@ -35,10 +35,8 @@ export interface AutosizeState {
  * @param groupBVal - second group value to be compared.
  * @param groupField - field name being grouped at this level.
  * @param metadata - additional metadata with raw ag-Grid group nodes.
- * @param metadata.gridModel - controlling GridModel.
- * @param metadata.nodeA - first raw ag-Grid row node.
- * @param metadata.nodeB - second raw ag-Grid row node.
- * @returns 0 if group values are equal, <0 if `a` sorts first, >0 if `b` sorts first.
+ * @returns 0 if group values are equal, a negative number if `a` sorts first,
+ *      and a positive number if `b` sorts first.
  */
 export type GridGroupSortFn = (
     groupAVal: any,
@@ -160,14 +158,7 @@ export interface ColChooserConfig {
  * @param valueB - cell data valueB to be compared
  * @param sortDir - either 'asc' or 'desc'
  * @param abs - true to sort by absolute value
- * @param params - extra parameters devs might want
- * @param params.recordA - data record for valueA
- * @param params.recordB - data record for valueB
- * @param params.agNodeA - row node provided by ag-grid
- * @param params.agNodeB - row node provided by ag-grid
- * @param params.column - column for the cell being rendered
- * @param params.gridModel - gridModel for the grid
- * @param params.defaultComparator - default comparator provided by Hoist for this column.
+ * @param params - additional context about records and column for usage by comparator.
  */
 export type ColumnComparator<T=any> = (
     valueA: T,
@@ -231,9 +222,9 @@ export type ColumnCellClassFn<T=any> = (value: T, context: CellContext) => Some<
 /**
  * Function to determine if a particular CSS class should be added/removed from a cell, via
  * cellClassRules config.
- * @param agParams - as provided by Ag-Grid (CellClassParams)
- * @param agParams.value - the current cell value.
- * @param agParams.data - the backing Hoist record for the row, if any.
+ * @param agParams - as provided by Ag-Grid (CellClassParams).  Includes keys:
+ *      value - the current cell value.
+ *      data - the backing Hoist record for the row, if any.
  * @returns true if the class to which this function is keyed should be added, false if
  *      it should be removed.
  */

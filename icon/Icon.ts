@@ -62,17 +62,8 @@ export const Icon = {
      * directly (e.g. Icon.add(), Icon.book(), etc.) These factories will delegate to this method,
      * with the name of a pre-imported icon preset.
      */
-    icon({
-        iconName,
-        prefix = 'far',
-        className,
-        intent,
-        title,
-        size,
-        asHtml = false,
-        ...rest
-    }: IconProps = {}
-    ): any {
+    icon(opts?: IconProps): any {
+        let {iconName, prefix = 'far', className, intent, title, size, asHtml = false, ...rest} = opts ?? {};
         if (intent) {
             className = classNames(className, `xh-intent-${intent}`);
         }
@@ -304,12 +295,13 @@ export const Icon = {
     /**
      * Create an Icon for a file with default styling appropriate for the file type.
      *
-     * @param opts - Props to pass to Icon.icon().
-     * @param opts.filename - filename to be used to create icon.  Name will be parsed
-     *      for an extension.  If not provided or recognized, a default icon will be returned.
+     * @param opts - Props to pass to Icon.icon(), along with an optional filename to be used to
+     *   create icon.  Name will be parsed for an extension.  If not provided or recognized, a
+     *   default icon will be returned.
      */
-    fileIcon({filename, ...rest}: IconProps&{filename: string}): ReactElement|string {
-        const {factory, className} = getFileIconConfig(filename);
+    fileIcon(opts: IconProps&{filename: string}): ReactElement|string {
+        const {filename, ...rest} = opts,
+            {factory, className} = getFileIconConfig(filename);
 
         return factory({...rest, className: classNames(className, rest.className)});
     },
@@ -319,8 +311,9 @@ export const Icon = {
      * where an icon might otherwise go - e.g. to align a series of menu items, where some items do
      * not have an icon but others do.
      */
-    placeholder({size, asHtml = false}: IconProps = {}): ReactElement|string {
-        const className = enhanceFaClasses('xh-icon--placeholder', size);
+    placeholder(opts?: IconProps): ReactElement|string {
+        const {size, asHtml = false} = opts ?? {},
+            className = enhanceFaClasses('xh-icon--placeholder', size);
         return asHtml ? `<div class="${className}"></div>` : div({className});
     }
 };
