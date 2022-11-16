@@ -209,8 +209,10 @@ hoistCmp.containerFactory = hoistCmpContainerFactory;
  *
  * Not typically used by applications.
  */
-export function hoistCmpWithFactory<P extends HoistProps>(config: ComponentConfig<P>): [FC<P>, StandardElementFactory<P, FC<P>>] {
-    const cmp = hoistCmp<P>(config);
+export function hoistCmpWithFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): [FC<DefaultHoistProps<M>>, StandardElementFactory<DefaultHoistProps<M>, FC<DefaultHoistProps<M>>>];
+export function hoistCmpWithFactory<P extends HoistProps>(config: ComponentConfig<P>): [FC<P>, StandardElementFactory<P, FC<P>>];
+export function hoistCmpWithFactory(config) {
+    const cmp = hoistCmp(config);
     return [cmp, elementFactory(cmp)];
 }
 hoistCmp.withFactory = hoistCmpWithFactory;
@@ -224,8 +226,10 @@ hoistCmp.withFactory = hoistCmpWithFactory;
  *
  * Not typically used by applications.
  */
-export function hoistCmpWithContainerFactory<P extends HoistProps>(config: ComponentConfig<P>): [FC<P>, ContainerElementFactory<P, FC<P>>] {
-    const cmp = hoistCmp<P>(config);
+export function hoistCmpWithContainerFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): [FC<DefaultHoistProps<M>>, ContainerElementFactory<DefaultHoistProps<M>, FC<DefaultHoistProps<M>>>];
+export function hoistCmpWithContainerFactory<P extends HoistProps>(config: ComponentConfig<P>): [FC<P>, ContainerElementFactory<P, FC<P>>];
+export function hoistCmpWithContainerFactory(config) {
+    const cmp = hoistCmp(config);
     return [cmp, containerElementFactory(cmp)];
 }
 hoistCmp.withContainerFactory = hoistCmpWithContainerFactory;
