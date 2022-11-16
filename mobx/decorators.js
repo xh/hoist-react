@@ -29,7 +29,7 @@ export function settable(target, property, descriptor) {
 
 
 /**
- * Decorator to mark a property as @observable and also provide a simple MobX action of the
+ * Decorator to mark a property as observable and also provide a simple MobX action of the
  * form `setPropName()`.
  *
  * This decorator is especially useful for creating observable properties that are intended to be

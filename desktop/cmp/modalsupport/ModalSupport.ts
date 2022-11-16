@@ -22,9 +22,9 @@ import {ModalSupportModel} from './ModalSupportModel';
  * State and DOM refs are managed via a ModalSupportModel, which must be provided.
  *
  * Not intended for application use.  Instead, make use of the modal support provided by
- * {@see Panel}
+ * {@link Panel}
  *
- * @private
+ * @internal
  */
 export const modalSupport = hoistCmp.factory({
     displayName: 'ModalSupport',

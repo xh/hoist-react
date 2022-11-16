@@ -24,9 +24,9 @@ export interface AgGridProps extends
  * enhancements for consistent Hoist themes/styling, layout support, and a
  * backing model for convenient access to the ag-Grid APIs and other utility methods.
  *
- * All {@link https://www.ag-grid.com/javascript-grid-properties/ ag-Grid Grid Properties}
- * can be passed as props directly to this component. Pass an {@see AgGridModel} via the `model`
- * prop to control additional Hoist customizations.
+ * All ag-Grid Grid Properties can be passed as props directly to this component.
+ * See {@link https://www.ag-grid.com/javascript-grid-properties/}.  Pass an {@link AgGridModel}
+ * via the `model` prop to control additional Hoist customizations.
  *
  * This component complements and contrasts with the primary Hoist `Grid` class, which provides a
  * significantly more managed and opinionated wrapper around ag-Grid and a number of Hoist-specific

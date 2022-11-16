@@ -708,7 +708,7 @@ export class GridModel extends HoistModel {
     /**
      * Select the first row in the grid.
      *
-     * See {@see preSelectFirstAsync()} for a useful variant of this method.  preSelectFirstAsync()
+     * See {@link preSelectFirstAsync()} for a useful variant of this method.  preSelectFirstAsync()
      * will not change the selection if there is already a selection, which is what applications
      * typically want to do when loading/reloading a grid.
      *
@@ -733,7 +733,7 @@ export class GridModel extends HoistModel {
     /**
      * Select the first row in the grid, if no other selection present.
      *
-     * This method delegates to {@see selectFirstAsync}.
+     * This method delegates to {@link selectFirstAsync}.
      */
     async preSelectFirstAsync() {
         if (!this.hasSelection) return this.selectFirstAsync();
@@ -826,7 +826,7 @@ export class GridModel extends HoistModel {
      *
      * Note that this getter will also change if just the data of selected record is changed
      * due to store loading or editing.  Applications only interested in the identity
-     * of the selection should use {@see selectedId} instead.
+     * of the selection should use {@link selectedId} instead.
      */
     get selectedRecord(): StoreRecord {return this.selModel.selectedRecord}
 
@@ -835,7 +835,7 @@ export class GridModel extends HoistModel {
      *
      * Note that this getter will *not* change if just the data of selected record is changed
      * due to store loading or editing.  Applications also interested in the contents of the
-     * of the selection should use the {@see selectedRecord} getter instead.
+     * of the selection should use the {@link selectedRecord} getter instead.
      */
     get selectedId(): StoreRecordId {return this.selModel.selectedId}
 

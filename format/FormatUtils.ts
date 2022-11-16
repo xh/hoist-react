@@ -14,7 +14,7 @@ import {PlainObject} from '@xh/hoist/core';
  * a function that takes only a value, for convenient use with e.g. grid cell rendering.
  *
  * @param formatter - an existing formatter method.
- * @return - a configurable renderer.
+ * @returns - a configurable renderer.
  */
 export function createRenderer<V = any, C = PlainObject, R = any>(
     formatter: (v: V, obj?: C) => R

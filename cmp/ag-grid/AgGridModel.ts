@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, SizingMode, Some} from '@xh/hoist/core';
+import {HoistModel, PlainObject, SizingMode, Some} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
@@ -109,11 +109,8 @@ export class AgGridModel extends HoistModel {
     @action setShowCellFocus(v: boolean) {this.showCellFocus = v}
     @action setHideHeaders(v: boolean) {this.hideHeaders = v}
 
-
-    /** @member {GridApi} */
-    @observable.ref agApi = null;
-    /** @member {ColumnApi} */
-    @observable.ref agColumnApi = null;
+    @observable.ref agApi: PlainObject = null; // GridApi
+    @observable.ref agColumnApi: PlainObject = null; // ColumnApi
 
     private _prevSortBy: GridSorter[];
 
@@ -545,10 +542,10 @@ export class AgGridModel extends HoistModel {
     }
 
     /**
-     * @returns {{Object}} - the first row in the grid, after sorting and filtering, which
-     *      has data associated with it (i.e. not a group or other synthetic row).
+     * @returns the first row in the grid, after sorting and filtering, which
+     *  has data associated with it (i.e. not a group or other synthetic row).
      */
-    getFirstSelectableRowNode() {
+    getFirstSelectableRowNode(): PlainObject {
         this.throwIfNotReady();
 
         let ret = null;
@@ -562,32 +559,32 @@ export class AgGridModel extends HoistModel {
 
     /**
      * Sets the data used for rows which appear pinned to the top of the grid
-     * @param {Object[]} data - the data to pin at the top of the grid
+     * @param data - the data to pin at the top of the grid
      */
-    setPinnedTopRowData(data) {
+    setPinnedTopRowData(data: PlainObject[]) {
         this.throwIfNotReady();
         this.agApi.setPinnedTopRowData(data);
     }
 
     /**
-     * @returns {Array} - row data pinned to the top of the grid
+     * @returns row data pinned to the top of the grid
      */
-    getPinnedTopRowData() {
+    getPinnedTopRowData(): PlainObject[] {
         this.throwIfNotReady();
         return this.getPinnedRowData('Top');
     }
 
     /**
      * Sets the data used for rows which appear pinned to the bottom of the grid
-     * @param {Object[]} data - the data to pin at the bottom of the grid
+     * @param data - the data to pin at the bottom of the grid
      */
-    setPinnedBottomRowData(data) {
+    setPinnedBottomRowData(data: PlainObject[]) {
         this.throwIfNotReady();
         this.agApi.setPinnedBottomRowData(data);
     }
 
     /**
-     * @returns {Array} - row data pinned to the bottom of the grid
+     * @returns row data pinned to the bottom of the grid
      */
     getPinnedBottomRowData() {
         this.throwIfNotReady();

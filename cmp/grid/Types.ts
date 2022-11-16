@@ -52,7 +52,7 @@ export type GridGroupSortFn = (
 
 /**
  * Context menu factory function, provided to GridModel.
- * @param {GetContextMenuItemsParams} params - raw event params from ag-Grid
+ * @param params - raw event params from ag-Grid (GetContextMenuItemsParams)
  * @param gridModel - controlling GridModel instance
  * @returns context menu to display, or null
  */
@@ -72,7 +72,7 @@ export type RowClassFn = (data: PlainObject) => Some<string>;
 /**
  * Function to determine if a particular CSS class should be added/removed from a row,
  * via rowClassRules config.
- * @param {RowClassParams} agParams - as provided by AG-Grid.
+ * @param agParams - as provided by AG-Grid. (RowClassParams)
  * @returns true if the class to which this function is keyed should be added, false if
  *      it should be removed.
  */
@@ -108,7 +108,7 @@ export interface GridFilterModelConfig {
 
     /**
      * Specifies the fields this model supports for filtering. Should be configs for
-     * {@see GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or omitted
+     * {@link GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or omitted
      * entirely to indicate that all fields should be filter-enabled.
      */
     fieldSpecs?: (string|GridFilterFieldSpecConfig)[];

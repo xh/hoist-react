@@ -15,7 +15,7 @@ export interface ColAutosizeButtonProps extends ButtonProps {
     /** GridModel of the grid for which this button should autosize columns. */
     gridModel?: GridModel,
 
-    /** Options for the grid autosize. {@see GridModel#autosizeAsync()} */
+    /** Options for the grid autosize. See {@link GridModel#autosizeAsync()} */
     autosizeOptions?: GridAutosizeOptions;
 }
 

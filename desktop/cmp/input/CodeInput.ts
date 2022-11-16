@@ -112,7 +112,7 @@ export interface CodeInputProps extends
  * styling, and custom key handlers (e.g. tab to indent). Can be customized with options and
  * language modes supported by the underlying CodeMirror library {@link https://codemirror.net/}.
  *
- * Note Hoist also provides a preconfigured {@see JsonInput} component for editing JSON.
+ * Note Hoist also provides a preconfigured {@link JsonInput} component for editing JSON.
  *
  * TODO - understanding sizing spec / requirements for component vs. generated CodeMirror.
  * Reconcile LayoutSupport with width/height props. https://github.com/xh/hoist-react/issues/327

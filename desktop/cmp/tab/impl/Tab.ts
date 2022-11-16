@@ -14,8 +14,8 @@ import {useRef} from 'react';
  * Wrapper for contents to be shown within a TabContainer. This Component is used by TabContainer's
  * internal implementation to:
  *
- *   - Mount/unmount its contents according to {@see TabModel.renderMode}.
- *   - Track and trigger refreshes according to {@see TabModel.refreshMode}.
+ *   - Mount/unmount its contents according to {@link TabModel.renderMode}.
+ *   - Track and trigger refreshes according to {@link TabModel.refreshMode}.
  *   - Stretch its contents using a flex layout.
  *
  * @internal

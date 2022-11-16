@@ -32,7 +32,7 @@ import {FilterChooserFieldSpec} from '../FilterChooserFieldSpec';
 /**
  * Provide the querying support for FilterChooserModel.
  *
- * @private
+ * @internal
  *
  * Process the user typed query, FieldSpecs, and FilterChooserModel to come up with a sorted list
  * of auto-complete options to be displayed to the user.

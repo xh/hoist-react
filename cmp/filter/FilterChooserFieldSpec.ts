@@ -34,7 +34,7 @@ export interface FilterChooserFieldSpecConfig extends BaseFilterFieldSpecConfig 
  * Filter field specification class for the typeahead `FilterChooser` component. Manages additional
  * configuration related to data values available for suggestion.
  *
- * Apps should NOT instantiate this class directly. Instead {@see FilterChooserModel.fieldSpecs}
+ * Apps should NOT instantiate this class directly. Instead see {@link FilterChooserModel.fieldSpecs}
  * for the relevant config to set these options.
  */
 export class FilterChooserFieldSpec extends BaseFilterFieldSpec {

@@ -10,7 +10,7 @@ import {Icon} from '@xh/hoist/icon';
 
 /**
  * Desktop implementation of StoreFilterField.
- * @private
+ * @internal
  */
 export function storeFilterFieldImpl(props) {
     return textInput({

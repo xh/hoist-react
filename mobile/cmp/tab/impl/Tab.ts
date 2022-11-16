@@ -13,7 +13,7 @@ import {useRef} from 'react';
 import './Tabs.scss';
 
 /**
- * @private
+ * @internal
  *
  * Wrapper for contents to be shown within a TabContainer. This Component is used by TabContainer's
  * internal implementation to:

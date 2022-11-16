@@ -26,7 +26,7 @@ export interface ContextMenuProps  extends HoistProps {
  * ContextMenu
  *
  * Not typically used directly by applications.  To add a Context Menu to an application
- * see ContextMenuHost, or the 'contextMenu` prop on panel.
+ * see ContextMenuHost, or the `contextMenu` prop on panel.
  *
  * See {@link GridContextMenu} to specify a context menu on Grid and DataView components.
  * That API will receive specific information about the current selection

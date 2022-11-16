@@ -200,8 +200,8 @@ interface SelectOption {
  *      + User-created ad-hoc entries
  *      + Use of the library react-windowed-select for improved performance on large option lists.
  *
- * @see {@link https://react-select.com|React Select Docs}
- * @see {@link https://github.com/jacobworrel/react-windowed-select react-windowed-select}
+ * See {@link https://react-select.com|React}
+ * See {@link https://github.com/jacobworrel/react-windowed-select}
  */
 export const [Select, select] = hoistCmp.withFactory<SelectProps>({
     displayName: 'Select',

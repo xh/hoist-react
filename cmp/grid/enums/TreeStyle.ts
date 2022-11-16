@@ -7,7 +7,6 @@
 
 /**
  * Options controlling treeMode-specific styles (row background highlights and borders) for Grids.
- * @enum {string}
  */
 export const TreeStyle = Object.freeze({
 

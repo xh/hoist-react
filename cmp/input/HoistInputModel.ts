@@ -52,7 +52,7 @@ import './HoistInput.scss';
  * `select()`.
  *
  * To create an instance of an Input component using this model use the hook
- * {@see useHoistInputModel}.
+ * {@link useHoistInputModel}.
  */
 export class HoistInputModel extends HoistModel {
 

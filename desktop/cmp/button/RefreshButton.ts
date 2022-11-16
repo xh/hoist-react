@@ -17,7 +17,7 @@ export type RefreshButtonProps = ButtonProps<HoistModel>;
  *
  * If an onClick handler is provided it will be used. Otherwise this button will
  * be linked to any model in props with LoadSupport enabled, or the contextual
- * {@see RefreshContextModel}.
+ * See {@link RefreshContextModel}.
  */
 export const [RefreshButton, refreshButton] = hoistCmp.withFactory<RefreshButtonProps>({
     displayName: 'RefreshButton',

@@ -304,8 +304,8 @@ export const Icon = {
     /**
      * Create an Icon for a file with default styling appropriate for the file type.
      *
-     * @param {Object} c - See Icon.icon().
-     * @param {string} [c.filename] - filename to be used to create icon.  Name will be parsed
+     * @param opts - Props to pass to Icon.icon().
+     * @param opts.filename - filename to be used to create icon.  Name will be parsed
      *      for an extension.  If not provided or recognized, a default icon will be returned.
      */
     fileIcon({filename, ...rest}: IconProps&{filename: string}): ReactElement|string {

@@ -192,8 +192,8 @@ interface GridFilterModelConfig {
     commitOnChange?: boolean;
 
     /**
-     * Specifies the fields this model supports for filtering. Should be configs for {
-     * @see GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or omitted
+     * Specifies the fields this model supports for filtering. Should be configs for
+     * {@link GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or omitted
      * entirely to indicate that all fields should be filter-enabled.
      */
     fieldSpecs?: (string | GridFilterFieldSpec)[]

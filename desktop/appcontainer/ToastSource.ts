@@ -4,11 +4,11 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import { ToastModel } from '@xh/hoist/appcontainer/ToastModel';
+import {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, lookup} from '@xh/hoist/core';
-import {Toaster} from '@xh/hoist/kit/blueprint';
+import {Toaster, ToasterPosition} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
 import {isElement, map} from 'lodash';
 import {wait} from '../../promise';
@@ -54,7 +54,7 @@ class ToastSourceLocalModel extends HoistModel {
             if ((!!bpId) === isOpen) return;
 
             // 2) ...otherwise this toast needs to be shown or hidden with bp api
-            let toaster = this.getToaster(position, containerRef);
+            let toaster = this.getToaster(position as ToasterPosition, containerRef);
             if (!bpId) {
                 model.bpId = toaster.show({
                     className: classNames('xh-toast', `xh-toast--${intent}`),
@@ -77,10 +77,10 @@ class ToastSourceLocalModel extends HoistModel {
 
      * If non-default values are needed for a toaster, a different method must be used.
      *
-     * @param {string} [position] - see Blueprint Position enum for allowed values.
-     * @param {HTMLElement} [containerRef] - DOM Element used to position (contain) the toast.
+     * @param position - position on screen where toast should appear.
+     * @param containerRef - DOM Element used to position (contain) the toast.
      */
-    getToaster(position, containerRef) {
+    getToaster(position: ToasterPosition, containerRef: HTMLElement) {
 
         if (containerRef && !isElement(containerRef)) {
             console.warn('containerRef argument for Toast must be a DOM element. Argument will be ignored.');

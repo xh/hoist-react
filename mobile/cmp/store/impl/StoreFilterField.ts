@@ -9,7 +9,7 @@ import '@xh/hoist/mobile/register';
 
 /**
  * Mobile implementation of StoreFilterField.
- * @private
+ * @internal
  */
 export function storeFilterFieldImpl(props) {
     return textInput({

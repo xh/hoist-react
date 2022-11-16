@@ -7,7 +7,6 @@
 
 /**
  * Mode for Grid governing Autosize behavior.
- * @enum {string}
  */
 export const GridAutosizeMode = Object.freeze({
 

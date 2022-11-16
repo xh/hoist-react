@@ -27,7 +27,7 @@ export type GridContextMenuItemLike = RecordActionLike|GridContextMenuToken|stri
  *          `exportLocal` - export to Excel via ag-Grid's built-in client side export.
  *          'filter' - Sub menu to filter grid. Requires grid filtering.
  *          `restoreDefaults` - restore column, sorting, and grouping configs and clear any
- *              persistent grid state. {@see GridModel.restoreDefaults}
+ *              persistent grid state. See {@link GridModel.restoreDefaults}
  */
 export type GridContextMenuToken = 'autosizeColumns'|'copyCell'|'colChooser'|'expandCollapseAll'|
     'export'|'exportExcel'|'exportCsv'|'exportLocal'|'filter'|'restoreDefaults';

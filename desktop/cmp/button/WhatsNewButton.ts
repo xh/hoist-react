@@ -15,7 +15,7 @@ export type WhatsNewButtonProps = ButtonProps;
  * Button that conditionally renders when there is a changelog entry for the current app version
  * that has yet to be viewed by the current user.
  *
- * {@see ChangelogService} for details on how to enable this overall system.
+ * See {@link ChangelogService} for details on how to enable this overall system.
  */
 export const [WhatsNewButton, whatsNewButton] = hoistCmp.withFactory<WhatsNewButtonProps>({
     displayName: 'WhatsNewButton',

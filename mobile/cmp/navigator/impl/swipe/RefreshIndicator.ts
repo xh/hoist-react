@@ -6,7 +6,7 @@ import {SwiperModel} from './SwiperModel';
 
 /**
  * Indicator for the pulldownToRefresh affordance
- * @private
+ * @internal
  */
 export const refreshIndicator = hoistCmp.factory<SwiperModel>(
     ({model}) => {

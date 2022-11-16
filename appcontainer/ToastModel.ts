@@ -5,10 +5,9 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, ToastSpec} from '@xh/hoist/core';
-import {Position} from '@xh/hoist/kit/blueprint';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import { ReactNode, ReactElement } from 'react';
+import {ReactNode, ReactElement} from 'react';
 
 /**
  * Model for a single instance of a pop-up Toast alert.
@@ -39,7 +38,7 @@ export class ToastModel extends HoistModel {
         timeout = 3 * SECONDS,
         intent = 'primary',
         actionButtonProps,
-        position = Position.BOTTOM_RIGHT,
+        position = 'bottom-right',
         containerRef = null
     }: ToastSpec) {
         super();

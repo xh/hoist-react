@@ -80,7 +80,7 @@ export class FormModel extends HoistModel {
      * of another. This proxy is also passed to validation rules to facilitate reactive cross-field
      * validation - e.g. marking a field as invalid due to a change in another.
      *
-     * {@see getData()} instead if you need to get or react to the values of *any/all* fields.
+     * See {@link getData()} instead if you need to get or react to the values of *any/all* fields.
      */
     get values(): Record<string, any> {
         return this.valuesProxy;
@@ -126,7 +126,7 @@ export class FormModel extends HoistModel {
      * Snapshot of current field values, keyed by field name.
      *
      * Call within a reaction's track or component render function to react to *any* field change.
-     * {@see values} instead if you need to get or react to the value of a *single* field.
+     * See {@link values} instead if you need to get or react to the value of a *single* field.
      *
      * @param dirtyOnly - true to include only dirty field values in the return
      */

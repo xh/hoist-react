@@ -16,7 +16,7 @@ import {ForwardedRef, ReactElement, useImperativeHandle} from 'react';
 
 /**
  * Hook to render a component to be used for inline cell editing in ag-grid.
- * @private - Hoist provides components wrapping the currently-supported `HoistInput`s.
+ * @internal - Hoist provides components wrapping the currently-supported `HoistInput`s.
  *
  * Implements the lifecycle methods required by ag-grid cell editors.
  * See https://www.ag-grid.com/react-grid/react-hooks/#hooks-with-lifecycle-methods for details.

@@ -17,9 +17,9 @@ import {HotkeyConfig} from '@blueprintjs/core/src/hooks/hotkeys/hotkeyConfig';
  * The implementation of this hook is based on BlueprintJS.
  * See their docs {@link https://blueprintjs.com/docs/#core/components/hotkeys} for more info.
  *
- * @param {element} [child] - element to be given hotkey support.  Must specify Component
+ * @param child - element to be given hotkey support.  Must specify Component
  *      that takes react key events as props (e.g. boxes, panel, div, etc).
- * @param [hotkeys] - An array of hotkeys, or configs for hotkeys,
+ * @param hotkeys - An array of hotkeys, or configs for hotkeys,
  *      as prescribed by blueprint. A Hotkeys element may also be provided.
  */
 export function useHotkeys(child?: ReactElement, hotkeys?: HotkeyConfig[]) {

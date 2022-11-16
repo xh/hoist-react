@@ -19,7 +19,7 @@ export interface BooleanEditorProps extends EditorProps<CheckboxProps> {
      * hitting return). Defaults to true.
      *
      * Note that this prop is only available if the `fullRowEditing` property on the containing
-     * GridModel is false.  It is ignored in `fullRowEditing' mode.
+     * GridModel is false.  It is ignored in `fullRowEditing` mode.
      */
     quickToggle?: boolean;
 }

@@ -9,8 +9,8 @@ import {merge} from 'lodash';
 
 /**
  * Copy the chart in it's current state to the clipboard.
- *  Works only on webkit based browsers.
- * @private
+ * Works only on webkit based browsers.
+ * @internal
  */
 export function installCopyToClipboard(Highcharts) {
     if (!Highcharts) return;
