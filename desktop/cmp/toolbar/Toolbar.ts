@@ -111,7 +111,7 @@ const overflowBox = hoistCmp.factory({
     }
 });
 
-const overflowButton = hoistCmp.factory({
+const overflowButton = hoistCmp.containerFactory({
     model: false, observer: false, memo: false,
     render({children}) {
         return fragment(
