@@ -49,18 +49,6 @@ export type GridGroupSortFn = (
     }) => number;
 
 /**
- * Context menu factory function, provided to GridModel.
- * @param params - raw event params from ag-Grid (GetContextMenuItemsParams)
- * @param gridModel - controlling GridModel instance
- * @returns context menu to display, or null
- */
-export type GridStoreContextMenuFn = (
-    params: PlainObject,
-    gridModel: GridModel,
-) => any;  // TODO: Update when menus typed
-
-
-/**
  * Closure to generate CSS class names for a row.
  * @param data - the inner data object from the StoreRecord associated with the rendered row.
  * @returns CSS class(es) to apply to the row level.

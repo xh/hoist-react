@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {PersistOptions} from '@xh/hoist/core';
+import {MenuItemLike, PersistOptions} from '@xh/hoist/core';
 
 /**
  * Base interface for {@link DashCanvasConfig} and {@link DashContainerConfig}.
@@ -47,5 +47,5 @@ export interface DashConfig<VSPEC, VSTATE> {
      * context menu items. Extra menu items will appear in the menu section below the 'Add' action,
      * including when the dash container is empty.
      */
-    extraMenuItems?: any[];  // TODO: correct type.
+    extraMenuItems?: MenuItemLike[];
 }

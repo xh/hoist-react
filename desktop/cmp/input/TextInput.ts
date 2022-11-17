@@ -35,7 +35,7 @@ export interface TextInputProps extends
      * @see https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofilling-form-controls%3A-the-autocomplete-attribute
      * @see https://developer.mozilla.org/en-US/docs/Web/Security/Securing_your_site/Turning_off_form_autocompletion
      */
-    autoComplete?: string; // Todo: Is it worth importing / listing out valid values?
+    autoComplete?: string;
 
     /** True to focus the control on render. */
     autoFocus?: boolean;

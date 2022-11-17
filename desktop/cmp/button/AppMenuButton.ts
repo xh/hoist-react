@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, XH} from '@xh/hoist/core';
+import {hoistCmp, MenuItemLike, XH} from '@xh/hoist/core';
 import {ButtonProps, button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -12,7 +12,7 @@ import {menu, menuDivider, MenuDivider, MenuItem, menuItem, popover} from '@xh/h
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {withDefault} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import {ReactElement, isValidElement} from 'react';
+import {isValidElement} from 'react';
 
 
 export interface AppMenuButtonProps extends ButtonProps {
@@ -22,7 +22,7 @@ export interface AppMenuButtonProps extends ButtonProps {
      *  + `MenuDividers` or the special string token '-'.
      *  + React Elements or strings, which will be interpreted as the `text` property for a MenuItem.
      */
-    extraItems?: (Record<string, any>|string|ReactElement)[]; // Todo: Use MenuItemSpec type rather than Record<string,any>
+    extraItems?: MenuItemLike[];
 
     /** True to hide the About button */
     hideAboutItem?: boolean;

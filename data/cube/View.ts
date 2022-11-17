@@ -112,9 +112,7 @@ export class View extends HoistBase {
     get isConnected(): boolean {return this.cube.viewIsConnected(this)}
 
     get isFiltered(): boolean {
-        // TODO: What is this??
-        // @ts-ignore
-        return !isEmpty(this.cube.filters) && !isEmpty(this.query.filter);
+        return !isEmpty(this.query.filter);
     }
 
     /** Stop receiving live updates into this view when the linked Cube data changes. */

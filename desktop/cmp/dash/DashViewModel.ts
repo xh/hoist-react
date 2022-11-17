@@ -4,7 +4,14 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, ManagedRefreshContextModel, RefreshMode, RenderMode} from '@xh/hoist/core';
+import {
+    HoistModel,
+    managed,
+    ManagedRefreshContextModel,
+    MenuItemLike,
+    RefreshMode,
+    RenderMode
+} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {makeObservable, action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -47,7 +54,7 @@ export class DashViewModel extends HoistModel {
     @observable.ref viewState: DashViewState;
 
     /** Extra menu items for the context menu. */
-    @observable.ref extraMenuItems = [];
+    @observable.ref extraMenuItems: MenuItemLike[] = [];
 
     @managed refreshContextModel;
     @observable isActive: boolean;
@@ -80,9 +87,8 @@ export class DashViewModel extends HoistModel {
         this.icon = v;
     }
 
-    // TODO: Add menu type
     @action
-    setExtraMenuItems(v: any[]) {
+    setExtraMenuItems(v: MenuItemLike[]) {
         this.extraMenuItems = v;
     }
 

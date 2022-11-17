@@ -4,17 +4,16 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistProps, XH} from '@xh/hoist/core';
+import {hoistCmp, MenuItemLike, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {menuButton, MenuButtonProps} from '@xh/hoist/mobile/cmp/menu';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 
-// TODO: should *not* need to also extend HoistProps
-export interface AppMenuButtonProps extends MenuButtonProps, HoistProps {
+export interface AppMenuButtonProps extends MenuButtonProps {
 
     /** Array of app-specific MenuItems or configs to create them. */
-    extraItems?: any[];   // TODO: Type menu items
+    extraItems?: MenuItemLike[];
 
     /**
      * True to hide the Impersonate item.  Always hidden for users w/o HOIST_ADMIN role or
@@ -84,7 +83,8 @@ function buildMenuItems({
     hideLogoutItem,
     hideAboutItem,
     extraItems = []
-}:AppMenuButtonProps) {
+}:AppMenuButtonProps): MenuItemLike[] {
+
     hideAboutItem = hideAboutItem || !XH.appContainerModel.hasAboutDialog();
     hideOptionsItem = hideOptionsItem || !XH.appContainerModel.optionsDialogModel.hasOptions;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
@@ -106,6 +106,7 @@ function buildMenuItems({
         {
             omit: hideThemeItem,
             actionFn: () => XH.toggleTheme(),
+            text: 'Theme',
             prepareFn: (item) => {
                 item.text = XH.darkTheme ? 'Light Theme' : 'Dark Theme';
                 item.icon = XH.darkTheme ? Icon.sun() : Icon.moon();
