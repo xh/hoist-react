@@ -2,6 +2,11 @@
 
 ## v54.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+* Fix bug where dragging on any panel header which is a descendant of a `DashCanvasView` would move
+  the `DashCanvasView`
+
+
 ## v53.2.0 - 2022-11-15
 
 ### 🎁 New Features
