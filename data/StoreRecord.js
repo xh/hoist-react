@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil} from 'lodash';
+import {isNil, flatMap} from 'lodash';
 import {ValidationState} from './validation/ValidationState';
 
 /**
@@ -150,6 +150,11 @@ export class StoreRecord {
     /** @return {Object} - Map of field names to list of errors. */
     get errors() {
         return this.validator?.errors ?? {};
+    }
+
+    /** @return {string[]} - Array of all errors for this record. */
+    get allErrors() {
+        return flatMap(this.errors);
     }
 
     /** @return {number} - count of all validation errors for the record. */

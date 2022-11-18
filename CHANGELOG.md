@@ -1,5 +1,21 @@
 # Changelog
 
+## v54.0.0-SNAPSHOT - unreleased
+
+## v53.2.0 - 2022-11-15
+
+### 🎁 New Features
+* New convenience methods `Store.errors`, `Store.errorCount`, and `StoreRecord.allErrors` for getting
+  easy access to validation errors in the data package.
+* A new flag `Store.validationIsComplex` which governs whether non-changed
+  uncommitted records need to be revalidated when any record in the store is changed.  This flag
+  defaults to `false`, which  should be correct for most applications.  Set to `true` for stores with
+  validations that depend on other editable record values in the store (e.g. unique constraints).
+
+### ⚙️ Technical
+* Major performance improvements to validation of records in stores.  This is a critical fix for
+  applications that do bulk insertion of hundreds of rows or greater in editable grids.
+
 ## v53.1.0 - 2022-11-03
 
 ### 🎁 New Features
