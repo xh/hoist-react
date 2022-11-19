@@ -5,8 +5,8 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core/model';
-import {CSSProperties, ForwardedRef, HTMLAttributes, ReactNode} from 'react';
-import { ElementSpec } from './elem';
+import {CSSProperties, ForwardedRef, HTMLAttributes, ReactNode, Ref} from 'react';
+import {ElementSpec} from './elem';
 import {PlainObject} from './types/Types';
 
 /**
@@ -31,6 +31,11 @@ export interface HoistProps<M extends HoistModel = HoistModel> extends ElementSp
      * with the `createFromConfig` set as true. See the `uses()` directive for more information.
      */
     modelConfig?: PlainObject;
+
+    /**
+     * Used for gaining a reference to the model of a HoistComponent.
+     */
+    modelRef?: Ref<HoistModel>
 
     /**
      * ClassName for the component.  Includes the classname as provided in props, enhanced with

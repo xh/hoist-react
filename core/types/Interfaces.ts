@@ -231,7 +231,7 @@ export interface TrackOptions {
 export interface MenuItem {
 
     /** Label to be displayed. */
-    text: string;
+    text: ReactNode;
 
     /** Icon to be displayed. */
     icon?: ReactElement;
