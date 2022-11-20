@@ -42,6 +42,11 @@ changes  were required, and these may require application adjustments.  Please r
 * PropTypes support has been removed in favor of the type script interfaces discussed above.  Apps
   importing Hoist Proptypes instances should simply remove these compile-time references.
 
+### ⚙️ Technical
+* Hoist Components will now automatically remount if the model passed to them (via context or props)
+is changed during the lifetime of the component.  This allows applications to swap out higher level
+models, without needing to manually force the remounting of related components with an explicit
+`key` setting, i.e.  `key: model.xhId`.
 
 ### 📚 Libraries
 * hoist-dev-utils `6.x -> 7.0`

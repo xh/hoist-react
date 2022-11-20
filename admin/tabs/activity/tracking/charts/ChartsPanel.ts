@@ -25,10 +25,7 @@ export const chartsPanel = hoistCmp.factory({
             icon: Icon.chartBar(),
             model: panelModel,
             compactHeader: !isModal,
-            item: chart({
-                model: chartModel,
-                key: chartModel.xhId
-            }),
+            item: chart({model: chartModel}),
             bbar: bbar(),
             height: '100%',
             ...props
