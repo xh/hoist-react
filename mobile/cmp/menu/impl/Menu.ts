@@ -10,7 +10,7 @@ import {listItem} from '@xh/hoist/kit/onsen';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import classNames from 'classnames';
-import {cloneDeep, isEmpty, isString} from 'lodash';
+import {clone, isEmpty, isString} from 'lodash';
 import {isValidElement, ReactNode, useEffect} from 'react';
 
 import './Menu.scss';
@@ -71,7 +71,7 @@ class LocalMenuModel extends HoistModel {
         items = items.map(item => {
             if (!isMenuItem(item)) return item;
 
-            item = cloneDeep(item);
+            item = clone(item);
             item.prepareFn?.(item);
             return item;
         });

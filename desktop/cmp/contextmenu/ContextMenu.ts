@@ -9,7 +9,7 @@ import '@xh/hoist/desktop/register';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
-import {cloneDeep, isEmpty, isString} from 'lodash';
+import {clone, isEmpty, isString} from 'lodash';
 import {isValidElement, ReactElement, ReactNode} from 'react';
 
 /**
@@ -48,7 +48,8 @@ function parseItems(items: MenuItemLike[]): ReactNode[] {
     items = items.map(item => {
         if (!isMenuItem(item)) return item;
 
-        item = cloneDeep(item);
+        item = clone(item);
+        item.items = clone(item.items);
         item.prepareFn?.(item);
         return item;
     });
