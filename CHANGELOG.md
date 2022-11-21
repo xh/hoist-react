@@ -51,7 +51,7 @@ changes  were required, and these may require application adjustments.  Please r
 
 ### 🎁 New Features
 * New convenience methods `Store.errors`, `Store.errorCount`, and `StoreRecord.allErrors` for getting
-  easy access to validation errors in Stores.
+  easy access to validation errors in the data package.
 * A new flag `Store.validationIsComplex` which governs whether non-changed
   uncommitted records need to be revalidated when any record in the store is changed.  This flag
   defaults to `false`, which  should be correct for most applications.  Set to `true` for stores with
