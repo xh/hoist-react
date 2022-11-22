@@ -297,10 +297,7 @@ class GridLocalModel extends HoistModel {
             {contextMenu} = model;
         if (!contextMenu || XH.isMobileApp || model.isEditing) return null;
 
-        const ret = getAgGridMenuItems(params, model, contextMenu);
-        if (isEmpty(ret)) return null;
-
-        // Before returning menu, manipulate selection if needed.
+        // Manipulate selection if needed.
         if (!agOptions.suppressRowClickSelection) {
             const record = params.node?.data,
                 {selModel} = model;
@@ -311,6 +308,9 @@ class GridLocalModel extends HoistModel {
             }
             if (!record) selModel.clear();
         }
+
+        const ret = getAgGridMenuItems(params, model, contextMenu);
+        if (isEmpty(ret)) return null;
 
         return ret;
     };
