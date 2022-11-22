@@ -14,9 +14,9 @@ import {cloneElement, isValidElement} from 'react';
 /**
  * Hook to add context menu support to a component.
  *
- * @param child - element to be given context menu support.  Must specify Component
+ * @param child - element to be given context menu support. Must specify Component
  *      that takes react context menu event as a prop (e.g. boxes, panel, div, etc).
- * @param contextMenu -  Context Menu to be shown.  If null, or the number of items is empty,
+ * @param spec - Context Menu to be shown. If null, or the number of items is empty,
  *      no menu will be rendered, and the event will be consumed.
  */
 export function useContextMenu(child?: ReactElement, spec?: ContextMenuSpec): ReactElement {
