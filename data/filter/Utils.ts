@@ -65,12 +65,12 @@ export function parseFilter(spec: FilterLike): Filter {
  * @param field - StoreRecord Field name used to identify filters for replacement
  */
 export function withFilterByField(filter: FilterLike, newFilter: FilterLike, field: string): Filter {
-    const isCompoundFilter = filter instanceof CompoundFilter,
-        currFilters = isCompoundFilter ? filter.filters : [filter],
+    const isCompound = filter && 'filters' in filter,
+        currFilters = isCompound ? filter.filters : [filter],
         ret = currFilters.filter((it: any) => it && it.field !== field) as FilterLike[];
 
     ret.push(...castArray(newFilter));
-    return isCompoundFilter ?
+    return isCompound ?
         parseFilter({filters: ret, op: filter.op}) :
         parseFilter(ret);
 }
@@ -82,12 +82,12 @@ export function withFilterByField(filter: FilterLike, newFilter: FilterLike, fie
  * @param key - FunctionFilter key used to identify filters for replacement
  */
 export function withFilterByKey(filter: FilterLike, newFilter: FilterLike, key: string): Filter {
-    const isCompoundFilter = filter instanceof CompoundFilter,
-        currFilters = isCompoundFilter ? filter.filters : [filter],
+    const isCompound = filter && 'filters' in filter,
+        currFilters = isCompound ? filter.filters : [filter],
         ret = currFilters.filter((it: any) => it && it.key !== key) as FilterLike[];
 
     ret.push(...castArray(newFilter));
-    return isCompoundFilter ?
+    return isCompound ?
         parseFilter({filters: ret, op: filter.op}) :
         parseFilter(ret);
 }
@@ -98,9 +98,9 @@ export function withFilterByKey(filter: FilterLike, newFilter: FilterLike, key: 
  * @param newFilter - New filter(s) to add.
  * @param types - Filter type(s) used to identify filters for replacement
  */
-export function withFilterByTypes(filter: FilterLike, newFilter: FilterLike, types: Some<string>): Filter {
-    const isCompoundFilter = filter instanceof CompoundFilter,
-        currFilters = isCompoundFilter ? filter.filters : [filter] as FilterLike[];
+export function withFilterByTypes(filter: Filter, newFilter: FilterLike, types: Some<string>): Filter {
+    const isCompound = filter instanceof CompoundFilter,
+        currFilters = isCompound ? filter.filters : [filter] as FilterLike[];
 
     const ret = currFilters.filter(it => {
         for (const type of castArray(types)) {
@@ -112,7 +112,7 @@ export function withFilterByTypes(filter: FilterLike, newFilter: FilterLike, typ
     });
 
     ret.push(...castArray(newFilter));
-    return isCompoundFilter ?
+    return isCompound ?
         parseFilter({filters: ret, op: filter.op}) :
         parseFilter(ret);
 }
