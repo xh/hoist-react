@@ -71,8 +71,6 @@ export class HoistAppModel extends HoistModel {
     /**
      * Provide a list of app-wide metadata and version information to be displayed in the
      * App's built-in About dialog.
-     * @see AboutDialog
-     *
      */
     getAboutDialogItems(): AboutDialogItem[] {
         const XH = window['XH'],
@@ -110,7 +108,7 @@ export class HoistAppModel extends HoistModel {
 
 
 /** Object Describing an entry in the AboutDialog. */
-interface AboutDialogItem {
+export interface AboutDialogItem {
     label: ReactNode;
     value: ReactNode;
     omit?: boolean;
