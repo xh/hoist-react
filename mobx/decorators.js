@@ -29,7 +29,7 @@ export function settable(target, property, descriptor) {
 
 
 /**
- * Decorator to mark a property as @observable and also provide a simple MobX action of the
+ * Decorator to mark a property as observable and also provide a simple MobX action of the
  * form `setPropName()`.
  *
  * This decorator is especially useful for creating observable properties that are intended to be
@@ -42,7 +42,7 @@ export function bindable(target, property, descriptor) {
     return settable(target, property, observable(target, property, descriptor));
 }
 bindable.ref = function(target, property, descriptor) {
-    return settable(target, property, observable.ref(target, property, descriptor));
+    return settable(target, property, observable.ref(target, property));
 };
 
 
