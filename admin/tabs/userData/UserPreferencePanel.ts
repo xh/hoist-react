@@ -1,0 +1,60 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2022 Extremely Heavy Industries Inc.
+ */
+import {hoistCmp} from '@xh/hoist/core';
+import {FieldSpec} from '@xh/hoist/data';
+import {restGrid} from '@xh/hoist/desktop/cmp/rest';
+import * as Col from '@xh/hoist/admin/columns';
+import {App} from '@xh/hoist/admin/AppModel';
+
+
+export const userPreferencePanel = hoistCmp.factory(
+    () => restGrid({modelConfig: {...modelSpec, readonly: App.readonly}})
+);
+
+const required = true,
+    hidden = true;
+
+const modelSpec = {
+    persistWith: {localStorageKey: 'xhAdminUserPreferenceState'},
+    colChooserModel: true,
+    enableExport: true,
+    selModel: 'multiple',
+    store: {
+        url: 'rest/userPreferenceAdmin',
+        reloadLookupsOnLoad: true,
+        fieldDefaults: {disableXssProtection: true},
+        fields: [
+            {...Col.name.field as FieldSpec, displayName: 'Pref', lookupName: 'names', editable: 'onAdd', required},
+            {...Col.groupName.field as FieldSpec, lookupName: 'groupNames', editable: false},
+            {...Col.type.field as FieldSpec, editable: false},
+            {...Col.username.field as FieldSpec, required},
+            {...Col.userValue.field as FieldSpec, typeField: 'type', required},
+            {...Col.lastUpdated.field as FieldSpec, editable: false},
+            {...Col.lastUpdatedBy.field as FieldSpec, editable: false}
+        ]
+    },
+    sortBy: 'name',
+    groupBy: 'groupName',
+    unit: 'preference',
+    filterFields: ['name', 'username'],
+    columns: [
+        {...Col.name},
+        {...Col.type},
+        {...Col.username},
+        {...Col.groupName, hidden},
+        {...Col.userValue},
+        {...Col.lastUpdatedBy, hidden},
+        {...Col.lastUpdated, hidden}
+    ],
+    editors: [
+        {field: 'name'},
+        {field: 'username'},
+        {field: 'userValue'},
+        {field: 'lastUpdated'},
+        {field: 'lastUpdatedBy'}
+    ]
+};

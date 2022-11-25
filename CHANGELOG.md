@@ -2,32 +2,102 @@
 
 ## v54.0.0-SNAPSHOT - unreleased
 
+We are pleased to announce that Hoist React has been fully rewritten in TypeScript! ✨🚀
+
+All core Hoist Components, Models, and other utilities now have TypeScript interfaces for their
+public APIs, improving the developer ergonomics of the toolkit with much more accurate dev-time type
+checking and intellisense. Developers now also have the option (but are not required) to write
+application code using TypeScript.
+
+Runtime support for TypeScript is provided by `@xh/hoist-dev-utils v6.1+`, which recognizes and
+transpiles TypeScript files (`.ts|.tsx`) via the `@babel/plugin-transform-typescript` plugin.
+Development-time support can be provided by the user's IDE (e.g. IntelliJ or VSCode, which both
+provide strong TypeScript-based error checking and auto-completion).
+
+The goal of this release is to be backward compatible with v53 to the greatest degree possible, and
+most applications will run with minimal or no changes. However, some breaking changes were required
+and can require application adjustments, as detailed below.
+
+As always, please review our [Toolbox project](https://github.com/xh/toolbox/), which we've updated
+to use TypeScript for its own app-level code.
+
+### 🎁 New Features
+
+* New TypeScript interface `HoistProps` and per-component extensions to specify props for all
+  components. This replaces the use of the `PropTypes` library, which is no longer included.
+* Enhanced TypeScript-aware implementations of `ElementFactory`, including separate factories for
+  standard components (`elementFactory`) and components that often take children only
+  (`containerElementFactory`).
+* References to singleton instances of services and the app model can now be gained via the static
+  `instance` property on the class name of the singleton - e.g. `SomeAppService.instance` - or via
+  a new utility method - `XH.getService(SomeAppService)`.
+    * These new options provide TypeScript-friendly (i.e. properly typed) access to services in
+      code, and are required when writing new TS code (as TS does not know that `XH` will have a
+      references to your custom app service).
+    * Referencing app-level services via `XH` is still supported for JS apps, and for debug access
+      on the console.
+
+### 💥 Breaking Changes
+
+* The constructors for `GridModel` and `Column` no long accept arbitrary rest (e.g `...rest`)
+  arguments for applying app-specific data to the object. Instead, use the new `appData` property
+  on these objects.
+* The `elemFactory` function has been removed. Applications calling this function should specify
+  `elementFactory` (typically) or `containerElementFactory` instead.
+    * Most application components are defined using helper aliases `hoistCmp.factory`
+      and `hoistCmp.withFactory` - these calls do _not_ need to change, unless your component
+      needs to take a list of children directly (i.e. `someComponent(child1, child2)`).
+    * Update the definition of any such components to use `hoistCmp.containerFactory` instead.
+    * Where possible, favor the simpler, default factory for more streamlined type suggestions /
+      error messages regarding your component's valid props.
+* The use of the `model` prop to provide a config object for a model to be created on-the-fly
+  is deprecated.
+    * Use the new `modelConfig` prop when passing a *plain object config* -
+      e.g. `someComp({modelConfig: {modelOpt: true}})`
+    * Continue to use the `model` prop when passing an existing model *instance* -
+      e.g. `someComp({model: someCompModel})`.
+* PropTypes support has been removed in favor of the type script interfaces discussed above. Apps
+  importing Hoist Proptypes instances should simply remove these compile-time references.
+
 ### 🐞 Bug Fixes
 * Fix bug where dragging on any panel header which is a descendant of a `DashCanvasView` would move
   the `DashCanvasView`
 
+### ✅ Testing Scope
+
+* *Full regression testing recommended* - this is a major Hoist release and involved a significant
+  amount of refactoring to the toolkit code. As such, we recommend a thorough regression test of any
+  applications updating to this release from prior versions.
+
+### 📚 Libraries
+
+* @blueprintjs/core `4.11 -> 4.12`
+* @xh/hoist-dev-utils `6.0 -> 6.1`
+* typescript `added @ 4.9`
 
 ## v53.2.0 - 2022-11-15
 
 ### 🎁 New Features
-* New convenience methods `Store.errors`, `Store.errorCount`, and `StoreRecord.allErrors` for getting
-  easy access to validation errors in the data package.
-* A new flag `Store.validationIsComplex` which governs whether non-changed
-  uncommitted records need to be revalidated when any record in the store is changed.  This flag
-  defaults to `false`, which  should be correct for most applications.  Set to `true` for stores with
-  validations that depend on other editable record values in the store (e.g. unique constraints).
 
-### ⚙️ Technical
-* Major performance improvements to validation of records in stores.  This is a critical fix for
-  applications that do bulk insertion of hundreds of rows or greater in editable grids.
+* New methods `Store.errors`, `Store.errorCount`, and `StoreRecord.allErrors` provide convenient
+  access to validation errors in the data package.
+* New flag `Store.validationIsComplex` indicates whether *all* uncommitted records in a store should
+  be revalidated when *any* record in the store is changed.
+    * Defaults to `false`, which should be adequate for most use cases and can provide a significant
+      performance boost in apps that bulk-insert 100s or 1000s of rows into editable grids.
+    * Set to `true` for stores with validations that depend on other editable record values in the
+      store (e.g. unique constraints), where a change to record X should cause another record Y to
+      change its own validation status.
 
 ## v53.1.0 - 2022-11-03
 
 ### 🎁 New Features
+
 * `PanelModel` now supports `modalSupport.defaultModal` option to allow rendering a Panel in an
-initially modal state.
+  initially modal state.
 
 ### 🐞 Bug Fixes
+
 * Fixed layout issues caused by top-level DOM elements created by `ModalSupport`
   and `ColumnWidthCalculator` (grid auto-sizing). Resolved occasional gaps between select inputs and
   their drop-down menus.
