@@ -9,6 +9,7 @@
     "resolveJsonModule":  true,
     "noEmit": true,
     "jsx": "react",
+    "useDefineForClassFields": true,
     "paths": {
       "@xh/hoist/*": ["./*"]
     },
