@@ -16,7 +16,7 @@ import {modelLookupContextProvider} from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -111,11 +111,7 @@ export class DashContainerModel extends DashModel<DashContainerViewSpec, DashVie
     //---------------------
     // Settable State
     //----------------------
-    @observable showMenuButton: boolean;
-
-    @action setShowMenuButton(v: boolean) {
-        this.showMenuButton = v;
-    }
+    @bindable showMenuButton: boolean;
 
     //-----------------------------
     // Public properties
@@ -438,7 +434,7 @@ export class DashContainerModel extends DashModel<DashContainerViewSpec, DashVie
                 viewModel = this.getViewModel(id),
                 isActive = item === activeItem;
 
-            if (viewModel) viewModel.setIsActive(isActive);
+            if (viewModel) viewModel.isActive = isActive;
         });
     }
 
@@ -505,7 +501,7 @@ export class DashContainerModel extends DashModel<DashContainerViewSpec, DashVie
             const title = $inputEl.val();
             if (title.length) {
                 $titleEl.text(title);
-                viewModel.setTitle(title);
+                viewModel.title = title;
             }
 
             this.hideTitleForm($el);

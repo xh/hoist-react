@@ -7,7 +7,7 @@
 import {Content, HoistModel, managed, ManagedRefreshContextModel, RefreshContextModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import '@xh/hoist/desktop/register';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {ReactElement} from 'react';
 import {DockContainerModel} from './DockContainerModel';
@@ -56,8 +56,8 @@ export interface DockViewConfig {
 export class DockViewModel extends HoistModel {
 
     id: string;
-    @observable title: string;
-    @observable.ref icon: ReactElement;
+    @bindable title: string;
+    @bindable.ref icon: ReactElement;
     @observable docked: boolean;
     @observable collapsed: boolean;
     content: Content;
@@ -133,16 +133,6 @@ export class DockViewModel extends HoistModel {
         });
     }
 
-    @action
-    setTitle(title: string) {
-        this.title = title;
-    }
-
-    @action
-    setIcon(icon: ReactElement) {
-        this.icon = icon;
-    }
-
     //-----------------------
     // Docked state
     //-----------------------
@@ -159,13 +149,13 @@ export class DockViewModel extends HoistModel {
         if (!this.allowDialog) return;
         this.containerModel.views.forEach(it => it.showInDock());
         this.docked = false;
-        this.modalSupportModel.setIsModal(true);
+        this.modalSupportModel.isModal = true;
     }
 
     @action
     showInDock() {
         this.docked = true;
-        this.modalSupportModel.setIsModal(false);
+        this.modalSupportModel.isModal = false;
     }
 
     //-----------------------
@@ -181,13 +171,13 @@ export class DockViewModel extends HoistModel {
 
     @action
     expand() {
-        this.modalSupportModel.setIsModal(false);
+        this.modalSupportModel.isModal = false;
         this.collapsed = false;
     }
 
     @action
     collapse() {
-        this.modalSupportModel.setIsModal(false);
+        this.modalSupportModel.isModal = false;
         this.collapsed = true;
         this.docked = true;
     }

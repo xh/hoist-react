@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, PlainObject, SizingMode, Some} from '@xh/hoist/core';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
     castArray,
@@ -93,21 +93,13 @@ export class AgGridModel extends HoistModel {
     //------------------------
     // Grid Style
     //------------------------
-    @observable sizingMode: SizingMode;
-    @observable rowBorders: boolean;
-    @observable stripeRows: boolean;
-    @observable cellBorders: boolean;
-    @observable showHover: boolean;
-    @observable showCellFocus: boolean;
-    @observable hideHeaders: boolean;
-
-    @action setSizingMode(v: SizingMode) {this.sizingMode = v}
-    @action setRowBorders(v: boolean) {this.rowBorders = v}
-    @action setStripeRows(v: boolean) {this.stripeRows = v}
-    @action setCellBorders(v: boolean) {this.cellBorders = v}
-    @action setShowHover(v: boolean) {this.showHover = v}
-    @action setShowCellFocus(v: boolean) {this.showCellFocus = v}
-    @action setHideHeaders(v: boolean) {this.hideHeaders = v}
+    @bindable sizingMode: SizingMode;
+    @bindable rowBorders: boolean;
+    @bindable stripeRows: boolean;
+    @bindable cellBorders: boolean;
+    @bindable showHover: boolean;
+    @bindable showCellFocus: boolean;
+    @bindable hideHeaders: boolean;
 
     @observable.ref agApi: PlainObject = null; // GridApi
     @observable.ref agColumnApi: PlainObject = null; // ColumnApi

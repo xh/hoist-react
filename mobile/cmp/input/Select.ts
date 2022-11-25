@@ -17,7 +17,7 @@ import {
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
-import {action, makeObservable, observable, override} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
@@ -195,12 +195,8 @@ class SelectInputModel extends HoistInputModel {
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
-    @observable.ref internalOptions = [];
-    @observable fullscreen = false;
-
-    @action setInternalOptions(v) {this.internalOptions = v}
-    @action setFullscreen(v) {this.fullscreen = v}
-
+    @bindable.ref internalOptions = [];
+    @bindable fullscreen = false;
 
     // Prop-backed convenience getters
     get asyncMode() {return !!this.componentProps.queryFn}
@@ -236,7 +232,7 @@ class SelectInputModel extends HoistInputModel {
             track: () => this.componentProps.options,
             run: (opts) => {
                 opts = this.normalizeOptions(opts);
-                this.setInternalOptions(opts);
+                this.internalOptions = opts;
             },
             fireImmediately: true
         });
@@ -277,7 +273,7 @@ class SelectInputModel extends HoistInputModel {
             this.inputValueChangedSinceSelect = false;
         }
         this.noteValueChange(opt);
-        this.setFullscreen(false);
+        this.fullscreen = false;
     };
 
     //-------------------------
@@ -299,7 +295,7 @@ class SelectInputModel extends HoistInputModel {
     @override
     noteFocused() {
         if (this.fullscreenMode) {
-            this.setFullscreen(true);
+            this.fullscreen = true;
         }
         if (this.manageInputValue) {
             const {renderValue} = this;
@@ -449,7 +445,7 @@ class SelectInputModel extends HoistInputModel {
                     if (!matchOpt) newOpts.push(currOpt);  // avoiding dupes
                 });
 
-                this.setInternalOptions(newOpts);
+                this.internalOptions = newOpts;
 
                 // But only return the matching options back to the combo.
                 return matchOpts;
@@ -678,7 +674,7 @@ const fullscreenWrapper = hoistCmp.factory<SelectInputModel>(
                     items: [
                         button({
                             icon: Icon.chevronLeft(),
-                            onClick: () => model.setFullscreen(false)
+                            onClick: () => model.fullscreen = false
                         }),
                         span(title)
                     ]

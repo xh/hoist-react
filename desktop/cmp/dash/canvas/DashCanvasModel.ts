@@ -9,7 +9,7 @@ import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable, computed, observable} from '@xh/hoist/mobx';
+import {action, makeObservable, computed, observable, bindable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
@@ -69,18 +69,11 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
     //-----------------------------
     // Settable State
     //------------------------------
-    @observable columns: number;
-    @observable rowHeight: number;
-    @observable compact: boolean;
-    @observable.ref margin: [number, number]; // [x, y]
-    @observable.ref containerPadding: [number, number]; // [x, y]
-
-    @action setColumns(v: number) {this.columns = v}
-    @action setRowHeight(v: number) {this.rowHeight = v}
-    @action setCompact(v: boolean) {this.compact = v}
-    @action setMargin(v: [number, number]) {this.margin = v}
-    @action setContainerPadding(v: [number, number]) {this.containerPadding = v}
-
+    @bindable columns: number;
+    @bindable rowHeight: number;
+    @bindable compact: boolean;
+    @bindable.ref margin: [number, number]; // [x, y]
+    @bindable.ref containerPadding: [number, number]; // [x, y]
 
     //-----------------------------
     // Public properties
@@ -289,7 +282,7 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
                 rules: [required]
             }
         }).then(newName => {
-            if (newName) view.setTitle(newName);
+            if (newName) view.title = newName;
         });
     }
 

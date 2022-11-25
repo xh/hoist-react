@@ -7,7 +7,7 @@
 import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, MenuItem, MenuItemLike} from '@xh/hoist/core';
 import {listItem} from '@xh/hoist/kit/onsen';
-import {observable, action, makeObservable} from '@xh/hoist/mobx';
+import {makeObservable, bindable} from '@xh/hoist/mobx';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import classNames from 'classnames';
 import {clone, isEmpty, isString} from 'lodash';
@@ -57,8 +57,7 @@ export const menu = hoistCmp.factory({
 class LocalMenuModel extends HoistModel {
     xhImpl = true;
 
-    @observable pressedIdx: number;
-    @action setPressedIdx(v: number) {this.pressedIdx = v}
+    @bindable pressedIdx: number;
 
     constructor() {
         super();
@@ -96,10 +95,10 @@ class LocalMenuModel extends HoistModel {
                     ),
                     item: div({className: 'center', items: labelItems}),
                     omit: hidden,
-                    onTouchStart: () => this.setPressedIdx(idx),
-                    onTouchEnd: () => this.setPressedIdx(null),
+                    onTouchStart: () => this.pressedIdx = idx,
+                    onTouchEnd: () => this.pressedIdx = null,
                     onClick: () => {
-                        this.setPressedIdx(null);
+                        this.pressedIdx = null;
                         if (actionFn) actionFn();
                         onDismiss();
                     }

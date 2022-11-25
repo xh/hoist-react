@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable, makeObservable, bindable} from '@xh/hoist/mobx';
 
 /**
  * Manages the default display of exceptions.
@@ -35,7 +35,7 @@ export class ExceptionDialogModel extends HoistModel {
     }
 
     /** Optional user supplied message */
-    @observable
+    @bindable
     userMessage: string = '';
 
     constructor() {
@@ -61,11 +61,6 @@ export class ExceptionDialogModel extends HoistModel {
         this.userMessage = '';
     }
 
-    @action
-    setUserMessage(userMessage: string) {
-        this.userMessage = userMessage;
-    }
-
     async sendReportAsync() {
         const {exception, userMessage, options} = this;
 
@@ -77,7 +72,7 @@ export class ExceptionDialogModel extends HoistModel {
 
         if (success) {
             await XH.alert({title: 'Message Sent', message: 'Your error has been reported.'});
-            this.setUserMessage(null);
+            this.userMessage = null;
             if (!options.requireReload) this.close();
         } else {
             const email = XH.configService.get('xhEmailSupport', 'none'),

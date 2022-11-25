@@ -6,7 +6,7 @@
  */
 import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {find, isEqual, keys, merge} from 'lodash';
 import {page} from './impl/Page';
@@ -50,7 +50,7 @@ export interface NavigatorConfig {
 export class NavigatorModel extends HoistModel {
     @bindable disableAppRefreshButton: boolean;
 
-    @observable.ref
+    @bindable.ref
     stack: PageModel[] = [];
 
     pages: PageConfig[] = [];
@@ -127,10 +127,6 @@ export class NavigatorModel extends HoistModel {
         this._callback = callback;
     }
 
-    @action
-    setStack(stack: PageModel[]) {
-        this.stack = stack;
-    }
 
     //--------------------
     // Implementation
@@ -185,7 +181,7 @@ export class NavigatorModel extends HoistModel {
             stack.push(page);
         }
 
-        this.setStack(stack);
+        this.stack = stack;
     }
 
     private async onStackChangeAsync() {

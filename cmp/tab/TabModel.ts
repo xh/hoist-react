@@ -14,7 +14,7 @@ import {
     Content,
     RefreshContextModel
 } from '@xh/hoist/core';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, computed, observable, makeObservable, bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 import {TabContainerModel} from '@xh/hoist/cmp/tab/TabContainerModel';
@@ -85,9 +85,9 @@ export interface TabConfig {
 export class TabModel extends HoistModel {
 
     id: string;
-    @observable.ref title: ReactNode;
-    @observable.ref icon: ReactElement;
-    @observable.ref tooltip: ReactNode;
+    @bindable.ref title: ReactNode;
+    @bindable.ref icon: ReactElement;
+    @bindable.ref tooltip: ReactNode;
     @observable disabled: boolean;
     excludeFromSwitcher: boolean;
     showRemoveAction: boolean;
@@ -155,20 +155,6 @@ export class TabModel extends HoistModel {
         return this.containerModel.activeTabId === this.id;
     }
 
-    @action
-    setIcon(icon: ReactElement) {
-        this.icon = icon;
-    }
-
-    @action
-    setTitle(title: ReactNode) {
-        this.title = title;
-    }
-
-    @action
-    setTooltip(tooltip: ReactNode) {
-        this.tooltip = tooltip;
-    }
 
     @action
     setDisabled(disabled: boolean) {
