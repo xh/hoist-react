@@ -46,43 +46,43 @@ import {
  * or an object containing a render function and associated metadata.
  */
 export type ComponentConfig<P extends HoistProps> =
-    ((props: P, ref?: ForwardedRef<any>) => ReactNode) |
+   ((props: P, ref?: ForwardedRef<any>) => ReactNode) |
     {
 
-        /** Render function defining the component. */
-        render(props: P, ref?: ForwardedRef<any>): ReactNode;
+    /** Render function defining the component. */
+    render(props: P, ref?: ForwardedRef<any>): ReactNode;
 
-        /**
-         * Spec defining the model to be rendered by this component.
-         * Specify as false for components that don't require a primary model. Otherwise, set to the
-         * return of {@link uses} or {@link creates} - these factory functions will create a spec for
-         * either externally-provided or internally-created models. Defaults to `uses('*')`.
-         */
-        model?: ModelSpec<P['model']>|false;
+    /**
+     * Spec defining the model to be rendered by this component.
+     * Specify as false for components that don't require a primary model. Otherwise, set to the
+     * return of {@link uses} or {@link creates} - these factory functions will create a spec for
+     * either externally-provided or internally-created models. Defaults to `uses('*')`.
+     */
+    model?: ModelSpec<P['model']>|false;
 
-        /**
-         * Base CSS class for this component. Will be combined with any className
-         * in props, with the combined string passed into render as a prop.
-         */
-        className?: string;
+    /**
+     * Base CSS class for this component. Will be combined with any className
+     * in props, with the combined string passed into render as a prop.
+     */
+    className?: string;
 
-        /** Component name for debugging/inspection. */
-        displayName?: string;
+    /** Component name for debugging/inspection. */
+    displayName?: string;
 
-        /**
-         * True (default) to wrap component in a call to `React.memo()`.
-         * Components that are known to be unable to make effective use of memo (e.g. container
-         * components) may set this to `false`. Not typically set by application code.
-         */
-        memo?: boolean,
+    /**
+     * True (default) to wrap component in a call to `React.memo()`.
+     * Components that are known to be unable to make effective use of memo (e.g. container
+     * components) may set this to `false`. Not typically set by application code.
+     */
+    memo?: boolean,
 
-        /**
-         *  True (default) to enable MobX-powered reactivity via the
-         * `observer()` HOC from mobx-react. Components that are known to dereference no observable
-         *  state may set this to `false`, but this is not typically done by application code.
-         */
-        observer?: boolean
-    }
+    /**
+     *  True (default) to enable MobX-powered reactivity via the
+     * `observer()` HOC from mobx-react. Components that are known to dereference no observable
+     *  state may set this to `false`, but this is not typically done by application code.
+     */
+    observer?: boolean
+}
 
 
 /**
@@ -117,7 +117,7 @@ export type ComponentConfig<P extends HoistProps> =
  */
 export function hoistCmp<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): FC<DefaultHoistProps<M>>;
 export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P>;
-export function hoistCmp(config: ComponentConfig<HoistProps>) {
+export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P> {
     // 0) Pre-process/parse args.
     if (isFunction(config)) config = {render: config, displayName: config.name};
 
@@ -235,7 +235,6 @@ export function hoistCmpWithContainerFactory(config) {
     return [cmp, containerElementFactory(cmp)];
 }
 hoistCmp.withContainerFactory = hoistCmpWithContainerFactory;
-
 
 //----------------------------
 // Implementation

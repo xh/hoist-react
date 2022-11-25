@@ -138,7 +138,6 @@ export class XHClass {
     webSocketService: WebSocketService;
 
     /** Get a reference to a singleton service by camel case name.*/
-
     getService(name: string): HoistService;
 
     /** Get a reference to a singleton service by full class. */

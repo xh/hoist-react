@@ -61,7 +61,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                     containerPadding: model.containerPadding,
                     autoSize: true,
                     isBounded: true,
-                    draggableHandle: '.xh-panel > .xh-panel__content > .xh-panel-header',
+                    draggableHandle: '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
                     draggableCancel: '.xh-button',
                     onLayoutChange: layout => model.onRglLayoutChange(layout),
                     onResizeStart: () => model.isResizing = true,

@@ -47,17 +47,20 @@
   &__message {
     flex: 1;
     margin-top: var(--xh-pad-px);
-    overflow: hidden;
+    overflow: auto;
     text-overflow: ellipsis;
     white-space: pre-wrap;
-    width: calc(100% - 80px);
+    width: calc(100% - 90px);
 
     @media only screen and (max-width: 1350px) {
-      width: calc(100% - 90px);
+      width: calc(100% - 95px);
     }
 
     @media only screen and (max-width: 700px) {
-      width: calc(100% - 110px);
+      width: calc(100% - 115px);
     }
+  &::-webkit-scrollbar {
+    max-width: 4px
+  }
   }
 }
