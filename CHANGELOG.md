@@ -36,6 +36,10 @@ to use TypeScript for its own app-level code.
       references to your custom app service).
     * Referencing app-level services via `XH` is still supported for JS apps, and for debug access
       on the console.
+* The `@bindable` annotation has been enhanced to produce a native javascript setter for its
+   property as well as the `setXXX()` method it currently produces.  This provides a more typescript
+   friendly way to set properties in a mobx action, and should be the favored method going forward.
+   The use of the `setXXX()` method will continue to be supported for backward compatibility.
 
 ### 💥 Breaking Changes
 
