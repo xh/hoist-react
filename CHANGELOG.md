@@ -59,6 +59,10 @@ to use TypeScript for its own app-level code.
 * PropTypes support has been removed in favor of the type script interfaces discussed above. Apps
   importing Hoist Proptypes instances should simply remove these compile-time references.
 
+### 🐞 Bug Fixes
+* Fix bug where dragging on any panel header which is a descendant of a `DashCanvasView` would move
+  the `DashCanvasView`
+
 ### ✅ Testing Scope
 
 * *Full regression testing recommended* - this is a major Hoist release and involved a significant
