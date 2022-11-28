@@ -7,7 +7,8 @@
 
 import {HoistService, HoistModel} from './..';
 import {Store} from '@xh/hoist/data';
-import {observable, action, makeObservable} from '@xh/hoist/mobx';
+import {observable, makeObservable} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
 
 /**
  * Generic singleton object for cataloging global models and services.
@@ -25,29 +26,24 @@ class InstanceManager {
     @observable.shallow
     stores: Set<Store> = new Set();
 
-    @action
     registerModel(m: HoistModel) {
-        this.models.add(m);
+        wait().thenAction(() => this.models.add(m));
     }
 
-    @action
     unregisterModel(m: HoistModel) {
-        this.models.delete(m);
+        wait().thenAction(() => this.models.delete(m));
     }
 
-    @action
     registerService(s: HoistService) {
-        this.services.add(s);
+        wait().thenAction(() => this.services.add(s));
     }
 
-    @action
     registerStore(s: Store) {
-        this.stores.add(s);
+        wait().thenAction(() => this.stores.add(s));
     }
 
-    @action
     unregisterStore(s: Store) {
-        this.stores.delete(s);
+        wait().thenAction(() => this.stores.delete(s));
     }
 
     constructor() {
