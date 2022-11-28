@@ -219,7 +219,6 @@ export interface ColumnSpec {
 
     /**
      * Set to true to call attention to cell changes by flashing the cell's background color.
-     * Note: incompatible with rendererIsComplex.
      */
     highlightOnChange?: boolean;
 
@@ -606,10 +605,6 @@ export class Column {
         this.renderer = managedRenderer(renderer, this.displayName);
         this.rendererIsComplex = rendererIsComplex;
         this.highlightOnChange = highlightOnChange;
-        warnIf(
-            rendererIsComplex && highlightOnChange,
-            'Specifying both renderIsComplex and highlightOnChange is not supported. Cells will be force-refreshed on all changes and always flash.'
-        );
 
         this.tooltip = tooltip;
         this.tooltipElement = tooltipElement;
