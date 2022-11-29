@@ -6,7 +6,7 @@
  */
 import {upperFirst} from 'lodash';
 import {observable, runInAction} from 'mobx';
-import {getOrCreate} from '../utils/js';
+import {apiDeprecated, getOrCreate} from '../utils/js';
 
 /**
  * Decorator to add a simple MobX action of the form `setPropName()` to a class.
@@ -18,6 +18,12 @@ import {getOrCreate} from '../utils/js';
  */
 export function settable(target, property, descriptor) {
     const name = 'set' + upperFirst(property);
+
+    apiDeprecated('settable', {
+        v: 'v56',
+        message: `Consider using @bindable or implement a simple '${name}' method instead.`
+    });
+
     if (!target.hasOwnProperty(name)) {
         const value = function(v) {
             runInAction(() => {this[property] = v});
@@ -53,7 +59,7 @@ bindable.ref = function(target, property, descriptor) {
 //-----------------
 function createBindable(target, name, descriptor, isRef) {
 
-    // 1) set up a set function, if one does not exist.  This was the original side-effect of
+    // 1) Set up a set function, if one does not exist.  This was the original side-effect of
     // bindable and still used for backward compatibility by HoistBase.setBindable.
     const setterName = 'set' + upperFirst(name);
     if (!target.hasOwnProperty(setterName)) {
@@ -65,7 +71,7 @@ function createBindable(target, name, descriptor, isRef) {
 
     // 2) return a get/set pair that wraps a boxed observable.
     const {initializer} = descriptor,
-        getBox = (obj) => getOrCreate(obj, `_${name}`, () => {
+        getBox = (obj) => getOrCreate(obj, `_${name}_bindable`, () => {
             const initVal = initializer?.call(obj);
             return isRef ? observable.box(initVal, {deep: false}) : observable.box(initVal);
         });
