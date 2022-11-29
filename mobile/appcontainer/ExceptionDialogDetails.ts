@@ -65,7 +65,7 @@ export const exceptionDialogDetails = hoistCmp.factory({
                             },
                             confirmProps: {icon: Icon.envelope(), text: 'Send'}
                         }).then(userMessage => {
-                            model.setUserMessage(userMessage);
+                            model.userMessage = userMessage;
                             if (model.userMessage) {
                                 model.sendReportAsync();
                             }

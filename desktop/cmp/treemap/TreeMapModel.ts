@@ -10,7 +10,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {FilterLike} from '@xh/hoist/data/filter/Types';
 import '@xh/hoist/desktop/register';
 import {numberRenderer} from '@xh/hoist/format';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {ReactNode} from 'react';
 import {cloneDeep, get, isEmpty, isFinite, max, set, sortBy, sumBy, unset} from 'lodash';
@@ -132,17 +132,17 @@ export class TreeMapModel extends HoistModel {
     //------------------------
     // Observable API
     //------------------------
-    @observable.ref highchartsConfig: any = {};
+    @bindable.ref highchartsConfig: any = {};
     @observable.ref data: TreeMapRecord[] = [];
-    @observable labelField: string;
-    @observable valueField: string;
-    @observable heatField: string;
-    @observable maxHeat: number;
-    @observable maxDepth: number;
-    @observable algorithm: TreeMapAlgorithm;
-    @observable colorMode: TreeMapColorMode;
-    @observable theme: Theme;
-    @observable isMasking: boolean;
+    @bindable labelField: string;
+    @bindable valueField: string;
+    @bindable heatField: string;
+    @bindable maxHeat: number;
+    @bindable maxDepth: number;
+    @bindable algorithm: TreeMapAlgorithm;
+    @bindable colorMode: TreeMapColorMode;
+    @bindable theme: Theme;
+    @bindable isMasking: boolean;
 
     _filter;
 
@@ -264,54 +264,6 @@ export class TreeMapModel extends HoistModel {
         return (this.data.length > this.maxNodes) ?
             'Data node limit reached. Unable to render TreeMap.' :
             null;
-    }
-
-    //-------------------------
-    // Setters
-    //-------------------------
-    @action
-    setHighchartsConfig(highchartsConfig: any) {
-        this.highchartsConfig = highchartsConfig;
-    }
-
-    @action
-    setLabelField(labelField: string) {
-        this.labelField = labelField;
-    }
-
-    @action
-    setHeatField(heatField: string) {
-        this.heatField = heatField;
-    }
-
-    @action
-    setMaxDepth(maxDepth: number) {
-        this.maxDepth = maxDepth;
-    }
-
-    @action
-    setMaxHeat(maxHeat: number) {
-        this.maxHeat = maxHeat;
-    }
-
-    @action
-    setAlgorithm(algorithm: TreeMapAlgorithm) {
-        this.algorithm = algorithm;
-    }
-
-    @action
-    setColorMode(colorMode: TreeMapColorMode) {
-        this.colorMode = colorMode;
-    }
-
-    @action
-    setTheme(theme: Theme) {
-        this.theme = theme;
-    }
-
-    @action
-    setIsMasking(isMasking: boolean) {
-        this.isMasking = isMasking;
     }
 
     //-------------------------

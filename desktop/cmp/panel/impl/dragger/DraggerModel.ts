@@ -28,7 +28,7 @@ export class DraggerModel extends HoistModel {
     throttledSetSize;
 
     override onLinked() {
-        this.throttledSetSize = throttle(size => this.panelModel.setSize(size), 50);
+        this.throttledSetSize = throttle(size => this.panelModel.size = size, 50);
 
         // Add listeners to el to ensure we can get non-passive handlers than can preventDefault()
         // React synthetic touch events on certain browsers (e.g. airwatch) don't yield that
@@ -148,7 +148,7 @@ export class DraggerModel extends HoistModel {
             if (throttle) {
                 this.throttledSetSize(size);
             } else {
-                this.panelModel.setSize(size);
+                this.panelModel.size = size;
             }
         }
     }

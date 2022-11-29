@@ -13,7 +13,7 @@ import {
     RenderMode
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {makeObservable, action, observable} from '@xh/hoist/mobx';
+import {makeObservable, bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {ReactElement} from 'react';
 import {DashViewSpec} from './DashViewSpec';
@@ -45,19 +45,19 @@ export class DashViewModel extends HoistModel {
     containerModel: any;
 
     /** Title with which to initialize the view. */
-    @observable title: string;
+    @bindable title: string;
 
     /** Icon with which to initialize the view. */
-    @observable.ref icon: ReactElement;
+    @bindable.ref icon: ReactElement;
 
     /** State with which to initialize the view. */
-    @observable.ref viewState: DashViewState;
+    @bindable.ref viewState: DashViewState;
 
     /** Extra menu items for the context menu. */
-    @observable.ref extraMenuItems: MenuItemLike[] = [];
+    @bindable.ref extraMenuItems: MenuItemLike[] = [];
 
     @managed refreshContextModel;
-    @observable isActive: boolean;
+    @bindable isActive: boolean;
 
     get renderMode(): RenderMode {
         return this.viewSpec.renderMode ?? this.containerModel.renderMode;
@@ -65,31 +65,6 @@ export class DashViewModel extends HoistModel {
 
     get refreshMode(): RefreshMode {
         return this.viewSpec.refreshMode ?? this.containerModel.refreshMode;
-    }
-
-    @action
-    setViewState(v: DashViewState) {
-        this.viewState = v;
-    }
-
-    @action
-    setIsActive(v: boolean) {
-        this.isActive = v;
-    }
-
-    @action
-    setTitle(v: string) {
-        this.title = v;
-    }
-
-    @action
-    setIcon(v: ReactElement) {
-        this.icon = v;
-    }
-
-    @action
-    setExtraMenuItems(v: MenuItemLike[]) {
-        this.extraMenuItems = v;
     }
 
     constructor({
@@ -119,7 +94,7 @@ export class DashViewModel extends HoistModel {
      * Modify a single key on this model's viewState
      */
     setViewStateKey(key: string, value: any) {
-        this.setViewState({...this.viewState, [key]: value});
+        this.viewState = {...this.viewState, [key]: value};
     }
 }
 

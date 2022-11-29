@@ -13,7 +13,7 @@ import '@xh/hoist/desktop/register';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {datePicker as bpDatePicker, popover, Position} from '@xh/hoist/kit/blueprint';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {makeObservable, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {consumeEvent, warnIf, withDefault} from '@xh/hoist/utils/js';
@@ -178,7 +178,7 @@ export const [DateInput, dateInput] = hoistCmp.withFactory<DateInputProps>({
 class DateInputModel extends HoistInputModel {
     xhImpl = true;
 
-    @observable popoverOpen: boolean = false;
+    @bindable popoverOpen: boolean = false;
 
     buttonRef = createRef<HTMLButtonElement>();
     popoverRef = createRef<HTMLElement>();
@@ -219,11 +219,6 @@ class DateInputModel extends HoistInputModel {
         makeObservable(this);
     }
 
-    @action
-    setPopoverOpen(popoverOpen: boolean) {
-        this.popoverOpen = popoverOpen;
-    }
-
     override toExternal(internal: Date): Date|LocalDate {
         if (this.valueType === 'localDate') return internal ? LocalDate.from(internal) : null;
         return internal;
@@ -253,7 +248,7 @@ class DateInputModel extends HoistInputModel {
         super.noteBlurred();
         wait().then(() => {
             if (!this.hasFocus) {
-                this.setPopoverOpen(false);
+                this.popoverOpen = false;
             }
         });
     }
@@ -265,7 +260,7 @@ class DateInputModel extends HoistInputModel {
     };
 
     onOpenPopoverClick = (ev) => {
-        this.setPopoverOpen(!this.popoverOpen);
+        this.popoverOpen = !this.popoverOpen;
         consumeEvent(ev);
     };
 
@@ -273,10 +268,10 @@ class DateInputModel extends HoistInputModel {
         if (ev.key === 'Enter') {
             this.doCommit();
         } else if (this.popoverOpen && ev.key === 'Escape') {
-            this.setPopoverOpen(false);
+            this.popoverOpen = false;
             consumeEvent(ev);
         } else if (!this.popoverOpen && ['ArrowUp', 'ArrowDown'].includes(ev.key)) {
-            this.setPopoverOpen(true);
+            this.popoverOpen = true;
             consumeEvent(ev);
         }
     };
@@ -316,7 +311,7 @@ class DateInputModel extends HoistInputModel {
         // operation for the user, so we dismiss the picker for them. When there *is* a time to set,
         // however, the picker is used to adjust multiple fields and should stay visible.
         if (!this.timePrecision) {
-            this.setPopoverOpen(false);
+            this.popoverOpen = false;
         }
     };
 
@@ -448,9 +443,9 @@ const cmp = hoistCmp.factory<DateInputModel>(
                 onClose: model.onPopoverClose,
                 onInteraction: (nextOpenState) => {
                     if (props.showPickerOnFocus) {
-                        model.setPopoverOpen(nextOpenState);
+                        model.popoverOpen = nextOpenState;
                     } else if (!nextOpenState) {
-                        model.setPopoverOpen(false);
+                        model.popoverOpen = false;
                     }
                 },
 

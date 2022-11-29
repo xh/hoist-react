@@ -41,7 +41,7 @@ import {
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable, observable, when} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -399,9 +399,10 @@ export class GridModel extends HoistModel {
     @observable.ref autosizeState: AutosizeState = {};
     @observable.ref sortBy: GridSorter[] = [];
     @observable.ref groupBy: string[] = null;
-    @observable showSummary: boolean | VSide = false;
-    @observable.ref emptyText: ReactNode;
-    @observable treeStyle: TreeStyle;
+
+    @bindable showSummary: boolean | VSide = false;
+    @bindable.ref emptyText: ReactNode;
+    @bindable treeStyle: TreeStyle;
 
     /**
      * Flag to track inline editing at a granular level. Will toggle each time row
@@ -454,9 +455,7 @@ export class GridModel extends HoistModel {
     @managed autosizeTask = TaskObserver.trackAll();
 
     /** @internal - used internally by any GridFindField that is bound to this GridModel. */
-    @observable xhFindQuery:string = null;
-    @action setXhFindQuery(v: string) {this.xhFindQuery = v}
-
+    @bindable xhFindQuery: string = null;
 
     constructor(config: GridConfig) {
         super();
@@ -848,27 +847,32 @@ export class GridModel extends HoistModel {
     get agColumnApi() {return this.agGridModel.agColumnApi}
 
     get sizingMode(): SizingMode {return this.agGridModel.sizingMode}
-    setSizingMode(v: SizingMode) {this.agGridModel.setSizingMode(v)}
+    set sizingMode(v: SizingMode) {this.agGridModel.sizingMode = v}
+    setSizingMode(v: SizingMode) {this.agGridModel.sizingMode = v}
 
     get showHover(): boolean { return this.agGridModel.showHover }
-    setShowHover(v: boolean) { this.agGridModel.setShowHover(v) }
+    set showHover(v: boolean) {this.agGridModel.showHover = v }
+    setShowHover(v: boolean) { this.agGridModel.showHover = v }
 
     get rowBorders(): boolean { return this.agGridModel.rowBorders }
-    setRowBorders(v: boolean) { this.agGridModel.setRowBorders(v) }
+    set rowBorders(v: boolean) { this.agGridModel.rowBorders = v}
+    setRowBorders(v: boolean) { this.agGridModel.rowBorders = v}
 
     get stripeRows(): boolean { return this.agGridModel.stripeRows }
-    setStripeRows(v: boolean) { this.agGridModel.setStripeRows(v) }
+    set stripeRows(v: boolean) { this.agGridModel.stripeRows = v}
+    setStripeRows(v: boolean) { this.agGridModel.stripeRows = v}
 
-    get cellBorders(): boolean { return this.agGridModel.cellBorders }
-    setCellBorders(v: boolean) { this.agGridModel.setCellBorders(v) }
+    get cellBorders(): boolean  {return this.agGridModel.cellBorders }
+    set cellBorders(v: boolean) {this.agGridModel.cellBorders = v}
+    setCellBorders(v: boolean) { this.agGridModel.cellBorders = v }
 
     get showCellFocus(): boolean { return this.agGridModel.showCellFocus }
-    setShowCellFocus(v: boolean) { this.agGridModel.setShowCellFocus(v) }
+    set showCellFocus(v: boolean) {this.agGridModel.showCellFocus = v}
+    setShowCellFocus(v: boolean) {this.agGridModel.showCellFocus = v}
 
     get hideHeaders(): boolean { return this.agGridModel.hideHeaders }
-    setHideHeaders(v: boolean) { this.agGridModel.setHideHeaders(v) }
-
-    @action setTreeStyle(v: TreeStyle) { this.treeStyle = v }
+    set hideHeaders(v: boolean) {this.agGridModel.hideHeaders = v}
+    setHideHeaders(v: boolean) {this.agGridModel.hideHeaders = v}
 
     /**
      * Apply full-width row-level grouping to the grid for the given column ID(s).
@@ -904,21 +908,6 @@ export class GridModel extends HoistModel {
             agApi.collapseAll();
             this.noteAgExpandStateChange();
         }
-    }
-
-    /**
-     * Set the location for a docked summary row. Requires `store.SummaryRecord` to be populated.
-     * @param showSummary - true/'top' or 'bottom' to show, false to hide.
-     */
-    @action
-    setShowSummary(showSummary: boolean|VSide) {
-        this.showSummary = showSummary;
-    }
-
-    /** @param emptyText - text/element to display if grid has no records. */
-    @action
-    setEmptyText(emptyText: ReactNode) {
-        this.emptyText = emptyText;
     }
 
     /**

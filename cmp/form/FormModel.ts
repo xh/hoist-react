@@ -6,7 +6,7 @@
  */
 import {HoistModel, managed, PlainObject} from '@xh/hoist/core';
 import {ValidationState} from '@xh/hoist/data';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {flatMap, forEach, forOwn, map, mapValues, pickBy, some, values} from 'lodash';
 import {BaseFieldConfig, BaseFieldModel} from './field/BaseFieldModel';
@@ -67,8 +67,8 @@ export class FormModel extends HoistModel {
     }
 
     parent: FormModel = null;
-    @observable disabled: boolean;
-    @observable readonly: boolean;
+    @bindable disabled: boolean;
+    @bindable readonly: boolean;
 
     private valuesProxy = this.createValuesProxy();
 
@@ -175,16 +175,6 @@ export class FormModel extends HoistModel {
     @computed
     get isDirty(): boolean {
         return some(this.fields, m => m.isDirty);
-    }
-
-    @action
-    setReadonly(readonly: boolean) {
-        this.readonly = readonly;
-    }
-
-    @action
-    setDisabled(disabled: boolean) {
-        this.disabled = disabled;
     }
 
     //-----------------------------------

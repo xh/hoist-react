@@ -7,7 +7,7 @@
 import {DashViewConfig, DashViewModel} from '../DashViewModel';
 import '@xh/hoist/desktop/register';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {ReactNode} from 'react';
 
 /**
@@ -25,7 +25,7 @@ export class DashCanvasViewModel extends DashViewModel {
     @observable autoHeight: boolean;
 
     /** Additional items to include in header. */
-    @observable.ref headerItems: ReactNode[] = [];
+    @bindable.ref headerItems: ReactNode[] = [];
 
     ref = createObservableRef<HTMLElement>();
 
@@ -49,12 +49,6 @@ export class DashCanvasViewModel extends DashViewModel {
             when: () => !!ref.current,
             run: () => ref.current.scrollIntoView({behavior: 'smooth', block: 'nearest'})
         });
-    }
-
-    /** Specify array of items to be added to the right-side of the panel header. */
-    @action
-    setHeaderItems(items: ReactNode[]) {
-        this.headerItems = items;
     }
 
     //------------------------

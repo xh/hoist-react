@@ -7,7 +7,7 @@
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, creates} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {observable, action, makeObservable} from '@xh/hoist/mobx';
+import {makeObservable, bindable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isFunction} from 'lodash';
 
@@ -57,8 +57,7 @@ export const columnGroupHeader = hoistCmp.factory({
 class ColumnGroupHeaderModel extends HoistModel {
     xhImpl = true;
 
-    @observable isExpanded = true;
-    @action setIsExpanded(v: boolean) {this.isExpanded = v}
+    @bindable isExpanded = true;
 
     get isExpandable() {
         return this.agColumnGroup.isExpandable();
@@ -83,5 +82,5 @@ class ColumnGroupHeaderModel extends HoistModel {
         super.destroy();
     }
 
-    syncIsExpanded = () => this.setIsExpanded(this.agColumnGroup.isExpanded());
+    syncIsExpanded = () => this.isExpanded = this.agColumnGroup.isExpanded();
 }

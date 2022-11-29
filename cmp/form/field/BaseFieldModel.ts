@@ -6,7 +6,7 @@
  */
 import {HoistModel, managed, TaskObserver} from '@xh/hoist/core';
 import {genDisplayName, required, Rule, RuleLike, ValidationState} from '@xh/hoist/data';
-import {action, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {action, bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {executeIfFunction, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -48,7 +48,7 @@ export abstract class BaseFieldModel extends HoistModel {
     get isFieldModel() {return true}
 
     @observable.ref initialValue: any;
-    @observable.ref value: any;
+    @bindable.ref value: any;
 
     name: string;
     @observable displayName: string;

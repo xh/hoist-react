@@ -1,5 +1,5 @@
 import {HoistService, managed, persist, XH} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -44,7 +44,7 @@ export class InspectorService extends HoistService {
     active: boolean = false;
 
     /** Info on current services/models/stores (when active). */
-    @observable.ref
+    @bindable.ref
     activeInstances: InspectorInstanceData[] = [];
 
     /** Timestamped model counts w/memory usage (when active). */

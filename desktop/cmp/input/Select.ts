@@ -16,7 +16,7 @@ import {
     reactSelect,
     reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
-import {action, makeObservable, observable, override} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
@@ -220,7 +220,7 @@ class SelectInputModel extends HoistInputModel {
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
-    @observable.ref internalOptions = [];
+    @bindable.ref internalOptions = [];
 
     // Prop-backed convenience getters
     get asyncMode(): boolean {
@@ -281,7 +281,7 @@ class SelectInputModel extends HoistInputModel {
             track: () => this.componentProps.options,
             run: (opts) => {
                 opts = this.normalizeOptions(opts);
-                this.setInternalOptions(opts);
+                this.internalOptions = opts;
             },
             fireImmediately: true
         });
@@ -504,7 +504,7 @@ class SelectInputModel extends HoistInputModel {
                     if (!matchOpt) newOpts.push(currOpt);  // avoiding dupes
                 });
 
-                this.setInternalOptions(newOpts);
+                this.internalOptions = newOpts;
 
                 // But only return the matching options back to the combo.
                 return matchOpts;
@@ -528,11 +528,6 @@ class SelectInputModel extends HoistInputModel {
     //----------------------
     // Option Rendering
     //----------------------
-    @action
-    setInternalOptions(opts) {
-        this.internalOptions = opts;
-    }
-
     formatOptionLabel = (opt, params) => {
         // Always display the standard label string in the value container (context == 'value').
         // If we need to expose customization here, we could consider a dedicated prop.

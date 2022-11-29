@@ -122,50 +122,50 @@ export class SplitTreeMapModel extends HoistModel {
 
     @action
     setHighchartsConfig(highchartsConfig: any) {
-        this.primaryMapModel.setHighchartsConfig(highchartsConfig);
-        this.secondaryMapModel.setHighchartsConfig(highchartsConfig);
+        this.primaryMapModel.highchartsConfig = highchartsConfig;
+        this.secondaryMapModel.highchartsConfig = highchartsConfig;
     }
 
     @action
     setLabelField(labelField: string) {
-        this.primaryMapModel.setLabelField(labelField);
-        this.secondaryMapModel.setLabelField(labelField);
+        this.primaryMapModel.labelField = labelField;
+        this.secondaryMapModel.labelField = labelField;
     }
 
     @action
     setHeatField(heatField: string) {
-        this.primaryMapModel.setHeatField(heatField);
-        this.secondaryMapModel.setHeatField(heatField);
+        this.primaryMapModel.heatField = heatField;
+        this.secondaryMapModel.heatField = heatField;
     }
 
     @action
     setMaxDepth(maxDepth: number) {
-        this.primaryMapModel.setMaxDepth(maxDepth);
-        this.secondaryMapModel.setMaxDepth(maxDepth);
+        this.primaryMapModel.maxDepth = maxDepth;
+        this.secondaryMapModel.maxDepth = maxDepth;
     }
 
     @action
     setMaxHeat(maxHeat: number) {
-        this.primaryMapModel.setMaxHeat(maxHeat);
-        this.secondaryMapModel.setMaxHeat(maxHeat);
+        this.primaryMapModel.maxHeat = maxHeat;
+        this.secondaryMapModel.maxHeat = maxHeat;
     }
 
     @action
     setAlgorithm(algorithm: TreeMapAlgorithm) {
-        this.primaryMapModel.setAlgorithm(algorithm);
-        this.secondaryMapModel.setAlgorithm(algorithm);
+        this.primaryMapModel.algorithm = algorithm;
+        this.secondaryMapModel.algorithm = algorithm;
     }
 
     @action
     setColorMode(colorMode: TreeMapColorMode) {
-        this.primaryMapModel.setColorMode(colorMode);
-        this.secondaryMapModel.setColorMode(colorMode);
+        this.primaryMapModel.colorMode = colorMode;
+        this.secondaryMapModel.colorMode = colorMode;
     }
 
     @action
     setTheme(theme: Theme) {
-        this.primaryMapModel.setTheme(theme);
-        this.secondaryMapModel.setTheme(theme);
+        this.primaryMapModel.theme = theme;
+        this.secondaryMapModel.theme = theme;
     }
 
     //-------------------------
