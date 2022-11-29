@@ -6,7 +6,7 @@
  */
 import {XH, hoistCmp, HoistModel, creates, managed} from '@xh/hoist/core';
 import {div, span} from '@xh/hoist/cmp/layout';
-import {observable, action, computed, makeObservable} from '@xh/hoist/mobx';
+import {computed, makeObservable, bindable} from '@xh/hoist/mobx';
 import {Column} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {columnHeaderFilter, ColumnHeaderFilterModel} from '@xh/hoist/dynamics/desktop';
@@ -143,8 +143,7 @@ class ColumnHeaderModel extends HoistModel {
     @managed columnHeaderFilterModel;
 
     // AG Filtering
-    @observable isAgFiltered = false;
-    @action setIsAgFiltered(v: boolean) {this.isAgFiltered = v}
+    @bindable isAgFiltered = false;
 
     agFilterButtonRef = createObservableRef();
 
@@ -168,7 +167,7 @@ class ColumnHeaderModel extends HoistModel {
             this.columnHeaderFilterModel = new ColumnHeaderFilterModel({filterModel, column: xhColumn});
             this.enableFilter = true;
         } else {
-            this.setIsAgFiltered(agColumn.isFilterActive());
+            this.isAgFiltered = agColumn.isFilterActive();
             agColumn.addEventListener('filterChanged', this.onFilterChanged);
         }
     }
@@ -197,7 +196,7 @@ class ColumnHeaderModel extends HoistModel {
 
     // Ag-Grid's filter callback
     onFilterChanged = () => {
-        this.setIsAgFiltered(this.agColumn.isFilterActive());
+        this.isAgFiltered = this.agColumn.isFilterActive();
     };
 
     @computed

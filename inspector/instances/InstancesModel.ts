@@ -70,7 +70,7 @@ export class InstancesModel extends HoistModel {
         this.addReaction(
             {
                 track: () => this.instancesGridModel.selectedIds,
-                run: (ids) => {this.propertiesGridModel.setEmptyText(ids.length ? 'No matching properties found.' : 'Select an instance to view properties.')},
+                run: (ids) => {this.propertiesGridModel.emptyText = ids.length ? 'No matching properties found.' : 'Select an instance to view properties.'},
                 delay: 300,
                 fireImmediately: true
             },

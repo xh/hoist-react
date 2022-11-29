@@ -216,7 +216,7 @@ class TreeMapLocalModel extends HoistModel {
             threshold = 50;
 
         if (widthChange > threshold || heightChange > threshold) {
-            model.setIsMasking(true);
+            model.isMasking = true;
         }
     };
 
@@ -232,7 +232,7 @@ class TreeMapLocalModel extends HoistModel {
         }
         await wait();
 
-        model.setIsMasking(false);
+        model.isMasking = false;
         this.updateLabelVisibility();
     };
 

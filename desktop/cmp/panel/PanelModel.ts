@@ -17,7 +17,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {action, makeObservable, observable, comparer} from '@xh/hoist/mobx';
+import {action, makeObservable, observable, comparer, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
@@ -134,7 +134,7 @@ export class PanelModel extends HoistModel {
     collapsed: boolean = false;
 
     /** Size in pixels along sizing dimension.  Used when object is *not* collapsed. */
-    @observable
+    @bindable
     size: number = null;
 
     /** Is this panel currently resizing? */
@@ -239,7 +239,7 @@ export class PanelModel extends HoistModel {
         }
 
         // Initialize state.
-        this.setSize(resizable && !isNil(state?.size) ? state.size : defaultSize);
+        this.size = resizable && !isNil(state?.size) ? state.size : defaultSize;
         this.setCollapsed(collapsible && !isNil(state?.collapsed) ? state.collapsed : defaultCollapsed);
 
         // Attach to provider last
@@ -285,16 +285,11 @@ export class PanelModel extends HoistModel {
 
     setIsModal(isModal: boolean) {
         throwIf(!this.hasModalSupport, 'ModalSupport not enabled for this panel.');
-        this.modalSupportModel.setIsModal(isModal);
+        this.modalSupportModel.isModal = isModal;
     }
 
     toggleIsModal() {
         this.setIsModal(!this.isModal);
-    }
-
-    @action
-    setSize(v: number) {
-        this.size = v;
     }
 
     @action

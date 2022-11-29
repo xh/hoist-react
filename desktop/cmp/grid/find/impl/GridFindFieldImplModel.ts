@@ -80,7 +80,7 @@ export class GridFindFieldImplModel extends HoistModel {
 
     @action
     setQuery(v) {
-        this.gridModel.setXhFindQuery(v);
+        this.gridModel.xhFindQuery = v;
     }
 
     constructor() {

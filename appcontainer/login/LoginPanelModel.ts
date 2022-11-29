@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {observable, bindable, computed, makeObservable, action} from '@xh/hoist/mobx';
+import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {debounced} from '@xh/hoist/utils/js';
 
 /**
@@ -16,18 +16,8 @@ export class LoginPanelModel extends HoistModel {
 
     @bindable username = '';
     @bindable password = '';
-
-    @observable warning = '';
-    @action
-    setWarning(s: string) {
-        this.warning = s;
-    }
-
-    @observable loginInProgress = false;
-    @action
-    setLoginInProgress(b: boolean) {
-        this.loginInProgress = b;
-    }
+    @bindable warning = '';
+    @bindable loginInProgress = false;
 
     @managed
     loginTask = TaskObserver.trackLast();
@@ -49,7 +39,7 @@ export class LoginPanelModel extends HoistModel {
         if (!isValid) return;
 
         try {
-            this.setLoginInProgress(true);
+            this.loginInProgress = true;
             const resp = await XH.fetchJson({
                 url: 'xh/login',
                 params: {username, password}
@@ -60,13 +50,13 @@ export class LoginPanelModel extends HoistModel {
             });
 
             if (resp.success) {
-                this.setWarning('');
+                this.warning = '';
                 await XH.completeInitAsync();
             } else {
-                this.setWarning('Login incorrect.');
+                this.warning = 'Login incorrect.';
             }
         } finally {
-            this.setLoginInProgress(false);
+            this.loginInProgress = false;
         }
 
     }

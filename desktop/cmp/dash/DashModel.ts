@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {HoistModel, managed, PersistenceProvider} from '@xh/hoist/core';
 
 /**
@@ -22,13 +22,9 @@ export abstract class DashModel<VSPEC, VSTATE, VMODEL> extends HoistModel {
     //-----------------------------
     // Settable State
     //------------------------------
-    @observable layoutLocked: boolean;
-    @observable contentLocked: boolean;
-    @observable renameLocked: boolean;
-
-    @action setLayoutLocked(v: boolean) {this.layoutLocked = v}
-    @action setContentLocked(v: boolean) {this.contentLocked = v}
-    @action setRenameLocked(v: boolean) {this.renameLocked = v}
+    @bindable layoutLocked: boolean;
+    @bindable contentLocked: boolean;
+    @bindable renameLocked: boolean;
 
     //------------------------------
     // Immutable public properties

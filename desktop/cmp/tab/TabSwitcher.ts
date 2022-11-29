@@ -19,7 +19,7 @@ import {
     tabs as bpTabs,
     tooltip as bpTooltip
 } from '@xh/hoist/kit/blueprint';
-import {makeObservable, action, observable} from '@xh/hoist/mobx';
+import {makeObservable, bindable} from '@xh/hoist/mobx';
 import {debounced, isDisplayed, throwIf} from '@xh/hoist/utils/js';
 import {
     createObservableRef,
@@ -186,7 +186,7 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
 class TabSwitcherLocalModel extends HoistModel  {
     xhImpl = true;
 
-    @observable.ref overflowIds = [];
+    @bindable.ref overflowIds = [];
     switcherRef = createObservableRef<HTMLElement>();
     model;
     enableOverflow;
@@ -194,11 +194,6 @@ class TabSwitcherLocalModel extends HoistModel  {
 
     get overflowTabs() {
         return compact(this.overflowIds.map(id => this.model.findTab(id)));
-    }
-
-    @action
-    setOverflowIds(ids: string[]) {
-        this.overflowIds = ids;
     }
 
     constructor(model, enableOverflow, vertical) {
@@ -226,8 +221,7 @@ class TabSwitcherLocalModel extends HoistModel  {
     //------------------------
     @debounced(100)
     updateOverflowTabs() {
-        const ids = this.getOverflowIds();
-        this.setOverflowIds(ids);
+        this.overflowIds = this.getOverflowIds();
     }
 
     // Debounce allows tab changes to render before scrolling into view

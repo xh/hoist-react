@@ -7,7 +7,7 @@
 
 import {HoistModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {observable, makeObservable, action} from '@xh/hoist/mobx';
+import {makeObservable, bindable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
 export interface ModalSupportConfig {
@@ -24,7 +24,7 @@ export interface ModalSupportConfig {
 export class ModalSupportModel extends HoistModel {
     xhImpl = true;
 
-    @observable
+    @bindable
     isModal: boolean = false;
 
     width: string|number;
@@ -70,12 +70,6 @@ export class ModalSupportModel extends HoistModel {
         return hostNode;
     }
 
-    @action
-    setIsModal(v: boolean) {
-        this.isModal = v;
-    }
-
-    @action
     toggleIsModal() {
         this.isModal = !this.isModal;
     }
