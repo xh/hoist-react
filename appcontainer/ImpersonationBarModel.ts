@@ -15,7 +15,7 @@ export class ImpersonationBarModel extends HoistModel {
     xhImpl = true;
 
     @observable showRequested: boolean = false;
-    @bindable.ref targets: string[] = [];
+    @observable.ref targets: string[] = [];
     @bindable pendingTarget: string = null;
 
     constructor() {
