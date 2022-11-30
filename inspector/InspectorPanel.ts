@@ -24,9 +24,7 @@ export const inspectorPanel = hoistCmp.factory({
                 defaultSize: 400,
                 side: 'bottom',
                 persistWith: XH.inspectorService.persistWith,
-                modalSupport: true,
-                showModalToggleButton: true,
-                showHeaderCollapseButton: false,
+                collapsible: false,
                 xhImpl: true
             },
             compactHeader: true,
