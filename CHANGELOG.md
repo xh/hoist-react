@@ -78,6 +78,7 @@ to use TypeScript for its own app-level code.
 * @blueprintjs/core `4.11 -> 4.12`
 * @xh/hoist-dev-utils `6.0 -> 6.1`
 * typescript `added @ 4.9`
+* highcharts `9.3 -> 10.3`
 
 ## v53.2.0 - 2022-11-15
 
