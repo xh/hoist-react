@@ -313,6 +313,7 @@ class ChartLocalModel extends HoistModel {
                 }
             },
             credits: false,
+            accessibility: {enabled:false},
             exporting
         };
     }

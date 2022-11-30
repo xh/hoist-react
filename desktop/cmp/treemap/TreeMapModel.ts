@@ -155,7 +155,7 @@ export class TreeMapModel extends HoistModel {
             gridModel,
             maxNodes = 1000,
             maxLabels = 250,
-            highchartsConfig,
+            highchartsConfig = { accessibility:{ enabled: false }},
             labelField = 'name',
             valueField = 'value',
             heatField = 'value',
