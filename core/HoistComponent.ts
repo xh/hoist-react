@@ -254,7 +254,7 @@ interface Config {
     modelSpec: ModelSpec;
 }
 
-export interface ResolvedModel {
+interface ResolvedModel {
     model: HoistModel;
     fromContext: boolean;
     isLinked: boolean;
@@ -357,6 +357,7 @@ function getInnerHost(render: RenderFn, cfg: Config): FunctionComponent {
 
     if (cfg.isForwardRef) ret = forwardRef(ret);
     if (cfg.isObserver) ret = observer(ret);
+    ret.displayName = 'Inner_'+ cfg.displayName;
     return ret;
 }
 
