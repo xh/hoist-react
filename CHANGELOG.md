@@ -41,8 +41,8 @@ to use TypeScript for its own app-level code.
    friendly way to set properties in a mobx action, and should be the favored method going forward.
    The use of the `setXXX()` method will continue to be supported for backward compatibility.
 * Hoist Components will now automatically remount if the model passed to them (via context or props)
-  is changed during the lifetime of the component.  This allows applications to swap out higher level
-  models, without needing to manually force the remounting of related components with an explicit
+  is changed during the lifetime of the component.  This allows applications to swap out models
+  without needing to manually force the remounting of related components with an explicit
   `key` setting, i.e.  `key: model.xhId`.
 
 ### 💥 Breaking Changes
@@ -105,6 +105,7 @@ to use TypeScript for its own app-level code.
   initially modal state.
 
 ### 🐞 Bug Fixes
+
 * Fixed layout issues caused by top-level DOM elements created by `ModalSupport`
   and `ColumnWidthCalculator` (grid auto-sizing). Resolved occasional gaps between select inputs and
   their drop-down menus.
