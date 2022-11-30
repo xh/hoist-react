@@ -26,10 +26,15 @@ export const [Box, box] = hoistCmp.withContainerFactory<BoxComponentProps>({
     model: false, memo: false, observer: false,
 
     render(props, ref) {
-        // Note `model` and `modelConfig` destructured off of non-layout props to avoid setting
-        // model as a bogus DOM attribute. This low-level component may easily be passed one from
-        // a parent that has not properly managed its own props.
-        let [layoutProps, {children, model, modelConfig, ...restProps}] = splitLayoutProps(props);
+        // Dissect props and children for applying to div.
+        // We pull off some common hoist props that might have 'leaked' through and would cause
+        // a react dev-time warning. (Implementation of Form.fieldDefaults is a particular culprit)
+        let [layoutProps, nonLayoutProps] = splitLayoutProps(props);
+        let {
+            model, modelConfig, leftIcon, commitOnChange, // leakers to remove
+            children,
+            ...restProps
+        } = nonLayoutProps as any;
 
         restProps = merge(
             {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
