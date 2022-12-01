@@ -84,6 +84,7 @@ export type ComponentConfig<P extends HoistProps> =
     observer?: boolean
 }
 
+let cmpIndex = 0;  // index for anonymous component dispay names
 
 /**
  * Hoist utility for defining functional components. This is the primary method for creating
@@ -131,7 +132,7 @@ export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P
     let render = config.render,
         cfg = {
             className: config.className,
-            displayName: config.displayName ? config.displayName : 'HoistCmp',
+            displayName: config.displayName ? config.displayName : 'HoistCmp'+ cmpIndex++,
             isMemo: withDefault(config.memo, true),
             isObserver: withDefault(config.observer, true),
             isForwardRef: render.length === 2,
@@ -274,7 +275,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
         {publishMode} = spec,
         publishNone = (publishMode === 'none'),
         publishDefault = (publishMode === 'default'),
-        InnerCmp = createInnerHoistCmp(cfg);
+        HostCmp = createCmpHost(cfg);
 
     return (props, ref) => {
 
@@ -324,7 +325,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
         };
 
         // 4b) Get the element, either running the wrapped function directly, or in a wrapped component if needed
-        const ret = isLinked ? managedRender(): createElement(InnerCmp, {managedRender, key: model?.xhId});
+        const ret = isLinked ? managedRender(): createElement(HostCmp, {managedRender, key: model?.xhId});
 
         return newLookup ? modelLookupContextProvider({value: newLookup, item: ret}) : ret;
     };
@@ -428,9 +429,11 @@ function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): 
  * Used to ensure that the core of the component is remounted,
  * if the provided model changes.
  */
-function createInnerHoistCmp(cfg: Config): FunctionComponent<any> {
-    const ret = (props) => props.managedRender();
-    return cfg.isObserver ? observer(ret) : ret;
+function createCmpHost(cfg: Config): FunctionComponent<any> {
+    let ret: FunctionComponent<any> = (props) => props.managedRender();
+    ret = cfg.isObserver ? observer(ret) : ret;
+    ret.displayName = cfg.displayName + 'Host';
+    return ret;
 }
 
 
