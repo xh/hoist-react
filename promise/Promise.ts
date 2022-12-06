@@ -6,6 +6,7 @@
  */
 import {Exception, ExceptionHandlerOptions, TaskObserver, TrackOptions, XH} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
+import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {castArray, isFunction, isNumber, isString} from 'lodash';
 
 /**
@@ -113,23 +114,26 @@ export function wait<T>(interval:number = 0): Promise<T> {
  * interval.
  *
  * @param condition - function that should return true when condition is met
- * @param interval - milliseconds to wait between checks (default 100). Note that the actual time
+ * @param interval - milliseconds to wait between checks (default 50). Note that the actual time
  *      will be subject to the minimum delay for `setTimeout()` in the browser.
- * @param timeout - milliseconds after which the Promise should be rejected (default Infinity).
+ * @param timeout - milliseconds after which the Promise should be rejected (default 5000).
  */
 export function waitFor(
     condition: () => boolean,
-    interval: number = 100,
-    timeout: number = Infinity
+    interval: number = 50,
+    timeout: number = 5 * SECONDS
 ): Promise<void> {
+    const startTime = Date.now();
 
-    timeout = Date.now() + timeout;
-
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
         const resolveOnMet = () => {
-            if (condition()) resolve();
-            else if (Date.now() > timeout) reject();
-            else setTimeout(resolveOnMet, interval);
+            if (condition()) {
+                resolve();
+            } else if (olderThan(startTime, timeout)) {
+                throw Exception.timeout({interval: Date.now() - startTime});
+            } else {
+                setTimeout(resolveOnMet, interval);
+            }
         };
         resolveOnMet();
     });
