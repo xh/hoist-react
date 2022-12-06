@@ -48,7 +48,7 @@ export const [ExportButton, exportButton] = hoistCmp.withFactory<ExportButtonPro
 
         return button({
             ref,
-            icon: withDefault(icon, Icon.download()),
+            icon: withDefault(icon, Icon.downloadIcon()),
             title: withDefault(title, 'Export'),
             onClick,
             disabled: withDefault(disabled, gridModel && gridModel.empty),

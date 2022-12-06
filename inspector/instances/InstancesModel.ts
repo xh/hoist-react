@@ -274,13 +274,13 @@ export class InstancesModel extends HoistModel {
                             actionFn: ({record}) => this.logPropToConsole(record)
                         },
                         {
-                            icon: Icon.star(),
+                            icon: Icon.favorite(),
                             tooltip: 'Toggle Watchlist',
                             actionFn: ({record}) => this.togglePropsWatchlistItem(record),
                             displayFn: ({record}) => ({
                                 icon: record.data.isWatchlistItem ?
-                                    Icon.star({intent: 'warning', prefix: 'fas'}) :
-                                    Icon.star({className: 'xh-text-color-muted'})
+                                    Icon.favorite({intent: 'warning', prefix: 'fas'}) :
+                                    Icon.favorite({className: 'xh-text-color-muted'})
                             })
                         }
                     ]

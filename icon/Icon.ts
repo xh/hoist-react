@@ -72,8 +72,6 @@ export const Icon = {
             iconCmp({iconName, prefix, className, title, size, ...rest});
     },
 
-    accessDenied(p?: IconProps)     {return Icon.icon({...p,  iconName: 'ban'})},
-    add(p?: IconProps)              {return Icon.icon({...p,  iconName: 'plus'})},
     addressCard(p?: IconProps)      {return Icon.icon({...p,  iconName: 'address-card'})},
     analytics(p?: IconProps)        {return Icon.icon({...p,  iconName: 'analytics'})},
     angleDoubleDown(p?: IconProps)  {return Icon.icon({...p,  iconName: 'angle-double-down'})},
@@ -84,7 +82,6 @@ export const Icon = {
     angleLeft(p?: IconProps)        {return Icon.icon({...p,  iconName: 'angle-left'})},
     angleRight(p?: IconProps)       {return Icon.icon({...p,  iconName: 'angle-right'})},
     angleUp(p?: IconProps)          {return Icon.icon({...p,  iconName: 'angle-up'})},
-    approve(p?: IconProps)          {return Icon.icon({...p,  iconName: 'user-check'})},
     arrowDown(p?: IconProps)        {return Icon.icon({...p,  iconName: 'arrow-down'})},
     arrowLeft(p?: IconProps)        {return Icon.icon({...p,  iconName: 'arrow-left'})},
     arrowRight(p?: IconProps)       {return Icon.icon({...p,  iconName: 'arrow-right'})},
@@ -142,15 +139,11 @@ export const Icon = {
     cube(p?: IconProps)             {return Icon.icon({...p,  iconName: 'cube'})},
     danger(p?: IconProps)           {return Icon.icon({...p,  iconName: 'times-circle'})},
     database(p?: IconProps)         {return Icon.icon({...p,  iconName: 'database'})},
-    delete(p?: IconProps)           {return Icon.icon({...p,  iconName: 'minus-circle'})},
     desktop(p?: IconProps)          {return Icon.icon({...p,  iconName: 'desktop'})},
     detail(p?: IconProps)           {return Icon.icon({...p,  iconName: 'search'})},
     diff(p?: IconProps)             {return Icon.icon({...p,  iconName: 'exchange'})},
-    disabled(p?: IconProps)         {return Icon.icon({...p,  iconName: 'ban'})},
     dollarSign(p?: IconProps)       {return Icon.icon({...p,  iconName: 'dollar-sign'})},
     dollarSignCircle(p?: IconProps) {return Icon.icon({...p,  iconName: 'usd-circle'})},
-    download(p?: IconProps)         {return Icon.icon({...p,  iconName: 'arrow-down-to-bracket'})},
-    edit(p?: IconProps)             {return Icon.icon({...p,  iconName: 'edit'})},
     ellipsisHorizontal(p?: IconProps) {return Icon.icon({...p, iconName: 'ellipsis-h'})},
     ellipsisVertical(p?: IconProps) {return Icon.icon({...p,  iconName: 'ellipsis-v'})},
     envelope(p?: IconProps)         {return Icon.icon({...p,  iconName: 'envelope'})},
@@ -162,7 +155,6 @@ export const Icon = {
     eye(p?: IconProps)              {return Icon.icon({...p,  iconName: 'eye'})},
     eyeSlash(p?: IconProps)         {return Icon.icon({...p,  iconName: 'eye-slash'})},
     factory(p?: IconProps)          {return Icon.icon({...p,  iconName: 'industry-alt'})},
-    favorite(p?: IconProps)         {return Icon.icon({...p,  iconName: 'star'})},
     file(p?: IconProps)             {return Icon.icon({...p,  iconName: 'file'})},
     fileArchive(p?: IconProps)      {return Icon.icon({...p,  iconName: 'file-archive'})},
     fileCsv(p?: IconProps)          {return Icon.icon({...p,  iconName: 'file-csv'})},
@@ -172,7 +164,6 @@ export const Icon = {
     filePowerpoint(p?: IconProps)   {return Icon.icon({...p,  iconName: 'file-powerpoint'})},
     fileText(p?: IconProps)         {return Icon.icon({...p,  iconName: 'file-alt'})},
     fileWord(p?: IconProps)         {return Icon.icon({...p,  iconName: 'file-word'})},
-    filter(p?: IconProps)           {return Icon.icon({...p,  iconName: 'filter'})},
     flag(p?: IconProps)             {return Icon.icon({...p,  iconName: 'flag'})},
     folder(p?: IconProps)           {return Icon.icon({...p,  iconName: 'folder'})},
     folderOpen(p?: IconProps)       {return Icon.icon({...p,  iconName: 'folder-open'})},
@@ -246,7 +237,6 @@ export const Icon = {
     refresh(p?: IconProps)          {return Icon.icon({...p,  iconName: 'sync'})},
     reset(p?: IconProps)            {return Icon.icon({...p,  iconName: 'undo'})},
     rocket(p?: IconProps)           {return Icon.icon({...p,  iconName: 'rocket'})},
-    save(p?: IconProps)             {return Icon.icon({...p,  iconName: 'save'})},
     search(p?: IconProps)           {return Icon.icon({...p,  iconName: 'search'})},
     server(p?: IconProps)           {return Icon.icon({...p,  iconName: 'server'})},
     settings(p?: IconProps)         {return Icon.icon({...p,  iconName: 'sliders-h-square'})},
@@ -259,7 +249,6 @@ export const Icon = {
     stop(p?: IconProps)             {return Icon.icon({...p,  iconName: 'stop'})},
     stopCircle(p?: IconProps)       {return Icon.icon({...p,  iconName: 'stop-circle'})},
     stopwatch(p?: IconProps)        {return Icon.icon({...p,  iconName: 'stopwatch'})},
-    success(p?: IconProps)          {return Icon.icon({...p,  iconName: 'check-circle'})},
     sun(p?: IconProps)              {return Icon.icon({...p,  iconName: 'sun'})},
     sync(p?: IconProps)             {return Icon.icon({...p,  iconName: 'sync'})},
     tab(p?: IconProps)              {return Icon.icon({...p,  iconName: 'folder'})},
@@ -291,6 +280,46 @@ export const Icon = {
     wrench(p?: IconProps)           {return Icon.icon({...p,  iconName: 'wrench'})},
     x(p?: IconProps)                {return Icon.icon({...p,  iconName: 'times'})},
     xCircle(p?: IconProps)          {return Icon.icon({...p,  iconName: 'times-circle'})},
+
+    /**
+     * Allows apps to override Hoist choices for given icons.
+     */
+    //Icons for column sorting
+    sortAsc: () => Icon.arrowUp(),
+    sortAbsAsc: () => Icon.arrowToTop(),
+    sortDesc: () => Icon.arrowDown(),
+    sortAbsDesc: () => Icon.arrowToBottom(),
+
+    //Column filter and menu icons
+    filter: (p?: IconProps)  => {return Icon.icon({...p,  iconName: 'filter'})},
+    columnMenu: (p?: IconProps) => Icon.bars({...p}),
+
+    //Form select dropdown icon
+    selectDropdown: (p?: IconProps) => Icon.chevronDown({...p}),
+
+    //Top level app menu icon
+    menu: (p?: IconProps) => Icon.bars({...p}),
+
+    //Panel hide and unhide Icons //TODO Find better name
+    panelHideToggleRight: (p?: IconProps) => Icon.chevronRight({...p}),
+    panelHideToggleLeft: (p?: IconProps) => Icon.chevronLeft({...p}),
+    panelHideToggleUp: (p?: IconProps) => Icon.chevronUp({...p}),
+    panelHideToggleDown: (p?: IconProps) => Icon.chevronDown({...p}),
+
+    //Icon for tree grid grouping
+    expandGroupRow: (p?: IconProps) => Icon.angleRight({...p}),
+    collapseGroupRow: (p?: IconProps) => Icon.angleDown({...p}),
+    approve(p?: IconProps)          {return Icon.icon({...p,  iconName: 'user-check'})},
+    download(p?: IconProps)         {return Icon.icon({...p,  iconName: 'arrow-down-to-bracket'})},
+    add(p?: IconProps)              {return Icon.icon({...p,  iconName: 'plus'})},
+    favorite: (p?: IconProps) => Icon.star({...p}),
+    accessDenied(p?: IconProps)     {return Icon.icon({...p,  iconName: 'ban'})},
+    disabled(p?: IconProps)         {return Icon.icon({...p,  iconName: 'ban'})},
+    edit(p?: IconProps)             {return Icon.icon({...p,  iconName: 'edit'})},
+    save(p?: IconProps)             {return Icon.icon({...p,  iconName: 'save'})},
+    success(p?: IconProps)          {return Icon.icon({...p,  iconName: 'check-circle'})},
+    delete(p?: IconProps)           {return Icon.icon({...p,  iconName: 'minus-circle'})},
+
 
     /**
      * Create an Icon for a file with default styling appropriate for the file type.

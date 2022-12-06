@@ -94,14 +94,14 @@ export class GridExportService extends HoistService {
         if (cellCount > withDefault(config.streamingCellThreshold, 100000)) {
             startToast = XH.toast({
                 message: 'Your export is being prepared. Due to its size, formatting will be removed.',
-                icon: Icon.download(),
+                icon: Icon.downloadIcon(),
                 intent: 'warning',
                 timeout: null
             });
         } else if (cellCount > withDefault(config.toastCellThreshold, 3000)) {
             startToast = XH.toast({
                 message: 'Your export is being prepared and will download when complete...',
-                icon: Icon.download(),
+                icon: Icon.downloadIcon(),
                 timeout: null
             });
         }

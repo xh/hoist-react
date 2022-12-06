@@ -48,7 +48,7 @@ export class LogViewerModel extends HoistModel {
 
     downloadFileAction: RecordActionSpec = {
         text: 'Download',
-        icon: Icon.download(),
+        icon: Icon.downloadIcon(),
         recordsRequired: 1,
         disabled: !checkMinVersion(XH.environmentService.get('hoistCoreVersion'), '9.4'),
         actionFn: () => this.downloadSelectedAsync()
@@ -123,7 +123,7 @@ export class LogViewerModel extends HoistModel {
             download(blob, filename);
 
             XH.toast({
-                icon: Icon.download(),
+                icon: Icon.downloadIcon(),
                 message: 'Download complete.'
             });
 

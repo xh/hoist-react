@@ -530,7 +530,7 @@ class SelectInputModel extends HoistInputModel {
     getDropdownIndicatorCmp() {
         return this.componentProps.hideDropdownIndicator ?
             () => null :
-            () => Icon.chevronDown({className: 'xh-select__indicator'});
+            () => Icon.selectDropdown({className: 'xh-select__indicator'});
     }
 
     getThemeConfig() {

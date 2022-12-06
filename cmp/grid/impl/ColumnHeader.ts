@@ -41,9 +41,9 @@ export const columnHeader = hoistCmp.factory({
 
             let icon;
             if (sort === 'asc') {
-                icon = abs ? Icon.arrowToTop() : Icon.arrowUp();
+                icon = abs ? Icon.sortAbsAsc() : Icon.sortAsc();
             } else if (sort === 'desc') {
-                icon = abs ? Icon.arrowToBottom() : Icon.arrowDown();
+                icon = abs ? Icon.sortAbsDesc() : Icon.sortDesc();
             }
             return div({className: 'xh-grid-header-sort-icon', item: icon});
         };
@@ -53,7 +53,7 @@ export const columnHeader = hoistCmp.factory({
             if (!enableMenu) return null;
             return div({
                 className: 'xh-grid-header-menu-icon',
-                item: model.isAgFiltered ? Icon.filter() : Icon.bars(),
+                item: model.isAgFiltered ? Icon.filter() : Icon.columnMenu(),
                 ref: model.agFilterButtonRef,
                 onClick: (e) => {
                     e.stopPropagation();
@@ -69,8 +69,8 @@ export const columnHeader = hoistCmp.factory({
             }
 
             const icon = model.majorityIsExpanded ?
-                Icon.angleDown({prefix: 'fal'}) :
-                Icon.angleRight({prefix: 'fal'});
+                Icon.collapseGroupRow({prefix: 'fal'}) :
+                Icon.expandGroupRow({prefix: 'fal'});
 
             return div({
                 className: 'xh-grid-header-expand-collapse-icon',
