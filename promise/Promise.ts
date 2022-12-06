@@ -109,6 +109,21 @@ export function wait<T>(interval:number = 0): Promise<T> {
 }
 
 /**
+ * Return a promise that will resolve after a condition has been met, polling at the specified
+ * interval.
+ *
+ * @param condition - function that should return true when condition is met
+ * @param interval - milliseconds to wait between checks (default 100). Note that the actual time
+ *      will be subject to the minimum delay for `setTimeout()` in the browser.
+ */
+export function waitFor(condition: () => boolean, interval: number = 100): Promise<void> {
+    return new Promise(resolver => {
+        const resolveOnMet = () => condition() ? resolver() : setTimeout(resolveOnMet, interval);
+        resolveOnMet();
+    });
+}
+
+/**
  * Return a promise that resolves immediately.
  * @param value - the value to be returned by the resulting Promise.
  */
