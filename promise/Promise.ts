@@ -115,10 +115,22 @@ export function wait<T>(interval:number = 0): Promise<T> {
  * @param condition - function that should return true when condition is met
  * @param interval - milliseconds to wait between checks (default 100). Note that the actual time
  *      will be subject to the minimum delay for `setTimeout()` in the browser.
+ * @param timeout - milliseconds after which the Promise should be rejected (default Infinity).
  */
-export function waitFor(condition: () => boolean, interval: number = 100): Promise<void> {
-    return new Promise(resolver => {
-        const resolveOnMet = () => condition() ? resolver() : setTimeout(resolveOnMet, interval);
+export function waitFor(
+    condition: () => boolean,
+    interval: number = 100,
+    timeout: number = Infinity
+): Promise<void> {
+
+    timeout = Date.now() + timeout;
+
+    return new Promise((resolve, reject) => {
+        const resolveOnMet = () => {
+            if (condition()) resolve();
+            else if (Date.now() > timeout) reject();
+            else setTimeout(resolveOnMet, interval);
+        };
         resolveOnMet();
     });
 }
