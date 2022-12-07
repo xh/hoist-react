@@ -784,17 +784,19 @@ export class GridModel extends HoistModel {
             indices = [];
 
         // 1) Expand any nodes that are collapsed
-        const collapsedRows = new Set();
+        const expandedRows = new Set();
         records.forEach(({agId}) => {
             for (let row = agApi.getRowNode(agId)?.parent; row; row = row.parent) {
                 if (!row.expanded) {
                     agApi.setRowNodeExpanded(row, true);
-                    collapsedRows.add(agId);
+                    expandedRows.add(agId);
                 }
             }
         });
 
-        await waitFor(() => every([...collapsedRows], it => agApi.getRowNode(it).rowIndex));
+        if (expandedRows.size) {
+            await waitFor(() => every([...expandedRows], it => !isNil(agApi.getRowNode(it).rowIndex)));
+        }
 
         // 2) Scroll to all nodes
         records.forEach(({agId}) => {

@@ -125,12 +125,12 @@ export function waitFor(
 ): Promise<void> {
     const startTime = Date.now();
 
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
         const resolveOnMet = () => {
             if (condition()) {
                 resolve();
             } else if (olderThan(startTime, timeout)) {
-                throw Exception.timeout({interval: Date.now() - startTime});
+                reject(Exception.timeout({interval: Date.now() - startTime}));
             } else {
                 setTimeout(resolveOnMet, interval);
             }
