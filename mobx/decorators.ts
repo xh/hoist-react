@@ -19,10 +19,9 @@ import {apiDeprecated, getOrCreate} from '../utils/js';
  * Use `@bindable.ref` for a version of the function that will mark the property as observable by
  * reference. This will use the similarly named `@observable.ref` decorator in the core MobX API.
  */
-export function bindable(target, property, descriptor) {
+export const bindable: any = (target, property, descriptor) => {
     return createBindable(target, property, descriptor, false);
-
-}
+};
 
 bindable.ref = function(target, property, descriptor) {
     return createBindable(target, property, descriptor, true);
@@ -34,7 +33,7 @@ bindable.ref = function(target, property, descriptor) {
 function createBindable(target, name, descriptor, isRef) {
 
     // 1) Set up a set function, on the prototype, if one does not exist.
-    // The original side effect of bindable, used for backward compat. by HoistBase.setBindable.
+    // This is the original side effect of bindable, used for backward compat by `setBindable`
     const setterName = 'set' + upperFirst(name);
     if (!target.hasOwnProperty(setterName)) {
         const value = function(v) {
@@ -43,8 +42,7 @@ function createBindable(target, name, descriptor, isRef) {
         Object.defineProperty(target, setterName, {value});
     }
 
-    // 2) Place a hidden getter that wraps a boxed observable on the prototype.
-    // This will be the backing observable.
+    // 2) Place a hidden getter on prototype that wraps the backing observable.
     const {initializer} = descriptor,
         propName = `_${name}_bindable`,
         valName = `_${name}_bindable_value`;
@@ -60,14 +58,25 @@ function createBindable(target, name, descriptor, isRef) {
         }
     );
 
-    // 3) Record this property, so we can create the public getter in makeObservable()
-    // Be sure to create list for *this* particular class. Clone and include inherited values.
+    // 3) Create the descriptor for a getter/setter pair..
+    descriptor =  {
+        get() {return this[propName].get()},
+        set(v) {runInAction(() => this[propName].set(v))},
+        enumerable: true,
+        configurable: true
+    };
+
+    // 4) Record on class, so we can later create on *instance* in makeObservable.
+    // (Be sure to create cloned list for *this* particular class.)
     const key = '_xhBindableProperties';
     if (!target.hasOwnProperty(key)) {
-        target[key] = [...(target[key] ?? [])];
+        target[key] = {...target[key]};
     }
-    target[key].push(name);
-    return {};
+    target[key][name] = descriptor;
+
+    // 5) Return the get/set to be placed on prototype.  (If makeObservable() never called, or called
+    // late, the non-enumerable property will still be available.)
+    return descriptor;
 }
 
 
@@ -78,13 +87,15 @@ function createBindable(target, name, descriptor, isRef) {
  * If the setter is already defined, this call will be a no-op.
  *
  * Modelled after approach in https://github.com/farwayer/mobx-decorators.
+ *
+ * @deprecated Use bindable decorator instead.
  */
-export function settable(target, property, descriptor) {
+export const settable: any = (target, property, descriptor) => {
     const name = 'set' + upperFirst(property);
 
     apiDeprecated('settable', {
         v: 'v56',
-        message: `Consider using @bindable or implement a simple '${name}' method instead.`
+        msg: `Consider using @bindable or implement a simple '${name}' method instead.`
     });
 
     if (!target.hasOwnProperty(name)) {
@@ -95,4 +106,4 @@ export function settable(target, property, descriptor) {
     }
 
     return descriptor && {...descriptor, configurable: true};
-}
+};
