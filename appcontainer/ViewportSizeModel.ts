@@ -5,10 +5,9 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {debounced} from '@xh/hoist/utils/js';
 import {isFinite, isString} from 'lodash';
-import {runInAction} from 'mobx';
 
 /**
  * Exposes width / height of browser viewport + device orientation as observables.

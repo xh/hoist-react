@@ -280,7 +280,6 @@ class ChartLocalModel extends HoistModel {
         };
 
         return {
-            title: {text: null},
             chart: {
                 events: {
                     beforePrint: function() {
@@ -313,7 +312,8 @@ class ChartLocalModel extends HoistModel {
                 }
             },
             credits: false,
-            accessibility: {enabled:false},
+            title: {text: null},
+            accessibility: {enabled: false},
             exporting
         };
     }
