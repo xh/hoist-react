@@ -6,13 +6,15 @@
  */
 import {
     action,
+    AnnotationsMap,
     autorun,
     comparer,
     computed,
     configure,
+    CreateObservableOptions,
     extendObservable,
     isObservableProp,
-    makeObservable,
+    makeObservable as mobxMakeObservable,
     observable,
     override,
     reaction,
@@ -37,9 +39,8 @@ export {
     comparer,
     computed,
     extendObservable,
-    isObservableProp,
-    makeObservable,
     observable,
+    isObservableProp,
     observer,
     override,
     reaction,
@@ -50,3 +51,21 @@ export {
     untracked,
     when
 };
+
+
+export function makeObservable(target: any, annotations?: AnnotationsMap<any, never>, options?: CreateObservableOptions) {
+
+    // Finish creating 'bindable' properties.
+    const bindables = target._xhBindableProperties ?? [];
+    bindables.forEach(name => {
+        const propName = `_${name}_bindable`;
+        Object.defineProperty(target, name, {
+            get() {return this[propName].get()},
+            set(v) {runInAction(() => this[propName].set(v))},
+            enumerable: true,
+            configurable: true
+        });
+    });
+
+    return mobxMakeObservable(target, annotations, options);
+}

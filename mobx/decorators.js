@@ -8,32 +8,6 @@ import {upperFirst} from 'lodash';
 import {observable, runInAction} from 'mobx';
 import {apiDeprecated, getOrCreate} from '../utils/js';
 
-/**
- * Decorator to add a simple MobX action of the form `setPropName()` to a class.
- *
- * Applications that wish to add custom logic to their setter should define one manually instead.
- * If the setter is already defined, this call will be a no-op.
- *
- * Modelled after approach in https://github.com/farwayer/mobx-decorators.
- */
-export function settable(target, property, descriptor) {
-    const name = 'set' + upperFirst(property);
-
-    apiDeprecated('settable', {
-        v: 'v56',
-        message: `Consider using @bindable or implement a simple '${name}' method instead.`
-    });
-
-    if (!target.hasOwnProperty(name)) {
-        const value = function(v) {
-            runInAction(() => {this[property] = v});
-        };
-        Object.defineProperty(target, name, {value});
-    }
-
-    return descriptor && {...descriptor, configurable: true};
-}
-
 
 /**
  * Decorator to mark a property as observable and also provide a simple MobX action of the
@@ -59,8 +33,8 @@ bindable.ref = function(target, property, descriptor) {
 //-----------------
 function createBindable(target, name, descriptor, isRef) {
 
-    // 1) Set up a set function, if one does not exist.  This was the original side-effect of
-    // bindable and still used for backward compatibility by HoistBase.setBindable.
+    // 1) Set up a set function, on the prototype, if one does not exist.
+    // The original side effect of bindable, used for backward compat. by HoistBase.setBindable.
     const setterName = 'set' + upperFirst(name);
     if (!target.hasOwnProperty(setterName)) {
         const value = function(v) {
@@ -69,20 +43,56 @@ function createBindable(target, name, descriptor, isRef) {
         Object.defineProperty(target, setterName, {value});
     }
 
-    // 2) return a get/set pair that wraps a boxed observable.
+    // 2) Place a hidden getter that wraps a boxed observable on the prototype.
+    // This will be the backing observable.
     const {initializer} = descriptor,
-        getBox = (obj) => getOrCreate(obj, `_${name}_bindable`, () => {
-            const initVal = initializer?.call(obj);
-            return isRef ? observable.box(initVal, {deep: false}) : observable.box(initVal);
-        });
+        propName = `_${name}_bindable`,
+        valName = `_${name}_bindable_value`;
+    Object.defineProperty(
+        target,
+        propName, {
+            get() {
+                return getOrCreate(this, valName, () => {
+                    const initVal = initializer?.call(this);
+                    return isRef ? observable.box(initVal, {deep: false}) : observable.box(initVal);
+                });
+            }
+        }
+    );
 
-    return {
-        get() {
-            return getBox(this).get();
-        },
-        set(v) {
-            runInAction(() => getBox(this).set(v));
-        },
-        configurable: true
-    };
+    // 3) Record this property, so we can create the public getter in makeObservable()
+    // Be sure to create list for *this* particular class. Clone and include inherited values.
+    const key = '_xhBindableProperties';
+    if (!target.hasOwnProperty(key)) {
+        target[key] = [...(target[key] ?? [])];
+    }
+    target[key].push(name);
+    return {};
+}
+
+
+/**
+ * Decorator to add a simple MobX action of the form `setPropName()` to a class.
+ *
+ * Applications that wish to add custom logic to their setter should define one manually instead.
+ * If the setter is already defined, this call will be a no-op.
+ *
+ * Modelled after approach in https://github.com/farwayer/mobx-decorators.
+ */
+export function settable(target, property, descriptor) {
+    const name = 'set' + upperFirst(property);
+
+    apiDeprecated('settable', {
+        v: 'v56',
+        message: `Consider using @bindable or implement a simple '${name}' method instead.`
+    });
+
+    if (!target.hasOwnProperty(name)) {
+        const value = function(v) {
+            runInAction(() => {this[property] = v});
+        };
+        Object.defineProperty(target, name, {value});
+    }
+
+    return descriptor && {...descriptor, configurable: true};
 }
