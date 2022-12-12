@@ -42,7 +42,7 @@ import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desk
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
+import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
@@ -62,6 +62,7 @@ import {
     compact,
     defaults,
     defaultsDeep,
+    every,
     find,
     forEach,
     isArray,
@@ -783,15 +784,19 @@ export class GridModel extends HoistModel {
             indices = [];
 
         // 1) Expand any nodes that are collapsed
+        const expandedRows = new Set();
         records.forEach(({agId}) => {
             for (let row = agApi.getRowNode(agId)?.parent; row; row = row.parent) {
                 if (!row.expanded) {
                     agApi.setRowNodeExpanded(row, true);
+                    expandedRows.add(agId);
                 }
             }
         });
 
-        await wait();
+        if (expandedRows.size) {
+            await waitFor(() => every([...expandedRows], it => !isNil(agApi.getRowNode(it).rowIndex)));
+        }
 
         // 2) Scroll to all nodes
         records.forEach(({agId}) => {

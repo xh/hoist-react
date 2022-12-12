@@ -40,6 +40,8 @@ to use TypeScript for its own app-level code.
    property as well as the `setXXX()` method it currently produces.  This provides a more typescript
    friendly way to set properties in a mobx action, and should be the favored method going forward.
    The use of the `setXXX()` method will continue to be supported for backward compatibility.
+* New utility function `waitFor` returns a promise that will resolve after a specified condition
+   has been met, polling at a specified interval
 
 ### 💥 Breaking Changes
 
@@ -66,6 +68,7 @@ to use TypeScript for its own app-level code.
 ### 🐞 Bug Fixes
 * Fix bug where dragging on any panel header which is a descendant of a `DashCanvasView` would move
   the `DashCanvasView`
+* Fix bug where `GridModel.ensureRecordsVisibleAsync` could fail to make collapsed nodes visible
 
 ### ✅ Testing Scope
 

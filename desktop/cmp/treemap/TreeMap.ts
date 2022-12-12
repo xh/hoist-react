@@ -330,7 +330,8 @@ class TreeMapLocalModel extends HoistModel {
                     }
                 }
             },
-            series: [{data, type: 'treemap'}]
+            series: [{data, type: 'treemap'}],
+            accessibility: {enabled: false}
         }, highchartsConfig);
     }
 

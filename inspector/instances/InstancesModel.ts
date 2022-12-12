@@ -6,11 +6,10 @@ import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable} from '@xh/hoist/mobx';
+import {action, bindable, isObservableProp, makeObservable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {trimToDepth} from '@xh/hoist/utils/js';
 import {compact, find, forIn, head, without} from 'lodash';
-import {isObservableProp, makeObservable, runInAction} from 'mobx';
 import {StatsModel} from '../stats/StatsModel';
 
 /**

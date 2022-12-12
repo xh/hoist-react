@@ -11,7 +11,6 @@ import {
     computed,
     configure,
     extendObservable,
-    makeObservable,
     observable,
     override,
     reaction,
@@ -22,7 +21,6 @@ import {
     when
 } from 'mobx';
 import {observer} from 'mobx-react-lite';
-import {bindable, settable} from './decorators';
 
 configure({enforceActions: 'observed'});
 
@@ -32,19 +30,19 @@ configure({enforceActions: 'observed'});
 export {
     action,
     autorun,
-    bindable,
     comparer,
     computed,
     extendObservable,
-    makeObservable,
     observable,
     observer,
     override,
     reaction,
     runInAction,
-    settable,
     toJS,
     trace,
     untracked,
     when
 };
+
+export * from './decorators';
+export * from './overrides';
