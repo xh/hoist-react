@@ -27,7 +27,7 @@ import {
     HoistModel
 } from './model';
 import {apiDeprecated, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {useOnMount, getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
 import {observer} from '../mobx';
@@ -38,8 +38,7 @@ import {
     memo,
     ReactNode,
     useContext,
-    useDebugValue,
-    useState
+    useEffect, useRef, createElement, FunctionComponent, useDebugValue
 } from 'react';
 
 /**
@@ -59,7 +58,7 @@ export type ComponentConfig<P extends HoistProps> =
      * return of {@link uses} or {@link creates} - these factory functions will create a spec for
      * either externally-provided or internally-created models. Defaults to `uses('*')`.
      */
-    model?: ModelSpec<P['model']>|boolean;
+    model?: ModelSpec<P['model']>|false;
 
     /**
      * Base CSS class for this component. Will be combined with any className
@@ -85,6 +84,7 @@ export type ComponentConfig<P extends HoistProps> =
     observer?: boolean
 }
 
+let cmpIndex = 0;  // index for anonymous component dispay names
 
 /**
  * Hoist utility for defining functional components. This is the primary method for creating
@@ -122,13 +122,6 @@ export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P
     // 0) Pre-process/parse args.
     if (isFunction(config)) config = {render: config, displayName: config.name};
 
-    const render = config.render,
-        className = config.className,
-        displayName = config.displayName ? config.displayName : 'HoistCmp',
-        isMemo = withDefault(config.memo, true),
-        isObserver = withDefault(config.observer, true),
-        isForwardRef = (render.length === 2);
-
     // 1) Default and validate the modelSpec.
     const modelSpec = withDefault(config.model, uses('*'));
     throwIf(
@@ -136,37 +129,41 @@ export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P
         "The 'model' config passed to hoistComponent() is incorrectly specified: provide a spec returned by either uses() or creates()."
     );
 
+    let render = config.render,
+        cfg = {
+            className: config.className,
+            displayName: config.displayName ? config.displayName : 'HoistCmp'+ cmpIndex++,
+            isMemo: withDefault(config.memo, true),
+            isObserver: withDefault(config.observer, true),
+            isForwardRef: render.length === 2,
+            modelSpec: modelSpec ? modelSpec : null
+        } as Config;
+
     warnIf(
-        !isMemo && isObserver,
+        !cfg.isMemo && cfg.isObserver,
         'Cannot create an observer component without `memo`.  Memo is built-in to MobX observable. Component will be memoized.'
     );
 
-    // 2) Decorate with function wrappers with behaviors.
-    let ret: any = render;
-    if (modelSpec) {
-        ret = wrapWithModel(ret,  modelSpec, displayName);
+    // 2) Wrap supplied render function with model and classname, support. Be sure to clone props.
+    if (cfg.modelSpec) {
+        render = wrapWithModel(render, cfg);
     }
-    if (className) {
-        ret = wrapWithClassName(ret, className);
+    if (cfg.className) {
+        render = wrapWithClassName(render, cfg);
     }
-
-    // 2a) If we are applying model or class name, will be enhancing props, they need to be cloned
-    if (modelSpec || className) {
-        ret = wrapWithClonedProps(ret);
+    if (cfg.modelSpec || cfg.className) {
+        render = wrapWithClonedProps(render);
     }
 
-    // 2b) Apply display name to wrapped function.  This is the "pre-react" functional component.
-    // and React dev tools expect it to be named.
-    ret.displayName = displayName;
-
-    // 3) Wrap with HOCs.
-    // Note that observer includes memo.
-    if (isForwardRef)           ret = forwardRef(ret);
-    if (isObserver)             ret = observer(ret);
-    if (isMemo && !isObserver)  ret = memo(ret);
+    // 4) Wrap with standard react HOCs, mark, and return.
+    let ret = render as any;
+    ret.displayName = cfg.displayName;
+    if (cfg.isForwardRef)               ret = forwardRef(ret);
+    if (cfg.isObserver)                 ret = observer(ret);
+    if (cfg.isMemo && !cfg.isObserver)  ret = memo(ret);
 
     // 4) Mark and return.
-    ret.displayName = displayName;
+    ret.displayName = cfg.displayName;
     ret.isHoistComponent = true;
 
     return ret;
@@ -234,135 +231,154 @@ export function hoistCmpWithContainerFactory(config) {
 }
 hoistCmp.withContainerFactory = hoistCmpWithContainerFactory;
 
+//----------------------------
+// Implementation
+//----------------------------
 
-//------------------------------------
-// Implementation -- Core Wrappers
-//------------------------------------
-function wrapWithClassName(render, baseName) {
+//----------------------------------
+// internal types and core wrappers
+//----------------------------------
+type RenderFn = (props: DefaultHoistProps, ref?:ForwardedRef<any>) => ReactNode;
+
+interface Config {
+    displayName: string;
+    className: string;
+    isObserver: boolean;
+    isForwardRef: boolean;
+    isMemo: boolean;
+    modelSpec: ModelSpec;
+}
+
+interface ResolvedModel {
+    model: HoistModel;
+    fromContext: boolean;
+    isLinked: boolean;
+}
+
+function wrapWithClassName(render: RenderFn, cfg: Config): RenderFn  {
     return (props, ref) => {
-        props.className = classNames(baseName, props.className);
+        props.className = classNames(cfg.className, props.className);
         return render(props, ref);
     };
 }
 
-function wrapWithModel(render, spec, displayName) {
-    return spec.publishMode === 'none' ?
-        wrapWithSimpleModel(render, spec, displayName) :
-        wrapWithPublishedModel(render, spec, displayName);
-}
-
-function wrapWithClonedProps(render) {
+function wrapWithClonedProps(render: RenderFn): RenderFn {
     return (props, ref) => render({...props}, ref);
 }
 
-
-//----------------------------------------------------------------------------------------
-// 1) Lookup/create model for this component using spec, but *NEVER* publish
-// received model explicitly to children.  No need to add any ContextProviders
-//-----------------------------------------------------------------------------------------
-function wrapWithSimpleModel(render, spec, displayName) {
-    return (props, ref) => {
-        const modelLookup = useContext(ModelLookupContext),
-            {model} = useResolvedModel(spec, props, modelLookup, displayName);
-        return callRender(render, spec, model, modelLookup, props, ref, displayName);
-    };
-}
-
 //------------------------------------------------------------------------------------
-// 2) Lookup/create model for this component using spec, *AND* potentially publish
+// Lookup/create model for this component using spec, *AND* potentially publish
 // explicitly to children, if needed.  This may require inserting a ContextProvider
 //------------------------------------------------------------------------------------
-function wrapWithPublishedModel(render, spec, displayName) {
+function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
+    const spec = cfg.modelSpec,
+        {publishMode} = spec,
+        publishNone = (publishMode === 'none'),
+        publishDefault = (publishMode === 'default'),
+        HostCmp = createCmpHost(cfg);
+
     return (props, ref) => {
-        const publishDefault = (spec.publishMode === 'default');  // otherwise LIMITED
 
-        // Get the model and context
+        // 1) Get the model and modelLookup context
         const modelLookup = useContext(ModelLookupContext),
-            {model, fromContext} = useResolvedModel(spec, props, modelLookup, displayName);
+            resolvedModel = useResolvedModel(props, modelLookup, cfg),
+            {isLinked, model, fromContext} = resolvedModel;
 
+        // 2) Validate
+        if (!model && !spec.optional && spec instanceof UsesSpec) {
+            console.error(`
+                Failed to find model with selector '${formatSelector(spec.selector)}' for
+                component '${cfg.displayName}'.  Ensure the proper model is available via context, or
+                specify explicitly using the 'model' prop.
+            `);
+            return cmpErrDisplay({...getLayoutProps(props), item: 'No model found'});
+        }
 
-        // Create any lookup needed for model, caching it in state.
+        useDebugValue(model, m => {
+            if (!m) return 'null';
+            return [
+                m.constructor.name,
+                m.xhId,
+                isLinked ? 'linked' : (fromContext ? 'context' : 'props')
+            ].join(' | ');
+        });
+
+        // 3) Create any new lookup context that needs to be established
         // Avoid adding extra context if this model already in default context.
-        // Fixed cache here ok due to the "immutable" model from useResolvedModel
-        const createLookup = () => {
-            return (
-                model &&
-                (!modelLookup || !fromContext || (publishDefault && modelLookup.lookupModel('*') !== model))
-            ) ? new ModelLookup(model, modelLookup, spec.publishMode) : null;
-        };
-        const [newLookup] = useState(createLookup);
+        const newLookup = !publishNone && model && (!modelLookup || !fromContext || (publishDefault && modelLookup.lookupModel('*') !== model)) ?
+            new ModelLookup(model, modelLookup, publishMode) :
+            null;
 
-        // Render the app specified elements, either raw or wrapped in context
-        const rendering = callRender(render, spec, model, newLookup ?? modelLookup, props, ref, displayName);
-        return newLookup ? modelLookupContextProvider({value: newLookup, item: rendering}) : rendering;
+        // 4) Get the rendering of the component with its model context
+        // 4a) Create a generic render function, that can be called immediately, or in wrapped component.
+        const managedRender = () => {
+            let ctx = localModelContext;
+            try {
+                props.model = model;
+                ctx.props = props;
+                ctx.modelLookup = newLookup ?? modelLookup;
+                return render(props, ref);
+            } finally {
+                ctx.props = null;
+                ctx.modelLookup = null;
+            }
+        };
+
+        // 4b) Get the element, either running the wrapped function directly, or in a wrapped component if needed
+        const ret = isLinked ? managedRender(): createElement(HostCmp, {managedRender, key: model?.xhId});
+
+        return newLookup ? modelLookupContextProvider({value: newLookup, item: ret}) : ret;
     };
 }
 
-//-------------------------------------------------------------------------------
-// Wrapped call to the app specified render method.
-// Provide enhanced props, and set context needed by useLocalModel() calls within
-//------------------------------------------------------------------------------
-function callRender(render, spec, model, modelLookup, props, ref, displayName) {
-    if (!model && !spec.optional) {
-        console.error(`
-            Failed to find model with selector '${formatSelector(spec.selector)}' for
-            component '${displayName}'.  Ensure the proper model is available via context, or
-            specify explicitly using the 'model' prop.
-        `);
-        return cmpErrDisplay({...getLayoutProps(props), item: 'No model found'});
-    }
-    const ctx = localModelContext;
-    try {
-        props.model = model;
-        ctx.props = props;
-        ctx.modelLookup = modelLookup;
-        return render(props, ref);
-    } finally {
-        ctx.props = null;
-        ctx.modelLookup = null;
-    }
-}
 
 //-------------------------------------------------------------------------
 // Support to resolve/create model at render-time.  Used by wrappers above.
 //-------------------------------------------------------------------------
-function useResolvedModel(spec, props, modelLookup, displayName) {
-    // fixed cache here creates the "immutable" model behavior in hoist components
-    // (Need to force full remount with 'key' prop to resolve any new model)
-    const [{model, isLinked, fromContext}] = useState(() => (
-        spec.createFn ? createModel(spec) : lookupModel(spec, props, modelLookup, displayName)
-    ));
+function useResolvedModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): ResolvedModel {
+    let ref = useRef<ResolvedModel>(null),
+        resolvedModel = ref.current;
+
+    // 1) Lookup or create the model, as appropriate.
+    if (!resolvedModel) {
+        resolvedModel = cfg.modelSpec instanceof CreatesSpec ?
+            createModel(cfg.modelSpec) :
+            lookupModel(props, modelLookup, cfg);
+
+        // 1a) Cache any linked (created) model.  Only create a model once!
+        if (resolvedModel.isLinked) ref.current = resolvedModel;
+    }
+
+
+    // 2) Other bookkeeping, following rules of hooks, before return.
+    const {model, isLinked} = resolvedModel,
+        {modelRef} = props;
 
     useModelLinker(isLinked ? model : null, modelLookup, props);
-
-    // wire any modelRef
-    useOnMount(() => {
-        const {modelRef} = props;
+    useEffect(() => {
         if (isFunction(modelRef)) {
             modelRef(model);
         } else if (isObject(modelRef)) {
             (modelRef as any).current = model;
         }
-    });
+    }, [model, modelRef]);
 
-    useDebugValue(model, m => m.constructor.name + (isLinked ? ' (linked)' : ''));
-
-    return {model, fromContext};
+    return resolvedModel;
 }
 
-function createModel(spec) {
+function createModel(spec: CreatesSpec<HoistModel>): ResolvedModel {
     let model = spec.createFn();
     if (isFunction(model)) {
-        // @ts-ignore
-        model = new model();
+        model = new (model as any)();
     }
 
     return {model, isLinked: true, fromContext: false};
 }
 
-function lookupModel(spec, props, modelLookup, displayName) {
+function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): ResolvedModel {
     let {model, modelConfig} = props,
-        {selector} = spec;
+        spec = cfg.modelSpec as UsesSpec<HoistModel>,
+        selector = spec.selector as any;
 
     // 1) props - config
     if (spec.createFromConfig) {
@@ -380,7 +396,7 @@ function lookupModel(spec, props, modelLookup, displayName) {
     if (model) {
         if (!model.isHoistModel || !model.matchesSelector(selector, true)) {
             console.error(
-                `Incorrect model passed to '${displayName}'.
+                `Incorrect model passed to '${cfg.displayName}'.
                 Expected: ${formatSelector(selector)}
                 Received: ${model.constructor.name}`
             );
@@ -404,6 +420,22 @@ function lookupModel(spec, props, modelLookup, displayName) {
 
     return {model: null, isLinked: false, fromContext: false};
 }
+
+/**
+ * @internal
+ *
+ * Create Internal wrapper component for HoistComponents with provided models.
+ *
+ * Used to ensure that the core of the component is remounted,
+ * if the provided model changes.
+ */
+function createCmpHost(cfg: Config): FunctionComponent<any> {
+    let ret: FunctionComponent<any> = (props) => props.managedRender();
+    ret = cfg.isObserver ? observer(ret) : ret;
+    ret.displayName = cfg.displayName + 'Host';
+    return ret;
+}
+
 
 /**
  * Component to render certain errors caught within hoistComponent.

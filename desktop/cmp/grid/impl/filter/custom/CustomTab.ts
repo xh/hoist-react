@@ -29,7 +29,7 @@ export const customTab = hoistCmp.factory({
             items: div({
                 className: 'xh-custom-filter-tab__list',
                 items: [
-                    ...model.rowModels.map(it => customRow({model: it, key: it.xhId})),
+                    ...model.rowModels.map(m => customRow({model: m})),
                     div({
                         className: 'xh-custom-filter-tab__list__add-btn-row',
                         items: [

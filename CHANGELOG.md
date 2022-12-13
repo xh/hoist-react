@@ -42,7 +42,10 @@ to use TypeScript for its own app-level code.
    The use of the `setXXX()` method will continue to be supported for backward compatibility.
 * New utility function `waitFor` returns a promise that will resolve after a specified condition
    has been met, polling at a specified interval
-
+* Hoist Components will now automatically remount if the model passed to them (via context or props)
+  is changed during the lifetime of the component.  This allows applications to swap out models
+  without needing to manually force the remounting of related components with an explicit
+  `key` setting, i.e.  `key: model.xhId`.
 ### 💥 Breaking Changes
 
 * The constructors for `GridModel` and `Column` no long accept arbitrary rest (e.g `...rest`)
