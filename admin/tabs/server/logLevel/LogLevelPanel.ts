@@ -16,7 +16,7 @@ export const logLevelPanel = hoistCmp.factory(
     () => restGrid({modelConfig: {...modelSpec, readonly: App.readonly}})
 );
 
-const modelSpec:RestGridConfig= {
+const modelSpec: RestGridConfig= {
     persistWith: {localStorageKey: 'xhAdminLogLevelState'},
     colChooserModel: true,
     enableExport: true,

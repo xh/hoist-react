@@ -15,7 +15,7 @@ export const feedbackPanel = hoistCmp.factory(
     () => restGrid({modelConfig: {...modelSpec, readonly: App.readonly}})
 );
 
-const modelSpec:RestGridConfig = {
+const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminFeedbackState'},
     colChooserModel: true,
     enableExport: true,

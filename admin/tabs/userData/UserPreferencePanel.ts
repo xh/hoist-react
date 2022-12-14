@@ -18,7 +18,7 @@ export const userPreferencePanel = hoistCmp.factory(
 const required = true,
     hidden = true;
 
-const modelSpec:RestGridConfig = {
+const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminUserPreferenceState'},
     colChooserModel: true,
     enableExport: true,

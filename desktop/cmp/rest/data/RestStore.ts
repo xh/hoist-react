@@ -6,7 +6,6 @@
  */
 import {PlainObject, XH} from '@xh/hoist/core';
 import {
-    Field,
     StoreRecord,
     UrlStore,
     UrlStoreConfig
