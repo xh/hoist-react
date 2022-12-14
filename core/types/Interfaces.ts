@@ -65,7 +65,7 @@ export interface ToastSpec {
  */
 export interface MessageSpec {
 
-    message: ReactNode;
+    message?: ReactNode;
     title?: string;
     icon?: ReactElement;
     className?: string;
