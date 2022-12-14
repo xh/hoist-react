@@ -7,7 +7,7 @@
 import {hoistCmp} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
-import {restGrid} from '@xh/hoist/desktop/cmp/rest';
+import {restGrid, RestGridConfig} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
 import * as MCol from './MonitorColumns';
 import {App} from '@xh/hoist/admin/AppModel';
@@ -19,7 +19,7 @@ export const monitorEditorPanel = hoistCmp.factory(
 const required = true,
     hidden = true;
 
-const modelSpec = {
+const modelSpec:RestGridConfig= {
     persistWith: {localStorageKey: 'xhAdminMonitorState'},
     colChooserModel: true,
     enableExport: true,
