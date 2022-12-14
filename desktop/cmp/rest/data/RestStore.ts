@@ -6,6 +6,7 @@
  */
 import {PlainObject, XH} from '@xh/hoist/core';
 import {
+    Field,
     StoreRecord,
     UrlStore,
     UrlStoreConfig
@@ -108,6 +109,10 @@ export class RestStore extends UrlStore {
         const {data} = record,
             editable = keyBy(filter(this.fields, 'editable'), 'name');
         return mapValues(editable, (v, k) => data[k]);
+    }
+
+    override getField(name: string): RestField {
+        return super.getField(name) as RestField;
     }
 
     //--------------------------------
