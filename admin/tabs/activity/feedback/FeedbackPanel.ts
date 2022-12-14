@@ -6,7 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
-import {deleteAction, restGrid} from '@xh/hoist/desktop/cmp/rest';
+import {deleteAction, restGrid, RestGridConfig} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
 import {App} from '@xh/hoist/admin/AppModel';
 import {FieldSpec} from '@xh/hoist/data';
@@ -15,7 +15,7 @@ export const feedbackPanel = hoistCmp.factory(
     () => restGrid({modelConfig: {...modelSpec, readonly: App.readonly}})
 );
 
-const modelSpec = {
+const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminFeedbackState'},
     colChooserModel: true,
     enableExport: true,
