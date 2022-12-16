@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
-import {createElement, hoistCmp, HoistProps, LayoutProps, PlainObject, XH} from '@xh/hoist/core';
+import {createElement, hoistCmp, HoistProps, LayoutProps, PlainObject, XH, Awaitable} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {
@@ -168,7 +168,7 @@ export interface SelectProps extends
      * confused with `filterFn`, which should be used to filter through local options when
      * not in async mode.
      */
-    queryFn?: (query: string) => Promise<(SelectOption|any)[]>|(SelectOption|any)[];
+    queryFn?: (query: string) => Awaitable<(SelectOption|any)[]>;
 
     /**
      * Escape-hatch props passed directly to react-select. Use with care - not all props
