@@ -46,7 +46,7 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>
 //---------------------------
 function parseItems(items: MenuItemLike[]): ReactNode[] {
     items = items.map(item => {
-        if (!isMenuItem(item)) return item;
+        if (!isMenuItemCfg(item)) return item;
 
         item = clone(item);
         item.items = clone(item.items);
@@ -55,12 +55,12 @@ function parseItems(items: MenuItemLike[]): ReactNode[] {
     });
 
     return items
-        .filter(it => isMenuItem(it) && !it.hidden && !it.omit)
+        .filter(it => !isMenuItemCfg(it) || (!it.hidden && !it.omit))
         .filter(filterConsecutiveMenuSeparators())
         .map(item => {
             // Process dividers
             if (item === '-') return menuDivider();
-            if (!isMenuItem(item)) return item;
+            if (!isMenuItemCfg(item)) return item;
 
             // Process items
             const items = item.items ? parseItems(item.items) : null;
@@ -76,6 +76,6 @@ function parseItems(items: MenuItemLike[]): ReactNode[] {
 }
 
 
-function isMenuItem(item: MenuItemLike): item is MenuItem {
+function isMenuItemCfg(item: MenuItemLike): item is MenuItem {
     return !isString(item) && !isValidElement(item);
 }

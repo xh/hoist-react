@@ -68,7 +68,7 @@ class LocalMenuModel extends HoistModel {
         const {pressedIdx} = this;
 
         items = items.map(item => {
-            if (!isMenuItem(item)) return item;
+            if (!isMenuItemCfg(item)) return item;
 
             item = clone(item);
             item.prepareFn?.(item);
@@ -76,11 +76,11 @@ class LocalMenuModel extends HoistModel {
         });
 
         return items
-            .filter(it => isMenuItem(it) && !it.omit && !it.hidden)
+            .filter(it => !isMenuItemCfg(it) || (!it.hidden && !it.omit))
             .filter(filterConsecutiveMenuSeparators())
             .map((item, idx) => {
                 // Process dividers
-                if (!isMenuItem(item)) return item;
+                if (!isMenuItemCfg(item)) return item;
 
                 // Process items
                 const {text, icon, actionFn, hidden} = item,
@@ -107,6 +107,6 @@ class LocalMenuModel extends HoistModel {
     }
 }
 
-function isMenuItem(item: MenuItemLike): item is MenuItem {
+function isMenuItemCfg(item: MenuItemLike): item is MenuItem {
     return !isString(item) && !isValidElement(item);
 }
