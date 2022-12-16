@@ -489,10 +489,11 @@ class SelectInputModel extends HoistInputModel {
     //------------------------
     doQueryAsync = async (query) => {
         const rawOpts = await this.componentProps.queryFn(query),
-            matchOpts = this.normalizeOptions(rawOpts),
+            matchOpts = this.normalizeOptions(rawOpts);
+            
         // Carry forward and add to any existing internalOpts to allow our value
         // converters to continue all selected values in multiMode.
-            matchesByVal = keyBy(matchOpts, 'value'),
+        const matchesByVal = keyBy(matchOpts, 'value'),
             newOpts = [...matchOpts];
         this.internalOptions.forEach(currOpt => {
             const matchOpt = matchesByVal[currOpt.value];
