@@ -153,7 +153,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
      * @param selector - type of model to lookup.
      * @returns model, or null if no matching model found.
      */
-    lookupModel(selector: ModelSelector): HoistModel {
+    lookupModel<T extends HoistModel>(selector: ModelSelector<T>): T {
         warnIf(
             !this.isLinked,
             'Attempted to execute a lookup from a model that has not yet been linked. ' +

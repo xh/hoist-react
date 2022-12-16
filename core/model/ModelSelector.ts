@@ -18,7 +18,9 @@ import {throwIf} from '@xh/hoist/utils/js';
  *  - boolean
  *  - function taking a model and returning any of the above.
  */
-export type ModelSelector<T extends HoistModel = HoistModel> = (HoistModelClass<T>|string|boolean|((model: HoistModel) => any));
+export type ModelSelector<T extends HoistModel = HoistModel> = ModelSelectorOpts<T> | ModelSelectorFn<T>;
+type ModelSelectorFn<T extends HoistModel> = (model: HoistModel) => ModelSelectorOpts<T>;
+type ModelSelectorOpts<T extends HoistModel> = HoistModelClass<T> | string | boolean
 
 /**
  * Ensure an object is a ModelSelector, or throw.
