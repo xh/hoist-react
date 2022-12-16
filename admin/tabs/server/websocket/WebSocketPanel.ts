@@ -15,7 +15,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
-import {App} from '@xh/hoist/admin/AppModel';
+import {AppModel} from '@xh/hoist/admin/AppModel';
 
 
 export const webSocketPanel = hoistCmp.factory({
@@ -32,7 +32,7 @@ export const webSocketPanel = hoistCmp.factory({
                     icon: Icon.stopCircle(),
                     intent: 'danger',
                     disabled: !model.gridModel.hasSelection,
-                    omit: App.readonly,
+                    omit: AppModel.instance.readonly,
                     onClick: () => model.forceSuspendOnSelectedAsync()
                 }),
                 filler(),

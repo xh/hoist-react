@@ -9,11 +9,11 @@ import {FieldSpec} from '@xh/hoist/data';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
 import * as LogLevelCol from './LogLevelColumns';
-import {App} from '@xh/hoist/admin/AppModel';
+import {AppModel} from '@xh/hoist/admin/AppModel';
 
 
 export const logLevelPanel = hoistCmp.factory(
-    () => restGrid({modelConfig: {...modelSpec, readonly: App.readonly}})
+    () => restGrid({modelConfig: {...modelSpec, readonly: AppModel.instance.readonly}})
 );
 
 const modelSpec = {

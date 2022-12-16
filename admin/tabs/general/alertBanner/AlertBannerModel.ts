@@ -10,7 +10,7 @@ import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, XH, Intent} from '@xh/hoist/core';
 import {dateIs, required} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {App} from '@xh/hoist/admin/AppModel';
+import {AppModel} from '@xh/hoist/admin/AppModel';
 
 export class AlertBannerModel extends HoistModel {
 
@@ -18,7 +18,7 @@ export class AlertBannerModel extends HoistModel {
 
     @managed
     formModel = new FormModel({
-        readonly: App.readonly,
+        readonly: AppModel.instance.readonly,
         fields: [
             {name: 'active'},
             {

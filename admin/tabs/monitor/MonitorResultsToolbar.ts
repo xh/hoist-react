@@ -12,7 +12,7 @@ import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {isEmpty} from 'lodash';
 import {MonitorResultsModel} from './MonitorResultsModel';
-import {App} from '@xh/hoist/admin/AppModel';
+import {AppModel} from '@xh/hoist/admin/AppModel';
 
 
 export const monitorResultsToolbar = hoistCmp.factory<MonitorResultsModel>(
@@ -27,7 +27,7 @@ export const monitorResultsToolbar = hoistCmp.factory<MonitorResultsModel>(
                 icon: Icon.refresh(),
                 text: 'Run all now',
                 disabled: isEmpty(results),
-                omit: App.readonly,
+                omit: AppModel.instance.readonly,
                 onClick: () => model.forceRunAllMonitorsAsync()
             }),
             hbox({
