@@ -1,5 +1,6 @@
 .xh-inspector {
-  .xh-modal-support__host > .xh-panel__content > .xh-panel-header {
+  z-index: 999;
+  > div >.xh-panel__content > .xh-panel-header {
     background-color: hsl(33, 93%, 40%);
     color: white;
   }

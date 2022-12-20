@@ -122,10 +122,12 @@ const appContainerView = hoistCmp.factory({
     displayName: 'AppContainerView',
     model: uses(AppContainerModel),
 
-    render({model}) {
-        const {appSpec, appModel} = XH;
-        let ret: ReactElement = viewport(
-            vframe(
+render({model}) {
+    const {appSpec, appModel} = XH;
+    let ret: ReactElement = viewport(
+        vframe({
+            id: 'xh-app-content',
+            item:[
                 impersonationBar(),
                 bannerList(),
                 refreshContextView({
@@ -133,14 +135,15 @@ const appContainerView = hoistCmp.factory({
                     item: frame(createElement(appSpec.componentClass, {model: appModel}))
                 }),
                 inspectorPanel(),
-                versionBar()
-            ),
-            mask({bind: model.appLoadModel, spinner: true}),
-            aboutDialog(),
-            changelogDialog(),
-            feedbackDialog(),
-            optionsDialog()
-        );
+                versionBar()]
+
+        }),
+        mask({bind: model.appLoadModel, spinner: true}),
+        aboutDialog(),
+        changelogDialog(),
+        feedbackDialog(),
+        optionsDialog()
+    );
 
         if (!appSpec.showBrowserContextMenu) {
             ret = useContextMenu(ret, null);
