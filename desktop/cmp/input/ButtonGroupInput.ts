@@ -120,11 +120,8 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(
             intent,
             minimal,
             outlined,
-            // ButtonGroup gets ButtonGroupProps
-            alignText,
-            fill,
-            large,
-            vertical
+            // ...and ButtonGroup gets all the rest
+            ...buttonGroupProps
         } = getNonLayoutProps(props) as ButtonGroupInputProps;
 
         const buttons = Children.map(children, button => {
@@ -156,10 +153,7 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(
 
         return buttonGroup({
             items: buttons,
-            alignText,
-            fill,
-            large,
-            vertical,
+            ...(buttonGroupProps as ButtonGroupProps),
             minimal: withDefault(minimal, outlined, false),
             ...getLayoutProps(props),
             onBlur: model.onBlur,
