@@ -184,8 +184,10 @@ export abstract class HoistModel extends HoistBase implements Loadable {
         // 1) check class ref first, it's a function, but distinct from callable function below
         if (sel.isHoistModel) return this instanceof sel;
 
-        // 2) call any test or selector generator function
-        sel = isFunction(sel) ? sel(this) : sel;
+        // 2) Recurse on any function.
+        if (isFunction(sel)) {
+            return this.matchesSelector(sel(this), acceptWildcard);
+        }
 
         // 3) main tests
         if (sel === true) return true;
