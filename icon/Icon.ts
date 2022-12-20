@@ -300,7 +300,7 @@ export const Icon = {
     //Top level app menu icon
     menu: (p?: IconProps) => Icon.bars({...p}),
 
-    //Panel hide and unhide Icons //TODO Find better name
+    //Panel hide and unhide Icons
     panelHideToggleRight: (p?: IconProps) => Icon.chevronRight({...p}),
     panelHideToggleLeft: (p?: IconProps) => Icon.chevronLeft({...p}),
     panelHideToggleUp: (p?: IconProps) => Icon.chevronUp({...p}),
