@@ -17,6 +17,7 @@ import {
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {
+    Awaitable,
     HoistModel,
     HSide,
     managed,
@@ -42,7 +43,7 @@ import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desk
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
+import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
@@ -62,6 +63,7 @@ import {
     compact,
     defaults,
     defaultsDeep,
+    every,
     find,
     forEach,
     isArray,
@@ -125,11 +127,11 @@ export interface GridConfig {
     colChooserModel?: ColChooserConfig | boolean;
 
     /**
-     * Async function to be called when the user triggers GridModel.restoreDefaultsAsync(). This
+     * Function to be called when the user triggers GridModel.restoreDefaultsAsync(). This
      * function will be called after the built-in defaults have been restored, and can be
      * used to restore application specific defaults.
      */
-    restoreDefaultsFn?: () => Promise<boolean>;
+    restoreDefaultsFn?: () => Awaitable<boolean>;
 
     /**
      * Confirmation warning to be presented to user before restoring default grid state. Set to
@@ -369,7 +371,7 @@ export class GridModel extends HoistModel {
     exportOptions: ExportOptions;
     useVirtualColumns: boolean;
     autosizeOptions: GridAutosizeOptions;
-    restoreDefaultsFn: () => Promise<boolean>;
+    restoreDefaultsFn: () => Awaitable<boolean>;
     restoreDefaultsWarning: ReactNode;
     fullRowEditing: boolean;
     hideEmptyTextBeforeLoad: boolean;
@@ -783,15 +785,19 @@ export class GridModel extends HoistModel {
             indices = [];
 
         // 1) Expand any nodes that are collapsed
+        const expandedRows = new Set();
         records.forEach(({agId}) => {
             for (let row = agApi.getRowNode(agId)?.parent; row; row = row.parent) {
                 if (!row.expanded) {
                     agApi.setRowNodeExpanded(row, true);
+                    expandedRows.add(agId);
                 }
             }
         });
 
-        await wait();
+        if (expandedRows.size) {
+            await waitFor(() => every([...expandedRows], it => !isNil(agApi.getRowNode(it).rowIndex)));
+        }
 
         // 2) Scroll to all nodes
         records.forEach(({agId}) => {

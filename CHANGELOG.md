@@ -40,7 +40,12 @@ to use TypeScript for its own app-level code.
    property as well as the `setXXX()` method it currently produces.  This provides a more typescript
    friendly way to set properties in a mobx action, and should be the favored method going forward.
    The use of the `setXXX()` method will continue to be supported for backward compatibility.
-
+* New utility function `waitFor` returns a promise that will resolve after a specified condition
+   has been met, polling at a specified interval
+* Hoist Components will now automatically remount if the model passed to them (via context or props)
+  is changed during the lifetime of the component.  This allows applications to swap out models
+  without needing to manually force the remounting of related components with an explicit
+  `key` setting, i.e.  `key: model.xhId`.
 ### 💥 Breaking Changes
 
 * The constructors for `GridModel` and `Column` no long accept arbitrary rest (e.g `...rest`)
@@ -66,6 +71,7 @@ to use TypeScript for its own app-level code.
 ### 🐞 Bug Fixes
 * Fix bug where dragging on any panel header which is a descendant of a `DashCanvasView` would move
   the `DashCanvasView`
+* Fix bug where `GridModel.ensureRecordsVisibleAsync` could fail to make collapsed nodes visible
 
 ### ✅ Testing Scope
 

@@ -168,7 +168,7 @@ const bannerList = hoistCmp.factory<AppContainerModel>({
         const {bannerModels} = model.bannerSourceModel;
         if (isEmpty(bannerModels)) return null;
         return fragment({
-            items: bannerModels.map(model => banner({model, key: model.xhId}))
+            items: bannerModels.map(model => banner({model}))
         });
     }
 });

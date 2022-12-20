@@ -110,6 +110,10 @@ export class RestStore extends UrlStore {
         return mapValues(editable, (v, k) => data[k]);
     }
 
+    override getField(name: string): RestField {
+        return super.getField(name) as RestField;
+    }
+
     //--------------------------------
     // Implementation
     //--------------------------------

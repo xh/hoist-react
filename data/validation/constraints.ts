@@ -17,7 +17,7 @@ import {Constraint} from './Rule';
  * For strings this validation will fail if empty or containing only whitespace.
  * For arrays (e.g. Select w/multiple values) this validation will fail if empty.
  */
-export const required: Constraint = ({value, displayName}, foo) => {
+export const required: Constraint = ({value, displayName}) => {
     if (
         isNil(value) ||
         (isString(value) && value.trim().length === 0) ||

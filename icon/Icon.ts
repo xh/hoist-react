@@ -32,7 +32,7 @@ export interface IconProps extends HoistProps, Partial<Omit<FontAwesomeIconProps
     title?: string;
 
     /** Size of the icon, as specified by the FontAwesome API. */
-    size?: 'xs'|'sm'|'lg'|'1x'|'2x'|'3x'|'4x'|'5x'|'6x'|'7x'|'8x'|'9x'|'10x';
+    size?: '2xs'|'xs'|'sm'|'lg'|'xl'|'2xl'|'1x'|'2x'|'3x'|'4x'|'5x'|'6x'|'7x'|'8x'|'9x'|'10x';
 
     /**  Set to true to return the output as a string containing the raw <svg/> tag.*/
     asHtml?: boolean;

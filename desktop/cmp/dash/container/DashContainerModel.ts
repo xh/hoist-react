@@ -16,7 +16,7 @@ import {modelLookupContextProvider} from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -304,12 +304,12 @@ export class DashContainerModel extends DashModel<DashContainerViewSpec, DashVie
     }
 
     @debounced(1000)
-    @action
     private publishState() {
         const {goldenLayout} = this;
         if (!goldenLayout) return;
-
-        this.state = convertGLToState(goldenLayout, this);
+        runInAction(() => {
+            this.state = convertGLToState(goldenLayout, this);
+        });
         this.provider?.write({state: this.state});
     }
 

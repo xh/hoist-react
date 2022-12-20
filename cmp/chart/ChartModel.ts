@@ -44,16 +44,18 @@ export class ChartModel extends HoistModel {
     @observable.ref
     highchart: any;
 
-    constructor({
-        highchartsConfig,
-        series = [],
-        showContextMenu = true,
-        xhImpl = false
-    }: ChartConfig) {
+    constructor(config?: ChartConfig) {
         super();
         makeObservable(this);
-        this.xhImpl = xhImpl;
 
+        const {
+            highchartsConfig,
+            series = [],
+            showContextMenu = true,
+            xhImpl = false
+        } = config ?? {};
+
+        this.xhImpl = xhImpl;
         this.highchartsConfig = highchartsConfig;
         this.series = castArray(series);
         this.showContextMenu = showContextMenu;

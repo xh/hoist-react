@@ -19,7 +19,7 @@ export const messageSource = hoistCmp.factory({
 
     render({model}) {
         const models = model.msgModels,
-            children = models.map(m => message({model: m,  key: m.xhId}));
+            children = models.map(m => message({model: m}));
         return children.length ? fragment(...children) : null;
     }
 });
