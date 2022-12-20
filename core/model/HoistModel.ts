@@ -153,7 +153,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
      * @param selector - type of model to lookup.
      * @returns model, or null if no matching model found.
      */
-    lookupModel(selector: ModelSelector): HoistModel {
+    lookupModel<T extends HoistModel>(selector: ModelSelector<T>): T {
         warnIf(
             !this.isLinked,
             'Attempted to execute a lookup from a model that has not yet been linked. ' +
@@ -184,8 +184,10 @@ export abstract class HoistModel extends HoistBase implements Loadable {
         // 1) check class ref first, it's a function, but distinct from callable function below
         if (sel.isHoistModel) return this instanceof sel;
 
-        // 2) call any test or selector generator function
-        sel = isFunction(sel) ? sel(this) : sel;
+        // 2) Recurse on any function.
+        if (isFunction(sel)) {
+            return this.matchesSelector(sel(this), acceptWildcard);
+        }
 
         // 3) main tests
         if (sel === true) return true;

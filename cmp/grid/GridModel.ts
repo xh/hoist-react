@@ -17,6 +17,7 @@ import {
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {
+    Awaitable,
     HoistModel,
     HSide,
     managed,
@@ -126,11 +127,11 @@ export interface GridConfig {
     colChooserModel?: ColChooserConfig | boolean;
 
     /**
-     * Async function to be called when the user triggers GridModel.restoreDefaultsAsync(). This
+     * Function to be called when the user triggers GridModel.restoreDefaultsAsync(). This
      * function will be called after the built-in defaults have been restored, and can be
      * used to restore application specific defaults.
      */
-    restoreDefaultsFn?: () => Promise<boolean>;
+    restoreDefaultsFn?: () => Awaitable<boolean>;
 
     /**
      * Confirmation warning to be presented to user before restoring default grid state. Set to
@@ -370,7 +371,7 @@ export class GridModel extends HoistModel {
     exportOptions: ExportOptions;
     useVirtualColumns: boolean;
     autosizeOptions: GridAutosizeOptions;
-    restoreDefaultsFn: () => Promise<boolean>;
+    restoreDefaultsFn: () => Awaitable<boolean>;
     restoreDefaultsWarning: ReactNode;
     fullRowEditing: boolean;
     hideEmptyTextBeforeLoad: boolean;

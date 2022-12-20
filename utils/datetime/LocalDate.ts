@@ -297,6 +297,6 @@ export class LocalDate {
  * Is the input value a local Date?
  * Convenience alias for LocalDate.isLocalDate()
  */
-export function isLocalDate(val): boolean {
+export function isLocalDate(val): val is LocalDate {
     return !!(val?.isLocalDate);
 }

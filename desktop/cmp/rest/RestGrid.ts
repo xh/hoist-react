@@ -7,11 +7,11 @@
 
 import {grid} from '@xh/hoist/cmp/grid';
 import {fragment} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, PlainObject, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, PlainObject, Some, uses} from '@xh/hoist/core';
 import {MaskProps} from '@xh/hoist/desktop/cmp/mask';
 import {panel, PanelProps} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
-import {cloneElement, isValidElement, ReactElement} from 'react';
+import {cloneElement, isValidElement, ReactElement, ReactNode} from 'react';
 
 import {restForm} from './impl/RestForm';
 import {restGridToolbar} from './impl/RestGridToolbar';
@@ -30,7 +30,7 @@ export interface RestGridProps extends
     agOptions?: PlainObject,
 
     /** Optional components rendered adjacent to the top toolbar's action buttons */
-    extraToolbarItems?: () => ReactElement|ReactElement[];
+    extraToolbarItems?: (Some<ReactNode>)|(() => Some<ReactNode>);
 
     /**
      * Mask to render on this Component. Defaults to true, which renders a standard

@@ -6,7 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
-import {restGrid} from '@xh/hoist/desktop/cmp/rest';
+import {restGrid, RestGridConfig} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 
@@ -18,7 +18,7 @@ export const userPreferencePanel = hoistCmp.factory(
 const required = true,
     hidden = true;
 
-const modelSpec = {
+const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminUserPreferenceState'},
     colChooserModel: true,
     enableExport: true,
