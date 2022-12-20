@@ -14,7 +14,7 @@ import {checkMinVersion} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
 import {createRef} from 'react';
 import {LogDisplayModel} from './LogDisplayModel';
-import {App} from '@xh/hoist/admin/AppModel';
+import {AppModel} from '@xh/hoist/admin/AppModel';
 
 
 /**
@@ -43,7 +43,7 @@ export class LogViewerModel extends HoistModel {
         intent: 'danger',
         recordsRequired: true,
         actionFn: () => this.deleteSelectedAsync(),
-        displayFn: () => ({hidden: App.readonly})
+        displayFn: () => ({hidden: AppModel.instance.readonly})
     };
 
     downloadFileAction: RecordActionSpec = {
