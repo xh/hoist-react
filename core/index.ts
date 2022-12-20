@@ -25,4 +25,4 @@ export * from './exception/ExceptionHandler';
 export * from './exception/Exception';
 
 // Explicitly exporting `XH` helps IntelliJ suggest the correct import from this core package.
-export {XH, XhApi} from './XH';
+export {XH, XHClass} from './XH';

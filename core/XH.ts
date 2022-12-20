@@ -70,6 +70,7 @@ declare const xhAppBuild: string;
 declare const xhBaseUrl: string;
 declare const xhIsDevelopmentMode: boolean;
 
+
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.
  *
@@ -79,7 +80,7 @@ declare const xhIsDevelopmentMode: boolean;
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
-export class XhApi {
+export class XHClass {
 
     private _initCalled: boolean = false;
     private _lastActivityMs: number = Date.now();
@@ -922,7 +923,7 @@ export class XhApi {
 }
 
 /** app-wide singleton instance. */
-export const XH = new XhApi();
+export const XH: XHClass = new XHClass();
 
 // Install reference to XH singleton on window (this is the one global Hoist adds directly).
 // Note that app code should still `import {XH} from '@xh/hoist/core'` to access this instance.
