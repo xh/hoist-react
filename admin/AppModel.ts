@@ -16,7 +16,7 @@ import {serverTab} from './tabs/server/ServerTab';
 import {userDataTab} from './tabs/userData/UserDataTab';
 
 export class AppModel extends HoistAppModel {
-    static instance: AppModel
+    static instance: AppModel;
 
     @managed
     tabModel: TabContainerModel;
