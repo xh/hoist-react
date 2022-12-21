@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {FieldFilterSpec} from '@xh/hoist/data';
 import {ColumnHeaderFilterModel} from '../ColumnHeaderFilterModel';
@@ -174,7 +174,7 @@ export class ValuesTabModel extends HoistModel {
     }
 
     private createGridModel() {
-        const {BLANK_STR} = this.gridFilterModel,
+        const {BLANK_PLACEHOLDER} = GridFilterModel,
             {align, headerAlign, displayName} = this.headerFilterModel.column,
             {fieldType} = this.headerFilterModel,
             renderer = this.fieldSpec.renderer ?? (fieldType !== 'tags' ? this.headerFilterModel.column.renderer : null);
@@ -229,12 +229,12 @@ export class ValuesTabModel extends HoistModel {
                     headerAlign,
                     comparator: (v1, v2, sortDir, abs, {defaultComparator}) => {
                         const mul = sortDir === 'desc' ? -1 : 1;
-                        if (v1 === BLANK_STR) return 1 * mul;
-                        if (v2 === BLANK_STR) return -1 * mul;
+                        if (v1 === BLANK_PLACEHOLDER) return 1 * mul;
+                        if (v2 === BLANK_PLACEHOLDER) return -1 * mul;
                         return defaultComparator(v1, v2);
                     },
                     renderer: (value, context) => {
-                        if (value === BLANK_STR) return value;
+                        if (value === BLANK_PLACEHOLDER) return value;
                         return renderer ? renderer(value, context) : value;
                     }
                 }
