@@ -110,7 +110,7 @@ export class RecordAction {
     tooltip: string;
     actionFn: (data: ActionFnData) => void;
     displayFn: (data: DisplayFnData) => PlainObject;
-    items: (RecordAction|string)[];
+    items: Array<RecordAction|string>;
     disabled: boolean;
     hidden: boolean;
     recordsRequired: boolean|number;

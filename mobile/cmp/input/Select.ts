@@ -120,7 +120,7 @@ export interface SelectProps extends
      * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
      * of up-front in this prop.
      */
-    options?: (SelectOption|any)[];
+    options?: Array<SelectOption|any>;
 
     /** Text to display when control is empty. */
     placeholder?: string;
@@ -161,7 +161,7 @@ export interface SelectProps extends
 interface SelectOption {
     value: any;
     label?: string;
-    options?: (SelectOption|any)[];
+    options?: Array<SelectOption|any>;
 }
 
 /**

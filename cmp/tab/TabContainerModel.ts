@@ -182,7 +182,7 @@ export class TabContainerModel extends HoistModel {
      * Set the Tabs displayed by this object.
      */
     @action
-    setTabs(tabs: (TabModel|TabConfig)[]) {
+    setTabs(tabs: Array<TabModel|TabConfig>) {
         const oldTabs = this.tabs,
             isInit = (oldTabs === null);
         throwIf(!isInit && this.route, 'Dynamic tabs not available on TabContainer with routing.');

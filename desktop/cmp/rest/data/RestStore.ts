@@ -18,7 +18,7 @@ import {RestField, RestFieldSpec} from './RestField';
 export interface RestStoreConfig extends UrlStoreConfig {
 
     /** Field names, configs, or instances. */
-    fields?: (string|RestFieldSpec|RestField)[];
+    fields?: Array<string|RestFieldSpec|RestField>;
 
     /** Whether lookups should be loaded each time new data is loaded or updated by this client. */
     reloadLookupsOnLoad?: boolean;

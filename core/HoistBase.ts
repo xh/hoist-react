@@ -137,7 +137,7 @@ export abstract class HoistBase {
      * @param specs - one or more autoruns to add
      * @returns disposer(s) to manually dispose of each created autorun.
      */
-    addAutorun(...specs: (AutoRunSpec|(()=>any))[]) : IReactionDisposer|IReactionDisposer[] {
+    addAutorun(...specs: Array<AutoRunSpec|(()=>any)>) : IReactionDisposer|Array<IReactionDisposer> {
         const disposers = specs.map(s => {
             if (!s) return null;
             if (isFunction(s)) s = {run: s};

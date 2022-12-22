@@ -28,13 +28,13 @@ export interface RestGridConfig extends GridConfig {
     readonly?: boolean;
 
     /** Actions to display in the toolbar. Defaults to add, edit, delete. */
-    toolbarActions?: (RecordAction|RecordActionSpec)[];
+    toolbarActions?: Array<RecordAction|RecordActionSpec>;
 
     /** actions to display in the grid context menu. Defaults to add, edit, delete. */
-    menuActions?: (RecordAction|RecordActionSpec)[];
+    menuActions?: Array<RecordAction|RecordActionSpec>;
 
     /** Actions to display in the form toolbar. Defaults to delete. */
-    formActions?: (RecordAction|RecordActionSpec)[];
+    formActions?: Array<RecordAction|RecordActionSpec>;
 
     /** Warning to display before actions on a selection of  records. */
     actionWarning?: {
@@ -91,9 +91,9 @@ export class RestGridModel extends HoistModel {
     //----------------
     readonly: boolean;
     editors: RestGridEditor[];
-    toolbarActions: (RecordAction|RecordActionSpec)[];
-    menuActions: (RecordAction|RecordActionSpec)[];
-    formActions: (RecordAction|RecordActionSpec)[];
+    toolbarActions: Array<RecordAction|RecordActionSpec>;
+    menuActions: Array<RecordAction|RecordActionSpec>;
+    formActions: Array<RecordAction|RecordActionSpec>;
     prepareCloneFn: (input: {record: StoreRecord, clone: PlainObject}) => void;
     unit: string;
     filterFields: string[] = null;
