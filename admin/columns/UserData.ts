@@ -8,28 +8,28 @@ import * as Col from '@xh/hoist/cmp/grid/columns';
 import {truncate} from 'lodash';
 import { ColumnSpec } from '@xh/hoist/cmp/grid/columns';
 
-export const value = {
+export const value: ColumnSpec= {
     field: {name: 'value', type: 'auto'},
     width: 200,
     autosizeMaxWidth: 400,
     renderer: truncateValue
-} as ColumnSpec;
+};
 
-export const defaultValue = {
+export const defaultValue: ColumnSpec = {
     field: {name: 'defaultValue', type: 'auto'},
     width: 200,
     autosizeMaxWidth: 400,
     renderer: truncateIfJson
-} as ColumnSpec;
+};
 
-export const userValue = {
+export const userValue: ColumnSpec = {
     field: {name: 'userValue', type: 'auto'},
     flex: true,
     minWidth: 200,
     renderer: truncateIfJson
-} as ColumnSpec;
+};
 
-export const valueType = {
+export const valueType: ColumnSpec = {
     field: {
         name: 'valueType',
         type: 'string',
@@ -37,29 +37,29 @@ export const valueType = {
     },
     width: 80,
     align: 'center'
-} as ColumnSpec;
+};
 
-export const groupName = {
+export const groupName: ColumnSpec = {
     field: {
         name: 'groupName',
         type: 'string',
         displayName: 'Group'
     },
     width: 100
-} as ColumnSpec;
+};
 
-export const clientVisible = {
+export const clientVisible: ColumnSpec = {
     field: {name: 'clientVisible', type: 'bool'},
     ...Col.boolCheck,
     displayName: 'Client?',
     width: 75
-} as ColumnSpec;
+};
 
-export const local = {
+export const local: ColumnSpec = {
     field: {name: 'local', type: 'bool'},
     ...Col.boolCheck,
     width: 75
-} as ColumnSpec;
+};
 
 function truncateIfJson(value, {record}) {
     return record.data.type === 'json' ? truncateValue(value) : value?.toString();

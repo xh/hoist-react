@@ -31,7 +31,7 @@ import './Actions.scss';
  *
  * @see RecordAction
  */
-export const actionCol = {
+export const actionCol: ColumnSpec = {
     colId: 'actions',
     displayName: 'Actions',
     headerName: null,
@@ -78,7 +78,7 @@ export const actionCol = {
             items: buttons
         });
     }
-} as ColumnSpec;
+};
 
 /**
  * Calculates the width for an action column

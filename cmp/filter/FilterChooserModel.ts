@@ -8,7 +8,7 @@ import {
     HoistModel,
     managed,
     PersistenceProvider,
-    PersistOptions,
+    PersistOptions, PlainObject,
     TaskObserver,
     XH
 } from '@xh/hoist/core';
@@ -438,7 +438,7 @@ export class FilterChooserModel extends HoistModel {
     // Persistence handling
     //-------------------------
     get persistState() {
-        const ret = {} as any;
+        const ret: PlainObject = {};
         if (this.persistValue) ret.value = this.value;
         if (this.persistFavorites) ret.favorites = this.favorites;
         return ret;

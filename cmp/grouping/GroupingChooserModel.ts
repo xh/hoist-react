@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, managed, PersistenceProvider, PersistOptions, XH} from '@xh/hoist/core';
+import {HoistModel, managed, PersistenceProvider, PersistOptions, PlainObject, XH} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -296,7 +296,7 @@ export class GroupingChooserModel extends HoistModel {
     // Persistence handling
     //-------------------------
     get persistState() {
-        const ret = {} as any;
+        const ret: PlainObject = {};
         if (this.persistValue) ret.value = this.value;
         if (this.persistFavorites) ret.favorites = this.favorites;
         return ret;

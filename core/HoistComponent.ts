@@ -130,14 +130,14 @@ export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P
     );
 
     let render = config.render,
-        cfg = {
+        cfg: Config = {
             className: config.className,
             displayName: config.displayName ? config.displayName : 'HoistCmp'+ cmpIndex++,
             isMemo: withDefault(config.memo, true),
             isObserver: withDefault(config.observer, true),
             isForwardRef: render.length === 2,
             modelSpec: modelSpec ? modelSpec : null
-        } as Config;
+        };
 
     warnIf(
         !cfg.isMemo && cfg.isObserver,

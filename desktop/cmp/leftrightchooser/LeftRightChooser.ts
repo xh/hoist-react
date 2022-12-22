@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {grid} from '@xh/hoist/cmp/grid';
+import {grid, GridProps} from '@xh/hoist/cmp/grid';
 import {hframe, vbox} from '@xh/hoist/cmp/layout';
 import {BoxProps, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
@@ -30,12 +30,12 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory<LeftRig
 
     render({model, ...props}, ref) {
         const {leftModel, rightModel, leftGroupingExpanded, rightGroupingExpanded} = model,
-            gridOptions = {
+            gridOptions: GridProps = {
                 agOptions: {
                     defaultColDef: {
                         resizable: false
                     }
-                } as any
+                }
             },
             leftGridOptions = cloneDeep(gridOptions),
             rightGridOptions = cloneDeep(gridOptions);

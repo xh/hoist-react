@@ -490,7 +490,7 @@ class SelectInputModel extends HoistInputModel {
     doQueryAsync = async (query) => {
         const rawOpts = await this.componentProps.queryFn(query),
             matchOpts = this.normalizeOptions(rawOpts);
-            
+
         // Carry forward and add to any existing internalOpts to allow our value
         // converters to continue all selected values in multiMode.
         const matchesByVal = keyBy(matchOpts, 'value'),
@@ -628,7 +628,7 @@ class SelectInputModel extends HoistInputModel {
 const cmp = hoistCmp.factory<SelectInputModel>(
     ({model, className, ...props}, ref) => {
         const {width, height, ...layoutProps} = getLayoutProps(props),
-            rsProps = {
+            rsProps: PlainObject = {
                 value: model.renderValue,
 
                 autoFocus: props.autoFocus,
@@ -669,7 +669,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(
                 filterOption: model.filterOption,
 
                 ref: model.reactSelectRef
-            } as any;
+            };
 
         if (model.manageInputValue) {
             rsProps.inputValue = model.inputValue || '';
