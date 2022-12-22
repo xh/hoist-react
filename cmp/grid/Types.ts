@@ -97,7 +97,7 @@ export interface GridFilterModelConfig {
      * {@link GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or omitted
      * entirely to indicate that all fields should be filter-enabled.
      */
-    fieldSpecs?: (string|GridFilterFieldSpecConfig)[];
+    fieldSpecs?: Array<string|GridFilterFieldSpecConfig>;
 
     /** Default properties to be assigned to all fieldSpecs created by this model. */
     fieldSpecDefaults?: GridFilterFieldSpecConfig

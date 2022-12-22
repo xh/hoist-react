@@ -229,7 +229,7 @@ export class GroupingChooserModel extends HoistModel {
         return value.every(dim => this.dimensionNames.includes(dim));
     }
 
-    normalizeDimensions(dims: (DimensionSpec|string)[]): Record<string, DimensionSpec> {
+    normalizeDimensions(dims: Array<DimensionSpec|string>): Record<string, DimensionSpec> {
         dims = dims ?? [];
         const ret = {};
         dims.forEach(it => {

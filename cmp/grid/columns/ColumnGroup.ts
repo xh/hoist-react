@@ -15,7 +15,7 @@ import {Column, ColumnSpec, getAgHeaderClassFn} from './Column';
 
 export interface ColumnGroupSpec {
     /** Column or ColumnGroup configs for children of this group.*/
-    children: (ColumnGroupSpec|ColumnSpec)[];
+    children: Array<ColumnGroupSpec|ColumnSpec>;
     /** Unique identifier for the ColumnGroup within its grid. */
     groupId?: string;
     /** Display text for column group header. */
@@ -43,7 +43,7 @@ export interface ColumnGroupSpec {
  */
 export class ColumnGroup {
 
-    readonly children:  (ColumnGroup|Column)[];
+    readonly children:  Array<ColumnGroup|Column>;
     readonly gridModel: GridModel;
     readonly groupId: string;
     readonly headerName: ReactNode|ColumnHeaderNameFn;
@@ -66,7 +66,7 @@ export class ColumnGroup {
      *
      * @internal
      */
-    constructor(config:ColumnGroupSpec, gridModel: GridModel, children: (Column|ColumnGroup)[]) {
+    constructor(config:ColumnGroupSpec, gridModel: GridModel, children: Array<Column|ColumnGroup>) {
         const {
             children: childrenSpecs,
             groupId,

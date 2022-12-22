@@ -56,7 +56,7 @@ export interface FilterChooserConfig {
      * will be parsed and displayed. If a `valueSource` is provided, these may be specified as field
      * names in that source or omitted entirely, indicating that all fields should be filter-enabled.
      */
-    fieldSpecs?: (FilterChooserFieldSpecConfig|string)[];
+    fieldSpecs?: Array<FilterChooserFieldSpecConfig|string>;
 
     /** Default properties to be assigned to all FilterChooserFieldSpecs created by this model. */
     fieldSpecDefaults?: FilterChooserFieldSpecConfig;
@@ -447,7 +447,7 @@ export class FilterChooserModel extends HoistModel {
     //--------------------------------
     // FilterChooserFieldSpec handling
     //--------------------------------
-    parseFieldSpecs(specs: (FilterChooserFieldSpecConfig|string)[], fieldSpecDefaults: FilterChooserFieldSpecConfig): FilterChooserFieldSpec[] {
+    parseFieldSpecs(specs: Array<FilterChooserFieldSpecConfig|string>, fieldSpecDefaults: FilterChooserFieldSpecConfig): Array<FilterChooserFieldSpec> {
         const {valueSource} = this;
 
         throwIf(
