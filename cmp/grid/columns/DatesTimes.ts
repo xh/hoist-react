@@ -8,47 +8,47 @@ import {ColumnSpec} from '@xh/hoist/cmp/grid';
 import {compactDateRenderer, dateRenderer, dateTimeRenderer, dateTimeSecRenderer, timeRenderer} from '@xh/hoist/format';
 import {ExcelFormat} from '../enums/ExcelFormat';
 
-const defaults = {align: 'right'} as ColumnSpec;
+const defaults: ColumnSpec = {align: 'right'};
 
-export const date = {
+export const date: ColumnSpec = {
     ...defaults,
     renderer: dateRenderer(),
     excelFormat: ExcelFormat.DATE_FMT,
     width: 120
-} as ColumnSpec;
+};
 
-export const time = {
+export const time: ColumnSpec = {
     ...defaults,
     renderer: timeRenderer(),
     width: 90
-} as ColumnSpec;
+};
 
-export const dateTime = {
+export const dateTime: ColumnSpec = {
     ...defaults,
     align: 'left',
     renderer: dateTimeRenderer(),
     excelFormat: ExcelFormat.DATETIME_FMT,
     width: 180
-} as ColumnSpec;
+};
 
-export const dateTimeSec = {
+export const dateTimeSec: ColumnSpec = {
     ...defaults,
     align: 'left',
     renderer: dateTimeSecRenderer(),
     excelFormat: ExcelFormat.DATETIME_FMT,
     width: 190
-} as ColumnSpec;
+};
 
-export const compactDate = {
+export const compactDate: ColumnSpec = {
     ...defaults,
     renderer: compactDateRenderer(),
     excelFormat: ExcelFormat.DATE_FMT,
     width: 100
-} as ColumnSpec;
+};
 
-export const localDate = {
+export const localDate: ColumnSpec = {
     ...date
-} as ColumnSpec;
+};
 
 // Deprecated aliases with `Col` suffix
 export const dateCol = date;

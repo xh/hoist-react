@@ -23,7 +23,7 @@ const UP_TICK = '▴',
     DOWN_TICK = '▾',
     LEDGER_ALIGN_PLACEHOLDER = '<span style="visibility:hidden">)</span>',
     LEDGER_ALIGN_PLACEHOLDER_EL = span({style: {visibility: 'hidden'}, item: ')'}),
-    DEFAULT_COLOR_SPEC = {pos: 'xh-pos-val', neg: 'xh-neg-val', neutral: 'xh-neutral-val'} as ColorSpec;
+    DEFAULT_COLOR_SPEC: ColorSpec = {pos: 'xh-pos-val', neg: 'xh-neg-val', neutral: 'xh-neutral-val'};
 
 export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'tooltip'> {
     /** A valid numbro format object or string. */

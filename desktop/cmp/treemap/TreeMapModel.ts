@@ -281,7 +281,7 @@ export class TreeMapModel extends HoistModel {
      * passed to HighCharts for rendering. Drilldown children are included according
      * to the bound GridModel's expandState.
      */
-    processRecordsRecursive(sourceRecords, parentId = null, depth = 1) {
+    processRecordsRecursive(sourceRecords, parentId = null, depth = 1): Partial<TreeMapRecord>[] {
         const {labelField, valueField, heatField, maxDepth} = this,
             ret = [];
 
@@ -295,13 +295,13 @@ export class TreeMapModel extends HoistModel {
             if (!value) return;
 
             // Create TreeMapRecord
-            const treeRec = {
+            const treeRec: Partial<TreeMapRecord> = {
                 id,
                 record,
                 name,
                 heatValue,
                 value: Math.abs(value)
-            } as TreeMapRecord;
+            };
 
             if (parentId) treeRec.parent = parentId;
 

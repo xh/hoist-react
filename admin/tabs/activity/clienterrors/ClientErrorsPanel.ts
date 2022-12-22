@@ -74,4 +74,4 @@ const tbar = hoistCmp.factory<ClientErrorsModel>(
     }
 );
 
-const dateInputProps = {popoverPosition: 'bottom', valueType: 'localDate', width: 120} as DateInputProps;
+const dateInputProps: DateInputProps = {popoverPosition: 'bottom', valueType: 'localDate', width: 120};

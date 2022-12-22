@@ -10,29 +10,29 @@ import {tagsRenderer} from '../renderers/TagsRenderer';
 import {ColumnSpec} from './Column';
 
 /** Column config to render truthy values with a standardized green check icon. */
-export const boolCheck = {
+export const boolCheck: ColumnSpec = {
     width: 34,
     align: 'center',
     resizable: false,
     renderer: (v) => v ? Icon.check({prefix: 'fas', intent: 'success'}) : null
-} as ColumnSpec;
+};
 
-export const number = {
+export const number: ColumnSpec = {
     align: 'right',
     renderer: numberRenderer({})
-} as ColumnSpec;
+};
 
-export const fileExt = {
+export const fileExt: ColumnSpec = {
     headerName: '',
     width: 28,
     align: 'center',
     resizable: false,
     renderer: (v) => v ? Icon.fileIcon({filename: v, title: v}) : null
-} as ColumnSpec;
+};
 
-export const tags = {
+export const tags: ColumnSpec = {
     renderer: tagsRenderer
-} as ColumnSpec;
+};
 
 // Deprecated aliases with `Col` suffix
 export const boolCheckCol = boolCheck;

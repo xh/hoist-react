@@ -628,7 +628,7 @@ class SelectInputModel extends HoistInputModel {
 const cmp = hoistCmp.factory<SelectInputModel>(
     ({model, className, ...props}, ref) => {
         const {width, height, ...layoutProps} = getLayoutProps(props),
-            rsProps = {
+            rsProps: PlainObject = {
                 value: model.renderValue,
 
                 autoFocus: props.autoFocus,
@@ -669,7 +669,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(
                 filterOption: model.filterOption,
 
                 ref: model.reactSelectRef
-            } as any;
+            };
 
         if (model.manageInputValue) {
             rsProps.inputValue = model.inputValue || '';

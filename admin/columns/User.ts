@@ -8,12 +8,12 @@ import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 import {Icon} from '@xh/hoist/icon';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 
-export const user = {
+export const user: ColumnSpec = {
     field: {name: 'user', type: 'string'},
     width: 250
-} as ColumnSpec;
+};
 
-export const username = {
+export const username: ColumnSpec = {
     field: {
         name: 'username',
         type: 'string',
@@ -22,31 +22,31 @@ export const username = {
         aggregator: 'UNIQUE'
     },
     width: 160
-} as ColumnSpec;
+};
 
-export const email = {
+export const email: ColumnSpec = {
     field: {name: 'email', type: 'string'},
     width: 200
-} as ColumnSpec;
+};
 
-export const displayName = {
+export const displayName: ColumnSpec = {
     field: {name: 'displayName', type: 'string'},
     width: 200
-} as ColumnSpec;
+};
 
-export const roles = {
+export const roles: ColumnSpec = {
     field: {name: 'roles', type: 'string'},
     minWidth: 130,
     flex: true,
     tooltip: true
-} as ColumnSpec;
+};
 
-export const impersonating = {
+export const impersonating: ColumnSpec = {
     field: {name: 'impersonating', type: 'string'},
     width: 140
-} as ColumnSpec;
+};
 
-export const impersonatingFlag = {
+export const impersonatingFlag: ColumnSpec = {
     field: {name: 'impersonatingFlag', type: 'bool'},
     headerName: Icon.impersonate(),
     headerTooltip: 'Indicates if the user was impersonating another user during tracked activity.',
@@ -62,10 +62,10 @@ export const impersonatingFlag = {
                 title: `Impersonating ${impersonating}`
             }) : null;
     }
-} as ColumnSpec;
+};
 
-export const active = {
+export const active: ColumnSpec = {
     field: {name: 'active', type: 'bool'},
     ...Col.boolCheck,
     width: 70
-} as ColumnSpec;
+};
