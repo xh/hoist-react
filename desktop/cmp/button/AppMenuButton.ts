@@ -105,7 +105,7 @@ function buildMenuItems(props: AppMenuButtonProps) {
     hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
     hideOptionsItem = hideOptionsItem || !XH.appContainerModel.optionsDialogModel.hasOptions;
 
-    const defaultItems = [
+    const defaultItems: MenuItemLike[] = [
         {
             omit: hideOptionsItem,
             text: 'Options',
@@ -158,7 +158,7 @@ function buildMenuItems(props: AppMenuButtonProps) {
             intent: 'danger',
             actionFn: () => XH.identityService.logoutAsync()
         }
-    ] as MenuItemLike[];
+    ];
 
     return parseMenuItems([
         ...extraItems,
@@ -169,7 +169,7 @@ function buildMenuItems(props: AppMenuButtonProps) {
 
 function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
     items = items.map(item => {
-        if (!isMenuItemCfg(item)) return item;
+        if (!isMenuItem(item)) return item;
 
         item = clone(item);
         item.items = clone(item.items);
@@ -178,16 +178,14 @@ function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
     });
 
     return items
-        .filter(it => !isMenuItemCfg(it) || (!it.hidden && !it.omit))
+        .filter(it => !isMenuItem(it) || (!it.hidden && !it.omit))
         .filter(filterConsecutiveMenuSeparators())
         .map(item => {
             if (item === '-') return menuDivider();
-            if (!isMenuItemCfg(item)) return item;
+            if (!isMenuItem(item)) return item;
 
-            const onClick = (item as any).onClick;
-            if (onClick) {
-                apiDeprecated('AppMenuButton.extraItems.onClick', {msg: 'Use `actionFn` instead', v: 'v54'});
-            }
+            const onClick = item['onClick'];
+            apiDeprecated('AppMenuButton.extraItems.onClick', {test: onClick, msg: 'Use `actionFn` instead', v: 'v56'});
             const actionFn = item.actionFn ?? onClick;
 
             // Create menuItem from config
@@ -195,7 +193,7 @@ function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
                 text: item.text,
                 icon: item.icon,
                 intent: item.intent,
-                onClick: actionFn ? () => wait().then(actionFn) : null,
+                onClick: actionFn ? () => wait().then(actionFn) : null, // do async to allow menu to close
                 disabled: item.disabled
             } as PlainObject;
 
@@ -209,6 +207,6 @@ function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
         });
 }
 
-function isMenuItemCfg(item: MenuItemLike): item is MenuItem {
+function isMenuItem(item: MenuItemLike): item is MenuItem {
     return !isString(item) && !isValidElement(item);
 }
