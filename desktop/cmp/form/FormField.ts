@@ -243,13 +243,13 @@ const editableChild = hoistCmp.factory<FieldModel>({
 
 
         // Overrides -- be sure not to clobber selected properties on child
-        const overrides = {
+        const overrides: DefaultHoistProps = {
             model,
             bind: 'value',
             id: childId,
             disabled: props.disabled || disabled,
             ref: composeRefs(model?.boundInputRef, child.ref)
-        } as DefaultHoistProps;
+        };
 
 
         // If a sizeable child input doesn't specify its own dimensions,

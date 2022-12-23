@@ -134,7 +134,7 @@ export function fmtCompactDate(v: DateLike, opts?: CompactDateFormatOptions) {
         valueDay = fmtDate(v),
         recentPast = now.clone().subtract(distantThreshold, 'months').endOf('month'),
         nearFuture = now.clone().add(distantThreshold, 'months').date(1),
-        dateOpts = {tooltip, originalValue, asHtml} as DateFormatOptions;
+        dateOpts: DateFormatOptions = {tooltip, originalValue, asHtml};
 
     if (today === valueDay) {
         dateOpts.fmt = sameDayFmt;

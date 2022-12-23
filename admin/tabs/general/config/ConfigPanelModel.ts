@@ -19,7 +19,7 @@ import * as Col from '@xh/hoist/admin/columns';
 import {isNil, truncate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
 import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
-import {App} from '@xh/hoist/admin/AppModel';
+import {AppModel} from '@xh/hoist/admin/AppModel';
 import {FieldSpec} from '@xh/hoist/data';
 
 export class ConfigPanelModel extends HoistModel {
@@ -45,7 +45,7 @@ export class ConfigPanelModel extends HoistModel {
             hidden = true;
 
         this.gridModel = new RestGridModel({
-            readonly: App.readonly,
+            readonly: AppModel.instance.readonly,
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,

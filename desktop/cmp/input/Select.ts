@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
-import {createElement, hoistCmp, HoistProps, LayoutProps, PlainObject, XH} from '@xh/hoist/core';
+import {createElement, hoistCmp, HoistProps, LayoutProps, PlainObject, XH, Awaitable} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {
@@ -150,7 +150,7 @@ export interface SelectProps extends
      * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
      * of up-front in this prop.
      */
-    options?: (SelectOption|any)[];
+    options?: Array<SelectOption|any>;
 
     /** Text to display when control is empty. */
     placeholder?: string;
@@ -168,7 +168,7 @@ export interface SelectProps extends
      * confused with `filterFn`, which should be used to filter through local options when
      * not in async mode.
      */
-    queryFn?: (query: string) => Promise<SelectOption[]>;
+    queryFn?: (query: string) => Awaitable<Array<SelectOption|any>>;
 
     /**
      * Escape-hatch props passed directly to react-select. Use with care - not all props
@@ -487,32 +487,22 @@ class SelectInputModel extends HoistInputModel {
     //------------------------
     // Async
     //------------------------
-    doQueryAsync = (query) => {
-        return this.componentProps
-            .queryFn(query)
-            .then(matchOpts => {
-                // Normalize query return.
-                matchOpts = this.normalizeOptions(matchOpts);
+    doQueryAsync = async (query) => {
+        const rawOpts = await this.componentProps.queryFn(query),
+            matchOpts = this.normalizeOptions(rawOpts);
 
-                // Carry forward and add to any existing internalOpts to allow our value
-                // converters to continue all selected values in multiMode.
-                const matchesByVal = keyBy(matchOpts, 'value'),
-                    newOpts = [...matchOpts];
+        // Carry forward and add to any existing internalOpts to allow our value
+        // converters to continue all selected values in multiMode.
+        const matchesByVal = keyBy(matchOpts, 'value'),
+            newOpts = [...matchOpts];
+        this.internalOptions.forEach(currOpt => {
+            const matchOpt = matchesByVal[currOpt.value];
+            if (!matchOpt) newOpts.push(currOpt);  // avoiding dupes
+        });
+        this.internalOptions = newOpts;
 
-                this.internalOptions.forEach(currOpt => {
-                    const matchOpt = matchesByVal[currOpt.value];
-                    if (!matchOpt) newOpts.push(currOpt);  // avoiding dupes
-                });
-
-                this.internalOptions = newOpts;
-
-                // But only return the matching options back to the combo.
-                return matchOpts;
-            })
-            .catch(e => {
-                console.error(e);
-                throw e;
-            });
+        // But only return the matching options back to the combo.
+        return matchOpts;
     };
 
     loadingMessageFn = (params) => {
@@ -638,7 +628,7 @@ class SelectInputModel extends HoistInputModel {
 const cmp = hoistCmp.factory<SelectInputModel>(
     ({model, className, ...props}, ref) => {
         const {width, height, ...layoutProps} = getLayoutProps(props),
-            rsProps = {
+            rsProps: PlainObject = {
                 value: model.renderValue,
 
                 autoFocus: props.autoFocus,
@@ -679,7 +669,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(
                 filterOption: model.filterOption,
 
                 ref: model.reactSelectRef
-            } as any;
+            };
 
         if (model.manageInputValue) {
             rsProps.inputValue = model.inputValue || '';

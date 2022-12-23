@@ -43,7 +43,7 @@ function buildMenuItems(
     agParams: PlainObject
 ) {
     // Transform to actions or ag-Grid ready strings.
-    const actions: (RecordAction|string)[] = menuItems
+    const actions: Array<RecordAction|string> = menuItems
         .flatMap(it => {
             if (isString(it)) return replaceHoistToken(it, gridModel);
             if (it instanceof RecordAction) return it;

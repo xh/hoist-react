@@ -232,7 +232,7 @@ export class InstancesModel extends HoistModel {
     }
 
     private createPropertiesGridModel() {
-        const iconCol = {width: 40, align: 'center', resizable: false} as ColumnSpec;
+        const iconCol: ColumnSpec = {width: 40, align: 'center', resizable: false};
         return new GridModel({
             persistWith: {...this.persistWith, path: 'propertiesGrid'},
             autosizeOptions: {mode: 'managed'},

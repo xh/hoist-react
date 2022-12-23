@@ -120,7 +120,7 @@ export interface SelectProps extends
      * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
      * of up-front in this prop.
      */
-    options?: (SelectOption|any)[];
+    options?: Array<SelectOption|any>;
 
     /** Text to display when control is empty. */
     placeholder?: string;
@@ -161,7 +161,7 @@ export interface SelectProps extends
 interface SelectOption {
     value: any;
     label?: string;
-    options?: (SelectOption|any)[];
+    options?: Array<SelectOption|any>;
 }
 
 /**
@@ -573,7 +573,7 @@ class SelectInputModel extends HoistInputModel {
 const cmp = hoistCmp.factory<SelectInputModel>(
     ({model, className, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props),
-            rsProps = {
+            rsProps: PlainObject = {
                 value: model.renderValue,
 
                 formatOptionLabel: model.formatOptionLabel,
@@ -608,7 +608,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(
                 filterOption: model.filterOption,
 
                 ref: model.reactSelectRef
-            } as any;
+            };
 
         if (model.manageInputValue) {
             rsProps.inputValue = model.inputValue || '';

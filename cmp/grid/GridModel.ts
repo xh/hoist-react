@@ -17,6 +17,7 @@ import {
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {
+    Awaitable,
     HoistModel,
     HSide,
     managed,
@@ -99,7 +100,7 @@ import {GridContextMenuSpec} from './GridContextMenu';
 export interface GridConfig {
 
     /** Columns for this grid. */
-    columns?: (ColumnSpec | ColumnGroupSpec)[];
+    columns?: Array<ColumnSpec | ColumnGroupSpec>;
 
     /**  Column configs to be set on all columns.  Merges deeply. */
     colDefaults?: Partial<ColumnSpec>;
@@ -126,11 +127,11 @@ export interface GridConfig {
     colChooserModel?: ColChooserConfig | boolean;
 
     /**
-     * Async function to be called when the user triggers GridModel.restoreDefaultsAsync(). This
+     * Function to be called when the user triggers GridModel.restoreDefaultsAsync(). This
      * function will be called after the built-in defaults have been restored, and can be
      * used to restore application specific defaults.
      */
-    restoreDefaultsFn?: () => Promise<boolean>;
+    restoreDefaultsFn?: () => Awaitable<boolean>;
 
     /**
      * Confirmation warning to be presented to user before restoring default grid state. Set to
@@ -370,7 +371,7 @@ export class GridModel extends HoistModel {
     exportOptions: ExportOptions;
     useVirtualColumns: boolean;
     autosizeOptions: GridAutosizeOptions;
-    restoreDefaultsFn: () => Promise<boolean>;
+    restoreDefaultsFn: () => Awaitable<boolean>;
     restoreDefaultsWarning: ReactNode;
     fullRowEditing: boolean;
     hideEmptyTextBeforeLoad: boolean;
@@ -394,7 +395,7 @@ export class GridModel extends HoistModel {
     //------------------------
     // Observable API
     //------------------------
-    @observable.ref columns: (ColumnGroup | Column)[] = [];
+    @observable.ref columns: Array<ColumnGroup | Column> = [];
     @observable.ref columnState: ColumnState[] = [];
     @observable.ref expandState: any = {};
     @observable.ref autosizeState: AutosizeState = {};
@@ -961,7 +962,7 @@ export class GridModel extends HoistModel {
 
     /** @param colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
-    setColumns(colConfigs: (ColumnSpec | ColumnGroupSpec)[]) {
+    setColumns(colConfigs: Array<ColumnSpec | ColumnGroupSpec>) {
         this.validateColConfigs(colConfigs);
         colConfigs = this.enhanceColConfigsFromStore(colConfigs);
 
@@ -1137,7 +1138,7 @@ export class GridModel extends HoistModel {
     }
 
     /** Return matching leaf-level Column object from the provided collection.*/
-    findColumn(cols: (Column|ColumnGroup)[], colId: string): Column {
+    findColumn(cols: Array<Column|ColumnGroup>, colId: string): Column {
         for (let col of cols) {
             if (col instanceof ColumnGroup) {
                 const ret = this.findColumn(col.children, colId);
@@ -1176,7 +1177,7 @@ export class GridModel extends HoistModel {
         if (omit) return null;
 
         if (this.isGroupSpec(config)) {
-            const children = compact(config.children.map(c => this.buildColumn(c))) as (ColumnGroup | Column)[];
+            const children = compact(config.children.map(c => this.buildColumn(c))) as Array<ColumnGroup | Column>;
             return !isEmpty(children) ? new ColumnGroup(config as ColumnGroupSpec, this, children) : null;
         }
 

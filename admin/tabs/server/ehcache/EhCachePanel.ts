@@ -12,14 +12,14 @@ import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {toolbarSeparator} from '@xh/hoist/desktop/cmp/toolbar';
-import {App} from '@xh/hoist/admin/AppModel';
+import {AppModel} from '@xh/hoist/admin/AppModel';
 import {EhCacheModel} from './EhCacheModel';
 
 export const ehCachePanel = hoistCmp.factory({
     model: creates(EhCacheModel),
 
     render({model}) {
-        const {readonly} = App;
+        const {readonly} = AppModel.instance;
 
         return panel({
             mask: 'onLoad',
