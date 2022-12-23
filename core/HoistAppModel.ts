@@ -53,6 +53,11 @@ export class HoistAppModel extends HoistModel {
     async logoutAsync() {}
 
     /**
+     * Allow for app-specific support of version bar
+     */
+    get supportVersionBar(): boolean {return true}
+
+    /**
      * Provide the initial set of Router5 Routes to be used by this application.
      */
     getRoutes(): Route[] {
