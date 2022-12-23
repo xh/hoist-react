@@ -80,6 +80,11 @@ to use TypeScript for its own app-level code.
   amount of refactoring to the toolkit code. As such, we recommend a thorough regression test of any
   applications updating to this release from prior versions.
 
+### ⚙️ Technical
+
+* Update `preflight.js` to catch errors that occur on startup, before our in-app exception handling
+  is initialized.
+
 ### 📚 Libraries
 
 * @blueprintjs/core `4.11 -> 4.12`
