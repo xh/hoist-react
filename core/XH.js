@@ -236,6 +236,8 @@ class XHClass {
      *      Should be an AppSpec, or a config for one.
      */
     renderApp(appSpec) {
+        // Remove the pre-load exception handler installed by preflight.js
+        window.onerror = null;
         const spinner = document.getElementById('xh-preload-spinner');
         if (spinner) spinner.style.display = 'none';
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
@@ -735,7 +737,7 @@ class XHClass {
 
         if (appSpec.trackAppLoad) this.trackLoad();
 
-        // Add xh css classes to to power Hoist CSS selectors.
+        // Add xh css classes to power Hoist CSS selectors.
         document.body.classList.add(...compact([
             'xh-app',
             (isMobileApp ? 'xh-mobile' : 'xh-standard'),
