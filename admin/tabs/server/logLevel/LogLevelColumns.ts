@@ -6,38 +6,38 @@
  */
 import {ColumnSpec} from '@xh/hoist/cmp/grid';
 
-export const logName = {
+export const logName: ColumnSpec = {
     field: {
         name: 'name',
         type: 'string',
         displayName: 'Log Name'
     },
     width: 400
-} as ColumnSpec;
+};
 
-export const level = {
+export const level: ColumnSpec = {
     field: {
         name: 'level',
         type: 'string',
         displayName: 'Override'
     },
     width: 110
-} as ColumnSpec;
+};
 
-export const defaultLevel = {
+export const defaultLevel: ColumnSpec = {
     field: {
         name: 'defaultLevel',
         type: 'string',
         displayName: 'Initial'
     },
     width: 110
-} as ColumnSpec;
+};
 
-export const effectiveLevel = {
+export const effectiveLevel: ColumnSpec = {
     field: {
         name: 'effectiveLevel',
         type: 'string',
         displayName: 'Effective'
     },
     width: 110
-} as ColumnSpec;
+};

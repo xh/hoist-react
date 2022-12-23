@@ -35,7 +35,7 @@ import { FilterLike } from './filter/Types';
 export interface StoreConfig {
 
     /** Field names, configs, or instances. */
-    fields?: (string|FieldSpec|Field)[];
+    fields?: Array<string|FieldSpec|Field>;
 
     /**
      * Default configs applied to `Field` instances constructed internally by this Store.
@@ -138,7 +138,7 @@ export interface StoreTransaction {
     update?: PlainObject[];
 
     /** Raw data of new records to be added, */
-    add?: (PlainObject|ChildRawData)[];
+    add?: Array<PlainObject|ChildRawData>;
 
     /** IDs of existing records to be removed. Any descendents will also be removed. */
     remove?: StoreRecordId[];

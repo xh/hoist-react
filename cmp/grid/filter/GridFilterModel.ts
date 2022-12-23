@@ -36,7 +36,7 @@ export class GridFilterModel extends HoistModel {
     @observable dialogOpen = false;
 
     // Display for nil or empty values
-    BLANK_STR = '[blank]';
+    static BLANK_PLACEHOLDER = '[blank]';
 
     constructor({
         gridModel,
@@ -116,11 +116,11 @@ export class GridFilterModel extends HoistModel {
     }
 
     toDisplayValue(value) {
-        return isNil(value) || value === '' ? this.BLANK_STR : value;
+        return isNil(value) || value === '' ? GridFilterModel.BLANK_PLACEHOLDER : value;
     }
 
     fromDisplayValue(value) {
-        return value === this.BLANK_STR ? null : value;
+        return value === GridFilterModel.BLANK_PLACEHOLDER ? null : value;
     }
 
     @action
@@ -196,7 +196,7 @@ interface GridFilterModelConfig {
      * {@link GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or omitted
      * entirely to indicate that all fields should be filter-enabled.
      */
-    fieldSpecs?: (string | GridFilterFieldSpec)[]
+    fieldSpecs?: Array<string | GridFilterFieldSpec>
 
     /** Default properties to be assigned to all `GridFilterFieldSpecs` created by this model. */
     fieldSpecDefaults?: Partial<GridFilterFieldSpec>;

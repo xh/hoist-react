@@ -11,21 +11,21 @@ import * as Col from '@xh/hoist/cmp/grid/columns';
 import {isFinite} from 'lodash';
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 
-export const appEnvironment = {
+export const appEnvironment: ColumnSpec = {
     field: {
         name: 'appEnvironment',
         type: 'string',
         displayName: 'Environment'
     },
     width: 130
-} as ColumnSpec;
+};
 
-export const appVersion = {
+export const appVersion: ColumnSpec = {
     field: {name: 'appVersion', type: 'string'},
     width: 130
-} as ColumnSpec;
+};
 
-export const browser = {
+export const browser: ColumnSpec = {
     field: {
         name: 'browser',
         type: 'string',
@@ -33,9 +33,9 @@ export const browser = {
         aggregator: 'UNIQUE'
     },
     width: 100
-} as ColumnSpec;
+};
 
-export const category = {
+export const category: ColumnSpec = {
     field: {
         name: 'category',
         type: 'string',
@@ -43,16 +43,16 @@ export const category = {
         aggregator: 'UNIQUE'
     },
     width: 100
-} as ColumnSpec;
+};
 
-export const data = {
+export const data: ColumnSpec = {
     field: {name: 'data', type: 'json'},
     flex: true,
     minWidth: 120,
     autosizeMaxWidth: 400
-} as ColumnSpec;
+};
 
-export const day = {
+export const day: ColumnSpec = {
     field: {
         name: 'day',
         type: 'localDate',
@@ -61,9 +61,9 @@ export const day = {
     },
     ...Col.localDate,
     displayName: 'App Day'
-} as ColumnSpec;
+};
 
-export const device = {
+export const device: ColumnSpec = {
     field: {
         name: 'device',
         type: 'string',
@@ -71,9 +71,9 @@ export const device = {
         aggregator: 'UNIQUE'
     },
     width: 100
-} as ColumnSpec;
+};
 
-export const elapsed = {
+export const elapsed: ColumnSpec = {
     field: {
         name: 'elapsed',
         type: 'int',
@@ -86,9 +86,9 @@ export const elapsed = {
         nullDisplay: '-',
         formatConfig: {thousandSeparated: false, mantissa: 0}
     })
-} as ColumnSpec;
+};
 
-export const entryCount = {
+export const entryCount: ColumnSpec = {
     field: {
         name: 'entryCount',
         type: 'int',
@@ -97,9 +97,9 @@ export const entryCount = {
     },
     width: 80,
     align: 'right'
-} as ColumnSpec;
+};
 
-export const entryId = {
+export const entryId: ColumnSpec = {
     field: {
         name: 'id',
         type: 'int',
@@ -107,9 +107,9 @@ export const entryId = {
     },
     width: 100,
     align: 'right'
-} as ColumnSpec;
+};
 
-export const error = {
+export const error: ColumnSpec = {
     field: {
         name: 'error',
         type: 'string',
@@ -118,9 +118,9 @@ export const error = {
     flex: true,
     minWidth: 150,
     renderer: (e) => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
-} as ColumnSpec;
+};
 
-export const msg = {
+export const msg: ColumnSpec = {
     field: {
         name: 'msg',
         type: 'string',
@@ -131,9 +131,9 @@ export const msg = {
     minWidth: 120,
     autosizeMaxWidth: 400,
     flex: true
-} as ColumnSpec;
+};
 
-export const url = {
+export const url: ColumnSpec = {
     field: {
         name: 'url',
         type: 'string',
@@ -141,9 +141,9 @@ export const url = {
     },
     width: 250,
     autosizeMaxWidth: 400
-} as ColumnSpec;
+};
 
-export const userAgent = {
+export const userAgent: ColumnSpec = {
     field: {
         name: 'userAgent',
         type: 'string',
@@ -151,9 +151,9 @@ export const userAgent = {
         aggregator: 'UNIQUE'
     },
     width: 130
-} as ColumnSpec;
+};
 
-export const userAlertedFlag = {
+export const userAlertedFlag: ColumnSpec = {
     field: {name: 'userAlerted', type: 'bool'},
     headerName: Icon.window(),
     headerTooltip: 'Indicates if the user was shown an interactive alert when this error was triggered.',
@@ -162,9 +162,9 @@ export const userAlertedFlag = {
     width: 50,
     exportName: 'User Alerted?',
     renderer: v => v ? Icon.window() : null
-} as ColumnSpec;
+};
 
-export const userMessageFlag = {
+export const userMessageFlag: ColumnSpec = {
     field: {name: 'userMessageFlag', type: 'bool'},
     headerName: Icon.comment(),
     headerTooltip: 'Indicates if the user provided a message along with the automated error report.',
@@ -176,9 +176,9 @@ export const userMessageFlag = {
         const {msg} = record.data;
         return msg ? Icon.comment() : null;
     }
-} as ColumnSpec;
+};
 
-export const dateRange = {
+export const dateRange: ColumnSpec = {
     field: {
         name: 'day',
         type: 'json',
@@ -189,7 +189,7 @@ export const dateRange = {
     renderer: dateRangeRenderer,
     exportValue: dateRangeRenderer,
     comparator: dateRangeComparator
-} as ColumnSpec;
+};
 
 //-----------------------
 // Implementation

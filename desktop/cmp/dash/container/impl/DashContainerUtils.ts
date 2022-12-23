@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {PlainObject} from '@xh/hoist/core';
 import {serializeIcon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isFinite, isNil, isPlainObject, isString, round} from 'lodash';
@@ -38,7 +39,7 @@ function convertGLToStateInner(configItems = [], contentItems = [], dashContaine
                 viewSpec = dashContainerModel.getViewSpec(viewSpecId),
                 viewModelId = getViewModelId(contentItem),
                 viewModel = dashContainerModel.getViewModel(viewModelId),
-                view = {type: 'view', id: viewSpecId} as any;
+                view = {type: 'view', id: viewSpecId} as PlainObject;
             if (viewModel.icon !== viewSpec.icon) view.icon = serializeIcon(viewModel.icon);
             if (viewModel.title !== viewSpec.title) view.title = viewModel.title;
             if (!isEmpty(viewModel.viewState)) view.state = viewModel.viewState;
@@ -46,7 +47,7 @@ function convertGLToStateInner(configItems = [], contentItems = [], dashContaine
             ret.push(view);
         } else {
             const {type, width, height, activeItemIndex, content} = configItem,
-                container = {type} as any;
+                container = {type} as PlainObject;
 
             if (isFinite(width)) container.width = round(width, 2);
             if (isFinite(height)) container.height = round(height, 2);

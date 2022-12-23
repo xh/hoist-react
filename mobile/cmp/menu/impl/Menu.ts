@@ -76,7 +76,7 @@ class LocalMenuModel extends HoistModel {
         });
 
         return items
-            .filter(it => isMenuItem(it) && !it.omit && !it.hidden)
+            .filter(it => !isMenuItem(it) || (!it.hidden && !it.omit))
             .filter(filterConsecutiveMenuSeparators())
             .map((item, idx) => {
                 // Process dividers

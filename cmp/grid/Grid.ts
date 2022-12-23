@@ -190,7 +190,7 @@ class GridLocalModel extends HoistModel {
         const {model} = this,
             {clicksToEdit, selModel} = model;
 
-        let ret = {
+        let ret: PlainObject = {
             model: model.agGridModel,
             suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowId: ({data}) => data.agId,
@@ -254,7 +254,7 @@ class GridLocalModel extends HoistModel {
             stopEditingWhenCellsLoseFocus: true,
             suppressLastEmptyLineOnPaste: true,
             suppressClipboardApi: true
-        } as any;
+        };
 
         // Platform specific defaults
         if (XH.isMobileApp) {

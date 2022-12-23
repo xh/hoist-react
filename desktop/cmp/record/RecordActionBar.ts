@@ -21,7 +21,7 @@ import {recordActionButton, RecordActionButtonProps} from './impl/RecordActionBu
 
 export interface RecordActionBarProps extends ButtonGroupProps {
     /** Actions to include. */
-    actions: (RecordActionSpec|RecordAction)[];
+    actions: Array<RecordActionSpec|RecordAction>;
 
     /** The StoreRecord to associate with the actions. Required if selModel is omitted. */
     record?: StoreRecord;

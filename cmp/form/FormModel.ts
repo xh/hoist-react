@@ -19,7 +19,7 @@ export interface FormConfig {
     /**
      * FieldModels, or configurations to create them, for all data fields managed by this FormModel.
      */
-    fields?: (BaseFieldModel|BaseFieldConfig|SubformsFieldConfig| SubformsFieldModel)[];
+    fields?: Array<BaseFieldModel|BaseFieldConfig|SubformsFieldConfig| SubformsFieldModel>;
 
     /** Map of initial values for fields in this model. */
     initialValues?: PlainObject;

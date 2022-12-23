@@ -8,7 +8,7 @@ import {Icon} from '@xh/hoist/icon';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import { ColumnSpec } from '@xh/hoist/cmp/grid/columns';
 
-export const isOpen = {
+export const isOpen: ColumnSpec = {
     field: {name: 'isOpen', type: 'bool'},
     headerName: '',
     align: 'center',
@@ -16,23 +16,23 @@ export const isOpen = {
     renderer: v => v ?
         Icon.circle({prefix: 'fas', className: 'xh-green'}) :
         Icon.circle({prefix: 'fal', className: 'xh-red'})
-} as ColumnSpec;
+};
 
-export const key = {
+export const key: ColumnSpec = {
     field: {name: 'key', type: 'string'},
     width: 160
-} as ColumnSpec;
+};
 
-export const createdTime = {
+export const createdTime: ColumnSpec = {
     field: {
         name: 'createdTime',
         type: 'date',
         displayName: 'Created'
     },
     ...Col.compactDate
-} as ColumnSpec;
+};
 
-export const sentMessageCount = {
+export const sentMessageCount: ColumnSpec = {
     field: {
         name: 'sentMessageCount',
         type: 'int',
@@ -40,9 +40,9 @@ export const sentMessageCount = {
     },
     ...Col.number,
     width: 90
-} as ColumnSpec;
+};
 
-export const lastSentTime = {
+export const lastSentTime: ColumnSpec = {
     field: {
         name: 'lastSentTime',
         type: 'date',
@@ -50,9 +50,9 @@ export const lastSentTime = {
     },
     ...Col.compactDate,
     width: 140
-} as ColumnSpec;
+};
 
-export const receivedMessageCount = {
+export const receivedMessageCount: ColumnSpec = {
     field: {
         name: 'receivedMessageCount',
         type: 'int',
@@ -60,9 +60,9 @@ export const receivedMessageCount = {
     },
     ...Col.number,
     width: 90
-} as ColumnSpec;
+};
 
-export const lastReceivedTime = {
+export const lastReceivedTime: ColumnSpec = {
     field: {
         name: 'lastReceivedTime',
         type: 'date',
@@ -70,4 +70,4 @@ export const lastReceivedTime = {
     },
     ...Col.compactDate,
     width: 140
-} as ColumnSpec;
+};

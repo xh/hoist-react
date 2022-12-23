@@ -7,22 +7,22 @@
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 
-export const dateCreated = {
+export const dateCreated: ColumnSpec = {
     field: {name: 'dateCreated', type: 'date'},
     ...Col.dateTime
-} as ColumnSpec;
+};
 
-export const dateCreatedWithSec = {
+export const dateCreatedWithSec: ColumnSpec = {
     field: {name: 'dateCreated', type: 'date'},
     ...Col.dateTimeSec
-} as ColumnSpec;
+};
 
-export const lastUpdated = {
+export const lastUpdated: ColumnSpec = {
     field: {name: 'lastUpdated', type: 'date'},
     ...Col.dateTime
-} as ColumnSpec;
+};
 
-export const lastUpdatedBy = {
+export const lastUpdatedBy: ColumnSpec = {
     field: {name: 'lastUpdatedBy', type: 'string'},
     width: 160
-} as ColumnSpec;
+};

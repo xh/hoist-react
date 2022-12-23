@@ -162,7 +162,7 @@ export interface ColumnSpec {
      * The sorting options for this column to be applied by successive clicks on the column header.
      * Specify null to clear the sort on this column.
      */
-    sortingOrder?: ('asc'|'desc'|ColumnSortSpec|null)[];
+    sortingOrder?: Array<'asc'|'desc'|ColumnSortSpec|null>;
 
     /**
      * True to enable absolute value sorting for this column.  If false (default) absolute value
@@ -422,7 +422,7 @@ export class Column {
     minWidth: number;
     maxWidth: number;
     rowHeight: number;
-    sortingOrder: ('asc'|'desc'|ColumnSortSpec|null)[];
+    sortingOrder: Array<'asc'|'desc'|ColumnSortSpec|null>;
     absSort: boolean;
     sortValue: string|ColumnSortValueFn;
     comparator: ColumnComparator;

@@ -76,12 +76,12 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory<DateEditorProps>({
  * @returns the data object, properly modified
  */
 function computeStyleInAgGrid(data: Popper.Data, options: PlainObject, portalContainer: HTMLElement): Popper.Data {
-    const styles = {
+    const styles: CSSProperties = {
         position: data.offsets.popper.position,
         top: 0,
         left: 0,
         willChange: 'transform'
-    } as CSSProperties;
+    };
 
     const inputEl = data.instance.reference,
         leftContainer = inputEl.closest('.ag-pinned-left-cols-container'),

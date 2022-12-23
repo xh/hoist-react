@@ -55,7 +55,7 @@ function parseItems(items: MenuItemLike[]): ReactNode[] {
     });
 
     return items
-        .filter(it => isMenuItem(it) && !it.hidden && !it.omit)
+        .filter(it => !isMenuItem(it) || (!it.hidden && !it.omit))
         .filter(filterConsecutiveMenuSeparators())
         .map(item => {
             // Process dividers

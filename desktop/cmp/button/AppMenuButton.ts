@@ -4,15 +4,16 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, MenuItemLike, XH} from '@xh/hoist/core';
+import {hoistCmp, MenuItemLike, MenuItem, PlainObject, XH} from '@xh/hoist/core';
 import {ButtonProps, button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuDivider, MenuDivider, MenuItem, menuItem, popover} from '@xh/hoist/kit/blueprint';
+import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
+import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
-import {withDefault} from '@xh/hoist/utils/js';
-import {isEmpty} from 'lodash';
-import {isValidElement} from 'react';
+import {apiDeprecated, withDefault} from '@xh/hoist/utils/js';
+import {clone, isEmpty, isString} from 'lodash';
+import {isValidElement, ReactNode} from 'react';
 
 
 export interface AppMenuButtonProps extends ButtonProps {
@@ -104,50 +105,50 @@ function buildMenuItems(props: AppMenuButtonProps) {
     hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
     hideOptionsItem = hideOptionsItem || !XH.appContainerModel.optionsDialogModel.hasOptions;
 
-    const defaultItems = [
+    const defaultItems: MenuItemLike[] = [
         {
             omit: hideOptionsItem,
             text: 'Options',
             icon: Icon.options(),
-            onClick: () => XH.showOptionsDialog()
+            actionFn: () => XH.showOptionsDialog()
         },
         {
             omit: hideFeedbackItem,
             text: 'Feedback',
             icon: Icon.comment({className: 'fa-flip-horizontal'}),
-            onClick: () => XH.showFeedbackDialog()
+            actionFn: () => XH.showFeedbackDialog()
         },
         {
             omit: hideThemeItem,
             text: XH.darkTheme ? 'Light Theme' : 'Dark Theme',
             icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
-            onClick: () => XH.toggleTheme()
+            actionFn: () => XH.toggleTheme()
         },
         '-',
         {
             omit: hideAdminItem,
             text: 'Admin',
             icon: Icon.wrench(),
-            onClick: () => window.open('/admin')
+            actionFn: () => window.open('/admin')
         },
         {
             omit: hideImpersonateItem,
             text: 'Impersonate',
             icon: Icon.impersonate(),
-            onClick: () => XH.showImpersonationBar()
+            actionFn: () => XH.showImpersonationBar()
         },
         '-',
         {
             omit: hideChangelogItem,
             text: 'Release Notes',
             icon: Icon.gift(),
-            onClick: () => XH.showChangelog()
+            actionFn: () => XH.showChangelog()
         },
         {
             omit: hideAboutItem,
             text: `About ${XH.clientAppName}`,
             icon: Icon.info(),
-            onClick: () => XH.showAboutDialog()
+            actionFn: () => XH.showAboutDialog()
         },
         '-',
         {
@@ -155,7 +156,7 @@ function buildMenuItems(props: AppMenuButtonProps) {
             text: 'Logout',
             icon: Icon.logout(),
             intent: 'danger',
-            onClick: () => XH.identityService.logoutAsync()
+            actionFn: () => XH.identityService.logoutAsync()
         }
     ];
 
@@ -166,22 +167,46 @@ function buildMenuItems(props: AppMenuButtonProps) {
     ]);
 }
 
-function parseMenuItems(items: any) {
-    return items.filter(it => !it.omit)
-        .filter(filterConsecutiveMenuSeparators())
-        .map(it => {
-            if (it === '-') return menuDivider();
-            if (isValidElement(it)) {
-                if (it instanceof MenuItem || it instanceof MenuDivider) return it;
-                return menuItem({text: it});
-            }
+function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
+    items = items.map(item => {
+        if (!isMenuItem(item)) return item;
 
-            // Create menuItem from config, recursively parsing any submenus
-            const cfg = {...it};
-            if (!isEmpty(cfg.items)) {
-                cfg.items = parseMenuItems(cfg.items);
+        item = clone(item);
+        item.items = clone(item.items);
+        item.prepareFn?.(item);
+        return item;
+    });
+
+    return items
+        .filter(it => !isMenuItem(it) || (!it.hidden && !it.omit))
+        .filter(filterConsecutiveMenuSeparators())
+        .map(item => {
+            if (item === '-') return menuDivider();
+            if (!isMenuItem(item)) return item;
+
+            const onClick = item['onClick'];
+            apiDeprecated('AppMenuButton.extraItems.onClick', {test: onClick, msg: 'Use `actionFn` instead', v: 'v56'});
+            const actionFn = item.actionFn ?? onClick;
+
+            // Create menuItem from config
+            const cfg = {
+                text: item.text,
+                icon: item.icon,
+                intent: item.intent,
+                onClick: actionFn ? () => wait().then(actionFn) : null, // do async to allow menu to close
+                disabled: item.disabled
+            } as PlainObject;
+
+            // Recursively parse any submenus
+            if (!isEmpty(item.items)) {
+                cfg.items = parseMenuItems(item.items);
                 cfg.popoverProps = {openOnTargetFocus: false};
             }
+
             return menuItem(cfg);
         });
+}
+
+function isMenuItem(item: MenuItemLike): item is MenuItem {
+    return !isString(item) && !isValidElement(item);
 }

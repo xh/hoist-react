@@ -150,7 +150,7 @@ export interface SelectProps extends
      * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
      * of up-front in this prop.
      */
-    options?: (SelectOption|any)[];
+    options?: Array<SelectOption|any>;
 
     /** Text to display when control is empty. */
     placeholder?: string;
@@ -168,7 +168,7 @@ export interface SelectProps extends
      * confused with `filterFn`, which should be used to filter through local options when
      * not in async mode.
      */
-    queryFn?: (query: string) => Awaitable<(SelectOption|any)[]>;
+    queryFn?: (query: string) => Awaitable<Array<SelectOption|any>>;
 
     /**
      * Escape-hatch props passed directly to react-select. Use with care - not all props
@@ -490,7 +490,7 @@ class SelectInputModel extends HoistInputModel {
     doQueryAsync = async (query) => {
         const rawOpts = await this.componentProps.queryFn(query),
             matchOpts = this.normalizeOptions(rawOpts);
-            
+
         // Carry forward and add to any existing internalOpts to allow our value
         // converters to continue all selected values in multiMode.
         const matchesByVal = keyBy(matchOpts, 'value'),
@@ -628,7 +628,7 @@ class SelectInputModel extends HoistInputModel {
 const cmp = hoistCmp.factory<SelectInputModel>(
     ({model, className, ...props}, ref) => {
         const {width, height, ...layoutProps} = getLayoutProps(props),
-            rsProps = {
+            rsProps: PlainObject = {
                 value: model.renderValue,
 
                 autoFocus: props.autoFocus,
@@ -669,7 +669,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(
                 filterOption: model.filterOption,
 
                 ref: model.reactSelectRef
-            } as any;
+            };
 
         if (model.manageInputValue) {
             rsProps.inputValue = model.inputValue || '';

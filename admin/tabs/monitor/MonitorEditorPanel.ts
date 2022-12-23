@@ -10,10 +10,10 @@ import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {restGrid, RestGridConfig} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
 import * as MCol from './MonitorColumns';
-import {App} from '@xh/hoist/admin/AppModel';
+import {AppModel} from '@xh/hoist/admin/AppModel';
 
 export const monitorEditorPanel = hoistCmp.factory(
-    () => restGrid({modelConfig: {...modelSpec, readonly: App.readonly}})
+    () => restGrid({modelConfig: {...modelSpec, readonly: AppModel.instance.readonly}})
 );
 
 const required = true,

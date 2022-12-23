@@ -6,30 +6,30 @@
  */
 import {ColumnSpec} from '@xh/hoist/cmp/grid';
 
-export const name = {
+export const name: ColumnSpec = {
     field: {name: 'name', type: 'string'},
     width: 200
-} as ColumnSpec;
+};
 
-export const type = {
+export const type: ColumnSpec = {
     field: {name: 'type', type: 'string'},
     width: 100
-} as ColumnSpec;
+};
 
-export const description = {
+export const description: ColumnSpec = {
     field: {name: 'description', type: 'string'},
     flex: true,
     minWidth: 200
-} as ColumnSpec;
+};
 
-export const notes = {
+export const notes: ColumnSpec = {
     field: {name: 'notes', type: 'string'},
     minWidth: 60,
     flex: true,
     tooltip: true
-} as ColumnSpec;
+};
 
-export const note = {
+export const note: ColumnSpec = {
     field: {
         name: 'note',
         type: 'string',
@@ -38,4 +38,4 @@ export const note = {
     minWidth: 60,
     flex: true,
     tooltip: true
-} as ColumnSpec;
+};
