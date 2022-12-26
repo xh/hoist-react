@@ -133,7 +133,7 @@ const appContainerView = hoistCmp.factory({
                     item: frame(createElement(appSpec.componentClass, {model: appModel}))
                 }),
                 inspectorPanel(),
-                appModel.supportVersionBar? versionBar() : null
+                versionBar()
             ),
             mask({bind: model.appLoadModel, spinner: true}),
             aboutDialog(),

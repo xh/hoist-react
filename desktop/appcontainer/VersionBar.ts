@@ -13,7 +13,7 @@ import './VersionBar.scss';
 export const versionBar = hoistCmp.factory({
     displayName: 'VersionBar',
     render() {
-        if (!isShowing()) return null;
+        if (!isShowing()|| !XH.appModel.supportsVersionBar) return null;
 
         const inspectorSvc = XH.inspectorService,
             env = XH.getEnv('appEnvironment'),

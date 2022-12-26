@@ -15,8 +15,8 @@ import './VersionBar.scss';
  */
 export const versionBar = hoistCmp.factory({
 
-    render() {
-        if (!isShowing()) return null;
+    render: function () {
+        if (!isShowing() || !XH.appModel.supportsVersionBar) return null;
 
         const env = XH.getEnv('appEnvironment'),
             version = XH.getEnv('clientVersion');
