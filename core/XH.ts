@@ -267,6 +267,8 @@ export class XHApi {
 
     /** Main entry point. Initialize and render application code. */
     renderApp<T extends HoistAppModel>(appSpec: AppSpec<T>) {
+        // Remove the pre-load exception handler installed by preflight.js
+        window.onerror = null;
         const spinner = document.getElementById('xh-preload-spinner');
         if (spinner) spinner.style.display = 'none';
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
