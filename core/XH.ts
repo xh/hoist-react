@@ -22,7 +22,7 @@ import {Store} from '@xh/hoist/data';
 import {instanceManager} from './impl/InstanceManager';
 import {installServicesAsync} from './impl/InstallServices';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable, observable, reaction as mobxReaction} from '@xh/hoist/mobx';
+import {action, makeObservable, observable, reaction as mobxReaction, when as mobxWhen} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {
     AlertBannerService,
@@ -88,6 +88,7 @@ export class XHApi {
     constructor() {
         makeObservable(this);
         this.exceptionHandler = new ExceptionHandler();
+        this.bindInitSequenceToAppLoadModel();
     }
 
     //----------------------------------------------------------------------------------------------
@@ -866,6 +867,12 @@ export class XHApi {
 
     private get acm(): AppContainerModel {
         return this.appContainerModel;
+    }
+
+    private bindInitSequenceToAppLoadModel() {
+        const terminalStates: AppState[] = ['RUNNING', 'SUSPENDED', 'LOAD_FAILED', 'ACCESS_DENIED'],
+            loadingPromise = mobxWhen(() => terminalStates.includes(this.appState));
+        loadingPromise.linkTo(this.appLoadModel);
     }
 
     private trackLoad() {
