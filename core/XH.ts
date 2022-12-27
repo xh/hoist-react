@@ -870,9 +870,7 @@ export class XHApi {
     private bindInitSequenceToAppLoadModel() {
         const terminalStates: AppState[] = ['RUNNING', 'SUSPENDED', 'LOAD_FAILED', 'ACCESS_DENIED'],
             loadingPromise = mobxWhen(() => terminalStates.includes(this.appState));
-        loadingPromise
-            .linkTo(this.appLoadModel)
-            .finally(() => loadingPromise.cancel());
+        loadingPromise.linkTo(this.appLoadModel);
     }
 
     private trackLoad() {
