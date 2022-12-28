@@ -188,7 +188,7 @@ export function fmtBillions(v: number, opts?: NumberFormatOptions): ReactNode  {
  * Render a quantity value, handling highly variable amounts by using units of millions (m) and
  * billions (b) as needed.'
  */
-export function fmtQuantity(v: number, opts?: NumberFormatOptions) {
+export function fmtQuantity(v: number, opts?: NumberFormatOptions & {allowBillions?: boolean}) {
     opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
@@ -203,7 +203,7 @@ export function fmtQuantity(v: number, opts?: NumberFormatOptions) {
     });
 
     if (lessThanM) return fmtNumber(v, opts);
-    if (lessThanB) return fmtMillions(v, opts);
+    if (lessThanB || !opts.allowBillions) return fmtMillions(v, opts);
     return fmtBillions(v, opts);
 }
 
