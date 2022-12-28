@@ -199,7 +199,8 @@ export function fmtQuantity(v: number, opts?: NumberFormatOptions & {allowBillio
     defaults(opts, {
         ledger: true,
         label: true,
-        precision: lessThanM ? 0 : 2
+        precision: lessThanM ? 0 : 2,
+        allowBillions: true
     });
 
     if (lessThanM) return fmtNumber(v, opts);
