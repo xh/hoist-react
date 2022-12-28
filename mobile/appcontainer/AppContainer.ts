@@ -113,7 +113,7 @@ const appContainerView = hoistCmp.factory<AppContainerModel>({
                 }),
                 versionBar()
             ),
-            mask(appLoadMask()),
+            appLoadMask(),
             aboutDialog(),
             feedbackDialog(),
             optionsDialog()
