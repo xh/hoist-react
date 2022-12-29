@@ -10,13 +10,13 @@ import {
     isValidElement,
     ReactNode,
     ReactElement,
-    JSXElementConstructor
+    JSXElementConstructor, ForwardedRef
 } from 'react';
-import {Some} from './';
+import {PlainObject, Some} from './';
 
 
 /**
- * Alternative format for specifying React Elements in render functions. This method is designed to
+ * Alternative format for specifying React Elements in render functions. This type is designed to
  * provide a well-formatted, declarative, native javascript approach to configuring Elements and
  * their children. It serves as an alternative to JSX and is especially useful for code-heavy
  * element trees. (For element trees with a significant amount of hypertext, JSX could be a better
@@ -25,19 +25,24 @@ import {Some} from './';
  * The core enhancement to this format over jsx is it expects child elements and props to be
  * specified in a single bundle, with children placed within an `item` or `items` key. This allows
  * developers to write declarative, multi-level element trees in a concise yet highly-readable
- * style.
+ * style.  An additional feature is the minor-but-useful support for an `omit` property, which
+ * allows element subtrees to be declaratively excluded from rendering if a given condition is met.
+ * This avoids the need for the common, but clunky React practice of wrapping elements in ternary
+ * statements to accomplish conditional rendering.
  *
- * This format is largely just a thin-wrapper over `React.createChildren`. A notable exception to
- * this is the minor-but-useful support for an `omit` property, which allows element
- * subtrees to be declaratively excluded from rendering if a given condition is met.
+ * @see {@link createElement} - That function is a thin-wrapper over `React.createChildren` that
+ * consumes this format.
  *
- * Also Note that if a React Component has its own property of `item`, `items`, or `omit`, the
- * property must be specified with a `$` prefix (e.g. `$item`) to avoid conflicting with this API.
- *
- * @see {@link elem} - a generic function that also consumes this format.
+ * Finally, note that if a React Component has its own props of `item`, `items`, or `omit`, the
+ * props may be specified in this object with a `$` prefix (e.g. `$item`) to avoid conflicting
+ * with this API.  The '$' will be stripped from the prop name before passing it along to the
+ * underlying component.
  */
-export interface ElementSpec {
+export type ElementSpec<P extends PlainObject> = P & {
 
+    //---------------------------------------------
+    // Enhanced attributes to support element factory
+    //---------------------------------------------
     /** Child Element(s). Equivalent provided as Rest Arguments to React.createElement.*/
     items?: Some<ReactNode>;
 
@@ -46,29 +51,47 @@ export interface ElementSpec {
 
     /** True to exclude the Element. */
     omit?: boolean;
-}
 
-export type WithElementSpec<P> = P & ElementSpec;
+    //-----------------------------------
+    // Core React attributes
+    //-----------------------------------
+    /** React Ref for this component. */
+    ref?: ForwardedRef<any>;
+
+    /** React key for this component. */
+    key?: string|number;
+
+    //-----------------------------------------------------
+    // Technical -- Escape support, prevent React Element.
+    //-----------------------------------------------------
+    $items?: any;
+    $item?: any;
+    $omit?: any;
+    props?: never;
+}
 
 export type ElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
     StandardElementFactory<P, T> | ContainerElementFactory<P, T>;
 
 export type StandardElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
-    (arg?: (P extends ElementSpec ? P : WithElementSpec<P>)) => ReactElement<P, T>;
+    (arg?: ElementSpec<P>) => ReactElement<P, T>;
 
 export type ContainerElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
-    ((arg?: (P extends ElementSpec ? P : WithElementSpec<P>)) => ReactElement<P, T>) &
+    ((arg?: ElementSpec<P>) => ReactElement<P, T>) &
     ((...args: ReactNode[]) => ReactElement<P, T>);
 
 /**
- * Create a React Element from a Component type and an ElementSpec
+ * Create a React Element from a Component type and an ElementSpec.
+ *
+ * This function is a thin-wrapper over `React.createChildren` that
+ * consumes the ElementSpec format.
  *
  * @param type - React Component or string representing an HTML element.
  * @param spec - element spec.
  */
 export function createElement<P=any, T extends string|JSXElementConstructor<any>=any>(
     type: T,
-    spec: (P extends ElementSpec ? P : WithElementSpec<P>)
+    spec: ElementSpec<P>
 ): ReactElement<P, T> {
     const {omit, item, items, ...props} = spec;
 
@@ -148,10 +171,11 @@ function normalizeArgs(args: any[], type: any, simple: boolean) {
 }
 
 function childrenPassedToSimpleFactory(type) {
-    const typeName = type.displayName ?? type.toString();
-    console.warn(
-        `Your application passed raw children to a 'StandardElementFactory' for Component '${ typeName }'.  This may not be ` +
-        'supported in future versions of StandardElementFactory.  Please call factory with an object implementing ' +
-        'ElementSpec or create your factory with `containerElementFactory` instead.'
-    );
+    let typeName = type.displayName ?? type.toString(),
+        msg = `Raw react nodes passed to a standard factory for '${typeName}'. ` +
+            'Please call with an ElementSpec object instead.';
+    if (typeName != 'Panel') {
+        msg += ` Alternatively, if you are defining '${typeName}', you may create a 'containerElementFactory' for it instead.`;
+    }
+    console.warn(msg);
 }
