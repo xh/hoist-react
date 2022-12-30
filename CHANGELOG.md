@@ -72,6 +72,7 @@ to use TypeScript for its own app-level code.
 * Fix bug where dragging on any panel header which is a descendant of a `DashCanvasView` would move
   the `DashCanvasView`.
 * Fix bug where `GridModel.ensureRecordsVisibleAsync` could fail to make collapsed nodes visible.
+* Fix bug where `GridPersistenceModel` would not clean outdated column state.
 * Fix animation bug when popping pages in the mobile navigator.
 
 ### ✅ Testing Scope
