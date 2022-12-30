@@ -87,7 +87,7 @@ export class GridPersistenceModel extends HoistModel {
             track: () => [gridModel.columnState, gridModel.autosizeState],
             run: ([columnState, autosizeState]) => {
                 this.patchState({
-                    columns: gridModel.removeTransientWidths(columnState),
+                    columns: gridModel.cleanColumnState(columnState),
                     autosize: autosizeState
                 });
             }
