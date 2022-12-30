@@ -46,8 +46,10 @@ to use TypeScript for its own app-level code.
   is changed during the lifetime of the component.  This allows applications to swap out models
   without needing to manually force the remounting of related components with an explicit
   `key` setting, i.e.  `key: model.xhId`.
-* `fmtQuantity` function now takes an `allowBillions` flag. The flag defaults to true; set to false
-  in order to force values greater than or equal to 1 billion to be rendered in millions.
+* `fmtQuantity` function now takes two new flags `allowMillions` and `allowBillions`, both default
+  to true. Set `allowMillions` to false in order to force all values to be rendered without
+  condensing to 'm' (or 'b') units. Set `allowBillions` to false in order to force values greater
+  than or equal to 1 billion to be rendered in millions.
 
 ### 💥 Breaking Changes
 
