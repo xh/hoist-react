@@ -27,7 +27,7 @@ export const monitorResultsToolbar = hoistCmp.factory<MonitorResultsModel>(
                 icon: Icon.refresh(),
                 text: 'Run all now',
                 disabled: isEmpty(results),
-                omit: AppModel.instance.readonly,
+                omit: AppModel.readonly,
                 onClick: () => model.forceRunAllMonitorsAsync()
             }),
             hbox({

@@ -12,7 +12,7 @@ import {AppModel} from '@xh/hoist/admin/AppModel';
 
 
 export const userPreferencePanel = hoistCmp.factory(
-    () => restGrid({modelConfig: {...modelSpec, readonly: AppModel.instance.readonly}})
+    () => restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}})
 );
 
 const required = true,

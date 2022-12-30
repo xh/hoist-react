@@ -43,7 +43,7 @@ export class LogViewerModel extends HoistModel {
         intent: 'danger',
         recordsRequired: true,
         actionFn: () => this.deleteSelectedAsync(),
-        displayFn: () => ({hidden: AppModel.instance.readonly})
+        displayFn: () => ({hidden: AppModel.readonly})
     };
 
     downloadFileAction: RecordActionSpec = {
