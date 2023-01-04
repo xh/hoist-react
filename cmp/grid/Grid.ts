@@ -204,8 +204,8 @@ class GridLocalModel extends HoistModel {
             popupParent: document.querySelector('body'),
             suppressAggFuncInHeader: true,
             icons: {
-                groupExpanded: Icon.collapseGroupRow({asHtml: true, className: 'ag-group-expanded'}),
-                groupContracted: Icon.expandGroupRow({asHtml: true, className: 'ag-group-contracted'}),
+                groupExpanded: Icon.groupRowExpanded({asHtml: true, className: 'ag-group-expanded'}),
+                groupContracted: Icon.groupRowCollapsed({asHtml: true, className: 'ag-group-contracted'}),
                 clipboardCopy: Icon.copy({asHtml: true})
             },
             components: {

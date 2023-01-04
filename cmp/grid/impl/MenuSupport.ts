@@ -140,13 +140,13 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
             return [
                 new RecordAction({
                     text: 'Expand All',
-                    icon: Icon.angleDown(),
+                    icon: Icon.groupRowExpanded(),
                     hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
                     actionFn: () => gridModel.expandAll()
                 }),
                 new RecordAction({
                     text: 'Collapse All',
-                    icon: Icon.angleRight(),
+                    icon: Icon.groupRowCollapsed(),
                     hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
                     actionFn: () => gridModel.collapseAll()
                 })

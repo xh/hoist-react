@@ -69,8 +69,8 @@ export const columnHeader = hoistCmp.factory({
             }
 
             const icon = model.majorityIsExpanded ?
-                Icon.collapseGroupRow({prefix: 'fal'}) :
-                Icon.expandGroupRow({prefix: 'fal'});
+                Icon.groupRowExpanded({prefix: 'fal'}) :
+                Icon.groupRowCollapsed({prefix: 'fal'});
 
             return div({
                 className: 'xh-grid-header-expand-collapse-icon',
