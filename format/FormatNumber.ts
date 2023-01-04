@@ -80,6 +80,11 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
     tooltip?: boolean|((v: number) => string);
 }
 
+export interface QuantityFormatOptions extends NumberFormatOptions {
+    useMillions?: boolean;
+
+    useBillions?: boolean;
+}
 
 /** Config for pos/neg/neutral color classes. */
 export interface ColorSpec {
@@ -188,7 +193,7 @@ export function fmtBillions(v: number, opts?: NumberFormatOptions): ReactNode  {
  * Render a quantity value, handling highly variable amounts by using units of millions (m) and
  * billions (b) as needed.'
  */
-export function fmtQuantity(v: number, opts?: NumberFormatOptions) {
+export function fmtQuantity(v: number, opts?: QuantityFormatOptions) {
     opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
@@ -199,11 +204,13 @@ export function fmtQuantity(v: number, opts?: NumberFormatOptions) {
     defaults(opts, {
         ledger: true,
         label: true,
-        precision: lessThanM ? 0 : 2
+        precision: lessThanM ? 0 : 2,
+        useMillions: true,
+        useBillions: true
     });
 
-    if (lessThanM) return fmtNumber(v, opts);
-    if (lessThanB) return fmtMillions(v, opts);
+    if (lessThanM || !opts.useMillions) return fmtNumber(v, opts);
+    if (lessThanB || !opts.useBillions) return fmtMillions(v, opts);
     return fmtBillions(v, opts);
 }
 

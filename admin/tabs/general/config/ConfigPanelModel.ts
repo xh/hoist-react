@@ -45,7 +45,7 @@ export class ConfigPanelModel extends HoistModel {
             hidden = true;
 
         this.gridModel = new RestGridModel({
-            readonly: AppModel.instance.readonly,
+            readonly: AppModel.readonly,
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,

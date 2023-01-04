@@ -20,7 +20,7 @@ export const servicePanel = hoistCmp.factory({
     model: creates(ServiceModel),
 
     render({model}) {
-        const {readonly} = AppModel.instance;
+        const {readonly} = AppModel;
 
         return panel({
             mask: 'onLoad',

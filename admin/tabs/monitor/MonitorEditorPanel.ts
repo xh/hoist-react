@@ -13,7 +13,7 @@ import * as MCol from './MonitorColumns';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 
 export const monitorEditorPanel = hoistCmp.factory(
-    () => restGrid({modelConfig: {...modelSpec, readonly: AppModel.instance.readonly}})
+    () => restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}})
 );
 
 const required = true,

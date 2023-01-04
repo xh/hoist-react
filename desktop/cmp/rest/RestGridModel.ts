@@ -7,7 +7,7 @@
 
 import {BaseFieldConfig} from '@xh/hoist/cmp/form';
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
+import {HoistModel, managed, PlainObject, ElementSpec, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {RecordAction, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon/Icon';
@@ -72,7 +72,7 @@ export interface RestGridEditor {
      * Partial config for FormField to be used to display this field.  Can be used to specify or
      * customize the input used for editing/displaying this Field.
      */
-    formField?: Partial<FormFieldProps>;
+    formField?: ElementSpec<Partial<FormFieldProps>>;
 
     /**
      * Partial config for underlying FieldModel to be used for form display. Can be used for to

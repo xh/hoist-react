@@ -22,7 +22,7 @@ import {Store} from '@xh/hoist/data';
 import {instanceManager} from './impl/InstanceManager';
 import {installServicesAsync} from './impl/InstallServices';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable, observable, reaction as mobxReaction} from '@xh/hoist/mobx';
+import {action, makeObservable, observable, reaction as mobxReaction, when as mobxWhen} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {
     AlertBannerService,
@@ -88,6 +88,7 @@ export class XHApi {
     constructor() {
         makeObservable(this);
         this.exceptionHandler = new ExceptionHandler();
+        this.bindInitSequenceToAppLoadModel();
     }
 
     //----------------------------------------------------------------------------------------------
@@ -267,6 +268,8 @@ export class XHApi {
 
     /** Main entry point. Initialize and render application code. */
     renderApp<T extends HoistAppModel>(appSpec: AppSpec<T>) {
+        // Remove the pre-load exception handler installed by preflight.js
+        window.onerror = null;
         const spinner = document.getElementById('xh-preload-spinner');
         if (spinner) spinner.style.display = 'none';
         this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
@@ -864,6 +867,12 @@ export class XHApi {
 
     private get acm(): AppContainerModel {
         return this.appContainerModel;
+    }
+
+    private bindInitSequenceToAppLoadModel() {
+        const terminalStates: AppState[] = ['RUNNING', 'SUSPENDED', 'LOAD_FAILED', 'ACCESS_DENIED'],
+            loadingPromise = mobxWhen(() => terminalStates.includes(this.appState));
+        loadingPromise.linkTo(this.appLoadModel);
     }
 
     private trackLoad() {

@@ -31,7 +31,7 @@ export const differDetail = hoistCmp.factory({
             onClose: () => model.close(),
             item: panel({
                 item: diffTable(),
-                bbar: AppModel.instance.readonly ? [] : [
+                bbar: AppModel.readonly ? [] : [
                     filler(),
                     button({
                         text: 'Cancel',

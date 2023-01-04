@@ -1,6 +1,8 @@
 # Changelog
 
-## v54.0.0-SNAPSHOT - unreleased
+## v55.0.0-SNAPSHOT - unreleased
+
+## v54.0.0 - 2022-12-31
 
 We are pleased to announce that Hoist React has been fully rewritten in TypeScript! ✨🚀
 
@@ -28,24 +30,21 @@ to use TypeScript for its own app-level code.
 * Enhanced TypeScript-aware implementations of `ElementFactory`, including separate factories for
   standard components (`elementFactory`) and components that often take children only
   (`containerElementFactory`).
-* References to singleton instances of services and the app model can now be gained via the static
-  `instance` property on the class name of the singleton - e.g. `SomeAppService.instance` - or via
-  a new utility method - `XH.getService(SomeAppService)`.
-    * These new options provide TypeScript-friendly (i.e. properly typed) access to services in
-      code, and are required when writing new TS code (as TS does not know that `XH` will have a
-      references to your custom app service).
-    * Referencing app-level services via `XH` is still supported for JS apps, and for debug access
-      on the console.
 * The `@bindable` annotation has been enhanced to produce a native javascript setter for its
-   property as well as the `setXXX()` method it currently produces.  This provides a more typescript
-   friendly way to set properties in a mobx action, and should be the favored method going forward.
-   The use of the `setXXX()` method will continue to be supported for backward compatibility.
+  property as well as the `setXXX()` method it currently produces.  This provides a more typescript
+  friendly way to set properties in a mobx action, and should be the favored method going forward.
+  The use of the `setXXX()` method will continue to be supported for backward compatibility.
+* References to singleton instances of services and the app model can now also be gained via the
+  static `instance` property on the class name of the singleton - e.g. `MyAppModel.instance`.
+  Referencing app-level services and the AppModel via `XH` is still fully supported and recommended.
 * New utility function `waitFor` returns a promise that will resolve after a specified condition
-   has been met, polling at a specified interval
+  has been met, polling at a specified interval.
 * Hoist Components will now automatically remount if the model passed to them (via context or props)
   is changed during the lifetime of the component.  This allows applications to swap out models
   without needing to manually force the remounting of related components with an explicit
   `key` setting, i.e.  `key: model.xhId`.
+* `fmtQuantity` function now takes two new flags `useMillions` and `useBillions`.
+
 ### 💥 Breaking Changes
 
 * The constructors for `GridModel` and `Column` no long accept arbitrary rest (e.g `...rest`)
@@ -72,6 +71,7 @@ to use TypeScript for its own app-level code.
 * Fix bug where dragging on any panel header which is a descendant of a `DashCanvasView` would move
   the `DashCanvasView`.
 * Fix bug where `GridModel.ensureRecordsVisibleAsync` could fail to make collapsed nodes visible.
+* Fix bug where `GridPersistenceModel` would not clean outdated column state.
 * Fix animation bug when popping pages in the mobile navigator.
 
 ### ✅ Testing Scope
@@ -79,6 +79,11 @@ to use TypeScript for its own app-level code.
 * *Full regression testing recommended* - this is a major Hoist release and involved a significant
   amount of refactoring to the toolkit code. As such, we recommend a thorough regression test of any
   applications updating to this release from prior versions.
+
+### ⚙️ Technical
+
+* Update `preflight.js` to catch errors that occur on startup, before our in-app exception handling
+  is initialized.
 
 ### 📚 Libraries
 

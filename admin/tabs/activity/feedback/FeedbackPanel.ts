@@ -12,7 +12,7 @@ import {AppModel} from '@xh/hoist/admin/AppModel';
 import {FieldSpec} from '@xh/hoist/data';
 
 export const feedbackPanel = hoistCmp.factory(
-    () => restGrid({modelConfig: {...modelSpec, readonly: AppModel.instance.readonly}})
+    () => restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}})
 );
 
 const modelSpec: RestGridConfig = {

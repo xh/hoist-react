@@ -42,6 +42,8 @@ export const versionBar = hoistCmp.factory({
 function isShowing() {
     const env = XH.getEnv('appEnvironment');
 
+    if (!XH.appModel.supportsVersionBar) return false;
+
     switch (XH.getPref('xhShowVersionBar', 'auto')) {
         case 'always':
             return true;

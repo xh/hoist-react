@@ -19,7 +19,7 @@ export const ehCachePanel = hoistCmp.factory({
     model: creates(EhCacheModel),
 
     render({model}) {
-        const {readonly} = AppModel.instance;
+        const {readonly} = AppModel;
 
         return panel({
             mask: 'onLoad',

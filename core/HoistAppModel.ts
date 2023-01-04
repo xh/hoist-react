@@ -53,6 +53,13 @@ export class HoistAppModel extends HoistModel {
     async logoutAsync() {}
 
     /**
+     * Should the version bar be shown in this application?.
+     * Applications  for which  a version bar might not be appropriate (e.g. a mini-app
+     * being shown in a frame or modal) may override this getter and return false
+     */
+    get supportsVersionBar(): boolean {return true}
+
+    /**
      * Provide the initial set of Router5 Routes to be used by this application.
      */
     getRoutes(): Route[] {

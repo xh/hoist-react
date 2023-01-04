@@ -32,7 +32,7 @@ export const webSocketPanel = hoistCmp.factory({
                     icon: Icon.stopCircle(),
                     intent: 'danger',
                     disabled: !model.gridModel.hasSelection,
-                    omit: AppModel.instance.readonly,
+                    omit: AppModel.readonly,
                     onClick: () => model.forceSuspendOnSelectedAsync()
                 }),
                 filler(),

@@ -95,7 +95,7 @@ function viewForState() {
     switch (XH.appState) {
         case 'PRE_AUTH':
         case 'INITIALIZING':
-            return viewport(mask({isDisplayed: true, spinner: true}));
+            return viewport(appLoadMask());
         case 'LOGIN_REQUIRED':
             return loginPanel();
         case 'ACCESS_DENIED':
@@ -135,7 +135,7 @@ const appContainerView = hoistCmp.factory({
                 inspectorPanel(),
                 versionBar()
             ),
-            mask({bind: model.appLoadModel, spinner: true}),
+            appLoadMask(),
             aboutDialog(),
             changelogDialog(),
             feedbackDialog(),
@@ -151,6 +151,10 @@ const appContainerView = hoistCmp.factory({
         return ret;
     }
 });
+
+const appLoadMask = hoistCmp.factory<AppContainerModel>(
+    ({model}) => mask({bind: model.appLoadModel, spinner: true})
+);
 
 const suspendedView = hoistCmp.factory({
     render() {

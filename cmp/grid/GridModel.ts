@@ -978,9 +978,7 @@ export class GridModel extends HoistModel {
     }
 
     setColumnState(colState: Partial<ColumnState>[]) {
-        colState = this.cleanColumnState(colState);
-        colState = this.removeTransientWidths(colState);
-        this.applyColumnStateChanges(colState);
+        this.applyColumnStateChanges(this.cleanColumnState(colState));
     }
 
     showColChooser() {
@@ -1461,7 +1459,7 @@ export class GridModel extends HoistModel {
         );
     }
 
-    private cleanColumnState(columnState) {
+    cleanColumnState(columnState) {
         const gridCols = this.getLeafColumns();
 
         // REMOVE any state columns that are no longer found in the grid. These were likely saved
@@ -1476,19 +1474,16 @@ export class GridModel extends HoistModel {
             }
         });
 
-        return ret;
-    }
-
-    // Remove the width from any non-resizable column - we don't want to track those widths as
-    // they are set programmatically (e.g. fixed / action columns), and saved state should not
-    // conflict with any code-level updates to their widths.
-    removeTransientWidths(columnState) {
-        const gridCols = this.getLeafColumns();
-        return columnState.map(state => {
+        // Remove the width from any non-resizable column - we don't want to track those widths as
+        // they are set programmatically (e.g. fixed / action columns), and saved state should not
+        // conflict with any code-level updates to their widths.
+        ret = ret.map(state => {
             const col = this.findColumn(gridCols, state.colId);
             if (!col.resizable) state = omit(state, 'width');
             return state;
         });
+
+        return ret;
     }
 
 
