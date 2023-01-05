@@ -2,6 +2,10 @@
 
 ## v55.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+
+* `GridModel`: Fix `RowClassFn` type signature and improve `RowClassRuleFn` documentation
+
 ## v54.0.0 - 2022-12-31
 
 We are pleased to announce that Hoist React has been fully rewritten in TypeScript! ✨🚀

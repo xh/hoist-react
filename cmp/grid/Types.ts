@@ -50,15 +50,16 @@ export type GridGroupSortFn = (
 
 /**
  * Closure to generate CSS class names for a row.
- * @param data - the inner data object from the StoreRecord associated with the rendered row.
+ * @param storeRecord - the StoreRecord associated with the rendered row.
  * @returns CSS class(es) to apply to the row level.
  */
-export type RowClassFn = (data: PlainObject) => Some<string>;
+export type RowClassFn = (storeRecord: StoreRecord) => Some<string>;
 
 /**
  * Function to determine if a particular CSS class should be added/removed from a row,
  * via rowClassRules config.
- * @param agParams - as provided by AG-Grid. (RowClassParams)
+ * @param agParams - as provided by AG-Grid. (RowClassParams).  Note that when a RowClassRuleFn is
+ *      called by the GridAutosizeService, it is only provided with {data: StoreRecord}.
  * @returns true if the class to which this function is keyed should be added, false if
  *      it should be removed.
  */
