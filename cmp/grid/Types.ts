@@ -50,10 +50,10 @@ export type GridGroupSortFn = (
 
 /**
  * Closure to generate CSS class names for a row.
- * @param storeRecord - the StoreRecord associated with the rendered row.
+ * @param record - the StoreRecord associated with the rendered row.
  * @returns CSS class(es) to apply to the row level.
  */
-export type RowClassFn = (storeRecord: StoreRecord) => Some<string>;
+export type RowClassFn = (record: StoreRecord) => Some<string>;
 
 /**
  * Function to determine if a particular CSS class should be added/removed from a row,
