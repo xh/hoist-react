@@ -2,7 +2,7 @@
 
 ## v55.0.0-SNAPSHOT - unreleased
 ### 🐞 Bug Fixes
-* Allow SpinnerProps to extend HTMLImageElement Props,
+* Allow SpinnerProps to extend ImgHTMLAttributes,
   since the Spinner component passes all props onto an img element.
 
 ## v54.0.0 - 2022-12-31
