@@ -6,6 +6,7 @@
  */
 import {img} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
+import {HTMLAttributes} from 'react';
 
 // @ts-ignore
 import compactSpinnerImg from './spinner-20px.png';
@@ -13,7 +14,7 @@ import compactSpinnerImg from './spinner-20px.png';
 import spinnerImg from './spinner-50px.png';
 
 
-export interface SpinnerProps extends HoistProps {
+export interface SpinnerProps extends HoistProps, HTMLAttributes<HTMLImageElement> {
     /** True to return a smaller 20px image vs default 50px. */
     compact?: boolean;
 }
