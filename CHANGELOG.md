@@ -1,6 +1,8 @@
 # Changelog
 
 ## v55.0.0-SNAPSHOT - unreleased
+### 🐞 Bug Fixes
+* ColumnSpec.actions accepts Array<RecordActionSpec|RecordAction>
 
 
 ## v54.0.0 - 2022-12-31

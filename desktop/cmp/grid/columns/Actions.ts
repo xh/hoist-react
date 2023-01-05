@@ -48,8 +48,8 @@ export const actionCol: ColumnSpec = {
         const {actions, actionsShowOnHoverOnly, gridModel} = column;
         if (isEmpty(actions)) return null;
 
-        const buttons = actions.map(actionSpec => {
-            const action = new RecordAction(actionSpec);
+        const buttons = actions.map(it => {
+            const action = it instanceof RecordAction ? it : new RecordAction(it);
 
             const {icon, intent, className, disabled, tooltip, hidden} = action.getDisplaySpec({record, selectedRecords: [record], gridModel, column});
             throwIf(!icon, 'An icon is required for any RecordAction rendered within a grid action column.');
