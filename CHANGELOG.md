@@ -4,6 +4,7 @@
 ### 🐞 Bug Fixes
 * Allow SpinnerProps to extend ImgHTMLAttributes,
   since the Spinner component passes all props onto an img element.
+* ColumnSpec.actions accepts RecordActionSpec[]|RecordAction[]
 
 ## v54.0.0 - 2022-12-31
 
