@@ -248,15 +248,7 @@ export interface HeaderContext {
  * @param metadata - additional data about the column and row.
  * @returns the formatted value for display.
  */
-export type ColumnTooltipFn<T=any> = (value: T, metadata: TooltipMetadata) => string;
-
-/**
- * Function to produce a grid column tooltip.
- * @param value - cell data value (column + row).
- * @param metadata - additional data about the column and row.
- * @returns the formatted value for display.
- */
-export type ColumnTooltipElementFn<T=any> = (value: T, metadata: TooltipMetadata) => ReactNode;
+export type ColumnTooltipFn<T=any> = (value: T, metadata: TooltipMetadata) => ReactNode;
 
 export interface TooltipMetadata {
     record: StoreRecord;

@@ -13,7 +13,7 @@ import {
     RecordActionSpec,
     StoreRecord
 } from '@xh/hoist/data';
-import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {apiDeprecated, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {
     castArray,
@@ -49,7 +49,6 @@ import {
     ColumnSetValueFn,
     ColumnSortSpec,
     ColumnSortValueFn,
-    ColumnTooltipElementFn,
     ColumnTooltipFn
 } from '../Types';
 import {ExcelFormat} from '../enums/ExcelFormat';
@@ -223,13 +222,13 @@ export interface ColumnSpec {
     highlightOnChange?: boolean;
 
     /**
-     * True displays the raw value, or tooltip function, which is based on AG Grid tooltip
-     * callback. Incompatible with `tooltipElement`.
+     * True to display raw value, or tooltip function, which is based on AG Grid tooltip callback.
+     * Incompatible with `tooltipElement`.
      */
     tooltip?: boolean|ColumnTooltipFn;
 
     /** Function returning a React node to display as a tooltip. Takes precedence over `tooltip`.*/
-    tooltipElement?: ColumnTooltipElementFn;
+    tooltipElement?: ColumnTooltipFn;
 
     /**
      * Name to display within the column chooser component. Defaults to `displayName`, can be
@@ -436,7 +435,7 @@ export class Column {
     rendererIsComplex: boolean;
     highlightOnChange: boolean;
     tooltip: boolean|ColumnTooltipFn;
-    tooltipElement: ColumnTooltipElementFn;
+    tooltipElement: ColumnTooltipFn;
     chooserName: string;
     chooserGroup: string;
     chooserDescription: string;
@@ -608,10 +607,6 @@ export class Column {
 
         this.tooltip = tooltip;
         this.tooltipElement = tooltipElement;
-        warnIf(
-            tooltip && tooltipElement,
-            `Column specified with both tooltip && tooltipElement. Tooltip will be ignored. [colId=${ this.colId }]`
-        );
 
         this.chooserName = chooserName || this.displayName;
         this.chooserGroup = chooserGroup;
@@ -781,20 +776,30 @@ export class Column {
         const {tooltip, tooltipElement, editor} = this,
             tooltipSpec = tooltipElement ?? tooltip;
 
+        if (tooltipElement) {
+            apiDeprecated('Column.tooltipElement', {msg: 'Use `tooltip` instead', v: 'v56'});
+        }
+
         if (tooltipSpec || editor) {
             // ag-Grid requires a return from getter, but value we actually use is computed below
             ret.tooltipValueGetter = () => 'tooltip';
             ret.tooltipComponent = forwardRef((props: PlainObject, ref) => {
-                const {location} = props;
+                const {location} = props,
+                    agParams = props,
+                    {data: record} = agParams,
+                    {store} = record,
+                    val = this.getValueFn({record, field, column: this, gridModel, agParams, store}),
+                    ret = isFunction(tooltipSpec) ?
+                        tooltipSpec(val, {record, column: this, gridModel, agParams}) :
+                        val,
+                    isElement = isValidElement(ret);
+
                 useImperativeHandle(ref, () => ({
                     getReactContainerClasses() {
                         if (location === 'header') return ['ag-tooltip'];
-                        return ['xh-grid-tooltip', tooltipElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'];
+                        return ['xh-grid-tooltip', isElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'];
                     }
                 }), [location]);
-
-                const agParams = props,
-                    {data: record} = agParams;
 
                 if (location === 'header') return div(this.headerTooltip);
 
@@ -815,14 +820,7 @@ export class Column {
                     if (!tooltipSpec) return null;
                 }
 
-                const {store} = record,
-                    val = this.getValueFn({record, field, column: this, gridModel, agParams, store});
-
-                const ret = isFunction(tooltipSpec) ?
-                    tooltipSpec(val, {record, column: this, gridModel, agParams}) :
-                    val;
-
-                return (isValidElement(ret) ? ret : toString(ret)) as any;
+                return (isElement ? ret : toString(ret)) as any;
             });
         }
 
