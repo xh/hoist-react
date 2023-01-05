@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {observable} from 'mobx';
 import {XH, PersistenceProvider, PersistOptions, DebounceSpec} from './';
 import {throwIf, getOrCreate} from '@xh/hoist/utils/js';
 import {
@@ -15,7 +16,7 @@ import {
     isPlainObject,
     isString,
     isUndefined,
-    upperFirst
+    upperFirst, forIn, isArray, castArray
 } from 'lodash';
 import {
     action,
@@ -23,7 +24,7 @@ import {
     comparer,
     autorun as mobxAutorun,
     reaction as mobxReaction,
-    when as mobxWhen
+    when as mobxWhen, makeObservable
 } from '@xh/hoist/mobx';
 import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
 import {IReactionDisposer} from 'mobx/dist/internal';
@@ -62,6 +63,11 @@ export abstract class HoistBase {
 
     // Internal State
     private managedInstances = [];
+
+    // Created on HoistBase by @managed property decorator
+    @observable.ref _xhManagedProperties: Array<string> = this['_xhManagedProperties'];
+    private _previousXhManagedValues: {[key: string]: HoistBase|Array<HoistBase>} = {};
+
     private disposers = [];
     private _destroyed = false;
     private _xhImpl: boolean;
@@ -251,6 +257,42 @@ export abstract class HoistBase {
         this.disposers.forEach(f => f());
         this.managedInstances.forEach(i => XH.safeDestroy(i));
         this['_xhManagedProperties']?.forEach(p => XH.safeDestroy(this[p]));
+    }
+
+    //--------------------------------------------------
+    // Implementation
+    //--------------------------------------------------
+    protected constructor() {
+        makeObservable(this);
+        const managedProperties = this._xhManagedProperties;
+        if (managedProperties != null) {
+            this.addReaction({
+                track: () => Object.fromEntries(managedProperties.map(it => [it, this[it]])),
+                run: (props) => this.manageProperties(props),
+                fireImmediately: true
+            });
+        }
+    }
+
+    protected manageProperties(props: {[key: string]: HoistBase|Array<HoistBase>}) {
+        forIn(props, (newRef, name) => {
+            const prevRef = this._previousXhManagedValues[name];
+            if (isArray(prevRef)) {
+                // When prevRef = [myObj] and newRef = myObj, don't destroy myObj
+                newRef = castArray(newRef);
+                prevRef.forEach(prev => {
+                    if (!(newRef as Array<HoistBase>).includes(prev)) {
+                        XH.safeDestroy(prev);
+                    }
+                });
+            } else {
+                // When prevRef = myObj and newRef = [myObj], don't destroy myObj
+                if (prevRef != null && prevRef !== newRef || (isArray(newRef) && newRef.includes(prevRef))) {
+                    XH.safeDestroy(prevRef);
+                }
+            }
+            this._previousXhManagedValues[name] = newRef;
+        });
     }
 }
 
