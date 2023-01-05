@@ -47,7 +47,7 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
         title,
         disabled,
         popoverProps,
-        icon = Icon.bars(),
+        icon = Icon.menu(),
         ...props
     }) {
         const impl = useLocalModel(MenuButtonLocalModel);

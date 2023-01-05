@@ -5,6 +5,14 @@
 * ColumnSpec.actions accepts Array<RecordActionSpec|RecordAction>
 
 
+### ⚙️ Technical
+
+* Hoist's `Icon` enumeration has been re-organized slightly better separate icons that describe "
+  what they look like" - e.g. `Icon.magnifyingGlass()` - from an expanded set of aliases that
+  describe "how they are used" - e.g. `Icon.search()`.
+    * This allows apps to override icon choices made within Hoist components in a more targeted way,
+      e.g. by setting `Icon.columnMenu = Icon.ellipsisVertical`.
+
 ## v54.0.0 - 2022-12-31
 
 We are pleased to announce that Hoist React has been fully rewritten in TypeScript! ✨🚀
@@ -34,7 +42,7 @@ to use TypeScript for its own app-level code.
   standard components (`elementFactory`) and components that often take children only
   (`containerElementFactory`).
 * The `@bindable` annotation has been enhanced to produce a native javascript setter for its
-  property as well as the `setXXX()` method it currently produces.  This provides a more typescript
+  property as well as the `setXXX()` method it currently produces. This provides a more typescript
   friendly way to set properties in a mobx action, and should be the favored method going forward.
   The use of the `setXXX()` method will continue to be supported for backward compatibility.
 * References to singleton instances of services and the app model can now also be gained via the
@@ -43,7 +51,7 @@ to use TypeScript for its own app-level code.
 * New utility function `waitFor` returns a promise that will resolve after a specified condition
   has been met, polling at a specified interval.
 * Hoist Components will now automatically remount if the model passed to them (via context or props)
-  is changed during the lifetime of the component.  This allows applications to swap out models
+  is changed during the lifetime of the component. This allows applications to swap out models
   without needing to manually force the remounting of related components with an explicit
   `key` setting, i.e.  `key: model.xhId`.
 * `fmtQuantity` function now takes two new flags `useMillions` and `useBillions`.
@@ -71,6 +79,7 @@ to use TypeScript for its own app-level code.
   importing Hoist Proptypes instances should simply remove these compile-time references.
 
 ### 🐞 Bug Fixes
+
 * Fix bug where dragging on any panel header which is a descendant of a `DashCanvasView` would move
   the `DashCanvasView`.
 * Fix bug where `GridModel.ensureRecordsVisibleAsync` could fail to make collapsed nodes visible.

@@ -18,7 +18,7 @@ export const splitter = hoistCmp.factory({
     render() {
         const panelModel = useContextModel(PanelModel),
             {vertical, collapsed, contentFirst, showSplitterCollapseButton, collapsible} = panelModel,
-            directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],
+            directions = vertical ? ['panelCollapseToggleUp', 'panelCollapseToggleDown'] : ['panelCollapseToggleLeft', 'panelCollapseToggleRight'],
             idx = (contentFirst != collapsed ? 0 : 1),
             chevron = directions[idx];
 
