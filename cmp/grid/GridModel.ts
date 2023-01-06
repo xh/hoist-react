@@ -11,6 +11,7 @@ import {
     ColumnGroup,
     ColumnGroupSpec,
     GridAutosizeMode,
+    GridFilterModelSpecConfig,
     GridGroupSortFn,
     TreeStyle
 } from '@xh/hoist/cmp/grid';
@@ -88,7 +89,6 @@ import {
     AutosizeState,
     ColChooserConfig,
     ColumnState,
-    GridFilterModelConfig,
     GridModelPersistOptions,
     GroupRowRenderer,
     RowClassFn,
@@ -121,7 +121,7 @@ export interface GridConfig {
     selModel?: StoreSelectionModel | StoreSelectionConfig | 'single' | 'multiple' | 'disabled';
 
     /** Config with which to create a GridFilterModel, or `true` to enable default. Desktop only.*/
-    filterModel?: GridFilterModelConfig | boolean;
+    filterModel?: GridFilterModelSpecConfig | boolean;
 
     /** Config with which to create aColChooserModel, or boolean `true` to enable default.*/
     colChooserModel?: ColChooserConfig | boolean;

@@ -87,12 +87,7 @@ export interface GridModelPersistOptions extends PersistOptions {
 }
 
 
-export interface GridFilterModelConfig {
-
-    /**
-     * Not typically provided by Applications.  Will be provided by Hoist if omitted.
-     */
-    gridModel?: GridModel;
+export interface GridFilterModelSpecConfig {
 
     /**
      * Store / Cube View to be filtered as column filters are applied. Defaulted to the
