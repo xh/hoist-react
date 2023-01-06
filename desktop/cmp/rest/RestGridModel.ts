@@ -75,7 +75,7 @@ export interface RestGridEditor {
     formField?: ElementSpec<Partial<FormFieldProps>>;
 
     /**
-     * Partial config for underlying FieldModel to be used for form display. Can be used for to
+     * Partial config for underlying FieldModel to be used for form display. Can be used to
      * specify additional validation requirements.
      */
     fieldModel?: BaseFieldConfig;
