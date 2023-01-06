@@ -4,80 +4,50 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {ContainerElementFactory, hoistCmp, containerElementFactory, ElementFactory, elementFactory} from '@xh/hoist/core';
-import ons from 'onsenui';
+import {
+    ContainerElementFactory,
+    containerElementFactory,
+    ElementFactory,
+    elementFactory,
+    HoistModel
+} from '@xh/hoist/core';
+import onsen from 'onsenui';
 import 'onsenui/css/onsen-css-components.css';
 import 'onsenui/css/onsenui.css';
-import {
-    BottomToolbar,
-    Button,
-    Checkbox,
-    Dialog,
-    GestureDetector,
-    Input,
-    ListItem,
-    Navigator,
-    Page,
-    SearchInput,
-    Select,
-    Switch,
-    Tab,
-    Tabbar,
-    Toast,
-    Toolbar
-} from 'react-onsenui';
+import {createElement, forwardRef, FunctionComponent} from 'react';
+import {isForwardRef} from 'react-is';
+import * as ons from 'react-onsenui';
 import {omitBy} from 'lodash';
 import './styles.scss';
 import './theme.scss';
 
-ons.disableAutoStyling();
-
-export {
-    BottomToolbar,
-    Button,
-    Checkbox,
-    Dialog,
-    GestureDetector,
-    Input,
-    ListItem,
-    Navigator,
-    Page,
-    SearchInput,
-    Select,
-    Switch,
-    Tab,
-    Tabbar,
-    Toast,
-    Toolbar
-};
-
+onsen.disableAutoStyling();
 
 //-----------------
 // Leaf Components
 //-----------------
 export const
-    button = onsenWrapper(elementFactory(Button)),
-    checkbox = onsenWrapper(elementFactory(Checkbox)),
-    gestureDetector = onsenWrapper(elementFactory(GestureDetector)),
-    input = onsenWrapper(elementFactory(Input)),
-    navigator = onsenWrapper(elementFactory(Navigator)),
-    searchInput = onsenWrapper(elementFactory(SearchInput)),
-    select = onsenWrapper(elementFactory(Select)),
-    switchControl = onsenWrapper(elementFactory(Switch));
-
+    [button, Button] = wrappedCmp(ons.Button),
+    [checkbox, Checkbox] = wrappedCmp(ons.Checkbox),
+    [gestureDetector, GestureDetector] = wrappedCmp(ons.GestureDetector),
+    [input, Input] = wrappedCmp(ons.Input),
+    [navigator, Navigator] = wrappedCmp(ons.Navigator),
+    [searchInput, SearchInput] = wrappedCmp(ons.SearchInput),
+    [select, Select] = wrappedCmp(ons.Select),
+    [switchControl, SwitchControl] = wrappedCmp(ons.Switch);
 
 //---------------------
 // Container Components
 //----------------------
 export const
-    dialog = onsenContainerWrapper(containerElementFactory(Dialog)),
-    listItem = onsenContainerWrapper(containerElementFactory(ListItem)),
-    page = onsenContainerWrapper(containerElementFactory(Page)),
-    tab = onsenContainerWrapper(containerElementFactory(Tab)),
-    tabbar = onsenContainerWrapper(containerElementFactory(Tabbar)),
-    toast = onsenContainerWrapper(containerElementFactory(Toast)),
-    toolbar = onsenContainerWrapper(containerElementFactory(Toolbar)),
-    bottomToolbar = onsenContainerWrapper(containerElementFactory(BottomToolbar));
+    [dialog, Dialog] = wrappedContainerCmp(ons.Dialog),
+    [listItem, ListItem] = wrappedContainerCmp(ons.ListItem),
+    [page, Page] = wrappedContainerCmp(ons.Page),
+    [tab, Tab] = wrappedContainerCmp(ons.Tab),
+    [tabbar, Tabbar] = wrappedContainerCmp(ons.Tabbar),
+    [toast, Toast] = wrappedContainerCmp(ons.Toast),
+    [toolbar, Toolbar] = wrappedContainerCmp(ons.Toolbar),
+    [bottomToolbar, BottomToolbar] = wrappedContainerCmp(ons.BottomToolbar);
 
 //-----------------
 // Implementation
@@ -94,20 +64,25 @@ export const
  * There is no reason for an Onsen Component to ever receive a HoistModel prop, so we can safely
  * strip them out here.
  */
-function onsenWrapper(factory: ElementFactory): ElementFactory {
-    return hoistCmp.factory({
-        render(props, ref) {
-            const safeProps = omitBy(props, it => it?.isHoistModel);
-            return factory({...safeProps, ref});
-        }
-    });
+function safeCmp(rawCmp): FunctionComponent {
+    return isForwardRef(rawCmp) ?
+        forwardRef((props, ref) => {
+            const safeProps = omitBy(props, it => it instanceof HoistModel);
+            safeProps.ref = ref;
+            return createElement(rawCmp, safeProps);
+        }) :
+        (props) => {
+            const safeProps = omitBy(props, it => it instanceof HoistModel);
+            return createElement(rawCmp, safeProps);
+        };
 }
 
-function onsenContainerWrapper(factory: ContainerElementFactory): ContainerElementFactory {
-    return hoistCmp.containerFactory({
-        render(props, ref) {
-            const safeProps = omitBy(props, it => it?.isHoistModel);
-            return factory({...safeProps, ref});
-        }
-    });
+function wrappedContainerCmp(rawCmp): [ContainerElementFactory, FunctionComponent] {
+    const cmp = safeCmp(rawCmp);
+    return [containerElementFactory(cmp), cmp];
+}
+
+function wrappedCmp(rawCmp): [ElementFactory, FunctionComponent] {
+    const cmp = safeCmp(rawCmp);
+    return [elementFactory(cmp), cmp];
 }
