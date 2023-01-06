@@ -4,6 +4,10 @@
 ### 🐞 Bug Fixes
 * ColumnSpec.actions accepts Array<RecordActionSpec|RecordAction>
 
+### 📚 Libraries
+
+* onsenui `2.11.1 -> 2.12.8`
+* react-onsenui `1.11.5 > 1.13.2`
 
 ### ⚙️ Technical
 
@@ -265,11 +269,6 @@ to use TypeScript for its own app-level code.
 
 * The `addReaction()` and `addAutorun()` methods on `HoistBase` (i.e. models and services) now
   support passing multiple reactions in a single call and will ignore nullish inputs.
-
-### 📚 Libraries
-
-* onsenui `2.11.1 -> 2.12.0`
-* react-onsenui `1.11.5 > 1.12.0`
 
 ## v50.1.1 - 2022-07-29
 

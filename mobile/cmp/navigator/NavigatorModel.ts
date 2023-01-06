@@ -8,7 +8,6 @@ import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {action, bindable, makeObservable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf, warnIf} from '@xh/hoist/utils/js';
-import {wait} from '@xh/hoist/promise';
 import {find, isEqual, keys, merge} from 'lodash';
 import {page} from './impl/Page';
 import {PageConfig, PageModel} from './PageModel';
@@ -222,7 +221,6 @@ export class NavigatorModel extends HoistModel {
         if (init) {
             if (!this._navigator) {
                 this._navigator = navigator;
-                this._navigator._navi.addEventListener('transitionend', this.onTransitionEnd);
                 this.onRouteChange(init);
             }
             return null;
@@ -255,22 +253,6 @@ export class NavigatorModel extends HoistModel {
         this.disableAppRefreshButton = this.activePage?.disableAppRefreshButton;
         this._callback?.();
         this._callback = null;
-    };
-
-    onTransitionEnd = () => {
-        const {pages} = this._navigator._navi,
-            visibleIdx = this.stack.length - 1,
-            cls = 'xh-page--force-hidden';
-
-        // Ensure only the intended top page is visible after a page transition.
-        pages.forEach((pageEl, idx) => {
-            pageEl.classList.toggle(cls, idx !== visibleIdx);
-        });
-
-        // Remove CSS class used to hide page
-        wait(100).then(() => {
-            pages.forEach(pageEl => pageEl.classList.remove(cls));
-        });
     };
 
 }
