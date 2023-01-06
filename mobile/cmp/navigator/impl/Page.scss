@@ -1,13 +1,7 @@
-.xh-page {
-  &--force-hidden {
-    display: none !important;
-  }
-
-  .page__content {
-    display: flex;
-    align-items: stretch;
-    flex-direction: column;
-    transform: translateX(0);
-    font-family: var(--xh-font-family);
-  }
+.xh-page .page__content {
+  display: flex;
+  align-items: stretch;
+  flex-direction: column;
+  transform: translateX(0);
+  font-family: var(--xh-font-family);
 }
