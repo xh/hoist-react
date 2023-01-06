@@ -59,7 +59,8 @@ export type RowClassFn = (record: StoreRecord) => Some<string>;
  * Function to determine if a particular CSS class should be added/removed from a row,
  * via rowClassRules config.
  * @param agParams - as provided by AG-Grid. (RowClassParams).  Note that when a RowClassRuleFn is
- *      called by the GridAutosizeService, it is only provided with {data: StoreRecord}.
+ *      called by the GridAutosizeService, it is only provided with an object with the 'data' key,
+ *      not the entire RowClassParams params.
  * @returns true if the class to which this function is keyed should be added, false if
  *      it should be removed.
  */
