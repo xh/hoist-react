@@ -1,0 +1,189 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2022 Extremely Heavy Industries Inc.
+ */
+
+import {XH} from '@xh/hoist/core';
+import {throwIf} from '@xh/hoist/utils/js';
+import {
+    castArray,
+    difference,
+    escapeRegExp,
+    isArray,
+    isNil,
+    isString,
+    isUndefined,
+    uniq
+} from 'lodash';
+import {parseFieldValue} from '../Field';
+import {Store} from '../Store';
+import {Filter} from './Filter';
+import {FieldFilterOperator, FieldFilterSpec, FilterTestFn} from './Types';
+
+/**
+ * Filters by comparing the value of a given field to one or more given candidate values using one
+ * of several supported operators.
+ *
+ * Note that the comparison operators `[<,<=,>,>=]` always return false for null and undefined values,
+ * favoring the behavior of Excel over Javascript's implicit conversion of nullish values to 0.
+ *
+ * Immutable.
+ */
+export class FieldFilter extends Filter {
+
+    get isFieldFilter() {return true}
+
+    readonly field: string;
+    readonly op: FieldFilterOperator;
+    readonly value: any;
+
+    static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like', 'not like', 'begins', 'ends', 'includes', 'excludes'];
+    static ARRAY_OPERATORS = ['=', '!=', 'like', 'not like', 'begins', 'ends', 'includes', 'excludes'];
+
+    /**
+     * Constructor - not typically called by apps - create via {@link parseFilter} instead.
+     * @internal
+     */
+    constructor({field, op, value}: FieldFilterSpec) {
+        super();
+
+        throwIf(!field, 'FieldFilter requires a field');
+        throwIf(isUndefined(value), 'FieldFilter requires a value');
+        throwIf(!FieldFilter.OPERATORS.includes(op),
+            `FieldFilter requires valid "op" value. Operator "${op}" not recognized.`
+        );
+        throwIf(!FieldFilter.ARRAY_OPERATORS.includes(op) && isArray(value),
+            `Operator "${op}" does not support multiple values. Use a CompoundFilter instead.`
+        );
+
+        this.field = isString(field) ? field : field.name;
+        this.op = op;
+        this.value = isArray(value) ? uniq(value) : value;
+
+        Object.freeze(this);
+    }
+
+    toJSON() {
+        const {field, op, value} = this;
+        return {field, op, value};
+    }
+
+    //-----------------
+    // Overrides
+    //-----------------
+    override getTestFn(store?: Store): FilterTestFn {
+        let {field, op, value} = this,
+            regExps;
+
+        if (store) {
+            const storeField = store.getField(field);
+            if (!storeField) return () => true; // Ignore (do not filter out) if field not in store
+
+            const fieldType = storeField.type === 'tags' ? 'string' : storeField.type;
+            value = isArray(value) ?
+                value.map(v => parseFieldValue(v, fieldType)) :
+                parseFieldValue(value, fieldType);
+        }
+        const getVal = store ? r => r.committedData[field] : r => r[field],
+            doNotFilter = r => store && isNil(r.committedData); // Ignore (do not filter out) record if part of a store and it has no committed data
+
+        if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
+            value = castArray(value);
+        }
+
+        switch (op) {
+            case '=':
+                return r => {
+                    if (doNotFilter(r)) return true;
+                    let v = getVal(r);
+                    if (isNil(v) || v === '') v = null;
+                    return value.includes(v);
+                };
+            case '!=':
+                return r => {
+                    if (doNotFilter(r)) return true;
+                    let v = getVal(r);
+                    if (isNil(v) || v === '') v = null;
+                    return !value.includes(v);
+                };
+            case '>':
+                return r => {
+                    if (doNotFilter(r)) return true;
+                    const v = getVal(r);
+                    return !isNil(v) && v > value;
+                };
+            case '>=':
+                return r => {
+                    if (doNotFilter(r)) return true;
+                    const v = getVal(r);
+                    return !isNil(v) && v >= value;
+                };
+            case '<':
+                return r => {
+                    if (doNotFilter(r)) return true;
+                    const v = getVal(r);
+                    return !isNil(v) && v < value;
+                };
+            case '<=':
+                return r => {
+                    if (doNotFilter(r)) return true;
+                    const v = getVal(r);
+                    return !isNil(v) && v <= value;
+                };
+            case 'like':
+                regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
+                return r => {
+                    if (doNotFilter(r)) return true;
+                    return regExps.some(re => re.test(getVal(r)));
+                };
+            case 'not like':
+                regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
+                return r => {
+                    if (doNotFilter(r)) return true;
+                    return regExps.every(re => !re.test(getVal(r)));
+                };
+            case 'begins':
+                regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
+                return r => {
+                    if (doNotFilter(r)) return true;
+                    return regExps.some(re => re.test(getVal(r)));
+                };
+            case 'ends':
+                regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
+                return r => {
+                    if (doNotFilter(r)) return true;
+                    return regExps.some(re => re.test(getVal(r)));
+                };
+            case 'includes':
+                return r => {
+                    if (doNotFilter(r)) return true;
+                    const v = getVal(r);
+                    return !isNil(v) && v.some(it => value.includes(it));
+                };
+            case 'excludes':
+                return r => {
+                    if (doNotFilter(r)) return true;
+                    const v = getVal(r);
+                    return isNil(v) || !v.some(it => value.includes(it));
+                };
+            default:
+                throw XH.exception(`Unknown operator: ${op}`);
+        }
+    }
+
+    override equals(other: Filter): boolean {
+        if (other === this) return true;
+        return (
+            other instanceof FieldFilter &&
+            other.field === this.field &&
+            other.op === this.op &&
+            (
+                isArray(other.value) && isArray(this.value) ?
+                    other.value.length === this.value.length && difference(other.value, this.value).length === 0 :
+                    other.value === this.value
+            )
+        );
+    }
+}

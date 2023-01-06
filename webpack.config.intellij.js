@@ -3,7 +3,7 @@
  * copy of hoist-react (when developing in "Hoist Inline" mode). This should enable code completion
  * and click-through navigation for imports such as `import {foo} from '@xh/hoist/bar'`.
  *
- * Point to this file within: Settings > Languages & Frameworks > JavaScript > Webpack
+ * Point to this file within: Settings | Languages & Frameworks | JavaScript | Webpack
  *
  * It is *not* used for any actual/other webpack related tasks or builds.
  */

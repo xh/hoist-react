@@ -1,5 +1,5 @@
 /**
- * This file replaces the MUCH larger versions included within the @blueprintjs/icons dependency,
+ * This file replaces the MUCH larger versions included within the blueprintjs/icons dependency,
  * which itself is required by Blueprint core. This file is swapped in at build-time by the
  * `@xh/hoist-dev-utils` webpack config to only bundle the icons required by BP-based  Hoist React
  * components, nicely reducing overall app bundle size.

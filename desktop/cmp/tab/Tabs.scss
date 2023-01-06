@@ -100,10 +100,14 @@
     }
   }
 
-  // Tooltip
   .bp4-tab {
     color: var(--xh-tab-text-color);
 
+    &[aria-disabled="true"] {
+      color: var(--xh-tab-disabled-text-color);
+    }
+
+    // Tooltip
     .bp4-popover-wrapper,
     .bp4-popover-target {
       width: 100%;
