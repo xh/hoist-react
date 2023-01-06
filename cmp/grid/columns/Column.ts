@@ -459,7 +459,7 @@ export class Column {
     editorIsPopup: boolean;
     setValueFn: ColumnSetValueFn;
     getValueFn: ColumnGetValueFn;
-    actions?: Array<RecordActionSpec|RecordAction>
+    actions?: Array<RecordActionSpec|RecordAction>;
     actionsShowOnHoverOnly?: boolean;
     fieldSpec: FieldSpec;
     manuallySized: boolean;
