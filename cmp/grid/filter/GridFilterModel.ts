@@ -5,6 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import {GridFilterModelConfig} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {CompoundFilter, FieldFilter, Filter,
@@ -39,12 +40,13 @@ export class GridFilterModel extends HoistModel {
     static BLANK_PLACEHOLDER = '[blank]';
 
     constructor({
-        gridModel,
         bind,
         commitOnChange = true,
         fieldSpecs,
         fieldSpecDefaults
-    }: GridFilterModelConfig) {
+    }: GridFilterModelConfig,
+    gridModel: GridModel
+    ) {
         super();
         makeObservable(this);
         this.gridModel = gridModel;
@@ -172,32 +174,4 @@ export class GridFilterModel extends HoistModel {
         const results = compact(filter.filters.map(it => this.getOuterCompoundFilter(it, field)));
         return results.length === 1 ? results[0] : null;
     }
-}
-
-
-/**
- * @internal
- */
-interface GridFilterModelConfig {
-
-    gridModel: GridModel;
-
-    /**
-     * Store / Cube View to be filtered as column filters are applied. Also used to provide
-     * suggested values (if configured).
-     */
-    bind?: Store | View;
-
-    /** True (default) to update filters immediately after each change made in the column-based filter UI.*/
-    commitOnChange?: boolean;
-
-    /**
-     * Specifies the fields this model supports for filtering. Should be configs for
-     * {@link GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or omitted
-     * entirely to indicate that all fields should be filter-enabled.
-     */
-    fieldSpecs?: Array<string | GridFilterFieldSpec>
-
-    /** Default properties to be assigned to all `GridFilterFieldSpecs` created by this model. */
-    fieldSpecDefaults?: Partial<GridFilterFieldSpec>;
 }

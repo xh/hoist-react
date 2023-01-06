@@ -11,6 +11,7 @@ import {
     ColumnGroup,
     ColumnGroupSpec,
     GridAutosizeMode,
+    GridFilterModelConfig,
     GridGroupSortFn,
     TreeStyle
 } from '@xh/hoist/cmp/grid';
@@ -88,7 +89,6 @@ import {
     AutosizeState,
     ColChooserConfig,
     ColumnState,
-    GridFilterModelConfig,
     GridModelPersistOptions,
     GroupRowRenderer,
     RowClassFn,
@@ -1616,11 +1616,10 @@ export class GridModel extends HoistModel {
     private parseFilterModel(filterModel) {
         if (XH.isMobileApp || !filterModel) return null;
         filterModel = isPlainObject(filterModel) ? filterModel : {};
-        return new GridFilterModel({
-            bind: this.store,
-            ...filterModel,
-            gridModel: this
-        });
+        return new GridFilterModel(
+            {bind: this.store, ...filterModel},
+            this
+        );
     }
 
     private parseExperimental(experimental) {
