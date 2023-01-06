@@ -155,7 +155,7 @@ export function containerElementFactory<P=any, T extends string|JSXElementConstr
 //------------------------
 // Implementation
 //------------------------
-export function normalizeArgs(args: any[], type: any, simple: boolean) {
+function normalizeArgs(args: any[], type: any, simple: boolean) {
     const len = args.length;
     if (len === 0) return {};
     if (len === 1) {

@@ -4,11 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {StandardElementFactory, createElement, normalizeArgs, ContainerElementFactory, ElementSpec} from '@xh/hoist/core';
+import {ContainerElementFactory, hoistCmp, containerElementFactory, ElementFactory, elementFactory} from '@xh/hoist/core';
 import ons from 'onsenui';
 import 'onsenui/css/onsen-css-components.css';
 import 'onsenui/css/onsenui.css';
-import {JSXElementConstructor} from 'react';
 import {
     BottomToolbar,
     Button,
@@ -57,34 +56,34 @@ export {
 // Leaf Components
 //-----------------
 export const
-    button = onsenElementFactory(Button),
-    checkbox = onsenElementFactory(Checkbox),
-    gestureDetector = onsenElementFactory(GestureDetector),
-    input = onsenElementFactory(Input),
-    navigator = onsenElementFactory(Navigator),
-    searchInput = onsenElementFactory(SearchInput),
-    select = onsenElementFactory(Select),
-    switchControl = onsenElementFactory(Switch);
+    button = onsenWrapper(elementFactory(Button)),
+    checkbox = onsenWrapper(elementFactory(Checkbox)),
+    gestureDetector = onsenWrapper(elementFactory(GestureDetector)),
+    input = onsenWrapper(elementFactory(Input)),
+    navigator = onsenWrapper(elementFactory(Navigator)),
+    searchInput = onsenWrapper(elementFactory(SearchInput)),
+    select = onsenWrapper(elementFactory(Select)),
+    switchControl = onsenWrapper(elementFactory(Switch));
 
 
 //---------------------
 // Container Components
 //----------------------
 export const
-    dialog = onsenContainerElementFactory(Dialog),
-    listItem = onsenContainerElementFactory(ListItem),
-    page = onsenContainerElementFactory(Page),
-    tab = onsenContainerElementFactory(Tab),
-    tabbar = onsenContainerElementFactory(Tabbar),
-    toast = onsenContainerElementFactory(Toast),
-    toolbar = onsenContainerElementFactory(Toolbar),
-    bottomToolbar = onsenContainerElementFactory(BottomToolbar);
+    dialog = onsenContainerWrapper(containerElementFactory(Dialog)),
+    listItem = onsenContainerWrapper(containerElementFactory(ListItem)),
+    page = onsenContainerWrapper(containerElementFactory(Page)),
+    tab = onsenContainerWrapper(containerElementFactory(Tab)),
+    tabbar = onsenContainerWrapper(containerElementFactory(Tabbar)),
+    toast = onsenContainerWrapper(containerElementFactory(Toast)),
+    toolbar = onsenContainerWrapper(containerElementFactory(Toolbar)),
+    bottomToolbar = onsenContainerWrapper(containerElementFactory(BottomToolbar));
 
 //-----------------
 // Implementation
 //-----------------
 /**
- * Custom implementations of `elementFactory` and `containerElementFactory`, that strip
+ * Wrappers around ElementFactory and ContainerElementFactory that strip
  * HoistModel props before passing onto the Onsen component.
  *
  * Onsen component props are internally serialized to JSON. If it receives a HoistModel as a prop,
@@ -95,24 +94,20 @@ export const
  * There is no reason for an Onsen Component to ever receive a HoistModel prop, so we can safely
  * strip them out here.
  */
-function onsenElementFactory<P=any, T extends string|JSXElementConstructor<any>=any>(
-    type: T
-): StandardElementFactory<P, T> {
-    const ret = function(...args) {
-        const normalizedArgs = normalizeArgs(args, type, true);
-        return createElement<P, T>(type, omitBy(normalizedArgs, it => it?.isHoistModel) as ElementSpec<P>);
-    };
-    ret.isElementFactory = true;
-    return ret;
+function onsenWrapper(factory: ElementFactory): ElementFactory {
+    return hoistCmp.factory({
+        render(props, ref) {
+            const safeProps = omitBy(props, it => it?.isHoistModel);
+            return factory({...safeProps, ref});
+        }
+    });
 }
 
-function onsenContainerElementFactory<P=any, T extends string|JSXElementConstructor<any>=any>(
-    type: T
-): ContainerElementFactory<P, T> {
-    const ret = function(...args) {
-        const normalizedArgs = normalizeArgs(args, type, false);
-        return createElement<P, T>(type, omitBy(normalizedArgs, it => it?.isHoistModel) as ElementSpec<P>);
-    };
-    ret.isElementFactory = true;
-    return ret;
+function onsenContainerWrapper(factory: ContainerElementFactory): ContainerElementFactory {
+    return hoistCmp.containerFactory({
+        render(props, ref) {
+            const safeProps = omitBy(props, it => it?.isHoistModel);
+            return factory({...safeProps, ref});
+        }
+    });
 }
