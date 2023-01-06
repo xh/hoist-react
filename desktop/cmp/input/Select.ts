@@ -572,7 +572,7 @@ class SelectInputModel extends HoistInputModel {
     getDropdownIndicatorCmp() {
         return this.hideDropdownIndicator ?
             () => null :
-            () => Icon.chevronDown({className: 'xh-select__indicator'});
+            () => Icon.selectDropdown({className: 'xh-select__indicator'});
     }
 
     // As per example @ https://react-select.com/components#replaceable-components

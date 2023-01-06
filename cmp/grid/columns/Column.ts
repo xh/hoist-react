@@ -10,6 +10,7 @@ import {
     CubeFieldSpec,
     FieldSpec,
     genDisplayName,
+    RecordAction,
     RecordActionSpec,
     StoreRecord
 } from '@xh/hoist/data';
@@ -346,7 +347,7 @@ export interface ColumnSpec {
     /**
      * Actions to display as clickable buttons in this column. For action columns only.
      */
-    actions?: RecordActionSpec[],
+    actions?: Array<RecordActionSpec|RecordAction>,
 
     /**
      * For action columns, hide the Buttons for all rows except the currently hovered row. This can
@@ -457,7 +458,7 @@ export class Column {
     editorIsPopup: boolean;
     setValueFn: ColumnSetValueFn;
     getValueFn: ColumnGetValueFn;
-    actions?: RecordActionSpec[];
+    actions?: Array<RecordActionSpec|RecordAction>;
     actionsShowOnHoverOnly?: boolean;
     fieldSpec: FieldSpec;
     manuallySized: boolean;
