@@ -11,7 +11,7 @@ import {
     ColumnGroup,
     ColumnGroupSpec,
     GridAutosizeMode,
-    GridFilterModelSpecConfig,
+    GridFilterModelConfig,
     GridGroupSortFn,
     TreeStyle
 } from '@xh/hoist/cmp/grid';
@@ -121,7 +121,7 @@ export interface GridConfig {
     selModel?: StoreSelectionModel | StoreSelectionConfig | 'single' | 'multiple' | 'disabled';
 
     /** Config with which to create a GridFilterModel, or `true` to enable default. Desktop only.*/
-    filterModel?: GridFilterModelSpecConfig | boolean;
+    filterModel?: GridFilterModelConfig | boolean;
 
     /** Config with which to create aColChooserModel, or boolean `true` to enable default.*/
     colChooserModel?: ColChooserConfig | boolean;
@@ -1616,11 +1616,10 @@ export class GridModel extends HoistModel {
     private parseFilterModel(filterModel) {
         if (XH.isMobileApp || !filterModel) return null;
         filterModel = isPlainObject(filterModel) ? filterModel : {};
-        return new GridFilterModel({
-            bind: this.store,
-            ...filterModel,
-            gridModel: this
-        });
+        return new GridFilterModel(
+            {bind: this.store, ...filterModel},
+            this
+        );
     }
 
     private parseExperimental(experimental) {

@@ -87,7 +87,7 @@ export interface GridModelPersistOptions extends PersistOptions {
 }
 
 
-export interface GridFilterModelSpecConfig {
+export interface GridFilterModelConfig {
 
     /**
      * Store / Cube View to be filtered as column filters are applied. Defaulted to the
