@@ -784,9 +784,8 @@ export class Column {
             // ag-Grid requires a return from getter, but value we actually use is computed below
             ret.tooltipValueGetter = () => 'tooltip';
             ret.tooltipComponent = forwardRef((props: PlainObject, ref) => {
-                const {location} = props,
-                    agParams = props,
-                    {data: record} = agParams,
+                const agParams = props,
+                    {location, data: record} = agParams,
                     {store} = record,
                     val = this.getValueFn({record, field, column: this, gridModel, agParams, store}),
                     ret = isFunction(tooltipSpec) ?
