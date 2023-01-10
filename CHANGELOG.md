@@ -1,8 +1,10 @@
 # Changelog
 
 ## v55.0.0-SNAPSHOT - unreleased
+
 ### 🐞 Bug Fixes
 * ColumnSpec.actions accepts Array<RecordActionSpec|RecordAction>
+* Fixed a bug in which grid cell editors would drop a single character edit.
 
 ### 📚 Libraries
 
