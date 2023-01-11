@@ -40,13 +40,13 @@ export function tabContainerImpl({model, className}: TabContainerProps) {
     return onsenTabbar({
         className: classNames(className, `xh-tab-container--${switcher?.orientation}`),
         position: switcher?.orientation,
-        index: activeTab ? tabs.indexOf(activeTab) : 0,
+        activeIndex: activeTab ? tabs.indexOf(activeTab) : 0,
         renderTabs: (idx, ref) => {
             impl.setSwiper(ref);
             return tabs.map(renderTabModel);
         },
         onPreChange: (e) => model.activateTab(tabs[e.index].id),
-        visible: !!switcher,
+        hideTabs: !switcher,
         ...switcher
     });
 }

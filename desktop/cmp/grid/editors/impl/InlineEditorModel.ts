@@ -92,8 +92,8 @@ class InlineEditorModel extends HoistModel {
     }
 
     focus() {
-        const {inputEl} = this;
-        if (!inputEl) return;
+        const {inputEl, ref} = this;
+        if (!inputEl || !ref.current) return;
 
         inputEl.focus();
 
@@ -101,7 +101,7 @@ class InlineEditorModel extends HoistModel {
         if (isNil(charPress)) {
             inputEl.select();
         } else {
-            inputEl.value = charPress;
+            ref.current.noteValueChange(charPress);
         }
     }
 

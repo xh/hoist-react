@@ -1,9 +1,15 @@
 # Changelog
 
 ## v55.0.0-SNAPSHOT - unreleased
+
 ### 🐞 Bug Fixes
 * ColumnSpec.actions accepts Array<RecordActionSpec|RecordAction>
+* Fixed a bug in which grid cell editors would drop a single character edit.
 
+### 📚 Libraries
+
+* onsenui `2.11.1 -> 2.12.8`
+* react-onsenui `1.11.5 > 1.13.2`
 
 ### ⚙️ Technical
 

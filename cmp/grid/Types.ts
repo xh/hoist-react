@@ -88,11 +88,15 @@ export interface GridModelPersistOptions extends PersistOptions {
 
 
 export interface GridFilterModelConfig {
+
     /**
      * Store / Cube View to be filtered as column filters are applied. Defaulted to the
      * gridModel's store.
      */
     bind?: Store|View;
+
+    /** True (default) to update filters immediately after each change made in the column-based filter UI.*/
+    commitOnChange?: boolean;
 
     /**
      * Specifies the fields this model supports for filtering. Should be configs for

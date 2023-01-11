@@ -34,7 +34,7 @@ export class SwiperModel extends HoistModel {
     @action
     onDragStart = (e) => {
         const {navigatorModel} = this,
-            {direction} = e.nativeEvent.gesture;
+            {direction} = e.gesture;
 
         this.refreshEnd();
         this.backEnd();
@@ -45,7 +45,7 @@ export class SwiperModel extends HoistModel {
             direction === 'right' &&
             navigatorModel.swipeToGoBack &&
             navigatorModel.stack.length >= 2 &&
-            e.nativeEvent.gesture.startEvent.center.pageX > 20 &&
+            e.gesture.startEvent.center.pageX > 20 &&
             !this.isDraggingChild(e, 'right')
         ) {
             this.backStart();

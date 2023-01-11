@@ -184,7 +184,7 @@ export interface SelectProps extends
     valueField?: string;
 }
 
-interface SelectOption {
+export interface SelectOption {
     value: any;
     label?: string;
     options?: (SelectOption|any)[];
