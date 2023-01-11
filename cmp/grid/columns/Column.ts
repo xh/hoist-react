@@ -223,13 +223,9 @@ export interface ColumnSpec {
     highlightOnChange?: boolean;
 
     /**
-     * True to display raw value, or tooltip function, which is based on AG Grid tooltip callback.
-     * Incompatible with `tooltipElement`.
+     * True to display raw value, or tooltip function.
      */
     tooltip?: boolean|ColumnTooltipFn;
-
-    /** Function returning a React node to display as a tooltip. Takes precedence over `tooltip`.*/
-    tooltipElement?: ColumnTooltipFn;
 
     /**
      * Name to display within the column chooser component. Defaults to `displayName`, can be
@@ -436,7 +432,6 @@ export class Column {
     rendererIsComplex: boolean;
     highlightOnChange: boolean;
     tooltip: boolean|ColumnTooltipFn;
-    tooltipElement: ColumnTooltipFn;
     chooserName: string;
     chooserGroup: string;
     chooserDescription: string;
@@ -525,7 +520,6 @@ export class Column {
             autosizeBufferPx,
             autoHeight,
             tooltip,
-            tooltipElement,
             editable,
             editor,
             editorIsPopup,
@@ -539,6 +533,12 @@ export class Column {
             appData,
             ...rest
         }: ColumnSpec = spec;
+
+        // Extract deprecated properties from rest. All other properties in rest are unsupported.
+        const {tooltipElement, ...unsupported} = rest as any;
+        if (tooltipElement) {
+            apiDeprecated('Column.tooltipElement', {msg: 'Use `tooltip` instead', v: 'v56'});
+        }
 
         this.field = this.parseField(field);
         this.enableDotSeparatedFieldPath = withDefault(enableDotSeparatedFieldPath, true);
@@ -606,8 +606,7 @@ export class Column {
         this.rendererIsComplex = rendererIsComplex;
         this.highlightOnChange = highlightOnChange;
 
-        this.tooltip = tooltip;
-        this.tooltipElement = tooltipElement;
+        this.tooltip = tooltip ?? tooltipElement;
 
         this.chooserName = chooserName || this.displayName;
         this.chooserGroup = chooserGroup;
@@ -650,8 +649,8 @@ export class Column {
         warnIf(this.agOptions.valueSetter, `Column '${ this.colId }' uses valueSetter through agOptions. Remove and use custom setValueFn if needed.`);
         warnIf(this.agOptions.valueGetter, `Column '${ this.colId }' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`);
 
-        if (!isEmpty(rest)) {
-            const keys = keysIn(rest);
+        if (!isEmpty(unsupported)) {
+            const keys = keysIn(unsupported);
             throw XH.exception(
                 `Key(s) '${keys}' not supported in Column.  For custom data, use the 'appData' property.`
             );
@@ -774,36 +773,35 @@ export class Column {
         }
 
         // Tooltip Handling
-        const {tooltip, tooltipElement, editor} = this,
-            tooltipSpec = tooltipElement ?? tooltip;
-
-        if (tooltipElement) {
-            apiDeprecated('Column.tooltipElement', {msg: 'Use `tooltip` instead', v: 'v56'});
-        }
-
-        if (tooltipSpec || editor) {
+        const {tooltip, editor} = this;
+        if (tooltip || editor) {
             // ag-Grid requires a return from getter, but value we actually use is computed below
             ret.tooltipValueGetter = () => 'tooltip';
             ret.tooltipComponent = forwardRef((props: PlainObject, ref) => {
                 const agParams = props,
                     {location, data: record} = agParams,
-                    {store} = record,
-                    val = this.getValueFn({record, field, column: this, gridModel, agParams, store}),
-                    ret = isFunction(tooltipSpec) ?
-                        tooltipSpec(val, {record, column: this, gridModel, agParams}) :
-                        val,
-                    isElement = isValidElement(ret);
+                    hasRecord = record instanceof StoreRecord;
 
+                let ret = null;
+                if (hasRecord) {
+                    const {store} = record,
+                        val = this.getValueFn({record, field, column: this, gridModel, agParams, store});
+
+                    ret = isFunction(tooltip) ?
+                        tooltip(val, {record, column: this, gridModel, agParams}) :
+                        val;
+                }
+
+                const isElement = isValidElement(ret);
                 useImperativeHandle(ref, () => ({
                     getReactContainerClasses() {
                         if (location === 'header') return ['ag-tooltip'];
                         return ['xh-grid-tooltip', isElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'];
                     }
-                }), [location]);
+                }), [location, isElement]);
 
                 if (location === 'header') return div(this.headerTooltip);
-
-                if (!(record instanceof StoreRecord)) return null;
+                if (!hasRecord) return null;
 
                 // Override with validation errors, if present
                 if (editor) {
@@ -817,7 +815,7 @@ export class Column {
                             items: errors.map((it, idx) => li({key: idx, item: it}))
                         });
                     }
-                    if (!tooltipSpec) return null;
+                    if (!tooltip) return null;
                 }
 
                 return (isElement ? ret : toString(ret)) as any;
