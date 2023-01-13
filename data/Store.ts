@@ -390,8 +390,9 @@ export class Store extends HoistBase {
             addRecs = new Map();
             add.forEach(it => {
                 if (isChildRawDataObject(it)) {
-                    const parent = this.getOrThrow(it.parentId);
-                    this.createRecords([it.rawData], parent, addRecs);
+                    const {rawData, parentId} = it,
+                        parent = !isNil(parentId) ? this.getOrThrow(parentId) : null;
+                    this.createRecords([rawData], parent, addRecs);
                 } else {
                     this.createRecords([it], null, addRecs);
                 }
