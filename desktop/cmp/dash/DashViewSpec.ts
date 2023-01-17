@@ -37,7 +37,7 @@ export interface DashViewSpec {
      * True to prevent any instances of this view. References to this view in state will
      * be quietly dropped. Default false.
      */
-    omit?: boolean;
+    omit?: boolean|(() => boolean);
 
     /** True to prevent multiple instances of this view. Default false. */
     unique?: boolean

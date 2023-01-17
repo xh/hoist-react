@@ -20,7 +20,16 @@ import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoi
 import {wait} from '@xh/hoist/promise';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {cloneDeep, defaultsDeep, find, isFinite, isNil, reject, startCase} from 'lodash';
+import {
+    cloneDeep,
+    defaultsDeep,
+    find,
+    isFinite,
+    isFunction,
+    isNil,
+    reject,
+    startCase
+} from 'lodash';
 import {createRoot} from 'react-dom/client';
 import {DashViewModel, DashViewState} from '../DashViewModel';
 import {DashContainerViewSpec} from './DashContainerViewSpec';
@@ -150,7 +159,7 @@ export class DashContainerModel extends DashModel<DashContainerViewSpec, DashVie
     }: DashContainerConfig) {
         super();
         makeObservable(this);
-        viewSpecs = viewSpecs.filter(it => !it.omit);
+        viewSpecs = viewSpecs.filter(it => isFunction(it.omit) ? !it.omit() : !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
             return defaultsDeep({}, cfg, viewSpecDefaults, {

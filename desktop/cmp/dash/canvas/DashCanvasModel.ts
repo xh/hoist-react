@@ -21,7 +21,7 @@ import {
     some,
     sortBy,
     pick,
-    isEqual, startCase
+    isEqual, startCase, isFunction
 } from 'lodash';
 
 export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCanvasItemState> {
@@ -125,7 +125,7 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
     }: DashCanvasConfig) {
         super();
         makeObservable(this);
-        viewSpecs = viewSpecs.filter(it => !it.omit);
+        viewSpecs = viewSpecs.filter(it => isFunction(it.omit) ? !it.omit() : !it.omit);
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
             return defaultsDeep({}, cfg, viewSpecDefaults, {
