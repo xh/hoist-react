@@ -308,5 +308,5 @@ export class WebSocketSubscription {
 
 export interface WebSocketMessage {
     topic: string;
-    data: any;
+    data?: any;
 }
