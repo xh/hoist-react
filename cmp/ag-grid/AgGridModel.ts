@@ -589,6 +589,10 @@ export class AgGridModel extends HoistModel {
     @action
     handleGridReady({api, columnApi}) {
         console.debug(`AgGridModel ${this.xhId} initializing`);
+        throwIf(this.agApi && this.agApi != api,
+            'Attempted to mount a grid on a GridModel that is already in use. ' +
+            'Ensure that you are not binding your grid to the wrong model via context.'
+        );
         this.agApi = api;
         this.agColumnApi = columnApi;
     }
