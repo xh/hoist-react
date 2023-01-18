@@ -38,7 +38,7 @@ export interface IconProps extends HoistProps, Partial<Omit<FontAwesomeIconProps
     asHtml?: boolean;
 
     /** True to skip rendering this Icon. */
-    omit?: boolean;
+    omit?: boolean|(() => boolean);
 }
 
 

@@ -5,10 +5,10 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
-import {HoistModel, XH} from '@xh/hoist/core';
+import {AboutDialogItem, HoistModel, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
-import {isNull, reject} from 'lodash';
+import {isFunction, isNull} from 'lodash';
 
 /**
  * @internal
@@ -50,7 +50,8 @@ export class AboutDialogModel extends HoistModel {
         return table(tbody(rows));
     }
 
-    getItems() {
-        return reject(XH.appModel.getAboutDialogItems(), 'omit');
+    getItems(): AboutDialogItem[] {
+        return XH.appModel.getAboutDialogItems()
+            .filter(it => isFunction(it.omit) ? !it.omit() : !it.omit);
     }
 }

@@ -7,7 +7,7 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {AppOptionSpec, HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {assign, mapValues, pickBy} from 'lodash';
+import {assign, isFunction, mapValues, pickBy} from 'lodash';
 import { resolve } from '../promise/Promise';
 import {AppOption} from './AppOption';
 
@@ -40,7 +40,9 @@ export class OptionsDialogModel extends HoistModel {
     // Setting options
     //-------------------
     setOptions(options: AppOptionSpec[]) {
-        this.options = options.filter(o => !o.omit).map(o => new AppOption(o));
+        this.options = options
+            .filter(o => isFunction(o.omit) ? !o.omit() : !o.omit)
+            .map(o => new AppOption(o));
         const fields = this.options.map(o => assign({name: o.name}, o.fieldModel));
         this.formModel = new FormModel({fields, xhImpl: true});
     }

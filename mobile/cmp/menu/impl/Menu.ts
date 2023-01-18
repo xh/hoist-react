@@ -10,7 +10,7 @@ import {listItem} from '@xh/hoist/kit/onsen';
 import {makeObservable, bindable} from '@xh/hoist/mobx';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import classNames from 'classnames';
-import {clone, isEmpty, isString} from 'lodash';
+import {clone, isEmpty, isFunction, isString} from 'lodash';
 import {isValidElement, ReactNode, useEffect} from 'react';
 
 import './Menu.scss';
@@ -76,7 +76,7 @@ class LocalMenuModel extends HoistModel {
         });
 
         return items
-            .filter(it => !isMenuItem(it) || (!it.hidden && !it.omit))
+            .filter(it => !isMenuItem(it) || (!it.hidden && !(isFunction(it.omit) ? it.omit() : it.omit)))
             .filter(filterConsecutiveMenuSeparators())
             .map((item, idx) => {
                 // Process dividers

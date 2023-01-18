@@ -95,7 +95,8 @@ export type PromiseTimeoutSpec = number | {interval: number, message?: string};
  * TaskObserver to track execution of a Promise, or an object specifying one with an optional
  * message to show while pending and/or optional flag to skip (e.g. for conditional masking).
  */
-export type PromiseLinkSpec = TaskObserver | { observer: TaskObserver, message?: string, omit?: boolean};
+export type PromiseLinkSpec = TaskObserver |
+    {observer: TaskObserver, message?: string, omit?: boolean|(() => boolean)};
 
 /**
  * Return a promise that will resolve after the specified amount of time.
@@ -183,7 +184,7 @@ const enhancePromise = (promisePrototype) => {
         },
 
         track(options) {
-            if (!options || options.omit) return this;
+            if (!options || (isFunction(options.omit) ? options.omit() : options.omit)) return this;
             if (isString(options)) options = {message: options};
 
             const startTime = Date.now();
@@ -233,7 +234,7 @@ const enhancePromise = (promisePrototype) => {
                 cfg = {observer: cfg};
             }
 
-            if (cfg.observer && !cfg.omit) {
+            if (cfg.observer && !(isFunction(cfg.omit) ? cfg.omit() : cfg.omit)) {
                 cfg.observer.linkTo(TaskObserver.forPromise({promise: this, message: cfg.message}));
             }
             return this;

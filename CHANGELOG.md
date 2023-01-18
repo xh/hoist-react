@@ -18,7 +18,8 @@
   describe "how they are used" - e.g. `Icon.search()`.
     * This allows apps to override icon choices made within Hoist components in a more targeted way,
       e.g. by setting `Icon.columnMenu = Icon.ellipsisVertical`.
-* `DashViewSpec.omit` now additionally supports a function returning a boolean.
+* All Hoist configurations that support `omit: boolean` now additionally support a callback of type
+  `() => boolean`.
 
 ## v54.0.0 - 2022-12-31
 

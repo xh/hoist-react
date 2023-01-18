@@ -6,7 +6,7 @@
  */
 import {HoistModel} from './';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {merge} from 'lodash';
+import {isFunction, merge} from 'lodash';
 import {createRouter, Router, State} from 'router5';
 import browserPlugin from 'router5-plugin-browser';
 
@@ -101,7 +101,7 @@ export class RouterModel extends HoistModel {
     }
 
     private preprocessRoutes(routes) {
-        const ret = routes.filter(r => !r.omit);
+        const ret = routes.filter(r => isFunction(r.omit) ? !r.omit() : !r.omit);
         ret.forEach(r => {
             if (r.children) r.children = this.preprocessRoutes(r.children);
         });

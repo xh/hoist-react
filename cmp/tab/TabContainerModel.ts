@@ -16,7 +16,7 @@ import {
 } from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {find, isString, isUndefined, without, difference} from 'lodash';
+import {find, isString, isUndefined, without, difference, isFunction} from 'lodash';
 import {ReactNode} from 'react';
 import {TabConfig, TabModel} from './TabModel';
 import {TabSwitcherProps} from './TabSwitcherProps';
@@ -190,7 +190,8 @@ export class TabContainerModel extends HoistModel {
 
         ensureUniqueBy(tabs, 'id', 'Multiple tabs have the same id.');
 
-        tabs = tabs.filter(p =>  p instanceof TabModel || !p.omit);
+        tabs = tabs
+            .filter(p =>  p instanceof TabModel || !(isFunction(p.omit) ? p.omit() : p.omit));
 
         // Adjust state -- intentionally setting activeTab *before* instantiating new tabs.
         const {activeTabId} = this;

@@ -34,7 +34,7 @@ export interface DockViewConfig {
     /** Strategy for refreshing this DockView. If null, will default to its container's mode. */
     refreshMode?: RefreshMode;
     /** true to exclude this DockView.  */
-    omit?: boolean;
+    omit?: boolean|(() => boolean);
     /** true (default) to initialise in dock, false to use Dialog. Respects allowDialog. */
     docked?: boolean;
     /** true to initialise collapsed, false (default) for expanded. */

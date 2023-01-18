@@ -8,6 +8,7 @@ import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {isFunction} from 'lodash';
 import {DockViewModel, DockViewConfig} from './DockViewModel';
 
 interface DockContainerConfig {
@@ -42,7 +43,7 @@ export class DockContainerModel extends HoistModel {
     }: DockContainerConfig = {}) {
         super();
         makeObservable(this);
-        views = views.filter(v => !v.omit);
+        views = views.filter(v => isFunction(v.omit) ? !v.omit() : !v.omit);
 
         ensureUniqueBy(views as [], 'id', 'Multiple DockContainerModel views have the same id.');
         throwIf(!['ltr', 'rtl'].includes(direction), 'Unsupported value for direction.');

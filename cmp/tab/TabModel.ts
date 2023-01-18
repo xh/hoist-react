@@ -68,7 +68,7 @@ export interface TabConfig {
     refreshMode?: RefreshMode;
 
     /** True to skip this tab.  */
-    omit?: boolean;
+    omit?: boolean|(() => boolean);
 
     /** @internal */
     xhImpl?: boolean;

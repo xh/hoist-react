@@ -118,5 +118,5 @@ export class HoistAppModel extends HoistModel {
 export interface AboutDialogItem {
     label: ReactNode;
     value: ReactNode;
-    omit?: boolean;
+    omit?: boolean|(() => boolean);
 }

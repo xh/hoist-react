@@ -6,7 +6,7 @@
  */
 import {HoistService, XH, TrackOptions} from '@xh/hoist/core';
 import {stripTags, withDefault} from '@xh/hoist/utils/js';
-import {isString} from 'lodash';
+import {isFunction, isString} from 'lodash';
 
 /**
  * Primary service for tracking any activity that an application's admins want to track.
@@ -23,7 +23,7 @@ export class TrackService extends HoistService {
     track(options: TrackOptions|string) {
         // Normalize string form, msg -> message, default severity.
         if (isString(options)) options = {message: options};
-        if (options.omit) return;
+        if (isFunction(options.omit) ? options.omit() : options.omit) return;
         options.message = withDefault(options.message, (options as any).msg);
         options.severity = withDefault(options.severity, 'INFO');
 
