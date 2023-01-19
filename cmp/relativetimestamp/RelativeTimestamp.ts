@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {box, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, managed, useLocalModel, XH, lookup, BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, managed, useLocalModel, XH, BoxProps, HoistProps} from '@xh/hoist/core';
 import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
 import {action, observable, makeObservable, computed} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -90,7 +90,7 @@ class RelativeTimestampLocalModel extends HoistModel {
     xhImpl = true;
 
     @observable display = '';
-    @lookup('*') model;
+    model: HoistModel;
 
     @managed
     timer = Timer.create({
@@ -100,7 +100,7 @@ class RelativeTimestampLocalModel extends HoistModel {
 
     get timestamp() {
         const {model} = this,
-            {bind, timestamp} = this.componentProps;
+            {timestamp, bind} = this.componentProps;
         return withDefault(timestamp, (model && bind ? model[bind] : null));
     }
 
@@ -117,6 +117,10 @@ class RelativeTimestampLocalModel extends HoistModel {
             track: () => [this.timestamp, this.options],
             run: () => this.refreshDisplay()
         });
+    }
+
+    override onLinked() {
+        this.model = this.lookupModel('*');
     }
 
     @action
