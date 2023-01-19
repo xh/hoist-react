@@ -1,6 +1,6 @@
 # Changelog
 
-## v53.2.1 - 2023-1-19
+## v53.2.1 - 2023-01-19
 * Fixed a bug in which grid cell editors would drop a single character edit.
 
 ## v53.2.0 - 2022-11-15
