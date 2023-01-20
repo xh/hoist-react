@@ -185,7 +185,7 @@ export interface SelectProps extends
 }
 
 export interface SelectOption {
-    value: any;
+    value?: any;
     label?: string;
     options?: (SelectOption|any)[];
 }
