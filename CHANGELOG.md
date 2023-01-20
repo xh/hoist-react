@@ -19,6 +19,7 @@
   describe "how they are used" - e.g. `Icon.search()`.
     * This allows apps to override icon choices made within Hoist components in a more targeted way,
       e.g. by setting `Icon.columnMenu = Icon.ellipsisVertical`.
+* `Grid` will only persist minimal user column state for hidden columns, to reduce user pref sizes.
 
 ## v54.0.0 - 2022-12-31
 
