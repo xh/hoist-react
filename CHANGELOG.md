@@ -3,14 +3,16 @@
 ## v55.0.0-SNAPSHOT - unreleased
 
 ### 🐞 Bug Fixes
-* `ColumnSpec.actions` now accepts `Array<RecordActionSpec|RecordAction>`
+
 * Fixed a bug in which grid cell editors would drop a single character edit.
-* `DashContainer` was flashing its "empty" text briefly before loading.  This has been fixed.
+* Fixed issue with `DashContainer` flashing its "empty" text briefly before loading.
+* Several Hoist TypeScript types, interfaces, and signatures have been improved or corrected (typing
+  changes only).
 
 ### ⚙️ Technical
 
-* Hoist's `Icon` enumeration has been re-organized slightly better separate icons that describe "
-  what they look like" - e.g. `Icon.magnifyingGlass()` - from an expanded set of aliases that
+* Hoist's `Icon` enumeration has been re-organized slightly better separate icons that describe
+  "what they look like" - e.g. `Icon.magnifyingGlass()` - from an expanded set of aliases that
   describe "how they are used" - e.g. `Icon.search()`.
     * This allows apps to override icon choices made within Hoist components in a more targeted way,
       e.g. by setting `Icon.columnMenu = Icon.ellipsisVertical`.
@@ -19,10 +21,19 @@
 ### 📚 Libraries
 
 * @blueprintjs/core `^4.12 -> ^4.14`
-* corejs `3.26 -> 3.27`
+* corejs `^3.26 -> ^3.27`
 * mobx `6.6 -> 6.7`
-* onsenui `2.11 -> 2.12`
+* onsenui `2.11 -> 2.12` (*see testing note below)
 * react-onsenui `1.11 > 1.13`
+
+### ✅ Testing Scope
+
+* *Full regression testing recommended for _mobile_ apps.* While the upgrade from 2.11 to 2.12
+  appears as a minor release, it was in fact a major update to the library.
+  See [the Onsen release notes](https://github.com/OnsenUI/OnsenUI/releases/tag/2.12.0) for
+  additional details. Note that Hoist has handled all changes required to its Onsen API calls,
+  and there are no breaking changes to the Hoist mobile component APIs. As a result, mobile apps
+  _might_ not need to change anything, but extra care in testing is still recommended.
 
 ## v54.0.0 - 2022-12-31
 
@@ -97,12 +108,6 @@ to use TypeScript for its own app-level code.
 * Fix bug where `GridPersistenceModel` would not clean outdated column state.
 * Fix animation bug when popping pages in the mobile navigator.
 
-### ✅ Testing Scope
-
-* *Full regression testing recommended* - this is a major Hoist release and involved a significant
-  amount of refactoring to the toolkit code. As such, we recommend a thorough regression test of any
-  applications updating to this release from prior versions.
-
 ### ⚙️ Technical
 
 * Update `preflight.js` to catch errors that occur on startup, before our in-app exception handling
@@ -114,6 +119,12 @@ to use TypeScript for its own app-level code.
 * @xh/hoist-dev-utils `6.0 -> 6.1`
 * typescript `added @ 4.9`
 * highcharts `9.3 -> 10.3`
+
+### ✅ Testing Scope
+
+* *Full regression testing recommended* - this is a major Hoist release and involved a significant
+  amount of refactoring to the toolkit code. As such, we recommend a thorough regression test of any
+  applications updating to this release from prior versions.
 
 ## v53.2.0 - 2022-11-15
 
