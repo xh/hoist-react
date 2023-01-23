@@ -7,11 +7,6 @@
 * Fixed a bug in which grid cell editors would drop a single character edit.
 * `DashContainer` was flashing its "empty" text briefly before loading.  This has been fixed.
 
-### 📚 Libraries
-
-* onsenui `2.11.1 -> 2.12.8`
-* react-onsenui `1.11.5 > 1.13.2`
-
 ### ⚙️ Technical
 
 * Hoist's `Icon` enumeration has been re-organized slightly better separate icons that describe "
@@ -20,6 +15,14 @@
     * This allows apps to override icon choices made within Hoist components in a more targeted way,
       e.g. by setting `Icon.columnMenu = Icon.ellipsisVertical`.
 * `Grid` will only persist minimal user column state for hidden columns, to reduce user pref sizes.
+
+### 📚 Libraries
+
+* @blueprintjs/core `^4.12 -> ^4.14`
+* corejs `3.26 -> 3.27`
+* mobx `6.6 -> 6.7`
+* onsenui `2.11 -> 2.12`
+* react-onsenui `1.11 > 1.13`
 
 ## v54.0.0 - 2022-12-31
 
