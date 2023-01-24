@@ -5,7 +5,7 @@
 ### 🐞 Bug Fixes
 
 * Fixed: grid cell editors would drop a single character edit.
-* Fixed: grid date input editors did not position correctly in a grid with pinned columns.
+* Fixed: grid date input editor's popup did not position correctly in a grid with pinned columns.
 * Fixed issue with `DashContainer` flashing its "empty" text briefly before loading.
 * Several Hoist TypeScript types, interfaces, and signatures have been improved or corrected (typing
   changes only).
