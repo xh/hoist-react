@@ -8,7 +8,8 @@ import {table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {AboutDialogItem, HoistModel, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
-import {isFunction, isNull} from 'lodash';
+import {isOmitted} from '@xh/hoist/utils/impl';
+import {isNull} from 'lodash';
 
 /**
  * @internal
@@ -51,7 +52,6 @@ export class AboutDialogModel extends HoistModel {
     }
 
     getItems(): AboutDialogItem[] {
-        return XH.appModel.getAboutDialogItems()
-            .filter(it => isFunction(it.omit) ? !it.omit() : !it.omit);
+        return XH.appModel.getAboutDialogItems().filter(it => !isOmitted(it));
     }
 }

@@ -25,7 +25,6 @@ export type Corner = 'tl'|'tr'|'bl'|'br';
 export type HAlign = 'left'|'right'|'center';
 export type VAlign = 'top'|'bottom'|'center';
 
-
 /** Convenience type for common pattern of accepting a single T, or an array of Ts. */
 export type Some<T> = T|T[];
 

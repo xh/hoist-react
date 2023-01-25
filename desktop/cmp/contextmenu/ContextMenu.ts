@@ -8,8 +8,8 @@ import {hoistCmp, HoistProps, MenuItem, MenuItemLike} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
-import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
-import {clone, isEmpty, isFunction, isString} from 'lodash';
+import {filterConsecutiveMenuSeparators, isOmitted} from '@xh/hoist/utils/impl';
+import {clone, isEmpty, isString} from 'lodash';
 import {isValidElement, ReactElement, ReactNode} from 'react';
 
 /**
@@ -55,7 +55,7 @@ function parseItems(items: MenuItemLike[]): ReactNode[] {
     });
 
     return items
-        .filter(it => !isMenuItem(it) || (!it.hidden && !(isFunction(it.omit) ? it.omit() : it.omit)))
+        .filter(it => !isMenuItem(it) || (!it.hidden && !isOmitted(it)))
         .filter(filterConsecutiveMenuSeparators())
         .map(item => {
             // Process dividers

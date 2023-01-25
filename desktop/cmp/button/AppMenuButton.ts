@@ -10,9 +10,9 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
-import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {filterConsecutiveMenuSeparators, isOmitted} from '@xh/hoist/utils/impl';
 import {apiDeprecated, withDefault} from '@xh/hoist/utils/js';
-import {clone, isEmpty, isFunction, isString} from 'lodash';
+import {clone, isEmpty, isString} from 'lodash';
 import {isValidElement, ReactNode} from 'react';
 
 
@@ -178,7 +178,7 @@ function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
     });
 
     return items
-        .filter(it => !isMenuItem(it) || (!it.hidden && !(isFunction(it.omit) ? it.omit() : it.omit)))
+        .filter(it => !isMenuItem(it) || (!it.hidden && !isOmitted(it)))
         .filter(filterConsecutiveMenuSeparators())
         .map(item => {
             if (item === '-') return menuDivider();
