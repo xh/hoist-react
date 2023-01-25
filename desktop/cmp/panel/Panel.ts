@@ -194,7 +194,8 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             item = refreshContextView({model: refreshContextModel, item});
         }
 
-        // 3) Wrap in modal support if needed
+        // 3) Wrap in modal support if needed.  Inner frame ensures className is still present in
+        // DOM when rendered in Dialog
         if (modalSupportModel) {
             item = modalSupport({
                 model: modalSupportModel,

@@ -10,7 +10,8 @@
 * Several Hoist TypeScript types, interfaces, and signatures have been improved or corrected (typing
   changes only).
 * Fix bug where a `className` provided to a `Panel` with `modalSupport` would be dropped when in a
-  modal state.
+  modal state. Note this necessitated an additional layer in the `Panel` DOM hierarchy.  Highly
+  specific CSS selectors may be affected.
 
 ### ⚙️ Technical
 
