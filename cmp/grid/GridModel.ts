@@ -77,7 +77,7 @@ import {
     keysIn,
     max,
     min,
-    omit,
+    omit, pick,
     pull
 } from 'lodash';
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
@@ -1474,12 +1474,18 @@ export class GridModel extends HoistModel {
             }
         });
 
-        // Remove the width from any non-resizable column - we don't want to track those widths as
-        // they are set programmatically (e.g. fixed / action columns), and saved state should not
-        // conflict with any code-level updates to their widths.
         ret = ret.map(state => {
             const col = this.findColumn(gridCols, state.colId);
+
+            // Remove the width from any non-resizable column - we don't want to track those widths as
+            // they are set programmatically (e.g. fixed / action columns), and saved state should not
+            // conflict with any code-level updates to their widths.
             if (!col.resizable) state = omit(state, 'width');
+
+            // Remove all metadata other than the id and the hidden state from hidden columns, to save
+            // on space when storing user configs with large amounts of hidden fields.
+            if (state.hidden) state = pick(state, 'colId', 'hidden');
+
             return state;
         });
 
