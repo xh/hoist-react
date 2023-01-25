@@ -8,7 +8,7 @@
 import {RuleLike} from '@xh/hoist/data';
 import {ReactElement, ReactNode} from 'react';
 import {LoadSpec} from '../load';
-import {Intent} from './Types';
+import {Intent, Thunkable} from './Types';
 
 /**
  * User of the application, as loaded from the server.
@@ -182,7 +182,7 @@ export interface AppOptionSpec {
     reloadRequired?: boolean;
 
     /** Optional flag to omit displaying option. */
-    omit?: boolean;
+    omit?: Thunkable<boolean>;
 }
 
 /**
@@ -219,7 +219,7 @@ export interface TrackOptions {
     elapsed?: number;
 
     /** Optional flag to omit sending message. */
-    omit?: boolean;
+    omit?: Thunkable<boolean>;
 }
 
 
@@ -255,7 +255,7 @@ export interface MenuItem {
     hidden?: boolean;
 
     /** True to skip this item. May be set dynamically via prepareFn. Alias for hidden.  */
-    omit?: boolean;
+    omit?: Thunkable<boolean>;
 }
 
 /**

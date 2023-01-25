@@ -11,6 +11,7 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, computed, observable, bindable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {isOmitted} from '@xh/hoist/utils/impl';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     defaultsDeep,
@@ -21,7 +22,8 @@ import {
     some,
     sortBy,
     pick,
-    isEqual, startCase
+    isEqual,
+    startCase
 } from 'lodash';
 
 export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCanvasItemState> {
@@ -125,7 +127,7 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
     }: DashCanvasConfig) {
         super();
         makeObservable(this);
-        viewSpecs = viewSpecs.filter(it => !it.omit);
+        viewSpecs = viewSpecs.filter(it => !isOmitted(it));
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
             return defaultsDeep({}, cfg, viewSpecDefaults, {

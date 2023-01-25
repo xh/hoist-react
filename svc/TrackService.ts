@@ -5,6 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH, TrackOptions} from '@xh/hoist/core';
+import {isOmitted} from '@xh/hoist/utils/impl';
 import {stripTags, withDefault} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
 
@@ -23,7 +24,7 @@ export class TrackService extends HoistService {
     track(options: TrackOptions|string) {
         // Normalize string form, msg -> message, default severity.
         if (isString(options)) options = {message: options};
-        if (options.omit) return;
+        if (isOmitted(options)) return;
         options.message = withDefault(options.message, (options as any).msg);
         options.severity = withDefault(options.severity, 'INFO');
 

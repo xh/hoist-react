@@ -8,7 +8,7 @@ import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, MenuItem, MenuItemLike} from '@xh/hoist/core';
 import {listItem} from '@xh/hoist/kit/onsen';
 import {makeObservable, bindable} from '@xh/hoist/mobx';
-import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {filterConsecutiveMenuSeparators, isOmitted} from '@xh/hoist/utils/impl';
 import classNames from 'classnames';
 import {clone, isEmpty, isString} from 'lodash';
 import {isValidElement, ReactNode, useEffect} from 'react';
@@ -76,7 +76,7 @@ class LocalMenuModel extends HoistModel {
         });
 
         return items
-            .filter(it => !isMenuItem(it) || (!it.hidden && !it.omit))
+            .filter(it => !isMenuItem(it) || (!it.hidden && !isOmitted(it)))
             .filter(filterConsecutiveMenuSeparators())
             .map((item, idx) => {
                 // Process dividers

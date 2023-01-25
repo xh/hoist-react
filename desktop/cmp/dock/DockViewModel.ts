@@ -4,7 +4,17 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {Content, HoistModel, managed, ManagedRefreshContextModel, RefreshContextModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
+import {
+    Content,
+    Thunkable,
+    HoistModel,
+    managed,
+    ManagedRefreshContextModel,
+    RefreshContextModel,
+    RefreshMode,
+    RenderMode,
+    XH
+} from '@xh/hoist/core';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import '@xh/hoist/desktop/register';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
@@ -34,7 +44,7 @@ export interface DockViewConfig {
     /** Strategy for refreshing this DockView. If null, will default to its container's mode. */
     refreshMode?: RefreshMode;
     /** true to exclude this DockView.  */
-    omit?: boolean;
+    omit?: Thunkable<boolean>;
     /** true (default) to initialise in dock, false to use Dialog. Respects allowDialog. */
     docked?: boolean;
     /** true to initialise collapsed, false (default) for expanded. */

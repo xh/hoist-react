@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HAlign, PlainObject, Some} from '@xh/hoist/core';
+import {HAlign, PlainObject, Some, Thunkable} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString} from 'lodash';
@@ -34,7 +34,7 @@ export interface ColumnGroupSpec {
     agOptions?: PlainObject;
 
     /** True to skip this column when adding to grid. */
-    omit?: boolean|(() => boolean);
+    omit?: Thunkable<boolean>;
 }
 
 /**

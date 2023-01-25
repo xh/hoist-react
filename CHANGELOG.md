@@ -4,7 +4,8 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed a bug in which grid cell editors would drop a single character edit.
+* Fixed: grid cell editors would drop a single character edit.
+* Fixed: grid date input editor's popup did not position correctly in a grid with pinned columns.
 * Fixed issue with `DashContainer` flashing its "empty" text briefly before loading.
 * Several Hoist TypeScript types, interfaces, and signatures have been improved or corrected (typing
   changes only).
@@ -18,6 +19,8 @@
   describe "how they are used" - e.g. `Icon.search()`.
     * This allows apps to override icon choices made within Hoist components in a more targeted way,
       e.g. by setting `Icon.columnMenu = Icon.ellipsisVertical`.
+* All Hoist configurations that support `omit: boolean` now additionally support a "thunkable" callback of type
+  `() => boolean`.
 * `Grid` will only persist minimal user column state for hidden columns, to reduce user pref sizes.
 
 ### 📚 Libraries

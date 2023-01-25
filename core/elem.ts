@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {castArray, isNil, isPlainObject} from 'lodash';
+import {castArray, isFunction, isNil, isPlainObject} from 'lodash';
 import {
     createElement as reactCreateElement,
     isValidElement,
@@ -12,7 +12,7 @@ import {
     ReactElement,
     JSXElementConstructor, ForwardedRef
 } from 'react';
-import {PlainObject, Some} from './';
+import {PlainObject, Some, Thunkable} from './types/Types';
 
 
 /**
@@ -50,7 +50,7 @@ export type ElementSpec<P extends PlainObject> = P & {
     item?: Some<ReactNode>;
 
     /** True to exclude the Element. */
-    omit?: boolean;
+    omit?: Thunkable<boolean>;
 
     //-----------------------------------
     // Core React attributes
@@ -96,7 +96,7 @@ export function createElement<P=any, T extends string|JSXElementConstructor<any>
     const {omit, item, items, ...props} = spec;
 
     // 1) Convenience omission syntax.
-    if (omit) return null;
+    if (isFunction(omit) ? omit() : omit) return null;
 
     // 2) Read children from item[s] config.
     const itemConfig = item ?? items,
