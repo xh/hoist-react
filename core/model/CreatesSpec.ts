@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {Thunkable} from './../types/Types';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import {HoistModel, HoistModelClass, ModelPublishMode} from './';
@@ -24,7 +25,7 @@ import {HoistModel, HoistModelClass, ModelPublishMode} from './';
  * @param opts - additional options
  */
 export function creates<T extends HoistModel>(
-    spec: HoistModelClass<T> | (() => HoistModelClass<T>) | (() => T),
+    spec: Thunkable<HoistModelClass<T>> | (() => T),
     opts: CreatesOptions = {}
 ): CreatesSpec<T> {
     return new CreatesSpec(spec, opts?.publishMode ?? 'default');

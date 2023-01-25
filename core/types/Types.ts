@@ -29,6 +29,7 @@ export type VAlign = 'top'|'bottom'|'center';
 /** Convenience type for common pattern of accepting a single T, or an array of Ts. */
 export type Some<T> = T|T[];
 
+export type Thunkable<T> = T|(() => T);
 export type Awaitable<T> = Promise<T>|T
 
 /** Convenience type for a "plain", string-keyed object holding any kind of values. */

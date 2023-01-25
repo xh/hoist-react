@@ -12,7 +12,7 @@ import {
     ReactElement,
     JSXElementConstructor, ForwardedRef
 } from 'react';
-import {PlainObject, Some} from './';
+import {PlainObject, Some, Thunkable} from './types/Types';
 
 
 /**
@@ -50,7 +50,7 @@ export type ElementSpec<P extends PlainObject> = P & {
     item?: Some<ReactNode>;
 
     /** True to exclude the Element. */
-    omit?: boolean|(() => boolean);
+    omit?: Thunkable<boolean>;
 
     //-----------------------------------
     // Core React attributes

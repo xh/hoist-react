@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {Exception, ExceptionHandlerOptions, TaskObserver, TrackOptions, XH} from '@xh/hoist/core';
+import {Thunkable, Exception, ExceptionHandlerOptions, TaskObserver, TrackOptions, XH} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {castArray, isFunction, isNumber, isString} from 'lodash';
@@ -96,7 +96,7 @@ export type PromiseTimeoutSpec = number | {interval: number, message?: string};
  * message to show while pending and/or optional flag to skip (e.g. for conditional masking).
  */
 export type PromiseLinkSpec = TaskObserver |
-    {observer: TaskObserver, message?: string, omit?: boolean|(() => boolean)};
+    {observer: TaskObserver, message?: string, omit?: Thunkable<boolean>};
 
 /**
  * Return a promise that will resolve after the specified amount of time.

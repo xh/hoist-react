@@ -12,7 +12,8 @@ import {
     RefreshMode,
     RenderMode,
     Content,
-    RefreshContextModel
+    RefreshContextModel,
+    Thunkable
 } from '@xh/hoist/core';
 import {action, computed, observable, makeObservable, bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -68,7 +69,7 @@ export interface TabConfig {
     refreshMode?: RefreshMode;
 
     /** True to skip this tab.  */
-    omit?: boolean|(() => boolean);
+    omit?: Thunkable<boolean>;
 
     /** @internal */
     xhImpl?: boolean;

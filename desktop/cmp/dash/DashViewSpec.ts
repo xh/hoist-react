@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import { Content } from '@xh/hoist/core';
+import {Content, Thunkable} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {ReactElement} from 'react';
 
@@ -37,7 +37,7 @@ export interface DashViewSpec {
      * True to prevent any instances of this view. References to this view in state will
      * be quietly dropped. Default false.
      */
-    omit?: boolean|(() => boolean);
+    omit?: Thunkable<boolean>;
 
     /** True to prevent multiple instances of this view. Default false. */
     unique?: boolean

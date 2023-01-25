@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
-import {AppOptionSpec, HoistModel} from './';
+import {AppOptionSpec, HoistModel, Thunkable} from './';
 import {Route} from 'router5';
 import {ReactNode} from 'react';
 /**
@@ -118,5 +118,5 @@ export class HoistAppModel extends HoistModel {
 export interface AboutDialogItem {
     label: ReactNode;
     value: ReactNode;
-    omit?: boolean|(() => boolean);
+    omit?: Thunkable<boolean>;
 }
