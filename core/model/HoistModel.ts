@@ -56,7 +56,7 @@ import {instanceManager} from '../impl/InstanceManager';
  */
 export abstract class HoistModel extends HoistBase implements Loadable {
 
-    /** Type provided to HoistProps.modelConfig for constructing an instance of this model */
+    /** Type for constructing an instance of this model */
     declare config: unknown;
 
     static get isHoistModel(): boolean {return true}

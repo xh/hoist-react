@@ -21,7 +21,7 @@ import {ActivityDetailModel} from './ActivityDetailModel';
 export const activityDetailView = hoistCmp.factory({
     model: creates(ActivityDetailModel),
 
-    render({model, modelRef, ...props}) {
+    render({model, ...props}) {
         return panel({
             title: 'Track Log Entries',
             icon: Icon.list(),

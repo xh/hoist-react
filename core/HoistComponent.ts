@@ -45,12 +45,22 @@ import {
  * Configuration for creating a Component.  May be specified either as a render function,
  * or an object containing a render function and associated metadata.
  */
+export type RenderPropsOf<P extends HoistProps> = Omit<P, 'modelConfig'|'modelRef'> & {
+    /**
+     *  React Children.  Not specified directly by users of the associated component, but
+     *  populated on props by React internally, before rendering.  Applications will
+     *  typically provide children to a component via JSX or the `item(s)` property passed to
+     *  an element factory.
+     */
+    children?: ReactNode
+};
+
 export type ComponentConfig<P extends HoistProps> =
-   ((props: P, ref?: ForwardedRef<any>) => ReactNode) |
+   ((props: RenderPropsOf<P>, ref?: ForwardedRef<any>) => ReactNode) |
     {
 
     /** Render function defining the component. */
-    render(props: P, ref?: ForwardedRef<any>): ReactNode;
+    render(props: RenderPropsOf<P>, ref?: ForwardedRef<any>): ReactNode;
 
     /**
      * Spec defining the model to be rendered by this component.

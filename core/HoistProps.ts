@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core/model';
-import {CSSProperties, HTMLAttributes, ReactNode, Ref} from 'react';
+import {CSSProperties, HTMLAttributes, Ref} from 'react';
 
 /**
  * Props interface for Hoist Components.
@@ -28,26 +28,18 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
      * when first mounted.  Should be used only on a component that specifies the 'uses()' directive
      * with the `createFromConfig` set as true. See the `uses()` directive for more information.
      */
-    modelConfig?: M['config'];
+    modelConfig?: M extends null ? never : M['config'];
 
     /**
      * Used for gaining a reference to the model of a HoistComponent.
      */
-    modelRef?: Ref<M>;
+    modelRef?: M extends null ? never : Ref<M>;
 
     /**
      * ClassName for the component.  Includes the classname as provided in props, enhanced with
      * any base class name provided by the component definition itself.
      */
     className?: string;
-
-    /**
-     *  React Children.  Not specified directly by users of the associated component, but
-     *  populated on props by React internally, before rendering.  Applications will
-     *  typically provide children to a component via JSX or the `item(s)` property passed to
-     *  an element factory.
-     */
-    children?: ReactNode;
 }
 
 /**

@@ -50,7 +50,6 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
 
     render({
         model,
-        modelRef,
         extraToolbarItems,
         mask = true,
         agOptions,
