@@ -23,6 +23,8 @@
 * All Hoist configurations that support `omit: boolean` now additionally support a "thunkable" callback of type
   `() => boolean`.
 * `Grid` will only persist minimal user column state for hidden columns, to reduce user pref sizes.
+* `HoistProps.modelConfig` now references the type declaration of `HoistModel.config`. See
+  `PanelModel` and `TabContainerModel` for examples.
 
 ### 📚 Libraries
 

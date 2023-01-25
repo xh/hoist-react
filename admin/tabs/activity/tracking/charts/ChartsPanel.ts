@@ -17,7 +17,7 @@ import {ChartsModel} from './ChartsModel';
 
 export const chartsPanel = hoistCmp.factory({
     model: creates(ChartsModel),
-    render({model, ...props}) {
+    render({model, modelRef, ...props}) {
         const {chartModel, activityTrackingModel, panelModel} = model,
             {isModal} = panelModel;
         return panel({

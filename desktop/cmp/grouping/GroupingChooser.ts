@@ -16,7 +16,7 @@ import {menu, menuDivider, menuItem, popover, Position} from '@xh/hoist/kit/blue
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, isEmpty, sortBy} from 'lodash';
+import {compact, isEmpty, omit, sortBy} from 'lodash';
 import './GroupingChooser.scss';
 
 export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> {
@@ -85,7 +85,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                             persistFavorites ? 'xh-grouping-chooser-button--with-favorites' : null
                         ),
                         minimal: styleButtonAsInput,
-                        ...buttonProps,
+                        ...omit(buttonProps, 'modelRef'),
                         onClick: () => model.showEditor()
                     }),
                     favoritesIcon()

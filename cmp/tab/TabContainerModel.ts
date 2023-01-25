@@ -87,6 +87,7 @@ export interface TabContainerConfig {
  * Note: Routing is currently enabled for desktop applications only.
  */
 export class TabContainerModel extends HoistModel {
+    declare config: TabContainerConfig;
 
     @managed
     @observable.ref

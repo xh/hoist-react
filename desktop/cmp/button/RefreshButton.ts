@@ -8,6 +8,7 @@ import {hoistCmp, HoistModel, RefreshContextModel, useContextModel} from '@xh/ho
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
+import {omit} from 'lodash';
 import {button, ButtonProps} from './Button';
 
 export type RefreshButtonProps = ButtonProps<HoistModel>;
@@ -39,7 +40,7 @@ export const [RefreshButton, refreshButton] = hoistCmp.withFactory<RefreshButton
             title: 'Refresh',
             intent: 'success',
             onClick,
-            ...props
+            ...omit(props, 'modelRef')
         });
     }
 });

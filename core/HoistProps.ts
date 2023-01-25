@@ -6,7 +6,6 @@
  */
 import {HoistModel} from '@xh/hoist/core/model';
 import {CSSProperties, HTMLAttributes, ReactNode, Ref} from 'react';
-import {PlainObject} from './types/Types';
 
 /**
  * Props interface for Hoist Components.
@@ -29,12 +28,12 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
      * when first mounted.  Should be used only on a component that specifies the 'uses()' directive
      * with the `createFromConfig` set as true. See the `uses()` directive for more information.
      */
-    modelConfig?: PlainObject;
+    modelConfig?: M['config'];
 
     /**
      * Used for gaining a reference to the model of a HoistComponent.
      */
-    modelRef?: Ref<HoistModel>
+    modelRef?: Ref<M>;
 
     /**
      * ClassName for the component.  Includes the classname as provided in props, enhanced with

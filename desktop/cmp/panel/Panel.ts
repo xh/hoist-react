@@ -27,7 +27,7 @@ import {modalSupport} from '../modalsupport/ModalSupport';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import './Panel.scss';
-import {PanelConfig, PanelModel} from './PanelModel';
+import {PanelModel} from './PanelModel';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
 import {ContextMenuSpec} from '../contextmenu/ContextMenu';
 
@@ -85,8 +85,6 @@ export interface PanelProps extends
 
     /** Title text added to the panel's header. */
     title?: ReactNode;
-
-    modelConfig?: PanelConfig;
 }
 
 
