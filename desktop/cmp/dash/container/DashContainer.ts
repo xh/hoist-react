@@ -46,8 +46,8 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory<DashContainer
 
 const emptyContainerOverlay = hoistCmp.factory<DashContainerModel>(
     ({model}) => {
-        const {isEmpty, emptyText} = model;
-        if (!isEmpty) return null;
+        const {isEmpty, emptyText, loadingStateTask} = model;
+        if (!isEmpty || loadingStateTask.isPending) return null;
 
         return overlay({
             className: `xh-dash-container--empty-overlay ${Classes.OVERLAY_SCROLL_CONTAINER}`,

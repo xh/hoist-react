@@ -3,8 +3,9 @@
 ## v55.0.0-SNAPSHOT - unreleased
 
 ### 🐞 Bug Fixes
-* ColumnSpec.actions accepts Array<RecordActionSpec|RecordAction>
+* `ColumnSpec.actions` now accepts `Array<RecordActionSpec|RecordAction>`
 * Fixed a bug in which grid cell editors would drop a single character edit.
+* `DashContainer` was flashing its "empty" text briefly before loading.  This has been fixed.
 
 ### 📚 Libraries
 
