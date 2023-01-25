@@ -9,6 +9,8 @@
 * Fixed issue with `DashContainer` flashing its "empty" text briefly before loading.
 * Several Hoist TypeScript types, interfaces, and signatures have been improved or corrected (typing
   changes only).
+* Fix bug where a `className` provided to a `Panel` with `modalSupport` would be dropped when in a
+  modal state.
 
 ### ⚙️ Technical
 

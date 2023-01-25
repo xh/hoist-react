@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {box, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {box, frame, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {
     BoxProps,
     HoistProps,
@@ -196,7 +196,13 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
 
         // 3) Wrap in modal support if needed
         if (modalSupportModel) {
-            item = modalSupport({model: modalSupportModel, item});
+            item = modalSupport({
+                model: modalSupportModel,
+                item: frame({
+                    item,
+                    className: model.isModal ? className : undefined
+                })
+            });
         }
 
         // 4) Return wrapped in resizable affordances if needed, or equivalent layout box
