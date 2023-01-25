@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
-import {HAlign, HSide, PlainObject, Some, XH} from '@xh/hoist/core';
+import {HAlign, HSide, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
 import {
     CubeFieldSpec,
     FieldSpec,
@@ -343,7 +343,7 @@ export interface ColumnSpec {
     enableDotSeparatedFieldPath?: boolean;
 
     /** True to skip this column when adding to grid. */
-    omit?: boolean|(() => boolean);
+    omit?: Thunkable<boolean>;
 
     /**
      * Actions to display as clickable buttons in this column. For action columns only.
@@ -463,7 +463,7 @@ export class Column {
     actionsShowOnHoverOnly?: boolean;
     fieldSpec: FieldSpec;
     manuallySized: boolean;
-    omit: boolean|(() => boolean);
+    omit: Thunkable<boolean>;
 
     gridModel: GridModel;
     agOptions: PlainObject;

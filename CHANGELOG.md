@@ -17,6 +17,8 @@
   describe "how they are used" - e.g. `Icon.search()`.
     * This allows apps to override icon choices made within Hoist components in a more targeted way,
       e.g. by setting `Icon.columnMenu = Icon.ellipsisVertical`.
+* All Hoist configurations that support `omit: boolean` now additionally support a "thunkable" callback of type
+  `() => boolean`.
 * `Grid` will only persist minimal user column state for hidden columns, to reduce user pref sizes.
 
 ### 📚 Libraries

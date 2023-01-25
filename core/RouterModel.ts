@@ -7,6 +7,7 @@
 import {HoistModel} from './';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {merge} from 'lodash';
+import {isOmitted} from '@xh/hoist/utils/impl';
 import {createRouter, Router, State} from 'router5';
 import browserPlugin from 'router5-plugin-browser';
 
@@ -101,7 +102,7 @@ export class RouterModel extends HoistModel {
     }
 
     private preprocessRoutes(routes) {
-        const ret = routes.filter(r => !r.omit);
+        const ret = routes.filter(r => !isOmitted(r));
         ret.forEach(r => {
             if (r.children) r.children = this.preprocessRoutes(r.children);
         });
