@@ -658,7 +658,7 @@ export class Column {
         if (!isEmpty(rest)) {
             const keys = keysIn(rest);
             throw XH.exception(
-                `Key(s) '${keys}' not supported in Column.  For custom data, use the 'appData' property.`
+                `Unsupported key(s) '${keys}' passed in Column config for colId:${colId}. Custom config data must be nested within the 'appData' property.`
             );
         }
     }
