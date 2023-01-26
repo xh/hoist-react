@@ -61,12 +61,16 @@ export type ElementSpec<P extends PlainObject> = P & {
     /** React key for this component. */
     key?: string|number;
 
-    //-----------------------------------------------------
-    // Technical -- Escape support, prevent React Element.
-    //-----------------------------------------------------
+    //---------------------------------------------------------
+    // Support escaping prop names that conflict with this API
+    //--------------------------------------------------------
     $items?: any;
     $item?: any;
     $omit?: any;
+
+    //-----------------------------------------------------
+    // Prevent acceptance of ReactElement as an ElementSpec
+    //-----------------------------------------------------
     props?: never;
 }
 

@@ -45,11 +45,17 @@ import {
  * Configuration for creating a Component.  May be specified either as a render function,
  * or an object containing a render function and associated metadata.
  */
-export type RenderPropsOf<P extends HoistProps> = Omit<P, 'modelConfig'|'modelRef'> & {
+export type RenderPropsOf<P extends HoistProps> = P & {
+
+    /** Pre-processed by HoistComponent internals into a mounted model.  Never passed to render. */
+    modelConfig: never;
+
+    /** Pre-processed by HoistComponent internals and attached to model.  Never passed to render. */
+    modelRef: never;
+
     /**
-     *  React Children.  Not specified directly by users of the associated component, but
-     *  populated on props by React internally, before rendering.  Applications will
-     *  typically provide children to a component via JSX or the `item(s)` property passed to
+     *  React Children. Populated on props by React internally, before rendering.  Applications
+     *  will typically provide children to a component via JSX or the `item(s)` property passed to
      *  an element factory.
      */
     children?: ReactNode
@@ -248,7 +254,7 @@ hoistCmp.withContainerFactory = hoistCmpWithContainerFactory;
 //----------------------------------
 // internal types and core wrappers
 //----------------------------------
-type RenderFn = (props: DefaultHoistProps, ref?:ForwardedRef<any>) => ReactNode;
+type RenderFn = (props: HoistProps, ref?:ForwardedRef<any>) => ReactNode;
 
 interface Config {
     displayName: string;
@@ -361,10 +367,11 @@ function useResolvedModel(props: HoistProps, modelLookup: ModelLookup, cfg: Conf
 
 
     // 2) Other bookkeeping, following rules of hooks, before return.
-    const {model, isLinked} = resolvedModel,
-        {modelRef} = props;
-
+    const {model, isLinked} = resolvedModel;
     useModelLinker(isLinked ? model : null, modelLookup, props);
+
+    const {modelRef} = props;
+    delete props.modelRef;
     useEffect(() => {
         if (isFunction(modelRef)) {
             modelRef(model);
