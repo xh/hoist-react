@@ -49,6 +49,7 @@ export class GridExportService extends HoistService {
             filename = 'export',
             type = 'excelTable',
             columns = 'VISIBLE',
+            track = false,
             timeout = 30 * SECONDS
         }: ExportOptions = {}
     ) {
@@ -60,6 +61,9 @@ export class GridExportService extends HoistService {
             `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`);
         throwIf(!(isFunction(columns) || isArray(columns) || ['ALL', 'VISIBLE'].includes(columns)),
             'Invalid columns config - must be "ALL", "VISIBLE", an array of colIds, or a function'
+        );
+        throwIf(!isBoolean(track),
+            'Invalid track value - must be either true or false'
         );
 
         if (isFunction(filename)) filename = filename(gridModel);
@@ -141,6 +145,14 @@ export class GridExportService extends HoistService {
             download(blob, `${filename}${fileExt}`, contentType);
             await dismissStartToast();
             XH.successToast('Export complete.');
+
+            if (track) {
+                XH.track({
+                    category: 'Navigation',
+                    message: `Downloaded ${filename}${fileExt}`,
+                    data: {rows: rows.length, columns: exportColumns.length}
+                });
+            }
         } catch (e) {
             XH.exceptionHandler.handleException(e, {showAlert: false});
             await dismissStartToast();
@@ -419,7 +431,10 @@ export interface ExportOptions {
      *  'ALL', or specific column IDs to include (can be used in conjunction with VISIBLE to export
      *  all visible and enumerated columns). Also supports a function returning column IDs to include.
      */
-    columns?: 'VISIBLE'|'ALL'|string[]|((g: GridModel) => string[])
+    columns?: 'VISIBLE'|'ALL'|string[]|((g: GridModel) => string[]);
+
+    /** True to enable activity tracking of exports (default false). */
+    track?: boolean;
 
     /** Timeout (in ms) for export request - defaults to 30 seconds. */
     timeout?: number;
