@@ -2,6 +2,11 @@
 
 ## v55.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Grid exports can now be tracked in the admin activity tab by setting `exportOptions.track` to
+  true (defaults to false).
+
 ### 🐞 Bug Fixes
 
 * Fixed: grid cell editors would drop a single character edit.
