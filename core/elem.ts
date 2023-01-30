@@ -62,7 +62,7 @@ export type ElementSpec<P extends PlainObject> = P & {
     key?: Key;
 
     //----------------------------
-    // Support escaping prop names that conflict with this API
+    // Technical -- Escape support
     //----------------------------
     $items?: any;
     $item?: any;

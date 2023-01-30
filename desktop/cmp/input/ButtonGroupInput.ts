@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistModel, Intent, RenderPropsOf, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, Intent, XH} from '@xh/hoist/core';
 import {Button, buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
@@ -122,7 +122,7 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(
             outlined,
             // ...and ButtonGroup gets all the rest
             ...buttonGroupProps
-        } = getNonLayoutProps(props) as RenderPropsOf<ButtonGroupInputProps>;
+        } = getNonLayoutProps(props);
 
         const buttons = Children.map(children, button => {
             if (!button) return null;
