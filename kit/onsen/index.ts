@@ -5,8 +5,6 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {
-    ContainerElementFactory,
-    containerElementFactory,
     ElementFactory,
     elementFactory,
     HoistModel
@@ -40,14 +38,14 @@ export const
 // Container Components
 //----------------------
 export const
-    [dialog, Dialog] = wrappedContainerCmp(ons.Dialog),
-    [listItem, ListItem] = wrappedContainerCmp(ons.ListItem),
-    [page, Page] = wrappedContainerCmp(ons.Page),
-    [tab, Tab] = wrappedContainerCmp(ons.Tab),
-    [tabbar, Tabbar] = wrappedContainerCmp(ons.Tabbar),
-    [toast, Toast] = wrappedContainerCmp(ons.Toast),
-    [toolbar, Toolbar] = wrappedContainerCmp(ons.Toolbar),
-    [bottomToolbar, BottomToolbar] = wrappedContainerCmp(ons.BottomToolbar);
+    [dialog, Dialog] = wrappedCmp(ons.Dialog),
+    [listItem, ListItem] = wrappedCmp(ons.ListItem),
+    [page, Page] = wrappedCmp(ons.Page),
+    [tab, Tab] = wrappedCmp(ons.Tab),
+    [tabbar, Tabbar] = wrappedCmp(ons.Tabbar),
+    [toast, Toast] = wrappedCmp(ons.Toast),
+    [toolbar, Toolbar] = wrappedCmp(ons.Toolbar),
+    [bottomToolbar, BottomToolbar] = wrappedCmp(ons.BottomToolbar);
 
 //-----------------
 // Implementation
@@ -75,11 +73,6 @@ function safeCmp(rawCmp): FunctionComponent {
             const safeProps = omitBy(props, it => it instanceof HoistModel);
             return createElement(rawCmp, safeProps);
         };
-}
-
-function wrappedContainerCmp(rawCmp): [ContainerElementFactory, FunctionComponent] {
-    const cmp = safeCmp(rawCmp);
-    return [containerElementFactory(cmp), cmp];
 }
 
 function wrappedCmp(rawCmp): [ElementFactory, FunctionComponent] {

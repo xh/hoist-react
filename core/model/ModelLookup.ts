@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {containerElementFactory, ModelSelector, HoistModel, ModelPublishMode} from './..';
+import {elementFactory, ModelSelector, HoistModel, ModelPublishMode} from './..';
 import {forOwn} from 'lodash';
 import {createContext} from 'react';
 
@@ -63,4 +63,4 @@ export class ModelLookup {
  */
 export const ModelLookupContext = createContext(null);
 
-export const modelLookupContextProvider = containerElementFactory(ModelLookupContext.Provider);
+export const modelLookupContextProvider = elementFactory(ModelLookupContext.Provider);

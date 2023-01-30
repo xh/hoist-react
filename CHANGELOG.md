@@ -13,6 +13,21 @@
   modal state. Note this necessitated an additional layer in the `Panel` DOM hierarchy.  Highly
   specific CSS selectors may be affected.
 
+
+### ⚙️ Typescript API Adjustments
+
+The following Typescript API were adjusted in v55.
+
+* Removed the distinction between `StandardElementFactory` and `ContainerElementFactory`.  This
+distinction was deemed to be unnecessary, and overcomplicated the understanding of Hoist.
+Applications should simply continue to use `ElementFactory` instead.  `hoistCmp.containerFactory` and
+`hoistCmp.withContainerFactory` are also removed in favor of the basic `hoistCmp.factory` and
+`hoistCmp.withFactory` respectively.
+
+**Note** that we do not intend to make such extensive Typescript changes going forward post-v55.0.
+These changes were deemed critical and worth adjusting in our first typescript update, and before
+typescript has been widely adopted in production Hoist apps.
+
 ### ⚙️ Technical
 
 * Hoist's `Icon` enumeration has been re-organized slightly better separate icons that describe
@@ -68,9 +83,9 @@ to use TypeScript for its own app-level code.
 
 * New TypeScript interface `HoistProps` and per-component extensions to specify props for all
   components. This replaces the use of the `PropTypes` library, which is no longer included.
-* Enhanced TypeScript-aware implementations of `ElementFactory`, including separate factories for
+* ~~Enhanced TypeScript-aware implementations of `ElementFactory`, including separate factories for
   standard components (`elementFactory`) and components that often take children only
-  (`containerElementFactory`).
+  (`containerElementFactory`).~~
 * The `@bindable` annotation has been enhanced to produce a native javascript setter for its
   property as well as the `setXXX()` method it currently produces. This provides a more typescript
   friendly way to set properties in a mobx action, and should be the favored method going forward.
@@ -91,14 +106,14 @@ to use TypeScript for its own app-level code.
 * The constructors for `GridModel` and `Column` no long accept arbitrary rest (e.g `...rest`)
   arguments for applying app-specific data to the object. Instead, use the new `appData` property
   on these objects.
-* The `elemFactory` function has been removed. Applications calling this function should specify
-  `elementFactory` (typically) or `containerElementFactory` instead.
-    * Most application components are defined using helper aliases `hoistCmp.factory`
+* ~~The `elemFactory` function has been removed. Applications calling this function should specify
+  `elementFactory` (typically) or `containerElementFactory` instead.~~
+    * ~~Most application components are defined using helper aliases `hoistCmp.factory`
       and `hoistCmp.withFactory` - these calls do _not_ need to change, unless your component
-      needs to take a list of children directly (i.e. `someComponent(child1, child2)`).
-    * Update the definition of any such components to use `hoistCmp.containerFactory` instead.
-    * Where possible, favor the simpler, default factory for more streamlined type suggestions /
-      error messages regarding your component's valid props.
+      needs to take a list of children directly (i.e. `someComponent(child1, child2)`).~~
+    * ~~Update the definition of any such components to use `hoistCmp.containerFactory` instead.~~
+    * ~~Where possible, favor the simpler, default factory for more streamlined type suggestions /
+      error messages regarding your component's valid props.~~
 * The use of the `model` prop to provide a config object for a model to be created on-the-fly
   is deprecated.
     * Use the new `modelConfig` prop when passing a *plain object config* -
