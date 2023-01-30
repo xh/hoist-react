@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {containerElementFactory} from '@xh/hoist/core';
+import {elementFactory} from '@xh/hoist/core';
 import {
     Classes,
     ContextMenu,
@@ -54,4 +54,4 @@ export {
 export * from './Wrappers';
 export * from './Dialog';
 
-export const hotkeysProvider = containerElementFactory(HotkeysProvider);
+export const hotkeysProvider = elementFactory(HotkeysProvider);

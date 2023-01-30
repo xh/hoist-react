@@ -9,10 +9,7 @@ import {
     UsesSpec,
     HoistProps,
     DefaultHoistProps,
-    StandardElementFactory,
     elementFactory,
-    ContainerElementFactory,
-    containerElementFactory,
     ElementFactory
 } from './';
 import {
@@ -45,12 +42,28 @@ import {
  * Configuration for creating a Component.  May be specified either as a render function,
  * or an object containing a render function and associated metadata.
  */
+export type RenderPropsOf<P extends HoistProps> = P & {
+
+    /** Pre-processed by HoistComponent internals into a mounted model.  Never passed to render. */
+    modelConfig: never;
+
+    /** Pre-processed by HoistComponent internals and attached to model.  Never passed to render. */
+    modelRef: never;
+
+    /**
+     *  React Children. Populated on props by React internally, before rendering.  Applications
+     *  will typically provide children to a component via JSX or the `item(s)` property passed to
+     *  an element factory.
+     */
+    children?: ReactNode
+};
+
 export type ComponentConfig<P extends HoistProps> =
-   ((props: P, ref?: ForwardedRef<any>) => ReactNode) |
+   ((props: RenderPropsOf<P>, ref?: ForwardedRef<any>) => ReactNode) |
     {
 
     /** Render function defining the component. */
-    render(props: P, ref?: ForwardedRef<any>): ReactNode;
+    render(props: RenderPropsOf<P>, ref?: ForwardedRef<any>): ReactNode;
 
     /**
      * Spec defining the model to be rendered by this component.
@@ -110,10 +123,10 @@ let cmpIndex = 0;  // index for anonymous component dispay names
  *
  * This function also has several related functions
  *
- *   - `hoistCmp.factory`/`hoistCmp.containerFactory` - return an elementFactory for a newly defined Component.
+ *   - `hoistCmp.factory` - return an elementFactory for a newly defined Component.
  *           instead of the Component itself.
  *
- *   - `hoistCmp.withFactory`/`hoistCmp.withContainerFactory`  - return a 2-element list containing both the newly
+ *   - `hoistCmp.withFactory` - return a 2-element list containing both the newly
  *          defined Component and an elementFactory for it.
  */
 export function hoistCmp<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): FC<DefaultHoistProps<M>>;
@@ -180,56 +193,26 @@ export const hoistComponent = hoistCmp;
  *
  * Most typically used by application, this provides a simple element factory.
  */
-export function hoistCmpFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): StandardElementFactory<DefaultHoistProps<M>, FC<DefaultHoistProps<M>>>;
-export function hoistCmpFactory<P extends HoistProps>(config: ComponentConfig<P>): StandardElementFactory<P, FC<P>>;
+export function hoistCmpFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): ElementFactory<DefaultHoistProps<M>>;
+export function hoistCmpFactory<P extends HoistProps>(config: ComponentConfig<P>): ElementFactory<P>;
 export function hoistCmpFactory(config) {
     return elementFactory(hoistCmp(config));
 }
 hoistCmp.factory = hoistCmpFactory;
 
 /**
- * Return an element factory for a newly defined component.
- *
- * Useful for containers (e.g. toolbars, layout boxes, etc.) that may
- * frequently contain children only, and may benefit from a leaner specification.
- */
-export function hoistCmpContainerFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): ContainerElementFactory<DefaultHoistProps<M>, FC<DefaultHoistProps<M>>>;
-export function hoistCmpContainerFactory<P extends HoistProps>(config: ComponentConfig<P>): ContainerElementFactory<P, FC<P>>;
-export function hoistCmpContainerFactory(config) {
-    return containerElementFactory(hoistCmp(config));
-}
-hoistCmp.containerFactory = hoistCmpContainerFactory;
-
-/**
  * Returns a 2-element list containing both the newly defined Component and an elementFactory for it.
  * Used by Hoist for exporting Component artifacts that support both JSX and elementFactory based development.
  *
  * Not typically used by applications.
  */
-export function hoistCmpWithFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): [FC<DefaultHoistProps<M>>, StandardElementFactory<DefaultHoistProps<M>, FC<DefaultHoistProps<M>>>];
-export function hoistCmpWithFactory<P extends HoistProps>(config: ComponentConfig<P>): [FC<P>, StandardElementFactory<P, FC<P>>];
+export function hoistCmpWithFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): [FC<DefaultHoistProps<M>>, ElementFactory<DefaultHoistProps<M>>];
+export function hoistCmpWithFactory<P extends HoistProps>(config: ComponentConfig<P>): [FC<P>, ElementFactory<P>];
 export function hoistCmpWithFactory(config) {
     const cmp = hoistCmp(config);
     return [cmp, elementFactory(cmp)];
 }
 hoistCmp.withFactory = hoistCmpWithFactory;
-
-/**
- * Returns a 2-element list containing both the newly defined Component and an elementFactory for it.
- * Used by Hoist for exporting Component artifacts that support both JSX and elementFactory based development.
- *
- * Useful for containers (e.g. toolbars, layout boxes, etc.) that may
- * frequently contain children only, and may benefit from a leaner specification.
- *
- * Not typically used by applications.
- */
-export function hoistCmpWithContainerFactory<M extends HoistModel>(config: ComponentConfig<DefaultHoistProps<M>>): [FC<DefaultHoistProps<M>>, ContainerElementFactory<DefaultHoistProps<M>, FC<DefaultHoistProps<M>>>];
-export function hoistCmpWithContainerFactory<P extends HoistProps>(config: ComponentConfig<P>): [FC<P>, ContainerElementFactory<P, FC<P>>];
-export function hoistCmpWithContainerFactory(config) {
-    const cmp = hoistCmp(config);
-    return [cmp, containerElementFactory(cmp)];
-}
-hoistCmp.withContainerFactory = hoistCmpWithContainerFactory;
 
 //----------------------------
 // Implementation
@@ -238,7 +221,7 @@ hoistCmp.withContainerFactory = hoistCmpWithContainerFactory;
 //----------------------------------
 // internal types and core wrappers
 //----------------------------------
-type RenderFn = (props: DefaultHoistProps, ref?:ForwardedRef<any>) => ReactNode;
+type RenderFn = (props: HoistProps, ref?:ForwardedRef<any>) => ReactNode;
 
 interface Config {
     displayName: string;
@@ -315,6 +298,8 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             let ctx = localModelContext;
             try {
                 props.model = model;
+                delete props.modelRef;
+                delete props.modelConfig;
                 ctx.props = props;
                 ctx.modelLookup = newLookup ?? modelLookup;
                 return render(props, ref);
@@ -351,10 +336,10 @@ function useResolvedModel(props: HoistProps, modelLookup: ModelLookup, cfg: Conf
 
 
     // 2) Other bookkeeping, following rules of hooks, before return.
-    const {model, isLinked} = resolvedModel,
-        {modelRef} = props;
-
+    const {model, isLinked} = resolvedModel;
     useModelLinker(isLinked ? model : null, modelLookup, props);
+
+    const {modelRef} = props;
     useEffect(() => {
         if (isFunction(modelRef)) {
             modelRef(model);
@@ -387,7 +372,6 @@ function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): 
             return {model: new selector(model), isLinked: true, fromContext: false};
         }
         if (isPlainObject(modelConfig)) {  // 1b) new location
-            delete props.modelConfig;
             return {model: new selector(modelConfig), isLinked: true, fromContext: false};
         }
     }

@@ -85,6 +85,7 @@ export interface RestGridEditor {
  * Core Model for a RestGrid.
  */
 export class RestGridModel extends HoistModel {
+    declare config: RestGridConfig;
 
     //----------------
     // Properties

@@ -20,7 +20,7 @@ import {RestGridModel} from './RestGridModel';
 
 export interface RestGridProps extends
     HoistProps<RestGridModel>,
-    Omit<PanelProps, 'model'|'modelConfig'>
+    Omit<PanelProps, 'model'|'modelConfig'|'modelRef'>
 {
     /**
      * This constitutes an 'escape hatch' for applications that need to get to the underlying

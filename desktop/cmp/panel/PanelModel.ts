@@ -99,6 +99,7 @@ export interface PanelConfig {
  * expand/collapse, along with support for saving this state via a configured PersistenceProvider.
  */
 export class PanelModel extends HoistModel {
+    declare config: PanelConfig;
 
     //-----------------------
     // Immutable Properties
