@@ -20,8 +20,8 @@ The following Typescript API were adjusted in v55.
 
 * Removed the distinction between `StandardElementFactory` and `ContainerElementFactory`.  This
 distinction was deemed to be unnecessary, and overcomplicated the understanding of Hoist.
-Applications should simply use the `ElementFactory` instead.  `hoistCmp.containerFactory` and
-`hoistCmp.withContainerFactory` and are also removed in favor of the basic `hoistCmp.factory` and
+Applications should simply continue to use `ElementFactory` instead.  `hoistCmp.containerFactory` and
+`hoistCmp.withContainerFactory` are also removed in favor of the basic `hoistCmp.factory` and
 `hoistCmp.withFactory` respectively.
 
 **Note** that we do not intend to make such extensive Typescript changes going forward post-v55.0.
