@@ -18,7 +18,7 @@ export interface LabelProps extends
 /**
  * A simple label for a form.
  */
-export const [Label, label] = hoistCmp.withContainerFactory<LabelProps>({
+export const [Label, label] = hoistCmp.withFactory<LabelProps>({
     displayName: 'Label',
     className: 'xh-input-label',
     render(props, ref) {

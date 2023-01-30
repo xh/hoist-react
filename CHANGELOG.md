@@ -13,6 +13,21 @@
   modal state. Note this necessitated an additional layer in the `Panel` DOM hierarchy.  Highly
   specific CSS selectors may be affected.
 
+
+### ⚙️ Typescript API Adjustments
+
+The following Typescript API were adjusted in v55.
+
+* Removed the distinction between `StandardElementFactory` and `ContainerElementFactory`.  This
+distinction was deemed to be unnecessary, and overcomplicated the understanding of Hoist.
+Applications should simply use the `ElementFactory` instead.  `hoistCmp.containerFactory` and
+`hoistCmp.withContainerFactory` and are also removed in favor of the basic `hoistCmp.factory` and
+`hoistCmp.withFactory` respectively.
+
+Note that we do not intend to make such extensive Typescript changes going forward post-v55.0.
+These changes were deemed critical and worth adjusting in our first typescript update, and before
+typescript has been widely adopted in production Hoist apps.
+
 ### ⚙️ Technical
 
 * Hoist's `Icon` enumeration has been re-organized slightly better separate icons that describe

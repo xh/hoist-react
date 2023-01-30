@@ -50,7 +50,7 @@ import {
     Tree
 } from '@blueprintjs/core';
 import {DatePicker} from '@blueprintjs/datetime';
-import {elementFactory, containerElementFactory} from '@xh/hoist/core';
+import {elementFactory} from '@xh/hoist/core';
 
 //---------------------
 // Re-exports
@@ -130,22 +130,22 @@ export const
 // Container Components
 //-----------------------
 export const
-    buttonGroup = containerElementFactory(ButtonGroup),
-    callout = containerElementFactory(Callout),
-    card = containerElementFactory(Card),
-    drawer = containerElementFactory(Drawer),
-    editableText = containerElementFactory(EditableText),
-    formGroup = containerElementFactory(FormGroup),
-    hotkey = containerElementFactory(Hotkey),
-    hotkeys = containerElementFactory(Hotkeys),
-    inputGroup = containerElementFactory(InputGroup),
-    label = containerElementFactory(Label),
-    menu = containerElementFactory(Menu),
-    navbar = containerElementFactory(Navbar),
-    navbarHeading = containerElementFactory(NavbarHeading),
-    navbarGroup = containerElementFactory(NavbarGroup),
-    radioGroup = containerElementFactory(RadioGroup),
-    tabs = containerElementFactory(Tabs),
-    tab = containerElementFactory(Tab),
-    tag = containerElementFactory(Tag),
-    text = containerElementFactory(Text);
+    buttonGroup = elementFactory(ButtonGroup),
+    callout = elementFactory(Callout),
+    card = elementFactory(Card),
+    drawer = elementFactory(Drawer),
+    editableText = elementFactory(EditableText),
+    formGroup = elementFactory(FormGroup),
+    hotkey = elementFactory(Hotkey),
+    hotkeys = elementFactory(Hotkeys),
+    inputGroup = elementFactory(InputGroup),
+    label = elementFactory(Label),
+    menu = elementFactory(Menu),
+    navbar = elementFactory(Navbar),
+    navbarHeading = elementFactory(NavbarHeading),
+    navbarGroup = elementFactory(NavbarGroup),
+    radioGroup = elementFactory(RadioGroup),
+    tabs = elementFactory(Tabs),
+    tab = elementFactory(Tab),
+    tag = elementFactory(Tag),
+    text = elementFactory(Text);

@@ -13,7 +13,7 @@ import {SwiperModel} from './SwiperModel';
  *
  * @internal
  */
-export const swiper = hoistCmp.containerFactory({
+export const swiper = hoistCmp.factory({
     model: creates(SwiperModel),
 
     render({model, children}) {
