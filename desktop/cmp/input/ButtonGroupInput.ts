@@ -122,7 +122,7 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(
             outlined,
             // ...and ButtonGroup gets all the rest
             ...buttonGroupProps
-        } = getNonLayoutProps(props) as ButtonGroupInputProps;
+        } = getNonLayoutProps(props);
 
         const buttons = Children.map(children, button => {
             if (!button) return null;

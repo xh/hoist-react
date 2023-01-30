@@ -24,6 +24,9 @@ Applications should simply continue to use `ElementFactory` instead.  `hoistCmp.
 `hoistCmp.withContainerFactory` are also removed in favor of the basic `hoistCmp.factory` and
 `hoistCmp.withFactory` respectively.
 
+* `HoistProps.modelConfig` now references the type declaration of `HoistModel.config`. See
+  `PanelModel` and `TabContainerModel` for examples.
+
 **Note** that we do not intend to make such extensive Typescript changes going forward post-v55.0.
 These changes were deemed critical and worth adjusting in our first typescript update, and before
 typescript has been widely adopted in production Hoist apps.

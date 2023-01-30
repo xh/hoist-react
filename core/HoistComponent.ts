@@ -42,12 +42,28 @@ import {
  * Configuration for creating a Component.  May be specified either as a render function,
  * or an object containing a render function and associated metadata.
  */
+export type RenderPropsOf<P extends HoistProps> = P & {
+
+    /** Pre-processed by HoistComponent internals into a mounted model.  Never passed to render. */
+    modelConfig: never;
+
+    /** Pre-processed by HoistComponent internals and attached to model.  Never passed to render. */
+    modelRef: never;
+
+    /**
+     *  React Children. Populated on props by React internally, before rendering.  Applications
+     *  will typically provide children to a component via JSX or the `item(s)` property passed to
+     *  an element factory.
+     */
+    children?: ReactNode
+};
+
 export type ComponentConfig<P extends HoistProps> =
-   ((props: P, ref?: ForwardedRef<any>) => ReactNode) |
+   ((props: RenderPropsOf<P>, ref?: ForwardedRef<any>) => ReactNode) |
     {
 
     /** Render function defining the component. */
-    render(props: P, ref?: ForwardedRef<any>): ReactNode;
+    render(props: RenderPropsOf<P>, ref?: ForwardedRef<any>): ReactNode;
 
     /**
      * Spec defining the model to be rendered by this component.
@@ -205,7 +221,7 @@ hoistCmp.withFactory = hoistCmpWithFactory;
 //----------------------------------
 // internal types and core wrappers
 //----------------------------------
-type RenderFn = (props: DefaultHoistProps, ref?:ForwardedRef<any>) => ReactNode;
+type RenderFn = (props: HoistProps, ref?:ForwardedRef<any>) => ReactNode;
 
 interface Config {
     displayName: string;
@@ -282,6 +298,8 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             let ctx = localModelContext;
             try {
                 props.model = model;
+                delete props.modelRef;
+                delete props.modelConfig;
                 ctx.props = props;
                 ctx.modelLookup = newLookup ?? modelLookup;
                 return render(props, ref);
@@ -318,10 +336,10 @@ function useResolvedModel(props: HoistProps, modelLookup: ModelLookup, cfg: Conf
 
 
     // 2) Other bookkeeping, following rules of hooks, before return.
-    const {model, isLinked} = resolvedModel,
-        {modelRef} = props;
-
+    const {model, isLinked} = resolvedModel;
     useModelLinker(isLinked ? model : null, modelLookup, props);
+
+    const {modelRef} = props;
     useEffect(() => {
         if (isFunction(modelRef)) {
             modelRef(model);
@@ -354,7 +372,6 @@ function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): 
             return {model: new selector(model), isLinked: true, fromContext: false};
         }
         if (isPlainObject(modelConfig)) {  // 1b) new location
-            delete props.modelConfig;
             return {model: new selector(modelConfig), isLinked: true, fromContext: false};
         }
     }
