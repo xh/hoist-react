@@ -62,7 +62,7 @@ export class GridExportService extends HoistService {
         throwIf(!(isFunction(columns) || isArray(columns) || ['ALL', 'VISIBLE'].includes(columns)),
             'Invalid columns config - must be "ALL", "VISIBLE", an array of colIds, or a function'
         );
-        throwIf(!(isBoolean(track)),
+        throwIf(!isBoolean(track),
             'Invalid track value - must be either true or false'
         );
 
