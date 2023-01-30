@@ -298,6 +298,8 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             let ctx = localModelContext;
             try {
                 props.model = model;
+                delete props.modelRef;
+                delete props.modelConfig;
                 ctx.props = props;
                 ctx.modelLookup = newLookup ?? modelLookup;
                 return render(props, ref);
@@ -338,7 +340,6 @@ function useResolvedModel(props: HoistProps, modelLookup: ModelLookup, cfg: Conf
     useModelLinker(isLinked ? model : null, modelLookup, props);
 
     const {modelRef} = props;
-    delete props.modelRef;
     useEffect(() => {
         if (isFunction(modelRef)) {
             modelRef(model);
@@ -371,7 +372,6 @@ function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): 
             return {model: new selector(model), isLinked: true, fromContext: false};
         }
         if (isPlainObject(modelConfig)) {  // 1b) new location
-            delete props.modelConfig;
             return {model: new selector(modelConfig), isLinked: true, fromContext: false};
         }
     }
