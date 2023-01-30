@@ -10,7 +10,7 @@ import {
     isValidElement,
     ReactNode,
     ReactElement,
-    JSXElementConstructor, ForwardedRef
+    ForwardedRef, Key
 } from 'react';
 import {PlainObject, Some, Thunkable} from './types/Types';
 
@@ -59,7 +59,7 @@ export type ElementSpec<P extends PlainObject> = P & {
     ref?: ForwardedRef<any>;
 
     /** React key for this component. */
-    key?: string|number;
+    key?: Key;
 
     //----------------------------
     // Technical -- Escape support
@@ -69,9 +69,9 @@ export type ElementSpec<P extends PlainObject> = P & {
     $omit?: any;
 }
 
-export type ElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
-    ((...args: ReactNode[]) => ReactElement<P, T>) &
-    ((arg?: ElementSpec<P>) => ReactElement<P, T>);
+export type ElementFactory<P = any> =
+    ((...args: ReactNode[]) => ReactElement<P, any>) &
+    ((arg: ElementSpec<P>) => ReactElement<P, any>);
 
 /**
  * Create a React Element from a Component type and an ElementSpec.
@@ -82,10 +82,7 @@ export type ElementFactory<P = any, T extends string|JSXElementConstructor<P> = 
  * @param type - React Component or string representing an HTML element.
  * @param spec - element spec.
  */
-export function createElement<P=any, T extends string|JSXElementConstructor<any>=any>(
-    type: T,
-    spec: ElementSpec<P>
-): ReactElement<P, T> {
+export function createElement<P=any>(type: any, spec: ElementSpec<P>): ReactElement<P, any> {
     const {omit, item, items, ...props} = spec;
 
     // 1) Convenience omission syntax.
@@ -109,11 +106,9 @@ export function createElement<P=any, T extends string|JSXElementConstructor<any>
 /**
  *  Create a factory function that can create a ReactElement from an ElementSpec.
  */
-export function elementFactory<P=any, T extends string|JSXElementConstructor<any>=any>(
-    type: T
-): ElementFactory<P, T> {
+export function elementFactory<P=any>(type: any): ElementFactory<P> {
     const ret = function(...args) {
-        return createElement<P, T>(type, normalizeArgs(args, type));
+        return createElement<P>(type, normalizeArgs(args, type));
     };
     ret.isElementFactory = true;
     return ret;
