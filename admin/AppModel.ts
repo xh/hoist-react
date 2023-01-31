@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistAppModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {Route} from 'router5';
@@ -107,7 +107,7 @@ export class AppModel extends HoistAppModel {
         ];
     }
 
-    createTabs() {
+    createTabs(): TabConfig[] {
         return [
             {
                 id: 'general',
