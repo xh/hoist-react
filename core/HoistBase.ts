@@ -251,7 +251,7 @@ export abstract class HoistBase {
 /**
  * Object containing options accepted by MobX 'reaction' API as well as arguments below.
  */
-export interface ReactionSpec<T> extends IReactionOptions<T, any> {
+export interface ReactionSpec<T = any> extends IReactionOptions<T, any> {
     /**
      * Function returning data to observe - first arg to the underlying reaction() call.
      * Specify this or `when`.
