@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {has, isEmpty, reduce} from 'lodash';
+import {isEmpty, reduce} from 'lodash';
 
 /**
  * Base class for a view row.
@@ -105,7 +105,7 @@ export abstract class BaseRow {
 
         this.canAggregate = reduce(view.fields, (ret, field) => {
             const {name} = field;
-            if (has(appliedDimensions, field)) {
+            if (Object.hasOwn(appliedDimensions, field)) {
                 ret[name] = false;
             } else {
                 const {aggregator, canAggregateFn} = field;
