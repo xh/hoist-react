@@ -17,7 +17,7 @@ import {
     useOnResize,
     useOnVisibleChange
 } from '@xh/hoist/utils/react';
-import {assign, castArray, cloneDeep, forOwn, isEqual, isPlainObject, merge, omit} from 'lodash';
+import {assign, castArray, forOwn, isEqual, isPlainObject, merge, omit} from 'lodash';
 import {Icon} from '@xh/hoist/icon';
 import {ChartModel} from './ChartModel';
 import {installZoomoutGesture} from './impl/zoomout';
@@ -285,7 +285,7 @@ class ChartLocalModel extends HoistModel {
                     beforePrint: function() {
                         // When we print, we use the same options provided for exporting, which
                         // can be found at `exporting.chartOptions`
-                        const config = cloneDeep(this.options),
+                        const config = structuredClone(this.options),
                             printChartOptions = {
                                 ...config.exporting?.chartOptions,
                                 exporting: {enabled: false} // Hide the hamburger menu
@@ -355,7 +355,7 @@ class ChartLocalModel extends HoistModel {
     }
 
     getThemeConfig() {
-        return XH.darkTheme ? cloneDeep(DarkTheme) : cloneDeep(LightTheme);
+        return XH.darkTheme ? structuredClone(DarkTheme) : structuredClone(LightTheme);
     }
 
     getModelConfig() {

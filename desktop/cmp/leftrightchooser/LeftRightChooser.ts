@@ -8,7 +8,6 @@ import {grid, GridProps} from '@xh/hoist/cmp/grid';
 import {hframe, vbox} from '@xh/hoist/cmp/layout';
 import {BoxProps, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {cloneDeep} from 'lodash';
 import {chooserToolbar} from './impl/ChooserToolbar';
 import {description} from './impl/Description';
 import './LeftRightChooser.scss';
@@ -37,8 +36,8 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory<LeftRig
                     }
                 }
             },
-            leftGridOptions = cloneDeep(gridOptions),
-            rightGridOptions = cloneDeep(gridOptions);
+            leftGridOptions = structuredClone(gridOptions),
+            rightGridOptions = structuredClone(gridOptions);
 
         if (!leftGroupingExpanded) leftGridOptions.agOptions.groupDefaultExpanded = 0;
         if (!rightGroupingExpanded) rightGridOptions.agOptions.groupDefaultExpanded = 0;
