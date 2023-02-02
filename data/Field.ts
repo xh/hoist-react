@@ -54,12 +54,12 @@ export class Field {
 
     get isField() {return true}
 
-    name: string;
-    type: FieldType;
-    displayName: string;
-    defaultValue: any;
-    rules: Rule[];
-    disableXssProtection: boolean;
+    readonly name: string;
+    readonly type: FieldType;
+    readonly displayName: string;
+    readonly defaultValue: any;
+    readonly rules: Rule[];
+    readonly disableXssProtection: boolean;
 
     constructor({
         name,

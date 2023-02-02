@@ -13,8 +13,8 @@ import {BaseRow} from './BaseRow';
 export class AggregateRow extends BaseRow {
     get isAggregate()   {return true}
 
-    dim = null;         // null for summary row
-    dimName = null;
+    readonly dim = null;         // null for summary row
+    readonly dimName = null;
 
     constructor(view, id, children, dim, val, appliedDimensions) {
         super(view, id);

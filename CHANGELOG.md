@@ -6,6 +6,7 @@
 
 * Grid exports can now be tracked in the admin activity tab by setting `exportOptions.track` to
   true (defaults to false).
+* Miscellaneous performance improvements to the cube package
 
 ### 🐞 Bug Fixes
 

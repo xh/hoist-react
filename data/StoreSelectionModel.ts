@@ -24,7 +24,7 @@ export interface StoreSelectionConfig {
  */
 export class StoreSelectionModel extends HoistModel {
 
-    store: Store;
+    readonly store: Store;
     mode: 'single'|'multiple'|'disabled';
 
     @observable.ref

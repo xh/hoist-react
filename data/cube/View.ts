@@ -10,7 +10,7 @@ import {Cube, CubeField, Filter, Query, Store, StoreRecord, StoreRecordId} from 
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf, logWithDebug} from '@xh/hoist/utils/js';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
-import {castArray, forEach, groupBy, isEmpty, isNil, map, isEqual, keys, find} from 'lodash';
+import {castArray, forEach, groupBy, isEmpty, isNil, map, find} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
 
 import {AggregateRow} from './row/AggregateRow';
@@ -122,19 +122,20 @@ export class View extends HoistBase {
      * Change the query in some way, re-computing the data in this View to reflect the new query.
      *
      * @param overrides - changes to be applied to the query. May include any arguments to the query
-     *      constructor with the exception of `cube`, which cannot be changed on a view once set
+     *      constructor except `cube`, which cannot be changed on a view once set
      *      via the initial query.
      */
     @action
     updateQuery(overrides) {
         throwIf(overrides.cube, 'Cannot redirect view to a different cube in updateQuery().');
-        const newQuery = this.query.clone(overrides);
-        if (this.query.equals(newQuery)) return;
+        const oldQuery = this.query,
+            newQuery = oldQuery.clone(overrides);
+        if (oldQuery.equals(newQuery)) return;
 
         this.query = newQuery;
 
-        // Only blow away row cache if more than filter changing, or we have complex aggregates.
-        if (!this.aggregatorsAreSimple || !isEqual(keys(overrides), ['filter'])) {
+        // Must clear row cache if we have complex aggregates or more than filter changing.
+        if (!this.aggregatorsAreSimple || !oldQuery.equalsExcludingFilter(newQuery)) {
             this._rowCache.clear();
         }
 
@@ -414,7 +415,7 @@ export class View extends HoistBase {
     }
 
     private get aggregatorsAreSimple() {
-        return this.query.fields.every(
+        return this.fields.every(
             ({aggregator}) => !aggregator || aggregator.dependsOnChildrenOnly
         );
     }

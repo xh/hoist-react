@@ -17,8 +17,6 @@ export class LeafRow extends BaseRow {
 
     constructor(view, id, rawRecord) {
         super(view, id);
-        this.view = view;
-
         this.data.cubeLabel = rawRecord.id;
         view.fields.forEach(({name}) => {
             this.data[name] = rawRecord.data[name];

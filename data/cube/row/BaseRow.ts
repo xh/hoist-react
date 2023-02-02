@@ -12,12 +12,13 @@ import {isEmpty, reduce} from 'lodash';
  */
 export abstract class BaseRow {
 
-    view = null;
-    id = null;
-    parent = null;
-    children = null;
-    data;
+    readonly view = null;
+    readonly id = null;
+    readonly parent = null;
+    readonly data;
 
+    // readonly, but set by subclasses
+    children = null;
     locked = false;
     canAggregate: any;
 
