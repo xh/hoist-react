@@ -14,7 +14,7 @@ import {BucketSpec} from '../BucketSpec';
 export class BucketRow extends BaseRow {
     get isBucket()  {return true}
 
-    bucketSpec: BucketSpec = null;
+    readonly bucketSpec: BucketSpec = null;
 
     constructor(view, id, children, bucketVal, bucketSpec, appliedDimensions) {
         super(view, id);

@@ -14,8 +14,8 @@ import {BaseFieldModel} from '../../cmp/form';
  */
 export class Rule {
 
-    check: Constraint[];
-    when: When;
+    readonly check: Constraint[];
+    readonly when: When;
 
     constructor(spec: RuleSpec) {
         this.check = castArray(spec.check);

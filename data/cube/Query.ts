@@ -5,12 +5,12 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
 import {Filter, parseFilter, StoreRecord} from '@xh/hoist/data';
 import {isEqual, find} from 'lodash';
 import {FilterLike, FilterTestFn} from '../filter/Types';
 import {CubeField} from './CubeField';
 import {Cube} from './Cube';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Queries determine what data is extracted from a cube and how it should be grouped + aggregated.
@@ -26,16 +26,16 @@ export interface QueryConfig {
     cube?: Cube;
 
     /**
-     * Field names. If unspecified will include all available fields
+     * Fields or field names. If unspecified will include all available fields
      * from the source Cube, otherwise supply a subset to optimize aggregation performance.
      */
-    fields?: string[];
+    fields?: string[]|CubeField[];
 
     /**
-     * Field names to group on. Any fields provided must also be in fields config, above. If none
+     * Fields or field names to group on. Any fields provided must also be in fields config, above. If none
      * given the resulting data will not be grouped.
      */
-    dimensions?: string[];
+    dimensions?: string[]|CubeField[];
 
     /**
      * One or more filters or configs to create one.  If an array, a single 'AND' filter will
@@ -56,14 +56,14 @@ export interface QueryConfig {
 /** {@inheritDoc QueryConfig} */
 export class Query {
 
-    fields: CubeField[];
-    dimensions: CubeField[];
-    filter: Filter;
-    includeRoot: boolean;
-    includeLeaves: boolean;
-    cube: Cube;
+    readonly fields: CubeField[];
+    readonly dimensions: CubeField[];
+    readonly filter: Filter;
+    readonly includeRoot: boolean;
+    readonly includeLeaves: boolean;
+    readonly cube: Cube;
 
-    private _testFn: FilterTestFn;
+    private readonly _testFn: FilterTestFn;
 
     constructor({
         cube,
@@ -85,8 +85,8 @@ export class Query {
 
     clone(overrides: Partial<QueryConfig>) {
         const conf = {
-            dimensions: this.dimensions?.map(d => d.name),
-            fields: this.fields?.map(f => f.name),
+            dimensions: this.dimensions,
+            fields: this.fields,
             filter: this.filter,
             includeRoot: this.includeRoot,
             includeLeaves: this.includeLeaves,
@@ -107,10 +107,20 @@ export class Query {
     equals(other: Query): boolean {
         if (other === this) return true;
         return (
-            isEqual(this.cube, other.cube) &&
+            this.equalsExcludingFilter(other) &&
+            ((!this.filter && !other.filter) || this.filter?.equals(other.filter))
+        );
+    }
+
+    /**
+     * True if the provided other Query is equivalent to this instance,
+     * not considering the filter.
+     */
+    equalsExcludingFilter(other: Query):boolean {
+        return (
             isEqual(this.fields, other.fields) &&
             isEqual(this.dimensions, other.dimensions) &&
-            ((!this.filter && !other.filter) || this.filter?.equals(other.filter)) &&
+            this.cube === other.cube &&
             this.includeRoot === other.includeRoot &&
             this.includeLeaves === other.includeLeaves
         );
@@ -119,19 +129,24 @@ export class Query {
     //------------------------
     // Implementation
     //------------------------
-    private parseFields(names: string[]): CubeField[] {
+    private parseFields(raw: CubeField[]|string[]): CubeField[] {
         const {fields} = this.cube;
-        return names ? fields.filter(f => names.includes(f.name)) : fields;
+        if (!raw) return fields;
+        if (raw[0] instanceof CubeField) return raw as CubeField[];
+        const names = raw as String[];
+        return fields.filter(f => names.includes(f.name));
     }
 
-    private parseDimensions(names: string[]): CubeField[] {
-        if (!names) return null;
+    private parseDimensions(raw: CubeField[]|string[]): CubeField[] {
+        if (!raw) return null;
+        if (raw[0] instanceof CubeField) return raw as CubeField[];
         const {fields} = this;
-        return names.map(name => {
+        return raw.map(name => {
             const field = find(fields, {name});
-            if (!field || !field.isDimension) {
-                throw XH.exception(`Dimension '${name}' is not a Field on this Cube, or is not specified with isDimension:true.`);
-            }
+            throwIf(
+                !field?.isDimension,
+                `Dimension '${name}' is not a Field on this Cube, or is not specified with isDimension:true.`
+            );
             return field;
         });
     }

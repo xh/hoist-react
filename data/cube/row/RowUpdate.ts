@@ -12,9 +12,9 @@ import {Field} from '../../Field';
  */
 export class RowUpdate {
 
-    field: Field;
-    oldValue: any;
-    newValue: any;
+    readonly field: Field;
+    readonly oldValue: any;
+    readonly newValue: any;
 
     constructor(field, oldValue, newValue) {
         this.field = field;
