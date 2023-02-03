@@ -8,7 +8,7 @@ import {hoistCmp, useLocalModel, HoistModel, BoxProps, HoistProps} from '@xh/hoi
 import {frame, box} from '@xh/hoist/cmp/layout';
 import {useOnResize} from '@xh/hoist/utils/react';
 import {useState, useLayoutEffect} from 'react';
-import {minBy, isEqual, isObject} from 'lodash';
+import {minBy, isEqual} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
 import {Children} from 'react';
 
@@ -102,7 +102,12 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
                 style: localModel.getTileStyle(idx),
                 className: 'xh-tile-frame__tile',
                 item,
-                key: isObject(item) && 'key' in item ? item.key : undefined
+
+                // In order to prevent unnecessary re-renders or end up in an out-of-sync state,
+                // children in a dynamic list of elements must provide unique identifying keys.
+                // Passing the child's key to the containing element here ensures that it is being
+                // applied at an appropriate level in the component hierarchy.
+                key: item['key']
             })):
             null;
 
