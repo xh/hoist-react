@@ -26,7 +26,7 @@ export interface LoadingIndicatorProps extends HoistProps {
     /** TaskObserver(s) that should be monitored to determine if the Indicator should be displayed. */
     bind?: Some<TaskObserver>;
     /** Position of the indicator relative to its containing component. */
-    corner: Corner,
+    corner?: Corner,
     /** True to display the indicator. */
     isDisplayed?: boolean;
     /** Max characters allowed in message, after which it will be elided. Default 30. */
