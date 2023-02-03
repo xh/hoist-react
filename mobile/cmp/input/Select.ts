@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, PlainObject} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, PlainObject, SelectOption} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {
     reactAsyncCreatableSelect,
@@ -156,12 +156,6 @@ export interface SelectProps extends
 
     /** Field on provided options for sourcing each option's value (default `value`). */
     valueField?: string;
-}
-
-interface SelectOption {
-    value: any;
-    label?: string;
-    options?: Array<SelectOption|any>;
 }
 
 /**

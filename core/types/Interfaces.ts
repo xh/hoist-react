@@ -259,10 +259,19 @@ export interface MenuItem {
 }
 
 /**
- * A item that can exist in a Menu.
+ * An item that can exist in a Menu.
  *
  * Allows for a ReactNode as divider.  If strings are specified, the implementations may choose
  * an appropriate default display, with '-' providing a standard textless divider that will also
  * be de-duped if appearing at the beginning, or end, or adjacent to another divider at render time.
  */
 export type MenuItemLike = MenuItem|ReactNode;
+
+/**
+ * An option to be passed to Select controls
+ */
+export interface SelectOption {
+    value?: any;
+    label?: string;
+    options?: (SelectOption|any)[];
+}

@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
-import {createElement, hoistCmp, HoistProps, LayoutProps, PlainObject, XH, Awaitable} from '@xh/hoist/core';
+import {createElement, hoistCmp, HoistProps, LayoutProps, PlainObject, XH, Awaitable, SelectOption} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {
@@ -182,12 +182,6 @@ export interface SelectProps extends
 
     /** Field on provided options for sourcing each option's value (default `value`). */
     valueField?: string;
-}
-
-export interface SelectOption {
-    value?: any;
-    label?: string;
-    options?: (SelectOption|any)[];
 }
 
 /**
