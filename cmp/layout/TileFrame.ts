@@ -102,7 +102,7 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
                 style: localModel.getTileStyle(idx),
                 className: 'xh-tile-frame__tile',
                 item,
-                key: item['key'] //trampoline any child key to prevent remounts
+                key: item['key'] // trampoline any child key to prevent remounts
             })):
             null;
 
