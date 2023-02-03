@@ -102,12 +102,7 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
                 style: localModel.getTileStyle(idx),
                 className: 'xh-tile-frame__tile',
                 item,
-
-                // In order to prevent unnecessary re-renders or end up in an out-of-sync state,
-                // children in a dynamic list of elements must provide unique identifying keys.
-                // Passing the child's key to the containing element here ensures that it is being
-                // applied at an appropriate level in the component hierarchy.
-                key: item['key']
+                key: item['key'] //trampoline any child key to prevent remounts
             })):
             null;
 
