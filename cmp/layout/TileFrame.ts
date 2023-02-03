@@ -101,7 +101,8 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
             childrenArr.map((item, idx) => box({
                 style: localModel.getTileStyle(idx),
                 className: 'xh-tile-frame__tile',
-                item
+                item,
+                key: item['key'] //trampoline any child key to prevent remounts
             })):
             null;
 
