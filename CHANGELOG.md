@@ -18,6 +18,7 @@
 * Fix bug where a `className` provided to a `Panel` with `modalSupport` would be dropped when in a
   modal state. Note this necessitated an additional layer in the `Panel` DOM hierarchy.  Highly
   specific CSS selectors may be affected.
+* Fix bug where `TileFrame` would not pass through the keys of its children.
 
 
 ### ⚙️ Typescript API Adjustments

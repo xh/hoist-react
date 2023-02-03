@@ -8,7 +8,7 @@ import {hoistCmp, useLocalModel, HoistModel, BoxProps, HoistProps} from '@xh/hoi
 import {frame, box} from '@xh/hoist/cmp/layout';
 import {useOnResize} from '@xh/hoist/utils/react';
 import {useState, useLayoutEffect} from 'react';
-import {minBy, isEqual} from 'lodash';
+import {minBy, isEqual, isObject} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
 import {Children} from 'react';
 
@@ -101,7 +101,8 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
             childrenArr.map((item, idx) => box({
                 style: localModel.getTileStyle(idx),
                 className: 'xh-tile-frame__tile',
-                item
+                item,
+                key: isObject(item) && 'key' in item ? item.key : undefined
             })):
             null;
 
