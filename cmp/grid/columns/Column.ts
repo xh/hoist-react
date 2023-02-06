@@ -576,11 +576,11 @@ export class Column {
 
         warnIf(
             flex && width,
-            `Column specified with both flex && width. Width will be ignored. [colId=${ this.colId }]`
+            `Column '${this.colId}' specified with both flex && width. Width will be ignored.`
         );
         warnIf(
             width && !isFinite(width),
-            `Column width not specified as a number. Default width will be applied. [colId=${ this.colId }]`
+            `Column '${this.colId}' width not specified as a number. Default width will be applied.`
         );
 
         this.flex = withDefault(flex, false);
@@ -611,7 +611,7 @@ export class Column {
         this.tooltipElement = tooltipElement;
         warnIf(
             tooltip && tooltipElement,
-            `Column specified with both tooltip && tooltipElement. Tooltip will be ignored. [colId=${ this.colId }]`
+            `Column '${this.colId}' specified with both tooltip && tooltipElement. Tooltip will be ignored.`
         );
 
         this.chooserName = chooserName || this.displayName;
@@ -652,13 +652,13 @@ export class Column {
         this.appData = appData ? clone(appData) : {};
 
         // Warn if using the ag-Grid valueSetter or valueGetter and recommend using our callbacks
-        warnIf(this.agOptions.valueSetter, `Column '${ this.colId }' uses valueSetter through agOptions. Remove and use custom setValueFn if needed.`);
-        warnIf(this.agOptions.valueGetter, `Column '${ this.colId }' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`);
+        warnIf(this.agOptions.valueSetter, `Column '${this.colId}' uses valueSetter through agOptions. Remove and use custom setValueFn if needed.`);
+        warnIf(this.agOptions.valueGetter, `Column '${this.colId}' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`);
 
         if (!isEmpty(rest)) {
             const keys = keysIn(rest);
             throw XH.exception(
-                `Unsupported key(s) '${keys}' passed in Column config for colId:${colId}. Custom config data must be nested within the 'appData' property.`
+                `Column '${this.colId}' configured with unsupported key(s) '${keys}'. Custom config data must be nested within the 'appData' property.`
             );
         }
     }
