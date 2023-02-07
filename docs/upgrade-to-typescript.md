@@ -77,7 +77,7 @@ in your project. An easy option is to rename `Bootstrap.js -> Bootstrap.ts`.
 At this point, you should be able to continue app development with the latest Hoist React on TS and
 all of your application code on JS. But to really get the benefits of this big upgrade, you will
 want to start writing application code in TS as well. This does *not* need to happen all at once -
-in fact, we recommend and incremental approach so you can merge and test changes as you go,
+in fact, we recommend an incremental approach so you can merge and test changes as you go,
 balancing the update with application/project priorities.
 
 This process boils down to:
@@ -154,7 +154,7 @@ from your TS upgrade:
 
 ### TODO
 
-* Component updates to pull through model type via `hoistCmp.factory<T` generic.
+* Component updates to pull through model type via `hoistCmp.factory<T>` generic.
 * Use of interfaces extending `HoistProps` and similar to replace prop-types.
 * Use of config interfaces for public / non-trivial model constructors.
 * Standard TS keywords we use and recommend - `readonly`, `override`
