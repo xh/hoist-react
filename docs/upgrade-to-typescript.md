@@ -124,8 +124,8 @@ declare module '@xh/hoist/core' {
 
 Moving your AppModel(s) to TS is a good next step, as that class often contains centralized
 properties or methods that benefit from additional type safety. The same issues around accessing
-your AppModel instance from the XH global apply here - TS only knows that `XH.appModel` is a `
-HoistAppModel` (the base class), and will warn if you attempt to access custom properties (
+your AppModel instance from the XH global apply here - TS only knows that `XH.appModel` is a
+`HoistAppModel` (the base class), and will warn if you attempt to access custom properties (
 e.g. `XH.appModel.myAppSpecificFlag`).
 
 Because an application can have multiple client apps bundled within, we recommend a different
