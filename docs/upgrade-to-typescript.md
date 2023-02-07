@@ -57,7 +57,7 @@ The following deprecations will be common, but should be easy to adjust for:
 
 If using IntelliJ, ensure that your settings are configured correctly to get the most of out TS:
 
-* Under "Languages & Frameworks > JavaScript", ensure that yourESLint and (if enabled) Prettier
+* Under "Languages & Frameworks > JavaScript", ensure that your ESLint and (if enabled) Prettier
   configs include the `.ts` file extension.
 * Under "Languages & Frameworks > TypeScript", ensure that the IDE has picked up the TS distribution
   from your app's `node_modules` and that the TypeScript language service is enabled.
@@ -146,7 +146,7 @@ from your TS upgrade:
 
 * *Services* - often centralized business logic accessed from multiple parts of the app, a great
   candidate for typed functions and public properties.
-* *POJOs* - if your app maintains any classes for data modelling, consider typing their public
+* *POJOs* - if your app maintains any classes for data modeling, consider typing their public
   properties and any public instance methods.
 * *Utils* - shared, app specific utility functions are good candidates for typing, with callers
   benefiting from typed parameters and return signatures.
