@@ -49,3 +49,25 @@ The following deprecations will be common, but should be easy to adjust for:
 * Use of `modelConfig` vs. `model` when passing a model configuration as a component prop in the
   form of a plain-object. A case-sensitive search for `model: {` within your client source should
   provide a good starting point. Common with `Panel` models, as those are often specified inline.
+* Columns will now warn if they are passed unknown configuration keys - previously this was allowed,
+  with any extra keys spread onto the Column instance as a way for apps to carry around some extra
+  data. Use the new dedicated `Column.appData` config instead.
+
+## IDE / Tooling
+
+If using IntelliJ, ensure that your settings are configured correctly to get the most of out TS:
+
+* Under "Languages & Frameworks > JavaScript", ensure that yourESLint and (if enabled) Prettier
+  configs include the `.ts` file extension.
+* Under "Languages & Frameworks > TypeScript", ensure that the IDE has picked up the TS distribution
+  from your app's `node_modules` and that the TypeScript language service is enabled.
+    * We recommend checking "show project errors" while leaving "recompile on changes" unchecked.
+* IntelliJ maintains distinct code style settings for JS vs. TS. You will likely want to review your
+  TS code style settings and get in sync.
+    * Consider
+      copying [the Hoist project's `.editorconfig` file](https://github.com/xh/hoist-react/blob/develop/.editorconfig)
+      into your project to apply XH-standardized settings automatically.
+
+If using Husky in your project for git hooks, consider adding `yarn run tsc` to your `pre-commit`
+check. Note that for `tsc` to run successfully, you will need to have _at least one_ TypeScript file
+in your project. An easy option is to rename `Bootstrap.js -> Bootstrap.ts`.
