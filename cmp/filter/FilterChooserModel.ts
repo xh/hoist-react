@@ -506,7 +506,7 @@ interface FilterChooserPersistOptions extends PersistOptions {
 /**
  * A variant of FilterLike, that excludes FunctionFilters and FilterTestFn.
  */
-type FilterChooserFilterLike = Filter |
+export type FilterChooserFilterLike = Filter |
     CompoundFilterSpec |
     FieldFilterSpec |
     FilterChooserFilterLike[];
