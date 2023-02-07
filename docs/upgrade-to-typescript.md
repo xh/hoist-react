@@ -141,9 +141,20 @@ runtime.
 ### Next Steps
 
 The pace and completeness with which you migrate the rest of your app's codebase is up to you.
-Consider prioritizing packages in an order similar to the below to get the most benefit early on from your TS upgrade:
+Consider prioritizing packages in an order similar to the below to get the most benefit early on
+from your TS upgrade:
 
-* Services - often centralized business logic accessed from multiple parts of the app, a great candidate for typed functions and public properties.
-* POJOs - if your app maintains any classes for data modelling, consider typing their public properties and any public instance methods.
-* Utils - shared, app specific utility functions are good candidates for typing, with callers benefiting from typed parameters and return signatures.
-* Models & Components
+* *Services* - often centralized business logic accessed from multiple parts of the app, a great
+  candidate for typed functions and public properties.
+* *POJOs* - if your app maintains any classes for data modelling, consider typing their public
+  properties and any public instance methods.
+* *Utils* - shared, app specific utility functions are good candidates for typing, with callers
+  benefiting from typed parameters and return signatures.
+* *Models & Components* - the bulk of your client-side codebase...
+
+### TODO
+
+* Component updates to pull through model type via `hoistCmp.factory<T` generic.
+* Use of interfaces extending `HoistProps` and similar to replace prop-types.
+* Use of config interfaces for public / non-trivial model constructors.
+* Standard TS keywords we use and recommend - `readonly`, `override`
