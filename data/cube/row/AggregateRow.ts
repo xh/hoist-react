@@ -5,6 +5,9 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import {PlainObject} from '@xh/hoist/core';
+import {CubeField} from '../CubeField';
+import {View} from '../View';
 import {BaseRow} from './BaseRow';
 
 /**
@@ -13,10 +16,17 @@ import {BaseRow} from './BaseRow';
 export class AggregateRow extends BaseRow {
     get isAggregate()   {return true}
 
-    readonly dim = null;         // null for summary row
-    readonly dimName = null;
+    readonly dim: CubeField = null;         // null for summary row
+    readonly dimName: string = null;
 
-    constructor(view, id, children, dim, val, appliedDimensions) {
+    constructor(
+        view: View,
+        id: string,
+        children: BaseRow[],
+        dim: CubeField,
+        val: any,
+        appliedDimensions: PlainObject
+    ) {
         super(view, id);
         const dimName = dim ? dim.name : 'Total';
 
