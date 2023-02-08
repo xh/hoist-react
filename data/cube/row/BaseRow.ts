@@ -5,29 +5,33 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import {PlainObject, Some} from '@xh/hoist/core';
+import {BucketSpec} from '@xh/hoist/data/cube/BucketSpec';
 import {isEmpty, reduce} from 'lodash';
+import {View} from '../View';
+import {RowUpdate} from './RowUpdate';
 
 /**
  * Base class for a view row.
  */
 export abstract class BaseRow {
 
-    readonly view = null;
-    readonly id = null;
-    readonly parent = null;
-    readonly data;
+    readonly view: View = null;
+    readonly id: string = null;
+    readonly data: PlainObject;
 
     // readonly, but set by subclasses
-    children = null;
-    locked = false;
-    canAggregate: any;
+    parent: BaseRow = null;
+    children: BaseRow[] = null;
+    locked: boolean = false;
+    canAggregate: PlainObject;
 
 
     get isLeaf()        {return false}
     get isAggregate()   {return false}
     get isBucket()      {return false}
 
-    constructor(view, id) {
+    constructor(view: View, id: string) {
         this.view = view;
         this.id = id;
         this.data = {id, _meta: this};
@@ -36,7 +40,7 @@ export abstract class BaseRow {
     //-----------------------
     // For all rows types
     //------------------------
-    noteBucketed(bucketSpec, bucketVal) {
+    noteBucketed(bucketSpec: BucketSpec, bucketVal: any) {
         this.data.buckets = this.data.buckets ?? {};
         this.data.buckets[bucketSpec.name] = bucketVal;
         this.children?.forEach(it => it.noteBucketed(bucketSpec, bucketVal));
@@ -44,47 +48,53 @@ export abstract class BaseRow {
 
     // Determine what should be exposed as the actual children in the
     // row data.  This where we lock, skip degenerate rows, etc.
-    applyVisibleChildren() {
-        let {children, view, data} = this,
-            {lockFn, omitFn} = view.cube;
+    getVisibleDatas(): Some<PlainObject> {
+        let {view, data, isLeaf} = this;
 
-        if (!children) return;
+        // 1) Get visible children nodes recursively
+        let dataChildren = this.getVisibleChildrenDatas();
 
-        // Remove all children from the data if the query is not configured to include leaves and
-        // this row has leaves as children
-        if (!view.query.includeLeaves && children[0]?.isLeaf) {
-            data.children = null;
-            return;
-        }
+        // 2) If omitting ourselves, we are done, return visible children.
+        if (!isLeaf && view.cube.omitFn?.(this as any)) return dataChildren;
 
-        // Check if we need to 'lock' this row - removing all children from the data so they will not
-        // appear in the UI but remain as children of this AggregateMeta to ensure that updates to
-        // those child rows will update our aggregate value
-        if (lockFn && lockFn(this)) {
-            this.locked = true;
-            data.children = null;
-            return;
-        }
+        // 3) Otherwise, we can attach this data to the children data and return.
 
-        // Apply recursively -- we need to go depth first to allow recursive collapsing
-        children.forEach(it => it.applyVisibleChildren());
-
-        // Skip chains of cullable single children, by wiring up to *their* data children.
-        while (children?.length === 1) {
-            const childRow = children[0];
-            if (this.isRedundantChild(this, childRow) || (omitFn && omitFn(childRow))) {
-                children = childRow.data.children?.map(it => it._meta) ?? null;
+        // 3a) Before attaching examine that we don't have a chain of redundant nodes
+        // (not sure if loop needed -- are these redundant relations transitive?)
+        while (dataChildren?.length === 1) {
+            const childRow = dataChildren[0]._meta;
+            if (this.isRedundantChild(this, childRow)) {
+                dataChildren = childRow.data.children;
             } else {
                 break;
             }
         }
 
-        // ...otherwise wire up to your own children's data
-        data.children = children?.map(it => it.data) ?? null;
+        data.children = dataChildren;
+        return data;
     }
 
-    isRedundantChild(parent, child) {
-        // TODO:  put this test in application code omitFn instead?
+    private getVisibleChildrenDatas(): PlainObject[] {
+        let {children, view} = this;
+
+        if (!children) return null;
+
+        // Skip all leaves from the data if the query is not configured to include leaves and
+        if (!view.query.includeLeaves && children[0]?.isLeaf) {
+            return null;
+        }
+
+        // Skip all children in a locked node
+        if (view.cube.lockFn?.(this as any)) {
+            this.locked = true;
+            return null;
+        }
+
+        // Recurse
+        return children.flatMap(it => it.getVisibleDatas());
+    }
+
+    private isRedundantChild(parent: any, child: any) {
         const parentDim = parent.dim,
             childDim = child.dim;
         return childDim && parentDim &&
@@ -95,7 +105,7 @@ export abstract class BaseRow {
     //-----------------------------------
     // Called by aggregates and buckets
     //----------------------------------
-    initAggregate(children, dimOrBucketName, val, appliedDimensions) {
+    protected initAggregate(children: BaseRow[], dimOrBucketName: string, val: any, appliedDimensions: PlainObject) {
         const {view, data} = this;
 
         this.children = children;
@@ -106,7 +116,7 @@ export abstract class BaseRow {
 
         this.canAggregate = reduce(view.fields, (ret, field) => {
             const {name} = field;
-            if (Object.hasOwn(appliedDimensions, field)) {
+            if (appliedDimensions.hasOwnProperty(name)) {
                 ret[name] = false;
             } else {
                 const {aggregator, canAggregateFn} = field;
@@ -118,8 +128,7 @@ export abstract class BaseRow {
         this.computeAggregates();
     }
 
-
-    protected applyDataUpdate(childUpdates, updatedRows) {
+    applyDataUpdate(childUpdates: RowUpdate[], updatedRowDatas: Set<PlainObject>) {
         const {parent, canAggregate, data, children} = this,
             ctx = this.view._aggContext,
             myUpdates = [];
@@ -137,8 +146,8 @@ export abstract class BaseRow {
         });
 
         if (!isEmpty(myUpdates)) {
-            updatedRows.add(this.data);
-            if (parent) parent.applyDataUpdate(myUpdates, updatedRows);
+            updatedRowDatas.add(this.data);
+            if (parent) parent.applyDataUpdate(myUpdates, updatedRowDatas);
         }
     }
 

@@ -5,18 +5,27 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import {PlainObject} from '@xh/hoist/core';
 import {BaseRow} from './BaseRow';
 import {BucketSpec} from '../BucketSpec';
+import { View } from '../View';
 
 /**
  *  Object used by views to gather bucket rows.
  */
 export class BucketRow extends BaseRow {
-    get isBucket()  {return true}
+    override get isBucket()  {return true}
 
     readonly bucketSpec: BucketSpec = null;
 
-    constructor(view, id, children, bucketVal, bucketSpec, appliedDimensions) {
+    constructor(
+        view: View,
+        id: string,
+        children: BaseRow[],
+        bucketVal: any,
+        bucketSpec: BucketSpec,
+        appliedDimensions: PlainObject
+    ) {
         super(view, id);
 
         this.bucketSpec = bucketSpec;

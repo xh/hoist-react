@@ -283,8 +283,10 @@ export class Cube extends HoistBase {
 export type LockFn = (row: AggregateRow|BucketRow) => boolean;
 
 /**
- * Function to be called for each single child during row generation to determine if it should be
- * skipped.  Useful for removing aggregates that are degenerate due to context.
+ * Function to be called for each node during row generation to determine if it should be
+ * skipped in tree output.  Useful for removing aggregates that are degenerate due to context.
+ * Note that skipping in this way has no effect on aggregations -- all children of this node are
+ * simply promoted to their parent node.
  */
 export type OmitFn = (row: AggregateRow|BucketRow) => boolean;
 
