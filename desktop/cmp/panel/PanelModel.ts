@@ -196,8 +196,8 @@ export class PanelModel extends HoistModel {
             maxSize = null;
         }
 
-        if (resizable && !showSplitter) {
-            console.error("Must not set 'showSplitter = false' for a resizable PanelModel. Panel sizing disabled.");
+        if (resizable && !resizeWhileDragging && !showSplitter) {
+            console.error("Must not set 'showSplitter = false' for a resizable PanelModel unless 'resizeWhileDragging` is enabled. Panel sizing disabled.");
             resizable = false;
         }
 
