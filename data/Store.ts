@@ -341,10 +341,10 @@ export class Store extends HoistBase {
      */
     @action
     @logWithDebug
-    updateData(rawData: PlainObject[]|StoreTransaction): any {
+    updateData(rawData: PlainObject[]|StoreTransaction): PlainObject {
         if (isEmpty(rawData)) return null;
 
-        const changeLog: any = {};
+        const changeLog: PlainObject = {};
 
         // Build a transaction object out of a flat list of adds and updates
         let rawTransaction;

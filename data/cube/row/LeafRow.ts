@@ -5,7 +5,10 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import { PlainObject } from '@xh/hoist/core';
 import {isEmpty} from 'lodash';
+import {StoreRecord} from '../../StoreRecord';
+import {View} from '../View';
 import {BaseRow} from './BaseRow';
 import {RowUpdate} from './RowUpdate';
 
@@ -13,9 +16,9 @@ import {RowUpdate} from './RowUpdate';
  * Object used to track leaf rows in a View
  */
 export class LeafRow extends BaseRow {
-    get isLeaf() {return true}
+    override get isLeaf() {return true}
 
-    constructor(view, id, rawRecord) {
+    constructor(view: View, id: string, rawRecord: StoreRecord) {
         super(view, id);
         this.data.cubeLabel = rawRecord.id;
         view.fields.forEach(({name}) => {
@@ -23,7 +26,7 @@ export class LeafRow extends BaseRow {
         });
     }
 
-    override applyDataUpdate(newRec, updatedRows) {
+    applyLeafDataUpdate(newRec: StoreRecord, updatedRowDatas: Set<PlainObject>) {
         const {view, parent, data} = this,
             newData = newRec.data,
             updates = [];
@@ -39,8 +42,8 @@ export class LeafRow extends BaseRow {
         });
 
         if (!isEmpty(updates)) {
-            updatedRows.add(this.data);
-            if (parent) parent.applyDataUpdate(updates, updatedRows);
+            updatedRowDatas.add(this.data);
+            if (parent) parent.applyDataUpdate(updates, updatedRowDatas);
         }
     }
 }

@@ -4,19 +4,18 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-
-import {Field} from '../../Field';
+import {CubeField} from '../CubeField';
 
 /**
  * @internal
  */
 export class RowUpdate {
 
-    readonly field: Field;
-    readonly oldValue: any;
-    readonly newValue: any;
+    readonly field: CubeField;
+    oldValue: any;
+    newValue: any;
 
-    constructor(field, oldValue, newValue) {
+    constructor(field: CubeField, oldValue: any, newValue: any) {
         this.field = field;
         this.oldValue = oldValue;
         this.newValue = newValue;

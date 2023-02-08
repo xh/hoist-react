@@ -7,6 +7,9 @@
 * Grid exports can now be tracked in the admin activity tab by setting `exportOptions.track` to
   true (defaults to false).
 * Miscellaneous performance improvements to the cube package
+* The implementation of the `Cube.omitFn` feature has been enhanced.  This function will now be
+  called on *all* non-leaf nodes, not just single child nodes.  This allows for more flexible editing of the shape of the resulting
+  hierarchical data emitted by cube views.
 
 ### 🐞 Bug Fixes
 
@@ -19,6 +22,11 @@
   modal state. Note this necessitated an additional layer in the `Panel` DOM hierarchy.  Highly
   specific CSS selectors may be affected.
 * Fix bug where `TileFrame` would not pass through the keys of its children.
+
+### 💥 Breaking Changes
+* The semantics of `Cube.omitFn` have changed such that it will now be called on all aggregate nodes,
+  not just nodes with a single child. Applications may need to adjust any implementation of this
+  function accordingly.
 
 
 ### ⚙️ Typescript API Adjustments
