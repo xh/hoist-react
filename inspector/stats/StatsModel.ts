@@ -10,7 +10,7 @@ import {fmtDate, numberRenderer} from '@xh/hoist/format';
 export class StatsModel extends HoistModel {
     override xhImpl = true;
 
-    override persistWith ={localStorageKey: `xhInspector.${XH.clientAppCode}.stats`};
+    override persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.stats`};
 
     panelModel: PanelModel;
     gridModel: GridModel;

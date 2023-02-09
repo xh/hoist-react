@@ -24,7 +24,7 @@ import {FieldSpec} from '@xh/hoist/data';
 
 export class ConfigPanelModel extends HoistModel {
 
-    override persistWith ={localStorageKey: 'xhAdminConfigState'};
+    override persistWith = {localStorageKey: 'xhAdminConfigState'};
 
     @managed
     regroupDialogModel = new RegroupDialogModel(this);

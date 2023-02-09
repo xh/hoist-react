@@ -19,7 +19,7 @@ import {LogViewerModel} from './LogViewerModel';
  */
 export class LogDisplayModel extends HoistModel {
 
-    override persistWith ={localStorageKey: 'xhAdminLogViewerState'};
+    override persistWith = {localStorageKey: 'xhAdminLogViewerState'};
 
     parent: LogViewerModel;
 

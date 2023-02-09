@@ -22,7 +22,7 @@ import {FieldSpec} from '@xh/hoist/data';
 
 export class PreferenceModel extends HoistModel {
 
-    override persistWith ={localStorageKey: 'xhAdminPreferenceState'};
+    override persistWith = {localStorageKey: 'xhAdminPreferenceState'};
 
     @managed
     regroupDialogModel = new RegroupDialogModel(this);

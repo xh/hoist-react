@@ -12,7 +12,7 @@ import {keyBy, keys} from 'lodash';
 
 export class UserModel extends HoistModel {
 
-    override persistWith ={localStorageKey: 'xhAdminUserState'};
+    override persistWith = {localStorageKey: 'xhAdminUserState'};
 
     @bindable activeOnly = true;
     @bindable withRolesOnly = false;

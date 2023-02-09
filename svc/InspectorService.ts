@@ -27,7 +27,7 @@ export class InspectorService extends HoistService {
 
     static instance: InspectorService;
 
-    override persistWith ={localStorageKey: `xhInspector.${XH.clientAppCode}`};
+    override persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}`};
 
     /**
      * True if Inspector is generally enabled via config.

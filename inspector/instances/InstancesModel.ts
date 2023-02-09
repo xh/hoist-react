@@ -19,7 +19,7 @@ import {StatsModel} from '../stats/StatsModel';
 export class InstancesModel extends HoistModel {
     override xhImpl = true;
 
-    override persistWith ={localStorageKey: `xhInspector.${XH.clientAppCode}.instances`};
+    override persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.instances`};
 
     instancesGridModel: GridModel;
     propertiesGridModel: GridModel;
