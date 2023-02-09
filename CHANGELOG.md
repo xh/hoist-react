@@ -1,6 +1,6 @@
 # Changelog
 
-## v55.0.0 - 2023-02-08
+## v55.1.0 - 2023-02-09
 
 Version 55 is the first major update of the toolkit after our transition to typescript.  In addition
 to a host of runtime fixes and features, it also contains a good number of important typescript
