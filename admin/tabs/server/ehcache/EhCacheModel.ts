@@ -12,7 +12,7 @@ import {trimEnd} from 'lodash';
 
 export class EhCacheModel extends HoistModel {
 
-    persistWith = {localStorageKey: 'xhAdminEhCacheState'};
+    override persistWith ={localStorageKey: 'xhAdminEhCacheState'};
 
     @managed
     gridModel = new GridModel({

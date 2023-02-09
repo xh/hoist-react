@@ -27,7 +27,7 @@ import {
  * @internal
  */
 export class GridFindFieldImplModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     gridModel: GridModel;
 

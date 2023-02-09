@@ -15,7 +15,7 @@ import {isFinite, isString} from 'lodash';
  * @internal
  */
 export class ViewportSizeModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @observable.ref
     size: {width: number, height: number};

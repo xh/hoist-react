@@ -102,7 +102,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
 
 
 class TreeMapLocalModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @lookup(TreeMapModel) model: TreeMapModel;
     chartRef = createObservableRef<HTMLElement>();
@@ -118,7 +118,7 @@ class TreeMapLocalModel extends HoistModel {
         return XH.darkTheme ? 'dark' : 'light';
     }
 
-    onLinked() {
+    override onLinked() {
         const {model} = this;
         // Detect double-clicks vs single-clicks
         this.clickCount = 0;
@@ -242,7 +242,7 @@ class TreeMapLocalModel extends HoistModel {
         }
     };
 
-    destroy() {
+    override destroy() {
         this.destroyHighChart();
         super.destroy();
     }

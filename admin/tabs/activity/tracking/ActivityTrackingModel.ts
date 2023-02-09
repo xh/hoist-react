@@ -21,7 +21,7 @@ export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};
 
 export class ActivityTrackingModel extends HoistModel {
 
-    persistWith = PERSIST_ACTIVITY;
+    override persistWith =PERSIST_ACTIVITY;
 
     @managed formModel: FormModel;
     @managed groupingChooserModel: GroupingChooserModel;

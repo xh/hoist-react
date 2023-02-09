@@ -16,7 +16,7 @@ import moment from 'moment';
 
 export class ClientErrorsModel extends HoistModel {
 
-    persistWith = {localStorageKey: 'xhAdminClientErrorsState'};
+    override persistWith ={localStorageKey: 'xhAdminClientErrorsState'};
 
     @bindable.ref startDay: LocalDate;
     @bindable.ref endDay: LocalDate;

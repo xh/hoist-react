@@ -13,7 +13,7 @@ import {values, isPlainObject} from 'lodash';
  * @internal
  */
 export class SizingModeModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @observable
     sizingMode: SizingMode = null;

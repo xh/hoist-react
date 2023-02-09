@@ -11,7 +11,7 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
  * @internal
  */
 export class ThemeModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @observable
     darkTheme: boolean;

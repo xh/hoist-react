@@ -128,7 +128,7 @@ export const columnHeader = hoistCmp.factory({
 
 
 class ColumnHeaderModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     get gridModel()     {return this.componentProps.gridModel}
     get xhColumn()      {return this.componentProps.xhColumn}
@@ -157,7 +157,7 @@ class ColumnHeaderModel extends HoistModel {
         makeObservable(this);
     }
 
-    onLinked() {
+    override onLinked() {
         const {xhColumn, agColumn} = this,
             {filterModel} = this.gridModel;
 
@@ -172,7 +172,7 @@ class ColumnHeaderModel extends HoistModel {
         }
     }
 
-    destroy() {
+    override destroy() {
         this.agColumn.removeEventListener('filterChanged', this.onFilterChanged);
         super.destroy();
     }

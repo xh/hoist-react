@@ -93,7 +93,7 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>
 // Implementation
 //-----------------------
 class NumberInputModel extends HoistInputModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
@@ -106,7 +106,7 @@ class NumberInputModel extends HoistInputModel {
         return withDefault(this.componentProps.precision, 4);
     }
 
-    get commitOnChange() {
+    override get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
     }
 
@@ -114,7 +114,7 @@ class NumberInputModel extends HoistInputModel {
         return withDefault(this.componentProps.scaleFactor, 1);
     }
 
-    select() {
+    override select() {
         // first focus, and then wait one tick for value to be put into input element
         this.focus();
         wait().then(() => super.select());
@@ -125,18 +125,18 @@ class NumberInputModel extends HoistInputModel {
     };
 
     @debounced(250)
-    doCommitOnChangeInternal() {
+    override doCommitOnChangeInternal() {
         super.doCommitOnChangeInternal();
     }
 
-    toInternal(val) {
+    override toInternal(val) {
         if (isNaN(val)) return val;
         if (isNil(val)) return null;
 
         return val * this.scaleFactor;
     }
 
-    toExternal(val) {
+    override toExternal(val) {
         val = this.parseValue(val);
         if (isNaN(val)) return val;
         if (isNil(val)) return null;
@@ -152,7 +152,7 @@ class NumberInputModel extends HoistInputModel {
         return val;
     }
 
-    isValid(val) {
+    override isValid(val) {
         const {min, max} = this.componentProps;
 
         if (isNaN(val)) return false;
@@ -170,7 +170,7 @@ class NumberInputModel extends HoistInputModel {
         this.componentProps.onKeyDown?.(ev);
     };
 
-    onFocus = (ev) => {
+    override onFocus = (ev) => {
         this.noteFocused();
 
         // Deferred to allow any value conversion to complete and flush into input.

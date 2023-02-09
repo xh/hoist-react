@@ -82,7 +82,7 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory<Loading
 class LocalMaskModel extends HoistModel {
     task;
 
-    onLinked() {
+    override onLinked() {
         const {bind} = this.componentProps;
         if (bind) {
             this.task = bind instanceof TaskObserver ?
