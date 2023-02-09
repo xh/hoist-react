@@ -199,7 +199,7 @@ export class DockViewModel extends HoistModel {
         this.containerModel.removeView(this.id);
     }
 
-    destroy() {
+    override destroy() {
         XH.safeDestroy(this.content);
         super.destroy();
     }

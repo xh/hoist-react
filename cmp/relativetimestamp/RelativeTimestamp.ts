@@ -87,7 +87,7 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<Relat
 });
 
 class RelativeTimestampLocalModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @observable display = '';
     model: HoistModel;

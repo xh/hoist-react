@@ -219,7 +219,7 @@ export class DataViewModel extends HoistModel {
         return this.gridModel.ensureSelectionVisibleAsync();
     }
 
-    doLoadAsync(loadSpec: LoadSpec) {
+    override doLoadAsync(loadSpec: LoadSpec) {
         return this.gridModel.doLoadAsync(loadSpec);
     }
 

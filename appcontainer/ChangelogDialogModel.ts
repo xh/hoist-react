@@ -9,7 +9,7 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 
 export class ChangelogDialogModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @observable isOpen: boolean = false;
 

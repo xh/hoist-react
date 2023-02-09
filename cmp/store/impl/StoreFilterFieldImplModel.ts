@@ -26,7 +26,7 @@ import {
  * @internal
  */
 export class StoreFilterFieldImplModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @lookup('*') model;
 
@@ -41,7 +41,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
         makeObservable(this);
     }
 
-    onLinked() {
+    override onLinked() {
         let {gridModel, store, includeFields, bind, filterBuffer = 200} = this.componentProps;
 
         throwIf(gridModel && store, "Cannot specify both 'gridModel' and 'store' props.");

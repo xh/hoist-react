@@ -69,7 +69,7 @@ export const [Mask, mask] = hoistCmp.withFactory<MaskProps>({
 class LocalMaskModel extends HoistModel {
     task;
 
-    onLinked() {
+    override onLinked() {
         const {bind} = this.componentProps;
         if (bind) {
             this.task = bind instanceof TaskObserver ?

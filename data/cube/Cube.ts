@@ -268,7 +268,7 @@ export class Cube extends HoistBase {
         });
     }
 
-    destroy() {
+    override destroy() {
         this._connectedViews.forEach(v => v.disconnect());
         super.destroy();
     }

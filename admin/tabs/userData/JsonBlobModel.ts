@@ -21,7 +21,7 @@ import {FieldSpec} from '@xh/hoist/data';
 
 export class JsonBlobModel extends HoistModel {
 
-    persistWith = {localStorageKey: 'xhAdminJsonBlobState'};
+    override persistWith = {localStorageKey: 'xhAdminJsonBlobState'};
 
     @managed
     gridModel: RestGridModel;

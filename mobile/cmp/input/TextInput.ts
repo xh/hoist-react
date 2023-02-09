@@ -78,9 +78,9 @@ export const [TextInput, textInput] = hoistCmp.withFactory<TextInputProps>({
 // Implementation
 //-----------------------
 class TextInputModel extends HoistInputModel {
-    xhImpl = true;
+    override xhImpl = true;
 
-    get commitOnChange() {
+    override get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
     }
 
@@ -100,7 +100,7 @@ class TextInputModel extends HoistInputModel {
         this.componentProps.onKeyDown?.(ev);
     };
 
-    onFocus = (ev) => {
+    override onFocus = (ev) => {
         if (this.componentProps.selectOnFocus && ev.target && ev.target.select) {
             ev.target.select();
         }

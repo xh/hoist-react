@@ -12,7 +12,7 @@ import {throwIf} from '@xh/hoist/utils/js';
  *  @internal
  */
 export class ImpersonationBarModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @observable showRequested: boolean = false;
     @observable.ref targets: string[] = [];

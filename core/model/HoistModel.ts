@@ -201,7 +201,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
         return false;
     }
 
-    destroy() {
+    override destroy() {
         super.destroy();
         instanceManager.unregisterModel(this);
     }

@@ -128,7 +128,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
 // Implementation
 //------------------------
 class GridLocalModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @lookup(GridModel)
     private model: GridModel;

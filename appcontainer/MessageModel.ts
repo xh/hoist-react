@@ -17,7 +17,7 @@ import {isEmpty} from 'lodash';
  * @internal
  */
 export class MessageModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     // Immutable properties
     title;
@@ -132,7 +132,7 @@ export class MessageModel extends HoistModel {
     //-----------------------
     // Implementation
     //-----------------------
-    destroy() {
+    override destroy() {
         this.close();
         super.destroy();
     }

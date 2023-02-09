@@ -18,7 +18,7 @@ import {valuesTab} from './values/ValuesTab';
 import {ValuesTabModel} from './values/ValuesTabModel';
 
 export class ColumnHeaderFilterModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     column: Column;
     gridFilterModel: GridFilterModel;

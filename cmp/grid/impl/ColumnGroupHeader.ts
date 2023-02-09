@@ -55,7 +55,7 @@ export const columnGroupHeader = hoistCmp.factory({
 });
 
 class ColumnGroupHeaderModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @bindable isExpanded = true;
 
@@ -72,12 +72,12 @@ class ColumnGroupHeaderModel extends HoistModel {
         makeObservable(this);
     }
 
-    onLinked() {
+    override onLinked() {
         this.syncIsExpanded();
         this.agColumnGroup.addEventListener('expandedChanged', this.syncIsExpanded);
     }
 
-    destroy() {
+    override destroy() {
         this.agColumnGroup.removeEventListener('expandedChanged', this.syncIsExpanded);
         super.destroy();
     }

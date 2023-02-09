@@ -32,7 +32,7 @@ export const [Checkbox, checkbox] = hoistCmp.withFactory<CheckboxProps>({
 });
 
 class CheckboxInputModel extends HoistInputModel {
-    xhImpl = true;
+    override xhImpl = true;
 }
 
 //----------------------------------
