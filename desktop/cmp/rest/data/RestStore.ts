@@ -45,7 +45,7 @@ export class RestStore extends UrlStore {
         this.reloadLookupsOnLoad = reloadLookupsOnLoad;
     }
 
-    get defaultFieldClass() {
+    override get defaultFieldClass() {
         return RestField;
     }
 

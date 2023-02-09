@@ -126,7 +126,7 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
 });
 
 class PopoverModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     targetRef = createObservableRef<HTMLElement>();
     contentRef = createObservableRef<HTMLElement>();

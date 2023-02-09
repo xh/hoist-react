@@ -55,7 +55,7 @@ export const menu = hoistCmp.factory({
 });
 
 class LocalMenuModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @bindable pressedIdx: number;
 

@@ -36,7 +36,7 @@ import {StoreRecord} from '@xh/hoist/data';
  * See the Column API for options to control exported values and formats.
  */
 export class GridExportService extends HoistService {
-    xhImpl = true;
+    override xhImpl = true;
 
     static instance: GridExportService;
 

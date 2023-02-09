@@ -11,7 +11,7 @@ import {clamp, throttle} from 'lodash';
 import {PanelModel} from '../../PanelModel';
 
 export class DraggerModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @lookup(PanelModel)
     panelModel: PanelModel;

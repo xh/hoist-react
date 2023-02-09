@@ -124,28 +124,28 @@ class CompoundObserver extends TaskObserver {
     }
 
     @computed
-    get isPending() {
+    override get isPending() {
         return this._subtasks.some(t => t.isPending);
     }
 
     @computed
-    get pendingCount() {
+    override get pendingCount() {
         return sumBy(this._subtasks, 'pendingCount');
     }
 
     @computed
-    get message() {
+    override get message() {
         const pending = this._subtasks.filter(t => t.isPending && t.message);
         return head(pending)?.message ?? this._message ?? null;
     }
 
     @action
-    setMessage(message) {
+    override setMessage(message) {
         this._message = message;
     }
 
     @action
-    linkTo(task) {
+    override linkTo(task) {
         if (this._mode === 'last') {
             this._subtasks = [task];
         } else {
@@ -165,9 +165,9 @@ class PromiseObserver extends TaskObserver {
     private _message: ReactNode;
 
     get isPromiseObserver()     {return true}
-    get isPending()             {return this._isPending}
-    get pendingCount()          {return this._isPending ? 1 : 0}
-    get message()               {return this._message}
+    override get isPending()             {return this._isPending}
+    override get pendingCount()          {return this._isPending ? 1 : 0}
+    override get message()               {return this._message}
 
     constructor(promise, message) {
         super();
