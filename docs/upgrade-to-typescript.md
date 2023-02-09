@@ -151,10 +151,3 @@ from your TS upgrade:
 * *Utils* - shared, app specific utility functions are good candidates for typing, with callers
   benefiting from typed parameters and return signatures.
 * *Models & Components* - the bulk of your client-side codebase...
-
-### TODO
-
-* Component updates to pull through model type via `hoistCmp.factory<T>` generic.
-* Use of interfaces extending `HoistProps` and similar to replace prop-types.
-* Use of config interfaces for public / non-trivial model constructors.
-* Standard TS keywords we use and recommend - `readonly`, `override`
