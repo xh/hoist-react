@@ -18,7 +18,7 @@ import {compact, map, trim} from 'lodash';
  * as `{enabled:true, interval: x}`, where `x` sets this service's polling frequency in seconds.
  */
 export class AlertBannerService extends HoistService {
-    xhImpl = true;
+    override xhImpl = true;
 
     static instance: AlertBannerService;
 

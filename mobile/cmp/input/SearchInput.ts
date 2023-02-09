@@ -53,9 +53,9 @@ export const [SearchInput, searchInput] = hoistCmp.withFactory<SearchInputProps>
 // Implementation
 //-----------------------
 class SearchInputModel extends HoistInputModel {
-    xhImpl = true;
+    override xhImpl = true;
 
-    get commitOnChange() {
+    override get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
     }
 
@@ -68,7 +68,7 @@ class SearchInputModel extends HoistInputModel {
         this.componentProps.onKeyDown?.(ev);
     };
 
-    onFocus = (ev) => {
+    override onFocus = (ev) => {
         if (this.componentProps.selectOnFocus && ev.target && ev.target.select) {
             ev.target.select();
         }

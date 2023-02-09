@@ -68,7 +68,7 @@ function renderTabModel(tabModel: TabModel) {
 }
 
 class TabContainerLocalModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     swiper;
 

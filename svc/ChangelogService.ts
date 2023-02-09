@@ -31,7 +31,7 @@ import {isEmpty, forOwn, includes} from 'lodash';
  *      the currently deployed app version. Installed by default in desktop appBar.
  */
 export class ChangelogService extends HoistService {
-    xhImpl = true;
+    override xhImpl = true;
 
     static instance: ChangelogService;
 

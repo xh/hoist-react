@@ -18,7 +18,7 @@ import {clone, find, sortBy} from 'lodash';
  * @internal
  */
 export class ColChooserModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     gridModel: GridModel;
     showRestoreDefaults: boolean;

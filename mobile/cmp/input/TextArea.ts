@@ -53,13 +53,13 @@ export const [TextArea, textArea] = hoistCmp.withFactory<TextAreaProps>({
 // Implementation
 //-----------------------
 class TextAreaInputModel extends HoistInputModel {
-    xhImpl = true;
+    override xhImpl = true;
 
-    get commitOnChange() {
+    override get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
     }
 
-    get inputEl() {
+    override get inputEl() {
         return this.domEl.querySelector('textarea');
     }
 
@@ -71,7 +71,7 @@ class TextAreaInputModel extends HoistInputModel {
         this.componentProps.onKeyDown?.(ev);
     };
 
-    onFocus = (ev) => {
+    override onFocus = (ev) => {
         if (this.componentProps.selectOnFocus && ev.target && ev.target.select) {
             ev.target.select();
         }

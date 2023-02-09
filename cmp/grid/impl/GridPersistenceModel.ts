@@ -16,7 +16,7 @@ import { GridModelPersistOptions } from '../Types';
  * @internal
  */
 export class GridPersistenceModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     VERSION = 1;  // Increment to abandon state.
 

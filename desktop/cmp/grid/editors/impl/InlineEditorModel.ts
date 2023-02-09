@@ -64,7 +64,7 @@ export function useInlineEditorModel(
  * @internal - created via {@link useInlineEditorModel}
  */
 class InlineEditorModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @bindable value;
 

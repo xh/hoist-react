@@ -111,7 +111,7 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
 });
 
 class TileFrameLocalModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     params;
     layout;

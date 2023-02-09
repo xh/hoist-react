@@ -17,9 +17,9 @@ import {StatsModel} from '../stats/StatsModel';
  * view properties (including reactive updates) for a selected instance.
  */
 export class InstancesModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
-    persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.instances`};
+    override persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.instances`};
 
     instancesGridModel: GridModel;
     propertiesGridModel: GridModel;

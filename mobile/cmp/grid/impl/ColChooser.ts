@@ -207,7 +207,7 @@ const row = hoistCmp.factory<ColChooserLocalModel>({
 
 
 class ColChooserLocalModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
     @lookup(ColChooserModel) model: ColChooserModel;
 
     onDragEnd = (result) => {

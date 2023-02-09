@@ -31,14 +31,14 @@ export const toastSource = hoistCmp.factory({
 
 
 class ToastSourceLocalModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @lookup(ToastSourceModel)
     sourceModel: ToastSourceModel;
 
     _toasterMap = new Map();
 
-    onLinked() {
+    override onLinked() {
         const {sourceModel} = this;
         this.addReaction({
             track: () => [sourceModel.toastModels, map(sourceModel.toastModels, 'isOpen')] as const,

@@ -130,7 +130,7 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>
 // Implementation
 //-----------------------
 class NumberInputModel extends HoistInputModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     constructor() {
         super();
@@ -141,7 +141,7 @@ class NumberInputModel extends HoistInputModel {
         return withDefault(this.componentProps.precision, 4);
     }
 
-    get commitOnChange(): boolean {
+    override get commitOnChange(): boolean {
         return withDefault(this.componentProps.commitOnChange, false);
     }
 
@@ -154,7 +154,7 @@ class NumberInputModel extends HoistInputModel {
     };
 
     @debounced(250)
-    doCommitOnChangeInternal() {
+    override doCommitOnChangeInternal() {
         super.doCommitOnChangeInternal();
     }
 
@@ -219,7 +219,7 @@ class NumberInputModel extends HoistInputModel {
         return parseNumber(value);
     }
 
-    noteFocused() {
+    override noteFocused() {
         super.noteFocused();
         if (this.componentProps.selectOnFocus) {
             // Deferred to allow any value conversion to complete and flush into input.

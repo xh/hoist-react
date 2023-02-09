@@ -68,7 +68,7 @@ export const [Slider, slider] = hoistCmp.withFactory<SliderProps>({
 // Implementation
 //-----------------------
 class SliderInputModel extends HoistInputModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     get sliderHandle(): HTMLElement {
         return this.domEl?.querySelector('.bp4-slider-handle');

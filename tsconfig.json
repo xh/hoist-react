@@ -10,6 +10,7 @@
     "noEmit": true,
     "jsx": "react",
     "useDefineForClassFields": true,
+    "noImplicitOverride": true,
     "paths": {
       "@xh/hoist/*": ["./*"]
     },

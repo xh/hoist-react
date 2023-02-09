@@ -66,7 +66,7 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
 });
 
 class MenuButtonLocalModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @bindable isOpen = false;
 

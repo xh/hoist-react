@@ -22,7 +22,7 @@ export interface ModalSupportConfig {
  * This model will place its component's child in 1 of 2 managed DOM nodes (either modal or inline)
  */
 export class ModalSupportModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @bindable
     isModal: boolean = false;
@@ -74,7 +74,7 @@ export class ModalSupportModel extends HoistModel {
         this.isModal = !this.isModal;
     }
 
-    destroy() {
+    override destroy() {
         this.hostNode.remove();
         super.destroy();
     }
