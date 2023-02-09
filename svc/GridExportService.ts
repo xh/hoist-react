@@ -148,7 +148,7 @@ export class GridExportService extends HoistService {
 
             if (track) {
                 XH.track({
-                    category: 'Navigation',
+                    category: 'Export',
                     message: `Downloaded ${filename}${fileExt}`,
                     data: {rows: rows.length, columns: exportColumns.length}
                 });
