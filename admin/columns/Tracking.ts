@@ -8,7 +8,6 @@ import {RangeAggregator} from '@xh/hoist/admin/tabs/activity/aggregators/RangeAg
 import {Icon} from '@xh/hoist/icon';
 import {fmtDate, fmtSpan, numberRenderer} from '@xh/hoist/format';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {isFinite} from 'lodash';
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 
 export const appEnvironment: ColumnSpec = {
@@ -56,8 +55,7 @@ export const day: ColumnSpec = {
     field: {
         name: 'day',
         type: 'localDate',
-        isDimension: true,
-        aggregator: new RangeAggregator()
+        isDimension: true
     },
     ...Col.localDate,
     displayName: 'App Day'
@@ -178,25 +176,25 @@ export const userMessageFlag: ColumnSpec = {
     }
 };
 
-export const dateRange: ColumnSpec = {
+export const dayRange: ColumnSpec = {
     field: {
-        name: 'day',
+        name: 'dayRange',
         type: 'json',
-        displayName: 'App Day'
+        aggregator: new RangeAggregator(),
+        displayName: 'App Day Range'
     },
-    ...Col.localDate,
+    align: 'right',
     width: 200,
-    renderer: dateRangeRenderer,
-    exportValue: dateRangeRenderer,
-    comparator: dateRangeComparator
+    renderer: dayRangeRenderer,
+    exportValue: dayRangeRenderer,
+    comparator: dayRangeComparator
 };
 
 //-----------------------
 // Implementation
 //-----------------------
-function dateRangeRenderer(range) {
-    if (!range) return;
-    if (isFinite(range)) return fmtDate(range);
+function dayRangeRenderer(range) {
+    if (!range) return null;
 
     const {min, max} = range,
         minStr = fmtDate(min),
@@ -206,7 +204,7 @@ function dateRangeRenderer(range) {
     return `${minStr} → ${maxStr}`;
 }
 
-function dateRangeComparator(rangeA, rangeB, sortDir, abs, {defaultComparator}) {
+function dayRangeComparator(rangeA, rangeB, sortDir, abs, {defaultComparator}) {
     const maxA = rangeA?.max,
         maxB = rangeB?.max;
 
