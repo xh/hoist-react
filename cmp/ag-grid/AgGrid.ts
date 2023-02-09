@@ -52,7 +52,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
         }
 
         const [layoutProps, agGridProps] = splitLayoutProps(props),
-            {sizingMode, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = model,
+            {sizingMode, showHover, rowBorders, stripeRows, cellBorders, showCellFocus, hideHeaders} = model,
             {darkTheme, isDesktop} = XH;
 
         const impl = useLocalModel(AgGridLocalModel);
@@ -67,6 +67,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
                 stripeRows ? 'xh-ag-grid--stripe-rows' : 'xh-ag-grid--no-stripe-rows',
                 cellBorders ? 'xh-ag-grid--cell-borders' : 'xh-ag-grid--no-cell-borders',
                 showCellFocus ? 'xh-ag-grid--show-cell-focus' : 'xh-ag-grid--no-cell-focus',
+                hideHeaders ? 'xh-ag-grid--hide-headers' : null,
                 isDesktop && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover'
             ),
             ...layoutProps,
