@@ -309,9 +309,10 @@ export class View extends HoistBase {
 
         appliedDimensions = {...appliedDimensions};
         return map(groups, (groupRecords, strVal) => {
-            const val = groupRecords[0].data[dimName];
+            const val = groupRecords[0].data[dimName],
+                id = rootId + `${dimName}=[${strVal}]`;
+
             appliedDimensions[dimName] = val;
-            const id = rootId + `${dimName}=[${strVal}]`;
 
             let children = this.groupAndInsertRecords(groupRecords, dimensions.slice(1), id, appliedDimensions, leafMap);
             children = this.bucketRows(children, id, appliedDimensions);
