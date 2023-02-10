@@ -2,6 +2,10 @@
 
 ## v56.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Typescript API Adjustments
+
+* Improved signatures of `RestStore` APIs.
+
 ## v55.1.0 - 2023-02-09
 
 Version 55 is the first major update of the toolkit after our transition to typescript.  In addition
