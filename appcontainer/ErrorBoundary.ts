@@ -20,12 +20,12 @@ export class ErrorBoundary extends Component {
         this.state = {caughtError: null, onError: props.onError};
     }
 
-    render() {
+    override render() {
         // @ts-ignore
         return this.state.caughtError ? 'An error occurred while rendering this Component.' : this.props.children ?? null;
     }
 
-    componentDidCatch(e, info) {
+    override componentDidCatch(e, info) {
         XH.handleException(e, {requireReload: true});
     }
 

@@ -89,7 +89,7 @@ const bbar = hoistCmp.factory(
 );
 
 class GridFilterDialogLocalModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @lookup(GridFilterModel) model: GridFilterModel;
 

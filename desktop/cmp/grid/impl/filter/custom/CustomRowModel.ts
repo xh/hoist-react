@@ -20,7 +20,7 @@ type OperatorOptionValue = 'blank'|'not blank'|FieldFilterOperator;
  * @internal
  */
 export class CustomRowModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     parentModel: CustomTabModel;
     headerFilterModel: ColumnHeaderFilterModel;

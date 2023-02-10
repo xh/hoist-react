@@ -168,7 +168,7 @@ export class RestGridModel extends HoistModel {
     }
 
     /** Load the underlying store. */
-    async doLoadAsync(loadSpec) {
+    override async doLoadAsync(loadSpec) {
         return this.store.loadAsync(loadSpec);
     }
 
@@ -185,7 +185,7 @@ export class RestGridModel extends HoistModel {
     }
 
     cloneRecord(record: StoreRecord) {
-        const clone = this.store.editableDataForRecord(record as any);
+        const clone = this.store.editableDataForRecord(record);
         this.prepareCloneFn?.({record, clone});
         this.formModel.openClone(clone);
     }

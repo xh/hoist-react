@@ -24,16 +24,16 @@ export class DashViewProvider extends PersistenceProvider {
     //----------------
     // Implementation
     //----------------
-    readRaw() {
+    override readRaw() {
         const {viewState} = this.dashViewModel;
         return viewState ?? {};
     }
 
-    writeRaw(data) {
+    override writeRaw(data) {
         this.dashViewModel.setViewState(data);
     }
 
-    clearRaw() {
+    override clearRaw() {
         return this.dashViewModel.setViewState(null);
     }
 }

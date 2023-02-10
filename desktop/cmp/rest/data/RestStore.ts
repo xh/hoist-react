@@ -5,13 +5,9 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {PlainObject, XH} from '@xh/hoist/core';
-import {
-    StoreRecord,
-    UrlStore,
-    UrlStoreConfig
-} from '@xh/hoist/data';
+import {StoreRecord, StoreRecordId, UrlStore, UrlStoreConfig} from '@xh/hoist/data';
 import '@xh/hoist/desktop/register';
-import {filter, keyBy, mapValues} from 'lodash';
+import {filter, isNil, keyBy, mapValues} from 'lodash';
 import {RestField, RestFieldSpec} from './RestField';
 
 
@@ -45,7 +41,7 @@ export class RestStore extends UrlStore {
         this.reloadLookupsOnLoad = reloadLookupsOnLoad;
     }
 
-    get defaultFieldClass() {
+    override get defaultFieldClass() {
         return RestField;
     }
 
@@ -81,17 +77,17 @@ export class RestStore extends UrlStore {
         return resp;
     }
 
-    async addRecordAsync(rec: {id: string, data: PlainObject}) {
+    async addRecordAsync(rec: {id?: StoreRecordId, data: PlainObject}) {
         return this.saveRecordInternalAsync(rec, true)
             .linkTo(this.loadModel);
     }
 
-    async saveRecordAsync(rec: {id: string, data: PlainObject}) {
+    async saveRecordAsync(rec: {id: StoreRecordId, data: PlainObject}) {
         return this.saveRecordInternalAsync(rec, false)
             .linkTo(this.loadModel);
     }
 
-    async bulkUpdateRecordsAsync(ids: string[], newParams: PlainObject) {
+    async bulkUpdateRecordsAsync(ids: StoreRecordId[], newParams: PlainObject) {
         const {url} = this,
             resp = await XH.fetchService.putJson({
                 url: `${url}/bulkUpdate`,
@@ -104,7 +100,7 @@ export class RestStore extends UrlStore {
         return resp;
     }
 
-    editableDataForRecord(record: {id: string, data: PlainObject}): PlainObject {
+    editableDataForRecord(record: {data: PlainObject}): PlainObject {
         const {data} = record,
             editable = keyBy(filter(this.fields, 'editable'), 'name');
         return mapValues(editable, (v, k) => data[k]);
@@ -117,12 +113,15 @@ export class RestStore extends UrlStore {
     //--------------------------------
     // Implementation
     //--------------------------------
-    private async saveRecordInternalAsync(rec: {id: string, data: PlainObject}, isAdd) {
-        let {url, dataRoot} = this;
-        if (!isAdd) url += '/' + rec.id;
+    private async saveRecordInternalAsync(rec: {id?: StoreRecordId, data: PlainObject}, isAdd) {
+        let {url, dataRoot} = this,
+            {id} = rec;
+
+        if (!isAdd) url += '/' + id;
 
         // Only include editable fields in the request data
-        const data = {id: rec.id, ...this.editableDataForRecord(rec)};
+        const data = this.editableDataForRecord(rec);
+        if (!isNil(id)) data.id = id;
 
         const fetchMethod = isAdd ? 'postJson' : 'putJson',
             response = await XH.fetchService[fetchMethod]({url, body: {data}}),

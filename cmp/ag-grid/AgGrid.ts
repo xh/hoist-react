@@ -113,7 +113,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
 })(AgGrid);
 
 class AgGridLocalModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @lookup(AgGridModel) model: AgGridModel;
 

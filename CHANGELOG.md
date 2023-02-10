@@ -1,6 +1,18 @@
 # Changelog
 
-## v55.0.0 - 2023-02-08
+## v56.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* `DashCanvas` enhancements:
+    * Views now support minimum and maximum dimensions.
+    * Views now expose an `allowDuplicate` flag for controlling the `Duplicate` menu item visibility.
+
+### ⚙️ Typescript API Adjustments
+
+* Improved signatures of `RestStore` APIs.
+
+## v55.1.0 - 2023-02-09
 
 Version 55 is the first major update of the toolkit after our transition to typescript.  In addition
 to a host of runtime fixes and features, it also contains a good number of important typescript

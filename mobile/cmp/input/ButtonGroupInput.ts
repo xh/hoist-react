@@ -53,16 +53,16 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory<ButtonG
 // Implementation
 //----------------------------------
 class ButtonGroupInputModel extends HoistInputModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     get enableMulti() {return !!this.componentProps.enableMulti}
     get enableClear() {return !!this.componentProps.enableClear}
 
-    blur() {
+    override blur() {
         this.domEl?.blur();
     }
 
-    focus() {
+    override focus() {
         this.domEl?.focus();
     }
 

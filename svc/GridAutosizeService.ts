@@ -24,7 +24,7 @@ import {StoreRecord} from '@xh/hoist/data';
  * @see GridAutosizeOptions
  */
 export class GridAutosizeService extends HoistService {
-    xhImpl = true;
+    override xhImpl = true;
 
     static instance: GridAutosizeService;
 

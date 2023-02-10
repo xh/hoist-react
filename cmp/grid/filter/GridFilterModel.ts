@@ -22,7 +22,7 @@ import {GridModel} from '../GridModel';
  * @internal
  */
 export class GridFilterModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     gridModel: GridModel;
     bind: Store|View;

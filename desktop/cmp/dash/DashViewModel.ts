@@ -31,12 +31,12 @@ export type DashViewState = Record<string, any>;
  * Content hosted within this view can use this model at runtime to access and set state
  * for the view or access other information.
  */
-export class DashViewModel extends HoistModel {
+export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistModel {
 
     id: string;
 
     /** DashViewSpec used to create this view. */
-    viewSpec: DashViewSpec;
+    viewSpec: T;
 
     /**
      * Parent DashContainerModel or DashCanvasModel. Provided by the container when
@@ -74,7 +74,7 @@ export class DashViewModel extends HoistModel {
         title,
         viewState = null,
         containerModel
-    }: DashViewConfig) {
+    }: DashViewConfig<T>) {
         super();
         makeObservable(this);
         throwIf(!id, 'DashViewModel requires an id');
@@ -99,9 +99,9 @@ export class DashViewModel extends HoistModel {
 }
 
 /** @internal */
-export interface DashViewConfig {
+export interface DashViewConfig<T extends DashViewSpec = DashViewSpec> {
     id: string;
-    viewSpec: DashViewSpec;
+    viewSpec: T;
     icon?: ReactElement;
     title?: string;
     viewState?: DashViewState;

@@ -58,7 +58,7 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory<ButtonG
 // Implementation
 //----------------------------------
 class ButtonGroupInputModel extends HoistInputModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     get enableMulti(): boolean {
         return !!this.componentProps.enableMulti;

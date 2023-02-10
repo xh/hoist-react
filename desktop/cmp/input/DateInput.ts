@@ -176,7 +176,7 @@ export const [DateInput, dateInput] = hoistCmp.withFactory<DateInputProps>({
 // Implementation
 //---------------------------------
 class DateInputModel extends HoistInputModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @bindable popoverOpen: boolean = false;
 

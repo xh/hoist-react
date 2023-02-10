@@ -21,7 +21,7 @@ export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};
 
 export class ActivityTrackingModel extends HoistModel {
 
-    persistWith = PERSIST_ACTIVITY;
+    override persistWith = PERSIST_ACTIVITY;
 
     @managed formModel: FormModel;
     @managed groupingChooserModel: GroupingChooserModel;
@@ -66,21 +66,22 @@ export class ActivityTrackingModel extends HoistModel {
 
         this.cube = new Cube({
             fields: [
-                Col.browser.field as CubeFieldSpec,
-                Col.category.field as CubeFieldSpec,
-                Col.data.field as CubeFieldSpec,
+                Col.browser.field,
+                Col.category.field,
+                Col.data.field,
                 {...Col.dateCreated.field as FieldSpec, displayName: 'Timestamp'},
-                Col.day.field as CubeFieldSpec,
-                Col.device.field as CubeFieldSpec,
-                Col.elapsed.field as CubeFieldSpec,
-                Col.entryCount.field as CubeFieldSpec,
-                Col.impersonating.field as CubeFieldSpec,
-                Col.msg.field as CubeFieldSpec,
-                Col.userAgent.field as CubeFieldSpec,
-                Col.username.field as CubeFieldSpec,
+                Col.day.field,
+                Col.dayRange.field,
+                Col.device.field,
+                Col.elapsed.field,
+                Col.entryCount.field,
+                Col.impersonating.field,
+                Col.msg.field,
+                Col.userAgent.field,
+                Col.username.field,
                 {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
                 {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'}
-            ]
+            ] as CubeFieldSpec[]
         });
 
         this.groupingChooserModel = new GroupingChooserModel({
@@ -162,7 +163,7 @@ export class ActivityTrackingModel extends HoistModel {
                 {...Col.userAgent, hidden},
                 {...Col.impersonating, hidden},
                 {...Col.elapsed, headerName: 'Elapsed (avg)', hidden},
-                {...Col.dateRange, hidden},
+                {...Col.dayRange, hidden},
                 {...Col.entryCount},
                 {field: 'count', hidden}
             ]
@@ -203,6 +204,7 @@ export class ActivityTrackingModel extends HoistModel {
             data.forEach(it => {
                 it.day = LocalDate.from(it.day);
                 it.month = it.day.format(this._monthFormat);
+                it.dayRange = {min: it.day, max: it.day};
             });
 
             await cube.loadDataAsync(data);
@@ -291,8 +293,8 @@ export class ActivityTrackingModel extends HoistModel {
         if (rawVal == null) return null;
 
         switch (dim) {
-            // Days are min/max ranges of LocalDates - sort by max date, desc.
-            case 'day': return rawVal.max.timestamp * -1;
+            // Sort date desc by default
+            case 'day': return rawVal.timestamp * -1;
             // Months are formatted "June 2020" strings - sort desc.
             case 'month': return moment(rawVal, this._monthFormat).valueOf() * -1;
             // Everything else can sort with its natural value.

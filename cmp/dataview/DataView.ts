@@ -39,12 +39,12 @@ export const [DataView, dataView] = hoistCmp.withFactory<DataViewProps>({
 });
 
 class DataViewLocalModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @lookup(DataViewModel) model: DataViewModel;
     agOptions: PlainObject;
 
-    onLinked() {
+    override onLinked() {
         const {model} = this;
 
         this.addReaction({
