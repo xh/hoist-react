@@ -268,7 +268,7 @@ export class View extends HoistBase {
         if (includeRoot) {
             newRows = [
                 this.cachedRow(rootId, newRows,
-                    () => new AggregateRow(this, rootId, newRows, null, 'Total', {})
+                    () => new AggregateRow(this, rootId, newRows, null, 'Total', 'Total', {})
                 )
             ];
         } else if (!query.includeLeaves && newRows[0]?.isLeaf) {
@@ -308,15 +308,17 @@ export class View extends HoistBase {
             groups = groupBy(records, (it) => it.data[dimName]);
 
         appliedDimensions = {...appliedDimensions};
-        return map(groups, (groupRecords, val) => {
+        return map(groups, (groupRecords, strVal) => {
+            const val = groupRecords[0].data[dimName],
+                id = rootId + `${dimName}=[${strVal}]`;
+
             appliedDimensions[dimName] = val;
-            const id = rootId + `${dimName}=[${val}]`;
 
             let children = this.groupAndInsertRecords(groupRecords, dimensions.slice(1), id, appliedDimensions, leafMap);
             children = this.bucketRows(children, id, appliedDimensions);
 
             return this.cachedRow(id, children,
-                () => new AggregateRow(this, id, children, dim, val, appliedDimensions)
+                () => new AggregateRow(this, id, children, dim, val, strVal, appliedDimensions)
             );
         });
     }

@@ -3,14 +3,20 @@
 ## v56.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-
 * `DashCanvas` enhancements:
     * Views now support minimum and maximum dimensions.
     * Views now expose an `allowDuplicate` flag for controlling the `Duplicate` menu item visibility.
 
+### 🐞 Bug Fixes
+* Fixed a bug with Cube views having dimensions containing non-string or `null` values.  Rows grouped
+by these dimensions would report values for the dimension which were incorrectly stringified (e.g.
+`null` vs. `'null'` or `'5'` vs. `5`).  This has been fixed.  Note that the stringified value is
+still reported for the rows' `cubeLabel` value, and will be used for the purposes of grouping.
+
 ### ⚙️ Typescript API Adjustments
 
 * Improved signatures of `RestStore` APIs.
+
 
 ## v55.1.0 - 2023-02-09
 
