@@ -2,6 +2,12 @@
 
 ## v56.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `DashCanvas` enhancements:
+    * Views now support minimum and maximum dimensions.
+    * Views now expose an `allowDuplicate` flag for controlling the `Duplicate` menu item visibility.
+
 ### ⚙️ Typescript API Adjustments
 
 * Improved signatures of `RestStore` APIs.
