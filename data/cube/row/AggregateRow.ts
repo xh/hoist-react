@@ -25,7 +25,7 @@ export class AggregateRow extends BaseRow {
         children: BaseRow[],
         dim: CubeField,
         val: any,
-        strVal: any,
+        strVal: string,
         appliedDimensions: PlainObject
     ) {
         super(view, id);
