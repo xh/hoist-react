@@ -4,9 +4,9 @@
 
 ### 🐞 Bug Fixes
 * Fixed a bug with Cube views having dimensions containing non-string or `null` values.  Rows grouped
-by these dimensions would report values for the dimension which were incorrectly stringfied (e.g.
+by these dimensions would report values for the dimension which were incorrectly stringified (e.g.
 `null` vs. `'null'` or `'5'` vs. `5`).  This has been fixed.  Note that the stringified value is
-still reported for the rows `cubeLabel` value, and will be used for the purposes of grouping.
+still reported for the rows' `cubeLabel` value, and will be used for the purposes of grouping.
 
 ## v55.1.0 - 2023-02-09
 
