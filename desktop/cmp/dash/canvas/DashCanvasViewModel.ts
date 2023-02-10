@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {DashViewConfig, DashViewModel} from '../DashViewModel';
 import '@xh/hoist/desktop/register';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -13,7 +14,10 @@ import {ReactNode} from 'react';
 /**
  * Model for a content item within a DashCanvas.
  */
-export class DashCanvasViewModel extends DashViewModel {
+export class DashCanvasViewModel extends DashViewModel<DashCanvasViewSpec> {
+
+    /** True (default) to allow duplicating the view. */
+    @observable allowDuplicate: boolean;
 
     /** Hide the Header Panel for the view? Default false. */
     @observable hidePanelHeader: boolean;
@@ -29,9 +33,10 @@ export class DashCanvasViewModel extends DashViewModel {
 
     ref = createObservableRef<HTMLElement>();
 
-    constructor(cfg: DashViewConfig) {
+    constructor(cfg: DashViewConfig<DashCanvasViewSpec>) {
         super(cfg);
         makeObservable(this);
+        this.allowDuplicate = cfg.viewSpec.allowDuplicate ?? true;
         this.hidePanelHeader = !!cfg.viewSpec.hidePanelHeader;
         this.hideMenuButton = !!cfg.viewSpec.hideMenuButton;
         this.autoHeight = !!cfg.viewSpec.autoHeight;

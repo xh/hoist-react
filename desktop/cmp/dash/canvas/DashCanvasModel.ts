@@ -101,10 +101,19 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
     private isLoadingState: boolean;
 
     get rglLayout() {
-        return this.layout.map(it => ({
-            ...it,
-            resizeHandles: this.getView(it.i).autoHeight ? ['e'] : ['e', 's', 'se']
-        }));
+        return this.layout.map(it => {
+            const dashCanvasView = this.getView(it.i),
+                {autoHeight, viewSpec} = dashCanvasView;
+
+            return {
+                ...it,
+                resizeHandles: autoHeight ? ['e'] : ['e', 's', 'se'],
+                maxH: viewSpec.maxHeight,
+                minH: viewSpec.minHeight,
+                maxW: viewSpec.maxWidth,
+                minW: viewSpec.minWidth
+            };
+        });
     }
 
     constructor({
@@ -135,6 +144,7 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
                 omit: false,
                 unique: false,
                 allowAdd: true,
+                allowDuplicate: true,
                 allowRemove: true,
                 allowRename: true,
                 height: 5,
@@ -339,8 +349,8 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
             prevLayout = previousViewId ? this.getViewLayout(previousViewId) : null,
             x = prevLayout?.x ?? layout?.x ?? 0,
             y = prevLayout?.y ?? layout?.y ?? this.rows,
-            h = layout?.h ?? viewSpec.height ?? 1,
-            w = layout?.w ?? viewSpec.width ?? 1;
+            h = layout?.h ?? viewSpec.height ?? viewSpec.minHeight ?? 1,
+            w = layout?.w ?? viewSpec.width ?? viewSpec.minWidth ?? 1;
 
         this.setLayout([...this.layout, {i: id, x, y, h, w}]);
         this.viewModels = [...this.viewModels, model];
