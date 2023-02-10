@@ -10,6 +10,7 @@ import {
     Cube,
     CubeField,
     Filter,
+    FilterLike,
     Query,
     QueryConfig,
     Store,
@@ -17,15 +18,14 @@ import {
     StoreRecordId
 } from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {throwIf, logWithDebug} from '@xh/hoist/utils/js';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
-import {castArray, forEach, groupBy, isEmpty, isNil, map, find} from 'lodash';
+import {logWithDebug, throwIf} from '@xh/hoist/utils/js';
+import {castArray, find, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
-
 import {AggregateRow} from './row/AggregateRow';
+import {BaseRow} from './row/BaseRow';
 import {BucketRow} from './row/BucketRow';
 import {LeafRow} from './row/LeafRow';
-import {BaseRow} from './row/BaseRow';
 
 export interface ViewConfig {
     /** Query to be used to construct this view. */
@@ -177,7 +177,7 @@ export class View extends HoistBase {
     }
 
     /** Update the filter on the current Query.*/
-    setFilter(filter: Filter) {
+    setFilter(filter: FilterLike) {
         this.updateQuery({filter});
     }
 
