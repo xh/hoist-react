@@ -1,6 +1,6 @@
 # Changelog
 
-## v56.0.0-SNAPSHOT - unreleased
+## v56.2.0 - 2023-02-10
 
 ### 🎁 New Features
 * `DashCanvas` enhancements:
