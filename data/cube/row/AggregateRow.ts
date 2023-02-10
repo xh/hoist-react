@@ -25,6 +25,7 @@ export class AggregateRow extends BaseRow {
         children: BaseRow[],
         dim: CubeField,
         val: any,
+        strVal: any,
         appliedDimensions: PlainObject
     ) {
         super(view, id);
@@ -32,7 +33,7 @@ export class AggregateRow extends BaseRow {
 
         this.dim = dim;
         this.dimName = dimName;
-        this.data.cubeLabel = val;
+        this.data.cubeLabel = strVal;
         this.data.cubeDimension = dimName;
 
         this.initAggregate(children, dimName, val, appliedDimensions);
