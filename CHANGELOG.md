@@ -2,27 +2,33 @@
 
 ## v56.0.0-SNAPSHOT - unreleased
 
+Coming soon...
+
+## v55.2.0 - 2023-02-10
+
 ### 🎁 New Features
+
 * `DashCanvas` enhancements:
     * Views now support minimum and maximum dimensions.
-    * Views now expose an `allowDuplicate` flag for controlling the `Duplicate` menu item visibility.
+    * Views now expose an `allowDuplicate` flag for controlling the `Duplicate` menu item
+      visibility.
 
 ### 🐞 Bug Fixes
-* Fixed a bug with Cube views having dimensions containing non-string or `null` values.  Rows grouped
-by these dimensions would report values for the dimension which were incorrectly stringified (e.g.
-`null` vs. `'null'` or `'5'` vs. `5`).  This has been fixed.  Note that the stringified value is
-still reported for the rows' `cubeLabel` value, and will be used for the purposes of grouping.
+
+* Fixed a bug with Cube views having dimensions containing non-string or `null` values. Rows grouped
+  by these dimensions would report values for the dimension which were incorrectly stringified (e.g.
+  `null` vs. `'null'` or `'5'` vs. `5`). This has been fixed. Note that the stringified value is
+  still reported for the rows' `cubeLabel` value, and will be used for the purposes of grouping.
 
 ### ⚙️ Typescript API Adjustments
 
 * Improved signatures of `RestStore` APIs.
 
-
 ## v55.1.0 - 2023-02-09
 
-Version 55 is the first major update of the toolkit after our transition to typescript.  In addition
+Version 55 is the first major update of the toolkit after our transition to typescript. In addition
 to a host of runtime fixes and features, it also contains a good number of important typescript
-typing adjustments, which are listed below.  In also includes a helpful
+typing adjustments, which are listed below. In also includes a helpful
 [Typescript upgrade guide](https://github.com/xh/hoist-react/blob/develop/docs/upgrade-to-typescript.md).
 
 ### 🎁 New Features
@@ -30,26 +36,29 @@ typing adjustments, which are listed below.  In also includes a helpful
 * Grid exports can now be tracked in the admin activity tab by setting `exportOptions.track` to
   true (defaults to false).
 * Miscellaneous performance improvements to the cube package
-* The implementation of the `Cube.omitFn` feature has been enhanced.  This function will now be
-  called on *all* non-leaf nodes, not just single child nodes.  This allows for more flexible
+* The implementation of the `Cube.omitFn` feature has been enhanced. This function will now be
+  called on *all* non-leaf nodes, not just single child nodes. This allows for more flexible
   editing of the shape of the resulting hierarchical data emitted by cube views.
 
 ### 🐞 Bug Fixes
+
 * Fixed: grid cell editors would drop a single character edit.
 * Fixed: grid date input editor's popup did not position correctly in a grid with pinned columns.
 * Fixed issue with `DashContainer` flashing its "empty" text briefly before loading.
 * Several Hoist TypeScript types, interfaces, and signatures have been improved or corrected (typing
   changes only).
 * Fix bug where a `className` provided to a `Panel` with `modalSupport` would be dropped when in a
-  modal state. Note this necessitated an additional layer in the `Panel` DOM hierarchy.  Highly
+  modal state. Note this necessitated an additional layer in the `Panel` DOM hierarchy. Highly
   specific CSS selectors may be affected.
 * Fix bug where `TileFrame` would not pass through the keys of its children.
 
 ### 💥 Breaking Changes
-* The semantics of `Cube.omitFn` have changed such that it will now be called on all aggregate nodes,
+
+* The semantics of `Cube.omitFn` have changed such that it will now be called on all aggregate
+  nodes,
   not just nodes with a single child. Applications may need to adjust any implementation of this
   function accordingly.
-*  `hoistCmp.containerFactory` and `hoistCmp.withContainerFactory` are removed in favor of
+* `hoistCmp.containerFactory` and `hoistCmp.withContainerFactory` are removed in favor of
   the basic `hoistCmp.factory` and `hoistCmp.withFactory` respectively. See typescript
   API adjustments below.
 
@@ -57,9 +66,10 @@ typing adjustments, which are listed below.  In also includes a helpful
 
 The following Typescript API were adjusted in v55.
 
-* Removed the distinction between `StandardElementFactory` and `ContainerElementFactory`.  This
+* Removed the distinction between `StandardElementFactory` and `ContainerElementFactory`. This
   distinction was deemed to be unnecessary, and overcomplicated the understanding of Hoist.
-  Applications should simply continue to use `ElementFactory` instead.  `hoistCmp.containerFactory` and
+  Applications should simply continue to use `ElementFactory` instead.  `hoistCmp.containerFactory`
+  and
   `hoistCmp.withContainerFactory` are also removed in favor of the basic `hoistCmp.factory` and
   `hoistCmp.withFactory` respectively.
 
@@ -71,7 +81,6 @@ The following Typescript API were adjusted in v55.
 **Note** that we do not intend to make such extensive Typescript changes going forward post-v55.0.
 These changes were deemed critical and worth adjusting in our first typescript update, and before
 typescript has been widely adopted in production Hoist apps.
-
 
 ### ⚙️ Technical
 
