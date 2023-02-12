@@ -6,6 +6,7 @@
  */
 
 import {LoadSupport} from './';
+import {PlainObject} from '../types/Types';
 
 /**
  * Object describing a load/refresh request in Hoist.
@@ -46,7 +47,7 @@ export class LoadSpec {
     owner: LoadSupport;
 
     /** Application specific information about the load request */
-    meta: object;
+    meta: PlainObject;
 
     /** True if a more recent request to load this object's owner has *started*. */
     get isStale(): boolean {
