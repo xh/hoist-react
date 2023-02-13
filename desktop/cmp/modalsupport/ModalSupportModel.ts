@@ -15,6 +15,7 @@ export interface ModalSupportConfig {
     height?: string|number;
     defaultModal?: boolean;
     canOutsideClickClose?: boolean;
+    enforceFocus?: boolean;
 }
 
 /**
@@ -30,6 +31,7 @@ export class ModalSupportModel extends HoistModel {
     width: string|number;
     height: string|number;
     canOutsideClickClose: boolean;
+    enforceFocus: boolean;
 
     inlineRef = createObservableRef<HTMLElement>();
     modalRef = createObservableRef<HTMLElement>();
@@ -39,7 +41,8 @@ export class ModalSupportModel extends HoistModel {
         width = '90vw',
         height = '90vh',
         defaultModal = false,
-        canOutsideClickClose = true
+        canOutsideClickClose = true,
+        enforceFocus = true
     }: ModalSupportConfig = {}) {
         super();
         makeObservable(this);
@@ -48,6 +51,7 @@ export class ModalSupportModel extends HoistModel {
         this.height = height;
         this.isModal = defaultModal;
         this.canOutsideClickClose = canOutsideClickClose;
+        this.enforceFocus = enforceFocus;
 
         const {inlineRef, modalRef, hostNode} = this;
         this.addReaction({

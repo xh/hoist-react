@@ -16,7 +16,7 @@ import {ModalSupportModel} from './ModalSupportModel';
 
 /**
  * A ModalSupport container provides the ability for its child component to expand into a modal
- * state, without requiring its contents to re-render.  All of the child component's state is
+ * state, without requiring its contents to re-render.  All the child component's state is
  * preserved when toggling between inline and modal views.
  *
  * State and DOM refs are managed via a ModalSupportModel, which must be provided.
@@ -68,11 +68,12 @@ const modalContainer = hoistCmp.factory<ModalSupportModel>({
     render({model}) {
         if (!model.isModal) return null;
 
-        const {width, height, canOutsideClickClose} = model;
+        const {width, height, canOutsideClickClose, enforceFocus} = model;
         return dialog({
             className: 'xh-modal-support__modal',
             style: {width, height},
             canOutsideClickClose,
+            enforceFocus,
             isOpen: true,
             onClose: () => model.toggleIsModal(),
             item: box({
