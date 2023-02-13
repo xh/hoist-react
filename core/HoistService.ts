@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistBase, managed, LoadSupport, LoadSpec, Loadable} from './';
+import {HoistBase, managed, LoadSupport, LoadSpec, Loadable, PlainObject} from './';
 
 /**
  * Core superclass for Services in Hoist. Services are special classes used in both Hoist and
@@ -64,12 +64,12 @@ export class HoistService extends HoistBase implements Loadable {
     @managed
     loadSupport: LoadSupport;
 
-    get loadModel()                         {return this.loadSupport?.loadModel}
-    get lastLoadRequested()                 {return this.loadSupport?.lastLoadRequested}
-    get lastLoadCompleted()                 {return this.loadSupport?.lastLoadCompleted}
-    get lastLoadException()                 {return this.loadSupport?.lastLoadException}
-    async refreshAsync(meta?: object)       {return this.loadSupport?.refreshAsync(meta)}
-    async autoRefreshAsync(meta?: object)   {return this.loadSupport?.autoRefreshAsync(meta)}
+    get loadModel()                             {return this.loadSupport?.loadModel}
+    get lastLoadRequested()                     {return this.loadSupport?.lastLoadRequested}
+    get lastLoadCompleted()                     {return this.loadSupport?.lastLoadCompleted}
+    get lastLoadException()                     {return this.loadSupport?.lastLoadException}
+    async refreshAsync(meta?: PlainObject)      {return this.loadSupport?.refreshAsync(meta)}
+    async autoRefreshAsync(meta?: PlainObject)  {return this.loadSupport?.autoRefreshAsync(meta)}
     async doLoadAsync(loadSpec: LoadSpec) {}
     async loadAsync(loadSpec?: LoadSpec|Partial<LoadSpec>) {
         return this.loadSupport?.loadAsync(loadSpec);

@@ -6,7 +6,7 @@
  */
 import {forOwn, has, isFunction} from 'lodash';
 import {warnIf} from '@xh/hoist/utils/js';
-import {DefaultHoistProps, HoistBase, managed} from '../';
+import {DefaultHoistProps, HoistBase, managed, PlainObject} from '../';
 import {ModelSelector} from './';
 import {LoadSupport, LoadSpec, Loadable} from '../load';
 import {observable, action, makeObservable} from '@xh/hoist/mobx';
@@ -94,12 +94,12 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     @managed
     loadSupport: LoadSupport;
 
-    get loadModel()                         {return this.loadSupport?.loadModel}
-    get lastLoadRequested()                 {return this.loadSupport?.lastLoadRequested}
-    get lastLoadCompleted()                 {return this.loadSupport?.lastLoadCompleted}
-    get lastLoadException()                 {return this.loadSupport?.lastLoadException}
-    async refreshAsync(meta?: object)       {return this.loadSupport?.refreshAsync(meta)}
-    async autoRefreshAsync(meta?: object)   {return this.loadSupport?.autoRefreshAsync(meta)}
+    get loadModel()                             {return this.loadSupport?.loadModel}
+    get lastLoadRequested()                     {return this.loadSupport?.lastLoadRequested}
+    get lastLoadCompleted()                     {return this.loadSupport?.lastLoadCompleted}
+    get lastLoadException()                     {return this.loadSupport?.lastLoadException}
+    async refreshAsync(meta?: PlainObject)      {return this.loadSupport?.refreshAsync(meta)}
+    async autoRefreshAsync(meta?: PlainObject)  {return this.loadSupport?.autoRefreshAsync(meta)}
     async doLoadAsync(loadSpec: LoadSpec) {}
     async loadAsync(loadSpec?: LoadSpec|Partial<LoadSpec>) {
         return this.loadSupport?.loadAsync(loadSpec);
