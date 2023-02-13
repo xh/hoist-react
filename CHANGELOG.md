@@ -2,7 +2,9 @@
 
 ## v56.0.0-SNAPSHOT - unreleased
 
-Coming soon...
+### 🎁 New Features
+
+* `ModalSupportModel` now accepts `enforceFocus` flag (default: `true`).
 
 ## v55.2.0 - 2023-02-10
 
