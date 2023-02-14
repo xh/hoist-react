@@ -37,10 +37,9 @@ export interface ExceptionHandlerOptions {
     showAlert?: boolean;
 
     /**
-     * If `showAlert`, which type of alert to display.
-     * Valid options are 'dialog'|'toast'. Defaults to ExceptionHandler.ALERT_TYPE.
+     * If `showAlert`, which type of alert to display. Defaults to ExceptionHandler.ALERT_TYPE.
      */
-    alertType?: string;
+    alertType?: 'dialog'|'toast';
 
     /**
      * Force user to fully refresh the app in order to dismiss - default false, excepting
@@ -80,9 +79,8 @@ export class ExceptionHandler {
 
     /**
      * Default type of alert to use to display exceptions with `showAlert`.
-     * Valid options are 'dialog'|'toast'.
      */
-    static ALERT_TYPE: string = 'dialog';
+    static ALERT_TYPE: 'dialog'|'toast' = 'dialog';
 
     /**
      * Default props provided to toast, when alert type is 'toast'
