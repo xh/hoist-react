@@ -7,27 +7,27 @@
 import {ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {HoistInputProps} from '@xh/hoist/cmp/input';
 import {PlainObject} from '@xh/hoist/core';
+import {FieldFilterOperator, parseFilter, View} from '@xh/hoist/data';
 import {
     BaseFilterFieldSpec,
     BaseFilterFieldSpecConfig
 } from '@xh/hoist/data/filter/BaseFilterFieldSpec';
-import {FieldFilterOperator, parseFilter, View} from '@xh/hoist/data';
 import {castArray, compact, flatten, isDate, isEmpty, uniqBy} from 'lodash';
 import {GridFilterModel} from './GridFilterModel';
 
-
 export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
-    /** GridFilterModel instance which owns this fieldSpec. */
+    /** GridFilterModel instance owning this fieldSpec. */
     filterModel?: GridFilterModel;
+
     /**
-     * function returning a formatted string for each value in this values filter display.
+     * Function returning a formatted string for each value in this values filter display.
      * If not provided, the Column's renderer will be used.
      */
     renderer?: ColumnRenderer;
 
     /**
-     * Props to pass through to the HoistInput components used on the custom filter tab. Note
-     * that the HoistInput component used is decided by fieldType.
+     * Props to pass through to the HoistInput components used on the custom filter tab.
+     * Note that the HoistInput component used is decided by fieldType.
      */
     inputProps?: HoistInputProps;
 
@@ -36,8 +36,8 @@ export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
 }
 
 /**
- * Apps should NOT instantiate this class directly. Provide a config for this object
- * to the GridModel's `filterModel` property instead.
+ * Apps should NOT instantiate this class directly.
+ * Instead, provide a config for this object to the GridModel's `filterModel` config.
  */
 export class GridFilterFieldSpec extends BaseFilterFieldSpec {
 
@@ -53,7 +53,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
         inputProps,
         defaultOp,
         ...rest
-    }:GridFilterFieldSpecConfig) {
+    }: GridFilterFieldSpecConfig) {
         super(rest);
 
         this.filterModel = filterModel;
@@ -106,9 +106,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
         this.valueCount = allValues.length;
     }
 
-    /**
-     * Recursively modify a Filter|CompoundFilter to remove all FieldFilters that reference this column
-     */
+    // Recursively modify a Filter|CompoundFilter to remove all FieldFilters referencing this column
     cleanFilter(filter) {
         if (!filter) return filter;
 
