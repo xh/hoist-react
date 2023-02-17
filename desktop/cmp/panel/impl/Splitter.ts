@@ -15,7 +15,7 @@ export const splitter = hoistCmp.factory({
     displayName: 'Splitter',
     model: false,
 
-    render() {
+    render(_, ref) {
         const panelModel = useContextModel(PanelModel),
             {vertical, collapsed, contentFirst, showSplitterCollapseButton, collapsible} = panelModel,
             directions = vertical ? ['panelCollapseToggleUp', 'panelCollapseToggleDown'] : ['panelCollapseToggleLeft', 'panelCollapseToggleRight'],
@@ -30,7 +30,8 @@ export const splitter = hoistCmp.factory({
                     icon: Icon[chevron](),
                     onClick: () => panelModel.toggleCollapsed(),
                     omit: !showSplitterCollapseButton || !collapsible
-                })
+                }),
+                ref
             };
 
         return cmp(cfg);

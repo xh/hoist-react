@@ -155,7 +155,7 @@ export class DraggerModel extends HoistModel {
 
     private getDraggableSplitter() {
         // clone .xh-resizable-splitter to get its styling
-        const splitter = this.panelEl.querySelector('.xh-resizable-splitter'),
+        const splitter = this.componentProps.splitterRef.current,
             ret = splitter.cloneNode();
 
         ret.style.position = 'absolute';
