@@ -155,8 +155,8 @@ export class DraggerModel extends HoistModel {
 
     private getDraggableSplitter() {
         // clone .xh-resizable-splitter to get its styling
-        const splitter = this.panelEl.querySelector('.xh-resizable-splitter'),
-            ret = splitter.cloneNode();
+        const splitter = this.panelModel.splitterRef.current,
+            ret = splitter.cloneNode() as HTMLDivElement;
 
         ret.style.position = 'absolute';
         ret.style.display = 'none'; // display = none needed to prevent flash

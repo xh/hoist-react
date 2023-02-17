@@ -159,6 +159,7 @@ export class PanelModel extends HoistModel {
     // Implementation
     //-----------------
     _resizeRef;
+    splitterRef = createRef<HTMLDivElement>();
 
     constructor({
         collapsible = true,

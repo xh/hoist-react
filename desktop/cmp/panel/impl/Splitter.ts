@@ -30,7 +30,8 @@ export const splitter = hoistCmp.factory({
                     icon: Icon[chevron](),
                     onClick: () => panelModel.toggleCollapsed(),
                     omit: !showSplitterCollapseButton || !collapsible
-                })
+                }),
+                ref: panelModel.splitterRef
             };
 
         return cmp(cfg);

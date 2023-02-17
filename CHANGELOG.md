@@ -4,6 +4,10 @@
 
 Coming soon...
 
+### 🐞 Bug Fixes
+
+* Fixed a bug where the splitter in a draggable `Panel` could be rendered incorrectly while dragging
+
 ## v55.2.0 - 2023-02-10
 
 ### 🎁 New Features
