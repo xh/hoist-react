@@ -1,12 +1,10 @@
 # Changelog
 
-## v56.0.0-SNAPSHOT - unreleased
-
-Coming soon...
+## v55.2.1 - 2023-02-24
 
 ### 🐞 Bug Fixes
 
-* Fixed a bug where the splitter in a draggable `Panel` could be rendered incorrectly while dragging
+* Fixed issue where a resizable `Panel` splitter could be rendered incorrectly while dragging.
 
 ## v55.2.0 - 2023-02-10
 
@@ -21,7 +19,7 @@ Coming soon...
 
 * Fixed a bug with Cube views having dimensions containing non-string or `null` values. Rows grouped
   by these dimensions would report values for the dimension which were incorrectly stringified (e.g.
-  `null` vs. `'null'` or `'5'` vs. `5`). This has been fixed. Note that the stringified value is
+  `'null'` vs. `null` or `'5'` vs. `5`). This has been fixed. Note that the stringified value is
   still reported for the rows' `cubeLabel` value, and will be used for the purposes of grouping.
 
 ### ⚙️ Typescript API Adjustments
@@ -30,16 +28,16 @@ Coming soon...
 
 ## v55.1.0 - 2023-02-09
 
-Version 55 is the first major update of the toolkit after our transition to typescript. In addition
-to a host of runtime fixes and features, it also contains a good number of important typescript
-typing adjustments, which are listed below. In also includes a helpful
+Version 55 is the first major update of the toolkit after our transition to Typescript. In addition
+to a host of runtime fixes and features, it also contains a good number of important Typescript
+typing adjustments, which are listed below. It also includes a helpful
 [Typescript upgrade guide](https://github.com/xh/hoist-react/blob/develop/docs/upgrade-to-typescript.md).
 
 ### 🎁 New Features
 
 * Grid exports can now be tracked in the admin activity tab by setting `exportOptions.track` to
   true (defaults to false).
-* Miscellaneous performance improvements to the cube package
+* Miscellaneous performance improvements to the cube package.
 * The implementation of the `Cube.omitFn` feature has been enhanced. This function will now be
   called on *all* non-leaf nodes, not just single child nodes. This allows for more flexible
   editing of the shape of the resulting hierarchical data emitted by cube views.
@@ -59,9 +57,8 @@ typing adjustments, which are listed below. In also includes a helpful
 ### 💥 Breaking Changes
 
 * The semantics of `Cube.omitFn` have changed such that it will now be called on all aggregate
-  nodes,
-  not just nodes with a single child. Applications may need to adjust any implementation of this
-  function accordingly.
+  nodes, not just nodes with a single child. Applications may need to adjust any implementation of
+  this function accordingly.
 * `hoistCmp.containerFactory` and `hoistCmp.withContainerFactory` are removed in favor of
   the basic `hoistCmp.factory` and `hoistCmp.withFactory` respectively. See typescript
   API adjustments below.
@@ -72,14 +69,11 @@ The following Typescript API were adjusted in v55.
 
 * Removed the distinction between `StandardElementFactory` and `ContainerElementFactory`. This
   distinction was deemed to be unnecessary, and overcomplicated the understanding of Hoist.
-  Applications should simply continue to use `ElementFactory` instead.  `hoistCmp.containerFactory`
-  and
-  `hoistCmp.withContainerFactory` are also removed in favor of the basic `hoistCmp.factory` and
+  Applications should simply continue to use `ElementFactory` instead. `hoistCmp.containerFactory`
+  and `hoistCmp.withContainerFactory` are also removed in favor of the basic `hoistCmp.factory` and
   `hoistCmp.withFactory` respectively.
-
 * `HoistProps.modelConfig` now references the type declaration of `HoistModel.config`. See
   `PanelModel` and `TabContainerModel` for examples.
-
 * The new `SelectOption` type has been made multi-platform and moved to `@xh/hoist/core`.
 
 **Note** that we do not intend to make such extensive Typescript changes going forward post-v55.0.
