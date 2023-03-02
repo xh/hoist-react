@@ -90,7 +90,7 @@ export class TabModel extends HoistModel {
     @bindable.ref icon: ReactElement;
     @bindable.ref tooltip: ReactNode;
     @observable disabled: boolean;
-    excludeFromSwitcher: boolean;
+    @bindable excludeFromSwitcher: boolean;
     showRemoveAction: boolean;
     content: Content;
 

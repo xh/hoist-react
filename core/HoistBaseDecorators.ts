@@ -6,7 +6,7 @@
 */
 import {PersistenceProvider, PersistOptions, HoistBaseClass} from './';
 
-import {cloneDeep, isUndefined} from 'lodash';
+import {isUndefined} from 'lodash';
 import {wait} from '../promise';
 import {throwIf} from '../utils/js';
 
@@ -75,7 +75,7 @@ function createPersistDescriptor(target: HoistBaseClass, property: string, descr
         try {
             const persistWith = {path: property, ...this.persistWith, ...options},
                 provider = this.markManaged(PersistenceProvider.create(persistWith));
-            providerState = cloneDeep(provider.read());
+            providerState = structuredClone(provider.read());
             wait().then(() => {
                 this.addReaction({
                     track: () => this[property],
