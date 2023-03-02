@@ -13,7 +13,7 @@ import {numberRenderer} from '@xh/hoist/format';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {ReactNode} from 'react';
-import {cloneDeep, get, isEmpty, isFinite, max, set, sortBy, sumBy, unset} from 'lodash';
+import {get, isEmpty, isFinite, max, set, sortBy, sumBy, unset} from 'lodash';
 
 /**
  * Core Model for a TreeMap.
@@ -442,7 +442,7 @@ export class TreeMapModel extends HoistModel {
 
     toggleNodeExpanded(treePath) {
         const {gridModel} = this,
-            expandState = cloneDeep(gridModel.expandState);
+            expandState = structuredClone(gridModel.expandState);
 
         if (get(expandState, treePath)) {
             unset(expandState, treePath);
