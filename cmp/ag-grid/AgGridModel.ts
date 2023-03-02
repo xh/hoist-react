@@ -389,7 +389,7 @@ export class AgGridModel extends HoistModel {
         const {agColumnApi} = this,
             validColIds = [
                 AgGridModel.AUTO_GROUP_COL_ID,
-                ...agColumnApi.getAllColumns().map(it => it.colId)
+                ...agColumnApi.getColumns().map(it => it.colId)
             ];
 
         let {isPivot, columns} = colState;
