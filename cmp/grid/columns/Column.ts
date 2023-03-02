@@ -537,7 +537,7 @@ export class Column {
         // Extract deprecated properties from rest. All other properties in rest are unsupported.
         const {tooltipElement, ...unsupported} = rest as any;
         if (tooltipElement) {
-            apiDeprecated('Column.tooltipElement', {msg: 'Use `tooltip` instead', v: 'v56'});
+            apiDeprecated('Column.tooltipElement', {msg: 'Use `tooltip` instead', v: 'v57'});
         }
 
         this.field = this.parseField(field);
