@@ -4,17 +4,17 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
+import {HoistModel, PlainObject, Some} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {castArray, cloneDeep, merge} from 'lodash';
+import {castArray, merge} from 'lodash';
 
 interface ChartConfig {
 
     /** The initial highchartsConfig for this chart. */
-    highchartsConfig: any;
+    highchartsConfig: PlainObject;
 
     /** The initial data series to be displayed. */
-    series?: any|any[];
+    series?: Some<any>;
 
     /** True to showContextMenu.  Defaults to true.  Desktop only. */
     showContextMenu?: boolean;
@@ -29,10 +29,10 @@ interface ChartConfig {
 export class ChartModel extends HoistModel {
 
     @observable.ref
-    highchartsConfig = {};
+    highchartsConfig: PlainObject = {};
 
     @observable.ref
-    series = [];
+    series: any[] = [];
 
     showContextMenu: boolean;
 
@@ -84,7 +84,7 @@ export class ChartModel extends HoistModel {
      */
     @action
     updateHighchartsConfig(update: any) {
-        this.highchartsConfig = merge(cloneDeep(this.highchartsConfig), update);
+        this.highchartsConfig = merge(structuredClone(this.highchartsConfig), update);
     }
 
     /** @param series - one or more data series to be charted. */

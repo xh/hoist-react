@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {containerElementFactory, XH} from '@xh/hoist/core';
+import {elementFactory, XH} from '@xh/hoist/core';
 import {Component} from 'react';
 
 /**
@@ -20,12 +20,12 @@ export class ErrorBoundary extends Component {
         this.state = {caughtError: null, onError: props.onError};
     }
 
-    render() {
+    override render() {
         // @ts-ignore
         return this.state.caughtError ? 'An error occurred while rendering this Component.' : this.props.children ?? null;
     }
 
-    componentDidCatch(e, info) {
+    override componentDidCatch(e, info) {
         XH.handleException(e, {requireReload: true});
     }
 
@@ -33,4 +33,4 @@ export class ErrorBoundary extends Component {
         return {caughtError: e};
     }
 }
-export const errorBoundary = containerElementFactory(ErrorBoundary);
+export const errorBoundary = elementFactory(ErrorBoundary);

@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH, Exception, PlainObject} from '@xh/hoist/core';
+import {HoistService, XH, Exception, PlainObject, Thunkable} from '@xh/hoist/core';
 import {isLocalDate, SECONDS, ONE_MINUTE, olderThan} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
@@ -46,7 +46,7 @@ export class FetchService extends HoistService {
      * Set default headers to be sent with all subsequent requests.
      * @param headers - to be sent with all fetch requests, or a function to generate.
      */
-    setDefaultHeaders(headers: PlainObject|(()=>PlainObject)) {
+    setDefaultHeaders(headers: Thunkable<PlainObject>) {
         this.defaultHeaders = headers;
     }
 

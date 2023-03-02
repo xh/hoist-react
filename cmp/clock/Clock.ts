@@ -59,7 +59,7 @@ export const [Clock, clock] = hoistCmp.withFactory<ClockProps>({
 });
 
 class ClockLocalModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     offset;
     offsetException;
@@ -72,7 +72,7 @@ class ClockLocalModel extends HoistModel {
         makeObservable(this);
     }
 
-    onLinked() {
+    override onLinked() {
         this.addReaction({
             track: () => this.componentProps.timeZone,
             run: () => this.loadTimezoneOffsetAsync(),

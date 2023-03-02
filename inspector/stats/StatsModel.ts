@@ -8,9 +8,9 @@ import {fmtDate, numberRenderer} from '@xh/hoist/format';
  * Displays a small grid/chart combo with a timeseries of the app's model count and memory usage.
  */
 export class StatsModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
-    persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.stats`};
+    override persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.stats`};
 
     panelModel: PanelModel;
     gridModel: GridModel;

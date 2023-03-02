@@ -13,7 +13,7 @@ import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/
 import {castArray, difference, isEmpty, partition, uniq, without} from 'lodash';
 
 export class ValuesTabModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     headerFilterModel: ColumnHeaderFilterModel;
 

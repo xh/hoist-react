@@ -58,7 +58,7 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(
     ({model}) => {
         if (model.hideMenuButton) return null;
 
-        const {viewState, viewSpec, id, containerModel, positionParams, title} = model,
+        const {allowDuplicate, viewState, viewSpec, id, containerModel, positionParams, title} = model,
             {contentLocked, renameLocked} = containerModel,
 
             addMenuItems = createViewMenuItems({
@@ -101,7 +101,7 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(
                     {
                         text: 'Duplicate',
                         icon: Icon.copy(),
-                        hidden: contentLocked || viewSpec.unique,
+                        hidden: !allowDuplicate || contentLocked || viewSpec.unique,
                         actionFn: () =>
                             containerModel.addViewInternal(viewSpec.id, {
                                 layout: getDuplicateLayout(positionParams, model),

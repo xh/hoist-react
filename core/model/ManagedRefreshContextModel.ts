@@ -19,7 +19,7 @@ export type ManagedRefreshTarget = Loadable & {isActive: boolean, refreshMode: R
  *  b) A `refreshMode` property, that returns a RefreshMode enum value.
  */
 export class ManagedRefreshContextModel extends RefreshContextModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     model: ManagedRefreshTarget;
     refreshPending: boolean = false;

@@ -18,7 +18,7 @@ export interface LoadingIndicatorProps extends HoistProps {
     /** TaskObserver(s) that should be monitored to determine if the Indicator should be displayed. */
     bind?: Some<TaskObserver>;
     /** Position of the indicator relative to its containing component. */
-    corner: 'tl'|'tr'|'bl'|'br';
+    corner?: 'tl'|'tr'|'bl'|'br';
     /** True to display the indicator. */
     isDisplayed?: boolean;
     /** Max characters allowed in message, after which it will be elided. Default 30. */
@@ -82,7 +82,7 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory<Loading
 class LocalMaskModel extends HoistModel {
     task;
 
-    onLinked() {
+    override onLinked() {
         const {bind} = this.componentProps;
         if (bind) {
             this.task = bind instanceof TaskObserver ?

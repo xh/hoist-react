@@ -130,7 +130,7 @@ export const [CodeInput, codeInput] = hoistCmp.withFactory<CodeInputProps>({
 // Implementation
 //------------------------------
 class CodeInputModel extends HoistInputModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @managed
     modalSupportModel: ModalSupportModel = new ModalSupportModel();
@@ -437,7 +437,7 @@ class CodeInputModel extends HoistInputModel {
         this.matches = [];
     }
 
-    destroy() {
+    override destroy() {
         // Cleanup editor component as per CodeMirror docs.
         if (this.editor) this.editor.toTextArea();
         super.destroy();

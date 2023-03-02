@@ -16,7 +16,7 @@ import {action, observable, makeObservable, bindable} from '@xh/hoist/mobx';
  * @internal
  */
 export class ExceptionDialogModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @observable.ref
     displayData: {exception: any, options: any};

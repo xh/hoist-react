@@ -36,7 +36,7 @@ export interface ButtonGroupInputProps extends
  * The buttons are automatically configured to set this value on click and appear pressed if the
  * ButtonGroupInput's value matches.
  */
-export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withContainerFactory<ButtonGroupInputProps>({
+export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory<ButtonGroupInputProps>({
     displayName: 'ButtonGroupInput',
     className: 'xh-button-group-input',
     render(props, ref) {
@@ -53,16 +53,16 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withContainerFactor
 // Implementation
 //----------------------------------
 class ButtonGroupInputModel extends HoistInputModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     get enableMulti() {return !!this.componentProps.enableMulti}
     get enableClear() {return !!this.componentProps.enableClear}
 
-    blur() {
+    override blur() {
         this.domEl?.blur();
     }
 
-    focus() {
+    override focus() {
         this.domEl?.focus();
     }
 

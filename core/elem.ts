@@ -4,15 +4,15 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {castArray, isNil, isPlainObject} from 'lodash';
+import {castArray, isFunction, isNil, isPlainObject} from 'lodash';
 import {
     createElement as reactCreateElement,
     isValidElement,
     ReactNode,
     ReactElement,
-    JSXElementConstructor, ForwardedRef
+    ForwardedRef, Key
 } from 'react';
-import {PlainObject, Some} from './';
+import {PlainObject, Some, Thunkable} from './types/Types';
 
 
 /**
@@ -50,7 +50,7 @@ export type ElementSpec<P extends PlainObject> = P & {
     item?: Some<ReactNode>;
 
     /** True to exclude the Element. */
-    omit?: boolean;
+    omit?: Thunkable<boolean>;
 
     //-----------------------------------
     // Core React attributes
@@ -59,26 +59,19 @@ export type ElementSpec<P extends PlainObject> = P & {
     ref?: ForwardedRef<any>;
 
     /** React key for this component. */
-    key?: string|number;
+    key?: Key;
 
-    //-----------------------------------------------------
-    // Technical -- Escape support, prevent React Element.
-    //-----------------------------------------------------
+    //----------------------------
+    // Technical -- Escape support
+    //----------------------------
     $items?: any;
     $item?: any;
     $omit?: any;
-    props?: never;
 }
 
-export type ElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
-    StandardElementFactory<P, T> | ContainerElementFactory<P, T>;
-
-export type StandardElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
-    (arg?: ElementSpec<P>) => ReactElement<P, T>;
-
-export type ContainerElementFactory<P = any, T extends string|JSXElementConstructor<P> = any> =
-    ((arg?: ElementSpec<P>) => ReactElement<P, T>) &
-    ((...args: ReactNode[]) => ReactElement<P, T>);
+export type ElementFactory<P = any> =
+    ((...args: ReactNode[]) => ReactElement<P, any>) &
+    ((arg: ElementSpec<P>) => ReactElement<P, any>);
 
 /**
  * Create a React Element from a Component type and an ElementSpec.
@@ -89,14 +82,11 @@ export type ContainerElementFactory<P = any, T extends string|JSXElementConstruc
  * @param type - React Component or string representing an HTML element.
  * @param spec - element spec.
  */
-export function createElement<P=any, T extends string|JSXElementConstructor<any>=any>(
-    type: T,
-    spec: ElementSpec<P>
-): ReactElement<P, T> {
+export function createElement<P=any>(type: any, spec: ElementSpec<P>): ReactElement<P, any> {
     const {omit, item, items, ...props} = spec;
 
     // 1) Convenience omission syntax.
-    if (omit) return null;
+    if (isFunction(omit) ? omit() : omit) return null;
 
     // 2) Read children from item[s] config.
     const itemConfig = item ?? items,
@@ -115,67 +105,26 @@ export function createElement<P=any, T extends string|JSXElementConstructor<any>
 
 /**
  *  Create a factory function that can create a ReactElement from an ElementSpec.
- *  This is the element factory that is appropriate for components that receive a mixture of
- *  children and attributes and should be the one created for most components.
- *
- *  For components that are often provided *only* with children (e.g. container components such as
- *  toolbars, or table cells), see {@link containerElementFactory}.
  */
-export function elementFactory<P=any, T extends string|JSXElementConstructor<any>=any>(
-    type: T
-): StandardElementFactory<P, T> {
+export function elementFactory<P=any>(type: any): ElementFactory<P> {
     const ret = function(...args) {
-        return createElement<P, T>(type, normalizeArgs(args, type, true));
+        return createElement<P>(type, normalizeArgs(args, type));
     };
     ret.isElementFactory = true;
     return ret;
 }
-
-/**
- *  Create a factory function that can create a ReactElement from either an ElementSpec, *OR* an
- *  argument list or array of react nodes (children).  Use this function for components that are
- *  often provided *only* with children (e.g. container components such as toolbars, or table
- *  cells), asit provides a more minimal style
- *
- *  For a simpler alternative that should be used from most components see
- *  {@link elementFactory}
- */
-
-export function containerElementFactory<P=any, T extends string|JSXElementConstructor<any>=any>(
-    type: T
-): ContainerElementFactory<P, T> {
-    const ret = function(...args) {
-        return createElement<P, T>(type, normalizeArgs(args, type, false));
-    };
-    ret.isElementFactory = true;
-    return ret;
-}
-
 
 //------------------------
 // Implementation
 //------------------------
-function normalizeArgs(args: any[], type: any, simple: boolean) {
+function normalizeArgs(args: any[], type: any) {
     const len = args.length;
     if (len === 0) return {};
     if (len === 1) {
         const arg = args[0];
         if (isPlainObject(arg) && !isValidElement(arg)) return arg;
-
-        if (simple) childrenPassedToSimpleFactory(type);
         return {items: arg};
     }
     // Assume > 1 args are children.
-    if (simple) childrenPassedToSimpleFactory(type);
     return {items: args};
-}
-
-function childrenPassedToSimpleFactory(type) {
-    let typeName = type.displayName ?? type.toString(),
-        msg = `Raw react nodes passed to a standard factory for '${typeName}'. ` +
-            'Please call with an ElementSpec object instead.';
-    if (typeName != 'Panel') {
-        msg += ` Alternatively, if you are defining '${typeName}', you may create a 'containerElementFactory' for it instead.`;
-    }
-    console.warn(msg);
 }

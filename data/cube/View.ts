@@ -5,18 +5,27 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase, PlainObject} from '@xh/hoist/core';
-import {Cube, CubeField, Filter, Query, Store, StoreRecord, StoreRecordId} from '@xh/hoist/data';
+import {HoistBase, PlainObject, Some} from '@xh/hoist/core';
+import {
+    Cube,
+    CubeField,
+    Filter,
+    FilterLike,
+    Query,
+    QueryConfig,
+    Store,
+    StoreRecord,
+    StoreRecordId
+} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {throwIf, logWithDebug} from '@xh/hoist/utils/js';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
-import {castArray, forEach, groupBy, isEmpty, isNil, map, isEqual, keys, find} from 'lodash';
+import {logWithDebug, throwIf} from '@xh/hoist/utils/js';
+import {castArray, find, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
-
 import {AggregateRow} from './row/AggregateRow';
+import {BaseRow} from './row/BaseRow';
 import {BucketRow} from './row/BucketRow';
 import {LeafRow} from './row/LeafRow';
-import {BaseRow} from './row/BaseRow';
 
 export interface ViewConfig {
     /** Query to be used to construct this view. */
@@ -76,10 +85,10 @@ export class View extends HoistBase {
 
     // Implementation
     private _rows: PlainObject[] = null;
-    private _rowCache: Map<StoreRecordId, BaseRow> = null;
+    private _rowCache: Map<string, BaseRow> = null;
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
     private _recordMap: Map<StoreRecordId, StoreRecord> = null;
-    private _aggContext: AggregationContext = null;
+    _aggContext: AggregationContext = null;
 
     /** @internal - applications should use {@link Cube.createView} */
     constructor(config: ViewConfig) {
@@ -122,19 +131,20 @@ export class View extends HoistBase {
      * Change the query in some way, re-computing the data in this View to reflect the new query.
      *
      * @param overrides - changes to be applied to the query. May include any arguments to the query
-     *      constructor with the exception of `cube`, which cannot be changed on a view once set
+     *      constructor except `cube`, which cannot be changed on a view once set
      *      via the initial query.
      */
     @action
-    updateQuery(overrides) {
+    updateQuery(overrides: Partial<QueryConfig>) {
         throwIf(overrides.cube, 'Cannot redirect view to a different cube in updateQuery().');
-        const newQuery = this.query.clone(overrides);
-        if (this.query.equals(newQuery)) return;
+        const oldQuery = this.query,
+            newQuery = oldQuery.clone(overrides);
+        if (oldQuery.equals(newQuery)) return;
 
         this.query = newQuery;
 
-        // Only blow away row cache if more than filter changing, or we have complex aggregates.
-        if (!this.aggregatorsAreSimple || !isEqual(keys(overrides), ['filter'])) {
+        // Must clear row cache if we have complex aggregates or more than filter changing.
+        if (!this.aggregatorsAreSimple || !oldQuery.equalsExcludingFilter(newQuery)) {
             this._rowCache.clear();
         }
 
@@ -161,13 +171,13 @@ export class View extends HoistBase {
     }
 
     /** Set stores to be loaded/reloaded with data from this view. */
-    setStores(stores: Store[]|Store) {
+    setStores(stores: Some<Store>) {
         this.stores = castArray(stores);
         this.loadStores();
     }
 
     /** Update the filter on the current Query.*/
-    setFilter(filter: Filter) {
+    setFilter(filter: FilterLike) {
         this.updateQuery({filter});
     }
 
@@ -181,7 +191,7 @@ export class View extends HoistBase {
     }
 
     @action
-    noteCubeUpdated(changeLog) {
+    noteCubeUpdated(changeLog: PlainObject) {
         const simpleUpdates = this.getSimpleUpdates(changeLog);
 
         if (!simpleUpdates) {
@@ -206,22 +216,22 @@ export class View extends HoistBase {
         this.updateResults();
     }
 
-    private dataOnlyUpdate(updates) {
+    private dataOnlyUpdate(updates: StoreRecord[]) {
         const {_leafMap, _recordMap, stores} = this,
-            updatedRows = new Set();
+            updatedRowDatas = new Set<PlainObject>();
 
         updates.forEach(rec => {
             _recordMap.set(rec.id, rec);
             const leaf = _leafMap.get(rec.id);
-            leaf?.applyDataUpdate(rec, updatedRows);
+            leaf?.applyLeafDataUpdate(rec, updatedRowDatas);
         });
 
         this.createAggregationContext();
 
         stores.forEach(store => {
             const recordUpdates = [];
-            updatedRows.forEach((row: BaseRow) => {
-                if (store.getById(row.id)) recordUpdates.push(row);
+            updatedRowDatas.forEach(rowData => {
+                if (store.getById(rowData.id)) recordUpdates.push(rowData);
             });
             store.updateData({update: recordUpdates});
         });
@@ -258,7 +268,7 @@ export class View extends HoistBase {
         if (includeRoot) {
             newRows = [
                 this.cachedRow(rootId, newRows,
-                    () => new AggregateRow(this, rootId, newRows, null, 'Total', {})
+                    () => new AggregateRow(this, rootId, newRows, null, 'Total', 'Total', {})
                 )
             ];
         } else if (!query.includeLeaves && newRows[0]?.isLeaf) {
@@ -270,12 +280,17 @@ export class View extends HoistBase {
         // This is the magic.  We only actually reveal to API the network of *data* nodes.
         // This hides all the meta information, as well as unwanted leaves and skipped rows.
         // Underlying network still there and updates will flow up through it via the leaves.
-        newRows.forEach(it => it.applyVisibleChildren());
-        this._rows = newRows.map(it => it.data);
+        this._rows = newRows.flatMap(it => it.getVisibleDatas());
     }
 
-    private groupAndInsertRecords(records, dimensions, parentId, appliedDimensions, leafMap) {
-        if (isEmpty(records)) return records;
+    private groupAndInsertRecords(
+        records: StoreRecord[],
+        dimensions: CubeField[],
+        parentId: string,
+        appliedDimensions: PlainObject,
+        leafMap: Map<StoreRecordId, LeafRow>
+    ): BaseRow[] {
+        if (isEmpty(records)) return [];
 
         const rootId = parentId + Cube.RECORD_ID_DELIMITER;
 
@@ -293,20 +308,22 @@ export class View extends HoistBase {
             groups = groupBy(records, (it) => it.data[dimName]);
 
         appliedDimensions = {...appliedDimensions};
-        return map(groups, (groupRecords, val) => {
+        return map(groups, (groupRecords, strVal) => {
+            const val = groupRecords[0].data[dimName],
+                id = rootId + `${dimName}=[${strVal}]`;
+
             appliedDimensions[dimName] = val;
-            const id = rootId + `${dimName}=[${val}]`;
 
             let children = this.groupAndInsertRecords(groupRecords, dimensions.slice(1), id, appliedDimensions, leafMap);
             children = this.bucketRows(children, id, appliedDimensions);
 
             return this.cachedRow(id, children,
-                () => new AggregateRow(this, id, children, dim, val, appliedDimensions)
+                () => new AggregateRow(this, id, children, dim, val, strVal, appliedDimensions)
             );
         });
     }
 
-    private bucketRows(rows, parentId, appliedDimensions) {
+    private bucketRows(rows: BaseRow[], parentId: string, appliedDimensions: PlainObject): BaseRow[] {
         if (!this.cube.bucketSpecFn) return rows;
 
         const bucketSpec = this.cube.bucketSpecFn(rows);
@@ -341,9 +358,9 @@ export class View extends HoistBase {
         return ret;
     }
 
-    // return a list of simple data updates we can apply to  leaves.
+    // return a list of simple data updates we can apply to leaves.
     // false if leaf population changing, or aggregations are complex
-    private getSimpleUpdates(t) {
+    private getSimpleUpdates(t): StoreRecord[]|false {
         if (!t) return [];
         if (!this.aggregatorsAreSimple) return false;
         const {_leafMap, query} = this;
@@ -377,7 +394,7 @@ export class View extends HoistBase {
         return ret;
     }
 
-    private hasDimUpdates(update) {
+    private hasDimUpdates(update: StoreRecord[]): boolean {
         const {dimensions} = this.query;
         if (isEmpty(dimensions)) return false;
 
@@ -390,14 +407,14 @@ export class View extends HoistBase {
         return false;
     }
 
-    private cachedRow(id, children, fn) {
+    private cachedRow<T extends BaseRow>(id: string, children: BaseRow[], fn: () => T): T {
         let ret = this._rowCache.get(id);
         if (ret && (ret.isLeaf || shallowEqualArrays(ret.children, children))) {
-            return ret;
+            return ret as T;
         }
         ret = fn();
         this._rowCache.set(id, ret);
-        return ret;
+        return ret as T;
     }
 
     private filterRecords() {
@@ -414,12 +431,12 @@ export class View extends HoistBase {
     }
 
     private get aggregatorsAreSimple() {
-        return this.query.fields.every(
+        return this.fields.every(
             ({aggregator}) => !aggregator || aggregator.dependsOnChildrenOnly
         );
     }
 
-    destroy() {
+    override destroy() {
         this.disconnect();
         super.destroy();
     }

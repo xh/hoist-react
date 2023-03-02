@@ -21,15 +21,15 @@ export interface BoxComponentProps extends HoistProps, BoxProps {}
  *
  * VBox and HBox variants support internal vertical (column) and horizontal (row) flex layouts.
  */
-export const [Box, box] = hoistCmp.withContainerFactory<BoxComponentProps>({
+export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
     displayName: 'Box',
     model: false, memo: false, observer: false,
 
     render(props, ref) {
-        // Note `model` and `modelConfig` destructured off of non-layout props to avoid setting
+        // Note `model` destructured off of non-layout props to avoid setting
         // model as a bogus DOM attribute. This low-level component may easily be passed one from
         // a parent that has not properly managed its own props.
-        let [layoutProps, {children, model, modelConfig, ...restProps}] = splitLayoutProps(props);
+        let [layoutProps, {children, model, ...restProps}] = splitLayoutProps(props);
 
         restProps = merge(
             {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
@@ -45,7 +45,7 @@ export const [Box, box] = hoistCmp.withContainerFactory<BoxComponentProps>({
     }
 });
 
-export const [VBox, vbox] = hoistCmp.withContainerFactory<BoxComponentProps>({
+export const [VBox, vbox] = hoistCmp.withFactory<BoxComponentProps>({
     displayName: 'VBox',
     model: false, memo: false, observer: false,
     className: 'xh-vbox',
@@ -59,7 +59,7 @@ export const [VBox, vbox] = hoistCmp.withContainerFactory<BoxComponentProps>({
     }
 });
 
-export const [HBox, hbox] = hoistCmp.withContainerFactory<BoxComponentProps>({
+export const [HBox, hbox] = hoistCmp.withFactory<BoxComponentProps>({
     displayName: 'HBox',
     model: false, memo: false, observer: false,
     className: 'xh-hbox',

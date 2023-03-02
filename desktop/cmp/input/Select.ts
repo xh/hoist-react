@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
-import {createElement, hoistCmp, HoistProps, LayoutProps, PlainObject, XH, Awaitable} from '@xh/hoist/core';
+import {createElement, hoistCmp, HoistProps, LayoutProps, PlainObject, XH, Awaitable, SelectOption} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {
@@ -184,12 +184,6 @@ export interface SelectProps extends
     valueField?: string;
 }
 
-export interface SelectOption {
-    value: any;
-    label?: string;
-    options?: (SelectOption|any)[];
-}
-
 /**
  * A managed wrapper around the React-Select combobox/dropdown component.
  *
@@ -216,7 +210,7 @@ export const [Select, select] = hoistCmp.withFactory<SelectProps>({
 // Implementation
 //-----------------------
 class SelectInputModel extends HoistInputModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
@@ -273,7 +267,7 @@ class SelectInputModel extends HoistInputModel {
         makeObservable(this);
     }
 
-    onLinked() {
+    override onLinked() {
         const queryBuffer = withDefault(this.componentProps.queryBuffer, 300);
         if (queryBuffer) this.doQueryAsync = debouncePromise(this.doQueryAsync, queryBuffer);
 
@@ -343,7 +337,7 @@ class SelectInputModel extends HoistInputModel {
     };
 
     @override
-    noteFocused() {
+    override noteFocused() {
         if (this.manageInputValue) {
             const {renderValue} = this;
             this.inputValue = renderValue ? renderValue.label : null;
@@ -373,7 +367,7 @@ class SelectInputModel extends HoistInputModel {
     }
 
     @override
-    setInternalValue(val) {
+    override setInternalValue(val) {
         const changed = !isEqual(val, this.internalValue);
         super.setInternalValue(val);
         if (changed && this.manageInputValue && this.hasFocus) {
@@ -415,7 +409,7 @@ class SelectInputModel extends HoistInputModel {
     // Convert external value into option object(s). Options created if missing - this takes the
     // external value from the model, and we will respect that even if we don't know about it.
     // (Exception for a null value, which we will only accept if explicitly present in options.)
-    toInternal(external) {
+    override toInternal(external) {
         if (this.multiMode) {
             if (external == null) external = [];  // avoid [null]
             return castArray(external).map(it => this.findOption(it, !isNil(it)));
@@ -438,7 +432,7 @@ class SelectInputModel extends HoistInputModel {
         return createIfNotFound ? this.valueToOption(value) : null;
     }
 
-    toExternal(internal) {
+    override toExternal(internal) {
         if (isNil(internal)) return null;
 
         if (this.multiMode) {

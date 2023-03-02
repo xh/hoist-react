@@ -1,27 +1,118 @@
 # Changelog
 
-## v55.0.0-SNAPSHOT - unreleased
-
-### 🐞 Bug Fixes
-* ColumnSpec.actions accepts Array<RecordActionSpec|RecordAction>
-* Fixed a bug in which grid cell editors would drop a single character edit.
-
-### 📚 Libraries
-
-* onsenui `2.11.1 -> 2.12.8`
-* react-onsenui `1.11.5 > 1.13.2`
+## v56.0.0-SNAPSHOT - under development
 
 ### ⚙️ Technical
 
-* Hoist's `Icon` enumeration has been re-organized slightly better separate icons that describe "
-  what they look like" - e.g. `Icon.magnifyingGlass()` - from an expanded set of aliases that
-  describe "how they are used" - e.g. `Icon.search()`.
-    * This allows apps to override icon choices made within Hoist components in a more targeted way,
-      e.g. by setting `Icon.columnMenu = Icon.ellipsisVertical`.
+* The use of `tooltipElement` on `Column` is deprecated. Use `tooltip` instead.
+
+## v55.2.1 - 2023-02-24
+
+### 🐞 Bug Fixes
+
+* Fixed issue where a resizable `Panel` splitter could be rendered incorrectly while dragging.
+
+## v55.2.0 - 2023-02-10
+
+### 🎁 New Features
+
+* `DashCanvas` enhancements:
+    * Views now support minimum and maximum dimensions.
+    * Views now expose an `allowDuplicate` flag for controlling the `Duplicate` menu item
+      visibility.
+
+### 🐞 Bug Fixes
+
+* Fixed a bug with Cube views having dimensions containing non-string or `null` values. Rows grouped
+  by these dimensions would report values for the dimension which were incorrectly stringified (e.g.
+  `'null'` vs. `null` or `'5'` vs. `5`). This has been fixed. Note that the stringified value is
+  still reported for the rows' `cubeLabel` value, and will be used for the purposes of grouping.
+
+### ⚙️ Typescript API Adjustments
+
+* Improved signatures of `RestStore` APIs.
+
+## v55.1.0 - 2023-02-09
+
+Version 55 is the first major update of the toolkit after our transition to Typescript. In addition
+to a host of runtime fixes and features, it also contains a good number of important Typescript
+typing adjustments, which are listed below. It also includes a helpful
+[Typescript upgrade guide](https://github.com/xh/hoist-react/blob/develop/docs/upgrade-to-typescript.md).
+
+### 🎁 New Features
+
+* Grid exports can now be tracked in the admin activity tab by setting `exportOptions.track` to
+  true (defaults to false).
+* Miscellaneous performance improvements to the cube package.
+* The implementation of the `Cube.omitFn` feature has been enhanced. This function will now be
+  called on *all* non-leaf nodes, not just single child nodes. This allows for more flexible
+  editing of the shape of the resulting hierarchical data emitted by cube views.
+
+### 🐞 Bug Fixes
+
+* Fixed: grid cell editors would drop a single character edit.
+* Fixed: grid date input editor's popup did not position correctly in a grid with pinned columns.
+* Fixed issue with `DashContainer` flashing its "empty" text briefly before loading.
+* Several Hoist TypeScript types, interfaces, and signatures have been improved or corrected (typing
+  changes only).
+* Fix bug where a `className` provided to a `Panel` with `modalSupport` would be dropped when in a
+  modal state. Note this necessitated an additional layer in the `Panel` DOM hierarchy. Highly
+  specific CSS selectors may be affected.
+* Fix bug where `TileFrame` would not pass through the keys of its children.
 
 ### 💥 Breaking Changes
 
-* The use of `tooltipElement` on `Column` is deprecated. Use `tooltip` instead.
+* The semantics of `Cube.omitFn` have changed such that it will now be called on all aggregate
+  nodes, not just nodes with a single child. Applications may need to adjust any implementation of
+  this function accordingly.
+* `hoistCmp.containerFactory` and `hoistCmp.withContainerFactory` are removed in favor of
+  the basic `hoistCmp.factory` and `hoistCmp.withFactory` respectively. See typescript
+  API adjustments below.
+
+### ⚙️ Typescript API Adjustments
+
+The following Typescript API were adjusted in v55.
+
+* Removed the distinction between `StandardElementFactory` and `ContainerElementFactory`. This
+  distinction was deemed to be unnecessary, and overcomplicated the understanding of Hoist.
+  Applications should simply continue to use `ElementFactory` instead. `hoistCmp.containerFactory`
+  and `hoistCmp.withContainerFactory` are also removed in favor of the basic `hoistCmp.factory` and
+  `hoistCmp.withFactory` respectively.
+* `HoistProps.modelConfig` now references the type declaration of `HoistModel.config`. See
+  `PanelModel` and `TabContainerModel` for examples.
+* The new `SelectOption` type has been made multi-platform and moved to `@xh/hoist/core`.
+
+**Note** that we do not intend to make such extensive Typescript changes going forward post-v55.0.
+These changes were deemed critical and worth adjusting in our first typescript update, and before
+typescript has been widely adopted in production Hoist apps.
+
+### ⚙️ Technical
+
+* Hoist's `Icon` enumeration has been re-organized slightly to better separate icons that describe
+  "what they look like" - e.g. `Icon.magnifyingGlass()` - from an expanded set of aliases that
+  describe "how they are used" - e.g. `Icon.search()`.
+    * This allows apps to override icon choices made within Hoist components in a more targeted way,
+      e.g. by setting `Icon.columnMenu = Icon.ellipsisVertical`.
+* All Hoist configurations that support `omit: boolean` now additionally support a "thunkable"
+  callback of type `() => boolean`.
+* `Grid` will only persist minimal user column state for hidden columns, to reduce user pref sizes.
+
+### 📚 Libraries
+
+* @blueprintjs/core `^4.12 -> ^4.14`
+* corejs `^3.26 -> ^3.27`
+* mobx `6.6 -> 6.7`
+* onsenui `2.11 -> 2.12` (*see testing note below)
+* react-onsenui `1.11 > 1.13`
+
+### ✅ Testing Scope
+
+* *Full regression testing recommended for _mobile_ apps.* While the upgrade from 2.11 to 2.12
+  appears as a minor release, it was in fact a major update to the library.
+  See [the Onsen release notes](https://github.com/OnsenUI/OnsenUI/releases/tag/2.12.0) for
+  additional details. Note that Hoist has handled all changes required to its Onsen API calls,
+  and there are no breaking changes to the Hoist mobile component APIs. As a result, mobile apps
+  _might_ not need to change anything, but extra care in testing is still recommended.
 
 ## v54.0.0 - 2022-12-31
 
@@ -48,9 +139,9 @@ to use TypeScript for its own app-level code.
 
 * New TypeScript interface `HoistProps` and per-component extensions to specify props for all
   components. This replaces the use of the `PropTypes` library, which is no longer included.
-* Enhanced TypeScript-aware implementations of `ElementFactory`, including separate factories for
+* ~~Enhanced TypeScript-aware implementations of `ElementFactory`, including separate factories for
   standard components (`elementFactory`) and components that often take children only
-  (`containerElementFactory`).
+  (`containerElementFactory`).~~
 * The `@bindable` annotation has been enhanced to produce a native javascript setter for its
   property as well as the `setXXX()` method it currently produces. This provides a more typescript
   friendly way to set properties in a mobx action, and should be the favored method going forward.
@@ -71,14 +162,14 @@ to use TypeScript for its own app-level code.
 * The constructors for `GridModel` and `Column` no long accept arbitrary rest (e.g `...rest`)
   arguments for applying app-specific data to the object. Instead, use the new `appData` property
   on these objects.
-* The `elemFactory` function has been removed. Applications calling this function should specify
-  `elementFactory` (typically) or `containerElementFactory` instead.
-    * Most application components are defined using helper aliases `hoistCmp.factory`
+* ~~The `elemFactory` function has been removed. Applications calling this function should specify
+  `elementFactory` (typically) or `containerElementFactory` instead.~~
+    * ~~Most application components are defined using helper aliases `hoistCmp.factory`
       and `hoistCmp.withFactory` - these calls do _not_ need to change, unless your component
-      needs to take a list of children directly (i.e. `someComponent(child1, child2)`).
-    * Update the definition of any such components to use `hoistCmp.containerFactory` instead.
-    * Where possible, favor the simpler, default factory for more streamlined type suggestions /
-      error messages regarding your component's valid props.
+      needs to take a list of children directly (i.e. `someComponent(child1, child2)`).~~
+    * ~~Update the definition of any such components to use `hoistCmp.containerFactory` instead.~~
+    * ~~Where possible, favor the simpler, default factory for more streamlined type suggestions /
+      error messages regarding your component's valid props.~~
 * The use of the `model` prop to provide a config object for a model to be created on-the-fly
   is deprecated.
     * Use the new `modelConfig` prop when passing a *plain object config* -
@@ -96,12 +187,6 @@ to use TypeScript for its own app-level code.
 * Fix bug where `GridPersistenceModel` would not clean outdated column state.
 * Fix animation bug when popping pages in the mobile navigator.
 
-### ✅ Testing Scope
-
-* *Full regression testing recommended* - this is a major Hoist release and involved a significant
-  amount of refactoring to the toolkit code. As such, we recommend a thorough regression test of any
-  applications updating to this release from prior versions.
-
 ### ⚙️ Technical
 
 * Update `preflight.js` to catch errors that occur on startup, before our in-app exception handling
@@ -113,6 +198,12 @@ to use TypeScript for its own app-level code.
 * @xh/hoist-dev-utils `6.0 -> 6.1`
 * typescript `added @ 4.9`
 * highcharts `9.3 -> 10.3`
+
+### ✅ Testing Scope
+
+* *Full regression testing recommended* - this is a major Hoist release and involved a significant
+  amount of refactoring to the toolkit code. As such, we recommend a thorough regression test of any
+  applications updating to this release from prior versions.
 
 ## v53.2.0 - 2022-11-15
 

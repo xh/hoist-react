@@ -13,7 +13,7 @@ import { ColumnHeaderFilterModel } from '../ColumnHeaderFilterModel';
 import {CustomRowModel} from './CustomRowModel';
 
 export class CustomTabModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     headerFilterModel: ColumnHeaderFilterModel;
 

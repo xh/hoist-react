@@ -16,6 +16,7 @@ import {
 } from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {isOmitted} from '@xh/hoist/utils/impl';
 import {find, isString, isUndefined, without, difference} from 'lodash';
 import {ReactNode} from 'react';
 import {TabConfig, TabModel} from './TabModel';
@@ -86,6 +87,7 @@ export interface TabContainerConfig {
  * Note: Routing is currently enabled for desktop applications only.
  */
 export class TabContainerModel extends HoistModel {
+    declare config: TabContainerConfig;
 
     @managed
     @observable.ref
@@ -190,7 +192,8 @@ export class TabContainerModel extends HoistModel {
 
         ensureUniqueBy(tabs, 'id', 'Multiple tabs have the same id.');
 
-        tabs = tabs.filter(p =>  p instanceof TabModel || !p.omit);
+        tabs = tabs
+            .filter(p =>  p instanceof TabModel || !isOmitted(p));
 
         // Adjust state -- intentionally setting activeTab *before* instantiating new tabs.
         const {activeTabId} = this;

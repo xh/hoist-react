@@ -29,7 +29,7 @@ export const optionsDialog = hoistCmp.factory({
     render({model, className}) {
         if (!model.hasOptions || !model.isOpen) return null;
 
-        const {reloadRequired, formModel} = model;
+        const {reloadRequired, formModel, loadTask} = model;
 
         return dialog({
             title: `${XH.clientAppName} Options`,
@@ -40,7 +40,7 @@ export const optionsDialog = hoistCmp.factory({
             canOutsideClickClose: false,
             item: [
                 panel({
-                    mask: 'onLoad',
+                    mask: loadTask,
                     item: dialogBody(
                         form({
                             model: formModel,

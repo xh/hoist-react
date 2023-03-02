@@ -99,6 +99,7 @@ export interface PanelConfig {
  * expand/collapse, along with support for saving this state via a configured PersistenceProvider.
  */
 export class PanelModel extends HoistModel {
+    declare config: PanelConfig;
 
     //-----------------------
     // Immutable Properties
@@ -158,6 +159,7 @@ export class PanelModel extends HoistModel {
     // Implementation
     //-----------------
     _resizeRef;
+    splitterRef = createRef<HTMLDivElement>();
 
     constructor({
         collapsible = true,
@@ -193,6 +195,11 @@ export class PanelModel extends HoistModel {
         if (!isNil(maxSize) && (maxSize < minSize || maxSize < defaultSize)) {
             console.error("'maxSize' must be greater than 'minSize' and 'defaultSize'. No 'maxSize' will be set.");
             maxSize = null;
+        }
+
+        if (resizable && !resizeWhileDragging && !showSplitter) {
+            console.error("Must not set 'showSplitter = false' for a resizable PanelModel unless 'resizeWhileDragging` is enabled. Panel sizing disabled.");
+            resizable = false;
         }
 
         this.collapsible = collapsible;

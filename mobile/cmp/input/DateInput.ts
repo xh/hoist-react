@@ -97,7 +97,7 @@ export const [DateInput, dateInput] = hoistCmp.withFactory<DateInputProps>({
 // Implementation
 //---------------------------------
 class DateInputModel extends HoistInputModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @observable popoverOpen = false;
 
@@ -123,11 +123,11 @@ class DateInputModel extends HoistInputModel {
         makeObservable(this);
     }
 
-    blur() {
+    override blur() {
         this.setPopoverOpen(false);
     }
 
-    focus() {
+    override focus() {
         this.setPopoverOpen(true);
     }
 
@@ -153,12 +153,12 @@ class DateInputModel extends HoistInputModel {
         return withDefault(this.componentProps.valueType, 'date');
     }
 
-    toExternal(internal) {
+    override toExternal(internal) {
         if (this.valueType === 'localDate') return internal ? LocalDate.from(internal) : null;
         return internal;
     }
 
-    toInternal(external) {
+    override toInternal(external) {
         if (this.valueType === 'localDate') return external ? external.date : null;
         return external;
     }

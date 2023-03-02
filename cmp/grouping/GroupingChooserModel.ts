@@ -10,7 +10,7 @@ import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {cloneDeep, difference, isFunction, isArray, isEmpty, isEqual, isString, keys, sortBy} from 'lodash';
+import {difference, isFunction, isArray, isEmpty, isEqual, isString, keys, sortBy} from 'lodash';
 
 export interface GroupingChooserConfig {
     /**
@@ -128,7 +128,7 @@ export class GroupingChooserModel extends HoistModel {
                 this.persistValue = persistWith.persistValue ?? true;
                 this.persistFavorites = persistWith.persistFavorites ?? true;
 
-                const state = cloneDeep(this.provider.read());
+                const state = structuredClone(this.provider.read());
                 if (this.persistValue && state?.value && this.validateValue(state?.value)) {
                     value = state.value;
                 }

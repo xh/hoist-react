@@ -5,15 +5,22 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {GridFilterModelConfig} from '@xh/hoist/cmp/grid';
+import {GridFilterFieldSpec, GridFilterModelConfig} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
-import {CompoundFilter, FieldFilter, Filter,
-    FilterLike, flattenFilter, Store, View, withFilterByField, withFilterByTypes} from '@xh/hoist/data';
+import {
+    CompoundFilter,
+    FieldFilter,
+    Filter,
+    FilterLike,
+    flattenFilter,
+    Store,
+    View,
+    withFilterByField,
+    withFilterByTypes
+} from '@xh/hoist/data';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {find, isString, isNil, castArray, uniq, every, compact} from 'lodash';
-
-import {GridFilterFieldSpec} from './GridFilterFieldSpec';
+import {castArray, compact, every, find, isNil, isString, uniq} from 'lodash';
 import {GridModel} from '../GridModel';
 
 
@@ -22,7 +29,7 @@ import {GridModel} from '../GridModel';
  * @internal
  */
 export class GridFilterModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     gridModel: GridModel;
     bind: Store|View;

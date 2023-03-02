@@ -96,11 +96,18 @@ function computeStyleInAgGrid(data: Popper.Data, options: PlainObject, portalCon
         return data;
     }
 
-    // recalc reference offsets with the dateEditor cell's column's ag-grid container of all rows
+    // Recalc reference offsets with the dateEditor cell's ag-grid row container
     data.offsets.reference = getOffsetRectRelativeToArbitraryNode(inputEl, rowContainer, false);
+    // 1. Handle case where dateInput is in a column that is pinned right.
     if (rightContainer) {
         data.offsets.reference.left += rightContainer.offsetLeft;
         data.offsets.reference.right += rightContainer.offsetLeft;
+    }
+
+    // 2. Handle case where dateInput is in centerContainer
+    // but other columns are pinned left.
+    if (centerContainer) {
+        data.offsets.reference.left += centerContainer.offsetLeft;
     }
 
     const scrollLeft = rowContainer.parentNode.scrollLeft,

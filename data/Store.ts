@@ -341,10 +341,10 @@ export class Store extends HoistBase {
      */
     @action
     @logWithDebug
-    updateData(rawData: PlainObject[]|StoreTransaction): any {
+    updateData(rawData: PlainObject[]|StoreTransaction): PlainObject {
         if (isEmpty(rawData)) return null;
 
-        const changeLog: any = {};
+        const changeLog: PlainObject = {};
 
         // Build a transaction object out of a flat list of adds and updates
         let rawTransaction;
@@ -390,8 +390,9 @@ export class Store extends HoistBase {
             addRecs = new Map();
             add.forEach(it => {
                 if (isChildRawDataObject(it)) {
-                    const parent = this.getOrThrow(it.parentId);
-                    this.createRecords([it.rawData], parent, addRecs);
+                    const {rawData, parentId} = it,
+                        parent = !isNil(parentId) ? this.getOrThrow(parentId) : null;
+                    this.createRecords([rawData], parent, addRecs);
                 } else {
                     this.createRecords([it], null, addRecs);
                 }

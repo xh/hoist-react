@@ -25,7 +25,7 @@ export const optionsDialog = hoistCmp.factory({
     render({model}) {
         if (!model.hasOptions || !model.isOpen) return null;
 
-        const {loadModel, formModel, reloadRequired} = model;
+        const {loadTask, formModel, reloadRequired} = model;
 
         return dialog({
             title: 'Options',
@@ -34,7 +34,7 @@ export const optionsDialog = hoistCmp.factory({
             isOpen: true,
             onCancel: () => model.hide(),
             content: [
-                mask({bind: loadModel, spinner: true}),
+                mask({bind: loadTask, spinner: true}),
                 form(
                     vframe(
                         model.options.map(option => {

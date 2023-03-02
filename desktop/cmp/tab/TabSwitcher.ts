@@ -184,7 +184,7 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
 });
 
 class TabSwitcherLocalModel extends HoistModel  {
-    xhImpl = true;
+    override xhImpl = true;
 
     @bindable.ref overflowIds = [];
     switcherRef = createObservableRef<HTMLElement>();

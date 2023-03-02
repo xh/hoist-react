@@ -5,10 +5,11 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
-import {AppOptionSpec, HoistModel, managed, XH} from '@xh/hoist/core';
+import {AppOptionSpec, HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {assign, mapValues, pickBy} from 'lodash';
-import { resolve } from '../promise/Promise';
+import {isOmitted} from '@xh/hoist/utils/impl';
+import {resolve} from '../promise/Promise';
 import {AppOption} from './AppOption';
 
 /**
@@ -16,10 +17,13 @@ import {AppOption} from './AppOption';
  * @internal
  */
 export class OptionsDialogModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @observable isOpen = false;
     @observable.ref options = [];
+
+    @managed
+    loadTask = TaskObserver.trackLast();
 
     @managed
     formModel = null;
@@ -40,7 +44,9 @@ export class OptionsDialogModel extends HoistModel {
     // Setting options
     //-------------------
     setOptions(options: AppOptionSpec[]) {
-        this.options = options.filter(o => !o.omit).map(o => new AppOption(o));
+        this.options = options
+            .filter(o => !isOmitted(o))
+            .map(o => new AppOption(o));
         const fields = this.options.map(o => assign({name: o.name}, o.fieldModel));
         this.formModel = new FormModel({fields, xhImpl: true});
     }
@@ -84,7 +90,7 @@ export class OptionsDialogModel extends HoistModel {
         const promises = this.options.map(option => {
             return option.getValueAsync().then(v => formModel.fields[option.name].init(v));
         });
-        await Promise.allSettled(promises).linkTo(this.loadModel);
+        await Promise.allSettled(promises).linkTo(this.loadTask);
 
     }
 
@@ -95,7 +101,7 @@ export class OptionsDialogModel extends HoistModel {
         const reloadApp = this.reloadRequired;
 
         if (reloadApp) {
-            this.loadModel.setMessage('Reloading app to apply changes...');
+            this.loadTask.setMessage('Reloading app to apply changes...');
         }
 
         resolve()
@@ -109,7 +115,7 @@ export class OptionsDialogModel extends HoistModel {
                     XH.refreshAppAsync();
                 }
             })
-            .linkTo(this.loadModel)
+            .linkTo(this.loadTask)
             .catchDefault();
     }
 

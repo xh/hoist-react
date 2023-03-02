@@ -8,7 +8,6 @@ import {XH, PersistenceProvider, PersistOptions, DebounceSpec} from './';
 import {throwIf, getOrCreate} from '@xh/hoist/utils/js';
 import {
     debounce as lodashDebounce,
-    cloneDeep,
     isFunction,
     isNil,
     isNumber,
@@ -220,7 +219,7 @@ export abstract class HoistBase {
                 provider = this.markManaged(PersistenceProvider.create(persistWith)),
                 providerState = provider.read();
             if (!isUndefined(providerState)) {
-                runInAction(() => this[property] = cloneDeep(providerState));
+                runInAction(() => this[property] = structuredClone(providerState));
             }
             this.addReaction({
                 track: () => this[property],
@@ -251,7 +250,7 @@ export abstract class HoistBase {
 /**
  * Object containing options accepted by MobX 'reaction' API as well as arguments below.
  */
-export interface ReactionSpec<T> extends IReactionOptions<T, any> {
+export interface ReactionSpec<T = any> extends IReactionOptions<T, any> {
     /**
      * Function returning data to observe - first arg to the underlying reaction() call.
      * Specify this or `when`.

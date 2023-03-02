@@ -45,7 +45,7 @@ export const [LeftRightChooserFilter, leftRightChooserFilter] = hoistCmp.withFac
 
 
 class LeftRightChooserFilterLocalModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @lookup(LeftRightChooserModel)
     model: LeftRightChooserModel;

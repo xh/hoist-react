@@ -9,7 +9,6 @@ import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/
 import {throwIf} from '@xh/hoist/utils/js';
 import {
     castArray,
-    cloneDeep,
     concat,
     find,
     has,
@@ -306,7 +305,7 @@ export class AgGridModel extends HoistModel {
     setSortState(sortState: AgGridColumnSortState[]) {
         this.throwIfNotReady();
 
-        const sortedColumnState = cloneDeep(sortState),
+        const sortedColumnState = structuredClone(sortState),
             [primaryColumnState, secondaryColumnState] = partition(sortedColumnState, it => !isArray(it.colId)),
             {agColumnApi: colApi, agApi} = this,
             isPivot = colApi.isPivotMode(),
@@ -390,7 +389,7 @@ export class AgGridModel extends HoistModel {
         const {agColumnApi} = this,
             validColIds = [
                 AgGridModel.AUTO_GROUP_COL_ID,
-                ...agColumnApi.getAllColumns().map(it => it.colId)
+                ...agColumnApi.getColumns().map(it => it.colId)
             ];
 
         let {isPivot, columns} = colState;
@@ -589,6 +588,10 @@ export class AgGridModel extends HoistModel {
     @action
     handleGridReady({api, columnApi}) {
         console.debug(`AgGridModel ${this.xhId} initializing`);
+        throwIf(this.agApi && this.agApi != api,
+            'Attempted to mount a grid on a GridModel that is already in use. ' +
+            'Ensure that you are not binding your grid to the wrong model via context.'
+        );
         this.agApi = api;
         this.agColumnApi = columnApi;
     }

@@ -14,7 +14,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
  * @internal
  */
 export class ColChooserModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     gridModel: GridModel;
     @managed lrModel: LeftRightChooserModel;

@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
-import {HAlign, HSide, PlainObject, Some, XH} from '@xh/hoist/core';
+import {HAlign, HSide, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
 import {
     CubeFieldSpec,
     FieldSpec,
@@ -338,7 +338,7 @@ export interface ColumnSpec {
     enableDotSeparatedFieldPath?: boolean;
 
     /** True to skip this column when adding to grid. */
-    omit?: boolean|(() => boolean);
+    omit?: Thunkable<boolean>;
 
     /**
      * Actions to display as clickable buttons in this column. For action columns only.
@@ -457,7 +457,7 @@ export class Column {
     actionsShowOnHoverOnly?: boolean;
     fieldSpec: FieldSpec;
     manuallySized: boolean;
-    omit: boolean|(() => boolean);
+    omit: Thunkable<boolean>;
 
     gridModel: GridModel;
     agOptions: PlainObject;
@@ -575,11 +575,11 @@ export class Column {
 
         warnIf(
             flex && width,
-            `Column specified with both flex && width. Width will be ignored. [colId=${ this.colId }]`
+            `Column '${this.colId}' specified with both flex && width. Width will be ignored.`
         );
         warnIf(
             width && !isFinite(width),
-            `Column width not specified as a number. Default width will be applied. [colId=${ this.colId }]`
+            `Column '${this.colId}' width not specified as a number. Default width will be applied.`
         );
 
         this.flex = withDefault(flex, false);
@@ -646,13 +646,13 @@ export class Column {
         this.appData = appData ? clone(appData) : {};
 
         // Warn if using the ag-Grid valueSetter or valueGetter and recommend using our callbacks
-        warnIf(this.agOptions.valueSetter, `Column '${ this.colId }' uses valueSetter through agOptions. Remove and use custom setValueFn if needed.`);
-        warnIf(this.agOptions.valueGetter, `Column '${ this.colId }' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`);
+        warnIf(this.agOptions.valueSetter, `Column '${this.colId}' uses valueSetter through agOptions. Remove and use custom setValueFn if needed.`);
+        warnIf(this.agOptions.valueGetter, `Column '${this.colId}' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`);
 
         if (!isEmpty(unsupported)) {
             const keys = keysIn(unsupported);
             throw XH.exception(
-                `Key(s) '${keys}' not supported in Column.  For custom data, use the 'appData' property.`
+                `Column '${this.colId}' configured with unsupported key(s) '${keys}'. Custom config data must be nested within the 'appData' property.`
             );
         }
     }

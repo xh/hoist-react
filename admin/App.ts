@@ -7,5 +7,5 @@ import {apiDeprecated} from '../utils/js';
 export const App = AppComponent;
 apiDeprecated(
     '@xh/hoist/admin/App',
-    {v: 'v55', msg: 'Use @xh/hoist/admin/AppComponent instead.'}
+    {v: 'v55', msg: 'Use @xh/hoist/admin/AppComponent instead'}
 );

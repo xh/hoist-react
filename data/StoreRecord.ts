@@ -27,14 +27,14 @@ import {Field} from './Field';
  */
 export class StoreRecord {
 
-    id: StoreRecordId;
-    parentId: StoreRecordId;
-    store: Store;
-    isSummary: boolean;
-    treePath: StoreRecordId[];
+    readonly id: StoreRecordId;
+    readonly parentId: StoreRecordId;
+    readonly store: Store;
+    readonly isSummary: boolean;
+    readonly treePath: StoreRecordId[];
 
     /** Raw data loaded into via Store.loadData() or Store.updateData(). */
-    raw: PlainObject;
+    readonly raw: PlainObject;
 
     /**
      * An object containing the current field values for this record.
@@ -44,7 +44,7 @@ export class StoreRecord {
      *
      * Call {@link getValues} for an object providing an explicit enumeration of all field values.
      */
-    data: PlainObject;
+    readonly data: PlainObject;
 
     /**
      * An object containing the fully committed field values for this record.
@@ -52,7 +52,7 @@ export class StoreRecord {
      * This object has the same form as `data`. If this record has not been locally modified, this
      * property will point to the same object as `data`.
      */
-    committedData: Record<string, any>;
+    readonly committedData: Record<string, any>;
 
     /**
      * Unique ID for representing record within ag-Grid node API.
@@ -60,7 +60,7 @@ export class StoreRecord {
      * A string variant of the main record ID.  It should be used when trying to identify or
      * locate the record using the ag-Grid callbacks and API.
      */
-    agId: string;
+    readonly agId: string;
 
     get isRecord():boolean {return true}
 

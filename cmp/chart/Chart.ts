@@ -91,7 +91,7 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
 
 
 class ChartLocalModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     @lookup(ChartModel)
     model: ChartModel;
@@ -100,7 +100,7 @@ class ChartLocalModel extends HoistModel {
     contextMenu: any;
     prevSeriesConfig;
 
-    onLinked() {
+    override onLinked() {
         this.contextMenu = this.getContextMenu();
 
         this.addReaction({
@@ -222,7 +222,7 @@ class ChartLocalModel extends HoistModel {
         return {width, height};
     }
 
-    destroy() {
+    override destroy() {
         this.destroyHighChart();
         super.destroy();
     }
@@ -355,7 +355,7 @@ class ChartLocalModel extends HoistModel {
     }
 
     getThemeConfig() {
-        return XH.darkTheme ? cloneDeep(DarkTheme) : cloneDeep(LightTheme);
+        return XH.darkTheme ? structuredClone(DarkTheme) : structuredClone(LightTheme);
     }
 
     getModelConfig() {

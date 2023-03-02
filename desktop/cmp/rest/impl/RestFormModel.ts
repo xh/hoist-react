@@ -41,7 +41,7 @@ export class RestFormModel extends HoistModel {
     get editors()           {return this.parent.editors}
     get gridModel()         {return this.parent.gridModel}
     get store()             {return this.parent.store}
-    get loadModel()         {return this.store.loadSupport.loadModel}
+    override get loadModel()         {return this.store.loadSupport.loadModel}
 
     constructor(parent: RestGridModel) {
         super();

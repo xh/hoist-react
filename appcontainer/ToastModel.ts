@@ -20,7 +20,7 @@ import {ReactNode, ReactElement} from 'react';
  * will have no effect.
  */
 export class ToastModel extends HoistModel {
-    xhImpl = true;
+    override xhImpl = true;
 
     message: ReactNode;
     icon: ReactElement;
@@ -58,7 +58,7 @@ export class ToastModel extends HoistModel {
         this.isOpen = false;
     }
 
-    destroy() {
+    override destroy() {
         this.dismiss();
         super.destroy();
     }

@@ -5,24 +5,35 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import {PlainObject} from '@xh/hoist/core';
+import {CubeField} from '../CubeField';
+import {View} from '../View';
 import {BaseRow} from './BaseRow';
 
 /**
  *  Object used by views to gather Aggregate rows.
  */
 export class AggregateRow extends BaseRow {
-    get isAggregate()   {return true}
+    override get isAggregate()   {return true}
 
-    dim = null;         // null for summary row
-    dimName = null;
+    readonly dim: CubeField = null;         // null for summary row
+    readonly dimName: string = null;
 
-    constructor(view, id, children, dim, val, appliedDimensions) {
+    constructor(
+        view: View,
+        id: string,
+        children: BaseRow[],
+        dim: CubeField,
+        val: any,
+        strVal: string,
+        appliedDimensions: PlainObject
+    ) {
         super(view, id);
         const dimName = dim ? dim.name : 'Total';
 
         this.dim = dim;
         this.dimName = dimName;
-        this.data.cubeLabel = val;
+        this.data.cubeLabel = strVal;
         this.data.cubeDimension = dimName;
 
         this.initAggregate(children, dimName, val, appliedDimensions);

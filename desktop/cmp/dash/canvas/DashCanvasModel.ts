@@ -11,6 +11,7 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, computed, observable, bindable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {isOmitted} from '@xh/hoist/utils/impl';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     defaultsDeep,
@@ -21,7 +22,8 @@ import {
     some,
     sortBy,
     pick,
-    isEqual, startCase
+    isEqual,
+    startCase
 } from 'lodash';
 
 export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCanvasItemState> {
@@ -99,10 +101,19 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
     private isLoadingState: boolean;
 
     get rglLayout() {
-        return this.layout.map(it => ({
-            ...it,
-            resizeHandles: this.getView(it.i).autoHeight ? ['e'] : ['e', 's', 'se']
-        }));
+        return this.layout.map(it => {
+            const dashCanvasView = this.getView(it.i),
+                {autoHeight, viewSpec} = dashCanvasView;
+
+            return {
+                ...it,
+                resizeHandles: autoHeight ? ['e'] : ['e', 's', 'se'],
+                maxH: viewSpec.maxHeight,
+                minH: viewSpec.minHeight,
+                maxW: viewSpec.maxWidth,
+                minW: viewSpec.minWidth
+            };
+        });
     }
 
     constructor({
@@ -125,7 +136,7 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
     }: DashCanvasConfig) {
         super();
         makeObservable(this);
-        viewSpecs = viewSpecs.filter(it => !it.omit);
+        viewSpecs = viewSpecs.filter(it => !isOmitted(it));
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
             return defaultsDeep({}, cfg, viewSpecDefaults, {
@@ -133,6 +144,7 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
                 omit: false,
                 unique: false,
                 allowAdd: true,
+                allowDuplicate: true,
                 allowRemove: true,
                 allowRename: true,
                 height: 5,
@@ -337,8 +349,8 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
             prevLayout = previousViewId ? this.getViewLayout(previousViewId) : null,
             x = prevLayout?.x ?? layout?.x ?? 0,
             y = prevLayout?.y ?? layout?.y ?? this.rows,
-            h = layout?.h ?? viewSpec.height ?? 1,
-            w = layout?.w ?? viewSpec.width ?? 1;
+            h = layout?.h ?? viewSpec.height ?? viewSpec.minHeight ?? 1,
+            w = layout?.w ?? viewSpec.width ?? viewSpec.minWidth ?? 1;
 
         this.setLayout([...this.layout, {i: id, x, y, h, w}]);
         this.viewModels = [...this.viewModels, model];

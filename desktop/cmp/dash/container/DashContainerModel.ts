@@ -20,7 +20,15 @@ import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoi
 import {wait} from '@xh/hoist/promise';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {cloneDeep, defaultsDeep, find, isFinite, isNil, reject, startCase} from 'lodash';
+import {isOmitted} from '@xh/hoist/utils/impl';
+import {
+    defaultsDeep,
+    find,
+    isFinite,
+    isNil,
+    reject,
+    startCase
+} from 'lodash';
 import {createRoot} from 'react-dom/client';
 import {DashViewModel, DashViewState} from '../DashViewModel';
 import {DashContainerViewSpec} from './DashContainerViewSpec';
@@ -150,7 +158,7 @@ export class DashContainerModel extends DashModel<DashContainerViewSpec, DashVie
     }: DashContainerConfig) {
         super();
         makeObservable(this);
-        viewSpecs = viewSpecs.filter(it => !it.omit);
+        viewSpecs = viewSpecs.filter(it => !isOmitted(it));
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
             return defaultsDeep({}, cfg, viewSpecDefaults, {
@@ -531,7 +539,7 @@ export class DashContainerModel extends DashModel<DashContainerViewSpec, DashVie
     private createGoldenLayout(containerEl: HTMLElement, state: any): GoldenLayout {
         const {viewSpecs} = this,
             ret = new GoldenLayout({
-                content: convertStateToGL(cloneDeep(state), this),
+                content: convertStateToGL(structuredClone(state), this),
                 settings: {
                     // Remove icons by default
                     showPopoutIcon: false,

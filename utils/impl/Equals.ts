@@ -8,7 +8,7 @@
 /**
  * @internal
  */
-export function shallowEqualArrays(a: [], b: []): boolean {
+export function shallowEqualArrays<T = any>(a: T[], b: T[]): boolean {
     if (a === b) return true;
     if (!a || !b) return false;
 
