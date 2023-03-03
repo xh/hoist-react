@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 @import '../../styles/helpers';
@@ -34,6 +34,14 @@
 
     .lm_controls {
       position: relative;
+      display: flex;
+      align-items: center;
+
+      .lm_tabdropdown {
+        &::before {
+          color: var(--xh-button-text-color);
+        }
+      }
     }
 
     .lm_tab {
@@ -96,8 +104,23 @@
     }
   }
 
-  .lm_tabdropdown_list .lm_tab {
-    border-bottom: var(--xh-border-solid);
+  .lm_tabdropdown_list {
+    background-color: var(--xh-menu-bg);
+    border: var(--xh-menu-border);
+    padding: 0;
+
+    .lm_tab {
+      background-color: var(--xh-menu-bg);
+      color: var(--xh-menu-item-text-color);
+      font-size: var(--xh-menu-item-font-size-px);
+      border: none;
+      margin: 0;
+      height: 30px;
+
+      &:hover {
+        background-color: var(--xh-menu-item-highlight-bg);
+      }
+    }
   }
 
   .lm_splitter {

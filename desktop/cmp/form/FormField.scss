@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 .xh-form-field {
@@ -15,31 +15,39 @@
     padding: 0 0 3px;
   }
 
-  .xh-form-field-fill {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-
-    .xh-input {
-      .bp3-input-group {
-        width: 100%;
-      }
-
-      &.bp3-popover-target,
-      .bp3-popover-target {
-        display: block;
-      }
+  .xh-form-field-inner {
+    // Used for unsizeable children
+    &--block {
+      display: block;
     }
 
-    .bp3-popover-wrapper:not(.xh-form-field-error-msg) {
-      display: flex;
+    // Used for sizeable children that should fill the FormField
+    &--flex {
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
 
-      & > .bp3-popover-target,
-      & > .bp3-popover-target > .bp3-control-group {
+      .xh-input {
+        .bp4-input-group {
+          width: 100%;
+        }
+
+        &.bp4-popover-target,
+        .bp4-popover-target {
+          display: block;
+        }
+      }
+
+      .bp4-popover-wrapper:not(.xh-form-field-error-msg) {
         display: flex;
         flex: 1;
+
+        & > .bp4-popover-target,
+        & > .bp4-popover-target > .bp4-control-group {
+          display: flex;
+          flex: 1;
+        }
       }
     }
   }
@@ -71,12 +79,30 @@
   }
 
   &.xh-form-field-readonly {
+    &.xh-form-field-json-input{
+      .xh-form-field-inner {
+        &--flex {
+          border: var(--xh-border-solid);
+          padding: var(--xh-pad-half-px);
+          background-color: var(--xh-input-disabled-bg);
+          font-family: var(--xh-font-family-mono);
+        }
+      }
+    }
+
     .xh-form-field-error-msg {
       display: none;
     }
 
+    .xh-form-field-inner {
+      &--flex {
+        overflow-y: auto;
+      }
+    }
+
     .xh-form-field-readonly-display {
       padding: 6px 0;
+      white-space: pre-wrap;
     }
   }
 
@@ -120,7 +146,7 @@ ul.xh-form-field-error-tooltip {
   align-items: baseline;
   overflow: visible !important;
 
-  .xh-form-field-fill {
+  .xh-form-field-inner--flex {
     flex-direction: row;
     align-items: center;
   }

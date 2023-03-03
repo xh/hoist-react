@@ -1,0 +1,41 @@
+// Allows inside of chart navigator mask to be draggable.
+.bp4-dialog .xh-chart {
+  pointer-events: auto;
+}
+
+// Ensure tooltips using the 'outside' flag render on top of other elements
+.highcharts-tooltip-container {
+  z-index: 9999 !important;
+}
+
+// Convenience class for optional use when specifying custom chart tooltips.
+// See Toolbox for example usage.
+.xh-chart-tooltip {
+  color: var(--xh-text-color);
+  overflow: hidden;
+  white-space: nowrap;
+  min-width: 120px;
+
+  &__title {
+    border-bottom: var(--xh-border-solid);
+    margin-bottom: var(--xh-pad-half-px);
+    padding-bottom: var(--xh-pad-half-px);
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th {
+    text-align: right;
+    padding: 0;
+  }
+
+  td {
+    text-align: right;
+    width: 100%;
+    padding: 0;
+  }
+}
+

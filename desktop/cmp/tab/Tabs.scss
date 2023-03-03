@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 .xh-tab-container {
@@ -18,17 +18,112 @@
     min-height: 0;
     flex: 1 1 0;
   }
+}
 
-  .xh-tab-switcher--top {
-    padding-bottom: var(--xh-pad-half-px);
-  }
+.xh-tab-switcher {
+  // Allow scrolling
+  &--overflow-enabled {
+    .xh-tab-switcher__scroll {
+      overflow-x: auto;
 
-  .xh-tab-switcher--bottom {
-    padding-top: var(--xh-pad-half-px);
-
-    // Flip the indicator to be on top of the tab label
-    .bp3-tab-list > .bp3-tab-indicator-wrapper {
-      top: -85%;
+      &::-webkit-scrollbar {
+        display: none;
+      }
     }
   }
+
+  &--top {
+    padding-left: var(--xh-pad-px);
+    max-width: 100%;
+  }
+
+  &--bottom {
+    padding-left: var(--xh-pad-px);
+    padding-top: var(--xh-pad-half-px);
+    max-width: 100%;
+
+    // Flip the indicator to be on top of the tab label
+    .bp4-tab[aria-selected=true] {
+      box-shadow: inset 0 3px 0 currentColor;
+    }
+  }
+
+  &--left,
+  &--right {
+    flex-direction: column;
+    max-height: 100%;
+
+    // Make overflow button full width
+    .bp4-popover-wrapper .bp4-popover-target {
+      display: block;
+
+      .xh-button {
+        width: 100%;
+      }
+    }
+  }
+
+  &__tab {
+    align-items: baseline;
+    font-family: var(--xh-tab-font-family);
+    font-size: var(--xh-tab-font-size-px);
+
+    & > svg:first-child {
+      margin: 0 0.4em 0 0;
+      min-width: 0;
+    }
+
+    & > span {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    // Close button styling
+    .xh-button {
+      align-self: center;
+      padding: 0 !important;
+      margin-left: 3px;
+      min-height: 15px;
+      min-width: 15px;
+      border-radius: 100% !important;
+    }
+  }
+
+  &__overflow-menu {
+    min-width: unset;
+
+    .xh-button {
+      padding: 0 !important;
+      min-width: 20px !important;
+      min-height: 20px !important;
+    }
+  }
+
+  .bp4-tab {
+    color: var(--xh-tab-text-color);
+
+    &[aria-disabled="true"] {
+      color: var(--xh-tab-disabled-text-color);
+    }
+
+    // Tooltip
+    .bp4-popover-wrapper,
+    .bp4-popover-target {
+      width: 100%;
+    }
+  }
+
+  // Active/hover color override
+  .bp4-tab[aria-selected="true"],
+  .bp4-tab:not([aria-disabled="true"]):hover {
+    .xh-tab-switcher__tab {
+      color: var(--xh-tab-active-text-color);
+    }
+  }
+
+  .bp4-tab[aria-selected="true"] {
+    box-shadow: inset 0 -3px 0 var(--xh-tab-active-text-color);
+  }
+
 }

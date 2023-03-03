@@ -1,12 +1,12 @@
 // Note both classes selected below to ensure higher specificity than .xh-toolbar alone.
 .xh-appbar.xh-toolbar {
   display: flex;
-  background-color: var(--xh-navbar-bg);
-  color: var(--xh-navbar-title-color);
+  background-color: var(--xh-appbar-bg);
+  color: var(--xh-appbar-title-color);
   padding: var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px) 0;
 
   .xh-appbar-title {
-    font-size: var(--xh-navbar-title-font-size-px);
+    font-size: var(--xh-appbar-title-font-size-px);
     flex: 1;
     overflow: hidden;
     white-space: nowrap;
@@ -20,6 +20,6 @@
 
   .xh-button {
     background: transparent !important;
-    color: var(--xh-navbar-title-color) !important;
+    color: var(--xh-appbar-title-color) !important;
   }
 }

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 .xh-idle-panel {
@@ -14,13 +14,13 @@
   background: var(--xh-bg-alt);
 
   &.xh-panel .xh-panel-header {
-    background-color: var(--xh-navbar-bg);
-    color: var(--xh-navbar-title-color);
+    background-color: var(--xh-appbar-bg);
+    color: var(--xh-appbar-title-color);
     padding: var(--xh-pad-half-px) var(--xh-pad-px);
     height: 38px;
 
     &__title {
-      font-size: var(--xh-navbar-title-font-size-px);
+      font-size: var(--xh-appbar-title-font-size-px);
     }
 
     & > svg {

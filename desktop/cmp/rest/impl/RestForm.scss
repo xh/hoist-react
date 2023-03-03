@@ -1,12 +1,25 @@
 .xh-rest-form {
-  width: 470px;
+  margin: 0;
+  max-height: 95vh !important;
+  width: 90vw;
+  max-width: 650px;
+
+  &__body {
+    padding: var(--xh-pad-px) var(--xh-pad-px) 0 var(--xh-pad-px);
+    overflow-y: auto;
+  }
 
   .xh-form-field {
     margin-bottom: var(--xh-pad-half-px);
   }
 
+  .xh-code-input {
+    // CodeInput does not take a box shadow - unsure why - this looks reasonable enough.
+    border: 1px solid var(--xh-form-field-box-shadow-color-top);
+  }
+
   .xh-form-field-label {
-    margin-right: var(--xh-pad-half-px);
+    margin-right: var(--xh-pad-px);
     font-weight: bold;
   }
 }

@@ -2,8 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+
+.xh-filter-chooser {
+  .bp4-popover-wrapper,
+  .bp4-popover-target {
+    display: flex;
+    flex: 1;
+  }
+}
 
 .xh-filter-chooser-option {
   padding: 0 var(--xh-pad-px);
@@ -40,17 +48,20 @@
     border-radius: 2px;
   }
 
-  &__truncated {
-    padding: var(--xh-pad-half-px) var(--xh-pad-px) !important;
-    margin-bottom: -4px;
-    font-size: var(--xh-font-size-small-px);
+  &__message {
     color: var(--xh-text-color-muted);
-    background: var(--xh-bg-alt);
-    border-top: var(--xh-border-solid);
-    border-radius: 0 0 3px 3px;
+    background: var(--xh-bg);
   }
 
-  &__suggestion {
+  &__field {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    .prefix {
+      color: var(--xh-text-color-muted);
+    }
+
     .name {
       margin-left: var(--xh-pad-half-px);
       color: var(--xh-intent-primary);
@@ -66,5 +77,50 @@
       color: var(--xh-text-color-muted);
       font-weight: bold;
     }
+  }
+
+  &__minimal-field {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--xh-intent-primary);
+  }
+}
+
+.xh-filter-chooser-favorite-icon {
+  margin-left: var(--xh-pad-half-px);
+
+  // Matched to GroupingChooser equivalent.
+  &.svg-inline--fa {
+    width: 12px;
+  }
+}
+
+.xh-filter-chooser-favorite {
+  align-items: center;
+  max-width: 50vw;
+
+  .xh-hbox {
+    flex-wrap: wrap;
+  }
+
+  .xh-button {
+    padding: 0 !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+  }
+
+  &__tag {
+    margin: 1px 3px 0 1px;
+    padding: 0 5px;
+    color: var(--xh-text-color);
+    font-size: var(--xh-font-size-small-px);
+    background-color: var(--xh-bg-alt);
+    border: var(--xh-border-solid);
+    border-radius: 2px;
+  }
+
+  &:hover {
+    background-color: var(--xh-bg-highlight);
   }
 }

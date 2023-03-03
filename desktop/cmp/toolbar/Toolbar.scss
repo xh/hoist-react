@@ -1,5 +1,6 @@
 .xh-toolbar {
   padding: var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px) var(--xh-pad-half-px);
+  font-size: var(--xh-tbar-font-size-px);
   color: var(--xh-tbar-text-color);
   background-color: var(--xh-tbar-bg);
   width: 100%;
@@ -8,7 +9,7 @@
   flex-wrap: nowrap;
 
   // Overflow box
-  .bp3-overflow-list {
+  .bp4-overflow-list {
     flex: 1;
     align-items: center;
 
@@ -16,7 +17,7 @@
       white-space: nowrap;
 
       // The overflow space needs to be able to shrink - BP checks this to determine overflow
-      &:not(.bp3-overflow-list-spacer) {
+      &:not(.bp4-overflow-list-spacer) {
         flex-shrink: 0;
       }
 
@@ -61,7 +62,7 @@
     width: var(--xh-tbar-min-size-px);
     padding: 0 var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px);
 
-    > *:not([class*='xh-no-pad']) {
+    &:not(.xh-toolbar--overflow) > *:not([class*='xh-no-pad']) {
       margin-top: var(--xh-tbar-item-pad-px);
       margin-left: 0;
     }
@@ -80,11 +81,141 @@
     }
   }
 
+  // Compact mode
+  &--compact {
+    font-size: var(--xh-tbar-compact-font-size-px);
+    // Tighten up padding on edges and between items.
+    padding-left: 0;
+    padding-right: 2px;
+    --xh-tbar-item-pad: 4;
+    --xh-tbar-item-pad-px: 4px;
+
+    &:not(.xh-toolbar--vertical) {
+      min-height: unset;
+      height: var(--xh-tbar-compact-min-size-px);
+
+      .xh-toolbar__separator {
+        height: 12px;
+      }
+    }
+
+    &.xh-toolbar--vertical {
+      width: var(--xh-tbar-compact-min-size-px);
+
+      .xh-toolbar__separator {
+        width: 12px;
+      }
+    }
+
+    // Compact toolbar buttons
+    .xh-app.xh-dark.bp4-dark &,
+    .xh-app & {
+      button.xh-button.bp4-button.xh-button--minimal,
+      button.xh-button.bp4-button.xh-button--standard,
+      button.xh-button.bp4-button.xh-button--outlined {
+        padding: 3px var(--xh-pad-half-px);
+        min-height: var(--xh-tbar-compact-item-height-px);
+        max-height: var(--xh-tbar-compact-item-height-px);
+        font-size: var(--xh-tbar-compact-font-size-px);
+
+        svg:not(:last-child) {
+          margin-right: 4px;
+        }
+      }
+    }
+
+    // Compact toolbar inputs
+    .xh-input {
+      max-height: var(--xh-tbar-compact-item-height-px);
+      min-height: var(--xh-tbar-compact-item-height-px);
+
+      .bp4-input-group {
+        // This padding reserves space for a left-icon - default 30px overly wide in compact mode.
+        .bp4-input:not(:first-child) {
+          padding-left: 20px;
+        }
+
+        > input {
+          max-height: var(--xh-tbar-compact-item-height-px);
+          min-height: var(--xh-tbar-compact-item-height-px);
+        }
+
+        // Buttons inside other input elements
+        .xh-button {
+          max-height: var(--xh-tbar-compact-item-height-px);
+          min-height: var(--xh-tbar-compact-item-height-px);
+          margin: 0 !important;
+        }
+
+        // Inline input icons made smaller, lighter, and alignment tweaked.
+        svg:not(.bp4-icon) {
+          font-size: var(--xh-tbar-compact-font-size-px);
+          margin: 5px 2px 5px 4px;
+          opacity: 0.6;
+        }
+      }
+
+      &.xh-switch-input {
+        display: flex;
+        align-items: center;
+
+        .bp4-control-indicator {
+          margin-top: 1px;
+          margin-right: var(--xh-pad-half-px);
+        }
+      }
+
+      &.xh-switch-input.bp4-align-right {
+        flex-direction: row-reverse;
+        padding-right: 0;
+      }
+
+      &.xh-select {
+        display: flex;
+        align-items: center;
+
+        .xh-select__control {
+          max-height: var(--xh-tbar-compact-item-height-px);
+          min-height: var(--xh-tbar-compact-item-height-px);
+
+          // Matched to other inline input icons (above).
+          &__left-icon {
+            font-size: var(--xh-tbar-compact-font-size-px);
+            margin: 5px 2px 5px 4px;
+            opacity: 0.6;
+          }
+        }
+
+        .xh-select__value-container {
+          max-height: var(--xh-tbar-compact-item-height-px);
+          min-height: var(--xh-tbar-compact-item-height-px);
+
+          // No need for padding if there is a leading leftIcon.
+          &:not(:first-child) {
+            padding-left: 0;
+          }
+
+          & > * {
+            margin-top: 0;
+            margin-bottom: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+          }
+
+          // Ensure multi-val tags fit w/o scrolling.
+          .xh-select__multi-value__label {
+            padding: 2px 0 0 4px;
+          }
+        }
+      }
+    }
+  }
+
   // Form field margins (if set) are not desired within Toolbars.
-  .bp3-control {
+  .bp4-control {
     margin-bottom: 0;
 
-    &.bp3-inline {
+    &.bp4-inline {
       margin-right: 0;
     }
   }
@@ -93,12 +224,12 @@
 .xh-toolbar-overflow-popover {
   border: 1px solid var(--xh-tbar-border-color);
 
-  .bp3-popover-arrow-border,
-  .bp3-popover-arrow-fill {
+  .bp4-popover-arrow-border,
+  .bp4-popover-arrow-fill {
     fill: var(--xh-tbar-border-color) !important;
   }
 
-  .bp3-popover-content {
+  .bp4-popover-content {
     color: var(--xh-tbar-text-color);
     background-color: var(--xh-tbar-bg);
 

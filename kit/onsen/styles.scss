@@ -18,7 +18,7 @@
     }
   }
 
-  &:not(.xh-input-label) {
+  &:not(.xh-input-label):not(.xh-button-group):not(.xh-switch-input):not(.xh-check-box) {
     font-size: 14px;
     border: var(--xh-border-solid);
     border-radius: var(--xh-border-radius-px);
@@ -26,25 +26,13 @@
     &:not(.xh-input-invalid):focus-within {
       border-color: var(--xh-focus-outline-color);
     }
-  }
 
-  &.xh-input-invalid {
-    border: var(--xh-form-field-invalid-border);
+    &.xh-input-invalid {
+      border: var(--xh-form-field-invalid-border);
+    }
   }
 }
 
 .xh-grid .ag-body-viewport::-webkit-scrollbar {
   display: none;
-}
-
-//--------------------
-// Onsen Overrides
-//--------------------
-.bottom-bar > .button {
-  margin: 6px 4px;
-  line-height: 26px;
-}
-
-.dialog {
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
 }

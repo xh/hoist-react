@@ -1,12 +1,8 @@
+@use "sass:string";
+
 // Helper functions (via https://gist.github.com/JacobDB/0ffffaf8e772c12acf7102edb8a302be)
-@function str-replace($string, $search, $replace: '') {
-  $index: str-index($string, $search);
-
-  @if $index {
-    @return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
-  }
-
-  @return $string;
+@function inline-svg($string) {
+  @return url('data:image/svg+xml,#{url-encode($string)}');
 }
 
 @function url-encode($string) {
@@ -45,6 +41,12 @@
   @return $new;
 }
 
-@function inline-svg($string) {
-  @return url('data:image/svg+xml,#{url-encode($string)}');
+@function str-replace($string, $search, $replace: '') {
+  $index: string.index($string, $search);
+
+  @if $index {
+    @return string.slice($string, 1, $index - 1) + $replace + str-replace(string.slice($string, $index + string.length($search)), $search, $replace);
+  }
+
+  @return $string;
 }

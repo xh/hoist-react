@@ -1,6 +1,15 @@
+// Unset Onsen CSS vars that conflict with hoist override vars
+:root {
+  --text-color: initial;
+  --border-color: initial;
+  --input-text-color: initial;
+  --input-placeholder-color: initial;
+  --font-size: initial;
+  --button-text-color: initial;
+}
+
 // Override styles provided in onsenui.css and onsen-css-components.css to use variable declarations
 body.xh-app.xh-mobile {
-
   // Background
   .page,
   .page__content,
@@ -39,14 +48,10 @@ body.xh-app.xh-mobile {
     background-image: none;
   }
 
-  .toolbar,
-  .list,
-  .list-item,
-  .list-item--longdivider {
+  .toolbar {
     border-bottom: var(--xh-border-solid);
   }
 
-  .list--inset,
   .textarea {
     border: var(--xh-border-solid);
   }
@@ -55,64 +60,9 @@ body.xh-app.xh-mobile {
     border-color: var(--xh-border-color);
   }
 
-  // Grids
-  .list {
-    border-top: var(--xh-border-solid);
-    background-color: var(--xh-grid-bg);
-  }
-
-  .list-header {
-    background-color: var(--xh-grid-header-bg);
-  }
-
-  .list-item {
-    border-color: var(--xh-grid-border-color);
-    color: var(--xh-text-color);
-    margin-top: 1px;
-  }
-
-  .list-item:nth-child(odd) {
-    background-color: var(--xh-grid-bg-odd);
-  }
-
-  .list-item--tappable:active {
-    background-color: var(--xh-list-select-color);
-  }
-
-  // Buttons
-  .button:not(.button--outline):not(.button--quiet):not(.button--light) {
-    background-color: var(--xh-button-bg);
-    color: var(--xh-button-text-color);
-
-    &:active {
-      background-color: var(--xh-button-active-bg);
-      color: var(--xh-button-active-text-color);
-    }
-  }
-
-  .button--outline,
-  .button--outline:active,
-  .button--outline:hover {
-    border-color: var(--xh-button-bg);
-    color: var(--xh-button-bg);
-  }
-
-  .button--light,
-  .button--light:active,
-  .button--light:hover {
-    border-color: var(--xh-text-color-muted);
-    color: var(--xh-text-color-muted);
-  }
-
-  .button--quiet,
-  .button--quiet:active,
-  .tabbar__button {
-    color: var(--xh-text-color);
-  }
-
-  // Dialogs
-  .dialog-container {
-    border: var(--xh-border-solid);
+  .bottom-bar > .button {
+    margin: 6px 4px;
+    line-height: 26px;
   }
 
   // Accented
