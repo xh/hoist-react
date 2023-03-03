@@ -105,6 +105,12 @@ export class ValuesTabModel extends HoistModel {
             without(this.pendingValues, ...values);
     }
 
+    toggleAllRecsChecked() {
+        const setAllToChecked = !this.allVisibleRecsChecked,
+            values = this.gridModel.store.records.map(it => it.get('value'));
+        this.setRecsChecked(setAllToChecked, values);
+    }
+
     //-------------------
     // Implementation
     //-------------------
@@ -175,13 +181,13 @@ export class ValuesTabModel extends HoistModel {
 
     private createGridModel() {
         const {BLANK_PLACEHOLDER} = GridFilterModel,
-            {align, headerAlign, displayName} = this.headerFilterModel.column,
-            {fieldType} = this.headerFilterModel,
-            renderer = this.fieldSpec.renderer ?? (fieldType !== 'tags' ? this.headerFilterModel.column.renderer : null);
+            {headerFilterModel, fieldSpec} = this,
+            {fieldType} = headerFilterModel,
+            renderer = fieldSpec.renderer ?? (fieldType !== 'tags' ? this.headerFilterModel.column.renderer : null);
 
         return new GridModel({
             store: {
-                idSpec: (raw) => this.fieldSpec.getUniqueValue(raw.value).toString(),
+                idSpec: (raw) => fieldSpec.getUniqueValue(raw.value).toString(),
                 fields: [
                     {name: 'value', type: 'auto'},
                     {name: 'isChecked', type: 'bool'}
@@ -190,7 +196,10 @@ export class ValuesTabModel extends HoistModel {
             selModel: 'disabled',
             emptyText: 'No records found...',
             contextMenu: null,
-            autosizeOptions: {mode: 'disabled'},
+            // Autosize enabled to ensure that long values don't get clipped and user can scroll
+            // right if necessary to view full string. For longer strings that differ only in their
+            // endings this is important - e.g. instrument or contract names ending in a date.
+            autosizeOptions: {mode: 'managed'},
             sizingMode: 'compact',
             stripeRows: false,
             sortBy: 'value',
@@ -202,16 +211,18 @@ export class ValuesTabModel extends HoistModel {
                 {
                     field: 'isChecked',
                     headerName: ({gridModel}) => {
-                        const {store} = gridModel,
-                            values = store.records.map(it => it.get('value'));
                         return checkbox({
-                            disabled: store.empty,
+                            disabled: gridModel.store.empty,
                             displayUnsetState: true,
                             value: this.allVisibleRecsChecked,
-                            onChange: () => this.setRecsChecked(!this.allVisibleRecsChecked, values)
+                            onChange: () => this.toggleAllRecsChecked()
                         });
                     },
-                    width: 30,
+                    width: 28,
+                    autosizable: false,
+                    pinned: true,
+                    align: 'center',
+                    headerAlign: 'center',
                     rendererIsComplex: true,
                     renderer: (v, {record}) => {
                         return checkbox({
@@ -223,10 +234,8 @@ export class ValuesTabModel extends HoistModel {
                 },
                 {
                     field: 'value',
-                    flex: 1,
-                    displayName,
-                    align,
-                    headerAlign,
+                    displayName: '(Select All)',
+                    align: 'left',
                     comparator: (v1, v2, sortDir, abs, {defaultComparator}) => {
                         const mul = sortDir === 'desc' ? -1 : 1;
                         if (v1 === BLANK_PLACEHOLDER) return 1 * mul;
