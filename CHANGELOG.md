@@ -2,7 +2,10 @@
 
 ## v56.0.0-SNAPSHOT - under development
 
-* Coming soon....
+### 🐞 Bug Fixes
+
+* Grid column filters scroll their internal grid horizontally to avoid clipping longer values.
+* Minor improvements to the same grid filter dialog's alignment and labelling.
 
 ## v55.2.1 - 2023-02-24
 
