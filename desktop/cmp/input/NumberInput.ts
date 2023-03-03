@@ -36,9 +36,6 @@ export interface NumberInputProps extends
     /** True to convert entries suffixed with k/m/b to thousands/millions/billions. */
     enableShorthandUnits?: boolean;
 
-    /** True to take up the full width of container. */
-    fill?: boolean;
-
     /** Ref handler that receives HTML <input> element backing this component. */
     inputRef?: Ref<HTMLInputElement>;
 
@@ -230,7 +227,7 @@ class NumberInputModel extends HoistInputModel {
 
 const cmp = hoistCmp.factory<NumberInputModel>(
     ({model, className, ...props}, ref) => {
-        const {width, ...layoutProps} = getLayoutProps(props),
+        const {width, flex, ...layoutProps} = getLayoutProps(props),
             renderValue = model.formatRenderValue(model.renderValue);
 
         // BP workaround -- min, max, and stepsize can block Blueprint from rendering
@@ -256,7 +253,6 @@ const cmp = hoistCmp.factory<NumberInputModel>(
             allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
             buttonPosition: 'none',
             disabled: props.disabled,
-            fill: props.fill,
             inputRef: composeRefs(model.inputRef, props.inputRef),
             leftIcon: props.leftIcon,
             min: props.min,
@@ -275,6 +271,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(
                 ...props.style,
                 ...layoutProps,
                 width: withDefault(width, 200),
+                flex: withDefault(flex, null),
                 textAlign: withDefault(props.textAlign, 'right')
             },
             onBlur: model.onBlur,

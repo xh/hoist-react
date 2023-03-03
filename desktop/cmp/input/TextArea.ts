@@ -28,9 +28,6 @@ export interface TextAreaProps extends
     /** True to commit on every change/keystroke, default false. */
     commitOnChange?: boolean;
 
-    /** True to take up the full width of container. */
-    fill?: boolean;
-
     /** Ref handler that receives HTML <input> element backing this component. */
     inputRef?: Ref<HTMLInputElement>;
 
@@ -88,14 +85,13 @@ class TextAreaInputModel extends HoistInputModel {
 
 const cmp = hoistCmp.factory<TextAreaInputModel>(
     ({model, className, ...props}, ref) => {
-        const {width, height, ...layoutProps} = getLayoutProps(props);
+        const {width, height, flex, ...layoutProps} = getLayoutProps(props);
 
         return bpTextarea({
             value: model.renderValue || '',
 
             autoFocus: props.autoFocus,
             disabled: props.disabled,
-            fill: props.fill,
             inputRef: composeRefs(model.inputRef, props.inputRef),
             placeholder: props.placeholder,
             spellCheck: withDefault(props.spellCheck, false),
@@ -107,9 +103,9 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(
                 ...props.style,
                 ...layoutProps,
                 width: withDefault(width, 300),
-                height: withDefault(height, 100)
+                height: withDefault(height, 100),
+                flex: withDefault(flex, null)
             },
-
             onBlur: model.onBlur,
             onChange: model.onChange,
             onFocus: model.onFocus,
