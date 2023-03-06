@@ -14,7 +14,7 @@ import {
     RecordActionSpec,
     StoreRecord
 } from '@xh/hoist/data';
-import {apiDeprecated, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {
     castArray,
@@ -534,12 +534,6 @@ export class Column {
             ...rest
         }: ColumnSpec = spec;
 
-        // Extract deprecated properties from rest. All other properties in rest are unsupported.
-        const {tooltipElement, ...unsupported} = rest as any;
-        if (tooltipElement) {
-            apiDeprecated('Column.tooltipElement', {msg: 'Use `tooltip` instead', v: 'v57'});
-        }
-
         this.field = this.parseField(field);
         this.enableDotSeparatedFieldPath = withDefault(enableDotSeparatedFieldPath, true);
         if (this.field) {
@@ -606,7 +600,7 @@ export class Column {
         this.rendererIsComplex = rendererIsComplex;
         this.highlightOnChange = highlightOnChange;
 
-        this.tooltip = tooltip ?? tooltipElement;
+        this.tooltip = tooltip;
 
         this.chooserName = chooserName || this.displayName;
         this.chooserGroup = chooserGroup;
@@ -649,8 +643,8 @@ export class Column {
         warnIf(this.agOptions.valueSetter, `Column '${this.colId}' uses valueSetter through agOptions. Remove and use custom setValueFn if needed.`);
         warnIf(this.agOptions.valueGetter, `Column '${this.colId}' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`);
 
-        if (!isEmpty(unsupported)) {
-            const keys = keysIn(unsupported);
+        if (!isEmpty(rest)) {
+            const keys = keysIn(rest);
             throw XH.exception(
                 `Column '${this.colId}' configured with unsupported key(s) '${keys}'. Custom config data must be nested within the 'appData' property.`
             );

@@ -1163,10 +1163,7 @@ export class GridModel extends HoistModel {
         // Ensure *any* tooltip setting on column itself always wins.
         if (this.colDefaults && !this.isGroupSpec(config)) {
             let colDefaults = {...this.colDefaults} as any;
-            if (config.tooltip || (config as any).tooltipElement) {
-                colDefaults.tooltip = null;
-                colDefaults.tooltipElement = null;
-            }
+            if (config.tooltip) colDefaults.tooltip = null;
             config = defaultsDeep({}, config, colDefaults);
         }
 

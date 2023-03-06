@@ -70,24 +70,27 @@ const content = hoistCmp.factory({
 const bbar = hoistCmp.factory<ColumnHeaderFilterModel>({
     render({model}) {
         const {commitOnChange} = model;
-        return toolbar(
-            filler(),
-            button({
-                icon: Icon.delete(),
-                text: 'Clear Filter',
-                intent: 'danger',
-                disabled: !model.hasFilter,
-                onClick: () => model.clear()
-            }),
-            button({
-                omit: commitOnChange,
-                icon: Icon.check(),
-                text: 'Apply Filter',
-                intent: 'success',
-                disabled: !model.hasFilter && !model.hasPendingFilter,
-                onClick: () => model.commit()
-            })
-        );
+        return toolbar({
+            compact: true,
+            items: [
+                filler(),
+                button({
+                    icon: Icon.delete(),
+                    text: 'Clear Filter',
+                    intent: 'danger',
+                    disabled: !model.hasFilter,
+                    onClick: () => model.clear()
+                }),
+                button({
+                    omit: commitOnChange,
+                    icon: Icon.check(),
+                    text: 'Apply Filter',
+                    intent: 'success',
+                    disabled: !model.hasFilter && !model.hasPendingFilter,
+                    onClick: () => model.commit()
+                })
+            ]
+        });
     }
 });
 
