@@ -27,8 +27,6 @@
     // Header height fixed to zero - avoid 1px border creating a gap at top of grid.
     .ag-header {
       border: none;
-      height: 0 !important;
-      min-height: 0 !important;
     }
 
     // Always suppress agGrid-provided horizontal scrollbar - we never want it for DVs.

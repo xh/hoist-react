@@ -9,7 +9,6 @@
 // This should use height: auto rather than height: 100%, to allow layoutConfig to work.
 .xh-ag-grid > div {
   width: 100%;
-  height: auto !important;
 }
 
 .xh-mobile {
@@ -162,13 +161,6 @@
   .ag-row-hover.ag-row-selected::before,
   .ag-row-selected::before {
     background: none;
-  }
-
-  &--hide-headers {
-    .ag-header {
-      height: 0 !important;
-      min-height: 0 !important;
-    }
   }
 
   //------------------------
