@@ -9,7 +9,7 @@ import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cm
 import {hoistCmp, LayoutProps, HoistProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {Ref} from 'react';
 import './TextArea.scss';
@@ -51,6 +51,7 @@ export const [TextArea, textArea] = hoistCmp.withFactory<TextAreaProps>({
     displayName: 'TextArea',
     className: 'xh-text-area',
     render(props, ref) {
+        apiRemoved(`fill`, {test: props, msg: 'Use the `flex` prop instead.', v: '58'});
         return useHoistInputModel(cmp, props, ref, TextAreaInputModel);
     }
 });

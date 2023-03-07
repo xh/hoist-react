@@ -5,10 +5,13 @@
 ### 💥 Breaking Changes
 
 * The use of `tooltipElement` on `Column` is removed. Use `tooltip` instead.
+* The prop `fill` on `TextArea` and `NumberInput` component has been removed.  Use the standard
+  flex` layout prop instead.
 * The previously deprecated properties on mobile buttons `Button.modifier.outline` and
  `Button.modifier.quiet` have been removed.
 * The previously deprecated property `AppMenuButton.extraItems.onClick` has been removed.  Use
 `actionFn` instead.
+
 
 ## v55.3.0 - 2023-03-03
 
