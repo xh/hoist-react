@@ -354,14 +354,14 @@
     display: none;
   }
 
-  // Default minimal styling. This is not applied when using a custom tooltipElement.
+  // Default minimal styling. This is not applied when using a custom tooltip.
   &--default {
     padding: var(--xh-pad-half-px);
     background: var(--xh-bg);
     border: var(--xh-border-solid);
   }
 
-  // Validation tooltip styling. Adjust depending on if within a default tooltip or custom tooltipElement.
+  // Validation tooltip styling. Adjust depending on if within a default or custom tooltip.
   &--validation {
     margin: 0;
 

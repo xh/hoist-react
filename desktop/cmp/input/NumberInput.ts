@@ -11,7 +11,7 @@ import '@xh/hoist/desktop/register';
 import {fmtNumber, parseNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
-import {debounced, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved, debounced, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber, round} from 'lodash';
 import {ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
@@ -35,9 +35,6 @@ export interface NumberInputProps extends
 
     /** True to convert entries suffixed with k/m/b to thousands/millions/billions. */
     enableShorthandUnits?: boolean;
-
-    /** True to take up the full width of container. */
-    fill?: boolean;
 
     /** Ref handler that receives HTML <input> element backing this component. */
     inputRef?: Ref<HTMLInputElement>;
@@ -121,6 +118,7 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>
     displayName: 'NumberInput',
     className: 'xh-number-input',
     render(props, ref) {
+        apiRemoved(`fill`, {test: props['fill'], msg: 'Use the `flex` prop instead.', v: '58'});
         return useHoistInputModel(cmp, props, ref, NumberInputModel);
     }
 });
@@ -230,7 +228,7 @@ class NumberInputModel extends HoistInputModel {
 
 const cmp = hoistCmp.factory<NumberInputModel>(
     ({model, className, ...props}, ref) => {
-        const {width, ...layoutProps} = getLayoutProps(props),
+        const {width, flex, ...layoutProps} = getLayoutProps(props),
             renderValue = model.formatRenderValue(model.renderValue);
 
         // BP workaround -- min, max, and stepsize can block Blueprint from rendering
@@ -256,7 +254,6 @@ const cmp = hoistCmp.factory<NumberInputModel>(
             allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
             buttonPosition: 'none',
             disabled: props.disabled,
-            fill: props.fill,
             inputRef: composeRefs(model.inputRef, props.inputRef),
             leftIcon: props.leftIcon,
             min: props.min,
@@ -275,6 +272,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(
                 ...props.style,
                 ...layoutProps,
                 width: withDefault(width, 200),
+                flex: withDefault(flex, null),
                 textAlign: withDefault(props.textAlign, 'right')
             },
             onBlur: model.onBlur,
