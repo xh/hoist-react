@@ -8,7 +8,6 @@ import {hspacer} from '@xh/hoist/cmp/layout';
 import {LayoutProps, StyleProps, hoistCmp, HoistModel, HoistProps, Intent} from '@xh/hoist/core';
 import {button as onsenButton} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
-import {apiDeprecated} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {ReactNode, ReactElement, MouseEvent} from 'react';
@@ -59,15 +58,6 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
         } = nonLayoutProps;
 
         let {outlined, minimal} = nonLayoutProps;
-        if (rest?.modifier === 'outline') {
-            apiDeprecated('Button.modifier = `outline`', {msg: 'Use `outlined` instead', v: 'v47'});
-            outlined = outlined ?? true;
-        }
-        if (rest?.modifier === 'quiet') {
-            apiDeprecated('Button.modifier = `quiet`', {msg: 'Use `minimal` instead', v: 'v47'});
-            minimal = minimal ?? true;
-        }
-
         if (disabled) {
             classes.push('xh-button--disabled');
         } else {

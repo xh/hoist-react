@@ -1,8 +1,23 @@
 # Changelog
 
-## v56.0.0-SNAPSHOT - under development
+## v56.0.0-SNAPSHOT - unreleased
 
-* Coming soon....
+### 💥 Breaking Changes
+
+* The use of `tooltipElement` on `Column` is removed. Use `tooltip` instead.
+* The previously deprecated properties on mobile buttons `Button.modifier.outline` and
+ `Button.modifier.quiet` have been removed.
+* The previously deprecated property `AppMenuButton.extraItems.onClick` has been removed.  Use
+`actionFn` instead.
+
+## v55.3.0 - 2023-03-03
+
+### 🐞 Bug Fixes
+* Grid column filters scroll their internal grid horizontally to avoid clipping longer values.
+* Minor improvements to the same grid filter dialog's alignment and labelling.
+
+### ⚙️ Technical
+* Use native `structuredClone` instead of lodash `deepClone` throughout toolkit.
 
 ## v55.2.1 - 2023-02-24
 
