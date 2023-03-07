@@ -2,6 +2,9 @@
 
 ## v56.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* The use of `tooltipElement` on `Column` is removed. Use `tooltip` instead.
 
 ## v55.3.0 - 2023-03-03
 
