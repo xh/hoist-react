@@ -5,6 +5,10 @@
 ### 💥 Breaking Changes
 
 * The use of `tooltipElement` on `Column` is removed. Use `tooltip` instead.
+* The previously deprecated properties on mobile buttons `Button.modifier.outline` and
+ `Button.modifier.quiet` have been removed.
+* The previously deprecated property `AppMenuButton.extraItems.onClick` has been removed.  Use
+`actionFn` instead.
 
 ## v55.3.0 - 2023-03-03
 
