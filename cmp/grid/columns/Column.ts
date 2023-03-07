@@ -645,7 +645,7 @@ export class Column {
 
         if (!isEmpty(rest)) {
             const keys = keysIn(rest);
-            apiRemoved('tooltipElement', {test: rest, msg: 'Use tooltip property instead.', v: '58'});
+            apiRemoved('tooltipElement', {test: rest['tooltipElement'], msg: 'Use tooltip property instead.', v: '58'});
             throw XH.exception(
                 `Column '${this.colId}' configured with unsupported key(s) '${keys}'. Custom config data must be nested within the 'appData' property.`
             );

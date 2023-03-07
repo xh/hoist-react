@@ -9,7 +9,7 @@ import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cm
 import {hoistCmp, LayoutProps, HoistProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {Ref} from 'react';
 import './TextArea.scss';
@@ -27,9 +27,6 @@ export interface TextAreaProps extends
 
     /** True to commit on every change/keystroke, default false. */
     commitOnChange?: boolean;
-
-    /** True to take up the full width of container. */
-    fill?: boolean;
 
     /** Ref handler that receives HTML <input> element backing this component. */
     inputRef?: Ref<HTMLInputElement>;
@@ -54,6 +51,7 @@ export const [TextArea, textArea] = hoistCmp.withFactory<TextAreaProps>({
     displayName: 'TextArea',
     className: 'xh-text-area',
     render(props, ref) {
+        apiRemoved(`fill`, {test: props['fill'], msg: 'Use the `flex` prop instead.', v: '58'});
         return useHoistInputModel(cmp, props, ref, TextAreaInputModel);
     }
 });
@@ -88,14 +86,13 @@ class TextAreaInputModel extends HoistInputModel {
 
 const cmp = hoistCmp.factory<TextAreaInputModel>(
     ({model, className, ...props}, ref) => {
-        const {width, height, ...layoutProps} = getLayoutProps(props);
+        const {width, height, flex, ...layoutProps} = getLayoutProps(props);
 
         return bpTextarea({
             value: model.renderValue || '',
 
             autoFocus: props.autoFocus,
             disabled: props.disabled,
-            fill: props.fill,
             inputRef: composeRefs(model.inputRef, props.inputRef),
             placeholder: props.placeholder,
             spellCheck: withDefault(props.spellCheck, false),
@@ -107,9 +104,9 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(
                 ...props.style,
                 ...layoutProps,
                 width: withDefault(width, 300),
-                height: withDefault(height, 100)
+                height: withDefault(height, 100),
+                flex: withDefault(flex, null)
             },
-
             onBlur: model.onBlur,
             onChange: model.onChange,
             onFocus: model.onFocus,
