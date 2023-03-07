@@ -118,7 +118,7 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>
     displayName: 'NumberInput',
     className: 'xh-number-input',
     render(props, ref) {
-        apiRemoved(`fill`, {test: props, msg: 'Use the `flex` prop instead.', v: '58'});
+        apiRemoved(`fill`, {test: props['fill'], msg: 'Use the `flex` prop instead.', v: '58'});
         return useHoistInputModel(cmp, props, ref, NumberInputModel);
     }
 });

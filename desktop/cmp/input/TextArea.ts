@@ -51,7 +51,7 @@ export const [TextArea, textArea] = hoistCmp.withFactory<TextAreaProps>({
     displayName: 'TextArea',
     className: 'xh-text-area',
     render(props, ref) {
-        apiRemoved(`fill`, {test: props, msg: 'Use the `flex` prop instead.', v: '58'});
+        apiRemoved(`fill`, {test: props['fill'], msg: 'Use the `flex` prop instead.', v: '58'});
         return useHoistInputModel(cmp, props, ref, TextAreaInputModel);
     }
 });
