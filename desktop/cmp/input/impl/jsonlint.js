@@ -25,7 +25,7 @@
  */
 
 /**
- * @private
+ * @internal
  */
 /* Jison generated parser */
 export const jsonlint = (function(){

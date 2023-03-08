@@ -122,4 +122,4 @@ From within the IDE's general preferences / settings dialog:
 
 📫☎️🌎 info@xh.io | <https://xh.io/contact>
 
-Copyright © 2021 Extremely Heavy Industries Inc.
+Copyright © 2022 Extremely Heavy Industries Inc.

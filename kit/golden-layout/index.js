@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import GoldenLayout from 'golden-layout';
 import jquery from 'jquery';
@@ -11,6 +11,7 @@ import 'golden-layout/src/css/goldenlayout-light-theme.css';
 import {uniqueId} from 'lodash';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {createRoot} from 'react-dom/client';
 import './styles.scss';
 
 // GoldenLayout looks for globally available React and ReactDOM.
@@ -25,15 +26,26 @@ window.ReactDOM = ReactDOM;
 const ReactComponentHandler = GoldenLayout['__lm'].utils.ReactComponentHandler;
 class ReactComponentHandlerPatched extends ReactComponentHandler {
 
+    // Keep reference to the root for unmounting.
+    _root = null;
+
     // Remove wiring up `componentWillUpdate` and `setState`. These methods don't work
     // with functional components.
     _render() {
         this._reactComponent = this._getReactComponent();
-        ReactDOM.render(this._reactComponent, this._container.getElement()[0]);
+        if (!this._root) this._root = createRoot(this._container.getElement()[0]);
+        this._root.render(this._reactComponent);
+    }
+
+    // Unmount the root rather than use outdated `ReactDOM.unmountComponentAtNode`
+    _destroy() {
+        this._root.unmount();
+        this._container.off('open', this._render, this);
+        this._container.off('destroy', this._destroy, this);
     }
 
     // Modify this to generate a unique id and pass it through.
-    // Also ensures any state is provided to the DashView via props.
+    // Also ensures any state is provided to the DashContainerView via props.
     // This enables us to associate DashViewModels with GoldenLayout react component instances.
     _getReactComponent() {
         const {icon, title, state} = this._container._config;
@@ -59,9 +71,9 @@ GoldenLayout['__lm'].utils.ReactComponentHandler = ReactComponentHandlerPatched;
 const DragListener = GoldenLayout['__lm'].utils.DragListener;
 class DragListenerPatched extends DragListener {
     onMouseDown(oEvent) {
-        oEvent.preventDefault();
-
         // PATCH BEGINS
+        if (oEvent.cancelable) oEvent.preventDefault();
+
         if (oEvent.type === 'touchstart') {
             this._touchTarget = oEvent.target;
 
@@ -87,7 +99,14 @@ class DragListenerPatched extends DragListener {
             this._oDocument.on('mousemove touchmove', this._fMove);
             this._oDocument.one('mouseup touchend', this._fUp);
 
-            this._timeout = setTimeout(GoldenLayout['__lm'].utils.fnBind(this._startDrag, this), this._nDelay);
+            // PATCH BEGINS
+            // Extend time held to begin drag for stationary touch events. Note that this should be
+            // quite long to allow for showing the context menu on a shorter hold. The user can
+            // initiate a drag at any time in the interim by moving their touch.
+            const ms = oEvent.type === 'touchstart' ? 3000 : this._nDelay;
+            this._touchStart = Date.now();
+            this._timeout = setTimeout(GoldenLayout['__lm'].utils.fnBind(this._startDrag, this), ms);
+            // PATCH ENDS
         }
     }
 
@@ -110,7 +129,14 @@ class DragListenerPatched extends DragListener {
             if (this._bDragging === true) {
                 this._bDragging = false;
                 this.emit('dragStop', oEvent, this._nOriginalX + this._nX);
+            // PATCH BEGINS
+            // If the touch is released *before* dragging has started, trigger the context menu
+            // event. We still require a minimum about of time to pass, to differentiate from
+            // taps to change the selected tab.
+            } else if (oEvent.type === 'touchend' && Date.now() - this._touchStart > 800) {
+                this._eElement.trigger('contextmenu');
             }
+            // PATCH ENDS
         }
     }
 }

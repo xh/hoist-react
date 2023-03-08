@@ -19,25 +19,30 @@
     background: var(--xh-bg);
   }
 
-  text > tspan {
-    font-family: var(--xh-font-family);
-    font-size: var(--xh-font-size-small-px);
-    font-weight: normal;
-  }
-
   rect.highcharts-point {
-    outline-style: solid;
-    outline-width: 1px;
-    outline-offset: -1px;
-    // Using transparent borders means they 'double' up, leading to
-    // slightly more pronounced borders around parent groups.
-    outline-color: rgba(0, 0, 0, 0.15);
+    stroke: rgba(0, 0, 0, 0.2);
+    stroke-width: 1px;
 
     &.highcharts-point-select {
-      outline-width: 3px;
-      outline-offset: -3px;
+      // We need to *remove* the stroke in order for the inset outline to work
+      stroke: none;
+      outline-style: solid;
+      outline-width: 1px;
+      outline-offset: -1px;
       outline-color: var(--xh-blue-light);
     }
+  }
+
+  .highcharts-data-label text {
+    font-family: var(--xh-font-family);
+    // Use of !important overrides default styles applied inline to the label elements by HC.
+    font-size: var(--xh-font-size-small-px) !important;
+    font-weight: normal !important;
+  }
+
+  // Use white borders in dark theme
+  &--dark rect.highcharts-point {
+    stroke: rgba(255, 255, 255, 0.2);
   }
 }
 

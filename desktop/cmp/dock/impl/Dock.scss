@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 .xh-dock-container {
@@ -29,6 +29,14 @@
     .xh-dock-view {
       margin-right: var(--xh-pad-px);
     }
+  }
+
+  .xh-modal-support__inline {
+    // Don't flex-shrink docked dock views, allowing them to clip the container.
+    flex: none;
+    // Workaround for this class getting `width: 100%` for 1 frame while waiting for
+    // an observable ref. See ModalSupport.js.
+    width: auto !important;
   }
 }
 
@@ -78,7 +86,7 @@
     }
 
     // Extra specificity needed here to overcome the specificity in Button.scss.
-    .xh-button.bp3-button {
+    .xh-button.bp4-button {
       &.xh-button--minimal {
         &.xh-button--intent-none {
           &.xh-button--enabled {

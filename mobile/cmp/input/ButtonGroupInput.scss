@@ -4,6 +4,7 @@
   &:focus {
     outline: none;
     border: 1px solid var(--xh-focus-outline-color);
+    border-radius: var(--xh-button-border-radius-px);
   }
 }
 

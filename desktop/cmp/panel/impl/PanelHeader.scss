@@ -4,14 +4,14 @@
   user-select: none;
   height: var(--xh-title-height-px);
   padding: var(--xh-title-pad-px);
-  background-color: var(--xh-title-bg);
-  color: var(--xh-title-text-color);
+  background-color: var(--xh-panel-title-bg);
+  color: var(--xh-panel-title-text-color);
 
   &__title {
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-family: var(--xh-title-font-family);
-    font-size: var(--xh-title-font-size-px);
+    font-family: var(--xh-panel-title-font-family);
+    font-size: var(--xh-panel-title-font-size-px);
   }
 
   &__items {
@@ -29,8 +29,8 @@
   }
 
   // Header "tool" buttons.
-  .xh-button--minimal {
-    color: var(--xh-title-text-color) !important;
+  .xh-button--minimal.xh-button--intent-none {
+    color: var(--xh-panel-title-text-color) !important;
   }
 
   // Vertical mode - collapsed to left or right

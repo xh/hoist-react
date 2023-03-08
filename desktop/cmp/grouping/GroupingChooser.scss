@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 .xh-grouping-chooser {
@@ -30,17 +30,18 @@
   }
 
   // Outer box is sized via layoutSupport - all nested inner elements should stretch to fill.
-  .bp3-popover-wrapper,
-  .bp3-popover-target,
+  .bp4-popover-wrapper,
+  .bp4-popover-target,
   .xh-grouping-chooser-button {
     width: 100%;
   }
 
-  .bp3-popover-target span {
+  .bp4-popover-target span {
     position: relative;
   }
 
   &__list {
+    margin-bottom: var(--xh-pad-half-px);
     background-color: var(--xh-bg-alt);
   }
 
@@ -63,12 +64,17 @@
       flex: 1;
 
       .xh-select__control {
+        cursor: pointer;
         background: none;
         box-shadow: none;
       }
 
       .xh-select__single-value {
         color: var(--xh-input-text-color);
+      }
+
+      &:hover {
+        border-bottom: var(--xh-border-solid);
       }
     }
 
@@ -132,6 +138,7 @@
       color: var(--xh-text-color);
     }
 
+    // Matched to FilterChooser equivalent.
     & > .svg-inline--fa {
       width: 12px;
     }

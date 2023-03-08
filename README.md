@@ -7,6 +7,8 @@ Additional docs of interest:
   \- notes on CI configuration and build/deploy considerations.
 * [docs/development-environment.md](https://github.com/xh/hoist-react/blob/develop/docs/development-environment.md)
   \- notes on local development environment configuration for Hoist and app developers.
+* [docs/upgrade-to-typescript.md](https://github.com/xh/hoist-react/blob/develop/docs/upgrade-to-typescript.md)
+  \- guide on upgrading hoist applications to typescript.
 
 Hoist is a web application development toolkit developed by [Extremely Heavy](https://xh.io/).
 
@@ -134,9 +136,9 @@ Promise prototype, including:
   [activity tracking](https://github.com/xh/hoist-core#activity-tracking-and-client-error-reporting),
   timing the duration of a promise-based chain and reporting it back to the server tagged with a
   developer-supplied category, message, and optional extra data.
-+ `timeout` - to cut (overly) long running Promises short
-+ `linkTo` - for integration with a `PendingTaskModel` to track and report on state across one or
-  more async operations.
++ `timeout` - to cut (overly) long-running Promises short
++ `linkTo` - for integration with a `TaskObserver` to track and report on state across one or more
+  async operations.
 
 💡 Note that by convention all methods returning a Promise within Hoist React (and XH-developed
 applications) are suffixed with the qualifier `Async`, e.g. `loadUsersAsync` or
@@ -401,4 +403,4 @@ will be filled in as soon as possible. These include planned notes on:
 
 📫☎️🌎 info@xh.io | <https://xh.io/contact>
 
-Copyright © 2021 Extremely Heavy Industries Inc.
+Copyright © 2022 Extremely Heavy Industries Inc.

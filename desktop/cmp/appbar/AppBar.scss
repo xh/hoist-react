@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 .xh-appbar {
@@ -17,8 +17,80 @@
   }
 
   .xh-appbar-title {
-    color: var(--xh-navbar-title-color);
-    font-size: var(--xh-navbar-title-font-size-px);
+    color: var(--xh-appbar-title-color);
+    font-size: var(--xh-appbar-title-font-size-px);
     margin-right: var(--xh-pad-px);
+  }
+}
+
+
+//------------------------
+// Blueprint overrides
+//------------------------
+.bp4-navbar,
+.bp4-dark .bp4-navbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  color: var(--xh-appbar-color);
+  background-color: var(--xh-appbar-bg);
+  height: var(--xh-appbar-height-px);
+  border-bottom: 1px solid var(--xh-appbar-border-color);
+  padding: 0 var(--xh-pad-px);
+  box-shadow: var(--xh-appbar-box-shadow); // Remove thick inner shadow
+
+  // Curiously, Admin Log Viewer would cause appbar to shrink without min-height
+  min-height: var(--xh-appbar-height-px);
+
+  .bp4-navbar-divider {
+    border-left-color: var(--xh-tbar-separator-color);
+  }
+
+  > * {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .bp4-navbar-heading {
+    color: var(--xh-appbar-title-color);
+    font-size: var(--xh-appbar-title-font-size-px);
+    margin-left: var(--xh-pad-px);
+  }
+
+  .bp4-navbar-group {
+    overflow: hidden;
+    height: var(--xh-appbar-height-px);
+
+    .bp4-navbar-divider {
+      margin: 0 var(--xh-pad-px);
+    }
+
+    // Replace default float behaviour in favour of flexbox
+    float: none;
+
+    > .svg-inline--fa {
+      margin: 0 5px 0 0;
+    }
+
+    &.bp4-align-left {
+      // Flex simulates left alignment
+      flex: 1;
+
+      // Primary app icon
+      > svg:first-child {
+        color: var(--xh-appbar-title-color);
+      }
+    }
+
+    &.bp4-align-right {
+      // Apply standardized spacing to extra appBar items, excepting dividers and xh-no-pad elements.
+      > *:not(.bp4-navbar-divider):not(.xh-no-pad) {
+        margin-left: var(--xh-pad-px);
+      }
+
+      .bp4-navbar-divider {
+        margin-right: 0;
+      }
+    }
   }
 }

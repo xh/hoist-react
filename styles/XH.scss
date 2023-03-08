@@ -2,17 +2,25 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-@import 'vars';
-@import 'helpers';
+@use 'vars';
+@use 'helpers';
+@use '~inter-ui/variable' with (
+  $inter-font-display: block,
+  $inter-font-path: '~inter-ui/Inter (web)'
+);
+
+@include variable.all;
 
 body.xh-app {
   background-color: var(--xh-bg);
   border-color: var(--xh-border-color);
   color: var(--xh-text-color);
   font-family: var(--xh-font-family);
+  // Important for default Inter font to ensure numbers are constant-width and line up properly.
+  font-variant-numeric: tabular-nums;
   font-size: var(--xh-font-size-px);
   box-sizing: border-box;
 
@@ -55,6 +63,17 @@ body.xh-app {
     cursor: pointer;
   }
 
+  // Avoid default select / magnify behaviors on touch-screens
+  &.xh-mobile,
+  &.xh-tablet {
+    text-size-adjust: none !important;
+    -webkit-touch-callout: none !important;
+
+    & *:not(input):not(textarea) {
+      user-select: none !important;
+    }
+  }
+
   // Colors
   .xh-black { color: var(--xh-black); }
   .xh-blue { color: var(--xh-blue); }
@@ -79,10 +98,17 @@ body.xh-app {
   .xh-transparent { color: transparent; }
   .xh-yellow { color: var(--xh-yellow); }
   .xh-yellow-light { color: var(--xh-yellow-light); }
+
+  // Colors - intents
   .xh-intent-primary { color: var(--xh-intent-primary); }
   .xh-intent-danger { color: var(--xh-intent-danger); }
   .xh-intent-success { color: var(--xh-intent-success); }
   .xh-intent-warning { color: var(--xh-intent-warning); }
+
+  // Colors - pos/neg (red/green) vals
+  .xh-pos-val { color: var(--xh-pos-val-color); }
+  .xh-neg-val { color: var(--xh-neg-val-color); }
+  .xh-neutral-val { color: var(--xh-neutral-val-color); }
 
   // File Icons
   .xh-file-icon-excel { color: #0e7b41; }
@@ -119,7 +145,7 @@ body.xh-app {
   .xh-border-solid { border: var(--xh-border-solid); }
   .xh-border-top { border-top: var(--xh-border-solid) !important; }
 
-  .xh-bold { font-weight: bold; }
+  .xh-bold { font-weight: 600; } // note this is technically demi-bold - 700 often too heavy
   .xh-font-family-headings { font-family: var(--xh-font-family-headings); }
   .xh-font-family-mono { font-family: var(--xh-font-family-mono); }
   .xh-font-size-large { font-size: var(--xh-font-size-large-em); }
@@ -150,10 +176,10 @@ body.xh-app {
 
 // Lightly patterned background with light and dark theme variants.
 .xh-tiled-bg {
-  background-image: inline-svg('<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21"><rect x="0" y="0" width="20" height="20" style="fill: #F5F5F5;" /></svg>');
+  background-image: helpers.inline-svg('<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21"><rect x="0" y="0" width="20" height="20" style="fill: #F5F5F5;" /></svg>');
 
   .xh-dark & {
-    background-image: inline-svg('<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21"><rect x="0" y="0" width="20" height="20" style="fill: #212121;" /></svg>');
+    background-image: helpers.inline-svg('<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21"><rect x="0" y="0" width="20" height="20" style="fill: #212121;" /></svg>');
   }
 }
 
@@ -162,8 +188,8 @@ body.xh-app {
   &--framed {
     border: 1px solid var(--xh-popup-border-color);
 
-    .bp3-popover-arrow-border,
-    .bp3-popover-arrow-fill {
+    .bp4-popover-arrow-border,
+    .bp4-popover-arrow-fill {
       fill: var(--xh-popup-border-color) !important;
     }
   }
