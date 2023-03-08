@@ -194,7 +194,6 @@ class GridLocalModel extends HoistModel {
             model: model.agGridModel,
             suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowId: ({data}) => data.agId,
-            rowDataChangeDetectionStrategy: 'IdentityCheck',
             defaultColDef: {
                 sortable: true,
                 resizable: true,
