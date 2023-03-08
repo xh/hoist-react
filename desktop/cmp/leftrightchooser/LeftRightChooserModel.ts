@@ -13,7 +13,6 @@ import {computed, makeObservable} from '@xh/hoist/mobx';
 import {FilterTestFn, StoreConfig, StoreRecord} from '@xh/hoist/data';
 
 export interface LeftRightChooserConfig {
-
     data?: LeftRightChooserItem[];
 
     /** Callback for when items change sides. */
@@ -68,7 +67,6 @@ export interface LeftRightChooserItem {
  * A Model for managing the state of a LeftRightChooser.
  */
 export class LeftRightChooserModel extends HoistModel {
-
     @managed leftModel: GridModel;
     @managed rightModel: GridModel;
 
@@ -156,13 +154,15 @@ export class LeftRightChooserModel extends HoistModel {
         const leftTextCol = {
                 field: 'text',
                 flex: true,
-                headerName: () => leftTitle + (showCounts ? ` (${this.leftModel.store.count})` : ''),
+                headerName: () =>
+                    leftTitle + (showCounts ? ` (${this.leftModel.store.count})` : ''),
                 renderer: this.getTextColRenderer('left')
             },
             rightTextCol = {
                 field: 'text',
                 flex: true,
-                headerName: () => rightTitle + (showCounts ? ` (${this.rightModel.store.count})` : ''),
+                headerName: () =>
+                    rightTitle + (showCounts ? ` (${this.rightModel.store.count})` : ''),
                 renderer: this.getTextColRenderer('right')
             },
             groupCol = {
@@ -176,7 +176,7 @@ export class LeftRightChooserModel extends HoistModel {
             selModel: 'multiple',
             sortBy: leftSorted ? 'text' : null,
             emptyText: leftEmptyText,
-            onRowDoubleClicked: (e) => this.onRowDoubleClicked(e),
+            onRowDoubleClicked: e => this.onRowDoubleClicked(e),
             columns: [leftTextCol, groupCol],
             xhImpl: true
         });
@@ -186,7 +186,7 @@ export class LeftRightChooserModel extends HoistModel {
             selModel: 'multiple',
             sortBy: rightSorted ? 'text' : null,
             emptyText: rightEmptyText,
-            onRowDoubleClicked: (e) => this.onRowDoubleClicked(e),
+            onRowDoubleClicked: e => this.onRowDoubleClicked(e),
             columns: [rightTextCol, groupCol],
             xhImpl: true
         });
@@ -198,8 +198,8 @@ export class LeftRightChooserModel extends HoistModel {
 
     setData(data: LeftRightChooserItem[]) {
         const hasGrouping = data.some(it => it.group),
-            lhGroupBy = (this.leftGroupingEnabled && hasGrouping) ? 'group' : null,
-            rhGroupBy = (this.rightGroupingEnabled && hasGrouping) ? 'group' : null;
+            lhGroupBy = this.leftGroupingEnabled && hasGrouping ? 'group' : null,
+            rhGroupBy = this.rightGroupingEnabled && hasGrouping ? 'group' : null;
 
         this.hasDescription = data.some(it => it.description);
         this.leftModel.setGroupBy(lhGroupBy);
@@ -214,7 +214,7 @@ export class LeftRightChooserModel extends HoistModel {
         rows.forEach(rec => {
             const {locked, side} = rec.data;
             if (locked) return;
-            rec.raw.side = (side === 'left' ? 'right' : 'left');
+            rec.raw.side = side === 'left' ? 'right' : 'left';
         });
 
         this.refreshStores();
@@ -225,11 +225,13 @@ export class LeftRightChooserModel extends HoistModel {
     // Implementation
     //------------------------
     private getTextColRenderer(side: HSide) {
-        const groupingEnabled = side === 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
+        const groupingEnabled =
+                side === 'left' ? this.leftGroupingEnabled : this.rightGroupingEnabled,
             lockSvg = Icon.lock({prefix: 'fal'});
 
         return (v, {record}) => {
-            const groupClass = groupingEnabled && this._hasGrouping ? 'xh-lr-chooser__group-row' : '';
+            const groupClass =
+                groupingEnabled && this._hasGrouping ? 'xh-lr-chooser__group-row' : '';
             return div({
                 className: `xh-lr-chooser__item-row ${groupClass}`,
                 items: [v, record.data.locked ? lockSvg : null]

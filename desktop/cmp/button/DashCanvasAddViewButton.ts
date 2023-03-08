@@ -21,25 +21,29 @@ export interface DashCanvasAddViewButtonProps extends ButtonProps {
 /**
  * A convenience menu button to add views to a DashCanvas.
  */
-export const [DashCanvasAddViewButton, dashCanvasAddViewButton] = hoistCmp.withFactory<DashCanvasAddViewButtonProps>({
-    displayName: 'DashCanvasAddViewButton',
-    model: false,
+export const [DashCanvasAddViewButton, dashCanvasAddViewButton] =
+    hoistCmp.withFactory<DashCanvasAddViewButtonProps>({
+        displayName: 'DashCanvasAddViewButton',
+        model: false,
 
-    render({icon, text, dashCanvasModel, ...rest}, ref) {
-        dashCanvasModel = withDefault(dashCanvasModel, useContextModel(DashCanvasModel));
+        render({icon, text, dashCanvasModel, ...rest}, ref) {
+            dashCanvasModel = withDefault(dashCanvasModel, useContextModel(DashCanvasModel));
 
-        errorIf(!dashCanvasModel, "No DashCanvasModel available to dashCanvasAddViewButton. Provide via a 'dashCanvasModel' prop, or context.");
+            errorIf(
+                !dashCanvasModel,
+                "No DashCanvasModel available to dashCanvasAddViewButton. Provide via a 'dashCanvasModel' prop, or context."
+            );
 
-        const menuItems = createViewMenuItems({dashCanvasModel});
-        return popover({
-            interactionKind: 'click',
-            item: button({
-                ref,
-                icon: withDefault(icon, Icon.add()),
-                text: withDefault(text, dashCanvasModel.addViewButtonText),
-                ...rest
-            }),
-            content: contextMenu({menuItems})
-        });
-    }
-});
+            const menuItems = createViewMenuItems({dashCanvasModel});
+            return popover({
+                interactionKind: 'click',
+                item: button({
+                    ref,
+                    icon: withDefault(icon, Icon.add()),
+                    text: withDefault(text, dashCanvasModel.addViewButtonText),
+                    ...rest
+                }),
+                content: contextMenu({menuItems})
+            });
+        }
+    });

@@ -5,7 +5,6 @@ import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 
-
 /**
  * Developer/Admin focused service to provide additional processing and stats related to the
  * running application, specifically its current HoistModel, HoistService, and Store instances.
@@ -101,7 +100,9 @@ export class InspectorService extends HoistService {
     @action
     activate() {
         if (!this.enabled) {
-            throw XH.exception('InspectorService disabled or not accessible to current user - review xhInspectorConfig.');
+            throw XH.exception(
+                'InspectorService disabled or not accessible to current user - review xhInspectorConfig.'
+            );
         }
 
         this.active = true;
@@ -118,20 +119,23 @@ export class InspectorService extends HoistService {
     updateStats() {
         if (!this.active) return;
 
-        const {totalJSHeapSize, usedJSHeapSize} = ((window.performance as any)?.memory ?? {}),
+        const {totalJSHeapSize, usedJSHeapSize} = (window.performance as any)?.memory ?? {},
             modelCount = instanceManager.models.size,
             prevModelCount = this._prevModelCount,
             now = Date.now();
 
-        this.stats = [...this.stats, {
-            id: now,
-            timestamp: now,
-            modelCount,
-            modelCountChange: modelCount - prevModelCount,
-            totalJSHeapSize,
-            usedJSHeapSize,
-            syncRun: this._syncRun
-        }];
+        this.stats = [
+            ...this.stats,
+            {
+                id: now,
+                timestamp: now,
+                modelCount,
+                modelCountChange: modelCount - prevModelCount,
+                totalJSHeapSize,
+                usedJSHeapSize,
+                syncRun: this._syncRun
+            }
+        ];
 
         this._prevModelCount = modelCount;
     }
@@ -142,9 +146,12 @@ export class InspectorService extends HoistService {
     }
 
     async restoreDefaultsAsync() {
-        if (!await XH.confirm({
-            message: 'Reset Inspector\'s layout and options to their defaults?'
-        })) return;
+        if (
+            !(await XH.confirm({
+                message: "Reset Inspector's layout and options to their defaults?"
+            }))
+        )
+            return;
 
         XH.localStorageService.removeIf(it => it.startsWith(`xhInspector.${XH.clientAppCode}`));
         this.deactivate();
@@ -152,48 +159,45 @@ export class InspectorService extends HoistService {
         this.activate();
     }
 
-
     //------------------
     // Implementation
     //------------------
     private sync() {
         if (!this.active) return;
 
-        const instances = [
-            ...XH.getActiveModels(),
-            ...XH.getServices(),
-            ...XH.getStores()
-        ];
+        const instances = [...XH.getActiveModels(), ...XH.getServices(), ...XH.getStores()];
 
         const {_idToSyncRun, _syncRun} = this,
             newSyncRun = _syncRun + 1;
 
         let hadNewInstances = false;
-        this.setActiveInstances(instances.map((inst: any) => {
-            const {xhId} = inst;
-            let syncRun = _idToSyncRun.get(xhId);
+        this.setActiveInstances(
+            instances.map((inst: any) => {
+                const {xhId} = inst;
+                let syncRun = _idToSyncRun.get(xhId);
 
-            if (!syncRun) {
-                syncRun = newSyncRun;
-                _idToSyncRun.set(xhId, syncRun);
-                hadNewInstances = true;
-            }
+                if (!syncRun) {
+                    syncRun = newSyncRun;
+                    _idToSyncRun.set(xhId, syncRun);
+                    hadNewInstances = true;
+                }
 
-            return {
-                id: xhId,
-                className: inst.constructor.name,
-                created: inst._created,
-                isHoistService: inst.isHoistService,
-                isHoistModel: inst.isHoistModel,
-                isStore: inst.isStore,
-                isLinked: inst.isLinked,
-                isXhImpl: inst.xhImpl,
-                hasLoadSupport: inst.loadSupport != null,
-                lastLoadCompleted: inst.lastLoadCompleted,
-                lastLoadException: inst.lastLoadException,
-                syncRun
-            };
-        }));
+                return {
+                    id: xhId,
+                    className: inst.constructor.name,
+                    created: inst._created,
+                    isHoistService: inst.isHoistService,
+                    isHoistModel: inst.isHoistModel,
+                    isStore: inst.isStore,
+                    isLinked: inst.isLinked,
+                    isXhImpl: inst.xhImpl,
+                    hasLoadSupport: inst.loadSupport != null,
+                    lastLoadCompleted: inst.lastLoadCompleted,
+                    lastLoadException: inst.lastLoadException,
+                    syncRun
+                };
+            })
+        );
 
         if (hadNewInstances) this._syncRun = newSyncRun;
     }
@@ -213,7 +217,6 @@ export class InspectorService extends HoistService {
             ...XH.getConf('xhInspectorConfig', {})
         };
     }
-
 }
 
 interface InspectorInstanceData {

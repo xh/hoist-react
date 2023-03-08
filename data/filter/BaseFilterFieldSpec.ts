@@ -19,7 +19,7 @@ export interface BaseFilterFieldSpecConfig {
     /** Operators available for filtering, will default to a supported set based on type.*/
     ops?: FieldFilterOperator[];
     /** Used to source matching data `Field` and extract values if configured. */
-    source?: Store|View;
+    source?: Store | View;
     /**
      * True to provide interfaces and auto-complete options
      * with enumerated matches for creating '=' or '!=' filters. Defaults to true for
@@ -43,12 +43,11 @@ export interface BaseFilterFieldSpecConfig {
  * @see GridFilterFieldSpec
  */
 export abstract class BaseFilterFieldSpec extends HoistBase {
-
     field: string;
     fieldType: FieldType;
     displayName: string;
     ops: FieldFilterOperator[];
-    source: Store|View;
+    source: Store | View;
     enableValues: boolean;
     forceSelection: boolean;
     values: any[];
@@ -93,7 +92,7 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
      * `(=, !=, like, not like, begins, ends)`
      * against a suggested exact value or user-provided input.
      */
-    get filterType(): 'range'|'value'|'collection' {
+    get filterType(): 'range' | 'value' | 'collection' {
         switch (this.fieldType) {
             case 'int':
             case 'number':
@@ -107,9 +106,15 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
         }
     }
 
-    get isRangeType(): boolean { return this.filterType === 'range' }
-    get isValueType(): boolean { return this.filterType === 'value' }
-    get isCollectionType(): boolean { return this.filterType === 'collection' }
+    get isRangeType(): boolean {
+        return this.filterType === 'range';
+    }
+    get isValueType(): boolean {
+        return this.filterType === 'value';
+    }
+    get isCollectionType(): boolean {
+        return this.filterType === 'collection';
+    }
 
     get isDateBasedFieldType(): boolean {
         const {fieldType} = this;
@@ -136,10 +141,12 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
     }
 
     supportsSuggestions(op: FieldFilterOperator): boolean {
-        return this.values &&
+        return (
+            this.values &&
             this.enableValues &&
             this.supportsOperator(op) &&
-            (op === '=' || op === '!=' || op === 'includes' || op === 'excludes');
+            (op === '=' || op === '!=' || op === 'includes' || op === 'excludes')
+        );
     }
 
     //------------------------
@@ -158,9 +165,9 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
     private getDefaultOperators(): FieldFilterOperator[] {
         if (this.isBoolFieldType) return ['='];
         if (this.isCollectionType) return ['includes', 'excludes'];
-        return this.isValueType ?
-            ['=', '!=', 'like', 'not like', 'begins', 'ends'] :
-            ['>', '>=', '<', '<=', '=', '!='];
+        return this.isValueType
+            ? ['=', '!=', 'like', 'not like', 'begins', 'ends']
+            : ['>', '>=', '<', '<=', '=', '!='];
     }
 
     private get isEnumerableByDefault(): boolean {

@@ -12,9 +12,11 @@ import {filterConsecutive} from '../js';
  */
 export function filterConsecutiveMenuSeparators() {
     return filterConsecutive((it: any) => {
-        return it === '-' ||
+        return (
+            it === '-' ||
             it === 'separator' ||
-            (it?.type?.name === 'MenuDivider' && !it.props?.title);
+            (it?.type?.name === 'MenuDivider' && !it.props?.title)
+        );
     });
 }
 

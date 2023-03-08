@@ -15,13 +15,12 @@ import {isString} from 'lodash';
  * Client metadata is set automatically by the server's parsing of request headers.
  */
 export class TrackService extends HoistService {
-
     static instance: TrackService;
 
     private _oncePerSessionSent = {};
 
     /** Track User Activity. */
-    track(options: TrackOptions|string) {
+    track(options: TrackOptions | string) {
         // Normalize string form, msg -> message, default severity.
         if (isString(options)) options = {message: options};
         if (isOmitted(options)) return;
@@ -47,10 +46,10 @@ export class TrackService extends HoistService {
         };
 
         try {
-            if (options.category)               params.category = options.category;
-            if (options.data)                   params.data = JSON.stringify(options.data);
-            if (options.elapsed !== undefined)  params.elapsed = options.elapsed;
-            if (options.severity)               params.severity = options.severity;
+            if (options.category) params.category = options.category;
+            if (options.data) params.data = JSON.stringify(options.data);
+            if (options.elapsed !== undefined) params.elapsed = options.elapsed;
+            if (options.severity) params.severity = options.severity;
 
             const elapsedStr = params.elapsed != null ? `${params.elapsed}ms` : null,
                 consoleMsg = ['[Track]', params.category, params.msg, elapsedStr]
@@ -64,7 +63,6 @@ export class TrackService extends HoistService {
             if (options.oncePerSession) {
                 this._oncePerSessionSent[key] = true;
             }
-
         } catch (e) {
             console.error('Failure tracking message: ' + params.msg);
         }

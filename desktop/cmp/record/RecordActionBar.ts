@@ -7,12 +7,7 @@
 
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
-import {
-    RecordActionSpec,
-    RecordAction,
-    StoreRecord,
-    StoreSelectionModel
-} from '@xh/hoist/data';
+import {RecordActionSpec, RecordAction, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
 import {buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -21,7 +16,7 @@ import {recordActionButton, RecordActionButtonProps} from './impl/RecordActionBu
 
 export interface RecordActionBarProps extends ButtonGroupProps {
     /** Actions to include. */
-    actions: Array<RecordActionSpec|RecordAction>;
+    actions: Array<RecordActionSpec | RecordAction>;
 
     /** The StoreRecord to associate with the actions. Required if selModel is omitted. */
     record?: StoreRecord;
@@ -42,7 +37,6 @@ export interface RecordActionBarProps extends ButtonGroupProps {
     vertical?: boolean;
 }
 
-
 /**
  * Component that accepts an array of one or more RecordActions, which it renders as buttons in a
  * ButtonGroup.
@@ -58,22 +52,28 @@ export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordAct
     className: 'xh-record-action-bar',
 
     render(props) {
-        const {actions, record, selModel, gridModel, column, buttonProps, vertical, ...rest} = props;
+        const {actions, record, selModel, gridModel, column, buttonProps, vertical, ...rest} =
+            props;
 
-        throwIf(!record && !selModel, 'You must provide either the record or selModel to RecordActionBar!');
+        throwIf(
+            !record && !selModel,
+            'You must provide either the record or selModel to RecordActionBar!'
+        );
 
         if (isEmpty(actions)) return null;
 
         return buttonGroup({
             vertical,
-            items: actions.filter(Boolean).map(action => recordActionButton({
-                action: action instanceof RecordAction ? action : new RecordAction(action),
-                record,
-                selModel,
-                gridModel,
-                column,
-                ...buttonProps
-            })),
+            items: actions.filter(Boolean).map(action =>
+                recordActionButton({
+                    action: action instanceof RecordAction ? action : new RecordAction(action),
+                    record,
+                    selModel,
+                    gridModel,
+                    column,
+                    ...buttonProps
+                })
+            ),
             ...rest
         });
     }

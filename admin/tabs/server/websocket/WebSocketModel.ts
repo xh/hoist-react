@@ -19,7 +19,6 @@ import {createRef} from 'react';
 import * as WSCol from './WebSocketColumns';
 
 export class WebSocketModel extends HoistModel {
-
     viewRef = createRef<HTMLElement>();
 
     @observable
@@ -100,7 +99,9 @@ export class WebSocketModel extends HoistModel {
             confirmProps: {text: 'Force Suspend', icon: Icon.stopCircle(), intent: 'danger'},
             cancelProps: {autoFocus: true},
             message: div(
-                p(`This action will force ${selectedRecords.length} connected client(s) into suspended mode, halting all background refreshes and other activity, masking the UI, and requiring users to reload the app to continue.`),
+                p(
+                    `This action will force ${selectedRecords.length} connected client(s) into suspended mode, halting all background refreshes and other activity, masking the UI, and requiring users to reload the app to continue.`
+                ),
                 p('If desired, you can enter a message below to display within the suspended app.')
             ),
             input: {
@@ -110,15 +111,16 @@ export class WebSocketModel extends HoistModel {
         });
 
         if (message !== false) {
-            const tasks = selectedRecords
-                .map((rec) => XH.fetchJson({
+            const tasks = selectedRecords.map(rec =>
+                XH.fetchJson({
                     url: 'webSocketAdmin/pushToChannel',
                     params: {
                         channelKey: rec.data.key,
                         topic: XH.webSocketService.FORCE_APP_SUSPEND_TOPIC,
                         message
                     }
-                }));
+                })
+            );
 
             await Promise.allSettled(tasks).track({
                 category: 'Audit',

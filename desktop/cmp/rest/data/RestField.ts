@@ -10,18 +10,17 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {PlainObject} from '@xh/hoist/core';
 
 export interface RestFieldSpec extends FieldSpec {
-
     /**
      *  False to disable editing and present field as readonly data. True (default) to enable
      *  editing, or token 'onAdd' to enable editing only when first creating a record.
      */
-    editable?: boolean|'onAdd';
+    editable?: boolean | 'onAdd';
 
     /** True to require a non-null value for additions and edits.*/
     required?: boolean;
 
     /** Array of available option values. */
-    lookup?: PlainObject[]|string[];
+    lookup?: PlainObject[] | string[];
 
     /** Name of server-provided options to populate lookup.*/
     lookupName?: string;
@@ -43,10 +42,9 @@ export interface RestFieldSpec extends FieldSpec {
  * Extended field for RestGrid.
  */
 export class RestField extends Field {
-
-    editable: boolean|string;
+    editable: boolean | string;
     required: boolean;
-    lookup: PlainObject[]|string[];
+    lookup: PlainObject[] | string[];
     lookupName: string;
     enableCreate: boolean;
     typeField: string;
@@ -68,5 +66,4 @@ export class RestField extends Field {
         this.enableCreate = withDefault(enableCreate, false);
         this.typeField = typeField;
     }
-
 }

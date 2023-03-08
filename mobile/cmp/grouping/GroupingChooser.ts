@@ -39,15 +39,18 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
     model: uses(GroupingChooserModel),
     className: 'xh-grouping-chooser',
 
-    render({
-        model,
-        className,
-        emptyText = 'Ungrouped',
-        popoverWidth = 270,
-        popoverMinHeight,
-        popoverTitle = 'Group By',
-        ...rest
-    }, ref) {
+    render(
+        {
+            model,
+            className,
+            emptyText = 'Ungrouped',
+            popoverWidth = 270,
+            popoverMinHeight,
+            popoverTitle = 'Group By',
+            ...rest
+        },
+        ref
+    ) {
         const {value, allowEmpty} = model,
             label = isEmpty(value) && allowEmpty ? emptyText : model.getValueLabel(value),
             [layoutProps, buttonProps] = splitLayoutProps(rest);
@@ -91,30 +94,30 @@ const popoverCmp = hoistCmp.factory<GroupingChooserModel>(
                 item: favoritesIsOpen ? favoritesMenu() : editor({emptyText})
             }),
             onCancel: () => model.closePopover(),
-            buttons: favoritesIsOpen ?
-                [
-                    button({
-                        icon: Icon.add(),
-                        flex: 1,
-                        text: 'Add current',
-                        disabled: addFavoriteDisabled,
-                        onClick: () => model.addFavorite(model.value)
-                    })
-                ] :
-                [
-                    filler(),
-                    button({
-                        text: 'Cancel',
-                        minimal: true,
-                        onClick: () => model.closePopover()
-                    }),
-                    button({
-                        icon: Icon.check(),
-                        text: 'Apply',
-                        disabled: !isValid,
-                        onClick: () => model.commitPendingValueAndClose()
-                    })
-                ]
+            buttons: favoritesIsOpen
+                ? [
+                      button({
+                          icon: Icon.add(),
+                          flex: 1,
+                          text: 'Add current',
+                          disabled: addFavoriteDisabled,
+                          onClick: () => model.addFavorite(model.value)
+                      })
+                  ]
+                : [
+                      filler(),
+                      button({
+                          text: 'Cancel',
+                          minimal: true,
+                          onClick: () => model.closePopover()
+                      }),
+                      button({
+                          icon: Icon.check(),
+                          text: 'Apply',
+                          disabled: !isValid,
+                          onClick: () => model.commitPendingValueAndClose()
+                      })
+                  ]
         });
     }
 );
@@ -124,36 +127,36 @@ const popoverCmp = hoistCmp.factory<GroupingChooserModel>(
 //------------------
 const editor = hoistCmp.factory({
     render({emptyText}) {
-        return vbox(
-            dimensionList({emptyText}),
-            addDimensionControl()
-        );
+        return vbox(dimensionList({emptyText}), addDimensionControl());
     }
 });
 
 const dimensionList = hoistCmp.factory<GroupingChooserModel>({
     render({model, emptyText}) {
         if (isEmpty(model.pendingValue)) {
-            return model.allowEmpty ?
-                hbox({
-                    className: 'xh-grouping-chooser__row',
-                    items: [filler(), emptyText, filler()]
-                }) :
-                null;
+            return model.allowEmpty
+                ? hbox({
+                      className: 'xh-grouping-chooser__row',
+                      items: [filler(), emptyText, filler()]
+                  })
+                : null;
         }
 
         return dragDropContext({
-            onDragEnd: (result) => model.onDragEnd(result),
+            onDragEnd: result => model.onDragEnd(result),
             item: droppable({
                 droppableId: 'dimension-list',
-                item: (dndProps) => div({
-                    ref: dndProps.innerRef,
-                    className: 'xh-grouping-chooser__list',
-                    items: [
-                        ...model.pendingValue.map((dimension, idx) => dimensionRow({dimension, idx})),
-                        dndProps.placeholder
-                    ]
-                })
+                item: dndProps =>
+                    div({
+                        ref: dndProps.innerRef,
+                        className: 'xh-grouping-chooser__list',
+                        items: [
+                            ...model.pendingValue.map((dimension, idx) =>
+                                dimensionRow({dimension, idx})
+                            ),
+                            dndProps.placeholder
+                        ]
+                    })
             })
         });
     }
@@ -189,7 +192,7 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
                                 flex: 1,
                                 width: null,
                                 hideDropdownIndicator: true,
-                                onChange: (newDim) => model.replacePendingDimAtIdx(newDim, idx)
+                                onChange: newDim => model.replacePendingDimAtIdx(newDim, idx)
                             })
                         }),
                         button({
@@ -224,7 +227,7 @@ const addDimensionControl = hoistCmp.factory<GroupingChooserModel>({
                     width: null,
                     hideDropdownIndicator: true,
                     hideSelectedOptionCheck: true,
-                    onChange: (newDim) => model.addPendingDim(newDim)
+                    onChange: newDim => model.addPendingDim(newDim)
                 })
             ]
         });

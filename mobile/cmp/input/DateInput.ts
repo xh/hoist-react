@@ -19,14 +19,8 @@ import moment from 'moment';
 import './DateInput.scss';
 import {ReactElement} from 'react';
 
-
-export interface DateInputProps extends
-    HoistProps,
-    HoistInputProps,
-    StyleProps,
-    LayoutProps
-{
-    value?: Date|LocalDate;
+export interface DateInputProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
+    value?: Date | LocalDate;
 
     /** True to show a "clear" button aligned to the right of the control. Default false. */
     enableClear?: boolean;
@@ -41,7 +35,7 @@ export interface DateInputProps extends
      *
      * If unspecified, will default to the month of the current value (if present), or today.
      */
-    initialMonth?: Date|LocalDate;
+    initialMonth?: Date | LocalDate;
 
     /** Icon to display inline on the left side of the input. */
     leftIcon?: ReactElement;
@@ -57,7 +51,7 @@ export interface DateInputProps extends
      * invalid date entry in place but flag as invalid via FormField. For cases where it is
      * possible to use FormField, that is often a better choice.
      */
-    maxDate?: Date|LocalDate;
+    maxDate?: Date | LocalDate;
 
     /**
      * Minimum (inclusive) valid date. Controls which dates can be selected via the calendar
@@ -65,7 +59,7 @@ export interface DateInputProps extends
      *
      * See note re. validation on maxDate, above.
      */
-    minDate?: Date|LocalDate;
+    minDate?: Date | LocalDate;
 
     /** Text to display when control is empty. */
     placeholder?: string;
@@ -77,7 +71,7 @@ export interface DateInputProps extends
     textAlign?: HSide;
 
     /** Type of value to publish. Defaults to 'date'. */
-    valueType?: 'date'|'localDate';
+    valueType?: 'date' | 'localDate';
 }
 
 /**
@@ -163,7 +157,7 @@ class DateInputModel extends HoistInputModel {
         return external;
     }
 
-    onDateChange = (date) => {
+    onDateChange = date => {
         if (date && this.isOutsideRange(date)) {
             // Dates outside of min/max constraints are reset to null.
             date = null;
@@ -186,46 +180,43 @@ class DateInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<DateInputModel>(
-    ({model, className, ...props}, ref) => {
+const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref) => {
+    const layoutProps = getLayoutProps(props),
+        {renderValue} = model,
+        value = renderValue ? moment(renderValue) : null,
+        enableClear = withDefault(props.enableClear, false),
+        textAlign = withDefault(props.textAlign, 'left'),
+        leftIcon = withDefault(props.leftIcon, null),
+        rightIcon = withDefault(props.rightIcon, Icon.calendar()),
+        isOpen = model.popoverOpen && !props.disabled;
 
-        const layoutProps = getLayoutProps(props),
-            {renderValue} = model,
-            value = renderValue ? moment(renderValue) : null,
-            enableClear = withDefault(props.enableClear, false),
-            textAlign = withDefault(props.textAlign, 'left'),
-            leftIcon = withDefault(props.leftIcon, null),
-            rightIcon = withDefault(props.rightIcon, Icon.calendar()),
-            isOpen = model.popoverOpen && !props.disabled;
+    return div({
+        className,
+        items: [
+            leftIcon,
+            singleDatePicker({
+                date: value,
+                focused: isOpen,
+                onFocusChange: ({focused}) => model.setPopoverOpen(focused),
+                onDateChange: date => model.onDateChange(date),
+                initialVisibleMonth: () => model.initialMonth,
+                isOutsideRange: date => model.isOutsideRange(date),
+                withPortal: true,
+                noBorder: true,
+                numberOfMonths: 1,
+                displayFormat: model.getFormat(),
+                showClearDate: enableClear,
+                placeholder: props.placeholder,
 
-        return div({
-            className,
-            items: [
-                leftIcon,
-                singleDatePicker({
-                    date: value,
-                    focused: isOpen,
-                    onFocusChange: ({focused}) => model.setPopoverOpen(focused),
-                    onDateChange: (date) => model.onDateChange(date),
-                    initialVisibleMonth: () => model.initialMonth,
-                    isOutsideRange: (date) => model.isOutsideRange(date),
-                    withPortal: true,
-                    noBorder: true,
-                    numberOfMonths: 1,
-                    displayFormat: model.getFormat(),
-                    showClearDate: enableClear,
-                    placeholder: props.placeholder,
-
-                    ...props.singleDatePickerProps
-                }),
-                rightIcon
-            ],
-            style: {
-                ...props.style,
-                ...layoutProps,
-                textAlign
-            },
-            ref
-        });
-    }
-);
+                ...props.singleDatePickerProps
+            }),
+            rightIcon
+        ],
+        style: {
+            ...props.style,
+            ...layoutProps,
+            textAlign
+        },
+        ref
+    });
+});

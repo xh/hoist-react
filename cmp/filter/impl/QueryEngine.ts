@@ -38,7 +38,6 @@ import {FilterChooserFieldSpec} from '../FilterChooserFieldSpec';
  * of auto-complete options to be displayed to the user.
  */
 export class QueryEngine {
-
     model: FilterChooserModel;
 
     constructor(model: FilterChooserModel) {
@@ -132,9 +131,7 @@ export class QueryEngine {
                 );
             }
         });
-        return isEmpty(ret) ?
-            msgOption(`The 'is' operator supports 'blank' or 'not blank'`) :
-            ret;
+        return isEmpty(ret) ? msgOption(`The 'is' operator supports 'blank' or 'not blank'`) : ret;
     }
 
     //----------------------------------------------------------------------------------
@@ -197,12 +194,13 @@ export class QueryEngine {
     // 5) We have an op and a value but no field-- look in *all* fields for matching candidates
     //-------------------------------------------------------------------------------------------
     valueSearchingOnAll(q): Some<FilterChooserOption> {
-        let ret = flatMap(this.fieldSpecs, spec => this.getValueMatchesForField(q.op, q.value, spec));
+        let ret = flatMap(this.fieldSpecs, spec =>
+            this.getValueMatchesForField(q.op, q.value, spec)
+        );
         ret = this.sortAndTruncate(ret);
 
-        return isEmpty(ret) ? msgOption('No matches found'): ret;
+        return isEmpty(ret) ? msgOption('No matches found') : ret;
     }
-
 
     //-------------------------------------------------
     // Helpers to produce suggestions
@@ -211,10 +209,12 @@ export class QueryEngine {
         const testFn = createWordBoundaryTest(queryStr);
         return this.fieldSpecs
             .filter(s => !queryStr || testFn(s.displayName))
-            .map(s => fieldOption({
-                fieldSpec: s,
-                isExact: caselessEquals(s.displayName, queryStr)
-            }));
+            .map(s =>
+                fieldOption({
+                    fieldSpec: s,
+                    isExact: caselessEquals(s.displayName, queryStr)
+                })
+            );
     }
 
     getMinimalFieldOpts(): FilterChooserOption[] {
@@ -303,13 +303,21 @@ export class QueryEngine {
         results = this.sort(results);
 
         const max = this.model.maxResults;
-        return max > 0 && results.length > max ?
-            [...results.slice(0, max), msgOption(`${max} of ${fmtNumber(results.length, {asHtml: true})} results shown`)] :
-            results;
+        return max > 0 && results.length > max
+            ? [
+                  ...results.slice(0, max),
+                  msgOption(`${max} of ${fmtNumber(results.length, {asHtml: true})} results shown`)
+              ]
+            : results;
     }
 
     sort(results: FilterChooserOption[]): FilterChooserOption[] {
-        return sortBy(results, o => o.type, o => !o.isExact, o => o.label);
+        return sortBy(
+            results,
+            o => o.type,
+            o => !o.isExact,
+            o => o.label
+        );
     }
 }
 
@@ -326,5 +334,5 @@ function caselessEquals(target, queryStr) {
 
 function createWordBoundaryTest(queryStr) {
     const regexp = new RegExp('\\b' + escapeRegExp(queryStr), 'i');
-    return (formattedValue) => formattedValue.match(regexp);
+    return formattedValue => formattedValue.match(regexp);
 }

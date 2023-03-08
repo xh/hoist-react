@@ -5,13 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {
-    DefaultHoistProps,
-    hoistCmp,
-    HoistModel,
-    useLocalModel,
-    XH
-} from '@xh/hoist/core';
+import {DefaultHoistProps, hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
 import {Filter, Store} from '@xh/hoist/data';
 import {storeFilterFieldImpl as desktopStoreFilterFieldImpl} from '@xh/hoist/dynamics/desktop';
 import {storeFilterFieldImpl as mobileStoreFilterFieldImpl} from '@xh/hoist/dynamics/mobile';
@@ -60,7 +54,7 @@ export interface StoreFilterFieldProps extends DefaultHoistProps {
     includeFields?: string[];
 
     /** Mode to use when filtering (default 'startWord'). */
-    matchMode?: 'start'|'startWord'|'any';
+    matchMode?: 'start' | 'startWord' | 'any';
 
     /** Optional model for raw value binding - see comments on the `bind` prop for details. */
     model?: HoistModel;
@@ -82,9 +76,8 @@ export interface StoreFilterFieldProps extends DefaultHoistProps {
     store?: Store;
 
     /** Width of the input in pixels. */
-    width?: number
+    width?: number;
 }
-
 
 /**
  * A text input Component that generates a filter function based on simple word-boundary matching of
@@ -113,8 +106,8 @@ export const [StoreFilterField, storeFilterField] = hoistCmp.withFactory<StoreFi
 
     render(props) {
         const model = useLocalModel(StoreFilterFieldImplModel);
-        return XH.isMobileApp ?
-            mobileStoreFilterFieldImpl({...props, model, bind: 'filterText'}) :
-            desktopStoreFilterFieldImpl({...props, model, bind: 'filterText'});
+        return XH.isMobileApp
+            ? mobileStoreFilterFieldImpl({...props, model, bind: 'filterText'})
+            : desktopStoreFilterFieldImpl({...props, model, bind: 'filterText'});
     }
 });

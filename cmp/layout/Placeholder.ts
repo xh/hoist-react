@@ -8,7 +8,6 @@ import {hoistCmp, BoxProps, setCmpErrorDisplay, HoistProps} from '@xh/hoist/core
 import {box} from '@xh/hoist/cmp/layout';
 import './Placeholder.scss';
 
-
 export interface PlaceholderProps extends HoistProps, BoxProps {}
 
 /**
@@ -19,7 +18,9 @@ export interface PlaceholderProps extends HoistProps, BoxProps {}
  */
 export const [Placeholder, placeholder] = hoistCmp.withFactory<PlaceholderProps>({
     displayName: 'Placeholder',
-    model: false, memo: false, observer: false,
+    model: false,
+    memo: false,
+    observer: false,
     className: 'xh-placeholder',
 
     render(props, ref) {

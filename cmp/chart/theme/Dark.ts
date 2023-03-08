@@ -6,16 +6,17 @@
  */
 
 // Dark theme color vars - see and sync with vars.scss.
-const bg = '#13181B',               // --xh-black
-    altBg = '#151e23',              // --xh-grid-bg-odd
-    borderColor = '#37474f',        // --xh-border-color
-    altBorderColor = '#293233',     // --xh-grid-border-color
-    textColor = '#ffffff',          // --xh-text-color
-    textColorMuted = '#757575',     // --xh-text-color-muted
-    accentColor = '#039be5';        // --xh-blue-light
+const bg = '#13181B', // --xh-black
+    altBg = '#151e23', // --xh-grid-bg-odd
+    borderColor = '#37474f', // --xh-border-color
+    altBorderColor = '#293233', // --xh-grid-border-color
+    textColor = '#ffffff', // --xh-text-color
+    textColorMuted = '#757575', // --xh-text-color-muted
+    accentColor = '#039be5'; // --xh-blue-light
 
 // Font-related vars.
-const fontFamily = '-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif',
+const fontFamily =
+        '-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif',
     titleFontPx = '19px',
     labelFontPx = '10px';
 
@@ -24,8 +25,17 @@ const fontFamily = '-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans"
  */
 export const DarkTheme = {
     colors: [
-        '#2b908f', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066',
-        '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'
+        '#2b908f',
+        '#90ee7e',
+        '#f45b5b',
+        '#7798BF',
+        '#aaeeee',
+        '#ff0066',
+        '#eeaaee',
+        '#55BF3B',
+        '#DF5353',
+        '#7798BF',
+        '#aaeeee'
     ],
 
     chart: {
@@ -137,8 +147,8 @@ export const DarkTheme = {
             theme: {
                 fill: 'transparent',
                 'stroke-width': 1,
-                stroke: borderColor,  // border color of button
-                r: 0,   // corner radius
+                stroke: borderColor, // border color of button
+                r: 0, // corner radius
                 states: {
                     hover: {
                         fill: 'transparent',
@@ -166,7 +176,6 @@ export const DarkTheme = {
             fontWeight: 'normal',
             background: altBg,
             color: accentColor
-
         }
     },
 
@@ -218,7 +227,7 @@ export const DarkTheme = {
     },
 
     scrollbar: {
-        barBackgroundColor: '#263238',  // --xh-scrollbar-thumb
+        barBackgroundColor: '#263238', // --xh-scrollbar-thumb
         barBorderColor: '#263238',
         buttonArrowColor: accentColor,
         buttonBackgroundColor: '#263238',

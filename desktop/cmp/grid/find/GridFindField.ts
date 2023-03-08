@@ -16,20 +16,15 @@ import {splitLayoutProps} from '@xh/hoist/utils/react';
 import './GridFindField.scss';
 import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
 
-export interface GridFindFieldProps extends
-    TextInputProps,
-    LayoutProps
-{
-
+export interface GridFindFieldProps extends TextInputProps, LayoutProps {
     /**
      * GridModel whose data this control should search. This component will, by default, use the
      * fields for all *visible* columns when matching, as well as any groupBy field.
      */
     gridModel?: GridModel;
 
-
     /** Mode to use when searching (default 'startWord'). */
-    matchMode?: 'start'|'startWord'|'any';
+    matchMode?: 'start' | 'startWord' | 'any';
 
     /**
      * Delay (in ms) to buffer searching the grid after the value changes from user input.
@@ -45,7 +40,6 @@ export interface GridFindFieldProps extends
     /** Names of field(s) to exclude from search. Cannot be used with `includeFields`. */
     excludeFields?: string[];
 }
-
 
 /**
  * A text input Component that enables users to search through a Grid and select rows that match
@@ -86,7 +80,7 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindField
                     selectOnFocus: true,
                     width: null,
                     flex: 1,
-                    onKeyDown: (e) => {
+                    onKeyDown: e => {
                         switch (e.key) {
                             case 'Enter':
                                 e.shiftKey ? impl.selectPrev() : impl.selectNext();
@@ -112,31 +106,29 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindField
     }
 });
 
-const controls = hoistCmp.factory(
-    ({impl}) => {
-        const {hasFocus, hasQuery, hasResults, countLabel} = impl;
-        if (!hasFocus && !hasQuery) return null;
-        return hbox({
-            className: 'xh-grid-find-field__controls',
-            items: [
-                span({
-                    omit: !countLabel,
-                    className: 'xh-grid-find-field__count-label',
-                    item: countLabel
+const controls = hoistCmp.factory(({impl}) => {
+    const {hasFocus, hasQuery, hasResults, countLabel} = impl;
+    if (!hasFocus && !hasQuery) return null;
+    return hbox({
+        className: 'xh-grid-find-field__controls',
+        items: [
+            span({
+                omit: !countLabel,
+                className: 'xh-grid-find-field__count-label',
+                item: countLabel
+            }),
+            vbox(
+                button({
+                    disabled: !hasResults,
+                    icon: Icon.chevronUp(),
+                    onClick: () => impl.selectPrev()
                 }),
-                vbox(
-                    button({
-                        disabled: !hasResults,
-                        icon: Icon.chevronUp(),
-                        onClick: () => impl.selectPrev()
-                    }),
-                    button({
-                        disabled: !hasResults,
-                        icon: Icon.chevronDown(),
-                        onClick: () => impl.selectNext()
-                    })
-                )
-            ]
-        });
-    }
-);
+                button({
+                    disabled: !hasResults,
+                    icon: Icon.chevronDown(),
+                    onClick: () => impl.selectNext()
+                })
+            )
+        ]
+    });
+});

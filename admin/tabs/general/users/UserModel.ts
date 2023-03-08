@@ -11,7 +11,6 @@ import * as Col from '@xh/hoist/admin/columns';
 import {keyBy, keys} from 'lodash';
 
 export class UserModel extends HoistModel {
-
     override persistWith = {localStorageKey: 'xhAdminUserState'};
 
     @bindable activeOnly = true;
@@ -58,32 +57,32 @@ export class UserModel extends HoistModel {
             loadSpec
         });
 
-        return Promise.allSettled([
-            userLoad, rolesLoad
-        ]).then((results: any) => {
-            let users = results[0].value,
-                byUsername = keyBy(users, 'username'),
-                roleMappings = results[1].value;
+        return Promise.allSettled([userLoad, rolesLoad])
+            .then((results: any) => {
+                let users = results[0].value,
+                    byUsername = keyBy(users, 'username'),
+                    roleMappings = results[1].value;
 
-            // Initialize empty roles[] on each user.
-            users.forEach(user => user.roles = []);
+                // Initialize empty roles[] on each user.
+                users.forEach(user => (user.roles = []));
 
-            // Loop through sorted roles, lookup and apply to users.
-            keys(roleMappings).sort().forEach(role => {
-                const roleUsers = roleMappings[role];
-                roleUsers.forEach(roleUser => {
-                    const user = byUsername[roleUser];
-                    if (user) user.roles.push(role);
-                });
-            });
+                // Loop through sorted roles, lookup and apply to users.
+                keys(roleMappings)
+                    .sort()
+                    .forEach(role => {
+                        const roleUsers = roleMappings[role];
+                        roleUsers.forEach(roleUser => {
+                            const user = byUsername[roleUser];
+                            if (user) user.roles.push(role);
+                        });
+                    });
 
-            if (this.withRolesOnly) {
-                users = users.filter(it => it.roles.length != 0);
-            }
+                if (this.withRolesOnly) {
+                    users = users.filter(it => it.roles.length != 0);
+                }
 
-            this.gridModel.loadData(users);
-        }).catchDefault();
+                this.gridModel.loadData(users);
+            })
+            .catchDefault();
     }
 }
-
-

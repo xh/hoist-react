@@ -44,7 +44,8 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory<DateEditorProps>({
                 popoverModifiers: {
                     computeStyle: {
                         enabled: true,
-                        fn: (data: Popper.Data, options) => computeStyleInAgGrid(data, options, portalContainer),
+                        fn: (data: Popper.Data, options) =>
+                            computeStyleInAgGrid(data, options, portalContainer),
                         order: 850
                     },
                     // Turn off other modifiers
@@ -75,7 +76,11 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory<DateEditorProps>({
  * @param options - Modifiers configuration and options
  * @returns the data object, properly modified
  */
-function computeStyleInAgGrid(data: Popper.Data, options: PlainObject, portalContainer: HTMLElement): Popper.Data {
+function computeStyleInAgGrid(
+    data: Popper.Data,
+    options: PlainObject,
+    portalContainer: HTMLElement
+): Popper.Data {
     const styles: CSSProperties = {
         position: data.offsets.popper.position,
         top: 0,
@@ -113,7 +118,13 @@ function computeStyleInAgGrid(data: Popper.Data, options: PlainObject, portalCon
     const scrollLeft = rowContainer.parentNode.scrollLeft,
         {scrollTop, offsetWidth: pcWidth, offsetHeight: pcHeight} = portalContainer,
         {height: popperHeight, width: popperWidth} = data.offsets.popper,
-        {top: inputElTop, bottom: inputElBottom, left: inputElLeft, right: inputElRight, width: inputElWidth} = data.offsets.reference,
+        {
+            top: inputElTop,
+            bottom: inputElBottom,
+            left: inputElLeft,
+            right: inputElRight,
+            width: inputElWidth
+        } = data.offsets.reference,
         pcRight = pcWidth + scrollLeft;
 
     // Set popper top & left to avoid hiding popper behind grid edges when cell is visible.
@@ -132,7 +143,8 @@ function computeStyleInAgGrid(data: Popper.Data, options: PlainObject, portalCon
     // Solve y axis (top).  Default position is underneath cell
     // Flips to above if cell is near bottom of grid.
     // If poppper height is greater than grid height, the popper stays in the default position.
-    const flipToAbove = popperHeight < pcHeight && inputElBottom - scrollTop + popperHeight > pcHeight,
+    const flipToAbove =
+            popperHeight < pcHeight && inputElBottom - scrollTop + popperHeight > pcHeight,
         trTop = flipToAbove ? inputElTop - popperHeight : inputElBottom;
 
     styles.transform = 'translate3d(' + trLeft + 'px, ' + trTop + 'px, 0)';

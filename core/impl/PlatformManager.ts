@@ -13,23 +13,25 @@ import {XH} from './..';
  * @internal
  */
 class PlatformManager {
-
     private mobileAPIRegistered = false;
     private desktopAPIRegistered = false;
 
     registerDesktop() {
         if (this.mobileAPIRegistered) {
-            throw XH.exception(`Desktop files imported into mobile app. Please check your imports.`);
+            throw XH.exception(
+                `Desktop files imported into mobile app. Please check your imports.`
+            );
         }
         this.desktopAPIRegistered = true;
     }
 
     registerMobile() {
         if (this.desktopAPIRegistered) {
-            throw XH.exception(`Mobile files imported into desktop app. Please check your imports.`);
+            throw XH.exception(
+                `Mobile files imported into desktop app. Please check your imports.`
+            );
         }
         this.mobileAPIRegistered = true;
     }
-
 }
 export const platformManager = new PlatformManager();

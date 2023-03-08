@@ -5,7 +5,14 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, managed, PersistenceProvider, PersistOptions, PlainObject, XH} from '@xh/hoist/core';
+import {
+    HoistModel,
+    managed,
+    PersistenceProvider,
+    PersistOptions,
+    PlainObject,
+    XH
+} from '@xh/hoist/core';
 import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -18,13 +25,13 @@ export interface GroupingChooserConfig {
      * it is recommended to pass the `dimensions` from the related cube (or a filtered subset thereof).
      * (Note that CubeField meets the DimensionSpec interface).
      */
-    dimensions?: (DimensionSpec|string)[];
+    dimensions?: (DimensionSpec | string)[];
 
     /** Initial value as an array of dimension names, or a function to produce such an array. */
-    initialValue?: string[]|(() => string[]);
+    initialValue?: string[] | (() => string[]);
 
     /** Initial favorites as an array of dim name arrays, or a function to produce such an array. */
-    initialFavorites?: string[][]|(() => string[][]);
+    initialFavorites?: string[][] | (() => string[][]);
 
     /** Options governing persistence. */
     persistWith?: GroupingChooserPersistOptions;
@@ -57,7 +64,6 @@ export interface GroupingChooserPersistOptions extends PersistOptions {
 }
 
 export class GroupingChooserModel extends HoistModel {
-
     @observable.ref value: string[];
 
     @observable.ref favorites: string[][] = [];
@@ -91,7 +97,8 @@ export class GroupingChooserModel extends HoistModel {
     @computed
     get isAddEnabled(): boolean {
         const {pendingValue, maxDepth, dimensionNames, availableDims} = this,
-            limit = maxDepth > 0 ? Math.min(maxDepth, dimensionNames.length) : dimensionNames.length,
+            limit =
+                maxDepth > 0 ? Math.min(maxDepth, dimensionNames.length) : dimensionNames.length,
             atMaxDepth = pendingValue.length === limit;
         return !atMaxDepth && !isEmpty(availableDims);
     }
@@ -124,7 +131,10 @@ export class GroupingChooserModel extends HoistModel {
         // Read state from provider -- fail gently
         if (persistWith) {
             try {
-                this.provider = PersistenceProvider.create({path: 'groupingChooser', ...persistWith});
+                this.provider = PersistenceProvider.create({
+                    path: 'groupingChooser',
+                    ...persistWith
+                });
                 this.persistValue = persistWith.persistValue ?? true;
                 this.persistFavorites = persistWith.persistFavorites ?? true;
 
@@ -138,7 +148,7 @@ export class GroupingChooserModel extends HoistModel {
 
                 this.addReaction({
                     track: () => this.persistState,
-                    run: (state) => this.provider.write(state)
+                    run: state => this.provider.write(state)
                 });
             } catch (e) {
                 console.error(e);
@@ -229,7 +239,7 @@ export class GroupingChooserModel extends HoistModel {
         return value.every(dim => this.dimensionNames.includes(dim));
     }
 
-    normalizeDimensions(dims: Array<DimensionSpec|string>): Record<string, DimensionSpec> {
+    normalizeDimensions(dims: Array<DimensionSpec | string>): Record<string, DimensionSpec> {
         dims = dims ?? [];
         const ret = {};
         dims.forEach(it => {
@@ -239,13 +249,16 @@ export class GroupingChooserModel extends HoistModel {
         return ret;
     }
 
-    createDimension(src: DimensionSpec|string) {
+    createDimension(src: DimensionSpec | string) {
         src = isString(src) ? {name: src} : src;
-        throwIf(!src.hasOwnProperty('name'), "Dimensions provided as Objects must define a 'name' property.");
+        throwIf(
+            !src.hasOwnProperty('name'),
+            "Dimensions provided as Objects must define a 'name' property."
+        );
         return {displayName: genDisplayName(src.name), ...src};
     }
 
-    getValueLabel(value:string[]) {
+    getValueLabel(value: string[]) {
         return value.map(dimName => this.getDimDisplayName(dimName)).join(' › ');
     }
 
@@ -266,10 +279,13 @@ export class GroupingChooserModel extends HoistModel {
     // Favorites
     //--------------------
     get favoritesOptions() {
-        return sortBy(this.favorites.map(value => ({
-            value,
-            label: this.getValueLabel(value)
-        })), it => it.label[0]);
+        return sortBy(
+            this.favorites.map(value => ({
+                value,
+                label: this.getValueLabel(value)
+            })),
+            it => it.label[0]
+        );
     }
 
     @action
@@ -301,5 +317,4 @@ export class GroupingChooserModel extends HoistModel {
         if (this.persistFavorites) ret.favorites = this.favorites;
         return ret;
     }
-
 }

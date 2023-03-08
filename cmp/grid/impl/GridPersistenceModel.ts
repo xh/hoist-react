@@ -7,9 +7,8 @@
 import {HoistModel, managed, PersistenceProvider, PlainObject, XH} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
-import { GridModel } from '../GridModel';
-import { GridModelPersistOptions } from '../Types';
-
+import {GridModel} from '../GridModel';
+import {GridModelPersistOptions} from '../Types';
 
 /**
  * Model to manage persisting state from GridModel.
@@ -18,7 +17,7 @@ import { GridModelPersistOptions } from '../Types';
 export class GridPersistenceModel extends HoistModel {
     override xhImpl = true;
 
-    VERSION = 1;  // Increment to abandon state.
+    VERSION = 1; // Increment to abandon state.
 
     gridModel: GridModel;
 
@@ -49,7 +48,7 @@ export class GridPersistenceModel extends HoistModel {
             this.state = this.loadState() ?? this.legacyState() ?? {version: this.VERSION};
             this.addReaction({
                 track: () => this.state,
-                run: (state) => this.provider.write(state)
+                run: state => this.provider.write(state)
             });
         } catch (e) {
             console.error(e);
@@ -106,7 +105,7 @@ export class GridPersistenceModel extends HoistModel {
     sortReaction() {
         return {
             track: () => this.gridModel.sortBy,
-            run: (sortBy) => {
+            run: sortBy => {
                 this.patchState({sortBy: sortBy.map(it => it.toString())});
             }
         };
@@ -123,7 +122,7 @@ export class GridPersistenceModel extends HoistModel {
     groupReaction() {
         return {
             track: () => this.gridModel.groupBy,
-            run: (groupBy) => {
+            run: groupBy => {
                 this.patchState({groupBy});
             }
         };

@@ -16,12 +16,7 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import './TextInput.scss';
 
-export interface TextInputProps extends
-    HoistProps,
-    HoistInputProps,
-    StyleProps,
-    LayoutProps
-{
+export interface TextInputProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
     value?: string;
 
     /**
@@ -58,9 +53,8 @@ export interface TextInputProps extends
     textAlign?: HSide;
 
     /** Underlying HTML <input> element type. */
-    type?: 'text'|'password';
+    type?: 'text' | 'password';
 }
-
 
 /**
  * A Text Input
@@ -89,18 +83,18 @@ class TextInputModel extends HoistInputModel {
         return enableClear && !disabled && !isEmpty(this.internalValue);
     }
 
-    onChange = (ev) => {
+    onChange = ev => {
         let {value} = ev.target;
         if (value === '') value = null;
         this.noteValueChange(value);
     };
 
-    onKeyDown = (ev) => {
+    onKeyDown = ev => {
         if (ev.key === 'Enter') this.doCommit();
         this.componentProps.onKeyDown?.(ev);
     };
 
-    override onFocus = (ev) => {
+    override onFocus = ev => {
         if (this.componentProps.selectOnFocus && ev.target && ev.target.select) {
             ev.target.select();
         }
@@ -108,45 +102,46 @@ class TextInputModel extends HoistInputModel {
     };
 }
 
-const cmp = hoistCmp.factory<TextInputModel>(
-    ({model, className, ...props}, ref) => {
-        const {width, ...layoutProps} = getLayoutProps(props);
+const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref) => {
+    const {width, ...layoutProps} = getLayoutProps(props);
 
-        return hbox({
-            ref,
-            className,
-            style: {
-                ...props.style,
-                ...layoutProps,
-                width: withDefault(width, null)
-            },
-            items: [
-                input({
-                    value: model.renderValue || '',
+    return hbox({
+        ref,
+        className,
+        style: {
+            ...props.style,
+            ...layoutProps,
+            width: withDefault(width, null)
+        },
+        items: [
+            input({
+                value: model.renderValue || '',
 
-                    autoComplete: withDefault(props.autoComplete, props.type === 'password' ? 'new-password' : 'off'),
-                    disabled: props.disabled,
-                    modifier: props.modifier,
-                    placeholder: props.placeholder,
-                    spellCheck: withDefault(props.spellCheck, false),
-                    tabIndex: props.tabIndex,
-                    type: props.type,
-                    className: 'xh-text-input__input',
-                    style: {textAlign: withDefault(props.textAlign, 'left')},
+                autoComplete: withDefault(
+                    props.autoComplete,
+                    props.type === 'password' ? 'new-password' : 'off'
+                ),
+                disabled: props.disabled,
+                modifier: props.modifier,
+                placeholder: props.placeholder,
+                spellCheck: withDefault(props.spellCheck, false),
+                tabIndex: props.tabIndex,
+                type: props.type,
+                className: 'xh-text-input__input',
+                style: {textAlign: withDefault(props.textAlign, 'left')},
 
-                    onChange: model.onChange,
-                    onKeyDown: model.onKeyDown,
-                    onBlur: model.onBlur,
-                    onFocus: model.onFocus
-                }),
-                clearButton()
-            ]
-        });
-    }
-);
+                onChange: model.onChange,
+                onKeyDown: model.onKeyDown,
+                onBlur: model.onBlur,
+                onFocus: model.onFocus
+            }),
+            clearButton()
+        ]
+    });
+});
 
-const clearButton = hoistCmp.factory<TextInputModel>(
-    ({model}) => button({
+const clearButton = hoistCmp.factory<TextInputModel>(({model}) =>
+    button({
         className: 'xh-text-input__clear-button',
         icon: Icon.cross(),
         tabIndex: -1,

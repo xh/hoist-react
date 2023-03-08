@@ -20,11 +20,9 @@ export function checkMinVersion(version: string, minVersion: string): boolean {
     return (
         version &&
         minVersion &&
-        semver.satisfies(
-            normalizeVersion(version),
-            '>=' + normalizeVersion(minVersion),
-            {includePrerelease: true}
-        )
+        semver.satisfies(normalizeVersion(version), '>=' + normalizeVersion(minVersion), {
+            includePrerelease: true
+        })
     );
 }
 
@@ -35,11 +33,9 @@ export function checkMaxVersion(version: string, maxVersion: string): boolean {
     return (
         version &&
         maxVersion &&
-        semver.satisfies(
-            normalizeVersion(version),
-            '<=' + normalizeVersion(maxVersion),
-            {includePrerelease: true}
-        )
+        semver.satisfies(normalizeVersion(version), '<=' + normalizeVersion(maxVersion), {
+            includePrerelease: true
+        })
     );
 }
 

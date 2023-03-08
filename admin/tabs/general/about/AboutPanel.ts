@@ -12,19 +12,15 @@ import {Icon, xhLogo} from '@xh/hoist/icon';
 import {fmtTimeZone} from '@xh/hoist/utils/impl';
 import './AboutPanel.scss';
 
-export const aboutPanel = hoistCmp.factory(
-    () => div({
+export const aboutPanel = hoistCmp.factory(() =>
+    div({
         className: 'xh-admin-about-panel',
-        items: [
-            h2(Icon.info(), 'About this Application'),
-            ...renderTables(),
-            renderBlurb()
-        ]
+        items: [h2(Icon.info(), 'About this Application'), ...renderTables(), renderBlurb()]
     })
 );
 
 function renderTables() {
-    const get = (str) => XH.environmentService.get(str),
+    const get = str => XH.environmentService.get(str),
         startupTime = get('startupTime'),
         row = (label, data) => {
             data = data || span({item: 'Not available', className: 'xh-text-color-muted'});
@@ -45,11 +41,25 @@ function renderTables() {
                 row('App Name / Code', `${get('appName')} / ${get('appCode')}`),
                 row('Environment', get('appEnvironment')),
                 row('Database', get('databaseConnectionString')),
-                row('DB User / Create Mode', `${get('databaseUser')} / ${get('databaseCreateMode')}`),
+                row(
+                    'DB User / Create Mode',
+                    `${get('databaseUser')} / ${get('databaseCreateMode')}`
+                ),
                 row('App Time Zone', fmtTimeZone(get('appTimeZone'), get('appTimeZoneOffset'))),
-                row('Server Time Zone', fmtTimeZone(get('serverTimeZone'), get('serverTimeZoneOffset'))),
-                row('Client Time Zone', fmtTimeZone(get('clientTimeZone'), get('clientTimeZoneOffset'))),
-                startupTime ? row('Server Uptime', relativeTimestamp({timestamp: startupTime, options: {pastSuffix: ''}})) : null
+                row(
+                    'Server Time Zone',
+                    fmtTimeZone(get('serverTimeZone'), get('serverTimeZoneOffset'))
+                ),
+                row(
+                    'Client Time Zone',
+                    fmtTimeZone(get('clientTimeZone'), get('clientTimeZoneOffset'))
+                ),
+                startupTime
+                    ? row(
+                          'Server Uptime',
+                          relativeTimestamp({timestamp: startupTime, options: {pastSuffix: ''}})
+                      )
+                    : null
             )
         }),
         h2(Icon.books(), 'Application and Library Versions'),
@@ -82,12 +92,19 @@ function renderBlurb() {
             div(
                 p(
                     'Built with Hoist: a plugin for rich web-application development provided by ',
-                    a({href: 'http://xh.io', target: '_blank', rel: 'noopener noreferrer', item: 'Extremely Heavy'})
+                    a({
+                        href: 'http://xh.io',
+                        target: '_blank',
+                        rel: 'noopener noreferrer',
+                        item: 'Extremely Heavy'
+                    })
                 ),
-                p('Please contact ', a({href: 'mailto:support@xh.io', item: 'support@xh.io'}), ' with any questions.')
+                p(
+                    'Please contact ',
+                    a({href: 'mailto:support@xh.io', item: 'support@xh.io'}),
+                    ' with any questions.'
+                )
             )
         ]
     });
 }
-
-

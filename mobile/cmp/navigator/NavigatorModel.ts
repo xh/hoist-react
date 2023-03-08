@@ -12,9 +12,7 @@ import {find, isEqual, keys, merge} from 'lodash';
 import {page} from './impl/Page';
 import {PageConfig, PageModel} from './PageModel';
 
-
 export interface NavigatorConfig {
-
     /** Configs for PageModels, representing all supported pages within this Navigator/App. */
     pages: PageConfig[];
 
@@ -84,7 +82,10 @@ export class NavigatorModel extends HoistModel {
     }: NavigatorConfig) {
         super();
         makeObservable(this);
-        warnIf(renderMode === 'always', 'RenderMode.ALWAYS is not supported in Navigator. Pages can\'t exist before being mounted.');
+        warnIf(
+            renderMode === 'always',
+            "RenderMode.ALWAYS is not supported in Navigator. Pages can't exist before being mounted."
+        );
 
         ensureNotEmpty(pages, 'NavigatorModel needs at least one page.');
         ensureUniqueBy(pages, 'id', 'Multiple NavigatorModel PageModels have the same id.');
@@ -109,7 +110,7 @@ export class NavigatorModel extends HoistModel {
         if (track) {
             this.addReaction({
                 track: () => this.activePageId,
-                run: (activePageId) => {
+                run: activePageId => {
                     XH.track({
                         category: 'Navigation',
                         message: `Viewed ${activePageId} page`,
@@ -126,7 +127,6 @@ export class NavigatorModel extends HoistModel {
     setCallback(callback: () => void) {
         this._callback = callback;
     }
-
 
     //--------------------
     // Implementation
@@ -160,7 +160,10 @@ export class NavigatorModel extends HoistModel {
                 pageModelCfg = find(this.pages, {id: part.id});
 
             // Ensure PageModel that matches route exists
-            throwIf(!pageModelCfg, `Route ${part.id} does not match any PageModel.id configured in the NavigatorModel`);
+            throwIf(
+                !pageModelCfg,
+                `Route ${part.id} does not match any PageModel.id configured in the NavigatorModel`
+            );
 
             // If, on the initial pass, we encounter a route that prevents direct linking,
             // we drop the rest of the route and redirect to the route so far
@@ -254,5 +257,4 @@ export class NavigatorModel extends HoistModel {
         this._callback?.();
         this._callback = null;
     };
-
 }

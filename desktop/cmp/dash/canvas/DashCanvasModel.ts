@@ -27,7 +27,6 @@ import {
 } from 'lodash';
 
 export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCanvasItemState> {
-
     /** Total number of columns (x coordinates for views correspond with column numbers). */
     columns?: number;
 
@@ -65,9 +64,11 @@ export interface DashCanvasItemLayout {
  * Model for {@link DashCanvas}, managing all configurable options for the component and publishing
  * the observable state of its current widgets and their layout.
  */
-export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasItemState, DashCanvasViewModel> {
-
-
+export class DashCanvasModel extends DashModel<
+    DashCanvasViewSpec,
+    DashCanvasItemState,
+    DashCanvasViewModel
+> {
     //-----------------------------
     // Settable State
     //------------------------------
@@ -156,8 +157,16 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
         });
 
         this.restoreState = {
-            initialState, layoutLocked, contentLocked, renameLocked, columns,
-            rowHeight, compact, margin, maxRows, containerPadding
+            initialState,
+            layoutLocked,
+            contentLocked,
+            renameLocked,
+            columns,
+            rowHeight,
+            compact,
+            margin,
+            maxRows,
+            containerPadding
         };
         this.layoutLocked = layoutLocked;
         this.contentLocked = contentLocked;
@@ -203,7 +212,6 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
         });
     }
 
-
     /** Removes all views from the canvas */
     @action
     clear() {
@@ -242,9 +250,9 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
     addView(
         specId: string,
         opts: {
-            title?: string,
-            position?: 'first'|'last'|'nextAvailable'|string,
-            state?: any
+            title?: string;
+            position?: 'first' | 'last' | 'nextAvailable' | string;
+            state?: any;
         } = {}
     ): DashCanvasViewModel {
         const {title, position = 'nextAvailable', state} = opts;
@@ -316,7 +324,10 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
                 return this.getNextAvailablePosition(this.getSpec(specId));
             default: {
                 const previousView = this.getViewLayout(position);
-                throwIf(!previousView, `Position must be either 'first', 'last', 'nextAvailable' or a valid viewId`);
+                throwIf(
+                    !previousView,
+                    `Position must be either 'first', 'last', 'nextAvailable' or a valid viewId`
+                );
                 const {x, y} = previousView;
                 return {x, y};
             }
@@ -328,13 +339,16 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
         const viewSpec = this.getSpec(specId),
             instances = this.getViewsBySpecId(specId);
 
-        throwIf(!viewSpec,
+        throwIf(
+            !viewSpec,
             `Trying to add non-existent or omitted DashCanvasViewSpec. id=${specId}`
         );
-        throwIf(!viewSpec.allowAdd,
+        throwIf(
+            !viewSpec.allowAdd,
             `Trying to add DashCanvasViewSpec with allowAdd=false. id=${specId}`
         );
-        throwIf(viewSpec.unique && instances.length,
+        throwIf(
+            viewSpec.unique && instances.length,
             `Trying to add multiple instances of a DashCanvasViewSpec with unique=true. id=${specId}`
         );
 
@@ -461,7 +475,14 @@ export class DashCanvasModel extends DashModel<DashCanvasViewSpec, DashCanvasIte
         return this.viewModels.filter(it => it.viewSpec.id === id);
     }
 
-    private getNextAvailablePosition({width, height, startX = 0, startY = 0, defaultX = 0, endY = null}: any) {
+    private getNextAvailablePosition({
+        width,
+        height,
+        startX = 0,
+        startY = 0,
+        defaultX = 0,
+        endY = null
+    }: any) {
         const {rows, columns} = this,
             occupied = times(columns, () => Array(rows).fill(false));
 

@@ -5,7 +5,6 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-
 /**
  * The exports below are platform specific classes we would like to use (carefully!) in our
  * cross-platform code.

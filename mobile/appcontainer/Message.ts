@@ -44,9 +44,10 @@ export const message = hoistCmp.factory({
 
         if (confirmProps) {
             // Merge in formModel.isValid here in render stage to get reactivity.
-            buttons.push(formModel ?
-                button({...confirmProps, disabled: !formModel.isValid}) :
-                button(confirmProps)
+            buttons.push(
+                formModel
+                    ? button({...confirmProps, disabled: !formModel.isValid})
+                    : button(confirmProps)
             );
         }
 
@@ -66,17 +67,14 @@ export const message = hoistCmp.factory({
     }
 });
 
-
-const inputCmp = hoistCmp.factory<MessageModel>(
-    ({model}) => {
-        const {formModel, input} = model;
-        if (!formModel) return null;
-        return form({
-            fieldDefaults: {commitOnChange: true, minimal: true, label: null},
-            item: formField({
-                field: 'value',
-                item: withDefault(input.item, textInput())
-            })
-        });
-    }
-);
+const inputCmp = hoistCmp.factory<MessageModel>(({model}) => {
+    const {formModel, input} = model;
+    if (!formModel) return null;
+    return form({
+        fieldDefaults: {commitOnChange: true, minimal: true, label: null},
+        item: formField({
+            field: 'value',
+            item: withDefault(input.item, textInput())
+        })
+    });
+});

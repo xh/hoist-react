@@ -11,7 +11,6 @@ import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import classNames from 'classnames';
 import {first} from 'lodash';
 
-
 /** @internal */
 export interface RecordActionButtonProps extends ButtonProps {
     /** The action to run. */
@@ -31,44 +30,52 @@ export interface RecordActionButtonProps extends ButtonProps {
  *
  * @internal
  */
-export const [RecordActionButton, recordActionButton] = hoistCmp.withFactory<RecordActionButtonProps>({
-    displayName: 'RecordActionButton',
-    className: 'xh-record-action-button',
+export const [RecordActionButton, recordActionButton] =
+    hoistCmp.withFactory<RecordActionButtonProps>({
+        displayName: 'RecordActionButton',
+        className: 'xh-record-action-button',
 
-    render(props) {
-        let {action, minimal, gridModel, selModel, column, record, className, ...rest} = props;
+        render(props) {
+            let {action, minimal, gridModel, selModel, column, record, className, ...rest} = props;
 
-        let selectedRecords = record ? [record] : null;
-        if (selModel) {
-            selectedRecords = selModel.selectedRecords;
+            let selectedRecords = record ? [record] : null;
+            if (selModel) {
+                selectedRecords = selModel.selectedRecords;
 
-            // Try to get the record from the selModel if not explicitly provided to the button
-            if (!record) {
-                if (selectedRecords.length === 1) {
-                    record = selModel.selectedRecord;
-                } else {
-                    record = first(selModel.selectedRecords);
+                // Try to get the record from the selModel if not explicitly provided to the button
+                if (!record) {
+                    if (selectedRecords.length === 1) {
+                        record = selModel.selectedRecord;
+                    } else {
+                        record = first(selModel.selectedRecords);
+                    }
                 }
             }
+
+            const params = {record, selectedRecords, gridModel, column},
+                displaySpec = action.getDisplaySpec(params),
+                {
+                    text,
+                    icon,
+                    intent,
+                    className: actionClassName,
+                    disabled,
+                    tooltip: title,
+                    hidden
+                } = displaySpec;
+
+            if (hidden) return null;
+
+            return button({
+                className: classNames(className, actionClassName),
+                minimal,
+                text: minimal ? null : text,
+                icon,
+                intent,
+                title,
+                disabled,
+                onClick: () => action.call({record, selectedRecords, gridModel, column}),
+                ...rest
+            });
         }
-
-        const params = {record, selectedRecords, gridModel, column},
-            displaySpec = action.getDisplaySpec(params),
-            {text, icon, intent, className: actionClassName, disabled, tooltip: title, hidden} = displaySpec;
-
-        if (hidden) return null;
-
-        return button({
-            className: classNames(className, actionClassName),
-            minimal,
-            text: minimal ? null : text,
-            icon,
-            intent,
-            title,
-            disabled,
-            onClick: () => action.call({record, selectedRecords, gridModel, column}),
-            ...rest
-        });
-    }
-});
-
+    });

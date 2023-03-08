@@ -10,10 +10,7 @@ import {hoistCmp, HoistProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import './Label.scss';
 
-export interface LabelProps extends
-    HoistProps,
-    HoistInputProps,
-    StyleProps {}
+export interface LabelProps extends HoistProps, HoistInputProps, StyleProps {}
 
 /**
  * A simple label for a form.
@@ -33,13 +30,11 @@ class LabelInputModel extends HoistInputModel {
 //-----------------------
 // Implementation
 //-----------------------
-const cmp = hoistCmp.factory(
-    ({model, className, style, width, children}, ref) => {
-        return div({
-            className,
-            style: {...style, whiteSpace: 'nowrap', width},
-            items: children,
-            ref
-        });
-    }
-);
+const cmp = hoistCmp.factory(({model, className, style, width, children}, ref) => {
+    return div({
+        className,
+        style: {...style, whiteSpace: 'nowrap', width},
+        items: children,
+        ref
+    });
+});

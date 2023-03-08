@@ -12,28 +12,26 @@ import {Icon} from '@xh/hoist/icon';
 import {LeftRightChooserModel} from '../LeftRightChooserModel';
 
 /** @internal */
-export const chooserToolbar = hoistCmp.factory<LeftRightChooserModel>(
-    ({model}) => {
-        const leftSel = model.leftModel.selModel,
-            rightSel = model.rightModel.selModel;
+export const chooserToolbar = hoistCmp.factory<LeftRightChooserModel>(({model}) => {
+    const leftSel = model.leftModel.selModel,
+        rightSel = model.rightModel.selModel;
 
-        return toolbar({
-            width: 50,
-            vertical: true,
-            className: 'xh-lr-chooser__toolbar',
-            items: [
-                vspacer(10),
-                button({
-                    icon: Icon.chevronRight(),
-                    onClick: () => model.moveRows(leftSel.selectedRecords),
-                    disabled: leftSel.isEmpty
-                }),
-                button({
-                    icon: Icon.chevronLeft(),
-                    onClick: () => model.moveRows(rightSel.selectedRecords),
-                    disabled: rightSel.isEmpty
-                })
-            ]
-        });
-    }
-);
+    return toolbar({
+        width: 50,
+        vertical: true,
+        className: 'xh-lr-chooser__toolbar',
+        items: [
+            vspacer(10),
+            button({
+                icon: Icon.chevronRight(),
+                onClick: () => model.moveRows(leftSel.selectedRecords),
+                disabled: leftSel.isEmpty
+            }),
+            button({
+                icon: Icon.chevronLeft(),
+                onClick: () => model.moveRows(rightSel.selectedRecords),
+                disabled: rightSel.isEmpty
+            })
+        ]
+    });
+});

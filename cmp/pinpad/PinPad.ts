@@ -26,5 +26,3 @@ export const [PinPad, pinPad] = hoistCmp.withFactory({
         return XH.isMobileApp ? mobilePinPadImpl(props, ref) : desktopPinPadImpl(props, ref);
     }
 });
-
-

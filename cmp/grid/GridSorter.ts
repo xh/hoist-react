@@ -10,14 +10,13 @@ export type GridSorterLike = GridSorterSpec | string | GridSorter;
 
 export interface GridSorterSpec {
     colId: string;
-    sort?: 'asc'|'desc'|'ASC'|'DESC';
+    sort?: 'asc' | 'desc' | 'ASC' | 'DESC';
     abs?: boolean;
 }
 
 export class GridSorter {
-
     readonly colId: string;
-    readonly sort: 'asc'|'desc';
+    readonly sort: 'asc' | 'desc';
     readonly abs: boolean;
 
     /**
@@ -46,11 +45,7 @@ export class GridSorter {
 
     /** Generate a delimited string representation suitable for consumption by parse().*/
     toString(): string {
-        return [
-            this.colId,
-            this.sort,
-            this.abs ? 'abs' : null
-        ].filter(Boolean).join('|');
+        return [this.colId, this.sort, this.abs ? 'abs' : null].filter(Boolean).join('|');
     }
 
     /** Comparator to use with instances of GridSorter.*/
@@ -71,7 +66,7 @@ export class GridSorter {
         if (v1.toNumber) v1 = v1.toNumber();
         if (v2.toNumber) v2 = v2.toNumber();
 
-        const quickCompare = (a, b) => a > b ? 1 : (a < b ? -1 : 0);
+        const quickCompare = (a, b) => (a > b ? 1 : a < b ? -1 : 0);
 
         if (typeof v1 === 'string') {
             try {

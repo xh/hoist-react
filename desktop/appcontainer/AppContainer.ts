@@ -11,14 +11,10 @@ import {errorBoundary} from '@xh/hoist/appcontainer/ErrorBoundary';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
 import {suspendPanel} from '@xh/hoist/desktop/appcontainer/SuspendPanel';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
-import {
-    colChooserDialog as colChooser
-} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
+import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
 import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserModel';
 import {columnHeaderFilter} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilter';
-import {
-    ColumnHeaderFilterModel
-} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
+import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
 import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilterDialog';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport';
@@ -152,8 +148,8 @@ const appContainerView = hoistCmp.factory({
     }
 });
 
-const appLoadMask = hoistCmp.factory<AppContainerModel>(
-    ({model}) => mask({bind: model.appLoadModel, spinner: true})
+const appLoadMask = hoistCmp.factory<AppContainerModel>(({model}) =>
+    mask({bind: model.appLoadModel, spinner: true})
 );
 
 const suspendedView = hoistCmp.factory({
@@ -165,7 +161,6 @@ const suspendedView = hoistCmp.factory({
         return suspendPanel();
     }
 });
-
 
 const bannerList = hoistCmp.factory<AppContainerModel>({
     render({model}) {

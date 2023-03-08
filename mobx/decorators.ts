@@ -8,7 +8,6 @@ import {upperFirst} from 'lodash';
 import {observable, runInAction} from 'mobx';
 import {apiDeprecated, getOrCreate} from '../utils/js';
 
-
 /**
  * Decorator to mark a property as observable and also provide a simple MobX action of the
  * form `setPropName()`.
@@ -23,7 +22,7 @@ export const bindable: any = (target, property, descriptor) => {
     return createBindable(target, property, descriptor, false);
 };
 
-bindable.ref = function(target, property, descriptor) {
+bindable.ref = function (target, property, descriptor) {
     return createBindable(target, property, descriptor, true);
 };
 
@@ -31,12 +30,11 @@ bindable.ref = function(target, property, descriptor) {
 // Implementation
 //-----------------
 function createBindable(target, name, descriptor, isRef) {
-
     // 1) Set up a set function, on the prototype, if one does not exist.
     // This is the original side effect of bindable, used for backward compat by `setBindable`
     const setterName = 'set' + upperFirst(name);
     if (!target.hasOwnProperty(setterName)) {
-        const value = function(v) {
+        const value = function (v) {
             this[name] = v;
         };
         Object.defineProperty(target, setterName, {value});
@@ -46,22 +44,23 @@ function createBindable(target, name, descriptor, isRef) {
     const {initializer} = descriptor,
         propName = `_${name}_bindable`,
         valName = `_${name}_bindable_value`;
-    Object.defineProperty(
-        target,
-        propName, {
-            get() {
-                return getOrCreate(this, valName, () => {
-                    const initVal = initializer?.call(this);
-                    return isRef ? observable.box(initVal, {deep: false}) : observable.box(initVal);
-                });
-            }
+    Object.defineProperty(target, propName, {
+        get() {
+            return getOrCreate(this, valName, () => {
+                const initVal = initializer?.call(this);
+                return isRef ? observable.box(initVal, {deep: false}) : observable.box(initVal);
+            });
         }
-    );
+    });
 
     // 3) Create the descriptor for a getter/setter pair..
-    descriptor =  {
-        get() {return this[propName].get()},
-        set(v) {runInAction(() => this[propName].set(v))},
+    descriptor = {
+        get() {
+            return this[propName].get();
+        },
+        set(v) {
+            runInAction(() => this[propName].set(v));
+        },
         enumerable: true,
         configurable: true
     };
@@ -78,7 +77,6 @@ function createBindable(target, name, descriptor, isRef) {
     // late, the non-enumerable property will still be available.)
     return descriptor;
 }
-
 
 /**
  * Decorator to add a simple MobX action of the form `setPropName()` to a class.
@@ -99,8 +97,10 @@ export const settable: any = (target, property, descriptor) => {
     });
 
     if (!target.hasOwnProperty(name)) {
-        const value = function(v) {
-            runInAction(() => {this[property] = v});
+        const value = function (v) {
+            runInAction(() => {
+                this[property] = v;
+            });
         };
         Object.defineProperty(target, name, {value});
     }

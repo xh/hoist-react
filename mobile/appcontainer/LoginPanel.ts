@@ -31,11 +31,7 @@ export const loginPanel = hoistCmp.factory({
         return panel({
             className: 'xh-login',
             items: [
-                toolbar(
-                    filler(),
-                    XH.clientAppName,
-                    filler()
-                ),
+                toolbar(filler(), XH.clientAppName, filler()),
                 panel({
                     className: 'xh-login__body',
                     mask: loadModel,

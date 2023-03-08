@@ -38,7 +38,9 @@ export const lockoutPanel = hoistCmp.factory({
 function unauthorizedMessage() {
     const {appSpec, identityService} = XH,
         user = XH.getUser(),
-        roleMsg = isEmpty(user.roles) ? 'no roles assigned' : `the roles [${user.roles.join(', ')}]`;
+        roleMsg = isEmpty(user.roles)
+            ? 'no roles assigned'
+            : `the roles [${user.roles.join(', ')}]`;
 
     return div(
         p(XH.accessDeniedMessage ?? ''),

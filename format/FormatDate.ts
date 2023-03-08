@@ -21,12 +21,10 @@ export const DATE_FMT = 'YYYY-MM-DD',
 
 const INVALID_DATE = moment(null).format();
 
-
 /**
  * An object specifying how a date should be formatted.
  */
 export interface DateFormatOptions extends FormatOptions<DateLike> {
-
     /** Display value for null values. */
     nullDisplay?: ReactNode;
 
@@ -37,21 +35,26 @@ export interface DateFormatOptions extends FormatOptions<DateLike> {
 /**
  * Render a date like value with a default format of {@link DATE_FMT}.
  */
-export function fmtDate(v: DateLike, opts?: DateFormatOptions|string): ReactNode {
+export function fmtDate(v: DateLike, opts?: DateFormatOptions | string): ReactNode {
     opts = isString(opts) ? {fmt: opts} : {...opts};
     if (v == null) return opts?.nullDisplay ?? '';
 
     defaults(opts, {fmt: DATE_FMT, tooltip: null});
     saveOriginal(v, opts);
 
-    let ret: ReactNode = v instanceof LocalDate || moment.isMoment(v) ?
-        v.format(opts.fmt) :
-        moment(v).format(opts.fmt);
+    let ret: ReactNode =
+        v instanceof LocalDate || moment.isMoment(v)
+            ? v.format(opts.fmt)
+            : moment(v).format(opts.fmt);
 
     if (ret === INVALID_DATE) {
         ret = '';
     } else if (opts.tooltip) {
-        ret = fmtSpan(ret, {className: 'xh-title-tip', title: opts.tooltip(opts.originalValue), asHtml: opts.asHtml});
+        ret = fmtSpan(ret, {
+            className: 'xh-title-tip',
+            title: opts.tooltip(opts.originalValue),
+            asHtml: opts.asHtml
+        });
     }
 
     return ret;
@@ -60,7 +63,7 @@ export function fmtDate(v: DateLike, opts?: DateFormatOptions|string): ReactNode
 /**
  * Render dates with a default format of {@link DATETIME_FMT}.
  */
-export function fmtDateTime(v: any, opts?: DateFormatOptions|string): ReactNode {
+export function fmtDateTime(v: any, opts?: DateFormatOptions | string): ReactNode {
     opts = isString(opts) ? {fmt: opts} : {...opts};
     defaults(opts, {fmt: DATETIME_FMT});
     saveOriginal(v, opts);
@@ -71,7 +74,7 @@ export function fmtDateTime(v: any, opts?: DateFormatOptions|string): ReactNode 
 /**
  * Render dates with a default format of {@link DATETIMESEC_FMT}.
  */
-export function fmtDateTimeSec(v: DateLike, opts?: DateFormatOptions|string) {
+export function fmtDateTimeSec(v: DateLike, opts?: DateFormatOptions | string) {
     opts = isString(opts) ? {fmt: opts} : {...opts};
     defaults(opts, {fmt: DATETIMESEC_FMT});
     saveOriginal(v, opts);
@@ -82,7 +85,7 @@ export function fmtDateTimeSec(v: DateLike, opts?: DateFormatOptions|string) {
 /**
  * Render dates with a default format of {@link TIME_FMT}.
  */
-export function fmtTime(v: DateLike, opts?: DateFormatOptions|string) {
+export function fmtTime(v: DateLike, opts?: DateFormatOptions | string) {
     opts = isString(opts) ? {fmt: opts} : {...opts};
     defaults(opts, {fmt: TIME_FMT});
     saveOriginal(v, opts);
@@ -90,9 +93,7 @@ export function fmtTime(v: DateLike, opts?: DateFormatOptions|string) {
     return fmtDate(v, opts);
 }
 
-
 export interface CompactDateFormatOptions extends FormatOptions<DateLike> {
-
     /**
      * Format for date matching current day, defaults to 'hh:mma' for dates, 'MMM D' for LocalDates.
      */

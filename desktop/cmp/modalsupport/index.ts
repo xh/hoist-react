@@ -6,4 +6,3 @@
  */
 export * from './ModalSupport';
 export * from './ModalSupportModel';
-

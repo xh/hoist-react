@@ -28,7 +28,7 @@ import {camelCase, castArray} from 'lodash';
 export async function installServicesAsync(serviceClasses: Some<HoistServiceClass>) {
     serviceClasses = castArray(serviceClasses);
     const notSvc = serviceClasses.find((it: any) => !it.isHoistService);
-    throwIf(notSvc, `Cannot initialize ${ notSvc?.name } - does not extend HoistService`);
+    throwIf(notSvc, `Cannot initialize ${notSvc?.name} - does not extend HoistService`);
 
     const svcs = serviceClasses.map(serviceClass => new serviceClass());
     await initServicesInternalAsync(svcs);
@@ -38,11 +38,9 @@ export async function installServicesAsync(serviceClasses: Some<HoistServiceClas
             name = camelCase(clazz.name);
         throwIf(
             XH[name],
-            (
-                `Service cannot be installed: property '${ name }' already exists on target object,
+            `Service cannot be installed: property '${name}' already exists on target object,
                 indicating duplicate/conflicting service names or an (unsupported) attempt to
                 install the same service twice.`
-            )
         );
         XH[name] = svc;
         (clazz as any).instance = svc;
@@ -52,9 +50,13 @@ export async function installServicesAsync(serviceClasses: Some<HoistServiceClas
 
 async function initServicesInternalAsync(svcs: HoistService[]) {
     const promises = svcs.map(it => {
-        return withDebug(`Initializing ${it.constructor.name}`, () => {
-            return it.initAsync();
-        }, 'XH');
+        return withDebug(
+            `Initializing ${it.constructor.name}`,
+            () => {
+                return it.initAsync();
+            },
+            'XH'
+        );
     });
 
     const results: any[] = await Promise.allSettled(promises),

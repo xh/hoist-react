@@ -49,7 +49,7 @@ function getChildren(model: TabContainerModel) {
         switcherBefore ? tabSwitcher({key: 'switcher', ...switcher}) : null,
         ...tabs.map(tabModel => {
             const tabId = tabModel.id,
-                style = (activeTabId !== tabId) ? hideStyle : undefined;
+                style = activeTabId !== tabId ? hideStyle : undefined;
 
             return div({
                 className: 'xh-tab-wrapper',
@@ -63,4 +63,3 @@ function getChildren(model: TabContainerModel) {
 }
 
 const hideStyle = {display: 'none'};
-

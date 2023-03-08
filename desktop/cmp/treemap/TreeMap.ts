@@ -6,7 +6,16 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, placeholder} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, LayoutProps, HoistProps, lookup, useLocalModel, uses, XH} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistModel,
+    LayoutProps,
+    HoistProps,
+    lookup,
+    useLocalModel,
+    uses,
+    XH
+} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import '@xh/hoist/desktop/register';
@@ -26,9 +35,7 @@ import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import './TreeMap.scss';
 import {TreeMapModel} from './TreeMapModel';
 
-export interface TreeMapProps extends
-    HoistProps<TreeMapModel>,
-    LayoutProps {}
+export interface TreeMapProps extends HoistProps<TreeMapModel>, LayoutProps {}
 
 /**
  * Component for rendering a TreeMap.
@@ -47,7 +54,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
         if (!Highcharts) {
             console.error(
                 'Highcharts has not been imported in to this application. Please import and ' +
-                'register in Bootstrap.js.  See Toolbox for an example.'
+                    'register in Bootstrap.js.  See Toolbox for an example.'
             );
             return 'Highcharts not available';
         }
@@ -90,16 +97,12 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
 
         return box({
             ...layoutProps,
-            className: classNames(
-                className,
-                `xh-treemap--${impl.theme}`
-            ),
+            className: classNames(className, `xh-treemap--${impl.theme}`),
             ref,
             items
         });
     }
 });
-
 
 class TreeMapLocalModel extends HoistModel {
     override xhImpl = true;
@@ -125,13 +128,13 @@ class TreeMapLocalModel extends HoistModel {
         this.debouncedClickHandler = debounce(this.clickHandler, 500);
 
         // Render HighChart when chartElem container ready in DOM, or dependencies updated
-        const chartDependencies = () => ([
+        const chartDependencies = () => [
             this.chartRef.current,
             model.highchartsConfig,
             model.algorithm,
             model.data,
             this.theme
-        ]);
+        ];
 
         this.addReaction({
             track: chartDependencies,
@@ -141,7 +144,7 @@ class TreeMapLocalModel extends HoistModel {
         this.addReaction({
             track: () => [model.selectedIds, chartDependencies()],
             run: () => this.syncSelection(),
-            debounce: 1  // prevents chattiness on reload and provides needed delay for chart to render
+            debounce: 1 // prevents chattiness on reload and provides needed delay for chart to render
         });
     }
 
@@ -188,9 +191,13 @@ class TreeMapLocalModel extends HoistModel {
         if (parentDims.width === 0 || parentDims.height === 0) return;
 
         assign(config.chart, parentDims, {renderTo: chartElem});
-        withDebug(`Creating new TreeMap | ${newData.length} records`, () => {
-            this.chart = Highcharts.chart(config);
-        }, this);
+        withDebug(
+            `Creating new TreeMap | ${newData.length} records`,
+            () => {
+                this.chart = Highcharts.chart(config);
+            },
+            this
+        );
     }
 
     @logWithDebug
@@ -236,7 +243,7 @@ class TreeMapLocalModel extends HoistModel {
         this.updateLabelVisibility();
     };
 
-    onVisibleChange = (visible) => {
+    onVisibleChange = visible => {
         if (visible && !this.chart) {
             this.createOrReloadHighChart();
         }
@@ -270,7 +277,7 @@ class TreeMapLocalModel extends HoistModel {
             title: false,
             legend: {enabled: false},
             exporting: {enabled: false},
-            tooltip: {hideDelay: 0}  // prevent simult. display in adjacent maps (e.g. SplitTreeMap)
+            tooltip: {hideDelay: 0} // prevent simult. display in adjacent maps (e.g. SplitTreeMap)
         };
     }
 
@@ -281,11 +288,11 @@ class TreeMapLocalModel extends HoistModel {
                 min: 0,
                 max: 1,
                 stops: [
-                    [0,   darkTheme ? '#CC0000' : '#640000'], // Max negative
+                    [0, darkTheme ? '#CC0000' : '#640000'], // Max negative
                     [0.4, darkTheme ? '#0E0909' : '#f7f2f2'], // Min negative
                     [0.5, darkTheme ? '#555555' : '#BBBBBB'], // None / incomputable
                     [0.6, darkTheme ? '#090E09' : '#f2f7f2'], // Min positive / zero
-                    [1,   darkTheme ? '#00CC00' : '#006400'] // Max positive
+                    [1, darkTheme ? '#00CC00' : '#006400'] // Max positive
                 ]
             }
         };
@@ -295,50 +302,53 @@ class TreeMapLocalModel extends HoistModel {
         const {data, algorithm, tooltip, highchartsConfig} = this.model,
             {defaultTooltip} = this;
 
-        return merge({
-            tooltip: {
-                enabled: !!tooltip,
-                useHTML: true,
-                padding: 0,
-                shape: 'square',
-                shadow: false,
-                outside: true,
-                pointFormatter: function() {
-                    if (!tooltip) return;
-                    const {record} = this;
-                    return isFunction(tooltip) ? tooltip(record) : defaultTooltip(record);
-                }
-            },
-            plotOptions: {
-                treemap: {
-                    layoutAlgorithm: algorithm,
-                    animation: false,
-                    borderWidth: 0,
-                    events: {click: this.onClick},
-                    dataLabels: {
-                        enabled: true,
-                        allowOverlap: false,
-                        align: 'left',
-                        verticalAlign: 'top',
-                        // See stylesheet for additional label style overrides.
-                        style: {
-                            // Disable default outlining via HC pseudo-property.
-                            textOutline: 'none',
-                            // Default to hidden, updated selectively in updateLabelVisibility().
-                            visibility: 'hidden'
+        return merge(
+            {
+                tooltip: {
+                    enabled: !!tooltip,
+                    useHTML: true,
+                    padding: 0,
+                    shape: 'square',
+                    shadow: false,
+                    outside: true,
+                    pointFormatter: function () {
+                        if (!tooltip) return;
+                        const {record} = this;
+                        return isFunction(tooltip) ? tooltip(record) : defaultTooltip(record);
+                    }
+                },
+                plotOptions: {
+                    treemap: {
+                        layoutAlgorithm: algorithm,
+                        animation: false,
+                        borderWidth: 0,
+                        events: {click: this.onClick},
+                        dataLabels: {
+                            enabled: true,
+                            allowOverlap: false,
+                            align: 'left',
+                            verticalAlign: 'top',
+                            // See stylesheet for additional label style overrides.
+                            style: {
+                                // Disable default outlining via HC pseudo-property.
+                                textOutline: 'none',
+                                // Default to hidden, updated selectively in updateLabelVisibility().
+                                visibility: 'hidden'
+                            }
                         }
                     }
-                }
+                },
+                series: [{data, type: 'treemap'}],
+                accessibility: {enabled: false}
             },
-            series: [{data, type: 'treemap'}],
-            accessibility: {enabled: false}
-        }, highchartsConfig);
+            highchartsConfig
+        );
     }
 
     //----------------------
     // Click handling
     //----------------------
-    onClick = (e) => {
+    onClick = e => {
         this.clickCount++;
         this.debouncedClickHandler(e.point.record, e);
         if (this.clickCount >= 2) this.debouncedClickHandler.flush();
@@ -368,10 +378,12 @@ class TreeMapLocalModel extends HoistModel {
         // Fallback to parent node if selection exceeds max depth
         let toSelect;
         if (maxDepth && gridModel?.treeMode) {
-            toSelect = new Set(selectedIds.map(id => {
-                const record = store.getById(id);
-                return record ? record.treePath.slice(0, maxDepth).pop() : null;
-            }));
+            toSelect = new Set(
+                selectedIds.map(id => {
+                    const record = store.getById(id);
+                    return record ? record.treePath.slice(0, maxDepth).pop() : null;
+                })
+            );
         } else {
             toSelect = new Set(selectedIds);
         }
@@ -394,8 +406,9 @@ class TreeMapLocalModel extends HoistModel {
             const {dataLabel, graphic} = node;
             if (dataLabel && graphic) {
                 const buffer = 5,
-                    tooSmallWidth = (dataLabel.width + buffer) > graphic.element.width.baseVal.value,
-                    tooSmallHeight = (dataLabel.height + buffer) > graphic.element.height.baseVal.value,
+                    tooSmallWidth = dataLabel.width + buffer > graphic.element.width.baseVal.value,
+                    tooSmallHeight =
+                        dataLabel.height + buffer > graphic.element.height.baseVal.value,
                     currentVisibility = dataLabel.styles.visibility,
                     newVisibility = tooSmallWidth || tooSmallHeight ? 'hidden' : 'visible';
 
@@ -415,9 +428,17 @@ class TreeMapLocalModel extends HoistModel {
     //----------------------
     // Tooltip
     //----------------------
-    defaultTooltip = (record) => {
+    defaultTooltip = record => {
         const {model} = this,
-            {labelField, valueField, heatField, valueFieldLabel, heatFieldLabel, valueRenderer, heatRenderer} = model,
+            {
+                labelField,
+                valueField,
+                heatField,
+                valueFieldLabel,
+                heatFieldLabel,
+                valueRenderer,
+                heatRenderer
+            } = model,
             name = record.get(labelField),
             value = record.get(valueField),
             heat = record.get(heatField),
@@ -425,22 +446,22 @@ class TreeMapLocalModel extends HoistModel {
 
         let valueDiv = '';
         if (model.valueIsValid(value)) {
-            valueDiv = (`
+            valueDiv = `
                 <div class='xh-treemap-tooltip__row'>
                     <div>${valueFieldLabel}:</div>
                     <div>${valueRenderer(value, record)}</div>
                 </div>
-            `);
+            `;
         }
 
         let heatDiv = '';
         if (valueField !== heatField && model.valueIsValid(heat)) {
-            heatDiv = (`
+            heatDiv = `
                 <div class='xh-treemap-tooltip__row'>
                     <div>${heatFieldLabel}:</div>
                     <div>${heatRenderer(heat, record)}</div>
                 </div>
-            `);
+            `;
         }
 
         return `<div class='xh-treemap-tooltip'>${labelDiv}${valueDiv}${heatDiv}</div>`;

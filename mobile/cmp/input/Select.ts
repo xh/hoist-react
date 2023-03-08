@@ -27,11 +27,7 @@ import {Children, ReactNode, ReactPortal} from 'react';
 import ReactDom from 'react-dom';
 import './Select.scss';
 
-export interface SelectProps extends
-    HoistProps,
-    HoistInputProps,
-    LayoutProps
-{
+export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     /**
      * Function to return a "create a new option" string prompt. Requires `allowCreate` true.
      * Passed current query input.
@@ -90,7 +86,7 @@ export interface SelectProps extends
     maxMenuHeight?: number;
 
     /** Placement of the dropdown menu relative to the input control. */
-    menuPlacement?: 'auto'|'top'|'bottom';
+    menuPlacement?: 'auto' | 'top' | 'bottom';
 
     /** Width in pixels for the dropdown menu - if unspecified, defaults to control width. */
     menuWidth?: number;
@@ -120,7 +116,7 @@ export interface SelectProps extends
      * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
      * of up-front in this prop.
      */
-    options?: Array<SelectOption|any>;
+    options?: Array<SelectOption | any>;
 
     /** Text to display when control is empty. */
     placeholder?: string;
@@ -193,17 +189,27 @@ class SelectInputModel extends HoistInputModel {
     @bindable fullscreen = false;
 
     // Prop-backed convenience getters
-    get asyncMode() {return !!this.componentProps.queryFn}
-    get creatableMode() {return !!this.componentProps.enableCreate}
-    get filterMode() {return !!this.componentProps.enableFilter}
-    get fullscreenMode() {return !!this.componentProps.enableFullscreen}
-    get selectOnFocus() {
-        return this.componentProps.selectOnFocus ??
-            (this.filterMode || this.creatableMode);
+    get asyncMode() {
+        return !!this.componentProps.queryFn;
     }
-    get hideSelectedOptions() {return this.componentProps.hideSelectedOptions}
-    get hideSelectedOptionCheck() {return this.componentProps.hideSelectedOptionCheck || this.hideSelectedOptions}
-
+    get creatableMode() {
+        return !!this.componentProps.enableCreate;
+    }
+    get filterMode() {
+        return !!this.componentProps.enableFilter;
+    }
+    get fullscreenMode() {
+        return !!this.componentProps.enableFullscreen;
+    }
+    get selectOnFocus() {
+        return this.componentProps.selectOnFocus ?? (this.filterMode || this.creatableMode);
+    }
+    get hideSelectedOptions() {
+        return this.componentProps.hideSelectedOptions;
+    }
+    get hideSelectedOptionCheck() {
+        return this.componentProps.hideSelectedOptionCheck || this.hideSelectedOptions;
+    }
 
     // Managed value for underlying text input under certain conditions
     // This is a workaround for rs-select issue described in hoist-react #880
@@ -224,7 +230,7 @@ class SelectInputModel extends HoistInputModel {
 
         this.addReaction({
             track: () => this.componentProps.options,
-            run: (opts) => {
+            run: opts => {
                 opts = this.normalizeOptions(opts);
                 this.internalOptions = opts;
             },
@@ -255,13 +261,17 @@ class SelectInputModel extends HoistInputModel {
 
     getSelectFactory() {
         const {creatableMode, asyncMode} = this;
-        return asyncMode ?
-            (creatableMode ? reactAsyncCreatableSelect : reactAsyncSelect) :
-            (creatableMode ? reactCreatableSelect : reactSelect);
+        return asyncMode
+            ? creatableMode
+                ? reactAsyncCreatableSelect
+                : reactAsyncSelect
+            : creatableMode
+            ? reactCreatableSelect
+            : reactSelect;
     }
 
     @action
-    onSelectChange = (opt) => {
+    onSelectChange = opt => {
         if (this.manageInputValue) {
             this.inputValue = opt ? opt.label : null;
             this.inputValueChangedSinceSelect = false;
@@ -311,7 +321,9 @@ class SelectInputModel extends HoistInputModel {
         // Use of windowedMode, creatable and async variants will create levels of nesting we must
         // traverse to get to the underlying Select comp and its inputRef.
         let selectComp = reactSelect.select;
-        while (selectComp && !selectComp.inputRef) {selectComp = selectComp.select}
+        while (selectComp && !selectComp.inputRef) {
+            selectComp = selectComp.select;
+        }
         const inputElem = selectComp?.inputRef;
 
         if (this.hasFocus && inputElem && document.activeElement === inputElem) {
@@ -338,7 +350,7 @@ class SelectInputModel extends HoistInputModel {
         // 1) show all options if input has not changed since last select (i.e. user has not typed)
         //    or if in async mode (i.e. queryFn specified).
         if (
-            this.manageInputValue && (!inputValue || !inputValueChangedSinceSelect) ||
+            (this.manageInputValue && (!inputValue || !inputValueChangedSinceSelect)) ||
             asyncMode
         ) {
             return true;
@@ -357,7 +369,6 @@ class SelectInputModel extends HoistInputModel {
         const regex = new RegExp(`(^|\\W)${searchTerm}`, 'i');
         return regex.test(opt.label);
     };
-
 
     // Convert external value into option object(s). Options created if missing - this takes the
     // external value from the model, and we will respect that even if we don't know about it.
@@ -395,9 +406,7 @@ class SelectInputModel extends HoistInputModel {
     // and Objects. Objects are validated/defaulted to ensure a label+value or label+options sublist,
     // with other fields brought along to support Selects emitting value objects with ad hoc properties.
     toOption(src, depth) {
-        return isPlainObject(src) ?
-            this.objectToOption(src, depth) :
-            this.valueToOption(src);
+        return isPlainObject(src) ? this.objectToOption(src, depth) : this.valueToOption(src);
     }
 
     objectToOption(src, depth) {
@@ -410,9 +419,17 @@ class SelectInputModel extends HoistInputModel {
             `Select options provided as Objects must define a '${valueField}' property or a sublist of options.`
         );
 
-        return src.hasOwnProperty('options') ?
-            {...src, label: src[labelField], options: this.normalizeOptions(src.options, depth + 1)} :
-            {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
+        return src.hasOwnProperty('options')
+            ? {
+                  ...src,
+                  label: src[labelField],
+                  options: this.normalizeOptions(src.options, depth + 1)
+              }
+            : {
+                  ...src,
+                  label: withDefault(src[labelField], src[valueField]),
+                  value: src[valueField]
+              };
     }
 
     valueToOption(src) {
@@ -422,7 +439,7 @@ class SelectInputModel extends HoistInputModel {
     //------------------------
     // Async
     //------------------------
-    doQueryAsync = (query) => {
+    doQueryAsync = query => {
         return this.componentProps
             .queryFn(query)
             .then(matchOpts => {
@@ -436,7 +453,7 @@ class SelectInputModel extends HoistInputModel {
 
                 this.internalOptions.forEach(currOpt => {
                     const matchOpt = matchesByVal[currOpt.value];
-                    if (!matchOpt) newOpts.push(currOpt);  // avoiding dupes
+                    if (!matchOpt) newOpts.push(currOpt); // avoiding dupes
                 });
 
                 this.internalOptions = newOpts;
@@ -450,14 +467,13 @@ class SelectInputModel extends HoistInputModel {
             });
     };
 
-    loadingMessageFn = (params) => {
+    loadingMessageFn = params => {
         if (!params) return '';
         const {loadingMessageFn} = this.componentProps,
             q = params.inputValue;
 
         return loadingMessageFn ? loadingMessageFn(q) : 'Loading...';
     };
-
 
     //----------------------
     // Option Rendering
@@ -475,23 +491,23 @@ class SelectInputModel extends HoistInputModel {
         return optionRenderer(opt);
     };
 
-    optionRenderer = (opt) => {
+    optionRenderer = opt => {
         if (this.hideSelectedOptionCheck) {
             return div(opt.label);
         }
 
-        return this.externalValue === opt.value ?
-            hbox({
-                items: [
-                    div({
-                        style: {minWidth: 25, textAlign: 'center'},
-                        item: Icon.check({size: 'sm'})
-                    }),
-                    span(opt.label)
-                ],
-                paddingLeft: 0
-            }) :
-            div({item: opt.label, style: {paddingLeft: 25}});
+        return this.externalValue === opt.value
+            ? hbox({
+                  items: [
+                      div({
+                          style: {minWidth: 25, textAlign: 'center'},
+                          item: Icon.check({size: 'sm'})
+                      }),
+                      span(opt.label)
+                  ],
+                  paddingLeft: 0
+              })
+            : div({item: opt.label, style: {paddingLeft: 25}});
     };
 
     //------------------------
@@ -500,7 +516,7 @@ class SelectInputModel extends HoistInputModel {
     fullscreenReaction() {
         return {
             track: () => this.fullscreen,
-            run: (fullscreen) => {
+            run: fullscreen => {
                 if (fullscreen) this.focus();
             },
             delay: 1 // Wait for render within fullscreen portal
@@ -522,13 +538,13 @@ class SelectInputModel extends HoistInputModel {
     // Other Implementation
     //------------------------
     getDropdownIndicatorCmp() {
-        return this.componentProps.hideDropdownIndicator ?
-            () => null :
-            () => Icon.selectDropdown({className: 'xh-select__indicator'});
+        return this.componentProps.hideDropdownIndicator
+            ? () => null
+            : () => Icon.selectDropdown({className: 'xh-select__indicator'});
     }
 
     getThemeConfig() {
-        return (base) => {
+        return base => {
             return {
                 ...base,
                 spacing: {...base.spacing, menuGutter: 3},
@@ -537,7 +553,7 @@ class SelectInputModel extends HoistInputModel {
         };
     }
 
-    noOptionsMessageFn = (params) => {
+    noOptionsMessageFn = params => {
         if (!params) return '';
         const {noOptionsMessageFn} = this.componentProps,
             q = params.inputValue;
@@ -547,7 +563,7 @@ class SelectInputModel extends HoistInputModel {
         return this.asyncMode ? 'Type to search...' : '';
     };
 
-    createMessageFn = (q) => {
+    createMessageFn = q => {
         const {createMessageFn} = this.componentProps;
         return createMessageFn ? createMessageFn(q) : `Create "${q}"`;
     };
@@ -564,117 +580,113 @@ class SelectInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<SelectInputModel>(
-    ({model, className, ...props}, ref) => {
-        const {width, ...layoutProps} = getLayoutProps(props),
-            rsProps: PlainObject = {
-                value: model.renderValue,
+const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, ref) => {
+    const {width, ...layoutProps} = getLayoutProps(props),
+        rsProps: PlainObject = {
+            value: model.renderValue,
 
-                formatOptionLabel: model.formatOptionLabel,
-                isDisabled: props.disabled,
-                closeMenuOnSelect: props.closeMenuOnSelect,
-                hideSelectedOptions: model.hideSelectedOptions,
-                menuPlacement: withDefault(props.menuPlacement, 'auto'),
-                maxMenuHeight: props.maxMenuHeight,
-                noOptionsMessage: model.noOptionsMessageFn,
-                openMenuOnFocus: props.openMenuOnFocus || model.fullscreen,
-                placeholder: withDefault(props.placeholder, 'Select...'),
-                tabIndex: props.tabIndex,
-                menuShouldBlockScroll: true,
+            formatOptionLabel: model.formatOptionLabel,
+            isDisabled: props.disabled,
+            closeMenuOnSelect: props.closeMenuOnSelect,
+            hideSelectedOptions: model.hideSelectedOptions,
+            menuPlacement: withDefault(props.menuPlacement, 'auto'),
+            maxMenuHeight: props.maxMenuHeight,
+            noOptionsMessage: model.noOptionsMessageFn,
+            openMenuOnFocus: props.openMenuOnFocus || model.fullscreen,
+            placeholder: withDefault(props.placeholder, 'Select...'),
+            tabIndex: props.tabIndex,
+            menuShouldBlockScroll: true,
 
-                // Minimize (or hide) bulky dropdown
-                components: {
-                    DropdownIndicator: model.getDropdownIndicatorCmp(),
-                    IndicatorSeparator: () => null
-                },
+            // Minimize (or hide) bulky dropdown
+            components: {
+                DropdownIndicator: model.getDropdownIndicatorCmp(),
+                IndicatorSeparator: () => null
+            },
 
-                // A shared div is created lazily here as needed, appended to the body, and assigned
-                // a high z-index to ensure options menus render over dialogs or other modals.
-                menuPortalTarget: model.getOrCreatePortalDiv(),
+            // A shared div is created lazily here as needed, appended to the body, and assigned
+            // a high z-index to ensure options menus render over dialogs or other modals.
+            menuPortalTarget: model.getOrCreatePortalDiv(),
 
-                inputId: props.id,
-                classNamePrefix: 'xh-select',
-                theme: model.getThemeConfig(),
+            inputId: props.id,
+            classNamePrefix: 'xh-select',
+            theme: model.getThemeConfig(),
 
-                onBlur: model.onBlur,
-                onChange: model.onSelectChange,
-                onFocus: model.onFocus,
-                filterOption: model.filterOption,
+            onBlur: model.onBlur,
+            onChange: model.onSelectChange,
+            onFocus: model.onFocus,
+            filterOption: model.filterOption,
 
-                ref: model.reactSelectRef
-            };
+            ref: model.reactSelectRef
+        };
 
-        if (model.manageInputValue) {
-            rsProps.inputValue = model.inputValue || '';
-            rsProps.onInputChange = model.onInputChange;
-            rsProps.controlShouldRenderValue = !model.hasFocus;
-        }
-
-        if (model.asyncMode) {
-            rsProps.loadOptions = model.doQueryAsync;
-            rsProps.loadingMessage = model.loadingMessageFn;
-            if (model.renderValue) rsProps.defaultOptions = [model.renderValue];
-        } else {
-            rsProps.options = model.internalOptions;
-            rsProps.isSearchable = model.filterMode;
-        }
-
-        if (model.creatableMode) {
-            rsProps.formatCreateLabel = model.createMessageFn;
-        }
-
-        if (props.menuWidth) {
-            rsProps.styles = {
-                menu: (provided) => ({...provided, width: `${props.menuWidth}px`}),
-                ...props.rsOptions?.styles
-            };
-        }
-
-        const factory = model.getSelectFactory();
-        merge(rsProps, props.rsOptions);
-
-        if (model.fullscreen) {
-            return ReactDom.createPortal(
-                fullscreenWrapper({
-                    model,
-                    title: props.title,
-                    item: box({
-                        item: factory(rsProps),
-                        className,
-                        ref
-                    })
-                }),
-                model.getOrCreateFullscreenPortalDiv()
-            ) as ReactPortal;
-        } else {
-            return box({
-                item: factory(rsProps),
-                className,
-                ...layoutProps,
-                width: withDefault(width, null),
-                ref
-            });
-        }
+    if (model.manageInputValue) {
+        rsProps.inputValue = model.inputValue || '';
+        rsProps.onInputChange = model.onInputChange;
+        rsProps.controlShouldRenderValue = !model.hasFocus;
     }
-);
 
-const fullscreenWrapper = hoistCmp.factory<SelectInputModel>(
-    ({model, title, children}) => {
-        return div({
-            className: 'xh-select__fullscreen-wrapper',
-            items: [
-                toolbar({
-                    className: 'xh-select__fullscreen-toolbar',
-                    items: [
-                        button({
-                            icon: Icon.chevronLeft(),
-                            onClick: () => model.fullscreen = false
-                        }),
-                        span(title)
-                    ]
-                }),
-                Children.only(children)
-            ]
+    if (model.asyncMode) {
+        rsProps.loadOptions = model.doQueryAsync;
+        rsProps.loadingMessage = model.loadingMessageFn;
+        if (model.renderValue) rsProps.defaultOptions = [model.renderValue];
+    } else {
+        rsProps.options = model.internalOptions;
+        rsProps.isSearchable = model.filterMode;
+    }
+
+    if (model.creatableMode) {
+        rsProps.formatCreateLabel = model.createMessageFn;
+    }
+
+    if (props.menuWidth) {
+        rsProps.styles = {
+            menu: provided => ({...provided, width: `${props.menuWidth}px`}),
+            ...props.rsOptions?.styles
+        };
+    }
+
+    const factory = model.getSelectFactory();
+    merge(rsProps, props.rsOptions);
+
+    if (model.fullscreen) {
+        return ReactDom.createPortal(
+            fullscreenWrapper({
+                model,
+                title: props.title,
+                item: box({
+                    item: factory(rsProps),
+                    className,
+                    ref
+                })
+            }),
+            model.getOrCreateFullscreenPortalDiv()
+        ) as ReactPortal;
+    } else {
+        return box({
+            item: factory(rsProps),
+            className,
+            ...layoutProps,
+            width: withDefault(width, null),
+            ref
         });
     }
-);
+});
+
+const fullscreenWrapper = hoistCmp.factory<SelectInputModel>(({model, title, children}) => {
+    return div({
+        className: 'xh-select__fullscreen-wrapper',
+        items: [
+            toolbar({
+                className: 'xh-select__fullscreen-toolbar',
+                items: [
+                    button({
+                        icon: Icon.chevronLeft(),
+                        onClick: () => (model.fullscreen = false)
+                    }),
+                    span(title)
+                ]
+            }),
+            Children.only(children)
+        ]
+    });
+});

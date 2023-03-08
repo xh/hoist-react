@@ -39,7 +39,7 @@ export interface ExceptionHandlerOptions {
     /**
      * If `showAlert`, which type of alert to display. Defaults to ExceptionHandler.ALERT_TYPE.
      */
-    alertType?: 'dialog'|'toast';
+    alertType?: 'dialog' | 'toast';
 
     /**
      * Force user to fully refresh the app in order to dismiss - default false, excepting
@@ -69,18 +69,15 @@ export interface ExceptionHandlerLoggingOptions {
  * Manages the logging and display of exceptions.
  */
 export class ExceptionHandler {
-
     /**
      * Property paths within error details JSON to replace with '******'
      */
-    static REDACT_PATHS: string[] = [
-        'fetchOptions.headers.Authorization'
-    ];
+    static REDACT_PATHS: string[] = ['fetchOptions.headers.Authorization'];
 
     /**
      * Default type of alert to use to display exceptions with `showAlert`.
      */
-    static ALERT_TYPE: 'dialog'|'toast' = 'dialog';
+    static ALERT_TYPE: 'dialog' | 'toast' = 'dialog';
 
     /**
      * Default props provided to toast, when alert type is 'toast'
@@ -92,7 +89,7 @@ export class ExceptionHandler {
     #isUnloading = false;
 
     constructor() {
-        window.addEventListener('unload', () => this.#isUnloading = true);
+        window.addEventListener('unload', () => (this.#isUnloading = true));
     }
 
     /**
@@ -115,7 +112,7 @@ export class ExceptionHandler {
      * @param exception - Error or thrown object - if not an Error, an Exception will be created
      *      via `Exception.create()`.
      * @param options - provides further control over how the exception is shown and/or logged.
-    */
+     */
     handleException(exception: any, options?: ExceptionHandlerOptions) {
         if (this.#isUnloading) return;
 
@@ -133,7 +130,8 @@ export class ExceptionHandler {
                     ),
                     actionButtonProps: {
                         icon: Icon.search(),
-                        onClick: () => XH.appContainerModel.exceptionDialogModel.show(exception, options)
+                        onClick: () =>
+                            XH.appContainerModel.exceptionDialogModel.show(exception, options)
                     },
                     intent: showAsError ? 'danger' : 'primary',
                     ...ExceptionHandler.TOAST_PROPS
@@ -173,7 +171,11 @@ export class ExceptionHandler {
      *
      * @returns true if message was successfully sent to server.
      */
-    async logOnServerAsync({exception, userAlerted, userMessage}: ExceptionHandlerLoggingOptions): Promise<boolean>  {
+    async logOnServerAsync({
+        exception,
+        userAlerted,
+        userMessage
+    }: ExceptionHandlerLoggingOptions): Promise<boolean> {
         try {
             const error = this.stringifyErrorSafely(exception),
                 username = XH.getUsername();
@@ -210,7 +212,7 @@ export class ExceptionHandler {
             // 1) Create basic structure.
             // Raw Error does not have 'own' properties, so be explicit about core name/message/stack
             // Order here intentional for serialization
-            let ret:any = {
+            let ret: any = {
                 name: error.name,
                 message: error.message
             };
@@ -286,9 +288,9 @@ export class ExceptionHandler {
     }
 
     private logException(exception, options) {
-        return options.showAsError ?
-            console.error(options.message, exception) :
-            console.debug(options.message);
+        return options.showAsError
+            ? console.error(options.message, exception)
+            : console.debug(options.message);
     }
 
     private parseOptions(e, options) {
@@ -308,7 +310,8 @@ export class ExceptionHandler {
 
         if (this.sessionMismatch(e)) {
             ret.title = 'Session Mismatch';
-            ret.message = 'Your session may no longer be active, or no longer matches with the server. Please refresh.';
+            ret.message =
+                'Your session may no longer be active, or no longer matches with the server. Please refresh.';
             ret.requireReload = true;
         }
 

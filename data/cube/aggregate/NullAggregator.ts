@@ -8,7 +8,6 @@
 import {Aggregator} from './Aggregator';
 
 export class NullAggregator extends Aggregator {
-
     override aggregate(rows, fieldName) {
         return null;
     }

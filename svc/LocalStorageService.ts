@@ -18,7 +18,6 @@ import store from 'store2';
  * Relied upon by Hoist features such as local preference values and grid state.
  */
 export class LocalStorageService extends HoistService {
-
     static instance: LocalStorageService;
 
     constructor() {
@@ -27,7 +26,7 @@ export class LocalStorageService extends HoistService {
             XH.handleException(
                 XH.exception(
                     'Local Storage is not supported in this browser. Transient in-memory storage ' +
-                    'will be used as a fallback.  All data stored will be lost when page is closed.'
+                        'will be used as a fallback.  All data stored will be lost when page is closed.'
                 ),
                 {showAlert: false}
             );
@@ -57,7 +56,7 @@ export class LocalStorageService extends HoistService {
         this.getInstance().remove(key);
     }
 
-    removeIf(predicateFn: (s:string) => boolean) {
+    removeIf(predicateFn: (s: string) => boolean) {
         this.keys().forEach(key => {
             if (predicateFn(key)) this.remove(key);
         });

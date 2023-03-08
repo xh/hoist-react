@@ -8,7 +8,6 @@
 import {Aggregator} from './Aggregator';
 
 export class SumAggregator extends Aggregator {
-
     override aggregate(rows, fieldName) {
         let ret = null;
         for (const row of rows) {

@@ -12,13 +12,12 @@ import {CreatesSpec, UsesSpec, HoistModel} from './';
  * See {@link uses} and {@link creates} for standard factories that produce instances of this type.
  * @internal
  */
-export type ModelSpec<T extends HoistModel=HoistModel> = CreatesSpec<T> | UsesSpec<T>;
+export type ModelSpec<T extends HoistModel = HoistModel> = CreatesSpec<T> | UsesSpec<T>;
 
 /**
  * Options for how a Model should be published to context.
  */
 export const ModelPublishMode = Object.freeze({
-
     /**
      * Model may be looked up from context using wildcard ('*') and model's top-level
      * properties will also be searched for an appropriate model during lookup.  This is the
@@ -41,4 +40,4 @@ export const ModelPublishMode = Object.freeze({
 });
 
 // eslint-disable-next-line
-export type ModelPublishMode = typeof ModelPublishMode[keyof typeof ModelPublishMode];
+export type ModelPublishMode = (typeof ModelPublishMode)[keyof typeof ModelPublishMode];

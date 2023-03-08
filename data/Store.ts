@@ -30,12 +30,11 @@ import {StoreErrorMap, StoreValidator} from './impl/StoreValidator';
 import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 import {instanceManager} from '../core/impl/InstanceManager';
 import {Filter} from './filter/Filter';
-import { FilterLike } from './filter/Types';
+import {FilterLike} from './filter/Types';
 
 export interface StoreConfig {
-
     /** Field names, configs, or instances. */
-    fields?: Array<string|FieldSpec|Field>;
+    fields?: Array<string | FieldSpec | Field>;
 
     /**
      * Default configs applied to `Field` instances constructed internally by this Store.
@@ -138,7 +137,7 @@ export interface StoreTransaction {
     update?: PlainObject[];
 
     /** Raw data of new records to be added, */
-    add?: Array<PlainObject|ChildRawData>;
+    add?: Array<PlainObject | ChildRawData>;
 
     /** IDs of existing records to be removed. Any descendents will also be removed. */
     remove?: StoreRecordId[];
@@ -162,18 +161,19 @@ export interface ChildRawData {
     rawData: PlainObject[];
 }
 
-export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId)
+export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
 
 /**
  * A managed and observable set of local, in-memory Records.
  */
 export class Store extends HoistBase {
-
-    get isStore() {return true}
+    get isStore() {
+        return true;
+    }
 
     fields: Field[] = null;
     idSpec: (data: PlainObject) => StoreRecordId;
-    processRawData: (raw:any) => any;
+    processRawData: (raw: any) => any;
 
     @observable
     filterIncludesChildren: boolean;
@@ -216,7 +216,7 @@ export class Store extends HoistBase {
     @observable.ref
     private _current: RecordSet;
     @observable.ref
-     _filtered: RecordSet;
+    _filtered: RecordSet;
 
     private _dataDefaults = null;
     private _created = Date.now();
@@ -306,9 +306,7 @@ export class Store extends HoistBase {
             rawData = rawData[0].children ?? [];
         }
 
-        this.summaryRecord = rawSummaryData ?
-            this.createRecord(rawSummaryData, null, true) :
-            null;
+        this.summaryRecord = rawSummaryData ? this.createRecord(rawSummaryData, null, true) : null;
 
         const records = this.createRecords(rawData, null);
         this._committed = this._current = this._committed.withNewRecords(records);
@@ -341,7 +339,7 @@ export class Store extends HoistBase {
      */
     @action
     @logWithDebug
-    updateData(rawData: PlainObject[]|StoreTransaction): PlainObject {
+    updateData(rawData: PlainObject[] | StoreTransaction): PlainObject {
         if (isEmpty(rawData)) return null;
 
         const changeLog: PlainObject = {};
@@ -349,13 +347,14 @@ export class Store extends HoistBase {
         // Build a transaction object out of a flat list of adds and updates
         let rawTransaction;
         if (isArray(rawData)) {
-            const update = [], add = [];
+            const update = [],
+                add = [];
             rawData.forEach(it => {
                 const isChildData = isChildRawDataObject(it),
-                    recId = isChildData ?
-                        // The idSpec function does not support the {rawData,parentId} format
-                        this.idSpec(it.rawData) :
-                        this.idSpec(it);
+                    recId = isChildData
+                        ? // The idSpec function does not support the {rawData,parentId} format
+                          this.idSpec(it.rawData)
+                        : this.idSpec(it);
                 if (this.getById(recId)) {
                     // The update array does not support the {rawData,parentId} format
                     update.push(isChildData ? it.rawData : it);
@@ -422,7 +421,6 @@ export class Store extends HoistBase {
         if (!isEmpty(remove)) rsTransaction.remove = remove;
 
         if (!isEmpty(rsTransaction)) {
-
             // Apply updates to the committed RecordSet - these changes are considered to be
             // sourced from the server / source of record and are coming in as committed.
             this._committed = this._committed.withTransaction(rsTransaction);
@@ -432,7 +430,9 @@ export class Store extends HoistBase {
                 // local state. This might (or might not) effectively overwrite those local changes,
                 // so we normalize against the newly updated committed state to verify if any local
                 // modifications remain.
-                this._current = this._current.withTransaction(rsTransaction).normalize(this._committed);
+                this._current = this._current
+                    .withTransaction(rsTransaction)
+                    .normalize(this._committed);
             } else {
                 // Otherwise, the updated RecordSet is both current and committed.
                 this._current = this._committed;
@@ -486,7 +486,13 @@ export class Store extends HoistBase {
             const parsedData = this.parseRaw(it),
                 parent = this.getById(parentId);
 
-            return new StoreRecord({id, data: parsedData, store: this, parent, committedData: null});
+            return new StoreRecord({
+                id,
+                data: parsedData,
+                store: this,
+                parent,
+                committedData: null
+            });
         });
 
         this._current = this._current.withTransaction({add: addRecs});
@@ -502,11 +508,11 @@ export class Store extends HoistBase {
      * @param records - list of StoreRecord IDs or Records to remove
      */
     @action
-    removeRecords(records: StoreRecordOrId|StoreRecordOrId[]) {
+    removeRecords(records: StoreRecordOrId | StoreRecordOrId[]) {
         records = castArray(records);
         if (isEmpty(records)) return;
 
-        const idsToRemove = records.map(it => (it instanceof StoreRecord) ? it.id : it);
+        const idsToRemove = records.map(it => (it instanceof StoreRecord ? it.id : it));
 
         this._current = this._current
             .withTransaction({remove: idsToRemove})
@@ -566,10 +572,12 @@ export class Store extends HoistBase {
 
         if (isEmpty(updateRecs)) return;
 
-        warnIf(hadDupes, 'Store.modifyRecords() called with multiple updates for the same Records. Only the first modification for each StoreRecord was processed.');
+        warnIf(
+            hadDupes,
+            'Store.modifyRecords() called with multiple updates for the same Records. Only the first modification for each StoreRecord was processed.'
+        );
 
-        this._current = this._current
-            .withTransaction({update: Array.from(updateRecs.values())});
+        this._current = this._current.withTransaction({update: Array.from(updateRecs.values())});
 
         this.rebuildFiltered();
     }
@@ -583,11 +591,11 @@ export class Store extends HoistBase {
      * @param records - StoreRecord IDs or instances to revert
      */
     @action
-    revertRecords(records: StoreRecordOrId|StoreRecordOrId[]) {
+    revertRecords(records: StoreRecordOrId | StoreRecordOrId[]) {
         records = castArray(records);
         if (isEmpty(records)) return;
 
-        const recs = records.map(it => (it instanceof StoreRecord) ? it : this.getOrThrow(it));
+        const recs = records.map(it => (it instanceof StoreRecord ? it : this.getOrThrow(it)));
 
         this._current = this._current
             .withTransaction({update: recs.map(r => this.getCommittedOrThrow(r.id))})
@@ -752,7 +760,7 @@ export class Store extends HoistBase {
 
     @computed
     get maxDepth(): number {
-        return this._current.maxDepth;  // maxDepth should not be effected by filtering.
+        return this._current.maxDepth; // maxDepth should not be effected by filtering.
     }
 
     get errors(): StoreErrorMap {
@@ -887,7 +895,7 @@ export class Store extends HoistBase {
         this.summaryRecord = null;
     }
 
-    private parseFields(fields: any[], defaults: any): Field[]  {
+    private parseFields(fields: any[], defaults: any): Field[] {
         const ret = fields.map(f => {
             if (f instanceof Field) return f;
 
@@ -916,7 +924,11 @@ export class Store extends HoistBase {
     //---------------------------------------
     // StoreRecord Generation
     //---------------------------------------
-    private createRecord(raw: PlainObject, parent: StoreRecord, isSummary: boolean = false): StoreRecord {
+    private createRecord(
+        raw: PlainObject,
+        parent: StoreRecord,
+        isSummary: boolean = false
+    ): StoreRecord {
         const id = this.idSpec(raw);
 
         // Potentially re-use existing record if raw data is reference equal and tree path identical
@@ -931,7 +943,10 @@ export class Store extends HoistBase {
         let data = raw;
         if (processRawData) {
             data = processRawData(raw);
-            throwIf(!data, 'Store.processRawData should return an object. If writing/editing, be sure to return a clone!');
+            throwIf(
+                !data,
+                'Store.processRawData should return an object. If writing/editing, be sure to return a clone!'
+            );
         }
 
         data = this.parseRaw(data);
@@ -1007,7 +1022,7 @@ export class Store extends HoistBase {
 
     private createDataDefaults() {
         const ret = {};
-        this.fields.forEach(({name, defaultValue}) => ret[name] = defaultValue);
+        this.fields.forEach(({name, defaultValue}) => (ret[name] = defaultValue));
         return ret;
     }
 
@@ -1025,8 +1040,8 @@ export class Store extends HoistBase {
     }
 
     private parseIdSpec(idSpec) {
-        if (isString(idSpec)) return (raw) => raw[idSpec];
-        if (isFunction(idSpec)) return (raw) => idSpec(raw);
+        if (isString(idSpec)) return raw => raw[idSpec];
+        if (isFunction(idSpec)) return raw => idSpec(raw);
         throw XH.exception(
             'idSpec should be either a name of a field, or a function to generate an id.'
         );
@@ -1043,7 +1058,6 @@ function forIn(obj, fn) {
     }
 }
 
-
-function isChildRawDataObject(obj):boolean {
+function isChildRawDataObject(obj): boolean {
     return obj.hasOwnProperty('rawData') && obj.hasOwnProperty('parentId');
 }

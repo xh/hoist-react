@@ -39,11 +39,7 @@ import {findDOMNode} from 'react-dom';
 import {ReactElement} from 'react';
 import './CodeInput.scss';
 
-export interface CodeInputProps extends
-    HoistProps,
-    HoistInputProps,
-    LayoutProps
-{
+export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps {
     /** True to focus the control on render. */
     autoFocus?: boolean;
 
@@ -143,7 +139,9 @@ class CodeInputModel extends HoistInputModel {
     @bindable query: string = '';
     @observable currentMatchIdx: number = -1;
     @observable.ref matches = [];
-    get matchCount(): number {return this.matches.length}
+    get matchCount(): number {
+        return this.matches.length;
+    }
 
     get fullScreen(): boolean {
         return this.modalSupportModel.isModal;
@@ -159,7 +157,9 @@ class CodeInputModel extends HoistInputModel {
 
     get showFormatButton(): boolean {
         const {disabled, readonly, formatter, showFormatButton} = this.componentProps;
-        return (!disabled && !readonly && isFunction(formatter) && withDefault(showFormatButton, true));
+        return (
+            !disabled && !readonly && isFunction(formatter) && withDefault(showFormatButton, true)
+        );
     }
 
     get showAnyActionButtons(): boolean {
@@ -178,28 +178,34 @@ class CodeInputModel extends HoistInputModel {
         // Show if prop enabled and at least one action button.
         if (componentProps.showToolbar && showAnyActionButtons) return true;
         // Show if fullscreen w/buttons and prop not explicitly *disabled*.
-        return (fullScreen && showAnyActionButtons && componentProps.showToolbar !== false);
+        return fullScreen && showAnyActionButtons && componentProps.showToolbar !== false;
     }
 
     get actionButtons(): ReactElement[] {
         const {showCopyButton, showFormatButton, showFullscreenButton, editor} = this;
         return compact([
-            showCopyButton ? clipboardButton({
-                text: null,
-                title: 'Copy to clipboard',
-                successMessage: 'Contents copied to clipboard',
-                getCopyText: () => editor.getValue()
-            }) : null,
-            showFormatButton ? button({
-                icon: Icon.magic(),
-                title: 'Auto-format',
-                onClick: () => this.onAutoFormat()
-            }) : null,
-            showFullscreenButton ? button({
-                icon: this.fullScreen ? Icon.collapse() : Icon.expand(),
-                title: this.fullScreen ? 'Exit full screen' : 'Full screen',
-                onClick: () => this.toggleFullScreen()
-            }) : null
+            showCopyButton
+                ? clipboardButton({
+                      text: null,
+                      title: 'Copy to clipboard',
+                      successMessage: 'Contents copied to clipboard',
+                      getCopyText: () => editor.getValue()
+                  })
+                : null,
+            showFormatButton
+                ? button({
+                      icon: Icon.magic(),
+                      title: 'Auto-format',
+                      onClick: () => this.onAutoFormat()
+                  })
+                : null,
+            showFullscreenButton
+                ? button({
+                      icon: this.fullScreen ? Icon.collapse() : Icon.expand(),
+                      title: this.fullScreen ? 'Exit full screen' : 'Full screen',
+                      onClick: () => this.toggleFullScreen()
+                  })
+                : null
         ]);
     }
 
@@ -241,7 +247,7 @@ class CodeInputModel extends HoistInputModel {
 
         this.addReaction({
             track: () => this.renderValue,
-            run: (value) => {
+            run: value => {
                 const {editor} = this;
                 if (editor && editor.getValue() != value) {
                     // CodeMirror will throw on null value.
@@ -252,14 +258,14 @@ class CodeInputModel extends HoistInputModel {
 
         this.addReaction({
             track: () => this.componentProps.readonly || this.componentProps.disabled,
-            run: (editorReadOnly) => {
+            run: editorReadOnly => {
                 this.editor.setOption('readOnly', editorReadOnly);
             }
         });
 
         this.addReaction({
             track: () => this.query,
-            run: (query) => {
+            run: query => {
                 if (query?.trim()) {
                     this.findAll();
                 } else {
@@ -270,7 +276,7 @@ class CodeInputModel extends HoistInputModel {
         });
     }
 
-    manageCodeEditor = (textAreaComp) => {
+    manageCodeEditor = textAreaComp => {
         if (textAreaComp) {
             this.editor = this.createCodeEditor(textAreaComp);
             this.preserveSearchResults();
@@ -278,10 +284,7 @@ class CodeInputModel extends HoistInputModel {
     };
 
     createCodeEditor(textAreaComp) {
-        const editorSpec = defaultsDeep(
-            this.componentProps.editorProps,
-            this.createDefaults()
-        );
+        const editorSpec = defaultsDeep(this.componentProps.editorProps, this.createDefaults());
 
         const taDom = findDOMNode(textAreaComp),
             editor = codemirror.fromTextArea(taDom, editorSpec);
@@ -292,10 +295,7 @@ class CodeInputModel extends HoistInputModel {
 
     createDefaults() {
         const {disabled, readonly, mode, linter, autoFocus} = this.componentProps;
-        let gutters = [
-            'CodeMirror-linenumbers',
-            'CodeMirror-foldgutter'
-        ];
+        let gutters = ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'];
         if (linter) gutters.push('CodeMirror-lint-markers');
 
         return {
@@ -317,11 +317,11 @@ class CodeInputModel extends HoistInputModel {
         };
     }
 
-    onChange = (ev) => {
+    onChange = ev => {
         this.noteValueChange(ev.target.value);
     };
 
-    handleEditorChange = (editor) => {
+    handleEditorChange = editor => {
         this.noteValueChange(editor.getValue());
         if (this.cursor) this.clearSearchResults();
     };
@@ -425,7 +425,9 @@ class CodeInputModel extends HoistInputModel {
     preserveSearchResults() {
         const {matches, editor} = this;
         matches.forEach(match => {
-            match.textMarker = editor.markText(match.anchor, match.head, {className: 'xh-code-input--highlight'});
+            match.textMarker = editor.markText(match.anchor, match.head, {
+                className: 'xh-code-input--highlight'
+            });
         });
     }
 
@@ -444,29 +446,27 @@ class CodeInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<CodeInputModel>(
-    ({model, className, ...props}, ref) => {
-        return box({
-            className: 'xh-code-input__outer-wrapper',
-            width: 300,
-            height: 100,
-            ...getLayoutProps(props),
-            item: modalSupport({
-                model: model.modalSupportModel,
-                item: inputCmp({
-                    width: '100%',
-                    height: '100%',
-                    className,
-                    ref,
-                    model
-                })
+const cmp = hoistCmp.factory<CodeInputModel>(({model, className, ...props}, ref) => {
+    return box({
+        className: 'xh-code-input__outer-wrapper',
+        width: 300,
+        height: 100,
+        ...getLayoutProps(props),
+        item: modalSupport({
+            model: model.modalSupportModel,
+            item: inputCmp({
+                width: '100%',
+                height: '100%',
+                className,
+                ref,
+                model
             })
-        });
-    }
-);
+        })
+    });
+});
 
-const inputCmp = hoistCmp.factory<CodeInputModel>(
-    ({model, ...props}, ref) => vbox({
+const inputCmp = hoistCmp.factory<CodeInputModel>(({model, ...props}, ref) =>
+    vbox({
         items: [
             div({
                 className: 'xh-code-input__inner-wrapper',
@@ -485,87 +485,74 @@ const inputCmp = hoistCmp.factory<CodeInputModel>(
     })
 );
 
-const toolbarCmp = hoistCmp.factory<CodeInputModel>(
-    ({model}) => {
-        const {actionButtons, showSearchInput, fullScreen} = model;
-        return toolbar({
-            className: 'xh-code-input__toolbar',
-            compact: !fullScreen,
-            items: [
-                searchInputCmp({omit: !showSearchInput}),
-                filler(),
-                ...actionButtons
-            ]
-        });
-    }
-);
+const toolbarCmp = hoistCmp.factory<CodeInputModel>(({model}) => {
+    const {actionButtons, showSearchInput, fullScreen} = model;
+    return toolbar({
+        className: 'xh-code-input__toolbar',
+        compact: !fullScreen,
+        items: [searchInputCmp({omit: !showSearchInput}), filler(), ...actionButtons]
+    });
+});
 
-const searchInputCmp = hoistCmp.factory<CodeInputModel>(
-    ({model}) => {
-        const {query, cursor, currentMatchIdx, matchCount, fullScreen} = model;
-        return fragment(
-            // Frame wrapper added due to issues with textInput not supporting all layout props as it should.
-            frame({
+const searchInputCmp = hoistCmp.factory<CodeInputModel>(({model}) => {
+    const {query, cursor, currentMatchIdx, matchCount, fullScreen} = model;
+    return fragment(
+        // Frame wrapper added due to issues with textInput not supporting all layout props as it should.
+        frame({
+            flex: 1,
+            maxWidth: !fullScreen ? 225 : 400,
+            item: textInput({
+                width: null,
                 flex: 1,
-                maxWidth: !fullScreen ? 225 : 400,
-                item: textInput({
-                    width: null,
-                    flex: 1,
-                    model: this,
-                    bind: 'query',
-                    leftIcon: Icon.search(),
-                    enableClear: true,
-                    commitOnChange: true,
-                    onKeyDown: (e) => {
-                        if (e.key !== 'Enter') return;
-                        if (!cursor) {
-                            model.findAll();
-                        } else if (e.shiftKey) {
-                            model.findPrevious();
-                        } else {
-                            model.findNext();
-                        }
+                model: this,
+                bind: 'query',
+                leftIcon: Icon.search(),
+                enableClear: true,
+                commitOnChange: true,
+                onKeyDown: e => {
+                    if (e.key !== 'Enter') return;
+                    if (!cursor) {
+                        model.findAll();
+                    } else if (e.shiftKey) {
+                        model.findPrevious();
+                    } else {
+                        model.findNext();
                     }
-                })
-            }),
-            label({
-                className: classNames(
-                    'xh-code-input__label',
-                    !fullScreen ? 'xh-no-pad' : null
-                ),
-                item: matchCount ?
-                    `${currentMatchIdx + 1} / ${matchCount}` :
-                    span({item: '0 results', className: 'xh-text-color-muted'}),
-                omit: !query
-            }),
-            button({
-                icon: Icon.arrowUp(),
-                title: 'Find previous (shift+enter)',
-                className: !fullScreen ? 'xh-no-pad' : null,
-                disabled: !matchCount,
-                onClick: () => model.findPrevious(),
-                omit: !query
-            }),
-            button({
-                icon: Icon.arrowDown(),
-                title: 'Find next (enter)',
-                className: !fullScreen ? 'xh-no-pad' : null,
-                disabled: !matchCount,
-                onClick: () => model.findNext(),
-                omit: !query
+                }
             })
-        );
-    }
-);
+        }),
+        label({
+            className: classNames('xh-code-input__label', !fullScreen ? 'xh-no-pad' : null),
+            item: matchCount
+                ? `${currentMatchIdx + 1} / ${matchCount}`
+                : span({item: '0 results', className: 'xh-text-color-muted'}),
+            omit: !query
+        }),
+        button({
+            icon: Icon.arrowUp(),
+            title: 'Find previous (shift+enter)',
+            className: !fullScreen ? 'xh-no-pad' : null,
+            disabled: !matchCount,
+            onClick: () => model.findPrevious(),
+            omit: !query
+        }),
+        button({
+            icon: Icon.arrowDown(),
+            title: 'Find next (enter)',
+            className: !fullScreen ? 'xh-no-pad' : null,
+            disabled: !matchCount,
+            onClick: () => model.findNext(),
+            omit: !query
+        })
+    );
+});
 
-const actionButtonsCmp = hoistCmp.factory<CodeInputModel>(
-    ({model}) => {
-        const {hasFocus, actionButtons} = model;
-        return (hasFocus && actionButtons.length) ?
-            hbox({
-                className: 'xh-code-input__action-buttons',
-                items: actionButtons
-            }) : null;
-    }
-);
-
+const actionButtonsCmp = hoistCmp.factory<CodeInputModel>(({model}) => {
+    const {hasFocus, actionButtons} = model;
+    return hasFocus && actionButtons.length
+        ? hbox({
+              className: 'xh-code-input__action-buttons',
+              items: actionButtons
+          })
+        : null;
+});

@@ -27,24 +27,23 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory<ColAu
     displayName: 'ColAutosizeButton',
     model: false,
 
-    render({
-        gridModel,
-        icon = Icon.arrowsLeftRight(),
-        onClick,
-        autosizeOptions = {},
-        ...props
-    }) {
+    render({gridModel, icon = Icon.arrowsLeftRight(), onClick, autosizeOptions = {}, ...props}) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
         if (!gridModel?.autosizeEnabled) {
-            console.error("No GridModel available with autosize enabled. Provide via a 'gridModel' prop, or context.");
+            console.error(
+                "No GridModel available with autosize enabled. Provide via a 'gridModel' prop, or context."
+            );
             return button({icon, disabled: true, ...props});
         }
 
-        onClick = onClick ?? (() => gridModel.autosizeAsync({
-            showMask: true,
-            ...autosizeOptions
-        }));
+        onClick =
+            onClick ??
+            (() =>
+                gridModel.autosizeAsync({
+                    showMask: true,
+                    ...autosizeOptions
+                }));
 
         return button({icon, onClick, ...props});
     }

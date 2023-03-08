@@ -29,7 +29,6 @@ export const toastSource = hoistCmp.factory({
     }
 });
 
-
 class ToastSourceLocalModel extends HoistModel {
     override xhImpl = true;
 
@@ -47,11 +46,12 @@ class ToastSourceLocalModel extends HoistModel {
     }
 
     displayPendingToasts(models: ToastModel[]) {
-        models.forEach((model: ToastModel&{bpId}) => {
-            let {bpId, isOpen, icon, intent, actionButtonProps, position, containerRef, ...rest} = model;
+        models.forEach((model: ToastModel & {bpId}) => {
+            let {bpId, isOpen, icon, intent, actionButtonProps, position, containerRef, ...rest} =
+                model;
 
             // 1) If toast is visible and sent to bp, or already obsolete -- nothing to do
-            if ((!!bpId) === isOpen) return;
+            if (!!bpId === isOpen) return;
 
             // 2) ...otherwise this toast needs to be shown or hidden with bp api
             let toaster = this.getToaster(position as ToasterPosition, containerRef);
@@ -81,9 +81,10 @@ class ToastSourceLocalModel extends HoistModel {
      * @param containerRef - DOM Element used to position (contain) the toast.
      */
     getToaster(position: ToasterPosition, containerRef: HTMLElement) {
-
         if (containerRef && !isElement(containerRef)) {
-            console.warn('containerRef argument for Toast must be a DOM element. Argument will be ignored.');
+            console.warn(
+                'containerRef argument for Toast must be a DOM element. Argument will be ignored.'
+            );
             containerRef = null;
         }
         const toasterMap = this._toasterMap,
@@ -92,7 +93,8 @@ class ToastSourceLocalModel extends HoistModel {
 
         // We want to just memoize this by two args (one object)?  Is there a library for this?
         const toasters = toasterMap.get(container) || {};
-        if (!toasters[position]) toasters[position] = Toaster.create({position, className}, container);
+        if (!toasters[position])
+            toasters[position] = Toaster.create({position, className}, container);
         toasterMap.set(container, toasters);
         return toasters[position];
     }

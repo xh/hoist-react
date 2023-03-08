@@ -19,7 +19,8 @@ export const versionBar = hoistCmp.factory({
             env = XH.getEnv('appEnvironment'),
             version = XH.getEnv('clientVersion'),
             build = XH.getEnv('clientBuild'),
-            versionAndBuild = (!build || build === 'UNKNOWN') ? version : `${version} (build ${build})`;
+            versionAndBuild =
+                !build || build === 'UNKNOWN' ? version : `${version} (build ${build})`;
 
         return box({
             justifyContent: 'center',
@@ -41,7 +42,6 @@ export const versionBar = hoistCmp.factory({
     }
 });
 
-
 //----------------------
 // Implementation
 //----------------------
@@ -57,6 +57,6 @@ function isShowing() {
             return false;
         case 'auto':
         default:
-            return (env !== 'Production' || XH.getUser().isHoistAdminReader);
+            return env !== 'Production' || XH.getUser().isHoistAdminReader;
     }
 }

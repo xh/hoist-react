@@ -19,7 +19,6 @@ import {isFunction} from 'lodash';
  * primary AppBar menu.
  */
 export class AppOption {
-
     name;
     prefName;
     fieldModel;
@@ -37,7 +36,6 @@ export class AppOption {
         valueSetter,
         reloadRequired = false
     }: AppOptionSpec) {
-
         warnIf(
             !(prefName && XH.prefService.hasKey(prefName)) && !(valueGetter && valueSetter),
             'Must specify either a valid prefName or provide a valueGetter and valueSetter.'

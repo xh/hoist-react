@@ -20,7 +20,7 @@ import {castArray, isString} from 'lodash';
  * @param fn - function to execute
  * @param source - class, function or string to label the source of the message
  */
-export function withInfo<T>(msgs: string[]|string, fn: () => T, source?: any): T {
+export function withInfo<T>(msgs: string[] | string, fn: () => T, source?: any): T {
     return loggedDo(msgs, fn, source, 'info');
 }
 
@@ -28,7 +28,7 @@ export function withInfo<T>(msgs: string[]|string, fn: () => T, source?: any): T
  * Track a function execution with console.debug.
  * @see withInfo
  */
-export function withDebug<T>(msgs: string[]|string, fn: () => T, source?: any): T {
+export function withDebug<T>(msgs: string[] | string, fn: () => T, source?: any): T {
     return loggedDo(msgs, fn, source, 'debug');
 }
 
@@ -38,7 +38,7 @@ export function withDebug<T>(msgs: string[]|string, fn: () => T, source?: any): 
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logInfo(msgs: string[]|string, source?: any) {
+export function logInfo(msgs: string[] | string, source?: any) {
     return loggedDo(msgs, null, source, 'info');
 }
 
@@ -46,7 +46,7 @@ export function logInfo(msgs: string[]|string, source?: any) {
  * Log a message with console.debug.
  * @see logInfo
  */
-export function logDebug(msgs: string[]|string, source?: any) {
+export function logDebug(msgs: string[] | string, source?: any) {
     return loggedDo(msgs, null, source, 'debug');
 }
 
@@ -70,9 +70,13 @@ function loggedDo(msgs, fn, source, level) {
             const elapsed = Date.now() - start;
             writeLog(`${msg} | ${elapsed}ms`, source, level);
         },
-        logException =  (e) => {
+        logException = e => {
             const elapsed = Date.now() - start;
-            writeLog(`${msg} | failed - ${e.message ?? e.name ?? 'Unknown error'} | ${elapsed}ms`, source, level);
+            writeLog(
+                `${msg} | failed - ${e.message ?? e.name ?? 'Unknown error'} | ${elapsed}ms`,
+                source,
+                level
+            );
         };
 
     start = Date.now();

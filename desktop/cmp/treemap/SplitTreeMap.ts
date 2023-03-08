@@ -18,15 +18,12 @@ import './SplitTreeMap.scss';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
 import {treeMap} from './TreeMap';
 
-export interface SplitTreeMapProps extends
-    HoistProps<SplitTreeMapModel>,
-    BoxProps {}
-
+export interface SplitTreeMapProps extends HoistProps<SplitTreeMapModel>, BoxProps {}
 
 /**
  * A component which divides data across two TreeMaps.
  */
-export const [SplitTreeMap, splitTreeMap]  = hoistCmp.withFactory<SplitTreeMapProps>({
+export const [SplitTreeMap, splitTreeMap] = hoistCmp.withFactory<SplitTreeMapProps>({
     displayName: 'SplitTreeMap',
     model: uses(SplitTreeMapModel),
     className: 'xh-split-treemap',
@@ -45,91 +42,88 @@ export const [SplitTreeMap, splitTreeMap]  = hoistCmp.withFactory<SplitTreeMapPr
     }
 });
 
-const childMaps = hoistCmp.factory<SplitTreeMapModel>(
-    ({model}) => {
-        const {
-            primaryMapModel,
-            secondaryMapModel,
-            empty,
-            emptyText,
-            isMasking,
-            mapTitleFn,
-            showSplitter
-        } = model;
-        if (empty) return placeholder(emptyText);
+const childMaps = hoistCmp.factory<SplitTreeMapModel>(({model}) => {
+    const {
+        primaryMapModel,
+        secondaryMapModel,
+        empty,
+        emptyText,
+        isMasking,
+        mapTitleFn,
+        showSplitter
+    } = model;
+    if (empty) return placeholder(emptyText);
 
-        const pTotal = primaryMapModel.total,
-            sTotal = secondaryMapModel.total;
+    const pTotal = primaryMapModel.total,
+        sTotal = secondaryMapModel.total;
 
-        let pFlex = 1, sFlex = 1;
-        if (pTotal && sTotal) {
-            // pFlex value is rounded to limit the precision of our flex config and avoid extra
-            // render cycles due to imperceptible changes in the ratio between the sides.
-            pFlex = parseFloat((pTotal / sTotal).toFixed(2));
-        } else if (pTotal && !sTotal) {
-            sFlex = 0;
-        } else if (!pTotal && sTotal) {
-            pFlex = 0;
-        }
-
-        return fragment([
-            // Primary Map
-            mapTitle({isPrimary: true}),
-            box({
-                omit: !pTotal,
-                flex: pFlex,
-                className: 'xh-split-treemap__map-holder',
-                item: treeMap({model: primaryMapModel})
-            }),
-
-            splitter({omit: !!mapTitleFn || !showSplitter}),
-
-            // Secondary Map
-            mapTitle({isPrimary: false}),
-            box({
-                omit: !sTotal,
-                flex: sFlex,
-                className: 'xh-split-treemap__map-holder',
-                item: treeMap({model: secondaryMapModel})
-            }),
-
-            // Mask
-            div({
-                omit: !isMasking,
-                className: 'xh-split-treemap__mask-holder',
-                item: mask({isDisplayed: true, spinner: true})
-            })
-        ]);
+    let pFlex = 1,
+        sFlex = 1;
+    if (pTotal && sTotal) {
+        // pFlex value is rounded to limit the precision of our flex config and avoid extra
+        // render cycles due to imperceptible changes in the ratio between the sides.
+        pFlex = parseFloat((pTotal / sTotal).toFixed(2));
+    } else if (pTotal && !sTotal) {
+        sFlex = 0;
+    } else if (!pTotal && sTotal) {
+        pFlex = 0;
     }
-);
 
-const mapTitle = hoistCmp.factory<SplitTreeMapModel>(
-    ({model, isPrimary}) => {
-        const {mapTitleFn, orientation} = model,
-            // Title orientation is perpendicular to overall orientation
-            titleOrientation = orientation === 'vertical' ? 'horizontal' : 'vertical',
-            treeMapModel = isPrimary ? model.primaryMapModel : model.secondaryMapModel;
+    return fragment([
+        // Primary Map
+        mapTitle({isPrimary: true}),
+        box({
+            omit: !pTotal,
+            flex: pFlex,
+            className: 'xh-split-treemap__map-holder',
+            item: treeMap({model: primaryMapModel})
+        }),
 
-        if (!mapTitleFn || !treeMapModel.total) return null;
+        splitter({omit: !!mapTitleFn || !showSplitter}),
 
-        const container = titleOrientation === 'horizontal' ? hbox : vbox,
-            dim = titleOrientation === 'horizontal' ? 'height' : 'width',
-            size = (AgGrid as any).getHeaderHeightForSizingMode(XH.sizingMode);
+        // Secondary Map
+        mapTitle({isPrimary: false}),
+        box({
+            omit: !sTotal,
+            flex: sFlex,
+            className: 'xh-split-treemap__map-holder',
+            item: treeMap({model: secondaryMapModel})
+        }),
 
-        return container({
-            style: {[dim]: `${size}px`},
-            className: classNames(
-                'xh-split-treemap__header',
-                'xh-split-treemap__header--' + titleOrientation
-            ),
-            item: div({
-                className: 'xh-split-treemap__header__title',
-                item: mapTitleFn(treeMapModel, isPrimary)
-            })
-        });
-    }
-);
+        // Mask
+        div({
+            omit: !isMasking,
+            className: 'xh-split-treemap__mask-holder',
+            item: mask({isDisplayed: true, spinner: true})
+        })
+    ]);
+});
 
-const errorPanel = hoistCmp.factory(
-    ({errors}) => errorMessage({message: fragment(errors.map(e => p(e)))})
+const mapTitle = hoistCmp.factory<SplitTreeMapModel>(({model, isPrimary}) => {
+    const {mapTitleFn, orientation} = model,
+        // Title orientation is perpendicular to overall orientation
+        titleOrientation = orientation === 'vertical' ? 'horizontal' : 'vertical',
+        treeMapModel = isPrimary ? model.primaryMapModel : model.secondaryMapModel;
+
+    if (!mapTitleFn || !treeMapModel.total) return null;
+
+    const container = titleOrientation === 'horizontal' ? hbox : vbox,
+        dim = titleOrientation === 'horizontal' ? 'height' : 'width',
+        size = (AgGrid as any).getHeaderHeightForSizingMode(XH.sizingMode);
+
+    return container({
+        style: {[dim]: `${size}px`},
+        className: classNames(
+            'xh-split-treemap__header',
+            'xh-split-treemap__header--' + titleOrientation
+        ),
+        item: div({
+            className: 'xh-split-treemap__header__title',
+            item: mapTitleFn(treeMapModel, isPrimary)
+        })
+    });
+});
+
+const errorPanel = hoistCmp.factory(({errors}) =>
+    errorMessage({message: fragment(errors.map(e => p(e)))})
 );

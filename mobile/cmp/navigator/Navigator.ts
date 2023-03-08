@@ -12,9 +12,8 @@ import {NavigatorModel} from './NavigatorModel';
 
 export interface NavigatorProps extends HoistProps<NavigatorModel> {
     /** Set animation style or turn off, default 'slide'. */
-    animation?: 'slide'|'lift'|'fade'|'none';
+    animation?: 'slide' | 'lift' | 'fade' | 'none';
 }
-
 
 /**
  * Top-level Component within an application, responsible for rendering a stack of

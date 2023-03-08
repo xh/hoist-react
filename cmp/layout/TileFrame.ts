@@ -14,7 +14,6 @@ import {Children} from 'react';
 
 import './TileFrame.scss';
 
-
 export interface TileFrameProps extends HoistProps, BoxProps {
     /**
      * Desired tile width / height ratio (i.e. desiredRatio: 2 == twice as wide as tall).
@@ -39,7 +38,12 @@ export interface TileFrameProps extends HoistProps, BoxProps {
     maxTileHeight?: number;
 
     /** Callback triggered when the layout configuration changes.*/
-    onLayoutChange?: (layout: {rows: number, cols: number, tileWidth: number, tileHeight: number}) => any;
+    onLayoutChange?: (layout: {
+        rows: number;
+        cols: number;
+        tileWidth: number;
+        tileHeight: number;
+    }) => any;
 }
 
 /**
@@ -53,20 +57,24 @@ export interface TileFrameProps extends HoistProps, BoxProps {
  */
 export const [TileFrame, tileFrame] = hoistCmp.withFactory({
     displayName: 'TileFrame',
-    memo: false, observer: false,
+    memo: false,
+    observer: false,
     className: 'xh-tile-frame',
 
-    render({
-        children,
-        desiredRatio = 1,
-        spacing = 0,
-        minTileWidth,
-        maxTileWidth,
-        minTileHeight,
-        maxTileHeight,
-        onLayoutChange,
-        ...props
-    }: TileFrameProps, ref) {
+    render(
+        {
+            children,
+            desiredRatio = 1,
+            spacing = 0,
+            minTileWidth,
+            maxTileWidth,
+            minTileHeight,
+            maxTileHeight,
+            onLayoutChange,
+            ...props
+        }: TileFrameProps,
+        ref
+    ) {
         const localModel = useLocalModel(TileFrameLocalModel),
             [width, setWidth] = useState<number>(),
             [height, setHeight] = useState<number>(),
@@ -91,20 +99,25 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
 
         ref = composeRefs(
             ref,
-            useOnResize(({width, height}) => {
-                setWidth(width);
-                setHeight(height);
-            }, {debounce: 100})
+            useOnResize(
+                ({width, height}) => {
+                    setWidth(width);
+                    setHeight(height);
+                },
+                {debounce: 100}
+            )
         );
 
-        const items = localModel.layout ?
-            childrenArr.map((item, idx) => box({
-                style: localModel.getTileStyle(idx),
-                className: 'xh-tile-frame__tile',
-                item,
-                key: item['key'] // trampoline any child key to prevent remounts
-            })):
-            null;
+        const items = localModel.layout
+            ? childrenArr.map((item, idx) =>
+                  box({
+                      style: localModel.getTileStyle(idx),
+                      className: 'xh-tile-frame__tile',
+                      item,
+                      key: item['key'] // trampoline any child key to prevent remounts
+                  })
+              )
+            : null;
 
         return frame({ref, ...props, items});
     }
@@ -129,9 +142,9 @@ class TileFrameLocalModel extends HoistModel {
         const {spacing} = this.params,
             {cols, tileWidth, tileHeight} = this.layout,
             rowIdx = Math.floor(idx / cols),
-            colIdx = idx - (rowIdx * cols),
-            top = (tileHeight * rowIdx) + (rowIdx * spacing) + spacing,
-            left = (tileWidth * colIdx) + (colIdx * spacing) + spacing;
+            colIdx = idx - rowIdx * cols,
+            top = tileHeight * rowIdx + rowIdx * spacing + spacing,
+            left = tileWidth * colIdx + colIdx * spacing + spacing;
 
         return {
             top,
@@ -160,13 +173,7 @@ class TileFrameLocalModel extends HoistModel {
     }
 
     generateScoredLayout(cols) {
-        const {
-            width,
-            minTileWidth,
-            maxTileWidth,
-            minTileHeight,
-            maxTileHeight
-        } = this.params;
+        const {width, minTileWidth, maxTileWidth, minTileHeight, maxTileHeight} = this.params;
 
         // 1) Generate layout
         const layout = this.generateLayout(cols);
@@ -218,7 +225,7 @@ class TileFrameLocalModel extends HoistModel {
     // A higher score indicates more empty tile space
     getEmptyScore(layout) {
         const {count} = this.params,
-            emptyCount = (layout.rows * layout.cols) - count;
+            emptyCount = layout.rows * layout.cols - count;
 
         return Math.pow(emptyCount, 2);
     }
@@ -236,6 +243,6 @@ class TileFrameLocalModel extends HoistModel {
     }
 
     getRequiredWidth(layout) {
-        return (layout.tileWidth * layout.cols) + ((layout.cols + 1) * this.params.spacing);
+        return layout.tileWidth * layout.cols + (layout.cols + 1) * this.params.spacing;
     }
 }

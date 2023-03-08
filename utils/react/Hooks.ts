@@ -8,25 +8,21 @@ import {observeResize, observeVisibleChange} from '@xh/hoist/utils/js';
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useCallback, useEffect, useRef} from 'react';
 
-
 /**
  * Hook to run a function once after component has been mounted.
  */
-export function useOnMount(fn:() => void) {
-    useEffect(
-        () => {fn(); return undefined},
-        []
-    );
+export function useOnMount(fn: () => void) {
+    useEffect(() => {
+        fn();
+        return undefined;
+    }, []);
 }
 
 /**
  * Hook to run a function once after component has been unmounted.
  */
 export function useOnUnmount(fn: () => void) {
-    useEffect(
-        () => fn,
-        []
-    );
+    useEffect(() => fn, []);
 }
 
 /**
@@ -45,10 +41,13 @@ export function useOnResize(
     const observer = useRef(null);
     useOnUnmount(() => observer.current?.disconnect());
 
-    return useCallback(node => {
-        observer.current?.disconnect();
-        if (node) observer.current = observeResize(fn, node, opts);
-    }, [opts.debounce]);
+    return useCallback(
+        node => {
+            observer.current?.disconnect();
+            if (node) observer.current = observeResize(fn, node, opts);
+        },
+        [opts.debounce]
+    );
 }
 
 /**

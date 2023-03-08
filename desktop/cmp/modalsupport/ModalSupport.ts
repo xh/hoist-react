@@ -57,8 +57,9 @@ const inlineContainer = hoistCmp.factory<ModalSupportModel>({
 
             // If not rendering within a container with flexDirection: row, take up all available
             // width:
-            ...(model.inlineRef.current?.parentElement.style.flexDirection !== 'row' ?
-                {width: '100%'} : {})
+            ...(model.inlineRef.current?.parentElement.style.flexDirection !== 'row'
+                ? {width: '100%'}
+                : {})
         });
     }
 });

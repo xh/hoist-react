@@ -64,7 +64,6 @@ export interface DockViewConfig {
  * the `DockContainerModel.addView()` method.
  */
 export class DockViewModel extends HoistModel {
-
     id: string;
     @bindable title: string;
     @bindable.ref icon: ReactElement;
@@ -203,5 +202,4 @@ export class DockViewModel extends HoistModel {
         XH.safeDestroy(this.content);
         super.destroy();
     }
-
 }

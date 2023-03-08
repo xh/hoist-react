@@ -12,7 +12,6 @@ import {forOwn, sortBy} from 'lodash';
 import * as MCol from '../../monitor/MonitorColumns';
 
 export class MemoryMonitorModel extends HoistModel {
-
     @managed gridModel: GridModel;
     @managed chartModel: ChartModel;
 
@@ -50,7 +49,11 @@ export class MemoryMonitorModel extends HoistModel {
                 title: {text: null},
                 xAxis: {
                     type: 'datetime',
-                    labels: {formatter: function() {return fmtTime(this.value)}}
+                    labels: {
+                        formatter: function () {
+                            return fmtTime(this.value);
+                        }
+                    }
                 },
                 yAxis: [
                     {

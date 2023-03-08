@@ -31,12 +31,15 @@ import {HoistBase, managed, LoadSupport, LoadSpec, Loadable, PlainObject} from '
  * can also read and react to service state and call service APIs.
  */
 export class HoistService extends HoistBase implements Loadable {
-
     // Internal State
     _created = Date.now();
 
-    static get isHoistService(): boolean {return true}
-    get isHoistService(): boolean {return true}
+    static get isHoistService(): boolean {
+        return true;
+    }
+    get isHoistService(): boolean {
+        return true;
+    }
 
     constructor() {
         super();
@@ -50,9 +53,7 @@ export class HoistService extends HoistBase implements Loadable {
      * Throwing an exception from this method will typically block startup.
      * Service writers should take care to stifle and manage all non-fatal exceptions.
      */
-    async initAsync(): Promise<void> {
-
-    }
+    async initAsync(): Promise<void> {}
 
     /**
      * Provides optional support for Hoist's approach to managed loading.
@@ -64,18 +65,30 @@ export class HoistService extends HoistBase implements Loadable {
     @managed
     loadSupport: LoadSupport;
 
-    get loadModel()                             {return this.loadSupport?.loadModel}
-    get lastLoadRequested()                     {return this.loadSupport?.lastLoadRequested}
-    get lastLoadCompleted()                     {return this.loadSupport?.lastLoadCompleted}
-    get lastLoadException()                     {return this.loadSupport?.lastLoadException}
-    async refreshAsync(meta?: PlainObject)      {return this.loadSupport?.refreshAsync(meta)}
-    async autoRefreshAsync(meta?: PlainObject)  {return this.loadSupport?.autoRefreshAsync(meta)}
+    get loadModel() {
+        return this.loadSupport?.loadModel;
+    }
+    get lastLoadRequested() {
+        return this.loadSupport?.lastLoadRequested;
+    }
+    get lastLoadCompleted() {
+        return this.loadSupport?.lastLoadCompleted;
+    }
+    get lastLoadException() {
+        return this.loadSupport?.lastLoadException;
+    }
+    async refreshAsync(meta?: PlainObject) {
+        return this.loadSupport?.refreshAsync(meta);
+    }
+    async autoRefreshAsync(meta?: PlainObject) {
+        return this.loadSupport?.autoRefreshAsync(meta);
+    }
     async doLoadAsync(loadSpec: LoadSpec) {}
-    async loadAsync(loadSpec?: LoadSpec|Partial<LoadSpec>) {
+    async loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>) {
         return this.loadSupport?.loadAsync(loadSpec);
     }
 }
 
 export interface HoistServiceClass<T extends HoistService = HoistService> {
-    new(): T;
+    new (): T;
 }

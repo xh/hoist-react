@@ -13,7 +13,7 @@ export interface FormatOptions<T = any> {
     nullDisplay?: ReactNode;
 
     /** Function to generate a tooltip string. */
-    tooltip?:  (v: T) => string;
+    tooltip?: (v: T) => string;
 
     /** Return an HTML string rather than a React element (default false).*/
     asHtml?: boolean;
@@ -21,7 +21,6 @@ export interface FormatOptions<T = any> {
     /** The unaltered original value to be formatted. Not typically used by applications.*/
     originalValue?: T;
 }
-
 
 export interface SpanFormatOptions extends FormatOptions {
     className?: string;
@@ -58,7 +57,7 @@ export interface JSONFormatOptions {
     replacer?: any;
 
     /** Indentation amount to pass to `stringify`*/
-    space?: number|string;
+    space?: number | string;
 }
 
 /**
@@ -66,9 +65,7 @@ export interface JSONFormatOptions {
  */
 export function fmtJson(str: string, opts?: JSONFormatOptions): string {
     const {replacer = undefined, space = 2} = opts ?? {};
-    return isNil(str) ?
-        '' :
-        JSON.stringify(JSON.parse(str), replacer, space);
+    return isNil(str) ? '' : JSON.stringify(JSON.parse(str), replacer, space);
 }
 
 /**
@@ -77,11 +74,11 @@ export function fmtJson(str: string, opts?: JSONFormatOptions): string {
  */
 export function capitalizeWords(str: string): string {
     if (str == null || !str.length) return str;
-    return str.split(' ')
+    return str
+        .split(' ')
         .map(s => capitalize(s))
         .join(' ');
 }
-
 
 //-----------------
 // Implementation

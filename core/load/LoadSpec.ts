@@ -28,8 +28,9 @@ import {PlainObject} from '../types/Types';
  * @see LoadSupport
  */
 export class LoadSpec {
-
-    get isLoadSpec(): boolean    {return true}
+    get isLoadSpec(): boolean {
+        return true;
+    }
 
     /** index of the associated load on this object. 0 for the first load. */
     loadNumber: number;
@@ -64,7 +65,7 @@ export class LoadSpec {
      */
     get typeDisplay(): string {
         if (this.isAutoRefresh) return 'Auto-Refresh';
-        if (this.isRefresh)     return 'Refresh';
+        if (this.isRefresh) return 'Refresh';
         return 'Load';
     }
 

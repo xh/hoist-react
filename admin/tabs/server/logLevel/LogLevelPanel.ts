@@ -11,12 +11,11 @@ import * as Col from '@xh/hoist/admin/columns';
 import * as LogLevelCol from './LogLevelColumns';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 
-
-export const logLevelPanel = hoistCmp.factory(
-    () => restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}})
+export const logLevelPanel = hoistCmp.factory(() =>
+    restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}})
 );
 
-const modelSpec: RestGridConfig= {
+const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminLogLevelState'},
     colChooserModel: true,
     enableExport: true,
@@ -24,12 +23,12 @@ const modelSpec: RestGridConfig= {
         url: 'rest/logLevelAdmin',
         fieldDefaults: {disableXssProtection: true},
         fields: [
-            {...LogLevelCol.logName.field as FieldSpec, required: true},
-            {...LogLevelCol.level.field as FieldSpec, lookupName: 'levels'},
-            {...LogLevelCol.defaultLevel.field as FieldSpec, editable: false},
-            {...LogLevelCol.effectiveLevel.field as FieldSpec, editable: false},
-            {...Col.lastUpdated.field as FieldSpec, editable: false},
-            {...Col.lastUpdatedBy.field as FieldSpec, editable: false}
+            {...(LogLevelCol.logName.field as FieldSpec), required: true},
+            {...(LogLevelCol.level.field as FieldSpec), lookupName: 'levels'},
+            {...(LogLevelCol.defaultLevel.field as FieldSpec), editable: false},
+            {...(LogLevelCol.effectiveLevel.field as FieldSpec), editable: false},
+            {...(Col.lastUpdated.field as FieldSpec), editable: false},
+            {...(Col.lastUpdatedBy.field as FieldSpec), editable: false}
         ]
     },
     unit: 'log level',
@@ -42,11 +41,5 @@ const modelSpec: RestGridConfig= {
         Col.lastUpdated,
         Col.lastUpdatedBy
     ],
-    editors: [
-        {field: 'name'},
-        {field: 'level'},
-        {field: 'lastUpdated'},
-        {field: 'lastUpdatedBy'}
-    ]
+    editors: [{field: 'name'}, {field: 'level'}, {field: 'lastUpdated'}, {field: 'lastUpdatedBy'}]
 };
-

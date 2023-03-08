@@ -20,27 +20,30 @@ export interface ExpandCollapseButtonProps extends ButtonProps {
 /**
  * A convenience button to expand / collapse all rows in grouped or tree grid.
  */
-export const [ExpandCollapseButton, expandCollapseButton] = hoistCmp.withFactory<ExpandCollapseButtonProps>({
-    displayName: 'ExpandCollapseButton',
-    model: false,
-    render({
-        gridModel,
-        onClick,
-        ...props
-    }) {
-        gridModel = withDefault(gridModel, useContextModel(GridModel));
+export const [ExpandCollapseButton, expandCollapseButton] =
+    hoistCmp.withFactory<ExpandCollapseButtonProps>({
+        displayName: 'ExpandCollapseButton',
+        model: false,
+        render({gridModel, onClick, ...props}) {
+            gridModel = withDefault(gridModel, useContextModel(GridModel));
 
-        if (!gridModel) {
-            console.error("No GridModel available. Provide via a 'gridModel' prop, or context.");
-            return button({icon: Icon.expand(), disabled: true, ...props});
+            if (!gridModel) {
+                console.error(
+                    "No GridModel available. Provide via a 'gridModel' prop, or context."
+                );
+                return button({icon: Icon.expand(), disabled: true, ...props});
+            }
+
+            const shouldCollapse = !isEmpty(gridModel.expandState),
+                disabled = gridModel.treeMode
+                    ? gridModel.store.allRootCount === gridModel.store.allCount
+                    : isEmpty(gridModel.groupBy),
+                icon = shouldCollapse ? Icon.collapse() : Icon.expand();
+
+            onClick =
+                onClick ??
+                (() => (shouldCollapse ? gridModel.collapseAll() : gridModel.expandAll()));
+
+            return button({disabled, icon, onClick, ...props});
         }
-
-        const shouldCollapse = !isEmpty(gridModel.expandState),
-            disabled = gridModel.treeMode ? gridModel.store.allRootCount === gridModel.store.allCount : isEmpty(gridModel.groupBy),
-            icon = shouldCollapse ? Icon.collapse() : Icon.expand();
-
-        onClick = onClick ?? (() => shouldCollapse ? gridModel.collapseAll() : gridModel.expandAll());
-
-        return button({disabled, icon, onClick, ...props});
-    }
-});
+    });

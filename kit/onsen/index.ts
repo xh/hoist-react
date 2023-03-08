@@ -4,11 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {
-    ElementFactory,
-    elementFactory,
-    HoistModel
-} from '@xh/hoist/core';
+import {ElementFactory, elementFactory, HoistModel} from '@xh/hoist/core';
 import onsen from 'onsenui';
 import 'onsenui/css/onsen-css-components.css';
 import 'onsenui/css/onsenui.css';
@@ -24,8 +20,7 @@ onsen.disableAutoStyling();
 //-----------------
 // Leaf Components
 //-----------------
-export const
-    [button, Button] = wrappedCmp(ons.Button),
+export const [button, Button] = wrappedCmp(ons.Button),
     [checkbox, Checkbox] = wrappedCmp(ons.Checkbox),
     [gestureDetector, GestureDetector] = wrappedCmp(ons.GestureDetector),
     [input, Input] = wrappedCmp(ons.Input),
@@ -37,8 +32,7 @@ export const
 //---------------------
 // Container Components
 //----------------------
-export const
-    [dialog, Dialog] = wrappedCmp(ons.Dialog),
+export const [dialog, Dialog] = wrappedCmp(ons.Dialog),
     [listItem, ListItem] = wrappedCmp(ons.ListItem),
     [page, Page] = wrappedCmp(ons.Page),
     [tab, Tab] = wrappedCmp(ons.Tab),
@@ -63,16 +57,16 @@ export const
  * strip them out here.
  */
 function safeCmp(rawCmp): FunctionComponent {
-    return isForwardRef(rawCmp) ?
-        forwardRef((props, ref) => {
-            const safeProps = omitBy(props, it => it instanceof HoistModel);
-            safeProps.ref = ref;
-            return createElement(rawCmp, safeProps);
-        }) :
-        (props) => {
-            const safeProps = omitBy(props, it => it instanceof HoistModel);
-            return createElement(rawCmp, safeProps);
-        };
+    return isForwardRef(rawCmp)
+        ? forwardRef((props, ref) => {
+              const safeProps = omitBy(props, it => it instanceof HoistModel);
+              safeProps.ref = ref;
+              return createElement(rawCmp, safeProps);
+          })
+        : props => {
+              const safeProps = omitBy(props, it => it instanceof HoistModel);
+              return createElement(rawCmp, safeProps);
+          };
 }
 
 function wrappedCmp(rawCmp): [ElementFactory, FunctionComponent] {

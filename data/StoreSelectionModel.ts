@@ -13,19 +13,17 @@ import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 
 export interface StoreSelectionConfig {
     store?: Store;
-    mode?: 'single'|'multiple'|'disabled';
+    mode?: 'single' | 'multiple' | 'disabled';
     xhImpl?: boolean;
 }
-
 
 /**
  * Model for managing store selections.
  * Typically accessed from a GridModel to observe/control Grid selection.
  */
 export class StoreSelectionModel extends HoistModel {
-
     readonly store: Store;
-    mode: 'single'|'multiple'|'disabled';
+    mode: 'single' | 'multiple' | 'disabled';
 
     @observable.ref
     private _ids = [];
@@ -95,17 +93,19 @@ export class StoreSelectionModel extends HoistModel {
      * @param clearSelection - true to clear previous selection (rather than add to it).
      */
     @action
-    select(records: StoreRecordOrId|StoreRecordOrId[], clearSelection: boolean = true) {
+    select(records: StoreRecordOrId | StoreRecordOrId[], clearSelection: boolean = true) {
         records = castArray(records ?? []);
         if (this.mode === 'disabled') return;
         if (this.mode === 'single' && records.length > 1) {
             records = [records[0]];
         }
-        const ids = records.map(it => {
-            return it instanceof StoreRecord? it.id : it;
-        }).filter(id => {
-            return this.store.getById(id, true);
-        });
+        const ids = records
+            .map(it => {
+                return it instanceof StoreRecord ? it.id : it;
+            })
+            .filter(id => {
+                return this.store.getById(id, true);
+            });
 
         if (isEqual(ids, this._ids)) {
             return;
@@ -141,4 +141,3 @@ export class StoreSelectionModel extends HoistModel {
         };
     }
 }
-

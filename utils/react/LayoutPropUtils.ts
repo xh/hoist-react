@@ -41,7 +41,6 @@ import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
  * as raw numbers rather than strings.
  */
 export function getLayoutProps(props: PlainObject): LayoutProps {
-
     // Harvest all keys of interest
     const ret: LayoutProps = pick(props, allKeys);
 
@@ -76,21 +75,29 @@ export function getNonLayoutProps<T extends HoistProps>(props: T): T {
  */
 export function splitLayoutProps<T extends HoistProps>(props: T): [LayoutProps, T] {
     const layoutProps = getLayoutProps(props);
-    return [
-        layoutProps,
-        (isEmpty(layoutProps) ? props : getNonLayoutProps(props))
-    ];
+    return [layoutProps, isEmpty(layoutProps) ? props : getNonLayoutProps(props)];
 }
-
 
 //-------------------------
 // Keys to be processed
 //-------------------------
 const dimKeys = [
-    'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
-    'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
-    'height', 'minHeight', 'maxHeight',
-    'width', 'minWidth', 'maxWidth'
+    'margin',
+    'marginTop',
+    'marginRight',
+    'marginBottom',
+    'marginLeft',
+    'padding',
+    'paddingTop',
+    'paddingRight',
+    'paddingBottom',
+    'paddingLeft',
+    'height',
+    'minHeight',
+    'maxHeight',
+    'width',
+    'minWidth',
+    'maxWidth'
 ];
 const flexKeys = ['flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap'];
 const alignKeys = ['alignItems', 'alignSelf', 'alignContent', 'justifyContent'];
@@ -98,15 +105,19 @@ const overflowKeys = ['overflow', 'overflowX', 'overflowY'];
 const otherKeys = ['top', 'left', 'position', 'display'];
 const allKeys = [...dimKeys, ...flexKeys, ...alignKeys, ...overflowKeys, ...otherKeys];
 
-
 //------------------------
 // Implementation
 //------------------------
-const toPx = (v) => {
+const toPx = v => {
     // Note isFinite() is native JS - not _.isFinite() - true for numbers + numbers-strings.
     return window.isFinite(v) ? `${v}px` : v;
 };
 
-const toTlbrPx = (v) => {
-    return isString(v) ? v.split(' ').map(side => toPx(side)).join(' ') : toPx(v);
+const toTlbrPx = v => {
+    return isString(v)
+        ? v
+              .split(' ')
+              .map(side => toPx(side))
+              .join(' ')
+        : toPx(v);
 };

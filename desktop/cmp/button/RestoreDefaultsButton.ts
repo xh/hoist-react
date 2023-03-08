@@ -25,39 +25,44 @@ export interface RestoreDefaultsButtonProps extends ButtonProps {
  *
  * Can be provided an onClick handler, otherwise will call default framework handler.
  */
-export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmp.withFactory<RestoreDefaultsButtonProps>({
-    displayName: 'RestoreDefaultsButton',
-    model: false,
+export const [RestoreDefaultsButton, restoreDefaultsButton] =
+    hoistCmp.withFactory<RestoreDefaultsButtonProps>({
+        displayName: 'RestoreDefaultsButton',
+        model: false,
 
-    render({
-        warningTitle = 'Please Confirm',
-        warningMessage = fragment(
-            'All app options (including grid customizations) will be restored to their default settings, and the app will be reloaded.', br(), br(),
-            'OK to proceed?'
-        ),
-        ...buttonProps
-    }, ref) {
+        render(
+            {
+                warningTitle = 'Please Confirm',
+                warningMessage = fragment(
+                    'All app options (including grid customizations) will be restored to their default settings, and the app will be reloaded.',
+                    br(),
+                    br(),
+                    'OK to proceed?'
+                ),
+                ...buttonProps
+            },
+            ref
+        ) {
+            const onClick = () => {
+                XH.confirm({
+                    title: warningTitle,
+                    message: warningMessage,
+                    icon: Icon.warning(),
+                    onConfirm: () => XH.restoreDefaultsAsync(),
+                    confirmProps: {
+                        text: 'Yes, restore defaults',
+                        intent: 'primary'
+                    }
+                });
+            };
 
-        const onClick = () => {
-            XH.confirm({
-                title: warningTitle,
-                message: warningMessage,
-                icon: Icon.warning(),
-                onConfirm: () => XH.restoreDefaultsAsync(),
-                confirmProps: {
-                    text: 'Yes, restore defaults',
-                    intent: 'primary'
-                }
+            return button({
+                ref,
+                icon: Icon.reset(),
+                text: 'Restore Defaults',
+                intent: 'danger',
+                onClick,
+                ...buttonProps
             });
-        };
-
-        return button({
-            ref,
-            icon: Icon.reset(),
-            text: 'Restore Defaults',
-            intent: 'danger',
-            onClick,
-            ...buttonProps
-        });
-    }
-});
+        }
+    });

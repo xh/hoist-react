@@ -7,7 +7,7 @@
 import {isEmpty} from 'lodash';
 import {div, hbox} from '@xh/hoist/cmp/layout';
 import './TagsRenderer.scss';
-import { ReactNode } from 'react';
+import {ReactNode} from 'react';
 
 export function tagsRenderer(v): ReactNode {
     if (isEmpty(v)) return null;

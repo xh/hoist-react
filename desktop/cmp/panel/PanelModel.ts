@@ -10,7 +10,8 @@ import {
     ManagedRefreshContextModel,
     PersistenceProvider,
     PersistOptions,
-    PrefProvider, RefreshContextModel,
+    PrefProvider,
+    RefreshContextModel,
     RefreshMode,
     RenderMode,
     Side,
@@ -25,7 +26,6 @@ import {createRef} from 'react';
 import {ModalSupportConfig, ModalSupportModel} from '../modalsupport/';
 
 export interface PanelConfig {
-
     /** Can panel be resized? */
     resizable?: boolean;
 
@@ -57,7 +57,7 @@ export interface PanelConfig {
      * Set to true to enable built-in support for showing panel contents in a modal, or provide a
      * config to further configure.
      */
-    modalSupport?: boolean|ModalSupportConfig;
+    modalSupport?: boolean | ModalSupportConfig;
 
     /** How should collapsed content be rendered? Ignored if collapsible is false. */
     renderMode?: RenderMode;
@@ -92,7 +92,6 @@ export interface PanelConfig {
     /** @internal */
     xhImpl?;
 }
-
 
 /**
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
@@ -193,12 +192,16 @@ export class PanelModel extends HoistModel {
         }
 
         if (!isNil(maxSize) && (maxSize < minSize || maxSize < defaultSize)) {
-            console.error("'maxSize' must be greater than 'minSize' and 'defaultSize'. No 'maxSize' will be set.");
+            console.error(
+                "'maxSize' must be greater than 'minSize' and 'defaultSize'. No 'maxSize' will be set."
+            );
             maxSize = null;
         }
 
         if (resizable && !resizeWhileDragging && !showSplitter) {
-            console.error("Must not set 'showSplitter = false' for a resizable PanelModel unless 'resizeWhileDragging` is enabled. Panel sizing disabled.");
+            console.error(
+                "Must not set 'showSplitter = false' for a resizable PanelModel unless 'resizeWhileDragging` is enabled. Panel sizing disabled."
+            );
             resizable = false;
         }
 
@@ -218,9 +221,10 @@ export class PanelModel extends HoistModel {
         this.showModalToggleButton = showModalToggleButton;
 
         if (modalSupport) {
-            this.modalSupportModel = modalSupport === true ?
-                new ModalSupportModel() :
-                new ModalSupportModel(modalSupport);
+            this.modalSupportModel =
+                modalSupport === true
+                    ? new ModalSupportModel()
+                    : new ModalSupportModel(modalSupport);
         }
 
         // Set up various optional functionality;
@@ -247,7 +251,9 @@ export class PanelModel extends HoistModel {
 
         // Initialize state.
         this.size = resizable && !isNil(state?.size) ? state.size : defaultSize;
-        this.setCollapsed(collapsible && !isNil(state?.collapsed) ? state.collapsed : defaultCollapsed);
+        this.setCollapsed(
+            collapsible && !isNil(state?.collapsed) ? state.collapsed : defaultCollapsed
+        );
 
         // Attach to provider last
         if (this.provider) {
@@ -259,7 +265,7 @@ export class PanelModel extends HoistModel {
                     if (resizable) state.size = this.size;
                     return state;
                 },
-                run: (state) => this.provider.write(state)
+                run: state => this.provider.write(state)
             });
         }
     }
@@ -269,7 +275,7 @@ export class PanelModel extends HoistModel {
     //----------------------
     @action
     setCollapsed(collapsed: boolean) {
-        throwIf(collapsed  && !this.collapsible, 'Panel does not support collapsing.');
+        throwIf(collapsed && !this.collapsible, 'Panel does not support collapsing.');
 
         // When opening we never want to shrink -- in that degenerate case restore default size.
         // Can happen when no min height and title bar, and user has sized panel to be very small.

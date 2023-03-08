@@ -7,13 +7,8 @@
 import {elementFactory} from '@xh/hoist/core';
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd';
 
-export {
-    DragDropContext,
-    Droppable,
-    Draggable
-};
+export {DragDropContext, Droppable, Draggable};
 
-export const
-    dragDropContext = elementFactory(DragDropContext),
+export const dragDropContext = elementFactory(DragDropContext),
     droppable = elementFactory(Droppable),
     draggable = elementFactory(Draggable);

@@ -13,7 +13,6 @@ import {forOwn} from 'lodash';
  * a dedicated admin-only endpoint.
  */
 export class ServerEnvModel extends HoistModel {
-
     @managed gridModel: GridModel;
 
     constructor() {

@@ -16,12 +16,7 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber, round} from 'lodash';
 import {ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
 
-export interface NumberInputProps extends
-    HoistProps,
-    LayoutProps,
-    StyleProps,
-    HoistInputProps
-{
+export interface NumberInputProps extends HoistProps, LayoutProps, StyleProps, HoistInputProps {
     value?: number;
 
     /** True to focus the control on render. */
@@ -208,7 +203,13 @@ class NumberInputModel extends HoistInputModel {
 
         const {valueLabel, displayWithCommas} = componentProps,
             zeroPad = withDefault(componentProps.zeroPad, false),
-            formattedVal = fmtNumber(value, {precision, zeroPad, label: valueLabel, labelCls: null, asHtml: true}) as string;
+            formattedVal = fmtNumber(value, {
+                precision,
+                zeroPad,
+                label: valueLabel,
+                labelCls: null,
+                asHtml: true
+            }) as string;
 
         return displayWithCommas ? formattedVal : formattedVal.replace(/,/g, '');
     }
@@ -226,60 +227,58 @@ class NumberInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<NumberInputModel>(
-    ({model, className, ...props}, ref) => {
-        const {width, flex, ...layoutProps} = getLayoutProps(props),
-            renderValue = model.formatRenderValue(model.renderValue);
+const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, ref) => {
+    const {width, flex, ...layoutProps} = getLayoutProps(props),
+        renderValue = model.formatRenderValue(model.renderValue);
 
-        // BP workaround -- min, max, and stepsize can block Blueprint from rendering
-        // intended value in underlying control -- ensure it is always shown.
-        useLayoutEffect(() => {
-            const input = model.inputEl;
-            if (input) input.value = renderValue;
-        });
+    // BP workaround -- min, max, and stepsize can block Blueprint from rendering
+    // intended value in underlying control -- ensure it is always shown.
+    useLayoutEffect(() => {
+        const input = model.inputEl;
+        if (input) input.value = renderValue;
+    });
 
-        // BP bases expected precision off of dps in minorStepSize, if specified.
-        // The default BP value of 0.1 for this prop emits a console warning any time the input
-        // value extends beyond 1 dp. Re-default here to sync with our `precision` prop.
-        // See https://blueprintjs.com/docs/#core/components/numeric-input.numeric-precision
-        const {precision} = model,
-            majorStepSize = props.majorStepSize,
-            minorStepSize = precision ?
-                withDefault(props.minorStepSize, round(Math.pow(10, -precision), precision)) :
-                null;
+    // BP bases expected precision off of dps in minorStepSize, if specified.
+    // The default BP value of 0.1 for this prop emits a console warning any time the input
+    // value extends beyond 1 dp. Re-default here to sync with our `precision` prop.
+    // See https://blueprintjs.com/docs/#core/components/numeric-input.numeric-precision
+    const {precision} = model,
+        majorStepSize = props.majorStepSize,
+        minorStepSize = precision
+            ? withDefault(props.minorStepSize, round(Math.pow(10, -precision), precision))
+            : null;
 
-        // Render BP input.
-        return numericInput({
-            value: renderValue,
-            allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
-            buttonPosition: 'none',
-            disabled: props.disabled,
-            inputRef: composeRefs(model.inputRef, props.inputRef),
-            leftIcon: props.leftIcon,
-            min: props.min,
-            max: props.max,
-            minorStepSize,
-            majorStepSize,
-            placeholder: props.placeholder,
-            rightElement: props.rightElement,
-            stepSize: props.stepSize,
-            tabIndex: props.tabIndex,
-            autoFocus: props.autoFocus,
+    // Render BP input.
+    return numericInput({
+        value: renderValue,
+        allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
+        buttonPosition: 'none',
+        disabled: props.disabled,
+        inputRef: composeRefs(model.inputRef, props.inputRef),
+        leftIcon: props.leftIcon,
+        min: props.min,
+        max: props.max,
+        minorStepSize,
+        majorStepSize,
+        placeholder: props.placeholder,
+        rightElement: props.rightElement,
+        stepSize: props.stepSize,
+        tabIndex: props.tabIndex,
+        autoFocus: props.autoFocus,
 
-            id: props.id,
-            className,
-            style: {
-                ...props.style,
-                ...layoutProps,
-                width: withDefault(width, 200),
-                flex: withDefault(flex, null),
-                textAlign: withDefault(props.textAlign, 'right')
-            },
-            onBlur: model.onBlur,
-            onFocus: model.onFocus,
-            onKeyDown: model.onKeyDown,
-            onValueChange: model.onValueChange,
-            ref
-        });
-    }
-);
+        id: props.id,
+        className,
+        style: {
+            ...props.style,
+            ...layoutProps,
+            width: withDefault(width, 200),
+            flex: withDefault(flex, null),
+            textAlign: withDefault(props.textAlign, 'right')
+        },
+        onBlur: model.onBlur,
+        onFocus: model.onFocus,
+        onKeyDown: model.onKeyDown,
+        onValueChange: model.onValueChange,
+        ref
+    });
+});

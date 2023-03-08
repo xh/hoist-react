@@ -8,7 +8,13 @@ import {form, FormModel} from '@xh/hoist/cmp/form';
 import {GridFilterModel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses} from '@xh/hoist/core';
-import {CompoundFilter, FieldFilter, parseFilter, required, withFilterByTypes} from '@xh/hoist/data';
+import {
+    CompoundFilter,
+    FieldFilter,
+    parseFilter,
+    required,
+    withFilterByTypes
+} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
@@ -49,44 +55,40 @@ export const gridFilterDialog = hoistCmp.factory({
     }
 });
 
-const filterForm = hoistCmp.factory(
-    ({impl}) => {
-        return form({
-            model: impl.formModel,
-            fieldDefaults: {label: null, minimal: true},
-            item: formField({
-                field: 'filter',
-                item: jsonInput()
-            })
-        });
-    }
-);
+const filterForm = hoistCmp.factory(({impl}) => {
+    return form({
+        model: impl.formModel,
+        fieldDefaults: {label: null, minimal: true},
+        item: formField({
+            field: 'filter',
+            item: jsonInput()
+        })
+    });
+});
 
-const bbar = hoistCmp.factory(
-    ({impl}) => {
-        const {isValid, isDirty} = impl.formModel;
-        return toolbar(
-            button({
-                icon: Icon.delete(),
-                intent: 'danger',
-                text: 'Clear Filter',
-                onClick: () => impl.clear()
-            }),
-            filler(),
-            button({
-                text: 'Save',
-                icon: Icon.check(),
-                intent: 'success',
-                disabled: !isValid || !isDirty,
-                onClick: () => impl.saveAsync()
-            }),
-            button({
-                text: 'Cancel',
-                onClick: () => impl.close()
-            })
-        );
-    }
-);
+const bbar = hoistCmp.factory(({impl}) => {
+    const {isValid, isDirty} = impl.formModel;
+    return toolbar(
+        button({
+            icon: Icon.delete(),
+            intent: 'danger',
+            text: 'Clear Filter',
+            onClick: () => impl.clear()
+        }),
+        filler(),
+        button({
+            text: 'Save',
+            icon: Icon.check(),
+            intent: 'success',
+            disabled: !isValid || !isDirty,
+            onClick: () => impl.saveAsync()
+        }),
+        button({
+            text: 'Cancel',
+            onClick: () => impl.close()
+        })
+    );
+});
 
 class GridFilterDialogLocalModel extends HoistModel {
     override xhImpl = true;
@@ -121,7 +123,7 @@ class GridFilterDialogLocalModel extends HoistModel {
     override onLinked() {
         this.addReaction({
             track: () => this.model.dialogOpen,
-            run: (open) => {
+            run: open => {
                 if (open) this.loadForm();
             }
         });
@@ -149,7 +151,9 @@ class GridFilterDialogLocalModel extends HoistModel {
     }
 
     loadForm() {
-        const filter = withFilterByTypes(this.model.filter, null, 'FunctionFilter') as CompoundFilter|FieldFilter;
+        const filter = withFilterByTypes(this.model.filter, null, 'FunctionFilter') as
+            | CompoundFilter
+            | FieldFilter;
         this.formModel.init({
             filter: JSON.stringify(filter?.toJSON() ?? null, undefined, 2)
         });

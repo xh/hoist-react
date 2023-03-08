@@ -86,12 +86,11 @@ function renderBoolean(fieldModel) {
     const {isRequired, value, initialValue} = fieldModel,
         useSwitch = isRequired && value != null && initialValue != null;
 
-    return useSwitch ?
-        switchInput() :
-        select({
-            options: [true, false],
-            enableClear: !isRequired,
-            enableCreate: false
-        });
+    return useSwitch
+        ? switchInput()
+        : select({
+              options: [true, false],
+              enableClear: !isRequired,
+              enableCreate: false
+          });
 }
-

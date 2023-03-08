@@ -37,13 +37,7 @@ export const [Mask, mask] = hoistCmp.withFactory<MaskProps>({
     displayName: 'Mask',
     className: 'xh-mask',
 
-    render({
-        isDisplayed,
-        message,
-        spinner = false,
-        onClick,
-        className
-    }, ref) {
+    render({isDisplayed, message, spinner = false, onClick, className}, ref) {
         const impl = useLocalModel(LocalMaskModel);
 
         isDisplayed = isDisplayed ?? impl.task?.isPending;
@@ -72,9 +66,10 @@ class LocalMaskModel extends HoistModel {
     override onLinked() {
         const {bind} = this.componentProps;
         if (bind) {
-            this.task = bind instanceof TaskObserver ?
-                bind :
-                this.markManaged(TaskObserver.trackAll({tasks: bind}));
+            this.task =
+                bind instanceof TaskObserver
+                    ? bind
+                    : this.markManaged(TaskObserver.trackAll({tasks: bind}));
         }
     }
 }

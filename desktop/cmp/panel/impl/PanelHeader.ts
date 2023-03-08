@@ -44,13 +44,13 @@ export const panelHeader = hoistCmp.factory({
                 className: classNames(className, compactCls),
                 items: [
                     icon || null,
-                    title ?
-                        box({
-                            className: titleCls,
-                            flex: 1,
-                            item: title
-                        }) :
-                        filler(),
+                    title
+                        ? box({
+                              className: titleCls,
+                              flex: 1,
+                              item: title
+                          })
+                        : filler(),
                     hbox({
                         className: 'xh-panel-header__items',
                         items: [
@@ -58,7 +58,7 @@ export const panelHeader = hoistCmp.factory({
                             modalButton({panelModel}),
                             collapseButton({panelModel})
                         ],
-                        onDoubleClick: (e) => e.stopPropagation()
+                        onDoubleClick: e => e.stopPropagation()
                     })
                 ],
                 onDoubleClick
@@ -73,12 +73,12 @@ export const panelHeader = hoistCmp.factory({
             items: [
                 isLeft ? filler() : collapseButton({panelModel}),
                 icon || null,
-                title ?
-                    box({
-                        className: titleCls,
-                        item: title
-                    }) :
-                    null,
+                title
+                    ? box({
+                          className: titleCls,
+                          item: title
+                      })
+                    : null,
                 !isLeft ? filler() : collapseButton({panelModel})
             ],
             onDoubleClick
@@ -86,28 +86,24 @@ export const panelHeader = hoistCmp.factory({
     }
 });
 
-const collapseButton = hoistCmp.factory(
-    ({panelModel}) => {
-        const {showHeaderCollapseButton, collapsible, isModal} = panelModel as PanelModel;
-        if (!showHeaderCollapseButton || !collapsible || isModal) return null;
+const collapseButton = hoistCmp.factory(({panelModel}) => {
+    const {showHeaderCollapseButton, collapsible, isModal} = panelModel as PanelModel;
+    if (!showHeaderCollapseButton || !collapsible || isModal) return null;
 
-        const {vertical, collapsed, contentFirst} = panelModel,
-            directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],
-            idx = (contentFirst !== collapsed ? 0 : 1),
-            chevron = directions[idx];
+    const {vertical, collapsed, contentFirst} = panelModel,
+        directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],
+        idx = contentFirst !== collapsed ? 0 : 1,
+        chevron = directions[idx];
 
-        return button({
-            icon: Icon[chevron](),
-            onClick: () => panelModel.toggleCollapsed(),
-            minimal: true
-        });
-    }
-);
+    return button({
+        icon: Icon[chevron](),
+        onClick: () => panelModel.toggleCollapsed(),
+        minimal: true
+    });
+});
 
-const modalButton = hoistCmp.factory(
-    ({panelModel}) => {
-        const {showModalToggleButton, hasModalSupport} = panelModel as PanelModel;
-        if (!showModalToggleButton || !hasModalSupport) return null;
-        return modalToggleButton();
-    }
-);
+const modalButton = hoistCmp.factory(({panelModel}) => {
+    const {showModalToggleButton, hasModalSupport} = panelModel as PanelModel;
+    if (!showModalToggleButton || !hasModalSupport) return null;
+    return modalToggleButton();
+});

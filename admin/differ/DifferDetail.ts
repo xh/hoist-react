@@ -31,63 +31,53 @@ export const differDetail = hoistCmp.factory({
             onClose: () => model.close(),
             item: panel({
                 item: diffTable(),
-                bbar: AppModel.readonly ? [] : [
-                    filler(),
-                    button({
-                        text: 'Cancel',
-                        onClick: () => model.close()
-                    }),
-                    button({
-                        text: 'Accept Remote',
-                        icon: Icon.cloudDownload(),
-                        intent: 'primary',
-                        minimal: false,
-                        onClick: () => model.confirmApplyRemote()
-                    })
-                ]
+                bbar: AppModel.readonly
+                    ? []
+                    : [
+                          filler(),
+                          button({
+                              text: 'Cancel',
+                              onClick: () => model.close()
+                          }),
+                          button({
+                              text: 'Accept Remote',
+                              icon: Icon.cloudDownload(),
+                              intent: 'primary',
+                              minimal: false,
+                              onClick: () => model.confirmApplyRemote()
+                          })
+                      ]
             })
         });
     }
 });
 
-const diffTable = hoistCmp.factory<DifferDetailModel>(
-    ({model}) => {
-        const {data} = model.record,
-            local = data.localValue,
-            remote = data.remoteValue,
-            fields = filter(keys(local || remote), key => !startsWith(key, 'lastUpdated')),
-            localLastUpdatedBy = local?.lastUpdatedBy,
-            remoteLastUpdatedBy = remote?.lastUpdatedBy,
-            localLastUpdated = fmtDateTime(local?.lastUpdated),
-            remoteLastUpdated = fmtDateTime(remote?.lastUpdated);
+const diffTable = hoistCmp.factory<DifferDetailModel>(({model}) => {
+    const {data} = model.record,
+        local = data.localValue,
+        remote = data.remoteValue,
+        fields = filter(keys(local || remote), key => !startsWith(key, 'lastUpdated')),
+        localLastUpdatedBy = local?.lastUpdatedBy,
+        remoteLastUpdatedBy = remote?.lastUpdatedBy,
+        localLastUpdated = fmtDateTime(local?.lastUpdated),
+        remoteLastUpdated = fmtDateTime(remote?.lastUpdated);
 
-        const rows = fields.map(field => {
-            const cls = model.createDiffClass(field, local, remote),
-                localCell = local ? toString(local[field]) : '',
-                remoteCell = remote ? {className: cls, item: toString(remote[field])} : null;
-            return tr(td(field), td(localCell), td(remoteCell));
-        });
+    const rows = fields.map(field => {
+        const cls = model.createDiffClass(field, local, remote),
+            localCell = local ? toString(local[field]) : '',
+            remoteCell = remote ? {className: cls, item: toString(remote[field])} : null;
+        return tr(td(field), td(localCell), td(remoteCell));
+    });
 
-        return table(
-            tbody(
-                tr(
-                    th(''),
-                    th('Local'),
-                    th('Remote')
-                ),
-                ...rows,
-                tr(
-                    td(''),
-                    td(
-                        div(strong(localLastUpdatedBy)),
-                        div(localLastUpdated)
-                    ),
-                    td(
-                        div(strong(remoteLastUpdatedBy)),
-                        div(remoteLastUpdated)
-                    )
-                )
+    return table(
+        tbody(
+            tr(th(''), th('Local'), th('Remote')),
+            ...rows,
+            tr(
+                td(''),
+                td(div(strong(localLastUpdatedBy)), div(localLastUpdated)),
+                td(div(strong(remoteLastUpdatedBy)), div(remoteLastUpdated))
             )
-        );
-    }
-);
+        )
+    );
+});

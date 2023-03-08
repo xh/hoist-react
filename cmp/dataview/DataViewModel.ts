@@ -36,15 +36,16 @@ import {isFunction, isNumber} from 'lodash';
  *  GridModel. Note this is for advanced usage - not all configs supported, and many will
  *  override DataView defaults in ways that will break this component.
  */
-export interface DataViewConfig extends GridConfig {  // TODO: Accept grid keys without publicizing them?
+export interface DataViewConfig extends GridConfig {
+    // TODO: Accept grid keys without publicizing them?
     /** A Store instance, or a config to create one. */
-    store?: Store|StoreConfig;
+    store?: Store | StoreConfig;
 
     /** Renderer to use for each data row. */
     renderer?: ColumnRenderer;
 
     /** Row height (in px) for each item displayed in the view, or a function which returns a number.*/
-    itemHeight?: number|ItemHeightFn;
+    itemHeight?: number | ItemHeightFn;
 
     /** Field(s) by which to do full-width row grouping. */
     groupBy?: Some<string>;
@@ -59,7 +60,7 @@ export interface DataViewConfig extends GridConfig {  // TODO: Accept grid keys 
     sortBy?: Some<GridSorterLike>;
 
     /** Specification of selection behavior. Defaults to 'single' (desktop) and 'disabled' (mobile) */
-    selModel?: StoreSelectionModel|StoreSelectionConfig|'single'|'multiple'|'disabled';
+    selModel?: StoreSelectionModel | StoreSelectionConfig | 'single' | 'multiple' | 'disabled';
 
     /** Text/HTML to display if view has no records.*/
     emptyText?: string;
@@ -105,14 +106,11 @@ export interface DataViewConfig extends GridConfig {  // TODO: Accept grid keys 
     onRowDoubleClicked?: (e: any) => void;
 }
 
-export type ItemHeightFn = (
-    params: {
-        record: StoreRecord,
-        dataViewModel: DataViewModel,
-        agParams: PlainObject
-    }
-) => number;
-
+export type ItemHeightFn = (params: {
+    record: StoreRecord;
+    dataViewModel: DataViewModel;
+    agParams: PlainObject;
+}) => number;
 
 /**
  * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
@@ -121,7 +119,6 @@ export type ItemHeightFn = (
  * This is the primary app entry-point for specifying DataView component options and behavior.
  */
 export class DataViewModel extends HoistModel {
-
     @managed gridModel: GridModel;
     @bindable.ref itemHeight: number | ItemHeightFn;
     @bindable groupRowHeight: number;
@@ -161,7 +158,7 @@ export class DataViewModel extends HoistModel {
         // We create a single visible 'synthetic' column in our DataView grid to hold our renderer
         // Also add hidden columns for all other fields to make sure grouping and sorting works!
         const columns: ColumnSpec[] = store.fields.map(field => {
-            const fieldName = field.name ?? field;   // A StoreField, or just a config for one
+            const fieldName = field.name ?? field; // A StoreField, or just a config for one
             return {field: fieldName, hidden: true};
         });
 
@@ -193,17 +190,38 @@ export class DataViewModel extends HoistModel {
     }
 
     // Getters and methods trampolined from GridModel.
-    get store()                 {return this.gridModel.store}
-    get empty()                 {return this.gridModel.empty}
-    get selModel()              {return this.gridModel.selModel}
-    get hasSelection()          {return this.gridModel.hasSelection}
-    get selectedRecords()       {return this.gridModel.selectedRecords}
-    get selectedRecord()        {return this.gridModel.selectedRecord}
-    get selectedId()            {return this.gridModel.selectedId}
-    get groupBy()               {return this.gridModel.groupBy}
-    get sortBy()                {return this.gridModel.sortBy}
+    get store() {
+        return this.gridModel.store;
+    }
+    get empty() {
+        return this.gridModel.empty;
+    }
+    get selModel() {
+        return this.gridModel.selModel;
+    }
+    get hasSelection() {
+        return this.gridModel.hasSelection;
+    }
+    get selectedRecords() {
+        return this.gridModel.selectedRecords;
+    }
+    get selectedRecord() {
+        return this.gridModel.selectedRecord;
+    }
+    get selectedId() {
+        return this.gridModel.selectedId;
+    }
+    get groupBy() {
+        return this.gridModel.groupBy;
+    }
+    get sortBy() {
+        return this.gridModel.sortBy;
+    }
 
-    selectAsync(records: Some<StoreRecordOrId>, opts: { ensureVisible?: boolean; clearSelection?: boolean; }) {
+    selectAsync(
+        records: Some<StoreRecordOrId>,
+        opts: {ensureVisible?: boolean; clearSelection?: boolean}
+    ) {
         return this.gridModel.selectAsync(records, opts);
     }
 

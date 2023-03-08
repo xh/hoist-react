@@ -95,8 +95,8 @@ class LocalMenuModel extends HoistModel {
                     ),
                     item: div({className: 'center', items: labelItems}),
                     omit: hidden,
-                    onTouchStart: () => this.pressedIdx = idx,
-                    onTouchEnd: () => this.pressedIdx = null,
+                    onTouchStart: () => (this.pressedIdx = idx),
+                    onTouchEnd: () => (this.pressedIdx = null),
                     onClick: () => {
                         this.pressedIdx = null;
                         if (actionFn) actionFn();

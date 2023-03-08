@@ -15,7 +15,6 @@ import {toolbarSeparator} from '@xh/hoist/desktop/cmp/toolbar';
 import {ServiceModel} from './ServiceModel';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 
-
 export const servicePanel = hoistCmp.factory({
     model: creates(ServiceModel),
 
@@ -48,7 +47,7 @@ export const servicePanel = hoistCmp.factory({
             item: grid({
                 agOptions: {
                     groupRowRendererParams: {
-                        innerRenderer: (params) => params.value + ' Services'
+                        innerRenderer: params => params.value + ' Services'
                     }
                 }
             })

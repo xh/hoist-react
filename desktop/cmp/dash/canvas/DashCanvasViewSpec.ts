@@ -14,12 +14,11 @@ import '@xh/hoist/desktop/register';
  * object configs via the `DashCanvasModel.viewSpecs` constructor config.
  */
 export interface DashCanvasViewSpec extends DashViewSpec {
-
     /** Initial height of view when added to canvas (default 5). */
     height?: number;
 
     /** Initial width of view when added to canvas (default 5). */
-    width?: number
+    width?: number;
 
     /** Maximum height of the view (default undefined). */
     maxHeight?: number;
@@ -28,10 +27,10 @@ export interface DashCanvasViewSpec extends DashViewSpec {
     minHeight?: number;
 
     /** Maximum width of the view (default undefined). */
-    maxWidth?: number
+    maxWidth?: number;
 
     /** Minimum width of the view (default undefined). */
-    minWidth?: number
+    minWidth?: number;
 
     /** True to hide the panel header (default false). */
     hidePanelHeader?: boolean;

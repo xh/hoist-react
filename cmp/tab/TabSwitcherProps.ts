@@ -2,7 +2,6 @@ import {BoxProps, HoistProps, Side} from '@xh/hoist/core';
 import {TabContainerModel} from './TabContainerModel';
 
 export interface TabSwitcherProps extends HoistProps<TabContainerModel>, BoxProps {
-
     /** Relative position within the parent TabContainer. Defaults to 'top'. */
     orientation?: Side;
 

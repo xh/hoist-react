@@ -29,24 +29,22 @@ export const monitorResultsPanel = hoistCmp.factory({
     }
 });
 
-const body = hoistCmp.factory<MonitorResultsModel>(
-    ({model}) => {
-        const {results, lastLoadException} = model;
+const body = hoistCmp.factory<MonitorResultsModel>(({model}) => {
+    const {results, lastLoadException} = model;
 
-        if (lastLoadException) {
-            return errorMessage({error: lastLoadException});
-        }
-
-        if (isEmpty(results)) {
-            return placeholder('No monitors configured for this application.');
-        }
-
-        return tileFrame({
-            spacing: 10,
-            desiredRatio: 3,
-            minTileWidth: 150,
-            minTileHeight: 150,
-            items: results.map(check => tile({check}))
-        });
+    if (lastLoadException) {
+        return errorMessage({error: lastLoadException});
     }
-);
+
+    if (isEmpty(results)) {
+        return placeholder('No monitors configured for this application.');
+    }
+
+    return tileFrame({
+        spacing: 10,
+        desiredRatio: 3,
+        minTileWidth: 150,
+        minTileHeight: 150,
+        items: results.map(check => tile({check}))
+    });
+});

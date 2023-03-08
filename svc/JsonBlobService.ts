@@ -10,7 +10,6 @@ import {XH, HoistService} from '@xh/hoist/core';
  * Service to read and set chunks of user-specific JSON persisted via Hoist Core's JSONBlob class.
  */
 export class JsonBlobService extends HoistService {
-
     static instance: JsonBlobService;
 
     async getAsync(token) {
@@ -26,9 +25,7 @@ export class JsonBlobService extends HoistService {
      * @param type - reference key for which type of data to list.
      * @param includeValue - true to include the full value string for each blob.
      */
-    async listAsync(
-        {type, includeValue}: { type: string, includeValue?: boolean }
-    ) {
+    async listAsync({type, includeValue}: {type: string; includeValue?: boolean}) {
         return XH.fetchJson({
             url: 'xh/listJsonBlobs',
             params: {type, includeValue}
@@ -36,9 +33,19 @@ export class JsonBlobService extends HoistService {
     }
 
     /** Persist a new JSONBlob back to the server. */
-    async createAsync(
-        {type, name, value, meta, description}: {type: string, name: string, description?: string, value: any, meta?: any}
-    ) {
+    async createAsync({
+        type,
+        name,
+        value,
+        meta,
+        description
+    }: {
+        type: string;
+        name: string;
+        description?: string;
+        value: any;
+        meta?: any;
+    }) {
         return XH.fetchJson({
             url: 'xh/createJsonBlob',
             params: {
@@ -50,7 +57,12 @@ export class JsonBlobService extends HoistService {
     /** Modify an existing JSONBlob, as identified by its unique token. */
     async updateAsync(
         token: string,
-        {name, value, meta, description}: {name?: string, value?: any, meta?: any, description?: string}
+        {
+            name,
+            value,
+            meta,
+            description
+        }: {name?: string; value?: any; meta?: any; description?: string}
     ) {
         return XH.fetchJson({
             url: 'xh/updateJsonBlob',
@@ -69,4 +81,3 @@ export class JsonBlobService extends HoistService {
         });
     }
 }
-

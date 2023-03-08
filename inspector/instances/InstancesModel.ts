@@ -41,16 +41,26 @@ export class InstancesModel extends HoistModel {
     @bindable @persist propertiesStoreFilter;
 
     @bindable @persist instQuickFilters = ['showInGroups'];
-    get showInGroups() {return this.instQuickFilters?.includes('showInGroups')}
-    get showXhImpl() {return this.instQuickFilters?.includes('showXhImpl')}
+    get showInGroups() {
+        return this.instQuickFilters?.includes('showInGroups');
+    }
+    get showXhImpl() {
+        return this.instQuickFilters?.includes('showXhImpl');
+    }
 
     @bindable @persist propQuickFilters = [];
-    get showUnderscoreProps() {return this.propQuickFilters?.includes('showUnderscoreProps')}
-    get observablePropsOnly() {return this.propQuickFilters?.includes('observablePropsOnly')}
-    get ownPropsOnly() {return this.propQuickFilters?.includes('ownPropsOnly')}
+    get showUnderscoreProps() {
+        return this.propQuickFilters?.includes('showUnderscoreProps');
+    }
+    get observablePropsOnly() {
+        return this.propQuickFilters?.includes('observablePropsOnly');
+    }
+    get ownPropsOnly() {
+        return this.propQuickFilters?.includes('ownPropsOnly');
+    }
 
     get selectedInstances(): HoistBase[] {
-        return this.instancesGridModel.selectedIds.map((it:string) => this.getInstance(it));
+        return this.instancesGridModel.selectedIds.map((it: string) => this.getInstance(it));
     }
 
     constructor() {
@@ -69,13 +79,18 @@ export class InstancesModel extends HoistModel {
         this.addReaction(
             {
                 track: () => this.instancesGridModel.selectedIds,
-                run: (ids) => {this.propertiesGridModel.emptyText = ids.length ? 'No matching properties found.' : 'Select an instance to view properties.'},
+                run: ids => {
+                    this.propertiesGridModel.emptyText = ids.length
+                        ? 'No matching properties found.'
+                        : 'Select an instance to view properties.';
+                },
                 delay: 300,
                 fireImmediately: true
             },
             {
                 track: () => this.showInGroups,
-                run: (showInGroups) => this.instancesGridModel.setGroupBy(showInGroups ? 'displayGroup' : null)
+                run: showInGroups =>
+                    this.instancesGridModel.setGroupBy(showInGroups ? 'displayGroup' : null)
             }
         );
 
@@ -141,18 +156,19 @@ export class InstancesModel extends HoistModel {
             {propsWatchlist} = this,
             currItem = this.getWatchlistItem(instanceXhId, property);
 
-        this.propsWatchlist = currItem ?
-            without(propsWatchlist, currItem) :
-            [...propsWatchlist, {instanceXhId, property, isGetter}];
+        this.propsWatchlist = currItem
+            ? without(propsWatchlist, currItem)
+            : [...propsWatchlist, {instanceXhId, property, isGetter}];
     }
 
     getInstance(xhId: string): HoistBase {
         if (!xhId) return null;
-        return head(XH.getActiveModels(it => it.xhId === xhId)) ??
+        return (
+            head(XH.getActiveModels(it => it.xhId === xhId)) ??
             XH.getServices().find(it => it.xhId === xhId) ??
-            XH.getStores().find(it => it.xhId === xhId);
+            XH.getStores().find(it => it.xhId === xhId)
+        );
     }
-
 
     //------------------
     // Implementation
@@ -195,7 +211,8 @@ export class InstancesModel extends HoistModel {
                         {
                             icon: Icon.refresh({intent: 'success'}),
                             tooltip: 'Call loadAsync()',
-                            actionFn: ({record}) => (this.getInstance(record.id) as any)?.loadAsync(),
+                            actionFn: ({record}) =>
+                                (this.getInstance(record.id) as any)?.loadAsync(),
                             displayFn: ({record}) => ({hidden: !record.data.hasLoadSupport})
                         }
                     ]
@@ -208,8 +225,8 @@ export class InstancesModel extends HoistModel {
                     headerTooltip: 'Linked model',
                     ...boolCheckCol,
                     width: 40,
-                    tooltip: v => v ? 'Linked model' : '',
-                    renderer: (v) => v ? Icon.link() : null
+                    tooltip: v => (v ? 'Linked model' : ''),
+                    renderer: v => (v ? Icon.link() : null)
                 },
                 {field: 'displayGroup', hidden: true},
                 {field: 'className', flex: 1, minWidth: 150},
@@ -223,7 +240,7 @@ export class InstancesModel extends HoistModel {
                 },
                 {field: 'created', align: 'right', renderer: timestampRenderer}
             ],
-            rowClassFn: (rec) => {
+            rowClassFn: rec => {
                 return rec?.data.isXhImpl ? 'xh-impl-row' : null;
             },
             onRowDoubleClicked: ({data: rec}) => this.logInstanceToConsole(rec),
@@ -278,9 +295,9 @@ export class InstancesModel extends HoistModel {
                             tooltip: 'Toggle Watchlist',
                             actionFn: ({record}) => this.togglePropsWatchlistItem(record),
                             displayFn: ({record}) => ({
-                                icon: record.data.isWatchlistItem ?
-                                    Icon.favorite({intent: 'warning', prefix: 'fas'}) :
-                                    Icon.favorite({className: 'xh-text-color-muted'})
+                                icon: record.data.isWatchlistItem
+                                    ? Icon.favorite({intent: 'warning', prefix: 'fas'})
+                                    : Icon.favorite({className: 'xh-text-color-muted'})
                             })
                         }
                     ]
@@ -289,16 +306,19 @@ export class InstancesModel extends HoistModel {
                     field: 'displayProperty',
                     width: 200,
                     renderer: (v, {record}) => {
-                        return record.data.displayGroup === 'Watchlist' ?
-                            a({item: v, onClick: () => this.selectInstanceAsync(record.data.instanceXhId)}) :
-                            v;
+                        return record.data.displayGroup === 'Watchlist'
+                            ? a({
+                                  item: v,
+                                  onClick: () => this.selectInstanceAsync(record.data.instanceXhId)
+                              })
+                            : v;
                     }
                 },
                 {
                     field: 'isObservable',
                     headerName: Icon.eye(),
                     ...iconCol,
-                    renderer: v => v ? Icon.eye({title: 'Observable'}) : ''
+                    renderer: v => (v ? Icon.eye({title: 'Observable'}) : '')
                 },
                 {field: 'valueType', width: 130},
                 {
@@ -340,7 +360,11 @@ export class InstancesModel extends HoistModel {
                     if (!showXhImpl && inst.isXhImpl) return;
                     if (selectedSyncRun && inst.syncRun !== selectedSyncRun) return;
 
-                    const displayGroup = inst.isHoistService ? 'Services' : inst.isStore ? 'Stores' : 'Models';
+                    const displayGroup = inst.isHoistService
+                        ? 'Services'
+                        : inst.isStore
+                        ? 'Stores'
+                        : 'Models';
                     data.push({...inst, displayGroup});
                 });
 
@@ -364,11 +388,13 @@ export class InstancesModel extends HoistModel {
                         // that renders as a confusing link to the superclass as if it were a
                         // distinct instance (which, you know, it kinda is but let's not go there).
                         if (property !== '__proto__' && (descriptor.enumerable || descriptor.get)) {
-                            data.push(this.getRecData({
-                                instance,
-                                property,
-                                isGetter: !!descriptor.get
-                            }));
+                            data.push(
+                                this.getRecData({
+                                    instance,
+                                    property,
+                                    isGetter: !!descriptor.get
+                                })
+                            );
                         }
                     });
                 });
@@ -377,12 +403,14 @@ export class InstancesModel extends HoistModel {
                 propsWatchlist.forEach(it => {
                     const wlInstance = this.getInstance(it.instanceXhId);
                     if (wlInstance) {
-                        data.push(this.getRecData({
-                            instance: wlInstance,
-                            property: it.property,
-                            fromWatchlistItem: true,
-                            isGetter: it.isGetter
-                        }));
+                        data.push(
+                            this.getRecData({
+                                instance: wlInstance,
+                                property: it.property,
+                                fromWatchlistItem: true,
+                                isGetter: it.isGetter
+                            })
+                        );
                     }
                 });
 
@@ -412,22 +440,26 @@ export class InstancesModel extends HoistModel {
             (ownPropsOnly && !isOwnProperty) ||
             (observablePropsOnly && !isObservable) ||
             (!showUnderscoreProps && property.startsWith('_'))
-        ) return null;
+        )
+            return null;
 
         const {xhId} = instance,
             ctorName = instance.constructor.name,
             instanceDisplayName = `${ctorName} [${xhId}]`,
             isLoadedGetter = isGetter && this.shouldLoadGetter(xhId, property),
-            v = (!isGetter || isLoadedGetter) ? instance[property] : null,
+            v = !isGetter || isLoadedGetter ? instance[property] : null,
             // Detect FormModel.values Proxy object - throws otherwise on attempt to render in grid.
             isProxy = !!v?._xhIsProxy,
             isHoistModel = v?.isHoistModel,
             isHoistService = v?.isHoistService,
             isStore = v?.isStore;
 
-        const valueType = (isGetter && !isLoadedGetter) ?
-            'get(?)' :
-            isProxy ? 'Proxy' : (v?.constructor?.name ?? typeof v);
+        const valueType =
+            isGetter && !isLoadedGetter
+                ? 'get(?)'
+                : isProxy
+                ? 'Proxy'
+                : v?.constructor?.name ?? typeof v;
 
         return {
             id: `${xhId}-${property}${fromWatchlistItem ? '-wl' : ''}`,
@@ -437,7 +469,12 @@ export class InstancesModel extends HoistModel {
             // Watchlist items are shown under a single group - differentiate by prepending instDisplayName
             displayProperty: fromWatchlistItem ? `${instanceDisplayName}.${property}` : property,
             displayGroup: fromWatchlistItem ? 'Watchlist' : instanceDisplayName,
-            value: (isHoistModel || isHoistService || isStore) ? v.xhId : isProxy ? '[cannot render]' : v,
+            value:
+                isHoistModel || isHoistService || isStore
+                    ? v.xhId
+                    : isProxy
+                    ? '[cannot render]'
+                    : v,
             valueType,
             isOwnProperty,
             isObservable,
@@ -477,12 +514,10 @@ export class InstancesModel extends HoistModel {
 
 const timestampRenderer = v => fmtDate(v, {fmt: 'HH:mm:ss.SSS'});
 
-const propsGridGroupRenderer = hoistCmp.factory<InstancesModel>(
-    ({value, node, model}) => {
-        if (model.selectedInstances.length === 1 || value === 'Watchlist') return value;
+const propsGridGroupRenderer = hoistCmp.factory<InstancesModel>(({value, node, model}) => {
+    if (model.selectedInstances.length === 1 || value === 'Watchlist') return value;
 
-        const firstRecData = node.allLeafChildren[0]?.data.data ?? {},
-            {instanceXhId, instanceDisplayName} = firstRecData;
-        return a({item: instanceDisplayName, onClick: () => model.selectInstanceAsync(instanceXhId)});
-    }
-);
+    const firstRecData = node.allLeafChildren[0]?.data.data ?? {},
+        {instanceXhId, instanceDisplayName} = firstRecData;
+    return a({item: instanceDisplayName, onClick: () => model.selectInstanceAsync(instanceXhId)});
+});

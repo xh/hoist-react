@@ -44,9 +44,7 @@ export class OptionsDialogModel extends HoistModel {
     // Setting options
     //-------------------
     setOptions(options: AppOptionSpec[]) {
-        this.options = options
-            .filter(o => !isOmitted(o))
-            .map(o => new AppOption(o));
+        this.options = options.filter(o => !isOmitted(o)).map(o => new AppOption(o));
         const fields = this.options.map(o => assign({name: o.name}, o.fieldModel));
         this.formModel = new FormModel({fields, xhImpl: true});
     }
@@ -58,7 +56,10 @@ export class OptionsDialogModel extends HoistModel {
     @computed
     get reloadRequired(): boolean {
         const {formModel} = this;
-        return formModel && this.options.some(o => formModel.fields[o.name].isDirty && o.reloadRequired);
+        return (
+            formModel &&
+            this.options.some(o => formModel.fields[o.name].isDirty && o.reloadRequired)
+        );
     }
 
     //-------------------
@@ -75,7 +76,6 @@ export class OptionsDialogModel extends HoistModel {
         this.isOpen = false;
     }
 
-
     @action
     toggleVisibility() {
         if (this.isOpen) {
@@ -91,7 +91,6 @@ export class OptionsDialogModel extends HoistModel {
             return option.getValueAsync().then(v => formModel.fields[option.name].init(v));
         });
         await Promise.allSettled(promises).linkTo(this.loadTask);
-
     }
 
     async saveAsync(): Promise<void> {

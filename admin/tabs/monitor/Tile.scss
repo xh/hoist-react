@@ -14,15 +14,25 @@
     border-color: white;
   }
 
-  &-ok { background-color: var(--xh-intent-success-darker); }
+  &-ok {
+    background-color: var(--xh-intent-success-darker);
+  }
 
-  &-warn { background-color: var(--xh-intent-warning-darker); }
+  &-warn {
+    background-color: var(--xh-intent-warning-darker);
+  }
 
-  &-fail { background-color: var(--xh-intent-danger-darker); }
+  &-fail {
+    background-color: var(--xh-intent-danger-darker);
+  }
 
-  &-inactive { background-color: var(--xh-gray-dark); }
+  &-inactive {
+    background-color: var(--xh-gray-dark);
+  }
 
-  &-unknown { background-color: var(--xh-gray-dark); }
+  &-unknown {
+    background-color: var(--xh-gray-dark);
+  }
 
   &__name {
     padding: var(--xh-pad-px);
@@ -59,8 +69,8 @@
     @media only screen and (max-width: 700px) {
       width: calc(100% - 115px);
     }
-  &::-webkit-scrollbar {
-    max-width: 4px
-  }
+    &::-webkit-scrollbar {
+      max-width: 4px;
+    }
   }
 }

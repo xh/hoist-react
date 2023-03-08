@@ -6,7 +6,16 @@
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
-import {hoistCmp, HoistModel, useLocalModel, uses, lookup, PlainObject, HoistProps, BoxProps} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistModel,
+    useLocalModel,
+    uses,
+    lookup,
+    PlainObject,
+    HoistProps,
+    BoxProps
+} from '@xh/hoist/core';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {isFunction} from 'lodash';
 
@@ -55,7 +64,7 @@ class DataViewLocalModel extends HoistModel {
         this.agOptions = {
             headerHeight: 0,
             suppressMakeColumnVisibleAfterUnGroup: true,
-            getRowHeight: (agParams) => {
+            getRowHeight: agParams => {
                 const {groupRowHeight, itemHeight} = model;
 
                 // For group rows, return groupRowHeight if specified, or use standard height

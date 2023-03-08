@@ -15,7 +15,6 @@ import {BaseFieldModel, BaseFieldConfig} from './BaseFieldModel';
 import {FormConfig} from '../FormModel';
 
 export interface SubformsFieldConfig extends BaseFieldConfig {
-
     /** Config for FormModel representing a subform. */
     subforms: FormConfig;
 
@@ -25,7 +24,6 @@ export interface SubformsFieldConfig extends BaseFieldConfig {
      */
     initialValue?: any[];
 }
-
 
 /**
  * A data field in a form whose value is a collection of FormModels (subforms).
@@ -42,14 +40,13 @@ export interface SubformsFieldConfig extends BaseFieldConfig {
  * validation state.
  */
 export class SubformsFieldModel extends BaseFieldModel {
-
     // (Sub)FormModels created by this model, tracked to support cleanup.
     @managed
     private createdModels: FormModel[] = [];
     private formConfig: FormConfig = null;
     private origInitialValues: any[];
 
-    constructor({subforms, initialValue = [],  ...rest}: SubformsFieldConfig) {
+    constructor({subforms, initialValue = [], ...rest}: SubformsFieldConfig) {
         super(rest);
         makeObservable(this);
         this.formConfig = subforms;
@@ -60,7 +57,9 @@ export class SubformsFieldModel extends BaseFieldModel {
     //-----------------------------
     // Overrides
     //-----------------------------
-    override get hasFocus(): boolean {return false}
+    override get hasFocus(): boolean {
+        return false;
+    }
     override focus() {}
     override blur() {}
 
@@ -87,12 +86,12 @@ export class SubformsFieldModel extends BaseFieldModel {
     }
 
     override get formModel(): FormModel {
-        return super.formModel;  // Need to define setter/getter pair together - see below.
+        return super.formModel; // Need to define setter/getter pair together - see below.
     }
 
     override set formModel(formModel: FormModel) {
         super.formModel = formModel;
-        this.value.forEach(s => s.parent = formModel);
+        this.value.forEach(s => (s.parent = formModel));
 
         this.addAutorun(() => {
             const {disabled, readonly, value} = this;
@@ -134,7 +133,10 @@ export class SubformsFieldModel extends BaseFieldModel {
         const {value, initialValue} = this;
         return (
             value.some(s => s.isDirty) ||
-            !isEqual(initialValue.map(s => s.getData()), value.map(s => s.getData()))
+            !isEqual(
+                initialValue.map(s => s.getData()),
+                value.map(s => s.getData())
+            )
         );
     }
 
@@ -166,7 +168,7 @@ export class SubformsFieldModel extends BaseFieldModel {
      * @param index - index in collection where subform should be inserted.
      */
     @action
-    add(opts: {initialValues?: PlainObject, index?: number} = {}) {
+    add(opts: {initialValues?: PlainObject; index?: number} = {}) {
         const {initialValues = {}, index = this.value.length} = opts,
             newSubforms = this.parseValue([initialValues]),
             newValue = clone(this.value);
@@ -202,7 +204,10 @@ export class SubformsFieldModel extends BaseFieldModel {
     private cleanupModels() {
         // destroy any models we know we are finished with early..
         const {createdModels, initialValue, value} = this,
-            [keep, destroy] = partition(createdModels, m => initialValue.includes(m) || value.includes(m));
+            [keep, destroy] = partition(
+                createdModels,
+                m => initialValue.includes(m) || value.includes(m)
+            );
         this.createdModels = keep;
         XH.safeDestroy(destroy);
     }

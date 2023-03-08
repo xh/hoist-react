@@ -7,12 +7,7 @@
 import {XH, HoistModel, managed, LoadSpec} from '@xh/hoist/core';
 import {makeObservable, observable, action} from '@xh/hoist/mobx';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
-import {
-    addAction,
-    deleteAction,
-    editAction,
-    RestGridModel
-} from '@xh/hoist/desktop/cmp/rest';
+import {addAction, deleteAction, editAction, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
 
 import {DifferModel} from '../../differ/DifferModel';
@@ -21,7 +16,6 @@ import {AppModel} from '@xh/hoist/admin/AppModel';
 import {FieldSpec} from '@xh/hoist/data';
 
 export class PreferenceModel extends HoistModel {
-
     override persistWith = {localStorageKey: 'xhAdminPreferenceState'};
 
     @managed
@@ -53,14 +47,24 @@ export class PreferenceModel extends HoistModel {
                 reloadLookupsOnLoad: true,
                 fieldDefaults: {disableXssProtection: true},
                 fields: [
-                    {...Col.name.field as FieldSpec, required},
-                    {...Col.groupName.field as FieldSpec, lookupName: 'groupNames', required, enableCreate},
-                    {...Col.type.field as FieldSpec, lookupName: 'types', editable: 'onAdd', required},
-                    {...Col.defaultValue.field as FieldSpec, typeField: 'type', required},
+                    {...(Col.name.field as FieldSpec), required},
+                    {
+                        ...(Col.groupName.field as FieldSpec),
+                        lookupName: 'groupNames',
+                        required,
+                        enableCreate
+                    },
+                    {
+                        ...(Col.type.field as FieldSpec),
+                        lookupName: 'types',
+                        editable: 'onAdd',
+                        required
+                    },
+                    {...(Col.defaultValue.field as FieldSpec), typeField: 'type', required},
                     Col.notes.field,
-                    {...Col.local.field as FieldSpec, defaultValue: false, required},
-                    {...Col.lastUpdated.field as FieldSpec, editable: false},
-                    {...Col.lastUpdatedBy.field as FieldSpec, editable: false}
+                    {...(Col.local.field as FieldSpec), defaultValue: false, required},
+                    {...(Col.lastUpdated.field as FieldSpec), editable: false},
+                    {...(Col.lastUpdatedBy.field as FieldSpec), editable: false}
                 ]
             },
             sortBy: 'name',
@@ -68,8 +72,8 @@ export class PreferenceModel extends HoistModel {
             unit: 'preference',
             filterFields: ['name', 'groupName'],
             actionWarning: {
-                del: (records) =>  `Are you sure you want to delete ${records.length} preference(s)? Deleting preferences can break running apps.`
-
+                del: records =>
+                    `Are you sure you want to delete ${records.length} preference(s)? Deleting preferences can break running apps.`
             },
             menuActions: [
                 addAction,
@@ -111,7 +115,7 @@ export class PreferenceModel extends HoistModel {
             entityName: 'preference',
             columnFields: ['name', 'type'],
             matchFields: ['name'],
-            valueRenderer: (v) => v?.defaultValue ?? ''
+            valueRenderer: v => v?.defaultValue ?? ''
         });
     }
 

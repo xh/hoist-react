@@ -37,5 +37,4 @@ export class ChangelogDialogModel extends HoistModel {
     hide() {
         this.isOpen = false;
     }
-
 }

@@ -47,7 +47,9 @@ export class ThemeModel extends HoistModel {
                 this.setDarkTheme(false);
                 break;
             default:
-                throw XH.exception("Unrecognized value for theme pref.  Must be either 'system', 'dark', or 'light'.");
+                throw XH.exception(
+                    "Unrecognized value for theme pref.  Must be either 'system', 'dark', or 'light'."
+                );
         }
         if (persist) {
             XH.setPref('xhTheme', value);
@@ -56,7 +58,7 @@ export class ThemeModel extends HoistModel {
 
     init() {
         this.setTheme(XH.getPref('xhTheme'));
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
             if (XH.getPref('xhTheme') === 'system') {
                 this.setDarkTheme(event.matches);
             }

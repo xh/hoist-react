@@ -34,20 +34,22 @@ export const sizingModeAppOption = ({
         formField: {
             label: 'Grid sizing',
             item: buttonGroupInput({
-                items: modes.map(mode => button({
-                    value: mode,
-                    text: startCase(mode),
-                    flex: 1,
-                    style: {
-                        fontSize: `var(--xh-grid-${mode}-font-size-px)`
-                    }
-                })),
+                items: modes.map(mode =>
+                    button({
+                        value: mode,
+                        text: startCase(mode),
+                        flex: 1,
+                        style: {
+                            fontSize: `var(--xh-grid-${mode}-font-size-px)`
+                        }
+                    })
+                ),
                 width: '100%',
                 ...inputProps
             }),
             ...formFieldProps
         },
         valueGetter: () => XH.sizingMode,
-        valueSetter: (v) => XH.setSizingMode(v)
+        valueSetter: v => XH.setSizingMode(v)
     };
 };

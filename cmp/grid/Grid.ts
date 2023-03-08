@@ -33,16 +33,7 @@ import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed, logDebug, logWithDebug} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {
-    compact,
-    debounce,
-    isEmpty,
-    isEqual,
-    isNil,
-    max,
-    maxBy,
-    merge
-} from 'lodash';
+import {compact, debounce, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
 import {createRef} from 'react';
 import './Grid.scss';
 import {GridModel} from './GridModel';
@@ -50,12 +41,9 @@ import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
-import { Icon } from '@xh/hoist/icon';
+import {Icon} from '@xh/hoist/icon';
 
-export interface GridProps extends
-    HoistProps<GridModel>,
-    LayoutProps
-{
+export interface GridProps extends HoistProps<GridModel>, LayoutProps {
     /**
      * Options for ag-Grid's API.
      *
@@ -65,7 +53,7 @@ export interface GridProps extends
      *
      * Note that changes to these options after the component's initial render will be ignored.
      */
-    agOptions?: PlainObject,
+    agOptions?: PlainObject;
 
     /**
      * Callback when the grid has initialized. The component will call this with the ag-Grid
@@ -73,7 +61,6 @@ export interface GridProps extends
      */
     onGridReady?: (e: PlainObject) => void;
 }
-
 
 /**
  * The primary rich data grid component within the Hoist toolkit.
@@ -97,14 +84,17 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     className: 'xh-grid',
 
     render({model, className, ...props}, ref) {
-        const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} = model,
+        const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} =
+                model,
             impl = useLocalModel(GridLocalModel),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
             maxDepth = impl.isHierarchical ? store.maxDepth : null;
 
         className = classNames(
             className,
-            impl.isHierarchical ? `xh-grid--hierarchical xh-grid--max-depth-${maxDepth}` : 'xh-grid--flat',
+            impl.isHierarchical
+                ? `xh-grid--hierarchical xh-grid--max-depth-${maxDepth}`
+                : 'xh-grid--flat',
             treeMode ? getTreeStyleClasses(treeStyle) : null,
             highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
         );
@@ -116,8 +106,8 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                 onKeyDown: impl.onKeyDown,
                 ref: composeRefs(impl.viewRef, ref)
             }),
-            (colChooserModel ? platformColChooser({model: colChooserModel}) : null),
-            (filterModel ? gridFilterDialog({model: filterModel}) : null)
+            colChooserModel ? platformColChooser({model: colChooserModel}) : null,
+            filterModel ? gridFilterDialog({model: filterModel}) : null
         );
     }
 });
@@ -144,12 +134,9 @@ class GridLocalModel extends HoistModel {
             {groupDisplayType} = agOptions;
 
         if (node?.group) {
-            return (
-                groupRowHeight ??
-                groupDisplayType === 'groupRows' ?
-                    (AgGrid as any).getGroupRowHeightForSizingMode(sizingMode) :
-                    (AgGrid as any).getRowHeightForSizingMode(sizingMode)
-            );
+            return groupRowHeight ?? groupDisplayType === 'groupRows'
+                ? (AgGrid as any).getGroupRowHeightForSizingMode(sizingMode)
+                : (AgGrid as any).getRowHeightForSizingMode(sizingMode);
         }
         return this.fixedRowHeight;
     }
@@ -204,20 +191,26 @@ class GridLocalModel extends HoistModel {
             popupParent: document.querySelector('body'),
             suppressAggFuncInHeader: true,
             icons: {
-                groupExpanded: Icon.groupRowExpanded({asHtml: true, className: 'ag-group-expanded'}),
-                groupContracted: Icon.groupRowCollapsed({asHtml: true, className: 'ag-group-contracted'}),
+                groupExpanded: Icon.groupRowExpanded({
+                    asHtml: true,
+                    className: 'ag-group-expanded'
+                }),
+                groupContracted: Icon.groupRowCollapsed({
+                    asHtml: true,
+                    className: 'ag-group-contracted'
+                }),
                 clipboardCopy: Icon.copy({asHtml: true})
             },
             components: {
-                agColumnHeader: (props) => columnHeader({gridModel: model, ...props}),
-                agColumnGroupHeader: (props) => columnGroupHeader(props)
+                agColumnHeader: props => columnHeader({gridModel: model, ...props}),
+                agColumnGroupHeader: props => columnGroupHeader(props)
             },
             rowSelection: selModel.mode,
             suppressRowClickSelection: !selModel.isEnabled,
             isRowSelectable: () => selModel.isEnabled,
             tooltipShowDelay: 0,
             getRowHeight: ({node}) => this.getRowHeight(node),
-            getRowClass: ({data}) => model.rowClassFn ? model.rowClassFn(data) : null,
+            getRowClass: ({data}) => (model.rowClassFn ? model.rowClassFn(data) : null),
             rowClassRules: model.rowClassRules,
             noRowsOverlayComponent: observer(() => div(this.emptyText)),
             onCellContextMenu: model.onCellContextMenu,
@@ -292,7 +285,7 @@ class GridLocalModel extends HoistModel {
         return this.model.columns.map(col => col.getAgSpec());
     }
 
-    getContextMenuItems = (params) => {
+    getContextMenuItems = params => {
         const {model, agOptions} = this,
             {contextMenu} = model;
         if (!contextMenu || XH.isMobileApp || model.isEditing) return null;
@@ -407,7 +400,12 @@ class GridLocalModel extends HoistModel {
                 }
 
                 // 1) Columns all in right place -- simply update incorrect props we maintain
-                if (isEqual(colState.map(c => c.colId), agColState.map(c => c.colId))) {
+                if (
+                    isEqual(
+                        colState.map(c => c.colId),
+                        agColState.map(c => c.colId)
+                    )
+                ) {
                     let hasChanges = false;
                     colState.forEach((col, index) => {
                         const agCol = agColState[index],
@@ -483,7 +481,9 @@ class GridLocalModel extends HoistModel {
                 const {isReady, agApi} = model;
                 if (!isReady) return;
 
-                const refreshCols = model.getLeafColumns().filter(c => c.editor || c.rendererIsComplex);
+                const refreshCols = model
+                    .getLeafColumns()
+                    .filter(c => c.editor || c.rendererIsComplex);
                 if (!isEmpty(refreshCols)) {
                     const colIds = refreshCols.map(c => c.colId);
                     agApi.refreshCells({columns: colIds, force: true});
@@ -509,7 +509,7 @@ class GridLocalModel extends HoistModel {
         const {model} = this,
             {store, showSummary, agGridModel} = model,
             {agApi} = agGridModel,
-            filterSummaryFn = (record) => !record.isSummary,
+            filterSummaryFn = record => !record.isSummary,
             pinnedTopRowData = agGridModel.getPinnedTopRowData().filter(filterSummaryFn),
             pinnedBottomRowData = agGridModel.getPinnedBottomRowData().filter(filterSummaryFn);
 
@@ -532,7 +532,9 @@ class GridLocalModel extends HoistModel {
         const newList = newRs.list,
             prevList = prevRs.list;
 
-        let add = [], update = [], remove = [];
+        let add = [],
+            update = [],
+            remove = [];
         newList.forEach(rec => {
             const existing = prevRs.getById(rec.id);
             if (!existing) {
@@ -542,7 +544,7 @@ class GridLocalModel extends HoistModel {
             }
         });
 
-        if (newList.length !== (prevList.length + add.length)) {
+        if (newList.length !== prevList.length + add.length) {
             remove = prevList.filter(rec => !newRs.getById(rec.id));
         }
 
@@ -570,7 +572,6 @@ class GridLocalModel extends HoistModel {
             if (!this.transactionIsEmpty(transaction)) {
                 agApi.applyTransaction(transaction);
             }
-
         } else {
             agApi.setRowData(newRs.list);
         }
@@ -628,13 +629,15 @@ class GridLocalModel extends HoistModel {
     }
 
     transactionLogStr(t) {
-        return `[update: ${t.update ? t.update.length : 0} | add: ${t.add ? t.add.length : 0} | remove: ${t.remove ? t.remove.length : 0}]`;
+        return `[update: ${t.update ? t.update.length : 0} | add: ${
+            t.add ? t.add.length : 0
+        } | remove: ${t.remove ? t.remove.length : 0}]`;
     }
 
     //------------------------
     // Event Handlers on AG Grid.
     //------------------------
-    getDataPath = (record) => {
+    getDataPath = record => {
         return record.treePath;
     };
 
@@ -647,12 +650,12 @@ class GridLocalModel extends HoistModel {
     }, 0);
 
     // Catches column re-ordering, resizing AND pinning via user drag-and-drop interaction.
-    onDragStopped = (ev) => {
+    onDragStopped = ev => {
         this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
     };
 
     // Catches column resizing on call to autoSize API.
-    onColumnResized = (ev) => {
+    onColumnResized = ev => {
         if (!isDisplayed(this.viewRef.current) || !ev.finished) return;
         if (ev.source === 'uiColumnDragged') {
             const colId = ev.columns[0].colId,
@@ -664,7 +667,7 @@ class GridLocalModel extends HoistModel {
     };
 
     // Catches row group changes triggered from ag-grid ui components
-    onColumnRowGroupChanged = (ev) => {
+    onColumnRowGroupChanged = ev => {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.setGroupBy(ev.columnApi.getRowGroupColumns().map(it => it.colId));
         }
@@ -675,14 +678,14 @@ class GridLocalModel extends HoistModel {
     };
 
     // Catches column pinning changes triggered from ag-grid ui components
-    onColumnPinned = (ev) => {
+    onColumnPinned = ev => {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
     };
 
     // Catches column visibility changes triggered from ag-grid ui components
-    onColumnVisible = (ev) => {
+    onColumnVisible = ev => {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
         }
@@ -726,11 +729,11 @@ class GridLocalModel extends HoistModel {
         });
     };
 
-    navigateToNextCell = (agParams) => {
+    navigateToNextCell = agParams => {
         return this.rowKeyNavSupport?.navigateToNextCell(agParams);
     };
 
-    onCellMouseDown = (evt) => {
+    onCellMouseDown = evt => {
         const {model} = this;
         if (model.highlightRowOnClick) {
             model.agApi.flashCells({
@@ -741,7 +744,7 @@ class GridLocalModel extends HoistModel {
         }
     };
 
-    onKeyDown = (evt) => {
+    onKeyDown = evt => {
         const {model} = this,
             {selModel} = model;
 
@@ -753,7 +756,7 @@ class GridLocalModel extends HoistModel {
         model.onKeyDown?.(evt);
     };
 
-    onRowClicked = (evt) => {
+    onRowClicked = evt => {
         const {model} = this,
             {node, event} = evt,
             {selModel, treeMode, clicksToExpand, agApi} = model;
@@ -770,7 +773,7 @@ class GridLocalModel extends HoistModel {
         }
     };
 
-    onRowDoubleClicked = (evt) => {
+    onRowDoubleClicked = evt => {
         const {model} = this,
             {node, event} = evt,
             {treeMode, clicksToExpand, agApi} = model;

@@ -47,12 +47,11 @@ export function useLocalModel<T extends HoistModel>(spec?: HoistModelClass<T> | 
     throwIf(
         !modelLookup || !props,
         'Cannot use useLocalModel() in this render method. ' +
-        'Please ensure that this is a HoistComponent and that its `model` spec is not falsy.'
+            'Please ensure that this is a HoistComponent and that its `model` spec is not falsy.'
     );
     useModelLinker(ret, modelLookup, props);
     return ret;
 }
-
 
 /**
  * Integrate a HoistModel owned by a component into the component's lifecycle, enabling support for
@@ -71,7 +70,9 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
             const parentModel = modelLookup.lookupModel(selector);
             if (!parentModel) {
                 throw XH.exception(
-                    `Failed to resolve @lookup for property '${name}' with selector ${formatSelector(selector)}.
+                    `Failed to resolve @lookup for property '${name}' with selector ${formatSelector(
+                        selector
+                    )}.
                     Ensure that an appropriate parent model exists for this selector in the component hierarchy.`
                 );
             }
@@ -88,7 +89,6 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
 
         model.setComponentProps(props);
         model.onLinked();
-
     }
 
     // 2) Linking async work: call afterLinked(), and wire up loadSupport
@@ -97,7 +97,9 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
             model.afterLinked();
             if (model.loadSupport) {
                 model.loadAsync();
-                const refreshContext = modelLookup?.lookupModel(RefreshContextModel) as RefreshContextModel;
+                const refreshContext = modelLookup?.lookupModel(
+                    RefreshContextModel
+                ) as RefreshContextModel;
                 if (refreshContext) {
                     refreshContext.register(model);
                     return () => refreshContext.unregister(model);
@@ -106,17 +108,14 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
         }
     }, []);
 
-
     // 3) Subsequent renders: update props (async to avoid triggering synchronous state changes)
     useEffect(() => {
         if (!isLinking) model?.setComponentProps(props);
     }, [props]);
 
-
     // 4) Destroy on unmount
     useOnUnmount(() => XH.safeDestroy(model));
 }
-
 
 /**
  * Default Context for useLocalModel.

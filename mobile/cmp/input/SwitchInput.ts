@@ -10,11 +10,7 @@ import {switchControl} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import './SwitchInput.scss';
 
-export interface SwitchInputProps extends
-    HoistProps,
-    HoistInputProps,
-    StyleProps
-{
+export interface SwitchInputProps extends HoistProps, HoistInputProps, StyleProps {
     value?: string;
 
     /** Onsen modifier string */
@@ -39,24 +35,21 @@ class SwitchInputModel extends HoistInputModel {
 //-----------------------
 // Implementation
 //-----------------------
-const cmp = hoistCmp.factory<SwitchInputModel>(
-    ({model, className, ...props}, ref) => {
+const cmp = hoistCmp.factory<SwitchInputModel>(({model, className, ...props}, ref) => {
+    return switchControl({
+        checked: !!model.renderValue,
 
-        return switchControl({
-            checked: !!model.renderValue,
+        disabled: props.disabled,
+        modifier: props.modifier,
+        tabIndex: props.tabIndex,
 
-            disabled: props.disabled,
-            modifier: props.modifier,
-            tabIndex: props.tabIndex,
+        className,
+        style: props.style,
 
-            className,
-            style: props.style,
+        onBlur: model.onBlur,
+        onFocus: model.onFocus,
+        onChange: e => model.noteValueChange(e.target.checked),
 
-            onBlur: model.onBlur,
-            onFocus: model.onFocus,
-            onChange: (e) => model.noteValueChange(e.target.checked),
-
-            ref
-        });
-    }
-);
+        ref
+    });
+});

@@ -50,12 +50,20 @@ export class StatsModel extends HoistModel {
                 {field: 'timestamp', renderer: timestampRenderer},
                 {field: 'modelCount', renderer: numberRenderer({precision: 0})},
                 {field: 'syncRun', renderer: numberRenderer({precision: 0})},
-                {field: 'modelCountChange', renderer: numberRenderer({precision: 0, colorSpec: true, withSignGlyph: true})},
-                {field: 'usedJSHeapSize', displayName: 'Heap used/total', rendererIsComplex: true, renderer: (v, {record}) => {
-                    const used = Math.round(v/1000000),
-                        total = Math.round(record.data.totalJSHeapSize/1000000);
-                    return `${used}/${total}mb`;
-                }}
+                {
+                    field: 'modelCountChange',
+                    renderer: numberRenderer({precision: 0, colorSpec: true, withSignGlyph: true})
+                },
+                {
+                    field: 'usedJSHeapSize',
+                    displayName: 'Heap used/total',
+                    rendererIsComplex: true,
+                    renderer: (v, {record}) => {
+                        const used = Math.round(v / 1000000),
+                            total = Math.round(record.data.totalJSHeapSize / 1000000);
+                        return `${used}/${total}mb`;
+                    }
+                }
             ],
             xhImpl: true
         });
@@ -67,10 +75,19 @@ export class StatsModel extends HoistModel {
                 title: {text: null},
                 xAxis: {type: 'datetime'},
                 yAxis: [
-                    {title: {text: '# Models'}, allowDecimals: false, opposite: true, height: '70%'},
+                    {
+                        title: {text: '# Models'},
+                        allowDecimals: false,
+                        opposite: true,
+                        height: '70%'
+                    },
                     {title: {text: 'Used JS Heap (mb)'}, height: '70%'},
                     {
-                        title: {text: '#Δ'}, height: '20%', top: '80%', offset: 0, opposite: true,
+                        title: {text: '#Δ'},
+                        height: '20%',
+                        top: '80%',
+                        offset: 0,
+                        opposite: true,
                         plotLines: [
                             {
                                 value: 0,
@@ -83,16 +100,14 @@ export class StatsModel extends HoistModel {
             xhImpl: true
         });
 
-        this.addReaction(
-            {
-                track: () => XH.inspectorService.stats,
-                run: (stats) => {
-                    this.gridModel.loadData(stats);
-                    this.updateChartModel();
-                },
-                fireImmediately: true
-            }
-        );
+        this.addReaction({
+            track: () => XH.inspectorService.stats,
+            run: stats => {
+                this.gridModel.loadData(stats);
+                this.updateChartModel();
+            },
+            fireImmediately: true
+        });
     }
 
     private updateChartModel() {
@@ -109,12 +124,18 @@ export class StatsModel extends HoistModel {
                 y: modelCountChange,
                 color: modelCountChange > 0 ? '#6c8d6d' : '#bd7c7c'
             });
-            usedHeapData.push([timestamp, usedJSHeapSize/1000000]);
+            usedHeapData.push([timestamp, usedJSHeapSize / 1000000]);
         });
 
         this.chartModel.setSeries([
             {type: 'area', name: '# Models', data: modelCountData, yAxis: 0},
-            {type: 'line', name: 'Used Heap (mb)', data: usedHeapData, yAxis: 1, color: '#DD7D08FF'},
+            {
+                type: 'line',
+                name: 'Used Heap (mb)',
+                data: usedHeapData,
+                yAxis: 1,
+                color: '#DD7D08FF'
+            },
             {type: 'column', name: '#Δ', data: modelCountChangeData, yAxis: 2, borderWidth: 0}
         ]);
     }

@@ -18,18 +18,17 @@ export interface GridCountLabelProps extends HoistProps, BoxProps {
      * True to count nested child records.
      * If false (default) only root records will be included in count.
      */
-    includeChildren?: boolean,
+    includeChildren?: boolean;
 
     /**
      * Control display of selection count after overall records count: auto (default) to display
      * count when greater than 1, or always/never to show/hide regardless of current count.
      */
-    showSelectionCount?: 'always'|'never'|'auto',
+    showSelectionCount?: 'always' | 'never' | 'auto';
 
     /** Units label appropriate for records being counted (e.g. "user" will yield, e.g. "50 users"). */
-    unit?: string
+    unit?: string;
 }
-
 
 /**
  * Displays the number of records loaded into a grid's store + (configurable) selection count.
@@ -47,17 +46,18 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLa
         unit = 'record',
         ...props
     }) {
-
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
         if (!gridModel) {
-            console.error("No GridModel available to GridCountLabel.  Provide via a 'gridModel' prop, or context.");
+            console.error(
+                "No GridModel available to GridCountLabel.  Provide via a 'gridModel' prop, or context."
+            );
             return '';
         }
 
         const {store, selectedRecords} = gridModel;
 
-        const fmtCount = (count) => fmtNumber(count, {precision: 0, asHtml: true}),
+        const fmtCount = count => fmtNumber(count, {precision: 0, asHtml: true}),
             recCountString = () => {
                 const count = includeChildren ? store.count : store.rootCount,
                     unitLabel = count === 1 ? singularize(unit) : pluralize(unit);
@@ -67,7 +67,9 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLa
             selCountString = () => {
                 const count = selectedRecords.length,
                     countStr = count ? fmtCount(count) : 'none',
-                    showCount = showSelectionCount === 'always' || (showSelectionCount === 'auto' && count > 1);
+                    showCount =
+                        showSelectionCount === 'always' ||
+                        (showSelectionCount === 'auto' && count > 1);
 
                 return showCount ? ` (${countStr} selected)` : '';
             };

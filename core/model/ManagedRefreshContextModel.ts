@@ -8,8 +8,7 @@ import {loadAllAsync, Loadable, LoadSpec} from '../load';
 import {RefreshContextModel} from './';
 import {RefreshMode} from '../';
 
-
-export type ManagedRefreshTarget = Loadable & {isActive: boolean, refreshMode: RefreshMode}
+export type ManagedRefreshTarget = Loadable & {isActive: boolean; refreshMode: RefreshMode};
 /**
  * A refresh context model that consults a model's RefreshMode and active state to manage
  * refreshes of its target models.
@@ -24,7 +23,7 @@ export class ManagedRefreshContextModel extends RefreshContextModel {
     model: ManagedRefreshTarget;
     refreshPending: boolean = false;
 
-    constructor(model: ManagedRefreshTarget)  {
+    constructor(model: ManagedRefreshTarget) {
         super();
         this.model = model;
         this.addReaction({

@@ -5,7 +5,13 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {XH, HoistModel, managed} from '@xh/hoist/core';
-import {addAction, cloneAction, deleteAction, editAction, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
+import {
+    addAction,
+    cloneAction,
+    deleteAction,
+    editAction,
+    RestGridModel
+} from '@xh/hoist/desktop/cmp/rest';
 import {makeObservable, observable, action} from '@xh/hoist/mobx';
 import {fmtDateTime} from '@xh/hoist/format';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
@@ -15,12 +21,10 @@ import {LoadSpec} from '../../../core';
 import * as JBCol from './JsonBlobColumns';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 
-
 import {DifferModel} from '../../differ/DifferModel';
 import {FieldSpec} from '@xh/hoist/data';
 
 export class JsonBlobModel extends HoistModel {
-
     override persistWith = {localStorageKey: 'xhAdminJsonBlobState'};
 
     @managed
@@ -49,34 +53,24 @@ export class JsonBlobModel extends HoistModel {
                 reloadLookupsOnLoad: true,
                 fieldDefaults: {disableXssProtection: true},
                 fields: [
-                    {...JBCol.token.field as FieldSpec, editable: false},
+                    {...(JBCol.token.field as FieldSpec), editable: false},
                     JBCol.owner.field,
                     JBCol.acl.field,
-                    {...Col.name.field as FieldSpec, required},
-                    {...Col.type.field as FieldSpec, lookupName: 'types', required, enableCreate},
-                    {...Col.value.field as FieldSpec, type: 'json', required},
+                    {...(Col.name.field as FieldSpec), required},
+                    {...(Col.type.field as FieldSpec), lookupName: 'types', required, enableCreate},
+                    {...(Col.value.field as FieldSpec), type: 'json', required},
                     JBCol.meta.field,
                     Col.description.field,
-                    {...JBCol.archived.field as FieldSpec, defaultValue: false, required},
-                    {...JBCol.archivedDate.field as FieldSpec, editable: false},
-                    {...Col.dateCreated.field as FieldSpec, editable: false},
-                    {...Col.lastUpdated.field as FieldSpec, editable: false},
-                    {...Col.lastUpdatedBy.field as FieldSpec, editable: false}
+                    {...(JBCol.archived.field as FieldSpec), defaultValue: false, required},
+                    {...(JBCol.archivedDate.field as FieldSpec), editable: false},
+                    {...(Col.dateCreated.field as FieldSpec), editable: false},
+                    {...(Col.lastUpdated.field as FieldSpec), editable: false},
+                    {...(Col.lastUpdatedBy.field as FieldSpec), editable: false}
                 ]
             },
-            toolbarActions: [
-                addAction,
-                editAction,
-                cloneAction,
-                deleteAction
-            ],
-            menuActions: [
-                addAction,
-                editAction,
-                cloneAction,
-                deleteAction
-            ],
-            prepareCloneFn: ({clone}) => clone.name = `${clone.name}_CLONE`,
+            toolbarActions: [addAction, editAction, cloneAction, deleteAction],
+            menuActions: [addAction, editAction, cloneAction, deleteAction],
+            prepareCloneFn: ({clone}) => (clone.name = `${clone.name}_CLONE`),
             sortBy: ['owner', 'name'],
             groupBy: 'type',
             unit: 'blob',
@@ -106,11 +100,14 @@ export class JsonBlobModel extends HoistModel {
                 {field: 'value'},
                 {field: 'meta'},
                 {field: 'archived'},
-                {field: 'archivedDate', formField: {
-                    readonlyRenderer: v => {
-                        return (!isDate(v) || v.getTime() === 0) ? '-' : fmtDateTime(v);
+                {
+                    field: 'archivedDate',
+                    formField: {
+                        readonlyRenderer: v => {
+                            return !isDate(v) || v.getTime() === 0 ? '-' : fmtDateTime(v);
+                        }
                     }
-                }},
+                },
                 {field: 'dateCreated'},
                 {field: 'lastUpdated'},
                 {field: 'lastUpdatedBy'}

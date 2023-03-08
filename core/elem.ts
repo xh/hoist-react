@@ -10,10 +10,10 @@ import {
     isValidElement,
     ReactNode,
     ReactElement,
-    ForwardedRef, Key
+    ForwardedRef,
+    Key
 } from 'react';
 import {PlainObject, Some, Thunkable} from './types/Types';
-
 
 /**
  * Alternative format for specifying React Elements in render functions. This type is designed to
@@ -39,7 +39,6 @@ import {PlainObject, Some, Thunkable} from './types/Types';
  * underlying component.
  */
 export type ElementSpec<P extends PlainObject> = P & {
-
     //---------------------------------------------
     // Enhanced attributes to support element factory
     //---------------------------------------------
@@ -67,10 +66,9 @@ export type ElementSpec<P extends PlainObject> = P & {
     $items?: any;
     $item?: any;
     $omit?: any;
-}
+};
 
-export type ElementFactory<P = any> =
-    ((...args: ReactNode[]) => ReactElement<P, any>) &
+export type ElementFactory<P = any> = ((...args: ReactNode[]) => ReactElement<P, any>) &
     ((arg: ElementSpec<P>) => ReactElement<P, any>);
 
 /**
@@ -82,7 +80,7 @@ export type ElementFactory<P = any> =
  * @param type - React Component or string representing an HTML element.
  * @param spec - element spec.
  */
-export function createElement<P=any>(type: any, spec: ElementSpec<P>): ReactElement<P, any> {
+export function createElement<P = any>(type: any, spec: ElementSpec<P>): ReactElement<P, any> {
     const {omit, item, items, ...props} = spec;
 
     // 1) Convenience omission syntax.
@@ -90,7 +88,7 @@ export function createElement<P=any>(type: any, spec: ElementSpec<P>): ReactElem
 
     // 2) Read children from item[s] config.
     const itemConfig = item ?? items,
-        children = (isNil(itemConfig) ? [] : castArray(itemConfig));
+        children = isNil(itemConfig) ? [] : castArray(itemConfig);
 
     // 3) Recapture API props that needed '$' prefix to avoid conflicts.
     ['$omit', '$item', '$items'].forEach(key => {
@@ -106,8 +104,8 @@ export function createElement<P=any>(type: any, spec: ElementSpec<P>): ReactElem
 /**
  *  Create a factory function that can create a ReactElement from an ElementSpec.
  */
-export function elementFactory<P=any>(type: any): ElementFactory<P> {
-    const ret = function(...args) {
+export function elementFactory<P = any>(type: any): ElementFactory<P> {
+    const ret = function (...args) {
         return createElement<P>(type, normalizeArgs(args, type));
     };
     ret.isElementFactory = true;

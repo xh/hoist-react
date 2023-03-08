@@ -8,7 +8,20 @@
 import {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
 import {XH} from '@xh/hoist/core';
 import {stripTags} from '@xh/hoist/utils/js';
-import {forOwn, groupBy, isEmpty, isArray, isFunction, isNil, isString, map, max, min, sortBy, takeRight} from 'lodash';
+import {
+    forOwn,
+    groupBy,
+    isEmpty,
+    isArray,
+    isFunction,
+    isNil,
+    isString,
+    map,
+    max,
+    min,
+    sortBy,
+    takeRight
+} from 'lodash';
 import {isValidElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {forEachAsync} from '@xh/hoist/utils/async';
@@ -24,7 +37,6 @@ import {StoreRecord} from '@xh/hoist/data';
  * @internal
  */
 export class ColumnWidthCalculator {
-
     /** Max number value to calculate size per column */
     SIZE_CALC_SAMPLES = 10;
 
@@ -77,7 +89,13 @@ export class ColumnWidthCalculator {
                 // Here we group the records by tree depth and determine the max width at each depth.
                 const recordsByDepth = groupBy(records, record => record.ancestors.length),
                     levelTasks = map(recordsByDepth, (records, depth) => {
-                        return this.calcLevelWidthAsync(gridModel, records, column, options, this.getIndentation(depth));
+                        return this.calcLevelWidthAsync(
+                            gridModel,
+                            records,
+                            column,
+                            options,
+                            this.getIndentation(depth)
+                        );
                     }),
                     levelMaxes = await Promise.all(levelTasks);
                 return max(levelMaxes);
@@ -92,20 +110,14 @@ export class ColumnWidthCalculator {
     }
 
     async calcLevelWidthAsync(gridModel, records, column, options, indentationPx = 0) {
-        const {
-                field,
-                getValueFn,
-                renderer,
-                rendererIsComplex,
-                cellClassFn,
-                cellClassRules
-            } = column,
+        const {field, getValueFn, renderer, rendererIsComplex, cellClassFn, cellClassRules} =
+                column,
             {store, sizingMode, rowClassFn, rowClassRules} = gridModel,
             bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
         // 1) Get map of rendered values to data about it
         const estimatesByValue = new Map(),
-            renderMemo = renderer && !rendererIsComplex ? (new Map()) : null;
+            renderMemo = renderer && !rendererIsComplex ? new Map() : null;
 
         await forEachAsync(records, record => {
             if (!record) return;
@@ -131,7 +143,9 @@ export class ColumnWidthCalculator {
             if (!est) {
                 estimatesByValue.set(value, {
                     value,
-                    width: isNil(value) ? 0 : this.getStringWidth(stripTags(value.toString())) + indentationPx,
+                    width: isNil(value)
+                        ? 0
+                        : this.getStringWidth(stripTags(value.toString())) + indentationPx,
                     records: [record]
                 });
             } else {
@@ -179,8 +193,12 @@ export class ColumnWidthCalculator {
             {sizingMode, filterModel} = gridModel,
             headerHtml = this.getHeaderHtml(gridModel, column),
             headerClass = this.getHeaderClass(gridModel, column),
-            showSort = sortable && (includeHeaderIcons || gridModel.sortBy.find(sorter => sorter.colId === colId)),
-            showMenu = (agOptions?.suppressMenu === false || (filterable && filterModel)) && includeHeaderIcons;
+            showSort =
+                sortable &&
+                (includeHeaderIcons || gridModel.sortBy.find(sorter => sorter.colId === colId)),
+            showMenu =
+                (agOptions?.suppressMenu === false || (filterable && filterModel)) &&
+                includeHeaderIcons;
 
         // Render to a hidden header cell to calculate the max displayed width
         const headerEl = this.getHeaderEl();
@@ -196,7 +214,9 @@ export class ColumnWidthCalculator {
         if (isNil(headerValue)) return '';
         if (isString(headerValue)) return headerValue;
         if (isValidElement(headerValue)) return renderToStaticMarkup(headerValue);
-        throw XH.exception('Unable to get column header html because value is not a string or valid react element');
+        throw XH.exception(
+            'Unable to get column header html because value is not a string or valid react element'
+        );
     }
 
     resetHeaderClassNames() {

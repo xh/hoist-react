@@ -42,21 +42,19 @@ export const regroupDialog = hoistCmp.factory({
     }
 });
 
-const tbar = hoistCmp.factory<RegroupDialogModel>(
-    ({model}) => {
-        return toolbar(
-            filler(),
-            button({
-                text: 'Cancel',
-                onClick: () => model.close()
-            }),
-            button({
-                text: 'Save',
-                icon: Icon.check(),
-                intent: 'success',
-                disabled: model.groupName == null,
-                onClick: () => model.saveAsync()
-            })
-        );
-    }
-);
+const tbar = hoistCmp.factory<RegroupDialogModel>(({model}) => {
+    return toolbar(
+        filler(),
+        button({
+            text: 'Cancel',
+            onClick: () => model.close()
+        }),
+        button({
+            text: 'Save',
+            icon: Icon.check(),
+            intent: 'success',
+            disabled: model.groupName == null,
+            onClick: () => model.saveAsync()
+        })
+    );
+});

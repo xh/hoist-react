@@ -34,7 +34,9 @@ export function useContextMenu(child?: ReactElement, spec?: ContextMenuSpec): Re
             contextMenuOutput = contextMenuOutput(e);
         }
         if (isArray(contextMenuOutput)) {
-            contextMenuOutput = !isEmpty(contextMenuOutput) ? contextMenu({menuItems: contextMenuOutput}) : null;
+            contextMenuOutput = !isEmpty(contextMenuOutput)
+                ? contextMenu({menuItems: contextMenuOutput})
+                : null;
         }
         if (contextMenuOutput && !isValidElement(contextMenuOutput)) {
             console.error("Incorrect specification of 'contextMenu' arg in useContextMenu()");
@@ -43,7 +45,12 @@ export function useContextMenu(child?: ReactElement, spec?: ContextMenuSpec): Re
 
         // 2) Render via blueprint!
         if (contextMenuOutput) {
-            ContextMenu.show(contextMenuOutput, {left: e.clientX, top: e.clientY}, null, XH.darkTheme);
+            ContextMenu.show(
+                contextMenuOutput,
+                {left: e.clientX, top: e.clientY},
+                null,
+                XH.darkTheme
+            );
         }
     };
 

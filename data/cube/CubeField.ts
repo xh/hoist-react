@@ -24,7 +24,6 @@ import {
 import {isString} from 'lodash';
 
 export interface CubeFieldSpec extends FieldSpec {
-
     /** True to allow this field to be used for grouping.*/
     isDimension?: boolean;
 
@@ -32,7 +31,19 @@ export interface CubeFieldSpec extends FieldSpec {
      * Instance of a Hoist Cube Aggregator (from the aggregate package), or string alias for the
      * same (e.g. 'MAX').
      */
-    aggregator?: Aggregator|'AVG'|'AVG_STRICT'|'CHILD_COUNT'|'LEAF_COUNT'|'MAX'|'MIN'|'NULL'|'SINGLE'|'SUM'|'SUM_STRICT'|'UNIQUE';
+    aggregator?:
+        | Aggregator
+        | 'AVG'
+        | 'AVG_STRICT'
+        | 'CHILD_COUNT'
+        | 'LEAF_COUNT'
+        | 'MAX'
+        | 'MIN'
+        | 'NULL'
+        | 'SINGLE'
+        | 'SUM'
+        | 'SUM_STRICT'
+        | 'UNIQUE';
 
     /** Function to determine if aggregation should be performed at a given level of a query result. */
     canAggregateFn?: CanAggregateFn;
@@ -53,8 +64,11 @@ export interface CubeFieldSpec extends FieldSpec {
  * @param value - value of record on dimension
  * @param appliedDims - *all* applied dimension values for this record
  */
-export type CanAggregateFn = (dimension: string, value: any, appliedDims: Record<string, any>) => boolean;
-
+export type CanAggregateFn = (
+    dimension: string,
+    value: any,
+    appliedDims: Record<string, any>
+) => boolean;
 
 /**
  * Metadata used to define a measure or dimension in Cube. For properties present on raw data source
@@ -62,7 +76,6 @@ export type CanAggregateFn = (dimension: string, value: any, appliedDims: Record
  * it to extract the data from the source objects and how to aggregate or filter on that data.
  */
 export class CubeField extends Field {
-
     aggregator: Aggregator;
     canAggregateFn: CanAggregateFn;
     isDimension: boolean;
@@ -84,7 +97,7 @@ export class CubeField extends Field {
     constructor({
         isDimension = false,
         aggregator = null,
-        canAggregateFn =  null,
+        canAggregateFn = null,
         isLeafDimension = false,
         parentDimension = null,
         ...fieldArgs
@@ -107,17 +120,28 @@ export class CubeField extends Field {
     private parseAggregator(val: any): Aggregator {
         if (isString(val)) {
             switch (val) {
-                case 'AVG':             return CubeField.averageAggregator;
-                case 'AVG_STRICT':      return CubeField.averageStrictAggregator;
-                case 'CHILD_COUNT':     return CubeField.childCountAggregator;
-                case 'LEAF_COUNT':      return CubeField.leafCountAggregator;
-                case 'MAX':             return CubeField.maxAggregator;
-                case 'MIN':             return CubeField.minAggregator;
-                case 'NULL':            return CubeField.nullAggregator;
-                case 'SINGLE':          return CubeField.singleAggregator;
-                case 'SUM':             return CubeField.sumAggregator;
-                case 'SUM_STRICT':      return CubeField.sumStrictAggregator;
-                case 'UNIQUE':          return CubeField.uniqueAggregator;
+                case 'AVG':
+                    return CubeField.averageAggregator;
+                case 'AVG_STRICT':
+                    return CubeField.averageStrictAggregator;
+                case 'CHILD_COUNT':
+                    return CubeField.childCountAggregator;
+                case 'LEAF_COUNT':
+                    return CubeField.leafCountAggregator;
+                case 'MAX':
+                    return CubeField.maxAggregator;
+                case 'MIN':
+                    return CubeField.minAggregator;
+                case 'NULL':
+                    return CubeField.nullAggregator;
+                case 'SINGLE':
+                    return CubeField.singleAggregator;
+                case 'SUM':
+                    return CubeField.sumAggregator;
+                case 'SUM_STRICT':
+                    return CubeField.sumStrictAggregator;
+                case 'UNIQUE':
+                    return CubeField.uniqueAggregator;
             }
         }
         if (val instanceof Aggregator) return val;

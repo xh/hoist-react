@@ -87,13 +87,13 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
                         icon ? span({className: 'xh-appbar-icon', item: icon}) : null,
                         title ? span({className: 'xh-appbar-title', item: title}) : null,
                         appBarSeparator({omit: isEmpty(leftItems)}),
-                        ...leftItems ?? []
+                        ...(leftItems ?? [])
                     ]
                 }),
                 navbarGroup({
                     align: 'right',
                     items: [
-                        ...rightItems ?? [],
+                        ...(rightItems ?? []),
                         whatsNewButton({omit: hideWhatsNewButton}),
                         refreshButton({omit: hideRefreshButton}),
                         appMenuButton({

@@ -14,13 +14,13 @@ import {Component} from 'react';
  * @internal
  */
 export class ErrorBoundary extends Component {
-
     constructor(props) {
         super(props);
         this.state = {caughtError: null, onError: props.onError};
     }
 
     override render() {
+        // prettier-ignore
         // @ts-ignore
         return this.state.caughtError ? 'An error occurred while rendering this Component.' : this.props.children ?? null;
     }

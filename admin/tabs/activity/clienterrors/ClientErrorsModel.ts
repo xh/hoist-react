@@ -15,7 +15,6 @@ import * as Col from '@xh/hoist/admin/columns';
 import moment from 'moment';
 
 export class ClientErrorsModel extends HoistModel {
-
     override persistWith = {localStorageKey: 'xhAdminClientErrorsState'};
 
     @bindable.ref startDay: LocalDate;
@@ -25,7 +24,9 @@ export class ClientErrorsModel extends HoistModel {
     @managed formModel: FormModel;
     @managed filterChooserModel: FilterChooserModel;
 
-    get selectedRecord() {return this.gridModel.selectedRecord}
+    get selectedRecord() {
+        return this.gridModel.selectedRecord;
+    }
 
     /** Parsed and JSON-formatted stacktrace / additional data for selected error. */
     @observable formattedErrorJson: string;
@@ -104,7 +105,7 @@ export class ClientErrorsModel extends HoistModel {
 
                         return ret.toDate();
                     },
-                    valueRenderer: (v) => fmtDate(v),
+                    valueRenderer: v => fmtDate(v),
                     ops: ['>', '>=', '<', '<=']
                 }
             ],
@@ -113,7 +114,9 @@ export class ClientErrorsModel extends HoistModel {
 
         this.formModel = new FormModel({
             readonly: true,
-            fields: this.gridModel.getLeafColumns().map(it => ({name: it.field, displayName: it.headerName as string}))
+            fields: this.gridModel
+                .getLeafColumns()
+                .map(it => ({name: it.field, displayName: it.headerName as string}))
         });
 
         this.addReaction({
@@ -124,7 +127,7 @@ export class ClientErrorsModel extends HoistModel {
 
         this.addReaction({
             track: () => this.gridModel.selectedRecord,
-            run: (detailRec) => this.showEntryDetail(detailRec)
+            run: detailRec => this.showEntryDetail(detailRec)
         });
     }
 
@@ -147,7 +150,6 @@ export class ClientErrorsModel extends HoistModel {
 
             gridModel.loadData(data);
             await gridModel.preSelectFirstAsync();
-
         } catch (e) {
             gridModel.clear();
             XH.handleException(e);
@@ -206,6 +208,10 @@ export class ClientErrorsModel extends HoistModel {
         };
     }
 
-    getDefaultStartDay() {return LocalDate.currentAppDay().subtract(6)}
-    getDefaultEndDay() {return LocalDate.currentAppDay()}
+    getDefaultStartDay() {
+        return LocalDate.currentAppDay().subtract(6);
+    }
+    getDefaultEndDay() {
+        return LocalDate.currentAppDay();
+    }
 }

@@ -10,7 +10,6 @@
  * Used by {@link TabContainerModel}, {@link DashContainerModel}, and {@link PanelModel}.
  */
 export const RenderMode = Object.freeze({
-
     /** Always render contents when the parent container is rendered, even if inactive. */
     ALWAYS: 'always',
 
@@ -22,5 +21,4 @@ export const RenderMode = Object.freeze({
 });
 
 // eslint-disable-next-line
-export type RenderMode = typeof RenderMode[keyof typeof RenderMode];
-
+export type RenderMode = (typeof RenderMode)[keyof typeof RenderMode];

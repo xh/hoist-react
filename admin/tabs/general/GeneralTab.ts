@@ -12,9 +12,8 @@ import {aboutPanel} from './about/AboutPanel';
 import {alertBannerPanel} from './alertBanner/AlertBannerPanel';
 import {userPanel} from './users/UserPanel';
 
-
-export const generalTab = hoistCmp.factory(
-    () => tabContainer({
+export const generalTab = hoistCmp.factory(() =>
+    tabContainer({
         modelConfig: {
             route: 'default.general',
             switcher: {orientation: 'left'},

@@ -13,7 +13,6 @@ import {throwIf} from '@xh/hoist/utils/js';
  * PersistenceProvider that stores state within the Hoist Preferences system.
  */
 export class PrefProvider extends PersistenceProvider {
-
     key: string;
 
     constructor({prefKey: key, ...rest}: PersistOptions) {

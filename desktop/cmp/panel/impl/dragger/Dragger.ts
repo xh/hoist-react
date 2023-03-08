@@ -21,4 +21,3 @@ export const dragger = hoistCmp.factory({
         });
     }
 });
-

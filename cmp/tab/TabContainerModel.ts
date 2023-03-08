@@ -23,7 +23,6 @@ import {TabConfig, TabModel} from './TabModel';
 import {TabSwitcherProps} from './TabSwitcherProps';
 
 export interface TabContainerConfig {
-
     /** Tabs to be displayed. */
     tabs?: TabConfig[];
 
@@ -44,7 +43,7 @@ export interface TabContainerConfig {
      * boolean or an object containing props for a TabSwitcher component. Set to false to not
      * include a switcher. Defaults to true.
      */
-    switcher?: boolean|TabSwitcherProps;
+    switcher?: boolean | TabSwitcherProps;
 
     /**
      * True to enable activity tracking of tab views (default false).  Viewing of each tab will
@@ -76,7 +75,6 @@ export interface TabContainerConfig {
     /** @internal */
     xhImpl?: boolean;
 }
-
 
 /**
  * Model for a TabContainer, representing its layout/contents and the currently displayed Tab.
@@ -162,7 +160,7 @@ export class TabContainerModel extends HoistModel {
         if (track) {
             this.addReaction({
                 track: () => this.activeTab,
-                run: (activeTab) => {
+                run: activeTab => {
                     const {route} = this,
                         {title, id} = activeTab;
                     XH.track({
@@ -184,27 +182,30 @@ export class TabContainerModel extends HoistModel {
      * Set the Tabs displayed by this object.
      */
     @action
-    setTabs(tabs: Array<TabModel|TabConfig>) {
+    setTabs(tabs: Array<TabModel | TabConfig>) {
         const oldTabs = this.tabs,
-            isInit = (oldTabs === null);
+            isInit = oldTabs === null;
         throwIf(!isInit && this.route, 'Dynamic tabs not available on TabContainer with routing.');
         throwIf(!isInit && XH.isMobileApp, 'Dynamic tabs not available on mobile TabContainer.');
 
         ensureUniqueBy(tabs, 'id', 'Multiple tabs have the same id.');
 
-        tabs = tabs
-            .filter(p =>  p instanceof TabModel || !isOmitted(p));
+        tabs = tabs.filter(p => p instanceof TabModel || !isOmitted(p));
 
         // Adjust state -- intentionally setting activeTab *before* instantiating new tabs.
         const {activeTabId} = this;
         if (!activeTabId || !tabs.find(t => t.id === activeTabId && !t.disabled)) {
             this.activeTabId = this.calculateActiveTabId(tabs);
         }
-        this.tabs = tabs.map(t => t instanceof TabModel? t : new TabModel({
-            ...t,
-            containerModel: this,
-            xhImpl: this.xhImpl
-        }));
+        this.tabs = tabs.map(t =>
+            t instanceof TabModel
+                ? t
+                : new TabModel({
+                      ...t,
+                      containerModel: this,
+                      xhImpl: this.xhImpl
+                  })
+        );
 
         if (oldTabs) {
             XH.safeDestroy(difference(oldTabs, this.tabs));
@@ -213,7 +214,7 @@ export class TabContainerModel extends HoistModel {
 
     /** Add a Tab for display.*/
     @action
-    addTab(tab: TabModel|TabConfig, opts?: AddTabOptions): TabModel {
+    addTab(tab: TabModel | TabConfig, opts?: AddTabOptions): TabModel {
         const {tabs} = this,
             {index = tabs.length, activateImmediately = false} = opts ?? {};
         this.setTabs([...tabs.slice(0, index), tab, ...tabs.slice(index)]);
@@ -228,9 +229,9 @@ export class TabContainerModel extends HoistModel {
      * @param tab - TabModel or id of TabModel to be removed.
      */
     @action
-    removeTab(tab: TabModel|string) {
+    removeTab(tab: TabModel | string) {
         const {tabs, activeTab} = this,
-            toRemove = find(tabs, (t) => t === tab || t.id === tab);
+            toRemove = find(tabs, t => t === tab || t.id === tab);
 
         if (!toRemove) return;
 
@@ -280,7 +281,7 @@ export class TabContainerModel extends HoistModel {
      *
      * @param tab - TabModel or id of TabModel to be activated.
      */
-    activateTab(tab: TabModel|string) {
+    activateTab(tab: TabModel | string) {
         tab = this.findTab(tab instanceof TabModel ? tab.id : tab);
 
         if (!tab || tab.disabled || tab.isActive) return;
@@ -386,12 +387,11 @@ export class TabContainerModel extends HoistModel {
         if (this.provider) {
             this.addReaction({
                 track: () => this.activeTabId,
-                run: (activeTabId) => this.provider.write({activeTabId})
+                run: activeTabId => this.provider.write({activeTabId})
             });
         }
     }
 }
-
 
 export interface AddTabOptions {
     /** Index in tab collection where tab is to be added. */

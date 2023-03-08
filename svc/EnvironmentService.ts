@@ -17,7 +17,6 @@ import mobxPkg from 'mobx/package.json';
 import {version as reactVersion} from 'react';
 
 export class EnvironmentService extends HoistService {
-
     static instance: EnvironmentService;
 
     /**
@@ -38,23 +37,26 @@ export class EnvironmentService extends HoistService {
     override async initAsync() {
         const serverEnv = await XH.fetchJson({url: 'xh/environment'}),
             clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
-            clientTimeZoneOffset = (new Date()).getTimezoneOffset() * -1 * MINUTES;
+            clientTimeZoneOffset = new Date().getTimezoneOffset() * -1 * MINUTES;
 
         // Favor client-side data injected via Webpack build or otherwise determined locally,
         // then apply all other env data sourced from the server.
-        this._data = defaults({
-            appCode: XH.appCode,
-            appName: XH.appName,
-            clientVersion: XH.appVersion,
-            clientBuild: XH.appBuild,
-            reactVersion,
-            hoistReactVersion: hoistPkg.version,
-            agGridVersion,
-            mobxVersion: mobxPkg.version,
-            blueprintCoreVersion: bpPkg.version,
-            clientTimeZone,
-            clientTimeZoneOffset
-        }, serverEnv);
+        this._data = defaults(
+            {
+                appCode: XH.appCode,
+                appName: XH.appName,
+                clientVersion: XH.appVersion,
+                clientBuild: XH.appBuild,
+                reactVersion,
+                hoistReactVersion: hoistPkg.version,
+                agGridVersion,
+                mobxVersion: mobxPkg.version,
+                blueprintCoreVersion: bpPkg.version,
+                clientTimeZone,
+                clientTimeZoneOffset
+            },
+            serverEnv
+        );
 
         deepFreeze(this._data);
 
@@ -116,7 +118,9 @@ export class EnvironmentService extends HoistService {
         // prompted to refresh.
         const clientVersion = this.get('clientVersion');
         if (appVersion !== clientVersion) {
-            console.warn(`Version mismatch detected between client and server - ${clientVersion} vs ${appVersion}`);
+            console.warn(
+                `Version mismatch detected between client and server - ${clientVersion} vs ${appVersion}`
+            );
         }
 
         this.setServerVersion(appVersion, appBuild);

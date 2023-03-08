@@ -10,9 +10,7 @@ import {Store} from '@xh/hoist/data';
 import {fmtNumber} from '@xh/hoist/format';
 import {pluralize, singularize} from '@xh/hoist/utils/js';
 
-
 export interface StoreCountLabelProps extends HoistProps, BoxProps {
-
     /** Store to which this component should bind. */
     store?: Store;
 
@@ -30,15 +28,9 @@ export interface StoreCountLabelProps extends HoistProps, BoxProps {
  * Displays the number of (post-filtered) records loaded into a Store.
  */
 export const [StoreCountLabel, storeCountLabel] = hoistCmp.withFactory<StoreCountLabelProps>({
-
     className: 'xh-store-count-label',
 
-    render({
-        store,
-        unit = 'record',
-        includeChildren = false,
-        ...props
-    }, ref) {
+    render({store, unit = 'record', includeChildren = false, ...props}, ref) {
         const count = includeChildren ? store.count : store.rootCount,
             unitLabel = count === 1 ? singularize(unit) : pluralize(unit),
             item = `${fmtNumber(count, {precision: 0, asHtml: true})} ${unitLabel}`;

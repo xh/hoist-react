@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import { ColumnSpec } from '@xh/hoist/cmp/grid/columns';
+import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 import {RecordAction} from '@xh/hoist/data';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
@@ -13,7 +13,6 @@ import classNames from 'classnames';
 import {isEmpty} from 'lodash';
 
 import './Actions.scss';
-
 
 /**
  * A column definition partial for adding an "action column" to a grid. An action column displays
@@ -51,8 +50,16 @@ export const actionCol: ColumnSpec = {
         const buttons = actions.map(it => {
             const action = it instanceof RecordAction ? it : new RecordAction(it);
 
-            const {icon, intent, className, disabled, tooltip, hidden} = action.getDisplaySpec({record, selectedRecords: [record], gridModel, column});
-            throwIf(!icon, 'An icon is required for any RecordAction rendered within a grid action column.');
+            const {icon, intent, className, disabled, tooltip, hidden} = action.getDisplaySpec({
+                record,
+                selectedRecords: [record],
+                gridModel,
+                column
+            });
+            throwIf(
+                !icon,
+                'An icon is required for any RecordAction rendered within a grid action column.'
+            );
 
             if (hidden) return null;
 
@@ -61,12 +68,8 @@ export const actionCol: ColumnSpec = {
                 disabled,
                 tooltip,
                 intent,
-                className: classNames(
-                    'bp4-small',
-                    'xh-record-action-button',
-                    className
-                ),
-                onClick: (ev) => {
+                className: classNames('bp4-small', 'xh-record-action-button', className),
+                onClick: ev => {
                     ev.stopPropagation();
                     action.call({record, selectedRecords: [record], gridModel, column});
                 }
@@ -88,7 +91,11 @@ export const actionCol: ColumnSpec = {
  *      Default small minimal buttons with an icon will be 24px
  * @returns the width in pixels
  */
-export function calcActionColWidth(count: number, cellPadding: number = 5, buttonWidth: number = 24): number {
+export function calcActionColWidth(
+    count: number,
+    cellPadding: number = 5,
+    buttonWidth: number = 24
+): number {
     // add 1 to cellPadding to account for 1px transparent border in default theme
-    return (count * buttonWidth) + ((cellPadding + 1) * 2);
+    return count * buttonWidth + (cellPadding + 1) * 2;
 }

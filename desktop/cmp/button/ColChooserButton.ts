@@ -17,7 +17,7 @@ import {button, ButtonProps} from './Button';
 
 export interface ColChooserButtonProps extends ButtonProps {
     /** GridModel of the grid for which this button should show a chooser. */
-    gridModel?: GridModel,
+    gridModel?: GridModel;
 
     /** Position for chooser popover, as per Blueprint docs. */
     popoverPosition?: Position;
@@ -40,12 +40,16 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
         const colChooserModel = gridModel?.colChooserModel as ColChooserModel;
 
         if (!gridModel) {
-            console.error("No GridModel available to ColChooserButton.  Provide via a 'gridModel' prop, or context.");
+            console.error(
+                "No GridModel available to ColChooserButton.  Provide via a 'gridModel' prop, or context."
+            );
             disabled = true;
         }
 
         if (!colChooserModel) {
-            console.error('No ColChooserModel available on bound GridModel - enable via GridModel.colChooserModel config.');
+            console.error(
+                'No ColChooserModel available on bound GridModel - enable via GridModel.colChooserModel config.'
+            );
             disabled = true;
         }
 
@@ -68,7 +72,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
                     colChooser({model: colChooserModel})
                 ]
             }),
-            onInteraction: (willOpen) => {
+            onInteraction: willOpen => {
                 if (willOpen) {
                     colChooserModel.openPopover();
                 } else {

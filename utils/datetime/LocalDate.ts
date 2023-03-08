@@ -22,7 +22,6 @@ import moment, {Moment, MomentInput} from 'moment';
  * Unit accepted by manipulation methods are ['year', 'quarter', 'month', 'week', 'day', 'date'].
  */
 export class LocalDate {
-
     private static _instances = new Map();
     static VALID_UNITS = ['year', 'quarter', 'month', 'week', 'day', 'date'];
 
@@ -61,7 +60,7 @@ export class LocalDate {
      *
      * @param val - any string, timestamp, or date parsable by moment.js.
      */
-    static from(val: MomentInput|LocalDate): LocalDate {
+    static from(val: MomentInput | LocalDate): LocalDate {
         if (isNil(val)) return val;
         if (val instanceof LocalDate) return val;
         const m = moment.isMoment(val) ? val : moment(val);
@@ -79,7 +78,6 @@ export class LocalDate {
             clientOffset = svc.get('clientTimeZoneOffset'),
             appOffset = svc.get('appTimeZoneOffset');
         return LocalDate.from(Date.now() + appOffset - clientOffset);
-
     }
 
     /** LocalDate representing the current day in the Server TimeZone */
@@ -143,17 +141,29 @@ export class LocalDate {
         return day > 0 && day < 6;
     }
 
-    get isStartOfMonth(): boolean {return this === this.startOfMonth()}
+    get isStartOfMonth(): boolean {
+        return this === this.startOfMonth();
+    }
 
-    get isEndOfMonth(): boolean {return this === this.endOfMonth()}
+    get isEndOfMonth(): boolean {
+        return this === this.endOfMonth();
+    }
 
-    get isStartOfQuarter(): boolean {return this === this.startOfQuarter()}
+    get isStartOfQuarter(): boolean {
+        return this === this.startOfQuarter();
+    }
 
-    get isEndOfQuarter(): boolean {return this === this.endOfQuarter()}
+    get isEndOfQuarter(): boolean {
+        return this === this.endOfQuarter();
+    }
 
-    get isStartOfYear(): boolean {return this === this.startOfYear()}
+    get isStartOfYear(): boolean {
+        return this === this.startOfYear();
+    }
 
-    get isEndOfYear(): boolean {return this === this.endOfYear()}
+    get isEndOfYear(): boolean {
+        return this === this.endOfYear();
+    }
 
     //----------------
     // Core overrides.
@@ -170,7 +180,9 @@ export class LocalDate {
         return this._isoString;
     }
 
-    get isLocalDate(): boolean {return true}
+    get isLocalDate(): boolean {
+        return true;
+    }
 
     //--------------------------
     // Manipulate/Calendar logic
@@ -238,18 +250,24 @@ export class LocalDate {
     @computeOnce
     nextWeekday(): LocalDate {
         switch (this._moment.day()) {
-            case 5:     return this.add(3);
-            case 6:     return this.add(2);
-            default:    return this.add(1);
+            case 5:
+                return this.add(3);
+            case 6:
+                return this.add(2);
+            default:
+                return this.add(1);
         }
     }
 
     @computeOnce
     previousWeekday(): LocalDate {
         switch (this._moment.day()) {
-            case 1:     return this.subtract(3);
-            case 0:     return this.subtract(2);
-            default:    return this.subtract(1);
+            case 1:
+                return this.subtract(3);
+            case 0:
+                return this.subtract(2);
+            default:
+                return this.subtract(1);
         }
     }
 
@@ -298,5 +316,5 @@ export class LocalDate {
  * Convenience alias for LocalDate.isLocalDate()
  */
 export function isLocalDate(val): val is LocalDate {
-    return !!(val?.isLocalDate);
+    return !!val?.isLocalDate;
 }

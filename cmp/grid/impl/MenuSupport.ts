@@ -34,7 +34,6 @@ export function getAgGridMenuItems(
     return buildMenuItems(menuItems, record, model, column, params);
 }
 
-
 function buildMenuItems(
     menuItems: GridContextMenuItemLike[],
     record: StoreRecord,
@@ -43,12 +42,11 @@ function buildMenuItems(
     agParams: PlainObject
 ) {
     // Transform to actions or ag-Grid ready strings.
-    const actions: Array<RecordAction|string> = menuItems
-        .flatMap(it => {
-            if (isString(it)) return replaceHoistToken(it, gridModel);
-            if (it instanceof RecordAction) return it;
-            return new RecordAction(it);
-        });
+    const actions: Array<RecordAction | string> = menuItems.flatMap(it => {
+        if (isString(it)) return replaceHoistToken(it, gridModel);
+        if (it instanceof RecordAction) return it;
+        return new RecordAction(it);
+    });
 
     const ret = [];
     actions.forEach(action => {
@@ -78,7 +76,8 @@ function buildMenuItems(
         const icon = isValidElement(displaySpec.icon) ? convertIconToHtml(displaySpec.icon) : null;
 
         const cssClasses = ['xh-grid-menu-option'];
-        if (displaySpec.intent) cssClasses.push(`xh-grid-menu-option--intent-${ displaySpec.intent }`);
+        if (displaySpec.intent)
+            cssClasses.push(`xh-grid-menu-option--intent-${displaySpec.intent}`);
         if (displaySpec.className) cssClasses.push(displaySpec.className);
 
         ret.push({
@@ -98,8 +97,7 @@ function buildMenuItems(
 }
 
 /** Pre-process hoist tokens to RecordActions, leaving ag-Grid token in place. **/
-function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordAction|string> {
-
+function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordAction | string> {
     switch (token) {
         case '-':
             return 'separator';
@@ -177,43 +175,46 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                 return uniq(records.map(rec => rec.get(field)));
             };
 
-            const filterDisplayFn = (op) => ({selectedRecords, record, column}) => {
-                if (isEmpty(selectedRecords) || !column?.filterable) return {hidden: true};
+            const filterDisplayFn =
+                op =>
+                ({selectedRecords, record, column}) => {
+                    if (isEmpty(selectedRecords) || !column?.filterable) return {hidden: true};
 
-                const {field} = column,
-                    fieldSpec = filterModel.getFieldSpec(field);
+                    const {field} = column,
+                        fieldSpec = filterModel.getFieldSpec(field);
 
-                if (!fieldSpec?.supportsOperator(op)) return {hidden: true};
+                    if (!fieldSpec?.supportsOperator(op)) return {hidden: true};
 
-                const values = getValues(selectedRecords, field);
-                if (values.length > 1) return {text: `${ values.length } values`};
+                    const values = getValues(selectedRecords, field);
+                    if (values.length > 1) return {text: `${values.length} values`};
 
-                const renderer = fieldSpec.renderer ?? column.renderer,
-                    elem = renderer ? renderer(values[0], {
-                        record,
-                        column,
-                        gridModel
-                    }) : values[0] ?? '[blank]',
-                    // Grid col renderers will very typically return elements, but we need this to be a string.
-                    // That's the contract for `RecordAction.text`, but even more importantly, we end up piping
-                    // those actions into Ag-Grid context menus, which *only* accept strings / HTML markup
-                    // and *not* ReactElements (as of AG v28.2).
-                    text = isValidElement(elem) ? renderToStaticMarkup(elem) : elem;
+                    const renderer = fieldSpec.renderer ?? column.renderer,
+                        elem = renderer
+                            ? renderer(values[0], {
+                                  record,
+                                  column,
+                                  gridModel
+                              })
+                            : values[0] ?? '[blank]',
+                        // Grid col renderers will very typically return elements, but we need this to be a string.
+                        // That's the contract for `RecordAction.text`, but even more importantly, we end up piping
+                        // those actions into Ag-Grid context menus, which *only* accept strings / HTML markup
+                        // and *not* ReactElements (as of AG v28.2).
+                        text = isValidElement(elem) ? renderToStaticMarkup(elem) : elem;
 
-                return {text};
-            };
+                    return {text};
+                };
 
             return new RecordAction({
                 text: 'Filter',
                 icon: Icon.filter(),
                 displayFn: ({column}) => {
                     return {
-                        hidden: (
+                        hidden:
                             !filterModel?.bind ||
                             !(filterModel.bind instanceof Store) ||
                             !filterModel.getFieldSpec(column?.field) ||
                             !column?.filterable
-                        )
                     };
                 },
                 items: [
@@ -242,7 +243,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                         icon: Icon.delete(),
                         displayFn: ({column}) => {
                             const filters = filterModel.getColumnFilters(column.field),
-                                text = `Clear ${ column.displayName } Filters`;
+                                text = `Clear ${column.displayName} Filters`;
                             return {text, disabled: isEmpty(filters)};
                         },
                         actionFn: ({column}) => {

@@ -16,7 +16,9 @@ import {PanelProps} from '../Panel';
 export const panelHeader = hoistCmp.factory<PanelProps>({
     displayName: 'PanelHeader',
     className: 'xh-panel-header',
-    model: false, memo: false, observer: false,
+    model: false,
+    memo: false,
+    observer: false,
 
     render({className, title, icon, headerItems = []}) {
         headerItems = headerItems ?? [];
@@ -26,12 +28,12 @@ export const panelHeader = hoistCmp.factory<PanelProps>({
             className,
             items: [
                 icon || null,
-                title ?
-                    div({
-                        className: 'xh-panel-header__title',
-                        item: title
-                    }) :
-                    filler(),
+                title
+                    ? div({
+                          className: 'xh-panel-header__title',
+                          item: title
+                      })
+                    : filler(),
                 ...headerItems
             ]
         });

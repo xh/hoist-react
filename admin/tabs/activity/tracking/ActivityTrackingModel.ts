@@ -20,7 +20,6 @@ import moment from 'moment';
 export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};
 
 export class ActivityTrackingModel extends HoistModel {
-
     override persistWith = PERSIST_ACTIVITY;
 
     @managed formModel: FormModel;
@@ -29,7 +28,9 @@ export class ActivityTrackingModel extends HoistModel {
     @managed filterChooserModel: FilterChooserModel;
     @managed gridModel: GridModel;
 
-    get dimensions(): string[] {return this.groupingChooserModel.value}
+    get dimensions(): string[] {
+        return this.groupingChooserModel.value;
+    }
 
     /**
      * Summary of currently active query / filters.
@@ -40,9 +41,13 @@ export class ActivityTrackingModel extends HoistModel {
         return `${XH.appName} Activity`;
     }
 
-    get endDay(): LocalDate {return this.formModel.values.endDay}
+    get endDay(): LocalDate {
+        return this.formModel.values.endDay;
+    }
 
-    get maxRows(): number {return this.formModel.values.maxRows}
+    get maxRows(): number {
+        return this.formModel.values.maxRows;
+    }
 
     /** True if data loaded from the server has been topped by maxRows. */
     @computed
@@ -69,7 +74,7 @@ export class ActivityTrackingModel extends HoistModel {
                 Col.browser.field,
                 Col.category.field,
                 Col.data.field,
-                {...Col.dateCreated.field as FieldSpec, displayName: 'Timestamp'},
+                {...(Col.dateCreated.field as FieldSpec), displayName: 'Timestamp'},
                 Col.day.field,
                 Col.dayRange.field,
                 Col.device.field,
@@ -102,7 +107,7 @@ export class ActivityTrackingModel extends HoistModel {
                 'userAgent',
                 {
                     field: 'elapsed',
-                    valueRenderer: (v) => {
+                    valueRenderer: v => {
                         return fmtNumber(v, {
                             label: 'ms',
                             formatConfig: {thousandSeparated: false, mantissa: 0}
@@ -123,7 +128,7 @@ export class ActivityTrackingModel extends HoistModel {
 
                         return ret.toDate();
                     },
-                    valueRenderer: (v) => fmtDate(v),
+                    valueRenderer: v => fmtDate(v),
                     ops: ['>', '>=', '<', '<=']
                 }
             ],
@@ -239,7 +244,7 @@ export class ActivityTrackingModel extends HoistModel {
             node.leafRows = node.children;
             delete node.children;
         } else {
-            node.children.forEach((child) => this.separateLeafRows(child));
+            node.children.forEach(child => this.separateLeafRows(child));
         }
     }
 
@@ -294,15 +299,21 @@ export class ActivityTrackingModel extends HoistModel {
 
         switch (dim) {
             // Sort date desc by default
-            case 'day': return rawVal.timestamp * -1;
+            case 'day':
+                return rawVal.timestamp * -1;
             // Months are formatted "June 2020" strings - sort desc.
-            case 'month': return moment(rawVal, this._monthFormat).valueOf() * -1;
+            case 'month':
+                return moment(rawVal, this._monthFormat).valueOf() * -1;
             // Everything else can sort with its natural value.
-            default: return rawVal;
+            default:
+                return rawVal;
         }
     }
 
-    getDefaultStartDay() {return LocalDate.currentAppDay().subtract(6)}
-    getDefaultEndDay() {return LocalDate.currentAppDay()}
-
+    getDefaultStartDay() {
+        return LocalDate.currentAppDay().subtract(6);
+    }
+    getDefaultEndDay() {
+        return LocalDate.currentAppDay();
+    }
 }

@@ -15,7 +15,6 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isString} from 'lodash';
 import {isValidElement, ReactNode} from 'react';
 
-
 export interface AppMenuButtonProps extends ButtonProps {
     /**
      * Array of extra menu items. Can contain:
@@ -63,9 +62,19 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
 
     render(props) {
         const {
-            className, extraItems,
-            hideAboutItem, hideAdminItem, hideChangelogItem, hideFeedbackItem, hideImpersonateItem,
-            hideLogoutItem, hideOptionsItem, hideThemeItem, disabled, ...rest} = props;
+            className,
+            extraItems,
+            hideAboutItem,
+            hideAdminItem,
+            hideChangelogItem,
+            hideFeedbackItem,
+            hideImpersonateItem,
+            hideLogoutItem,
+            hideOptionsItem,
+            hideThemeItem,
+            disabled,
+            ...rest
+        } = props;
 
         return popover({
             className,
@@ -160,11 +169,7 @@ function buildMenuItems(props: AppMenuButtonProps) {
         }
     ];
 
-    return parseMenuItems([
-        ...extraItems,
-        '-',
-        ...defaultItems
-    ]);
+    return parseMenuItems([...extraItems, '-', ...defaultItems]);
 }
 
 function parseMenuItems(items: MenuItemLike[]): ReactNode[] {

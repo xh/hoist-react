@@ -13,7 +13,6 @@ import {BaseFieldModel} from '../../cmp/form';
  * Immutable object representing a validation rule.
  */
 export class Rule {
-
     readonly check: Constraint[];
     readonly when: When;
 
@@ -31,8 +30,10 @@ export class Rule {
  * @returns String(s) or array of strings describing errors, or null or undefined if rule passes
  * successfully. May return a Promise of strings for async validation.
  */
-export type Constraint<T=any> = (fieldState: FieldState<T>, allValues: Record<string, any>) => Awaitable<Some<string>>;
-
+export type Constraint<T = any> = (
+    fieldState: FieldState<T>,
+    allValues: Record<string, any>
+) => Awaitable<Some<string>>;
 
 /**
  * Function to determine when to perform validation on a value.
@@ -44,7 +45,7 @@ export type Constraint<T=any> = (fieldState: FieldState<T>, allValues: Record<st
  */
 export type When = (entity: any, allValues: Record<string, any>) => boolean;
 
-export interface FieldState<T=any> {
+export interface FieldState<T = any> {
     /** Current value of the field */
     value: T;
 
@@ -62,7 +63,6 @@ export interface FieldState<T=any> {
 }
 
 export interface RuleSpec {
-
     /** Function(s) to perform validation. */
     check: Some<Constraint>;
 
@@ -73,4 +73,4 @@ export interface RuleSpec {
     when?: When;
 }
 
-export type RuleLike = RuleSpec|Constraint|Rule;
+export type RuleLike = RuleSpec | Constraint | Rule;
