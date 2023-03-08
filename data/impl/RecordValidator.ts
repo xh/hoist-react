@@ -14,7 +14,6 @@ import {TaskObserver} from '../../core';
  * @internal
  */
 export class RecordValidator {
-
     record: StoreRecord;
 
     @observable.ref _fieldErrors: RecordErrorMap = null;
@@ -79,7 +78,7 @@ export class RecordValidator {
 
         const promises = fieldsToValidate.flatMap(field => {
             fieldErrors[field.name] = [];
-            return field.rules.map(async (rule) => {
+            return field.rules.map(async rule => {
                 const result = await this.evaluateRuleAsync(record, field, rule);
                 fieldErrors[field.name].push(result);
             });
@@ -89,7 +88,7 @@ export class RecordValidator {
         if (runId !== this._validationRunId) return;
         fieldErrors = mapValues(fieldErrors, it => compact(flatten(it)));
 
-        runInAction(() => this._fieldErrors = fieldErrors);
+        runInAction(() => (this._fieldErrors = fieldErrors));
 
         return this.isValid;
     }
@@ -100,9 +99,7 @@ export class RecordValidator {
 
         if (_fieldErrors === null) return 'Unknown'; // Before executing any rules
 
-        return (values(_fieldErrors).some(errors => !isEmpty(errors))) ?
-            'NotValid' :
-            'Valid';
+        return values(_fieldErrors).some(errors => !isEmpty(errors)) ? 'NotValid' : 'Valid';
     }
 
     async evaluateRuleAsync(record: StoreRecord, field: Field, rule: Rule): Promise<string[]> {
@@ -111,7 +108,7 @@ export class RecordValidator {
             value = record.get(name);
 
         if (this.ruleIsActive(record, field, rule)) {
-            const promises = rule.check.map(async (constraint) => {
+            const promises = rule.check.map(async constraint => {
                 const fieldState = {value, name, displayName, record};
                 return await constraint(fieldState, values);
             });

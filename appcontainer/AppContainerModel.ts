@@ -24,7 +24,6 @@ import {ToastSourceModel} from './ToastSourceModel';
  * Root object for Framework GUI State.
  */
 export class AppContainerModel extends HoistModel {
-
     //------------
     // Sub-models
     //------------
@@ -82,7 +81,9 @@ export class AppContainerModel extends HoistModel {
 
         // Show Banner
         const mobile = XH.isMobileApp,
-            message = mobile ? 'Update available!' : `A new version of ${XH.clientAppName} is available!`,
+            message = mobile
+                ? 'Update available!'
+                : `A new version of ${XH.clientAppName} is available!`,
             buttonText = mobile ? version : `Update to ${version}`;
 
         XH.showBanner({

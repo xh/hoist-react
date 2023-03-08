@@ -14,9 +14,7 @@ import {ReactNode} from 'react';
 import './FileChooser.scss';
 import {FileChooserModel} from './FileChooserModel';
 
-
 export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps {
-
     /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
     accept?: Some<string>;
 
@@ -45,7 +43,6 @@ export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps
     targetText?: ReactNode;
 }
 
-
 /**
  * A component to select one or more files from the local filesystem. Wraps the third-party
  * react-dropzone component to provide both drag-and-drop and click-to-browse file selection.
@@ -65,19 +62,22 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
     model: uses(FileChooserModel),
     className: 'xh-file-chooser',
 
-    render({
-        model,
-        accept,
-        maxSize,
-        minSize,
-        targetText = 'Drag and drop files here, or click to browse...',
-        enableMulti = true,
-        enableAddMulti = enableMulti,
-        showFileGrid = true,
-        ...props
-    }, ref) {
+    render(
+        {
+            model,
+            accept,
+            maxSize,
+            minSize,
+            targetText = 'Drag and drop files here, or click to browse...',
+            enableMulti = true,
+            enableAddMulti = enableMulti,
+            showFileGrid = true,
+            ...props
+        },
+        ref
+    ) {
         const {lastRejectedCount} = model,
-            fileNoun = (count) => `${count} ${count === 1 ? 'file' : 'files'}`;
+            fileNoun = count => `${count} ${count === 1 ? 'file' : 'files'}`;
 
         return hbox({
             ref,
@@ -90,9 +90,13 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                     multiple: enableAddMulti,
                     item: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
                         const draggedCount = draggedFiles.length,
-                            targetTxt = isDragActive ? `Drop to add ${fileNoun(draggedCount)}.` : targetText,
-                            rejectTxt = lastRejectedCount && !isDragActive ?
-                                `Unable to accept ${fileNoun(lastRejectedCount)} for upload.` : '';
+                            targetTxt = isDragActive
+                                ? `Drop to add ${fileNoun(draggedCount)}.`
+                                : targetText,
+                            rejectTxt =
+                                lastRejectedCount && !isDragActive
+                                    ? `Unable to accept ${fileNoun(lastRejectedCount)} for upload.`
+                                    : '';
 
                         return div({
                             ...getRootProps(),

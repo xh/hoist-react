@@ -13,7 +13,9 @@ import {hoistCmp} from '@xh/hoist/core';
 export const [DialogBody, dialogBody] = hoistCmp.withFactory({
     displayName: 'DialogBody',
     className: 'bp4-dialog-body',
-    observer: false, model: false, memo: false,
+    observer: false,
+    model: false,
+    memo: false,
 
     render(props) {
         return div(props);
@@ -26,7 +28,9 @@ export const [DialogBody, dialogBody] = hoistCmp.withFactory({
 export const [DialogFooter, dialogFooter] = hoistCmp.withFactory({
     displayName: 'DialogFooter',
     className: 'bp4-dialog-footer',
-    observer: false, model: false, memo: false,
+    observer: false,
+    model: false,
+    memo: false,
 
     render(props) {
         return div(props);
@@ -39,7 +43,9 @@ export const [DialogFooter, dialogFooter] = hoistCmp.withFactory({
 export const [DialogFooterActions, dialogFooterActions] = hoistCmp.withFactory({
     displayName: 'DialogFooterActions',
     className: 'bp4-dialog-footer-actions',
-    observer: false, model: false, memo: false,
+    observer: false,
+    model: false,
+    memo: false,
 
     render(props) {
         return div(props);

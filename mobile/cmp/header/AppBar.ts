@@ -20,7 +20,6 @@ import {ReactElement, ReactNode} from 'react';
 import './AppBar.scss';
 import {appMenuButton, AppMenuButtonProps} from './AppMenuButton';
 
-
 export interface AppBarProps extends HoistProps {
     /** App icon to display to the left of the title. */
     icon?: ReactElement;
@@ -69,20 +68,23 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
     className: 'xh-appbar',
     model: false,
 
-    render({
-        className,
-        icon,
-        title,
-        leftItems,
-        rightItems,
-        hideAppMenuButton,
-        hideBackButton,
-        hideRefreshButton,
-        appMenuButtonProps = {},
-        appMenuButtonPosition = 'right',
-        backButtonProps = {},
-        refreshButtonProps = {}
-    }, ref) {
+    render(
+        {
+            className,
+            icon,
+            title,
+            leftItems,
+            rightItems,
+            hideAppMenuButton,
+            hideBackButton,
+            hideRefreshButton,
+            appMenuButtonProps = {},
+            appMenuButtonPosition = 'right',
+            backButtonProps = {},
+            refreshButtonProps = {}
+        },
+        ref
+    ) {
         const navigatorModel = useContextModel(NavigatorModel);
 
         return toolbar({
@@ -101,7 +103,7 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
                             menuPosition: 'bottom-right',
                             ...appMenuButtonProps
                         } as AppMenuButtonProps),
-                        ...leftItems || []
+                        ...(leftItems || [])
                     ]
                 }),
                 button({
@@ -119,7 +121,7 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
                 div({
                     className: 'xh-appbar-right',
                     items: [
-                        ...rightItems || [],
+                        ...(rightItems || []),
                         refreshButton({
                             omit: hideRefreshButton,
                             disabled: navigatorModel?.disableAppRefreshButton,

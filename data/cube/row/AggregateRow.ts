@@ -14,9 +14,11 @@ import {BaseRow} from './BaseRow';
  *  Object used by views to gather Aggregate rows.
  */
 export class AggregateRow extends BaseRow {
-    override get isAggregate()   {return true}
+    override get isAggregate() {
+        return true;
+    }
 
-    readonly dim: CubeField = null;         // null for summary row
+    readonly dim: CubeField = null; // null for summary row
     readonly dimName: string = null;
 
     constructor(

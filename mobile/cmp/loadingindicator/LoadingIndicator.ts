@@ -18,7 +18,7 @@ export interface LoadingIndicatorProps extends HoistProps {
     /** TaskObserver(s) that should be monitored to determine if the Indicator should be displayed. */
     bind?: Some<TaskObserver>;
     /** Position of the indicator relative to its containing component. */
-    corner?: 'tl'|'tr'|'bl'|'br';
+    corner?: 'tl' | 'tr' | 'bl' | 'br';
     /** True to display the indicator. */
     isDisplayed?: boolean;
     /** Max characters allowed in message, after which it will be elided. Default 30. */
@@ -41,14 +41,10 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory<Loading
     displayName: 'LoadingIndicator',
     className: 'xh-loading-indicator',
 
-    render({
-        isDisplayed,
-        message,
-        spinner = true,
-        corner = 'br',
-        maxMessageLength = 30,
-        className
-    }, ref) {
+    render(
+        {isDisplayed, message, spinner = true, corner = 'br', maxMessageLength = 30, className},
+        ref
+    ) {
         const impl = useLocalModel(LocalMaskModel);
 
         isDisplayed = withDefault(isDisplayed, impl.task?.isPending);
@@ -57,14 +53,14 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory<Loading
 
         if (!isDisplayed || (!spinner && !message)) return null;
 
-        const innerItems = () =>  {
+        const innerItems = () => {
             const spinnerEl = spinnerCmp({compact: true});
             if (!message) return [spinnerEl];
             const msgBox = div({className: `xh-loading-indicator__message`, item: message});
 
-            return corner === 'tl' || corner === 'bl' ?
-                [spinner ? spinnerEl : null, msgBox] :
-                [msgBox, spinner ? spinnerEl : null];
+            return corner === 'tl' || corner === 'bl'
+                ? [spinner ? spinnerEl : null, msgBox]
+                : [msgBox, spinner ? spinnerEl : null];
         };
 
         const hasMessageCls = message ? 'xh-loading-indicator--has-message' : null,
@@ -85,9 +81,10 @@ class LocalMaskModel extends HoistModel {
     override onLinked() {
         const {bind} = this.componentProps;
         if (bind) {
-            this.task = bind instanceof TaskObserver ?
-                bind :
-                this.markManaged(TaskObserver.trackAll({tasks: bind}));
+            this.task =
+                bind instanceof TaskObserver
+                    ? bind
+                    : this.markManaged(TaskObserver.trackAll({tasks: bind}));
         }
     }
 }

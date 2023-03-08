@@ -25,7 +25,10 @@ export class SizingModeModel extends HoistModel {
 
     @action
     setSizingMode(sizingMode: SizingMode) {
-        throwIf(!values(SizingMode).includes(sizingMode), `Sizing mode "${sizingMode}" not recognised.`);
+        throwIf(
+            !values(SizingMode).includes(sizingMode),
+            `Sizing mode "${sizingMode}" not recognised.`
+        );
 
         const classList = document.body.classList;
         values(SizingMode).forEach(it => classList.toggle(`xh-${it}`, it === sizingMode));
@@ -37,7 +40,9 @@ export class SizingModeModel extends HoistModel {
                 platform = this.getPlatform();
 
             if (!isPlainObject(pref)) {
-                console.warn(`Required pref 'xhSizingMode' must be type JSON - update via Admin Console.`);
+                console.warn(
+                    `Required pref 'xhSizingMode' must be type JSON - update via Admin Console.`
+                );
                 return;
             }
 

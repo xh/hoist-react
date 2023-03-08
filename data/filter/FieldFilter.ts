@@ -32,15 +32,38 @@ import {FieldFilterOperator, FieldFilterSpec, FilterTestFn} from './Types';
  * Immutable.
  */
 export class FieldFilter extends Filter {
-
-    get isFieldFilter() {return true}
+    get isFieldFilter() {
+        return true;
+    }
 
     readonly field: string;
     readonly op: FieldFilterOperator;
     readonly value: any;
 
-    static OPERATORS = ['=', '!=', '>', '>=', '<', '<=', 'like', 'not like', 'begins', 'ends', 'includes', 'excludes'];
-    static ARRAY_OPERATORS = ['=', '!=', 'like', 'not like', 'begins', 'ends', 'includes', 'excludes'];
+    static OPERATORS = [
+        '=',
+        '!=',
+        '>',
+        '>=',
+        '<',
+        '<=',
+        'like',
+        'not like',
+        'begins',
+        'ends',
+        'includes',
+        'excludes'
+    ];
+    static ARRAY_OPERATORS = [
+        '=',
+        '!=',
+        'like',
+        'not like',
+        'begins',
+        'ends',
+        'includes',
+        'excludes'
+    ];
 
     /**
      * Constructor - not typically called by apps - create via {@link parseFilter} instead.
@@ -51,10 +74,12 @@ export class FieldFilter extends Filter {
 
         throwIf(!field, 'FieldFilter requires a field');
         throwIf(isUndefined(value), 'FieldFilter requires a value');
-        throwIf(!FieldFilter.OPERATORS.includes(op),
+        throwIf(
+            !FieldFilter.OPERATORS.includes(op),
             `FieldFilter requires valid "op" value. Operator "${op}" not recognized.`
         );
-        throwIf(!FieldFilter.ARRAY_OPERATORS.includes(op) && isArray(value),
+        throwIf(
+            !FieldFilter.ARRAY_OPERATORS.includes(op) && isArray(value),
             `Operator "${op}" does not support multiple values. Use a CompoundFilter instead.`
         );
 
@@ -82,9 +107,9 @@ export class FieldFilter extends Filter {
             if (!storeField) return () => true; // Ignore (do not filter out) if field not in store
 
             const fieldType = storeField.type === 'tags' ? 'string' : storeField.type;
-            value = isArray(value) ?
-                value.map(v => parseFieldValue(v, fieldType)) :
-                parseFieldValue(value, fieldType);
+            value = isArray(value)
+                ? value.map(v => parseFieldValue(v, fieldType))
+                : parseFieldValue(value, fieldType);
         }
         const getVal = store ? r => r.committedData[field] : r => r[field],
             doNotFilter = r => store && isNil(r.committedData); // Ignore (do not filter out) record if part of a store and it has no committed data
@@ -179,11 +204,10 @@ export class FieldFilter extends Filter {
             other instanceof FieldFilter &&
             other.field === this.field &&
             other.op === this.op &&
-            (
-                isArray(other.value) && isArray(this.value) ?
-                    other.value.length === this.value.length && difference(other.value, this.value).length === 0 :
-                    other.value === this.value
-            )
+            (isArray(other.value) && isArray(this.value)
+                ? other.value.length === this.value.length &&
+                  difference(other.value, this.value).length === 0
+                : other.value === this.value)
         );
     }
 }

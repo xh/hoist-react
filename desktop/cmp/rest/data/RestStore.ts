@@ -10,33 +10,24 @@ import '@xh/hoist/desktop/register';
 import {filter, isNil, keyBy, mapValues} from 'lodash';
 import {RestField, RestFieldSpec} from './RestField';
 
-
 export interface RestStoreConfig extends UrlStoreConfig {
-
     /** Field names, configs, or instances. */
-    fields?: Array<string|RestFieldSpec|RestField>;
+    fields?: Array<string | RestFieldSpec | RestField>;
 
     /** Whether lookups should be loaded each time new data is loaded or updated by this client. */
     reloadLookupsOnLoad?: boolean;
 }
-
 
 /**
  * Store with additional support for RestGrid.
  * Provides support for lookups, and CRUD operations on records.
  */
 export class RestStore extends UrlStore {
-
     declare fields: RestField[];
     reloadLookupsOnLoad: boolean;
     private lookupsLoaded = false;
 
-    constructor({
-        url,
-        dataRoot = 'data',
-        reloadLookupsOnLoad = false,
-        ...rest
-    }: RestStoreConfig) {
+    constructor({url, dataRoot = 'data', reloadLookupsOnLoad = false, ...rest}: RestStoreConfig) {
         super({url, dataRoot, ...rest});
         this.reloadLookupsOnLoad = reloadLookupsOnLoad;
     }
@@ -56,11 +47,11 @@ export class RestStore extends UrlStore {
         return XH.fetchJson({
             url: `${url}/${rec.id}`,
             method: 'DELETE'
-        }).then(() => {
-            this.updateData({remove: [rec.id]});
-        }).linkTo(
-            this.loadModel
-        );
+        })
+            .then(() => {
+                this.updateData({remove: [rec.id]});
+            })
+            .linkTo(this.loadModel);
     }
 
     async bulkDeleteRecordsAsync(records: StoreRecord[]) {
@@ -69,32 +60,28 @@ export class RestStore extends UrlStore {
             resp = await XH.fetchJson({
                 url: `${url}/bulkDelete`,
                 params: {ids}
-            }).linkTo(
-                this.loadModel
-            );
+            }).linkTo(this.loadModel);
 
         await this.loadAsync();
         return resp;
     }
 
-    async addRecordAsync(rec: {id?: StoreRecordId, data: PlainObject}) {
-        return this.saveRecordInternalAsync(rec, true)
-            .linkTo(this.loadModel);
+    async addRecordAsync(rec: {id?: StoreRecordId; data: PlainObject}) {
+        return this.saveRecordInternalAsync(rec, true).linkTo(this.loadModel);
     }
 
-    async saveRecordAsync(rec: {id: StoreRecordId, data: PlainObject}) {
-        return this.saveRecordInternalAsync(rec, false)
-            .linkTo(this.loadModel);
+    async saveRecordAsync(rec: {id: StoreRecordId; data: PlainObject}) {
+        return this.saveRecordInternalAsync(rec, false).linkTo(this.loadModel);
     }
 
     async bulkUpdateRecordsAsync(ids: StoreRecordId[], newParams: PlainObject) {
         const {url} = this,
-            resp = await XH.fetchService.putJson({
-                url: `${url}/bulkUpdate`,
-                body: {ids, newParams}
-            }).linkTo(
-                this.loadModel
-            );
+            resp = await XH.fetchService
+                .putJson({
+                    url: `${url}/bulkUpdate`,
+                    body: {ids, newParams}
+                })
+                .linkTo(this.loadModel);
 
         await this.loadAsync();
         return resp;
@@ -113,7 +100,7 @@ export class RestStore extends UrlStore {
     //--------------------------------
     // Implementation
     //--------------------------------
-    private async saveRecordInternalAsync(rec: {id?: StoreRecordId, data: PlainObject}, isAdd) {
+    private async saveRecordInternalAsync(rec: {id?: StoreRecordId; data: PlainObject}, isAdd) {
         let {url, dataRoot} = this,
             {id} = rec;
 
@@ -125,7 +112,7 @@ export class RestStore extends UrlStore {
 
         const fetchMethod = isAdd ? 'postJson' : 'putJson',
             response = await XH.fetchService[fetchMethod]({url, body: {data}}),
-            responseData = (dataRoot) ? response[dataRoot] : response;
+            responseData = dataRoot ? response[dataRoot] : response;
 
         this.updateData([responseData]);
 

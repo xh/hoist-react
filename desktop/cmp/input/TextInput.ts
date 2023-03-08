@@ -17,12 +17,7 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import {ReactElement, ReactNode, Ref, FocusEvent} from 'react';
 
-export interface TextInputProps extends
-    HoistProps,
-    HoistInputProps,
-    LayoutProps,
-    StyleProps
-{
+export interface TextInputProps extends HoistProps, HoistInputProps, LayoutProps, StyleProps {
     value?: string;
 
     /**
@@ -74,7 +69,7 @@ export interface TextInputProps extends
     spellCheck?: boolean;
 
     /** Underlying HTML <input> element type. */
-    type?: 'text'|'password';
+    type?: 'text' | 'password';
 }
 
 /**
@@ -99,7 +94,7 @@ export class TextInputModel extends HoistInputModel {
         return withDefault(this.componentProps.commitOnChange, false);
     }
 
-    onChange = (ev) => {
+    onChange = ev => {
         let {value} = ev.target;
         if (value === '') value = null;
         this.noteValueChange(value);
@@ -119,55 +114,57 @@ export class TextInputModel extends HoistInputModel {
     };
 }
 
-const cmp = hoistCmp.factory<TextInputModel>(
-    ({model, className, ...props}, ref) => {
-        const {width, flex, ...layoutProps} = getLayoutProps(props);
+const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref) => {
+    const {width, flex, ...layoutProps} = getLayoutProps(props);
 
-        const isClearable = !isEmpty(model.internalValue);
+    const isClearable = !isEmpty(model.internalValue);
 
-        return div({
-            item: inputGroup({
-                value: model.renderValue || '',
+    return div({
+        item: inputGroup({
+            value: model.renderValue || '',
 
-                autoComplete: withDefault(props.autoComplete, props.type === 'password' ? 'new-password' : 'off'),
-                autoFocus: props.autoFocus,
-                disabled: props.disabled,
-                inputRef: composeRefs(model.inputRef, props.inputRef),
-                leftIcon: props.leftIcon,
-                placeholder: props.placeholder,
-                rightElement: props.rightElement ||
-                    (props.enableClear && !props.disabled && isClearable ? clearButton() : null),
-                round: withDefault(props.round, false),
-                spellCheck: withDefault(props.spellCheck, false),
-                tabIndex: props.tabIndex,
-                type: props.type,
+            autoComplete: withDefault(
+                props.autoComplete,
+                props.type === 'password' ? 'new-password' : 'off'
+            ),
+            autoFocus: props.autoFocus,
+            disabled: props.disabled,
+            inputRef: composeRefs(model.inputRef, props.inputRef),
+            leftIcon: props.leftIcon,
+            placeholder: props.placeholder,
+            rightElement:
+                props.rightElement ||
+                (props.enableClear && !props.disabled && isClearable ? clearButton() : null),
+            round: withDefault(props.round, false),
+            spellCheck: withDefault(props.spellCheck, false),
+            tabIndex: props.tabIndex,
+            type: props.type,
 
-                id: props.id,
-                style: {
-                    ...props.style,
-                    ...layoutProps,
-                    textAlign: withDefault(props.textAlign, 'left')
-                },
-
-                onChange: model.onChange,
-                onKeyDown: model.onKeyDown
-            }),
-
-            className,
+            id: props.id,
             style: {
-                width: withDefault(width, 200),
-                flex: withDefault(flex, null)
+                ...props.style,
+                ...layoutProps,
+                textAlign: withDefault(props.textAlign, 'left')
             },
 
-            onBlur: model.onBlur,
-            onFocus: model.onFocus,
-            ref
-        });
-    }
-);
+            onChange: model.onChange,
+            onKeyDown: model.onKeyDown
+        }),
 
-const clearButton = hoistCmp.factory<TextInputModel>(
-    ({model}) => button({
+        className,
+        style: {
+            width: withDefault(width, 200),
+            flex: withDefault(flex, null)
+        },
+
+        onBlur: model.onBlur,
+        onFocus: model.onFocus,
+        ref
+    });
+});
+
+const clearButton = hoistCmp.factory<TextInputModel>(({model}) =>
+    button({
         icon: Icon.cross(),
         tabIndex: -1,
         minimal: true,

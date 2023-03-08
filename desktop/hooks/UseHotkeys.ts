@@ -30,4 +30,3 @@ export function useHotkeys(child?: ReactElement, hotkeys?: HotkeyConfig[]) {
 
     return cloneElement(child, {onKeyDown: handleKeyDown, onKeyUp: handleKeyUp});
 }
-

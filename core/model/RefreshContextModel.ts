@@ -36,7 +36,6 @@ import {pull} from 'lodash';
  * @see HoistModel.loadSupport
  */
 export class RefreshContextModel extends HoistModel {
-
     /** Targets registered for refresh. */
     refreshTargets: Loadable[] = [];
 

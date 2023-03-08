@@ -35,7 +35,6 @@ export class ChangelogService extends HoistService {
 
     static instance: ChangelogService;
 
-
     // Optional JSON AppConfig key to soft-configure this service - see this.config for shape.
     SVC_CONFIG_KEY: string = 'xhChangelogConfig';
     // Optional string Preference key to track last read log entry + enable unread notifications.
@@ -63,7 +62,8 @@ export class ChangelogService extends HoistService {
     get enabled(): boolean {
         const {config, versions} = this,
             {enabled, limitToRoles} = config,
-            userHasAccess = isEmpty(limitToRoles) || limitToRoles.some(it => XH.getUser().hasRole(it));
+            userHasAccess =
+                isEmpty(limitToRoles) || limitToRoles.some(it => XH.getUser().hasRole(it));
 
         return XH.isDesktop && enabled && userHasAccess && !isEmpty(versions);
     }
@@ -84,9 +84,9 @@ export class ChangelogService extends HoistService {
     }
 
     override async initAsync() {
-        this.changelog = !isEmpty(jsonFromMarkdown?.versions) ?
-            jsonFromMarkdown :
-            {title: null, versions: []};
+        this.changelog = !isEmpty(jsonFromMarkdown?.versions)
+            ? jsonFromMarkdown
+            : {title: null, versions: []};
 
         this.versions = this.parseVersions(this.changelog);
         this.updateUnreadStatus();
@@ -101,14 +101,15 @@ export class ChangelogService extends HoistService {
         }
 
         if (!latestAvailableVersion || !XH.prefService.hasKey(LAST_READ_PREF_KEY)) {
-            console.warn('Unable to mark changelog as read - latest version or required pref not found.');
+            console.warn(
+                'Unable to mark changelog as read - latest version or required pref not found.'
+            );
             return;
         }
 
         XH.setPref(LAST_READ_PREF_KEY, latestAvailableVersion);
         this.updateUnreadStatus();
     }
-
 
     //------------------------
     // Implementation
@@ -146,7 +147,10 @@ export class ChangelogService extends HoistService {
 
             return versions;
         } catch (e) {
-            console.error('Error parsing changelog JSON into versions - changelog will not be available', e);
+            console.error(
+                'Error parsing changelog JSON into versions - changelog will not be available',
+                e
+            );
             return [];
         }
     }
@@ -157,22 +161,22 @@ export class ChangelogService extends HoistService {
 
     private includeCategory(catTitle) {
         // Check against '_' is due to catch-all category created by changelog-parser lib.
-        return catTitle !== '_' && !this.config.excludedCategories.find(it => catTitle.includes(it));
+        return (
+            catTitle !== '_' && !this.config.excludedCategories.find(it => catTitle.includes(it))
+        );
     }
 
     @action
     private updateUnreadStatus() {
         const {enabled, latestNonEmptyVersion} = this,
             lastReadVersion = XH.getPref(this.LAST_READ_PREF_KEY, null);
-        this.currentVersionIsUnread = (
+        this.currentVersionIsUnread =
             enabled &&
             latestNonEmptyVersion &&
             lastReadVersion &&
-            !checkMinVersion(lastReadVersion, latestNonEmptyVersion)
-        );
+            !checkMinVersion(lastReadVersion, latestNonEmptyVersion);
     }
 }
-
 
 export interface ChangelogVersion {
     version: string;
@@ -185,4 +189,3 @@ export interface ChangelogCategory {
     title: string;
     items: string[];
 }
-

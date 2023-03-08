@@ -56,7 +56,6 @@ export function useInlineEditorModel(
     });
 }
 
-
 /**
  * Local Model supporting inline cell editor components. Provides base functionality required by
  * ag-grid plus extension points for editors needing more complex behaviors.

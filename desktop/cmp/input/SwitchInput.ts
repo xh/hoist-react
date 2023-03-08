@@ -12,11 +12,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {ReactNode} from 'react';
 import './SwitchInput.scss';
 
-export interface SwitchInputProps extends
-    HoistProps,
-    HoistInputProps,
-    StyleProps
-{
+export interface SwitchInputProps extends HoistProps, HoistInputProps, StyleProps {
     value?: boolean;
 
     /** True if the control should appear as an inline element (defaults to true). */
@@ -50,28 +46,26 @@ class SwitchInputModel extends HoistInputModel {
     override xhImpl = true;
 }
 
-const cmp = hoistCmp.factory<SwitchInputModel>(
-    ({model, className, ...props}, ref) => {
-        const labelSide = withDefault(props.labelSide, 'right');
+const cmp = hoistCmp.factory<SwitchInputModel>(({model, className, ...props}, ref) => {
+    const labelSide = withDefault(props.labelSide, 'right');
 
-        return switchControl({
-            checked: !!model.renderValue,
+    return switchControl({
+        checked: !!model.renderValue,
 
-            alignIndicator: labelSide === 'left' ? 'right' : 'left',
-            disabled: props.disabled,
-            inline: withDefault(props.inline, true),
-            label: props.label,
-            style: props.style,
-            tabIndex: props.tabIndex,
+        alignIndicator: labelSide === 'left' ? 'right' : 'left',
+        disabled: props.disabled,
+        inline: withDefault(props.inline, true),
+        label: props.label,
+        style: props.style,
+        tabIndex: props.tabIndex,
 
-            id: props.id,
-            className,
+        id: props.id,
+        className,
 
-            onBlur: model.onBlur,
-            onFocus: model.onFocus,
-            onChange: (e) => model.noteValueChange(e.target.checked),
-            inputRef: model.inputRef,
-            ref
-        });
-    }
-);
+        onBlur: model.onBlur,
+        onFocus: model.onFocus,
+        onChange: e => model.noteValueChange(e.target.checked),
+        inputRef: model.inputRef,
+        ref
+    });
+});

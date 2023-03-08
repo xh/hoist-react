@@ -36,7 +36,11 @@ export const statsPanel = hoistCmp.factory({
                         interactionKind: 'hover',
                         content: div({
                             className: 'xh-pad',
-                            item: span('Note that JS heap space is as reported by the ', code('window.performance.memory'), ' API.')
+                            item: span(
+                                'Note that JS heap space is as reported by the ',
+                                code('window.performance.memory'),
+                                ' API.'
+                            )
                         })
                     }),
                     filler(),

@@ -5,7 +5,15 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, vbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, TaskObserver, useContextModel, Some, HoistProps, ElementFactory, hoistCmp} from '@xh/hoist/core';
+import {
+    BoxProps,
+    TaskObserver,
+    useContextModel,
+    Some,
+    HoistProps,
+    ElementFactory,
+    hoistCmp
+} from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
@@ -17,10 +25,7 @@ import {isValidElement, ReactNode, ReactElement} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import './Panel.scss';
 
-export interface PanelProps extends
-    HoistProps,
-    Omit<BoxProps, 'title'>
-{
+export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
     /** A toolbar to be docked at the bottom of the panel. */
     bbar?: Some<ReactNode>;
 
@@ -37,7 +42,7 @@ export interface PanelProps extends
      *   + one or more TaskObservers for a default load mask bound to the tasks
      *   + the string 'onLoad' for a default load mask bound to the loading of the current model.
      */
-    mask?: Some<TaskObserver>|ReactElement|boolean|'onLoad';
+    mask?: Some<TaskObserver> | ReactElement | boolean | 'onLoad';
 
     /**
      * LoadingIndicator to render on this panel. Set to:
@@ -46,7 +51,7 @@ export interface PanelProps extends
      *   + one or more TaskObservers for a default LoadingIndicator bound to the tasks
      *   + the string 'onLoad' for a default LoadingIndicator bound to the loading of the current model.
      */
-    loadingIndicator?: Some<TaskObserver>|ReactElement|boolean|'onLoad';
+    loadingIndicator?: Some<TaskObserver> | ReactElement | boolean | 'onLoad';
 
     /** Allow the panel to scroll vertically */
     scrollable?: boolean;
@@ -57,7 +62,6 @@ export interface PanelProps extends
     /** Title text added to the panel's header. */
     title?: ReactNode;
 }
-
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
@@ -98,7 +102,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         }
 
         // 2) Set coreContents element based on scrollable.
-        const coreContentsEl = scrollable ? div : vbox as ElementFactory,
+        const coreContentsEl = scrollable ? div : (vbox as ElementFactory),
             coreContents = coreContentsEl({
                 className: 'xh-panel__content',
                 items: children
@@ -122,19 +126,20 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
     }
 });
 
-
 //------------------------
 // Implementation
 //------------------------
 function parseLoadDecorator(prop, name, contextModel) {
     const cmp = (name === 'mask' ? mask : loadingIndicator) as ElementFactory;
-    if (!prop)                                  return null;
-    if (prop === true)                          return cmp({isDisplayed: true});
-    if (isValidElement(prop))                   return prop;
+    if (!prop) return null;
+    if (prop === true) return cmp({isDisplayed: true});
+    if (isValidElement(prop)) return prop;
     if (prop === 'onLoad') {
         const loadModel = contextModel?.loadModel;
         if (!loadModel) {
-            console.warn(`Cannot use 'onLoad' for '${name}'.  Context model does not implement loading.`);
+            console.warn(
+                `Cannot use 'onLoad' for '${name}'.  Context model does not implement loading.`
+            );
             return null;
         }
         return cmp({bind: loadModel, spinner: true});

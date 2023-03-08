@@ -13,4 +13,3 @@ import {isFunction} from 'lodash';
 export function isOmitted(obj?: {omit?: Thunkable<boolean>}): boolean {
     return isFunction(obj?.omit) ? obj.omit() : !!obj?.omit;
 }
-

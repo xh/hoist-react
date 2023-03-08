@@ -13,10 +13,9 @@ import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty, filter, without, castArray} from 'lodash';
 import {Children, cloneElement, isValidElement} from 'react';
 
-export interface ButtonGroupInputProps extends
-    Omit<ButtonGroupProps<HoistModel>, 'onChange'>,
-    HoistInputProps
-{
+export interface ButtonGroupInputProps
+    extends Omit<ButtonGroupProps<HoistModel>, 'onChange'>,
+        HoistInputProps {
     /**
      * True to allow buttons to be unselected (aka inactivated). Defaults to false.
      * Does not apply when enableMulti: true.
@@ -52,7 +51,6 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory<ButtonG
     }
 });
 (ButtonGroupInput as any).hasLayoutSupport = true;
-
 
 //----------------------------------
 // Implementation
@@ -102,64 +100,62 @@ class ButtonGroupInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<ButtonGroupInputModel>(
-    ({model, className, ...props}, ref) => {
-        const {
-            children,
-            //  HoistInput Props
-            bind,
-            disabled,
-            onChange,
-            onCommit,
-            tabIndex,
-            value,
-            // ButtonGroupInput Props
-            enableClear,
-            enableMulti,
-            // Button props applied to each child button
-            intent,
-            minimal,
-            outlined,
-            // ...and ButtonGroup gets all the rest
-            ...buttonGroupProps
-        } = getNonLayoutProps(props);
+const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props}, ref) => {
+    const {
+        children,
+        //  HoistInput Props
+        bind,
+        disabled,
+        onChange,
+        onCommit,
+        tabIndex,
+        value,
+        // ButtonGroupInput Props
+        enableClear,
+        enableMulti,
+        // Button props applied to each child button
+        intent,
+        minimal,
+        outlined,
+        // ...and ButtonGroup gets all the rest
+        ...buttonGroupProps
+    } = getNonLayoutProps(props);
 
-        const buttons = Children.map(children, button => {
-            if (!button) return null;
+    const buttons = Children.map(children, button => {
+        if (!button) return null;
 
-            if (!isValidElement(button) || button.type !== Button) {
-                throw XH.exception('ButtonGroupInput child must be a Button.');
-            }
+        if (!isValidElement(button) || button.type !== Button) {
+            throw XH.exception('ButtonGroupInput child must be a Button.');
+        }
 
-            const {value, intent: btnIntent} = button.props,
-                btnDisabled = disabled || button.props.disabled;
+        const {value, intent: btnIntent} = button.props,
+            btnDisabled = disabled || button.props.disabled;
 
-            throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
+        throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
 
-            const isActive = model.isActive(value);
+        const isActive = model.isActive(value);
 
-            return cloneElement(button, {
-                active: isActive,
-                intent: btnIntent ?? intent,
-                minimal: withDefault(minimal, false),
-                outlined: withDefault(outlined, false),
-                disabled: withDefault(btnDisabled, false),
-                onClick: () => model.onButtonClick(value),
-                // Workaround for https://github.com/palantir/blueprint/issues/3971
-                key: `${isActive} ${value}`,
-                autoFocus: isActive && model.hasFocus
-            } as ButtonGroupProps);
-        });
+        return cloneElement(button, {
+            active: isActive,
+            intent: btnIntent ?? intent,
+            minimal: withDefault(minimal, false),
+            outlined: withDefault(outlined, false),
+            disabled: withDefault(btnDisabled, false),
+            onClick: () => model.onButtonClick(value),
+            // Workaround for https://github.com/palantir/blueprint/issues/3971
+            key: `${isActive} ${value}`,
+            autoFocus: isActive && model.hasFocus
+        } as ButtonGroupProps);
+    });
 
-        return buttonGroup({
-            items: buttons,
-            ...(buttonGroupProps as ButtonGroupProps),
-            minimal: withDefault(minimal, outlined, false),
-            ...getLayoutProps(props),
-            onBlur: model.onBlur,
-            onFocus: model.onFocus,
-            className,
-            ref
-        });
-    }
-);
+    return buttonGroup({
+        items: buttons,
+        ...(buttonGroupProps as ButtonGroupProps),
+        minimal: withDefault(minimal, outlined, false),
+        ...getLayoutProps(props),
+        onBlur: model.onBlur,
+        onFocus: model.onFocus,
+        className,
+        ref
+    });
+});

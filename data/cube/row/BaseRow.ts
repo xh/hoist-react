@@ -15,7 +15,6 @@ import {RowUpdate} from './RowUpdate';
  * Base class for a view row.
  */
 export abstract class BaseRow {
-
     readonly view: View = null;
     readonly id: string = null;
     readonly data: PlainObject;
@@ -26,10 +25,15 @@ export abstract class BaseRow {
     locked: boolean = false;
     canAggregate: PlainObject;
 
-
-    get isLeaf()        {return false}
-    get isAggregate()   {return false}
-    get isBucket()      {return false}
+    get isLeaf() {
+        return false;
+    }
+    get isAggregate() {
+        return false;
+    }
+    get isBucket() {
+        return false;
+    }
 
     constructor(view: View, id: string) {
         this.view = view;
@@ -97,33 +101,48 @@ export abstract class BaseRow {
     private isRedundantChild(parent: any, child: any) {
         const parentDim = parent.dim,
             childDim = child.dim;
-        return childDim && parentDim &&
+        return (
+            childDim &&
+            parentDim &&
             childDim.parentDimension === parentDim.name &&
-            child.data[childDim.name] === parent.data[parentDim.name];
+            child.data[childDim.name] === parent.data[parentDim.name]
+        );
     }
 
     //-----------------------------------
     // Called by aggregates and buckets
     //----------------------------------
-    protected initAggregate(children: BaseRow[], dimOrBucketName: string, val: any, appliedDimensions: PlainObject) {
+    protected initAggregate(
+        children: BaseRow[],
+        dimOrBucketName: string,
+        val: any,
+        appliedDimensions: PlainObject
+    ) {
         const {view, data} = this;
 
         this.children = children;
-        children.forEach(it => it.parent = this);
+        children.forEach(it => (it.parent = this));
 
-        view.fields.forEach(({name}) => data[name] = null);
+        view.fields.forEach(({name}) => (data[name] = null));
         Object.assign(data, appliedDimensions);
 
-        this.canAggregate = reduce(view.fields, (ret, field) => {
-            const {name} = field;
-            if (appliedDimensions.hasOwnProperty(name)) {
-                ret[name] = false;
-            } else {
-                const {aggregator, canAggregateFn} = field;
-                ret[name] = aggregator && (!canAggregateFn || canAggregateFn(dimOrBucketName, val, appliedDimensions));
-            }
-            return ret;
-        }, {});
+        this.canAggregate = reduce(
+            view.fields,
+            (ret, field) => {
+                const {name} = field;
+                if (appliedDimensions.hasOwnProperty(name)) {
+                    ret[name] = false;
+                } else {
+                    const {aggregator, canAggregateFn} = field;
+                    ret[name] =
+                        aggregator &&
+                        (!canAggregateFn ||
+                            canAggregateFn(dimOrBucketName, val, appliedDimensions));
+                }
+                return ret;
+            },
+            {}
+        );
 
         this.computeAggregates();
     }

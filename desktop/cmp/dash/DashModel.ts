@@ -11,7 +11,6 @@ import {HoistModel, managed, PersistenceProvider} from '@xh/hoist/core';
  * Base Model for {@link DashCanvasModel} and {@link DashContainerModel}.
  */
 export abstract class DashModel<VSPEC, VSTATE, VMODEL> extends HoistModel {
-
     //---------------------------
     // Core State
     //---------------------------

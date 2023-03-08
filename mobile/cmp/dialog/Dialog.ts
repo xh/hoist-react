@@ -59,7 +59,6 @@ export const [Dialog, dialog] = hoistCmp.withFactory<DialogProps>({
     }
 });
 
-
 //-----------------------------------------------------------------
 // Trampoline a model in to context to workaround the fact that
 // onsenDialog appears to exist in a different react context than
@@ -67,7 +66,8 @@ export const [Dialog, dialog] = hoistCmp.withFactory<DialogProps>({
 //-----------------------------------------------------------------
 const modelHost = hoistCmp.factory({
     model: uses('*'),
-    memo: false, observer: false,
+    memo: false,
+    observer: false,
     render({children}) {
         return children;
     }

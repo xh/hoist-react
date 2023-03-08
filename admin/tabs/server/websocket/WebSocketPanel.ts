@@ -17,9 +17,7 @@ import {Icon} from '@xh/hoist/icon';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 
-
 export const webSocketPanel = hoistCmp.factory({
-
     model: creates(WebSocketModel),
 
     render({model}) {
@@ -50,9 +48,8 @@ export const webSocketPanel = hoistCmp.factory({
     }
 });
 
-
-const notPresentMessage = hoistCmp.factory(
-    () => box({
+const notPresentMessage = hoistCmp.factory(() =>
+    box({
         height: 200,
         width: 1000,
         items: [
@@ -60,7 +57,9 @@ const notPresentMessage = hoistCmp.factory(
                 error: {
                     message: fragment(
                         p('WebSockets are not enabled in this application.'),
-                        p('Please ensure that you have enabled web sockets in your server and client application configuration.')
+                        p(
+                            'Please ensure that you have enabled web sockets in your server and client application configuration.'
+                        )
                     )
                 }
             })

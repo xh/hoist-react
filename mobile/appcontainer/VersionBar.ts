@@ -14,7 +14,6 @@ import './VersionBar.scss';
  * @internal
  */
 export const versionBar = hoistCmp.factory({
-
     render() {
         if (!isShowing()) return null;
 
@@ -51,6 +50,6 @@ function isShowing() {
             return false;
         case 'auto':
         default:
-            return (env !== 'Production' || XH.getUser().isHoistAdminReader);
+            return env !== 'Production' || XH.getUser().isHoistAdminReader;
     }
 }

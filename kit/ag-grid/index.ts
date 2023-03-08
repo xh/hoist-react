@@ -28,7 +28,7 @@ export function installAgGrid(ComponentReactWrapper, version: string) {
     if (!checkVersion(version, MIN_VERSION, MAX_VERSION)) {
         console.error(
             `This version of Hoist requires an ag-Grid version between ${MIN_VERSION} and ` +
-            `${MAX_VERSION}. Version ${version} detected. ag-Grid will be unavailable.`
+                `${MAX_VERSION}. Version ${version} detected. ag-Grid will be unavailable.`
         );
         return;
     }

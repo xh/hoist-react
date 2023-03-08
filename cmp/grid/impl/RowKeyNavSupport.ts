@@ -5,13 +5,12 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import { GridModel } from '../GridModel';
+import {GridModel} from '../GridModel';
 
 /**
  * Add support for row based navigation to GridModel.
  */
 export class RowKeyNavSupport {
-
     gridModel: GridModel;
 
     constructor(gridModel: GridModel) {
@@ -25,7 +24,7 @@ export class RowKeyNavSupport {
             {nextCellPosition, previousCellPosition, event, key} = agParams,
             shiftKey = event.shiftKey,
             nextIndex = nextCellPosition?.rowIndex ?? null,
-            prevIndex =  previousCellPosition?.rowIndex ?? null,
+            prevIndex = previousCellPosition?.rowIndex ?? null,
             prevIsTreeCol = previousCellPosition?.column.colDef.xhColumn.isTreeColumn,
             prevNode = prevIndex != null ? agApi.getDisplayedRowAtIndex(prevIndex) : null,
             prevNodeIsParent = prevNode && prevNode.allChildrenCount,
@@ -35,11 +34,10 @@ export class RowKeyNavSupport {
             case 'ArrowDown':
             case 'ArrowUp':
                 if (nextIndex != null) {
-
-                    const isUp = (key === 'ArrowUp');
+                    const isUp = key === 'ArrowUp';
 
                     // agGrid can weirdly wrap focus when bottom summary present - prevent that
-                    if (isUp !== (nextIndex < prevIndex)) return previousCellPosition;
+                    if (isUp !== nextIndex < prevIndex) return previousCellPosition;
 
                     // If selection is enabled, want to sync up-down movement with that
                     if (selModel.isEnabled) {

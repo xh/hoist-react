@@ -12,7 +12,6 @@ import {throwIf} from '@xh/hoist/utils/js';
  * PersistenceProvider that stores state within a DashViewModel.
  */
 export class DashViewProvider extends PersistenceProvider {
-
     dashViewModel;
 
     constructor({dashViewModel, ...rest}: PersistOptions) {

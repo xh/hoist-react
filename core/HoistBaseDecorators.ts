@@ -3,7 +3,7 @@
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
-*/
+ */
 import {PersistenceProvider, PersistOptions, HoistBaseClass} from './';
 
 import {isUndefined} from 'lodash';
@@ -27,7 +27,6 @@ export const managed: any = (target: HoistBaseClass, property: string, descripto
     return descriptor;
 };
 
-
 /**
  * Decorator to make a class property persistent.
  *
@@ -48,8 +47,8 @@ export const persist: any = (target: HoistBaseClass, property: string, descripto
  * Decorator to make a class property persistent. This is a higher-order version of `@persist`.
  * Use this variant as a function to provide custom PersistOptions.
  */
-persist.with = function(options: PersistOptions): any {
-    return function(target, property, descriptor) {
+persist.with = function (options: PersistOptions): any {
+    return function (target, property, descriptor) {
         return createPersistDescriptor(target, property, descriptor, options);
     };
 };
@@ -57,17 +56,25 @@ persist.with = function(options: PersistOptions): any {
 //---------------------
 // Implementation
 //---------------------
-function createPersistDescriptor(target: HoistBaseClass, property: string, descriptor: any, options:PersistOptions) {
-    throwIf(!target.isHoistBase, '@persist decorator should be applied to an instance of HoistBase');
+function createPersistDescriptor(
+    target: HoistBaseClass,
+    property: string,
+    descriptor: any,
+    options: PersistOptions
+) {
+    throwIf(
+        !target.isHoistBase,
+        '@persist decorator should be applied to an instance of HoistBase'
+    );
     if (descriptor.get || descriptor.set) {
         console.error(
             `Error defining ${property} : @persist or @persistWith should be defined closest ` +
-            `to property, and after mobx annotation e.g. '@bindable @persist ${property}'`
+                `to property, and after mobx annotation e.g. '@bindable @persist ${property}'`
         );
         return descriptor;
     }
     const codeValue = descriptor.initializer;
-    const initializer = function() {
+    const initializer = function () {
         let providerState;
 
         // Read from and attach to Provider.
@@ -79,13 +86,13 @@ function createPersistDescriptor(target: HoistBaseClass, property: string, descr
             wait().then(() => {
                 this.addReaction({
                     track: () => this[property],
-                    run: (data) => provider.write(data)
+                    run: data => provider.write(data)
                 });
             });
         } catch (e) {
             console.error(
                 `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
-                `'persistWith' on this object or annotation.`
+                    `'persistWith' on this object or annotation.`
             );
         }
 

@@ -10,7 +10,8 @@ import {
     ManagedRefreshContextModel,
     PersistenceProvider,
     PersistOptions,
-    PrefProvider, RefreshContextModel,
+    PrefProvider,
+    RefreshContextModel,
     RefreshMode,
     RenderMode,
     Side,
@@ -20,12 +21,11 @@ import '@xh/hoist/desktop/register';
 import {action, makeObservable, observable, comparer, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil} from 'lodash';
+import {isNil, isString} from 'lodash';
 import {createRef} from 'react';
 import {ModalSupportConfig, ModalSupportModel} from '../modalsupport/';
 
 export interface PanelConfig {
-
     /** Can panel be resized? */
     resizable?: boolean;
 
@@ -36,7 +36,7 @@ export interface PanelConfig {
     collapsible?: boolean;
 
     /** Default size (in px or %) of the panel. */
-    defaultSize?: number|string;
+    defaultSize?: number | string;
 
     /** Minimum size (in px) to which the panel can be resized. */
     minSize?: number;
@@ -57,7 +57,7 @@ export interface PanelConfig {
      * Set to true to enable built-in support for showing panel contents in a modal, or provide a
      * config to further configure.
      */
-    modalSupport?: boolean|ModalSupportConfig;
+    modalSupport?: boolean | ModalSupportConfig;
 
     /** How should collapsed content be rendered? Ignored if collapsible is false. */
     renderMode?: RenderMode;
@@ -105,7 +105,7 @@ export class PanelModel extends HoistModel {
     //-----------------------
     readonly resizable: boolean;
     readonly collapsible: boolean;
-    readonly defaultSize: number|string;
+    readonly defaultSize: number | string;
     readonly minSize: number;
     readonly maxSize: number;
     readonly defaultCollapsed: boolean;
@@ -135,7 +135,7 @@ export class PanelModel extends HoistModel {
 
     /** Size in pixels or percents along sizing dimension.  Used when object is *not* collapsed. */
     @bindable
-    size: number|string = null;
+    size: number | string = null;
 
     /** Is this panel currently resizing? */
     @observable
@@ -191,8 +191,43 @@ export class PanelModel extends HoistModel {
             resizable = false;
         }
 
+        if (!isNil(maxSize) && maxSize < minSize) {
+            console.error("'maxSize' must be greater than 'minSize'. No 'maxSize' will be set.");
+            maxSize = null;
+        }
+
+        if (!isNil(maxSize) && !this.isPercent(defaultSize) && maxSize < defaultSize) {
+            console.error(
+                "'maxSize' must be greater than 'defaultSize'. No 'maxSize' will be set."
+            );
+            maxSize = null;
+        }
+
+        if (minSize > 0 && !this.isPercent(defaultSize) && minSize > defaultSize) {
+            console.error(
+                "'minSize' must be smaller than 'defaultSize'. 'minSize' will be set to 0."
+            );
+            minSize = 0;
+        }
+
+        if (!isNil(maxSize) && this.isPercent(defaultSize)) {
+            console.error(
+                "'maxSize' is ignored when 'defaultSize' is a percent. No 'maxSize' will be set."
+            );
+            maxSize = null;
+        }
+
+        if (minSize > 0 && this.isPercent(defaultSize)) {
+            console.error(
+                "'minSize' is ignored when 'defaultSize' is a percent. 'minSize' will be set to 0."
+            );
+            minSize = 0;
+        }
+
         if (resizable && !resizeWhileDragging && !showSplitter) {
-            console.error("Must not set 'showSplitter = false' for a resizable PanelModel unless 'resizeWhileDragging` is enabled. Panel sizing disabled.");
+            console.error(
+                "Must not set 'showSplitter = false' for a resizable PanelModel unless 'resizeWhileDragging` is enabled. Panel sizing disabled."
+            );
             resizable = false;
         }
 
@@ -212,9 +247,10 @@ export class PanelModel extends HoistModel {
         this.showModalToggleButton = showModalToggleButton;
 
         if (modalSupport) {
-            this.modalSupportModel = modalSupport === true ?
-                new ModalSupportModel() :
-                new ModalSupportModel(modalSupport);
+            this.modalSupportModel =
+                modalSupport === true
+                    ? new ModalSupportModel()
+                    : new ModalSupportModel(modalSupport);
         }
 
         // Set up various optional functionality;
@@ -241,7 +277,9 @@ export class PanelModel extends HoistModel {
 
         // Initialize state.
         this.size = resizable && !isNil(state?.size) ? state.size : defaultSize;
-        this.setCollapsed(collapsible && !isNil(state?.collapsed) ? state.collapsed : defaultCollapsed);
+        this.setCollapsed(
+            collapsible && !isNil(state?.collapsed) ? state.collapsed : defaultCollapsed
+        );
 
         // Attach to provider last
         if (this.provider) {
@@ -253,7 +291,7 @@ export class PanelModel extends HoistModel {
                     if (resizable) state.size = this.size;
                     return state;
                 },
-                run: (state) => this.provider.write(state)
+                run: state => this.provider.write(state)
             });
         }
     }
@@ -342,5 +380,9 @@ export class PanelModel extends HoistModel {
     private dispatchResize() {
         // Forces other components to redraw if required.
         wait().then(() => window.dispatchEvent(new Event('resize')));
+    }
+
+    isPercent(v) {
+        return isString(v) && v.endsWith('%');
     }
 }

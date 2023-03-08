@@ -21,7 +21,6 @@ import {ActivityTrackingModel, PERSIST_ACTIVITY} from './ActivityTrackingModel';
 import {chartsPanel} from './charts/ChartsPanel';
 import {activityDetailView} from './detail/ActivityDetailView';
 
-
 export const activityTrackingPanel = hoistCmp.factory({
     model: creates(ActivityTrackingModel),
 
@@ -29,112 +28,125 @@ export const activityTrackingPanel = hoistCmp.factory({
         return panel({
             className: 'xh-admin-activity-panel',
             tbar: tbar(),
-            item: hframe(
-                aggregateView(),
-                activityDetailView({flex: 1})
-            ),
+            item: hframe(aggregateView(), activityDetailView({flex: 1})),
             mask: 'onLoad'
         });
     }
 });
 
-const tbar = hoistCmp.factory<ActivityTrackingModel>(
-    ({model}) => {
-        return toolbar(
-            form({
-                fieldDefaults: {label: null},
-                items: [
-                    button({
-                        icon: Icon.angleLeft(),
-                        onClick: () => model.adjustDates('subtract')
-                    }),
-                    formField({
-                        field: 'startDay',
-                        item: dateInput({...dateInputProps})
-                    }),
-                    Icon.caretRight(),
-                    formField({
-                        field: 'endDay',
-                        item: dateInput({...dateInputProps})
-                    }),
-                    button({
-                        icon: Icon.angleRight(),
-                        onClick: () => model.adjustDates('add'),
-                        disabled: model.endDay >= LocalDate.currentAppDay()
-                    }),
-                    buttonGroup(
-                        button({text: '6m', outlined: true, width: 40, onClick: () => model.adjustStartDate(6, 'months')}),
-                        button({text: '1m', outlined: true, width: 40, onClick: () => model.adjustStartDate(1, 'months')}),
-                        button({text: '7d', outlined: true, width: 40, onClick: () => model.adjustStartDate(7, 'days')}),
-                        button({text: '1d', outlined: true, width: 40, onClick: () => model.adjustStartDate(1, 'days')})
-                    ),
-                    toolbarSep(),
-                    filterChooser({
-                        flex: 1,
-                        enableClear: true
-                    }),
-                    toolbarSep(),
-                    formField({
-                        field: 'maxRows',
-                        label: 'Max rows:',
-                        width: 140,
-                        item: select({
-                            enableFilter: false,
-                            hideDropdownIndicator: true,
-                            options: [
-                                {label: '5k', value: 5000},
-                                {label: '25k', value: 25000},
-                                {label: '50k', value: 50000},
-                                {label: '100k', value: 100000}
-                            ]
-                        })
-                    }),
-                    toolbarSep(),
-                    button({
-                        icon: Icon.reset(),
-                        intent: 'danger',
-                        title: 'Reset query to defaults',
-                        onClick: () => model.resetQuery()
-                    })
-                ]
-            })
-        );
-    }
-);
-
-const aggregateView = hoistCmp.factory<ActivityTrackingModel>(
-    ({model}) => {
-        return panel({
-            title: 'Aggregate Activity Report',
-            icon: Icon.users(),
-            compactHeader: true,
-            modelConfig: {
-                side: 'left',
-                defaultSize: 500,
-                persistWith: {...PERSIST_ACTIVITY, path: 'aggReportPanel'}
-            },
-            tbar: [
-                groupingChooser({flex: 1}),
-                colChooserButton(),
-                exportButton()
-            ],
+const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
+    return toolbar(
+        form({
+            fieldDefaults: {label: null},
             items: [
-                grid({
+                button({
+                    icon: Icon.angleLeft(),
+                    onClick: () => model.adjustDates('subtract')
+                }),
+                formField({
+                    field: 'startDay',
+                    item: dateInput({...dateInputProps})
+                }),
+                Icon.caretRight(),
+                formField({
+                    field: 'endDay',
+                    item: dateInput({...dateInputProps})
+                }),
+                button({
+                    icon: Icon.angleRight(),
+                    onClick: () => model.adjustDates('add'),
+                    disabled: model.endDay >= LocalDate.currentAppDay()
+                }),
+                buttonGroup(
+                    button({
+                        text: '6m',
+                        outlined: true,
+                        width: 40,
+                        onClick: () => model.adjustStartDate(6, 'months')
+                    }),
+                    button({
+                        text: '1m',
+                        outlined: true,
+                        width: 40,
+                        onClick: () => model.adjustStartDate(1, 'months')
+                    }),
+                    button({
+                        text: '7d',
+                        outlined: true,
+                        width: 40,
+                        onClick: () => model.adjustStartDate(7, 'days')
+                    }),
+                    button({
+                        text: '1d',
+                        outlined: true,
+                        width: 40,
+                        onClick: () => model.adjustStartDate(1, 'days')
+                    })
+                ),
+                toolbarSep(),
+                filterChooser({
                     flex: 1,
-                    agOptions: {groupDefaultExpanded: 1}
+                    enableClear: true
                 }),
-                div({
-                    className: 'xh-admin-activity-panel__max-rows-alert',
-                    items: [
-                        Icon.warning(),
-                        `Entries truncated to most recent ${model.maxRows / 1000}k leaf rows.`
-                    ],
-                    omit: !model.maxRowsReached
+                toolbarSep(),
+                formField({
+                    field: 'maxRows',
+                    label: 'Max rows:',
+                    width: 140,
+                    item: select({
+                        enableFilter: false,
+                        hideDropdownIndicator: true,
+                        options: [
+                            {label: '5k', value: 5000},
+                            {label: '25k', value: 25000},
+                            {label: '50k', value: 50000},
+                            {label: '100k', value: 100000}
+                        ]
+                    })
                 }),
-                chartsPanel()
+                toolbarSep(),
+                button({
+                    icon: Icon.reset(),
+                    intent: 'danger',
+                    title: 'Reset query to defaults',
+                    onClick: () => model.resetQuery()
+                })
             ]
-        });
-    }
-);
+        })
+    );
+});
 
-const dateInputProps: DateInputProps = {popoverPosition: 'bottom', valueType: 'localDate', width: 120};
+const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
+    return panel({
+        title: 'Aggregate Activity Report',
+        icon: Icon.users(),
+        compactHeader: true,
+        modelConfig: {
+            side: 'left',
+            defaultSize: 500,
+            persistWith: {...PERSIST_ACTIVITY, path: 'aggReportPanel'}
+        },
+        tbar: [groupingChooser({flex: 1}), colChooserButton(), exportButton()],
+        items: [
+            grid({
+                flex: 1,
+                agOptions: {groupDefaultExpanded: 1}
+            }),
+            div({
+                className: 'xh-admin-activity-panel__max-rows-alert',
+                items: [
+                    Icon.warning(),
+                    `Entries truncated to most recent ${model.maxRows / 1000}k leaf rows.`
+                ],
+                omit: !model.maxRowsReached
+            }),
+            chartsPanel()
+        ]
+    });
+});
+
+const dateInputProps: DateInputProps = {
+    popoverPosition: 'bottom',
+    valueType: 'localDate',
+    width: 120
+};

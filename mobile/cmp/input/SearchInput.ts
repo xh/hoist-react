@@ -12,10 +12,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import './SearchInput.scss';
 
-export interface SearchInputProps extends
-    HoistProps,
-    HoistInputProps
-{
+export interface SearchInputProps extends HoistProps, HoistInputProps {
     value?: string;
 
     /** True to commit on every change/keystroke, default false. */
@@ -59,16 +56,16 @@ class SearchInputModel extends HoistInputModel {
         return withDefault(this.componentProps.commitOnChange, false);
     }
 
-    onChange = (ev) => {
+    onChange = ev => {
         this.noteValueChange(ev.target.value);
     };
 
-    onKeyDown = (ev) => {
+    onKeyDown = ev => {
         if (ev.key === 'Enter') this.doCommit();
         this.componentProps.onKeyDown?.(ev);
     };
 
-    override onFocus = (ev) => {
+    override onFocus = ev => {
         if (this.componentProps.selectOnFocus && ev.target && ev.target.select) {
             ev.target.select();
         }
@@ -76,32 +73,30 @@ class SearchInputModel extends HoistInputModel {
     };
 }
 
-const cmp = hoistCmp.factory<SearchInputModel>(
-    ({model, className, ...props}, ref) => {
-        const {width, ...layoutProps} = getLayoutProps(props);
+const cmp = hoistCmp.factory<SearchInputModel>(({model, className, ...props}, ref) => {
+    const {width, ...layoutProps} = getLayoutProps(props);
 
-        return onsenSearchInput({
-            value: model.renderValue || '',
+    return onsenSearchInput({
+        value: model.renderValue || '',
 
-            disabled: props.disabled,
-            modifier: props.modifier,
-            placeholder: props.placeholder,
-            spellCheck: withDefault(props.spellCheck, false),
-            tabIndex: props.tabIndex,
+        disabled: props.disabled,
+        modifier: props.modifier,
+        placeholder: props.placeholder,
+        spellCheck: withDefault(props.spellCheck, false),
+        tabIndex: props.tabIndex,
 
-            className,
-            style: {
-                ...props.style,
-                ...layoutProps,
-                width: withDefault(width, null),
-                textAlign: withDefault(props.textAlign, 'left')
-            },
+        className,
+        style: {
+            ...props.style,
+            ...layoutProps,
+            width: withDefault(width, null),
+            textAlign: withDefault(props.textAlign, 'left')
+        },
 
-            onChange: model.onChange,
-            onKeyDown: model.onKeyDown,
-            onBlur: model.onBlur,
-            onFocus: model.onFocus,
-            ref
-        });
-    }
-);
+        onChange: model.onChange,
+        onKeyDown: model.onKeyDown,
+        onBlur: model.onBlur,
+        onFocus: model.onFocus,
+        ref
+    });
+});

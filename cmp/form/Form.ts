@@ -4,7 +4,14 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {BoxProps, DefaultHoistProps, elementFactory, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import {
+    BoxProps,
+    DefaultHoistProps,
+    elementFactory,
+    hoistCmp,
+    HoistProps,
+    uses
+} from '@xh/hoist/core';
 import equal from 'fast-deep-equal';
 import {createContext, useContext} from 'react';
 import {useCached} from '@xh/hoist/utils/react';
@@ -23,7 +30,6 @@ export interface FormContextType {
 /** @internal */
 export const FormContext = createContext<FormContextType>({});
 const formContextProvider = elementFactory(FormContext.Provider);
-
 
 export interface FormProps extends HoistProps<FormModel>, BoxProps {
     /**
@@ -49,7 +55,7 @@ export interface FormProps extends HoistProps<FormModel>, BoxProps {
  */
 export const [Form, form] = hoistCmp.withFactory<FormProps>({
     displayName: 'Form',
-    model: uses(FormModel, {publishMode:  'none'}),
+    model: uses(FormModel, {publishMode: 'none'}),
 
     render({model, fieldDefaults = {}, children}) {
         // gather own and inherited field defaults...

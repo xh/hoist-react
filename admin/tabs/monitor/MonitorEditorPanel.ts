@@ -12,14 +12,14 @@ import * as Col from '@xh/hoist/admin/columns';
 import * as MCol from './MonitorColumns';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 
-export const monitorEditorPanel = hoistCmp.factory(
-    () => restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}})
+export const monitorEditorPanel = hoistCmp.factory(() =>
+    restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}})
 );
 
 const required = true,
     hidden = true;
 
-const modelSpec: RestGridConfig= {
+const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminMonitorState'},
     colChooserModel: true,
     enableExport: true,
@@ -27,17 +27,17 @@ const modelSpec: RestGridConfig= {
         url: 'rest/monitorAdmin',
         fieldDefaults: {disableXssProtection: true},
         fields: [
-            {...MCol.code.field as FieldSpec, required},
+            {...(MCol.code.field as FieldSpec), required},
             MCol.metricUnit.field,
             MCol.warnThreshold.field,
             MCol.failThreshold.field,
             MCol.sortOrder.field,
 
-            {...Col.name.field as FieldSpec, required},
+            {...(Col.name.field as FieldSpec), required},
             Col.notes.field,
-            {...Col.active.field as FieldSpec, defaultValue: true, required},
-            {...Col.lastUpdated.field as FieldSpec, editable: false},
-            {...Col.lastUpdatedBy.field as FieldSpec, editable: false},
+            {...(Col.active.field as FieldSpec), defaultValue: true, required},
+            {...(Col.lastUpdated.field as FieldSpec), editable: false},
+            {...(Col.lastUpdatedBy.field as FieldSpec), editable: false},
 
             {name: 'metricType', type: 'string', lookupName: 'metricTypes', required},
             {name: 'params', type: 'json'}

@@ -6,9 +6,9 @@
  */
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {truncate} from 'lodash';
-import { ColumnSpec } from '@xh/hoist/cmp/grid/columns';
+import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 
-export const value: ColumnSpec= {
+export const value: ColumnSpec = {
     field: {name: 'value', type: 'auto'},
     width: 200,
     autosizeMaxWidth: 400,

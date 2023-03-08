@@ -11,7 +11,7 @@
  */
 export function installZoomoutGesture(Highcharts) {
     if (!Highcharts) return;
-    Highcharts.wrap(Highcharts.Chart.prototype, 'init', function(proceed) {
+    Highcharts.wrap(Highcharts.Chart.prototype, 'init', function (proceed) {
         proceed.apply(this, Array.prototype.slice.call(arguments, 1));
 
         const {container} = this;
@@ -30,7 +30,7 @@ export function installZoomoutGesture(Highcharts) {
 
         Highcharts.addEvent(this, 'selection', e => {
             if (pixelDiff < 0) {
-                this.zoom();   // call w/o arguments resets zoom
+                this.zoom(); // call w/o arguments resets zoom
                 e.preventDefault();
             }
         });

@@ -9,7 +9,6 @@
  * Options controlling treeMode-specific styles (row background highlights and borders) for Grids.
  */
 export const TreeStyle = Object.freeze({
-
     /** Highlight parent nodes in tree */
     HIGHLIGHTS: 'highlights',
 
@@ -26,8 +25,7 @@ export const TreeStyle = Object.freeze({
 });
 
 // eslint-disable-next-line
-export type TreeStyle = typeof TreeStyle[keyof typeof TreeStyle];
-
+export type TreeStyle = (typeof TreeStyle)[keyof typeof TreeStyle];
 
 export function getTreeStyleClasses(treeStyle) {
     switch (treeStyle) {

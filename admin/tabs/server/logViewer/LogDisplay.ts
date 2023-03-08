@@ -24,7 +24,6 @@ export const logDisplay = hoistCmp.factory({
     model: uses(LogDisplayModel),
 
     render({model}) {
-
         return panel({
             className: 'xh-log-display',
             tbar: tbar(),
@@ -35,70 +34,66 @@ export const logDisplay = hoistCmp.factory({
     }
 });
 
-const tbar = hoistCmp.factory<LogDisplayModel>(
-    ({model}) => {
-        return toolbar(
-            label('Start line:'),
-            numberInput({
-                bind: 'startLine',
-                min: 1,
-                width: 80,
-                disabled: model.tail,
-                displayWithCommas: true
-            }),
-            hspacer(5),
-            label('Max lines:'),
-            numberInput({
-                bind: 'maxLines',
-                min: 1,
-                width: 80,
-                displayWithCommas: true
-            }),
-            '-',
-            textInput({
-                bind: 'pattern',
-                placeholder: 'Filter',
-                leftIcon: Icon.filter(),
-                enableClear: true,
-                width: 160
-            }),
-            gridFindField({width: 160}),
-            '-',
-            switchInput({
-                bind: 'tail',
-                label: 'Tail',
-                labelSide: 'left'
-            }),
-            hspacer(5),
-            button({
-                icon: Icon.pause(),
-                intent: 'warning',
-                outlined: true,
-                text: 'Paused',
-                onClick: () => {
-                    model.gridModel.clearSelection();
-                    model.scrollToTail();
-                },
-                omit: !model.tail || model.tailActive
+const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
+    return toolbar(
+        label('Start line:'),
+        numberInput({
+            bind: 'startLine',
+            min: 1,
+            width: 80,
+            disabled: model.tail,
+            displayWithCommas: true
+        }),
+        hspacer(5),
+        label('Max lines:'),
+        numberInput({
+            bind: 'maxLines',
+            min: 1,
+            width: 80,
+            displayWithCommas: true
+        }),
+        '-',
+        textInput({
+            bind: 'pattern',
+            placeholder: 'Filter',
+            leftIcon: Icon.filter(),
+            enableClear: true,
+            width: 160
+        }),
+        gridFindField({width: 160}),
+        '-',
+        switchInput({
+            bind: 'tail',
+            label: 'Tail',
+            labelSide: 'left'
+        }),
+        hspacer(5),
+        button({
+            icon: Icon.pause(),
+            intent: 'warning',
+            outlined: true,
+            text: 'Paused',
+            onClick: () => {
+                model.gridModel.clearSelection();
+                model.scrollToTail();
+            },
+            omit: !model.tail || model.tailActive
+        })
+    );
+});
+
+const bbar = hoistCmp.factory(() => {
+    const zone = XH.getEnv('serverTimeZone');
+
+    return toolbar({
+        items: [
+            'Server time:',
+            clock({
+                timezone: zone,
+                format: 'HH:mm [GMT]Z',
+                className: 'xh-font-family-mono xh-font-size-small'
             })
-        );
-    }
-);
-
-const bbar = hoistCmp.factory(
-    () => {
-        const zone = XH.getEnv('serverTimeZone');
-
-        return toolbar({
-            items: [
-                'Server time:',
-                clock({
-                    timezone: zone,
-                    format: 'HH:mm [GMT]Z',
-                    className: 'xh-font-family-mono xh-font-size-small'
-                })
-            ],
-            omit: !zone  // zone env support requires hoist-core 7.1+
-        });
-    }
-);
+        ],
+        omit: !zone // zone env support requires hoist-core 7.1+
+    });
+});

@@ -11,15 +11,31 @@ import {preferencePanel} from './PreferencePanel';
 import {userPreferencePanel} from './UserPreferencePanel';
 import {jsonBlobPanel} from './JsonBlobPanel';
 
-export const userDataTab = hoistCmp.factory(
-    () => tabContainer({
+export const userDataTab = hoistCmp.factory(() =>
+    tabContainer({
         modelConfig: {
             route: 'default.userData',
             switcher: {orientation: 'left'},
             tabs: [
-                {id: 'prefs', title: 'Preferences', icon: Icon.bookmark(), content: preferencePanel},
-                {id: 'userPrefs', icon: Icon.users(), content: userPreferencePanel, refreshMode: 'onShowAlways'},
-                {id: 'jsonBlobs', title: 'JSON Blobs', icon: Icon.json(), content: jsonBlobPanel, refreshMode: 'onShowAlways'}
+                {
+                    id: 'prefs',
+                    title: 'Preferences',
+                    icon: Icon.bookmark(),
+                    content: preferencePanel
+                },
+                {
+                    id: 'userPrefs',
+                    icon: Icon.users(),
+                    content: userPreferencePanel,
+                    refreshMode: 'onShowAlways'
+                },
+                {
+                    id: 'jsonBlobs',
+                    title: 'JSON Blobs',
+                    icon: Icon.json(),
+                    content: jsonBlobPanel,
+                    refreshMode: 'onShowAlways'
+                }
             ]
         }
     })

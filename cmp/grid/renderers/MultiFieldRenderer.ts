@@ -24,7 +24,10 @@ export function multiFieldRenderer(value, context): ReactNode {
         {multiFieldConfig} = column.appData;
 
     throwIf(!multiFieldConfig, 'Columns using multiFieldRenderer must specify a multiFieldConfig');
-    warnIf(!column.rowHeight, 'MultiFieldRenderer works best with rowHeight: Grid.MULTIFIELD_ROW_HEIGHT');
+    warnIf(
+        !column.rowHeight,
+        'MultiFieldRenderer works best with rowHeight: Grid.MULTIFIELD_ROW_HEIGHT'
+    );
 
     const {mainRenderer, delimiter, subFields = []} = multiFieldConfig,
         [topFields, bottomFields] = partition(subFields, it => it.position === 'top'),
@@ -76,10 +79,10 @@ export interface MultiFieldSubField {
     colId: string;
 
     /** True to include the Column's headerName as label, or string. */
-    label?: boolean|'string';
+    label?: boolean | 'string';
 
     /** Where to render the sub field. Default 'bottom'. */
-    position?: 'top'|'bottom';
+    position?: 'top' | 'bottom';
 }
 
 //------------------
@@ -106,10 +109,7 @@ function renderSubField({colId, label}, context) {
 
     return div({
         className: 'xh-multifield-renderer-field',
-        items: [
-            label ? `${label}: ` : null,
-            renderValue(value, renderer, column, context)
-        ]
+        items: [label ? `${label}: ` : null, renderValue(value, renderer, column, context)]
     });
 }
 

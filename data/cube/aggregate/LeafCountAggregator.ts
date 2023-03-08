@@ -8,7 +8,6 @@
 import {Aggregator} from './Aggregator';
 
 export class LeafCountAggregator extends Aggregator {
-
     override aggregate(rows, fieldName) {
         let count = 0;
         for (const row of rows) {

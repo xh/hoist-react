@@ -13,7 +13,6 @@ import {XH} from '../';
  * PersistenceProvider that stores state within the Browser's LocalStorage.
  */
 export class LocalStorageProvider extends PersistenceProvider {
-
     key: string;
 
     constructor({localStorageKey: key, ...rest}: PersistOptions) {

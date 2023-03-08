@@ -48,18 +48,24 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
     model: uses(TabContainerModel),
     className: 'xh-tab-switcher',
 
-    render({
-        model,
-        className,
-        orientation = 'top',
-        animate = false,
-        enableOverflow = false,
-        tabWidth,
-        tabMinWidth,
-        tabMaxWidth,
-        ...props
-    }, ref) {
-        throwIf(!['top', 'bottom', 'left', 'right'].includes(orientation), 'Unsupported value for orientation.');
+    render(
+        {
+            model,
+            className,
+            orientation = 'top',
+            animate = false,
+            enableOverflow = false,
+            tabWidth,
+            tabMinWidth,
+            tabMaxWidth,
+            ...props
+        },
+        ref
+    ) {
+        throwIf(
+            !['top', 'bottom', 'left', 'right'].includes(orientation),
+            'Unsupported value for orientation.'
+        );
 
         const {tabs, activeTabId} = model,
             layoutProps = getLayoutProps(props),
@@ -67,15 +73,15 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
             impl = useLocalModel(() => new TabSwitcherLocalModel(model, enableOverflow, vertical));
 
         // Implement overflow
-        ref = impl.enableOverflow ?
-            composeRefs(
-                ref,
-                impl.switcherRef,
-                useOnResize(() => impl.updateOverflowTabs()),
-                useOnVisibleChange(() => impl.updateOverflowTabs()),
-                useOnScroll(() => impl.updateOverflowTabs())
-            ):
-            composeRefs(ref, impl.switcherRef);
+        ref = impl.enableOverflow
+            ? composeRefs(
+                  ref,
+                  impl.switcherRef,
+                  useOnResize(() => impl.updateOverflowTabs()),
+                  useOnVisibleChange(() => impl.updateOverflowTabs()),
+                  useOnScroll(() => impl.updateOverflowTabs())
+              )
+            : composeRefs(ref, impl.switcherRef);
 
         // Create tabs
         const tabStyle: CSSProperties = {};
@@ -131,7 +137,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                         animate,
                         items,
                         selectedTabId: activeTabId,
-                        onChange: (tabId) => model.activateTab(tabId)
+                        onChange: tabId => model.activateTab(tabId)
                     })
                 }),
                 overflowMenu({
@@ -160,7 +166,7 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
                 labelElement: button({
                     omit: !showRemoveAction,
                     icon: Icon.x(),
-                    onClick: (e) => {
+                    onClick: e => {
                         model.removeTab(id);
                         e.stopPropagation();
                     }
@@ -183,7 +189,7 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
     }
 });
 
-class TabSwitcherLocalModel extends HoistModel  {
+class TabSwitcherLocalModel extends HoistModel {
     override xhImpl = true;
 
     @bindable.ref overflowIds = [];
@@ -228,7 +234,9 @@ class TabSwitcherLocalModel extends HoistModel  {
     @debounced(1)
     scrollActiveTabIntoView() {
         if (!this.enableOverflow) return;
-        const tab = this.tabEls.find((tab: HTMLElement) => tab.dataset.tabId === this.model.activeTabId);
+        const tab = this.tabEls.find(
+            (tab: HTMLElement) => tab.dataset.tabId === this.model.activeTabId
+        );
         if (tab) tab.scrollIntoView();
     }
 
@@ -247,7 +255,7 @@ class TabSwitcherLocalModel extends HoistModel  {
             // Tabs are considered overflowed if they are at least 25% obscured
             const {start, length, end} = this.getTabDimensions(tab),
                 buffer = Math.round(length * 0.25),
-                overflowed = start < (visibleStart - buffer) || end > (visibleEnd + buffer);
+                overflowed = start < visibleStart - buffer || end > visibleEnd + buffer;
 
             if (overflowed) ids.push(tab.dataset.tabId);
         });
@@ -287,9 +295,13 @@ class TabSwitcherLocalModel extends HoistModel  {
 
 function flipOrientation(orientation) {
     switch (orientation) {
-        case 'top': return 'bottom';
-        case 'bottom': return 'top';
-        case 'left': return 'right';
-        case 'right': return 'left';
+        case 'top':
+            return 'bottom';
+        case 'bottom':
+            return 'top';
+        case 'left':
+            return 'right';
+        case 'right':
+            return 'left';
     }
 }

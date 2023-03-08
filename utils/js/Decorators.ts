@@ -16,12 +16,12 @@ import {withDebug} from './LogUtils';
  * @param duration - milliseconds to debounce.
  */
 export function debounced(duration: number) {
-    return function(target, key, descriptor) {
+    return function (target, key, descriptor) {
         const baseFn = descriptor.value;
         throwIf(!isFunction(baseFn), '@debounced must be applied to a class method.');
         return {
             ...descriptor,
-            value: function() {
+            value: function () {
                 // synthesize an inner debounced function to the instance (not the class)
                 const fn = getOrCreate(this, '_xh_' + key, () => debounce(baseFn, duration));
                 fn.apply(this, arguments);
@@ -36,7 +36,8 @@ export function debounced(duration: number) {
  */
 export function computeOnce(target, key, descriptor) {
     const {value, get} = descriptor;
-    throwIf(!isFunction(value) && !isFunction(get),
+    throwIf(
+        !isFunction(value) && !isFunction(get),
         '@computeOnce must be applied to a zero-argument class method or getter.'
     );
 
@@ -45,7 +46,7 @@ export function computeOnce(target, key, descriptor) {
         baseFn = isMethod ? value : get;
     return {
         ...descriptor,
-        [baseFnName]: function() {
+        [baseFnName]: function () {
             return getOrCreate(this, '_xh_' + key, () => baseFn.call(this));
         }
     };
@@ -60,7 +61,7 @@ export function logWithDebug(target, key, descriptor) {
     throwIf(!isFunction(value), '@logWithDebug must be applied to a class method.');
     return {
         ...descriptor,
-        value: function(...args) {
+        value: function (...args) {
             return withDebug(key, () => value.apply(this, args), this);
         }
     };
@@ -79,7 +80,8 @@ export function enumerable(target, key, descriptor) {
  */
 export function abstract(target, key, descriptor) {
     const {value, get} = descriptor;
-    throwIf(!isFunction(value) && !isFunction(get),
+    throwIf(
+        !isFunction(value) && !isFunction(get),
         '@abstract must be applied to a class method or getter.'
     );
 
@@ -88,10 +90,8 @@ export function abstract(target, key, descriptor) {
 
     return {
         ...descriptor,
-        [baseFnName]: function() {
-            throw XH.exception(
-                `${key} must be implemented by ${this.constructor.name}`
-            );
+        [baseFnName]: function () {
+            throw XH.exception(`${key} must be implemented by ${this.constructor.name}`);
         }
     };
 }

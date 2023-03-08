@@ -5,7 +5,15 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {box, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, managed, useLocalModel, XH, BoxProps, HoistProps} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistModel,
+    managed,
+    useLocalModel,
+    XH,
+    BoxProps,
+    HoistProps
+} from '@xh/hoist/core';
 import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
 import {action, observable, makeObservable, computed} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -22,15 +30,13 @@ interface RelativeTimestampProps extends HoistProps, BoxProps {
     bind?: string;
 
     /** Date or milliseconds representing the starting time / time to compare. See also `bind`. */
-    timestamp?: Date|number;
+    timestamp?: Date | number;
 
     /** Formatting options */
     options?: RelativeTimestampOptions;
 }
 
-
 export interface RelativeTimestampOptions {
-
     /** Allow dates greater than Date.now().*/
     allowFuture?: boolean;
 
@@ -56,9 +62,8 @@ export interface RelativeTimestampOptions {
     emptyResult?: string;
 
     /** Time to which the input timestamp is compared. */
-    relativeTo?: Date|number;
+    relativeTo?: Date | number;
 }
-
 
 /**
  * A component to display the approximate amount of time between a given timestamp and now in a
@@ -101,7 +106,7 @@ class RelativeTimestampLocalModel extends HoistModel {
     get timestamp() {
         const {model} = this,
             {timestamp, bind} = this.componentProps;
-        return withDefault(timestamp, (model && bind ? model[bind] : null));
+        return withDefault(timestamp, model && bind ? model[bind] : null);
     }
 
     @computed.struct
@@ -133,9 +138,12 @@ class RelativeTimestampLocalModel extends HoistModel {
  * Returns a string describing the approximate amount of time between a given timestamp and the
  * present moment in a friendly, human readable format.
  */
-export function getRelativeTimestamp(timestamp: Date|number, options: RelativeTimestampOptions = {}) {
+export function getRelativeTimestamp(
+    timestamp: Date | number,
+    options: RelativeTimestampOptions = {}
+) {
     const relTo = options.relativeTo,
-        relFmt = relTo ? fmtCompactDate(relTo, {asHtml: true}) as string : null,
+        relFmt = relTo ? (fmtCompactDate(relTo, {asHtml: true}) as string) : null,
         relFmtIsTime = relFmt?.includes(':');
 
     options = {
@@ -159,7 +167,7 @@ export function getRelativeTimestamp(timestamp: Date|number, options: RelativeTi
 //------------------------
 // Implementation
 //------------------------
-function doFormat(timestamp: Date|number, opts: RelativeTimestampOptions) {
+function doFormat(timestamp: Date | number, opts: RelativeTimestampOptions) {
     const {prefix, equalString, epsilon, allowFuture, short} = opts,
         diff = toTimestamp(opts.relativeTo) - toTimestamp(timestamp),
         elapsed = Math.abs(diff),
@@ -175,9 +183,7 @@ function doFormat(timestamp: Date|number, opts: RelativeTimestampOptions) {
     } else {
         // By default, moment will show 'a few seconds' for durations of 0-45 seconds. At the higher
         // end of that range that output is a bit too inaccurate, so we replace as per below.
-        ret = (elapsed < 60 * SECONDS) ?
-            '<1 minute' :
-            moment.duration(elapsed).humanize();
+        ret = elapsed < 60 * SECONDS ? '<1 minute' : moment.duration(elapsed).humanize();
 
         // Moment outputs e.g. "a minute" instead of "1 minute". This creates some awkwardness
         // when the leading number comes and goes - "<1 minute" -> "a minute" -> "2 minutes".
@@ -191,6 +197,6 @@ function doFormat(timestamp: Date|number, opts: RelativeTimestampOptions) {
     return prefix ? prefix + ' ' + ret : ret;
 }
 
-function toTimestamp(v: Date|number): number {
+function toTimestamp(v: Date | number): number {
     return v instanceof Date ? v.getTime() : v;
 }

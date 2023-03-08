@@ -22,7 +22,13 @@ import {Store} from '@xh/hoist/data';
 import {instanceManager} from './impl/InstanceManager';
 import {installServicesAsync} from './impl/InstallServices';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable, observable, reaction as mobxReaction, when as mobxWhen} from '@xh/hoist/mobx';
+import {
+    action,
+    makeObservable,
+    observable,
+    reaction as mobxReaction,
+    when as mobxWhen
+} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {
     AlertBannerService,
@@ -45,11 +51,7 @@ import {
 } from '@xh/hoist/svc';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
-import {
-    checkMinVersion,
-    getClientDeviceInfo,
-    throwIf
-} from '@xh/hoist/utils/js';
+import {checkMinVersion, getClientDeviceInfo, throwIf} from '@xh/hoist/utils/js';
 import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import {createRoot} from 'react-dom/client';
 import parser from 'ua-parser-js';
@@ -58,10 +60,17 @@ import {ToastModel} from '../appcontainer/ToastModel';
 import {BannerModel} from '../appcontainer/BannerModel';
 import '../styles/XH.scss';
 import {ModelSelector, HoistModel, RefreshContextModel} from './model';
-import {HoistAppModel, RouterModel, BannerSpec, ToastSpec, MessageSpec, HoistUser, TaskObserver} from './';
+import {
+    HoistAppModel,
+    RouterModel,
+    BannerSpec,
+    ToastSpec,
+    MessageSpec,
+    HoistUser,
+    TaskObserver
+} from './';
 
 const MIN_HOIST_CORE_VERSION = '14.4';
-
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
@@ -80,7 +89,6 @@ declare const xhIsDevelopmentMode: boolean;
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
 export class XHApi {
-
     private _initCalled: boolean = false;
     private _lastActivityMs: number = Date.now();
     private _uaParser: any = null;
@@ -189,7 +197,7 @@ export class XHApi {
         return this.prefService.set(key, val);
     }
 
-    track(opts: string|TrackOptions) {
+    track(opts: string | TrackOptions) {
         return this.trackService?.track(opts);
     }
 
@@ -382,7 +390,7 @@ export class XHApi {
     // Viewport Size
     //------------------------
     /** Current viewport width / height. (observable) */
-    get viewportSize(): {width: number, height: number} {
+    get viewportSize(): {width: number; height: number} {
         return this.acm.viewportSizeModel.size;
     }
 
@@ -483,14 +491,14 @@ export class XHApi {
      * Show a non-modal "toast" notification that appears and then automatically dismisses.
      * @returns model representing the toast. May be used for programmatic dismissal.
      */
-    toast(config: ToastSpec|string): ToastModel {
+    toast(config: ToastSpec | string): ToastModel {
         return this.acm.toastSourceModel.show(config);
     }
 
     /**
      * Show a toast with default intent and icon indicating success.
      */
-    successToast(config: ToastSpec|string): ToastModel {
+    successToast(config: ToastSpec | string): ToastModel {
         if (isString(config)) config = {message: config};
         return this.toast({intent: 'success', icon: Icon.success(), ...config});
     }
@@ -498,7 +506,7 @@ export class XHApi {
     /**
      * Show a toast with default intent and icon indicating a warning.
      */
-    warningToast(config: ToastSpec|string): ToastModel {
+    warningToast(config: ToastSpec | string): ToastModel {
         if (isString(config)) config = {message: config};
         return this.toast({intent: 'warning', icon: Icon.warning(), ...config});
     }
@@ -506,7 +514,7 @@ export class XHApi {
     /**
      * Show a toast with intent and icon indicating a serious issue.
      */
-    dangerToast(config: ToastSpec|string): ToastModel {
+    dangerToast(config: ToastSpec | string): ToastModel {
         if (isString(config)) config = {message: config};
         return this.toast({intent: 'danger', icon: Icon.danger(), ...config});
     }
@@ -515,7 +523,7 @@ export class XHApi {
      * Show a Banner across the top of the viewport. Banners are unique by their
      * category prop - showing a new banner with an existing category will replace it.
      */
-    showBanner(config: BannerSpec|string): BannerModel {
+    showBanner(config: BannerSpec | string): BannerModel {
         if (isString(config)) config = {message: config};
         return this.acm.bannerSourceModel.show(config);
     }
@@ -543,7 +551,7 @@ export class XHApi {
      *      via `Exception.create()`.
      * @param options - provides further control over how the exception is shown and/or logged.
      */
-    handleException(exception: Error|PlainObject|string, options?: ExceptionHandlerOptions) {
+    handleException(exception: Error | PlainObject | string, options?: ExceptionHandlerOptions) {
         this.exceptionHandler.handleException(exception, options);
     }
 
@@ -557,7 +565,7 @@ export class XHApi {
      *      via `Exception.create()`.
      * @param options - provides further control over how the exception is shown and/or logged.
      */
-    showException(exception: Error|PlainObject|string, options?: ExceptionHandlerOptions) {
+    showException(exception: Error | PlainObject | string, options?: ExceptionHandlerOptions) {
         this.exceptionHandler.showException(exception, options);
     }
 
@@ -565,7 +573,7 @@ export class XHApi {
      * Create a new exception - See {@link Exception} for Hoist extensions to JS Errors.
      * @param cfg - properties to add to the returned Error. If a string, will be the `message`.
      */
-    exception(cfg: PlainObject|string): Error {
+    exception(cfg: PlainObject | string): Error {
         return Exception.create(cfg);
     }
 
@@ -642,7 +650,7 @@ export class XHApi {
      * @param args - objects to be destroyed. If any argument is an array,
      *      each element in the array will be destroyed (this is *not* done recursively);.
      */
-    safeDestroy(...args: (any|any[])[]) {
+    safeDestroy(...args: (any | any[])[]) {
         if (args) {
             args = flatten(args);
             args.forEach(it => {
@@ -679,13 +687,15 @@ export class XHApi {
         if (appSpec.trackAppLoad) this.trackLoad();
 
         // Add xh css classes to power Hoist CSS selectors.
-        document.body.classList.add(...compact([
-            'xh-app',
-            (isMobileApp ? 'xh-mobile' : 'xh-standard'),
-            (isDesktop ? 'xh-desktop' : null),
-            (isPhone ? 'xh-phone' : null),
-            (isTablet ? 'xh-tablet' : null)
-        ]));
+        document.body.classList.add(
+            ...compact([
+                'xh-app',
+                isMobileApp ? 'xh-mobile' : 'xh-standard',
+                isDesktop ? 'xh-desktop' : null,
+                isPhone ? 'xh-phone' : null,
+                isTablet ? 'xh-tablet' : null
+            ])
+        );
 
         this.createActivityListeners();
 
@@ -703,14 +713,15 @@ export class XHApi {
             try {
                 await XH.fetch({url: 'ping'});
             } catch (e) {
-                const pingURL = baseUrl.startsWith('http') ?
-                    `${baseUrl}ping` :
-                    `${window.location.origin}${baseUrl}ping`;
+                const pingURL = baseUrl.startsWith('http')
+                    ? `${baseUrl}ping`
+                    : `${window.location.origin}${baseUrl}ping`;
 
                 throw this.exception({
                     name: 'UI Server Unavailable',
                     detail: e.message,
-                    message: 'Client cannot reach UI server.  Please check UI server at the ' +
+                    message:
+                        'Client cannot reach UI server.  Please check UI server at the ' +
                         `following location: ${pingURL}`
                 });
             }
@@ -718,7 +729,7 @@ export class XHApi {
             this.setAppState('PRE_AUTH');
 
             // consult (optional) pre-auth init for app
-            const modelClass: any  = this.appSpec.modelClass;
+            const modelClass: any = this.appSpec.modelClass;
             await modelClass.preAuthAsync();
 
             // Check if user has already been authenticated (prior login, OAuth, SSO)...
@@ -736,7 +747,6 @@ export class XHApi {
 
             // ...if so, continue with initialization.
             await this.completeInitAsync();
-
         } catch (e) {
             this.setAppState('LOAD_FAILED');
             this.handleException(e, {requireReload: true});
@@ -751,7 +761,6 @@ export class XHApi {
     @action
     async completeInitAsync() {
         try {
-
             // Install identity service and confirm access
             await this.installServicesAsync(IdentityService);
             const access = this.checkAccess();
@@ -765,7 +774,10 @@ export class XHApi {
             this.setAppState('INITIALIZING');
             await this.installServicesAsync(LocalStorageService);
             await this.installServicesAsync(
-                EnvironmentService, PrefService, ConfigService, JsonBlobService
+                EnvironmentService,
+                PrefService,
+                ConfigService,
+                JsonBlobService
             );
 
             // Confirm hoist-core version after environment service loaded
@@ -778,8 +790,14 @@ export class XHApi {
             }
 
             await this.installServicesAsync(
-                AlertBannerService, AutoRefreshService, ChangelogService, IdleService,
-                InspectorService, GridAutosizeService, GridExportService, WebSocketService
+                AlertBannerService,
+                AutoRefreshService,
+                ChangelogService,
+                IdleService,
+                InspectorService,
+                GridAutosizeService,
+                GridExportService,
+                WebSocketService
             );
             this.acm.init();
 
@@ -788,8 +806,8 @@ export class XHApi {
             // Delay to workaround hot-reload styling issues in dev.
             await wait(XH.isDevelopmentMode ? 300 : 1);
 
-            const modelClass:any  = this.appSpec.modelClass;
-            this.appModel = modelClass.instance =  new modelClass();
+            const modelClass: any = this.appSpec.modelClass;
+            this.appModel = modelClass.instance = new modelClass();
             await this.appModel.initAsync();
             this.startRouter();
             this.startOptionsDialog();
@@ -823,12 +841,12 @@ export class XHApi {
             {checkAccess} = this.appSpec;
 
         if (isString(checkAccess)) {
-            return user.hasRole(checkAccess) ?
-                {hasAccess: true} :
-                {
-                    hasAccess: false,
-                    message: `User needs the role "${checkAccess}" to access this application.`
-                };
+            return user.hasRole(checkAccess)
+                ? {hasAccess: true}
+                : {
+                      hasAccess: false,
+                      message: `User needs the role "${checkAccess}" to access this application.`
+                  };
         } else {
             const ret = checkAccess(user);
             return isBoolean(ret) ? {hasAccess: ret} : ret;
@@ -838,14 +856,14 @@ export class XHApi {
     private setDocTitle() {
         const env = XH.getEnv('appEnvironment'),
             {clientAppName} = this.appSpec;
-        document.title = (env === 'Production' ? clientAppName : `${clientAppName} (${env})`);
+        document.title = env === 'Production' ? clientAppName : `${clientAppName} (${env})`;
     }
 
     private async getAuthStatusFromServerAsync(): Promise<boolean> {
         return await this.fetchService
             .fetchJson({
                 url: 'xh/authStatus',
-                timeout: 3 * MINUTES     // Accommodate delay for user at a credentials prompt
+                timeout: 3 * MINUTES // Accommodate delay for user at a credentials prompt
             })
             .then(r => r.authenticated)
             .catch(e => {
@@ -882,7 +900,7 @@ export class XHApi {
 
         const disposer = mobxReaction(
             () => this.appState,
-            (state) => {
+            state => {
                 const now = Date.now();
                 switch (state) {
                     case 'RUNNING':
@@ -923,11 +941,7 @@ export class XHApi {
         return this._uaParser;
     }
 
-    private parseAppSpec() {
-
-    }
-
-
+    private parseAppSpec() {}
 }
 
 /** app-wide singleton instance. */
@@ -936,5 +950,3 @@ export const XH = new XHApi();
 // Install reference to XH singleton on window (this is the one global Hoist adds directly).
 // Note that app code should still `import {XH} from '@xh/hoist/core'` to access this instance.
 window['XH'] = XH;
-
-

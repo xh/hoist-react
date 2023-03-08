@@ -32,15 +32,14 @@ export const dashCanvasView = hoistCmp.factory({
 
     render({model, className}) {
         const {viewSpec, ref, hidePanelHeader, headerItems, autoHeight} = model,
-            headerProps = hidePanelHeader ? {} : {
-                compactHeader: true,
-                title: model.title,
-                icon: model.icon,
-                headerItems: [
-                    ...headerItems,
-                    headerMenu({model})
-                ]
-            };
+            headerProps = hidePanelHeader
+                ? {}
+                : {
+                      compactHeader: true,
+                      title: model.title,
+                      icon: model.icon,
+                      headerItems: [...headerItems, headerMenu({model})]
+                  };
         return panel({
             className,
             ref,
@@ -54,82 +53,79 @@ export const dashCanvasView = hoistCmp.factory({
     }
 });
 
-const headerMenu = hoistCmp.factory<DashCanvasViewModel>(
-    ({model}) => {
-        if (model.hideMenuButton) return null;
+const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
+    if (model.hideMenuButton) return null;
 
-        const {allowDuplicate, viewState, viewSpec, id, containerModel, positionParams, title} = model,
-            {contentLocked, renameLocked} = containerModel,
-
-            addMenuItems = createViewMenuItems({
-                dashCanvasModel: containerModel,
-                viewId: id
-            }),
-
-            replaceMenuItems = createViewMenuItems({
-                dashCanvasModel: containerModel,
-                viewId: id,
-                replaceExisting: true
-            }),
-
-            content = ContextMenu({
-                menuItems: [
-                    {
-                        text: 'Add',
-                        icon: Icon.add(),
-                        items: addMenuItems,
-                        hidden: contentLocked
-                    },
-                    {
-                        text: 'Remove',
-                        icon: Icon.cross(),
-                        hidden: !viewSpec.allowRemove || contentLocked,
-                        actionFn: () => containerModel.removeView(id)
-                    },
-                    {
-                        text: 'Rename',
-                        icon: Icon.edit(),
-                        hidden: !viewSpec.allowRename || renameLocked,
-                        actionFn: () => containerModel.renameView(id)
-                    },
-                    {
-                        text: 'Replace',
-                        icon: Icon.transaction(),
-                        items: replaceMenuItems,
-                        hidden: !viewSpec.allowRemove || contentLocked
-                    },
-                    {
-                        text: 'Duplicate',
-                        icon: Icon.copy(),
-                        hidden: !allowDuplicate || contentLocked || viewSpec.unique,
-                        actionFn: () =>
-                            containerModel.addViewInternal(viewSpec.id, {
+    const {allowDuplicate, viewState, viewSpec, id, containerModel, positionParams, title} = model,
+        {contentLocked, renameLocked} = containerModel,
+        addMenuItems = createViewMenuItems({
+            dashCanvasModel: containerModel,
+            viewId: id
+        }),
+        replaceMenuItems = createViewMenuItems({
+            dashCanvasModel: containerModel,
+            viewId: id,
+            replaceExisting: true
+        }),
+        content = ContextMenu({
+            menuItems: [
+                {
+                    text: 'Add',
+                    icon: Icon.add(),
+                    items: addMenuItems,
+                    hidden: contentLocked
+                },
+                {
+                    text: 'Remove',
+                    icon: Icon.cross(),
+                    hidden: !viewSpec.allowRemove || contentLocked,
+                    actionFn: () => containerModel.removeView(id)
+                },
+                {
+                    text: 'Rename',
+                    icon: Icon.edit(),
+                    hidden: !viewSpec.allowRename || renameLocked,
+                    actionFn: () => containerModel.renameView(id)
+                },
+                {
+                    text: 'Replace',
+                    icon: Icon.transaction(),
+                    items: replaceMenuItems,
+                    hidden: !viewSpec.allowRemove || contentLocked
+                },
+                {
+                    text: 'Duplicate',
+                    icon: Icon.copy(),
+                    hidden: !allowDuplicate || contentLocked || viewSpec.unique,
+                    actionFn: () =>
+                        containerModel
+                            .addViewInternal(viewSpec.id, {
                                 layout: getDuplicateLayout(positionParams, model),
                                 state: viewState,
                                 title
-                            }).ensureVisible()
-                    },
-                    '-',
-                    ...(model.extraMenuItems ?? []),
-                    '-',
-                    ...(containerModel.extraMenuItems ?? [])
-                ]
-            });
-
-        // Workaround using React functional component to check if ContextMenu renders null
-        // TODO - build a popover wrapper that null-checks content instead of this workaround
-        if (!content) return null;
-
-        return popover({
-            position: Position.BOTTOM,
-            minimal: true,
-            target: button({
-                icon: Icon.ellipsisVertical()
-            }),
-            content
+                            })
+                            .ensureVisible()
+                },
+                '-',
+                ...(model.extraMenuItems ?? []),
+                '-',
+                ...(containerModel.extraMenuItems ?? [])
+            ]
         });
-    }
-);
+
+    // Workaround using React functional component to check if ContextMenu renders null
+    // TODO - build a popover wrapper that null-checks content instead of this workaround
+    if (!content) return null;
+
+    return popover({
+        position: Position.BOTTOM,
+        minimal: true,
+        target: button({
+            icon: Icon.ellipsisVertical()
+        }),
+        content
+    });
+});
 
 //------------------------
 // Implementation
@@ -137,5 +133,8 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(
 /** Returns layout for duplicate view, directly underneath original */
 const getDuplicateLayout = (layout, model) => {
     const {w: width, h: height, x: startX, y: startY} = layout;
-    return {...layout, ...model.containerModel.getNextAvailablePosition({width, height, startX, startY})};
+    return {
+        ...layout,
+        ...model.containerModel.getNextAvailablePosition({width, height, startX, startY})
+    };
 };

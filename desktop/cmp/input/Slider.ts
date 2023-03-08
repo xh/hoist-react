@@ -15,11 +15,7 @@ import {isArray} from 'lodash';
 import {ReactNode} from 'react';
 import './Slider.scss';
 
-export interface SliderProps extends
-    HoistProps,
-    HoistInputProps,
-    LayoutProps
-{
+export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
     value?: Some<number>;
 
     /** Maximum value */
@@ -33,7 +29,7 @@ export interface SliderProps extends
      * If true, labels will use number value formatted to labelStepSize decimal places.
      * If false, labels will not be shown.
      */
-    labelRenderer?: boolean|((value: number) => ReactNode);
+    labelRenderer?: boolean | ((value: number) => ReactNode);
 
     /** Increment between successive labels. Must be greater than zero. Defaults to 1. */
     labelStepSize?: number;
@@ -63,7 +59,6 @@ export const [Slider, slider] = hoistCmp.withFactory<SliderProps>({
 });
 (Slider as any).hasLayoutSupport = true;
 
-
 //-----------------------
 // Implementation
 //-----------------------
@@ -83,44 +78,39 @@ class SliderInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<SliderInputModel>(
-    ({model, className, ...props}, ref) => {
-        const {width, ...layoutProps} = getLayoutProps(props),
-            sliderType = isArray(model.renderValue) ? bpRangeSlider : bpSlider;
+const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, ref) => {
+    const {width, ...layoutProps} = getLayoutProps(props),
+        sliderType = isArray(model.renderValue) ? bpRangeSlider : bpSlider;
 
-        throwIf(
-            props.labelStepSize <= 0,
-            'Error in Slider: labelStepSize must be greater than zero.'
-        );
+    throwIf(props.labelStepSize <= 0, 'Error in Slider: labelStepSize must be greater than zero.');
 
-        // Set default left / right padding
-        if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;
-        if (!layoutProps.padding && !layoutProps.paddingRight) layoutProps.paddingRight = 20;
+    // Set default left / right padding
+    if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;
+    if (!layoutProps.padding && !layoutProps.paddingRight) layoutProps.paddingRight = 20;
 
-        return box({
-            item: sliderType({
-                value: model.renderValue,
+    return box({
+        item: sliderType({
+            value: model.renderValue,
 
-                disabled: props.disabled,
-                labelRenderer: props.labelRenderer,
-                labelStepSize: props.labelStepSize,
-                max: props.max,
-                min: props.min,
-                showTrackFill: props.showTrackFill,
-                stepSize: props.stepSize,
-                tabIndex: props.tabIndex,
-                vertical: props.vertical,
+            disabled: props.disabled,
+            labelRenderer: props.labelRenderer,
+            labelStepSize: props.labelStepSize,
+            max: props.max,
+            min: props.min,
+            showTrackFill: props.showTrackFill,
+            stepSize: props.stepSize,
+            tabIndex: props.tabIndex,
+            vertical: props.vertical,
 
-                onChange: (val) => model.noteValueChange(val)
-            }),
+            onChange: val => model.noteValueChange(val)
+        }),
 
-            ...layoutProps,
-            width: withDefault(width, 200),
-            className,
+        ...layoutProps,
+        width: withDefault(width, 200),
+        className,
 
-            onBlur: model.onBlur,
-            onFocus: model.onFocus,
-            ref
-        });
-    }
-);
+        onBlur: model.onBlur,
+        onFocus: model.onFocus,
+        ref
+    });
+});

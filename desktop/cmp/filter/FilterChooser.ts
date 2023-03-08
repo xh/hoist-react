@@ -29,9 +29,9 @@ export interface FilterChooserProps extends HoistProps<FilterChooserModel>, Layo
     /** Icon to display inline on the left side of the input. */
     leftIcon?: ReactElement;
     /** Max-height of dropdown. Either a number in pixels or a valid CSS string, such as '80vh'. */
-    maxMenuHeight?: number|string;
+    maxMenuHeight?: number | string;
     /** Placement of the dropdown menu relative to the input control. */
-    menuPlacement?: 'auto'|'top'|'bottom';
+    menuPlacement?: 'auto' | 'top' | 'bottom';
     /** Width in pixels for the dropdown menu - if unspecified, defaults to control width. */
     menuWidth?: number;
     /** Text to display when control is empty. */
@@ -47,12 +47,14 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooser
     className: 'xh-filter-chooser',
     render({model, className, ...props}, ref) {
         const [layoutProps, chooserProps] = splitLayoutProps(props),
-            {inputRef, suggestFieldsWhenEmpty, selectOptions, unsupportedFilter, favoritesIsOpen} = model,
-            {autoFocus, enableClear, leftIcon, maxMenuHeight, menuPlacement, menuWidth} = chooserProps,
+            {inputRef, suggestFieldsWhenEmpty, selectOptions, unsupportedFilter, favoritesIsOpen} =
+                model,
+            {autoFocus, enableClear, leftIcon, maxMenuHeight, menuPlacement, menuWidth} =
+                chooserProps,
             disabled = unsupportedFilter || chooserProps.disabled,
-            placeholder = unsupportedFilter ?
-                'Unsupported filter (click to clear)' :
-                withDefault(chooserProps.placeholder, 'Filter...');
+            placeholder = unsupportedFilter
+                ? 'Unsupported filter (click to clear)'
+                : withDefault(chooserProps.placeholder, 'Filter...');
 
         return box({
             ref,
@@ -74,18 +76,18 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooser
                     enableClear: withDefault(enableClear, true),
 
                     enableMulti: true,
-                    queryFn: (q) => model.queryAsync(q),
+                    queryFn: q => model.queryAsync(q),
                     options: selectOptions,
                     optionRenderer,
                     rsOptions: {
                         defaultOptions: suggestFieldsWhenEmpty,
                         openMenuOnClick: suggestFieldsWhenEmpty,
                         openMenuOnFocus: false,
-                        isOptionDisabled: (opt) => opt.type === 'msg',
+                        isOptionDisabled: opt => opt.type === 'msg',
                         noOptionsMessage: () => null,
                         loadingMessage: () => null,
                         styles: {
-                            menuList: (base) => ({
+                            menuList: base => ({
                                 ...base,
                                 maxHeight: withDefault(maxMenuHeight, '50vh')
                             })
@@ -99,7 +101,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooser
                 isOpen: favoritesIsOpen,
                 position: 'bottom-right',
                 minimal: true,
-                onInteraction: (willOpen) => {
+                onInteraction: willOpen => {
                     if (!willOpen) model.closeFavoritesMenu();
                     if (unsupportedFilter) model.setValue(null);
                 }
@@ -113,16 +115,22 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooser
 //------------------
 function optionRenderer(opt) {
     switch (opt.type) {
-        case 'field' : return fieldOption(opt);
-        case 'minimalField' : return minimalFieldOption(opt);
-        case 'filter': return filterOption(opt);
-        case 'msg': return messageOption(opt);
+        case 'field':
+            return fieldOption(opt);
+        case 'minimalField':
+            return minimalFieldOption(opt);
+        case 'filter':
+            return filterOption(opt);
+        case 'msg':
+            return messageOption(opt);
     }
     return null;
 }
 
 const fieldOption = hoistCmp.factory({
-    model: false, observer: false, memo: false,
+    model: false,
+    observer: false,
+    memo: false,
     render({fieldSpec}) {
         const {displayName, ops, example} = fieldSpec;
         return hframe({
@@ -138,7 +146,9 @@ const fieldOption = hoistCmp.factory({
 });
 
 const minimalFieldOption = hoistCmp.factory({
-    model: false, observer: false, memo: false,
+    model: false,
+    observer: false,
+    memo: false,
     render({fieldSpec}) {
         const {displayName} = fieldSpec;
         return hframe({
@@ -149,7 +159,8 @@ const minimalFieldOption = hoistCmp.factory({
 });
 
 const filterOption = hoistCmp.factory({
-    model: false, observer: false,
+    model: false,
+    observer: false,
     render({fieldSpec, displayOp, displayValue}) {
         return hframe({
             className: 'xh-filter-chooser-option',
@@ -163,7 +174,8 @@ const filterOption = hoistCmp.factory({
 });
 
 const messageOption = hoistCmp.factory({
-    model: false, observer: false,
+    model: false,
+    observer: false,
     render({label}) {
         return hframe({
             className: 'xh-filter-chooser-option__message',
@@ -178,11 +190,8 @@ const messageOption = hoistCmp.factory({
 function favoritesIcon(model) {
     if (!model.persistFavorites) return null;
     return Icon.favorite({
-        className: classNames(
-            'xh-select__indicator',
-            'xh-filter-chooser-favorite-icon'
-        ),
-        onMouseDown: (e) => {
+        className: classNames('xh-select__indicator', 'xh-filter-chooser-favorite-icon'),
+        onMouseDown: e => {
             model.openFavoritesMenu();
             e.stopPropagation();
         }
@@ -212,10 +221,7 @@ const favoritesMenu = hoistCmp.factory<FilterChooserModel>({
             })
         );
 
-        return vbox(
-            div({className: 'xh-popup__title', item: 'Favorites'}),
-            menu({items})
-        );
+        return vbox(div({className: 'xh-popup__title', item: 'Favorites'}), menu({items}));
     }
 });
 
@@ -227,7 +233,7 @@ const favoriteMenuItem = hoistCmp.factory<FilterChooserModel>({
             onClick: () => model.setValue(value),
             labelElement: button({
                 icon: Icon.delete(),
-                onClick: (e) => {
+                onClick: e => {
                     model.removeFavorite(value);
                     e.stopPropagation();
                 }

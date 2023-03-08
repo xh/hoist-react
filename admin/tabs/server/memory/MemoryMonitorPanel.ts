@@ -18,7 +18,6 @@ export const memoryMonitorPanel = hoistCmp.factory({
     model: creates(MemoryMonitorModel),
 
     render({model}) {
-
         const {readonly} = AppModel;
         return panel({
             tbar: [

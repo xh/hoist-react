@@ -15,7 +15,6 @@ import {LeftRightChooserModel} from './LeftRightChooserModel';
 
 export interface LeftRightChooserProps extends HoistProps<LeftRightChooserModel>, BoxProps {}
 
-
 /**
  * A component for moving a list of items between two arbitrary groups. By convention, the left
  * group represents 'available' items and the right group represents 'selected' items.

@@ -13,7 +13,6 @@ import {differ} from '../../../differ/Differ';
 import {regroupDialog} from '../../../regroup/RegroupDialog';
 import {ConfigPanelModel} from './ConfigPanelModel';
 
-
 export const configPanel = hoistCmp.factory({
     model: creates(ConfigPanelModel),
 

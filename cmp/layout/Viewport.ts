@@ -9,14 +9,15 @@ import {box} from './Box';
 
 export interface ViewportProps extends HoistProps, BoxProps {}
 
-
 /**
  * A container for the top level of the application.
  * Will stretch to encompass the entire browser.
  */
 export const [Viewport, viewport] = hoistCmp.withFactory<ViewportProps>({
     displayName: 'Viewport',
-    model: false, memo: false, observer: false,
+    model: false,
+    memo: false,
+    observer: false,
 
     className: 'xh-viewport',
 

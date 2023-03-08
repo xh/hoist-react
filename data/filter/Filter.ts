@@ -20,8 +20,9 @@ import {FilterTestFn} from './Types';
  *      via an `AND` or `OR` operator.
  */
 export abstract class Filter {
-
-    get isFilter() {return true}
+    get isFilter() {
+        return true;
+    }
 
     /**
      * Return a function that can be used to test a record or object.
@@ -29,8 +30,8 @@ export abstract class Filter {
      * @param store - if provided, return will be appropriate for testing records of this store.
      *      Otherwise, return will be appropriate for testing anonymous objects.
      */
-    abstract getTestFn(store?: Store): FilterTestFn
+    abstract getTestFn(store?: Store): FilterTestFn;
 
     /** True if the provided other Filter is equivalent to this instance.*/
-    abstract equals(other: Filter): boolean
+    abstract equals(other: Filter): boolean;
 }

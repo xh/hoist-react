@@ -13,15 +13,25 @@ import {makeObservable, bindable} from '@xh/hoist/mobx';
 import {ReactNode} from 'react';
 import {menu} from './impl/Menu';
 
-
 export interface MenuButtonProps extends Omit<ButtonProps, 'title'> {
-
     /** Array of MenuItems or spacers. */
     menuItems?: MenuItemLike[];
 
     /** Position of menu relative to button */
-    menuPosition?: 'top-left'|'top'|'top-right'|'right-top'|'right'|'right-bottom'|'bottom-right'|
-        'bottom'|'bottom-left'|'left-bottom'|'left'|'left-top'|'auto';
+    menuPosition?:
+        | 'top-left'
+        | 'top'
+        | 'top-right'
+        | 'right-top'
+        | 'right'
+        | 'right-bottom'
+        | 'bottom-right'
+        | 'bottom'
+        | 'bottom-left'
+        | 'left-bottom'
+        | 'left'
+        | 'left-top'
+        | 'auto';
 
     /** Optional title to display above the menu. */
     title?: ReactNode;
@@ -32,7 +42,6 @@ export interface MenuButtonProps extends Omit<ButtonProps, 'title'> {
     /** Props passed to the internal popover. */
     popoverProps?: Partial<PopoverProps>;
 }
-
 
 /**
  * Convenience Button preconfigured for use as a trigger for a dropdown menu operation.
@@ -57,8 +66,8 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
             position: menuPosition,
             disabled: disabled,
             target: button({icon, disabled, ...props}),
-            content: menu({menuItems, title, onDismiss: () => impl.isOpen = false}),
-            onInteraction: (nextOpenState) => impl.isOpen = nextOpenState,
+            content: menu({menuItems, title, onDismiss: () => (impl.isOpen = false)}),
+            onInteraction: nextOpenState => (impl.isOpen = nextOpenState),
             backdrop: true,
             ...popoverProps
         });

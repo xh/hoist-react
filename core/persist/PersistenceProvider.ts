@@ -6,15 +6,14 @@
  */
 
 import {DebounceSpec, XH} from '../';
-import {LocalStorageProvider, PrefProvider, DashViewProvider, CustomProvider, PersistOptions} from './';
 import {
-    isUndefined,
-    get,
-    set,
-    unset,
-    isNumber,
-    debounce as lodashDebounce
-} from 'lodash';
+    LocalStorageProvider,
+    PrefProvider,
+    DashViewProvider,
+    CustomProvider,
+    PersistOptions
+} from './';
+import {isUndefined, get, set, unset, isNumber, debounce as lodashDebounce} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -31,8 +30,9 @@ import {throwIf} from '@xh/hoist/utils/js';
  *   - {@link CustomProvider} - API for app and components to provide their own storage mechanism.
  */
 export class PersistenceProvider {
-
-    get isPersistenceProvider(): boolean {return true}
+    get isPersistenceProvider(): boolean {
+        return true;
+    }
 
     path: string;
     debounce: DebounceSpec;
@@ -70,9 +70,9 @@ export class PersistenceProvider {
         this.path = path;
         this.debounce = debounce;
         if (debounce) {
-            this.writeInternal = isNumber(debounce) ?
-                lodashDebounce(this.writeInternal, debounce) :
-                lodashDebounce(this.writeInternal, debounce.interval, debounce);
+            this.writeInternal = isNumber(debounce)
+                ? lodashDebounce(this.writeInternal, debounce)
+                : lodashDebounce(this.writeInternal, debounce.interval, debounce);
         }
     }
 
@@ -117,7 +117,8 @@ export class PersistenceProvider {
     }
 
     protected writeRaw(obj: object) {}
-    protected readRaw(): object {return null}
+    protected readRaw(): object {
+        return null;
+    }
     protected clearRaw() {}
 }
-

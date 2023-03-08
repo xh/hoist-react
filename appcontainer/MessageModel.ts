@@ -81,7 +81,7 @@ export class MessageModel extends HoistModel {
 
         this.onConfirm = onConfirm;
         this.onCancel = onCancel;
-        this.result = new Promise(resolve => this._resolver = resolve);
+        this.result = new Promise(resolve => (this._resolver = resolve));
 
         // Message modals are automatically dismissed on app route changes to avoid navigating the
         // app underneath the dialog in an unsettling way.
@@ -140,9 +140,12 @@ export class MessageModel extends HoistModel {
     // Merge handler and deprecated props into consolidated object.
     // Return null if neither text nor icon provided - button should not be displayed.
     private parseButtonProps(props, handler) {
-        warnIf(props.onClick, 'Cannot specify "onClick" callback for default Message buttons - callback will be ignored.');
+        warnIf(
+            props.onClick,
+            'Cannot specify "onClick" callback for default Message buttons - callback will be ignored.'
+        );
 
         const ret = {...props, onClick: handler};
-        return (ret.text || ret.icon) ? ret : null;
+        return ret.text || ret.icon ? ret : null;
     }
 }

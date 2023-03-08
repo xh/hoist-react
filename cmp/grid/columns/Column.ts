@@ -41,7 +41,8 @@ import {
     ColumnCellClassRuleFn,
     ColumnComparator,
     ColumnEditableFn,
-    ColumnEditorFn, ColumnExcelFormatFn,
+    ColumnEditorFn,
+    ColumnExcelFormatFn,
     ColumnExportValueFn,
     ColumnGetValueFn,
     ColumnHeaderClassFn,
@@ -57,13 +58,12 @@ import {FunctionComponent} from 'react';
 import {ColumnGroup} from './ColumnGroup';
 
 export interface ColumnSpec {
-
     /**
      * Name of data store field to display within the column, or object containing properties
      * for store field.  If object form is used, the provided properties will be used for
      * auto-creating any fields needed on the Grid's store.
      */
-    field?: string|FieldSpec|CubeFieldSpec;
+    field?: string | FieldSpec | CubeFieldSpec;
 
     /**
      * Unique identifier for the Column within its grid. Defaults to field name - one of these
@@ -91,7 +91,7 @@ export interface ColumnSpec {
      * User-facing text/element displayed in the Column header, or a function to produce the same.
      * Defaulted from `displayName`.
      */
-    headerName?: ColumnHeaderNameFn|ReactNode
+    headerName?: ColumnHeaderNameFn | ReactNode;
 
     /** Tooltip text for grid header.*/
     headerTooltip?: string;
@@ -106,7 +106,7 @@ export interface ColumnSpec {
     headerAlign?: HAlign;
 
     /** CSS classes to add to the header. Supports both string values or a function to generate strings.*/
-    headerClass?: ColumnHeaderClassFn|Some<string>;
+    headerClass?: ColumnHeaderClassFn | Some<string>;
 
     /**
      * Additional CSS classes to add to each cell in the column. Supports both string values or
@@ -119,7 +119,7 @@ export interface ColumnSpec {
      * CSS class names to functions determining if they should be added or removed from the cell.
      * See Ag-Grid docs on "cell styles" for details.
      */
-    cellClassRules?: Record<string, ColumnCellClassRuleFn>
+    cellClassRules?: Record<string, ColumnCellClassRuleFn>;
 
     /** True to suppress default display of the column.*/
     hidden?: boolean;
@@ -132,7 +132,7 @@ export interface ColumnSpec {
      * default 50px minimum or stretching so wide that it compromises the overall legibility of
      * the grid.
      */
-    flex?: boolean|number;
+    flex?: boolean | number;
 
     /** Default width in pixels.*/
     width?: number;
@@ -162,7 +162,7 @@ export interface ColumnSpec {
      * The sorting options for this column to be applied by successive clicks on the column header.
      * Specify null to clear the sort on this column.
      */
-    sortingOrder?: Array<'asc'|'desc'|ColumnSortSpec|null>;
+    sortingOrder?: Array<'asc' | 'desc' | ColumnSortSpec | null>;
 
     /**
      * True to enable absolute value sorting for this column.  If false (default) absolute value
@@ -174,7 +174,7 @@ export interface ColumnSpec {
      * Alternate field name to reference or function to call when producing a value for this column
      * to be sorted by.
      */
-    sortValue?: string|ColumnSortValueFn;
+    sortValue?: string | ColumnSortValueFn;
 
     /** Function to compare cell values for sorting.*/
     comparator?: ColumnComparator;
@@ -225,7 +225,7 @@ export interface ColumnSpec {
     /**
      * True to display raw value, or tooltip function.
      */
-    tooltip?: boolean|ColumnTooltipFn;
+    tooltip?: boolean | ColumnTooltipFn;
 
     /**
      * Name to display within the column chooser component. Defaults to `displayName`, can be
@@ -262,13 +262,13 @@ export interface ColumnSpec {
      * Alternate field name to reference or function to call when producing a value for a file
      * export. {@link GridExportService}
      */
-    exportValue?: string|ColumnExportValueFn;
+    exportValue?: string | ColumnExportValueFn;
 
     /** True to drop this column from a file export. */
     excludeFromExport?: boolean;
 
     /** Structured format string for Excel-based exports, or a function to produce one. {@link ExcelFormat} */
-    excelFormat?: string|ColumnExcelFormatFn;
+    excelFormat?: string | ColumnExcelFormatFn;
 
     /**
      * Width in characters for Excel-based exports. Typically used with ExcelFormat.LONG_TEXT to
@@ -308,13 +308,13 @@ export interface ColumnSpec {
      * True to make cells in this column editable, or a function to determine on a
      * record-by-record basis.
      */
-    editable?: boolean|ColumnEditableFn;
+    editable?: boolean | ColumnEditableFn;
 
     /**
      * Cell editor Component or a function to create one.  Adding an editor will also
      * install a cellClassRule and tooltip to display the validation state of the cell in question.
      */
-    editor?: FunctionComponent|ColumnEditorFn;
+    editor?: FunctionComponent | ColumnEditorFn;
 
     /**
      * True if this cell editor should be rendered as a popup over the cell instead of within the
@@ -343,7 +343,7 @@ export interface ColumnSpec {
     /**
      * Actions to display as clickable buttons in this column. For action columns only.
      */
-    actions?: Array<RecordActionSpec|RecordAction>,
+    actions?: Array<RecordActionSpec | RecordAction>;
 
     /**
      * For action columns, hide the Buttons for all rows except the currently hovered row. This can
@@ -361,7 +361,7 @@ export interface ColumnSpec {
     agOptions?: PlainObject;
 
     /** Extra, app-specific data for the column. */
-    appData?: PlainObject
+    appData?: PlainObject;
 }
 
 /**
@@ -369,7 +369,6 @@ export interface ColumnSpec {
  * Provided to GridModels as plain configuration objects.
  */
 export class Column {
-
     static DEFAULT_WIDTH = 60;
     static FLEX_COL_MIN_WIDTH = 30;
 
@@ -404,23 +403,23 @@ export class Column {
     colId: string;
     isTreeColumn: boolean;
     displayName: string;
-    headerName: ColumnHeaderNameFn|ReactNode;
+    headerName: ColumnHeaderNameFn | ReactNode;
     headerTooltip: string;
     headerHasExpandCollapse: boolean;
     headerAlign: HAlign;
-    headerClass: ColumnHeaderClassFn|Some<string>;
-    cellClass: ColumnCellClassFn|Some<string>;
+    headerClass: ColumnHeaderClassFn | Some<string>;
+    cellClass: ColumnCellClassFn | Some<string>;
     cellClassRules: Record<string, ColumnCellClassRuleFn>;
     align: HAlign;
     hidden: boolean;
-    flex: boolean|number;
+    flex: boolean | number;
     width: number;
     minWidth: number;
     maxWidth: number;
     rowHeight: number;
-    sortingOrder: Array<'asc'|'desc'|ColumnSortSpec|null>;
+    sortingOrder: Array<'asc' | 'desc' | ColumnSortSpec | null>;
     absSort: boolean;
-    sortValue: string|ColumnSortValueFn;
+    sortValue: string | ColumnSortValueFn;
     comparator: ColumnComparator;
     resizable: boolean;
     sortable: boolean;
@@ -431,15 +430,15 @@ export class Column {
     renderer: ColumnRenderer;
     rendererIsComplex: boolean;
     highlightOnChange: boolean;
-    tooltip: boolean|ColumnTooltipFn;
+    tooltip: boolean | ColumnTooltipFn;
     chooserName: string;
     chooserGroup: string;
     chooserDescription: string;
     excludeFromChooser: boolean;
-    exportName: string|ColumnHeaderNameFn;
-    exportValue: string|ColumnExportValueFn;
+    exportName: string | ColumnHeaderNameFn;
+    exportValue: string | ColumnExportValueFn;
     excludeFromExport: boolean;
-    excelFormat: string|ColumnExcelFormatFn;
+    excelFormat: string | ColumnExcelFormatFn;
     excelWidth: number;
     autosizable: boolean;
     autosizeIncludeHeader: boolean;
@@ -448,12 +447,12 @@ export class Column {
     autosizeMaxWidth: number;
     autosizeBufferPx: number;
     autoHeight: boolean;
-    editable: boolean|ColumnEditableFn;
+    editable: boolean | ColumnEditableFn;
     editor: ColumnEditorFn;
     editorIsPopup: boolean;
     setValueFn: ColumnSetValueFn;
     getValueFn: ColumnGetValueFn;
-    actions?: Array<RecordActionSpec|RecordAction>;
+    actions?: Array<RecordActionSpec | RecordAction>;
     actionsShowOnHoverOnly?: boolean;
     fieldSpec: FieldSpec;
     manuallySized: boolean;
@@ -577,7 +576,7 @@ export class Column {
         );
 
         this.flex = withDefault(flex, false);
-        this.width = this.flex ? null : (width && isFinite(width) ? width : Column.DEFAULT_WIDTH);
+        this.width = this.flex ? null : width && isFinite(width) ? width : Column.DEFAULT_WIDTH;
         // Prevent flex col from becoming hidden inadvertently.  Can be avoided by setting minWidth to null or 0.
         this.minWidth = withDefault(minWidth, this.flex ? Column.FLEX_COL_MIN_WIDTH : null);
         this.maxWidth = maxWidth;
@@ -610,7 +609,7 @@ export class Column {
         // ExportName must be non-empty string. Default to headerName if unspecified (it supports
         // the function form of headerName) and fallback to colId. Note GridExportService can
         // fallback again to colId internally if headerName is or returns an Element.
-        this.exportName = exportName || this.headerName as any || this.colId;
+        this.exportName = exportName || (this.headerName as any) || this.colId;
         this.exportValue = exportValue;
         this.excludeFromExport = withDefault(excludeFromExport, !this.field);
 
@@ -633,19 +632,29 @@ export class Column {
         this.getValueFn = withDefault(getValueFn, this.defaultGetValueFn);
 
         this.actions = actions;
-        this.actionsShowOnHoverOnly  = actionsShowOnHoverOnly ?? false;
+        this.actionsShowOnHoverOnly = actionsShowOnHoverOnly ?? false;
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
         this.appData = appData ? clone(appData) : {};
 
         // Warn if using the ag-Grid valueSetter or valueGetter and recommend using our callbacks
-        warnIf(this.agOptions.valueSetter, `Column '${this.colId}' uses valueSetter through agOptions. Remove and use custom setValueFn if needed.`);
-        warnIf(this.agOptions.valueGetter, `Column '${this.colId}' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`);
+        warnIf(
+            this.agOptions.valueSetter,
+            `Column '${this.colId}' uses valueSetter through agOptions. Remove and use custom setValueFn if needed.`
+        );
+        warnIf(
+            this.agOptions.valueGetter,
+            `Column '${this.colId}' uses valueGetter through agOptions. Remove and use custom getValueFn if needed.`
+        );
 
         if (!isEmpty(rest)) {
             const keys = keysIn(rest);
-            apiRemoved('tooltipElement', {test: rest['tooltipElement'], msg: 'Use tooltip property instead.', v: '58'});
+            apiRemoved('tooltipElement', {
+                test: rest['tooltipElement'],
+                msg: 'Use tooltip property instead.',
+                v: '58'
+            });
             throw XH.exception(
                 `Column '${this.colId}' configured with unsupported key(s) '${keys}'. Custom config data must be nested within the 'appData' property.`
             );
@@ -656,9 +665,9 @@ export class Column {
     isEditableForRecord(record: StoreRecord): boolean {
         const {editable, gridModel} = this;
         if (!record) return false;
-        return isFunction(editable) ?
-            editable({record, store: record.store, gridModel, column: this}) :
-            editable;
+        return isFunction(editable)
+            ? editable({record, store: record.store, gridModel, column: this})
+            : editable;
     }
 
     /** A Column definition appropriate for AG-Grid. */
@@ -671,8 +680,10 @@ export class Column {
                 // headerValueGetter should always return a string
                 // for display in draggable shadow box, aGrid Tool panel.
                 // Hoist ColumnHeader will handle display of Element values in the header.
-                headerValueGetter: (agParams) => {
-                    let ret = isFunction(headerName) ? headerName({column: this, gridModel, agParams}) : headerName;
+                headerValueGetter: agParams => {
+                    let ret = isFunction(headerName)
+                        ? headerName({column: this, gridModel, agParams})
+                        : headerName;
                     return isString(ret) ? ret : displayName;
                 },
                 headerClass: getAgHeaderClassFn(this),
@@ -681,7 +692,7 @@ export class Column {
                 minWidth: this.minWidth,
                 maxWidth: this.maxWidth,
                 resizable: this.resizable,
-                sortable: false,   // Prevent ag-Grid built-in sorting affordances.  Our custom header provides.
+                sortable: false, // Prevent ag-Grid built-in sorting affordances.  Our custom header provides.
                 suppressMovable: !this.movable,
                 lockPinned: !gridModel.enableColumnPinning || XH.isMobileApp,
                 pinned: this.pinned,
@@ -691,8 +702,8 @@ export class Column {
                 suppressFiltersToolPanel: this.excludeFromChooser,
                 enableCellChangeFlash: this.highlightOnChange,
                 cellClassRules: this.cellClassRules,
-                editable: (agParams) => this.isEditableForRecord(agParams.node.data),
-                valueSetter: (agParams) => {
+                editable: agParams => this.isEditableForRecord(agParams.node.data),
+                valueSetter: agParams => {
                     const record = agParams.data;
                     this.setValueFn({
                         value: agParams.newValue,
@@ -704,7 +715,7 @@ export class Column {
                         agParams
                     });
                 },
-                valueGetter: (agParams) => {
+                valueGetter: agParams => {
                     const record = agParams.data;
                     return this.getValueFn({
                         record,
@@ -734,7 +745,7 @@ export class Column {
         // We will change this setter as needed to install the renderer in the proper location
         // for cases like tree columns where we need to set the inner renderer on the default ag-Grid
         // group cell renderer, instead of on the top-level column itself
-        let setRenderer = (r) => ret.cellRenderer = r;
+        let setRenderer = r => (ret.cellRenderer = r);
 
         // Our implementation of Grid.getDataPath() > StoreRecord.treePath returns data path []s of
         // StoreRecord IDs. TreeColumns use those IDs as their cell values, regardless of field.
@@ -747,7 +758,7 @@ export class Column {
                 suppressDoubleClickExpand: true
             };
 
-            setRenderer = (r) => ret.cellRendererParams.innerRenderer = r;
+            setRenderer = r => (ret.cellRendererParams.innerRenderer = r);
         }
 
         // By always providing a minimal pass-through cellRenderer, we can ensure the
@@ -755,10 +766,15 @@ export class Column {
         // the dev has specified a renderer option directly against the ag-Grid API.
         const {renderer} = this;
         if (!agOptions.cellRenderer) {
-            setRenderer((agParams) => {
-                let ret = renderer ?
-                    renderer(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
-                    agParams.value;
+            setRenderer(agParams => {
+                let ret = renderer
+                    ? renderer(agParams.value, {
+                          record: agParams.data,
+                          column: this,
+                          gridModel,
+                          agParams
+                      })
+                    : agParams.value;
 
                 ret = isNil(ret) || isValidElement(ret) ? ret : toString(ret);
 
@@ -780,20 +796,34 @@ export class Column {
                 let ret = null;
                 if (hasRecord) {
                     const {store} = record,
-                        val = this.getValueFn({record, field, column: this, gridModel, agParams, store});
+                        val = this.getValueFn({
+                            record,
+                            field,
+                            column: this,
+                            gridModel,
+                            agParams,
+                            store
+                        });
 
-                    ret = isFunction(tooltip) ?
-                        tooltip(val, {record, column: this, gridModel, agParams}) :
-                        val;
+                    ret = isFunction(tooltip)
+                        ? tooltip(val, {record, column: this, gridModel, agParams})
+                        : val;
                 }
 
                 const isElement = isValidElement(ret);
-                useImperativeHandle(ref, () => ({
-                    getReactContainerClasses() {
-                        if (location === 'header') return ['ag-tooltip'];
-                        return ['xh-grid-tooltip', isElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'];
-                    }
-                }), [location, isElement]);
+                useImperativeHandle(
+                    ref,
+                    () => ({
+                        getReactContainerClasses() {
+                            if (location === 'header') return ['ag-tooltip'];
+                            return [
+                                'xh-grid-tooltip',
+                                isElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'
+                            ];
+                        }
+                    }),
+                    [location, isElement]
+                );
 
                 if (location === 'header') return div(this.headerTooltip);
                 if (!hasRecord) return null;
@@ -820,13 +850,18 @@ export class Column {
         // Generate CSS classes for cells.
         // Default alignment classes are mixed in with any provided custom classes.
         const {cellClass, isTreeColumn, align} = this;
-        ret.cellClass = (agParams) => {
+        ret.cellClass = agParams => {
             let r = [];
             if (cellClass) {
                 r = castArray(
-                    isFunction(cellClass) ?
-                        cellClass(agParams.value, {record: agParams.data, column: this, gridModel, agParams}) :
-                        cellClass
+                    isFunction(cellClass)
+                        ? cellClass(agParams.value, {
+                              record: agParams.data,
+                              column: this,
+                              gridModel,
+                              agParams
+                          })
+                        : cellClass
                 );
             }
             if (isTreeColumn) {
@@ -912,11 +947,11 @@ export class Column {
             });
             ret.cellEditorPopup = this.editorIsPopup;
             ret.cellClassRules = {
-                'xh-cell--invalid': (agParams) => {
+                'xh-cell--invalid': agParams => {
                     const record = agParams.data;
                     return record && !isEmpty(record.errors[field]);
                 },
-                'xh-cell--editable': (agParams) => {
+                'xh-cell--editable': agParams => {
                     return this.isEditableForRecord(agParams.data);
                 },
                 ...ret.cellClassRules
@@ -973,12 +1008,16 @@ export class Column {
         }
 
         if (!this.field) {
-            console.warn(`Column '${this.colId}' is not a Store field. 'filterable' will be ignored.`);
+            console.warn(
+                `Column '${this.colId}' is not a Store field. 'filterable' will be ignored.`
+            );
             return false;
         }
 
         if (this.field === 'cubeLabel') {
-            console.warn(`Column '${this.colId}' is a cube label column. 'filterable' will be ignored.`);
+            console.warn(
+                `Column '${this.colId}' is a cube label column. 'filterable' will be ignored.`
+            );
             return false;
         }
 
@@ -989,28 +1028,24 @@ export class Column {
         const {sortValue, gridModel} = this;
         if (!sortValue) return v;
 
-        return isFunction(sortValue) ?
-            sortValue(v, {record, column: this, gridModel}) :
-            record?.data[sortValue] ?? v;
+        return isFunction(sortValue)
+            ? sortValue(v, {record, column: this, gridModel})
+            : record?.data[sortValue] ?? v;
     }
-
 }
 
-
 export function getAgHeaderClassFn(
-    column: Column|ColumnGroup
+    column: Column | ColumnGroup
 ): (params: PlainObject) => string[] {
     // Generate CSS classes for headers.
     // Default alignment classes are mixed in with any provided custom classes.
     const {headerClass, headerAlign, gridModel} = column;
 
-    return (agParams) => {
+    return agParams => {
         let r = [];
         if (headerClass) {
             r = castArray(
-                isFunction(headerClass) ?
-                    headerClass({column, gridModel, agParams}) :
-                    headerClass
+                isFunction(headerClass) ? headerClass({column, gridModel, agParams}) : headerClass
             );
         }
 
@@ -1025,5 +1060,3 @@ export function getAgHeaderClassFn(
         return r;
     };
 }
-
-

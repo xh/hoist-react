@@ -6,7 +6,6 @@
  */
 import {wait} from '@xh/hoist/promise';
 
-
 /**
  * Iterate over an iterable and run a closure on each item - as with `for ... of` - but do so
  * asynchronously and with minimal waits inserted after a configurable time interval.
@@ -27,10 +26,11 @@ import {wait} from '@xh/hoist/promise';
 export async function forEachAsync<T>(
     collection: Iterable<T>,
     fn: (val: T, idx: number, collection: Iterable<T>) => void,
-    opts?: {waitAfter?: number, waitFor?: number}
+    opts?: {waitAfter?: number; waitFor?: number}
 ) {
     const iterator = collection[Symbol.iterator]();
-    let curr = iterator.next(), idx = 0;
+    let curr = iterator.next(),
+        idx = 0;
     return whileAsync(
         () => !curr.done,
         () => {

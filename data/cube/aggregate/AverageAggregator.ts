@@ -8,7 +8,6 @@
 import {Aggregator} from './Aggregator';
 
 export class AverageAggregator extends Aggregator {
-
     override aggregate(rows, fieldName) {
         let total = null,
             count = 0;

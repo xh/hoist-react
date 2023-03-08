@@ -12,8 +12,8 @@ import {clientErrorsPanel} from './clienterrors/ClientErrorsPanel';
 import {feedbackPanel} from './feedback/FeedbackPanel';
 import {activityTrackingPanel} from './tracking/ActivityTrackingPanel';
 
-export const activityTab = hoistCmp.factory(
-    () => tabContainer({
+export const activityTab = hoistCmp.factory(() =>
+    tabContainer({
         modelConfig: {
             route: 'default.activity',
             switcher: {orientation: 'left'},

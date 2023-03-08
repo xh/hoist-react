@@ -27,12 +27,8 @@ import {PopperBoundary, PopperModifiers} from '@blueprintjs/core';
 import {ITimePickerProps} from '@blueprintjs/datetime';
 import {DayPickerProps} from 'react-day-picker';
 
-export interface DateInputProps extends
-    HoistProps,
-    LayoutProps,
-    HoistInputProps
-{
-    value?: Date|LocalDate;
+export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps {
+    value?: Date | LocalDate;
 
     /** Props passed to ReactDayPicker component, as per DayPicker docs. */
     dayPickerProps?: DayPickerProps;
@@ -52,7 +48,6 @@ export interface DateInputProps extends
      */
     formatString?: string;
 
-
     /**
      * MomentJS format string(s) for date parsing. Defaults to the format string, followed by an
      * additional set of common variants.  Default presence of time components in these strings is
@@ -67,7 +62,7 @@ export interface DateInputProps extends
      * If unspecified will default to the month of the current value (if present) or closest
      * valid value.
      */
-    initialMonth?: Date|LocalDate;
+    initialMonth?: Date | LocalDate;
 
     /** Icon to display inline on the left side of the input. */
     leftIcon?: ReactElement;
@@ -87,7 +82,7 @@ export interface DateInputProps extends
      * which will flag an invalid date in a Form. For Form usages, it may be advisable to set
      * validation constraints in addition to this property.
      */
-    maxDate?: Date|LocalDate;
+    maxDate?: Date | LocalDate;
 
     /**
      * Maximum (inclusive) valid date that can be entered by the user via the calendar picker or
@@ -95,7 +90,7 @@ export interface DateInputProps extends
      *
      * See note re. validation on maxDate, above.
      */
-    minDate?: Date|LocalDate;
+    minDate?: Date | LocalDate;
 
     /** Text to display when control is empty. */
     placeholder?: string;
@@ -145,14 +140,14 @@ export interface DateInputProps extends
      * The precision of time selection that accompanies the calendar.
      * If undefined, control will not show time. Ignored when valueType is localDate.
      */
-    timePrecision?: 'second'|'minute';
+    timePrecision?: 'second' | 'minute';
 
     /**
      * Type of value to publish. Defaults to 'date'. The use of 'localDate' is often a good
      * choice for use cases where there is no time component.
      * @see LocalDate - the class that will be published when localDate mode.
      */
-    valueType?: 'date'|'localDate';
+    valueType?: 'date' | 'localDate';
 }
 
 /**
@@ -202,11 +197,11 @@ class DateInputModel extends HoistInputModel {
         return isLocalDate(initialMonth) ? initialMonth.date : initialMonth;
     }
 
-    get valueType(): 'date'|'localDate' {
+    get valueType(): 'date' | 'localDate' {
         return withDefault(this.componentProps.valueType, 'date');
     }
 
-    get timePrecision():'second'|'minute' {
+    get timePrecision(): 'second' | 'minute' {
         return this.valueType === 'localDate' ? null : this.componentProps.timePrecision;
     }
 
@@ -219,12 +214,12 @@ class DateInputModel extends HoistInputModel {
         makeObservable(this);
     }
 
-    override toExternal(internal: Date): Date|LocalDate {
+    override toExternal(internal: Date): Date | LocalDate {
         if (this.valueType === 'localDate') return internal ? LocalDate.from(internal) : null;
         return internal;
     }
 
-    override toInternal(external: Date|LocalDate): Date {
+    override toInternal(external: Date | LocalDate): Date {
         if (this.valueType === 'localDate') return external ? (external as LocalDate).date : null;
         return external as Date;
     }
@@ -253,18 +248,18 @@ class DateInputModel extends HoistInputModel {
         });
     }
 
-    onClearBtnClick = (ev) => {
+    onClearBtnClick = ev => {
         this.noteValueChange(null);
         this.doCommit();
         consumeEvent(ev);
     };
 
-    onOpenPopoverClick = (ev) => {
+    onOpenPopoverClick = ev => {
         this.popoverOpen = !this.popoverOpen;
         consumeEvent(ev);
     };
 
-    onKeyDown = (ev) => {
+    onKeyDown = ev => {
         if (ev.key === 'Enter') {
             this.doCommit();
         } else if (this.popoverOpen && ev.key === 'Escape') {
@@ -288,18 +283,18 @@ class DateInputModel extends HoistInputModel {
         }
     };
 
-    onInputCommit = (value) => {
+    onInputCommit = value => {
         const date = this.parseDate(value);
         this.onDateChange(date);
     };
 
-    onInputChange = (value) => {
+    onInputChange = value => {
         if (!value && !trim(value)) this.onDateChange(null);
         const date = this.parseDate(value, true);
         if (date) this.onDateChange(date);
     };
 
-    onInputKeyDown = (ev) => {
+    onInputKeyDown = ev => {
         if (ev.key === 'Tab') this.textInputRef.current?.doCommit();
     };
 
@@ -315,7 +310,7 @@ class DateInputModel extends HoistInputModel {
         }
     };
 
-    onDateChange = (date) => {
+    onDateChange = date => {
         if (date) {
             // Dates outside of min/max constraints are reset to null.
             const {minDate, maxDate} = this;
@@ -324,7 +319,9 @@ class DateInputModel extends HoistInputModel {
             if (date) {
                 date = this.applyPrecision(date);
             } else {
-                console.debug('DateInput value exceeded max/minDate bounds on change - reset to null.');
+                console.debug(
+                    'DateInput value exceeded max/minDate bounds on change - reset to null.'
+                );
             }
         }
         this.noteValueChange(date);
@@ -354,7 +351,9 @@ class DateInputModel extends HoistInputModel {
 
         if (parseStrings) return castArray(parseStrings);
 
-        const ret = ['YYYY-MM-DD', 'YYYYMMDD', 'YYYY-M-DD', 'M/D/YYYY'].map(s => this.addTimeFmt(s));
+        const ret = ['YYYY-MM-DD', 'YYYYMMDD', 'YYYY-M-DD', 'M/D/YYYY'].map(s =>
+            this.addTimeFmt(s)
+        );
         if (formatString && !ret.includes(formatString)) ret.unshift(formatString);
 
         return ret;
@@ -376,116 +375,122 @@ class DateInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<DateInputModel>(
-    ({model, className, ...props}, ref) => {
-        warnIf(
-            (props.enableClear || props.enablePicker) && props.rightElement,
-            'Cannot specify enableClear or enablePicker along with custom rightElement - built-in clear/picker button will not be shown.'
-        );
+const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref) => {
+    warnIf(
+        (props.enableClear || props.enablePicker) && props.rightElement,
+        'Cannot specify enableClear or enablePicker along with custom rightElement - built-in clear/picker button will not be shown.'
+    );
 
-        const enablePicker = props.enablePicker ?? true,
-            enableTextInput = props.enableTextInput ?? true,
-            enableClear = props.enableClear ?? false,
-            disabled = props.disabled ?? false,
-            isClearable = model.internalValue !== null,
-            isOpen = enablePicker && model.popoverOpen && !disabled;
+    const enablePicker = props.enablePicker ?? true,
+        enableTextInput = props.enableTextInput ?? true,
+        enableClear = props.enableClear ?? false,
+        disabled = props.disabled ?? false,
+        isClearable = model.internalValue !== null,
+        isOpen = enablePicker && model.popoverOpen && !disabled;
 
-        const buttons = buttonGroup({
-            padding: 0,
-            items: [
-                button({
-                    className: 'xh-date-input__clear-icon',
-                    omit: !enableClear || !isClearable || disabled,
-                    icon: Icon.cross(),
-                    tabIndex: -1,
-                    onClick: model.onClearBtnClick
-                }),
-                button({
-                    className: classNames('xh-date-input__picker-icon', enablePicker ? null : 'xh-date-input__picker-icon--disabled'),
-                    icon: Icon.calendar(),
-                    tabIndex: enableTextInput || disabled ? -1 : undefined,
-                    elementRef: model.buttonRef,
-                    onClick: enablePicker && !disabled ? model.onOpenPopoverClick : null
-                })
-            ]
-        });
-        const rightElement = withDefault(props.rightElement, buttons);
-
-        let {minDate, maxDate, initialMonth, renderValue} = model;
-
-        // If app has set an out-of-range date, we render it -- these bounds govern *manual* entry
-        // But need to relax constraints on the picker, to prevent BP from breaking badly
-        if (renderValue) {
-            if (minDate && renderValue < minDate) minDate = renderValue;
-            if (maxDate && renderValue > maxDate) maxDate = renderValue;
-        }
-
-        // BP chooses annoying mid-point if forced to guess initial month. Use closest bound instead
-        if (!initialMonth && !renderValue) {
-            const today = new Date();
-            if (minDate && today < minDate) initialMonth = minDate;
-            if (maxDate && today > maxDate) initialMonth = maxDate;
-        }
-
-        return div({
-            className: 'xh-date-input__wrapper',
-            item: popover({
-                isOpen,
-                minimal: true,
-                usePortal: true,
-                autoFocus: false,
-                enforceFocus: false,
-                modifiers: props.popoverModifiers,
-                position: props.popoverPosition ?? 'auto',
-                boundary: props.popoverBoundary ?? 'viewport',
-                portalContainer: props.portalContainer ?? document.body,
-                popoverRef: model.popoverRef,
-                onClose: model.onPopoverClose,
-                onInteraction: (nextOpenState) => {
-                    if (props.showPickerOnFocus) {
-                        model.popoverOpen = nextOpenState;
-                    } else if (!nextOpenState) {
-                        model.popoverOpen = false;
-                    }
-                },
-
-                content: bpDatePicker({
-                    value: renderValue,
-                    onChange: model.onDatePickerChange,
-                    maxDate,
-                    minDate,
-                    initialMonth,
-                    showActionsBar: props.showActionsBar,
-                    dayPickerProps: assign({fixedWeeks: true}, props.dayPickerProps),
-                    timePrecision: model.timePrecision,
-                    timePickerProps: model.timePrecision ? assign({selectAllOnFocus: true}, props.timePickerProps) : undefined
-                }),
-
-                item: div({
-                    item: textInput({
-                        value: model.formatDate(renderValue) as string,
-                        className: classNames(className, !enableTextInput && !disabled ? 'xh-date-input--picker-only' : null),
-                        onCommit: model.onInputCommit,
-                        onChange: model.onInputChange,
-                        onKeyDown: model.onInputKeyDown,
-                        rightElement,
-                        disabled: disabled || !enableTextInput,
-                        leftIcon: props.leftIcon,
-                        tabIndex: props.tabIndex,
-                        placeholder: props.placeholder,
-                        textAlign: props.textAlign,
-                        selectOnFocus: props.selectOnFocus,
-                        inputRef: model.inputRef,
-                        ref: model.textInputRef,
-                        ...getLayoutProps(props)
-                    }),
-                    onClick: !enableTextInput && !disabled ? model.onOpenPopoverClick : null
-                })
+    const buttons = buttonGroup({
+        padding: 0,
+        items: [
+            button({
+                className: 'xh-date-input__clear-icon',
+                omit: !enableClear || !isClearable || disabled,
+                icon: Icon.cross(),
+                tabIndex: -1,
+                onClick: model.onClearBtnClick
             }),
-            onBlur: model.onBlur,
-            onFocus: model.onFocus,
-            onKeyDown: model.onKeyDown,
-            ref
-        });
+            button({
+                className: classNames(
+                    'xh-date-input__picker-icon',
+                    enablePicker ? null : 'xh-date-input__picker-icon--disabled'
+                ),
+                icon: Icon.calendar(),
+                tabIndex: enableTextInput || disabled ? -1 : undefined,
+                elementRef: model.buttonRef,
+                onClick: enablePicker && !disabled ? model.onOpenPopoverClick : null
+            })
+        ]
+    });
+    const rightElement = withDefault(props.rightElement, buttons);
+
+    let {minDate, maxDate, initialMonth, renderValue} = model;
+
+    // If app has set an out-of-range date, we render it -- these bounds govern *manual* entry
+    // But need to relax constraints on the picker, to prevent BP from breaking badly
+    if (renderValue) {
+        if (minDate && renderValue < minDate) minDate = renderValue;
+        if (maxDate && renderValue > maxDate) maxDate = renderValue;
     }
-);
+
+    // BP chooses annoying mid-point if forced to guess initial month. Use closest bound instead
+    if (!initialMonth && !renderValue) {
+        const today = new Date();
+        if (minDate && today < minDate) initialMonth = minDate;
+        if (maxDate && today > maxDate) initialMonth = maxDate;
+    }
+
+    return div({
+        className: 'xh-date-input__wrapper',
+        item: popover({
+            isOpen,
+            minimal: true,
+            usePortal: true,
+            autoFocus: false,
+            enforceFocus: false,
+            modifiers: props.popoverModifiers,
+            position: props.popoverPosition ?? 'auto',
+            boundary: props.popoverBoundary ?? 'viewport',
+            portalContainer: props.portalContainer ?? document.body,
+            popoverRef: model.popoverRef,
+            onClose: model.onPopoverClose,
+            onInteraction: nextOpenState => {
+                if (props.showPickerOnFocus) {
+                    model.popoverOpen = nextOpenState;
+                } else if (!nextOpenState) {
+                    model.popoverOpen = false;
+                }
+            },
+
+            content: bpDatePicker({
+                value: renderValue,
+                onChange: model.onDatePickerChange,
+                maxDate,
+                minDate,
+                initialMonth,
+                showActionsBar: props.showActionsBar,
+                dayPickerProps: assign({fixedWeeks: true}, props.dayPickerProps),
+                timePrecision: model.timePrecision,
+                timePickerProps: model.timePrecision
+                    ? assign({selectAllOnFocus: true}, props.timePickerProps)
+                    : undefined
+            }),
+
+            item: div({
+                item: textInput({
+                    value: model.formatDate(renderValue) as string,
+                    className: classNames(
+                        className,
+                        !enableTextInput && !disabled ? 'xh-date-input--picker-only' : null
+                    ),
+                    onCommit: model.onInputCommit,
+                    onChange: model.onInputChange,
+                    onKeyDown: model.onInputKeyDown,
+                    rightElement,
+                    disabled: disabled || !enableTextInput,
+                    leftIcon: props.leftIcon,
+                    tabIndex: props.tabIndex,
+                    placeholder: props.placeholder,
+                    textAlign: props.textAlign,
+                    selectOnFocus: props.selectOnFocus,
+                    inputRef: model.inputRef,
+                    ref: model.textInputRef,
+                    ...getLayoutProps(props)
+                }),
+                onClick: !enableTextInput && !disabled ? model.onOpenPopoverClick : null
+            })
+        }),
+        onBlur: model.onBlur,
+        onFocus: model.onFocus,
+        onKeyDown: model.onKeyDown,
+        ref
+    });
+});

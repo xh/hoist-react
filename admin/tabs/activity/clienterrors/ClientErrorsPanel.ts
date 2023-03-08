@@ -24,54 +24,73 @@ export const clientErrorsPanel = hoistCmp.factory({
         return panel({
             className: 'xh-admin-activity-panel',
             tbar: tbar(),
-            items: [
-                grid(),
-                clientErrorDetail()
-            ],
+            items: [grid(), clientErrorDetail()],
             mask: 'onLoad'
         });
     }
 });
 
-const tbar = hoistCmp.factory<ClientErrorsModel>(
-    ({model}) => {
-        return toolbar(
+const tbar = hoistCmp.factory<ClientErrorsModel>(({model}) => {
+    return toolbar(
+        button({
+            icon: Icon.angleLeft(),
+            onClick: () => model.adjustDates('subtract')
+        }),
+        dateInput({bind: 'startDay', ...dateInputProps}),
+        Icon.caretRight(),
+        dateInput({bind: 'endDay', ...dateInputProps}),
+        button({
+            icon: Icon.angleRight(),
+            onClick: () => model.adjustDates('add'),
+            disabled: model.endDay >= LocalDate.currentAppDay()
+        }),
+        buttonGroup(
             button({
-                icon: Icon.angleLeft(),
-                onClick: () => model.adjustDates('subtract')
-            }),
-            dateInput({bind: 'startDay', ...dateInputProps}),
-            Icon.caretRight(),
-            dateInput({bind: 'endDay', ...dateInputProps}),
-            button({
-                icon: Icon.angleRight(),
-                onClick: () => model.adjustDates('add'),
-                disabled: model.endDay >= LocalDate.currentAppDay()
-            }),
-            buttonGroup(
-                button({text: '6m', outlined: true, width: 40, onClick: () => model.adjustStartDate(6, 'months')}),
-                button({text: '1m', outlined: true, width: 40, onClick: () => model.adjustStartDate(1, 'months')}),
-                button({text: '7d', outlined: true, width: 40, onClick: () => model.adjustStartDate(7, 'days')}),
-                button({text: '1d', outlined: true, width: 40, onClick: () => model.adjustStartDate(1, 'days')})
-            ),
-            hspacer(),
-            filterChooser({
-                flex: 1,
-                enableClear: true
+                text: '6m',
+                outlined: true,
+                width: 40,
+                onClick: () => model.adjustStartDate(6, 'months')
             }),
             button({
-                icon: Icon.reset(),
-                intent: 'danger',
-                title: 'Reset query to defaults',
-                onClick: () => model.resetQuery()
+                text: '1m',
+                outlined: true,
+                width: 40,
+                onClick: () => model.adjustStartDate(1, 'months')
             }),
-            '-',
-            gridCountLabel({unit: 'error'}),
-            '-',
-            colChooserButton(),
-            exportButton()
-        );
-    }
-);
+            button({
+                text: '7d',
+                outlined: true,
+                width: 40,
+                onClick: () => model.adjustStartDate(7, 'days')
+            }),
+            button({
+                text: '1d',
+                outlined: true,
+                width: 40,
+                onClick: () => model.adjustStartDate(1, 'days')
+            })
+        ),
+        hspacer(),
+        filterChooser({
+            flex: 1,
+            enableClear: true
+        }),
+        button({
+            icon: Icon.reset(),
+            intent: 'danger',
+            title: 'Reset query to defaults',
+            onClick: () => model.resetQuery()
+        }),
+        '-',
+        gridCountLabel({unit: 'error'}),
+        '-',
+        colChooserButton(),
+        exportButton()
+    );
+});
 
-const dateInputProps: DateInputProps = {popoverPosition: 'bottom', valueType: 'localDate', width: 120};
+const dateInputProps: DateInputProps = {
+    popoverPosition: 'bottom',
+    valueType: 'localDate',
+    width: 120
+};

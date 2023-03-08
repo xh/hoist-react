@@ -8,7 +8,6 @@
 import {StoreRecord} from '../../StoreRecord';
 import {View} from '../View';
 
-
 /**
  * Context provided to aggregators.
  *
@@ -17,7 +16,6 @@ import {View} from '../View';
  * It will be replaced if the current set of records is being changed in any way.
  */
 export class AggregationContext {
-
     /** View being aggregated. */
     view: View;
 
@@ -36,4 +34,3 @@ export class AggregationContext {
         this.appData = {};
     }
 }
-

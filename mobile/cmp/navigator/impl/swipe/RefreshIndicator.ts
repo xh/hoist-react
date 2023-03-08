@@ -8,25 +8,23 @@ import {SwiperModel} from './SwiperModel';
  * Indicator for the pulldownToRefresh affordance
  * @internal
  */
-export const refreshIndicator = hoistCmp.factory<SwiperModel>(
-    ({model}) => {
-        const {refreshStarted, refreshProgress, refreshCompleted} = model,
-            top = -40 + (refreshProgress * 85),
-            degrees = Math.floor(refreshProgress * 360),
-            className = classNames(
-                'xh-swiper-indicator',
-                refreshCompleted ? 'xh-swiper-indicator--complete' : null,
-                refreshStarted ? 'xh-swiper-indicator--started' : null
-            );
+export const refreshIndicator = hoistCmp.factory<SwiperModel>(({model}) => {
+    const {refreshStarted, refreshProgress, refreshCompleted} = model,
+        top = -40 + refreshProgress * 85,
+        degrees = Math.floor(refreshProgress * 360),
+        className = classNames(
+            'xh-swiper-indicator',
+            refreshCompleted ? 'xh-swiper-indicator--complete' : null,
+            refreshStarted ? 'xh-swiper-indicator--started' : null
+        );
 
-        return div({
-            className,
-            style: {
-                top,
-                left: '50%',
-                transform: `translateX(-50%) rotate(${degrees}deg)`
-            },
-            item: Icon.refresh()
-        });
-    }
-);
+    return div({
+        className,
+        style: {
+            top,
+            left: '50%',
+            transform: `translateX(-50%) rotate(${degrees}deg)`
+        },
+        item: Icon.refresh()
+    });
+});

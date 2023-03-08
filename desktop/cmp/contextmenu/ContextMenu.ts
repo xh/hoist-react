@@ -16,10 +16,10 @@ import {isValidElement, ReactElement, ReactNode} from 'react';
  * A context menu is specified as  an array of items, a function to generate one from a click, or
  * a full element representing a contextMenu Component.
  */
-export type ContextMenuSpec = MenuItemLike[]|((e: MouseEvent) => MenuItemLike[])|ReactElement;
+export type ContextMenuSpec = MenuItemLike[] | ((e: MouseEvent) => MenuItemLike[]) | ReactElement;
 
-export interface ContextMenuProps  extends HoistProps {
-    menuItems: MenuItemLike[]
+export interface ContextMenuProps extends HoistProps {
+    menuItems: MenuItemLike[];
 }
 
 /**
@@ -33,7 +33,9 @@ export interface ContextMenuProps  extends HoistProps {
  */
 export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>({
     displayName: 'ContextMenu',
-    memo: false, model: false, observer: false,
+    memo: false,
+    model: false,
+    observer: false,
 
     render({menuItems}) {
         menuItems = parseItems(menuItems);
@@ -68,13 +70,12 @@ function parseItems(items: MenuItemLike[]): ReactNode[] {
                 text: item.text,
                 icon: item.icon,
                 intent: item.intent,
-                onClick: item.actionFn ? () => wait().then(item.actionFn) : null,    // do async to allow menu to close
+                onClick: item.actionFn ? () => wait().then(item.actionFn) : null, // do async to allow menu to close
                 disabled: item.disabled,
                 items
             });
         });
 }
-
 
 function isMenuItem(item: MenuItemLike): item is MenuItem {
     return !isString(item) && !isValidElement(item);

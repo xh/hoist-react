@@ -13,7 +13,7 @@ import {button, ButtonProps} from './Button';
 
 export interface ColAutosizeButtonProps extends ButtonProps {
     /** GridModel of the grid for which this button should autosize columns. */
-    gridModel?: GridModel,
+    gridModel?: GridModel;
 
     /** Options for the grid autosize. */
     autosizeOptions?: GridAutosizeOptions;
@@ -29,12 +29,18 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory<ColAu
     render({icon, title, onClick, gridModel, disabled, autosizeOptions = {}, ...rest}, ref) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
-        errorIf(!gridModel, "No GridModel available to ColAutosizeButton. Provide via a 'gridModel' prop, or context.");
+        errorIf(
+            !gridModel,
+            "No GridModel available to ColAutosizeButton. Provide via a 'gridModel' prop, or context."
+        );
 
-        onClick = onClick ?? (() => gridModel.autosizeAsync({
-            showMask: true,
-            ...autosizeOptions
-        }));
+        onClick =
+            onClick ??
+            (() =>
+                gridModel.autosizeAsync({
+                    showMask: true,
+                    ...autosizeOptions
+                }));
 
         errorIf(
             !gridModel?.autosizeEnabled,

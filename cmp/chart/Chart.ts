@@ -7,7 +7,17 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {placeholder} from '../layout';
-import {lookup, hoistCmp, HoistModel, useLocalModel, uses, XH, BoxProps, HoistProps, PlainObject} from '@xh/hoist/core';
+import {
+    lookup,
+    hoistCmp,
+    HoistModel,
+    useLocalModel,
+    uses,
+    XH,
+    BoxProps,
+    HoistProps,
+    PlainObject
+} from '@xh/hoist/core';
 import {useContextMenu} from '@xh/hoist/dynamics/desktop';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {runInAction} from '@xh/hoist/mobx';
@@ -30,7 +40,6 @@ installZoomoutGesture(Highcharts);
 installCopyToClipboard(Highcharts);
 
 export interface ChartProps extends HoistProps<ChartModel>, BoxProps {
-
     /**
      * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will
      * respect this ratio within the available space.  Otherwise, the chart will stretch on both
@@ -53,7 +62,7 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
         if (!Highcharts) {
             console.error(
                 'Highcharts has not been imported in to this application. Please import and ' +
-                'register in Bootstrap.js. See the XH Toolbox app for an example.'
+                    'register in Bootstrap.js. See the XH Toolbox app for an example.'
             );
             return placeholder('Highcharts library not available.');
         }
@@ -83,12 +92,9 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
             })
         });
 
-        return !XH.isMobileApp ?
-            useContextMenu(coreContents, impl.contextMenu) :
-            coreContents;
+        return !XH.isMobileApp ? useContextMenu(coreContents, impl.contextMenu) : coreContents;
     }
 });
-
 
 class ChartLocalModel extends HoistModel {
     override xhImpl = true;
@@ -120,7 +126,7 @@ class ChartLocalModel extends HoistModel {
     }
 
     set chart(newChart) {
-        runInAction(() => this.model.highchart = newChart);
+        runInAction(() => (this.model.highchart = newChart));
     }
 
     get chart() {
@@ -176,7 +182,7 @@ class ChartLocalModel extends HoistModel {
         }
     }
 
-    onResize = (size) => {
+    onResize = size => {
         if (!this.chart) return;
         const {width, height} = this.getChartDims(size);
 
@@ -185,7 +191,7 @@ class ChartLocalModel extends HoistModel {
         this.chart.setSize(width, height, false);
     };
 
-    onVisibleChange = (visible) => {
+    onVisibleChange = visible => {
         if (visible && !this.chart) {
             this.renderHighChart();
         }
@@ -259,7 +265,9 @@ class ChartLocalModel extends HoistModel {
             },
             menuItemDefinitions: {
                 copyToClipboard: {
-                    onclick: function() {this.copyToClipboardAsync()},
+                    onclick: function () {
+                        this.copyToClipboardAsync();
+                    },
                     text: 'Copy to clipboard'
                 }
             },
@@ -268,7 +276,7 @@ class ChartLocalModel extends HoistModel {
                     menuItems: [
                         'viewFullscreen',
                         'separator',
-                        ...Highcharts.isWebKit ? ['copyToClipboard'] : [],
+                        ...(Highcharts.isWebKit ? ['copyToClipboard'] : []),
                         'printChart',
                         'separator',
                         'downloadPNG',
@@ -282,7 +290,7 @@ class ChartLocalModel extends HoistModel {
         return {
             chart: {
                 events: {
-                    beforePrint: function() {
+                    beforePrint: function () {
                         // When we print, we use the same options provided for exporting, which
                         // can be found at `exporting.chartOptions`
                         const config = cloneDeep(this.options),
@@ -305,7 +313,7 @@ class ChartLocalModel extends HoistModel {
                         // Update the chart with print options
                         this.update(printChartOptions);
                     },
-                    afterPrint: function() {
+                    afterPrint: function () {
                         // Restore the original screen options
                         this.update(this._screenChartOptions);
                     }

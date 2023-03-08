@@ -32,7 +32,6 @@ export type DashViewState = Record<string, any>;
  * for the view or access other information.
  */
 export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistModel {
-
     id: string;
 
     /** DashViewSpec used to create this view. */
@@ -67,14 +66,7 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
         return this.viewSpec.refreshMode ?? this.containerModel.refreshMode;
     }
 
-    constructor({
-        id,
-        viewSpec,
-        icon,
-        title,
-        viewState = null,
-        containerModel
-    }: DashViewConfig<T>) {
+    constructor({id, viewSpec, icon, title, viewState = null, containerModel}: DashViewConfig<T>) {
         super();
         makeObservable(this);
         throwIf(!id, 'DashViewModel requires an id');

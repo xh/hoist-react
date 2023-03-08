@@ -8,7 +8,6 @@
 import {BaseRow} from './row/BaseRow';
 
 export class BucketSpec {
-
     name: string;
     bucketFn: (row: BaseRow) => string;
     labelFn: (bucket: string) => string;
@@ -26,6 +25,6 @@ export class BucketSpec {
     ) {
         this.name = name;
         this.bucketFn = bucketFn;
-        this.labelFn = labelFn ?? ((b) => b);
+        this.labelFn = labelFn ?? (b => b);
     }
 }

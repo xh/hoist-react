@@ -31,10 +31,7 @@ import {PanelModel} from './PanelModel';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
 import {ContextMenuSpec} from '../contextmenu/ContextMenu';
 
-export interface PanelProps extends
-    HoistProps<PanelModel>,
-    Omit<BoxProps, 'title'>
-{
+export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'title'> {
     /** True to style panel header (if displayed) with reduced padding and font-size. */
     compactHeader?: boolean;
 
@@ -60,7 +57,7 @@ export interface PanelProps extends
      *   + one or more tasks for a default LoadingIndicator bound to the tasks
      *   + the string 'onLoad' for a default LoadingIndicator bound to the loading of the current model.
      */
-    loadingIndicator?: Some<TaskObserver>|ReactElement|boolean|'onLoad';
+    loadingIndicator?: Some<TaskObserver> | ReactElement | boolean | 'onLoad';
 
     /**
      * Mask to render on this panel. Set to:
@@ -69,7 +66,7 @@ export interface PanelProps extends
      *   + one or more tasks for a default load mask bound to the tasks
      *   + the string 'onLoad' for a default load mask bound to the loading of the current model.
      */
-    mask?: Some<TaskObserver>|ReactElement|boolean|'onLoad';
+    mask?: Some<TaskObserver> | ReactElement | boolean | 'onLoad';
 
     /**
      * A toolbar to be docked at the top of the panel.
@@ -86,7 +83,6 @@ export interface PanelProps extends
     /** Title text added to the panel's header. */
     title?: ReactNode;
 }
-
 
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
@@ -106,8 +102,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
     }),
     className: 'xh-panel',
 
-    render({model, className,  ...props}, ref) {
-
+    render({model, className, ...props}, ref) {
         const contextModel = useContextModel('*');
 
         let wasDisplayed = useRef(false),
@@ -156,8 +151,12 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         }
 
         let coreContents = null;
-        if (!collapsed || renderMode === 'always' || (renderMode === 'lazy' && wasDisplayed.current)) {
-            const parseToolbar = (barSpec) => {
+        if (
+            !collapsed ||
+            renderMode === 'always' ||
+            (renderMode === 'lazy' && wasDisplayed.current)
+        ) {
+            const parseToolbar = barSpec => {
                 return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
             };
 
@@ -205,24 +204,26 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         }
 
         // 4) Return wrapped in resizable affordances if needed, or equivalent layout box
-        item = resizable || collapsible || showSplitter ?
-            resizeContainer({ref, item, className}) :
-            box({ref, item, className, ...layoutProps});
+        item =
+            resizable || collapsible || showSplitter
+                ? resizeContainer({ref, item, className})
+                : box({ref, item, className, ...layoutProps});
 
         return item;
     }
-
 });
 
 function parseLoadDecorator(prop, name, contextModel) {
     const cmp = (name === 'mask' ? mask : loadingIndicator) as any;
-    if (!prop)                                  return null;
-    if (isValidElement(prop))                   return prop;
-    if (prop === true)                          return cmp({isDisplayed: true});
+    if (!prop) return null;
+    if (isValidElement(prop)) return prop;
+    if (prop === true) return cmp({isDisplayed: true});
     if (prop === 'onLoad') {
         const loadModel = contextModel?.loadModel;
         if (!loadModel) {
-            console.warn(`Cannot use 'onLoad' for '${name}' - the linked context model must enable LoadSupport to support this feature.`);
+            console.warn(
+                `Cannot use 'onLoad' for '${name}' - the linked context model must enable LoadSupport to support this feature.`
+            );
             return null;
         }
         return cmp({bind: loadModel, spinner: true});

@@ -10,10 +10,7 @@ import {checkbox as onsenCheckbox} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import './Checkbox.scss';
 
-export interface CheckboxProps extends
-    HoistProps,
-    HoistInputProps
-{
+export interface CheckboxProps extends HoistProps, HoistInputProps {
     value?: string;
 
     /** Onsen modifier string */
@@ -38,23 +35,21 @@ class CheckboxInputModel extends HoistInputModel {
 //----------------------------------
 // Implementation
 //----------------------------------
-const cmp = hoistCmp.factory<CheckboxInputModel>(
-    ({model, className, ...props}, ref) => {
-        return onsenCheckbox({
-            checked: !!model.renderValue,
+const cmp = hoistCmp.factory<CheckboxInputModel>(({model, className, ...props}, ref) => {
+    return onsenCheckbox({
+        checked: !!model.renderValue,
 
-            disabled: props.disabled,
-            modifier: props.modifier,
-            tabIndex: props.tabIndex,
+        disabled: props.disabled,
+        modifier: props.modifier,
+        tabIndex: props.tabIndex,
 
-            style: props.style,
+        style: props.style,
 
-            onBlur: model.onBlur,
-            onFocus: model.onFocus,
-            onChange: (e) => model.noteValueChange(e.target.checked),
+        onBlur: model.onBlur,
+        onFocus: model.onFocus,
+        onChange: e => model.noteValueChange(e.target.checked),
 
-            className,
-            ref
-        });
-    }
-);
+        className,
+        ref
+    });
+});

@@ -11,8 +11,8 @@ import {makeObservable, bindable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
 export interface ModalSupportConfig {
-    width?: string|number;
-    height?: string|number;
+    width?: string | number;
+    height?: string | number;
     defaultModal?: boolean;
     canOutsideClickClose?: boolean;
 }
@@ -27,8 +27,8 @@ export class ModalSupportModel extends HoistModel {
     @bindable
     isModal: boolean = false;
 
-    width: string|number;
-    height: string|number;
+    width: string | number;
+    height: string | number;
     canOutsideClickClose: boolean;
 
     inlineRef = createObservableRef<HTMLElement>();

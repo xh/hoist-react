@@ -11,7 +11,6 @@ import {MenuItemLike, PersistOptions} from '@xh/hoist/core';
  * Base interface for {@link DashCanvasConfig} and {@link DashContainerConfig}.
  */
 export interface DashConfig<VSPEC, VSTATE> {
-
     /**
      * A collection of viewSpecs, each describing a type of view that can be displayed in this
      * container.

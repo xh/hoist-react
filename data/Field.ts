@@ -17,7 +17,6 @@ import DOMPurify from 'dompurify';
  * Constructor arguments for a Hoist data package Field.
  */
 export interface FieldSpec {
-
     /** Unique key representing this field. */
     name: string;
 
@@ -45,14 +44,14 @@ export interface FieldSpec {
      *
      * Please contact XH if you find yourself needing to disable this protection!
      */
-    disableXssProtection ?: boolean;
+    disableXssProtection?: boolean;
 }
-
 
 /** Metadata for an individual data field within a {@link StoreRecord}. */
 export class Field {
-
-    get isField() {return true}
+    get isField() {
+        return true;
+    }
 
     readonly name: string;
     readonly type: FieldType;
@@ -116,7 +115,7 @@ export function parseFieldValue(
     if (val === undefined || val === null) val = defaultValue;
     if (val === null) return val;
 
-    const sanitizeValue = (v) => {
+    const sanitizeValue = v => {
         if (disableXssProtection || !isString(v)) return v;
         return DOMPurify.sanitize(v);
     };
@@ -167,7 +166,7 @@ export const FieldType = Object.freeze({
 });
 
 // eslint-disable-next-line
-export type FieldType = typeof FieldType[keyof typeof FieldType];
+export type FieldType = (typeof FieldType)[keyof typeof FieldType];
 
 /**
  * @param fieldName - short name / code for a field.

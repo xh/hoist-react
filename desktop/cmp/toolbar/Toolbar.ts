@@ -18,38 +18,32 @@ import {Children} from 'react';
 import './Toolbar.scss';
 import {toolbarSeparator} from './ToolbarSep';
 
-
-export interface ToolbarProps extends
-    HoistProps,
-    BoxProps
-{
-
+export interface ToolbarProps extends HoistProps, BoxProps {
     /** Set to true to style toolbar with reduced height and font-size. */
-    compact?: boolean,
+    compact?: boolean;
 
     /** Set to true to vertically align the items of this toolbar. */
-    vertical?: boolean,
+    vertical?: boolean;
 
     /**
      * Place items that overflow in a menu. Only available for horizontal toolbars.
      * Default to false. NOTE, the move of components into a menu when they overflow will trigger a
      * remount of those components.
      */
-    enableOverflowMenu?: boolean,
+    enableOverflowMenu?: boolean;
 
     /**
      * For horizontal toolbars that overflow, manages which direction the items collapse from.
      * Defaults to 'end'.
      */
-    collapseFrom?: 'start' | 'end',
+    collapseFrom?: 'start' | 'end';
 
     /**
      * For horizontal toolbars that overflow, manages the minimum number of visible items
      * that should never collapse into the overflow menu.
      */
-    minVisibleItems?: number
+    minVisibleItems?: number;
 }
-
 
 /**
  * A toolbar with built-in styling and padding.
@@ -57,24 +51,32 @@ export interface ToolbarProps extends
  */
 export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps>({
     displayName: 'Toolbar',
-    model: false, memo: false, observer: false,
+    model: false,
+    memo: false,
+    observer: false,
     className: 'xh-toolbar',
 
-    render({
-        children,
-        className,
-        compact = false,
-        vertical = false,
-        enableOverflowMenu = false,
-        collapseFrom = 'end',
-        minVisibleItems,
-        ...rest
-    }, ref) {
-        throwIf(vertical && enableOverflowMenu, 'Overflow menu not available for vertical toolbars.');
+    render(
+        {
+            children,
+            className,
+            compact = false,
+            vertical = false,
+            enableOverflowMenu = false,
+            collapseFrom = 'end',
+            minVisibleItems,
+            ...rest
+        },
+        ref
+    ) {
+        throwIf(
+            vertical && enableOverflowMenu,
+            'Overflow menu not available for vertical toolbars.'
+        );
 
         const items = Children.toArray(children)
             .filter(filterConsecutiveToolbarSeparators())
-            .map(it => it === '-' ? toolbarSeparator() : it);
+            .map(it => (it === '-' ? toolbarSeparator() : it));
 
         const container = vertical ? vbox : hbox,
             overflow = enableOverflowMenu && !isEmpty(items);
@@ -88,9 +90,7 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps>({
                 vertical ? 'xh-toolbar--vertical' : null,
                 overflow ? 'xh-toolbar--overflow' : null
             ),
-            items: overflow ?
-                overflowBox({items, minVisibleItems, collapseFrom}) :
-                items
+            items: overflow ? overflowBox({items, minVisibleItems, collapseFrom}) : items
         });
     }
 });
@@ -99,20 +99,24 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps>({
 // Implementation
 //--------------
 const overflowBox = hoistCmp.factory({
-    model: false, observer: false, memo: false,
+    model: false,
+    observer: false,
+    memo: false,
     render({children, minVisibleItems, collapseFrom}) {
         return overflowList({
             $items: children,
             minVisibleItems,
             collapseFrom,
-            visibleItemRenderer: (item) => item,
+            visibleItemRenderer: item => item,
             overflowRenderer: overflowButton
         });
     }
 });
 
 const overflowButton = hoistCmp.factory({
-    model: false, observer: false, memo: false,
+    model: false,
+    observer: false,
+    memo: false,
     render({children}) {
         return fragment(
             filler(),

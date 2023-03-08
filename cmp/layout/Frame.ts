@@ -19,7 +19,9 @@ export interface FrameProps extends HoistProps, BoxProps {}
  */
 export const [Frame, frame] = hoistCmp.withFactory<FrameProps>({
     displayName: 'Frame',
-    model: false, memo: false, observer: false,
+    model: false,
+    memo: false,
+    observer: false,
 
     render(props, ref) {
         return box({ref, ...props, flex: 'auto'});
@@ -28,7 +30,9 @@ export const [Frame, frame] = hoistCmp.withFactory<FrameProps>({
 
 export const [VFrame, vframe] = hoistCmp.withFactory<FrameProps>({
     displayName: 'VFrame',
-    model: false, memo: false, observer: false,
+    model: false,
+    memo: false,
+    observer: false,
     className: 'xh-vframe',
 
     render(props, ref) {
@@ -43,7 +47,9 @@ export const [VFrame, vframe] = hoistCmp.withFactory<FrameProps>({
 
 export const [HFrame, hframe] = hoistCmp.withFactory<FrameProps>({
     displayName: 'HFrame',
-    model: false, memo: false, observer: false,
+    model: false,
+    memo: false,
+    observer: false,
     className: 'xh-hframe',
 
     render(props, ref) {

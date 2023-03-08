@@ -36,12 +36,17 @@ export function uses<T extends HoistModel>(
         optional = false
     }: UsesOptions = {}
 ): UsesSpec<T> {
-    return new UsesSpec(selector, fromContext, publishMode, createFromConfig, createDefault, optional);
+    return new UsesSpec(
+        selector,
+        fromContext,
+        publishMode,
+        createFromConfig,
+        createDefault,
+        optional
+    );
 }
 
-
 export interface UsesOptions {
-
     /** True (default) to look for a suitable model in context if not sourced via props.*/
     fromContext?: boolean;
 
@@ -58,14 +63,13 @@ export interface UsesOptions {
      * True to create a model if none provided.
      * Selector must be a HoistModel Class, or a custom function may be provided for this argument.
      */
-    createDefault?: boolean|(() => HoistModel);
+    createDefault?: boolean | (() => HoistModel);
 
     /** True to specify a model that is optional.  Default false. */
     optional?: boolean;
 }
 
 export class UsesSpec<T extends HoistModel> {
-
     fromContext: boolean;
     publishMode: ModelPublishMode;
     optional: boolean;

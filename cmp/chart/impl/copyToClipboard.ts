@@ -17,7 +17,7 @@ export function installCopyToClipboard(Highcharts) {
     const {Chart, extend} = Highcharts;
 
     extend(Chart.prototype, {
-        copyToClipboardAsync: async function() {
+        copyToClipboardAsync: async function () {
             if (!Highcharts.isWebKit) {
                 XH.dangerToast('Copying charts to the clipboard is not supported on this browser');
                 return;
@@ -43,12 +43,12 @@ export function installCopyToClipboard(Highcharts) {
 // Implementation
 //------------------
 async function convertChartToPngAsync(chart) {
-    const svg = await new Promise(
-            (resolve, reject)  => chart.getSVGForLocalExport(
+    const svg = await new Promise((resolve, reject) =>
+            chart.getSVGForLocalExport(
                 merge(chart.options.exporting),
                 {},
                 () => reject('Cannot fallback to export server'),
-                (svg) => resolve(svg)
+                svg => resolve(svg)
             )
         ),
         svgUrl = svgToDataUrl(svg),
@@ -59,7 +59,7 @@ async function convertChartToPngAsync(chart) {
     return ret;
 }
 
-const domurl = window.URL || window.webkitURL || window as any;
+const domurl = window.URL || window.webkitURL || (window as any);
 function memoryCleanup(svgUrl) {
     try {
         domurl.revokeObjectURL(svgUrl);
@@ -80,34 +80,32 @@ async function loadBlob(dataUrl) {
 function svgToDataUrl(svg) {
     // Webkit and not chrome
     const userAgent = window.navigator.userAgent;
-    const isWebKitButNotChrome = (
-        userAgent.indexOf('WebKit') > -1 &&
-        userAgent.indexOf('Chrome') < 0
-    );
+    const isWebKitButNotChrome =
+        userAgent.indexOf('WebKit') > -1 && userAgent.indexOf('Chrome') < 0;
 
     try {
         // Safari requires data URI since it doesn't allow navigation to blob
         // URLs.
         // foreignObjects dont work well in Blobs in Chrome (#14780).
         if (!isWebKitButNotChrome && svg.indexOf('<foreignObject') === -1) {
-            return domurl.createObjectURL(new window.Blob([svg], {
-                type: 'image/svg+xml;charset-utf-16'
-            }));
+            return domurl.createObjectURL(
+                new window.Blob([svg], {
+                    type: 'image/svg+xml;charset-utf-16'
+                })
+            );
         }
-    } catch (e) {
-    }
+    } catch (e) {}
 
     // safari, firefox, or svgs with foreignObect returns this
     return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
 }
-
 
 /**
  * Get PNG data:URL from image URL. Pass in callbacks to handle results.
  */
 async function svgUrlToPngDataUrlAsync(imageURL, scale = 1) {
     const img = new window.Image(),
-        loadHandler = function(resolve, reject) {
+        loadHandler = function (resolve, reject) {
             const canvas = window.document.createElement('canvas'),
                 ctx = canvas.getContext && canvas.getContext('2d');
 

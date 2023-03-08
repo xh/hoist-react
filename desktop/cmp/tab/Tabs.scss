@@ -43,7 +43,7 @@
     max-width: 100%;
 
     // Flip the indicator to be on top of the tab label
-    .bp4-tab[aria-selected=true] {
+    .bp4-tab[aria-selected='true'] {
       box-shadow: inset 0 3px 0 currentColor;
     }
   }
@@ -103,7 +103,7 @@
   .bp4-tab {
     color: var(--xh-tab-text-color);
 
-    &[aria-disabled="true"] {
+    &[aria-disabled='true'] {
       color: var(--xh-tab-disabled-text-color);
     }
 
@@ -115,15 +115,14 @@
   }
 
   // Active/hover color override
-  .bp4-tab[aria-selected="true"],
-  .bp4-tab:not([aria-disabled="true"]):hover {
+  .bp4-tab[aria-selected='true'],
+  .bp4-tab:not([aria-disabled='true']):hover {
     .xh-tab-switcher__tab {
       color: var(--xh-tab-active-text-color);
     }
   }
 
-  .bp4-tab[aria-selected="true"] {
+  .bp4-tab[aria-selected='true'] {
     box-shadow: inset 0 -3px 0 var(--xh-tab-active-text-color);
   }
-
 }

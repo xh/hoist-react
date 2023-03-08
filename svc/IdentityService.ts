@@ -15,7 +15,6 @@ import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
  * actual underlying user.
  */
 export class IdentityService extends HoistService {
-
     static instance: IdentityService;
 
     private _authUser: HoistUser;
@@ -65,8 +64,7 @@ export class IdentityService extends HoistService {
         } catch (e) {
             console.error('Error calling XH.appModel.logoutAsync()', e);
         }
-        return XH
-            .fetchJson({url: 'xh/logout'})
+        return XH.fetchJson({url: 'xh/logout'})
             .then(() => XH.reloadApp())
             .catchDefault();
     }
@@ -126,11 +124,13 @@ export class IdentityService extends HoistService {
     async endImpersonateAsync() {
         return XH.fetchJson({
             url: 'xh/endImpersonate'
-        }).then(() => {
-            XH.reloadApp();
-        }).catchDefault({
-            message: 'Failed to end impersonation'
-        });
+        })
+            .then(() => {
+                XH.reloadApp();
+            })
+            .catchDefault({
+                message: 'Failed to end impersonation'
+            });
     }
 
     //------------------------
@@ -139,15 +139,15 @@ export class IdentityService extends HoistService {
     private createUser(user, roles): HoistUser {
         if (!user) return null;
         user.roles = roles;
-        user.hasRole = (role) => user.roles.includes(role);
+        user.hasRole = role => user.roles.includes(role);
         user.isHoistAdmin = user.hasRole('HOIST_ADMIN');
         user.isHoistAdminReader = user.hasRole('HOIST_ADMIN_READER');
-        user.hasGate = (gate) => this.hasGate(gate, user);
+        user.hasGate = gate => this.hasGate(gate, user);
         return deepFreeze(user) as HoistUser;
     }
 
     private hasGate(gate, user): boolean {
-        const gateUsers =  XH.getConf(gate, '').trim(),
+        const gateUsers = XH.getConf(gate, '').trim(),
             tokens = gateUsers.split(',').map(it => it.trim()),
             groupPattern = /\[([\w-]+)\]/;
 
@@ -156,9 +156,7 @@ export class IdentityService extends HoistService {
         for (let i = 0; i < tokens.length; i++) {
             const match = groupPattern.exec(tokens[i]);
             if (match && this.hasGate(match[1], user)) return true;
-
         }
         return false;
     }
 }
-

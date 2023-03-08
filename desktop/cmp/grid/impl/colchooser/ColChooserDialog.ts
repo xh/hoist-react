@@ -15,7 +15,6 @@ export const colChooserDialog = hoistCmp.factory({
     className: 'xh-col-chooser-dialog',
 
     render({model, className}) {
-
         const {isOpen, width} = model;
         if (!isOpen) return null;
 

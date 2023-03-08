@@ -37,7 +37,7 @@ export const customRow = hoistCmp.factory({
                                 hideSelectedOptionCheck: true,
                                 width: '100%',
                                 options,
-                                optionRenderer: (opt) => operatorRenderer({opt})
+                                optionRenderer: opt => operatorRenderer({opt})
                             })
                         }),
                         div({
@@ -63,49 +63,45 @@ export const customRow = hoistCmp.factory({
 //-------------------
 // Implementation
 //-------------------
-const inputField = hoistCmp.factory<CustomRowModel>(
-    ({model}) => {
-        const {fieldSpec, commitOnChange, op} = model,
-            props = {
-                bind: 'inputVal',
-                enableClear: true,
-                width: '100%',
-                autoFocus: true,
-                commitOnChange,
-                ...fieldSpec.inputProps
-            };
+const inputField = hoistCmp.factory<CustomRowModel>(({model}) => {
+    const {fieldSpec, commitOnChange, op} = model,
+        props = {
+            bind: 'inputVal',
+            enableClear: true,
+            width: '100%',
+            autoFocus: true,
+            commitOnChange,
+            ...fieldSpec.inputProps
+        };
 
-        if (fieldSpec.isNumericFieldType) {
-            return numberInput({
-                ...props,
-                enableShorthandUnits: true
-            });
-        } else if (fieldSpec.isDateBasedFieldType) {
-            return dateInput({
-                ...props,
-                valueType: fieldSpec.fieldType as 'localDate'|'date'
-            });
-        } else if (fieldSpec.supportsSuggestions(op as FieldFilterOperator)) {
-            return select({
-                ...props,
-                options: fieldSpec.values,
-                enableCreate: !fieldSpec.forceSelection,
-                enableMulti: true,
-                hideDropdownIndicator: true,
-                hideSelectedOptionCheck: true,
-                enableClear: false
-            });
-        } else {
-            return textInput(props);
-        }
-    }
-);
-
-const operatorRenderer = hoistCmp.factory(
-    ({opt}) => {
-        return div({
-            className: 'xh-custom-filter-tab__operator-renderer',
-            item: opt.label
+    if (fieldSpec.isNumericFieldType) {
+        return numberInput({
+            ...props,
+            enableShorthandUnits: true
         });
+    } else if (fieldSpec.isDateBasedFieldType) {
+        return dateInput({
+            ...props,
+            valueType: fieldSpec.fieldType as 'localDate' | 'date'
+        });
+    } else if (fieldSpec.supportsSuggestions(op as FieldFilterOperator)) {
+        return select({
+            ...props,
+            options: fieldSpec.values,
+            enableCreate: !fieldSpec.forceSelection,
+            enableMulti: true,
+            hideDropdownIndicator: true,
+            hideSelectedOptionCheck: true,
+            enableClear: false
+        });
+    } else {
+        return textInput(props);
     }
-);
+});
+
+const operatorRenderer = hoistCmp.factory(({opt}) => {
+    return div({
+        className: 'xh-custom-filter-tab__operator-renderer',
+        item: opt.label
+    });
+});

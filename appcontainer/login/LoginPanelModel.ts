@@ -13,7 +13,6 @@ import {debounced} from '@xh/hoist/utils/js';
  * @internal
  */
 export class LoginPanelModel extends HoistModel {
-
     @bindable username = '';
     @bindable password = '';
     @bindable warning = '';
@@ -43,11 +42,11 @@ export class LoginPanelModel extends HoistModel {
             const resp = await XH.fetchJson({
                 url: 'xh/login',
                 params: {username, password}
-            }).linkTo(
-                loginTask
-            ).catchDefault({
-                hideParams: ['password']
-            });
+            })
+                .linkTo(loginTask)
+                .catchDefault({
+                    hideParams: ['password']
+                });
 
             if (resp.success) {
                 this.warning = '';
@@ -58,6 +57,5 @@ export class LoginPanelModel extends HoistModel {
         } finally {
             this.loginInProgress = false;
         }
-
     }
 }

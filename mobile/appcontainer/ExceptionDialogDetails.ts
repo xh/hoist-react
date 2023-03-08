@@ -25,7 +25,8 @@ export const exceptionDialogDetails = hoistCmp.factory({
     render({model}) {
         const {detailsIsOpen, exception, options} = model,
             {requireReload} = options,
-            row = (label, data) => tr(th({item: `${label}:`, style: {textAlign: 'left'}}), td(data));
+            row = (label, data) =>
+                tr(th({item: `${label}:`, style: {textAlign: 'left'}}), td(data));
 
         if (!detailsIsOpen || !exception) return null;
 
@@ -44,10 +45,7 @@ export const exceptionDialogDetails = hoistCmp.factory({
             icon: Icon.search(),
             isOpen: true,
             onCancel: !requireReload ? () => model.close() : null,
-            content: fragment(
-                header,
-                pre(errorStr)
-            ),
+            content: fragment(header, pre(errorStr)),
             buttons: [
                 button({
                     icon: Icon.envelope(),

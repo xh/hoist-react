@@ -4,7 +4,6 @@ import {gestureDetector} from '@xh/hoist/kit/onsen';
 import {backIndicator} from './BackIndicator';
 import {refreshIndicator} from './RefreshIndicator';
 
-
 import './Swiper.scss';
 import {SwiperModel} from './SwiperModel';
 

@@ -13,11 +13,10 @@ import classNames from 'classnames';
 import {ReactNode, ReactElement, MouseEvent} from 'react';
 import './Button.scss';
 
-export interface ButtonProps<M extends HoistModel=HoistModel> extends
-    HoistProps<M>,
-    LayoutProps,
-    StyleProps
-{
+export interface ButtonProps<M extends HoistModel = HoistModel>
+    extends HoistProps<M>,
+        LayoutProps,
+        StyleProps {
     active?: boolean;
     disabled?: boolean;
     icon?: ReactElement;
@@ -45,17 +44,8 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             classes = [],
             items = [];
 
-        const {
-            active,
-            className,
-            disabled,
-            icon,
-            intent,
-            onClick,
-            style,
-            text,
-            ...rest
-        } = nonLayoutProps;
+        const {active, className, disabled, icon, intent, onClick, style, text, ...rest} =
+            nonLayoutProps;
 
         let {outlined, minimal} = nonLayoutProps;
         if (disabled) {

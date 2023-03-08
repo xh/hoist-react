@@ -21,7 +21,6 @@ import {isPlainObject} from 'lodash';
  * Not typically created directly by applications.
  */
 export class LoadSupport extends HoistBase implements Loadable {
-
     lastRequested: LoadSpec = null;
     lastSucceeded: LoadSpec = null;
 
@@ -45,11 +44,11 @@ export class LoadSupport extends HoistBase implements Loadable {
         this.target = target;
     }
 
-    async loadAsync(loadSpec?: LoadSpec|Partial<LoadSpec>) {
+    async loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>) {
         throwIf(
             loadSpec && !(loadSpec.isLoadSpec || isPlainObject(loadSpec)),
-            'Unexpected param passed to loadAsync().  If triggered via a reaction '  +
-            'ensure call is wrapped in a closure.'
+            'Unexpected param passed to loadAsync().  If triggered via a reaction ' +
+                'ensure call is wrapped in a closure.'
         );
         const newSpec = new LoadSpec({...loadSpec, owner: this});
 
@@ -74,7 +73,7 @@ export class LoadSupport extends HoistBase implements Loadable {
             loadModel = null;
         }
 
-        runInAction(() => this.lastLoadRequested = new Date());
+        runInAction(() => (this.lastLoadRequested = new Date()));
         this.lastRequested = loadSpec;
 
         let exception = null;
@@ -99,7 +98,9 @@ export class LoadSupport extends HoistBase implements Loadable {
                 if (target instanceof RefreshContextModel) return;
 
                 const elapsed = this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime(),
-                    msg = `[${target.constructor.name}] | ${loadSpec.typeDisplay} | ${exception ? 'failed | ' : ''}${elapsed}ms`;
+                    msg = `[${target.constructor.name}] | ${loadSpec.typeDisplay} | ${
+                        exception ? 'failed | ' : ''
+                    }${elapsed}ms`;
 
                 if (exception) {
                     if (exception.isRoutine) {
@@ -122,13 +123,14 @@ export class LoadSupport extends HoistBase implements Loadable {
  *
  * @param objs - list of objects to be loaded
  * @param loadSpec - optional metadata related to this request.
-*/
-export async function loadAllAsync(objs: Loadable[], loadSpec?: LoadSpec|any) {
+ */
+export async function loadAllAsync(objs: Loadable[], loadSpec?: LoadSpec | any) {
     const promises = objs.map(it => it.loadAsync(loadSpec)),
         ret = await Promise.allSettled(promises);
 
-    ret.filter(it => it.status === 'rejected')
-        .forEach((err: any) => console.error('Failed to Load Object', err.reason));
+    ret.filter(it => it.status === 'rejected').forEach((err: any) =>
+        console.error('Failed to Load Object', err.reason)
+    );
 
     return ret;
 }

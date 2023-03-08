@@ -9,7 +9,6 @@ import {Aggregator} from '@xh/hoist/data';
 import {min, max} from 'lodash';
 
 export class RangeAggregator extends Aggregator {
-
     override aggregate(rows, fieldName) {
         const minVals = rows.map(row => row.data[fieldName].min),
             maxVals = rows.map(row => row.data[fieldName].max);
@@ -20,7 +19,7 @@ export class RangeAggregator extends Aggregator {
     override replace(rows, currAgg, update, context) {
         const {oldValue, newValue} = update;
 
-        if ((oldValue == currAgg.min || oldValue == currAgg.max)) {
+        if (oldValue == currAgg.min || oldValue == currAgg.max) {
             return super.replace(rows, currAgg, update, context);
         }
 

@@ -28,7 +28,6 @@ import {debounce, forEach, isEmpty, isEqual, isNil, pickBy} from 'lodash';
  * associate with a particular machine or browser (e.g. sizing or layout related options).
  */
 export class PrefService extends HoistService {
-
     static instance: PrefService;
 
     private _data = {};
@@ -108,7 +107,6 @@ export class PrefService extends HoistService {
         this.set(key, this._data[key]?.defaultValue);
     }
 
-
     /**
      * Set a preference value for the current user, and immediately trigger a sync to the server.
      *
@@ -172,7 +170,6 @@ export class PrefService extends HoistService {
         }
     }
 
-
     //-------------------
     //  Implementation
     //-------------------
@@ -197,9 +194,9 @@ export class PrefService extends HoistService {
 
         for (let key in data) {
             if (data[key].local) {
-                data[key].value = !isNil(localPrefs[key]) ?
-                    deepFreeze(structuredClone(localPrefs[key])) :
-                    data[key].defaultValue;
+                data[key].value = !isNil(localPrefs[key])
+                    ? deepFreeze(structuredClone(localPrefs[key]))
+                    : data[key].defaultValue;
             }
         }
     }

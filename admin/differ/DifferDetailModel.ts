@@ -12,9 +12,8 @@ import {StoreRecord} from '@xh/hoist/data';
 /**
  * @internal
  */
-export class DifferDetailModel extends HoistModel  {
-
-    parent:DifferModel = null;
+export class DifferDetailModel extends HoistModel {
+    parent: DifferModel = null;
 
     @observable.ref record: StoreRecord = null;
 

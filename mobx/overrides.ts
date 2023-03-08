@@ -20,7 +20,6 @@ export function makeObservable(
     annotations?: AnnotationsMap<any, never>,
     options?: CreateObservableOptions
 ) {
-
     // Finish creating 'bindable' properties for this instance.
     // Do here to ensure it's enumerable on *instance*
     const bindables = target._xhBindableProperties;
@@ -35,7 +34,7 @@ export function makeObservable(
  * An enhanced version of the native mobx isObservableProp
  */
 export function isObservableProp(target: any, propertyKey: PropertyKey) {
-    return baseIsObservableProp(target, propertyKey) || target?._xhBindableProperties?.[propertyKey];
+    return (
+        baseIsObservableProp(target, propertyKey) || target?._xhBindableProperties?.[propertyKey]
+    );
 }
-
-

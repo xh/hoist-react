@@ -6,8 +6,7 @@
  */
 import moment from 'moment';
 
-export const
-    MILLISECONDS = 1,
+export const MILLISECONDS = 1,
     SECONDS = 1000,
     MINUTES = 1000 * 60,
     HOURS = 1000 * 60 * 60,
@@ -21,7 +20,7 @@ export const
  * Is a Date or UTC time stamp older than a certain amount?
  * Returns true if input time is null.
  */
-export function olderThan(t: Date|number, millis: number) {
+export function olderThan(t: Date | number, millis: number) {
     return !t || t < Date.now() - millis;
 }
 

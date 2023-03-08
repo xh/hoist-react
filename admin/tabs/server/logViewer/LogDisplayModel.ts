@@ -18,7 +18,6 @@ import {LogViewerModel} from './LogViewerModel';
  * @internal
  */
 export class LogDisplayModel extends HoistModel {
-
     override persistWith = {localStorageKey: 'xhAdminLogViewerState'};
 
     parent: LogViewerModel;
@@ -52,7 +51,7 @@ export class LogDisplayModel extends HoistModel {
 
         this.addReaction({
             track: () => this.tail,
-            run: (tail) => {
+            run: tail => {
                 this.startLine = tail ? null : 1;
                 this.loadLog();
             },
@@ -148,7 +147,7 @@ export class LogDisplayModel extends HoistModel {
                     icon: Icon.minusCircle()
                 }
             ],
-            onRowClicked: (evt) => {
+            onRowClicked: evt => {
                 if (evt.data === this.gridModel.selectedRecord) {
                     this.gridModel.clearSelection();
                 }
@@ -159,16 +158,15 @@ export class LogDisplayModel extends HoistModel {
     private updateGridData(data) {
         const {tailActive, gridModel} = this;
         let maxRowLength = 200;
-        const gridData = data.map(
-            (row) => {
-                if (row[1].length > maxRowLength) {
-                    maxRowLength = row[1].length;
-                }
-                return {
-                    'rowNum': row[0],
-                    'rowContent': row[1]
-                };
-            });
+        const gridData = data.map(row => {
+            if (row[1].length > maxRowLength) {
+                maxRowLength = row[1].length;
+            }
+            return {
+                rowNum: row[0],
+                rowContent: row[1]
+            };
+        });
 
         // Estimate the length of the row in pixels based on (character count) * (font size)
         gridModel.setColumnState([{colId: 'rowContent', width: maxRowLength * 6}]);
@@ -184,7 +182,8 @@ export class LogDisplayModel extends HoistModel {
         const {tailActive, parent} = this,
             {viewRef} = parent;
 
-        if (tailActive &&
+        if (
+            tailActive &&
             olderThan(this.lastLoadCompleted, 5 * SECONDS) &&
             !this.loadModel.isPending &&
             isDisplayed(viewRef.current)

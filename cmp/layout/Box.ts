@@ -23,7 +23,9 @@ export interface BoxComponentProps extends HoistProps, BoxProps {}
  */
 export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
     displayName: 'Box',
-    model: false, memo: false, observer: false,
+    model: false,
+    memo: false,
+    observer: false,
 
     render(props, ref) {
         // Note `model` destructured off of non-layout props to avoid setting
@@ -47,7 +49,9 @@ export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
 
 export const [VBox, vbox] = hoistCmp.withFactory<BoxComponentProps>({
     displayName: 'VBox',
-    model: false, memo: false, observer: false,
+    model: false,
+    memo: false,
+    observer: false,
     className: 'xh-vbox',
 
     render(props, ref) {
@@ -61,7 +65,9 @@ export const [VBox, vbox] = hoistCmp.withFactory<BoxComponentProps>({
 
 export const [HBox, hbox] = hoistCmp.withFactory<BoxComponentProps>({
     displayName: 'HBox',
-    model: false, memo: false, observer: false,
+    model: false,
+    memo: false,
+    observer: false,
     className: 'xh-hbox',
 
     render(props, ref) {

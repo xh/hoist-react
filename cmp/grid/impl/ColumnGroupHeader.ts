@@ -26,7 +26,9 @@ export const columnGroupHeader = hoistCmp.factory({
         const expandIcon = () => {
             if (!isExpandable) return null;
 
-            const icon = isExpanded ? Icon.chevronLeft({size: 'sm'}) : Icon.chevronRight({size: 'sm'});
+            const icon = isExpanded
+                ? Icon.chevronLeft({size: 'sm'})
+                : Icon.chevronRight({size: 'sm'});
             return div(icon);
         };
 
@@ -39,12 +41,12 @@ export const columnGroupHeader = hoistCmp.factory({
         }
 
         return div({
-            className: classNames(className, isExpandable ? 'xh-grid-group-header--expandable' : null),
-            items: [
-                span(headerName),
-                expandIcon()
-            ],
-            onClick: (e) => {
+            className: classNames(
+                className,
+                isExpandable ? 'xh-grid-group-header--expandable' : null
+            ),
+            items: [span(headerName), expandIcon()],
+            onClick: e => {
                 if (!isExpandable) return;
 
                 e.stopPropagation();
@@ -82,5 +84,5 @@ class ColumnGroupHeaderModel extends HoistModel {
         super.destroy();
     }
 
-    syncIsExpanded = () => this.isExpanded = this.agColumnGroup.isExpanded();
+    syncIsExpanded = () => (this.isExpanded = this.agColumnGroup.isExpanded());
 }

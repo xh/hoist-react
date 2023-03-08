@@ -15,7 +15,6 @@ import filesize from 'filesize';
 import {find, uniqBy, without} from 'lodash';
 
 export class FileChooserModel extends HoistModel {
-
     @observable.ref
     files: File[] = [];
 
@@ -33,10 +32,9 @@ export class FileChooserModel extends HoistModel {
 
         this.addReaction({
             track: () => this.files,
-            run: (files) => this.onFilesChange(files)
+            run: files => this.onFilesChange(files)
         });
     }
-
 
     /**
      * Add Files to the selection. Typically called by the component's embedded react-dropzone.
@@ -45,10 +43,7 @@ export class FileChooserModel extends HoistModel {
      */
     @action
     addFiles(filesToAdd: File[]) {
-        this.files = uniqBy([
-            ...filesToAdd,
-            ...this.files
-        ], 'name');
+        this.files = uniqBy([...filesToAdd, ...this.files], 'name');
     }
 
     @action
@@ -100,14 +95,16 @@ export class FileChooserModel extends HoistModel {
                 {
                     ...actionCol,
                     width: calcActionColWidth(1),
-                    actions: [{
-                        icon: Icon.delete(),
-                        tooltip: 'Remove file',
-                        intent: 'danger',
-                        actionFn: ({record}) => {
-                            this.removeFileByName(record.data.name);
+                    actions: [
+                        {
+                            icon: Icon.delete(),
+                            tooltip: 'Remove file',
+                            intent: 'danger',
+                            actionFn: ({record}) => {
+                                this.removeFileByName(record.data.name);
+                            }
                         }
-                    }]
+                    ]
                 }
             ],
             emptyText: 'No files selected.',

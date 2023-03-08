@@ -23,7 +23,6 @@ import {RecordActionSpec} from '@xh/hoist/data';
  * @internal
  */
 export class DifferModel extends HoistModel {
-
     parentModel;
     entityName;
     displayName;
@@ -45,7 +44,9 @@ export class DifferModel extends HoistModel {
     @observable
     hasLoaded = false;
 
-    get readonly() {return this.parentModel?.gridModel.readonly}
+    get readonly() {
+        return this.parentModel?.gridModel.readonly;
+    }
 
     applyRemoteAction: RecordActionSpec = {
         text: 'Apply Remote',
@@ -78,7 +79,7 @@ export class DifferModel extends HoistModel {
         this.displayName = displayName ?? entityName;
         this.columnFields = columnFields;
         this.matchFields = matchFields;
-        this.valueRenderer = valueRenderer ?? (v => isNil(v) ? '' : v.value);
+        this.valueRenderer = valueRenderer ?? (v => (isNil(v) ? '' : v.value));
 
         this.url = entityName + 'DiffAdmin';
 
@@ -97,7 +98,7 @@ export class DifferModel extends HoistModel {
             groupBy: 'status',
             enableExport: true,
             showHover: true,
-            onRowDoubleClicked: (e) => this.detailModel.open(e.data),
+            onRowDoubleClicked: e => this.detailModel.open(e.data),
             columns: [
                 {
                     ...actionCol,
@@ -125,11 +126,7 @@ export class DifferModel extends HoistModel {
                     renderer: this.valueRenderer
                 }
             ],
-            contextMenu: [
-                this.applyRemoteAction,
-                '-',
-                ...GridModel.defaultContextMenu
-            ]
+            contextMenu: [this.applyRemoteAction, '-', ...GridModel.defaultContextMenu]
         });
 
         this.addReaction({
@@ -150,9 +147,9 @@ export class DifferModel extends HoistModel {
         try {
             const resp = await Promise.all([
                 XH.fetchJson({url: `${url}/${entityName}s`, loadSpec}),
-                this.clipboardContent ?
-                    Promise.resolve(structuredClone(this.clipboardContent)) :
-                    XH.fetchJson({url: `${remoteBaseUrl}${url}/${entityName}s`, loadSpec})
+                this.clipboardContent
+                    ? Promise.resolve(structuredClone(this.clipboardContent))
+                    : XH.fetchJson({url: `${remoteBaseUrl}${url}/${entityName}s`, loadSpec})
             ]);
             this.processResponse(resp);
         } catch (e) {
@@ -161,7 +158,8 @@ export class DifferModel extends HoistModel {
                 XH.alert({
                     title: 'Access Denied',
                     icon: Icon.accessDenied(),
-                    message: 'Access denied when querying records. Are you logged in to an account with admin rights on the remote instance?'
+                    message:
+                        'Access denied when querying records. Are you logged in to an account with admin rights on the remote instance?'
                 });
             } else {
                 XH.handleException(e, {showAsError: false, logOnServer: false});
@@ -220,7 +218,11 @@ export class DifferModel extends HoistModel {
                 ...values,
                 localValue: local,
                 remoteValue: remote,
-                status: this.rawRecordsAreEqual(local, remote) ? 'Identical' : (remote ? 'Diff' : 'Local Only')
+                status: this.rawRecordsAreEqual(local, remote)
+                    ? 'Identical'
+                    : remote
+                    ? 'Diff'
+                    : 'Local Only'
             });
 
             if (remote) {
@@ -281,7 +283,11 @@ export class DifferModel extends HoistModel {
         const filteredRecords = records.filter(it => !this.isPwd(it)),
             hadPwd = records.length !== filteredRecords.length,
             willDelete = filteredRecords.some(it => !it.data.remoteValue),
-            confirmMsg = `Are you sure you want to apply remote values to ${pluralize(this.displayName, filteredRecords.length, true)}?`,
+            confirmMsg = `Are you sure you want to apply remote values to ${pluralize(
+                this.displayName,
+                filteredRecords.length,
+                true
+            )}?`,
             prodWarning = hbox({
                 omit: !XH.environmentService.isProduction(),
                 alignItems: 'center',
@@ -294,7 +300,10 @@ export class DifferModel extends HoistModel {
         const message = div(
             p(confirmMsg),
             p(prodWarning),
-            p({omit: !hadPwd, item: 'Warning: No changes will be applied to password records. These must be changed manually.'}),
+            p({
+                omit: !hadPwd,
+                item: 'Warning: No changes will be applied to password records. These must be changed manually.'
+            }),
             p({omit: !willDelete, item: 'Warning: Operation includes deletions.'})
         );
 
@@ -327,13 +336,14 @@ export class DifferModel extends HoistModel {
         XH.fetchJson({
             url: `${this.url}/applyRemoteValues`,
             params: {records: JSON.stringify(recsForPost)}
-        }).finally(() => {
-            this.loadAsync();
-            this.parentModel.gridModel.loadAsync();
-            this.detailModel.close();
-        }).linkTo(
-            this.loadModel
-        ).catchDefault();
+        })
+            .finally(() => {
+                this.loadAsync();
+                this.parentModel.gridModel.loadAsync();
+                this.detailModel.close();
+            })
+            .linkTo(this.loadModel)
+            .catchDefault();
     }
 
     showNoDiffToast() {
@@ -373,7 +383,9 @@ export class DifferModel extends HoistModel {
 
         this.clipboardContent = content;
         if (!this.clipboardContent?.data) {
-            throw XH.exception('Clipboard did not contain remote data in the expected JSON format.');
+            throw XH.exception(
+                'Clipboard did not contain remote data in the expected JSON format.'
+            );
         }
     }
 }

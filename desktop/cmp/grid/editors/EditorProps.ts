@@ -11,7 +11,6 @@ import {StoreRecord} from '@xh/hoist/data';
 import '@xh/hoist/desktop/register';
 
 export interface EditorProps<InputPropsT extends HoistInputProps> extends HoistProps {
-
     /** Column in StoreRecord being edited. */
     column: Column;
 

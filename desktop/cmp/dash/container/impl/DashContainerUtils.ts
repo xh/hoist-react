@@ -53,7 +53,11 @@ function convertGLToStateInner(configItems = [], contentItems = [], dashContaine
             if (isFinite(height)) container.height = round(height, 2);
             if (isFinite(activeItemIndex)) container.activeItemIndex = activeItemIndex;
             if (isArray(content) && content.length) {
-                container.content = convertGLToStateInner(content, contentItem.contentItems, dashContainerModel);
+                container.content = convertGLToStateInner(
+                    content,
+                    contentItem.contentItems,
+                    dashContainerModel
+                );
             }
 
             ret.push(container);
@@ -97,7 +101,8 @@ function convertStateToGLInner(items = [], viewSpecs = [], containerSize, contai
     return items.map((item: any) => {
         const {type, width, height} = item;
 
-        throwIf(type === 'component' || type === 'react-component',
+        throwIf(
+            type === 'component' || type === 'react-component',
             'Trying to use "component" or "react-component" types. Use type="view" instead.'
         );
 
@@ -105,7 +110,9 @@ function convertStateToGLInner(items = [], viewSpecs = [], containerSize, contai
             const viewSpec = viewSpecs.find(v => v.id === item.id);
 
             if (!viewSpec) {
-                console.debug(`Attempted to load non-existent or omitted view from state: ${item.id}`);
+                console.debug(
+                    `Attempted to load non-existent or omitted view from state: ${item.id}`
+                );
                 return null;
             }
 
@@ -122,17 +129,26 @@ function convertStateToGLInner(items = [], viewSpecs = [], containerSize, contai
             const itemSize = {...containerSize};
 
             if (dimension) {
-                itemSize[dimension] = relativeSizeToPixels(item[dimension], containerSize[dimension]);
+                itemSize[dimension] = relativeSizeToPixels(
+                    item[dimension],
+                    containerSize[dimension]
+                );
             }
 
-            const content = convertStateToGLInner(item.content, viewSpecs, itemSize, item).filter(it => !isNil(it));
+            const content = convertStateToGLInner(item.content, viewSpecs, itemSize, item).filter(
+                it => !isNil(it)
+            );
             if (!content.length) return null;
 
             // Below is a workaround for issue https://github.com/golden-layout/golden-layout/issues/418
             // GoldenLayouts can sometimes export its state with an out-of-bounds `activeItemIndex`.
             // If we encounter this, we overwrite `activeItemIndex` to point to the last item.
             const ret = {...item, content};
-            if (type === 'stack' && isFinite(ret.activeItemIndex) && ret.activeItemIndex >= content.length) {
+            if (
+                type === 'stack' &&
+                isFinite(ret.activeItemIndex) &&
+                ret.activeItemIndex >= content.length
+            ) {
                 ret.activeItemIndex = content.length - 1;
             }
             return ret;
@@ -164,7 +180,7 @@ function sizeItemsToContainer(items, containerSize, dimension) {
     // Insert an explicit size on any unsized items, by equally dividing the remaining size
     const remainingSize = 100 - totalSize;
     unsizedItems.forEach(item => {
-        item[dimension] = (remainingSize / unsizedItems.length);
+        item[dimension] = remainingSize / unsizedItems.length;
     });
 
     return items;

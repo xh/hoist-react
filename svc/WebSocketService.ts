@@ -36,7 +36,6 @@ import {find, pull} from 'lodash';
  * See {@link WebSocketIndicator}, a simple component for displaying connection status.
  */
 export class WebSocketService extends HoistService {
-
     static instance: WebSocketService;
 
     HEARTBEAT_TOPIC = 'xhHeartbeat';
@@ -75,12 +74,11 @@ export class WebSocketService extends HoistService {
         if (XH.environmentService.get('webSocketsEnabled') === false) {
             console.error(
                 'WebSockets have been enabled on this client app, but are disabled on the server. ' +
-                'Please adjust your server-side configuration to use WebSockets.'
+                    'Please adjust your server-side configuration to use WebSockets.'
             );
             this.enabled = false;
             return;
         }
-
 
         this.connect();
 
@@ -132,7 +130,6 @@ export class WebSocketService extends HoistService {
         this.maybeLogMessage('Sent message', message);
     }
 
-
     //------------------------
     // Implementation
     //------------------------
@@ -140,10 +137,18 @@ export class WebSocketService extends HoistService {
         try {
             // Create new socket and wire up events.  Be sure to ignore obsolete sockets
             const s = new WebSocket(this.buildWebSocketUrl());
-            s.onopen = (ev) => {if (s === this._socket) this.onOpen(ev);};
-            s.onclose = (ev) => {if (s === this._socket) this.onClose(ev);};
-            s.onerror = (ev) => {if (s === this._socket) this.onError(ev);};
-            s.onmessage = (data) => {if (s === this._socket) this.onMessage(data);};
+            s.onopen = ev => {
+                if (s === this._socket) this.onOpen(ev);
+            };
+            s.onclose = ev => {
+                if (s === this._socket) this.onClose(ev);
+            };
+            s.onerror = ev => {
+                if (s === this._socket) this.onError(ev);
+            };
+            s.onmessage = data => {
+                if (s === this._socket) this.onMessage(data);
+            };
             this._socket = s;
         } catch (e) {
             console.error('Failure creating WebSocket in WebSocketService', e);
@@ -221,7 +226,6 @@ export class WebSocketService extends HoistService {
         this.updateConnectedStatus();
     }
 
-
     //------------------------
     // Subscription impl
     //------------------------
@@ -269,9 +273,9 @@ export class WebSocketService extends HoistService {
         const protocol = window.location.protocol == 'https:' ? 'wss:' : 'ws:',
             endpoint = 'xhWebSocket';
 
-        return XH.isDevelopmentMode ?
-            `${protocol}//${XH.baseUrl.split('//')[1]}${endpoint}` :
-            `${protocol}//${window.location.host}${XH.baseUrl}${endpoint}`;
+        return XH.isDevelopmentMode
+            ? `${protocol}//${XH.baseUrl.split('//')[1]}${endpoint}`
+            : `${protocol}//${window.location.host}${XH.baseUrl}${endpoint}`;
     }
 
     showTestMessageAlert(message) {
@@ -285,7 +289,6 @@ export class WebSocketService extends HoistService {
     maybeLogMessage(...args) {
         if (this.logMessages) console.log(...args);
     }
-
 }
 
 /**

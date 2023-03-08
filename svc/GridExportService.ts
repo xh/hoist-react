@@ -24,7 +24,10 @@ import {
     sortBy,
     compact,
     findIndex,
-    keys, isBoolean, isDate, isNumber
+    keys,
+    isBoolean,
+    isDate,
+    isNumber
 } from 'lodash';
 import {span, a} from '@xh/hoist/cmp/layout';
 import {wait} from '@xh/hoist/promise';
@@ -53,18 +56,20 @@ export class GridExportService extends HoistService {
             timeout = 30 * SECONDS
         }: ExportOptions = {}
     ) {
-        throwIf(!gridModel,
-            'GridModel required for export');
-        throwIf(!isString(filename) && !isFunction(filename),
-            'Export filename must be either a string or a closure');
-        throwIf(!['excel', 'excelTable', 'csv'].includes(type),
-            `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`);
-        throwIf(!(isFunction(columns) || isArray(columns) || ['ALL', 'VISIBLE'].includes(columns)),
+        throwIf(!gridModel, 'GridModel required for export');
+        throwIf(
+            !isString(filename) && !isFunction(filename),
+            'Export filename must be either a string or a closure'
+        );
+        throwIf(
+            !['excel', 'excelTable', 'csv'].includes(type),
+            `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`
+        );
+        throwIf(
+            !(isFunction(columns) || isArray(columns) || ['ALL', 'VISIBLE'].includes(columns)),
             'Invalid columns config - must be "ALL", "VISIBLE", an array of colIds, or a function'
         );
-        throwIf(!isBoolean(track),
-            'Invalid track value - must be either true or false'
-        );
+        throwIf(!isBoolean(track), 'Invalid track value - must be either true or false');
 
         if (isFunction(filename)) filename = filename(gridModel);
 
@@ -80,16 +85,17 @@ export class GridExportService extends HoistService {
         }
 
         // If the grid includes a summary row, add it to the export payload as a root-level node.
-        const rows = gridModel.showSummary && summaryRecord ?
-            [
-                this.getHeaderRow(exportColumns, type, gridModel),
-                this.getRecordRow(gridModel, summaryRecord, exportColumns, type, 0),
-                ...this.getRecordRowsRecursive(gridModel, records, exportColumns, type, 1)
-            ] :
-            [
-                this.getHeaderRow(exportColumns, type, gridModel),
-                ...this.getRecordRowsRecursive(gridModel, records, exportColumns, type, 0)
-            ];
+        const rows =
+            gridModel.showSummary && summaryRecord
+                ? [
+                      this.getHeaderRow(exportColumns, type, gridModel),
+                      this.getRecordRow(gridModel, summaryRecord, exportColumns, type, 0),
+                      ...this.getRecordRowsRecursive(gridModel, records, exportColumns, type, 1)
+                  ]
+                : [
+                      this.getHeaderRow(exportColumns, type, gridModel),
+                      ...this.getRecordRowsRecursive(gridModel, records, exportColumns, type, 0)
+                  ];
 
         // Show separate 'started' toasts for larger (i.e. slower) exports.
         let startToast = null,
@@ -97,7 +103,8 @@ export class GridExportService extends HoistService {
 
         if (cellCount > withDefault(config.streamingCellThreshold, 100000)) {
             startToast = XH.toast({
-                message: 'Your export is being prepared. Due to its size, formatting will be removed.',
+                message:
+                    'Your export is being prepared. Due to its size, formatting will be removed.',
                 icon: Icon.download(),
                 intent: 'warning',
                 timeout: null
@@ -112,9 +119,9 @@ export class GridExportService extends HoistService {
 
         // Toast will be dismissed when export completes, but commit to showing for at least 2s to
         // avoid an annoying flash if download is ready immediately.
-        const dismissStartToast = startToast ?
-            this.minWait(2 * SECONDS, () => startToast.dismiss()) :
-            () => null;
+        const dismissStartToast = startToast
+            ? this.minWait(2 * SECONDS, () => startToast.dismiss())
+            : () => null;
 
         // POST the data as a file (using multipart/form-data) to work around size limits when using application/x-www-form-urlencoded.
         // This allows the data to be split into multiple parts and streamed, allowing for larger excel exports.
@@ -164,16 +171,32 @@ export class GridExportService extends HoistService {
      * Get the exportable value for a given cell.
      * Used internally by this service + public to support Grid's "copy cell" context menu action.
      */
-    getExportableValueForCell(
-        {gridModel, record, column, node, forExcel = false}:
-            {gridModel: GridModel, record: StoreRecord, column: Column, node?: any, forExcel?: boolean}
-    ): any {
+    getExportableValueForCell({
+        gridModel,
+        record,
+        column,
+        node,
+        forExcel = false
+    }: {
+        gridModel: GridModel;
+        record: StoreRecord;
+        column: Column;
+        node?: any;
+        forExcel?: boolean;
+    }): any {
         const {field, exportValue, getValueFn, defaultGetValueFn} = column,
             aggData = node && gridModel.treeMode && !isEmpty(record.children) ? node.aggData : null,
             hasCustomGetValueFn = getValueFn !== defaultGetValueFn;
 
         // 0) Main processing
-        let value = getValueFn({record, field, column, gridModel, store: record.store, agParams: null});
+        let value = getValueFn({
+            record,
+            field,
+            column,
+            gridModel,
+            store: record.store,
+            agParams: null
+        });
         // Modify value using exportValue
         if (isString(exportValue) && record.data[exportValue] !== null) {
             // If exportValue points to a different field
@@ -240,9 +263,7 @@ export class GridExportService extends HoistService {
 
     private getExportableColumns(gridModel, columns) {
         if (isFunction(columns)) {
-            return compact(
-                columns(gridModel).map(it => gridModel.getColumn(it))
-            );
+            return compact(columns(gridModel).map(it => gridModel.getColumn(it)));
         }
 
         const toExport = castArray(columns),
@@ -257,8 +278,7 @@ export class GridExportService extends HoistService {
             return (
                 toExport.includes(colId) ||
                 (!excludeFromExport &&
-                    (includeAll || (includeViz && gridModel.isColumnVisible(colId)))
-                )
+                    (includeAll || (includeViz && gridModel.isColumnVisible(colId))))
             );
         });
     }
@@ -302,15 +322,18 @@ export class GridExportService extends HoistService {
 
     private getHeaderRow(columns, type, gridModel) {
         const headers = columns.map(it => {
-            let ret = isFunction(it.exportName) ?
-                it.exportName({column: it, gridModel}) :
-                it.exportName;
+            let ret = isFunction(it.exportName)
+                ? it.exportName({column: it, gridModel})
+                : it.exportName;
 
             if (!isString(ret)) {
                 console.warn(
-                    'Tried to export column ' + it.colId + ' with an invalid "exportName", ' +
-                    'probably caused by setting "headerName" to a React element. Please specify an ' +
-                    'appropriate "exportName". Defaulting to ' + it.colId
+                    'Tried to export column ' +
+                        it.colId +
+                        ' with an invalid "exportName", ' +
+                        'probably caused by setting "headerName" to a React element. Please specify an ' +
+                        'appropriate "exportName". Defaulting to ' +
+                        it.colId
                 );
                 ret = it.colId;
             }
@@ -322,7 +345,10 @@ export class GridExportService extends HoistService {
         const headerCounts = countBy(headers.map(it => it.toLowerCase())),
             dupeHeaders = keys(pickBy(headerCounts, it => it > 1));
         if (type === 'excelTable' && !isEmpty(dupeHeaders)) {
-            console.warn('Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers. Duplicate headers: ', dupeHeaders);
+            console.warn(
+                'Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers. Duplicate headers: ',
+                dupeHeaders
+            );
         }
         return {data: headers, depth: 0};
     }
@@ -355,7 +381,13 @@ export class GridExportService extends HoistService {
         records.forEach(record => {
             ret.push(this.getRecordRow(gridModel, record, columns, type, depth));
             if (treeMode && record.children.length) {
-                const childRows = this.getRecordRowsRecursive(gridModel, record.children, columns, type, depth + 1);
+                const childRows = this.getRecordRowsRecursive(
+                    gridModel,
+                    record.children,
+                    columns,
+                    type,
+                    depth + 1
+                );
                 childRows.forEach(r => ret.push(r));
             }
         });
@@ -403,35 +435,35 @@ export class GridExportService extends HoistService {
 
     // Return a value's data type if different from the type specified
     private getCellSpecificType(v, colType) {
-        const ifTypeNot = (allowedTypes, retType) => allowedTypes.includes(colType) ? null : retType;
+        const ifTypeNot = (allowedTypes, retType) =>
+            allowedTypes.includes(colType) ? null : retType;
 
-        if (isBoolean(v))   return ifTypeNot(['bool'], 'bool');
-        if (isNumber(v))    return ifTypeNot(['number', 'int'], 'number');
+        if (isBoolean(v)) return ifTypeNot(['bool'], 'bool');
+        if (isNumber(v)) return ifTypeNot(['number', 'int'], 'number');
         if (isLocalDate(v)) return ifTypeNot(['localDate'], 'localDate');
-        if (isDate(v))      return ifTypeNot(['date'], 'date');
-        if (isString(v))    return ifTypeNot(['pwd', 'string', 'auto'], 'auto');
+        if (isDate(v)) return ifTypeNot(['date'], 'date');
+        if (isString(v)) return ifTypeNot(['pwd', 'string', 'auto'], 'auto');
 
         return null;
     }
 }
 
 export interface ExportOptions {
-
     /**
      * Name for export file, or closure to generate.
      * Do not include the file extension - that will be appended based on the specified type.
      */
-    filename?: string|((g: GridModel) => string);
+    filename?: string | ((g: GridModel) => string);
 
     /** Type of export. */
-    type?: 'excel'|'excelTable'|'csv';
+    type?: 'excel' | 'excelTable' | 'csv';
 
     /**
      *  Columns to include in export. Supports tokens 'VISIBLE' (default - all currently visible cols),
      *  'ALL', or specific column IDs to include (can be used in conjunction with VISIBLE to export
      *  all visible and enumerated columns). Also supports a function returning column IDs to include.
      */
-    columns?: 'VISIBLE'|'ALL'|string[]|((g: GridModel) => string[]);
+    columns?: 'VISIBLE' | 'ALL' | string[] | ((g: GridModel) => string[]);
 
     /** True to enable activity tracking of exports (default false). */
     track?: boolean;

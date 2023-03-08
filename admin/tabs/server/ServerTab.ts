@@ -15,15 +15,25 @@ import {memoryMonitorPanel} from './memory/MemoryMonitorPanel';
 import {servicePanel} from './services/ServicePanel';
 import {webSocketPanel} from './websocket/WebSocketPanel';
 
-export const serverTab = hoistCmp.factory(
-    () => tabContainer({
+export const serverTab = hoistCmp.factory(() =>
+    tabContainer({
         modelConfig: {
             route: 'default.server',
             switcher: {orientation: 'left'},
             tabs: [
-                {id: 'logViewer', icon: Icon.fileText(), content: logViewer, omit: !XH.getConf('xhEnableLogViewer', true)},
+                {
+                    id: 'logViewer',
+                    icon: Icon.fileText(),
+                    content: logViewer,
+                    omit: !XH.getConf('xhEnableLogViewer', true)
+                },
                 {id: 'logLevels', icon: Icon.settings(), content: logLevelPanel},
-                {id: 'memory', title: 'Memory Monitor', icon: Icon.server(), content: memoryMonitorPanel},
+                {
+                    id: 'memory',
+                    title: 'Memory Monitor',
+                    icon: Icon.server(),
+                    content: memoryMonitorPanel
+                },
                 {id: 'environment', icon: Icon.globe(), content: serverEnvPanel},
                 {id: 'services', icon: Icon.gears(), content: servicePanel},
                 {id: 'ehCache', icon: Icon.database(), title: 'Caches', content: ehCachePanel},

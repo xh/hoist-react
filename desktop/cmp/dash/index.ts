@@ -3,7 +3,6 @@ export * from './DashModel';
 export * from './DashViewModel';
 export * from './DashViewSpec';
 
-
 export * from './container/DashContainer';
 export * from './container/DashContainerModel';
 export * from './container/DashContainerViewSpec';

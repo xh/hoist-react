@@ -14,7 +14,7 @@ export const boolCheck: ColumnSpec = {
     width: 34,
     align: 'center',
     resizable: false,
-    renderer: (v) => v ? Icon.check({prefix: 'fas', intent: 'success'}) : null
+    renderer: v => (v ? Icon.check({prefix: 'fas', intent: 'success'}) : null)
 };
 
 export const number: ColumnSpec = {
@@ -27,7 +27,7 @@ export const fileExt: ColumnSpec = {
     width: 28,
     align: 'center',
     resizable: false,
-    renderer: (v) => v ? Icon.fileIcon({filename: v, title: v}) : null
+    renderer: v => (v ? Icon.fileIcon({filename: v, title: v}) : null)
 };
 
 export const tags: ColumnSpec = {

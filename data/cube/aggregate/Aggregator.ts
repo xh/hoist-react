@@ -11,7 +11,6 @@ import {LeafRow} from '../row/LeafRow';
 import {RowUpdate} from '../row/RowUpdate';
 
 export abstract class Aggregator {
-
     /**
      * Does this aggregator depend only on leaf nodes contained by the node being aggregated?
      *
@@ -30,7 +29,6 @@ export abstract class Aggregator {
      * @param context - current aggregation context
      */
     abstract aggregate(rows: BaseRow[], fieldName: string, context: AggregationContext);
-
 
     /**
      * Adjust an aggregated value, by replacing one of its constituent components.
@@ -53,7 +51,7 @@ export abstract class Aggregator {
      * @param rows - array of child rows
      * @param fn - the function to call on each leaf.
      */
-    protected forEachLeaf(rows: BaseRow[], fn: (leaf: LeafRow) => boolean|void): boolean {
+    protected forEachLeaf(rows: BaseRow[], fn: (leaf: LeafRow) => boolean | void): boolean {
         for (const row of rows) {
             if (row.isLeaf) {
                 const res = fn(row as LeafRow);

@@ -8,7 +8,7 @@ import {HoistModel, XH} from '@xh/hoist/core';
 import {CompoundFilterOperator, FilterLike} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {compact, isEmpty} from 'lodash';
-import { ColumnHeaderFilterModel } from '../ColumnHeaderFilterModel';
+import {ColumnHeaderFilterModel} from '../ColumnHeaderFilterModel';
 
 import {CustomRowModel} from './CustomRowModel';
 

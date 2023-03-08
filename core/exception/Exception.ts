@@ -16,17 +16,19 @@ import {isString} from 'lodash';
  * @see ExceptionHandler.handleException
  */
 export class Exception {
-
     /**
      * Create and return a Javascript Error object.
      * See {@link XH.exception} - an alias for this factory off of `XH`.
      * @param cfg - properties to add to the returned Error, or a string to use as message.
      */
-    static create(cfg: PlainObject|string): Error {
-        return this.createInternal({
-            name: 'Exception',
-            message: 'An unknown error occurred'
-        }, cfg);
+    static create(cfg: PlainObject | string): Error {
+        return this.createInternal(
+            {
+                name: 'Exception',
+                message: 'An unknown error occurred'
+            },
+            cfg
+        );
     }
 
     /**
@@ -35,7 +37,7 @@ export class Exception {
      * @param rest - additional properties to add to the returned Error.
      */
     static timeout({interval, ...rest}) {
-        const displayInterval = (interval % 1000) ? `${interval}ms` : `${interval/1000}s`;
+        const displayInterval = interval % 1000 ? `${interval}ms` : `${interval / 1000}s`;
         return this.createInternal({
             name: 'Timeout Exception',
             message: `Operation timed out after ${displayInterval}`,
@@ -119,7 +121,9 @@ export class Exception {
             name: 'Fetch Timeout',
             isTimeout: true,
             isFetchTimeout: true,
-            message: message ?? `Timed out loading '${fetchOptions.url}' - no response after ${interval}ms.`,
+            message:
+                message ??
+                `Timed out loading '${fetchOptions.url}' - no response after ${interval}ms.`,
             fetchOptions,
             interval,
             stack: null
@@ -135,26 +139,27 @@ export class Exception {
         const protocolPattern = /^[a-z]+:\/\//i,
             originPattern = /^[a-z]+:\/\/[^/]+/i,
             match = fetchOptions.url.match(originPattern),
-            origin = match ? match[0] :
-                protocolPattern.test(XH.baseUrl) ? XH.baseUrl :
-                    window.location.origin,
+            origin = match
+                ? match[0]
+                : protocolPattern.test(XH.baseUrl)
+                ? XH.baseUrl
+                : window.location.origin,
             message = `Unable to contact the server at ${origin}`;
 
         return this.createInternal({
             name: 'Server Unavailable',
             message,
-            httpStatus: 0,  // native fetch doesn't put status on its Error
+            httpStatus: 0, // native fetch doesn't put status on its Error
             originalMessage: e.message,
             fetchOptions,
             stack: null
         });
     }
 
-
     //-----------------------
     // Implementation
     //-----------------------
-    private static createInternal(defaults, override={}) {
+    private static createInternal(defaults, override = {}) {
         if (isString(override)) {
             override = {message: override};
         }

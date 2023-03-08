@@ -10,18 +10,18 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString} from 'lodash';
 import {ReactNode} from 'react';
 import {GridModel} from '../GridModel';
-import {ColumnHeaderClassFn, ColumnHeaderNameFn } from '../Types';
+import {ColumnHeaderClassFn, ColumnHeaderNameFn} from '../Types';
 import {Column, ColumnSpec, getAgHeaderClassFn} from './Column';
 
 export interface ColumnGroupSpec {
     /** Column or ColumnGroup configs for children of this group.*/
-    children: Array<ColumnGroupSpec|ColumnSpec>;
+    children: Array<ColumnGroupSpec | ColumnSpec>;
     /** Unique identifier for the ColumnGroup within its grid. */
     groupId?: string;
     /** Display text for column group header. */
-    headerName?: ReactNode|ColumnHeaderNameFn;
+    headerName?: ReactNode | ColumnHeaderNameFn;
     /** CSS classes to add to the header. */
-    headerClass?: Some<string>|ColumnHeaderClassFn;
+    headerClass?: Some<string> | ColumnHeaderClassFn;
     /** Horizontal alignment of header contents. */
     headerAlign?: HAlign;
 
@@ -42,12 +42,11 @@ export interface ColumnGroupSpec {
  * Provided to GridModels as plain configuration objects.
  */
 export class ColumnGroup {
-
-    readonly children:  Array<ColumnGroup|Column>;
+    readonly children: Array<ColumnGroup | Column>;
     readonly gridModel: GridModel;
     readonly groupId: string;
-    readonly headerName: ReactNode|ColumnHeaderNameFn;
-    readonly headerClass: Some<string>|ColumnHeaderClassFn;
+    readonly headerName: ReactNode | ColumnHeaderNameFn;
+    readonly headerClass: Some<string> | ColumnHeaderClassFn;
     readonly headerAlign: HAlign;
 
     /**
@@ -66,7 +65,11 @@ export class ColumnGroup {
      *
      * @internal
      */
-    constructor(config:ColumnGroupSpec, gridModel: GridModel, children: Array<Column|ColumnGroup>) {
+    constructor(
+        config: ColumnGroupSpec,
+        gridModel: GridModel,
+        children: Array<Column | ColumnGroup>
+    ) {
         const {
             children: childrenSpecs,
             groupId,
@@ -78,7 +81,10 @@ export class ColumnGroup {
         } = config;
 
         throwIf(isEmpty(children), 'Must specify children for a ColumnGroup');
-        throwIf(isEmpty(groupId) && !isString(headerName), 'Must specify groupId or a string headerName for a ColumnGroup');
+        throwIf(
+            isEmpty(groupId) && !isString(headerName),
+            'Must specify groupId or a string headerName for a ColumnGroup'
+        );
 
         Object.assign(this, rest);
 
@@ -95,7 +101,10 @@ export class ColumnGroup {
         const {headerName, gridModel} = this;
         return {
             groupId: this.groupId,
-            headerValueGetter: (agParams) => isFunction(headerName) ? headerName({columnGroup: this, gridModel, agParams}) : headerName,
+            headerValueGetter: agParams =>
+                isFunction(headerName)
+                    ? headerName({columnGroup: this, gridModel, agParams})
+                    : headerName,
             headerClass: getAgHeaderClassFn(this),
             headerGroupComponentParams: {gridModel, xhColumnGroup: this},
             children: this.children.map(it => it.getAgSpec()),

@@ -23,7 +23,6 @@ import {
 import {GridSorter, GridSorterLike} from '../grid/GridSorter';
 
 export interface AgGridModelConfig {
-
     sizingMode?: SizingMode;
 
     /** True to highlight the currently hovered row. */
@@ -46,7 +45,6 @@ export interface AgGridModelConfig {
 
     /** @internal */
     xhImpl?: boolean;
-
 }
 
 /**
@@ -76,7 +74,6 @@ export interface AgGridState {
     miscState?: AgGridMiscState;
     errors?: Record<string, string>;
 }
-
 
 /**
  * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
@@ -159,17 +156,19 @@ export class AgGridModel extends HoistModel {
      * @param excludeFilter - true to exclude the filter state
      * @param excludeMisc - true to exclude any additional miscellaneous state
      */
-    getState(opts: {
-        excludeColumnState?: boolean,
-        excludeSortState?: boolean,
-        excludeExpandState?: boolean,
-        excludeFilterState?: boolean,
-        excludeMiscState?: boolean
-    } = {}): AgGridState {
+    getState(
+        opts: {
+            excludeColumnState?: boolean;
+            excludeSortState?: boolean;
+            excludeExpandState?: boolean;
+            excludeFilterState?: boolean;
+            excludeMiscState?: boolean;
+        } = {}
+    ): AgGridState {
         this.throwIfNotReady();
 
         const errors = {},
-            getStateChunk = (type) => {
+            getStateChunk = type => {
                 if (opts[`exclude${startCase(type)}State`]) return undefined;
 
                 try {
@@ -306,7 +305,10 @@ export class AgGridModel extends HoistModel {
         this.throwIfNotReady();
 
         const sortedColumnState = structuredClone(sortState),
-            [primaryColumnState, secondaryColumnState] = partition(sortedColumnState, it => !isArray(it.colId)),
+            [primaryColumnState, secondaryColumnState] = partition(
+                sortedColumnState,
+                it => !isArray(it.colId)
+            ),
             {agColumnApi: colApi, agApi} = this,
             isPivot = colApi.isPivotMode(),
             havePivotCols = !isEmpty(colApi.getPivotColumns()),
@@ -322,11 +324,13 @@ export class AgGridModel extends HoistModel {
             // with an explicit clear of the auto_group column,
             // which is not cleared by the defaultState config.
             colApi.applyColumnState({
-                state: [{
-                    colId: AgGridModel.AUTO_GROUP_COL_ID,
-                    sort: null,
-                    sortIndex: null
-                }],
+                state: [
+                    {
+                        colId: AgGridModel.AUTO_GROUP_COL_ID,
+                        sort: null,
+                        sortIndex: null
+                    }
+                ],
                 defaultState
             });
 
@@ -419,9 +423,14 @@ export class AgGridModel extends HoistModel {
         if (isEqual(prevSortBy, sortBy)) return;
 
         // Pre-clear if only toggling abs for any sort. Ag-Grid doesn't handle abs and would skip
-        if (sortBy.some(curr =>
-            prevSortBy?.some(prev => curr.sort === prev.sort && curr.colId === prev.colId && curr.abs != prev.abs)
-        )) {
+        if (
+            sortBy.some(curr =>
+                prevSortBy?.some(
+                    prev =>
+                        curr.sort === prev.sort && curr.colId === prev.colId && curr.abs != prev.abs
+                )
+            )
+        ) {
             togglingAbsSort = true;
             agColumnApi.applyColumnState({defaultState: {sort: null, sortIndex: null}});
         }
@@ -588,9 +597,10 @@ export class AgGridModel extends HoistModel {
     @action
     handleGridReady({api, columnApi}) {
         console.debug(`AgGridModel ${this.xhId} initializing`);
-        throwIf(this.agApi && this.agApi != api,
+        throwIf(
+            this.agApi && this.agApi != api,
             'Attempted to mount a grid on a GridModel that is already in use. ' +
-            'Ensure that you are not binding your grid to the wrong model via context.'
+                'Ensure that you are not binding your grid to the wrong model via context.'
         );
         this.agApi = api;
         this.agColumnApi = columnApi;
@@ -614,7 +624,6 @@ export class AgGridModel extends HoistModel {
         }
 
         return ret;
-
     }
 
     private getPivotColumnId(column) {
@@ -637,6 +646,9 @@ export class AgGridModel extends HoistModel {
     }
 
     private throwIfNotReady() {
-        throwIf(!this.isReady, 'AgGrid is not ready! Make sure to check \'isReady\' before attempting this operation!');
+        throwIf(
+            !this.isReady,
+            "AgGrid is not ready! Make sure to check 'isReady' before attempting this operation!"
+        );
     }
 }

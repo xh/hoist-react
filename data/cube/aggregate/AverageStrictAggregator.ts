@@ -8,7 +8,6 @@
 import {Aggregator} from './Aggregator';
 
 export class AverageStrictAggregator extends Aggregator {
-
     override aggregate(rows, fieldName) {
         let total = null,
             count = 0,
@@ -21,7 +20,7 @@ export class AverageStrictAggregator extends Aggregator {
                 return false;
             }
             total += val;
-            count ++;
+            count++;
         });
 
         return containsNull ? null : total / count;

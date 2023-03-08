@@ -28,7 +28,7 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory<DashContainer
     render({model, className}, ref) {
         // Store current ModelLookupContext in model, to be applied in views later
         const context = useContext(ModelLookupContext);
-        useOnMount(() => model.modelLookupContext = context);
+        useOnMount(() => (model.modelLookupContext = context));
 
         // Get enhance container ref with GoldenLayout resize handling
         ref = composeRefs(
@@ -44,27 +44,20 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory<DashContainer
     }
 });
 
-const emptyContainerOverlay = hoistCmp.factory<DashContainerModel>(
-    ({model}) => {
-        const {isEmpty, emptyText, loadingStateTask} = model;
-        if (!isEmpty || loadingStateTask.isPending) return null;
+const emptyContainerOverlay = hoistCmp.factory<DashContainerModel>(({model}) => {
+    const {isEmpty, emptyText, loadingStateTask} = model;
+    if (!isEmpty || loadingStateTask.isPending) return null;
 
-        return overlay({
-            className: `xh-dash-container--empty-overlay ${Classes.OVERLAY_SCROLL_CONTAINER}`,
-            autoFocus: true,
-            isOpen: true,
-            canEscapeKeyClose: false,
-            usePortal: false,
-            enforceFocus: false,
-            item: vbox({
-                alignItems: 'center',
-                items: [
-                    div(emptyText),
-                    vspacer(10),
-                    dashContainerAddViewButton()
-                ]
-            })
-        });
-    }
-);
-
+    return overlay({
+        className: `xh-dash-container--empty-overlay ${Classes.OVERLAY_SCROLL_CONTAINER}`,
+        autoFocus: true,
+        isOpen: true,
+        canEscapeKeyClose: false,
+        usePortal: false,
+        enforceFocus: false,
+        item: vbox({
+            alignItems: 'center',
+            items: [div(emptyText), vspacer(10), dashContainerAddViewButton()]
+        })
+    });
+});

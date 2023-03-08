@@ -33,50 +33,44 @@ export const chartsPanel = hoistCmp.factory({
     }
 });
 
-const bbar = hoistCmp.factory<ChartsModel>(
-    () => toolbar(
-        metricSwitcher({multiline: true}),
-        hspacer(),
-        incWeekendsCheckbox()
-    )
+const bbar = hoistCmp.factory<ChartsModel>(() =>
+    toolbar(metricSwitcher({multiline: true}), hspacer(), incWeekendsCheckbox())
 );
 
-const incWeekendsCheckbox = hoistCmp.factory<ChartsModel>(
-    ({model}) => checkbox({
+const incWeekendsCheckbox = hoistCmp.factory<ChartsModel>(({model}) =>
+    checkbox({
         omit: !model.showAsTimeseries,
         bind: 'incWeekends',
         label: 'Inc Wknds'
     })
 );
 
-const metricSwitcher = hoistCmp.factory<ChartsModel>(
-    ({model, multiline}) => {
-        return buttonGroupInput({
-            className: 'xh-admin-activity-panel__metric-switcher',
-            bind: 'metric',
-            outlined: true,
-            flex: 2,
-            items: [
-                button({
-                    text: model.getLabelForMetric('entryCount', multiline),
-                    value: 'entryCount',
-                    outlined: true,
-                    flex: 1
-                }),
-                button({
-                    text: model.getLabelForMetric('count', multiline),
-                    value: 'count',
-                    outlined: true,
-                    flex: 1,
-                    omit: !model.secondaryDim
-                }),
-                button({
-                    text: model.getLabelForMetric('elapsed', multiline),
-                    value: 'elapsed',
-                    outlined: true,
-                    flex: 1
-                })
-            ]
-        });
-    }
-);
+const metricSwitcher = hoistCmp.factory<ChartsModel>(({model, multiline}) => {
+    return buttonGroupInput({
+        className: 'xh-admin-activity-panel__metric-switcher',
+        bind: 'metric',
+        outlined: true,
+        flex: 2,
+        items: [
+            button({
+                text: model.getLabelForMetric('entryCount', multiline),
+                value: 'entryCount',
+                outlined: true,
+                flex: 1
+            }),
+            button({
+                text: model.getLabelForMetric('count', multiline),
+                value: 'count',
+                outlined: true,
+                flex: 1,
+                omit: !model.secondaryDim
+            }),
+            button({
+                text: model.getLabelForMetric('elapsed', multiline),
+                value: 'elapsed',
+                outlined: true,
+                flex: 1
+            })
+        ]
+    });
+});

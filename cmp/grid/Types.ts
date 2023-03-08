@@ -8,7 +8,7 @@
 import {GridFilterFieldSpecConfig} from '@xh/hoist/cmp/grid/filter/GridFilterFieldSpec';
 import {HSide, PersistOptions, PlainObject, SizingMode, Some} from '@xh/hoist/core';
 import {Store, StoreRecord, View} from '@xh/hoist/data';
-import {ReactElement, ReactNode } from 'react';
+import {ReactElement, ReactNode} from 'react';
 import {Column} from './columns/Column';
 import {ColumnGroup} from './columns/ColumnGroup';
 import {GridModel} from './GridModel';
@@ -43,10 +43,11 @@ export type GridGroupSortFn = (
     groupBVal: any,
     groupField: string,
     metadata: {
-        gridModel: GridModel,
-        nodeA: PlainObject,
-        nodeB: PlainObject,
-    }) => number;
+        gridModel: GridModel;
+        nodeA: PlainObject;
+        nodeB: PlainObject;
+    }
+) => number;
 
 /**
  * Closure to generate CSS class names for a row.
@@ -66,9 +67,7 @@ export type RowClassFn = (record: StoreRecord) => Some<string>;
  */
 export type RowClassRuleFn = (agParams: PlainObject) => boolean;
 
-
 export interface GridModelPersistOptions extends PersistOptions {
-
     /** True to include column information (default true) */
     persistColumns?: boolean;
     /** True to include grouping information (default true) */
@@ -86,14 +85,12 @@ export interface GridModelPersistOptions extends PersistOptions {
     legacyStateKey?: string;
 }
 
-
 export interface GridFilterModelConfig {
-
     /**
      * Store / Cube View to be filtered as column filters are applied. Defaulted to the
      * gridModel's store.
      */
-    bind?: Store|View;
+    bind?: Store | View;
 
     /** True (default) to update filters immediately after each change made in the column-based filter UI.*/
     commitOnChange?: boolean;
@@ -103,12 +100,11 @@ export interface GridFilterModelConfig {
      * {@link GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or omitted
      * entirely to indicate that all fields should be filter-enabled.
      */
-    fieldSpecs?: Array<string|GridFilterFieldSpecConfig>;
+    fieldSpecs?: Array<string | GridFilterFieldSpecConfig>;
 
     /** Default properties to be assigned to all fieldSpecs created by this model. */
-    fieldSpecDefaults?: GridFilterFieldSpecConfig
+    fieldSpecDefaults?: GridFilterFieldSpecConfig;
 }
-
 
 /**
  * Renderer for a group row
@@ -116,7 +112,6 @@ export interface GridFilterModelConfig {
  * @returns the formatted value for display.
  */
 export type GroupRowRenderer = (context: PlainObject) => ReactNode;
-
 
 export interface ColChooserConfig {
     /**
@@ -154,20 +149,21 @@ export interface ColChooserConfig {
  * @param abs - true to sort by absolute value
  * @param params - additional context about records and column for usage by comparator.
  */
-export type ColumnComparator<T=any> = (
+export type ColumnComparator<T = any> = (
     valueA: T,
     valueB: T,
-    sortDir: 'asc'|'desc',
+    sortDir: 'asc' | 'desc',
     abs: boolean,
     params: {
-        recordA: StoreRecord,
-        recordB: StoreRecord,
-        agNodeA: PlainObject,
-        agNodeB: PlainObject,
-        column: Column,
-        gridModel: GridModel,
+        recordA: StoreRecord;
+        recordB: StoreRecord;
+        agNodeA: PlainObject;
+        agNodeB: PlainObject;
+        column: Column;
+        gridModel: GridModel;
         defaultComparator: (a: T, b: T) => number;
-    }) => number;
+    }
+) => number;
 
 /**
  * Renderer function for a grid cell.
@@ -178,7 +174,7 @@ export type ColumnComparator<T=any> = (
  *      re-run whenever the record (and not just the primary value) changes.
  * @returns the formatted value for display.
  */
-export type ColumnRenderer<T=any> = (value: T, context: CellContext) => ReactNode;
+export type ColumnRenderer<T = any> = (value: T, context: CellContext) => ReactNode;
 
 /**
  * Function to return a value to export for a grid cell.
@@ -186,7 +182,7 @@ export type ColumnRenderer<T=any> = (value: T, context: CellContext) => ReactNod
  * @param context - additional data about the column, row and GridModel.
  * @returns value for export.
  */
-export type ColumnExportValueFn<T=any> = (value: T, context: CellContext) => any;
+export type ColumnExportValueFn<T = any> = (value: T, context: CellContext) => any;
 
 /**
  * Function to return an excel format for a grid cell.
@@ -194,8 +190,7 @@ export type ColumnExportValueFn<T=any> = (value: T, context: CellContext) => any
  * @param context - additional data about the column, row and GridModel.
  * @returns excel format
  */
-export type ColumnExcelFormatFn<T=any> = (value: T, context: CellContext) => string;
-
+export type ColumnExcelFormatFn<T = any> = (value: T, context: CellContext) => string;
 
 /**
  * Function to return a value for sorting.
@@ -203,7 +198,7 @@ export type ColumnExcelFormatFn<T=any> = (value: T, context: CellContext) => str
  * @param context - additional data about the column, row and GridModel.
  * @returns value for sort.
  */
-export type ColumnSortValueFn<T=any> = (value: T, context: CellContext) => any;
+export type ColumnSortValueFn<T = any> = (value: T, context: CellContext) => any;
 
 /**
  * Function to generate grid cell CSS classes.
@@ -211,7 +206,7 @@ export type ColumnSortValueFn<T=any> = (value: T, context: CellContext) => any;
  * @param context - additional data about the column, row and GridModel.
  * @returns CSS class(es) to use.
  */
-export type ColumnCellClassFn<T=any> = (value: T, context: CellContext) => Some<string>;
+export type ColumnCellClassFn<T = any> = (value: T, context: CellContext) => Some<string>;
 
 /**
  * Function to determine if a particular CSS class should be added/removed from a cell, via
@@ -241,7 +236,7 @@ export interface CellContext {
 }
 
 export interface HeaderContext {
-    column: Column|ColumnGroup;
+    column: Column | ColumnGroup;
     gridModel: GridModel;
 
     /** ag-Grid header renderer params */
@@ -254,7 +249,7 @@ export interface HeaderContext {
  * @param metadata - additional data about the column and row.
  * @returns the formatted value for display.
  */
-export type ColumnTooltipFn<T=any> = (value: T, metadata: TooltipMetadata) => ReactNode;
+export type ColumnTooltipFn<T = any> = (value: T, metadata: TooltipMetadata) => ReactNode;
 
 export interface TooltipMetadata {
     record: StoreRecord;
@@ -275,14 +270,12 @@ export interface TooltipMetadata {
  *
  * @returns the header name to render in the Column header
  */
-export type ColumnHeaderNameFn = (
-    params: {
-        column?: Column,
-        columnGroup?: ColumnGroup,
-        gridModel: GridModel,
-        agParams: PlainObject
-    }
-) => ReactNode;
+export type ColumnHeaderNameFn = (params: {
+    column?: Column;
+    columnGroup?: ColumnGroup;
+    gridModel: GridModel;
+    agParams: PlainObject;
+}) => ReactNode;
 
 /**
  * Function to determine if a Column should be editable or not. This function will be
@@ -290,58 +283,50 @@ export type ColumnHeaderNameFn = (
  * before the actual inline editing session is started.
  * @returns true if cell is editable
  */
-export type ColumnEditableFn = (
-    params: {
-        record: StoreRecord,
-        store: Store,
-        column: Column,
-        gridModel: GridModel
-    }
-) => boolean
+export type ColumnEditableFn = (params: {
+    record: StoreRecord;
+    store: Store;
+    column: Column;
+    gridModel: GridModel;
+}) => boolean;
 
 /**
  * Function to return one Grid cell editor.  This value will be used to create a new Component
  * whenever editing is initiated on a cell.
  * @returns the react element to use as the cell editor.
  */
-export type ColumnEditorFn = (
-    params: {
-        record: StoreRecord,
-        column: Column,
-        gridModel: GridModel
-    }
-) => ReactElement
+export type ColumnEditorFn = (params: {
+    record: StoreRecord;
+    column: Column;
+    gridModel: GridModel;
+}) => ReactElement;
 
 /**
  * Function to update the value of a StoreRecord field after inline editing
  * Includes the ag-Grid value setter params. (CellClassParams)
  */
-export type ColumnSetValueFn<T=any> = (
-    params: {
-        value: T,
-        record: StoreRecord,
-        field: string,
-        store: Store,
-        column: Column,
-        gridModel: GridModel,
-        agParams: PlainObject
-    }
-) => void;
+export type ColumnSetValueFn<T = any> = (params: {
+    value: T;
+    record: StoreRecord;
+    field: string;
+    store: Store;
+    column: Column;
+    gridModel: GridModel;
+    agParams: PlainObject;
+}) => void;
 
 /**
  * Function to get the value of a StoreRecord field
  * Includes the ag-Grid value getter params. (ValueGetterParams)
  */
-export type ColumnGetValueFn<T=any> = (
-    params: {
-        record: StoreRecord,
-        field: string,
-        store: Store,
-        column: Column,
-        gridModel: GridModel,
-        agParams: PlainObject
-    }
-) => T;
+export type ColumnGetValueFn<T = any> = (params: {
+    record: StoreRecord;
+    field: string;
+    store: Store;
+    column: Column;
+    gridModel: GridModel;
+    agParams: PlainObject;
+}) => T;
 
 export interface ColumnSortSpec {
     /** Direction to sort, either 'asc' or 'desc', or null to remove sort. */
@@ -350,4 +335,3 @@ export interface ColumnSortSpec {
     /** True to sort by absolute value. */
     abs?: boolean;
 }
-

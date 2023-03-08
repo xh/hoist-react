@@ -9,7 +9,6 @@
  * Mode for Grid governing Autosize behavior.
  */
 export const GridAutosizeMode = Object.freeze({
-
     /** Grid will not allow autosizing of columns.*/
     DISABLED: 'disabled',
 
@@ -34,4 +33,4 @@ export const GridAutosizeMode = Object.freeze({
 });
 
 // eslint-disable-next-line
-export type GridAutosizeMode = typeof GridAutosizeMode[keyof typeof GridAutosizeMode];
+export type GridAutosizeMode = (typeof GridAutosizeMode)[keyof typeof GridAutosizeMode];

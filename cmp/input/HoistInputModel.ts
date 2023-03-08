@@ -55,7 +55,6 @@ import './HoistInput.scss';
  * {@link useHoistInputModel}.
  */
 export class HoistInputModel extends HoistModel {
-
     /** Does this input have the focus? */
     @observable hasFocus: boolean = false;
 
@@ -74,7 +73,9 @@ export class HoistInputModel extends HoistModel {
     get domEl(): HTMLElement {
         const current = this.domRef.current as ReactInstance;
         // eslint-disable-next-line no-undef
-        return (!current || current instanceof Element ? current : findDOMNode(current)) as HTMLElement;
+        return (
+            !current || current instanceof Element ? current : findDOMNode(current)
+        ) as HTMLElement;
     }
 
     /**
@@ -86,9 +87,10 @@ export class HoistInputModel extends HoistModel {
      * on the appropriate element during rendering.  Otherwise the dom will be
      * searched for the first rendered <input>.
      */
-    get inputEl(): HTMLInputElement|HTMLTextAreaElement {
+    get inputEl(): HTMLInputElement | HTMLTextAreaElement {
         return (this.inputRef.current ?? this.domEl?.querySelector('input')) as
-            (HTMLInputElement | HTMLTextAreaElement);
+            | HTMLInputElement
+            | HTMLTextAreaElement;
     }
 
     /** Bound model, if any.*/
@@ -99,9 +101,9 @@ export class HoistInputModel extends HoistModel {
     //-----------------------
     // Implementation State
     //------------------------
-    @observable.ref internalValue: any = null;          // Cached internal value
-    inputRef = createObservableRef<HTMLElement>();      // ref to internal <input> element, if any
-    domRef = createObservableRef<HTMLElement>();        // ref to outermost element, or class Component.
+    @observable.ref internalValue: any = null; // Cached internal value
+    inputRef = createObservableRef<HTMLElement>(); // ref to internal <input> element, if any
+    domRef = createObservableRef<HTMLElement>(); // ref to outermost element, or class Component.
     isDirty: boolean = false;
 
     constructor() {
@@ -148,9 +150,7 @@ export class HoistInputModel extends HoistModel {
     /** The value to be rendered internally by control. **/
     @computed
     get renderValue(): any {
-        return this.hasFocus ?
-            this.internalValue :
-            this.internalFromExternal();
+        return this.hasFocus ? this.internalValue : this.internalFromExternal();
     }
 
     /**
@@ -246,7 +246,6 @@ export class HoistInputModel extends HoistModel {
 
     onFocus = (e: FocusEvent) => this.noteFocused();
 
-
     //----------------------
     // Implementation
     //------------------------
@@ -272,7 +271,7 @@ export class HoistInputModel extends HoistModel {
     externalValueReaction() {
         return {
             track: () => this.externalValue,
-            run: (externalVal) => {
+            run: externalVal => {
                 if (this.externalFromInternal() != externalVal) {
                     this.setInternalValue(this.toInternal(externalVal));
                 }

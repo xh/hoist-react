@@ -26,7 +26,6 @@ import {ReactNode} from 'react';
  * requirements specific to its needs.
  */
 export class HoistAppModel extends HoistModel {
-
     /**
      * Hoist will call this method early in the initialization sequence, prior to user
      * authentication and full Hoist initialization. This means that several core services
@@ -34,7 +33,6 @@ export class HoistAppModel extends HoistModel {
      * do early service initialization or other work to support flows such as OAuth.
      */
     static async preAuthAsync() {}
-
 
     /**
      * Hoist will call this method after Hoist services have initialized and the application
@@ -57,7 +55,9 @@ export class HoistAppModel extends HoistModel {
      * Applications  for which  a version bar might not be appropriate (e.g. a mini-app
      * being shown in a frame or modal) may override this getter and return false
      */
-    get supportsVersionBar(): boolean {return true}
+    get supportsVersionBar(): boolean {
+        return true;
+    }
 
     /**
      * Provide the initial set of Router5 Routes to be used by this application.
@@ -88,7 +88,10 @@ export class HoistAppModel extends HoistModel {
             {label: 'Current User', value: XH.identityService.username},
             {label: 'Environment', value: svc.get('appEnvironment')},
             {label: 'Server', value: `${svc.get('appVersion')} (build ${svc.get('appBuild')})`},
-            {label: 'Client', value: `${svc.get('clientVersion')} (build ${svc.get('clientBuild')})`},
+            {
+                label: 'Client',
+                value: `${svc.get('clientVersion')} (build ${svc.get('clientBuild')})`
+            },
             {label: 'Hoist Core', value: svc.get('hoistCoreVersion')},
             {label: 'Hoist React', value: svc.get('hoistReactVersion')},
             {label: 'User Agent', value: window.navigator.userAgent},
@@ -112,7 +115,6 @@ export class HoistAppModel extends HoistModel {
         XH.localStorageService.clear();
     }
 }
-
 
 /** Object Describing an entry in the AboutDialog. */
 export interface AboutDialogItem {

@@ -22,11 +22,12 @@ The one common pre-requisite for running the server-side of a Hoist project is a
 an Oracle or any common OpenJDK distribution should be fine.
 
 If using IntelliJ (see below), consider having the IDE download and update a JDK for you:
-* From the "File > New Projects Settings" menu, open "Structure for New Projects..." If you have an
-  existing project open, you can also select "File > Project Structure" to modify that project.
-* Select the "SDKs" option in the navigation tree.
-* Click the + button and select "Download JDK..."
-* Select version 8/1.8 - a known-good option to choose is the "Azul" open source SDK.
+
+-   From the "File > New Projects Settings" menu, open "Structure for New Projects..." If you have an
+    existing project open, you can also select "File > Project Structure" to modify that project.
+-   Select the "SDKs" option in the navigation tree.
+-   Click the + button and select "Download JDK..."
+-   Select version 8/1.8 - a known-good option to choose is the "Azul" open source SDK.
 
 ### Other server-side requirements
 
@@ -44,10 +45,10 @@ For Toolbox development, see that project's README for TB-specific database info
 A recent version of Node.js is required to build and run the client-side component of the
 application (via Webpack and webpack-dev-server).
 
-* The latest (or any recent) LTS build is recommended - you can download directly from
-  https://nodejs.dev/ or use a tool (recommended) such as Homebrew or NVM (node-version-manager) to
-  install and update your local node versions.
-* Ensure that node is on your path via `node --version`.
+-   The latest (or any recent) LTS build is recommended - you can download directly from
+    https://nodejs.dev/ or use a tool (recommended) such as Homebrew or NVM (node-version-manager) to
+    install and update your local node versions.
+-   Ensure that node is on your path via `node --version`.
 
 ### Yarn
 
@@ -55,11 +56,11 @@ XH uses Yarn for JS package management. To reduce variability across workstation
 include an updated, portable version of yarn bundled within each project, but a local yarn install
 is still required to detect and run the portable copy.
 
-* The easiest way to install yarn is with npm (🤯): `npm i -g yarn`
-* Once installed, verify it can be run globally with `yarn --version`
-* Within the `client-app` directory of a Hoist app such as Toolbox, run `yarn` to download, install,
-  and build all client-side dependencies. (Note that `yarn` is a shortcut for `yarn install` - they
-  do the same thing.)
+-   The easiest way to install yarn is with npm (🤯): `npm i -g yarn`
+-   Once installed, verify it can be run globally with `yarn --version`
+-   Within the `client-app` directory of a Hoist app such as Toolbox, run `yarn` to download, install,
+    and build all client-side dependencies. (Note that `yarn` is a shortcut for `yarn install` - they
+    do the same thing.)
 
 ### Other client-side requirements
 
@@ -96,29 +97,30 @@ IntelliJ has hundreds of configuration options, many of which are well-worth exp
 beyond the scope of this doc. There are a few recommended settings to highlight, however.
 
 From within the IDE's general preferences / settings dialog:
-* Navigate to *Languages & Frameworks > Javascript*:
-  * Ensure "ECMAScript 6+" selected in the top-level of this section.
-  * Expand *Webpack* - if doing local Toolbox + Hoist React development, you can choose to configure
-    "Manually" and point IntelliJ at a stub `webpack.config.intellij.js` checked-in at the root of
-    your local hoist-react project. This will cause IntelliJ to resolve any auto-suggestions or
-    context clues to the local versions of the Hoist classes and utils.
-  * Expand *Code Quality Tools > Eslint* - select "Automatic" configuration to enable eslint to run
-    and monitor your code as you update it. Note that you will need to have run `yarn` to install
-    your local client-side dependencies first.
-* Navigate to *Languages & Frameworks > Node.js and NPM*:
-  * Ensure the IDE has detected the version of Node you wish to use.
-  * You can also specify yarn as your package manager, if you wish to use the IDEs built-in yarn
-    integration.
-* Navigate to *Languages & Frameworks > Stylesheets > Stylelint*:
-  * Enable with "Automatic configuration" to turn on local support for Stylelint, if using in your
-    project.
-* Navigate to *Version Control > Git* - verify the IDE has detected your local git and select
-  "Update method: Rebase" to avoid introducing unnecessary merge commits when updating your local
-  repo.
-  * The GitToolBox plugin is a useful add-on to IntelliJ, with several useful enhancements to
-    version control support.
 
-------------------------------------------
+-   Navigate to _Languages & Frameworks > Javascript_:
+    -   Ensure "ECMAScript 6+" selected in the top-level of this section.
+    -   Expand _Webpack_ - if doing local Toolbox + Hoist React development, you can choose to configure
+        "Manually" and point IntelliJ at a stub `webpack.config.intellij.js` checked-in at the root of
+        your local hoist-react project. This will cause IntelliJ to resolve any auto-suggestions or
+        context clues to the local versions of the Hoist classes and utils.
+    -   Expand _Code Quality Tools > Eslint_ - select "Automatic" configuration to enable eslint to run
+        and monitor your code as you update it. Note that you will need to have run `yarn` to install
+        your local client-side dependencies first.
+-   Navigate to _Languages & Frameworks > Node.js and NPM_:
+    -   Ensure the IDE has detected the version of Node you wish to use.
+    -   You can also specify yarn as your package manager, if you wish to use the IDEs built-in yarn
+        integration.
+-   Navigate to _Languages & Frameworks > Stylesheets > Stylelint_:
+    -   Enable with "Automatic configuration" to turn on local support for Stylelint, if using in your
+        project.
+-   Navigate to _Version Control > Git_ - verify the IDE has detected your local git and select
+    "Update method: Rebase" to avoid introducing unnecessary merge commits when updating your local
+    repo.
+    -   The GitToolBox plugin is a useful add-on to IntelliJ, with several useful enhancements to
+        version control support.
+
+---
 
 📫☎️🌎 info@xh.io | <https://xh.io/contact>
 

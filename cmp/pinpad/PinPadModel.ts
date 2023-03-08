@@ -16,13 +16,12 @@ import FastClick from '@onsenui/fastclick';
 
 export interface PinPadConfig {
     /** The length of the PIN to get from the user, default 4. */
-    pinLength?: number,
-    headerText?: string,
-    subHeaderText?: string
+    pinLength?: number;
+    headerText?: string;
+    subHeaderText?: string;
 }
 
 export class PinPadModel extends HoistModel {
-
     @bindable disabled: boolean;
     @bindable headerText: string;
     @bindable subHeaderText: string;
@@ -47,7 +46,7 @@ export class PinPadModel extends HoistModel {
 
         this.addReaction({
             track: () => this.ref.current,
-            run: (current) => {
+            run: current => {
                 if (current) FastClick.attach(current);
             }
         });
@@ -66,9 +65,7 @@ export class PinPadModel extends HoistModel {
     @computed
     get completedPin(): string {
         const {_enteredDigits, _pinLength} = this;
-        return _enteredDigits.length === _pinLength ?
-            _enteredDigits.join('') :
-            null;
+        return _enteredDigits.length === _pinLength ? _enteredDigits.join('') : null;
     }
 
     /**
@@ -105,7 +102,7 @@ export class PinPadModel extends HoistModel {
         const {_pinLength, _enteredDigits, _deleteWasLast, completedPin, activeIndex} = this;
 
         // Show bullet or empty
-        const ret: any[] = times(_pinLength, i => i < activeIndex ?  '•' : ' ');
+        const ret: any[] = times(_pinLength, i => (i < activeIndex ? '•' : ' '));
 
         // ... and reveal previous, if going forward
         if (activeIndex > 0 && !completedPin && !_deleteWasLast) {

@@ -32,7 +32,7 @@ export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
     inputProps?: HoistInputProps;
 
     /** Default operator displayed in custom filter tab. */
-    defaultOp?: FieldFilterOperator
+    defaultOp?: FieldFilterOperator;
 }
 
 /**
@@ -40,7 +40,6 @@ export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
  * Instead, provide a config for this object to the GridModel's `filterModel` config.
  */
 export class GridFilterFieldSpec extends BaseFilterFieldSpec {
-
     filterModel: GridFilterModel;
     renderer: ColumnRenderer;
     inputProps: PlainObject;
@@ -83,21 +82,26 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
         // Get values from current column filter
         const filterValues = [];
         columnFilters.forEach(filter => {
-            const newValues = castArray(filter.value).map(value => filterModel.toDisplayValue(value));
+            const newValues = castArray(filter.value).map(value =>
+                filterModel.toDisplayValue(value)
+            );
             filterValues.push(...newValues);
         });
 
         // Combine unique values from record sets and column filters.
-        const allValues = uniqBy([
-            ...flatten(allRecords.map(rec => this.valueFromRecord(rec))),
-            ...filterValues
-        ], this.getUniqueValue);
+        const allValues = uniqBy(
+            [...flatten(allRecords.map(rec => this.valueFromRecord(rec))), ...filterValues],
+            this.getUniqueValue
+        );
         let values;
         if (cleanedFilter) {
-            values = uniqBy([
-                ...flatten(filteredRecords.map(rec => this.valueFromRecord(rec))),
-                ...filterValues
-            ], this.getUniqueValue);
+            values = uniqBy(
+                [
+                    ...flatten(filteredRecords.map(rec => this.valueFromRecord(rec))),
+                    ...filterValues
+                ],
+                this.getUniqueValue
+            );
         } else {
             values = allValues;
         }

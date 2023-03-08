@@ -10,7 +10,6 @@ import {Icon} from '@xh/hoist/icon';
 import {InstancesModel} from '@xh/hoist/inspector/instances/InstancesModel';
 import {popover} from '@xh/hoist/kit/blueprint';
 
-
 export const instancesPanel = hoistCmp.factory({
     model: creates(InstancesModel),
 
@@ -19,20 +18,32 @@ export const instancesPanel = hoistCmp.factory({
             headerItems = [];
 
         if (selectedSyncRun) {
-            headerItems.push(popover({
-                interactionKind: 'hover',
-                target: span(Icon.filter(), ` registered @ sync run ${selectedSyncRun}`),
-                content: div({
-                    className: 'xh-pad',
-                    style: {width: '300px'},
-                    items: [
-                        p('Triggered by your selection in the Stats grid.'),
-                        p('Focuses this grid on instances created around the same time, in-between batched updates to stats.'),
-                        p('Useful for isolating clusters of models created together as part of an interaction or handler.'),
-                        p(a({item: '(click to clear)', onClick: () => model.statsModel.gridModel.clearSelection()}))
-                    ]
-                })
-            }), hspacer());
+            headerItems.push(
+                popover({
+                    interactionKind: 'hover',
+                    target: span(Icon.filter(), ` registered @ sync run ${selectedSyncRun}`),
+                    content: div({
+                        className: 'xh-pad',
+                        style: {width: '300px'},
+                        items: [
+                            p('Triggered by your selection in the Stats grid.'),
+                            p(
+                                'Focuses this grid on instances created around the same time, in-between batched updates to stats.'
+                            ),
+                            p(
+                                'Useful for isolating clusters of models created together as part of an interaction or handler.'
+                            ),
+                            p(
+                                a({
+                                    item: '(click to clear)',
+                                    onClick: () => model.statsModel.gridModel.clearSelection()
+                                })
+                            )
+                        ]
+                    })
+                }),
+                hspacer()
+            );
         }
 
         return panel({
@@ -64,81 +75,78 @@ export const instancesPanel = hoistCmp.factory({
     }
 });
 
-const instanceGridBar = hoistCmp.factory<InstancesModel>(
-    ({model}) => {
-        const {instancesGridModel} = model;
-        return toolbar({
-            items: [
-                buttonGroupInput({
-                    bind: 'instQuickFilters',
-                    enableMulti: true,
-                    outlined: true,
-                    items: [
-                        button({
-                            text: 'Grouped',
-                            value: 'showInGroups'
-                        }),
-                        button({
-                            text: 'xhImpl',
-                            value: 'showXhImpl',
-                            tooltip: 'Show instances created as part of internal Hoist model/component implementations'
-                        })
-                    ]
-                }),
-                filler(),
-                gridCountLabel({unit: 'instance', gridModel: instancesGridModel}),
-                '-',
-                storeFilterField({
-                    gridModel: instancesGridModel,
-                    bind: 'instancesStoreFilter',
-                    matchMode: 'any'
-                })
-            ]
-        });
-    }
-);
+const instanceGridBar = hoistCmp.factory<InstancesModel>(({model}) => {
+    const {instancesGridModel} = model;
+    return toolbar({
+        items: [
+            buttonGroupInput({
+                bind: 'instQuickFilters',
+                enableMulti: true,
+                outlined: true,
+                items: [
+                    button({
+                        text: 'Grouped',
+                        value: 'showInGroups'
+                    }),
+                    button({
+                        text: 'xhImpl',
+                        value: 'showXhImpl',
+                        tooltip:
+                            'Show instances created as part of internal Hoist model/component implementations'
+                    })
+                ]
+            }),
+            filler(),
+            gridCountLabel({unit: 'instance', gridModel: instancesGridModel}),
+            '-',
+            storeFilterField({
+                gridModel: instancesGridModel,
+                bind: 'instancesStoreFilter',
+                matchMode: 'any'
+            })
+        ]
+    });
+});
 
-const propertiesGridBar = hoistCmp.factory<InstancesModel>(
-    ({model}) => {
-        const {propertiesGridModel} = model;
-        return toolbar({
-            items: [
-                buttonGroupInput({
-                    bind: 'propQuickFilters',
-                    enableMulti: true,
-                    outlined: true,
-                    items: [
-                        button({
-                            text: 'Own only',
-                            value: 'ownPropsOnly',
-                            tooltip: 'Show only properties held directly by the instance, not its prototype / superclass'
-                        }),
-                        button({
-                            icon: Icon.eye(),
-                            text: 'only',
-                            value: 'observablePropsOnly',
-                            tooltip: 'Show only Observable properties (including getters)'
-                        }),
-                        button({
-                            text: '_ props',
-                            value: 'showUnderscoreProps',
-                            tooltip: 'Include properties that begin with an underscore'
-                        })
-                    ]
-
-                }),
-                '-',
-                button({
-                    text: 'Load getters',
-                    icon: Icon.ellipsisHorizontal(),
-                    outlined: true,
-                    onClick: () => model.loadAllCurrentGetters()
-                }),
-                filler(),
-                gridCountLabel({unit: 'props', gridModel: propertiesGridModel}),
-                '-',
-                storeFilterField({gridModel: propertiesGridModel, matchMode: 'any'})
-            ]
-        });
-    }
-);
+const propertiesGridBar = hoistCmp.factory<InstancesModel>(({model}) => {
+    const {propertiesGridModel} = model;
+    return toolbar({
+        items: [
+            buttonGroupInput({
+                bind: 'propQuickFilters',
+                enableMulti: true,
+                outlined: true,
+                items: [
+                    button({
+                        text: 'Own only',
+                        value: 'ownPropsOnly',
+                        tooltip:
+                            'Show only properties held directly by the instance, not its prototype / superclass'
+                    }),
+                    button({
+                        icon: Icon.eye(),
+                        text: 'only',
+                        value: 'observablePropsOnly',
+                        tooltip: 'Show only Observable properties (including getters)'
+                    }),
+                    button({
+                        text: '_ props',
+                        value: 'showUnderscoreProps',
+                        tooltip: 'Include properties that begin with an underscore'
+                    })
+                ]
+            }),
+            '-',
+            button({
+                text: 'Load getters',
+                icon: Icon.ellipsisHorizontal(),
+                outlined: true,
+                onClick: () => model.loadAllCurrentGetters()
+            }),
+            filler(),
+            gridCountLabel({unit: 'props', gridModel: propertiesGridModel}),
+            '-',
+            storeFilterField({gridModel: propertiesGridModel, matchMode: 'any'})
+        ]
+    });
+});

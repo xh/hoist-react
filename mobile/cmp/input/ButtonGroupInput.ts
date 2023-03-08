@@ -14,11 +14,7 @@ import {castArray, isEmpty, without} from 'lodash';
 import {Children, cloneElement, isValidElement, ReactNode} from 'react';
 import './ButtonGroupInput.scss';
 
-export interface ButtonGroupInputProps extends
-    HoistProps,
-    HoistInputProps,
-    ButtonGroupProps
-{
+export interface ButtonGroupInputProps extends HoistProps, HoistInputProps, ButtonGroupProps {
     /**
      * True to allow buttons to be unselected (aka inactivated). Used when enableMulti is false.
      * Defaults to false.
@@ -55,8 +51,12 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory<ButtonG
 class ButtonGroupInputModel extends HoistInputModel {
     override xhImpl = true;
 
-    get enableMulti() {return !!this.componentProps.enableMulti}
-    get enableClear() {return !!this.componentProps.enableClear}
+    get enableMulti() {
+        return !!this.componentProps.enableMulti;
+    }
+    get enableClear() {
+        return !!this.componentProps.enableClear;
+    }
 
     override blur() {
         this.domEl?.blur();
@@ -84,41 +84,45 @@ class ButtonGroupInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<ButtonGroupInputModel>(
-    ({model, className, ...props}, ref) => {
+const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props}, ref) => {
+    const {
+        children,
+        disabled,
+        enableClear,
+        enableMulti,
+        tabIndex = 0,
+        ...rest
+    } = getNonLayoutProps(props);
 
-        const {children, disabled, enableClear, enableMulti, tabIndex = 0, ...rest} = getNonLayoutProps(props);
+    const buttons = Children.map(children as ReactNode[], button => {
+        if (!button) return null;
 
-        const buttons = Children.map(children as ReactNode[], button => {
-            if (!button) return null;
+        if (!isValidElement(button) || button.type !== Button) {
+            throw XH.exception('ButtonGroupInput child must be a Button.');
+        }
 
-            if (!isValidElement(button) || button.type !== Button) {
-                throw XH.exception('ButtonGroupInput child must be a Button.');
-            }
+        const {value} = button.props,
+            btnDisabled = disabled || button.props.disabled;
 
-            const {value} = button.props,
-                btnDisabled = disabled || button.props.disabled;
+        throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
 
-            throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
+        const isActive = model.isActive(value);
 
-            const isActive = model.isActive(value);
+        return cloneElement(button, {
+            active: isActive,
+            disabled: withDefault(btnDisabled, false),
+            onClick: () => model.onButtonClick(value)
+        } as ButtonProps);
+    });
 
-            return cloneElement(button, {
-                active: isActive,
-                disabled: withDefault(btnDisabled, false),
-                onClick: () => model.onButtonClick(value)
-            } as ButtonProps);
-        });
-
-        return buttonGroup({
-            items: buttons,
-            tabIndex,
-            onBlur: model.onBlur,
-            onFocus: model.onFocus,
-            ...rest,
-            ...getLayoutProps(props),
-            className,
-            ref
-        });
-    }
-);
+    return buttonGroup({
+        items: buttons,
+        tabIndex,
+        onBlur: model.onBlur,
+        onFocus: model.onFocus,
+        ...rest,
+        ...getLayoutProps(props),
+        className,
+        ref
+    });
+});

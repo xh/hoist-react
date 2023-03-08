@@ -32,61 +32,55 @@ export const changelogDialog = hoistCmp.factory({
     }
 });
 
-const changelogContents = hoistCmp.factory<ChangelogDialogModel>(
-    ({model}) => {
-        const {versions} = XH.changelogService;
-        return panel({
-            item: div({
-                className: 'xh-changelog__inner',
-                items: versions.map(it => version({version: it}))
-            }),
-            bbar: [
-                filler(),
-                button({
-                    text: 'Close',
-                    intent: 'primary',
-                    onClick: () => model.hide()
-                })
-            ]
-        });
-    }
-);
+const changelogContents = hoistCmp.factory<ChangelogDialogModel>(({model}) => {
+    const {versions} = XH.changelogService;
+    return panel({
+        item: div({
+            className: 'xh-changelog__inner',
+            items: versions.map(it => version({version: it}))
+        }),
+        bbar: [
+            filler(),
+            button({
+                text: 'Close',
+                intent: 'primary',
+                onClick: () => model.hide()
+            })
+        ]
+    });
+});
 
-const version = hoistCmp.factory(
-    ({version}) => {
-        const categories = !isEmpty(version.categories) ?
-            version.categories.map(cat => {
-                const catClassName = categoryClassNames[lowerCase(cat.title)] ?? '';
-                return div({
-                    className: `xh-changelog__version__category ${catClassName ? 'xh-changelog__version__category--' + catClassName : ''}`,
-                    items: [
-                        h3(cat.title),
-                        ul(cat.items.map(item => li(item)))
-                    ]
-                });
-            }) :
-            [
-                div({
-                    className: 'xh-changelog__version__no-category',
-                    item: h3('No release notes for this version.')
-                })
-            ];
+const version = hoistCmp.factory(({version}) => {
+    const categories = !isEmpty(version.categories)
+        ? version.categories.map(cat => {
+              const catClassName = categoryClassNames[lowerCase(cat.title)] ?? '';
+              return div({
+                  className: `xh-changelog__version__category ${
+                      catClassName ? 'xh-changelog__version__category--' + catClassName : ''
+                  }`,
+                  items: [h3(cat.title), ul(cat.items.map(item => li(item)))]
+              });
+          })
+        : [
+              div({
+                  className: 'xh-changelog__version__no-category',
+                  item: h3('No release notes for this version.')
+              })
+          ];
 
-        return div({
-            className: `xh-changelog__version ${version.isCurrentVersion ? 'xh-changelog__version--current' : ''}`,
-            items:  [
-                h2(version.title),
-                ...categories
-            ]
-        });
-    }
-);
+    return div({
+        className: `xh-changelog__version ${
+            version.isCurrentVersion ? 'xh-changelog__version--current' : ''
+        }`,
+        items: [h2(version.title), ...categories]
+    });
+});
 
 // CSS-safe classnames for expected/common category titles.
 const categoryClassNames = {
     'breaking changes': 'breaking-changes',
     'new features': 'new-features',
     'bug fixes': 'bug-fixes',
-    'technical': 'technical',
-    'libraries': 'libraries'
+    technical: 'technical',
+    libraries: 'libraries'
 };

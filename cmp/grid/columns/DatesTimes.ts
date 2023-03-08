@@ -5,7 +5,13 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {ColumnSpec} from '@xh/hoist/cmp/grid';
-import {compactDateRenderer, dateRenderer, dateTimeRenderer, dateTimeSecRenderer, timeRenderer} from '@xh/hoist/format';
+import {
+    compactDateRenderer,
+    dateRenderer,
+    dateTimeRenderer,
+    dateTimeSecRenderer,
+    timeRenderer
+} from '@xh/hoist/format';
 import {ExcelFormat} from '../enums/ExcelFormat';
 
 const defaults: ColumnSpec = {align: 'right'};

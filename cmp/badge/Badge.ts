@@ -9,12 +9,11 @@ import classNames from 'classnames';
 import {div} from '@xh/hoist/cmp/layout';
 import './Badge.scss';
 
-
 export interface BadgeProps extends HoistProps, BoxProps {
     /** Sets fontsize to half that of parent element (default false). */
     compact?: boolean;
 
-    intent?: Intent
+    intent?: Intent;
 }
 
 /**

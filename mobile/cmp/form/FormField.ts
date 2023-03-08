@@ -5,12 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
-import {
-    FieldModel,
-    FormContext,
-    FormContextType,
-    BaseFormFieldProps
-} from '@xh/hoist/cmp/form';
+import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
 import {DefaultHoistProps, hoistCmp, uses, XH} from '@xh/hoist/core';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
@@ -24,9 +19,7 @@ import {isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
 import {Children, cloneElement, ReactNode, useContext} from 'react';
 import './FormField.scss';
 
-
 export interface FormFieldProps extends BaseFormFieldProps {}
-
 
 /**
  * Standardised wrapper around a HoistInput component for use in a form. FormField provides
@@ -57,14 +50,13 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
     }),
 
     render({model, className, field, children, info, ...props}, ref) {
-
         // Resolve FieldModel
         const formContext = useContext(FormContext);
         errorIf(
             isEmpty(formContext),
             `Form field could not find valid FormContext. ` +
-            `Make sure you are using a Hoist form ('@xh/hoist/cmp/form/form') ` +
-            `and not an HTML Form ('@xh/hoist/cmp/layout/form').`
+                `Make sure you are using a Hoist form ('@xh/hoist/cmp/form/form') ` +
+                `and not an HTML Form ('@xh/hoist/cmp/layout/form').`
         );
         const formModel = formContext.model;
         model = model || (formModel && field ? formModel.fields[field] : null);
@@ -78,11 +70,13 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             displayNotValid = validationDisplayed && notValid,
             errors = model?.errors || [],
             requiredStr = defaultProp('requiredIndicator', props, formContext, '*'),
-            requiredIndicator = (isRequired && !readonly && requiredStr) ?
-                span({
-                    item: ' ' + requiredStr,
-                    className: 'xh-form-field-required-indicator'
-                }) : null,
+            requiredIndicator =
+                isRequired && !readonly && requiredStr
+                    ? span({
+                          item: ' ' + requiredStr,
+                          className: 'xh-form-field-required-indicator'
+                      })
+                    : null,
             isPending = model && model.isValidationPending;
 
         // Get spec'ed child -- may be null for fields that are always read-only
@@ -90,11 +84,16 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             childIsSizeable = child?.type?.hasLayoutSupport ?? false;
 
         // Display related props
-        const layoutProps =  getLayoutProps(props),
+        const layoutProps = getLayoutProps(props),
             minimal = defaultProp('minimal', props, formContext, false),
             label = defaultProp('label', props, formContext, model?.displayName),
             commitOnChange = defaultProp('commitOnChange', props, formContext, undefined),
-            readonlyRenderer = defaultProp('readonlyRenderer', props, formContext, defaultReadonlyRenderer);
+            readonlyRenderer = defaultProp(
+                'readonlyRenderer',
+                props,
+                formContext,
+                defaultReadonlyRenderer
+            );
 
         // Styles
         const classes = [];
@@ -104,18 +103,19 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
-        let childEl = readonly || !child ?
-            readonlyChild({model, readonlyRenderer}) :
-            editableChild({
-                model,
-                child,
-                childIsSizeable,
-                disabled,
-                commitOnChange,
-                width: layoutProps.width,
-                height: layoutProps.height,
-                flex: layoutProps.flex
-            });
+        let childEl =
+            readonly || !child
+                ? readonlyChild({model, readonlyRenderer})
+                : editableChild({
+                      model,
+                      child,
+                      childIsSizeable,
+                      disabled,
+                      commitOnChange,
+                      width: layoutProps.width,
+                      height: layoutProps.height,
+                      flex: layoutProps.flex
+                  });
 
         return box({
             ref,
@@ -217,7 +217,7 @@ function getValidChild(children) {
     throwIf(
         child.props.bind || child.props.model,
         'Child of FormField should not specify "bind" or "model" props. These props will ' +
-        'will be set by the FormField to bind it appropriately.'
+            'will be set by the FormField to bind it appropriately.'
     );
 
     return child;
@@ -231,7 +231,12 @@ function defaultReadonlyRenderer(value: any): ReactNode {
     return span(value != null ? value.toString() : null);
 }
 
-function defaultProp(name: string, props: Partial<FormFieldProps>, formContext: FormContextType, defaultVal: any): any {
+function defaultProp(
+    name: string,
+    props: Partial<FormFieldProps>,
+    formContext: FormContextType,
+    defaultVal: any
+): any {
     const fieldDefault = formContext.fieldDefaults ? formContext.fieldDefaults[name] : null;
     return withDefault(props[name], fieldDefault, defaultVal);
 }

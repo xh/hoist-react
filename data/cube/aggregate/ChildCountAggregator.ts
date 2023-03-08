@@ -8,7 +8,6 @@
 import {Aggregator} from './Aggregator';
 
 export class ChildCountAggregator extends Aggregator {
-
     override aggregate(rows, fieldName) {
         return rows.length;
     }

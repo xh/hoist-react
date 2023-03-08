@@ -15,12 +15,7 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber, round} from 'lodash';
 import './NumberInput.scss';
 
-export interface NumberInputProps extends
-    HoistProps,
-    HoistInputProps,
-    StyleProps,
-    LayoutProps
-{
+export interface NumberInputProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
     value?: number;
 
     /** True to commit on every change/keystroke, default false. */
@@ -120,7 +115,7 @@ class NumberInputModel extends HoistInputModel {
         wait().then(() => super.select());
     }
 
-    onValueChange = (ev) => {
+    onValueChange = ev => {
         this.noteValueChange(ev.target.value);
     };
 
@@ -165,12 +160,12 @@ class NumberInputModel extends HoistInputModel {
         return true;
     }
 
-    onKeyDown = (ev) => {
+    onKeyDown = ev => {
         if (ev.key === 'Enter') this.doCommit();
         this.componentProps.onKeyDown?.(ev);
     };
 
-    override onFocus = (ev) => {
+    override onFocus = ev => {
         this.noteFocused();
 
         // Deferred to allow any value conversion to complete and flush into input.
@@ -192,7 +187,13 @@ class NumberInputModel extends HoistInputModel {
 
         const {valueLabel, displayWithCommas} = componentProps,
             zeroPad = withDefault(componentProps.zeroPad, false),
-            formattedVal = fmtNumber(value, {precision, zeroPad, label: valueLabel, labelCls: null, asHtml: true}) as string;
+            formattedVal = fmtNumber(value, {
+                precision,
+                zeroPad,
+                label: valueLabel,
+                labelCls: null,
+                asHtml: true
+            }) as string;
 
         return displayWithCommas ? formattedVal : formattedVal.replace(/,/g, '');
     }

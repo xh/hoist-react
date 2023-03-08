@@ -28,7 +28,7 @@ export interface ErrorMessageProps extends HoistProps {
      * Error to display. If undefined, this component will look for an error property on its model.
      * If no error is found, this component will not be displayed.
      */
-    error?: Error|string|Record<string, any>;
+    error?: Error | string | Record<string, any>;
     /**
      * Message to display for the error.
      * Defaults to the error, or any 'message' property contained within it.
@@ -43,15 +43,18 @@ export interface ErrorMessageProps extends HoistProps {
  */
 export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessageProps>({
     className: 'xh-error-message',
-    render({
-        className,
-        model,
-        error = (model as any)?.error,
-        message,
-        title,
-        actionFn,
-        actionButtonProps
-    }, ref) {
+    render(
+        {
+            className,
+            model,
+            error = (model as any)?.error,
+            message,
+            title,
+            actionFn,
+            actionButtonProps
+        },
+        ref
+    ) {
         if (actionFn) {
             actionButtonProps = {...actionButtonProps, onClick: actionFn};
         }
@@ -70,38 +73,28 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
             className,
             item: div({
                 className: 'xh-error-message__inner',
-                items: [
-                    titleCmp({title}),
-                    messageCmp({message}),
-                    actionButton({actionButtonProps})
-                ]
+                items: [titleCmp({title}), messageCmp({message}), actionButton({actionButtonProps})]
             })
         });
     }
 });
 
-const titleCmp = hoistCmp.factory(
-    ({title}) => {
-        if (isValidElement(title)) return title;
-        if (isString(title)) return div({className: 'xh-error-message__title', item: title});
-        return null;
-    }
-);
+const titleCmp = hoistCmp.factory(({title}) => {
+    if (isValidElement(title)) return title;
+    if (isString(title)) return div({className: 'xh-error-message__title', item: title});
+    return null;
+});
 
-const messageCmp = hoistCmp.factory(
-    ({message}) => {
-        if (isValidElement(message)) return message;
-        if (isString(message)) return p(message);
-        return null;
-    }
-);
+const messageCmp = hoistCmp.factory(({message}) => {
+    if (isValidElement(message)) return message;
+    if (isString(message)) return p(message);
+    return null;
+});
 
-const actionButton = hoistCmp.factory(
-    ({actionButtonProps}) => {
-        if (isEmpty(actionButtonProps)) return null;
-        return button({
-            text: 'Retry',
-            ...actionButtonProps
-        });
-    }
-);
+const actionButton = hoistCmp.factory(({actionButtonProps}) => {
+    if (isEmpty(actionButtonProps)) return null;
+    return button({
+        text: 'Retry',
+        ...actionButtonProps
+    });
+});

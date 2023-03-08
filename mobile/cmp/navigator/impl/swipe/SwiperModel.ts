@@ -10,21 +10,36 @@ import './Swiper.scss';
  * @internal
  */
 export class SwiperModel extends HoistModel {
-
     @lookup(NavigatorModel) navigatorModel;
 
     @observable backProgress = null;
     @observable refreshProgress = null;
 
-    @computed get backStarted()         {return isFinite(this.backProgress)}
-    @computed get backCompleted()       {return this.backProgress === 1}
-    @action backStart()                 {this.backProgress = 0}
-    @action backEnd()                   {this.backProgress = null}
+    @computed get backStarted() {
+        return isFinite(this.backProgress);
+    }
+    @computed get backCompleted() {
+        return this.backProgress === 1;
+    }
+    @action backStart() {
+        this.backProgress = 0;
+    }
+    @action backEnd() {
+        this.backProgress = null;
+    }
 
-    @computed get refreshStarted()      {return isFinite(this.refreshProgress)}
-    @computed get refreshCompleted()    {return this.refreshProgress === 1}
-    @action refreshStart()              {this.refreshProgress = 0}
-    @action refreshEnd()                {this.refreshProgress = null}
+    @computed get refreshStarted() {
+        return isFinite(this.refreshProgress);
+    }
+    @computed get refreshCompleted() {
+        return this.refreshProgress === 1;
+    }
+    @action refreshStart() {
+        this.refreshProgress = 0;
+    }
+    @action refreshEnd() {
+        this.refreshProgress = null;
+    }
 
     constructor() {
         super();
@@ -32,7 +47,7 @@ export class SwiperModel extends HoistModel {
     }
 
     @action
-    onDragStart = (e) => {
+    onDragStart = e => {
         const {navigatorModel} = this,
             {direction} = e.gesture;
 
@@ -66,7 +81,7 @@ export class SwiperModel extends HoistModel {
     };
 
     @action
-    onDrag = (e) => {
+    onDrag = e => {
         const {direction, deltaX, deltaY} = e.gesture;
 
         // For either gesture we set normalised progress based on distance dragged, or kill it
@@ -95,7 +110,7 @@ export class SwiperModel extends HoistModel {
     };
 
     @action
-    onDragEnd = (e) => {
+    onDragEnd = e => {
         // Back
         if (this.backStarted) {
             if (this.backCompleted) XH.popRoute();
@@ -114,16 +129,16 @@ export class SwiperModel extends HoistModel {
     isDraggingChild(e, dir) {
         // Loop through the touch targets to ensure it is safe to swipe
         for (let el = e.target; el && el !== document.body; el = el.parentNode) {
-
             // Don't conflict with grid header reordering or chart dragging.
-            if (el.classList.contains('xh-grid-header') ||
-                el.classList.contains('xh-chart')) {
+            if (el.classList.contains('xh-grid-header') || el.classList.contains('xh-chart')) {
                 return true;
             }
 
             // Ensure any scrolling element in the target path takes priority over swipe navigation.
-            if (dir === 'right' && el.scrollWidth > el.offsetWidth && el.scrollLeft > 0 ||
-                dir === 'down' && el.scrollHeight > el.offsetHeight && el.scrollTop > 0) {
+            if (
+                (dir === 'right' && el.scrollWidth > el.offsetWidth && el.scrollLeft > 0) ||
+                (dir === 'down' && el.scrollHeight > el.offsetHeight && el.scrollTop > 0)
+            ) {
                 return true;
             }
         }

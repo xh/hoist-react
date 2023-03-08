@@ -12,11 +12,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import {ReactNode} from 'react';
 
-export interface CheckboxProps extends
-    HoistProps,
-    HoistInputProps,
-    StyleProps
-{
+export interface CheckboxProps extends HoistProps, HoistInputProps, StyleProps {
     value?: boolean;
 
     /** True to focus the control on render. */
@@ -60,32 +56,30 @@ class CheckboxInputModel extends HoistInputModel {
     override xhImpl = true;
 }
 
-const cmp = hoistCmp.factory<CheckboxInputModel>(
-    ({model, className, ...props}, ref) => {
-        const {renderValue} = model,
-            labelSide = withDefault(props.labelSide, 'right'),
-            displayUnsetState = withDefault(props.displayUnsetState, false),
-            valueIsUnset = isNil(renderValue);
+const cmp = hoistCmp.factory<CheckboxInputModel>(({model, className, ...props}, ref) => {
+    const {renderValue} = model,
+        labelSide = withDefault(props.labelSide, 'right'),
+        displayUnsetState = withDefault(props.displayUnsetState, false),
+        valueIsUnset = isNil(renderValue);
 
-        return bpCheckbox({
-            autoFocus: props.autoFocus,
-            checked: !!renderValue,
-            indeterminate: valueIsUnset && displayUnsetState,
-            alignIndicator: labelSide === 'left' ? 'right' : 'left',
-            disabled: props.disabled,
-            inline: withDefault(props.inline, true),
-            label: props.label,
-            tabIndex: props.tabIndex,
+    return bpCheckbox({
+        autoFocus: props.autoFocus,
+        checked: !!renderValue,
+        indeterminate: valueIsUnset && displayUnsetState,
+        alignIndicator: labelSide === 'left' ? 'right' : 'left',
+        disabled: props.disabled,
+        inline: withDefault(props.inline, true),
+        label: props.label,
+        tabIndex: props.tabIndex,
 
-            id: props.id,
-            className,
-            style: props.style,
+        id: props.id,
+        className,
+        style: props.style,
 
-            onBlur: model.onBlur,
-            onFocus: model.onFocus,
-            onChange: (e) => model.noteValueChange(e.target.checked),
-            inputRef: model.inputRef,
-            ref
-        });
-    }
-);
+        onBlur: model.onBlur,
+        onFocus: model.onFocus,
+        onChange: e => model.noteValueChange(e.target.checked),
+        inputRef: model.inputRef,
+        ref
+    });
+});

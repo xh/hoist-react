@@ -15,7 +15,6 @@ export interface DialogPanelProps extends PanelProps {
     isOpen?: boolean;
 }
 
-
 /**
  * Wraps a Panel in a fullscreen Dialog.
  *
@@ -25,10 +24,11 @@ export interface DialogPanelProps extends PanelProps {
 export const [DialogPanel, dialogPanel] = hoistCmp.withFactory<DialogPanelProps>({
     displayName: 'DialogPanel',
     className: 'xh-dialog xh-dialog-panel',
-    memo: false, model: false, observer: false,
+    memo: false,
+    model: false,
+    observer: false,
 
     render({className, isOpen, children, ...rest}) {
-
         if (!isOpen) return null;
 
         return dialog({

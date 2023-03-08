@@ -13,13 +13,11 @@ import {BaseFieldConfig, BaseFieldModel} from './field/BaseFieldModel';
 import {FieldModel} from './field/FieldModel';
 import {SubformsFieldConfig, SubformsFieldModel} from './field/SubformsFieldModel';
 
-
 export interface FormConfig {
-
     /**
      * FieldModels, or configurations to create them, for all data fields managed by this FormModel.
      */
-    fields?: Array<BaseFieldModel|BaseFieldConfig|SubformsFieldConfig| SubformsFieldModel>;
+    fields?: Array<BaseFieldModel | BaseFieldConfig | SubformsFieldConfig | SubformsFieldModel>;
 
     /** Map of initial values for fields in this model. */
     initialValues?: PlainObject;
@@ -55,7 +53,6 @@ export interface FormConfig {
  * @see FieldModel for details on state and validation maintained at the individual field level.
  */
 export class FormModel extends HoistModel {
-
     /** Container object for FieldModel instances, keyed by field name.*/
     @observable.ref
     fields: Record<string, BaseFieldModel> = {};
@@ -101,7 +98,12 @@ export class FormModel extends HoistModel {
         this.readonly = readonly;
         const models = {};
         fields.forEach((f: any) => {
-            const model = f instanceof BaseFieldModel ? f: (f.subforms ? new SubformsFieldModel(f) : new FieldModel(f)),
+            const model =
+                    f instanceof BaseFieldModel
+                        ? f
+                        : f.subforms
+                        ? new SubformsFieldModel(f)
+                        : new FieldModel(f),
                 {name} = model;
             throwIf(models[name], 'Form cannot contain multiple fields with same name: ' + name);
             models[name] = model;
@@ -132,7 +134,7 @@ export class FormModel extends HoistModel {
      */
     getData(dirtyOnly: boolean = false): PlainObject {
         const fields = dirtyOnly ? pickBy(this.fields, f => f.isDirty) : this.fields;
-        return mapValues(fields, v =>  v.getData());
+        return mapValues(fields, v => v.getData());
     }
 
     /**
@@ -252,21 +254,24 @@ export class FormModel extends HoistModel {
     //------------------------
     private createValuesProxy() {
         const me = this;
-        return new Proxy({}, {
-            get(target, name, receiver) {
-                // Allows Inspector to detect this as a proxy.
-                if (name === '_xhIsProxy') return true;
+        return new Proxy(
+            {},
+            {
+                get(target, name, receiver) {
+                    // Allows Inspector to detect this as a proxy.
+                    if (name === '_xhIsProxy') return true;
 
-                const field = me.fields[name as string];
-                if (field?.isFieldModel) {
-                    return field.getDataOrProxy();
+                    const field = me.fields[name as string];
+                    if (field?.isFieldModel) {
+                        return field.getDataOrProxy();
+                    }
+
+                    const parent = name === 'parent' ? me.parent : null;
+                    if (parent) return parent.values;
+
+                    return undefined;
                 }
-
-                const parent = (name === 'parent' ? me.parent : null);
-                if (parent) return parent.values;
-
-                return undefined;
             }
-        });
+        );
     }
 }

@@ -8,7 +8,8 @@ import {
     HoistModel,
     managed,
     PersistenceProvider,
-    PersistOptions, PlainObject,
+    PersistOptions,
+    PlainObject,
     TaskObserver,
     XH
 } from '@xh/hoist/core';
@@ -55,7 +56,7 @@ export interface FilterChooserConfig {
      * will be parsed and displayed. If a `valueSource` is provided, these may be specified as field
      * names in that source or omitted entirely, indicating that all fields should be filter-enabled.
      */
-    fieldSpecs?: Array<FilterChooserFieldSpecConfig|string>;
+    fieldSpecs?: Array<FilterChooserFieldSpecConfig | string>;
 
     /** Default properties to be assigned to all FilterChooserFieldSpecs created by this model. */
     fieldSpecDefaults?: FilterChooserFieldSpecConfig;
@@ -65,25 +66,25 @@ export interface FilterChooserConfig {
      * This may be the same as `valueSource`. Leave undefined if you wish to combine this model's values
      * with other filters, send it to the server, or otherwise observe and handle value changes manually.
      */
-    bind?: Store|View;
+    bind?: Store | View;
 
     /**
      * Store or cube View to be used to lookup matching Field-level defaults for `fieldSpecs` and to
      * provide suggested data values (if so configured) from user input. Defaults to `bind` if provided.
      */
-    valueSource?: Store|View;
+    valueSource?: Store | View;
 
     /**
      * Configuration for a filter appropriate to be rendered and managed by FilterChooser, or a function
      * to produce the same. Note that FilterChooser currently can only edit and create a flat collection
      * of FieldFilters, to be 'AND'ed together.
      */
-    initialValue?: FilterChooserFilterLike|(() => FilterChooserFilterLike);
+    initialValue?: FilterChooserFilterLike | (() => FilterChooserFilterLike);
 
     /**
      * Initial favorites as an array of filter configurations, or a function to produce such an array.
      */
-    initialFavorites?: FilterChooserFilterLike[]|(() => FilterChooserFilterLike[]);
+    initialFavorites?: FilterChooserFilterLike[] | (() => FilterChooserFilterLike[]);
 
     /**
      * true to offer all field suggestions when the control is focussed with an empty query,
@@ -113,15 +114,14 @@ export interface FilterChooserConfig {
     introHelpText?: ReactNode;
 
     /** Options governing persistence. */
-    persistWith?: FilterChooserPersistOptions,
+    persistWith?: FilterChooserPersistOptions;
 }
 
 export class FilterChooserModel extends HoistModel {
-
     @observable.ref value: Filter = null;
     @observable.ref favorites: Filter[] = [];
-    bind: Store|View;
-    valueSource: Store|View;
+    bind: Store | View;
+    valueSource: Store | View;
 
     @managed fieldSpecs: FilterChooserFieldSpec[] = [];
 
@@ -174,7 +174,9 @@ export class FilterChooserModel extends HoistModel {
         this.queryEngine = new QueryEngine(this);
 
         let value = isFunction(initialValue) ? initialValue() : initialValue,
-            favorites = (isFunction(initialFavorites) ? initialFavorites() : initialFavorites).map(f => parseFilter(f));
+            favorites = (isFunction(initialFavorites) ? initialFavorites() : initialFavorites).map(
+                f => parseFilter(f)
+            );
 
         // Read state from provider -- fail gently
         if (persistWith) {
@@ -193,7 +195,7 @@ export class FilterChooserModel extends HoistModel {
 
                 this.addReaction({
                     track: () => this.persistState,
-                    run: (state) => this.provider.write(state)
+                    run: state => this.provider.write(state)
                 });
             } catch (e) {
                 console.error(e);
@@ -208,7 +210,7 @@ export class FilterChooserModel extends HoistModel {
         if (bind) {
             this.addReaction({
                 track: () => bind.filter,
-                run: (filter) => {
+                run: filter => {
                     const value = withFilterByTypes(filter, null, 'FunctionFilter');
                     this.setValue(value);
                 }
@@ -263,24 +265,31 @@ export class FilterChooserModel extends HoistModel {
 
             // 4) Do the next steps asynchronously for UI responsiveness and to ensure the component
             // is ready to render the tags correctly (after selectOptions set above).
-            wait().thenAction(() => {
-                // No-op if we've already re-entered this method by the time this async routine runs.
-                if (this.value !== value) {
-                    return;
-                }
+            wait()
+                .thenAction(() => {
+                    // No-op if we've already re-entered this method by the time this async routine runs.
+                    if (this.value !== value) {
+                        return;
+                    }
 
-                this.selectValue = sortBy(displayFilters.map(f => JSON.stringify(f)), f => {
-                    const idx = this.selectValue?.indexOf(f);
-                    return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
-                });
+                    this.selectValue = sortBy(
+                        displayFilters.map(f => JSON.stringify(f)),
+                        f => {
+                            const idx = this.selectValue?.indexOf(f);
+                            return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
+                        }
+                    );
 
-                // 5) Round-trip value to bound filter
-                if (bind) {
-                    const filter = withFilterByTypes(bind.filter, value, ['FieldFilter', 'CompoundFilter']);
-                    bind.setFilter(filter);
-                }
-            }).linkTo(this.filterTask);
-
+                    // 5) Round-trip value to bound filter
+                    if (bind) {
+                        const filter = withFilterByTypes(bind.filter, value, [
+                            'FieldFilter',
+                            'CompoundFilter'
+                        ]);
+                        bind.setFilter(filter);
+                    }
+                })
+                .linkTo(this.filterTask);
         } catch (e) {
             console.error('Failed to set value on FilterChooserModel', e);
             this.value = null;
@@ -314,7 +323,7 @@ export class FilterChooserModel extends HoistModel {
         if (!filter) return [];
 
         let ret;
-        const unsupported = (s) => {
+        const unsupported = s => {
             throw XH.exception(`Unsupported Filter in FilterChooserModel: ${s}`);
         };
 
@@ -339,10 +348,8 @@ export class FilterChooserModel extends HoistModel {
 
         // 3) Finally unroll multi-value filters to one value per filter.
         // The multiple values will later be restored.
-        return flatMap(ret, (f) => {
-            return isArray(f.value) ?
-                f.value.map(value => new FieldFilter({...f, value})) :
-                f;
+        return flatMap(ret, f => {
+            return isArray(f.value) ? f.value.map(value => new FieldFilter({...f, value})) : f;
         });
     }
 
@@ -365,16 +372,18 @@ export class FilterChooserModel extends HoistModel {
             inputValue = newVal.length > currentVal.length ? newVal : currentVal;
 
         rsSelectCmp.select.setState({inputValue, menuIsOpen: true});
-        wait().then(() => {
-            rsSelectCmp.focus();
-            rsSelectCmp.handleInputChange(inputValue);
-        }).thenAction(() => {
-            // Setting the Select's `inputValue` state above has the side-effect of modifying
-            // it's internal `value`. Force synchronise its `value` to our bound `selectValue`
-            // to get it back inline. Note we're intentionally not using `setSelectValue()`,
-            // which returns early if the actual filter value hasn't changed.
-            this.selectValue = structuredClone(this.selectValue);
-        });
+        wait()
+            .then(() => {
+                rsSelectCmp.focus();
+                rsSelectCmp.handleInputChange(inputValue);
+            })
+            .thenAction(() => {
+                // Setting the Select's `inputValue` state above has the side-effect of modifying
+                // it's internal `value`. Force synchronise its `value` to our bound `selectValue`
+                // to get it back inline. Note we're intentionally not using `setSelectValue()`,
+                // which returns early if the actual filter value hasn't changed.
+                this.selectValue = structuredClone(this.selectValue);
+            });
     }
 
     //---------------------------------
@@ -384,7 +393,9 @@ export class FilterChooserModel extends HoistModel {
         if (filter instanceof FieldFilter) {
             return fieldFilterOption({filter, fieldSpec: this.getFieldSpec(filter.field)});
         } else if (filter instanceof CompoundFilter) {
-            const fieldNames = uniq(filter.filters.map(it => this.getFieldSpec((it as FieldFilter).field)?.displayName));
+            const fieldNames = uniq(
+                filter.filters.map(it => this.getFieldSpec((it as FieldFilter).field)?.displayName)
+            );
             return compoundFilterOption({filter, fieldNames});
         }
     }
@@ -446,7 +457,10 @@ export class FilterChooserModel extends HoistModel {
     //--------------------------------
     // FilterChooserFieldSpec handling
     //--------------------------------
-    parseFieldSpecs(specs: Array<FilterChooserFieldSpecConfig|string>, fieldSpecDefaults: FilterChooserFieldSpecConfig): Array<FilterChooserFieldSpec> {
+    parseFieldSpecs(
+        specs: Array<FilterChooserFieldSpecConfig | string>,
+        fieldSpecDefaults: FilterChooserFieldSpecConfig
+    ): Array<FilterChooserFieldSpec> {
         const {valueSource} = this;
 
         throwIf(
@@ -505,7 +519,8 @@ interface FilterChooserPersistOptions extends PersistOptions {
 /**
  * A variant of FilterLike, that excludes FunctionFilters and FilterTestFn.
  */
-export type FilterChooserFilterLike = Filter |
-    CompoundFilterSpec |
-    FieldFilterSpec |
-    FilterChooserFilterLike[];
+export type FilterChooserFilterLike =
+    | Filter
+    | CompoundFilterSpec
+    | FieldFilterSpec
+    | FilterChooserFilterLike[];

@@ -21,7 +21,7 @@ export function installHighcharts(HighchartsImpl) {
     if (!checkVersion(version, MIN_VERSION, MAX_VERSION)) {
         console.error(
             `This version of Hoist requires a Highcharts version between ${MIN_VERSION} and ` +
-            `${MAX_VERSION}. Version ${version} detected. Highcharts will be unavailable.`
+                `${MAX_VERSION}. Version ${version} detected. Highcharts will be unavailable.`
         );
         return;
     }

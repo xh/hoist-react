@@ -42,8 +42,9 @@ export function observeResize(
     node: Element,
     opts: {debounce?: number} = {}
 ): ResizeObserver {
-    let prevWidth = null, prevHeight = null;
-    let wrappedFn = (e) => {
+    let prevWidth = null,
+        prevHeight = null;
+    let wrappedFn = e => {
         const {contentRect} = e[0],
             {width, height} = contentRect,
             isVisible = width !== 0 && height !== 0,
@@ -94,7 +95,7 @@ export function observeVisibleChange(fn: (visible: boolean) => any, node: Elemen
  * A convenience handler that will call 'stopPropagation'
  * and 'preventDefault' on an event.
  */
-export function consumeEvent(e: Event|SyntheticEvent) {
+export function consumeEvent(e: Event | SyntheticEvent) {
     e.stopPropagation();
     e.preventDefault();
 }
@@ -102,6 +103,6 @@ export function consumeEvent(e: Event|SyntheticEvent) {
 /**
  * A convenience handler that will 'stopPropagation' on an event.
  */
-export function stopPropagation(e: Event| SyntheticEvent) {
+export function stopPropagation(e: Event | SyntheticEvent) {
     e.stopPropagation();
 }
