@@ -35,8 +35,8 @@ export interface PanelConfig {
     /** Can panel be collapsed, showing only its header? */
     collapsible?: boolean;
 
-    /** Default size (in px) of the panel. */
-    defaultSize?: number;
+    /** Default size (in px or %) of the panel. */
+    defaultSize?: number|string;
 
     /** Minimum size (in px) to which the panel can be resized. */
     minSize?: number;
@@ -93,7 +93,6 @@ export interface PanelConfig {
     xhImpl?;
 }
 
-
 /**
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
  * expand/collapse, along with support for saving this state via a configured PersistenceProvider.
@@ -106,7 +105,7 @@ export class PanelModel extends HoistModel {
     //-----------------------
     readonly resizable: boolean;
     readonly collapsible: boolean;
-    readonly defaultSize: number;
+    readonly defaultSize: number|string;
     readonly minSize: number;
     readonly maxSize: number;
     readonly defaultCollapsed: boolean;
@@ -192,11 +191,6 @@ export class PanelModel extends HoistModel {
             resizable = false;
         }
 
-        if (!isNil(maxSize) && (maxSize < minSize || maxSize < defaultSize)) {
-            console.error("'maxSize' must be greater than 'minSize' and 'defaultSize'. No 'maxSize' will be set.");
-            maxSize = null;
-        }
-
         if (resizable && !resizeWhileDragging && !showSplitter) {
             console.error("Must not set 'showSplitter = false' for a resizable PanelModel unless 'resizeWhileDragging` is enabled. Panel sizing disabled.");
             resizable = false;
@@ -206,7 +200,7 @@ export class PanelModel extends HoistModel {
         this.resizable = resizable;
         this.resizeWhileDragging = resizeWhileDragging;
         this.defaultSize = defaultSize;
-        this.minSize = Math.min(minSize, defaultSize);
+        this.minSize = minSize;
         this.maxSize = maxSize;
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
@@ -269,7 +263,7 @@ export class PanelModel extends HoistModel {
     //----------------------
     @action
     setCollapsed(collapsed: boolean) {
-        throwIf(collapsed  && !this.collapsible, 'Panel does not support collapsing.');
+        throwIf(collapsed && !this.collapsible, 'Panel does not support collapsing.');
 
         // When opening we never want to shrink -- in that degenerate case restore default size.
         // Can happen when no min height and title bar, and user has sized panel to be very small.
