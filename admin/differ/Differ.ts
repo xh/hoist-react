@@ -38,78 +38,74 @@ export const differ = hoistCmp.factory({
     }
 });
 
-const contents = hoistCmp.factory<DifferModel>(
-    ({model}) => {
-        return panel({
-            tbar: tbar(),
-            item: model.hasLoaded ?
-                grid({
-                    agOptions: {popupParent: null}
-                }) :
-                frame({
-                    item: `No ${model.displayName}s loaded for comparison.`,
-                    padding: 10
-                }),
-            bbar: bbar(),
-            mask: 'onLoad'
-        });
-    }
-);
+const contents = hoistCmp.factory<DifferModel>(({model}) => {
+    return panel({
+        tbar: tbar(),
+        item: model.hasLoaded
+            ? grid({
+                  agOptions: {popupParent: null}
+              })
+            : frame({
+                  item: `No ${model.displayName}s loaded for comparison.`,
+                  padding: 10
+              }),
+        bbar: bbar(),
+        mask: 'onLoad'
+    });
+});
 
-const tbar = hoistCmp.factory<DifferModel>(
-    ({model}) => {
-        return toolbar(
-            span('Compare with'),
-            select({
-                bind: 'remoteHost',
-                placeholder: 'https://remote-host/',
-                enableCreate: true,
-                createMessageFn: identity,
-                width: 250,
-                options: model.remoteHosts
-            }),
-            button({
-                text: 'Diff from Remote',
-                icon: Icon.diff(),
-                intent: 'primary',
-                disabled: !model.remoteHost,
-                onClick: () => model.diffFromRemote()
-            }),
-            span('- or -'),
-            button({
-                text: 'Diff from Clipboard',
-                icon: Icon.paste(),
-                intent: 'primary',
-                onClick: () => model.diffFromClipboardAsync()
-            }),
-            filler(),
-            clipboardButton({
-                text: `Copy ${startCase(model.displayName)}s`,
-                icon: Icon.copy(),
-                getCopyText: () => model.fetchLocalConfigsAsync(),
-                successMessage: `${startCase(model.displayName)}s copied to clipboard - ready to paste into the diff tool on another instance for comparison.`
-            })
-        );
-    }
-);
+const tbar = hoistCmp.factory<DifferModel>(({model}) => {
+    return toolbar(
+        span('Compare with'),
+        select({
+            bind: 'remoteHost',
+            placeholder: 'https://remote-host/',
+            enableCreate: true,
+            createMessageFn: identity,
+            width: 250,
+            options: model.remoteHosts
+        }),
+        button({
+            text: 'Diff from Remote',
+            icon: Icon.diff(),
+            intent: 'primary',
+            disabled: !model.remoteHost,
+            onClick: () => model.diffFromRemote()
+        }),
+        span('- or -'),
+        button({
+            text: 'Diff from Clipboard',
+            icon: Icon.paste(),
+            intent: 'primary',
+            onClick: () => model.diffFromClipboardAsync()
+        }),
+        filler(),
+        clipboardButton({
+            text: `Copy ${startCase(model.displayName)}s`,
+            icon: Icon.copy(),
+            getCopyText: () => model.fetchLocalConfigsAsync(),
+            successMessage: `${startCase(
+                model.displayName
+            )}s copied to clipboard - ready to paste into the diff tool on another instance for comparison.`
+        })
+    );
+});
 
-const bbar = hoistCmp.factory<DifferModel>(
-    ({model}) => {
-        return toolbar(
-            storeFilterField({
-                matchMode: 'any'
-            }),
-            filler(),
-            recordActionBar({
-                actions: [model.applyRemoteAction],
-                selModel: model.gridModel.selModel,
-                buttonProps: {intent: 'primary'}
-            }),
-            toolbarSep({omit: model.readonly}),
-            button({
-                text: 'Close',
-                onClick: () => model.parentModel.closeDiffer()
-            })
-        );
-    }
-);
+const bbar = hoistCmp.factory<DifferModel>(({model}) => {
+    return toolbar(
+        storeFilterField({
+            matchMode: 'any'
+        }),
+        filler(),
+        recordActionBar({
+            actions: [model.applyRemoteAction],
+            selModel: model.gridModel.selModel,
+            buttonProps: {intent: 'primary'}
+        }),
+        toolbarSep({omit: model.readonly}),
+        button({
+            text: 'Close',
+            onClick: () => model.parentModel.closeDiffer()
+        })
+    );
+});

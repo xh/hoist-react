@@ -31,24 +31,35 @@ export const dockView = hoistCmp.factory<DockViewProps>({
     model: uses(DockViewModel),
     className: 'xh-dock-view',
     render({model, className, compactHeaders}) {
-        const {width, height, collapsedWidth, collapsed, docked, isActive, renderMode, refreshContextModel} = model,
+        const {
+                width,
+                height,
+                collapsedWidth,
+                collapsed,
+                docked,
+                isActive,
+                renderMode,
+                refreshContextModel
+            } = model,
             wasActivated = useRef(false);
 
         if (!wasActivated.current && isActive) wasActivated.current = true;
 
-        const unmount = !isActive && (
-            (renderMode === 'unmountOnHide') ||
-            (renderMode === 'lazy' && !wasActivated.current)
-        );
+        const unmount =
+            !isActive &&
+            (renderMode === 'unmountOnHide' || (renderMode === 'lazy' && !wasActivated.current));
 
         const header = headerCmp({compactHeaders}),
-            body = unmount && (collapsed || docked) ?
-                null :
-                refreshContextView({
-                    model: refreshContextModel,
-                    item: div({className: 'xh-dock-view__body', item: elementFromContent(model.content)})
-                });
-
+            body =
+                unmount && (collapsed || docked)
+                    ? null
+                    : refreshContextView({
+                          model: refreshContextModel,
+                          item: div({
+                              className: 'xh-dock-view__body',
+                              item: elementFromContent(model.content)
+                          })
+                      });
 
         const suffix = collapsed ? 'collapsed' : docked ? 'docked' : 'dialog';
 
@@ -67,43 +78,41 @@ export const dockView = hoistCmp.factory<DockViewProps>({
 //------------------
 // Implementation
 //------------------
-const headerCmp = hoistCmp.factory<DockViewModel>(
-    ({model, compactHeaders}) => {
-        const {icon, title, collapsed, docked, allowClose, allowDialog} = model;
-        return div({
-            className: `xh-dock-view__header ${compactHeaders ? 'xh-dock-view__header--compact' : ''}`,
-            item: hbox({
-                className: `xh-dock-view__header__inner`,
-                items: [
-                    span({
-                        omit: !icon,
-                        item: icon,
-                        className: 'xh-dock-view__header__icon',
-                        onDoubleClick: () => model.toggleCollapsed()
-                    }),
-                    span({
-                        omit: !title,
-                        item: title,
-                        className: 'xh-dock-view__header__title',
-                        onDoubleClick: () => model.toggleCollapsed()
-                    }),
-                    filler(),
-                    button({
-                        icon: collapsed ? Icon.angleUp() : Icon.angleDown(),
-                        onClick: () => model.toggleCollapsed()
-                    }),
-                    button({
-                        omit: collapsed || !allowDialog,
-                        icon: docked ? Icon.expand() : Icon.collapse(),
-                        onClick: () => model.toggleDocked()
-                    }),
-                    button({
-                        omit: !allowClose,
-                        icon: Icon.close(),
-                        onClick: () => model.close()
-                    })
-                ]
-            })
-        });
-    }
-);
+const headerCmp = hoistCmp.factory<DockViewModel>(({model, compactHeaders}) => {
+    const {icon, title, collapsed, docked, allowClose, allowDialog} = model;
+    return div({
+        className: `xh-dock-view__header ${compactHeaders ? 'xh-dock-view__header--compact' : ''}`,
+        item: hbox({
+            className: `xh-dock-view__header__inner`,
+            items: [
+                span({
+                    omit: !icon,
+                    item: icon,
+                    className: 'xh-dock-view__header__icon',
+                    onDoubleClick: () => model.toggleCollapsed()
+                }),
+                span({
+                    omit: !title,
+                    item: title,
+                    className: 'xh-dock-view__header__title',
+                    onDoubleClick: () => model.toggleCollapsed()
+                }),
+                filler(),
+                button({
+                    icon: collapsed ? Icon.angleUp() : Icon.angleDown(),
+                    onClick: () => model.toggleCollapsed()
+                }),
+                button({
+                    omit: collapsed || !allowDialog,
+                    icon: docked ? Icon.expand() : Icon.collapse(),
+                    onClick: () => model.toggleDocked()
+                }),
+                button({
+                    omit: !allowClose,
+                    icon: Icon.close(),
+                    onClick: () => model.close()
+                })
+            ]
+        })
+    });
+});

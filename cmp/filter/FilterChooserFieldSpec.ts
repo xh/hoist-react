@@ -4,7 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {BaseFilterFieldSpec, BaseFilterFieldSpecConfig} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
+import {
+    BaseFilterFieldSpec,
+    BaseFilterFieldSpecConfig
+} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
 import {FieldFilterOperator} from '@xh/hoist/data/filter/Types';
 import {parseFieldValue, View} from '@xh/hoist/data';
 import {fmtDate, parseNumber} from '@xh/hoist/format';
@@ -38,25 +41,20 @@ export interface FilterChooserFieldSpecConfig extends BaseFilterFieldSpecConfig 
  * for the relevant config to set these options.
  */
 export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
-
     valueRenderer: FilterChooserValueRenderer;
     valueParser: FilterChooserValueParser;
     example: string;
 
     /** @internal */
-    constructor({
-        valueRenderer,
-        valueParser,
-        example,
-        ...rest
-    }: FilterChooserFieldSpecConfig) {
+    constructor({valueRenderer, valueParser, example, ...rest}: FilterChooserFieldSpecConfig) {
         super(rest);
 
         this.valueRenderer = valueRenderer;
         this.valueParser = this.parseValueParser(valueParser);
         this.example = this.parseExample(example);
 
-        if (!this.hasExplicitValues &&
+        if (
+            !this.hasExplicitValues &&
             this.source &&
             this.sourceField &&
             (this.enableValues || this.forceSelection)
@@ -122,7 +120,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
     parseValueParser(valueParser) {
         // Default numeric parser
         if (!valueParser && (this.fieldType === 'int' || this.fieldType === 'number')) {
-            return (input) => parseNumber(input);
+            return input => parseNumber(input);
         }
         return valueParser;
     }

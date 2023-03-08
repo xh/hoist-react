@@ -13,8 +13,7 @@ import {Component, ComponentClass, FunctionComponent} from 'react';
  * Specification for a client-side Hoist application.
  * Passed to XH.renderApp() to kick-off app rendering and available thereafter as `XH.appSpec`.
  */
-export class AppSpec<T extends HoistAppModel=HoistAppModel> {
-
+export class AppSpec<T extends HoistAppModel = HoistAppModel> {
     /**
      *  Short code for this particular JS client application.
      *  Will default to the `appCode` specified within the project's Webpack config, but can be
@@ -41,14 +40,14 @@ export class AppSpec<T extends HoistAppModel=HoistAppModel> {
      * Root HoistComponent for the application. Despite the name,
      * functional components are fully supported and expected.
      */
-    componentClass: ComponentClass<HoistProps>|FunctionComponent<HoistProps>;
+    componentClass: ComponentClass<HoistProps> | FunctionComponent<HoistProps>;
 
     /**
      * Container component to be used to host this application.
      * This class determines the platform used by Hoist. The value should be imported from
      * either `@xh/hoist/desktop/AppContainer` or `@xh/hoist/mobile/AppContainer`.
      */
-    containerClass: ComponentClass<HoistProps>|FunctionComponent<HoistProps>;
+    containerClass: ComponentClass<HoistProps> | FunctionComponent<HoistProps>;
 
     /** True if the app should use the Hoist mobile toolkit.*/
     isMobileApp: boolean;
@@ -62,7 +61,7 @@ export class AppSpec<T extends HoistAppModel=HoistAppModel> {
      * Otherwise, function taking a user and returning a boolean or an object of the form
      * `{hasAccess: boolean, message: 'explanatory message'}`.
      */
-    checkAccess: string | ((user: object) => boolean|({hasAccess: boolean, message: string}));
+    checkAccess: string | ((user: object) => boolean | {hasAccess: boolean; message: string});
 
     /**
      *  Write a track log statement after the app has loaded and fully initialized?
@@ -78,14 +77,14 @@ export class AppSpec<T extends HoistAppModel=HoistAppModel> {
      * receive a single prop -- onReactivate -- a callback called when the user has acknowledged
      * the suspension and wishes to reload the app.
      */
-    idlePanel?: ElementFactory|FunctionComponent|Component;
+    idlePanel?: ElementFactory | FunctionComponent | Component;
 
     /**
      * Optional custom Component to display when the user is denied access to app. Intended for
      * apps that implement custom auth flows. See also `lockoutMessage` for a more lightweight
      * customization option.
      */
-    lockoutPanel?: ElementFactory|FunctionComponent|Component;
+    lockoutPanel?: ElementFactory | FunctionComponent | Component;
 
     /** Optional message to show on login form (for non-SSO apps). */
     loginMessage?: string;
@@ -126,13 +125,14 @@ export class AppSpec<T extends HoistAppModel=HoistAppModel> {
         showBrowserContextMenu = false,
         disableXssProtection = false
     }) {
-
         throwIf(!modelClass, 'A Hoist App must define a modelClass.');
         throwIf(!componentClass, 'A Hoist App must define a componentClass');
         throwIf(isNil(isMobileApp), 'A Hoist App must define isMobileApp');
         throwIf(
             !containerClass,
-            `Please import and provide containerClass from "@xh/hoist/${isMobileApp ? 'mobile' : 'desktop'}/AppContainer".`
+            `Please import and provide containerClass from "@xh/hoist/${
+                isMobileApp ? 'mobile' : 'desktop'
+            }/AppContainer".`
         );
         throwIf(isNil(isSSO), 'A Hoist App must define isSSO');
 

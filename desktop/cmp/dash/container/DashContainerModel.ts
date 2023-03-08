@@ -21,26 +21,22 @@ import {wait} from '@xh/hoist/promise';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {isOmitted} from '@xh/hoist/utils/impl';
-import {
-    defaultsDeep,
-    find,
-    isFinite,
-    isNil,
-    reject,
-    startCase
-} from 'lodash';
+import {defaultsDeep, find, isFinite, isNil, reject, startCase} from 'lodash';
 import {createRoot} from 'react-dom/client';
 import {DashViewModel, DashViewState} from '../DashViewModel';
 import {DashContainerViewSpec} from './DashContainerViewSpec';
 import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
 import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
-import {convertGLToState, convertStateToGL, goldenLayoutConfig, getViewModelId} from './impl/DashContainerUtils';
+import {
+    convertGLToState,
+    convertStateToGL,
+    goldenLayoutConfig,
+    getViewModelId
+} from './impl/DashContainerUtils';
 import {dashContainerView} from './impl/DashContainerView';
 import {DashModel, DashConfig} from '../';
 
-
-export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, DashViewState>{
-
+export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, DashViewState> {
     /** Strategy for rendering DashContainerViews. Can also be set per-view in `viewSpecs`*/
     renderMode?: RenderMode;
 
@@ -56,7 +52,6 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
      */
     goldenLayoutSettings?: Record<string, any>;
 }
-
 
 /**
  * Model for a DashContainer, representing its contents and layout state.
@@ -114,8 +109,11 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
  * @see http://golden-layout.com/docs/ItemConfig.html
  * @see http://golden-layout.com/tutorials/getting-started-react.html
  */
-export class DashContainerModel extends DashModel<DashContainerViewSpec, DashViewState, DashViewModel> {
-
+export class DashContainerModel extends DashModel<
+    DashContainerViewSpec,
+    DashViewState,
+    DashViewModel
+> {
     //---------------------
     // Settable State
     //----------------------
@@ -235,14 +233,18 @@ export class DashContainerModel extends DashModel<DashContainerViewSpec, DashVie
         if (!containerEl) return;
 
         // Show mask to provide user feedback
-        return wait().thenAction(() => {
-            this.destroyGoldenLayout();
-            this.goldenLayout = this.createGoldenLayout(containerEl, state);
-        }).wait(500).then(() => {
-            // Since React v18, it's necessary to wait a short while for ViewModels to be available.
-            this.refreshActiveViews();
-            this.updateTabHeaders();
-        }).linkTo(this.loadingStateTask);
+        return wait()
+            .thenAction(() => {
+                this.destroyGoldenLayout();
+                this.goldenLayout = this.createGoldenLayout(containerEl, state);
+            })
+            .wait(500)
+            .then(() => {
+                // Since React v18, it's necessary to wait a short while for ViewModels to be available.
+                this.refreshActiveViews();
+                this.updateTabHeaders();
+            })
+            .linkTo(this.loadingStateTask);
     }
 
     /**
@@ -259,9 +261,18 @@ export class DashContainerModel extends DashModel<DashContainerViewSpec, DashVie
         const viewSpec = this.getViewSpec(specId),
             instances = this.getItemsBySpecId(specId);
 
-        throwIf(!viewSpec, `Trying to add non-existent or omitted DashContainerViewSpec. specId=${specId}`);
-        throwIf(!viewSpec.allowAdd, `Trying to add DashContainerViewSpec with allowAdd=false. specId=${specId}`);
-        throwIf(viewSpec.unique && instances.length, `Trying to add multiple instances of a DashContainerViewSpec with unique=true. specId=${specId}`);
+        throwIf(
+            !viewSpec,
+            `Trying to add non-existent or omitted DashContainerViewSpec. specId=${specId}`
+        );
+        throwIf(
+            !viewSpec.allowAdd,
+            `Trying to add DashContainerViewSpec with allowAdd=false. specId=${specId}`
+        );
+        throwIf(
+            viewSpec.unique && instances.length,
+            `Trying to add multiple instances of a DashContainerViewSpec with unique=true. specId=${specId}`
+        );
 
         if (!container) container = goldenLayout.root.contentItems[0];
 
@@ -402,7 +413,13 @@ export class DashContainerModel extends DashModel<DashContainerViewSpec, DashVie
         });
     }
 
-    private showContextMenu(e: MouseEvent, $target: any, stack: any, viewModel?: DashViewModel, index?: number) {
+    private showContextMenu(
+        e: MouseEvent,
+        $target: any,
+        stack: any,
+        viewModel?: DashViewModel,
+        index?: number
+    ) {
         if (this.contentLocked) return;
 
         // If event does not contain co-ordinates, fallback to showing context menu below target
@@ -538,28 +555,31 @@ export class DashContainerModel extends DashModel<DashContainerViewSpec, DashVie
     //-----------------
     private createGoldenLayout(containerEl: HTMLElement, state: any): GoldenLayout {
         const {viewSpecs} = this,
-            ret = new GoldenLayout({
-                content: convertStateToGL(structuredClone(state), this),
-                settings: {
-                    // Remove icons by default
-                    showPopoutIcon: false,
-                    showMaximiseIcon: false,
-                    showCloseIcon: false,
+            ret = new GoldenLayout(
+                {
+                    content: convertStateToGL(structuredClone(state), this),
+                    settings: {
+                        // Remove icons by default
+                        showPopoutIcon: false,
+                        showMaximiseIcon: false,
+                        showCloseIcon: false,
 
-                    // Respect layoutLocked
-                    reorderEnabled: !this.layoutLocked,
+                        // Respect layoutLocked
+                        reorderEnabled: !this.layoutLocked,
 
-                    ...this.goldenLayoutSettings
+                        ...this.goldenLayoutSettings
+                    },
+                    dimensions: {
+                        borderWidth: 6,
+                        headerHeight: 25
+                    }
                 },
-                dimensions: {
-                    borderWidth: 6,
-                    headerHeight: 25
-                }
-            }, containerEl);
+                containerEl
+            );
 
         // Register components
         viewSpecs.forEach(viewSpec => {
-            ret.registerComponent(viewSpec.id, (data) => {
+            ret.registerComponent(viewSpec.id, data => {
                 const {id, title, viewState} = data;
                 let icon = data.icon;
                 if (icon) icon = deserializeIcon(icon);

@@ -20,7 +20,6 @@ import {stringify} from 'qs';
 import {NavigatorModel} from './NavigatorModel';
 
 export interface PageConfig {
-
     /** Unique ID. Must match a configured Router5 route name. */
     id: string;
 
@@ -66,7 +65,6 @@ export interface PageConfig {
  * configuration for it via the `NavigatorModel.pages` constructor config.
  */
 export class PageModel extends HoistModel {
-
     id: string;
     content: Content;
     props: HoistProps;
@@ -114,7 +112,10 @@ export class PageModel extends HoistModel {
     }: PageConfig) {
         super();
         makeObservable(this);
-        warnIf(renderMode === 'always', 'RenderMode.ALWAYS is not supported in PageModel. Pages can\'t exist before being mounted.');
+        warnIf(
+            renderMode === 'always',
+            "RenderMode.ALWAYS is not supported in PageModel. Pages can't exist before being mounted."
+        );
 
         this.id = id;
         this.navigatorModel = navigatorModel;

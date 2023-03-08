@@ -29,7 +29,6 @@ interface DockContainerConfig {
  * and expanding / collapsing views programmatically.
  */
 export class DockContainerModel extends HoistModel {
-
     @managed @observable.ref views: DockViewModel[] = [];
     direction: DockViewDirection;
     renderMode: RenderMode;
@@ -83,4 +82,4 @@ export class DockContainerModel extends HoistModel {
     }
 }
 
-type DockViewDirection = 'ltr'|'rtl';
+type DockViewDirection = 'ltr' | 'rtl';

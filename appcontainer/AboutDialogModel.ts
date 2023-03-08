@@ -32,7 +32,10 @@ export class AboutDialogModel extends HoistModel {
         });
 
         const legacyConf = XH.getConf('xhAboutMenuConfigs', null);
-        warnIf(!isNull(legacyConf), 'Config xhAboutMenuConfigs is no longer supported. To customize your `AboutDialog`, see HoistAppModel.getAboutDialogItems()');
+        warnIf(
+            !isNull(legacyConf),
+            'Config xhAboutMenuConfigs is no longer supported. To customize your `AboutDialog`, see HoistAppModel.getAboutDialogItems()'
+        );
     }
 
     @action

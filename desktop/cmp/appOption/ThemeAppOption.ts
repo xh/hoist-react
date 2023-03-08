@@ -21,10 +21,7 @@ interface ThemeAppOptionSpec {
 /**
  * Convenience configuration for the `theme` AppOption.
  */
-export const themeAppOption = ({
-    formFieldProps,
-    inputProps
-}: ThemeAppOptionSpec = {}) => {
+export const themeAppOption = ({formFieldProps, inputProps}: ThemeAppOptionSpec = {}) => {
     return {
         name: 'theme',
         formField: {
@@ -40,6 +37,6 @@ export const themeAppOption = ({
             ...formFieldProps
         },
         prefName: 'xhTheme',
-        valueSetter: (v) => XH.setTheme(v)
+        valueSetter: v => XH.setTheme(v)
     };
 };

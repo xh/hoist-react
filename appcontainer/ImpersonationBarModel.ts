@@ -43,7 +43,10 @@ export class ImpersonationBarModel extends HoistModel {
 
     @action
     show() {
-        throwIf(!XH.identityService.canAuthUserImpersonate, 'User does not have right to impersonate or impersonation is disabled.');
+        throwIf(
+            !XH.identityService.canAuthUserImpersonate,
+            'User does not have right to impersonate or impersonation is disabled.'
+        );
         this.showRequested = true;
     }
 
@@ -61,7 +64,6 @@ export class ImpersonationBarModel extends HoistModel {
         }
     }
 
-
     //---------------------
     // Handlers
     //---------------------
@@ -72,14 +74,13 @@ export class ImpersonationBarModel extends HoistModel {
             await XH.identityService.impersonateAsync(pendingTarget);
         } catch (e) {
             this.pendingTarget = '';
-            XH.handleException(e, {logOnServer: false});  // likely to be an unknown user
+            XH.handleException(e, {logOnServer: false}); // likely to be an unknown user
         }
     };
 
     readonly onClose = () => {
         XH.identityService.isImpersonating ? XH.identityService.endImpersonateAsync() : this.hide();
     };
-
 
     //--------------------
     // Implementation
@@ -89,9 +90,11 @@ export class ImpersonationBarModel extends HoistModel {
 
         XH.fetchJson({
             url: 'xh/impersonationTargets'
-        }).then(targets => {
-            this.setTargets(targets);
-        }).catchDefault();
+        })
+            .then(targets => {
+                this.setTargets(targets);
+            })
+            .catchDefault();
     }
 
     @action

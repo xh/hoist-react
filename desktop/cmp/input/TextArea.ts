@@ -14,12 +14,7 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {Ref} from 'react';
 import './TextArea.scss';
 
-export interface TextAreaProps extends
-    HoistProps,
-    HoistInputProps,
-    LayoutProps,
-    StyleProps
-{
+export interface TextAreaProps extends HoistProps, HoistInputProps, LayoutProps, StyleProps {
     value?: string;
 
     /** True to focus the control on render. */
@@ -67,16 +62,16 @@ class TextAreaInputModel extends HoistInputModel {
         return withDefault(this.componentProps.commitOnChange, false);
     }
 
-    onChange = (ev) => {
+    onChange = ev => {
         this.noteValueChange(ev.target.value);
     };
 
-    onKeyDown = (ev) => {
+    onKeyDown = ev => {
         if (ev.key === 'Enter' && !ev.shiftKey) this.doCommit();
         this.componentProps.onKeyDown?.(ev);
     };
 
-    override onFocus = (ev) => {
+    override onFocus = ev => {
         if (this.componentProps.selectOnFocus) {
             ev.target.select();
         }
@@ -84,34 +79,32 @@ class TextAreaInputModel extends HoistInputModel {
     };
 }
 
-const cmp = hoistCmp.factory<TextAreaInputModel>(
-    ({model, className, ...props}, ref) => {
-        const {width, height, flex, ...layoutProps} = getLayoutProps(props);
+const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, ref) => {
+    const {width, height, flex, ...layoutProps} = getLayoutProps(props);
 
-        return bpTextarea({
-            value: model.renderValue || '',
+    return bpTextarea({
+        value: model.renderValue || '',
 
-            autoFocus: props.autoFocus,
-            disabled: props.disabled,
-            inputRef: composeRefs(model.inputRef, props.inputRef),
-            placeholder: props.placeholder,
-            spellCheck: withDefault(props.spellCheck, false),
-            tabIndex: props.tabIndex,
+        autoFocus: props.autoFocus,
+        disabled: props.disabled,
+        inputRef: composeRefs(model.inputRef, props.inputRef),
+        placeholder: props.placeholder,
+        spellCheck: withDefault(props.spellCheck, false),
+        tabIndex: props.tabIndex,
 
-            id: props.id,
-            className,
-            style: {
-                ...props.style,
-                ...layoutProps,
-                width: withDefault(width, 300),
-                height: withDefault(height, 100),
-                flex: withDefault(flex, null)
-            },
-            onBlur: model.onBlur,
-            onChange: model.onChange,
-            onFocus: model.onFocus,
-            onKeyDown: model.onKeyDown,
-            ref
-        });
-    }
-);
+        id: props.id,
+        className,
+        style: {
+            ...props.style,
+            ...layoutProps,
+            width: withDefault(width, 300),
+            height: withDefault(height, 100),
+            flex: withDefault(flex, null)
+        },
+        onBlur: model.onBlur,
+        onChange: model.onChange,
+        onFocus: model.onFocus,
+        onKeyDown: model.onKeyDown,
+        ref
+    });
+});

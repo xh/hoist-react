@@ -49,7 +49,8 @@ export class StoreFilterFieldImplModel extends HoistModel {
             gridModel = withDefault(gridModel, this.lookupModel(GridModel));
             store = gridModel?.store ?? null;
         }
-        warnIf(!gridModel && !store && isEmpty(includeFields),
+        warnIf(
+            !gridModel && !store && isEmpty(includeFields),
             "Must specify one of 'gridModel', 'store', or 'includeFields' or the filter will be a no-op."
         );
         throwIf(!store && !bind, "Must specify either 'bind' or a 'store' in StoreFilterField.");
@@ -120,10 +121,8 @@ export class StoreFilterFieldImplModel extends HoistModel {
         let newFilter = null;
         if (filterText && !isEmpty(activeFields)) {
             const regex = this.getRegex(filterText),
-                valGetters = flatMap(activeFields, (fieldPath) => this.getValGetters(fieldPath));
-            newFilter = (rec) => valGetters.some(fn => (
-                regex.test(fn(rec))
-            ));
+                valGetters = flatMap(activeFields, fieldPath => this.getValGetters(fieldPath));
+            newFilter = rec => valGetters.some(fn => regex.test(fn(rec)));
         }
 
         if (filter === newFilter) return;
@@ -220,8 +219,15 @@ export class StoreFilterFieldImplModel extends HoistModel {
 
                 return cols.map(column => {
                     const {renderer, getValueFn} = column;
-                    return (record) => {
-                        const ctx = {record, field: field.name, column, gridModel, store, agParams: null},
+                    return record => {
+                        const ctx = {
+                                record,
+                                field: field.name,
+                                column,
+                                gridModel,
+                                store,
+                                agParams: null
+                            },
                             ret = getValueFn(ctx);
 
                         return renderer ? stripTags(renderer(ret, ctx)) : ret;
@@ -232,6 +238,8 @@ export class StoreFilterFieldImplModel extends HoistModel {
 
         // Otherwise just match raw.
         // Use expensive get() only when needed to support dot-separated paths.
-        return fieldName.includes('.') ? (rec) => get(rec.data, fieldName) : (rec) => rec.data[fieldName];
+        return fieldName.includes('.')
+            ? rec => get(rec.data, fieldName)
+            : rec => rec.data[fieldName];
     }
 }

@@ -14,7 +14,6 @@ import {ReactElement} from 'react';
  * This is a base interface for {@link DashContainerViewSpec} and {@link DashCanvasViewSpec}
  */
 export interface DashViewSpec {
-
     /** Unique identifier of the DashViewSpec. */
     id: string;
 
@@ -40,7 +39,7 @@ export interface DashViewSpec {
     omit?: Thunkable<boolean>;
 
     /** True to prevent multiple instances of this view. Default false. */
-    unique?: boolean
+    unique?: boolean;
 
     /**
      * True (default) to allow adding new instances of this view. References to this view in

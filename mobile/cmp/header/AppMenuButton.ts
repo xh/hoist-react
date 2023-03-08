@@ -11,7 +11,6 @@ import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 
 export interface AppMenuButtonProps extends MenuButtonProps {
-
     /** Array of app-specific MenuItems or configs to create them. */
     extraItems?: MenuItemLike[];
 
@@ -71,7 +70,6 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
     }
 });
 
-
 //---------------------------
 // Implementation
 //---------------------------
@@ -83,8 +81,7 @@ function buildMenuItems({
     hideLogoutItem,
     hideAboutItem,
     extraItems = []
-}:AppMenuButtonProps): MenuItemLike[] {
-
+}: AppMenuButtonProps): MenuItemLike[] {
     hideAboutItem = hideAboutItem || !XH.appContainerModel.hasAboutDialog();
     hideOptionsItem = hideOptionsItem || !XH.appContainerModel.optionsDialogModel.hasOptions;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
@@ -107,7 +104,7 @@ function buildMenuItems({
             omit: hideThemeItem,
             actionFn: () => XH.toggleTheme(),
             text: 'Theme',
-            prepareFn: (item) => {
+            prepareFn: item => {
                 item.text = XH.darkTheme ? 'Light Theme' : 'Dark Theme';
                 item.icon = XH.darkTheme ? Icon.sun() : Icon.moon();
             }

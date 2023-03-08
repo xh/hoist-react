@@ -1,9 +1,9 @@
 /*
-* This file belongs to Hoist, an application development toolkit
-* developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
-*
-* Copyright © 2022 Extremely Heavy Industries Inc.
-*/
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2022 Extremely Heavy Industries Inc.
+ */
 
 import {RuleLike} from '@xh/hoist/data';
 import {ReactElement, ReactNode} from 'react';
@@ -33,7 +33,7 @@ export interface HoistUser {
 export interface ToastSpec {
     message: ReactNode;
     icon?: ReactElement;
-    intent?: Intent,
+    intent?: Intent;
 
     /**
      * Time in ms to show before auto-dismissing the toast, or null to keep toast
@@ -64,7 +64,6 @@ export interface ToastSpec {
  * Options for showing a modal alert, confirm, or prompt.
  */
 export interface MessageSpec {
-
     message?: ReactNode;
     title?: string;
     icon?: ReactElement;
@@ -81,14 +80,14 @@ export interface MessageSpec {
     /** Config for input to be displayed (as a prompt). */
     input?: {
         /** An element specifying a HoistInput, defaults to a platform appropriate TextInput. */
-        item?: ReactElement,
+        item?: ReactElement;
 
         /** Validation constraints to apply. */
         rules?: RuleLike[];
 
         /** Initial value for the input. */
         initialValue?: any;
-    }
+    };
 
     /**
      * Props for primary confirm button.
@@ -128,10 +127,9 @@ export interface MessageSpec {
  * Additional properties passed to this object will be passed directly to the banner component.
  */
 export interface BannerSpec {
-
     message?: ReactNode;
     icon?: ReactElement;
-    intent?: Intent,
+    intent?: Intent;
     className?: string;
 
     /** The category for the banner. Defaults to 'default'.*/
@@ -147,7 +145,7 @@ export interface BannerSpec {
     /**
      * Callback function triggered when the user clicks on the banner.
      */
-    onClick?(model: any)
+    onClick?(model: any);
 
     /**
      *  If provided, will render a button within the banner to enable the user to
@@ -189,7 +187,6 @@ export interface AppOptionSpec {
  * Options for tracking activity on the server via TrackService.
  */
 export interface TrackOptions {
-
     /** Short description of the activity being tracked. */
     message: string;
 
@@ -197,7 +194,7 @@ export interface TrackOptions {
     category?: string;
 
     /** App-supplied data to save along with track log.*/
-    data?: object|object[];
+    data?: object | object[];
 
     /**
      * Flag to indicate relative importance of activity.
@@ -222,14 +219,12 @@ export interface TrackOptions {
     omit?: Thunkable<boolean>;
 }
 
-
 /**
  *  Basic interface for a MenuItem to appear in a menu.
  *
  *  MenuItems can be displayed within a context menu, or shown when clicking on a button.
  */
 export interface MenuItem {
-
     /** Label to be displayed. */
     text: ReactNode;
 
@@ -265,7 +260,7 @@ export interface MenuItem {
  * an appropriate default display, with '-' providing a standard textless divider that will also
  * be de-duped if appearing at the beginning, or end, or adjacent to another divider at render time.
  */
-export type MenuItemLike = MenuItem|ReactNode;
+export type MenuItemLike = MenuItem | ReactNode;
 
 /**
  * An option to be passed to Select controls
@@ -273,5 +268,5 @@ export type MenuItemLike = MenuItem|ReactNode;
 export interface SelectOption {
     value?: any;
     label?: string;
-    options?: (SelectOption|any)[];
+    options?: (SelectOption | any)[];
 }

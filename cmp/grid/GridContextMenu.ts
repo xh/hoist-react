@@ -13,7 +13,7 @@ import {RecordActionLike} from '@xh/hoist/data';
  * for its native menu items, or a Hoist specific token.
  * {@link https://www.ag-grid.com/javascript-grid-context-menu/#built-in-menu-items}
  */
-export type GridContextMenuItemLike = RecordActionLike|GridContextMenuToken|string;
+export type GridContextMenuItemLike = RecordActionLike | GridContextMenuToken | string;
 
 /**
  * Hoist tokens, all of which require a GridModel:
@@ -29,13 +29,21 @@ export type GridContextMenuItemLike = RecordActionLike|GridContextMenuToken|stri
  *          `restoreDefaults` - restore column, sorting, and grouping configs and clear any
  *              persistent grid state. See {@link GridModel.restoreDefaults}
  */
-export type GridContextMenuToken = 'autosizeColumns'|'copyCell'|'colChooser'|'expandCollapseAll'|
-    'export'|'exportExcel'|'exportCsv'|'exportLocal'|'filter'|'restoreDefaults';
-
+export type GridContextMenuToken =
+    | 'autosizeColumns'
+    | 'copyCell'
+    | 'colChooser'
+    | 'expandCollapseAll'
+    | 'export'
+    | 'exportExcel'
+    | 'exportCsv'
+    | 'exportLocal'
+    | 'filter'
+    | 'restoreDefaults';
 
 /**
  * Specification for a GridContextMenu.  Either a list of items, or a function to produce one.
  */
-export type GridContextMenuSpec = GridContextMenuItemLike[] |
-    ((agParams: PlainObject, gridModel: GridModel) => GridContextMenuItemLike[]);
-
+export type GridContextMenuSpec =
+    | GridContextMenuItemLike[]
+    | ((agParams: PlainObject, gridModel: GridModel) => GridContextMenuItemLike[]);

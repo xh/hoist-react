@@ -13,24 +13,27 @@ import {fmtSpan, FormatOptions} from './FormatMisc';
 import {createRenderer} from './FormatUtils';
 import {saveOriginal} from './impl/Utils';
 
-
 const THOUSAND = 1000,
-    MILLION  = 1000000,
-    BILLION  = 1000000000,
+    MILLION = 1000000,
+    BILLION = 1000000000,
     MAX_NUMERIC_PRECISION = 12;
 
 const UP_TICK = '▴',
     DOWN_TICK = '▾',
     LEDGER_ALIGN_PLACEHOLDER = '<span style="visibility:hidden">)</span>',
     LEDGER_ALIGN_PLACEHOLDER_EL = span({style: {visibility: 'hidden'}, item: ')'}),
-    DEFAULT_COLOR_SPEC: ColorSpec = {pos: 'xh-pos-val', neg: 'xh-neg-val', neutral: 'xh-neutral-val'};
+    DEFAULT_COLOR_SPEC: ColorSpec = {
+        pos: 'xh-pos-val',
+        neg: 'xh-neg-val',
+        neutral: 'xh-neutral-val'
+    };
 
 export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'tooltip'> {
     /** A valid numbro format object or string. */
-    formatConfig?: string|Numbro.Format;
+    formatConfig?: string | Numbro.Format;
 
     /** Desired number of decimal places. */
-    precision?: number|'auto';
+    precision?: number | 'auto';
 
     /** True to pad with trailing zeros out to given precision. */
     zeroPad?: boolean;
@@ -62,7 +65,7 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
     /** Label to append to value, or true to append a default label for the formattter
      * e.g. 'm' for fmtMillions.
      */
-    label?: string|boolean;
+    label?: string | boolean;
 
     /** CSS class of label span. */
     labelCls?: string;
@@ -71,13 +74,13 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
      * Color output based on the sign of the value. True to use red/green/grey defaults, or provide
      * an object with alternate CSS classes.
      */
-    colorSpec?: boolean|ColorSpec;
+    colorSpec?: boolean | ColorSpec;
 
     /**
      * True to enable default tooltip with minimally formatted original value, or a function to
      * generate a custom tooltip string.
      */
-    tooltip?: boolean|((v: number) => string);
+    tooltip?: boolean | ((v: number) => string);
 }
 
 export interface QuantityFormatOptions extends NumberFormatOptions {
@@ -88,7 +91,6 @@ export interface QuantityFormatOptions extends NumberFormatOptions {
 
 /** Config for pos/neg/neutral color classes. */
 export interface ColorSpec {
-
     /** CSS color class to wrap around positive values */
     pos?: string;
 
@@ -98,7 +100,6 @@ export interface ColorSpec {
     /** CSS class to wrap around zero values. */
     neutral?: string;
 }
-
 
 /**
  * Standard number formatting for Hoist
@@ -115,7 +116,7 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
         nullDisplay = '',
         formatConfig = null,
         precision = 'auto',
-        zeroPad = (precision != 'auto'),
+        zeroPad = precision != 'auto',
         ledger = false,
         forceLedgerAlign = true,
         withPlusSign = false,
@@ -133,7 +134,8 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
 
     if (isInvalidInput(v)) return nullDisplay;
 
-    formatConfig = formatConfig || buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma);
+    formatConfig =
+        formatConfig || buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma);
     const str = numbro(v).format(formatConfig).replace('-', '');
     let sign = null;
 
@@ -144,10 +146,27 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
     }
 
     // As an optimization, return the string form if we do not *need* to wrap in markup.
-    const delOpts = {ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip, originalValue},
-        asString = !withSignGlyph && !colorSpec && !tooltip && (!ledger || !forceLedgerAlign) && (!label || !labelCls);
+    const delOpts = {
+            ledger,
+            forceLedgerAlign,
+            withSignGlyph,
+            prefix,
+            label,
+            labelCls,
+            colorSpec,
+            tooltip,
+            originalValue
+        },
+        asString =
+            !withSignGlyph &&
+            !colorSpec &&
+            !tooltip &&
+            (!ledger || !forceLedgerAlign) &&
+            (!label || !labelCls);
 
-    return asHtml || asString ? fmtNumberString(v, str, sign, delOpts) : fmtNumberElement(v, str, sign, delOpts);
+    return asHtml || asString
+        ? fmtNumberString(v, str, sign, delOpts)
+        : fmtNumberElement(v, str, sign, delOpts);
 }
 
 /**
@@ -165,7 +184,7 @@ export function fmtThousands(v: number, opts?: NumberFormatOptions): ReactNode {
 /**
  * Render number in millions.
  */
-export function fmtMillions(v: number, opts?: NumberFormatOptions): ReactNode  {
+export function fmtMillions(v: number, opts?: NumberFormatOptions): ReactNode {
     opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
@@ -175,11 +194,10 @@ export function fmtMillions(v: number, opts?: NumberFormatOptions): ReactNode  {
     return fmtNumber(v, opts);
 }
 
-
 /**
  * Render number in billions.
  */
-export function fmtBillions(v: number, opts?: NumberFormatOptions): ReactNode  {
+export function fmtBillions(v: number, opts?: NumberFormatOptions): ReactNode {
     opts = {...opts};
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
@@ -263,8 +281,9 @@ export function fmtNumberTooltip(v: number, opts?: {ledger?: boolean}): string {
 //---------------
 // Implementation
 //---------------
-function fmtNumberElement(v: number, str: string,  sign: '+'|'-', opts?: NumberFormatOptions) {
-    const {ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip} = opts ?? {};
+function fmtNumberElement(v: number, str: string, sign: '+' | '-', opts?: NumberFormatOptions) {
+    const {ledger, forceLedgerAlign, withSignGlyph, prefix, label, labelCls, colorSpec, tooltip} =
+        opts ?? {};
 
     // CSS classes
     const cls = [];
@@ -305,8 +324,14 @@ function fmtNumberElement(v: number, str: string,  sign: '+'|'-', opts?: NumberF
     });
 }
 
-function fmtNumberString(v: number, str: string, sign: '+'|'-', opts?: NumberFormatOptions): string {
-    const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, prefix} = opts,
+function fmtNumberString(
+    v: number,
+    str: string,
+    sign: '+' | '-',
+    opts?: NumberFormatOptions
+): string {
+    const {ledger, forceLedgerAlign, withSignGlyph, label, labelCls, colorSpec, tooltip, prefix} =
+            opts,
         asHtml = true;
     let ret = '';
 
@@ -343,7 +368,11 @@ function fmtNumberString(v: number, str: string, sign: '+'|'-', opts?: NumberFor
     }
 
     if (tooltip) {
-        ret = fmtSpan(ret, {className: 'xh-title-tip', title: processToolTip(tooltip, opts), asHtml}) as string;
+        ret = fmtSpan(ret, {
+            className: 'xh-title-tip',
+            title: processToolTip(tooltip, opts),
+            asHtml
+        }) as string;
     }
 
     return ret;
@@ -351,13 +380,17 @@ function fmtNumberString(v: number, str: string, sign: '+'|'-', opts?: NumberFor
 
 function signGlyph(v: number, asHtml: boolean = false) {
     if (!isFinite(v)) return '';
-    return v === 0 ? fmtSpan(UP_TICK, {className: 'xh-transparent', asHtml}) : v > 0 ? UP_TICK : DOWN_TICK;
+    return v === 0
+        ? fmtSpan(UP_TICK, {className: 'xh-transparent', asHtml})
+        : v > 0
+        ? UP_TICK
+        : DOWN_TICK;
 }
 
-function valueColor(v: number, colorSpec: ColorSpec|boolean) {
+function valueColor(v: number, colorSpec: ColorSpec | boolean) {
     if (!isFinite(v) || !colorSpec) return '';
 
-    colorSpec = isPlainObject(colorSpec) ? colorSpec as ColorSpec : DEFAULT_COLOR_SPEC;
+    colorSpec = isPlainObject(colorSpec) ? (colorSpec as ColorSpec) : DEFAULT_COLOR_SPEC;
     if (v < 0) return colorSpec.neg;
     if (v > 0) return colorSpec.pos;
     return colorSpec.neutral;
@@ -375,7 +408,7 @@ function buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma
     } else {
         if (num === 0) {
             mantissa = 2;
-        } else if (num < .01) {
+        } else if (num < 0.01) {
             mantissa = 6;
         } else if (num < 100) {
             mantissa = 4;
@@ -386,8 +419,13 @@ function buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma
         }
     }
 
-    config.thousandSeparated = withCommas &&
-        !(omitFourDigitComma && num < 10000 && (mantissa == 0 || (!zeroPad && Number.isInteger(num))));
+    config.thousandSeparated =
+        withCommas &&
+        !(
+            omitFourDigitComma &&
+            num < 10000 &&
+            (mantissa == 0 || (!zeroPad && Number.isInteger(num)))
+        );
     config.mantissa = mantissa;
     config.trimMantissa = !zeroPad && mantissa != 0;
     return config;
@@ -410,7 +448,6 @@ export const numberRenderer = createRenderer(fmtNumber),
     quantityRenderer = createRenderer(fmtQuantity),
     priceRenderer = createRenderer(fmtPrice),
     percentRenderer = createRenderer(fmtPercent);
-
 
 const shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 

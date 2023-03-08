@@ -5,7 +5,7 @@ import {isFunction} from 'lodash';
  */
 export function managedRenderer(fn, identifier) {
     if (!isFunction(fn)) return fn;
-    return function() {
+    return function () {
         try {
             return fn.apply(null, arguments);
         } catch (e) {

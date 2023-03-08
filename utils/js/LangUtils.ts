@@ -39,10 +39,9 @@ export function getOrCreate<V>(obj: any, key: any, fn: () => V): V {
     } else {
         const val = obj[key];
         if (!isUndefined(val)) return val;
-        return obj[key] = fn();
+        return (obj[key] = fn());
     }
 }
-
 
 /**
  * Return the first defined argument - intended to allow for multiple levels of fallback values or
@@ -160,7 +159,7 @@ export interface APIWarnOptions {
 export function apiRemoved(name: string, opts: APIWarnOptions = {}) {
     if ('test' in opts && isUndefined(opts.test)) return;
 
-    const msg = opts.msg ? ` ${opts.msg}.`: '';
+    const msg = opts.msg ? ` ${opts.msg}.` : '';
     throw Exception.create(`The use of '${name}' is no longer supported.${msg}`);
 }
 
@@ -169,12 +168,12 @@ export function apiRemoved(name: string, opts: APIWarnOptions = {}) {
  *
  * @param name - the name of the deprecated parameter
  */
-const _seenWarnings  = {};
+const _seenWarnings = {};
 export function apiDeprecated(name: string, opts: APIWarnOptions = {}) {
     if ('test' in opts && isUndefined(opts.test)) return;
 
     const v = opts.v ?? 'a future release',
-        msg = opts.msg ? ` ${opts.msg}.`: '',
+        msg = opts.msg ? ` ${opts.msg}.` : '',
         warn = `The use of '${name}' has been deprecated and will be removed in ${v}.${msg}`;
     if (!_seenWarnings[warn]) {
         console.warn(warn);
@@ -212,7 +211,9 @@ export function ensureUnique(arr: any[], exceptionMessage?: string) {
  * @param exceptionMessage - error to throw if non-unique values found.
  */
 export function ensureUniqueBy(arr: any[], uniqueKey: string, exceptionMessage?: string) {
-    exceptionMessage = exceptionMessage ?? `Multiple items in the provided array have the same ${uniqueKey} - must be unique.`;
+    exceptionMessage =
+        exceptionMessage ??
+        `Multiple items in the provided array have the same ${uniqueKey} - must be unique.`;
     throwIf(arr.length != uniqBy(arr, uniqueKey).length, exceptionMessage);
 }
 
@@ -237,7 +238,7 @@ export function pluralize(s: string, count?: number, includeCount?: boolean) {
 /**
  * Remove when lodash adds Set/Map support.
  */
-export function findIn<T>(collection: Set<T>|Map<unknown, T>, fn: (it: T) => boolean): T {
+export function findIn<T>(collection: Set<T> | Map<unknown, T>, fn: (it: T) => boolean): T {
     for (let it of collection.values()) {
         if (fn(it)) return it;
     }
@@ -258,7 +259,6 @@ export function filterConsecutive<T>(
 ): (it: T, idx: number, arr: T[]) => boolean {
     return (it, idx, arr) => {
         if (predicate(it)) {
-
             // Remove if first
             if (idx === 0) return false;
 

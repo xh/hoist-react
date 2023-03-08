@@ -38,10 +38,7 @@ export const exceptionDialog = hoistCmp.factory({
                 isCloseButtonShown: !options.requireReload,
                 onClose,
                 icon: Icon.warning(),
-                items: [
-                    dialogBody(options.message),
-                    bbar()
-                ]
+                items: [dialogBody(options.message), bbar()]
             }),
             exceptionDialogDetails()
         );
@@ -51,8 +48,8 @@ export const exceptionDialog = hoistCmp.factory({
 //--------------------------------
 // Implementation
 //--------------------------------
-const bbar = hoistCmp.factory<ExceptionDialogModel>(
-    ({model}) => toolbar(
+const bbar = hoistCmp.factory<ExceptionDialogModel>(({model}) =>
+    toolbar(
         button({
             omit: !XH.identityService?.isImpersonating,
             icon: Icon.impersonate(),
@@ -70,30 +67,27 @@ const bbar = hoistCmp.factory<ExceptionDialogModel>(
     )
 );
 
-
 /**
  * A Dismiss button that either forces reload, or allows close.
  * @internal
  */
-export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(
-    ({model}) => {
-        const reloadRequired = model.options.requireReload,
-            loginRequired = isSessionExpired(model.exception);
+export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(({model}) => {
+    const reloadRequired = model.options.requireReload,
+        loginRequired = isSessionExpired(model.exception);
 
-        return reloadRequired ?
-            button({
-                icon: loginRequired ? Icon.login() : Icon.refresh(),
-                text: loginRequired ? 'Login' : 'Reload App',
-                autoFocus: true,
-                onClick: () => XH.reloadApp()
-            }) :
-            button({
-                text: 'Close',
-                autoFocus: true,
-                onClick: () => model.close()
-            });
-    }
-);
+    return reloadRequired
+        ? button({
+              icon: loginRequired ? Icon.login() : Icon.refresh(),
+              text: loginRequired ? 'Login' : 'Reload App',
+              autoFocus: true,
+              onClick: () => XH.reloadApp()
+          })
+        : button({
+              text: 'Close',
+              autoFocus: true,
+              onClick: () => model.close()
+          });
+});
 
 function isSessionExpired(e) {
     return e?.httpStatus === 401;

@@ -18,7 +18,6 @@ import {ReactNode} from 'react';
  * method for masking a section of a user interface while an operation is pending.
  */
 export class TaskObserver {
-
     //-------------------
     // Main entry Points
     //-------------------
@@ -26,8 +25,11 @@ export class TaskObserver {
      * Create a new TaskObserver that will be pending if *any* linked
      * subtasks is still pending.
      */
-    static trackAll({tasks = [], message}: {tasks?: TaskObserver[], message?: string} = {}): TaskObserver {
-        return new CompoundObserver('all',  tasks, message);
+    static trackAll({
+        tasks = [],
+        message
+    }: {tasks?: TaskObserver[]; message?: string} = {}): TaskObserver {
+        return new CompoundObserver('all', tasks, message);
     }
 
     /**
@@ -97,17 +99,16 @@ export class TaskObserver {
         throwIf(
             this.constructor === TaskObserver,
             'TaskObserver is abstract and should not be instantiated directly. To get an ' +
-            'instance of this class, use static methods trackFirst(), trackLast() or forPromise().'
+                'instance of this class, use static methods trackFirst(), trackLast() or forPromise().'
         );
     }
 }
-
 
 //------------------------------
 // Implementation
 //------------------------------
 class CompoundObserver extends TaskObserver {
-    private _mode: 'last'|'all';
+    private _mode: 'last' | 'all';
 
     @observable.ref
     private _subtasks: TaskObserver[];
@@ -157,23 +158,29 @@ class CompoundObserver extends TaskObserver {
 }
 
 class PromiseObserver extends TaskObserver {
-
     // Keep simple as we create these in Promise.linkTo, without managing/destroying.  Could change
     // to create internally in this file in a method.
     @observable
     private _isPending: boolean = true;
     private _message: ReactNode;
 
-    get isPromiseObserver()     {return true}
-    override get isPending()             {return this._isPending}
-    override get pendingCount()          {return this._isPending ? 1 : 0}
-    override get message()               {return this._message}
+    get isPromiseObserver() {
+        return true;
+    }
+    override get isPending() {
+        return this._isPending;
+    }
+    override get pendingCount() {
+        return this._isPending ? 1 : 0;
+    }
+    override get message() {
+        return this._message;
+    }
 
     constructor(promise, message) {
         super();
         makeObservable(this);
         this._message = message;
-        promise.finally(action(() => this._isPending = false));
+        promise.finally(action(() => (this._isPending = false)));
     }
 }
-

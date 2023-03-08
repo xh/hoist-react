@@ -100,9 +100,9 @@ export class ValuesTabModel extends HoistModel {
     @action
     setRecsChecked(isChecked: boolean, values: any[]) {
         values = castArray(values);
-        this.pendingValues = isChecked ?
-            uniq([...this.pendingValues, ...values]) :
-            without(this.pendingValues, ...values);
+        this.pendingValues = isChecked
+            ? uniq([...this.pendingValues, ...values])
+            : without(this.pendingValues, ...values);
     }
 
     toggleAllRecsChecked() {
@@ -117,7 +117,9 @@ export class ValuesTabModel extends HoistModel {
     private getFilter() {
         const {gridFilterModel, pendingValues, values, valueCount, field} = this,
             included = pendingValues.map(it => gridFilterModel.fromDisplayValue(it)),
-            excluded = difference(values, pendingValues).map(it => gridFilterModel.fromDisplayValue(it));
+            excluded = difference(values, pendingValues).map(it =>
+                gridFilterModel.fromDisplayValue(it)
+            );
 
         if (included.length === valueCount || excluded.length === valueCount) {
             return null;
@@ -130,7 +132,7 @@ export class ValuesTabModel extends HoistModel {
             op = 'includes';
         } else {
             const weight = valueCount <= 10 ? 2.5 : 1; // Prefer '=' for short lists
-            op = included.length > (excluded.length * weight) ? '!=' : '=';
+            op = included.length > excluded.length * weight ? '!=' : '=';
             arr = op === '=' ? included : excluded;
         }
 
@@ -151,13 +153,18 @@ export class ValuesTabModel extends HoistModel {
         }
 
         // We are only interested '!=' filters if we have no '=' filters.
-        const [equalsFilters, notEqualsFilters] = partition(columnFilters, f => f.op === '=' || f.op === 'includes'),
+        const [equalsFilters, notEqualsFilters] = partition(
+                columnFilters,
+                f => f.op === '=' || f.op === 'includes'
+            ),
             useNotEquals = isEmpty(equalsFilters),
             arr = useNotEquals ? notEqualsFilters : equalsFilters,
             filterValues = [];
 
         arr.forEach(filter => {
-            const newValues = castArray(filter.value).map(value => gridFilterModel.toDisplayValue(value));
+            const newValues = castArray(filter.value).map(value =>
+                gridFilterModel.toDisplayValue(value)
+            );
             filterValues.push(...newValues); // Todo: Is this safe?
         });
 
@@ -183,11 +190,13 @@ export class ValuesTabModel extends HoistModel {
         const {BLANK_PLACEHOLDER} = GridFilterModel,
             {headerFilterModel, fieldSpec} = this,
             {fieldType} = headerFilterModel,
-            renderer = fieldSpec.renderer ?? (fieldType !== 'tags' ? this.headerFilterModel.column.renderer : null);
+            renderer =
+                fieldSpec.renderer ??
+                (fieldType !== 'tags' ? this.headerFilterModel.column.renderer : null);
 
         return new GridModel({
             store: {
-                idSpec: (raw) => fieldSpec.getUniqueValue(raw.value).toString(),
+                idSpec: raw => fieldSpec.getUniqueValue(raw.value).toString(),
                 fields: [
                     {name: 'value', type: 'auto'},
                     {name: 'isChecked', type: 'bool'}

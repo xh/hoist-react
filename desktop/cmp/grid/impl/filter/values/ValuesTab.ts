@@ -31,59 +31,45 @@ export const valuesTab = hoistCmp.factory({
     }
 });
 
-const tbar = hoistCmp.factory(
-    () => {
-        return toolbar(
-            storeFilterField({
-                bind: 'filterText',
-                leftIcon: Icon.search(),
-                placeholder: 'Search...',
-                flex: 1,
-                autoFocus: true
-            })
-        );
-    }
-);
+const tbar = hoistCmp.factory(() => {
+    return toolbar(
+        storeFilterField({
+            bind: 'filterText',
+            leftIcon: Icon.search(),
+            placeholder: 'Search...',
+            flex: 1,
+            autoFocus: true
+        })
+    );
+});
 
-const body = hoistCmp.factory<ValuesTabModel>(
-    ({model}) => {
-        const {isCustomFilter} = model.headerFilterModel;
-        if (isCustomFilter) return customFilterPlaceholder();
-        return vframe(
-            grid(),
-            hiddenValuesMessage()
-        );
-    }
-);
+const body = hoistCmp.factory<ValuesTabModel>(({model}) => {
+    const {isCustomFilter} = model.headerFilterModel;
+    if (isCustomFilter) return customFilterPlaceholder();
+    return vframe(grid(), hiddenValuesMessage());
+});
 
-const customFilterPlaceholder = hoistCmp.factory<ValuesTabModel>(
-    ({model}) => {
-        return placeholder(
-            div({
-                className: 'xh-values-filter-tab__custom-filter-message',
-                items: [
-                    'Custom filter active',
-                    button({
-                        icon: Icon.undo(),
-                        text: 'Clear',
-                        intent: 'danger',
-                        onClick: () => model.headerFilterModel.clear(false)
-                    })
-                ]
-            })
-        );
-    }
-);
-
-const hiddenValuesMessage = hoistCmp.factory<ValuesTabModel>(
-    ({model}) => {
-        return div({
-            omit: !model.hasHiddenValues,
-            className: 'xh-values-filter-tab__hidden-values-message',
+const customFilterPlaceholder = hoistCmp.factory<ValuesTabModel>(({model}) => {
+    return placeholder(
+        div({
+            className: 'xh-values-filter-tab__custom-filter-message',
             items: [
-                Icon.info(),
-                div('Some values are hidden due to filters on other columns')
+                'Custom filter active',
+                button({
+                    icon: Icon.undo(),
+                    text: 'Clear',
+                    intent: 'danger',
+                    onClick: () => model.headerFilterModel.clear(false)
+                })
             ]
-        });
-    }
-);
+        })
+    );
+});
+
+const hiddenValuesMessage = hoistCmp.factory<ValuesTabModel>(({model}) => {
+    return div({
+        omit: !model.hasHiddenValues,
+        className: 'xh-values-filter-tab__hidden-values-message',
+        items: [Icon.info(), div('Some values are hidden due to filters on other columns')]
+    });
+});

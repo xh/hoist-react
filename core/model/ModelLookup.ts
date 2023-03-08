@@ -34,7 +34,7 @@ export class ModelLookup {
      */
     lookupModel(selector: ModelSelector): HoistModel {
         const {model, publishMode, parent} = this,
-            modeIsDefault = (publishMode === 'default');
+            modeIsDefault = publishMode === 'default';
 
         if (model.matchesSelector(selector, modeIsDefault)) {
             return model;
@@ -45,7 +45,11 @@ export class ModelLookup {
             let ret = null;
 
             forOwn(model, (value, key) => {
-                if (!key.startsWith('_') && value?.isHoistModel && value.matchesSelector(selector)) {
+                if (
+                    !key.startsWith('_') &&
+                    value?.isHoistModel &&
+                    value.matchesSelector(selector)
+                ) {
                     ret = value;
                     return false;
                 }

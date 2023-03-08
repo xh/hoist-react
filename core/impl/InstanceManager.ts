@@ -15,13 +15,11 @@ import {wait} from '@xh/hoist/promise';
  * @internal
  */
 class InstanceManager {
-
     @observable.shallow
     services: Set<HoistService> = new Set();
 
     @observable.shallow
     models: Set<HoistModel> = new Set();
-
 
     @observable.shallow
     stores: Set<Store> = new Set();

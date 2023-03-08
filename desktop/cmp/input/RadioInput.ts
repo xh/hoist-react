@@ -13,10 +13,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {filter, isObject} from 'lodash';
 import './RadioInput.scss';
 
-export interface RadioInputProps extends
-    HoistProps,
-    HoistInputProps
-{
+export interface RadioInputProps extends HoistProps, HoistInputProps {
     /** True to display each radio button inline with each other. */
     inline?: boolean;
 
@@ -24,7 +21,7 @@ export interface RadioInputProps extends
     labelSide?: HSide;
 
     /** Array of available options */
-    options: (RadioOption|any)[];
+    options: (RadioOption | any)[];
 }
 
 export interface RadioOption {
@@ -75,7 +72,7 @@ class RadioInputModel extends HoistInputModel {
     //-------------------------
     // Options / value handling
     //-------------------------
-    onChange = (e) => {
+    onChange = e => {
         this.noteValueChange(e.target.value);
     };
 
@@ -91,31 +88,29 @@ class RadioInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<RadioInputModel>(
-    ({model, className, ...props}, ref) => {
-        const {normalizedOptions} = model,
-            labelSide = withDefault(props.labelSide, 'right');
+const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref) => {
+    const {normalizedOptions} = model,
+        labelSide = withDefault(props.labelSide, 'right');
 
-        const items = normalizedOptions.map(opt => {
-            return radio({
-                alignIndicator: labelSide === 'left' ? 'right' : 'left',
-                disabled: opt.disabled,
-                label: opt.label,
-                value: opt.value,
-                className: 'xh-radio-input-option',
-                onFocus: model.onFocus,
-                onBlur: model.onBlur
-            });
+    const items = normalizedOptions.map(opt => {
+        return radio({
+            alignIndicator: labelSide === 'left' ? 'right' : 'left',
+            disabled: opt.disabled,
+            label: opt.label,
+            value: opt.value,
+            className: 'xh-radio-input-option',
+            onFocus: model.onFocus,
+            onBlur: model.onBlur
         });
+    });
 
-        return radioGroup({
-            className,
-            items,
-            disabled: props.disabled,
-            inline: props.inline,
-            selectedValue: model.renderValue,
-            onChange: model.onChange,
-            ref
-        });
-    }
-);
+    return radioGroup({
+        className,
+        items,
+        disabled: props.disabled,
+        inline: props.inline,
+        selectedValue: model.renderValue,
+        onChange: model.onChange,
+        ref
+    });
+});

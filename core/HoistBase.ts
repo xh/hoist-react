@@ -32,7 +32,6 @@ export interface HoistBaseClass {
     isHoistBase: boolean;
 }
 
-
 /**
  * Base class for objects in Hoist.
  * Provides misc. support for Mobx integration, state persistence, and resource cleanup.
@@ -44,9 +43,12 @@ export interface HoistBaseClass {
  * @see Store
  */
 export abstract class HoistBase {
-
-    static get isHoistBase(): boolean {return true}
-    get isHoistBase(): boolean {return true}
+    static get isHoistBase(): boolean {
+        return true;
+    }
+    get isHoistBase(): boolean {
+        return true;
+    }
 
     /**
      * For XH internal use only - marks this instance as created by and for Hoist as part of its
@@ -98,7 +100,7 @@ export abstract class HoistBase {
      * @param specs - one or more reactions to add
      * @returns disposer(s) to manually dispose of each created reaction.
      */
-    addReaction(...specs: ReactionSpec<any>[]): IReactionDisposer|IReactionDisposer[] {
+    addReaction(...specs: ReactionSpec<any>[]): IReactionDisposer | IReactionDisposer[] {
         const disposers = specs.map(s => {
             if (!s) return null;
             let {track, when, run, debounce, ...opts} = s;
@@ -115,7 +117,6 @@ export abstract class HoistBase {
         });
         return disposers.length === 1 ? disposers[0] : disposers;
     }
-
 
     /**
      * Add and start one or more managed autoruns.
@@ -136,7 +137,9 @@ export abstract class HoistBase {
      * @param specs - one or more autoruns to add
      * @returns disposer(s) to manually dispose of each created autorun.
      */
-    addAutorun(...specs: Array<AutoRunSpec|(()=>any)>) : IReactionDisposer|Array<IReactionDisposer> {
+    addAutorun(
+        ...specs: Array<AutoRunSpec | (() => any)>
+    ): IReactionDisposer | Array<IReactionDisposer> {
         const disposers = specs.map(s => {
             if (!s) return null;
             if (isFunction(s)) s = {run: s};
@@ -160,9 +163,10 @@ export abstract class HoistBase {
      */
     setBindable(property: string, value: any) {
         const setter = `set${upperFirst(property)}`;
-        throwIf(!isFunction(this[setter]),
+        throwIf(
+            !isFunction(this[setter]),
             `Required function '${setter}()' not found on bound model. ` +
-            `Implement a setter, or use the @bindable annotation.`
+                `Implement a setter, or use the @bindable annotation.`
         );
         this[setter].call(this, value);
     }
@@ -219,22 +223,24 @@ export abstract class HoistBase {
                 provider = this.markManaged(PersistenceProvider.create(persistWith)),
                 providerState = provider.read();
             if (!isUndefined(providerState)) {
-                runInAction(() => this[property] = structuredClone(providerState));
+                runInAction(() => (this[property] = structuredClone(providerState)));
             }
             this.addReaction({
                 track: () => this[property],
-                run: (data) => provider.write(data)
+                run: data => provider.write(data)
             });
         } catch (e) {
             console.error(
                 `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
-                `'persistWith' on this object or in the method call.`
+                    `'persistWith' on this object or in the method call.`
             );
         }
     }
 
     /** @returns true if this instance has been destroyed. */
-    get isDestroyed() {return this._destroyed}
+    get isDestroyed() {
+        return this._destroyed;
+    }
 
     /**
      * Clean up resources associated with this object
@@ -296,7 +302,6 @@ function parseReactionOptions(options) {
     return options;
 }
 
-
 function bindAndDebounce(obj, fn, debounce = null) {
     let ret = fn.bind(obj);
 
@@ -306,4 +311,3 @@ function bindAndDebounce(obj, fn, debounce = null) {
     if (isPlainObject(debounce)) return lodashDebounce(action(ret), debounce.interval, debounce);
     return ret;
 }
-

@@ -102,8 +102,7 @@ export {
 //----------------------------
 // Primarily leaf Components
 //-----------------------------
-export const
-    alert = elementFactory(Alert),
+export const alert = elementFactory(Alert),
     button = elementFactory(Button),
     controlGroup = elementFactory(ControlGroup),
     checkbox = elementFactory(Checkbox),
@@ -129,8 +128,7 @@ export const
 //-----------------------
 // Container Components
 //-----------------------
-export const
-    buttonGroup = elementFactory(ButtonGroup),
+export const buttonGroup = elementFactory(ButtonGroup),
     callout = elementFactory(Callout),
     card = elementFactory(Card),
     drawer = elementFactory(Drawer),

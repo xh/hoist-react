@@ -11,7 +11,6 @@
  * Used by {@link TabContainerModel} and {@link DashContainerModel}.
  */
 export const RefreshMode = Object.freeze({
-
     /** Always refresh a tab when requested, even if it is inactive (hidden). */
     ALWAYS: 'always',
 
@@ -23,9 +22,7 @@ export const RefreshMode = Object.freeze({
 
     /** Ignore refresh requests entirely when tab is inactive. Do not auto-refresh when reactivated. */
     SKIP_HIDDEN: 'skipHidden'
-
 });
 
 // eslint-disable-next-line
-export type RefreshMode = typeof RefreshMode[keyof typeof RefreshMode];
-
+export type RefreshMode = (typeof RefreshMode)[keyof typeof RefreshMode];

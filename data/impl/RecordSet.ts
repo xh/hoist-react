@@ -22,15 +22,14 @@ type StoreRecordMap = Map<StoreRecordId, StoreRecord>;
 type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;
 
 export class RecordSet {
-
     store: Store;
-    recordMap: StoreRecordMap;      // Map of all Records by id
+    recordMap: StoreRecordMap; // Map of all Records by id
     count: number;
     rootCount: number;
 
     private _childrenMap: ChildRecordMap; // children by parentId
-    private _list: StoreRecord[];         // all records.
-    private _rootList: StoreRecord[];     // root records.
+    private _list: StoreRecord[]; // all records.
+    private _rootList: StoreRecord[]; // root records.
     private _maxDepth: number;
 
     constructor(store: Store, recordMap: StoreRecordMap = new Map()) {
@@ -93,7 +92,7 @@ export class RecordSet {
     get rootList(): StoreRecord[] {
         if (!this._rootList) {
             const {list, count, rootCount} = this;
-            this._rootList = (count == rootCount ? list : list.filter(r => r.parentId == null));
+            this._rootList = count == rootCount ? list : list.filter(r => r.parentId == null);
         }
         return this._rootList;
     }
@@ -101,11 +100,10 @@ export class RecordSet {
     get maxDepth(): number {
         if (isNil(this._maxDepth)) {
             const {list, count, rootCount} = this;
-            this._maxDepth = (count === rootCount ? 0 :  maxBy(list, 'depth').depth);
+            this._maxDepth = count === rootCount ? 0 : maxBy(list, 'depth').depth;
         }
         return this._maxDepth;
     }
-
 
     //----------------------------------------------
     // Editing operations that spawn new RecordSets.
@@ -121,15 +119,15 @@ export class RecordSet {
             includeChildren = store.filterIncludesChildren,
             test = filter.getTestFn(store),
             passes = new Map(),
-            isMarked = (rec) => passes.has(rec.id),
-            mark = (rec) => passes.set(rec.id, rec);
+            isMarked = rec => passes.has(rec.id),
+            mark = rec => passes.set(rec.id, rec);
 
         // Pass 1.  Mark all passing records, and potentially their children recursively.
         // Any row already marked will already have all of its children marked, so check can be skipped
         let markChildren;
         if (includeChildren) {
             const childrenMap = this.childrenMap;
-            markChildren = (rec) => {
+            markChildren = rec => {
                 const children = childrenMap.get(rec.id) || [];
                 children.forEach(c => {
                     if (!isMarked(c)) {
@@ -147,7 +145,7 @@ export class RecordSet {
         });
 
         // Pass 2) Walk up from any passing roots and make sure all parents are marked
-        const markParents = (rec) => {
+        const markParents = rec => {
             const {parent} = rec;
             if (parent && !isMarked(parent)) {
                 mark(parent);
@@ -178,14 +176,19 @@ export class RecordSet {
         return new RecordSet(this.store, recordMap);
     }
 
-    withTransaction(t: {update?: StoreRecord[], add?: StoreRecord[], remove?: StoreRecordId[]}): RecordSet {
+    withTransaction(t: {
+        update?: StoreRecord[];
+        add?: StoreRecord[];
+        remove?: StoreRecordId[];
+    }): RecordSet {
         const {update, add, remove} = t;
 
         // Be sure to finalize any new records that are accepted.
         const {recordMap} = this,
             newRecords = new Map(recordMap);
 
-        let missingRemoves = 0, missingUpdates = 0;
+        let missingRemoves = 0,
+            missingUpdates = 0;
 
         // 0) Removes - process first to allow delete-then-add-elsewhere-in-tree.
         if (remove) {
@@ -226,8 +229,10 @@ export class RecordSet {
             });
         }
 
-        if (missingRemoves > 0) console.warn(`Failed to remove ${missingRemoves} records not found by id`);
-        if (missingUpdates > 0) console.warn(`Failed to update ${missingUpdates} records not found by id`);
+        if (missingRemoves > 0)
+            console.warn(`Failed to remove ${missingRemoves} records not found by id`);
+        if (missingUpdates > 0)
+            console.warn(`Failed to update ${missingUpdates} records not found by id`);
 
         return new RecordSet(this.store, newRecords);
     }
@@ -236,11 +241,14 @@ export class RecordSet {
     // Implementation
     //------------------------
     private areRecordsEqual(r1: StoreRecord, r2: StoreRecord): boolean {
-        return r1 === r2 ||
-            (equal(r1.data, r2.data) && (this.store.idEncodesTreePath || equal(r1.treePath, r2.treePath)));
+        return (
+            r1 === r2 ||
+            (equal(r1.data, r2.data) &&
+                (this.store.idEncodesTreePath || equal(r1.treePath, r2.treePath)))
+        );
     }
 
-    private computeChildrenMap(recordMap: StoreRecordMap) : ChildRecordMap {
+    private computeChildrenMap(recordMap: StoreRecordMap): ChildRecordMap {
         const ret = new Map();
         recordMap.forEach(r => {
             const {parent} = r;

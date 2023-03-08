@@ -13,7 +13,6 @@ import compactSpinnerImg from './spinner-20px.png';
 // @ts-ignore
 import spinnerImg from './spinner-50px.png';
 
-
 export interface SpinnerProps extends HoistProps, ImgHTMLAttributes<HTMLImageElement> {
     /** True to return a smaller 20px image vs default 50px. */
     compact?: boolean;

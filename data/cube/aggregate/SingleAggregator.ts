@@ -8,7 +8,6 @@
 import {Aggregator} from './Aggregator';
 
 export class SingleAggregator extends Aggregator {
-
     override aggregate(rows, fieldName) {
         return rows.length === 1 ? rows[0].data[fieldName] : null;
     }

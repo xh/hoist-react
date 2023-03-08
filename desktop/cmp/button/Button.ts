@@ -15,12 +15,11 @@ import classNames from 'classnames';
 import {ReactNode, ReactElement} from 'react';
 import './Button.scss';
 
-export interface ButtonProps<M extends HoistModel = null> extends
-    HoistProps<M>,
-    StyleProps,
-    LayoutProps,
-    BpButtonProps
-{
+export interface ButtonProps<M extends HoistModel = null>
+    extends HoistProps<M>,
+        StyleProps,
+        LayoutProps,
+        BpButtonProps {
     active?: boolean;
     autoFocus?: boolean;
     disabled?: boolean;
@@ -33,11 +32,10 @@ export interface ButtonProps<M extends HoistModel = null> extends
     title?: string;
     value?: any;
 
-    tabIndex?: number;  // TODO: where does this come from?
+    tabIndex?: number; // TODO: where does this come from?
 
     /** Alias for title. */
     tooltip?: string;
-
 }
 
 /**

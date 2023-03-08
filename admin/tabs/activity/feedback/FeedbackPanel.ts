@@ -11,8 +11,8 @@ import * as Col from '@xh/hoist/admin/columns';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {FieldSpec} from '@xh/hoist/data';
 
-export const feedbackPanel = hoistCmp.factory(
-    () => restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}})
+export const feedbackPanel = hoistCmp.factory(() =>
+    restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}})
 );
 
 const modelSpec: RestGridConfig = {
@@ -28,8 +28,8 @@ const modelSpec: RestGridConfig = {
             Col.browser.field,
             Col.device.field,
             Col.appEnvironment.field,
-            {...Col.appVersion.field as FieldSpec, displayName: 'Version'},
-            {...Col.dateCreated.field as FieldSpec, displayName: 'Date'}
+            {...(Col.appVersion.field as FieldSpec), displayName: 'Version'},
+            {...(Col.dateCreated.field as FieldSpec), displayName: 'Date'}
         ]
     },
     toolbarActions: [deleteAction],

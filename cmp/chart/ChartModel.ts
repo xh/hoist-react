@@ -9,7 +9,6 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, merge} from 'lodash';
 
 interface ChartConfig {
-
     /** The initial highchartsConfig for this chart. */
     highchartsConfig: PlainObject;
 
@@ -27,7 +26,6 @@ interface ChartConfig {
  * Model to hold and maintain the configuration and data series for a Highcharts chart.
  */
 export class ChartModel extends HoistModel {
-
     @observable.ref
     highchartsConfig: PlainObject = {};
 
@@ -75,7 +73,6 @@ export class ChartModel extends HoistModel {
         this.highchartsConfig = config;
     }
 
-
     /**
      * Merge new properties settings into the Highcharts configuration (Deep merge)
      *
@@ -89,11 +86,12 @@ export class ChartModel extends HoistModel {
 
     /** @param series - one or more data series to be charted. */
     @action
-    setSeries(series: any|any[]) {
+    setSeries(series: any | any[]) {
         this.series = series ? castArray(series) : [];
     }
 
     /** Remove all series from this chart. */
-    clear() {this.setSeries([])}
-
+    clear() {
+        this.setSeries([]);
+    }
 }

@@ -32,10 +32,7 @@ export const page = hoistCmp.factory({
 
         if (
             !isActive &&
-            (
-                (renderMode === 'unmountOnHide') ||
-                (renderMode === 'lazy' && !wasActivated.current)
-            )
+            (renderMode === 'unmountOnHide' || (renderMode === 'lazy' && !wasActivated.current))
         ) {
             // Note: We must render an empty placeholder page to work with the Navigator.
             return onsenPage({className: 'xh-page'});

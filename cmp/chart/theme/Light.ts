@@ -7,16 +7,16 @@
 
 // Light theme color vars - see and sync with vars.scss.
 const bg = '#ffffff',
-    altBg = '#f5f5f5',              // --xh-grid-bg-odd
-    borderColor = '#bdbdbd',        // --xh-border-color
-    altBorderColor = '#e6e6e6',     // --xh-grid-border-color
-    textColor = '#263238',          // --xh-text-color
-    textColorMuted = '#757575',     // --xh-text-color-muted
-    accentColor = '#039be5';        // --xh-blue-light
-
+    altBg = '#f5f5f5', // --xh-grid-bg-odd
+    borderColor = '#bdbdbd', // --xh-border-color
+    altBorderColor = '#e6e6e6', // --xh-grid-border-color
+    textColor = '#263238', // --xh-text-color
+    textColorMuted = '#757575', // --xh-text-color-muted
+    accentColor = '#039be5'; // --xh-blue-light
 
 // Font-related vars.
-const fontFamily = '-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif',
+const fontFamily =
+        '-apple-system, "BlinkMacSystemFont", "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif',
     titleFontPx = '19px',
     labelFontPx = '10px';
 
@@ -114,8 +114,8 @@ export const LightTheme = {
             theme: {
                 fill: 'transparent',
                 'stroke-width': 1,
-                stroke: borderColor,  // border color of button
-                r: 0,   // corner radius
+                stroke: borderColor, // border color of button
+                r: 0, // corner radius
                 states: {
                     hover: {
                         fill: 'transparent',
@@ -143,7 +143,6 @@ export const LightTheme = {
             fontWeight: 'normal',
             background: altBg,
             color: accentColor
-
         }
     },
 
@@ -194,13 +193,13 @@ export const LightTheme = {
     },
 
     scrollbar: {
-        barBackgroundColor: '#90a4ae',  // --xh-scrollbar-thumb
+        barBackgroundColor: '#90a4ae', // --xh-scrollbar-thumb
         barBorderColor: '#cfd8dc',
         buttonArrowColor: 'white',
         buttonBackgroundColor: '#90a4ae',
         buttonBorderColor: '#cfd8dc',
         rifleColor: 'white',
-        trackBackgroundColor: '#cfd8dc',  // xh-scrollbar-bg
+        trackBackgroundColor: '#cfd8dc', // xh-scrollbar-bg
         trackBorderColor: borderColor
     }
 };

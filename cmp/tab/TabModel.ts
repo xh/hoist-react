@@ -21,7 +21,6 @@ import {startCase} from 'lodash';
 import {TabContainerModel} from '@xh/hoist/cmp/tab/TabContainerModel';
 import {ReactElement, ReactNode} from 'react';
 
-
 export interface TabConfig {
     /** Unique ID, used by container for locating tabs and generating routes. */
     id: string;
@@ -30,7 +29,7 @@ export interface TabConfig {
      *  Parent TabContainerModel. Provided by the container when constructing these models -
      *  no need for application to specify directly.
      */
-    containerModel?: TabContainerModel
+    containerModel?: TabContainerModel;
 
     /** Display title for the Tab in the container's TabSwitcher. */
     title?: ReactNode;
@@ -75,7 +74,6 @@ export interface TabConfig {
     xhImpl?: boolean;
 }
 
-
 /**
  * Model for a Tab within a TabContainer. Specifies the actual content (child component) to be
  * rendered within a tab and manages that content's active and refresh state.
@@ -84,7 +82,6 @@ export interface TabConfig {
  * configuration for it via the `TabContainerModel.tabs` constructor config.
  */
 export class TabModel extends HoistModel {
-
     id: string;
     @bindable.ref title: ReactNode;
     @bindable.ref icon: ReactElement;
@@ -100,7 +97,9 @@ export class TabModel extends HoistModel {
     containerModel: TabContainerModel;
     @managed refreshContextModel: RefreshContextModel;
 
-    get isTabModel() {return true}
+    get isTabModel() {
+        return true;
+    }
 
     constructor({
         id,
@@ -120,7 +119,10 @@ export class TabModel extends HoistModel {
         makeObservable(this);
         this.xhImpl = xhImpl;
 
-        throwIf(showRemoveAction && XH.isMobileApp, 'Removable Tabs not supported in Mobile toolkit.');
+        throwIf(
+            showRemoveAction && XH.isMobileApp,
+            'Removable Tabs not supported in Mobile toolkit.'
+        );
 
         this.id = id.toString();
         this.containerModel = containerModel;
@@ -155,7 +157,6 @@ export class TabModel extends HoistModel {
     get isActive(): boolean {
         return this.containerModel.activeTabId === this.id;
     }
-
 
     @action
     setDisabled(disabled: boolean) {

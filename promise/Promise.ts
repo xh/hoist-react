@@ -4,7 +4,14 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {Thunkable, Exception, ExceptionHandlerOptions, TaskObserver, TrackOptions, XH} from '@xh/hoist/core';
+import {
+    Thunkable,
+    Exception,
+    ExceptionHandlerOptions,
+    TaskObserver,
+    TrackOptions,
+    XH
+} from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {castArray, isFunction, isNumber, isString} from 'lodash';
@@ -14,14 +21,15 @@ import {castArray, isFunction, isNumber, isString} from 'lodash';
  * Merged in to definition here and implemented on the prototype below.
  */
 declare global {
-
     interface Promise<T> {
-
         /**
          * Version of `then()` that wraps the callback in a MobX action, for use in a Promise chain
          * that modifies MobX observables.
          */
-        thenAction(onFulfilled?: (value: T) => any, onRejected?: (reason: any) => any): Promise<any>;
+        thenAction(
+            onFulfilled?: (value: T) => any,
+            onRejected?: (reason: any) => any
+        ): Promise<any>;
 
         /**
          * Version of `catch()` that will only catch certain exceptions.
@@ -31,7 +39,10 @@ declare global {
          *      selector will be handled by this method.
          * @param fn - catch handler
          */
-        catchWhen(selector: ((e: any) => boolean) | string | string[], fn?: (reason: any) => any): Promise<any>;
+        catchWhen(
+            selector: ((e: any) => boolean) | string | string[],
+            fn?: (reason: any) => any
+        ): Promise<any>;
 
         /**
          * Version of `catch()` that passes the error onto Hoist's default exception handler for
@@ -42,7 +53,10 @@ declare global {
         /**
          * Version of `catchDefault()` that will only catch certain exceptions.
          */
-        catchDefaultWhen(selector: ((e: any) => boolean) | string | string[], options: ExceptionHandlerOptions): Promise<any>;
+        catchDefaultWhen(
+            selector: ((e: any) => boolean) | string | string[],
+            options: ExceptionHandlerOptions
+        ): Promise<any>;
 
         /**
          * Wait on a potentially async function before passing on the original value.
@@ -53,7 +67,6 @@ declare global {
          */
         tap(onFulfillment: (value: T) => any): Promise<T>;
 
-
         /**
          * Return a promise that will resolve a specified delay after this promise resolves.
          *
@@ -61,13 +74,11 @@ declare global {
          */
         wait(interval: number): Promise<T>;
 
-
         /**
          * Return a promise that will reject if this promise has not been settled after the
          * specified interval has passed.
          */
         timeout(spec: PromiseTimeoutSpec): Promise<T>;
-
 
         /**
          * Link this promise to an instance of a {@link TaskObserver}. See that class for details
@@ -76,12 +87,11 @@ declare global {
          */
         linkTo(spec: PromiseLinkSpec): Promise<T>;
 
-
         /**
          * Track a Promise (with timing) via Hoist activity tracking.
          * @param options - TrackOptions, or simply a message string.
          */
-        track(options: TrackOptions|string): Promise<T>;
+        track(options: TrackOptions | string): Promise<T>;
     }
 }
 
@@ -89,14 +99,15 @@ declare global {
  * Timeout interval in ms, or an object specifying the interval and an optional message to be used
  * for any exception thrown on timeout.
  */
-export type PromiseTimeoutSpec = number | {interval: number, message?: string};
+export type PromiseTimeoutSpec = number | {interval: number; message?: string};
 
 /**
  * TaskObserver to track execution of a Promise, or an object specifying one with an optional
  * message to show while pending and/or optional flag to skip (e.g. for conditional masking).
  */
-export type PromiseLinkSpec = TaskObserver |
-    {observer: TaskObserver, message?: string, omit?: Thunkable<boolean>};
+export type PromiseLinkSpec =
+    | TaskObserver
+    | {observer: TaskObserver; message?: string; omit?: Thunkable<boolean>};
 
 /**
  * Return a promise that will resolve after the specified amount of time.
@@ -106,7 +117,7 @@ export type PromiseLinkSpec = TaskObserver |
  * @param interval - milliseconds to delay (default 0). Note that the actual delay will be subject
  *      to the minimum delay for `setTimeout()` in the browser.
  */
-export function wait<T>(interval:number = 0): Promise<T> {
+export function wait<T>(interval: number = 0): Promise<T> {
     return new Promise(resolve => setTimeout(resolve, interval)) as Promise<T>;
 }
 
@@ -158,9 +169,8 @@ export function never<T>(): Promise<T> {
 //--------------------------------
 // Promise prototype extensions
 //--------------------------------
-const enhancePromise = (promisePrototype) => {
+const enhancePromise = promisePrototype => {
     Object.assign(promisePrototype, {
-
         thenAction(fn) {
             return this.then(action(fn));
         },
@@ -196,14 +206,12 @@ const enhancePromise = (promisePrototype) => {
 
         tap(onFulfillment) {
             let ret = null;
-            const resolveFn = (data) => {
+            const resolveFn = data => {
                 ret = data;
                 return onFulfillment(data);
             };
 
-            return this
-                .then(resolveFn)
-                .then(() => ret);
+            return this.then(resolveFn).then(() => ret);
         },
 
         wait(interval) {
@@ -216,7 +224,7 @@ const enhancePromise = (promisePrototype) => {
             const interval = config.interval;
 
             let completed = false;
-            const promise = this.finally(() => completed = true);
+            const promise = this.finally(() => (completed = true));
 
             const deadline = wait(interval).then(() => {
                 if (!completed) {
@@ -244,7 +252,7 @@ const enhancePromise = (promisePrototype) => {
         // Implementation
         //--------------------------------
         throwIfFailsSelector(e, selector) {
-            const fn = isFunction(selector) ? selector : (e) => castArray(selector).includes(e.name);
+            const fn = isFunction(selector) ? selector : e => castArray(selector).includes(e.name);
             if (!fn(e)) throw e;
         }
     });
@@ -258,7 +266,9 @@ enhancePromise(Promise.prototype);
 // @see https://github.com/xh/hoist-react/issues/1411
 const asyncFnReturn = (async () => {})();
 if (!(asyncFnReturn instanceof Promise)) {
-    console.debug('"Native" Promise return detected as return from async function - enhancing prototype');
+    console.debug(
+        '"Native" Promise return detected as return from async function - enhancing prototype'
+    );
 
     // @ts-ignore
     enhancePromise(asyncFnReturn.__proto__);

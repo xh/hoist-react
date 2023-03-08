@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import { Column } from '@xh/hoist/cmp/grid';
+import {Column} from '@xh/hoist/cmp/grid';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
@@ -60,9 +60,9 @@ export class ColumnHeaderFilterModel extends HoistModel {
 
     get hasPendingFilter() {
         const {activeTabId} = this.tabContainerModel;
-        return activeTabId === 'valuesFilter' ?
-            !!this.valuesTabModel.filter :
-            !!this.customTabModel.filter;
+        return activeTabId === 'valuesFilter'
+            ? !!this.valuesTabModel.filter
+            : !!this.customTabModel.filter;
     }
 
     @computed

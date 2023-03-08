@@ -17,7 +17,7 @@ import {usePopper} from 'react-popper';
 
 import './Popover.scss';
 
-export interface PopoverProps extends HoistProps  {
+export interface PopoverProps extends HoistProps {
     /** Component to display inside the popover */
     content: Content;
 
@@ -40,8 +40,20 @@ export interface PopoverProps extends HoistProps  {
     backdrop?: boolean;
 
     /** The position (relative to the target) at which the popover should appear. Default 'auto' */
-    position?: 'top-left'|'top'|'top-right'|'right-top'|'right'|'right-bottom'|'bottom-right'|
-        'bottom'|'bottom-left'|'left-bottom'| 'left'| 'left-top'|'auto';
+    position?:
+        | 'top-left'
+        | 'top'
+        | 'top-right'
+        | 'right-top'
+        | 'right'
+        | 'right-bottom'
+        | 'bottom-right'
+        | 'bottom'
+        | 'bottom-left'
+        | 'left-bottom'
+        | 'left'
+        | 'left-top'
+        | 'auto';
 
     /** Optional className applied to the popover content wrapper. */
     popoverClassName?: string;
@@ -49,7 +61,6 @@ export interface PopoverProps extends HoistProps  {
     /** Escape hatch to provide additional options to the PopperJS implementation */
     popperOptions?: Record<string, any>;
 }
-
 
 /**
  * Popovers display floating content next to a target element.
@@ -77,13 +88,15 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
             popper = usePopper(impl.targetEl, impl.contentEl, {
                 placement: impl.menuPositionToPlacement(position),
                 strategy: 'fixed',
-                modifiers: [{
-                    name: 'preventOverflow',
-                    options: {
-                        padding: 10,
-                        boundary: 'viewport'
-                    } as any
-                }],
+                modifiers: [
+                    {
+                        name: 'preventOverflow',
+                        options: {
+                            padding: 10,
+                            boundary: 'viewport'
+                        } as any
+                    }
+                ],
                 ...popperOptions
             });
 
@@ -106,7 +119,10 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
                             div({
                                 ref: impl.contentRef,
                                 style: popper?.styles?.popper,
-                                className: classNames('xh-popover__content-wrapper', popoverClassName),
+                                className: classNames(
+                                    'xh-popover__content-wrapper',
+                                    popoverClassName
+                                ),
                                 items: elementFromContent(content)
                             }),
                             div({
@@ -156,7 +172,7 @@ class PopoverModel extends HoistModel {
 
         this.addReaction({
             track: () => this.componentProps.isOpen,
-            run: (isOpen) => {
+            run: isOpen => {
                 if (!isNil(isOpen)) {
                     this.setControlledMode(isOpen);
                 }

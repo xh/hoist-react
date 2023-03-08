@@ -26,16 +26,13 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
     displayName: 'ColChooserButton',
     model: false,
 
-    render({
-        gridModel,
-        icon = Icon.gridPanel(),
-        onClick,
-        ...props
-    }) {
+    render({gridModel, icon = Icon.gridPanel(), onClick, ...props}) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
         if (!gridModel) {
-            console.error("No GridModel available to ColChooserButton. Provide via a 'gridModel' prop, or context.");
+            console.error(
+                "No GridModel available to ColChooserButton. Provide via a 'gridModel' prop, or context."
+            );
             return button({icon, disabled: true, ...props});
         }
 

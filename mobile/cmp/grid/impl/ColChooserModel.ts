@@ -41,11 +41,7 @@ export class ColChooserModel extends HoistModel {
         return sortBy(this.getHidden(this.columns), 'text');
     }
 
-    constructor({
-        gridModel,
-        showRestoreDefaults = true,
-        autosizeOnCommit = true
-    }) {
+    constructor({gridModel, showRestoreDefaults = true, autosizeOnCommit = true}) {
         super();
         makeObservable(this);
 
@@ -103,9 +99,7 @@ export class ColChooserModel extends HoistModel {
     @action
     setHidden(colId: string, hidden: boolean) {
         const columns = this.columns.map(col => {
-            return (col.colId === colId && !col.locked && !col.exclude) ?
-                {...col, hidden} :
-                col;
+            return col.colId === colId && !col.locked && !col.exclude ? {...col, hidden} : col;
         });
         this.columns = columns;
     }
@@ -155,7 +149,10 @@ export class ColChooserModel extends HoistModel {
                 visible = gridModel.isColumnVisible(colId),
                 pinned = gridModel.getColumnPinned(colId);
 
-            warnIf(pinned && idx > 0, 'ColChooser only supports pinning the first column. Subsequent pinned columns will be ignored.');
+            warnIf(
+                pinned && idx > 0,
+                'ColChooser only supports pinning the first column. Subsequent pinned columns will be ignored.'
+            );
 
             return {
                 originalIdx: idx,
@@ -168,10 +165,7 @@ export class ColChooserModel extends HoistModel {
             };
         });
 
-        this.columns =[
-            ...this.getVisible(columns),
-            ...this.getHidden(columns)
-        ];
+        this.columns = [...this.getVisible(columns), ...this.getHidden(columns)];
 
         this.pinFirst = columns.length && columns[0].pinned;
     }
@@ -184,7 +178,6 @@ export class ColChooserModel extends HoistModel {
         return cols.filter(it => it.hidden);
     }
 }
-
 
 interface ColMeta {
     originalIdx: number;

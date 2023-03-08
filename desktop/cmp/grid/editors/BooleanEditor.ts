@@ -39,9 +39,9 @@ export const [BooleanEditor, booleanEditor] = hoistCmp.withFactory<BooleanEditor
             quickToggle = false;
         }
 
-        return quickToggle ?
-            useInstantEditor(props.agParams, ref) :
-            useInlineEditorModel(checkbox, props, ref);
+        return quickToggle
+            ? useInstantEditor(props.agParams, ref)
+            : useInlineEditorModel(checkbox, props, ref);
     }
 });
 

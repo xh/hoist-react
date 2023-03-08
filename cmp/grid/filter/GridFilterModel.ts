@@ -23,7 +23,6 @@ import {wait} from '@xh/hoist/promise';
 import {castArray, compact, every, find, isNil, isString, uniq} from 'lodash';
 import {GridModel} from '../GridModel';
 
-
 /**
  * Model for managing a Grid's column filters.
  * @internal
@@ -32,7 +31,7 @@ export class GridFilterModel extends HoistModel {
     override xhImpl = true;
 
     gridModel: GridModel;
-    bind: Store|View;
+    bind: Store | View;
     @bindable commitOnChange: boolean;
     @managed fieldSpecs: GridFilterFieldSpec[] = [];
 
@@ -46,13 +45,9 @@ export class GridFilterModel extends HoistModel {
     // Display for nil or empty values
     static BLANK_PLACEHOLDER = '[blank]';
 
-    constructor({
-        bind,
-        commitOnChange = true,
-        fieldSpecs,
-        fieldSpecDefaults
-    }: GridFilterModelConfig,
-    gridModel: GridModel
+    constructor(
+        {bind, commitOnChange = true, fieldSpecs, fieldSpecDefaults}: GridFilterModelConfig,
+        gridModel: GridModel
     ) {
         super();
         makeObservable(this);
@@ -95,10 +90,7 @@ export class GridFilterModel extends HoistModel {
                 match = find(currFilters, {field, op}) as any;
 
             if (match) {
-                newFilter.value = uniq([
-                    ...castArray(newFilter.value),
-                    ...castArray(match.value)
-                ]);
+                newFilter.value = uniq([...castArray(newFilter.value), ...castArray(match.value)]);
             }
         }
         this.setColumnFilters(field, filter);
@@ -111,8 +103,9 @@ export class GridFilterModel extends HoistModel {
     }
 
     getColumnFilters(field: string): FieldFilter[] {
-        return flattenFilter(this.filter)
-            .filter(it => it instanceof FieldFilter && it.field === field) as FieldFilter[];
+        return flattenFilter(this.filter).filter(
+            it => it instanceof FieldFilter && it.field === field
+        ) as FieldFilter[];
     }
 
     /** The CompoundFilter that wraps the filters for specified field. */

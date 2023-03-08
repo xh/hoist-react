@@ -11,7 +11,6 @@ import {RefreshMode, RenderMode} from '@xh/hoist/core';
  * Spec used to generate DashContainerViews and DashContainerViewModels.
  */
 export interface DashContainerViewSpec extends DashViewSpec {
-
     /**
      *  Strategy for rendering this DashContainerView. If null, will default to its container's
      *  mode. See enum for description of supported modes.

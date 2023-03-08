@@ -42,10 +42,7 @@ export const inspectorPanel = hoistCmp.factory({
                     onClick: () => XH.inspectorService.restoreDefaultsAsync()
                 })
             ],
-            item: hframe(
-                statsPanel(),
-                instancesPanel()
-            )
+            item: hframe(statsPanel(), instancesPanel())
         });
     }
 });

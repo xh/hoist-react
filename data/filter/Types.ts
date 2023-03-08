@@ -9,7 +9,7 @@ import {PlainObject} from '@xh/hoist/core';
 import {Filter} from './Filter';
 import {StoreRecord, Field} from '../';
 
-export type CompoundFilterOperator = 'AND'|'OR'|'and'|'or';
+export type CompoundFilterOperator = 'AND' | 'OR' | 'and' | 'or';
 export interface CompoundFilterSpec {
     /** Collection of Filters or configs to create. */
     filters: FilterLike[];
@@ -18,10 +18,22 @@ export interface CompoundFilterSpec {
     op?: CompoundFilterOperator;
 }
 
-export type FieldFilterOperator = '='|'!='|'>'|'>='|'<'|'<='|'like'|'not like'|'begins'|'ends'|'includes'|'excludes';
+export type FieldFilterOperator =
+    | '='
+    | '!='
+    | '>'
+    | '>='
+    | '<'
+    | '<='
+    | 'like'
+    | 'not like'
+    | 'begins'
+    | 'ends'
+    | 'includes'
+    | 'excludes';
 export interface FieldFilterSpec {
     /** Name of Field to filter or Field instance. */
-    field: string|Field;
+    field: string | Field;
 
     /** One of the supported operators to use for comparison. */
     op: FieldFilterOperator;
@@ -42,11 +54,12 @@ export interface FunctionFilterSpec {
  * @param candidate - single Hoist StoreRecord or plain JS Object to evaluate.
  * @returns  true if the candidate passes and should be included in filtered results.
  */
-export type FilterTestFn = (candidate: PlainObject|StoreRecord) => boolean;
+export type FilterTestFn = (candidate: PlainObject | StoreRecord) => boolean;
 
-export type FilterLike = Filter |
-    CompoundFilterSpec |
-    FieldFilterSpec |
-    FunctionFilterSpec |
-    FilterTestFn |
-    FilterLike[];
+export type FilterLike =
+    | Filter
+    | CompoundFilterSpec
+    | FieldFilterSpec
+    | FunctionFilterSpec
+    | FilterTestFn
+    | FilterLike[];

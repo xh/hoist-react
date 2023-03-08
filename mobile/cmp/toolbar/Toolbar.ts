@@ -10,7 +10,6 @@ import '@xh/hoist/mobile/register';
 import classNames from 'classnames';
 import './Toolbar.scss';
 
-
 export interface ToolbarProps extends HoistProps, BoxProps {
     /** Set to true to vertically align the items of this toolbar */
     vertical?: boolean;
@@ -22,7 +21,9 @@ export interface ToolbarProps extends HoistProps, BoxProps {
 export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps>({
     displayName: 'Toolbar',
     className: 'xh-toolbar',
-    model: false, memo: false, observer: false,
+    model: false,
+    memo: false,
+    observer: false,
 
     render({className, vertical, ...rest}, ref) {
         return (vertical ? vbox : hbox)({

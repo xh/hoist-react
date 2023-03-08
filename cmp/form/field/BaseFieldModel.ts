@@ -14,7 +14,6 @@ import {compact, flatten, isEmpty, isEqual, isFunction, isNil} from 'lodash';
 import {FormModel} from '../FormModel';
 
 export interface BaseFieldConfig {
-
     /** Unique name for this field within its parent FormModel. */
     name: string;
 
@@ -44,8 +43,9 @@ export interface BaseFieldConfig {
  * @see SubformsFieldModel
  */
 export abstract class BaseFieldModel extends HoistModel {
-
-    get isFieldModel() {return true}
+    get isFieldModel() {
+        return true;
+    }
 
     @observable.ref initialValue: any;
     @bindable.ref value: any;
@@ -61,7 +61,6 @@ export abstract class BaseFieldModel extends HoistModel {
      * this field since init/reset and eagerly showing validation errors would be confusing.
      */
     @observable validationDisplayed: boolean = false;
-
 
     /**
      * The input Component bound to this field.
@@ -178,7 +177,6 @@ export abstract class BaseFieldModel extends HoistModel {
     get errors(): string[] {
         return compact(flatten(this._errors));
     }
-
 
     /** All validation errors for this field and its sub-forms. */
     get allErrors(): string[] {
@@ -341,15 +339,15 @@ export abstract class BaseFieldModel extends HoistModel {
         const promises = this.rules.map(async (rule, idx) => {
             const result = await this.evaluateRuleAsync(rule);
             if (runId === this.validationRunId) {
-                runInAction(() => this._errors[idx] = result);
+                runInAction(() => (this._errors[idx] = result));
             }
         });
         await Promise.all(promises);
     }
 
-    private async evaluateRuleAsync(rule) : Promise<string[]> {
+    private async evaluateRuleAsync(rule): Promise<string[]> {
         if (this.ruleIsActive(rule)) {
-            const promises = rule.check.map(async (constraint) => {
+            const promises = rule.check.map(async constraint => {
                 const {value, name, displayName} = this,
                     fieldState = {value, name, displayName, fieldModel: this};
 

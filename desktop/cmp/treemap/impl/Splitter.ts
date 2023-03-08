@@ -10,7 +10,6 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {SplitTreeMapModel} from '../SplitTreeMapModel';
 import './Splitter.scss';
 
-
 /**
  * @internal
  */

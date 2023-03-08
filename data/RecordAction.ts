@@ -25,7 +25,7 @@ export interface RecordActionSpec {
     intent?: Intent;
 
     /** Css class name to be added when rendering the action. */
-    className?: string
+    className?: string;
 
     /** Tooltip to display when hovering over the action. */
     tooltip?: string;
@@ -53,16 +53,15 @@ export interface RecordActionSpec {
      *  - true: specifies a non-zero number of records.
      *  - false: specifies any number of records (0 - infinity, inclusive). Always active.
      */
-    recordsRequired?: boolean|number;
+    recordsRequired?: boolean | number;
 }
 
-export type RecordActionLike = RecordAction|RecordActionSpec|'-';
+export type RecordActionLike = RecordAction | RecordActionSpec | '-';
 
 /**
  * Data passed to the Action Function of a RecordAction
  */
 export interface ActionFnData {
-
     /** The triggering action itself. */
     action?: RecordAction;
 
@@ -79,7 +78,7 @@ export interface ActionFnData {
     column?: Column;
 
     /** Additional data provided by the context where this action presides */
-    [x:string]: any;
+    [x: string]: any;
 }
 
 /**
@@ -101,7 +100,6 @@ export interface ActionFnData {
  * @see GridContextMenuSpec
  */
 export class RecordAction {
-
     text: string;
     secondaryText: string;
     icon: ReactElement;
@@ -110,10 +108,10 @@ export class RecordAction {
     tooltip: string;
     actionFn: (data: ActionFnData) => void;
     displayFn: (data: DisplayFnData) => PlainObject;
-    items: Array<RecordAction|string>;
+    items: Array<RecordAction | string>;
     disabled: boolean;
     hidden: boolean;
-    recordsRequired: boolean|number;
+    recordsRequired: boolean | number;
 
     constructor({
         text,
@@ -152,9 +150,8 @@ export class RecordAction {
      * @internal
      */
     getDisplaySpec({record, selectedRecords, gridModel, column, ...rest}: ActionFnData) {
-        const recordCount = record && isEmpty(selectedRecords) ?
-            1 :
-            selectedRecords ? selectedRecords.length : 0;
+        const recordCount =
+            record && isEmpty(selectedRecords) ? 1 : selectedRecords ? selectedRecords.length : 0;
 
         const defaultDisplay = {
             icon: this.icon,
@@ -200,15 +197,15 @@ export class RecordAction {
 
     private meetsRecordRequirement(count: number) {
         const required = this.recordsRequired;
-        return isNil(required) ||
-            (isBoolean(required) && (!required || required && count > 0)) ||
-            (isNumber(required) && count === required);
+        return (
+            isNil(required) ||
+            (isBoolean(required) && (!required || (required && count > 0))) ||
+            (isNumber(required) && count === required)
+        );
     }
 }
-
 
 interface DisplayFnData extends ActionFnData {
     /** Default display config for the action */
     defaultConfig?: Record<string, any>;
 }
-

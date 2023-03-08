@@ -27,7 +27,7 @@ export class AlertBannerService extends HoistService {
 
     get interval(): number {
         const conf = XH.getConf('xhAlertBannerConfig', {});
-        return (conf.enabled && conf.interval) ? conf.interval * SECONDS : -1;
+        return conf.enabled && conf.interval ? conf.interval * SECONDS : -1;
     }
 
     get enabled(): boolean {
@@ -52,7 +52,8 @@ export class AlertBannerService extends HoistService {
             {active, expires, publishDate, message, intent, iconName, enableClose} = data,
             {lastDismissed, onClose} = this;
 
-        if (!active ||
+        if (
+            !active ||
             !message ||
             (expires && expires < Date.now()) ||
             (lastDismissed && lastDismissed > publishDate)
@@ -64,14 +65,20 @@ export class AlertBannerService extends HoistService {
         }
     }
 
-    genBannerSpec(message: string, intent: Intent, iconName: string, enableClose: boolean): BannerSpec {
+    genBannerSpec(
+        message: string,
+        intent: Intent,
+        iconName: string,
+        enableClose: boolean
+    ): BannerSpec {
         const icon = iconName ? Icon.icon({iconName, size: 'lg'}) : null,
             msgLines = compact(map(message.split('\n'), trim)),
-            showFullAlert = () => XH.alert({
-                title: 'Alert',
-                icon,
-                message: div(msgLines.map(it => p(it)))
-            });
+            showFullAlert = () =>
+                XH.alert({
+                    title: 'Alert',
+                    icon,
+                    message: div(msgLines.map(it => p(it)))
+                });
 
         let actionButtonProps, onClick;
         if (msgLines.length > 1) {

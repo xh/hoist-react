@@ -36,9 +36,7 @@ export interface CreatesOptions {
     publishMode?: ModelPublishMode;
 }
 
-
 export class CreatesSpec<T extends HoistModel> {
-
     fromContext: boolean = false;
     optional: boolean = false;
     publishMode: ModelPublishMode;
@@ -47,11 +45,17 @@ export class CreatesSpec<T extends HoistModel> {
     constructor(spec, publishMode: ModelPublishMode) {
         this.publishMode = publishMode;
         if (spec.isHoistModel) {
-            throwIf(spec.lookupModel, 'Specified model type must *not* be an instance. Specify a class name instead.');
+            throwIf(
+                spec.lookupModel,
+                'Specified model type must *not* be an instance. Specify a class name instead.'
+            );
             this.createFn = () => spec;
         } else if (isFunction(spec)) {
             this.createFn = spec;
         }
-        throwIf(!this.createFn, 'Must specify type or a creation function for model to be generated.');
+        throwIf(
+            !this.createFn,
+            'Must specify type or a creation function for model to be generated.'
+        );
     }
 }

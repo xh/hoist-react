@@ -19,7 +19,7 @@ export class ExceptionDialogModel extends HoistModel {
     override xhImpl = true;
 
     @observable.ref
-    displayData: {exception: any, options: any};
+    displayData: {exception: any; options: any};
 
     @observable
     detailsIsOpen = false;
@@ -76,9 +76,10 @@ export class ExceptionDialogModel extends HoistModel {
             if (!options.requireReload) this.close();
         } else {
             const email = XH.configService.get('xhEmailSupport', 'none'),
-                message = email && email != 'none' ?
-                    `Failed to send message.  Please seek out additional support by contacting: '${email}'.` :
-                    `Failed to send message.  Please contact support directly.`;
+                message =
+                    email && email != 'none'
+                        ? `Failed to send message.  Please seek out additional support by contacting: '${email}'.`
+                        : `Failed to send message.  Please contact support directly.`;
 
             await XH.alert({title: 'Error', message});
         }

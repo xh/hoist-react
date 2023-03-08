@@ -15,7 +15,8 @@ export interface SpacerProps extends HoistProps, BoxProps {}
  */
 export const [Spacer, spacer] = hoistCmp.withFactory<SpacerProps>({
     displayName: 'Spacer',
-    model: false, observer: false,
+    model: false,
+    observer: false,
 
     className: 'xh-spacer',
 
@@ -32,7 +33,8 @@ export const [Spacer, spacer] = hoistCmp.withFactory<SpacerProps>({
  */
 export const [Filler, filler] = hoistCmp.withFactory<BoxProps>({
     displayName: 'Filler',
-    model: false, observer: false,
+    model: false,
+    observer: false,
     className: 'xh-filler',
 
     render(props) {
@@ -43,9 +45,12 @@ export const [Filler, filler] = hoistCmp.withFactory<BoxProps>({
     }
 });
 
-
 //--------------------------------
 // Convenience Factories
 //--------------------------------
-export function hspacer(width: number = 10)  {return spacer({width})}
-export function vspacer(height: number = 10) {return spacer({height})}
+export function hspacer(width: number = 10) {
+    return spacer({width});
+}
+export function vspacer(height: number = 10) {
+    return spacer({height});
+}

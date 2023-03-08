@@ -115,7 +115,7 @@ export const error: ColumnSpec = {
     },
     flex: true,
     minWidth: 150,
-    renderer: (e) => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
+    renderer: e => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
 };
 
 export const msg: ColumnSpec = {
@@ -154,18 +154,20 @@ export const userAgent: ColumnSpec = {
 export const userAlertedFlag: ColumnSpec = {
     field: {name: 'userAlerted', type: 'bool'},
     headerName: Icon.window(),
-    headerTooltip: 'Indicates if the user was shown an interactive alert when this error was triggered.',
+    headerTooltip:
+        'Indicates if the user was shown an interactive alert when this error was triggered.',
     resizable: false,
     align: 'center',
     width: 50,
     exportName: 'User Alerted?',
-    renderer: v => v ? Icon.window() : null
+    renderer: v => (v ? Icon.window() : null)
 };
 
 export const userMessageFlag: ColumnSpec = {
     field: {name: 'userMessageFlag', type: 'bool'},
     headerName: Icon.comment(),
-    headerTooltip: 'Indicates if the user provided a message along with the automated error report.',
+    headerTooltip:
+        'Indicates if the user provided a message along with the automated error report.',
     excludeFromExport: true,
     resizable: false,
     align: 'center',

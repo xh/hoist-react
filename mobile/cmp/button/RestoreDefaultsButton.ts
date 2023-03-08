@@ -24,29 +24,33 @@ export interface RestoreDefaultsButtonProps extends ButtonProps {
  *
  * Can be provided an onClick handler, otherwise will call default framework handler.
  */
-export const [RestoreDefaultsButton, restoreDefaultsButton] = hoistCmp.withFactory<RestoreDefaultsButtonProps>({
-    displayName: 'RestoreDefaultsButton',
-    model: false,
-    render({
-        warningTitle = 'Please Confirm',
-        warningMessage = 'All app options (including grid customizations) will be restored to their default settings, and the app will be reloaded.',
-        ...buttonProps
-    }, ref) {
-        const onClick = () => {
-            XH.confirm({
-                title: warningTitle,
-                message: warningMessage,
-                icon: Icon.warning(),
-                onConfirm: () => XH.restoreDefaultsAsync()
-            });
-        };
+export const [RestoreDefaultsButton, restoreDefaultsButton] =
+    hoistCmp.withFactory<RestoreDefaultsButtonProps>({
+        displayName: 'RestoreDefaultsButton',
+        model: false,
+        render(
+            {
+                warningTitle = 'Please Confirm',
+                warningMessage = 'All app options (including grid customizations) will be restored to their default settings, and the app will be reloaded.',
+                ...buttonProps
+            },
+            ref
+        ) {
+            const onClick = () => {
+                XH.confirm({
+                    title: warningTitle,
+                    message: warningMessage,
+                    icon: Icon.warning(),
+                    onConfirm: () => XH.restoreDefaultsAsync()
+                });
+            };
 
-        return button({
-            ref,
-            icon: Icon.reset(),
-            text: 'Restore Defaults',
-            onClick,
-            ...buttonProps
-        });
-    }
-});
+            return button({
+                ref,
+                icon: Icon.reset(),
+                text: 'Restore Defaults',
+                onClick,
+                ...buttonProps
+            });
+        }
+    });

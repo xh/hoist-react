@@ -28,11 +28,12 @@ export class MessageSourceModel extends HoistModel {
     }
 
     message(config: MessageSpec) {
-
         // Default autoFocus on any confirm button, if no input control and developer has made no explicit request
         const {confirmProps, cancelProps, input} = config;
 
-        if ((confirmProps && isUndefined(confirmProps.autoFocus)) &&
+        if (
+            confirmProps &&
+            isUndefined(confirmProps.autoFocus) &&
             (!cancelProps || isUndefined(cancelProps.autoFocus)) &&
             !input
         ) {

@@ -10,7 +10,6 @@ import {CubeField} from '../CubeField';
  * @internal
  */
 export class RowUpdate {
-
     readonly field: CubeField;
     oldValue: any;
     newValue: any;

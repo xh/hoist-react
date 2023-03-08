@@ -55,12 +55,15 @@ import {instanceManager} from '../impl/InstanceManager';
  * public `loadAsync()` entry point.
  */
 export abstract class HoistModel extends HoistBase implements Loadable {
-
     /** Type for constructing an instance of this model */
     declare config: unknown;
 
-    static get isHoistModel(): boolean {return true}
-    get isHoistModel(): boolean {return true}
+    static get isHoistModel(): boolean {
+        return true;
+    }
+    get isHoistModel(): boolean {
+        return true;
+    }
 
     // Internal State
     @observable
@@ -94,14 +97,26 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     @managed
     loadSupport: LoadSupport;
 
-    get loadModel()                             {return this.loadSupport?.loadModel}
-    get lastLoadRequested()                     {return this.loadSupport?.lastLoadRequested}
-    get lastLoadCompleted()                     {return this.loadSupport?.lastLoadCompleted}
-    get lastLoadException()                     {return this.loadSupport?.lastLoadException}
-    async refreshAsync(meta?: PlainObject)      {return this.loadSupport?.refreshAsync(meta)}
-    async autoRefreshAsync(meta?: PlainObject)  {return this.loadSupport?.autoRefreshAsync(meta)}
+    get loadModel() {
+        return this.loadSupport?.loadModel;
+    }
+    get lastLoadRequested() {
+        return this.loadSupport?.lastLoadRequested;
+    }
+    get lastLoadCompleted() {
+        return this.loadSupport?.lastLoadCompleted;
+    }
+    get lastLoadException() {
+        return this.loadSupport?.lastLoadException;
+    }
+    async refreshAsync(meta?: PlainObject) {
+        return this.loadSupport?.refreshAsync(meta);
+    }
+    async autoRefreshAsync(meta?: PlainObject) {
+        return this.loadSupport?.autoRefreshAsync(meta);
+    }
     async doLoadAsync(loadSpec: LoadSpec) {}
-    async loadAsync(loadSpec?: LoadSpec|Partial<LoadSpec>) {
+    async loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>) {
         return this.loadSupport?.loadAsync(loadSpec);
     }
 
@@ -137,7 +152,6 @@ export abstract class HoistModel extends HoistBase implements Loadable {
      */
     onLinked() {}
 
-
     /**
      * Called after first render of the component linked to this model.
      *
@@ -160,8 +174,8 @@ export abstract class HoistModel extends HoistBase implements Loadable {
         warnIf(
             !this.isLinked,
             'Attempted to execute a lookup from a model that has not yet been linked. ' +
-            'Ensure this model was created by `creates` or `useLocalModel` and that this ' +
-            'call is occurring during or after the call to onLinked().'
+                'Ensure this model was created by `creates` or `useLocalModel` and that this ' +
+                'call is occurring during or after the call to onLinked().'
         );
         return this._modelLookup?.lookupModel(selector) ?? null;
     }
@@ -210,4 +224,3 @@ export abstract class HoistModel extends HoistBase implements Loadable {
 export interface HoistModelClass<T extends HoistModel> extends Function {
     prototype: T;
 }
-

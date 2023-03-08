@@ -45,7 +45,7 @@ export function tabContainerImpl({model, className}: TabContainerProps) {
             impl.setSwiper(ref);
             return tabs.map(renderTabModel);
         },
-        onPreChange: (e) => model.activateTab(tabs[e.index].id),
+        onPreChange: e => model.activateTab(tabs[e.index].id),
         hideTabs: !switcher,
         ...switcher
     });
@@ -59,10 +59,7 @@ function renderTabModel(tabModel: TabModel) {
         tab: onsenTab({
             key: id,
             className: 'xh-tab',
-            items: [
-                icon,
-                div({className: 'xh-tab__label', item: title, omit: !title})
-            ]
+            items: [icon, div({className: 'xh-tab__label', item: title, omit: !title})]
         })
     };
 }
@@ -81,7 +78,6 @@ class TabContainerLocalModel extends HoistModel {
         });
     }
 
-
     // Capture a reference to the underlying Onsen Swiper from the Tabbar ref.
     // We must debounce as the first time this method is called the Tabbar's constructor has not completed.
     @debounced(1)
@@ -89,5 +85,4 @@ class TabContainerLocalModel extends HoistModel {
         if (this.swiper) return;
         this.swiper = ref?._tabbar?._swiper;
     }
-
 }

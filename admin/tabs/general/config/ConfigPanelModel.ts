@@ -23,7 +23,6 @@ import {AppModel} from '@xh/hoist/admin/AppModel';
 import {FieldSpec} from '@xh/hoist/data';
 
 export class ConfigPanelModel extends HoistModel {
-
     override persistWith = {localStorageKey: 'xhAdminConfigState'};
 
     @managed
@@ -55,25 +54,31 @@ export class ConfigPanelModel extends HoistModel {
                 reloadLookupsOnLoad: true,
                 fieldDefaults: {disableXssProtection: true},
                 fields: [
-                    {...Col.name.field as FieldSpec, required},
-                    {...Col.groupName.field as FieldSpec, lookupName: 'groupNames', required, enableCreate},
-                    {...Col.valueType.field as FieldSpec, lookupName: 'valueTypes', editable: 'onAdd', required},
-                    {...Col.value.field as FieldSpec, typeField: 'valueType', required},
-                    {...Col.clientVisible.field as FieldSpec, defaultValue: false, required},
-                    {...Col.note.field as FieldSpec},
-                    {...Col.lastUpdated.field as FieldSpec, editable: false},
-                    {...Col.lastUpdatedBy.field as FieldSpec, editable: false}
+                    {...(Col.name.field as FieldSpec), required},
+                    {
+                        ...(Col.groupName.field as FieldSpec),
+                        lookupName: 'groupNames',
+                        required,
+                        enableCreate
+                    },
+                    {
+                        ...(Col.valueType.field as FieldSpec),
+                        lookupName: 'valueTypes',
+                        editable: 'onAdd',
+                        required
+                    },
+                    {...(Col.value.field as FieldSpec), typeField: 'valueType', required},
+                    {...(Col.clientVisible.field as FieldSpec), defaultValue: false, required},
+                    {...(Col.note.field as FieldSpec)},
+                    {...(Col.lastUpdated.field as FieldSpec), editable: false},
+                    {...(Col.lastUpdatedBy.field as FieldSpec), editable: false}
                 ]
             }),
             actionWarning: {
-                del: (records) =>  `Are you sure you want to delete ${records.length} config(s)? Deleting configs can break running apps.`
+                del: records =>
+                    `Are you sure you want to delete ${records.length} config(s)? Deleting configs can break running apps.`
             },
-            toolbarActions: [
-                addAction,
-                editAction,
-                cloneAction,
-                deleteAction
-            ],
+            toolbarActions: [addAction, editAction, cloneAction, deleteAction],
             menuActions: [
                 addAction,
                 editAction,
@@ -81,7 +86,7 @@ export class ConfigPanelModel extends HoistModel {
                 deleteAction,
                 this.regroupDialogModel.regroupAction
             ],
-            prepareCloneFn: ({clone}) => clone.name = `${clone.name}_CLONE`,
+            prepareCloneFn: ({clone}) => (clone.name = `${clone.name}_CLONE`),
             unit: 'config',
             filterFields: ['name', 'value', 'groupName', 'note'],
             sortBy: 'name',
@@ -131,7 +136,7 @@ export class ConfigPanelModel extends HoistModel {
             entityName: 'config',
             columnFields: ['name', {field: 'valueType', headerName: 'Type'}],
             matchFields: ['name'],
-            valueRenderer: (v) => {
+            valueRenderer: v => {
                 if (isNil(v)) return '';
                 return v.valueType === 'pwd' ? '*****' : v.value;
             }

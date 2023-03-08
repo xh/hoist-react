@@ -11,5 +11,4 @@ export const ValidationState = Object.freeze({
     Valid: 'Valid'
 });
 // eslint-disable-next-line
-export type ValidationState = typeof ValidationState[keyof typeof ValidationState];
-
+export type ValidationState = (typeof ValidationState)[keyof typeof ValidationState];

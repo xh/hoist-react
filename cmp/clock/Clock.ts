@@ -5,7 +5,15 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {box, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, managed, BoxProps, useLocalModel, XH, HoistProps} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistModel,
+    managed,
+    BoxProps,
+    useLocalModel,
+    XH,
+    HoistProps
+} from '@xh/hoist/core';
 import {fmtDate, TIME_FMT} from '@xh/hoist/format';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -14,7 +22,6 @@ import {isNumber} from 'lodash';
 import {getLayoutProps} from '../../utils/react';
 
 export interface ClockProps extends HoistProps, BoxProps {
-
     /** String to display if the timezone is invalid or an offset cannot be fetched. */
     errorString?: string;
 
@@ -136,6 +143,6 @@ function getAdjustedTime(offset) {
 
     // Get UTC time by accounting for the local timezone offset (in minutes),
     // then add the offset returned by the server to return local time for configured timezone
-    const utcTime = now.getTime() + (now.getTimezoneOffset() * MINUTES);
+    const utcTime = now.getTime() + now.getTimezoneOffset() * MINUTES;
     return new Date(utcTime + offset);
 }

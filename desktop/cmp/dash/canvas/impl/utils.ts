@@ -37,11 +37,10 @@ export function createViewMenuItems({
 
     dashCanvasModel.viewSpecs
         .filter(viewSpec => {
-            return viewSpec.allowAdd &&
-                (
-                    !viewSpec.unique ||
-                    !(dashCanvasModel.getViewsBySpecId(viewSpec.id).length)
-                );
+            return (
+                viewSpec.allowAdd &&
+                (!viewSpec.unique || !dashCanvasModel.getViewsBySpecId(viewSpec.id).length)
+            );
         })
         .forEach(viewSpec => {
             const {title, icon, groupName, id} = viewSpec,
@@ -52,10 +51,9 @@ export function createViewMenuItems({
                         if (replaceExisting) {
                             dashCanvasModel.replaceView(viewId, id);
                         } else {
-                            dashCanvasModel.addViewInternal(
-                                id,
-                                {layout: addPosition, previousViewId: viewId}
-                            ).ensureVisible();
+                            dashCanvasModel
+                                .addViewInternal(id, {layout: addPosition, previousViewId: viewId})
+                                .ensureVisible();
                         }
                     }
                 };
@@ -67,17 +65,17 @@ export function createViewMenuItems({
             }
         });
 
-
     return [
-        ...Object.keys(groupedItems)
-            .map(group => {
-                // If we have any ungrouped root items (i.e. in a 'mixed mode'),
-                // insert a hidden icon to align the item text.
-                const icon = ungroupedItems.length ? Icon.angleRight({style: {visibility: 'hidden'}}) : undefined,
-                    text = group,
-                    items = groupedItems[group];
-                return {icon, text, items};
-            }),
+        ...Object.keys(groupedItems).map(group => {
+            // If we have any ungrouped root items (i.e. in a 'mixed mode'),
+            // insert a hidden icon to align the item text.
+            const icon = ungroupedItems.length
+                    ? Icon.angleRight({style: {visibility: 'hidden'}})
+                    : undefined,
+                text = group,
+                items = groupedItems[group];
+            return {icon, text, items};
+        }),
         ...ungroupedItems
     ];
 }
@@ -90,12 +88,10 @@ export function createViewMenuItems({
  * @param dashCanvasModel - backing model
  */
 const calcAddPosition = (x: number, y: number, dashCanvasModel: DashCanvasModel) => {
-    const calcXY = (positionParams, top, left, w=0, h=0) => {
-        const calcGridColWidth = (positionParams) => {
-            const { margin, containerPadding, containerWidth, cols } = positionParams;
-            return (
-                (containerWidth - margin[0] * (cols - 1) - containerPadding[0] * 2) / cols
-            );
+    const calcXY = (positionParams, top, left, w = 0, h = 0) => {
+        const calcGridColWidth = positionParams => {
+            const {margin, containerPadding, containerWidth, cols} = positionParams;
+            return (containerWidth - margin[0] * (cols - 1) - containerPadding[0] * 2) / cols;
         };
 
         const clamp = (num, lowerBound, upperBound) =>
@@ -108,14 +104,20 @@ const calcAddPosition = (x: number, y: number, dashCanvasModel: DashCanvasModel)
 
         x = clamp(x, 0, cols - w);
         y = clamp(y, 0, maxRows - h);
-        return { x, y };
+        return {x, y};
     };
 
     const {margin, columns: cols, rowHeight, maxRows, ref, containerPadding} = dashCanvasModel,
         containerPosition = ref.current.getBoundingClientRect(),
         {left: containerLeft, top: containerTop, width: containerWidth} = containerPosition,
-        positionParams = {margin, cols, rowHeight, maxRows,
-            containerPadding: containerPadding ?? margin, containerWidth},
+        positionParams = {
+            margin,
+            cols,
+            rowHeight,
+            maxRows,
+            containerPadding: containerPadding ?? margin,
+            containerWidth
+        },
         left = x - containerLeft,
         top = y - containerTop;
 

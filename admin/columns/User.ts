@@ -56,11 +56,12 @@ export const impersonatingFlag: ColumnSpec = {
     width: 50,
     renderer: (v, {record}) => {
         const {impersonating} = record.data;
-        return impersonating ?
-            Icon.impersonate({
-                className: 'xh-text-color-accent',
-                title: `Impersonating ${impersonating}`
-            }) : null;
+        return impersonating
+            ? Icon.impersonate({
+                  className: 'xh-text-color-accent',
+                  title: `Impersonating ${impersonating}`
+              })
+            : null;
     }
 };
 

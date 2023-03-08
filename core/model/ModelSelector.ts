@@ -19,17 +19,18 @@ import {throwIf} from '@xh/hoist/utils/js';
  *  - function taking a model and returning any of the above.
  */
 export type ModelSelector<T extends HoistModel = HoistModel> =
-    HoistModelClass<T> |
-    string |
-    boolean |
-    ((model: HoistModel) => ModelSelector<T>)
+    | HoistModelClass<T>
+    | string
+    | boolean
+    | ((model: HoistModel) => ModelSelector<T>);
 
 /**
  * Ensure an object is a ModelSelector, or throw.
  */
 export function ensureIsSelector(s: any) {
     const isFunc = isFunction(s),
-        msg = 'A valid subclass of HoistModel, a function, or "*" is required as a selector.' +
+        msg =
+            'A valid subclass of HoistModel, a function, or "*" is required as a selector.' +
             'Functional form may take a HoistModel and return a boolean, or take no arguments and ' +
             'return a subclass of HoistModel.';
 
@@ -46,12 +47,11 @@ export function ensureIsSelector(s: any) {
 export function formatSelector(selector: ModelSelector): string {
     if (isString(selector)) return selector;
     if (isFunction(selector)) {
-        let sel:any = selector;
+        let sel: any = selector;
         if (sel.isHoistModel) return sel.name;
         try {
             sel = sel();
-        } catch (e) {
-        }
+        } catch (e) {}
         if (sel.isHoistModel) return '() => ' + sel.name;
     }
     return '[Selector]';
@@ -67,8 +67,11 @@ export function formatSelector(selector: ModelSelector): string {
  */
 export const lookup: any = (selector: ModelSelector) => {
     ensureIsSelector(selector);
-    return function(target, property, descriptor) {
-        throwIf(!target.isHoistModel, '@lookup decorator should be applied to a subclass of HoistModel');
+    return function (target, property, descriptor) {
+        throwIf(
+            !target.isHoistModel,
+            '@lookup decorator should be applied to a subclass of HoistModel'
+        );
         // Be sure to create list for *this* particular class. Clone and include inherited values.
         const key = '_xhInjectedParentProperties';
         if (!target.hasOwnProperty(key)) {

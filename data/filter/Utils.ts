@@ -48,9 +48,12 @@ export function parseFilter(spec: FilterLike): Filter {
     if (s.filters) {
         const ret = new CompoundFilter(s);
         switch (ret.filters.length) {
-            case 0: return null;
-            case 1: return ret.filters[0];
-            default: return ret;
+            case 0:
+                return null;
+            case 1:
+                return ret.filters[0];
+            default:
+                return ret;
         }
     }
 
@@ -64,15 +67,17 @@ export function parseFilter(spec: FilterLike): Filter {
  * @param newFilter - New filter(s) to add.
  * @param field - StoreRecord Field name used to identify filters for replacement
  */
-export function withFilterByField(filter: FilterLike, newFilter: FilterLike, field: string): Filter {
+export function withFilterByField(
+    filter: FilterLike,
+    newFilter: FilterLike,
+    field: string
+): Filter {
     const isCompound = filter && 'filters' in filter,
         currFilters = isCompound ? filter.filters : [filter],
         ret = currFilters.filter((it: any) => it && it.field !== field) as FilterLike[];
 
     ret.push(...castArray(newFilter));
-    return isCompound ?
-        parseFilter({filters: ret, op: filter.op}) :
-        parseFilter(ret);
+    return isCompound ? parseFilter({filters: ret, op: filter.op}) : parseFilter(ret);
 }
 
 /**
@@ -87,9 +92,7 @@ export function withFilterByKey(filter: FilterLike, newFilter: FilterLike, key: 
         ret = currFilters.filter((it: any) => it && it.key !== key) as FilterLike[];
 
     ret.push(...castArray(newFilter));
-    return isCompound ?
-        parseFilter({filters: ret, op: filter.op}) :
-        parseFilter(ret);
+    return isCompound ? parseFilter({filters: ret, op: filter.op}) : parseFilter(ret);
 }
 
 /**
@@ -98,9 +101,13 @@ export function withFilterByKey(filter: FilterLike, newFilter: FilterLike, key: 
  * @param newFilter - New filter(s) to add.
  * @param types - Filter type(s) used to identify filters for replacement
  */
-export function withFilterByTypes(filter: Filter, newFilter: FilterLike, types: Some<string>): Filter {
+export function withFilterByTypes(
+    filter: Filter,
+    newFilter: FilterLike,
+    types: Some<string>
+): Filter {
     const isCompound = filter instanceof CompoundFilter,
-        currFilters = isCompound ? filter.filters : [filter] as FilterLike[];
+        currFilters = isCompound ? filter.filters : ([filter] as FilterLike[]);
 
     const ret = currFilters.filter(it => {
         for (const type of castArray(types)) {
@@ -112,9 +119,7 @@ export function withFilterByTypes(filter: Filter, newFilter: FilterLike, types: 
     });
 
     ret.push(...castArray(newFilter));
-    return isCompound ?
-        parseFilter({filters: ret, op: filter.op}) :
-        parseFilter(ret);
+    return isCompound ? parseFilter({filters: ret, op: filter.op}) : parseFilter(ret);
 }
 
 /**
@@ -136,8 +141,8 @@ export function flattenFilter(spec: FilterLike): Filter[] {
 export function combineValueFilters(filters = []): Filter[] {
     const groupMap = groupBy(filters, ({op, field}) => `${op}|${field}`);
     return flatMap(groupMap, filters => {
-        return (filters.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(filters[0].op)) ?
-            {...filters[0], value: flatMap(filters, it => it.value)} :
-            filters;
+        return filters.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(filters[0].op)
+            ? {...filters[0], value: flatMap(filters, it => it.value)}
+            : filters;
     });
 }

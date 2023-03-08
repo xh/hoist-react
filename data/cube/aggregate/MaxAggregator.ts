@@ -8,11 +8,10 @@
 import {Aggregator} from './Aggregator';
 
 export class MaxAggregator extends Aggregator {
-
     override aggregate(rows, fieldName) {
         return rows.reduce((ret, it) => {
             const val = it.data[fieldName];
-            if (val != null  && (ret == null || val > ret)) {
+            if (val != null && (ret == null || val > ret)) {
                 ret = val;
             }
             return ret;

@@ -22,7 +22,8 @@ export const required: Constraint = ({value, displayName}) => {
         isNil(value) ||
         (isString(value) && value.trim().length === 0) ||
         (isArray(value) && value.length === 0)
-    ) return `${displayName} is required.`;
+    )
+        return `${displayName} is required.`;
 };
 
 /**
@@ -32,6 +33,7 @@ export const required: Constraint = ({value, displayName}) => {
 export const validEmail: Constraint<string> = ({value, displayName}) => {
     if (isNil(value)) return null;
 
+    // prettier-ignore
     // eslint-disable-next-line no-useless-escape
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
         isValid = re.test(value);
@@ -44,15 +46,16 @@ export function lengthIs(c: LengthIsOptions): Constraint<string> {
         if (isNil(value)) return null;
 
         const {min, max} = c;
-        if (min != null && value.length < min) return `${displayName} must contain at least ${min} characters.`;
-        if (max != null && value.length > max) return `${displayName} must contain no more than ${max} characters.`;
+        if (min != null && value.length < min)
+            return `${displayName} must contain at least ${min} characters.`;
+        if (max != null && value.length > max)
+            return `${displayName} must contain no more than ${max} characters.`;
     };
 }
 export interface LengthIsOptions {
     min?: number;
     max?: number;
 }
-
 
 /** Validate amount of a number */
 export function numberIs(c: NumberIsOptions): Constraint<number> {
@@ -61,25 +64,27 @@ export function numberIs(c: NumberIsOptions): Constraint<number> {
 
         const {min, max, gt, lt, notZero} = c;
         if (notZero && value === 0) return `${displayName} must not be zero.`;
-        if (isFinite(min) && value < min) return `${displayName} must be greater than or equal to ${min}.`;
-        if (isFinite(max) && value > max) return `${displayName} must be less than or equal to ${max}.`;
+        if (isFinite(min) && value < min)
+            return `${displayName} must be greater than or equal to ${min}.`;
+        if (isFinite(max) && value > max)
+            return `${displayName} must be less than or equal to ${max}.`;
         if (isFinite(gt) && value <= gt) return `${displayName} must be greater than ${gt}.`;
         if (isFinite(lt) && value >= lt) return `${displayName} must be less than ${lt}.`;
     };
 }
 export interface NumberIsOptions {
-     /** Minimum value (value must be gte).*/
-     min?: number;
+    /** Minimum value (value must be gte).*/
+    min?: number;
     /** Maximum value (value must be lte).*/
-     max?: number;
-     gt?: number;
-     lt?: number;
-     /** True to disallow 0. */
-     notZero?: boolean;
+    max?: number;
+    gt?: number;
+    lt?: number;
+    /** True to disallow 0. */
+    notZero?: boolean;
 }
 
 /** Validate a date or LocalDate against allowed min/max boundaries. */
-export function dateIs(c: DateIsOptions): Constraint<Date|LocalDate> {
+export function dateIs(c: DateIsOptions): Constraint<Date | LocalDate> {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
 
@@ -112,15 +117,25 @@ export function dateIs(c: DateIsOptions): Constraint<Date|LocalDate> {
         let error = null;
         if (minMoment?.isAfter(val)) {
             switch (min) {
-                case 'now': error = 'in the past.'; break;
-                case 'today': error = 'before today.'; break;
-                default: error = `before ${minMoment.format(fmt)}`;
+                case 'now':
+                    error = 'in the past.';
+                    break;
+                case 'today':
+                    error = 'before today.';
+                    break;
+                default:
+                    error = `before ${minMoment.format(fmt)}`;
             }
         } else if (maxMoment?.isBefore(val)) {
             switch (max) {
-                case 'now': error = 'in the future.'; break;
-                case 'today': error = 'after today.'; break;
-                default: error = `after ${maxMoment.format(fmt)}`;
+                case 'now':
+                    error = 'in the future.';
+                    break;
+                case 'today':
+                    error = 'after today.';
+                    break;
+                default:
+                    error = `after ${maxMoment.format(fmt)}`;
             }
         }
         return error ? `${displayName} must not be ${error}` : null;
@@ -132,25 +147,24 @@ export interface DateIsOptions {
      * Earliest allowed value for the date to be checked.
      * Supports values 'now' (instant rule is run) and 'today' (any time on the current day).
      */
-    min?: Date|LocalDate|'now'|'today';
+    min?: Date | LocalDate | 'now' | 'today';
     /**
      * Latest allowed value for the date to be checked.
      * Supports values 'now' (instant rule is run) and 'today' (any time on the current day).
      */
-    max?: Date|LocalDate|'now'|'today';
+    max?: Date | LocalDate | 'now' | 'today';
     /** Custom date format to be used in validation message. */
     fmt?: string;
 }
 
 /**
-* Apply a constraint to an array of values, e.g values coming from a tag picker.
-*
-* @param constraint - the executed constraint function to use on each individual value.
-* @returns a constraint appropriate for an array of values.
-*/
+ * Apply a constraint to an array of values, e.g values coming from a tag picker.
+ *
+ * @param constraint - the executed constraint function to use on each individual value.
+ * @returns a constraint appropriate for an array of values.
+ */
 export function constrainAll<T>(constraint: Constraint<T>): Constraint<T[]> {
     return (fieldState, map) => {
-
         const {value} = fieldState;
         if (!isArray(value) || isNil(value) || isEmpty(value)) return null;
 
@@ -164,9 +178,9 @@ export function constrainAll<T>(constraint: Constraint<T>): Constraint<T[]> {
 }
 
 /**
-* Validate that a value does not contain specific strings or characters.
-* @param excludeVals - one or more strings to exclude
-*/
+ * Validate that a value does not contain specific strings or characters.
+ * @param excludeVals - one or more strings to exclude
+ */
 export function stringExcludes(...excludeVals: string[]): Constraint<string> {
     return ({value, displayName}) => {
         if (isNil(value)) return null;

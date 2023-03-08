@@ -16,12 +16,10 @@ import {createRef} from 'react';
 import {LogDisplayModel} from './LogDisplayModel';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 
-
 /**
  * @internal
  */
 export class LogViewerModel extends HoistModel {
-
     // Overall State
     @observable file: string = null;
 
@@ -62,7 +60,7 @@ export class LogViewerModel extends HoistModel {
 
         this.addReaction({
             track: () => this.selectedRecord,
-            run: (rec) => {
+            run: rec => {
                 this.file = rec?.data?.filename;
             }
         });
@@ -74,7 +72,9 @@ export class LogViewerModel extends HoistModel {
         try {
             await store.loadAsync(loadSpec);
             if (selModel.isEmpty) {
-                const latestAppLog = store.records.find(rec => rec.data.filename === `${XH.appCode}.log`);
+                const latestAppLog = store.records.find(
+                    rec => rec.data.filename === `${XH.appCode}.log`
+                );
                 if (latestAppLog) {
                     selModel.select(latestAppLog);
                 }
@@ -105,7 +105,6 @@ export class LogViewerModel extends HoistModel {
         } catch (e) {
             XH.handleException(e);
         }
-
     }
 
     async downloadSelectedAsync() {
@@ -126,7 +125,6 @@ export class LogViewerModel extends HoistModel {
                 icon: Icon.download(),
                 message: 'Download complete.'
             });
-
         } catch (e) {
             XH.handleException(e);
         }
@@ -182,7 +180,7 @@ function fileSizeRenderer(v) {
     if (v == null) return '';
 
     const inMb = v > 1000000,
-        scale = inMb ? 1/1000000 : 1/1000;
+        scale = inMb ? 1 / 1000000 : 1 / 1000;
 
     return fmtNumber(v * scale, {
         precision: 1,

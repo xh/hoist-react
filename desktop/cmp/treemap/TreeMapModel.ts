@@ -104,7 +104,7 @@ export interface TreeMapConfig {
     onDoubleClick?: (StoreRecord, MouseEvent) => void;
 
     /** `true` to use the default tooltip renderer, or a custom tooltipFn. */
-    tooltip?: boolean|TreeMapTooltipFn;
+    tooltip?: boolean | TreeMapTooltipFn;
 
     /** Element/text to render if TreeMap has no records. */
     emptyText?: ReactNode;
@@ -114,7 +114,6 @@ export interface TreeMapConfig {
 }
 
 export class TreeMapModel extends HoistModel {
-
     //------------------------
     // Immutable public properties
     //------------------------
@@ -126,7 +125,7 @@ export class TreeMapModel extends HoistModel {
     heatRenderer: TreeMapHeatRendererFn;
     onClick: (StoreRecord, MouseEvent) => void;
     onDoubleClick: (StoreRecord, MouseEvent) => void;
-    tooltip: boolean|TreeMapTooltipFn;
+    tooltip: boolean | TreeMapTooltipFn;
     emptyText: ReactNode;
 
     //------------------------
@@ -175,7 +174,7 @@ export class TreeMapModel extends HoistModel {
 
         this.gridModel = gridModel;
         this.store = store ? store : gridModel ? gridModel.store : null;
-        throwIf(!this.store,  'TreeMapModel requires either a Store or a GridModel');
+        throwIf(!this.store, 'TreeMapModel requires either a Store or a GridModel');
 
         this.maxNodes = maxNodes;
         this.maxLabels = maxLabels;
@@ -188,13 +187,22 @@ export class TreeMapModel extends HoistModel {
         this.maxHeat = maxHeat;
         this.maxDepth = maxDepth;
 
-        throwIf(!['sliceAndDice', 'stripes', 'squarified', 'strip'].includes(algorithm), `Algorithm "${algorithm}" not recognised.`);
+        throwIf(
+            !['sliceAndDice', 'stripes', 'squarified', 'strip'].includes(algorithm),
+            `Algorithm "${algorithm}" not recognised.`
+        );
         this.algorithm = algorithm;
 
-        throwIf(!['linear', 'wash', 'none'].includes(colorMode), `Color mode "${colorMode}" not recognised.`);
+        throwIf(
+            !['linear', 'wash', 'none'].includes(colorMode),
+            `Color mode "${colorMode}" not recognised.`
+        );
         this.colorMode = colorMode;
 
-        throwIf(theme && !['system', 'light', 'dark'].includes(theme), `Theme "${theme}" not recognised.`);
+        throwIf(
+            theme && !['system', 'light', 'dark'].includes(theme),
+            `Theme "${theme}" not recognised.`
+        );
         this.theme = theme;
 
         this.onClick = withDefault(onClick, this.defaultOnClick);
@@ -261,9 +269,9 @@ export class TreeMapModel extends HoistModel {
 
     @computed
     get error(): string {
-        return (this.data.length > this.maxNodes) ?
-            'Data node limit reached. Unable to render TreeMap.' :
-            null;
+        return this.data.length > this.maxNodes
+            ? 'Data node limit reached. Unable to render TreeMap.'
+            : null;
     }
 
     //-------------------------
@@ -361,7 +369,7 @@ export class TreeMapModel extends HoistModel {
         // ColorMode === 'none'
         //---------------------
         if (!data.length || colorMode === 'none') {
-            data.forEach(it => it.colorValue = 0.5);
+            data.forEach(it => (it.colorValue = 0.5));
             return data;
         }
 
@@ -422,10 +430,10 @@ export class TreeMapModel extends HoistModel {
     }
 
     normalizeToRange(value, fromMin, fromMax, toMin, toMax) {
-        const fromRange = (fromMax - fromMin),
-            toRange = (toMax - toMin);
+        const fromRange = fromMax - fromMin,
+            toRange = toMax - toMin;
 
-        return (((value - fromMin) * toRange) / fromRange) + toMin;
+        return ((value - fromMin) * toRange) / fromRange + toMin;
     }
 
     valueIsValid(value) {
@@ -469,7 +477,7 @@ export class TreeMapModel extends HoistModel {
         gridModel.ensureSelectionVisibleAsync();
     };
 
-    defaultOnDoubleClick = (record) => {
+    defaultOnDoubleClick = record => {
         if (!this.gridModel?.treeMode || isEmpty(record.children)) return;
         this.toggleNodeExpanded(record.treePath);
     };
@@ -493,10 +501,10 @@ export interface TreeMapRecord {
 }
 
 /** Layout algorithm to use. */
-export type TreeMapAlgorithm = 'squarified'|'sliceAndDice'|'stripes'|'strip';
+export type TreeMapAlgorithm = 'squarified' | 'sliceAndDice' | 'stripes' | 'strip';
 
 /** Heat color distribution mode. */
-export type TreeMapColorMode = 'linear'|'wash'|'none';
+export type TreeMapColorMode = 'linear' | 'wash' | 'none';
 
 /**
  * Normalized renderer function to display value in the tree map tooltip.

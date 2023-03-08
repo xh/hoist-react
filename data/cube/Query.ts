@@ -29,13 +29,13 @@ export interface QueryConfig {
      * Fields or field names. If unspecified will include all available fields
      * from the source Cube, otherwise supply a subset to optimize aggregation performance.
      */
-    fields?: string[]|CubeField[];
+    fields?: string[] | CubeField[];
 
     /**
      * Fields or field names to group on. Any fields provided must also be in fields config, above. If none
      * given the resulting data will not be grouped.
      */
-    dimensions?: string[]|CubeField[];
+    dimensions?: string[] | CubeField[];
 
     /**
      * One or more filters or configs to create one.  If an array, a single 'AND' filter will
@@ -55,7 +55,6 @@ export interface QueryConfig {
 
 /** {@inheritDoc QueryConfig} */
 export class Query {
-
     readonly fields: CubeField[];
     readonly dimensions: CubeField[];
     readonly filter: Filter;
@@ -129,7 +128,7 @@ export class Query {
     //------------------------
     // Implementation
     //------------------------
-    private parseFields(raw: CubeField[]|string[]): CubeField[] {
+    private parseFields(raw: CubeField[] | string[]): CubeField[] {
         const {fields} = this.cube;
         if (!raw) return fields;
         if (raw[0] instanceof CubeField) return raw as CubeField[];
@@ -137,7 +136,7 @@ export class Query {
         return fields.filter(f => names.includes(f.name));
     }
 
-    private parseDimensions(raw: CubeField[]|string[]): CubeField[] {
+    private parseDimensions(raw: CubeField[] | string[]): CubeField[] {
         if (!raw) return null;
         if (raw[0] instanceof CubeField) return raw as CubeField[];
         const {fields} = this;

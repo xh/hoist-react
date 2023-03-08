@@ -19,7 +19,7 @@ import {PlainObject} from '@xh/hoist/core';
 export function createRenderer<V = any, C = PlainObject, R = any>(
     formatter: (v: V, obj?: C) => R
 ): (obj?: C) => (v: V) => R {
-    return function(config) {
+    return function (config) {
         return (v: V) => formatter(v, config);
     };
 }

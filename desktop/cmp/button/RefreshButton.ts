@@ -21,14 +21,17 @@ export type RefreshButtonProps = ButtonProps<HoistModel>;
  */
 export const [RefreshButton, refreshButton] = hoistCmp.withFactory<RefreshButtonProps>({
     displayName: 'RefreshButton',
-    model: false,  // For consistency with all other buttons -- the model prop here could be replaced by 'target'
+    model: false, // For consistency with all other buttons -- the model prop here could be replaced by 'target'
 
     render({model, onClick, ...props}, ref) {
         const refreshContextModel = useContextModel(RefreshContextModel);
 
         if (!onClick) {
             let target: HoistModel = model;
-            errorIf(target && !target.loadSupport, 'Models provided to RefreshButton must enable LoadSupport.');
+            errorIf(
+                target && !target.loadSupport,
+                'Models provided to RefreshButton must enable LoadSupport.'
+            );
             target = withDefault(target, refreshContextModel);
             onClick = target ? () => target.refreshAsync() : null;
         }

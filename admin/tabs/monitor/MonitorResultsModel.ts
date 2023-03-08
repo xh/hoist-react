@@ -13,7 +13,6 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {min, sortBy} from 'lodash';
 
 export class MonitorResultsModel extends HoistModel {
-
     @observable.ref results = [];
     @observable lastRun = null;
     @managed timer = null;
@@ -53,16 +52,15 @@ export class MonitorResultsModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         if (!isDisplayed(this.viewRef.current)) return;
 
-        return XH
-            .fetchJson({url: 'monitorAdmin/results', loadSpec})
+        return XH.fetchJson({url: 'monitorAdmin/results', loadSpec})
             .then(rows => {
                 this.completeLoad(rows);
-            }).catch(e => {
+            })
+            .catch(e => {
                 this.completeLoad({});
                 throw e;
             });
     }
-
 
     async forceRunAllMonitorsAsync() {
         try {
@@ -84,9 +82,9 @@ export class MonitorResultsModel extends HoistModel {
 
     @action
     private getLastRun() {
-        const lastRun = min(this.results.
-            filter(monitor => monitor.status !== 'UNKNOWN')
-            .map(it => it.date));
+        const lastRun = min(
+            this.results.filter(monitor => monitor.status !== 'UNKNOWN').map(it => it.date)
+        );
 
         this.lastRun = lastRun ? new Date(lastRun) : null;
     }

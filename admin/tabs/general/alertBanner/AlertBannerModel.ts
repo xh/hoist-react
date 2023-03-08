@@ -13,7 +13,6 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 
 export class AlertBannerModel extends HoistModel {
-
     savedValue;
 
     @managed
@@ -50,13 +49,8 @@ export class AlertBannerModel extends HoistModel {
     @observable.ref
     bannerModel = null;
 
-    get intentOptions() : Intent[] {
-        return [
-            'primary',
-            'success',
-            'warning',
-            'danger'
-        ];
+    get intentOptions(): Intent[] {
+        return ['primary', 'success', 'warning', 'danger'];
     }
 
     get iconOptions() {
@@ -102,10 +96,7 @@ export class AlertBannerModel extends HoistModel {
     }
 
     async saveAsync() {
-        return this
-            .saveInternalAsync()
-            .linkTo(this.loadModel)
-            .catchDefault();
+        return this.saveInternalAsync().linkTo(this.loadModel).catchDefault();
     }
 
     resetForm() {
@@ -119,21 +110,19 @@ export class AlertBannerModel extends HoistModel {
     @action
     private syncPreview() {
         const vals = this.formModel.values,
-            conf = XH.alertBannerService.genBannerSpec(vals.message, vals.intent, vals.iconName, vals.enableClose);
+            conf = XH.alertBannerService.genBannerSpec(
+                vals.message,
+                vals.intent,
+                vals.iconName,
+                vals.enableClose
+            );
         this.bannerModel = new BannerModel(conf);
     }
 
     private async saveInternalAsync() {
         const {formModel, savedValue} = this,
-            {
-                active,
-                message,
-                intent,
-                iconName,
-                enableClose,
-                expires,
-                created
-            } = formModel.getData();
+            {active, message, intent, iconName, enableClose, expires, created} =
+                formModel.getData();
 
         await formModel.validateAsync();
         if (!formModel.isValid) return;
@@ -143,12 +132,23 @@ export class AlertBannerModel extends HoistModel {
         // Ask some questions if we are dealing with live stuff
         if (XH.alertBannerService.enabled && (active || savedValue?.active)) {
             // Question 1. Reshow when modifying an active && already active, closable banner?
-            if (active && savedValue?.active && savedValue?.enableClose && savedValue?.publishDate) {
+            if (
+                active &&
+                savedValue?.active &&
+                savedValue?.enableClose &&
+                savedValue?.publishDate
+            ) {
                 const reshow = await XH.confirm({
                     message: fragment(
-                        p('You are updating an already-active banner. Some users might have already read and closed this alert.'),
-                        p('Choose below if you would like to show this banner again to all users, including those who have already closed it once.'),
-                        p('(Users who have not yet seen or closed this alert will be shown the new version either way.)')
+                        p(
+                            'You are updating an already-active banner. Some users might have already read and closed this alert.'
+                        ),
+                        p(
+                            'Choose below if you would like to show this banner again to all users, including those who have already closed it once.'
+                        ),
+                        p(
+                            '(Users who have not yet seen or closed this alert will be shown the new version either way.)'
+                        )
                     ),
                     cancelProps: {
                         text: 'Update quietly',

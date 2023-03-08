@@ -19,7 +19,8 @@ import {isEmpty} from 'lodash';
  * @internal
  */
 export const dashCanvasContextMenu = hoistCmp.factory({
-    model: null, observer: null,
+    model: null,
+    observer: null,
     render({dashCanvasModel, position}) {
         const menuItems = createMenuItems({dashCanvasModel, position});
         return contextMenu({menuItems});
@@ -41,6 +42,5 @@ function createMenuItems({dashCanvasModel, position}) {
         },
         '-',
         ...(extraMenuItems ?? [])
-
     ];
 }

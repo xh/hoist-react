@@ -1,9 +1,9 @@
 /*
-* This file belongs to Hoist, an application development toolkit
-* developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
-*
-* Copyright © 2022 Extremely Heavy Industries Inc.
-*/
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2022 Extremely Heavy Industries Inc.
+ */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';

@@ -20,8 +20,14 @@
     "./static/polyfills.js"
   ],
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": "eslint",
-    "*.s?(a|c)ss": "stylelint"
+    "*.{js,jsx,ts,tsx}": [
+      "eslint",
+      "prettier --write"
+    ],
+    "*.s?(a|c)ss": [
+      "stylelint",
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@blueprintjs/core": "^4.14.1",
@@ -80,9 +86,11 @@
   "devDependencies": {
     "@xh/hoist-dev-utils": "^6.1.1",
     "eslint-plugin-tsdoc": "^0.2.17",
+    "eslint-config-prettier": "8.x",
     "husky": "^8.0.2",
     "lint-staged": "^13.0.3",
     "postcss": "^8.4.19",
+    "prettier": "^2.8.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "stylelint": "^14.15.0",

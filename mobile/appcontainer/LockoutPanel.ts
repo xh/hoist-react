@@ -28,7 +28,9 @@ export const lockoutPanel = hoistCmp.factory({
                 item: div(
                     XH.accessDeniedMessage ?? '',
                     vspacer(10),
-                    `You are logged in as ${user.username} and have the roles [${user.roles.join(', ') || '--'}].`,
+                    `You are logged in as ${user.username} and have the roles [${
+                        user.roles.join(', ') || '--'
+                    }].`,
                     vspacer(10),
                     appSpec.lockoutMessage,
                     vspacer(20),

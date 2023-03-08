@@ -12,13 +12,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import './TextArea.scss';
 
-
-export interface TextAreaProps extends
-    HoistProps,
-    HoistInputProps,
-    StyleProps,
-    LayoutProps
-{
+export interface TextAreaProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
     value?: string;
 
     /** True to commit on every change/keystroke, default false. */
@@ -63,15 +57,15 @@ class TextAreaInputModel extends HoistInputModel {
         return this.domEl.querySelector('textarea');
     }
 
-    onChange = (ev) => {
+    onChange = ev => {
         this.noteValueChange(ev.target.value);
     };
 
-    onKeyDown = (ev) => {
+    onKeyDown = ev => {
         this.componentProps.onKeyDown?.(ev);
     };
 
-    override onFocus = (ev) => {
+    override onFocus = ev => {
         if (this.componentProps.selectOnFocus && ev.target && ev.target.select) {
             ev.target.select();
         }
@@ -79,33 +73,31 @@ class TextAreaInputModel extends HoistInputModel {
     };
 }
 
-const cmp = hoistCmp.factory<TextAreaInputModel>(
-    ({model, className, ...props}, ref) => {
-        const {width, height, ...layoutProps} = getLayoutProps(props);
+const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, ref) => {
+    const {width, height, ...layoutProps} = getLayoutProps(props);
 
-        return div({
-            item: textareaTag({
-                value: model.renderValue || '',
+    return div({
+        item: textareaTag({
+            value: model.renderValue || '',
 
-                disabled: props.disabled,
-                placeholder: props.placeholder,
-                spellCheck: withDefault(props.spellCheck, false),
-                tabIndex: props.tabIndex,
+            disabled: props.disabled,
+            placeholder: props.placeholder,
+            spellCheck: withDefault(props.spellCheck, false),
+            tabIndex: props.tabIndex,
 
-                onChange: model.onChange,
-                onKeyDown: model.onKeyDown,
-                onBlur: model.onBlur,
-                onFocus: model.onFocus
-            }),
-            style: {
-                ...props.style,
-                ...layoutProps,
-                width: withDefault(width, null),
-                height: withDefault(height, 100)
-            },
+            onChange: model.onChange,
+            onKeyDown: model.onKeyDown,
+            onBlur: model.onBlur,
+            onFocus: model.onFocus
+        }),
+        style: {
+            ...props.style,
+            ...layoutProps,
+            width: withDefault(width, null),
+            height: withDefault(height, 100)
+        },
 
-            className,
-            ref
-        });
-    }
-);
+        className,
+        ref
+    });
+});

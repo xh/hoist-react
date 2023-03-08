@@ -19,9 +19,8 @@ import {BaseRow} from './row/BaseRow';
 import {BucketSpec} from './BucketSpec';
 import {defaultsDeep, isEmpty} from 'lodash';
 
-
 export interface CubeConfig {
-    fields: CubeField[]|CubeFieldSpec[];
+    fields: CubeField[] | CubeFieldSpec[];
 
     /** Default configs applied to all `CubeField`s constructed internally by this Cube. */
     fieldDefaults?: Partial<CubeFieldSpec>;
@@ -67,7 +66,6 @@ export interface CubeConfig {
  * auto-updating results in response to updates to the underlying data.
  */
 export class Cube extends HoistBase {
-
     static RECORD_ID_DELIMITER = '>>';
 
     @managed store: Store;
@@ -108,17 +106,24 @@ export class Cube extends HoistBase {
     }
 
     /** Fields configured for this Cube. */
-    get fields(): CubeField[] {return this.store.fields as CubeField[]}
+    get fields(): CubeField[] {
+        return this.store.fields as CubeField[];
+    }
 
     /** Dimension Fields configured for this Cube. */
-    get dimensions(): CubeField[] {return this.fields.filter(it => it.isDimension)}
+    get dimensions(): CubeField[] {
+        return this.fields.filter(it => it.isDimension);
+    }
 
     /** Records loaded in to this Cube. */
-    get records(): StoreRecord[] {return this.store.records}
+    get records(): StoreRecord[] {
+        return this.store.records;
+    }
 
     /** Count of currently connected, auto-updating Views. */
-    get connectedViewCount(): number {return this._connectedViews.size}
-
+    get connectedViewCount(): number {
+        return this._connectedViews.size;
+    }
 
     //------------------
     // Querying API
@@ -157,10 +162,14 @@ export class Cube extends HoistBase {
      * @param connect - true to update View automatically when data in
      *      the underlying cube is changed. Default false.
      */
-    createView({query, stores, connect = false}: {
+    createView({
+        query,
+        stores,
+        connect = false
+    }: {
         query: QueryConfig;
-        stores?: Store[]|Store;
-        connect?: boolean
+        stores?: Store[] | Store;
+        connect?: boolean;
     }): View {
         return new View({
             query: new Query({...query, cube: this}),
@@ -181,7 +190,6 @@ export class Cube extends HoistBase {
         this._connectedViews.delete(view);
     }
 
-
     //-------------------
     // Data Loading API
     //-------------------
@@ -200,10 +208,7 @@ export class Cube extends HoistBase {
     async loadDataAsync(rawData: PlainObject[], info: Record<string, any> = {}): Promise<void> {
         this.store.loadData(rawData);
         this.setInfo(info);
-        await forEachAsync(
-            this._connectedViews,
-            (v) => v.noteCubeLoaded()
-        );
+        await forEachAsync(this._connectedViews, v => v.noteCubeLoaded());
     }
 
     /**
@@ -217,7 +222,10 @@ export class Cube extends HoistBase {
      *      into adds and updates, with updates determined by matching existing records by ID.
      * @param infoUpdates - new key-value pairs to be applied to existing info on this cube.
      */
-    async updateDataAsync(rawData: PlainObject[]|StoreTransaction, infoUpdates: PlainObject): Promise<void> {
+    async updateDataAsync(
+        rawData: PlainObject[] | StoreTransaction,
+        infoUpdates: PlainObject
+    ): Promise<void> {
         // 1) Process data
         const changeLog = this.store.updateData(rawData);
 
@@ -227,10 +235,7 @@ export class Cube extends HoistBase {
 
         // 3) Notify connected views
         if (changeLog || hasInfoUpdates) {
-            await forEachAsync(
-                this._connectedViews,
-                (v) => v.noteCubeUpdated(changeLog)
-            );
+            await forEachAsync(this._connectedViews, v => v.noteCubeUpdated(changeLog));
         }
     }
 
@@ -245,7 +250,7 @@ export class Cube extends HoistBase {
      */
     updateInfo(infoUpdates: Record<string, any> = {}) {
         this.setInfo({...this.info, ...infoUpdates});
-        this._connectedViews.forEach((v) => v.noteCubeUpdated(null));
+        this._connectedViews.forEach(v => v.noteCubeUpdated(null));
     }
 
     //---------------------
@@ -274,13 +279,12 @@ export class Cube extends HoistBase {
     }
 }
 
-
 /**
  * Function to be called for each node to aggregate to determine if it should be "locked",
  * preventing drilldown into its children. If true returned for a node, no drilldown will be
  * allowed, and the row will be marked with a boolean "locked" property.
  */
-export type LockFn = (row: AggregateRow|BucketRow) => boolean;
+export type LockFn = (row: AggregateRow | BucketRow) => boolean;
 
 /**
  * Function to be called for each node during row generation to determine if it should be
@@ -288,7 +292,7 @@ export type LockFn = (row: AggregateRow|BucketRow) => boolean;
  * Note that skipping in this way has no effect on aggregations -- all children of this node are
  * simply promoted to their parent node.
  */
-export type OmitFn = (row: AggregateRow|BucketRow) => boolean;
+export type OmitFn = (row: AggregateRow | BucketRow) => boolean;
 
 /**
  * Function to be called for each dimension to determine if children of said dimension should be

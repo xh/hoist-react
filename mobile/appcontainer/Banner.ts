@@ -23,14 +23,7 @@ export const banner = hoistCmp.factory({
     displayName: 'Banner',
     model: uses(BannerModel),
     render({model}) {
-        const {
-            icon,
-            message,
-            intent,
-            onClick,
-            className,
-            props
-        } = model;
+        const {icon, message, intent, onClick, className, props} = model;
 
         return div({
             className: classNames(
@@ -61,32 +54,28 @@ export const banner = hoistCmp.factory({
     }
 });
 
-const actionButton = hoistCmp.factory<BannerModel>(
-    ({model}) => {
-        const {actionButtonProps} = model;
-        if (isEmpty(actionButtonProps)) return null;
+const actionButton = hoistCmp.factory<BannerModel>(({model}) => {
+    const {actionButtonProps} = model;
+    if (isEmpty(actionButtonProps)) return null;
 
-        return button({
-            className: 'xh-banner__action-button',
-            outlined: true,
-            ...actionButtonProps
-        });
-    }
-);
+    return button({
+        className: 'xh-banner__action-button',
+        outlined: true,
+        ...actionButtonProps
+    });
+});
 
-const dismissButton = hoistCmp.factory<BannerModel>(
-    ({model}) => {
-        const {enableClose, category, onClose} = model;
-        if (!enableClose) return null;
+const dismissButton = hoistCmp.factory<BannerModel>(({model}) => {
+    const {enableClose, category, onClose} = model;
+    if (!enableClose) return null;
 
-        return button({
-            icon: Icon.close(),
-            minimal: true,
-            className: 'xh-banner__dismiss-button',
-            onClick: () => {
-                XH.hideBanner(category);
-                if (isFunction(onClose)) onClose(model);
-            }
-        });
-    }
-);
+    return button({
+        icon: Icon.close(),
+        minimal: true,
+        className: 'xh-banner__dismiss-button',
+        onClick: () => {
+            XH.hideBanner(category);
+            if (isFunction(onClose)) onClose(model);
+        }
+    });
+});

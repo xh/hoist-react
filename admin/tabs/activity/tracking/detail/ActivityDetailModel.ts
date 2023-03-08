@@ -13,7 +13,6 @@ import * as Col from '@xh/hoist/admin/columns';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
 
 export class ActivityDetailModel extends HoistModel {
-
     @lookup(ActivityTrackingModel) activityTrackingModel: ActivityTrackingModel;
     @managed gridModel: GridModel;
     @managed formModel: FormModel;
@@ -56,17 +55,19 @@ export class ActivityDetailModel extends HoistModel {
 
         this.formModel = new FormModel({
             readonly: true,
-            fields: this.gridModel.getLeafColumns().map(it => ({name: it.field, displayName: it.headerName as string}))
+            fields: this.gridModel
+                .getLeafColumns()
+                .map(it => ({name: it.field, displayName: it.headerName as string}))
         });
 
         this.addReaction({
             track: () => this.activityTrackingModel.gridModel.selectedRecord,
-            run: (aggRec) => this.showActivityEntriesAsync(aggRec)
+            run: aggRec => this.showActivityEntriesAsync(aggRec)
         });
 
         this.addReaction({
             track: () => this.gridModel.selectedRecord,
-            run: (detailRec) => this.showEntryDetail(detailRec)
+            run: detailRec => this.showEntryDetail(detailRec)
         });
     }
 
@@ -111,5 +112,4 @@ export class ActivityDetailModel extends HoistModel {
 
         this.formattedData = formattedTrackData;
     }
-
 }

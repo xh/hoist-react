@@ -16,31 +16,29 @@ import {isFunction} from 'lodash';
 import {RestStore, RestStoreConfig} from './data/RestStore';
 import {RestFormModel} from './impl/RestFormModel';
 import {FormFieldProps} from '../form';
-import { addAction, deleteAction, editAction, viewAction } from './Actions';
-import { ExportOptions } from '@xh/hoist/svc';
-
+import {addAction, deleteAction, editAction, viewAction} from './Actions';
+import {ExportOptions} from '@xh/hoist/svc';
 
 export interface RestGridConfig extends GridConfig {
-
-    store?: RestStore|RestStoreConfig;
+    store?: RestStore | RestStoreConfig;
 
     /** Prevent users from creating, updating, or destroying a record. Defaults to false. */
     readonly?: boolean;
 
     /** Actions to display in the toolbar. Defaults to add, edit, delete. */
-    toolbarActions?: Array<RecordAction|RecordActionSpec>;
+    toolbarActions?: Array<RecordAction | RecordActionSpec>;
 
     /** actions to display in the grid context menu. Defaults to add, edit, delete. */
-    menuActions?: Array<RecordAction|RecordActionSpec>;
+    menuActions?: Array<RecordAction | RecordActionSpec>;
 
     /** Actions to display in the form toolbar. Defaults to delete. */
-    formActions?: Array<RecordAction|RecordActionSpec>;
+    formActions?: Array<RecordAction | RecordActionSpec>;
 
     /** Warning to display before actions on a selection of  records. */
     actionWarning?: {
-        add?: string|((recs: StoreRecord[]) => string)
-        del?: string|((recs: StoreRecord[]) => string)
-        edit?: string|((recs: StoreRecord[]) => string)
+        add?: string | ((recs: StoreRecord[]) => string);
+        del?: string | ((recs: StoreRecord[]) => string);
+        edit?: string | ((recs: StoreRecord[]) => string);
     };
 
     /** Name that describes records in this grid. */
@@ -50,7 +48,7 @@ export interface RestGridConfig extends GridConfig {
     filterFields?: string[];
 
     /** Called prior to passing the original record and cloned record to the editor form. */
-    prepareCloneFn?: (input: {record: StoreRecord, clone: PlainObject}) => void;
+    prepareCloneFn?: (input: {record: StoreRecord; clone: PlainObject}) => void;
 
     /** Specifications for fields to be displayed in editor form. */
     editors?: RestGridEditor[];
@@ -59,9 +57,7 @@ export interface RestGridConfig extends GridConfig {
     onRowDoubleClicked?: (e: any) => void;
 }
 
-
 export interface RestGridEditor {
-
     /**
      *  Name of field to appear in the editor form - should match name of a Store Field
      *  configured for this RestGridModel.
@@ -92,29 +88,39 @@ export class RestGridModel extends HoistModel {
     //----------------
     readonly: boolean;
     editors: RestGridEditor[];
-    toolbarActions: Array<RecordAction|RecordActionSpec>;
-    menuActions: Array<RecordAction|RecordActionSpec>;
-    formActions: Array<RecordAction|RecordActionSpec>;
-    prepareCloneFn: (input: {record: StoreRecord, clone: PlainObject}) => void;
+    toolbarActions: Array<RecordAction | RecordActionSpec>;
+    menuActions: Array<RecordAction | RecordActionSpec>;
+    formActions: Array<RecordAction | RecordActionSpec>;
+    prepareCloneFn: (input: {record: StoreRecord; clone: PlainObject}) => void;
     unit: string;
     filterFields: string[] = null;
 
     actionWarning = {
         add: null,
         edit: null,
-        del: (recs) => (recs.length > 1 ?
-            `Are you sure you want to delete the selected ${recs.length} ${pluralize(this.unit)}?` :
-            `Are you sure you want to delete the selected ${this.unit}?`)
+        del: recs =>
+            recs.length > 1
+                ? `Are you sure you want to delete the selected ${recs.length} ${pluralize(
+                      this.unit
+                  )}?`
+                : `Are you sure you want to delete the selected ${this.unit}?`
     };
-
 
     @managed gridModel: GridModel = null;
     @managed formModel: RestFormModel = null;
 
-    get store() {return this.gridModel.store as RestStore}
-    get selModel() {return this.gridModel.selModel}
-    get selectedRecords() {return this.gridModel.selectedRecords}
-    get selectedRecord() {return this.gridModel.selectedRecord}
+    get store() {
+        return this.gridModel.store as RestStore;
+    }
+    get selModel() {
+        return this.gridModel.selModel;
+    }
+    get selectedRecords() {
+        return this.gridModel.selectedRecords;
+    }
+    get selectedRecord() {
+        return this.gridModel.selectedRecord;
+    }
 
     constructor({
         readonly = false,
@@ -145,12 +151,10 @@ export class RestGridModel extends HoistModel {
         this.unit = unit;
         this.filterFields = filterFields;
 
-        onRowDoubleClicked = withDefault(onRowDoubleClicked, (row) => {
+        onRowDoubleClicked = withDefault(onRowDoubleClicked, row => {
             if (!row.data) return;
 
-            this.readonly ?
-                this.formModel.openView(row.data) :
-                this.formModel.openEdit(row.data);
+            this.readonly ? this.formModel.openView(row.data) : this.formModel.openEdit(row.data);
         });
 
         this.gridModel = new GridModel({
@@ -192,7 +196,8 @@ export class RestGridModel extends HoistModel {
 
     async deleteRecordAsync(record: StoreRecord) {
         throwIf(this.readonly, 'Record not deleted: this grid is read-only');
-        return this.store.deleteRecordAsync(record)
+        return this.store
+            .deleteRecordAsync(record)
             .then(() => this.formModel.close())
             .linkTo(this.loadModel)
             .catchDefault();
@@ -200,10 +205,13 @@ export class RestGridModel extends HoistModel {
 
     async bulkDeleteRecordsAsync(records: StoreRecord[]) {
         throwIf(this.readonly, 'Records not deleted: this grid is read-only');
-        return this.store.bulkDeleteRecordsAsync(records)
+        return this.store
+            .bulkDeleteRecordsAsync(records)
             .then(resp => {
                 const intent = resp.fail > 0 ? 'warning' : 'success',
-                    message = `Deleted ${ resp.success } ${ pluralize(this.unit) } with ${ resp.fail } failures`;
+                    message = `Deleted ${resp.success} ${pluralize(this.unit)} with ${
+                        resp.fail
+                    } failures`;
 
                 XH.toast({intent, message});
             })
@@ -222,7 +230,10 @@ export class RestGridModel extends HoistModel {
     confirmDeleteRecords() {
         const records = this.selectedRecords,
             warning = this.actionWarning.del,
-            delFn = () => records.length > 1 ? this.bulkDeleteRecordsAsync(records) : this.deleteRecordAsync(records[0]);
+            delFn = () =>
+                records.length > 1
+                    ? this.bulkDeleteRecordsAsync(records)
+                    : this.deleteRecordAsync(records[0]);
 
         if (!warning) {
             delFn();
@@ -244,7 +255,7 @@ export class RestGridModel extends HoistModel {
     //-----------------
     // Implementation
     //-----------------
-    private parseStore(store: RestStore|RestStoreConfig) {
+    private parseStore(store: RestStore | RestStoreConfig) {
         return store instanceof RestStore ? store : this.markManaged(new RestStore(store));
     }
 }

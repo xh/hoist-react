@@ -5,7 +5,17 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {placeholder, frame} from '@xh/hoist/cmp/layout';
-import {HoistModel, LayoutProps, useLocalModel, uses, hoistCmp, createElement, XH, lookup, DefaultHoistProps} from '@xh/hoist/core';
+import {
+    HoistModel,
+    LayoutProps,
+    useLocalModel,
+    uses,
+    hoistCmp,
+    createElement,
+    XH,
+    lookup,
+    DefaultHoistProps
+} from '@xh/hoist/core';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isNil} from 'lodash';
@@ -13,10 +23,7 @@ import './AgGrid.scss';
 import {AgGridModel} from './AgGridModel';
 import {AgGridReact} from '@xh/hoist/kit/ag-grid';
 
-export interface AgGridProps extends
-    DefaultHoistProps<AgGridModel>,
-    LayoutProps {}
-
+export interface AgGridProps extends DefaultHoistProps<AgGridModel>, LayoutProps {}
 
 /**
  * Minimal wrapper for AgGridReact, supporting direct use of the ag-Grid component with limited
@@ -42,11 +49,10 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
     model: uses(AgGridModel),
 
     render({model, key, className, ...props}, ref) {
-
         if (!AgGridReact) {
             console.error(
                 'ag-Grid has not been imported in to this application. Please import and ' +
-                'register modules in Bootstrap.js. See the XH Toolbox app for an example.'
+                    'register modules in Bootstrap.js. See the XH Toolbox app for an example.'
             );
             return placeholder('ag-Grid library not available.');
         }
@@ -83,7 +89,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
     }
 });
 
-(function(AgGrid: any) {
+(function (AgGrid: any) {
     /**
      * Row heights (in pixels) enumerated here and available for global override if required
      * by stomping on these values directly. To override for individual grids, supply a custom
@@ -91,7 +97,8 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
      */
     AgGrid.ROW_HEIGHTS = {large: 32, standard: 28, compact: 24, tiny: 18};
     AgGrid.ROW_HEIGHTS_MOBILE = {large: 38, standard: 34, compact: 30, tiny: 26};
-    AgGrid.getRowHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS)[mode];
+    AgGrid.getRowHeightForSizingMode = mode =>
+        (XH.isMobileApp ? AgGrid.ROW_HEIGHTS_MOBILE : AgGrid.ROW_HEIGHTS)[mode];
 
     /**
      * Full-width group row heights (in pixels). To override for individual grids, use
@@ -100,15 +107,16 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
      */
     AgGrid.GROUP_ROW_HEIGHTS = {large: 28, standard: 24, compact: 22, tiny: 18};
     AgGrid.GROUP_ROW_HEIGHTS_MOBILE = {large: 38, standard: 34, compact: 30, tiny: 26};
-    AgGrid.getGroupRowHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.GROUP_ROW_HEIGHTS_MOBILE : AgGrid.GROUP_ROW_HEIGHTS)[mode];
+    AgGrid.getGroupRowHeightForSizingMode = mode =>
+        (XH.isMobileApp ? AgGrid.GROUP_ROW_HEIGHTS_MOBILE : AgGrid.GROUP_ROW_HEIGHTS)[mode];
 
     /**
      * Header heights (in pixels)
      */
     AgGrid.HEADER_HEIGHTS = {large: 28, standard: 24, compact: 22, tiny: 20};
     AgGrid.HEADER_HEIGHTS_MOBILE = {large: 42, standard: 38, compact: 34, tiny: 30};
-    AgGrid.getHeaderHeightForSizingMode = (mode) => (XH.isMobileApp ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
-
+    AgGrid.getHeaderHeightForSizingMode = mode =>
+        (XH.isMobileApp ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
 })(AgGrid);
 
 class AgGridLocalModel extends HoistModel {
@@ -133,7 +141,7 @@ class AgGridLocalModel extends HoistModel {
         }
     }
 
-    noteGridReady = (agParams) => {
+    noteGridReady = agParams => {
         this.model.handleGridReady(agParams);
         this.componentProps.onGridReady?.(agParams);
     };

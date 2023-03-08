@@ -6,15 +6,12 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
-import {
-    ColumnHeaderFilterModel
-} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
+import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {isArray, isNil} from 'lodash';
-import { CustomTabModel } from './CustomTabModel';
+import {CustomTabModel} from './CustomTabModel';
 
-
-type OperatorOptionValue = 'blank'|'not blank'|FieldFilterOperator;
+type OperatorOptionValue = 'blank' | 'not blank' | FieldFilterOperator;
 
 /**
  * @internal
@@ -30,7 +27,7 @@ export class CustomRowModel extends HoistModel {
 
     /** FieldFilter config output of this row. */
     @computed.struct
-    get value(): FieldFilterSpec  {
+    get value(): FieldFilterSpec {
         const {field} = this.fieldSpec;
 
         let op = this.op,
@@ -65,7 +62,7 @@ export class CustomRowModel extends HoistModel {
             }),
             {label: 'Is blank', value: 'blank'},
             {label: 'Is not blank', value: 'not blank'}
-        ] as {label: string, value: OperatorOptionValue}[];
+        ] as {label: string; value: OperatorOptionValue}[];
     }
 
     get commitOnChange() {

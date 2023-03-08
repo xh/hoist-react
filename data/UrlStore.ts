@@ -21,7 +21,6 @@ export interface UrlStoreConfig extends StoreConfig {
  * A store with built-in support for loading data from a URL.
  */
 export class UrlStore extends Store implements Loadable {
-
     url: string;
     dataRoot: string;
 
@@ -34,13 +33,25 @@ export class UrlStore extends Store implements Loadable {
         this.dataRoot = dataRoot;
     }
 
-    get loadModel()                         {return this.loadSupport.loadModel}
-    get lastLoadRequested()                 {return this.loadSupport.lastLoadRequested}
-    get lastLoadCompleted()                 {return this.loadSupport.lastLoadCompleted}
-    get lastLoadException()                 {return this.loadSupport.lastLoadException}
-    async refreshAsync(meta?: object)       {return this.loadSupport.refreshAsync(meta)}
-    async autoRefreshAsync(meta?: object)   {return this.loadSupport.autoRefreshAsync(meta)}
-    async loadAsync(loadSpec?: LoadSpec|Partial<LoadSpec>) {
+    get loadModel() {
+        return this.loadSupport.loadModel;
+    }
+    get lastLoadRequested() {
+        return this.loadSupport.lastLoadRequested;
+    }
+    get lastLoadCompleted() {
+        return this.loadSupport.lastLoadCompleted;
+    }
+    get lastLoadException() {
+        return this.loadSupport.lastLoadException;
+    }
+    async refreshAsync(meta?: object) {
+        return this.loadSupport.refreshAsync(meta);
+    }
+    async autoRefreshAsync(meta?: object) {
+        return this.loadSupport.autoRefreshAsync(meta);
+    }
+    async loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>) {
         return this.loadSupport.loadAsync(loadSpec);
     }
 

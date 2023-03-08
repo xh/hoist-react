@@ -17,7 +17,7 @@ export interface ModalToggleButtonProps extends ButtonProps {
 
 /**
  * A convenience button to toggle a Panel's modal view state.
-*/
+ */
 export const [ModalToggleButton, modalToggleButton] = hoistCmp.withFactory<ModalToggleButtonProps>({
     displayName: 'ModalToggleButton',
     model: false,
@@ -25,7 +25,10 @@ export const [ModalToggleButton, modalToggleButton] = hoistCmp.withFactory<Modal
     render({panelModel, ...rest}, ref) {
         panelModel = withDefault(panelModel, useContextModel(PanelModel));
 
-        errorIf(!panelModel, "No PanelModel available to ModalToggleButton. Provide via 'panelModel' prop, or context.");
+        errorIf(
+            !panelModel,
+            "No PanelModel available to ModalToggleButton. Provide via 'panelModel' prop, or context."
+        );
 
         return button({
             ref,

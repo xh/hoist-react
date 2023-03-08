@@ -27,7 +27,7 @@ export const loginPanel = hoistCmp.factory({
         const {loginMessage} = XH.appSpec,
             {loadModel, warning, isValid, loginInProgress} = model;
 
-        const onKeyDown = (ev) => {
+        const onKeyDown = ev => {
             if (ev.key === 'Enter') model.submitAsync();
         };
 

@@ -10,7 +10,6 @@ import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {Icon} from '@xh/hoist/icon/Icon';
 
 export class RegroupDialogModel extends HoistModel {
-
     _parent;
 
     @bindable groupName = null;
@@ -62,5 +61,4 @@ export class RegroupDialogModel extends HoistModel {
     open() {
         this.isOpen = true;
     }
-
 }

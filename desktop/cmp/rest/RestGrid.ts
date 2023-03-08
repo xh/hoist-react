@@ -17,27 +17,25 @@ import {restForm} from './impl/RestForm';
 import {restGridToolbar} from './impl/RestGridToolbar';
 import {RestGridModel} from './RestGridModel';
 
-
-export interface RestGridProps extends
-    HoistProps<RestGridModel>,
-    Omit<PanelProps, 'model'|'modelConfig'|'modelRef'>
-{
+export interface RestGridProps
+    extends HoistProps<RestGridModel>,
+        Omit<PanelProps, 'model' | 'modelConfig' | 'modelRef'> {
     /**
      * This constitutes an 'escape hatch' for applications that need to get to the underlying
      * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
      * interfere with the implementation of this component and its use of the ag-Grid API.
      */
-    agOptions?: PlainObject,
+    agOptions?: PlainObject;
 
     /** Optional components rendered adjacent to the top toolbar's action buttons */
-    extraToolbarItems?: (Some<ReactNode>)|(() => Some<ReactNode>);
+    extraToolbarItems?: Some<ReactNode> | (() => Some<ReactNode>);
 
     /**
      * Mask to render on this Component. Defaults to true, which renders a standard
      * Hoist mask. Also can be set to false for no mask, or passed an element
      * specifying a Mask instance.
      */
-    mask?: ReactElement|boolean;
+    mask?: ReactElement | boolean;
 
     /** Classname to be passed to RestForm. */
     formClassName?: string;
@@ -48,14 +46,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
     model: uses(RestGridModel, {publishMode: 'limited'}),
     className: 'xh-rest-grid',
 
-    render({
-        model,
-        extraToolbarItems,
-        mask = true,
-        agOptions,
-        formClassName,
-        ...props
-    }, ref) {
+    render({model, extraToolbarItems, mask = true, agOptions, formClassName, ...props}, ref) {
         const {formModel, gridModel} = model;
 
         return fragment(
@@ -70,7 +61,6 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
         );
     }
 });
-
 
 function getMaskFromProp(model, mask) {
     if (isValidElement(mask)) {

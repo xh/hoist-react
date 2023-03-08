@@ -6,4 +6,3 @@
  */
 export * from './Panel';
 export * from './PanelModel';
-

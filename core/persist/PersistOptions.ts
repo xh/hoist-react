@@ -11,12 +11,11 @@ import {DebounceSpec} from '../';
  * Options governing persistence.
  */
 export interface PersistOptions {
-
     /** Dot delimited path to store state. */
     path?: string;
 
     /** Debounce interval in ms, or a lodash debounce config. */
-    debounce?: DebounceSpec
+    debounce?: DebounceSpec;
 
     /**
      * Type of PersistenceProvider to create. If not provided, defaulted based

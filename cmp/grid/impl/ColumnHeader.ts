@@ -13,7 +13,16 @@ import {columnHeaderFilter, ColumnHeaderFilterModel} from '@xh/hoist/dynamics/de
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {debounced} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
-import {filter, size, findIndex, isEmpty, isFunction, isFinite, isUndefined, isString} from 'lodash';
+import {
+    filter,
+    size,
+    findIndex,
+    isEmpty,
+    isFunction,
+    isFinite,
+    isUndefined,
+    isString
+} from 'lodash';
 import classNames from 'classnames';
 
 import {GridSorter} from '../GridSorter';
@@ -55,7 +64,7 @@ export const columnHeader = hoistCmp.factory({
                 className: 'xh-grid-header-menu-icon',
                 item: model.isAgFiltered ? Icon.filter() : Icon.columnMenu(),
                 ref: model.agFilterButtonRef,
-                onClick: (e) => {
+                onClick: e => {
                     e.stopPropagation();
                     showColumnMenu(model.agFilterButtonRef.current);
                 }
@@ -64,13 +73,18 @@ export const columnHeader = hoistCmp.factory({
 
         const expandCollapseIcon = () => {
             const {xhColumn} = model;
-            if (!xhColumn || !xhColumn.isTreeColumn || !xhColumn.headerHasExpandCollapse || !model.rootsWithChildren) {
+            if (
+                !xhColumn ||
+                !xhColumn.isTreeColumn ||
+                !xhColumn.headerHasExpandCollapse ||
+                !model.rootsWithChildren
+            ) {
                 return null;
             }
 
-            const icon = model.majorityIsExpanded ?
-                Icon.groupRowExpanded({prefix: 'fal'}) :
-                Icon.groupRowCollapsed({prefix: 'fal'});
+            const icon = model.majorityIsExpanded
+                ? Icon.groupRowExpanded({prefix: 'fal'})
+                : Icon.groupRowCollapsed({prefix: 'fal'});
 
             return div({
                 className: 'xh-grid-header-expand-collapse-icon',
@@ -90,9 +104,9 @@ export const columnHeader = hoistCmp.factory({
         // If `xhColumn` is present, it can consulted for a richer `headerName`
         let headerElem = displayName;
         if (xhColumn) {
-            headerElem = isFunction(xhColumn.headerName) ?
-                xhColumn.headerName({column: xhColumn, gridModel}) :
-                xhColumn.headerName;
+            headerElem = isFunction(xhColumn.headerName)
+                ? xhColumn.headerName({column: xhColumn, gridModel})
+                : xhColumn.headerName;
         }
 
         // If no app tooltip dynamically toggle a tooltip to display elided header
@@ -109,12 +123,12 @@ export const columnHeader = hoistCmp.factory({
         }
 
         return div({
-            className:      classNames(className, extraClasses),
-            onClick:        model.onClick,
-            onDoubleClick:  model.onDoubleClick,
-            onMouseDown:    model.onMouseDown,
-            onTouchStart:   model.onTouchStart,
-            onTouchEnd:     model.onTouchEnd,
+            className: classNames(className, extraClasses),
+            onClick: model.onClick,
+            onDoubleClick: model.onDoubleClick,
+            onMouseDown: model.onMouseDown,
+            onTouchStart: model.onTouchStart,
+            onTouchEnd: model.onTouchEnd,
 
             items: [
                 expandCollapseIcon(),
@@ -126,15 +140,24 @@ export const columnHeader = hoistCmp.factory({
     }
 });
 
-
 class ColumnHeaderModel extends HoistModel {
     override xhImpl = true;
 
-    get gridModel()     {return this.componentProps.gridModel}
-    get xhColumn()      {return this.componentProps.xhColumn}
-    get agColumn()      {return this.componentProps.column}
-    get colId()         {return this.agColumn.colId}
-    get enableSorting() {return this.xhColumn?.sortable}
+    get gridModel() {
+        return this.componentProps.gridModel;
+    }
+    get xhColumn() {
+        return this.componentProps.xhColumn;
+    }
+    get agColumn() {
+        return this.componentProps.column;
+    }
+    get colId() {
+        return this.agColumn.colId;
+    }
+    get enableSorting() {
+        return this.xhColumn?.sortable;
+    }
 
     availableSorts;
 
@@ -164,7 +187,10 @@ class ColumnHeaderModel extends HoistModel {
         this.availableSorts = this.parseAvailableSorts();
 
         if (!XH.isMobileApp && xhColumn?.filterable && filterModel?.getFieldSpec(xhColumn.field)) {
-            this.columnHeaderFilterModel = new ColumnHeaderFilterModel({filterModel, column: xhColumn});
+            this.columnHeaderFilterModel = new ColumnHeaderFilterModel({
+                filterModel,
+                column: xhColumn
+            });
             this.enableFilter = true;
         } else {
             this.isAgFiltered = agColumn.isFilterActive();
@@ -207,7 +233,7 @@ class ColumnHeaderModel extends HoistModel {
     @computed
     get majorityIsExpanded() {
         const {expandState} = this.gridModel;
-        return !isEmpty(expandState) && size(expandState) > this.rootsWithChildren/2;
+        return !isEmpty(expandState) && size(expandState) > this.rootsWithChildren / 2;
     }
 
     // Desktop click handling
@@ -215,7 +241,7 @@ class ColumnHeaderModel extends HoistModel {
         this._lastMouseDown = Date.now();
     };
 
-    onExpandOrCollapse = (e) => {
+    onExpandOrCollapse = e => {
         const {gridModel, majorityIsExpanded} = this;
 
         e.stopPropagation();
@@ -227,8 +253,8 @@ class ColumnHeaderModel extends HoistModel {
         }
     };
 
-    onClick = (e) => {
-        if (olderThan(this._lastMouseDown, 500)) return;  // avoid spurious reaction to drag end.
+    onClick = e => {
+        if (olderThan(this._lastMouseDown, 500)) return; // avoid spurious reaction to drag end.
         this._doubleClick = false;
         this.updateSort(e.shiftKey);
     };
@@ -239,14 +265,14 @@ class ColumnHeaderModel extends HoistModel {
     };
 
     // Mobile touch handling
-    onTouchStart = (e) => {
+    onTouchStart = e => {
         e.preventDefault();
         this._lastTouchStart = Date.now();
     };
 
-    onTouchEnd = (e) => {
+    onTouchEnd = e => {
         e.preventDefault();
-        if (olderThan(this._lastTouchStart, 500)) return;  // avoid spurious reaction to drag end.
+        if (olderThan(this._lastTouchStart, 500)) return; // avoid spurious reaction to drag end.
 
         if (!olderThan(this._lastTouch, 300)) {
             this._doubleClick = true;

@@ -11,10 +11,7 @@ import '@xh/hoist/mobile/register';
 import {Children, cloneElement, isValidElement} from 'react';
 import './ButtonGroup.scss';
 
-export interface ButtonGroupProps extends
-    HoistProps,
-    BoxProps
-{
+export interface ButtonGroupProps extends HoistProps, BoxProps {
     intent?: Intent;
     minimal?: boolean;
     outlined?: boolean;

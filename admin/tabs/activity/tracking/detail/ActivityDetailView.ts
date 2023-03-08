@@ -27,95 +27,93 @@ export const activityDetailView = hoistCmp.factory({
             icon: Icon.list(),
             className: 'xh-admin-activity-detail',
             compactHeader: true,
-            items: [
-                grid({flex: 1}),
-                detailRecForm()
-            ],
+            items: [grid({flex: 1}), detailRecForm()],
             tbar: tbar(),
             ...props
         });
     }
 });
 
-const tbar = hoistCmp.factory(
-    ({model}) => {
-        return toolbar(
-            filler(),
-            gridCountLabel({unit: 'entry'}),
-            storeFilterField(),
-            colChooserButton(),
-            exportButton()
-        );
-    }
-);
+const tbar = hoistCmp.factory(({model}) => {
+    return toolbar(
+        filler(),
+        gridCountLabel({unit: 'entry'}),
+        storeFilterField(),
+        colChooserButton(),
+        exportButton()
+    );
+});
 
-const detailRecForm = hoistCmp.factory<ActivityDetailModel>(
-    ({model}) => {
-        const {formattedData, gridModel, formModel} = model;
-        if (!gridModel.selectedRecord) return null;
+const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
+    const {formattedData, gridModel, formModel} = model;
+    if (!gridModel.selectedRecord) return null;
 
-        return panel({
-            modelConfig: {
-                side: 'bottom',
-                defaultSize: 370
-            },
-            item: form({
-                fieldDefaults: {inline: true, readonlyRenderer: valOrNa},
-                item: hframe(
-                    div({
-                        className: 'xh-admin-activity-detail__form',
-                        style: {flex: 1},
-                        items: [
-                            h3(Icon.info(), 'Activity'),
-                            formField({
-                                field: 'username',
-                                readonlyRenderer: (username) => {
-                                    if (!username) return naSpan();
-                                    const {impersonating} = formModel.values,
-                                        impSpan = impersonating ? span({className: 'xh-text-color-accent', item: ` (impersonating ${impersonating})`}) : null;
-                                    return span(username, impSpan);
-                                }
-                            }),
-                            formField({field: 'category'}),
-                            formField({field: 'msg'}),
-                            formField({
-                                field: 'dateCreated',
-                                readonlyRenderer: dateTimeSecRenderer({})
-                            }),
-                            formField({
-                                field: 'elapsed',
-                                readonlyRenderer: numberRenderer({
-                                    label: 'ms',
-                                    nullDisplay: '-',
-                                    formatConfig: {thousandSeparated: false, mantissa: 0}
-                                })
-                            }),
-                            formField({field: 'id'}),
-                            h3(Icon.desktop(), 'Device / Browser'),
-                            formField({field: 'device'}),
-                            formField({field: 'browser'}),
-                            formField({field: 'userAgent'})
-                        ]
-                    }),
-                    panel({
-                        flex: 1,
-                        className: 'xh-border-left',
-                        items: [
-                            h3(Icon.json(), 'Additional Data'),
-                            jsonInput({
-                                readonly: true,
-                                width: '100%',
-                                height: '100%',
-                                showCopyButton: true,
-                                value: formattedData ?? '{}'
+    return panel({
+        modelConfig: {
+            side: 'bottom',
+            defaultSize: 370
+        },
+        item: form({
+            fieldDefaults: {inline: true, readonlyRenderer: valOrNa},
+            item: hframe(
+                div({
+                    className: 'xh-admin-activity-detail__form',
+                    style: {flex: 1},
+                    items: [
+                        h3(Icon.info(), 'Activity'),
+                        formField({
+                            field: 'username',
+                            readonlyRenderer: username => {
+                                if (!username) return naSpan();
+                                const {impersonating} = formModel.values,
+                                    impSpan = impersonating
+                                        ? span({
+                                              className: 'xh-text-color-accent',
+                                              item: ` (impersonating ${impersonating})`
+                                          })
+                                        : null;
+                                return span(username, impSpan);
+                            }
+                        }),
+                        formField({field: 'category'}),
+                        formField({field: 'msg'}),
+                        formField({
+                            field: 'dateCreated',
+                            readonlyRenderer: dateTimeSecRenderer({})
+                        }),
+                        formField({
+                            field: 'elapsed',
+                            readonlyRenderer: numberRenderer({
+                                label: 'ms',
+                                nullDisplay: '-',
+                                formatConfig: {thousandSeparated: false, mantissa: 0}
                             })
-                        ]
-                    })
-                )
-            })
-        });
-    }
-);
+                        }),
+                        formField({field: 'id'}),
+                        h3(Icon.desktop(), 'Device / Browser'),
+                        formField({field: 'device'}),
+                        formField({field: 'browser'}),
+                        formField({field: 'userAgent'})
+                    ]
+                }),
+                panel({
+                    flex: 1,
+                    className: 'xh-border-left',
+                    items: [
+                        h3(Icon.json(), 'Additional Data'),
+                        jsonInput({
+                            readonly: true,
+                            width: '100%',
+                            height: '100%',
+                            showCopyButton: true,
+                            value: formattedData ?? '{}'
+                        })
+                    ]
+                })
+            )
+        })
+    });
+});
 
-const valOrNa = v => v != null ? v : naSpan();
+const valOrNa = v => (v != null ? v : naSpan());
 const naSpan = () => span({item: 'N/A', className: 'xh-text-color-muted'});

@@ -11,6 +11,7 @@ import {runInAction} from '@xh/hoist/mobx';
 import {GridModel, GridAutosizeOptions} from '@xh/hoist/cmp/grid';
 import {ColumnWidthCalculator} from '../cmp/grid/impl/ColumnWidthCalculator';
 import {StoreRecord} from '@xh/hoist/data';
+
 /**
  * Sets appropriate column widths for a grid based on its contents. Generally seeks to make columns
  * at least as wide as all of their contents, including headers.
@@ -51,7 +52,12 @@ export class GridAutosizeService extends HoistService {
 
         // 3) Perform computation.  This is async and expensive, and may become obsolete
         const records = this.gatherRecordsToBeSized(gridModel, options),
-            requiredWidths = await this.calcRequiredWidthsAsync(gridModel, colIds, records, options);
+            requiredWidths = await this.calcRequiredWidthsAsync(
+                gridModel,
+                colIds,
+                records,
+                options
+            );
 
         if (!requiredWidths) {
             console.debug('Autosize aborted, grid data is obsolete.');
@@ -61,7 +67,10 @@ export class GridAutosizeService extends HoistService {
         runInAction(() => {
             // 4) Set columns to their required widths.
             gridModel.applyColumnStateChanges(requiredWidths);
-            console.debug(`Column widths autosized via GridAutosizeService (${records.length} records)`, requiredWidths);
+            console.debug(
+                `Column widths autosized via GridAutosizeService (${records.length} records)`,
+                requiredWidths
+            );
 
             // 5) Grow columns to fill any remaining space, if enabled.
             const {fillMode} = options;
@@ -73,7 +82,6 @@ export class GridAutosizeService extends HoistService {
         });
     }
 
-
     //------------------
     // Implementation
     //------------------
@@ -82,12 +90,17 @@ export class GridAutosizeService extends HoistService {
         colIds: string[],
         records: StoreRecord[],
         options: GridAutosizeOptions
-    ): Promise<{coldId:string, width: number}[]> {
+    ): Promise<{coldId: string; width: number}[]> {
         const startRecords = gridModel.store._filtered,
             ret = [];
 
         for (const colId of colIds) {
-            const width = await this._columnWidthCalculator.calcWidthAsync(gridModel, records, colId, options);
+            const width = await this._columnWidthCalculator.calcWidthAsync(
+                gridModel,
+                records,
+                colId,
+                options
+            );
             if (isFinite(width)) ret.push({colId, width});
 
             // Bail out if GridModel has moved on to new data.
@@ -96,7 +109,6 @@ export class GridAutosizeService extends HoistService {
 
         return ret;
     }
-
 
     private gatherRecordsToBeSized(
         gridModel: GridModel,
@@ -136,15 +148,14 @@ export class GridAutosizeService extends HoistService {
         return ret;
     }
 
-
     /**
      * Calculate the increased size of columns to fill any remaining space.
      */
     private calcFillWidths(
         gridModel: GridModel,
         colIds: string[],
-        fillMode:string
-    ):{colId: string, width: number}[] {
+        fillMode: string
+    ): {colId: string; width: number}[] {
         if (gridModel.getVisibleLeafColumns().some(it => it.flex)) {
             return [];
         }
@@ -183,7 +194,9 @@ export class GridAutosizeService extends HoistService {
         const ret = {};
 
         while (remaining > 0) {
-            const targetColumns = columns.filter(col => !isFinite(col.maxWidth) || col.width < col.maxWidth);
+            const targetColumns = columns.filter(
+                col => !isFinite(col.maxWidth) || col.width < col.maxWidth
+            );
             if (isEmpty(targetColumns)) break;
 
             const targetAdd = Math.floor(remaining / targetColumns.length);
@@ -192,7 +205,9 @@ export class GridAutosizeService extends HoistService {
             targetColumns.forEach(col => {
                 const {colId, width, maxWidth} = col,
                     currWidth = ret[colId] ?? width,
-                    extraWidth = isFinite(maxWidth) ? Math.min(maxWidth - currWidth, targetAdd) : targetAdd;
+                    extraWidth = isFinite(maxWidth)
+                        ? Math.min(maxWidth - currWidth, targetAdd)
+                        : targetAdd;
 
                 if (extraWidth > 0) {
                     remaining -= extraWidth;

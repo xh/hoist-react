@@ -47,7 +47,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                 isResizable ? `${className}--resizable` : null
             ),
             ref: model.ref,
-            onContextMenu: (e) => onContextMenu(e, model),
+            onContextMenu: e => onContextMenu(e, model),
             items: [
                 reactGridLayout({
                     layout: model.rglLayout,
@@ -61,15 +61,18 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                     containerPadding: model.containerPadding,
                     autoSize: true,
                     isBounded: true,
-                    draggableHandle: '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
+                    draggableHandle:
+                        '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
                     draggableCancel: '.xh-button',
                     onLayoutChange: layout => model.onRglLayoutChange(layout),
-                    onResizeStart: () => model.isResizing = true,
-                    onResizeStop: () => model.isResizing = false,
-                    items: model.viewModels.map(vm => div({
-                        key: vm.id,
-                        item: dashCanvasView({model: vm})
-                    }))
+                    onResizeStart: () => (model.isResizing = true),
+                    onResizeStop: () => (model.isResizing = false),
+                    items: model.viewModels.map(vm =>
+                        div({
+                            key: vm.id,
+                            item: dashCanvasView({model: vm})
+                        })
+                    )
                 }),
                 emptyContainerOverlay()
             ]
@@ -77,35 +80,30 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
     }
 });
 
-const emptyContainerOverlay = hoistCmp.factory<DashCanvasModel>(
-    ({model}) => {
-        const {isEmpty, emptyText} = model;
-        if (!isEmpty) return null;
+const emptyContainerOverlay = hoistCmp.factory<DashCanvasModel>(({model}) => {
+    const {isEmpty, emptyText} = model;
+    if (!isEmpty) return null;
 
-        return overlay({
-            className: `xh-dash-canvas--empty-overlay ${Classes.OVERLAY_SCROLL_CONTAINER}`,
-            autoFocus: true,
-            isOpen: true,
-            canEscapeKeyClose: false,
-            usePortal: false,
-            enforceFocus: false,
-            item: vbox({
-                alignItems: 'center',
-                items: [
-                    div(emptyText),
-                    vspacer(10),
-                    dashCanvasAddViewButton()
-                ]
-            })
-        });
-    }
-);
+    return overlay({
+        className: `xh-dash-canvas--empty-overlay ${Classes.OVERLAY_SCROLL_CONTAINER}`,
+        autoFocus: true,
+        isOpen: true,
+        canEscapeKeyClose: false,
+        usePortal: false,
+        enforceFocus: false,
+        item: vbox({
+            alignItems: 'center',
+            items: [div(emptyText), vspacer(10), dashCanvasAddViewButton()]
+        })
+    });
+});
 
 const onContextMenu = (e, model) => {
     const {classList} = e.target;
-    if (classList.contains('react-grid-layout') ||
-            classList.contains('react-resizable-handle') ||
-            classList.contains('xh-dash-canvas')
+    if (
+        classList.contains('react-grid-layout') ||
+        classList.contains('react-resizable-handle') ||
+        classList.contains('xh-dash-canvas')
     ) {
         const {clientX, clientY} = e,
             x = clientX + model.ref.current.scrollLeft,

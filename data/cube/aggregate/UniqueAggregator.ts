@@ -9,7 +9,6 @@ import {Aggregator} from './Aggregator';
 import {isEmpty} from 'lodash';
 
 export class UniqueAggregator extends Aggregator {
-
     override aggregate(rows, fieldName) {
         if (isEmpty(rows)) return null;
 

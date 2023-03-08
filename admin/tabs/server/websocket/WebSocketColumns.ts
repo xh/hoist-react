@@ -6,16 +6,17 @@
  */
 import {Icon} from '@xh/hoist/icon';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import { ColumnSpec } from '@xh/hoist/cmp/grid/columns';
+import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 
 export const isOpen: ColumnSpec = {
     field: {name: 'isOpen', type: 'bool'},
     headerName: '',
     align: 'center',
     width: 40,
-    renderer: v => v ?
-        Icon.circle({prefix: 'fas', className: 'xh-green'}) :
-        Icon.circle({prefix: 'fal', className: 'xh-red'})
+    renderer: v =>
+        v
+            ? Icon.circle({prefix: 'fas', className: 'xh-green'})
+            : Icon.circle({prefix: 'fal', className: 'xh-red'})
 };
 
 export const key: ColumnSpec = {

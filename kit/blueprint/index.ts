@@ -24,7 +24,6 @@ import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
 import './styles.scss';
 
-
 // Only show focus indicators when tabbing through components - avoids drawing focus outlines
 // on focusable components when focused via mouse click.
 FocusStyleManager.onlyShowFocusOnTabs();
@@ -36,7 +35,6 @@ Dialog.defaultProps.transitionName = 'none';
 Overlay.defaultProps.transitionDuration = 0;
 Overlay.defaultProps.transitionName = 'none';
 Popover.defaultProps.transitionDuration = 0;
-
 
 //---------------------
 // Re-exports

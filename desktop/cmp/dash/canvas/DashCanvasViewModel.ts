@@ -15,7 +15,6 @@ import {ReactNode} from 'react';
  * Model for a content item within a DashCanvas.
  */
 export class DashCanvasViewModel extends DashViewModel<DashCanvasViewSpec> {
-
     /** True (default) to allow duplicating the view. */
     @observable allowDuplicate: boolean;
 

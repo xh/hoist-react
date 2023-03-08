@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-@use "sass:math";
+@use 'sass:math';
 
 .xh-grid:not(.xh-data-view) {
   //------------------------
@@ -70,17 +70,17 @@
   }
 
   .xh-column-header-align-right {
-      .xh-grid-header,
-      .xh-grid-group-header {
-        text-align: right;
-      }
+    .xh-grid-header,
+    .xh-grid-group-header {
+      text-align: right;
     }
+  }
 
   .xh-column-header-align-center {
-      .xh-grid-header,
-      .xh-grid-group-header {
-        text-align: center;
-      }
+    .xh-grid-header,
+    .xh-grid-group-header {
+      text-align: center;
+    }
   }
 
   // Floating viewports host total rows.
@@ -151,7 +151,6 @@
   }
 }
 
-
 //------------------------
 // Trees and Grouping
 //------------------------
@@ -185,7 +184,6 @@
   .ag-header-cell.xh-column-header--with-expand-collapse {
     padding-left: 2px;
   }
-
 
   //------------------------
   // Tree grid styling modes

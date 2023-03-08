@@ -32,7 +32,7 @@ export class ChartsModel extends HoistModel {
      *      + elapsed - avg elapsed time in ms for the primary dim group.
      */
     @bindable
-    metric: 'entryCount'|'count'|'elapsed' = 'entryCount';
+    metric: 'entryCount' | 'count' | 'elapsed' = 'entryCount';
 
     /** show weekends on the activity chart */
     @bindable
@@ -57,7 +57,7 @@ export class ChartsModel extends HoistModel {
             plotOptions: {
                 line: {
                     events: {
-                        click: (e) => this.selectRow(e)
+                        click: e => this.selectRow(e)
                     },
                     width: 1,
                     animation: false,
@@ -69,9 +69,13 @@ export class ChartsModel extends HoistModel {
             xAxis: {
                 type: 'datetime',
                 title: {},
-                units: [['day', [1]], ['week', [2]], ['month', [1]]],
+                units: [
+                    ['day', [1]],
+                    ['week', [2]],
+                    ['month', [1]]
+                ],
                 labels: {
-                    formatter: function() {
+                    formatter: function () {
                         return fmtDate(this.value, 'D MMM');
                     }
                 }
@@ -94,7 +98,7 @@ export class ChartsModel extends HoistModel {
 
     get secondaryDim(): string {
         const {dimensions} = this;
-        return (dimensions.length >= 2) ? dimensions[1] : null;
+        return dimensions.length >= 2 ? dimensions[1] : null;
     }
 
     get data() {
@@ -114,13 +118,11 @@ export class ChartsModel extends HoistModel {
     getLabelForMetric(metric, multiline) {
         switch (metric) {
             case 'count':
-                return multiline ?
-                    fragment(`Unique`, br(), `${this.getUnitsForDim(this.secondaryDim)} Count`) :
-                    `Unique ${this.getUnitsForDim(this.secondaryDim)} Count`;
+                return multiline
+                    ? fragment(`Unique`, br(), `${this.getUnitsForDim(this.secondaryDim)} Count`)
+                    : `Unique ${this.getUnitsForDim(this.secondaryDim)} Count`;
             case 'entryCount':
-                return multiline ?
-                    fragment('Total', br(), 'Entry Count') :
-                    'Total Entry Count';
+                return multiline ? fragment('Total', br(), 'Entry Count') : 'Total Entry Count';
             case 'elapsed':
                 return 'Elapsed ms';
             default:
@@ -183,10 +185,12 @@ export class ChartsModel extends HoistModel {
         if (showAsTimeseries) {
             const fillData = [];
             for (let i = 1; i < chartData.length; i++) {
-                const skippedDayCount = Math.floor((((chartData[i][0] - chartData[i - 1][0]) / ONE_DAY) - 1));
+                const skippedDayCount = Math.floor(
+                    (chartData[i][0] - chartData[i - 1][0]) / ONE_DAY - 1
+                );
                 if (skippedDayCount > 0) {
                     for (let j = 1; j <= skippedDayCount; j++) {
-                        const skippedDate = chartData[i - 1][0] + (j * ONE_DAY);
+                        const skippedDate = chartData[i - 1][0] + j * ONE_DAY;
                         fillData.push([skippedDate, 0]);
                     }
                 }
@@ -204,9 +208,11 @@ export class ChartsModel extends HoistModel {
     }
 
     private getUnitsForDim(dim) {
-        return {
-            username: 'User',
-            msg: 'Message'
-        }[dim] ?? capitalizeWords(dim);
+        return (
+            {
+                username: 'User',
+                msg: 'Message'
+            }[dim] ?? capitalizeWords(dim)
+        );
     }
 }

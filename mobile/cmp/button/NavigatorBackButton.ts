@@ -15,18 +15,15 @@ export type NavigatorBackButtonProps = ButtonProps;
 /**
  * Convenience Button preconfigured to use navigate back one page.
  */
-export const [NavigatorBackButton, navigatorBackButton] = hoistCmp.withFactory<NavigatorBackButtonProps>({
-    displayName: 'NavigatorBackButton',
-    model: false,
+export const [NavigatorBackButton, navigatorBackButton] =
+    hoistCmp.withFactory<NavigatorBackButtonProps>({
+        displayName: 'NavigatorBackButton',
+        model: false,
 
-    render({
-        icon = Icon.chevronLeft(),
-        onClick = () => XH.popRoute(),
-        ...props
-    }) {
-        const model = useContextModel(NavigatorModel);
+        render({icon = Icon.chevronLeft(), onClick = () => XH.popRoute(), ...props}) {
+            const model = useContextModel(NavigatorModel);
 
-        if (!model || model.stack.length < 2) return null;
-        return button({icon, onClick, ...props});
-    }
-});
+            if (!model || model.stack.length < 2) return null;
+            return button({icon, onClick, ...props});
+        }
+    });

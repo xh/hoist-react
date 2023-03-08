@@ -18,8 +18,9 @@ import {FunctionFilterSpec, FilterTestFn} from './Types';
  * Immutable.
  */
 export class FunctionFilter extends Filter {
-
-    get isFunctionFilter() {return true}
+    get isFunctionFilter() {
+        return true;
+    }
 
     readonly key: string;
     readonly testFn: FilterTestFn;
@@ -37,7 +38,6 @@ export class FunctionFilter extends Filter {
 
         Object.freeze(this);
     }
-
 
     //-----------------
     // Overrides

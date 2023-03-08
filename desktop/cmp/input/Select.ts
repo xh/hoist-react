@@ -6,7 +6,16 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
-import {createElement, hoistCmp, HoistProps, LayoutProps, PlainObject, XH, Awaitable, SelectOption} from '@xh/hoist/core';
+import {
+    createElement,
+    hoistCmp,
+    HoistProps,
+    LayoutProps,
+    PlainObject,
+    XH,
+    Awaitable,
+    SelectOption
+} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {
@@ -38,11 +47,7 @@ import './Select.scss';
 
 export const MENU_PORTAL_ID = 'xh-select-input-portal';
 
-export interface SelectProps extends
-    HoistProps,
-    HoistInputProps,
-    LayoutProps
-{
+export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     /** True to focus the control on render. */
     autoFocus?: boolean;
 
@@ -108,7 +113,7 @@ export interface SelectProps extends
     hideSelectedOptions?: boolean;
 
     /** Field on provided options for sourcing each option's display text (default `label`). */
-    labelField?: string,
+    labelField?: string;
 
     /** Icon to display inline on the left side of the input. */
     leftIcon?: ReactElement;
@@ -120,7 +125,7 @@ export interface SelectProps extends
     maxMenuHeight?: number;
 
     /** Placement of the dropdown menu relative to the input control. */
-    menuPlacement?: 'auto'|'top'|'bottom';
+    menuPlacement?: 'auto' | 'top' | 'bottom';
 
     /** Width in pixels for the dropdown menu - if unspecified, defaults to control width. */
     menuWidth?: number;
@@ -150,7 +155,7 @@ export interface SelectProps extends
      * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
      * of up-front in this prop.
      */
-    options?: Array<SelectOption|any>;
+    options?: Array<SelectOption | any>;
 
     /** Text to display when control is empty. */
     placeholder?: string;
@@ -168,7 +173,7 @@ export interface SelectProps extends
      * confused with `filterFn`, which should be used to filter through local options when
      * not in async mode.
      */
-    queryFn?: (query: string) => Awaitable<Array<SelectOption|any>>;
+    queryFn?: (query: string) => Awaitable<Array<SelectOption | any>>;
 
     /**
      * Escape-hatch props passed directly to react-select. Use with care - not all props
@@ -238,8 +243,10 @@ class SelectInputModel extends HoistInputModel {
     }
 
     get selectOnFocus(): boolean {
-        return this.componentProps.selectOnFocus ??
-            (!this.multiMode && (this.filterMode || this.creatableMode));
+        return (
+            this.componentProps.selectOnFocus ??
+            (!this.multiMode && (this.filterMode || this.creatableMode))
+        );
     }
 
     get hideDropdownIndicator(): boolean {
@@ -273,7 +280,7 @@ class SelectInputModel extends HoistInputModel {
 
         this.addReaction({
             track: () => this.componentProps.options,
-            run: (opts) => {
+            run: opts => {
                 opts = this.normalizeOptions(opts);
                 this.internalOptions = opts;
             },
@@ -306,13 +313,17 @@ class SelectInputModel extends HoistInputModel {
             throwIf(asyncMode, 'Windowed mode not available when queryFn is set');
             return reactWindowedSelect;
         }
-        return asyncMode ?
-            (creatableMode ? reactAsyncCreatableSelect : reactAsyncSelect) :
-            (creatableMode ? reactCreatableSelect : reactSelect);
+        return asyncMode
+            ? creatableMode
+                ? reactAsyncCreatableSelect
+                : reactAsyncSelect
+            : creatableMode
+            ? reactCreatableSelect
+            : reactSelect;
     }
 
     @action
-    onSelectChange = (opt) => {
+    onSelectChange = opt => {
         if (this.manageInputValue) {
             this.inputValue = opt ? opt.label : null;
             this.inputValueChangedSinceSelect = false;
@@ -358,7 +369,9 @@ class SelectInputModel extends HoistInputModel {
         // Use of windowedMode, creatable and async variants will create levels of nesting we must
         // traverse to get to the underlying Select comp and its inputRef.
         let selectComp = reactSelect.select;
-        while (selectComp && !selectComp.inputRef) {selectComp = selectComp.select}
+        while (selectComp && !selectComp.inputRef) {
+            selectComp = selectComp.select;
+        }
         const inputElem = selectComp?.inputRef;
 
         if (this.hasFocus && inputElem && document.activeElement === inputElem) {
@@ -385,7 +398,7 @@ class SelectInputModel extends HoistInputModel {
         // 1) show all options if input has not changed since last select (i.e. user has not typed)
         //    or if in async mode (i.e. queryFn specified).
         if (
-            this.manageInputValue && (!inputValue || !inputValueChangedSinceSelect) ||
+            (this.manageInputValue && (!inputValue || !inputValueChangedSinceSelect)) ||
             asyncMode
         ) {
             return true;
@@ -405,13 +418,12 @@ class SelectInputModel extends HoistInputModel {
         return regex.test(opt.label);
     };
 
-
     // Convert external value into option object(s). Options created if missing - this takes the
     // external value from the model, and we will respect that even if we don't know about it.
     // (Exception for a null value, which we will only accept if explicitly present in options.)
     override toInternal(external) {
         if (this.multiMode) {
-            if (external == null) external = [];  // avoid [null]
+            if (external == null) external = []; // avoid [null]
             return castArray(external).map(it => this.findOption(it, !isNil(it)));
         }
 
@@ -454,9 +466,7 @@ class SelectInputModel extends HoistInputModel {
     // and Objects. Objects are validated/defaulted to ensure a label+value or label+options sublist,
     // with other fields brought along to support Selects emitting value objects with ad hoc properties.
     toOption(src, depth) {
-        return isPlainObject(src) ?
-            this.objectToOption(src, depth) :
-            this.valueToOption(src);
+        return isPlainObject(src) ? this.objectToOption(src, depth) : this.valueToOption(src);
     }
 
     objectToOption(src, depth) {
@@ -469,9 +479,17 @@ class SelectInputModel extends HoistInputModel {
             `Select options provided as Objects must define a '${valueField}' property or a sublist of options.`
         );
 
-        return src.hasOwnProperty('options') ?
-            {...src, label: src[labelField], options: this.normalizeOptions(src.options, depth + 1)} :
-            {...src, label: withDefault(src[labelField], src[valueField]), value: src[valueField]};
+        return src.hasOwnProperty('options')
+            ? {
+                  ...src,
+                  label: src[labelField],
+                  options: this.normalizeOptions(src.options, depth + 1)
+              }
+            : {
+                  ...src,
+                  label: withDefault(src[labelField], src[valueField]),
+                  value: src[valueField]
+              };
     }
 
     valueToOption(src) {
@@ -481,7 +499,7 @@ class SelectInputModel extends HoistInputModel {
     //------------------------
     // Async
     //------------------------
-    doQueryAsync = async (query) => {
+    doQueryAsync = async query => {
         const rawOpts = await this.componentProps.queryFn(query),
             matchOpts = this.normalizeOptions(rawOpts);
 
@@ -491,7 +509,7 @@ class SelectInputModel extends HoistInputModel {
             newOpts = [...matchOpts];
         this.internalOptions.forEach(currOpt => {
             const matchOpt = matchesByVal[currOpt.value];
-            if (!matchOpt) newOpts.push(currOpt);  // avoiding dupes
+            if (!matchOpt) newOpts.push(currOpt); // avoiding dupes
         });
         this.internalOptions = newOpts;
 
@@ -499,7 +517,7 @@ class SelectInputModel extends HoistInputModel {
         return matchOpts;
     };
 
-    loadingMessageFn = (params) => {
+    loadingMessageFn = params => {
         // workaround for https://github.com/jacobworrel/react-windowed-select/issues/19
         if (!params) return '';
         const {loadingMessageFn} = this.componentProps,
@@ -507,7 +525,6 @@ class SelectInputModel extends HoistInputModel {
 
         return loadingMessageFn ? loadingMessageFn(q) : 'Loading...';
     };
-
 
     //----------------------
     // Option Rendering
@@ -525,23 +542,23 @@ class SelectInputModel extends HoistInputModel {
         return optionRenderer(opt);
     };
 
-    optionRenderer = (opt) => {
+    optionRenderer = opt => {
         if (this.hideSelectedOptionCheck) {
             return div(opt.label);
         }
 
-        return castArray(this.externalValue).includes(opt.value) ?
-            hbox({
-                items: [
-                    div({
-                        style: {minWidth: 25, textAlign: 'center'},
-                        item: Icon.check({size: 'sm'})
-                    }),
-                    span(opt.label)
-                ],
-                paddingLeft: 0
-            }) :
-            div({item: opt.label, style: {paddingLeft: 25}});
+        return castArray(this.externalValue).includes(opt.value)
+            ? hbox({
+                  items: [
+                      div({
+                          style: {minWidth: 25, textAlign: 'center'},
+                          item: Icon.check({size: 'sm'})
+                      }),
+                      span(opt.label)
+                  ],
+                  paddingLeft: 0
+              })
+            : div({item: opt.label, style: {paddingLeft: 25}});
     };
 
     //------------------------
@@ -552,26 +569,27 @@ class SelectInputModel extends HoistInputModel {
     getValueContainerCmp() {
         if (!this._valueContainerCmp) {
             const {leftIcon} = this.componentProps;
-            this._valueContainerCmp = leftIcon ?
-                (props) => fragment(
-                    span({className: 'xh-select__control__left-icon', item: leftIcon}),
-                    createElement(components.ValueContainer, props)
-                ) :
-                components.ValueContainer;
+            this._valueContainerCmp = leftIcon
+                ? props =>
+                      fragment(
+                          span({className: 'xh-select__control__left-icon', item: leftIcon}),
+                          createElement(components.ValueContainer, props)
+                      )
+                : components.ValueContainer;
         }
 
         return this._valueContainerCmp;
     }
 
     getDropdownIndicatorCmp() {
-        return this.hideDropdownIndicator ?
-            () => null :
-            () => Icon.selectDropdown({className: 'xh-select__indicator'});
+        return this.hideDropdownIndicator
+            ? () => null
+            : () => Icon.selectDropdown({className: 'xh-select__indicator'});
     }
 
     // As per example @ https://react-select.com/components#replaceable-components
     getClearIndicatorCmp() {
-        return (props) => {
+        return props => {
             const {ref, ...restInnerProps} = props.innerProps;
             return div({
                 ...restInnerProps,
@@ -582,7 +600,7 @@ class SelectInputModel extends HoistInputModel {
     }
 
     getThemeConfig() {
-        return (base) => {
+        return base => {
             return {
                 ...base,
                 spacing: {...base.spacing, menuGutter: 3},
@@ -591,7 +609,7 @@ class SelectInputModel extends HoistInputModel {
         };
     }
 
-    noOptionsMessageFn = (params) => {
+    noOptionsMessageFn = params => {
         // account for bug in react-windowed-select https://github.com/jacobworrel/react-windowed-select/issues/19
         if (!params) return '';
         const {noOptionsMessageFn} = this.componentProps,
@@ -602,7 +620,7 @@ class SelectInputModel extends HoistInputModel {
         return this.asyncMode ? 'Type to search...' : '';
     };
 
-    createMessageFn = (q) => {
+    createMessageFn = q => {
         const {createMessageFn} = this.componentProps;
         return createMessageFn ? createMessageFn(q) : `Create "${q}"`;
     };
@@ -619,103 +637,103 @@ class SelectInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<SelectInputModel>(
-    ({model, className, ...props}, ref) => {
-        const {width, height, ...layoutProps} = getLayoutProps(props),
-            rsProps: PlainObject = {
-                value: model.renderValue,
+const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, ref) => {
+    const {width, height, ...layoutProps} = getLayoutProps(props),
+        rsProps: PlainObject = {
+            value: model.renderValue,
 
-                autoFocus: props.autoFocus,
-                formatOptionLabel: model.formatOptionLabel,
-                isDisabled: props.disabled,
-                isMulti: props.enableMulti,
-                closeMenuOnSelect: props.closeMenuOnSelect,
-                hideSelectedOptions: model.hideSelectedOptions,
-                maxMenuHeight: props.maxMenuHeight,
+            autoFocus: props.autoFocus,
+            formatOptionLabel: model.formatOptionLabel,
+            isDisabled: props.disabled,
+            isMulti: props.enableMulti,
+            closeMenuOnSelect: props.closeMenuOnSelect,
+            hideSelectedOptions: model.hideSelectedOptions,
+            maxMenuHeight: props.maxMenuHeight,
 
-                // Explicit false ensures consistent default for single and multi-value instances.
-                isClearable: withDefault(props.enableClear, false),
-                menuPlacement: withDefault(props.menuPlacement, 'auto'),
-                noOptionsMessage: model.noOptionsMessageFn,
-                openMenuOnFocus: props.openMenuOnFocus,
-                placeholder: withDefault(props.placeholder, 'Select...'),
-                tabIndex: props.tabIndex,
+            // Explicit false ensures consistent default for single and multi-value instances.
+            isClearable: withDefault(props.enableClear, false),
+            menuPlacement: withDefault(props.menuPlacement, 'auto'),
+            noOptionsMessage: model.noOptionsMessageFn,
+            openMenuOnFocus: props.openMenuOnFocus,
+            placeholder: withDefault(props.placeholder, 'Select...'),
+            tabIndex: props.tabIndex,
 
-                // Minimize (or hide) bulky dropdown
-                components: {
-                    DropdownIndicator: model.getDropdownIndicatorCmp(),
-                    ClearIndicator: model.getClearIndicatorCmp(),
-                    IndicatorSeparator: () => null,
-                    ValueContainer: model.getValueContainerCmp()
-                },
-
-                // A shared div is created lazily here as needed, appended to the body, and assigned
-                // a high z-index to ensure options menus render over dialogs or other modals.
-                menuPortalTarget: model.getOrCreatePortalDiv(),
-
-                inputId: props.id,
-                classNamePrefix: 'xh-select',
-                theme: model.getThemeConfig(),
-
-                onBlur: model.onBlur,
-                onChange: model.onSelectChange,
-                onFocus: model.onFocus,
-                filterOption: model.filterOption,
-
-                ref: model.reactSelectRef
-            };
-
-        if (model.manageInputValue) {
-            rsProps.inputValue = model.inputValue || '';
-            rsProps.onInputChange = model.onInputChange;
-            rsProps.controlShouldRenderValue = !model.hasFocus;
-            rsProps.onMenuOpen = () => {
-                wait().then(()=> {
-                    const selectedEl = document.getElementsByClassName('xh-select__option--is-selected')[0];
-                    selectedEl?.scrollIntoView({block: 'end'});
-                });
-            };
-        }
-
-        if (model.asyncMode) {
-            rsProps.loadOptions = model.doQueryAsync;
-            rsProps.loadingMessage = model.loadingMessageFn;
-            if (model.renderValue) rsProps.defaultOptions = [model.renderValue];
-        } else {
-            rsProps.options = model.internalOptions;
-            rsProps.isSearchable = model.filterMode;
-        }
-
-        if (model.creatableMode) {
-            rsProps.formatCreateLabel = model.createMessageFn;
-        }
-
-        if (props.menuWidth) {
-            rsProps.styles = {
-                menu: (provided) => ({...provided, width: `${props.menuWidth}px`}),
-                ...props.rsOptions?.styles
-            };
-        }
-
-        const factory = model.getSelectFactory();
-        merge(rsProps, props.rsOptions);
-
-        return box({
-            item: factory(rsProps),
-            className: classNames(className, height ? 'xh-select--has-height' : null),
-            onKeyDown: (e) => {
-                // Esc. and Enter can be listened for by parents -- stop the keydown event
-                // propagation only if react-select already likely to have used for menu management.
-                // note: menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
-                const menuIsOpen = model.reactSelect?.state?.menuIsOpen;
-                if (menuIsOpen && (e.key === 'Escape' || e.key === 'Enter')) {
-                    e.stopPropagation();
-                }
+            // Minimize (or hide) bulky dropdown
+            components: {
+                DropdownIndicator: model.getDropdownIndicatorCmp(),
+                ClearIndicator: model.getClearIndicatorCmp(),
+                IndicatorSeparator: () => null,
+                ValueContainer: model.getValueContainerCmp()
             },
-            ...layoutProps,
-            width: withDefault(width, 200),
-            height: height,
-            ref
-        });
+
+            // A shared div is created lazily here as needed, appended to the body, and assigned
+            // a high z-index to ensure options menus render over dialogs or other modals.
+            menuPortalTarget: model.getOrCreatePortalDiv(),
+
+            inputId: props.id,
+            classNamePrefix: 'xh-select',
+            theme: model.getThemeConfig(),
+
+            onBlur: model.onBlur,
+            onChange: model.onSelectChange,
+            onFocus: model.onFocus,
+            filterOption: model.filterOption,
+
+            ref: model.reactSelectRef
+        };
+
+    if (model.manageInputValue) {
+        rsProps.inputValue = model.inputValue || '';
+        rsProps.onInputChange = model.onInputChange;
+        rsProps.controlShouldRenderValue = !model.hasFocus;
+        rsProps.onMenuOpen = () => {
+            wait().then(() => {
+                const selectedEl = document.getElementsByClassName(
+                    'xh-select__option--is-selected'
+                )[0];
+                selectedEl?.scrollIntoView({block: 'end'});
+            });
+        };
     }
-);
+
+    if (model.asyncMode) {
+        rsProps.loadOptions = model.doQueryAsync;
+        rsProps.loadingMessage = model.loadingMessageFn;
+        if (model.renderValue) rsProps.defaultOptions = [model.renderValue];
+    } else {
+        rsProps.options = model.internalOptions;
+        rsProps.isSearchable = model.filterMode;
+    }
+
+    if (model.creatableMode) {
+        rsProps.formatCreateLabel = model.createMessageFn;
+    }
+
+    if (props.menuWidth) {
+        rsProps.styles = {
+            menu: provided => ({...provided, width: `${props.menuWidth}px`}),
+            ...props.rsOptions?.styles
+        };
+    }
+
+    const factory = model.getSelectFactory();
+    merge(rsProps, props.rsOptions);
+
+    return box({
+        item: factory(rsProps),
+        className: classNames(className, height ? 'xh-select--has-height' : null),
+        onKeyDown: e => {
+            // Esc. and Enter can be listened for by parents -- stop the keydown event
+            // propagation only if react-select already likely to have used for menu management.
+            // note: menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
+            const menuIsOpen = model.reactSelect?.state?.menuIsOpen;
+            if (menuIsOpen && (e.key === 'Escape' || e.key === 'Enter')) {
+                e.stopPropagation();
+            }
+        },
+        ...layoutProps,
+        width: withDefault(width, 200),
+        height: height,
+        ref
+    });
+});

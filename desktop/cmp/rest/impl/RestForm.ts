@@ -30,7 +30,7 @@ export const restForm = hoistCmp.factory({
         if (!isOpen) return null;
 
         return dialog({
-            title: isAdd ? 'Add Record' : (!readonly ? 'Edit Record' : 'View Record'),
+            title: isAdd ? 'Add Record' : !readonly ? 'Edit Record' : 'View Record',
             icon: isAdd ? Icon.add() : Icon.edit(),
             className,
             isOpen: true,
@@ -45,48 +45,44 @@ export const restForm = hoistCmp.factory({
     }
 });
 
-const formDisplay = hoistCmp.factory<RestFormModel>(
-    ({model}) => {
-        const formFields = model.editors.map(editor => restFormField({editor}));
+const formDisplay = hoistCmp.factory<RestFormModel>(({model}) => {
+    const formFields = model.editors.map(editor => restFormField({editor}));
 
-        return form({
-            fieldDefaults: {
-                commitOnChange: true,
-                minimal: true,
-                inline: true,
-                labelWidth: 120,
-                labelTextAlign: 'right'
-            },
-            item: div({
-                className: 'xh-rest-form__body',
-                items: formFields
-            })
-        });
-    }
-);
+    return form({
+        fieldDefaults: {
+            commitOnChange: true,
+            minimal: true,
+            inline: true,
+            labelWidth: 120,
+            labelTextAlign: 'right'
+        },
+        item: div({
+            className: 'xh-rest-form__body',
+            items: formFields
+        })
+    });
+});
 
-const tbar = hoistCmp.factory<RestFormModel>(
-    ({model}) => {
-        const {formModel, actions, currentRecord, gridModel} = model;
-        return toolbar(
-            recordActionBar({
-                actions,
-                gridModel,
-                record: currentRecord
-            }),
-            filler(),
-            button({
-                text: formModel.readonly ? 'Close' : 'Cancel',
-                onClick: () => model.close()
-            }),
-            button({
-                text: 'Save',
-                icon: Icon.check(),
-                intent: 'success',
-                disabled: !model.isAdd && !formModel.isDirty,
-                onClick: () => model.validateAndSaveAsync(),
-                omit: formModel.readonly
-            })
-        );
-    }
-);
+const tbar = hoistCmp.factory<RestFormModel>(({model}) => {
+    const {formModel, actions, currentRecord, gridModel} = model;
+    return toolbar(
+        recordActionBar({
+            actions,
+            gridModel,
+            record: currentRecord
+        }),
+        filler(),
+        button({
+            text: formModel.readonly ? 'Close' : 'Cancel',
+            onClick: () => model.close()
+        }),
+        button({
+            text: 'Save',
+            icon: Icon.check(),
+            intent: 'success',
+            disabled: !model.isAdd && !formModel.isDirty,
+            onClick: () => model.validateAndSaveAsync(),
+            omit: formModel.readonly
+        })
+    );
+});

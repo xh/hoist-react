@@ -33,10 +33,7 @@ export const tab = hoistCmp.factory({
 
         if (
             !isActive &&
-            (
-                (renderMode === 'unmountOnHide') ||
-                (renderMode === 'lazy' && !wasActivated.current)
-            )
+            (renderMode === 'unmountOnHide' || (renderMode === 'lazy' && !wasActivated.current))
         ) {
             return null;
         }

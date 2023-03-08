@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import { GridModel } from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
@@ -120,7 +120,7 @@ export class ColChooserModel extends HoistModel {
                 value: it.colId,
                 text: it.chooserName,
                 description: it.chooserDescription,
-                group: hasGrouping ? (it.chooserGroup ?? 'Ungrouped') : null,
+                group: hasGrouping ? it.chooserGroup ?? 'Ungrouped' : null,
                 exclude: it.excludeFromChooser,
                 locked: visible && !it.hideable,
                 side: visible ? 'right' : 'left'

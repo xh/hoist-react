@@ -25,7 +25,7 @@ export class ToastSourceModel extends HoistModel {
         makeObservable(this);
     }
 
-    show(config: ToastSpec|string) {
+    show(config: ToastSpec | string) {
         if (isString(config)) config = {message: config};
         const ret = new ToastModel(config);
         this.addModel(ret);

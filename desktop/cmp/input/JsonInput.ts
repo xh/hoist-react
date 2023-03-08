@@ -39,7 +39,7 @@ function linter(text: string) {
     const errors = [];
     if (!text) return errors;
 
-    jsonlint.parseError = function(str, hash) {
+    jsonlint.parseError = function (str, hash) {
         const loc = hash.loc;
         errors.push({
             from: codemirror.Pos(loc.first_line - 1, loc.first_column),

@@ -10,12 +10,11 @@ import '@xh/hoist/desktop/register';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 
-export interface ButtonGroupProps<M extends HoistModel = null> extends
-    HoistProps<M>,
-    LayoutProps,
-    StyleProps,
-    Omit<BpButtonGroupProps, 'children'>
-{
+export interface ButtonGroupProps<M extends HoistModel = null>
+    extends HoistProps<M>,
+        LayoutProps,
+        StyleProps,
+        Omit<BpButtonGroupProps, 'children'> {
     /** True to have all buttons fill available width equally. */
     fill?: boolean;
 

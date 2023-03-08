@@ -54,7 +54,6 @@ export const AppContainer = hoistCmp({
     model: uses(AppContainerModel),
 
     render() {
-
         useOnMount(() => XH.initAsync());
 
         return fragment(
@@ -67,7 +66,6 @@ export const AppContainer = hoistCmp({
         );
     }
 });
-
 
 //-------------------
 // Implementation
@@ -121,8 +119,8 @@ const appContainerView = hoistCmp.factory<AppContainerModel>({
     }
 });
 
-const appLoadMask = hoistCmp.factory<AppContainerModel>(
-    ({model}) => mask({bind: model.appLoadModel, spinner: true})
+const appLoadMask = hoistCmp.factory<AppContainerModel>(({model}) =>
+    mask({bind: model.appLoadModel, spinner: true})
 );
 
 const bannerList = hoistCmp.factory<AppContainerModel>({
@@ -135,7 +133,6 @@ const bannerList = hoistCmp.factory<AppContainerModel>({
     }
 });
 
-
 const suspendedView = hoistCmp.factory({
     render() {
         if (XH.suspendData?.reason === 'IDLE') {
@@ -145,4 +142,3 @@ const suspendedView = hoistCmp.factory({
         return suspendPanel();
     }
 });
-

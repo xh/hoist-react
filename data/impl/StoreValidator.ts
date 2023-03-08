@@ -19,7 +19,6 @@ import {StoreRecordId} from '../StoreRecord';
  * @internal
  */
 export class StoreValidator extends HoistBase {
-
     store: Store;
 
     /** True if the store is confirmed to be Valid. */
@@ -94,7 +93,7 @@ export class StoreValidator extends HoistBase {
     /** @returns map of StoreRecord IDs to StoreRecord-level error maps. */
     getErrorMap(): StoreErrorMap {
         const ret = {};
-        this._validators.forEach(v => ret[v.id] = v.errors);
+        this._validators.forEach(v => (ret[v.id] = v.errors));
         return ret;
     }
 
@@ -141,7 +140,7 @@ export class StoreValidator extends HoistBase {
         });
 
         await this.validateInChunksAsync(toValidate);
-        runInAction(() => this._validators = newValidators);
+        runInAction(() => (this._validators = newValidators));
     }
 
     private async validateInChunksAsync(validators: RecordValidator[]) {
@@ -151,11 +150,10 @@ export class StoreValidator extends HoistBase {
         }
     }
 
-    private mapValidators<T=RecordValidator>(fn:(v:RecordValidator)=>T = undefined): T[] {
+    private mapValidators<T = RecordValidator>(fn: (v: RecordValidator) => T = undefined): T[] {
         return Array.from(this._validators.values(), fn);
     }
 }
 
 /** Map of StoreRecord IDs to StoreRecord-level error maps. */
-export type StoreErrorMap = Record<StoreRecordId, RecordErrorMap>
-
+export type StoreErrorMap = Record<StoreRecordId, RecordErrorMap>;

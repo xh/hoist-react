@@ -27,7 +27,6 @@ export const message = hoistCmp.factory({
     className: 'xh-message',
 
     render({model, className, ...props}) {
-
         if (!model.isOpen) return null;
 
         return dialog({
@@ -36,61 +35,57 @@ export const message = hoistCmp.factory({
             title: model.title,
             icon: model.icon,
             className: classNames(className, model.className),
-            items: [
-                dialogBody(
-                    model.message,
-                    inputCmp()
-                ),
-                bbar()
-            ],
+            items: [dialogBody(model.message, inputCmp()), bbar()],
             onClose: () => model.doEscape(),
             ...props
         });
     }
 });
 
-const inputCmp = hoistCmp.factory<MessageModel>(
-    ({model}) => {
-        const {formModel, input} = model;
-        if (!formModel) return null;
-        return form({
-            model: formModel,
-            fieldDefaults: {commitOnChange: true, minimal: true, label: null},
-            item: formField({
-                field: 'value',
-                item: withDefault(input.item, textInput({
+const inputCmp = hoistCmp.factory<MessageModel>(({model}) => {
+    const {formModel, input} = model;
+    if (!formModel) return null;
+    return form({
+        model: formModel,
+        fieldDefaults: {commitOnChange: true, minimal: true, label: null},
+        item: formField({
+            field: 'value',
+            item: withDefault(
+                input.item,
+                textInput({
                     autoFocus: true,
                     selectOnFocus: true,
-                    onKeyDown: evt => {if (evt.key === 'Enter') model.doConfirmAsync();}
-                }))
-            })
-        });
+                    onKeyDown: evt => {
+                        if (evt.key === 'Enter') model.doConfirmAsync();
+                    }
+                })
+            )
+        })
+    });
+});
+
+const bbar = hoistCmp.factory<MessageModel>(({model}) => {
+    const {confirmProps, cancelProps, cancelAlign, formModel} = model,
+        ret = [];
+
+    if (cancelProps) {
+        ret.push(button(cancelProps));
     }
-);
 
-const bbar = hoistCmp.factory<MessageModel>(
-    ({model}) => {
-        const {confirmProps, cancelProps, cancelAlign, formModel} = model,
-            ret = [];
-
-        if (cancelProps) {
-            ret.push(button(cancelProps));
-        }
-
-        if (cancelAlign === 'left') {
-            ret.push(filler());
-        } else {
-            ret.unshift(filler());
-        }
-
-        if (confirmProps) {
-            // Merge in formModel.isValid here in render stage to get reactivity.
-            ret.push(formModel ?
-                button({...confirmProps, disabled: !formModel.isValid}) :
-                button(confirmProps)
-            );
-        }
-
-        return toolbar(ret);
+    if (cancelAlign === 'left') {
+        ret.push(filler());
+    } else {
+        ret.unshift(filler());
     }
-);
+
+    if (confirmProps) {
+        // Merge in formModel.isValid here in render stage to get reactivity.
+        ret.push(
+            formModel
+                ? button({...confirmProps, disabled: !formModel.isValid})
+                : button(confirmProps)
+        );
+    }
+
+    return toolbar(ret);
+});

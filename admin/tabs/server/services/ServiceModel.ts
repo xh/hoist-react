@@ -10,7 +10,6 @@ import {UrlStore} from '@xh/hoist/data';
 import {isEmpty, lowerFirst} from 'lodash';
 
 export class ServiceModel extends HoistModel {
-
     @managed
     gridModel: GridModel = new GridModel({
         enableExport: true,

@@ -26,7 +26,7 @@ export const resizeContainer = hoistCmp.factory({
 
         if (showSplitter) {
             const splitterCmp = splitter();
-            items = (contentFirst ? [...items, splitterCmp] : [splitterCmp, ...items]);
+            items = contentFirst ? [...items, splitterCmp] : [splitterCmp, ...items];
         }
 
         if (!collapsed && resizable) {
@@ -35,7 +35,6 @@ export const resizeContainer = hoistCmp.factory({
 
         const cmp = vertical ? vbox : hbox,
             maxDim = vertical ? 'maxHeight' : 'maxWidth';
-
 
         if (panelModel._resizeRef) {
             ref = composeRefs(panelModel._resizeRef, ref);

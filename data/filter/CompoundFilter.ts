@@ -17,8 +17,9 @@ import {CompoundFilterSpec, CompoundFilterOperator, FilterTestFn} from './Types'
  * Immutable.
  */
 export class CompoundFilter extends Filter {
-
-    get isCompoundFilter() {return true}
+    get isCompoundFilter() {
+        return true;
+    }
 
     readonly filters: Filter[];
     readonly op: CompoundFilterOperator;
@@ -58,19 +59,17 @@ export class CompoundFilter extends Filter {
         if (isEmpty(filters)) return () => true;
 
         const tests = filters.map(f => f.getTestFn(store));
-        return op === 'AND' ?
-            r => tests.every(test => test(r)) :
-            r => tests.some(test => test(r));
+        return op === 'AND' ? r => tests.every(test => test(r)) : r => tests.some(test => test(r));
     }
 
     override equals(other: Filter): boolean {
         if (other === this) return true;
-        return other instanceof CompoundFilter &&
+        return (
+            other instanceof CompoundFilter &&
             other.op === this.op &&
-            isEqualWith(
-                other.filters,
-                this.filters,
-                (a, b) => a.isFilter && b.isFilter ? a.equals(b) : undefined
-            );
+            isEqualWith(other.filters, this.filters, (a, b) =>
+                a.isFilter && b.isFilter ? a.equals(b) : undefined
+            )
+        );
     }
 }

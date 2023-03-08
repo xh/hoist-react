@@ -36,12 +36,12 @@ export const columnHeaderFilter = hoistCmp.factory({
             boundary: 'viewport',
             hasBackdrop: true,
             interactionKind: 'click',
-            onInteraction: (open) => {
+            onInteraction: open => {
                 if (!open) model.closeMenu();
             },
             target: div({
                 item: hasFilter ? Icon.filter() : Icon.columnMenu(),
-                onClick: (e) => {
+                onClick: e => {
                     e.stopPropagation();
                     model.openMenu();
                 }
@@ -94,30 +94,26 @@ const bbar = hoistCmp.factory<ColumnHeaderFilterModel>({
     }
 });
 
-const switcher = hoistCmp.factory<ColumnHeaderFilterModel>(
-    ({model}) => {
-        const {fieldType, enableValues} = model.fieldSpec,
-            {tabs} = model.tabContainerModel;
+const switcher = hoistCmp.factory<ColumnHeaderFilterModel>(({model}) => {
+    const {fieldType, enableValues} = model.fieldSpec,
+        {tabs} = model.tabContainerModel;
 
-        return buttonGroup({
-            omit: !enableValues || fieldType === 'bool',
-            className: 'xh-column-header-filter__tab-switcher',
-            items: tabs.map(it => switcherButton({...it}))
-        });
-    }
-);
+    return buttonGroup({
+        omit: !enableValues || fieldType === 'bool',
+        className: 'xh-column-header-filter__tab-switcher',
+        items: tabs.map(it => switcherButton({...it}))
+    });
+});
 
-const switcherButton = hoistCmp.factory<ColumnHeaderFilterModel>(
-    ({model, id, title}) => {
-        const {tabContainerModel} = model,
-            {activeTabId} = tabContainerModel;
+const switcherButton = hoistCmp.factory<ColumnHeaderFilterModel>(({model, id, title}) => {
+    const {tabContainerModel} = model,
+        {activeTabId} = tabContainerModel;
 
-        return button({
-            className: 'xh-column-header-filter__tab-switcher__button',
-            text: title,
-            active: activeTabId === id,
-            outlined: true,
-            onClick: () => tabContainerModel.activateTab(id)
-        });
-    }
-);
+    return button({
+        className: 'xh-column-header-filter__tab-switcher__button',
+        text: title,
+        active: activeTabId === id,
+        outlined: true,
+        onClick: () => tabContainerModel.activateTab(id)
+    });
+});

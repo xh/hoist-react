@@ -9,7 +9,6 @@ import {tabContainerImpl as desktopTabContainerImpl} from '@xh/hoist/dynamics/de
 import {tabContainerImpl as mobileTabContainerImpl} from '@xh/hoist/dynamics/mobile';
 import {TabContainerModel} from './TabContainerModel';
 
-
 export type TabContainerProps = HoistProps<TabContainerModel> & BoxProps;
 
 /**
@@ -35,7 +34,9 @@ export const [TabContainer, tabContainer] = hoistCmp.withFactory<TabContainerPro
     render(props, ref) {
         return refreshContextView({
             model: props.model.refreshContextModel,
-            item: XH.isMobileApp ? mobileTabContainerImpl(props, ref) : desktopTabContainerImpl(props, ref)
+            item: XH.isMobileApp
+                ? mobileTabContainerImpl(props, ref)
+                : desktopTabContainerImpl(props, ref)
         });
     }
 });

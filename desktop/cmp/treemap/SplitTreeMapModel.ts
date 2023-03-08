@@ -42,7 +42,6 @@ interface SplitTreeMapConfig extends TreeMapConfig {
 }
 
 export class SplitTreeMapModel extends HoistModel {
-
     //------------------------
     // Immutable public properties
     //------------------------
@@ -73,11 +72,14 @@ export class SplitTreeMapModel extends HoistModel {
         this.mapTitleFn = mapTitleFn;
         this.showSplitter = showSplitter;
 
-        throwIf(!['vertical', 'horizontal'].includes(orientation), `Orientation "${orientation}" not recognised.`);
+        throwIf(
+            !['vertical', 'horizontal'].includes(orientation),
+            `Orientation "${orientation}" not recognised.`
+        );
         this.orientation = orientation;
 
-        this.primaryMapModel = new TreeMapModel({...rest, filter: (r) => this.mapFilter(r)});
-        this.secondaryMapModel = new TreeMapModel({...rest, filter: (r) => !this.mapFilter(r)});
+        this.primaryMapModel = new TreeMapModel({...rest, filter: r => this.mapFilter(r)});
+        this.secondaryMapModel = new TreeMapModel({...rest, filter: r => !this.mapFilter(r)});
     }
 
     // Getters derived from both underlying TreeMapModels.
@@ -103,17 +105,39 @@ export class SplitTreeMapModel extends HoistModel {
 
     // Simple getters and methods trampolined from underlying TreeMapModels.
     // Where possible, we consult only the primary map model, as we don't expect the two to become out of sync.
-    get expandState()       {return this.primaryMapModel.expandState}
-    get error()             {return this.primaryMapModel.error}
-    get emptyText()         {return this.primaryMapModel.emptyText}
-    get highchartsConfig()  {return this.primaryMapModel.highchartsConfig}
-    get labelField()        {return this.primaryMapModel.labelField}
-    get heatField()         {return this.primaryMapModel.heatField}
-    get maxDepth()          {return this.primaryMapModel.maxDepth}
-    get maxHeat()           {return this.primaryMapModel.maxHeat}
-    get algorithm()         {return this.primaryMapModel.algorithm}
-    get colorMode()         {return this.primaryMapModel.colorMode}
-    get theme()             {return this.primaryMapModel.theme}
+    get expandState() {
+        return this.primaryMapModel.expandState;
+    }
+    get error() {
+        return this.primaryMapModel.error;
+    }
+    get emptyText() {
+        return this.primaryMapModel.emptyText;
+    }
+    get highchartsConfig() {
+        return this.primaryMapModel.highchartsConfig;
+    }
+    get labelField() {
+        return this.primaryMapModel.labelField;
+    }
+    get heatField() {
+        return this.primaryMapModel.heatField;
+    }
+    get maxDepth() {
+        return this.primaryMapModel.maxDepth;
+    }
+    get maxHeat() {
+        return this.primaryMapModel.maxHeat;
+    }
+    get algorithm() {
+        return this.primaryMapModel.algorithm;
+    }
+    get colorMode() {
+        return this.primaryMapModel.colorMode;
+    }
+    get theme() {
+        return this.primaryMapModel.theme;
+    }
 
     @action
     setOrientation(orientation: SplitTreeMapOrientation) {
@@ -171,7 +195,7 @@ export class SplitTreeMapModel extends HoistModel {
     //-------------------------
     // Implementation
     //-------------------------
-    defaultMapFilter = (record) => {
+    defaultMapFilter = record => {
         const data = record instanceof StoreRecord ? record.data : record;
         return data[this.primaryMapModel.valueField] >= 0;
     };
@@ -181,7 +205,7 @@ export class SplitTreeMapModel extends HoistModel {
  * Return true if record belongs to / should appear within the primary map, falsy to
  * have it allocated to the secondary map.
  */
-type SplitTreeMapFilterFn = (record: PlainObject|StoreRecord) => boolean;
+type SplitTreeMapFilterFn = (record: PlainObject | StoreRecord) => boolean;
 
 /**
  * Function to generate the region title to display.
@@ -194,4 +218,4 @@ type SplitTreeMapTitleFn = (treeMapModel: TreeMapModel, isPrimary: boolean) => R
  *   - 'vertical' (default) to display primary and secondary maps one above the other.
  *   - 'horizontal' to show them side-by-side.
  */
-type SplitTreeMapOrientation = 'vertical'|'horizontal';
+type SplitTreeMapOrientation = 'vertical' | 'horizontal';

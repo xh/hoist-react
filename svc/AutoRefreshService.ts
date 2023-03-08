@@ -36,11 +36,7 @@ export class AutoRefreshService extends HoistService {
     private initTime: number;
 
     get enabled(): boolean {
-        return (
-            this.interval > 0 &&
-            XH.appIsRunning &&
-            XH.getPref('xhAutoRefreshEnabled', false)
-        );
+        return this.interval > 0 && XH.appIsRunning && XH.getPref('xhAutoRefreshEnabled', false);
     }
 
     get interval(): number {
@@ -57,7 +53,6 @@ export class AutoRefreshService extends HoistService {
             delay: 5 * SECONDS
         });
     }
-
 
     //------------------------
     // Implementation

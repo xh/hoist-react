@@ -39,7 +39,14 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
     className: 'xh-col-chooser',
 
     render({model, className}) {
-        const {isOpen, gridModel, pinnedColumn, visibleColumns, hiddenColumns, showRestoreDefaults} = model,
+        const {
+                isOpen,
+                gridModel,
+                pinnedColumn,
+                visibleColumns,
+                hiddenColumns,
+                showRestoreDefaults
+            } = model,
             impl = useLocalModel(ColChooserLocalModel);
 
         return dialogPanel({
@@ -59,13 +66,14 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                                 row({col: pinnedColumn, model: impl}),
                                 droppable({
                                     droppableId: 'visible-columns',
-                                    item: (dndProps) => columnList({
-                                        model: impl,
-                                        cols: visibleColumns,
-                                        className: 'visible-columns',
-                                        ref: dndProps.innerRef,
-                                        placeholder: dndProps.placeholder
-                                    })
+                                    item: dndProps =>
+                                        columnList({
+                                            model: impl,
+                                            cols: visibleColumns,
+                                            className: 'visible-columns',
+                                            ref: dndProps.innerRef,
+                                            placeholder: dndProps.placeholder
+                                        })
                                 })
                             ],
                             bbar: toolbar({
@@ -84,13 +92,14 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                             scrollable: true,
                             item: droppable({
                                 droppableId: 'hidden-columns',
-                                item: (dndProps) => columnList({
-                                    model: impl,
-                                    cols: hiddenColumns,
-                                    className: 'hidden-columns',
-                                    ref: dndProps.innerRef,
-                                    placeholder: dndProps.placeholder
-                                })
+                                item: dndProps =>
+                                    columnList({
+                                        model: impl,
+                                        cols: hiddenColumns,
+                                        className: 'hidden-columns',
+                                        ref: dndProps.innerRef,
+                                        placeholder: dndProps.placeholder
+                                    })
                             })
                         })
                     ]
@@ -129,10 +138,7 @@ const columnList = hoistCmp.factory({
     render({cols, placeholder, className, ...props}, ref) {
         return div({
             className: classNames('xh-col-chooser__list', className),
-            items: [
-                ...cols.map((col, idx) => draggableRow({col, idx})),
-                placeholder
-            ],
+            items: [...cols.map((col, idx) => draggableRow({col, idx})), placeholder],
             ...props,
             ref
         });
@@ -148,14 +154,15 @@ const draggableRow = hoistCmp.factory({
             draggableId: colId,
             index: idx,
             isDragDisabled: !!pinned,
-            item: (dndProps, dndState) => row({
-                key: colId,
-                col,
-                isDragging: dndState.isDragging,
-                ref: dndProps.innerRef,
-                ...dndProps.dragHandleProps,
-                ...dndProps.draggableProps
-            })
+            item: (dndProps, dndState) =>
+                row({
+                    key: colId,
+                    col,
+                    isDragging: dndState.isDragging,
+                    ref: dndProps.innerRef,
+                    ...dndProps.dragHandleProps,
+                    ...dndProps.draggableProps
+                })
         });
     }
 });
@@ -167,7 +174,7 @@ const row = hoistCmp.factory<ColChooserLocalModel>({
         let {colId, text, pinned, hidden, locked, exclude} = col;
         if (exclude) return null;
 
-        const getDragIcon = (pinned) => {
+        const getDragIcon = pinned => {
             return pinned ? Icon.pin({prefix: 'fas'}) : Icon.grip({prefix: 'fas'});
         };
 
@@ -205,12 +212,11 @@ const row = hoistCmp.factory<ColChooserLocalModel>({
     }
 });
 
-
 class ColChooserLocalModel extends HoistModel {
     override xhImpl = true;
     @lookup(ColChooserModel) model: ColChooserModel;
 
-    onDragEnd = (result) => {
+    onDragEnd = result => {
         const {model} = this,
             {pinFirst, columns} = model,
             {draggableId, destination} = result;

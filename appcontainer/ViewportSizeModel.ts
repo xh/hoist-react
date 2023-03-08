@@ -18,7 +18,7 @@ export class ViewportSizeModel extends HoistModel {
     override xhImpl = true;
 
     @observable.ref
-    size: {width: number, height: number};
+    size: {width: number; height: number};
 
     @observable isPortrait: boolean;
 
@@ -63,10 +63,13 @@ export class ViewportSizeModel extends HoistModel {
     // appear to reliably catch resize events even on problematic mobile browsers (see above).
     @debounced(100)
     private setViewportSize() {
-        runInAction(() => this.size = {
-            width: window.innerWidth,
-            height: window.innerHeight
-        });
+        runInAction(
+            () =>
+                (this.size = {
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                })
+        );
     }
 
     @action

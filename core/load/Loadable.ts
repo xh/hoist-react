@@ -11,7 +11,6 @@ import {LoadSpec} from './';
  * Interface for the primary load/refresh APIs on models and services with {@link LoadSupport}.
  */
 export interface Loadable {
-
     /**
      * For tracking the loading of this object.
      * Note that this model will *not* track auto-refreshes.
@@ -36,7 +35,7 @@ export interface Loadable {
      *
      * @param loadSpec - a {@link LoadSpec}, or an object containing properties to create one.
      */
-    loadAsync(loadSpec?: LoadSpec|Partial<LoadSpec>): Promise<void>;
+    loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>): Promise<void>;
 
     /**
      * Refresh the target.

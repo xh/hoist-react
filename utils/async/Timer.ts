@@ -27,13 +27,12 @@ import {isBoolean, isFinite, isFunction, isNil, isString, pull} from 'lodash';
  * of this timer dynamically.
  */
 export class Timer {
-
     static _timers: Timer[] = [];
 
     runFn: () => any = null;
-    interval: number|(() => number) = null;
-    timeout: number|(() => number) = null;
-    delay: number|boolean = null;
+    interval: number | (() => number) = null;
+    timeout: number | (() => number) = null;
+    delay: number | boolean = null;
     scope: any = null;
     intervalUnits: number = null;
     timeoutUnits: number = null;
@@ -56,7 +55,6 @@ export class Timer {
         this._timers.push(t);
         return t;
     }
-
 
     /**
      * Permanently cancel *all* running timers.
@@ -162,9 +160,7 @@ export class Timer {
     }
 }
 
-
 export interface TimerSpec {
-
     /**
      * Function to run.
      * For async activity, return a promise to allow timer to prevent overlapping runs.
@@ -177,14 +173,14 @@ export interface TimerSpec {
      * If a function, will be re-evaluated after every timer run.
      * If a string, will be interpreted as an AppConfig key and looked up to determine the value.
      */
-    interval: number|(() => number)|string;
+    interval: number | (() => number) | string;
 
     /**
      * Timeout for action in milliseconds.
      * Like interval, this value may also be specified as a function or a config key.
      * Set to null for no timeout.
      */
-    timeout?: number|(() => number)|string;
+    timeout?: number | (() => number) | string;
 
     /** Units that the interval arg is specified in. Default is ms. */
     intervalUnits?: number;
@@ -196,7 +192,7 @@ export interface TimerSpec {
      * Initial delay, in milliseconds.
      * If specified as true, the value of the delay will be the same as interval.  Default to false.
      */
-    delay?: number|boolean;
+    delay?: number | boolean;
 
     /** Scope to run runFn in. */
     scope?: any;

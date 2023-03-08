@@ -62,22 +62,19 @@ export const exceptionDialog = hoistCmp.factory({
  * A Dismiss button that either forces reload, or allows close.
  * @internal
  */
-export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(
-    ({model}) => {
-        return model.options.requireReload ?
-            button({
-                icon: Icon.refresh(),
-                text: sessionExpired(model.exception) ? 'Login' : 'Reload App',
-                onClick: () => XH.reloadApp()
-            }) :
-            button({
-                text: 'Close',
-                onClick: () => model.close()
-            });
-    }
-);
+export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(({model}) => {
+    return model.options.requireReload
+        ? button({
+              icon: Icon.refresh(),
+              text: sessionExpired(model.exception) ? 'Login' : 'Reload App',
+              onClick: () => XH.reloadApp()
+          })
+        : button({
+              text: 'Close',
+              onClick: () => model.close()
+          });
+});
 
 function sessionExpired(e) {
     return e?.httpStatus === 401;
 }
-

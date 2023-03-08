@@ -33,14 +33,13 @@ import {never, PromiseTimeoutSpec} from '@xh/hoist/promise';
  * via config if needed.
  */
 export class FetchService extends HoistService {
-
     static instance: FetchService;
 
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
     private autoAborters = {};
     defaultHeaders = {};
-    defaultTimeout = 30 * SECONDS as any;
+    defaultTimeout = (30 * SECONDS) as any;
 
     /**
      * Set default headers to be sent with all subsequent requests.
@@ -63,9 +62,8 @@ export class FetchService extends HoistService {
      * @returns Promise which resolves to a Fetch Response.
      */
     fetch(opts: FetchOptions): Promise<any> {
-        return this.managedFetchAsync(
-            opts,
-            (aborter) => this.fetchInternalAsync(opts, aborter)
+        return this.managedFetchAsync(opts, aborter =>
+            this.fetchInternalAsync(opts, aborter)
         ) as any;
     }
 
@@ -74,16 +72,16 @@ export class FetchService extends HoistService {
      * @returns the decoded JSON object, or null if the response had no content.
      */
     fetchJson(opts: FetchOptions): Promise<any> {
-        return this.managedFetchAsync(
-            opts,
-            async (aborter) => {
-                const r = await this.fetchInternalAsync({
+        return this.managedFetchAsync(opts, async aborter => {
+            const r = await this.fetchInternalAsync(
+                {
                     ...opts,
-                    headers: {'Accept': 'application/json', ...opts.headers}
-                }, aborter);
-                return this.NO_JSON_RESPONSES.includes(r.status) ? null : r.json();
-            }
-        ) as any;
+                    headers: {Accept: 'application/json', ...opts.headers}
+                },
+                aborter
+            );
+            return this.NO_JSON_RESPONSES.includes(r.status) ? null : r.json();
+        }) as any;
     }
 
     /**
@@ -129,7 +127,7 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
-    private async managedFetchAsync(opts: FetchOptions, fn: (ctl: AbortController)=>any) {
+    private async managedFetchAsync(opts: FetchOptions, fn: (ctl: AbortController) => any) {
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
             aborter = new AbortController();
@@ -151,7 +149,9 @@ export class FetchService extends HoistService {
             if (e.isHoistException) throw e;
 
             // Just two other cases where we expect this to throw -- Typically we get a failed response)
-            throw (e.name === 'AbortError') ? Exception.fetchAborted(opts, e) : Exception.serverUnavailable(opts, e);
+            throw e.name === 'AbortError'
+                ? Exception.fetchAborted(opts, e)
+                : Exception.serverUnavailable(opts, e);
         } finally {
             if (autoAborters[autoAbortKey] === aborter) {
                 delete autoAborters[autoAbortKey];
@@ -159,16 +159,18 @@ export class FetchService extends HoistService {
         }
     }
 
-
     private async fetchInternalAsync(opts, aborter): Promise<any> {
         const {defaultHeaders} = this;
         let {url, method, headers, body, params} = opts;
         throwIf(!url, 'No url specified in call to fetchService.');
-        throwIf(headers instanceof Headers, 'headers must be a plain object in calls to fetchService.');
+        throwIf(
+            headers instanceof Headers,
+            'headers must be a plain object in calls to fetchService.'
+        );
 
         // 1) Compute / install defaults
         if (!method) {
-            method = (params ? 'POST' : 'GET');
+            method = params ? 'POST' : 'GET';
         }
         const isRelativeUrl = !url.startsWith('/') && !url.includes('//');
         if (isRelativeUrl) {
@@ -177,7 +179,7 @@ export class FetchService extends HoistService {
 
         // 2) Compute headers
         const headerEntries = {
-            'Content-Type': (method === 'POST') ? 'application/x-www-form-urlencoded' : 'text/plain',
+            'Content-Type': method === 'POST' ? 'application/x-www-form-urlencoded' : 'text/plain',
             ...(isFunction(defaultHeaders) ? defaultHeaders(opts) : defaultHeaders),
             ...headers
         };
@@ -205,7 +207,10 @@ export class FetchService extends HoistService {
             };
             const paramsString = stringify(params, qsOpts);
 
-            if (['POST', 'PUT'].includes(method) && headers.get('Content-Type') !== 'application/json') {
+            if (
+                ['POST', 'PUT'].includes(method) &&
+                headers.get('Content-Type') !== 'application/json'
+            ) {
                 // Fall back to an 'application/x-www-form-urlencoded' POST/PUT body if not sending json.
                 fetchOpts.body = paramsString;
             } else {
@@ -213,7 +218,7 @@ export class FetchService extends HoistService {
             }
         }
 
-        const ret:any = await fetch(url, fetchOpts);
+        const ret: any = await fetch(url, fetchOpts);
 
         if (!ret.ok) {
             ret.responseText = await this.safeResponseTextAsync(ret);
@@ -263,12 +268,11 @@ export class FetchService extends HoistService {
     }
 
     private qsFilterFn = (prefix, value) => {
-        if (isDate(value))      return value.getTime();
+        if (isDate(value)) return value.getTime();
         if (isLocalDate(value)) return value.isoString;
         return value;
     };
 }
-
 
 /**
  * Standard options to pass through to fetch, with some additions.

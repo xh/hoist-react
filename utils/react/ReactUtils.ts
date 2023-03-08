@@ -43,7 +43,8 @@ export function elementFromContent(content: Content, addProps?: object): ReactEl
 
     const ret = isFunction(c) ? c() : c;
     if (ret === null) return null;
-    throwIf(!isValidElement(ret),
+    throwIf(
+        !isValidElement(ret),
         'Must specify either a React Element, HoistComponent or a function that returns a React Element.'
     );
     return addProps ? cloneElement(ret, addProps) : ret;

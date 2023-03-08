@@ -26,7 +26,6 @@ import {Field} from './Field';
  * most not typically be constructed directly within application code.
  */
 export class StoreRecord {
-
     readonly id: StoreRecordId;
     readonly parentId: StoreRecordId;
     readonly store: Store;
@@ -62,7 +61,9 @@ export class StoreRecord {
      */
     readonly agId: string;
 
-    get isRecord():boolean {return true}
+    get isRecord(): boolean {
+        return true;
+    }
 
     /** True if the StoreRecord has never been committed. */
     get isAdd(): boolean {
@@ -142,7 +143,7 @@ export class StoreRecord {
     }
 
     /** Map of field names to list of errors. */
-    get errors(): Record<string, string[]>  {
+    get errors(): Record<string, string[]> {
         return this.validator?.errors ?? {};
     }
 
@@ -189,7 +190,15 @@ export class StoreRecord {
      * @internal
      */
     constructor(config: StoreRecordConfig) {
-        const {id, store, data, raw = null, committedData = data, parent, isSummary = false} = config;
+        const {
+            id,
+            store,
+            data,
+            raw = null,
+            committedData = data,
+            parent,
+            isSummary = false
+        } = config;
         throwIf(
             isNil(id),
             "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
@@ -197,7 +206,7 @@ export class StoreRecord {
         data.id = id;
 
         this.id = id;
-        this.agId = 'ag_'+ id.toString();
+        this.agId = 'ag_' + id.toString();
         this.store = store;
         this.data = data;
         this.raw = raw;
@@ -254,10 +263,10 @@ export class StoreRecord {
 }
 
 /** Unique identifier for a StoreRecord within a Store. */
-export type StoreRecordId = number|string;
+export type StoreRecordId = number | string;
 
 /** A Hoist StoreRecord, or an ID for one. */
-export type StoreRecordOrId = StoreRecordId|StoreRecord;
+export type StoreRecordOrId = StoreRecordId | StoreRecord;
 
 /** StoreRecord constructor arguments. */
 export interface StoreRecordConfig {
@@ -284,7 +293,7 @@ export interface StoreRecordConfig {
      * The version of the data that was last loaded via the Store load APIs. Pass `null` to
      * signal that this is a "new" StoreRecord that has been added since the last load.
      */
-    committedData? : PlainObject;
+    committedData?: PlainObject;
 
     parent?: StoreRecord;
 

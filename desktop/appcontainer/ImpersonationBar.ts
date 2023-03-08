@@ -24,7 +24,8 @@ export const impersonationBar = hoistCmp.factory({
     model: uses(ImpersonationBarModel),
 
     render({model}) {
-        const {isImpersonating, canAuthUserImpersonate, authUsername, username} = XH.identityService;
+        const {isImpersonating, canAuthUserImpersonate, authUsername, username} =
+            XH.identityService;
 
         if (!canAuthUserImpersonate || !model.isOpen) return null;
 
@@ -73,12 +74,24 @@ const showUseResponsiblyAlert = () => {
         message: fragment(
             h3('With great power comes great responsibility.'),
             ul(
-                li('While impersonating, anything you do will be as if the user you are impersonating had done it themselves.'),
-                li('Use care when updating any user settings - including grid and dashboard customizations. These are saved to the impersonated user\'s profile by default.'),
-                li('Remember, not all options require an explicit step to save - e.g. changing a query control, re-ordering grid columns, or dragging around a dashboard widget.'),
-                li('Impersonation sessions are tracked and logged - who and when you start and stop impersonating will be recorded.')
+                li(
+                    'While impersonating, anything you do will be as if the user you are impersonating had done it themselves.'
+                ),
+                li(
+                    "Use care when updating any user settings - including grid and dashboard customizations. These are saved to the impersonated user's profile by default."
+                ),
+                li(
+                    'Remember, not all options require an explicit step to save - e.g. changing a query control, re-ordering grid columns, or dragging around a dashboard widget.'
+                ),
+                li(
+                    'Impersonation sessions are tracked and logged - who and when you start and stop impersonating will be recorded.'
+                )
             ),
-            p('Contact ', a({href: 'mailto:support@xh.io', item: 'XH support'}), ' with any questions or concerns.')
+            p(
+                'Contact ',
+                a({href: 'mailto:support@xh.io', item: 'XH support'}),
+                ' with any questions or concerns.'
+            )
         ),
         confirmProps: {
             text: 'I understand and will be careful'

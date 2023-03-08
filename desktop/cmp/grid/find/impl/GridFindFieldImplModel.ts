@@ -31,10 +31,18 @@ export class GridFindFieldImplModel extends HoistModel {
 
     gridModel: GridModel;
 
-    get matchMode(): string {return this.componentProps.matchMode ?? 'startWord'}
-    get queryBuffer(): number {return this.componentProps.queryBuffer ?? 200}
-    get includeFields(): string[] {return this.componentProps.includeFields}
-    get excludeFields(): string[] {return this.componentProps.excludeFields}
+    get matchMode(): string {
+        return this.componentProps.matchMode ?? 'startWord';
+    }
+    get queryBuffer(): number {
+        return this.componentProps.queryBuffer ?? 200;
+    }
+    get includeFields(): string[] {
+        return this.componentProps.includeFields;
+    }
+    get excludeFields(): string[] {
+        return this.componentProps.excludeFields;
+    }
 
     @observable.ref results;
     inputRef = createObservableRef<TextInputModel>();
@@ -89,7 +97,10 @@ export class GridFindFieldImplModel extends HoistModel {
     }
 
     override onLinked() {
-        const gridModel = this.gridModel = withDefault(this.componentProps.gridModel, this.lookupModel(GridModel));
+        const gridModel = (this.gridModel = withDefault(
+            this.componentProps.gridModel,
+            this.lookupModel(GridModel)
+        ));
         errorIf(
             !gridModel?.selModel?.isEnabled,
             'GridFindField must be bound to GridModel with an enabled StoreSelectionModel.'
@@ -163,11 +174,13 @@ export class GridFindFieldImplModel extends HoistModel {
         }
 
         const regex = this.getRegex(query),
-            valGetters = flatMap(activeFields, (fieldPath) => this.getValGetters(fieldPath));
+            valGetters = flatMap(activeFields, fieldPath => this.getValGetters(fieldPath));
 
-        this.results = this.getRecords().filter(rec => {
-            return valGetters.some(fn => regex.test(fn(rec)));
-        }).map(rec => rec.id);
+        this.results = this.getRecords()
+            .filter(rec => {
+                return valGetters.some(fn => regex.test(fn(rec)));
+            })
+            .map(rec => rec.id);
 
         // Auto-select first matching result
         if (autoSelect && this.hasResults && !isFinite(this.selectedIdx)) {
@@ -308,8 +321,15 @@ export class GridFindFieldImplModel extends HoistModel {
 
             return cols.map(column => {
                 const {renderer, getValueFn} = column;
-                return (record) => {
-                    const ctx = {record, field: fieldName, column, gridModel, store, agParams: null},
+                return record => {
+                    const ctx = {
+                            record,
+                            field: fieldName,
+                            column,
+                            gridModel,
+                            store,
+                            agParams: null
+                        },
                         ret = getValueFn(ctx);
 
                     return renderer ? stripTags(renderer(ret, ctx)) : ret;
@@ -319,6 +339,8 @@ export class GridFindFieldImplModel extends HoistModel {
 
         // Otherwise just match raw.
         // Use expensive get() only when needed to support dot-separated paths.
-        return fieldName.includes('.') ? (rec) => get(rec.data, fieldName) : (rec) => rec.data[fieldName];
+        return fieldName.includes('.')
+            ? rec => get(rec.data, fieldName)
+            : rec => rec.data[fieldName];
     }
 }

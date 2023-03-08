@@ -28,13 +28,13 @@ export class DraggerModel extends HoistModel {
     throttledSetSize;
 
     override onLinked() {
-        this.throttledSetSize = throttle(size => this.panelModel.size = size, 50);
+        this.throttledSetSize = throttle(size => (this.panelModel.size = size), 50);
 
         // Add listeners to el to ensure we can get non-passive handlers than can preventDefault()
         // React synthetic touch events on certain browsers (e.g. airwatch) don't yield that
         this.addReaction({
             track: () => this.ref.current,
-            run: (current) => {
+            run: current => {
                 if (current) this.addListeners(current);
             }
         });
@@ -52,7 +52,7 @@ export class DraggerModel extends HoistModel {
         }
     }
 
-    private onDragStart = (e) => {
+    private onDragStart = e => {
         const dragger = e.target;
         this.panelEl = dragger.parentElement;
         const {panelEl: panel, panelModel} = this;
@@ -83,7 +83,7 @@ export class DraggerModel extends HoistModel {
         this.maxSize = panelModel.maxSize ? Math.min(panelModel.maxSize, calcMaxSize) : calcMaxSize;
     };
 
-    private onDrag = (e) => {
+    private onDrag = e => {
         if (!this.resizeState) return;
 
         e.preventDefault();
@@ -104,10 +104,18 @@ export class DraggerModel extends HoistModel {
             {startX, startY} = this.resizeState;
 
         switch (side) {
-            case 'left':    this.diff = clientX - startX; break;
-            case 'right':   this.diff = startX - clientX; break;
-            case 'bottom':  this.diff = startY - clientY; break;
-            case 'top':     this.diff = clientY - startY; break;
+            case 'left':
+                this.diff = clientX - startX;
+                break;
+            case 'right':
+                this.diff = startX - clientX;
+                break;
+            case 'bottom':
+                this.diff = startY - clientY;
+                break;
+            case 'top':
+                this.diff = clientY - startY;
+                break;
         }
 
         if (resizeWhileDragging) {
@@ -174,41 +182,69 @@ export class DraggerModel extends HoistModel {
         const stl = dragBar.style;
         stl.display = 'block';
 
-        if (diff + startSize <= minSize) { // constrain to minSize (which could be 0)
+        if (diff + startSize <= minSize) {
+            // constrain to minSize (which could be 0)
             switch (side) {
-                case 'left':    stl.left =  (panel.offsetLeft + minSize) + 'px'; break;
-                case 'top':     stl.top =   (panel.offsetTop + minSize) + 'px'; break;
-                case 'right':   stl.left =  (panel.offsetLeft + startSize - minSize) + 'px'; break;
-                case 'bottom':  stl.top =   (panel.offsetTop + startSize - minSize) + 'px'; break;
+                case 'left':
+                    stl.left = panel.offsetLeft + minSize + 'px';
+                    break;
+                case 'top':
+                    stl.top = panel.offsetTop + minSize + 'px';
+                    break;
+                case 'right':
+                    stl.left = panel.offsetLeft + startSize - minSize + 'px';
+                    break;
+                case 'bottom':
+                    stl.top = panel.offsetTop + startSize - minSize + 'px';
+                    break;
             }
-        } else if (diff + startSize >= maxSize) {  // constrain to max-size
+        } else if (diff + startSize >= maxSize) {
+            // constrain to max-size
             switch (side) {
-                case 'left':    stl.left =  (panel.offsetLeft + maxSize) + 'px'; break;
-                case 'top':     stl.top =   (panel.offsetTop + maxSize) + 'px'; break;
-                case 'right':   stl.left =  (panel.offsetLeft + startSize - maxSize) + 'px'; break;
-                case 'bottom':  stl.top =   (panel.offsetTop + startSize - maxSize) + 'px'; break;
+                case 'left':
+                    stl.left = panel.offsetLeft + maxSize + 'px';
+                    break;
+                case 'top':
+                    stl.top = panel.offsetTop + maxSize + 'px';
+                    break;
+                case 'right':
+                    stl.left = panel.offsetLeft + startSize - maxSize + 'px';
+                    break;
+                case 'bottom':
+                    stl.top = panel.offsetTop + startSize - maxSize + 'px';
+                    break;
             }
         } else {
             switch (side) {
-                case 'left':    stl.left =  (panel.offsetLeft + startSize + diff) + 'px'; break;
-                case 'top':     stl.top =   (panel.offsetTop + startSize + diff) + 'px'; break;
-                case 'right':   stl.left =  (panel.offsetLeft - diff) + 'px'; break;
-                case 'bottom':  stl.top =   (panel.offsetTop - diff) + 'px'; break;
+                case 'left':
+                    stl.left = panel.offsetLeft + startSize + diff + 'px';
+                    break;
+                case 'top':
+                    stl.top = panel.offsetTop + startSize + diff + 'px';
+                    break;
+                case 'right':
+                    stl.left = panel.offsetLeft - diff + 'px';
+                    break;
+                case 'bottom':
+                    stl.top = panel.offsetTop - diff + 'px';
+                    break;
             }
         }
     }
 
     private getSiblingAvailSize() {
         const {panelModel, panelEl} = this,
-            sib = panelModel.contentFirst ? panelEl.nextElementSibling : panelEl.previousElementSibling,
+            sib = panelModel.contentFirst
+                ? panelEl.nextElementSibling
+                : panelEl.previousElementSibling,
             sibIsResizable = sib.classList.contains('xh-resizable'),
             sibSplitter = sibIsResizable ? sib.querySelector('.xh-resizable-splitter') : null;
 
         // Use 'clientWidth/Height', not 'offsetWidth/Height' here, because clientHeight does not count borders.
         // Flexbox does not collapse borders when resizing.
-        return panelModel.vertical ?
-            sib.clientHeight - (sibIsResizable ? sibSplitter.offsetHeight : 0):
-            sib.clientWidth - (sibIsResizable ? sibSplitter.offsetWidth : 0);
+        return panelModel.vertical
+            ? sib.clientHeight - (sibIsResizable ? sibSplitter.offsetHeight : 0)
+            : sib.clientWidth - (sibIsResizable ? sibSplitter.offsetWidth : 0);
     }
 
     private parseEventPositions(e) {
@@ -228,7 +264,7 @@ export class DraggerModel extends HoistModel {
      * @param v - Workaround to allow dragging over iframe, which is its own
      *  separate document and cannot listen for events from main document.
      */
-    setIframePointerEvents(v: 'none'|'auto') {
+    setIframePointerEvents(v: 'none' | 'auto') {
         for (const el of document.getElementsByTagName('iframe') as any) {
             el.style['pointer-events'] = v;
         }

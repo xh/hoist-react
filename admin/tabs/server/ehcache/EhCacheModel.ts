@@ -11,7 +11,6 @@ import * as Col from '@xh/hoist/cmp/grid/columns';
 import {trimEnd} from 'lodash';
 
 export class EhCacheModel extends HoistModel {
-
     override persistWith = {localStorageKey: 'xhAdminEhCacheState'};
 
     @managed
@@ -58,5 +57,3 @@ export class EhCacheModel extends HoistModel {
         return this.gridModel.loadAsync(loadSpec).catchDefault();
     }
 }
-
-

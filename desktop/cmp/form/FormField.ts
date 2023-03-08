@@ -22,7 +22,6 @@ import './FormField.scss';
 import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
 
 export interface FormFieldProps extends BaseFormFieldProps {
-
     /**
      * Focus or toggle input when label is clicked.
      * Defaulted from containing Form, or true.
@@ -66,7 +65,6 @@ export interface FormFieldProps extends BaseFormFieldProps {
     tooltipPosition?: PopoverPosition;
 }
 
-
 /**
  * Standardised wrapper around a HoistInput component for use in a form. FormField provides
  * consistent layout, labelling, and optional display of validation messages for the field.
@@ -101,8 +99,8 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         errorIf(
             isEmpty(formContext),
             `Form field could not find valid FormContext. ` +
-            `Make sure you are using a Hoist form ('@xh/hoist/cmp/form/form') ` +
-            `and not an HTML Form ('@xh/hoist/cmp/layout/form').`
+                `Make sure you are using a Hoist form ('@xh/hoist/cmp/form/form') ` +
+                `and not an HTML Form ('@xh/hoist/cmp/layout/form').`
         );
         const formModel = formContext.model;
         model = model ?? (formModel && field ? formModel.fields[field] : null);
@@ -120,11 +118,13 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             displayNotValid = validationDisplayed && notValid,
             errors = model?.errors || [],
             requiredStr = defaultProp('requiredIndicator', props, formContext, '*'),
-            requiredIndicator = (isRequired && !readonly && requiredStr) ?
-                span({
-                    item: ' ' + requiredStr,
-                    className: 'xh-form-field-required-indicator'
-                }) : null;
+            requiredIndicator =
+                isRequired && !readonly && requiredStr
+                    ? span({
+                          item: ' ' + requiredStr,
+                          className: 'xh-form-field-required-indicator'
+                      })
+                    : null;
 
         // Get spec'ed child -- may be null for fields that are always read-only
         const child = getValidChild(children),
@@ -145,7 +145,12 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             commitOnChange = defaultProp('commitOnChange', props, formContext, undefined),
             tooltipPosition = defaultProp('tooltipPosition', props, formContext, 'right'),
             tooltipBoundary = defaultProp('tooltipBoundary', props, formContext, 'viewport'),
-            readonlyRenderer = defaultProp('readonlyRenderer', props, formContext, defaultReadonlyRenderer);
+            readonlyRenderer = defaultProp(
+                'readonlyRenderer',
+                props,
+                formContext,
+                defaultReadonlyRenderer
+            );
 
         // Styles
         const classes = [];
@@ -158,24 +163,26 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
         // generate actual element child to render
-        let childEl: ReactElement =  !child || readonly ?
-            readonlyChild({model, readonlyRenderer}) :
-            editableChild({
-                model,
-                child,
-                childIsSizeable,
-                childId,
-                disabled,
-                displayNotValid,
-                leftErrorIcon,
-                commitOnChange
-            });
+        let childEl: ReactElement =
+            !child || readonly
+                ? readonlyChild({model, readonlyRenderer})
+                : editableChild({
+                      model,
+                      child,
+                      childIsSizeable,
+                      childId,
+                      disabled,
+                      displayNotValid,
+                      leftErrorIcon,
+                      commitOnChange
+                  });
 
         if (minimal) {
             childEl = tooltip({
                 target: childEl,
                 targetClassName: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
-                targetTagName: !blockChildren.includes(childElementName) || childWidth ? 'span' : 'div',
+                targetTagName:
+                    !blockChildren.includes(childElementName) || childWidth ? 'span' : 'div',
                 position: tooltipPosition,
                 boundary: tooltipBoundary,
                 disabled: !displayNotValid,
@@ -238,9 +245,17 @@ const readonlyChild = hoistCmp.factory({
 const editableChild = hoistCmp.factory<FieldModel>({
     model: false,
 
-    render({model, child, childIsSizeable, childId, disabled, displayNotValid, leftErrorIcon, commitOnChange}) {
+    render({
+        model,
+        child,
+        childIsSizeable,
+        childId,
+        disabled,
+        displayNotValid,
+        leftErrorIcon,
+        commitOnChange
+    }) {
         const {props} = child;
-
 
         // Overrides -- be sure not to clobber selected properties on child
         const overrides: DefaultHoistProps = {
@@ -250,7 +265,6 @@ const editableChild = hoistCmp.factory<FieldModel>({
             disabled: props.disabled || disabled,
             ref: composeRefs(model?.boundInputRef, child.ref)
         };
-
 
         // If a sizeable child input doesn't specify its own dimensions,
         // the input should fill the available size of the FormField.
@@ -295,7 +309,7 @@ function getValidChild(children) {
     throwIf(
         child.props.bind || child.props.model,
         'Child of FormField should not specify "bind" or "model" props. These props will ' +
-        'will be set by the FormField to bind it appropriately.'
+            'will be set by the FormField to bind it appropriately.'
     );
 
     return child;
@@ -308,7 +322,9 @@ function defaultReadonlyRenderer(value: any): ReactNode {
     if (isBoolean(value)) return value.toString();
 
     // format JSON, but fail and ignore on plain text
-    try {value = fmtJson(value)} catch (e) {}
+    try {
+        value = fmtJson(value);
+    } catch (e) {}
 
     return span(value != null ? value.toString() : null);
 }
@@ -322,7 +338,12 @@ function getErrorTooltipContent(errors: string[]): ReactNode {
     });
 }
 
-function defaultProp(name: string, props: Partial<FormFieldProps>, formContext: FormContextType, defaultVal: any): any {
+function defaultProp(
+    name: string,
+    props: Partial<FormFieldProps>,
+    formContext: FormContextType,
+    defaultVal: any
+): any {
     const fieldDefault = formContext.fieldDefaults ? formContext.fieldDefaults[name] : null;
     return withDefault(props[name], fieldDefault, defaultVal);
 }

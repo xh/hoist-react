@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import { PlainObject } from '@xh/hoist/core';
+import {PlainObject} from '@xh/hoist/core';
 import {isEmpty} from 'lodash';
 import {StoreRecord} from '../../StoreRecord';
 import {View} from '../View';
@@ -16,7 +16,9 @@ import {RowUpdate} from './RowUpdate';
  * Object used to track leaf rows in a View
  */
 export class LeafRow extends BaseRow {
-    override get isLeaf() {return true}
+    override get isLeaf() {
+        return true;
+    }
 
     constructor(view: View, id: string, rawRecord: StoreRecord) {
         super(view, id);

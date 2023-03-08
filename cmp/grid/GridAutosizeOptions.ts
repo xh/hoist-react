@@ -9,7 +9,6 @@ import {Column} from './columns';
 import {GridAutosizeMode} from './enums/GridAutosizeMode';
 
 export interface GridAutosizeOptions {
-
     /** Mode governing when resize occurs. Defaults to GridAutosizeMode.ON_SIZING_MODE_CHANGE.*/
     mode?: GridAutosizeMode;
 
