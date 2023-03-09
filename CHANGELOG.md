@@ -2,6 +2,10 @@
 
 ## v56.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `DashCanvas` views can now be programmatically added with specified width and height dimensions.
+
 ### 💥 Breaking Changes
 
 * The use of `tooltipElement` on `Column` is removed. Use `tooltip` instead.
