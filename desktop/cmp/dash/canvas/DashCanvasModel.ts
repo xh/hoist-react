@@ -253,10 +253,16 @@ export class DashCanvasModel extends DashModel<
             title?: string;
             position?: 'first' | 'last' | 'nextAvailable' | string;
             state?: any;
+            width?: number;
+            height?: number;
         } = {}
     ): DashCanvasViewModel {
-        const {title, position = 'nextAvailable', state} = opts;
-        const layout = this.getLayoutFromPosition(position, specId);
+        const {title, position = 'nextAvailable', state, width, height} = opts;
+        const layout = {
+            ...this.getLayoutFromPosition(position, specId),
+            w: width,
+            h: height
+        };
         return this.addViewInternal(specId, {title, layout, state});
     }
 
