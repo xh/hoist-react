@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {ReactNode} from 'react';
 import {ButtonGroupProps as BpButtonGroupProps} from '@blueprintjs/core';
 import {hoistCmp, HoistModel, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
@@ -14,7 +15,7 @@ export interface ButtonGroupProps<M extends HoistModel = null>
     extends HoistProps<M>,
         LayoutProps,
         StyleProps,
-        Partial<BpButtonGroupProps> {
+        Omit<BpButtonGroupProps, 'children'> {
     /** True to have all buttons fill available width equally. */
     fill?: boolean;
 
@@ -23,6 +24,9 @@ export interface ButtonGroupProps<M extends HoistModel = null>
 
     /** True to render in a vertical orientation. */
     vertical?: boolean;
+
+    /** Override non-optional `children` from BpButtonGroupProps to support ElementFactor. */
+    children?: ReactNode | undefined;
 }
 
 /**
