@@ -9,6 +9,7 @@ import {hoistCmp, HoistModel, HoistProps, LayoutProps, StyleProps} from '@xh/hoi
 import '@xh/hoist/desktop/register';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
+import * as React from 'react';
 
 export interface ButtonGroupProps<M extends HoistModel = null>
     extends HoistProps<M>,
@@ -23,6 +24,8 @@ export interface ButtonGroupProps<M extends HoistModel = null>
 
     /** True to render in a vertical orientation. */
     vertical?: boolean;
+
+    children?: React.ReactNode | undefined;
 }
 
 /**
