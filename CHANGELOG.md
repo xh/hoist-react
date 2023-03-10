@@ -5,6 +5,7 @@
 ### 🎁 New Features
 
 * `DashCanvas` views can now be programmatically added with specified width and height dimensions.
+* `FetchService` now has a public `abort` method for manually aborting a pending fetch request.
 
 ### 💥 Breaking Changes
 
