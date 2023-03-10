@@ -25,6 +25,7 @@ export interface ButtonGroupProps<M extends HoistModel = null>
     /** True to render in a vertical orientation. */
     vertical?: boolean;
 
+    /** Override non-optional `children` from BpButtonGroupProps to support ElementFactor. */
     children?: ReactNode | undefined;
 }
 
