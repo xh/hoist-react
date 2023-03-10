@@ -124,6 +124,21 @@ export class FetchService extends HoistService {
         return this.sendJsonInternalAsync({method: 'DELETE', ...opts});
     }
 
+    /**
+     * Manually abort any pending request for a given autoAbortKey.
+     * @returns false if no request pending for the given key.
+     */
+    abort(autoAbortKey: string): boolean {
+        const {autoAborters} = this,
+            aborter = autoAborters[autoAbortKey];
+
+        if (!aborter) return false;
+
+        aborter.abort();
+        delete autoAborters[autoAbortKey];
+        return true;
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
