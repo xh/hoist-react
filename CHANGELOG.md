@@ -8,7 +8,10 @@
 * `FetchService` now has a public `abort` method for manually aborting a pending fetch request.
 
 ### 💥 Breaking Changes
-
+* "Local" Preference support in PreferenceService is no longer supported.  Application should use
+  `LocalStorageService` instead. With v56, the `local` flag on any preferences will be ignored, and
+  all preferences will be saved on the server instead.  Note that Hoist v56 will execute a one-time
+  migration of any existing preferences from browser Local Storage to the server on app load.
 * The use of `tooltipElement` on `Column` is removed. Use `tooltip` instead.
 * The prop `fill` on `TextArea` and `NumberInput` component has been removed.  Use the standard
   flex` layout prop instead.
@@ -16,6 +19,9 @@
  `Button.modifier.quiet` have been removed.
 * The previously deprecated property `AppMenuButton.extraItems.onClick` has been removed.  Use
 `actionFn` instead.
+
+### ⚙️ Technical
+* This version requires an update to hoist-core v16.0.0
 
 
 ## v55.3.0 - 2023-03-03

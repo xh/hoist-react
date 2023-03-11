@@ -7,7 +7,7 @@
 import {HoistService, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
-import {debounce, forEach, isEmpty, isEqual, isNil, pickBy} from 'lodash';
+import {debounce, forEach, isEmpty, isEqual, size} from 'lodash';
 
 /**
  * Service to read and set user-specific preference values.
@@ -23,16 +23,13 @@ import {debounce, forEach, isEmpty, isEqual, isNil, pickBy} from 'lodash';
  * been configured with preference support).
  *
  * Preferences are persisted automatically back to the server by default so as to follow their user
- * across workstations. A `local` flag can be set on the preference definition, however, to persist
- * user values to local storage instead. This should be used for prefs that are more natural to
- * associate with a particular machine or browser (e.g. sizing or layout related options).
+ * across workstations.
  */
 export class PrefService extends HoistService {
     static instance: PrefService;
 
     private _data = {};
     private _updates = {};
-    private _localStorageKey = 'localPrefs';
     private pushPendingBuffered: any;
 
     constructor() {
@@ -43,6 +40,7 @@ export class PrefService extends HoistService {
     }
 
     override async initAsync() {
+        await this.migrateLocalPrefsAsync();
         return this.loadPrefsAsync();
     }
 
@@ -81,7 +79,7 @@ export class PrefService extends HoistService {
      *
      * Values are validated client-side to ensure they (probably) are of the correct data type.
      *
-     * Values are saved to the server (or local storage) in an asynchronous and debounced manner.
+     * Values are saved to the server in an asynchronous and debounced manner.
      * See pushAsync() and pushPendingAsync()
      */
     set(key: string, value: any) {
@@ -120,18 +118,10 @@ export class PrefService extends HoistService {
     }
 
     /**
-     * Reset all *local* preferences, reverting their effective values back to defaults.
-     */
-    clearLocalValues() {
-        XH.localStorageService.remove(this._localStorageKey);
-    }
-
-    /**
      * Reset *all* preferences, reverting their effective values back to defaults.
      * @returns a Promise that resolves when preferences have been cleared and defaults reloaded.
      */
     async clearAllAsync() {
-        this.clearLocalValues();
         await XH.fetchJson({
             url: 'xh/clearPrefs',
             params: {clientUsername: XH.getUsername()}
@@ -140,7 +130,7 @@ export class PrefService extends HoistService {
     }
 
     /**
-     * Push any pending buffered updates to persist newly set values to server or local storage.
+     * Push any pending buffered updates to persist newly set values to server.
      * Called automatically by this app on page unload to avoid dropping changes when e.g. a user
      * changes and option and then immediately hits a (browser) refresh.
      */
@@ -152,18 +142,11 @@ export class PrefService extends HoistService {
         // clear obj state immediately to allow picking up next batch during async operation
         this._updates = {};
 
-        const remoteUpdates = pickBy(updates, (v, k) => !this.isLocalPreference(k)),
-            localUpdates = pickBy(updates, (v, k) => this.isLocalPreference(k));
-
-        if (!isEmpty(localUpdates)) {
-            XH.localStorageService.apply(this._localStorageKey, localUpdates);
-        }
-
-        if (!isEmpty(remoteUpdates)) {
+        if (!isEmpty(updates)) {
             await XH.fetchJson({
                 url: 'xh/setPrefs',
                 params: {
-                    updates: JSON.stringify(remoteUpdates),
+                    updates: JSON.stringify(updates),
                     clientUsername: XH.getUsername()
                 }
             });
@@ -183,52 +166,30 @@ export class PrefService extends HoistService {
             deepFreeze(v.defaultValue);
         });
         this._data = data;
-        this.syncLocalPrefs();
     }
 
-    private syncLocalPrefs() {
-        const localPrefs = XH.localStorageService.get(this._localStorageKey, {}),
-            data = this._data;
-
-        this.cleanLocalPrefs(localPrefs);
-
-        for (let key in data) {
-            if (data[key].local) {
-                data[key].value = !isNil(localPrefs[key])
-                    ? deepFreeze(structuredClone(localPrefs[key]))
-                    : data[key].defaultValue;
+    private async migrateLocalPrefsAsync() {
+        try {
+            const key = 'localPrefs',
+                updates = XH.localStorageService.get(key, {}),
+                updateCount = size(updates);
+            if (updateCount) {
+                await XH.fetchJson({
+                    url: 'xh/migrateLocalPrefs',
+                    timeout: 5 * SECONDS,
+                    params: {
+                        clientUsername: XH.getUsername(),
+                        updates: JSON.stringify(updates)
+                    }
+                }).track({
+                    message: `Migrated ${updateCount} preferences`,
+                    data: updates
+                });
+                XH.localStorageService.remove(key);
             }
+        } catch (e) {
+            XH.handleException(e, {showAlert: false});
         }
-    }
-
-    private cleanLocalPrefs(localPrefs) {
-        const data = this._data;
-
-        for (let pref in localPrefs) {
-            if (!data.hasOwnProperty(pref)) this.removeLocalValue(pref);
-        }
-    }
-
-    private removeLocalValue(key) {
-        const hasRemoveValue = this._data.hasOwnProperty(key);
-
-        throwIf(
-            hasRemoveValue && !this.isLocalPreference(key),
-            `${key} is not a local preference.`
-        );
-
-        const localPrefs = XH.localStorageService.get(this._localStorageKey, {});
-
-        delete localPrefs[key];
-
-        if (hasRemoveValue) this._data[key].value = this._data[key].defaultValue;
-
-        XH.localStorageService.set(this._localStorageKey, localPrefs);
-    }
-
-    private isLocalPreference(key) {
-        const pref = this._data[key];
-        return pref && pref.local;
     }
 
     private validateBeforeSet(key, value) {
