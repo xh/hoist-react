@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {SetOptional} from 'type-fest';
 import {ButtonGroupProps as BpButtonGroupProps} from '@blueprintjs/core';
 import {hoistCmp, HoistModel, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
@@ -14,7 +15,7 @@ export interface ButtonGroupProps<M extends HoistModel = null>
     extends HoistProps<M>,
         LayoutProps,
         StyleProps,
-        Omit<BpButtonGroupProps, 'children'> {
+        SetOptional<BpButtonGroupProps, 'children'> {
     /** True to have all buttons fill available width equally. */
     fill?: boolean;
 
