@@ -70,7 +70,7 @@ import {
     TaskObserver
 } from './';
 
-const MIN_HOIST_CORE_VERSION = '15.0';
+const MIN_HOIST_CORE_VERSION = '16.0';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
