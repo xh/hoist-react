@@ -1,0 +1,21 @@
+.xh-dash-container {
+  &--empty-overlay {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    .bp4-overlay-backdrop {
+      background-color: var(--xh-bg);
+    }
+  }
+}
+
+.xh-dash-container-menu-btn {
+  margin: 2px 0;
+  padding: 0 !important;
+  height: 22px;
+  width: 22px;
+  min-height: 22px;
+  min-width: 22px;
+}

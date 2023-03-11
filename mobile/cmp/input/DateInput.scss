@@ -2,6 +2,7 @@
 .xh-date-input {
   display: flex;
   align-items: stretch;
+  background: var(--xh-input-bg);
 
   & > svg {
     margin: 8px 0;
@@ -37,7 +38,7 @@
 
 // Popover and mask
 .SingleDatePicker_picker__portal {
-  background-color: var(--xh-mask-bg);
+  background-color: var(--xh-backdrop-bg);
 
   .DayPicker {
     background-color: var(--xh-bg);

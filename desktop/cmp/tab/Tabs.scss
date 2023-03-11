@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 .xh-tab-container {
@@ -43,7 +43,7 @@
     max-width: 100%;
 
     // Flip the indicator to be on top of the tab label
-    .bp3-tab[aria-selected=true] {
+    .bp4-tab[aria-selected='true'] {
       box-shadow: inset 0 3px 0 currentColor;
     }
   }
@@ -54,7 +54,7 @@
     max-height: 100%;
 
     // Make overflow button full width
-    .bp3-popover-wrapper .bp3-popover-target {
+    .bp4-popover-wrapper .bp4-popover-target {
       display: block;
 
       .xh-button {
@@ -100,24 +100,29 @@
     }
   }
 
-  // Tooltip
-  .bp3-tab {
-    .bp3-popover-wrapper,
-    .bp3-popover-target {
+  .bp4-tab {
+    color: var(--xh-tab-text-color);
+
+    &[aria-disabled='true'] {
+      color: var(--xh-tab-disabled-text-color);
+    }
+
+    // Tooltip
+    .bp4-popover-wrapper,
+    .bp4-popover-target {
       width: 100%;
     }
   }
 
   // Active/hover color override
-  .bp3-tab[aria-selected="true"],
-  .bp3-tab:not([aria-disabled="true"]):hover {
+  .bp4-tab[aria-selected='true'],
+  .bp4-tab:not([aria-disabled='true']):hover {
     .xh-tab-switcher__tab {
       color: var(--xh-tab-active-text-color);
     }
   }
 
-  .bp3-tab[aria-selected="true"] {
+  .bp4-tab[aria-selected='true'] {
     box-shadow: inset 0 -3px 0 var(--xh-tab-active-text-color);
   }
-
 }

@@ -2,24 +2,37 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 .xh-status-tile {
   color: white;
-  border: 1px solid white;
-  border-radius: var(--xh-border-radius);
+  border: var(--xh-border-solid);
   overflow: hidden;
 
-  &-ok { background-color: var(--xh-green); }
+  .xh-dark & {
+    border-color: white;
+  }
 
-  &-warn { background-color: var(--xh-orange); }
+  &-ok {
+    background-color: var(--xh-intent-success-darker);
+  }
 
-  &-fail { background-color: var(--xh-red); }
+  &-warn {
+    background-color: var(--xh-intent-warning-darker);
+  }
 
-  &-inactive { background-color: var(--xh-gray-dark); }
+  &-fail {
+    background-color: var(--xh-intent-danger-darker);
+  }
 
-  &-unknown { background-color: var(--xh-gray-dark); }
+  &-inactive {
+    background-color: var(--xh-gray-dark);
+  }
+
+  &-unknown {
+    background-color: var(--xh-gray-dark);
+  }
 
   &__name {
     padding: var(--xh-pad-px);
@@ -44,16 +57,20 @@
   &__message {
     flex: 1;
     margin-top: var(--xh-pad-px);
-    overflow: hidden;
+    overflow: auto;
     text-overflow: ellipsis;
-    width: calc(100% - 80px);
+    white-space: pre-wrap;
+    width: calc(100% - 90px);
 
     @media only screen and (max-width: 1350px) {
-      width: calc(100% - 90px);
+      width: calc(100% - 95px);
     }
 
     @media only screen and (max-width: 700px) {
-      width: calc(100% - 110px);
+      width: calc(100% - 115px);
+    }
+    &::-webkit-scrollbar {
+      max-width: 4px;
     }
   }
 }

@@ -7,12 +7,13 @@ Grails / Gradle based server. That is technically the domain of
 [Hoist Core](https://github.com/xh/hoist-core) but is detailed here to provide a consolidated look
 at the build process.
 
-***At a high level, the build process:***
-* Builds the Grails back-end via Gradle, producing a WAR file.
-* Builds the JS front-end via Webpack, producing a set of production ready client assets.
-* Copies both outputs into a pair of Docker containers and publishes those containers as the
-  end-product of the build.
-* Deploys the new images, immediately or in a later step.
+**_At a high level, the build process:_**
+
+-   Builds the Grails back-end via Gradle, producing a WAR file.
+-   Builds the JS front-end via Webpack, producing a set of production ready client assets.
+-   Copies both outputs into a pair of Docker containers and publishes those containers as the
+    end-product of the build.
+-   Deploys the new images, immediately or in a later step.
 
 Hoist does not mandate the use of any particular CI system, although we recommend and use
 [Jetbrains Teamcity](https://www.jetbrains.com/teamcity/) across multiple project deployments. The
@@ -32,7 +33,7 @@ within the application source code via both the Gradle and Webpack configs.
 
 #### 1.1) Refresh and Lint JS Client
 
-We do this first to fail fast if the client code doesn’t pass the linter checks, which is relatively
+We do this first to fail fast if the client code doesn't pass the linter checks, which is relatively
 common. This step could also run any preflight unit tests, etc. should you be diligent enough to
 have them.
 
@@ -41,20 +42,29 @@ yarn
 yarn lint
 ```
 
-#### 1.2) Set Gradle project name
+#### 1.2) Set Gradle project name (optional)
 
 It’s best to be explicit with Gradle about the name of the project. By default it uses the name of
 the containing directory, which in a CI build is probably a random hash.
 
-Project names can be set via a `settings.gradle`in the project root, but we often don’t want to
-check in a `settings.gradle` with each app project. as we commonly build and test [custom Grails
-plugins](https://github.com/xh/hoist-core#custom-plugins-for-enterprise-deployments) by running in a
-[multi-project build mode](https://docs.gradle.org/current/userguide/multi_project_builds.html) with
-an under-development Grails plugin and the app checked out as siblings in a parent wrapper
+Project names can be set by creating a `settings.gradle` in the project root with the following:
+
+```properties
+rootProject.name="appCode"
+```
+
+_If you have such a file in your project, this build step should be ignored / skipped entirely._
+
+However, we sometimes do not check in a `settings.gradle` with each app project as we commonly build
+and
+test [custom Grails plugins](https://github.com/xh/hoist-core#custom-plugins-for-enterprise-deployments)
+by running in
+a [multi-project build mode](https://docs.gradle.org/current/userguide/multi_project_builds.html)
+with an under-development Grails plugin _and_ the app checked out as siblings in a parent wrapper
 directory. That parent directory (which is local to the developer’s machine and not in source
 control) has its own `settings.gradle` file to bind the app and plugin together. You can’t have more
 than one `settings.gradle` in a Gradle project, so this dev-time setup would conflict with a checked
-in version should one exist
+in version should one exist.
 
 As a workaround, we can have the build system take the app name (we use a project-level Teamcity
 `%param%`) and then write out a `settings.gradle` file in place within the checked out source.
@@ -63,74 +73,53 @@ As a workaround, we can have the build system take the app name (we use a projec
 echo "rootProject.name = \"%appCode%\"" > settings.gradle
 ```
 
-This step could be avoided by checking in a `settings.gradle` with the app and, should you need the
-special plugin development setup outlined above, manually deleting or renaming it (and remembering
-to not check that change into source control). In many cases, in-line Grails plugin development will
-be a rarity or limited to XH or a smaller set of developers.
-
 ### 2\) Server and Client Builds
 
-#### 2.1) Build (and optionally publish) Grails server WAR with Gradle
+#### 2.1) Build Grails server WAR with Gradle
 
 This step calls into a `build.gradle` script checked in with each project to build the Grails
-server-side into a WAR and then publish that to an internal Maven repo.
+server-side into a WAR.
 
-Publishing the built WAR to an internal Maven repo is not necessary, but it does give us some parity
-with how we build and publish Grails plugins and is relatively standard with versioned Java
-artifacts. That said, the “real” output of the build will be a pair of Docker containers (below),
-and we’re not pushing the corresponding client JS assets to Maven or baking them into the WAR - both
-of which make publishing the WAR somewhat arbitrary. 🤷 The choice as to whether or not to publish
-can depend on the nature of the app and the standards/controls expected within the organization.
+This step takes an application version as well as an optional build tag, both of which are baked
+into the build:
 
-This step takes an application version, which is baked into the build. This can be left out, in
-which case it will default to the version specified within the app’s `gradle.properties` file. Our
+-   `xhAppVersion` - an x.y.z version for releases, or `x.y-SNAPSHOT` for transient builds.
+-   `xhAppBuild` - this is an optional arg that gets baked into the server and client and exposed as a
+    variable for display in the built-in Hoist admin client. We use it to pass a git commit hash,
+    which then provides another way to cross-reference exactly what snapshot of the codebase was used
+    to build any given running application.
+
+Both version and build can be left unspecified, in which case the version will default to the
+version specified within the app’s `gradle.properties` file (the build tag is nullable). Our
 convention is to leave `gradle.properties` checked in with the next snapshot version and have the
 builds override via a Gradle `-P` option when doing a particular versioned build. This means that
 “snapshot” builds can simply leave the argument off, versioned builds can supply it (we use a
 Teamcity param supplied via a required prompt), and `gradle.properties` only needs to change in
 source control when a new major release moves us to a new snapshot.
 
-When publishing, the build script is typically also setup to accept credentials w/deploy rights to
-the internal Maven repository. The
-[Toolbox build script](https://github.com/xh/toolbox/blob/develop/build.gradle) provides an example
-\- see the `publishing` section.
-
 Teamcity can use its dedicated “Gradle runner” to provide a more customized view on the task, or a
 simple command runner could be used. In both cases, a Gradle wrapper should be checked in with the
 project and used according to Gradle best practices.
 
 ```bash
-# If publishing - will build WAR then push to Maven as per particular config in build.gradle
-./gradlew publishApp -PxhAppVersion=%appVersion% -PmavenDeployUser=%deployUser% -PmavenDeployPassword=%deployPwd%
-
 # If building WAR only
-./gradlew war -PxhAppVersion=%appVersion%
+./gradlew war -PxhAppVersion=%appVersion% -PxhAppBuild=%appBuild%
 ```
 
-In both cases, the output is a `appCode-appVersion.war` file file within `/build/libs`.
+In both cases, the output is a `appCode-appVersion.war` file within `/build/libs`.
 
 #### 2.2) Build JS Client with Webpack
 
 This step builds all the client-side assets (JS/CSS/static resources) with Webpack, taking the
 source and dependencies and producing concatenated, minified, and hashed files suitable for serving
-to browsers. We use `yarn` as our package manager / runner tool, although `npm` is also fine if
-preferred.
+to browsers. We use `yarn` as our package manager / runner tool.
 
 This step takes several arguments that are passed via a script in `package.json` to Webpack. Each
 project has a `webpack.config.js` file checked into the root of its `client-app` directory that
 accepts any args and runs them through a script provided by
 [hoist-dev-utils](https://github.com/xh/hoist-dev-utils/blob/master/configureWebpack.js) to produce
-a fully-based Webpack configuration object. The two args typically set during the build process (as
-opposed to being checked in to the app's `webpack.config.js`) are:
-
-* `appVersion` - the same x.y.z version supplied to the server-side build above. We take the same
-  approach on the client as we do on the server, where the next snapshot version is left defaulted
-  within the app’s `webpack.config.js` file and then overridden via this arg for versioned builds
-  only.
-* `appBuild` - this is an optional arg that gets baked into the client code and exposed as a
-  variable for display in the built-in Hoist admin client. We use it to pass a git commit hash,
-  which then provides another way to cross-reference exactly what snapshot of the codebase was used
-  to build any given running application.
+a fully-based Webpack configuration object. The appVersion and appBuild params, detailed above, are
+the most common options passed in at build-time.
 
 An example Teamcity command line runner. ⚠️ Note this must run with `client-app` as its working
 directory:
@@ -230,8 +219,8 @@ Dockerfile.
 
 The `app.conf` referenced here is an app-specific nginx configuration that should be checked in
 alongside the Dockerfile. It should setup the available routes to serve each bundled client app,
-configure SSL certificates if needed, do any required redirects, and (importantly) include a *proxy
-configuration* to pass traffic through from the nginx container to the Tomcat container. Hoist
+configure SSL certificates if needed, do any required redirects, and (importantly) include a _proxy
+configuration_ to pass traffic through from the nginx container to the Tomcat container. Hoist
 deploys typically bind only the nginx ports to the host machine, then link the nginx and Tomcat
 containers together via Docker so there’s a single point of entry (nginx) for incoming requests.
 This means that no CORS or further, external proxy configuration is required to have the
@@ -291,33 +280,33 @@ server {
 }
 ```
 
-***Note that this example configuration:***
+**_Note that this example configuration:_**
 
-* Uses `appCode` as a placeholder - use the same code as configured in the app’s server and client
-  builds!
-* Calls several optional nginx config includes, sourced from the base `xh-nginx` image. The base
-  image also copies in [an overall config](https://github.com/xh/xh-nginx/blob/master/xh.conf) that
-  enables gzip compression and sets the `$expires` variable referenced above.
-* Redirects insecure requests to HTTPS on port 443 and terminates SSL itself, using certificates
-  sourced from `/appCode/ssl` - the conventional location for Hoist apps to store certs and keys
-  within an attached Docker volume.
-* Sets up locations for each client-app entry point / bundle - here we are shipping two JS apps with
-  this container: `app` - the business-user facing app itself - and `admin` - the built-in Hoist
-  Admin console. Apps might have other entry points, such as `mobile` or other more specific
-  bundles.
-* Uses the `try_files` directive to attempt to service requests at sub-paths by handing back asset
-  files if they exist, but otherwise falling back to `index.html` within that path. This allows for
-  the use of HTML5 “pushState” routing, where in-app routes are written to the URL without the use
-  of a traditional `#` symbol (e.g. <http://host/app/details/123>).
-* Creates a proxy endpoint at `/api/` to pass traffic through to the Tomcat back-end. This path is
-  expected by the JS client, which will automatically prepend it to the path of any local/relative
-  Ajax requests. This can be customized if needed on the client by adjusting the `baserUrl` param
-  passed to `configureWebpack()`.
+-   Uses `appCode` as a placeholder - use the same code as configured in the app’s server and client
+    builds!
+-   Calls several optional nginx config includes, sourced from the base `xh-nginx` image. The base
+    image also copies in [an overall config](https://github.com/xh/xh-nginx/blob/master/xh.conf) that
+    enables gzip compression and sets the `$expires` variable referenced above.
+-   Redirects insecure requests to HTTPS on port 443 and terminates SSL itself, using certificates
+    sourced from `/appCode/ssl` - the conventional location for Hoist apps to store certs and keys
+    within an attached Docker volume.
+-   Sets up locations for each client-app entry point / bundle - here we are shipping two JS apps with
+    this container: `app` - the business-user facing app itself - and `admin` - the built-in Hoist
+    Admin console. Apps might have other entry points, such as `mobile` or other more specific
+    bundles.
+-   Uses the `try_files` directive to attempt to service requests at sub-paths by handing back asset
+    files if they exist, but otherwise falling back to `index.html` within that path. This allows for
+    the use of HTML5 “pushState” routing, where in-app routes are written to the URL without the use
+    of a traditional `#` symbol (e.g. <http://host/app/details/123>).
+-   Creates a proxy endpoint at `/api/` to pass traffic through to the Tomcat back-end. This path is
+    expected by the JS client, which will automatically prepend it to the path of any local/relative
+    Ajax requests. This can be customized if needed on the client by adjusting the `baserUrl` param
+    passed to `configureWebpack()`.
 
 The build system now simply needs to copy the built client-side resources into the Docker context
 and build the image. The sample below is simplified, but could also include the return code checks
-in the Tomcat example above. Note the `-nginx` suffix on the container tag. ⚠️ This example must also
-run with `docker/nginx` as its working directory:
+in the Tomcat example above. Note the `-nginx` suffix on the container tag. ⚠️ This example must
+also run with `docker/nginx` as its working directory:
 
 ```bash
 cp -R ../../client-app/build/ .
@@ -350,20 +339,20 @@ Container Service (ECS).
 
 Regardless of the specific implementation, the following points should apply:
 
-* Both `appCode-tomcat` and `appCode-nginx` containers should be deployed as a service / pair, and
-  be kept at the same version.
-* The Tomcat container does not need to have any ports exposed/mapped onto the host (although it
-  could if direct access is desired).
-* The nginx container typically exposes ports 80 and 443, although if a load balancer or similar is
-  also in play that might vary (and would require appropriate adjustments to the `app.conf` nginx
-  file outlined above).
-* The nginx container must be able to reach the Tomcat container at the same name included in its
-  `app.conf` file - by convention, it expects to use `appCode-tomcat`. With straight Docker, this
-  can be accomplished via the `--link` option (see below).
-* A shared volume can be used to host the instance config .yml file for the Grails server, SSL certs
-  as required for nginx, and logs if so configured. This volume must be created in advance on the
-  host and populated with any required bootstrap files. How that’s done again will depend on the
-  particular Docker environment in play.
+-   Both `appCode-tomcat` and `appCode-nginx` containers should be deployed as a service / pair, and
+    be kept at the same version.
+-   The Tomcat container does not need to have any ports exposed/mapped onto the host (although it
+    could if direct access is desired).
+-   The nginx container typically exposes ports 80 and 443, although if a load balancer or similar is
+    also in play that might vary (and would require appropriate adjustments to the `app.conf` nginx
+    file outlined above).
+-   The nginx container must be able to reach the Tomcat container at the same name included in its
+    `app.conf` file - by convention, it expects to use `appCode-tomcat`. With straight Docker, this
+    can be accomplished via the `--link` option (see below).
+-   A shared volume can be used to host the instance config .yml file for the Grails server, SSL certs
+    as required for nginx, and logs if so configured. This volume must be created in advance on the
+    host and populated with any required bootstrap files. How that’s done again will depend on the
+    particular Docker environment in play.
 
 A sample Teamcity SSH-exec runner using Docker directly:
 
@@ -403,10 +392,8 @@ echo "Deploying $nginxImage complete"
 sudo docker system prune -af
 ```
 
-------------------------------------------
+---
 
 📫☎️🌎 info@xh.io | <https://xh.io/contact>
 
-Copyright © 2021 Extremely Heavy Industries Inc.
-
-
+Copyright © 2022 Extremely Heavy Industries Inc.

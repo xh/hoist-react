@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 // Host div for Select option menu portal.
@@ -182,6 +182,7 @@
     &__value-container--is-multi {
       height: 28px;
       overflow-y: auto !important;
+      line-height: 1.2; // Ensure the line-height does not cause the scrollbar to appear
     }
   }
 }

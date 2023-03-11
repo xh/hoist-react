@@ -1,10 +1,10 @@
 .xh-mask {
+  align-items: center;
   display: flex !important;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
 
-  .bp3-overlay-backdrop {
+  .bp4-overlay-backdrop {
     background-color: var(--xh-mask-bg);
   }
 
@@ -13,12 +13,13 @@
     justify-content: center;
 
     .xh-mask-text {
-      max-width: 200px;
-      text-align: center;
-      border-radius: var(--xh-border-radius-px);
-      padding: var(--xh-pad-half-px);
       background-color: var(--xh-mask-text-bg);
+      border: var(--xh-mask-text-border);
+      border-radius: var(--xh-border-radius-px);
       color: var(--xh-mask-text-color);
+      max-width: 200px;
+      padding: var(--xh-pad-half-px);
+      text-align: center;
     }
   }
 }

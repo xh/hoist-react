@@ -1,0 +1,31 @@
+.xh-tags-renderer {
+  &__tag {
+    --tag-bg: var(--xh-intent-neutral);
+
+    .xh-dark & {
+      --tag-bg: var(--xh-intent-neutral-darkest);
+    }
+
+    position: relative;
+    border-radius: 1.5px;
+    font-size: 85%;
+    padding: 3px 6px 3px 3px;
+    margin: 2px 2px 2px 12px;
+    width: fit-content;
+    background-color: var(--tag-bg);
+    height: 20px;
+    line-height: 15px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: -10px;
+      top: 0;
+      width: 0;
+      height: 0;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      border-right: 10px solid var(--tag-bg);
+    }
+  }
+}

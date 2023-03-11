@@ -2,14 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2021 Extremely Heavy Industries Inc.
+ * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
 // Ag-grid installs an outer div around itself.
-// This should use height: auto rather than height: 100%, to allow layoutConfig to work.
 .xh-ag-grid > div {
   width: 100%;
-  height: auto !important;
 }
 
 .xh-mobile {
@@ -156,14 +154,26 @@
     }
   }
 
+  // Disable native ag-grid hover and selection colors
+  .ag-row-hover:not(.ag-full-width-row)::before,
+  .ag-row-hover.ag-full-width-row.ag-row-group::before,
+  .ag-row-hover.ag-row-selected::before,
+  .ag-row-selected::before {
+    background: none;
+  }
+
   //------------------------
   // Core Cell Classes
   //------------------------
-  .ag-cell,
-  .ag-header-cell,
-  .ag-header-group-cell {
+  .ag-cell {
     padding-left: var(--xh-grid-cell-lr-pad-px);
     padding-right: var(--xh-grid-cell-lr-pad-px);
+  }
+
+  .ag-header-cell,
+  .ag-header-group-cell {
+    padding-left: var(--xh-grid-header-lr-pad-px);
+    padding-right: var(--xh-grid-header-lr-pad-px);
 
     // Override ag-Grid defaults for the header separator to make it responsive to different header heights
     &::after {
@@ -188,7 +198,7 @@
     // the flex-child to overflow, as by default flex children take up as much
     // width as necessary to fit their contents.
     // See https://makandracards.com/makandra/66994-css-flex-and-min-width
-    & > * {
+    .xh-cell-inner-wrapper {
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -202,7 +212,7 @@
   // Cell borders
   &--cell-borders {
     .ag-cell {
-      border-right-color: var(--xh-grid-border-color) !important;
+      border-right-color: var(--xh-grid-border-color);
     }
 
     .ag-row {
@@ -211,7 +221,8 @@
   }
 
   &--no-cell-borders {
-    .ag-cell {
+    .ag-cell,
+    .ag-context-menu-open .ag-cell-focus:not(.ag-cell-range-selected) {
       border-color: transparent;
     }
   }
@@ -293,14 +304,6 @@
     .ag-cell {
       padding-left: var(--xh-grid-tiny-cell-lr-pad-px);
       padding-right: var(--xh-grid-tiny-cell-lr-pad-px);
-
-      .xh-check-box {
-        padding-top: 1px;
-
-        .bp3-control-indicator {
-          font-size: calc(var(--xh-grid-tiny-font-size-px) + 2px);
-        }
-      }
     }
 
     .ag-header-cell,
@@ -345,14 +348,29 @@
   .ag-set-filter-select-all {
     padding: var(--xh-pad-half-px) 0;
   }
-}
 
-// Ensure ag-grid popups (context menus, tooltips, and column filter controls) with default z-index of 5
-// appear over bp dialogs with z-index of 20.
-.ag-theme-balham.ag-popup,
-.ag-theme-balham-dark.ag-popup {
-  .ag-popup-child {
-    z-index: 30;
+  //------------------------
+  // Overlay masks
+  //------------------------
+  .ag-overlay {
+    // Match loading overlay color to mask, suppress display of text in center.
+    .ag-overlay-loading-wrapper {
+      background-color: var(--xh-mask-bg);
+
+      .ag-overlay-loading-center {
+        display: none;
+      }
+    }
+
+    // Reduce default contrast of emptyText.
+    .ag-overlay-no-rows-wrapper {
+      color: var(--xh-grid-empty-text-color);
+    }
+  }
+
+  // Set Blueprint controls - specifically checkboxes - to match grid size.
+  .bp4-control .bp4-control-indicator {
+    font-size: 1em;
   }
 }
 
@@ -367,56 +385,51 @@
   }
 }
 
-//------------------------
-// Overlay masks
-//------------------------
-.ag-overlay {
-  // Match loading overlay color to mask, suppress display of text in center.
-  .ag-overlay-loading-wrapper {
-    background-color: var(--xh-mask-bg);
-
-    .ag-overlay-loading-center {
-      display: none;
+body.xh-app {
+  // Ensure ag-grid popups (context menus, tooltips, and column filter controls) with default z-index of 5
+  // appear over bp dialogs with z-index of 20.
+  .ag-theme-balham.ag-popup,
+  .ag-theme-balham-dark.ag-popup {
+    .ag-popup-child {
+      z-index: 30;
     }
   }
 
-  // Reduce default contrast of emptyText.
-  .ag-overlay-no-rows-wrapper {
-    color: var(--xh-grid-empty-text-color);
-  }
-}
+  //------------------------
+  // Context Menu
+  //------------------------
+  .ag-theme-balham .ag-menu,
+  .ag-theme-balham-dark .ag-menu {
+    font-family: var(--xh-font-family);
+    font-size: var(--xh-menu-item-font-size-px);
+    color: var(--xh-menu-item-text-color);
 
-//------------------------
-// Context Menu (matching ag-Grid provided menus to BP menus)
-//------------------------
-.ag-theme-balham .ag-menu,
-.ag-theme-balham-dark .ag-menu {
-  font-family: var(--xh-font-family);
+    // Minimal/high-contrast bg
+    background-color: var(--xh-menu-bg);
+    border: var(--xh-menu-border);
 
-  // Minimal/high-contrast bg
-  background-color: var(--xh-bg);
-  border: var(--xh-border-solid);
+    // Matching box-shadow of Blueprint context menu popover
+    box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.2), 0 2px 4px rgba(16, 22, 26, 0.4),
+      0 8px 24px rgba(16, 22, 26, 0.4);
 
-  // Matching box-shadow of Blueprint context menu popover
-  box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.2), 0 2px 4px rgba(16, 22, 26, 0.4), 0 8px 24px rgba(16, 22, 26, 0.4);
+    .ag-menu-option.ag-menu-option-active {
+      background-color: var(--xh-menu-item-highlight-bg);
+    }
 
-  .ag-menu-option.ag-menu-option-active {
-    background-color: var(--xh-bg-highlight);
-  }
+    .ag-menu-option-icon {
+      text-align: center;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
 
-  .ag-menu-option-icon {
-    text-align: center;
-    padding-left: 8px;
-    padding-right: 8px;
-  }
+    // Mute the shortcut text to keep focus on the actual option text
+    .ag-menu-option-shortcut {
+      color: var(--xh-text-color-muted);
+    }
 
-  // Mute the shortcut text to keep focus on the actual option text
-  .ag-menu-option-shortcut {
-    color: var(--xh-text-color-muted);
-  }
-
-  // Keep the submenu caret in the standard text color
-  .ag-menu-option-popup-pointer {
-    color: var(--xh-text-color);
+    // Keep the submenu caret in the standard text color
+    .ag-menu-option-popup-pointer {
+      color: var(--xh-menu-item-text-color);
+    }
   }
 }

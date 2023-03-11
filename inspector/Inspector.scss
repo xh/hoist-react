@@ -1,0 +1,18 @@
+.xh-inspector {
+  .xh-modal-support__host > .xh-panel__content > .xh-panel-header {
+    background-color: hsl(33, 93%, 40%);
+    color: white;
+  }
+
+  .xh-font-family-mono {
+    font-size: 0.9em;
+  }
+
+  .xh-impl-row .xh-cell-inner-wrapper {
+    color: var(--xh-text-color-muted);
+  }
+
+  .xh-toolbar {
+    background-color: var(--xh-bg);
+  }
+}

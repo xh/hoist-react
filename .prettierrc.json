@@ -1,0 +1,22 @@
+{
+  "arrowParens": "avoid",
+  "bracketSpacing": false,
+  "printWidth": 100,
+  "singleQuote": true,
+  "tabWidth": 4,
+  "trailingComma": "none",
+  "overrides": [
+    {
+      "files": "*.scss",
+      "options": {
+        "tabWidth": 2
+      }
+    },
+    {
+      "files": "*.json",
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ]
+}

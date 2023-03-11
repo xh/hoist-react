@@ -1,6 +1,12 @@
 .xh-toast {
   bottom: unset;
 
+  &__title {
+    margin-bottom: var(--xh-pad-half-px);
+    display: block;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
   .toast {
     padding: var(--xh-pad-px);
     background-color: var(--xh-blue-gray-dark);
@@ -38,7 +44,7 @@
     }
 
     .xh-button svg {
-      color: white;
+      color: rgba(255, 255, 255, 0.7);
     }
   }
 }
