@@ -67,7 +67,7 @@ export class DashCanvasViewModel extends DashViewModel<DashCanvasViewSpec> {
             HEADER_HEIGHT = 23;
 
         // Calculate new height in grid units
-        const h = Math.round((height + HEADER_HEIGHT + margin[1]) / (rowHeight + margin[1]));
+        const h = Math.ceil((height + HEADER_HEIGHT + margin[1]) / (rowHeight + margin[1]));
         if (h === viewLayout.h) return;
 
         // Send the new layout back to the parent model
