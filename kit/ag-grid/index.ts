@@ -18,10 +18,9 @@ export let AgGridReact = null;
 export let agGridVersion = null;
 
 /**
- * However Hoist does importthe following community-only TYPES to help validate its internal
+ * However Hoist does import the following community-only TYPES to help validate its internal
  * implementations.
  */
-
 export type {
     GridOptions,
     GridApi,

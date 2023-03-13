@@ -729,7 +729,8 @@ export class Column {
                         field,
                         store: record?.store,
                         column: this,
-                        gridModel
+                        gridModel,
+                        agParams
                     });
                 },
                 suppressKeyboardEvent: ({editing, event}) => {
@@ -807,6 +808,7 @@ export class Column {
                             field,
                             column: this,
                             gridModel,
+                            agParams,
                             store
                         });
 
