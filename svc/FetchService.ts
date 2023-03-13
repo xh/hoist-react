@@ -274,7 +274,7 @@ export class FetchService extends HoistService {
         });
     }
 
-    private async safeResponseTextAsync(response) {
+    private async safeResponseTextAsync(response: Response) {
         try {
             return await response.text();
         } catch (ignore) {
