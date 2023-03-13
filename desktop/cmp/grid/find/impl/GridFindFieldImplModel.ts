@@ -210,7 +210,7 @@ export class GridFindFieldImplModel extends HoistModel {
                 compFn = column.getAgSpec().comparator.bind(column),
                 direction = it.sort === 'desc' ? -1 : 1;
 
-            const ctx = {field, column, gridModel, store, agParams: null};
+            const ctx = {field, column, gridModel, store};
             records.sort((a, b) => {
                 const valueA = getValueFn({record: a, ...ctx}),
                     valueB = getValueFn({record: b, ...ctx}),

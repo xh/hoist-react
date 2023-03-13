@@ -7,6 +7,8 @@
 
 import {GridModel} from '../GridModel';
 
+import type {CellPosition, NavigateToNextCellParams} from '@xh/hoist/kit/ag-grid';
+
 /**
  * Add support for row based navigation to GridModel.
  */
@@ -17,7 +19,7 @@ export class RowKeyNavSupport {
         this.gridModel = gridModel;
     }
 
-    navigateToNextCell(agParams) {
+    navigateToNextCell(agParams: NavigateToNextCellParams): CellPosition {
         const {gridModel} = this,
             {selModel, agGridModel} = gridModel,
             {agApi, showCellFocus} = agGridModel,
@@ -25,10 +27,10 @@ export class RowKeyNavSupport {
             shiftKey = event.shiftKey,
             nextIndex = nextCellPosition?.rowIndex ?? null,
             prevIndex = previousCellPosition?.rowIndex ?? null,
-            prevIsTreeCol = previousCellPosition?.column.colDef.xhColumn.isTreeColumn,
+            prevColumn = gridModel.getColumn(previousCellPosition?.column.getColId()),
             prevNode = prevIndex != null ? agApi.getDisplayedRowAtIndex(prevIndex) : null,
             prevNodeIsParent = prevNode && prevNode.allChildrenCount,
-            canExpandCollapse = prevNodeIsParent && (!showCellFocus || prevIsTreeCol);
+            canExpandCollapse = prevNodeIsParent && (!showCellFocus || prevColumn?.isTreeColumn);
 
         switch (key) {
             case 'ArrowDown':

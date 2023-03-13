@@ -4,19 +4,30 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {ColumnGroup, GridModel} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, creates} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, creates, HoistProps} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable, bindable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isFunction} from 'lodash';
+import {ReactNode} from 'react';
+
+import type {IHeaderGroupParams} from '@xh/hoist/kit/ag-grid';
+
+export interface ColumnGroupHeaderProps
+    extends HoistProps<ColumnGroupHeaderModel>,
+        IHeaderGroupParams {
+    gridModel: GridModel;
+    xhColumnGroup: ColumnGroup;
+}
 
 /**
  * A custom ag-Grid group header component.
  *
  * @internal
  */
-export const columnGroupHeader = hoistCmp.factory({
+export const columnGroupHeader = hoistCmp.factory<ColumnGroupHeaderProps>({
     displayName: 'ColumnGroupHeader',
     className: 'xh-grid-group-header',
     model: creates(() => ColumnGroupHeaderModel),
@@ -35,7 +46,7 @@ export const columnGroupHeader = hoistCmp.factory({
         // We will only have an xhColumnGroup if this was a configured column group. ag-Grid will
         // auto-create column groups to ensure the headers are balanced for columns which are not
         // in a group being rendered next to columns which are in groups.
-        let headerName = displayName;
+        let headerName: ReactNode = displayName;
         if (xhColumnGroup && isFunction(xhColumnGroup.headerName)) {
             headerName = xhColumnGroup.headerName({columnGroup: xhColumnGroup, gridModel});
         }

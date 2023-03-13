@@ -13,6 +13,16 @@ import {Column} from './columns/Column';
 import {ColumnGroup} from './columns/ColumnGroup';
 import {GridModel} from './GridModel';
 
+import type {
+    CellClassParams,
+    HeaderClassParams,
+    HeaderValueGetterParams,
+    ICellRendererParams,
+    ITooltipParams,
+    RowClassParams,
+    ValueSetterParams
+} from '@xh/hoist/kit/ag-grid';
+
 export interface ColumnState {
     colId: string;
     width: number;
@@ -59,13 +69,13 @@ export type RowClassFn = (record: StoreRecord) => Some<string>;
 /**
  * Function to determine if a particular CSS class should be added/removed from a row,
  * via rowClassRules config.
- * @param agParams - as provided by AG-Grid. (RowClassParams).  Note that when a RowClassRuleFn is
- *      called by the GridAutosizeService, it is only provided with an object with the 'data' key,
+ * @param agParams - as provided by AG-Grid.  Note that when a RowClassRuleFn is called by the
+ *      GridAutosizeService, it is only provided with an object with the 'data' key,
  *      not the entire RowClassParams params.
  * @returns true if the class to which this function is keyed should be added, false if
  *      it should be removed.
  */
-export type RowClassRuleFn = (agParams: PlainObject) => boolean;
+export type RowClassRuleFn = (agParams: RowClassParams) => boolean;
 
 export interface GridModelPersistOptions extends PersistOptions {
     /** True to include column information (default true) */
@@ -108,10 +118,10 @@ export interface GridFilterModelConfig {
 
 /**
  * Renderer for a group row
- * @param context - The group renderer params from ag-Grid. (ICellRendererParams)
+ * @param context - The group renderer params from ag-Grid
  * @returns the formatted value for display.
  */
-export type GroupRowRenderer = (context: PlainObject) => ReactNode;
+export type GroupRowRenderer = (context: ICellRendererParams) => ReactNode;
 
 export interface ColChooserConfig {
     /**
@@ -165,6 +175,12 @@ export type ColumnComparator<T = any> = (
     }
 ) => number;
 
+export interface CellContext {
+    record: StoreRecord;
+    column: Column;
+    gridModel: GridModel;
+}
+
 /**
  * Renderer function for a grid cell.
  * @param value - cell data value (column + row).
@@ -174,7 +190,10 @@ export type ColumnComparator<T = any> = (
  *      re-run whenever the record (and not just the primary value) changes.
  * @returns the formatted value for display.
  */
-export type ColumnRenderer<T = any> = (value: T, context: CellContext) => ReactNode;
+export type ColumnRenderer<T = any> = (
+    value: T,
+    context: CellContext & {agParams: ICellRendererParams}
+) => ReactNode;
 
 /**
  * Function to return a value to export for a grid cell.
@@ -206,42 +225,21 @@ export type ColumnSortValueFn<T = any> = (value: T, context: CellContext) => any
  * @param context - additional data about the column, row and GridModel.
  * @returns CSS class(es) to use.
  */
-export type ColumnCellClassFn<T = any> = (value: T, context: CellContext) => Some<string>;
+export type ColumnCellClassFn<T = any> = (
+    value: T,
+    context: CellContext & {agParams: CellClassParams}
+) => Some<string>;
 
 /**
  * Function to determine if a particular CSS class should be added/removed from a cell, via
  * cellClassRules config.
- * @param agParams - as provided by Ag-Grid (CellClassParams).  Includes keys:
+ * @param agParams - as provided by Ag-Grid.  Includes keys:
  *      value - the current cell value.
  *      data - the backing Hoist record for the row, if any.
  * @returns true if the class to which this function is keyed should be added, false if
  *      it should be removed.
  */
-export type ColumnCellClassRuleFn = (agParams: PlainObject) => boolean;
-
-/**
- * Function to generate header CSS classes.
- * @param context - contains data about the column and GridModel.
- * @returns CSS class(es) to use.
- */
-export type ColumnHeaderClassFn = (context: HeaderContext) => Some<string>;
-
-export interface CellContext {
-    record: StoreRecord;
-    column: Column;
-    gridModel: GridModel;
-
-    /** ag-Grid cell renderer params */
-    agParams?: PlainObject;
-}
-
-export interface HeaderContext {
-    column: Column | ColumnGroup;
-    gridModel: GridModel;
-
-    /** ag-Grid header renderer params */
-    agParams?: PlainObject;
-}
+export type ColumnCellClassRuleFn = (agParams: CellClassParams) => boolean;
 
 /**
  * Function to produce a grid column tooltip.
@@ -249,16 +247,21 @@ export interface HeaderContext {
  * @param metadata - additional data about the column and row.
  * @returns the formatted value for display.
  */
-export type ColumnTooltipFn<T = any> = (value: T, metadata: TooltipMetadata) => ReactNode;
+export type ColumnTooltipFn<T = any> = (
+    value: T,
+    cellContext: CellContext & {agParams: ITooltipParams}
+) => ReactNode;
 
-export interface TooltipMetadata {
-    record: StoreRecord;
-    column: Column;
+/**
+ * Function to generate header CSS classes.
+ * @param context - contains data about the column and GridModel.
+ * @returns CSS class(es) to use.
+ */
+export type ColumnHeaderClassFn = (context: {
+    column: Column | ColumnGroup;
     gridModel: GridModel;
-
-    /** The ag-grid tooltip params. (ITooltipParams) */
-    agParams: PlainObject;
-}
+    agParams?: HeaderClassParams;
+}) => Some<string>;
 
 /**
  * Function to generate a Column header name.
@@ -274,7 +277,7 @@ export type ColumnHeaderNameFn = (params: {
     column?: Column;
     columnGroup?: ColumnGroup;
     gridModel: GridModel;
-    agParams: PlainObject;
+    agParams?: HeaderValueGetterParams;
 }) => ReactNode;
 
 /**
@@ -303,7 +306,6 @@ export type ColumnEditorFn = (params: {
 
 /**
  * Function to update the value of a StoreRecord field after inline editing
- * Includes the ag-Grid value setter params. (CellClassParams)
  */
 export type ColumnSetValueFn<T = any> = (params: {
     value: T;
@@ -312,12 +314,11 @@ export type ColumnSetValueFn<T = any> = (params: {
     store: Store;
     column: Column;
     gridModel: GridModel;
-    agParams: PlainObject;
+    agParams: ValueSetterParams;
 }) => void;
 
 /**
  * Function to get the value of a StoreRecord field
- * Includes the ag-Grid value getter params. (ValueGetterParams)
  */
 export type ColumnGetValueFn<T = any> = (params: {
     record: StoreRecord;
@@ -325,12 +326,11 @@ export type ColumnGetValueFn<T = any> = (params: {
     store: Store;
     column: Column;
     gridModel: GridModel;
-    agParams: PlainObject;
 }) => T;
 
 export interface ColumnSortSpec {
     /** Direction to sort, either 'asc' or 'desc', or null to remove sort. */
-    sort: string;
+    sort: 'asc' | 'desc' | null;
 
     /** True to sort by absolute value. */
     abs?: boolean;

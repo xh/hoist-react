@@ -1,9 +1,13 @@
+import {ColumnRenderer, GroupRowRenderer} from '@xh/hoist/cmp/grid';
 import {isFunction} from 'lodash';
 
 /**
  * @internal
  */
-export function managedRenderer(fn, identifier) {
+export function managedRenderer<T extends ColumnRenderer | GroupRowRenderer>(
+    fn: T,
+    identifier: string
+): T {
     if (!isFunction(fn)) return fn;
     return function () {
         try {
@@ -12,5 +16,5 @@ export function managedRenderer(fn, identifier) {
             console.warn(`Renderer for '${identifier}' has thrown an error.`, e);
             return '#ERROR';
         }
-    };
+    } as unknown as T;
 }

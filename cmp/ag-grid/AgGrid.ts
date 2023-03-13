@@ -14,16 +14,16 @@ import {
     createElement,
     XH,
     lookup,
-    DefaultHoistProps
+    HoistProps
 } from '@xh/hoist/core';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isNil} from 'lodash';
 import './AgGrid.scss';
 import {AgGridModel} from './AgGridModel';
-import {AgGridReact} from '@xh/hoist/kit/ag-grid';
+import {AgGridReact, GridOptions} from '@xh/hoist/kit/ag-grid';
 
-export interface AgGridProps extends DefaultHoistProps<AgGridModel>, LayoutProps {}
+export interface AgGridProps extends HoistProps<AgGridModel>, GridOptions, LayoutProps {}
 
 /**
  * Minimal wrapper for AgGridReact, supporting direct use of the ag-Grid component with limited
@@ -48,7 +48,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
     className: 'xh-ag-grid',
     model: uses(AgGridModel),
 
-    render({model, key, className, ...props}, ref) {
+    render({model, className, ...props}, ref) {
         if (!AgGridReact) {
             console.error(
                 'ag-Grid has not been imported in to this application. Please import and ' +

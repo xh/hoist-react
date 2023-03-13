@@ -4,10 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmp, HoistModel, creates, managed} from '@xh/hoist/core';
+import {XH, hoistCmp, HoistModel, creates, managed, HoistProps} from '@xh/hoist/core';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {computed, makeObservable, bindable} from '@xh/hoist/mobx';
-import {Column} from '@xh/hoist/cmp/grid';
+import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {columnHeaderFilter, ColumnHeaderFilterModel} from '@xh/hoist/dynamics/desktop';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -26,6 +26,14 @@ import {
 import classNames from 'classnames';
 
 import {GridSorter} from '../GridSorter';
+import {ReactNode} from 'react';
+
+import type {IHeaderParams} from '@xh/hoist/kit/ag-grid';
+
+export interface ColumnHeaderProps extends HoistProps<ColumnHeaderModel>, IHeaderParams {
+    gridModel: GridModel;
+    xhColumn: Column;
+}
 
 /**
  * A custom ag-Grid header component.
@@ -35,7 +43,7 @@ import {GridSorter} from '../GridSorter';
  *
  * @internal
  */
-export const columnHeader = hoistCmp.factory({
+export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
     displayName: 'ColumnHeader',
     className: 'xh-grid-header',
     model: creates(() => ColumnHeaderModel),
@@ -101,8 +109,8 @@ export const columnHeader = hoistCmp.factory({
         ];
 
         // `displayName` is the output of the Column `headerValueGetter` and should always be a string
-        // If `xhColumn` is present, it can consulted for a richer `headerName`
-        let headerElem = displayName;
+        // If `xhColumn` is present, it can be consulted for a richer `headerName`
+        let headerElem: ReactNode = displayName;
         if (xhColumn) {
             headerElem = isFunction(xhColumn.headerName)
                 ? xhColumn.headerName({column: xhColumn, gridModel})
@@ -146,15 +154,19 @@ class ColumnHeaderModel extends HoistModel {
     get gridModel() {
         return this.componentProps.gridModel;
     }
-    get xhColumn() {
+
+    get xhColumn(): Column {
         return this.componentProps.xhColumn;
     }
+
     get agColumn() {
         return this.componentProps.column;
     }
+
     get colId() {
         return this.agColumn.colId;
     }
+
     get enableSorting() {
         return this.xhColumn?.sortable;
     }
@@ -168,7 +180,7 @@ class ColumnHeaderModel extends HoistModel {
     // AG Filtering
     @bindable isAgFiltered = false;
 
-    agFilterButtonRef = createObservableRef();
+    agFilterButtonRef = createObservableRef<HTMLElement>();
 
     private _doubleClick = false;
     private _lastTouch = null;
@@ -341,11 +353,7 @@ class ColumnHeaderModel extends HoistModel {
             colId = this.colId
         } = this.xhColumn ?? {}; // Note xhColumn may be null for ag-Grid dynamic columns
 
-        const ret = sortingOrder.map(spec => {
-            if (isString(spec) || spec === null) spec = {sort: spec};
-            return new GridSorter({...spec, colId});
-        });
-
+        const ret = sortingOrder.map(spec => new GridSorter({...spec, colId}));
         return absSort ? ret : ret.filter(it => !it.abs);
     }
 }

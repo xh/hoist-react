@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {PlainObject, Some, XH} from '@xh/hoist/core';
+import {Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {RecordAction, Store, StoreRecord} from '@xh/hoist/data';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
@@ -15,20 +15,22 @@ import {isValidElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
 
+import type {GetContextMenuItemsParams, MenuItemDef} from '@xh/hoist/kit/ag-grid';
+
 /**
  * @internal
  */
 export function getAgGridMenuItems(
-    params: PlainObject,
+    params: GetContextMenuItemsParams,
     model: GridModel,
     spec: GridContextMenuSpec
-): PlainObject[] {
+): Array<string | MenuItemDef> {
     let menuItems: GridContextMenuItemLike[] = isFunction(spec) ? spec(params, model) : spec;
 
     if (isEmpty(menuItems)) return null;
 
     const record = params.node?.data,
-        colId = params.column?.colId,
+        colId = params.column?.getColId(),
         column = !isNil(colId) ? model.getColumn(colId) : null;
 
     return buildMenuItems(menuItems, record, model, column, params);
@@ -39,7 +41,7 @@ function buildMenuItems(
     record: StoreRecord,
     gridModel: GridModel,
     column: Column,
-    agParams: PlainObject
+    agParams: GetContextMenuItemsParams
 ) {
     // Transform to actions or ag-Grid ready strings.
     const actions: Array<RecordAction | string> = menuItems.flatMap(it => {
