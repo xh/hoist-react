@@ -55,12 +55,6 @@ export const clientVisible: ColumnSpec = {
     width: 75
 };
 
-export const local: ColumnSpec = {
-    field: {name: 'local', type: 'bool'},
-    ...Col.boolCheck,
-    width: 75
-};
-
 function truncateIfJson(value, {record}) {
     return record.data.type === 'json' ? truncateValue(value) : value?.toString();
 }

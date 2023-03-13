@@ -62,7 +62,6 @@ export class PreferenceModel extends HoistModel {
                     },
                     {...(Col.defaultValue.field as FieldSpec), typeField: 'type', required},
                     Col.notes.field,
-                    {...(Col.local.field as FieldSpec), defaultValue: false, required},
                     {...(Col.lastUpdated.field as FieldSpec), editable: false},
                     {...(Col.lastUpdatedBy.field as FieldSpec), editable: false}
                 ]
@@ -82,7 +81,6 @@ export class PreferenceModel extends HoistModel {
                 this.regroupDialogModel.regroupAction
             ],
             columns: [
-                {...Col.local},
                 {...Col.name},
                 {...Col.type},
                 {...Col.defaultValue},
@@ -97,7 +95,6 @@ export class PreferenceModel extends HoistModel {
                 {field: 'type'},
                 {field: 'defaultValue'},
                 {field: 'notes', formField: {item: textArea({height: 100})}},
-                {field: 'local'},
                 {field: 'lastUpdated'},
                 {field: 'lastUpdatedBy'}
             ]

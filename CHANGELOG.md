@@ -2,8 +2,16 @@
 
 ## v56.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes
+### 🎁 New Features
 
+* `DashCanvas` views can now be programmatically added with specified width and height dimensions.
+* `FetchService` now has a public `abort` method for manually aborting a pending fetch request.
+
+### 💥 Breaking Changes
+* "Local" Preference support in PreferenceService is no longer supported.  Application should use
+  `LocalStorageService` instead. With v56, the `local` flag on any preferences will be ignored, and
+  all preferences will be saved on the server instead.  Note that Hoist v56 will execute a one-time
+  migration of any existing preferences from browser Local Storage to the server on app load.
 * The use of `tooltipElement` on `Column` is removed. Use `tooltip` instead.
 * The prop `fill` on `TextArea` and `NumberInput` component has been removed.  Use the standard
   flex` layout prop instead.
@@ -13,9 +21,11 @@
 `actionFn` instead.
 
 ### 🎁 New Features
+* `PanelModel` now supports a `defaultSize` property specified in percentage as well as pixels
+  (e.g. `defaultSize: '20%'` as well as `defaultSize: 200`).
 
-* `PanelModel` now supports a `size` property specified in percentage as well as pixels
-  (e.g. `size: '20%'` as well as `size: 200`).
+### ⚙️ Technical
+* This version requires an update to hoist-core v16.0.0
 
 ## v55.3.0 - 2023-03-03
 
