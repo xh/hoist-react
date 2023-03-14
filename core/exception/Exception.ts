@@ -8,7 +8,7 @@ import {FetchOptions} from '@xh/hoist/svc';
 import {PlainObject, XH} from '../';
 import {isString} from 'lodash';
 
-import {FetchException, HoistException, TimeoutException} from './Types';
+import {FetchException, HoistException, TimeoutException, TimeoutExceptionConfig} from './Types';
 
 /**
  * Standardized Exception/Error objects.
@@ -35,11 +35,10 @@ export class Exception {
 
     /**
      * Create an Error for when an operation (e.g. a Promise) times out.
-     * @param interval - time elapsed (in ms) before this timeout was thrown.
-     * @param rest - additional properties to add to the returned Error.
      */
-    static timeout({interval, ...rest}: PlainObject & {interval: number}): TimeoutException {
-        const displayInterval = interval % 1000 ? `${interval}ms` : `${interval / 1000}s`;
+    static timeout(config: TimeoutExceptionConfig): TimeoutException {
+        const {interval, ...rest} = config,
+            displayInterval = interval % 1000 ? `${interval}ms` : `${interval / 1000}s`;
         return this.createInternal({
             name: 'Timeout Exception',
             message: `Operation timed out after ${displayInterval}`,
