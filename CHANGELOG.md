@@ -1,5 +1,10 @@
 # Changelog
 
+## v55.3.1 - 2023-03-14
+
+### 🐞 Bug Fixes
+* Revert `structuredClone` to lodash `deepClone` throughout toolkit.
+
 ## v55.3.0 - 2023-03-03
 
 ### 🐞 Bug Fixes
