@@ -60,6 +60,7 @@ import equal from 'fast-deep-equal';
 import {
     castArray,
     clone,
+    cloneDeep,
     compact,
     defaults,
     defaultsDeep,
@@ -1123,7 +1124,7 @@ export class GridModel extends HoistModel {
     applyColumnStateChanges(colStateChanges: Partial<ColumnState>[]) {
         if (isEmpty(colStateChanges)) return;
 
-        let columnState = structuredClone(this.columnState);
+        let columnState = cloneDeep(this.columnState);
 
         throwIf(
             colStateChanges.some(({colId}) => !find(columnState, {colId})),

@@ -13,7 +13,7 @@ import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable, observable, action} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {hbox} from '@xh/hoist/cmp/layout';
-import {isEqual, isString, isNil, omit, remove, trimEnd} from 'lodash';
+import {cloneDeep, isEqual, isString, isNil, omit, remove, trimEnd} from 'lodash';
 import {hspacer} from '../../cmp/layout';
 
 import {DifferDetailModel} from './DifferDetailModel';
@@ -148,7 +148,7 @@ export class DifferModel extends HoistModel {
             const resp = await Promise.all([
                 XH.fetchJson({url: `${url}/${entityName}s`, loadSpec}),
                 this.clipboardContent
-                    ? Promise.resolve(structuredClone(this.clipboardContent))
+                    ? Promise.resolve(cloneDeep(this.clipboardContent))
                     : XH.fetchJson({url: `${remoteBaseUrl}${url}/${entityName}s`, loadSpec})
             ]);
             this.processResponse(resp);
@@ -252,8 +252,8 @@ export class DifferModel extends HoistModel {
 
     rawRecordsAreEqual(local, remote) {
         // cloning to avoid disturbing the source data.
-        local = structuredClone(local);
-        remote = structuredClone(remote);
+        local = cloneDeep(local);
+        remote = cloneDeep(remote);
 
         // For JSON records, parse JSON to do an accurate value compare,
         if (local?.valueType === 'json' && remote?.valueType === 'json') {

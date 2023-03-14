@@ -9,6 +9,7 @@ import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/
 import {throwIf} from '@xh/hoist/utils/js';
 import {
     castArray,
+    cloneDeep,
     concat,
     find,
     has,
@@ -304,7 +305,7 @@ export class AgGridModel extends HoistModel {
     setSortState(sortState: AgGridColumnSortState[]) {
         this.throwIfNotReady();
 
-        const sortedColumnState = structuredClone(sortState),
+        const sortedColumnState = cloneDeep(sortState),
             [primaryColumnState, secondaryColumnState] = partition(
                 sortedColumnState,
                 it => !isArray(it.colId)

@@ -22,7 +22,7 @@
 
 ### ⚙️ Technical
 * This version requires an update to hoist-core v16.0.0
-
+* Revert native `structuredClone` to lodash `deepClone` throughout toolkit.
 
 ## v55.3.0 - 2023-03-03
 

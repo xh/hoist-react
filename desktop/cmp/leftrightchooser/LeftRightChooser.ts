@@ -12,6 +12,7 @@ import {chooserToolbar} from './impl/ChooserToolbar';
 import {description} from './impl/Description';
 import './LeftRightChooser.scss';
 import {LeftRightChooserModel} from './LeftRightChooserModel';
+import {cloneDeep} from 'lodash';
 
 export interface LeftRightChooserProps extends HoistProps<LeftRightChooserModel>, BoxProps {}
 
@@ -35,8 +36,8 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory<LeftRig
                     }
                 }
             },
-            leftGridOptions = structuredClone(gridOptions),
-            rightGridOptions = structuredClone(gridOptions);
+            leftGridOptions = cloneDeep(gridOptions),
+            rightGridOptions = cloneDeep(gridOptions);
 
         if (!leftGroupingExpanded) leftGridOptions.agOptions.groupDefaultExpanded = 0;
         if (!rightGroupingExpanded) rightGridOptions.agOptions.groupDefaultExpanded = 0;
