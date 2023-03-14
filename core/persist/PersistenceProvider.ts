@@ -8,6 +8,7 @@
 import {DebounceSpec, XH} from '../';
 import {LocalStorageProvider, PrefProvider, DashViewProvider, CustomProvider, PersistOptions} from './';
 import {
+    cloneDeep,
     isUndefined,
     get,
     set,
@@ -95,7 +96,7 @@ export class PersistenceProvider {
      * Clear any state saved by this object at a path
      */
     clear(path: string = this.path) {
-        const obj = structuredClone(this.readRaw());
+        const obj = cloneDeep(this.readRaw());
         unset(obj, this.path);
         this.writeRaw(obj);
     }
@@ -111,7 +112,7 @@ export class PersistenceProvider {
     // Implementation
     //----------------
     protected writeInternal(data: object) {
-        const obj = structuredClone(this.readRaw());
+        const obj = cloneDeep(this.readRaw());
         set(obj, this.path, data);
         this.writeRaw(obj);
     }

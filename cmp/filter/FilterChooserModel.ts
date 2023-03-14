@@ -29,6 +29,7 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ReactNode} from 'react';
 import {
+    cloneDeep,
     compact,
     flatMap,
     flatten,
@@ -373,7 +374,7 @@ export class FilterChooserModel extends HoistModel {
             // it's internal `value`. Force synchronise its `value` to our bound `selectValue`
             // to get it back inline. Note we're intentionally not using `setSelectValue()`,
             // which returns early if the actual filter value hasn't changed.
-            this.selectValue = structuredClone(this.selectValue);
+            this.selectValue = cloneDeep(this.selectValue);
         });
     }
 

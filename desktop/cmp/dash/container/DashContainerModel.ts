@@ -22,6 +22,7 @@ import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {
+    cloneDeep,
     defaultsDeep,
     find,
     isFinite,
@@ -539,7 +540,7 @@ export class DashContainerModel extends DashModel<DashContainerViewSpec, DashVie
     private createGoldenLayout(containerEl: HTMLElement, state: any): GoldenLayout {
         const {viewSpecs} = this,
             ret = new GoldenLayout({
-                content: convertStateToGL(structuredClone(state), this),
+                content: convertStateToGL(cloneDeep(state), this),
                 settings: {
                     // Remove icons by default
                     showPopoutIcon: false,

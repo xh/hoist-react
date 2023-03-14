@@ -7,6 +7,7 @@
 import {XH, PersistenceProvider, PersistOptions, DebounceSpec} from './';
 import {throwIf, getOrCreate} from '@xh/hoist/utils/js';
 import {
+    cloneDeep,
     debounce as lodashDebounce,
     isFunction,
     isNil,
@@ -219,7 +220,7 @@ export abstract class HoistBase {
                 provider = this.markManaged(PersistenceProvider.create(persistWith)),
                 providerState = provider.read();
             if (!isUndefined(providerState)) {
-                runInAction(() => this[property] = structuredClone(providerState));
+                runInAction(() => this[property] = cloneDeep(providerState));
             }
             this.addReaction({
                 track: () => this[property],
