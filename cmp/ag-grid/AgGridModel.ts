@@ -349,8 +349,10 @@ export class AgGridModel extends HoistModel {
 
             // finally apply sorts from state to secondary columns
             secondaryColumnState.forEach(state => {
-                // TODO: Check this -- was very off
-                const col = colApi.getSecondaryPivotColumn([state.colId[0]], state.colId[1]);
+                // TODO -- state saving for pivot appears broken.
+                // Related to TS error below? Need to analyze and tear down if no longer needed.
+                // @ts-ignore
+                const col = colApi.getSecondaryPivotColumn(state.colId[0], state.colId[1]);
                 if (col) {
                     col.setSort(state.sort);
                     col.setSortIndex(state.sortIndex);
