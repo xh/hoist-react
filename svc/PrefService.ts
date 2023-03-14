@@ -7,7 +7,7 @@
 import {HoistService, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
-import {debounce, forEach, isEmpty, isEqual, isNil, pickBy} from 'lodash';
+import {cloneDeep, debounce, forEach, isEmpty, isEqual, isNil, pickBy} from 'lodash';
 
 /**
  * Service to read and set user-specific preference values.
@@ -92,7 +92,7 @@ export class PrefService extends HoistService {
         if (isEqual(oldValue, value)) return;
 
         // Change local value to sanitized copy and fire.
-        value = deepFreeze(structuredClone(value));
+        value = deepFreeze(cloneDeep(value));
         this._data[key].value = value;
 
         // Schedule serialization to storage
@@ -198,7 +198,7 @@ export class PrefService extends HoistService {
         for (let key in data) {
             if (data[key].local) {
                 data[key].value = !isNil(localPrefs[key]) ?
-                    deepFreeze(structuredClone(localPrefs[key])) :
+                    deepFreeze(cloneDeep(localPrefs[key])) :
                     data[key].defaultValue;
             }
         }

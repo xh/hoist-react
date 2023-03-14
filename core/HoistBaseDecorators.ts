@@ -9,6 +9,7 @@ import {PersistenceProvider, PersistOptions, HoistBaseClass} from './';
 import {isUndefined} from 'lodash';
 import {wait} from '../promise';
 import {throwIf} from '../utils/js';
+import {cloneDeep} from 'lodash';
 
 /**
  * Decorator to make a property "managed". Managed properties are designed to hold objects that
@@ -75,7 +76,7 @@ function createPersistDescriptor(target: HoistBaseClass, property: string, descr
         try {
             const persistWith = {path: property, ...this.persistWith, ...options},
                 provider = this.markManaged(PersistenceProvider.create(persistWith));
-            providerState = structuredClone(provider.read());
+            providerState = cloneDeep(provider.read());
             wait().then(() => {
                 this.addReaction({
                     track: () => this[property],

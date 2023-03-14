@@ -355,7 +355,7 @@ class ChartLocalModel extends HoistModel {
     }
 
     getThemeConfig() {
-        return XH.darkTheme ? structuredClone(DarkTheme) : structuredClone(LightTheme);
+        return XH.darkTheme ? cloneDeep(DarkTheme) : cloneDeep(LightTheme);
     }
 
     getModelConfig() {
