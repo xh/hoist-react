@@ -113,7 +113,7 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
         let headerElem: ReactNode = displayName;
         if (xhColumn) {
             headerElem = isFunction(xhColumn.headerName)
-                ? xhColumn.headerName({column: xhColumn, gridModel})
+                ? xhColumn.headerName({column: xhColumn, gridModel, agParams: null})
                 : xhColumn.headerName;
         }
 

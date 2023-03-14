@@ -261,7 +261,7 @@ export type ColumnTooltipFn<T = any> = (
 export type ColumnHeaderClassFn = (context: {
     column: Column | ColumnGroup;
     gridModel: GridModel;
-    agParams?: HeaderClassParams;
+    agParams: HeaderClassParams;
 }) => Some<string>;
 
 /**
@@ -278,7 +278,7 @@ export type ColumnHeaderNameFn = (params: {
     column?: Column;
     columnGroup?: ColumnGroup;
     gridModel: GridModel;
-    agParams?: HeaderValueGetterParams;
+    agParams: HeaderValueGetterParams;
 }) => ReactNode;
 
 /**

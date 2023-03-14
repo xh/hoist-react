@@ -48,7 +48,11 @@ export const columnGroupHeader = hoistCmp.factory<ColumnGroupHeaderProps>({
         // in a group being rendered next to columns which are in groups.
         let headerName: ReactNode = displayName;
         if (xhColumnGroup && isFunction(xhColumnGroup.headerName)) {
-            headerName = xhColumnGroup.headerName({columnGroup: xhColumnGroup, gridModel});
+            headerName = xhColumnGroup.headerName({
+                columnGroup: xhColumnGroup,
+                gridModel,
+                agParams: null
+            });
         }
 
         return div({
