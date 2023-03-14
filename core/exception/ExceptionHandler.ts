@@ -109,7 +109,7 @@ export class ExceptionHandler {
      * course of "normal" app operation and do not represent unexpected errors. When true, this
      * handler will apply defaults that avoid overly alarming the user and skip server-side logging.
      *
-     * @param exception - Error or thrown object - if not an Error, an Exception will be created
+     * @param exception - Error or thrown object - if not an Error, a HoistException will be created
      *      via `Exception.create()`.
      * @param options - provides further control over how the exception is shown and/or logged.
      */
@@ -150,7 +150,7 @@ export class ExceptionHandler {
      * Intended to be used for the deferred / user-initiated showing of exceptions that have
      * already been appropriately logged. Applications should typically prefer `handleException`.
      *
-     * @param exception - Error or thrown object - if not an Error, an Exception will be created
+     * @param exception - Error or thrown object - if not an Error, a HoistException will be created
      *      via `Exception.create()`.
      * @param options - provides further control over how the exception is shown and/or logged.
      */
@@ -171,11 +171,8 @@ export class ExceptionHandler {
      *
      * @returns true if message was successfully sent to server.
      */
-    async logOnServerAsync({
-        exception,
-        userAlerted,
-        userMessage
-    }: ExceptionHandlerLoggingOptions): Promise<boolean> {
+    async logOnServerAsync(options: ExceptionHandlerLoggingOptions): Promise<boolean> {
+        const {exception, userAlerted, userMessage} = options;
         try {
             const error = this.stringifyErrorSafely(exception),
                 username = XH.getUsername();
