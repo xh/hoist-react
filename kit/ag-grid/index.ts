@@ -43,7 +43,9 @@ export type {
     ValueSetterParams,
     MenuItemDef,
     CellPosition,
-    NavigateToNextCellParams
+    NavigateToNextCellParams,
+    Column as AgColumn,
+    ColumnGroup as AgColumnGroup
 } from '@ag-grid-community/core';
 
 const MIN_VERSION = '29.1.0';

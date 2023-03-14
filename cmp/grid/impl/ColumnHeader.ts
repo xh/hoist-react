@@ -28,7 +28,7 @@ import classNames from 'classnames';
 import {GridSorter} from '../GridSorter';
 import {ReactNode} from 'react';
 
-import type {IHeaderParams} from '@xh/hoist/kit/ag-grid';
+import type {IHeaderParams, AgColumn} from '@xh/hoist/kit/ag-grid';
 
 export interface ColumnHeaderProps extends HoistProps<ColumnHeaderModel>, IHeaderParams {
     gridModel: GridModel;
@@ -151,7 +151,7 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
 class ColumnHeaderModel extends HoistModel {
     override xhImpl = true;
 
-    get gridModel() {
+    get gridModel(): GridModel {
         return this.componentProps.gridModel;
     }
 
@@ -159,12 +159,12 @@ class ColumnHeaderModel extends HoistModel {
         return this.componentProps.xhColumn;
     }
 
-    get agColumn() {
+    get agColumn(): AgColumn {
         return this.componentProps.column;
     }
 
-    get colId() {
-        return this.agColumn.colId;
+    get colId(): string {
+        return this.agColumn.getColId();
     }
 
     get enableSorting() {
