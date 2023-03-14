@@ -1007,7 +1007,7 @@ export class Column {
     }
 
     private parseSortingOrder(sortingOrder): ColumnSortSpec[] {
-        return sortingOrder.map(spec => (isString(spec) || spec === null ? {sort: spec} : spec));
+        return sortingOrder?.map(spec => (isString(spec) || spec === null ? {sort: spec} : spec));
     }
 
     private parseFilterable(filterable) {
