@@ -2,6 +2,25 @@
 # yarn lockfile v1
 
 
+"@ag-grid-community/client-side-row-model@~29.1.0":
+  version "29.1.0"
+  resolved "https://registry.yarnpkg.com/@ag-grid-community/client-side-row-model/-/client-side-row-model-29.1.0.tgz#7715f22f2d60227e0ea01c737283d9c7568c5205"
+  integrity sha512-SaJnYe58k0teHXQtnoMSTWnxc0jwY5MwOL+VeaxqpGX32LQoVIB1u9z3lgG0uGmR95+mngLer9cI4u7FqBZ5iA==
+  dependencies:
+    "@ag-grid-community/core" "~29.1.0"
+
+"@ag-grid-community/core@~29.1.0":
+  version "29.1.0"
+  resolved "https://registry.yarnpkg.com/@ag-grid-community/core/-/core-29.1.0.tgz#5cf672f67ff3cf2efcb77d4d809dda7852967d9c"
+  integrity sha512-l68/3whSJ4ql2yvgx5FlT7V8op35z7+htx9PZ6VyzIPgnNVXSv5XuIU7JCzqobRwPOXSeyjRfH2Q4/tZrYVvmw==
+
+"@ag-grid-community/react@~29.1.0":
+  version "29.1.0"
+  resolved "https://registry.yarnpkg.com/@ag-grid-community/react/-/react-29.1.0.tgz#3ea7d5e6b6eb66101e7945d43361a608e7fda44e"
+  integrity sha512-MwCkgBU9cH0yEVbzuil0lMeZz3vATZx2q40hlQIfixc1KyZsp2BlyqOxazpCOk5svBWSjs2ZekMObGxX9WgZxw==
+  dependencies:
+    prop-types "^15.8.1"
+
 "@ampproject/remapping@^2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@ampproject/remapping/-/remapping-2.2.0.tgz#56c133824780de3174aed5ab6834f3026790154d"

@@ -13,6 +13,8 @@ import {GridModel} from '../GridModel';
 import {ColumnHeaderClassFn, ColumnHeaderNameFn} from '../Types';
 import {Column, ColumnSpec, getAgHeaderClassFn} from './Column';
 
+import type {ColGroupDef} from '@xh/hoist/kit/ag-grid';
+
 export interface ColumnGroupSpec {
     /** Column or ColumnGroup configs for children of this group.*/
     children: Array<ColumnGroupSpec | ColumnSpec>;
@@ -97,7 +99,7 @@ export class ColumnGroup {
         this.agOptions = agOptions ? clone(agOptions) : {};
     }
 
-    getAgSpec() {
+    getAgSpec(): ColGroupDef {
         const {headerName, gridModel} = this;
         return {
             groupId: this.groupId,

@@ -782,7 +782,7 @@ export class GridModel extends HoistModel {
             indices = [];
 
         // 1) Expand any nodes that are collapsed
-        const expandedRows = new Set();
+        const expandedRows = new Set<string>();
         records.forEach(({agId}) => {
             for (let row = agApi.getRowNode(agId)?.parent; row; row = row.parent) {
                 if (!row.expanded) {

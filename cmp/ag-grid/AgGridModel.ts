@@ -23,6 +23,8 @@ import {
 } from 'lodash';
 import {GridSorter, GridSorterLike} from '../grid/GridSorter';
 
+import type {ColumnApi, GridApi, SortDirection} from '@xh/hoist/kit/ag-grid';
+
 export interface AgGridModelConfig {
     sizingMode?: SizingMode;
 
@@ -59,7 +61,7 @@ export interface AgGridColumnState {
 }
 export interface AgGridColumnSortState {
     colId: string;
-    sort: string;
+    sort?: SortDirection;
     sortIndex: number;
 }
 
@@ -98,8 +100,8 @@ export class AgGridModel extends HoistModel {
     @bindable showCellFocus: boolean;
     @bindable hideHeaders: boolean;
 
-    @observable.ref agApi: PlainObject = null; // GridApi
-    @observable.ref agColumnApi: PlainObject = null; // ColumnApi
+    @observable.ref agApi: GridApi = null;
+    @observable.ref agColumnApi: ColumnApi = null;
 
     private _prevSortBy: GridSorter[];
 
@@ -246,7 +248,7 @@ export class AgGridModel extends HoistModel {
      * @returns Current filter state of the grid.
      * @see https://www.ag-grid.com/javascript-grid-filtering/#get-set-all-filter-models
      */
-    getFilterState(): any[] {
+    getFilterState(): PlainObject {
         this.throwIfNotReady();
 
         const {agApi} = this;
@@ -257,7 +259,7 @@ export class AgGridModel extends HoistModel {
      * Sets the grid filter state.
      * Note that this state may be data-dependent, depending on the types of filter being used.
      */
-    setFilterState(filterState: any[]) {
+    setFilterState(filterState: any) {
         this.throwIfNotReady();
 
         const {agApi} = this;
@@ -276,27 +278,27 @@ export class AgGridModel extends HoistModel {
         const {agColumnApi} = this,
             isPivot = agColumnApi.isPivotMode();
 
-        let sortState = agColumnApi.getColumnState().filter(it => it.sort);
+        let colState: PlainObject[] = agColumnApi.getColumnState().filter(it => it.sort);
 
         // When we have pivot columns we need to make sure we store the path to the sorted column
         // using the pivot keys and value column id, instead of using the auto-generate secondary
         // column id as this could be different with different data or even with the same data based
         // on the state of the grid when pivot mode was enabled.
         if (isPivot && !isEmpty(agColumnApi.getPivotColumns())) {
-            const secondarySortedCols = agColumnApi.getSecondaryColumns().filter(it => it.sort);
+            const secondarySortedCols = agColumnApi
+                .getSecondaryColumns()
+                .filter(it => it.getSort()) as PlainObject[];
             secondarySortedCols.forEach(col => {
                 col.colId = this.getPivotColumnId(col);
             });
-            sortState = concat(sortState, secondarySortedCols);
+            colState = concat(colState, secondarySortedCols);
         }
 
-        sortState = sortState.map(it => ({
+        return colState.map(it => ({
             colId: it.colId,
             sort: it.sort,
             sortIndex: it.sortIndex
         }));
-
-        return sortState;
     }
 
     /**
@@ -335,7 +337,7 @@ export class AgGridModel extends HoistModel {
                 defaultState
             });
 
-            // 2nd clear all pre-exisiting secondary column sorts
+            // 2nd clear all pre-existing secondary column sorts
             colApi.getSecondaryColumns().forEach(col => {
                 if (col) {
                     // When using `applyColumnState`, `undefined` means do nothing, `null` means set to none, not cleared.
@@ -348,6 +350,9 @@ export class AgGridModel extends HoistModel {
 
             // finally apply sorts from state to secondary columns
             secondaryColumnState.forEach(state => {
+                // TODO -- state saving for pivot appears broken.
+                // Related to TS error below? Need to analyze and tear down if no longer needed.
+                // @ts-ignore
                 const col = colApi.getSecondaryPivotColumn(state.colId[0], state.colId[1]);
                 if (col) {
                     col.setSort(state.sort);
@@ -394,7 +399,7 @@ export class AgGridModel extends HoistModel {
         const {agColumnApi} = this,
             validColIds = [
                 AgGridModel.AUTO_GROUP_COL_ID,
-                ...agColumnApi.getColumns().map(it => it.colId)
+                ...agColumnApi.getColumns().map(it => it.getColId())
             ];
 
         let {isPivot, columns} = colState;

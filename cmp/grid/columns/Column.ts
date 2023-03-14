@@ -56,6 +56,13 @@ import {
 import {ExcelFormat} from '../enums/ExcelFormat';
 import {FunctionComponent} from 'react';
 import {ColumnGroup} from './ColumnGroup';
+import type {
+    ColDef,
+    HeaderClassParams,
+    ITooltipParams,
+    ValueGetterParams,
+    ValueSetterParams
+} from '@xh/hoist/kit/ag-grid';
 
 export interface ColumnSpec {
     /**
@@ -358,7 +365,7 @@ export interface ColumnSpec {
      * compatible with its usages of Ag-Grid.
      * See {@link https://www.ag-grid.com/javascript-grid-column-properties/|AG-Grid docs}
      */
-    agOptions?: PlainObject;
+    agOptions?: ColDef;
 
     /** Extra, app-specific data for the column. */
     appData?: PlainObject;
@@ -375,7 +382,7 @@ export class Column {
     /**
      * A convenience sort order. Default for non-numeric, non-date columns.
      */
-    static ASC_FIRST = [
+    static ASC_FIRST: ColumnSortSpec[] = [
         {sort: 'asc', abs: false},
         {sort: 'desc', abs: false}
     ];
@@ -383,7 +390,7 @@ export class Column {
     /**
      * A convenience sort order. Default for numeric and date columns.
      */
-    static DESC_FIRST = [
+    static DESC_FIRST: ColumnSortSpec[] = [
         {sort: 'desc', abs: false},
         {sort: 'asc', abs: false}
     ];
@@ -391,7 +398,7 @@ export class Column {
     /**
      * A convenience sort order. Default for numeric and date columns where absSort: true.
      */
-    static ABS_DESC_FIRST = [
+    static ABS_DESC_FIRST: ColumnSortSpec[] = [
         {sort: 'desc', abs: true},
         {sort: 'asc', abs: false},
         {sort: 'desc', abs: false}
@@ -417,7 +424,7 @@ export class Column {
     minWidth: number;
     maxWidth: number;
     rowHeight: number;
-    sortingOrder: Array<'asc' | 'desc' | ColumnSortSpec | null>;
+    sortingOrder: ColumnSortSpec[];
     absSort: boolean;
     sortValue: string | ColumnSortValueFn;
     comparator: ColumnComparator;
@@ -459,7 +466,7 @@ export class Column {
     omit: Thunkable<boolean>;
 
     gridModel: GridModel;
-    agOptions: PlainObject;
+    agOptions: ColDef;
     appData: PlainObject;
 
     /**
@@ -584,7 +591,7 @@ export class Column {
         this.rowHeight = rowHeight;
 
         this.absSort = withDefault(absSort, false);
-        this.sortingOrder = sortingOrder;
+        this.sortingOrder = this.parseSortingOrder(sortingOrder);
         this.sortValue = sortValue;
         this.comparator = comparator;
 
@@ -671,10 +678,9 @@ export class Column {
     }
 
     /** A Column definition appropriate for AG-Grid. */
-    getAgSpec() {
+    getAgSpec(): ColDef {
         const {gridModel, field, headerName, displayName, agOptions} = this,
-            ret: any = {
-                xhColumn: this,
+            ret: ColDef = {
                 field,
                 colId: this.colId,
                 // headerValueGetter should always return a string
@@ -703,7 +709,7 @@ export class Column {
                 enableCellChangeFlash: this.highlightOnChange,
                 cellClassRules: this.cellClassRules,
                 editable: agParams => this.isEditableForRecord(agParams.node.data),
-                valueSetter: agParams => {
+                valueSetter: (agParams: ValueSetterParams) => {
                     const record = agParams.data;
                     this.setValueFn({
                         value: agParams.newValue,
@@ -714,8 +720,9 @@ export class Column {
                         gridModel,
                         agParams
                     });
+                    return true;
                 },
-                valueGetter: agParams => {
+                valueGetter: (agParams: ValueGetterParams) => {
                     const record = agParams.data;
                     return this.getValueFn({
                         record,
@@ -732,6 +739,7 @@ export class Column {
                     // Avoid stomping on react-select menus in editors
                     const {gridModel, colId} = this,
                         editor = gridModel.agApi.getCellEditorInstances({columns: [colId]})[0],
+                        // @ts-ignore -- private
                         reactSelect = editor?.inputModel?.().reactSelect;
                     if (reactSelect?.state.menuIsOpen) return true;
 
@@ -788,9 +796,8 @@ export class Column {
         if (tooltip || editor) {
             // ag-Grid requires a return from getter, but value we actually use is computed below
             ret.tooltipValueGetter = () => 'tooltip';
-            ret.tooltipComponent = forwardRef((props: PlainObject, ref) => {
-                const agParams = props,
-                    {location, data: record} = agParams,
+            ret.tooltipComponent = forwardRef((agParams: ITooltipParams, ref) => {
+                const {location, data: record} = agParams,
                     hasRecord = record instanceof StoreRecord;
 
                 let ret = null;
@@ -966,12 +973,12 @@ export class Column {
     // Implementation
     //--------------------
     // Default comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
-    defaultComparator = (v1, v2) => {
+    private defaultComparator = (v1, v2) => {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
         return sortCfg ? sortCfg.comparator(v1, v2) : GridSorter.defaultComparator(v1, v2);
     };
 
-    defaultSetValueFn = ({value, record, store, field}) => {
+    private defaultSetValueFn = ({value, record, store, field}) => {
         const data = {id: record.id};
         data[field] = value;
         store.modifyRecords(data);
@@ -985,7 +992,7 @@ export class Column {
         return record.data[fieldPath];
     };
 
-    parseField(field) {
+    private parseField(field) {
         if (isPlainObject(field)) {
             this.fieldSpec = field;
             return field.name;
@@ -993,13 +1000,17 @@ export class Column {
         return field;
     }
 
-    parsePinned(pinned) {
+    private parsePinned(pinned) {
         if (pinned === true) return 'left';
         if (pinned === 'left' || pinned === 'right') return pinned;
         return null;
     }
 
-    parseFilterable(filterable) {
+    private parseSortingOrder(sortingOrder): ColumnSortSpec[] {
+        return sortingOrder?.map(spec => (isString(spec) || spec === null ? {sort: spec} : spec));
+    }
+
+    private parseFilterable(filterable) {
         if (!filterable) return false;
 
         if (XH.isMobileApp) {
@@ -1024,7 +1035,7 @@ export class Column {
         return true;
     }
 
-    getSortValue(v, record) {
+    private getSortValue(v, record) {
         const {sortValue, gridModel} = this;
         if (!sortValue) return v;
 
@@ -1036,7 +1047,7 @@ export class Column {
 
 export function getAgHeaderClassFn(
     column: Column | ColumnGroup
-): (params: PlainObject) => string[] {
+): (params: HeaderClassParams) => string[] {
     // Generate CSS classes for headers.
     // Default alignment classes are mixed in with any provided custom classes.
     const {headerClass, headerAlign, gridModel} = column;

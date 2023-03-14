@@ -209,7 +209,9 @@ export class ColumnWidthCalculator {
 
     getHeaderHtml(gridModel, column) {
         const {headerName} = column,
-            headerValue = isFunction(headerName) ? headerName({column, gridModel}) : headerName;
+            headerValue = isFunction(headerName)
+                ? headerName({column, gridModel, agParams: null})
+                : headerName;
 
         if (isNil(headerValue)) return '';
         if (isString(headerValue)) return headerValue;
