@@ -729,8 +729,7 @@ export class Column {
                         field,
                         store: record?.store,
                         column: this,
-                        gridModel,
-                        agParams
+                        gridModel
                     });
                 },
                 suppressKeyboardEvent: ({editing, event}) => {
@@ -776,12 +775,7 @@ export class Column {
         if (!agOptions.cellRenderer) {
             setRenderer(agParams => {
                 let ret = renderer
-                    ? renderer(agParams.value, {
-                          record: agParams.data,
-                          column: this,
-                          gridModel,
-                          agParams
-                      })
+                    ? renderer(agParams.value, {record: agParams.data, column: this, gridModel})
                     : agParams.value;
 
                 ret = isNil(ret) || isValidElement(ret) ? ret : toString(ret);
@@ -808,7 +802,6 @@ export class Column {
                             field,
                             column: this,
                             gridModel,
-                            agParams,
                             store
                         });
 
