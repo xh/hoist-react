@@ -23,6 +23,7 @@ export * from './HoistAppModel';
 
 export * from './exception/ExceptionHandler';
 export * from './exception/Exception';
+export * from './exception/Types';
 
 // Explicitly exporting `XH` helps IntelliJ suggest the correct import from this core package.
 export {XH, XHApi} from './XH';

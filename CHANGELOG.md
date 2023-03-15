@@ -20,6 +20,11 @@
 * The previously deprecated property `AppMenuButton.extraItems.onClick` has been removed.  Use
 `actionFn` instead.
 
+### ⚙️ Typescript API Adjustments
+
+* New typescript types for all Hoist exceptions.
+* Integration of ag-Grid community types into hoist-react.
+
 ### ⚙️ Technical
 * This version requires an update to hoist-core v16.0.0
 * Revert native `structuredClone` to lodash `deepClone` throughout toolkit.
