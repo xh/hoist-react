@@ -2,7 +2,7 @@ import {PlainObject} from '@xh/hoist/core';
 import {FetchOptions} from '@xh/hoist/svc';
 
 /**
- * Base type for Exceptions in Hoist.
+ * A Hoist optimized Javascript Error object.
  */
 export interface HoistException extends Error {
     isHoistException: true;

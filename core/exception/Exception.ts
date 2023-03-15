@@ -5,8 +5,8 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {FetchOptions} from '@xh/hoist/svc';
-import {PlainObject, XH} from '../';
-import {isString} from 'lodash';
+import {FetchResponse, PlainObject, XH} from '../';
+import {isPlainObject} from 'lodash';
 
 import {FetchException, HoistException, TimeoutException, TimeoutExceptionConfig} from './Types';
 
@@ -19,18 +19,25 @@ import {FetchException, HoistException, TimeoutException, TimeoutExceptionConfig
  */
 export class Exception {
     /**
-     * Create and return a Javascript Error object.
+     * Create and return a HoistException
+     *
      * See {@link XH.exception} - an alias for this factory off of `XH`.
-     * @param cfg - properties to add to the returned Error, or a string to use as message.
+     *
+     * @param src - If a native JS Error, it will be enhanced into a HoistException and returned.
+     *      If a plain object, all properties will be set on a new HoistException.
+     *      Other inputs will be treated as the `message` of a new HoistException.
      */
-    static create(cfg: PlainObject | string): HoistException {
-        return this.createInternal(
-            {
-                name: 'Exception',
-                message: 'An unknown error occurred'
-            },
-            isString(cfg) ? {message: cfg} : cfg
-        );
+    static create(src: unknown): HoistException {
+        if (src instanceof Error) {
+            return src['isHoistException'] ? (src as HoistException) : this.createInternal({}, src);
+        }
+
+        const attributes: PlainObject = isPlainObject(src) ? src : {message: src?.toString()};
+        return this.createInternal({
+            name: 'Exception',
+            message: 'An unknown error occurred',
+            ...attributes
+        });
     }
 
     /**
@@ -52,24 +59,21 @@ export class Exception {
     /**
      * Create an Error to throw when a fetch call returns a !ok response.
      * @param fetchOptions - original options provided to `FetchService.fetch()`.
-     * @param response - return value of native fetch, with the addition of an optional
-     *      `responseText` property containing the already-awaited output of `response.text()`. If
-     *      `responseText` is determined to be a JSON object containing a `name` property, it will
-     *      be treated as a serialized exception and used to construct the returned Error.
+     * @param fetchResponse - return value of native fetch, as enhanced by FetchService.
      */
-    static fetchError(fetchOptions: FetchOptions, response: Response): FetchException {
-        const httpStatus = response.status,
-            responseText = response['responseText'],
+    static fetchError(fetchOptions: FetchOptions, fetchResponse: FetchResponse): FetchException {
+        const {headers, status, statusText, responseText} = fetchResponse,
             defaults = {
-                name: 'HTTP Error ' + (httpStatus || ''),
-                message: response.statusText,
-                httpStatus,
+                name: 'HTTP Error ' + (status || ''),
+                httpStatus: status,
+                message: statusText,
                 serverDetails: responseText,
                 fetchOptions
             };
 
-        if (httpStatus === 401) {
-            return this.createInternal(defaults, {
+        if (status === 401) {
+            return this.createInternal({
+                ...defaults,
                 name: 'Unauthorized',
                 message: 'Your session may have timed out and you may need to log in again.'
             }) as FetchException;
@@ -77,11 +81,12 @@ export class Exception {
 
         // Try to "smart" decode as server provided JSON Exception (with a name)
         try {
-            const cType = response.headers.get('Content-Type');
+            const cType = headers.get('Content-Type');
             if (cType && cType.includes('application/json')) {
                 const serverDetails = JSON.parse(responseText);
                 if (serverDetails?.name) {
-                    return this.createInternal(defaults, {
+                    return this.createInternal({
+                        ...defaults,
                         name: serverDetails.name,
                         message: serverDetails.message,
                         isRoutine: serverDetails.isRoutine ?? false,
@@ -92,7 +97,7 @@ export class Exception {
         } catch (ignored) {}
 
         // Fall back to raw defaults
-        return this.createInternal(defaults, {}) as FetchException;
+        return this.createInternal(defaults) as FetchException;
     }
 
     /**
@@ -170,17 +175,16 @@ export class Exception {
     // Implementation
     //-----------------------
     private static createInternal(
-        defaults: PlainObject,
-        override: PlainObject = {}
+        attributes: PlainObject,
+        baseError: Error = new Error()
     ): HoistException {
         return Object.assign(
-            new Error(),
+            baseError,
             {
                 isRoutine: false,
                 isHoistException: true
             },
-            defaults,
-            override
+            attributes
         ) as HoistException;
     }
 }

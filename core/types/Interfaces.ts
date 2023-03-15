@@ -28,6 +28,16 @@ export interface HoistUser {
 }
 
 /**
+ * Enhanced Response returned by FetchService.
+ */
+export interface FetchResponse extends Response {
+    /**
+     * Property containing the already-awaited output of `response.text()`.
+     */
+    responseText: string;
+}
+
+/**
  * Options for showing a "toast" notification that appears and then automatically dismisses.
  */
 export interface ToastSpec {
