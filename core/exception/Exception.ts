@@ -28,9 +28,8 @@ export class Exception {
      *      Other inputs will be treated as the `message` of a new HoistException.
      */
     static create(src: unknown): HoistException {
-        if (src instanceof Error) {
-            return src['isHoistException'] ? (src as HoistException) : this.createInternal({}, src);
-        }
+        if (isHoistException(src)) return src;
+        if (src instanceof Error) return this.createInternal({}, src);
 
         const attributes: PlainObject = isPlainObject(src) ? src : {message: src?.toString()};
         return this.createInternal({
@@ -65,18 +64,18 @@ export class Exception {
         const {headers, status, statusText, responseText} = fetchResponse,
             defaults = {
                 name: 'HTTP Error ' + (status || ''),
-                httpStatus: status,
                 message: statusText,
+                httpStatus: status,
                 serverDetails: responseText,
                 fetchOptions
             };
 
         if (status === 401) {
-            return this.createInternal({
+            return this.createFetchException({
                 ...defaults,
                 name: 'Unauthorized',
                 message: 'Your session may have timed out and you may need to log in again.'
-            }) as FetchException;
+            });
         }
 
         // Try to "smart" decode as server provided JSON Exception (with a name)
@@ -85,37 +84,33 @@ export class Exception {
             if (cType && cType.includes('application/json')) {
                 const serverDetails = JSON.parse(responseText);
                 if (serverDetails?.name) {
-                    return this.createInternal({
+                    return this.createFetchException({
                         ...defaults,
                         name: serverDetails.name,
                         message: serverDetails.message,
                         isRoutine: serverDetails.isRoutine ?? false,
                         serverDetails
-                    }) as FetchException;
+                    });
                 }
             }
         } catch (ignored) {}
 
         // Fall back to raw defaults
-        return this.createInternal(defaults) as FetchException;
+        return this.createFetchException(defaults);
     }
 
     /**
      * Create an Error to throw when a fetch call is aborted.
      * @param fetchOptions - original options the app passed to FetchService.
-     * @param e - Error thrown by native fetch
      */
-    static fetchAborted(fetchOptions: FetchOptions, e: any): FetchException {
-        return this.createInternal({
+    static fetchAborted(fetchOptions: FetchOptions): FetchException {
+        return this.createFetchException({
             name: 'Fetch Aborted',
             message: `Fetch request aborted, url: "${fetchOptions.url}"`,
             isRoutine: true,
             isFetchAborted: true,
-            fetchOptions,
-            httpStatus: 0,
-            serverDetails: null,
-            stack: null // Skip for fetch -- server-sourced exceptions do not include
-        }) as FetchException;
+            fetchOptions
+        });
     }
 
     /**
@@ -129,26 +124,23 @@ export class Exception {
         e: TimeoutException,
         message: string
     ): FetchException & TimeoutException {
-        const {interval} = e;
-        return this.createInternal({
-            name: 'Fetch Timeout',
-            isTimeout: true,
-            isFetchTimeout: true,
-            message:
-                message ??
-                `Timed out loading '${fetchOptions.url}' - no response after ${interval}ms.`,
-            fetchOptions,
-            interval,
-            httpStatus: 0,
-            serverDetails: null,
-            stack: null
-        }) as FetchException & TimeoutException;
+        const {url} = fetchOptions,
+            {interval} = e;
+        return this.createFetchException(
+            {
+                name: 'Fetch Timeout',
+                isFetchTimeout: true,
+                message: message ?? `Timed out loading '${url}' - no response after ${interval}ms.`,
+                fetchOptions
+            },
+            e
+        ) as FetchException & TimeoutException;
     }
 
     /**
      * Create an Error for when the server called by fetch does not respond
      * @param fetchOptions - original options the app passed to FetchService.fetch
-     * @param e - Error thrown by native fetch
+     * @param e - object thrown by native fetch
      */
     static serverUnavailable(fetchOptions: FetchOptions, e: any): FetchException {
         const protocolPattern = /^[a-z]+:\/\//i,
@@ -158,22 +150,35 @@ export class Exception {
                 ? match[0]
                 : protocolPattern.test(XH.baseUrl)
                 ? XH.baseUrl
-                : window.location.origin,
-            message = `Unable to contact the server at ${origin}`;
+                : window.location.origin;
 
-        return this.createInternal({
+        return this.createFetchException({
             name: 'Server Unavailable',
-            message,
-            httpStatus: 0, // native fetch doesn't put status on its Error
-            originalMessage: e?.message,
+            message: `Unable to contact the server at ${origin}`,
             fetchOptions,
-            stack: null
-        }) as FetchException;
+            originalMessage: e.message
+        });
     }
 
     //-----------------------
     // Implementation
     //-----------------------
+    private static createFetchException(
+        attributes: PlainObject,
+        baseError: Error = new Error()
+    ): FetchException {
+        return this.createInternal(
+            {
+                isFetchAborted: false,
+                httpStatus: 0, // native fetch doesn't put status on its Error
+                serverDetails: null,
+                stack: null, // server-sourced exceptions do not include, neither should client, not relevant
+                ...attributes
+            },
+            baseError
+        ) as FetchException;
+    }
+
     private static createInternal(
         attributes: PlainObject,
         baseError: Error = new Error()
@@ -187,4 +192,8 @@ export class Exception {
             attributes
         ) as HoistException;
     }
+}
+
+export function isHoistException(src: unknown): src is HoistException {
+    return src?.['isHoistException'];
 }

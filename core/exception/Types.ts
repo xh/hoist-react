@@ -42,6 +42,12 @@ export interface FetchException extends HoistException {
 
     /** Options of underlying fetch call. */
     fetchOptions: FetchOptions;
+
+    /**
+     * True if exception resulted from the fetch being aborted by fetchService, or the application.
+     * @see FetchService.abort and FetchOptions.autoAbortKey.
+     */
+    isFetchAborted: boolean;
 }
 
 /**

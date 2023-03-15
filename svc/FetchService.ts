@@ -165,7 +165,7 @@ export class FetchService extends HoistService {
 
             // Just two other cases where we expect this to throw -- Typically we get a failed response)
             throw e.name === 'AbortError'
-                ? Exception.fetchAborted(opts, e)
+                ? Exception.fetchAborted(opts)
                 : Exception.serverUnavailable(opts, e);
         } finally {
             if (autoAborters[autoAbortKey] === aborter) {
