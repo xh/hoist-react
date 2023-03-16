@@ -19,6 +19,11 @@
  `Button.modifier.quiet` have been removed.
 * The previously deprecated property `AppMenuButton.extraItems.onClick` has been removed.  Use
 `actionFn` instead.
+* The `Column.getValueFn` and `Column.renderer` functions will no longer be passed the `agParams`
+argument.  This argument was not passed consistently by Hoist when calling these functions; and was
+specifically omitted during operations such as column sizing, tooltip generation and Grid content
+searching.  We do not expect this argument was being used in practice by applications, but
+applications should ensure this is the case, and adjust these callbacks if necessary.
 
 ### ⚙️ Typescript API Adjustments
 
