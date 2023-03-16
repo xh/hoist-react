@@ -6,6 +6,8 @@
 
 * `DashCanvas` views can now be programmatically added with specified width and height dimensions.
 * `FetchService` now has a public `abort` method for manually aborting a pending fetch request.
+* Hoist exceptions have been enhanced and standardized, including new TypeScript types.  The
+ `Error.cause` property is now populated for wrapping exceptions.
 
 ### 💥 Breaking Changes
 * "Local" Preference support in PreferenceService is no longer supported.  Application should use

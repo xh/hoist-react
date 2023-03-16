@@ -158,14 +158,17 @@ export class FetchService extends HoistService {
         } catch (e) {
             if (e.isTimeout) {
                 aborter.abort();
-                throw Exception.fetchTimeout(opts, e, timeout?.message);
+                const msg =
+                    timeout?.message ??
+                    `Timed out loading '${opts.url}' - no response after ${e.interval}ms.`;
+                throw Exception.fetchTimeout(opts, e, msg);
             }
 
             if (e.isHoistException) throw e;
 
             // Just two other cases where we expect this to throw -- Typically we get a failed response)
             throw e.name === 'AbortError'
-                ? Exception.fetchAborted(opts)
+                ? Exception.fetchAborted(opts, e)
                 : Exception.serverUnavailable(opts, e);
         } finally {
             if (autoAborters[autoAbortKey] === aborter) {
