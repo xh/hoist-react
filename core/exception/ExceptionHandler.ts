@@ -8,8 +8,8 @@ import {Exception} from './Exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
 import {stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
-import {forOwn, has, isArray, isNil, isObject, omitBy, set} from 'lodash';
-import {HoistException, XH} from '../';
+import {forOwn, has, isArray, isNil, isObject, omitBy, pick, set} from 'lodash';
+import {HoistException, PlainObject, XH} from '../';
 
 export interface ExceptionHandlerOptions {
     /** Text (ideally user-friendly) describing the error. */
@@ -209,13 +209,17 @@ export class ExceptionHandler {
         try {
             // 1) Create basic structure.
             // Raw Error does not have 'own' properties, so be explicit about core name/message/stack
+            // Protect against long or circular cause chains.
             // Order here intentional for serialization
-            let ret: any = {
+            let ret: PlainObject = {
                 name: exception.name,
                 message: exception.message
             };
             Object.assign(ret, exception);
             ret.stack = exception.stack?.split(/\n/g);
+            if (ret.cause) {
+                ret.cause = pick(ret.cause, ['name', 'message']);
+            }
 
             ret = omitBy(ret, isNil);
 
