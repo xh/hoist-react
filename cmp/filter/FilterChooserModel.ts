@@ -88,7 +88,7 @@ export interface FilterChooserConfig {
     initialFavorites?: FilterChooserFilterLike[] | (() => FilterChooserFilterLike[]);
 
     /**
-     * true to offer all field suggestions when the control is focussed with an empty query,
+     * true to offer all field suggestions when the control is focused with an empty query,
      * to aid discoverability.
      */
     suggestFieldsWhenEmpty?: boolean;

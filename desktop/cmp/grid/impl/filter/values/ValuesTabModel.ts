@@ -144,7 +144,7 @@ export class ValuesTabModel extends HoistModel {
 
     @action
     private doSyncWithFilter() {
-        const {values, columnFilters, gridFilterModel} = this,
+        const {values, columnFilters, gridFilterModel, fieldSpec} = this,
             {fieldType} = this.headerFilterModel;
 
         if (isEmpty(columnFilters)) {
@@ -162,9 +162,10 @@ export class ValuesTabModel extends HoistModel {
             filterValues = [];
 
         arr.forEach(filter => {
-            const newValues = castArray(filter.value).map(value =>
-                gridFilterModel.toDisplayValue(value)
-            );
+            const newValues = castArray(filter.value).map(value => {
+                value = fieldSpec.sourceField.parseVal(value);
+                return gridFilterModel.toDisplayValue(value);
+            });
             filterValues.push(...newValues); // Todo: Is this safe?
         });
 
