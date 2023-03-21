@@ -9,6 +9,10 @@
 * Hoist exceptions have been enhanced and standardized, including new TypeScript types.  The
  `Error.cause` property is now populated for wrapping exceptions.
 
+### 🐞 Bug Fixes
+* Fix grid bug whereby LocalDate filter entered via FilterChooser was causing column filtering
+to fail.
+
 ### 💥 Breaking Changes
 * "Local" Preference support in PreferenceService is no longer supported.  Application should use
   `LocalStorageService` instead. With v56, the `local` flag on any preferences will be ignored, and
