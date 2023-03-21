@@ -191,37 +191,11 @@ export class PanelModel extends HoistModel {
             resizable = false;
         }
 
-        if (!isNil(maxSize) && maxSize < minSize) {
-            console.error("'maxSize' must be greater than 'minSize'. No 'maxSize' will be set.");
-            maxSize = null;
-        }
-
-        if (!isNil(maxSize) && !this.isPercent(defaultSize) && maxSize < defaultSize) {
+        if (!isNil(maxSize) && (maxSize < minSize || maxSize < defaultSize)) {
             console.error(
-                "'maxSize' must be greater than 'defaultSize'. No 'maxSize' will be set."
+                "'maxSize' must be greater than 'minSize' and 'defaultSize'. No 'maxSize' will be set."
             );
             maxSize = null;
-        }
-
-        if (minSize > 0 && !this.isPercent(defaultSize) && minSize > defaultSize) {
-            console.error(
-                "'minSize' must be smaller than 'defaultSize'. 'minSize' will be set to 0."
-            );
-            minSize = 0;
-        }
-
-        if (!isNil(maxSize) && this.isPercent(defaultSize)) {
-            console.error(
-                "'maxSize' is ignored when 'defaultSize' is a percent. No 'maxSize' will be set."
-            );
-            maxSize = null;
-        }
-
-        if (minSize > 0 && this.isPercent(defaultSize)) {
-            console.error(
-                "'minSize' is ignored when 'defaultSize' is a percent. 'minSize' will be set to 0."
-            );
-            minSize = 0;
         }
 
         if (resizable && !resizeWhileDragging && !showSplitter) {
@@ -342,6 +316,31 @@ export class PanelModel extends HoistModel {
      */
     setResizeWhileDragging(v: boolean) {
         this.resizeWhileDragging = v;
+    }
+
+    enforceSizeLimits() {
+        if (this.collapsed) return;
+
+        const el = this._resizeRef?.current,
+            height = el?.offsetHeight,
+            width = el?.offsetWidth,
+            isVisible = height > 0 && width > 0;
+
+        if (!isVisible) return;
+
+        const currSize = this.vertical ? height : width;
+
+        let size;
+        if (this.maxSize < currSize) {
+            size = this.maxSize;
+        } else if (this.minSize > currSize) {
+            size = this.minSize;
+        }
+
+        if (size) {
+            this.size = size;
+            this.dispatchResize();
+        }
     }
 
     //---------------------------------------------

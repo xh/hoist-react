@@ -22,7 +22,7 @@ import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import '@xh/hoist/desktop/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, omitBy} from 'lodash';
-import {Children, isValidElement, ReactElement, ReactNode, useRef} from 'react';
+import {Children, isValidElement, ReactElement, ReactNode, useEffect, useRef} from 'react';
 import {modalSupport} from '../modalsupport/ModalSupport';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
@@ -122,6 +122,10 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             children,
             ...rest
         } = nonLayoutProps;
+
+        useEffect(() => {
+            model.enforceSizeLimits();
+        });
 
         // 1) Pre-process layout
         // Block unwanted use of padding props, which will separate the panel's header
