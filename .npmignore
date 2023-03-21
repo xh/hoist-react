@@ -2,9 +2,11 @@ node_modules
 .editorconfig
 .eslintrc
 .github
+.prettierignore
+.prettierrc.json
 .stylelintrc
 .yarn
-.yarnrc
+.yarnrc.yml
 webpack.config.intellij.js
 *.log
 *.tgz

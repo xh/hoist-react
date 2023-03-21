@@ -17,3 +17,11 @@ node_modules/
 ehthumbs.db
 Thumbs.db
 
+# Yarn
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
