@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import React from 'react';
 import {
     HoistModel,
     managed,
@@ -157,7 +158,7 @@ export class PanelModel extends HoistModel {
     //-----------------
     // Implementation
     //-----------------
-    _resizeRef;
+    _resizeRef: React.RefObject<HTMLDivElement>;
     splitterRef = createRef<HTMLDivElement>();
 
     constructor({
