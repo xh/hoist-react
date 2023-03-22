@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import React from 'react';
 import {
     HoistModel,
     managed,
@@ -35,8 +36,8 @@ export interface PanelConfig {
     /** Can panel be collapsed, showing only its header? */
     collapsible?: boolean;
 
-    /** Default size (in px) of the panel. */
-    defaultSize?: number;
+    /** Default size (in px or %) of the panel. */
+    defaultSize?: number | string;
 
     /** Minimum size (in px) to which the panel can be resized. */
     minSize?: number;
@@ -105,7 +106,7 @@ export class PanelModel extends HoistModel {
     //-----------------------
     readonly resizable: boolean;
     readonly collapsible: boolean;
-    readonly defaultSize: number;
+    readonly defaultSize: number | string;
     readonly minSize: number;
     readonly maxSize: number;
     readonly defaultCollapsed: boolean;
@@ -133,9 +134,9 @@ export class PanelModel extends HoistModel {
     @observable
     collapsed: boolean = false;
 
-    /** Size in pixels along sizing dimension.  Used when object is *not* collapsed. */
+    /** Size in pixels or percents along sizing dimension.  Used when object is *not* collapsed. */
     @bindable
-    size: number = null;
+    size: number | string = null;
 
     /** Is this panel currently resizing? */
     @observable
@@ -157,7 +158,7 @@ export class PanelModel extends HoistModel {
     //-----------------
     // Implementation
     //-----------------
-    _resizeRef;
+    _resizeRef: React.RefObject<HTMLDivElement>;
     splitterRef = createRef<HTMLDivElement>();
 
     constructor({
@@ -209,7 +210,7 @@ export class PanelModel extends HoistModel {
         this.resizable = resizable;
         this.resizeWhileDragging = resizeWhileDragging;
         this.defaultSize = defaultSize;
-        this.minSize = Math.min(minSize, defaultSize);
+        this.minSize = minSize;
         this.maxSize = maxSize;
         this.defaultCollapsed = defaultCollapsed;
         this.side = side;
@@ -328,6 +329,31 @@ export class PanelModel extends HoistModel {
     // Does the Panel come before the resizing affordances?
     get contentFirst(): boolean {
         return this.side === 'top' || this.side === 'left';
+    }
+
+    enforceSizeLimits() {
+        if (this.collapsed) return;
+
+        const el = this._resizeRef?.current,
+            height = el?.offsetHeight,
+            width = el?.offsetWidth,
+            isVisible = height > 0 && width > 0;
+
+        if (!isVisible) return;
+
+        const currSize = this.vertical ? height : width;
+
+        let size;
+        if (this.maxSize && this.maxSize < currSize) {
+            size = this.maxSize;
+        } else if (this.minSize && this.minSize > currSize) {
+            size = this.minSize;
+        }
+
+        if (size) {
+            this.size = size;
+            this.dispatchResize();
+        }
     }
 
     //---------------------------------------------
