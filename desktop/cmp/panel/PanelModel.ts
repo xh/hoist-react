@@ -319,6 +319,18 @@ export class PanelModel extends HoistModel {
         this.resizeWhileDragging = v;
     }
 
+    //---------------------------------------------
+    // Implementation (for related private classes)
+    //---------------------------------------------
+    get vertical(): boolean {
+        return this.side === 'top' || this.side === 'bottom';
+    }
+
+    // Does the Panel come before the resizing affordances?
+    get contentFirst(): boolean {
+        return this.side === 'top' || this.side === 'left';
+    }
+
     enforceSizeLimits() {
         if (this.collapsed) return;
 
@@ -332,9 +344,9 @@ export class PanelModel extends HoistModel {
         const currSize = this.vertical ? height : width;
 
         let size;
-        if (this.maxSize < currSize) {
+        if (this.maxSize && this.maxSize < currSize) {
             size = this.maxSize;
-        } else if (this.minSize > currSize) {
+        } else if (this.minSize && this.minSize > currSize) {
             size = this.minSize;
         }
 
@@ -342,18 +354,6 @@ export class PanelModel extends HoistModel {
             this.size = size;
             this.dispatchResize();
         }
-    }
-
-    //---------------------------------------------
-    // Implementation (for related private classes)
-    //---------------------------------------------
-    get vertical(): boolean {
-        return this.side === 'top' || this.side === 'bottom';
-    }
-
-    // Does the Panel come before the resizing affordances?
-    get contentFirst(): boolean {
-        return this.side === 'top' || this.side === 'left';
     }
 
     //---------------------------------------------
