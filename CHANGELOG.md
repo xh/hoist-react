@@ -24,11 +24,6 @@
 * Removed previously deprecated `Button.modifier.outline` and `Button.modifier.quiet` (mobile only).
 * Removed previously deprecated `AppMenuButton.extraItems.onClick`. Use `actionFn` instead.
 
-### 🐞 Bug Fixes
-
-* Fixed issue where a filter on a `LocalDate` field created via `FilterChooser` would cause a
-  grid column filter on the same field to fail to properly render when shown.
-
 ### ⚙️ Typescript API Adjustments
 
 * New Typescript types for all Hoist exceptions.
@@ -36,13 +31,25 @@
 
 ### ⚙️ Technical
 
-* Revert native `structuredClone` to lodash `deepClone` throughout toolkit.
 * Hoist source code has been reformatted with Prettier.
 
 ### 📚 Libraries
 
 * mobx `6.7 -> 6.8`
 * dompurify `2.4 -> 3.0`
+
+## v55.3.2 - 2023-03-22
+
+### 🐞 Bug Fixes
+
+* Fixed issue where a filter on a `LocalDate` field created via `FilterChooser` would cause a
+  grid column filter on the same field to fail to properly render when shown.
+
+## v55.3.1 - 2023-03-14
+
+### 🐞 Bug Fixes
+
+* Revert native `structuredClone` to lodash `deepClone` throughout toolkit.
 
 ## v55.3.0 - 2023-03-03
 

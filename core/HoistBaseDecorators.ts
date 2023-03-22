@@ -4,11 +4,10 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {PersistenceProvider, PersistOptions, HoistBaseClass} from './';
-
 import {cloneDeep, isUndefined} from 'lodash';
 import {wait} from '../promise';
 import {throwIf} from '../utils/js';
+import {HoistBaseClass, PersistenceProvider, PersistOptions} from './';
 
 /**
  * Decorator to make a property "managed". Managed properties are designed to hold objects that
