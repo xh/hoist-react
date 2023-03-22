@@ -1,5 +1,12 @@
 # Changelog
 
+## v55.3.2 - 2023-03-22
+
+### 🐞 Bug Fixes
+* Fix grid bug whereby LocalDate filter entered via FilterChooser was causing column filtering
+  to fail.
+
+
 ## v55.3.1 - 2023-03-14
 
 ### 🐞 Bug Fixes
