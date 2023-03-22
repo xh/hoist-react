@@ -22,7 +22,7 @@ import '@xh/hoist/desktop/register';
 import {action, makeObservable, observable, comparer, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, isString} from 'lodash';
+import {isNil} from 'lodash';
 import {createRef} from 'react';
 import {ModalSupportConfig, ModalSupportModel} from '../modalsupport/';
 
@@ -380,9 +380,5 @@ export class PanelModel extends HoistModel {
     private dispatchResize() {
         // Forces other components to redraw if required.
         wait().then(() => window.dispatchEvent(new Event('resize')));
-    }
-
-    isPercent(v) {
-        return isString(v) && v.endsWith('%');
     }
 }

@@ -16,7 +16,8 @@ import {
     SizingMode,
     HoistServiceClass,
     Theme,
-    PlainObject
+    PlainObject,
+    HoistException
 } from './';
 import {Store} from '@xh/hoist/data';
 import {instanceManager} from './impl/InstanceManager';
@@ -547,11 +548,10 @@ export class XHApi {
      * See also Promise.catchDefault(). That method will delegate its arguments to this method
      * and provides a more convenient interface for catching exceptions in Promise chains.
      *
-     * @param exception - Error or thrown object - if not an Error, an Exception will be created
-     *      via `Exception.create()`.
+     * @param exception - thrown object, will be coerced into a HoistException by Exception.create().
      * @param options - provides further control over how the exception is shown and/or logged.
      */
-    handleException(exception: Error | PlainObject | string, options?: ExceptionHandlerOptions) {
+    handleException(exception: unknown, options?: ExceptionHandlerOptions) {
         this.exceptionHandler.handleException(exception, options);
     }
 
@@ -561,20 +561,22 @@ export class XHApi {
      * Intended to be used for the deferred / user-initiated showing of exceptions that have
      * already been appropriately logged. Applications should typically prefer `handleException`.
      *
-     * @param exception - Error or thrown object - if not an Error, an Exception will be created
-     *      via `Exception.create()`.
+     * @param exception - thrown object, will be coerced into a HoistException by Exception.create().
      * @param options - provides further control over how the exception is shown and/or logged.
      */
-    showException(exception: Error | PlainObject | string, options?: ExceptionHandlerOptions) {
+    showException(exception: unknown, options?: ExceptionHandlerOptions) {
         this.exceptionHandler.showException(exception, options);
     }
 
     /**
-     * Create a new exception - See {@link Exception} for Hoist extensions to JS Errors.
-     * @param cfg - properties to add to the returned Error. If a string, will be the `message`.
+     * Create a new exception - See {@link Exception}.
+     *
+     * @param src - If a native JS Error, it will be enhanced into a HoistException and returned.
+     *      If a plain object, all properties will be set on a new HoistException.
+     *      Other inputs will be treated as the `message` of a new HoistException.
      */
-    exception(cfg: PlainObject | string): Error {
-        return Exception.create(cfg);
+    exception(src: unknown): HoistException {
+        return Exception.create(src);
     }
 
     //---------------------------

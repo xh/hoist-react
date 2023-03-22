@@ -38,7 +38,10 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
     /** True to pad with trailing zeros out to given precision. */
     zeroPad?: boolean;
 
-    /** True to use ledger format.*/
+    /** Optional display value for the input value 0. */
+    zeroDisplay?: ReactNode;
+
+    /** True to use ledger format. */
     ledger?: boolean;
 
     /**
@@ -114,6 +117,7 @@ export interface ColorSpec {
 export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
     let {
         nullDisplay = '',
+        zeroDisplay = null,
         formatConfig = null,
         precision = 'auto',
         zeroPad = precision != 'auto',
@@ -133,6 +137,8 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
     } = opts ?? {};
 
     if (isInvalidInput(v)) return nullDisplay;
+
+    if (v === 0 && zeroDisplay != null) return zeroDisplay;
 
     formatConfig =
         formatConfig || buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma);

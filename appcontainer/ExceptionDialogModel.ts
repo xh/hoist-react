@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {ExceptionHandlerOptions, HoistException, HoistModel, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable, bindable} from '@xh/hoist/mobx';
 
 /**
@@ -19,13 +19,13 @@ export class ExceptionDialogModel extends HoistModel {
     override xhImpl = true;
 
     @observable.ref
-    displayData: {exception: any; options: any};
+    displayData: {exception: HoistException; options: ExceptionHandlerOptions};
 
     @observable
     detailsIsOpen = false;
 
     /** Exception currently being displayed */
-    get exception(): any {
+    get exception(): HoistException {
         return this.displayData?.exception ?? null;
     }
 
@@ -44,7 +44,7 @@ export class ExceptionDialogModel extends HoistModel {
     }
 
     @action
-    show(exception: any, options: any) {
+    show(exception: HoistException, options: ExceptionHandlerOptions) {
         if (this.displayData?.options.requireReload) return;
         this.displayData = {exception, options};
     }

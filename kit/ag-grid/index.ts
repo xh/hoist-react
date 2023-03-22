@@ -17,6 +17,37 @@ import {checkVersion} from '@xh/hoist/utils/js/VersionUtils';
 export let AgGridReact = null;
 export let agGridVersion = null;
 
+/**
+ * However Hoist does import the following community-only TYPES to help validate its internal
+ * implementations.
+ */
+export type {
+    GridOptions,
+    GridApi,
+    ColumnApi,
+    SortDirection,
+    ColDef,
+    ColGroupDef,
+    GetContextMenuItemsParams,
+    GridReadyEvent,
+    IHeaderGroupParams,
+    IHeaderParams,
+    ProcessCellForExportParams,
+    CellClassParams,
+    HeaderClassParams,
+    HeaderValueGetterParams,
+    ICellRendererParams,
+    ITooltipParams,
+    RowClassParams,
+    ValueGetterParams,
+    ValueSetterParams,
+    MenuItemDef,
+    CellPosition,
+    NavigateToNextCellParams,
+    Column as AgColumn,
+    ColumnGroup as AgColumnGroup
+} from '@ag-grid-community/core';
+
 const MIN_VERSION = '29.1.0';
 const MAX_VERSION = '29.*.*';
 

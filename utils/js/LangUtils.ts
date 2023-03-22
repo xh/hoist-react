@@ -220,7 +220,7 @@ export function ensureUniqueBy(arr: any[], uniqueKey: string, exceptionMessage?:
 /**
  * Returns the singular version of the plural word passed to it.
  */
-export function singularize(s: string) {
+export function singularize(s: string): string {
     return _inflection.singularize(s);
 }
 
@@ -231,8 +231,17 @@ export function singularize(s: string) {
  * @param count - if provided, will pluralize to match this number
  * @param includeCount - include count in the output
  */
-export function pluralize(s: string, count?: number, includeCount?: boolean) {
+export function pluralize(s: string, count?: number, includeCount?: boolean): string {
     return _inflection.pluralize(s, count, includeCount);
+}
+
+/**
+ * Returns the number with an ordinal suffix (ie. 1 => '1st', 11 => '11th').
+ *
+ * @param n - the number to ordinalize
+ */
+export function ordinalize(n: number): string {
+    return _inflection.ordinalize(n);
 }
 
 /**

@@ -4,8 +4,9 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {ICellEditorParams} from '@ag-grid-community/core';
 import {HoistInputModel} from '@xh/hoist/cmp/input';
-import {ElementFactory, HoistModel, PlainObject, useLocalModel} from '@xh/hoist/core';
+import {ElementFactory, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {EditorProps} from '@xh/hoist/desktop/cmp/grid/editors/EditorProps';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -69,13 +70,13 @@ class InlineEditorModel extends HoistModel {
 
     ref = createObservableRef<HoistInputModel>();
 
-    agParams: PlainObject; // ICellEditorParams
+    agParams: ICellEditorParams;
 
     get inputEl() {
         return this.ref.current?.inputEl;
     }
 
-    constructor(agParams) {
+    constructor(agParams: ICellEditorParams) {
         super();
         makeObservable(this);
 

@@ -158,7 +158,10 @@ export class FetchService extends HoistService {
         } catch (e) {
             if (e.isTimeout) {
                 aborter.abort();
-                throw Exception.fetchTimeout(opts, e, timeout?.message);
+                const msg =
+                    timeout?.message ??
+                    `Timed out loading '${opts.url}' - no response after ${e.interval}ms.`;
+                throw Exception.fetchTimeout(opts, e, msg);
             }
 
             if (e.isHoistException) throw e;
@@ -274,7 +277,7 @@ export class FetchService extends HoistService {
         });
     }
 
-    private async safeResponseTextAsync(response) {
+    private async safeResponseTextAsync(response: Response) {
         try {
             return await response.text();
         } catch (ignore) {

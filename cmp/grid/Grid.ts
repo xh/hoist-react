@@ -33,7 +33,7 @@ import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed, logDebug, logWithDebug} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, debounce, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
+import {debounce, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
 import {createRef} from 'react';
 import './Grid.scss';
 import {GridModel} from './GridModel';
@@ -42,6 +42,15 @@ import {columnHeader} from './impl/ColumnHeader';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
 import {Icon} from '@xh/hoist/icon';
+
+import type {
+    ColDef,
+    ColGroupDef,
+    GetContextMenuItemsParams,
+    GridOptions,
+    GridReadyEvent,
+    ProcessCellForExportParams
+} from '@xh/hoist/kit/ag-grid';
 
 export interface GridProps extends HoistProps<GridModel>, LayoutProps {
     /**
@@ -53,13 +62,13 @@ export interface GridProps extends HoistProps<GridModel>, LayoutProps {
      *
      * Note that changes to these options after the component's initial render will be ignored.
      */
-    agOptions?: PlainObject;
+    agOptions?: GridOptions;
 
     /**
      * Callback when the grid has initialized. The component will call this with the ag-Grid
      * event after running its internal handler to associate the ag-Grid APIs with its model.
      */
-    onGridReady?: (e: PlainObject) => void;
+    onGridReady?: (e: GridReadyEvent) => void;
 }
 
 /**
@@ -102,7 +111,11 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
         return fragment(
             frame({
                 className,
-                item: agGrid({...getLayoutProps(props), ...impl.agOptions}),
+                item: agGrid({
+                    model: model.agGridModel,
+                    ...getLayoutProps(props),
+                    ...impl.agOptions
+                }),
                 onKeyDown: impl.onKeyDown,
                 ref: composeRefs(impl.viewRef, ref)
             }),
@@ -122,7 +135,7 @@ class GridLocalModel extends HoistModel {
 
     @lookup(GridModel)
     private model: GridModel;
-    agOptions: PlainObject;
+    agOptions: GridOptions;
     viewRef = createRef<HTMLElement>();
     private fixedRowHeight: number;
     private rowKeyNavSupport: RowKeyNavSupport;
@@ -173,12 +186,11 @@ class GridLocalModel extends HoistModel {
         this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
     }
 
-    createDefaultAgOptions() {
+    private createDefaultAgOptions(): GridOptions {
         const {model} = this,
             {clicksToEdit, selModel} = model;
 
-        let ret: PlainObject = {
-            model: model.agGridModel,
+        let ret: GridOptions = {
             suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowId: ({data}) => data.agId,
             defaultColDef: {
@@ -201,10 +213,10 @@ class GridLocalModel extends HoistModel {
                 clipboardCopy: Icon.copy({asHtml: true})
             },
             components: {
-                agColumnHeader: props => columnHeader({gridModel: model, ...props}),
+                agColumnHeader: props => columnHeader(props),
                 agColumnGroupHeader: props => columnGroupHeader(props)
             },
-            rowSelection: selModel.mode,
+            rowSelection: selModel.mode == 'disabled' ? undefined : selModel.mode,
             suppressRowClickSelection: !selModel.isEnabled,
             isRowSelectable: () => selModel.isEnabled,
             tooltipShowDelay: 0,
@@ -280,11 +292,11 @@ class GridLocalModel extends HoistModel {
     //------------------------
     // Support for defaults
     //------------------------
-    getColumnDefs() {
+    getColumnDefs(): Array<ColDef | ColGroupDef> {
         return this.model.columns.map(col => col.getAgSpec());
     }
 
-    getContextMenuItems = params => {
+    getContextMenuItems = (params: GetContextMenuItemsParams) => {
         const {model, agOptions} = this,
             {contextMenu} = model;
         if (!contextMenu || XH.isMobileApp || model.isEditing) return null;
@@ -587,7 +599,9 @@ class GridLocalModel extends HoistModel {
             // Refresh cells in columns with complex renderers
             const refreshCols = visibleCols.filter(c => c.rendererIsComplex);
             if (!isEmpty(refreshCols)) {
-                const rowNodes = compact(transaction.update.map(r => agApi.getRowNode(r.agId))),
+                const rowNodes = transaction.update
+                        .map(r => agApi.getRowNode(r.agId))
+                        .filter(n => n != null),
                     columns = refreshCols.map(c => c.colId);
                 agApi.refreshCells({rowNodes, columns, force: true});
             }
@@ -712,10 +726,10 @@ class GridLocalModel extends HoistModel {
         this.model.agGridModel.agApi.setFilterModel(filterState);
     }
 
-    processCellForClipboard = ({value, node, column}) => {
+    processCellForClipboard = ({value, node, column}: ProcessCellForExportParams) => {
         const record = node.data,
             {model} = this,
-            {colId} = column,
+            colId = column.getColId(),
             xhColumn = !isNil(colId) ? model.getColumn(colId) : null;
 
         if (!record || !xhColumn) return value;

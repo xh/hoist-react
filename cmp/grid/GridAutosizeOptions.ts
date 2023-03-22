@@ -5,6 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import {Some} from '@xh/hoist/core';
 import {Column} from './columns';
 import {GridAutosizeMode} from './enums/GridAutosizeMode';
 
@@ -43,7 +44,7 @@ export interface GridAutosizeOptions {
      * autosized. Typically used when calling autosizeAsync() manually. To generally exclude
      * a column from autosizing, see the autosizable option on columns.
      */
-    columns?: string | string[] | ((c: Column) => boolean);
+    columns?: Some<string> | ((c: Column) => boolean);
 
     /**
      * How to fill remaining space after the columns have been autosized. Valid

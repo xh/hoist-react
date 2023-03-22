@@ -166,6 +166,7 @@ export class GridAutosizeService extends HoistService {
 
         // 1) Get available width of rendered grid
         const {agApi} = gridModel,
+            // @ts-ignore
             available = agApi?.gridPanel?.eBodyViewport?.clientWidth;
 
         if (!agApi || !isFinite(available)) {
