@@ -1068,6 +1068,10 @@ export function getAgHeaderClassFn(
             r.push('xh-column-header--with-expand-collapse');
         }
 
+        if (gridModel.minimalHeaderIcons) {
+            r.push('xh-column-header--minimal');
+        }
+
         return r;
     };
 }

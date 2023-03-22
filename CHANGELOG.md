@@ -10,6 +10,7 @@
   `Error.cause` property is now populated for wrapping exceptions.
 * `PanelModel` now supports a `defaultSize` property specified in percentage as well as pixels
   (e.g. `defaultSize: '20%'` as well as `defaultSize: 200`).
+* New `GridModel.minimalHeaderIcons` flag for only showing column header menu icons on hover
 
 ### 💥 Breaking Changes
 

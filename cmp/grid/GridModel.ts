@@ -183,6 +183,9 @@ export interface GridConfig {
     /** True to suppress display of the grid's header row. */
     hideHeaders?: boolean;
 
+    /** True to only show column header menu icons on hover. */
+    minimalHeaderIcons?: boolean;
+
     /** True to disallow moving columns outside of their groups. */
     lockColumnGroups?: boolean;
 
@@ -376,6 +379,7 @@ export class GridModel extends HoistModel {
     clicksToExpand: number;
     clicksToEdit: number;
     lockColumnGroups: boolean;
+    minimalHeaderIcons: boolean;
     colDefaults: Partial<ColumnSpec>;
     experimental: PlainObject;
     onKeyDown: (e: KeyboardEvent) => void;
@@ -484,6 +488,7 @@ export class GridModel extends HoistModel {
             stripeRows = !treeMode || treeStyle === 'none',
             showCellFocus = false,
             hideHeaders = false,
+            minimalHeaderIcons = false,
             lockColumnGroups = true,
             enableColumnPinning = true,
             enableExport = false,
@@ -522,6 +527,7 @@ export class GridModel extends HoistModel {
 
         this.emptyText = emptyText;
         this.hideEmptyTextBeforeLoad = hideEmptyTextBeforeLoad;
+        this.minimalHeaderIcons = minimalHeaderIcons;
         this.rowClassFn = rowClassFn;
         this.rowClassRules = rowClassRules;
         this.groupRowHeight = groupRowHeight;
