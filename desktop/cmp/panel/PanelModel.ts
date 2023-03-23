@@ -22,7 +22,7 @@ import '@xh/hoist/desktop/register';
 import {action, makeObservable, observable, comparer, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil} from 'lodash';
+import {isNil, isNumber} from 'lodash';
 import {createRef} from 'react';
 import {ModalSupportConfig, ModalSupportModel} from '../modalsupport/';
 
@@ -36,7 +36,12 @@ export interface PanelConfig {
     /** Can panel be collapsed, showing only its header? */
     collapsible?: boolean;
 
-    /** Default size (in px or %) of the panel. */
+    /**
+     * Default size (in px or %) of the panel.
+     * Supported formats:
+     *  1. Pixels, as a number
+     *  2. Percent, as a string 'N%'
+     */
     defaultSize?: number | string;
 
     /** Minimum size (in px) to which the panel can be resized. */
@@ -192,7 +197,10 @@ export class PanelModel extends HoistModel {
             resizable = false;
         }
 
-        if (!isNil(maxSize) && (maxSize < minSize || maxSize < defaultSize)) {
+        if (
+            !isNil(maxSize) &&
+            (maxSize < minSize || (isNumber(defaultSize) && maxSize < defaultSize))
+        ) {
             console.error(
                 "'maxSize' must be greater than 'minSize' and 'defaultSize'. No 'maxSize' will be set."
             );
