@@ -1,11 +1,19 @@
 # Changelog
 
+## v55.4.0 - 2023-03-23
+
+### 🐞 Bug Fixes
+* Fix grid bug whereby changing column visibility via state throws an exception and doesn't
+  render the grid when column groups are set via the `groupId` property.
+
+### ⚙️ Technical
+* AgGrid `28.1.0 -> 29.1.0`
+
 ## v55.3.2 - 2023-03-22
 
 ### 🐞 Bug Fixes
 * Fix grid bug whereby LocalDate filter entered via FilterChooser was causing column filtering
   to fail.
-
 
 ## v55.3.1 - 2023-03-14
 
