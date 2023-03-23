@@ -2,6 +2,13 @@
 
 ## v55.4.0 - 2023-03-23
 
+### 💥 Breaking Changes
+* Hoist now requires `AgGrid` v29.1.0 or higher - update your `AgGrid` dependency in your app's
+`package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
+* `AgGrid` stylesheets are now imported from the new `@ag-grid-community/styles` module. Update
+  your app's `Bootstrap.ts` file to import `ag-grid.css` and `ag-theme-balham.css` from this
+  module, and include it as a dependency in your app's `package.json` file.
+
 ### 🐞 Bug Fixes
 * Fix grid bug whereby changing column visibility via state throws an exception and doesn't
   render the grid when column groups are set via the `groupId` property.
