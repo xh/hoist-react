@@ -4,6 +4,8 @@
 
 ### 🎁 New Features
 
+* `PanelModel` now supports a `defaultSize` property specified in percentage as well as pixels
+  (e.g. `defaultSize: '20%'` as well as `defaultSize: 200`).
 * `DashCanvas` views can now be programmatically added with specified width and height dimensions.
 * New `FetchService.abort()` API allows manually aborting a pending fetch request.
 * Hoist exceptions have been enhanced and standardized, including new TypeScript types. The
@@ -14,14 +16,19 @@
 
 ### 💥 Breaking Changes
 
-* Hoist now requires AG Grid v29.0.0 or higher - update your AG Grid dependency in your app's
-  `package.json` file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for details.
+* Requires Hoist Core v16 or higher.
+* Requires AG Grid v29.0.0 or higher - update your AG Grid dependency in your app's `package.json`
+  file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for details.
+* New `xhActivityTrackingConfig` soft-configuration entry places new limits on the size of
+  any `data` objects passed to `XH.track()` calls.
+    * Any track requests with data objects exceeding this length will be persisted, but without the
+      requested data.
+    * Activity tracking can also be disabled (completely) via this same config.
 * "Local" preferences are no longer supported. Application should use `LocalStorageService` instead.
   With v56, the `local` flag on any preferences will be ignored, and all preferences will be saved
   on the server instead.
     * Note that Hoist will execute a one-time migration of any existing local preference values
       from the user's browser to the server on app load.
-    * This change necessitates an update to `hoist-core v16.0.0`.
 * Removed `Column.tooltipElement`. Use `tooltip` instead.
 * Removed `fill` prop on `TextArea` and `NumberInput` component. Use `flex` instead.
 * Removed previously deprecated `Button.modifier.outline` and `Button.modifier.quiet` (mobile only).
@@ -35,6 +42,8 @@
 ### ⚙️ Technical
 
 * Hoist source code has been reformatted with Prettier.
+* Admin Console modules that have been disabled via config are no longer hidden completely, but
+  instead will render a placeholder pointing to the relevant config name.
 
 ### 📚 Libraries
 

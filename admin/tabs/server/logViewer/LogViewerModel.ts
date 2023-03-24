@@ -20,7 +20,6 @@ import {AppModel} from '@xh/hoist/admin/AppModel';
  * @internal
  */
 export class LogViewerModel extends HoistModel {
-    // Overall State
     @observable file: string = null;
 
     viewRef = createRef<HTMLElement>();
@@ -30,6 +29,10 @@ export class LogViewerModel extends HoistModel {
 
     @managed
     filesGridModel: GridModel;
+
+    get enabled(): boolean {
+        return XH.getConf('xhEnableLogViewer', true);
+    }
 
     get selectedRecord() {
         return this.filesGridModel.selectedRecord;
@@ -67,8 +70,12 @@ export class LogViewerModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const store = this.filesGridModel.store as UrlStore,
-            selModel = this.filesGridModel.selModel;
+        const {enabled, filesGridModel} = this;
+        if (!enabled) return;
+
+        const store = filesGridModel.store as UrlStore,
+            selModel = filesGridModel.selModel;
+
         try {
             await store.loadAsync(loadSpec);
             if (selModel.isEmpty) {

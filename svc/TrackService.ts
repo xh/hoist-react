@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH, TrackOptions} from '@xh/hoist/core';
+import {HoistService, TrackOptions, XH} from '@xh/hoist/core';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {stripTags, withDefault} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
@@ -17,7 +17,22 @@ import {isString} from 'lodash';
 export class TrackService extends HoistService {
     static instance: TrackService;
 
-    private _oncePerSessionSent = {};
+    private _oncePerSessionSent = new Map();
+
+    get conf() {
+        return XH.getConf('xhActivityTrackingConfig', {
+            enabled: true,
+            maxDataLength: 2000,
+            maxRows: {
+                default: 10000,
+                options: [1000, 5000, 10000, 25000]
+            }
+        });
+    }
+
+    get enabled(): boolean {
+        return this.conf.enabled === true;
+    }
 
     /** Track User Activity. */
     track(options: TrackOptions | string) {
@@ -27,27 +42,64 @@ export class TrackService extends HoistService {
         options.message = withDefault(options.message, (options as any).msg);
         options.severity = withDefault(options.severity, 'INFO');
 
-        if (!options.message) {
-            console.warn('Tracking requires a message - activity will not be tracked.');
+        // Short-circuit if disabled...
+        if (!this.enabled) {
+            console.debug(
+                '[TrackService] | Activity tracking disabled - activity will not be tracked.',
+                options
+            );
             return;
         }
 
-        // Short-circuit tracks from auto-refreshes and unauthenticated users.
-        const username = XH.getUsername();
-        if (!username || (options.loadSpec && options.loadSpec.isAutoRefresh)) return;
+        // ...or invalid request (with warning for developer)...
+        if (!options.message) {
+            console.warn(
+                '[TrackService] | Required message not provided - activity will not be tracked.',
+                options
+            );
+            return;
+        }
 
-        // Short-circuit already sent once-per-session messages
+        // ...or if auto-refresh...
+        if (options.loadSpec?.isAutoRefresh) return;
+
+        // ...or if unauthenticated user...
+        if (!XH.getUsername()) return;
+
+        // ...or if already-sent once-per-session messages.
         const key = options.message + '_' + (options.category ?? '');
-        if (options.oncePerSession && this._oncePerSessionSent[key]) return;
+        if (options.oncePerSession && this._oncePerSessionSent.has(key)) return;
 
-        const params: any = {
-            msg: stripTags(options.message),
-            clientUsername: username
-        };
+        // Otherwise - fire off (but do not await) request.
+        this.doTrackAsync(options);
 
+        if (options.oncePerSession) {
+            this._oncePerSessionSent.set(key, true);
+        }
+    }
+
+    //------------------
+    // Implementation
+    //------------------
+    private async doTrackAsync(options: TrackOptions) {
         try {
+            const params: any = {
+                msg: stripTags(options.message),
+                clientUsername: XH.getUsername()
+            };
+
             if (options.category) params.category = options.category;
             if (options.data) params.data = JSON.stringify(options.data);
+
+            const {maxDataLength} = this.conf;
+            if (params.data?.length > maxDataLength) {
+                console.warn(
+                    `[TrackService] | Track log includes ${params.data.length} chars of JSON data | exceeds limit of ${maxDataLength} | data will not be persisted`,
+                    options.data
+                );
+                params.data = null;
+            }
+
             if (options.elapsed !== undefined) params.elapsed = options.elapsed;
             if (options.severity) params.severity = options.severity;
 
@@ -58,13 +110,9 @@ export class TrackService extends HoistService {
 
             console.log(consoleMsg);
 
-            XH.fetchJson({url: 'xh/track', params});
-
-            if (options.oncePerSession) {
-                this._oncePerSessionSent[key] = true;
-            }
+            await XH.fetchJson({url: 'xh/track', params});
         } catch (e) {
-            console.error('Failure tracking message: ' + params.msg);
+            console.error(`[TrackService] | Failed to persist track log`, options, e);
         }
     }
 }
