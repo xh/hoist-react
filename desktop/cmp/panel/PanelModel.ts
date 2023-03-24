@@ -22,7 +22,7 @@ import '@xh/hoist/desktop/register';
 import {action, makeObservable, observable, comparer, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil} from 'lodash';
+import {isNil, isString} from 'lodash';
 import {createRef} from 'react';
 import {ModalSupportConfig, ModalSupportModel} from '../modalsupport/';
 
@@ -36,7 +36,13 @@ export interface PanelConfig {
     /** Can panel be collapsed, showing only its header? */
     collapsible?: boolean;
 
-    /** Default size (in px or %) of the panel. */
+    /**
+     * Default size (in px or %) of the panel.
+     * Supported formats:
+     *  1. Pixels, as a number
+     *  2. Pixels, as a string 'Npx'
+     *  3. Percent, as a string 'N%'
+     */
     defaultSize?: number | string;
 
     /** Minimum size (in px) to which the panel can be resized. */
@@ -184,6 +190,11 @@ export class PanelModel extends HoistModel {
         makeObservable(this);
         this.xhImpl = xhImpl;
 
+        defaultSize =
+            isString(defaultSize) && defaultSize.endsWith('px')
+                ? parseInt(defaultSize, 10)
+                : defaultSize;
+
         if ((collapsible || resizable) && (isNil(defaultSize) || isNil(side))) {
             console.error(
                 "Must specify 'defaultSize' and 'side' for a collapsible or resizable PanelModel. Panel sizing disabled."
@@ -192,10 +203,8 @@ export class PanelModel extends HoistModel {
             resizable = false;
         }
 
-        if (!isNil(maxSize) && (maxSize < minSize || maxSize < defaultSize)) {
-            console.error(
-                "'maxSize' must be greater than 'minSize' and 'defaultSize'. No 'maxSize' will be set."
-            );
+        if (!isNil(maxSize) && maxSize < minSize) {
+            console.error("'maxSize' must be greater than 'minSize'. No 'maxSize' will be set.");
             maxSize = null;
         }
 
