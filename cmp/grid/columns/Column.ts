@@ -1068,8 +1068,8 @@ export function getAgHeaderClassFn(
             r.push('xh-column-header--with-expand-collapse');
         }
 
-        if (gridModel.minimalHeaderIcons) {
-            r.push('xh-column-header--minimal');
+        if (gridModel.headerMenuDisplay === 'hover') {
+            r.push('xh-column-header--hoverable');
         }
 
         return r;
