@@ -14,7 +14,7 @@ import {fmtDate, fmtNumber} from '@xh/hoist/format';
 import {action, computed, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import * as Col from '@xh/hoist/admin/columns';
-import {isEmpty} from 'lodash';
+import {isEmpty, round} from 'lodash';
 import moment from 'moment';
 
 export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};
@@ -27,6 +27,10 @@ export class ActivityTrackingModel extends HoistModel {
     @managed cube: Cube;
     @managed filterChooserModel: FilterChooserModel;
     @managed gridModel: GridModel;
+
+    get enabled(): boolean {
+        return XH.trackService.enabled;
+    }
 
     get dimensions(): string[] {
         return this.groupingChooserModel.value;
@@ -43,6 +47,15 @@ export class ActivityTrackingModel extends HoistModel {
 
     get endDay(): LocalDate {
         return this.formModel.values.endDay;
+    }
+
+    get maxRowOptions() {
+        return (
+            XH.trackService.conf.maxRows?.options?.map(rowCount => ({
+                value: rowCount,
+                label: `${round(rowCount / 1000, 1)}k`
+            })) ?? []
+        );
     }
 
     get maxRows(): number {
@@ -63,9 +76,9 @@ export class ActivityTrackingModel extends HoistModel {
         makeObservable(this);
         this.formModel = new FormModel({
             fields: [
-                {name: 'startDay', initialValue: () => this.getDefaultStartDay()},
-                {name: 'endDay', initialValue: () => this.getDefaultEndDay()},
-                {name: 'maxRows', initialValue: 25000}
+                {name: 'startDay', initialValue: () => this.defaultStartDay},
+                {name: 'endDay', initialValue: () => this.defaultEndDay},
+                {name: 'maxRows', initialValue: XH.trackService.conf.maxRows?.default}
             ]
         });
 
@@ -191,7 +204,8 @@ export class ActivityTrackingModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {cube, formModel} = this;
+        const {enabled, cube, formModel} = this;
+        if (!enabled) return;
 
         const params = formModel.getData();
 
@@ -310,10 +324,11 @@ export class ActivityTrackingModel extends HoistModel {
         }
     }
 
-    getDefaultStartDay() {
+    get defaultStartDay() {
         return LocalDate.currentAppDay().subtract(6);
     }
-    getDefaultEndDay() {
+
+    get defaultEndDay() {
         return LocalDate.currentAppDay();
     }
 }

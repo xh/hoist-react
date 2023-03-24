@@ -129,8 +129,7 @@ export class AppModel extends HoistAppModel {
             {
                 id: 'monitor',
                 icon: Icon.shieldCheck(),
-                content: monitorTab,
-                omit: !XH.getConf('xhEnableMonitoring', true)
+                content: monitorTab
             },
             {
                 id: 'userData',
