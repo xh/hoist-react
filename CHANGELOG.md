@@ -10,6 +10,9 @@
 * New `FetchService.abort()` API allows manually aborting a pending fetch request.
 * Hoist exceptions have been enhanced and standardized, including new TypeScript types. The
   `Error.cause` property is now populated for wrapping exceptions.
+* `PanelModel` now supports a `defaultSize` property specified in percentage as well as pixels
+  (e.g. `defaultSize: '20%'` as well as `defaultSize: 200`).
+* New `GridModel.headerMenuDisplay` config for limiting column header menu visibility to on hover.
 
 ### 💥 Breaking Changes
 

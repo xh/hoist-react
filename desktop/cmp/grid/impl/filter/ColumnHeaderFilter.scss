@@ -37,4 +37,12 @@
       }
     }
   }
+
+  .xh-column-header--hoverable:not(:hover) {
+    .xh-column-header-filter__icon {
+      &:not(&--active, &--open) {
+        display: none;
+      }
+    }
+  }
 }
