@@ -7,12 +7,14 @@
 
 import {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
 import {XH} from '@xh/hoist/core';
+import {CompoundFilter, FieldFilter, Filter, StoreRecord} from '@xh/hoist/data';
+import {forEachAsync} from '@xh/hoist/utils/async';
 import {stripTags} from '@xh/hoist/utils/js';
 import {
     forOwn,
     groupBy,
-    isEmpty,
     isArray,
+    isEmpty,
     isFunction,
     isNil,
     isString,
@@ -24,9 +26,8 @@ import {
 } from 'lodash';
 import {isValidElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
-import {forEachAsync} from '@xh/hoist/utils/async';
+import {Column} from '../columns';
 import {GridModel} from '../GridModel';
-import {StoreRecord} from '@xh/hoist/data';
 
 /**
  * Calculates the column width required to display column.  Used by GridAutoSizeService.
@@ -195,16 +196,33 @@ export class ColumnWidthCalculator {
             headerClass = this.getHeaderClass(gridModel, column),
             showSort =
                 sortable &&
-                (includeHeaderIcons || gridModel.sortBy.find(sorter => sorter.colId === colId)),
-            showMenu =
-                (agOptions?.suppressMenu === false || (filterable && filterModel)) &&
-                includeHeaderIcons;
+                (includeHeaderIcons || gridModel.sortBy.find(sorter => sorter.colId === colId));
+
+        let showMenu =
+            (agOptions?.suppressMenu === false || (filterable && filterModel)) &&
+            includeHeaderIcons;
+
+        // If only showing menu on hover, only need to allot room if the column is filtered
+        if (showMenu && gridModel.headerMenuDisplay === 'hover') {
+            showMenu = this.isColumnFiltered(filterModel.filter, column);
+        }
 
         // Render to a hidden header cell to calculate the max displayed width
         const headerEl = this.getHeaderEl();
         this.setHeaderClassNames(sizingMode, showSort, showMenu, headerClass);
         headerEl.firstChild.innerHTML = headerHtml;
         return Math.ceil(headerEl.clientWidth) + bufferPx;
+    }
+
+    isColumnFiltered(filter: Filter, column: Column): boolean {
+        if (filter instanceof FieldFilter) {
+            return filter.field === column.field;
+        } else if (filter instanceof CompoundFilter) {
+            for (let f of filter.filters) {
+                if (this.isColumnFiltered(f, column)) return true;
+            }
+        }
+        return false;
     }
 
     getHeaderHtml(gridModel, column) {
