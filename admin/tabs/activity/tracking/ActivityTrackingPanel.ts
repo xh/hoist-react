@@ -9,6 +9,7 @@ import {grid} from '@xh/hoist/cmp/grid';
 import {div, hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, buttonGroup, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
+import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {groupingChooser} from '@xh/hoist/desktop/cmp/grouping';
@@ -24,7 +25,13 @@ import {activityDetailView} from './detail/ActivityDetailView';
 export const activityTrackingPanel = hoistCmp.factory({
     model: creates(ActivityTrackingModel),
 
-    render() {
+    render({model}) {
+        if (!model.enabled) {
+            return errorMessage({
+                error: 'Activity tracking disabled via xhActivityTrackingConfig.'
+            });
+        }
+
         return panel({
             className: 'xh-admin-activity-panel',
             tbar: tbar(),
@@ -96,12 +103,7 @@ const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
                     item: select({
                         enableFilter: false,
                         hideDropdownIndicator: true,
-                        options: [
-                            {label: '5k', value: 5000},
-                            {label: '25k', value: 25000},
-                            {label: '50k', value: 50000},
-                            {label: '100k', value: 100000}
-                        ]
+                        options: model.maxRowOptions
                     })
                 }),
                 toolbarSep(),

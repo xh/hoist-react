@@ -709,7 +709,6 @@ export class XHApi {
 
         try {
             await this.installServicesAsync(FetchService);
-            await this.installServicesAsync(TrackService);
 
             // pre-flight allows clean recognition when we have no server.
             try {
@@ -774,13 +773,9 @@ export class XHApi {
 
             // Complete initialization process
             this.setAppState('INITIALIZING');
-            await this.installServicesAsync(LocalStorageService);
-            await this.installServicesAsync(
-                EnvironmentService,
-                PrefService,
-                ConfigService,
-                JsonBlobService
-            );
+            await this.installServicesAsync(ConfigService, LocalStorageService);
+            await this.installServicesAsync(TrackService);
+            await this.installServicesAsync(EnvironmentService, PrefService, JsonBlobService);
 
             // Confirm hoist-core version after environment service loaded
             const hcVersion = XH.environmentService.get('hoistCoreVersion');
