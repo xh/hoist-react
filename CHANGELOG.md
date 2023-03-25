@@ -19,6 +19,12 @@
 * Requires Hoist Core v16 or higher.
 * Requires AG Grid v29.0.0 or higher - update your AG Grid dependency in your app's `package.json`
   file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for details.
+  * Add a dependency on `@ag-grid-community/styles` to import new dedicated styles package.
+  * Imports of AG Grid CSS files within your app's `Bootstrap.ts` file will also need to be updated to import styles from their new location. The recommended imports are now:
+```typescript
+import '@ag-grid-community/styles/ag-grid.css';
+import '@ag-grid-community/styles/ag-theme-balham-no-font.css';
+```
 * New `xhActivityTrackingConfig` soft-configuration entry places new limits on the size of
   any `data` objects passed to `XH.track()` calls.
     * Any track requests with data objects exceeding this length will be persisted, but without the
