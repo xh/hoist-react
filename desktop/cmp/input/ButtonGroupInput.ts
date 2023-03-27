@@ -103,13 +103,15 @@ class ButtonGroupInputModel extends HoistInputModel {
 const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props}, ref) => {
     const {
         children,
-        //  HoistInput Props
+        // HoistInput Props
         bind,
         disabled,
         onChange,
         onCommit,
         tabIndex,
         value,
+        // FormField Props
+        commitOnChange,
         // ButtonGroupInput Props
         enableClear,
         enableMulti,
