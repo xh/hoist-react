@@ -19,8 +19,8 @@
 * Requires Hoist Core v16 or higher.
 * Requires AG Grid v29.0.0 or higher - update your AG Grid dependency in your app's `package.json`
   file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for details.
-  * Add a dependency on `@ag-grid-community/styles` to import new dedicated styles package.
-  * Imports of AG Grid CSS files within your app's `Bootstrap.ts` file will also need to be updated to import styles from their new location. The recommended imports are now:
+    * Add a dependency on `@ag-grid-community/styles` to import new dedicated styles package.
+    * Imports of AG Grid CSS files within your app's `Bootstrap.ts` file will also need to be updated to import styles from their new location. The recommended imports are now:
 ```typescript
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-balham-no-font.css';
@@ -55,6 +55,23 @@ import '@ag-grid-community/styles/ag-theme-balham-no-font.css';
 
 * mobx `6.7 -> 6.8`
 * dompurify `2.4 -> 3.0`
+
+## v55.4.0 - 2023-03-23
+
+### 🐞 Bug Fixes
+* Addresses `AgGrid` v28 regression whereby changing column visibility via state throws an
+  exception and doesn't
+  render the grid when column groups are set via the `groupId` property.
+
+### 💥 Breaking Changes
+* Hoist now requires `AgGrid` v29.1.0 or higher - update your `AgGrid` dependency in your app's
+`package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
+* `AgGrid` stylesheets are now imported from the new `@ag-grid-community/styles` module. Update
+  your app's `Bootstrap.ts` file to import `ag-grid.css` and `ag-theme-balham.css` from this
+  module, and include it as a dependency in your app's `package.json` file.
+
+### ⚙️ Technical
+* AgGrid `28.1.0 -> 29.1.0`
 
 ## v55.3.2 - 2023-03-22
 
