@@ -9,7 +9,8 @@ import * as Col from '@xh/hoist/cmp/grid/columns';
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 
 const mbCol = {width: 150, renderer: numberRenderer({precision: 2, withCommas: true})},
-    pctCol = {width: 150, renderer: numberRenderer({precision: 2, withCommas: true, label: '%'})};
+    pctCol = {width: 150, renderer: numberRenderer({precision: 2, withCommas: true, label: '%'})},
+    msCol = {width: 150, renderer: numberRenderer({precision: 0, withCommas: false})};
 
 export const metricUnit: ColumnSpec = {
     field: {name: 'metricUnit', type: 'string'},
@@ -84,11 +85,29 @@ export const usedHeapMb: ColumnSpec = {
     ...mbCol
 };
 
-export const usedPctTotal: ColumnSpec = {
+export const usedPctMax: ColumnSpec = {
     field: {
-        name: 'usedPctTotal',
+        name: 'usedPctMax',
         type: 'number',
         displayName: 'Used (pct Total)'
+    },
+    ...pctCol
+};
+
+export const avgCollectionTime: ColumnSpec = {
+    field: {
+        name: 'avgCollectionTime',
+        type: 'number',
+        displayName: 'Avg (ms)'
+    },
+    ...msCol
+};
+
+export const pctCollectionTime: ColumnSpec = {
+    field: {
+        name: 'pctCollectionTime',
+        type: 'number',
+        displayName: '% Time in GC'
     },
     ...pctCol
 };
