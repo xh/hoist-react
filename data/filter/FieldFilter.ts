@@ -179,7 +179,7 @@ export class FieldFilter extends Filter {
             if (r.isAdd) return true;
 
             // ... and check any differing original value as well
-            const committedVal = r.committedData[val];
+            const committedVal = r.committedData[field];
             return committedVal !== val && opFn(committedVal);
         };
     }
