@@ -103,6 +103,15 @@ export const avgCollectionTime: ColumnSpec = {
     ...msCol
 };
 
+export const collectionCount: ColumnSpec = {
+    field: {
+        name: 'collectionCount',
+        type: 'number',
+        displayName: '# GCs'
+    },
+    ...msCol
+};
+
 export const pctCollectionTime: ColumnSpec = {
     field: {
         name: 'pctCollectionTime',

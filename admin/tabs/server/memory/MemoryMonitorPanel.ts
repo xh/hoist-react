@@ -10,6 +10,7 @@ import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
+import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {AppModel} from '@xh/hoist/admin/AppModel';
@@ -18,7 +19,14 @@ export const memoryMonitorPanel = hoistCmp.factory({
     model: creates(MemoryMonitorModel),
 
     render({model}) {
-        const {readonly} = AppModel;
+        if (!model.enabled) {
+            return errorMessage({
+                error: 'Memory Monitoring disabled via xhMemoryMonitoringConfig.'
+            });
+        }
+
+        const {readonly} = AppModel,
+            dumpDisabled = model.heapDumpDir === null;
         return panel({
             tbar: [
                 button({
@@ -39,6 +47,10 @@ export const memoryMonitorPanel = hoistCmp.factory({
                     icon: Icon.fileArchive(),
                     intent: 'danger',
                     omit: readonly,
+                    disabled: dumpDisabled,
+                    tooltip: dumpDisabled
+                        ? 'Specify directory on server to enable heap dumps'
+                        : null,
                     onClick: () => model.dumpHeapAsync()
                 }),
                 filler(),

@@ -17,6 +17,14 @@ export class MemoryMonitorModel extends HoistModel {
     @managed gridModel: GridModel;
     @managed chartModel: ChartModel;
 
+    get enabled(): boolean {
+        return !!XH.configService.get('xhMemoryMonitoringConfig').enabled;
+    }
+
+    get heapDumpDir(): string {
+        return XH.configService.get('xhMemoryMonitoringConfig').heapDumpDir;
+    }
+
     constructor() {
         super();
 
@@ -43,7 +51,7 @@ export class MemoryMonitorModel extends HoistModel {
                 {
                     groupId: 'GC',
                     headerAlign: 'center',
-                    children: [MCol.avgCollectionTime, MCol.pctCollectionTime]
+                    children: [MCol.collectionCount, MCol.avgCollectionTime, MCol.pctCollectionTime]
                 }
             ]
         });
@@ -72,16 +80,14 @@ export class MemoryMonitorModel extends HoistModel {
                 yAxis: [
                     {
                         floor: 0,
-                        opposite: true,
+                        height: '20%',
+                        title: {text: 'GC Avg (ms)'}
+                    },
+                    {
+                        floor: 0,
+                        top: '30%',
+                        height: '70%',
                         title: {text: 'Heap (mb)'}
-                    },
-                    {
-                        floor: 0,
-                        title: {text: 'GC Elapsed (ms)'}
-                    },
-                    {
-                        floor: 0,
-                        title: {text: 'GC %'}
                     }
                 ],
                 tooltip: {outside: true, shared: true}
@@ -124,18 +130,24 @@ export class MemoryMonitorModel extends HoistModel {
 
             chartModel.setSeries([
                 {
+                    name: 'GC Avg',
+                    data: avgGCSeries,
+                    step: true,
+                    yAxis: 0
+                },
+                {
                     name: 'Heap Max',
                     data: maxSeries,
                     color: '#ef6c00',
                     step: true,
-                    yAxis: 0
+                    yAxis: 1
                 },
                 {
                     name: 'Heap Total',
                     data: totalSeries,
                     color: '#1976d2',
                     step: true,
-                    yAxis: 0
+                    yAxis: 1
                 },
                 {
                     name: 'Heap Used',
@@ -144,17 +156,7 @@ export class MemoryMonitorModel extends HoistModel {
                     color: '#bd7c7c',
                     fillOpacity: 0.3,
                     lineWidth: 1,
-                    yAxis: 0
-                },
-                {
-                    name: 'GC Elapsed',
-                    data: avgGCSeries,
                     yAxis: 1
-                },
-                {
-                    name: 'GC %',
-                    data: pctGCSeries,
-                    yAxis: 2
                 }
             ]);
         } catch (e) {
@@ -190,7 +192,7 @@ export class MemoryMonitorModel extends HoistModel {
                 message: 'File Name for Dump?',
                 input: {
                     rules: [required, lengthIs({min: 3, max: 30})],
-                    initialValue: 'dump.hprof'
+                    initialValue: `${XH.appName}_${XH.getEnv('appEnvironment')}.hprof`
                 }
             });
             if (!filename) return;
