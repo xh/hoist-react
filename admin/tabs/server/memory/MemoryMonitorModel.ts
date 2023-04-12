@@ -7,13 +7,23 @@
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {lengthIs, required} from '@xh/hoist/data';
 import {fmtTime} from '@xh/hoist/format';
+import {Icon} from '@xh/hoist/icon';
 import {forOwn, sortBy} from 'lodash';
 import * as MCol from '../../monitor/MonitorColumns';
 
 export class MemoryMonitorModel extends HoistModel {
     @managed gridModel: GridModel;
     @managed chartModel: ChartModel;
+
+    get enabled(): boolean {
+        return !!XH.configService.get('xhMemoryMonitoringConfig').enabled;
+    }
+
+    get heapDumpDir(): string {
+        return XH.configService.get('xhMemoryMonitoringConfig').heapDumpDir;
+    }
 
     constructor() {
         super();
@@ -24,13 +34,25 @@ export class MemoryMonitorModel extends HoistModel {
             filterModel: true,
             store: {idSpec: 'timestamp'},
             colDefaults: {filterable: true},
+            headerMenuDisplay: 'hover',
             columns: [
                 MCol.timestamp,
-                MCol.totalHeapMb,
-                MCol.maxHeapMb,
-                MCol.freeHeapMb,
-                MCol.usedHeapMb,
-                MCol.usedPctTotal
+                {
+                    groupId: 'heap',
+                    headerAlign: 'center',
+                    children: [
+                        MCol.totalHeapMb,
+                        MCol.maxHeapMb,
+                        MCol.freeHeapMb,
+                        MCol.usedHeapMb,
+                        MCol.usedPctMax
+                    ]
+                },
+                {
+                    groupId: 'GC',
+                    headerAlign: 'center',
+                    children: [MCol.collectionCount, MCol.avgCollectionTime, MCol.pctCollectionTime]
+                }
             ]
         });
 
@@ -58,12 +80,14 @@ export class MemoryMonitorModel extends HoistModel {
                 yAxis: [
                     {
                         floor: 0,
-                        title: {text: 'JVM Heap (mb)'}
+                        height: '20%',
+                        title: {text: 'GC Avg (ms)'}
                     },
                     {
-                        opposite: true,
-                        linkedTo: 0,
-                        title: {text: undefined}
+                        floor: 0,
+                        top: '30%',
+                        height: '70%',
+                        title: {text: 'Heap (mb)'}
                     }
                 ],
                 tooltip: {outside: true, shared: true}
@@ -91,34 +115,46 @@ export class MemoryMonitorModel extends HoistModel {
             // Process further for chart series.
             const maxSeries = [],
                 totalSeries = [],
-                usedSeries = [];
+                usedSeries = [],
+                avgGCSeries = [];
 
             snaps.forEach(snap => {
                 maxSeries.push([snap.timestamp, snap.maxHeapMb]);
                 totalSeries.push([snap.timestamp, snap.totalHeapMb]);
                 usedSeries.push([snap.timestamp, snap.usedHeapMb]);
+
+                avgGCSeries.push([snap.timestamp, snap.avgCollectionTime]);
             });
 
             chartModel.setSeries([
                 {
-                    name: 'Max',
+                    name: 'GC Avg',
+                    data: avgGCSeries,
+                    step: true,
+                    yAxis: 0
+                },
+                {
+                    name: 'Heap Max',
                     data: maxSeries,
                     color: '#ef6c00',
-                    step: true
+                    step: true,
+                    yAxis: 1
                 },
                 {
-                    name: 'Total',
+                    name: 'Heap Total',
                     data: totalSeries,
                     color: '#1976d2',
-                    step: true
+                    step: true,
+                    yAxis: 1
                 },
                 {
-                    name: 'Used',
+                    name: 'Heap Used',
                     type: 'area',
                     data: usedSeries,
                     color: '#bd7c7c',
                     fillOpacity: 0.3,
-                    lineWidth: 1
+                    lineWidth: 1,
+                    yAxis: 1
                 }
             ]);
         } catch (e) {
@@ -141,6 +177,29 @@ export class MemoryMonitorModel extends HoistModel {
             await XH.fetchJson({url: 'memoryMonitorAdmin/requestGc'}).linkTo(this.loadModel);
             await this.loadAsync();
             XH.successToast('GC run complete');
+        } catch (e) {
+            XH.handleException(e);
+        }
+    }
+
+    async dumpHeapAsync() {
+        try {
+            const filename = await XH.prompt({
+                title: 'Dump Heap',
+                icon: Icon.fileArchive(),
+                message: 'File Name for Dump?',
+                input: {
+                    rules: [required, lengthIs({min: 3, max: 30})],
+                    initialValue: `${XH.appName}_${XH.getEnv('appEnvironment')}.hprof`
+                }
+            });
+            if (!filename) return;
+            await XH.fetchJson({
+                url: 'memoryMonitorAdmin/dumpHeap',
+                params: {filename}
+            }).linkTo(this.loadModel);
+            await this.loadAsync();
+            XH.successToast('Heap dumped successfully to ' + filename);
         } catch (e) {
             XH.handleException(e);
         }

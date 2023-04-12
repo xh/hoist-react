@@ -1,6 +1,8 @@
 # Changelog
 
 ## v57.0.0-SNAPSHOT - unreleased
+* Add support for new memory management diagnostics provided by hoist-core
+ (requires hoist-core 16.1.0).
 
 ## v56.0.0 - 2023-03-29
 
