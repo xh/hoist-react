@@ -116,8 +116,7 @@ export class MemoryMonitorModel extends HoistModel {
             const maxSeries = [],
                 totalSeries = [],
                 usedSeries = [],
-                avgGCSeries = [],
-                pctGCSeries = [];
+                avgGCSeries = [];
 
             snaps.forEach(snap => {
                 maxSeries.push([snap.timestamp, snap.maxHeapMb]);
@@ -125,7 +124,6 @@ export class MemoryMonitorModel extends HoistModel {
                 usedSeries.push([snap.timestamp, snap.usedHeapMb]);
 
                 avgGCSeries.push([snap.timestamp, snap.avgCollectionTime]);
-                pctGCSeries.push([snap.timestamp, snap.pctCollectionTime]);
             });
 
             chartModel.setSeries([
