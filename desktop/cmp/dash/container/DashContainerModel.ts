@@ -7,6 +7,7 @@
 import {
     managed,
     PersistenceProvider,
+    PlainObject,
     RefreshMode,
     RenderMode,
     TaskObserver,
@@ -50,7 +51,7 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
      * Custom settings to be passed to the GoldenLayout instance.
      * @see http://golden-layout.com/docs/Config.html
      */
-    goldenLayoutSettings?: Record<string, any>;
+    goldenLayoutSettings?: PlainObject;
 }
 
 /**
@@ -124,7 +125,7 @@ export class DashContainerModel extends DashModel<
     //-----------------------------
     renderMode: RenderMode;
     refreshMode: RefreshMode;
-    goldenLayoutSettings: Record<string, any>;
+    goldenLayoutSettings: PlainObject;
 
     get isEmpty(): boolean {
         return this.goldenLayout && this.viewModels.length === 0;

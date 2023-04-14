@@ -9,6 +9,7 @@ import {
     managed,
     ManagedRefreshContextModel,
     MenuItemLike,
+    PlainObject,
     RefreshMode,
     RenderMode
 } from '@xh/hoist/core';
@@ -18,7 +19,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {ReactElement} from 'react';
 import {DashViewSpec} from './DashViewSpec';
 
-export type DashViewState = Record<string, any>;
+export type DashViewState = PlainObject;
 
 /**
  * Model for a content item within a DashContainer or DashCanvas.

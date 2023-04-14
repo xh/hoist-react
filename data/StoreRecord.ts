@@ -51,7 +51,7 @@ export class StoreRecord {
      * This object has the same form as `data`. If this record has not been locally modified, this
      * property will point to the same object as `data`.
      */
-    readonly committedData: Record<string, any>;
+    readonly committedData: PlainObject;
 
     /**
      * Unique ID for representing record within ag-Grid node API.
@@ -171,7 +171,7 @@ export class StoreRecord {
      * Unlike 'data', the object returned by this method contains an 'own' property for every
      * Field in the Store. Useful for cloning/iterating over all values (including defaults).
      */
-    getValues(): Record<string, any> {
+    getValues(): PlainObject {
         const ret = {id: this.id};
         this.fields.forEach(({name}) => {
             ret[name] = this.data[name];

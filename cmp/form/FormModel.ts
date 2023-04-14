@@ -79,7 +79,7 @@ export class FormModel extends HoistModel {
      *
      * See {@link getData} instead if you need to get or react to the values of *any/all* fields.
      */
-    get values(): Record<string, any> {
+    get values(): PlainObject {
         return this.valuesProxy;
     }
 
