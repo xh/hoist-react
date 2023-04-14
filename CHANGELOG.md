@@ -1,12 +1,13 @@
 # Changelog
 
+## 57.0.0-SNAPSHOT - unreleased
+
 ## 56.1.0 - 2023-04-14
 * Add support for new memory management diagnostics provided by hoist-core
  (requires hoist-core 16.1.0 for full operation).
 
 ### 🐞 Bug Fixes
 * Fixes bug with display/reporting of exceptions during app initialization sequence.
-
 
 ## v56.0.0 - 2023-03-29
 
