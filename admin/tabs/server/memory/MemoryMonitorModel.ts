@@ -18,11 +18,11 @@ export class MemoryMonitorModel extends HoistModel {
     @managed chartModel: ChartModel;
 
     get enabled(): boolean {
-        return !!XH.getConf('xhMemoryMonitoringConfig').enabled;
+        return this.conf.enabled;
     }
 
     get heapDumpDir(): string {
-        return XH.getConf('xhMemoryMonitoringConfig').heapDumpDir;
+        return this.conf.heapDumpDir;
     }
 
     constructor() {
@@ -204,5 +204,9 @@ export class MemoryMonitorModel extends HoistModel {
         } catch (e) {
             XH.handleException(e);
         }
+    }
+
+    private get conf() {
+        return XH.getConf('xhMemoryMonitoringConfig', {heapDumpDir: null, enabled: true});
     }
 }
