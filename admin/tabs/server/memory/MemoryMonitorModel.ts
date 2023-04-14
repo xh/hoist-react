@@ -18,11 +18,11 @@ export class MemoryMonitorModel extends HoistModel {
     @managed chartModel: ChartModel;
 
     get enabled(): boolean {
-        return !!XH.configService.get('xhMemoryMonitoringConfig').enabled;
+        return !!XH.getConf('xhMemoryMonitoringConfig').enabled;
     }
 
     get heapDumpDir(): string {
-        return XH.configService.get('xhMemoryMonitoringConfig').heapDumpDir;
+        return XH.getConf('xhMemoryMonitoringConfig').heapDumpDir;
     }
 
     constructor() {
@@ -184,15 +184,16 @@ export class MemoryMonitorModel extends HoistModel {
 
     async dumpHeapAsync() {
         try {
-            const filename = await XH.prompt({
-                title: 'Dump Heap',
-                icon: Icon.fileArchive(),
-                message: 'File Name for Dump?',
-                input: {
-                    rules: [required, lengthIs({min: 3, max: 30})],
-                    initialValue: `${XH.appName}_${XH.getEnv('appEnvironment')}.hprof`
-                }
-            });
+            const appEnv = XH.getEnv('appEnvironment').toLowerCase(),
+                filename = await XH.prompt({
+                    title: 'Dump Heap',
+                    icon: Icon.fileArchive(),
+                    message: `Specify a filename for the heap dump (to be saved in ${this.heapDumpDir})`,
+                    input: {
+                        rules: [required, lengthIs({min: 3, max: 250})],
+                        initialValue: `${XH.appCode}_${appEnv}_${Date.now()}.hprof`
+                    }
+                });
             if (!filename) return;
             await XH.fetchJson({
                 url: 'memoryMonitorAdmin/dumpHeap',

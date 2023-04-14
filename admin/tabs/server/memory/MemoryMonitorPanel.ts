@@ -14,6 +14,7 @@ import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {AppModel} from '@xh/hoist/admin/AppModel';
+import {isNil} from 'lodash';
 
 export const memoryMonitorPanel = hoistCmp.factory({
     model: creates(MemoryMonitorModel),
@@ -26,7 +27,7 @@ export const memoryMonitorPanel = hoistCmp.factory({
         }
 
         const {readonly} = AppModel,
-            dumpDisabled = model.heapDumpDir === null;
+            dumpDisabled = isNil(model.heapDumpDir);
         return panel({
             tbar: [
                 button({
@@ -35,6 +36,7 @@ export const memoryMonitorPanel = hoistCmp.factory({
                     omit: readonly,
                     onClick: () => model.takeSnapshotAsync()
                 }),
+                '-',
                 button({
                     text: 'Request GC',
                     icon: Icon.trash(),
@@ -49,7 +51,7 @@ export const memoryMonitorPanel = hoistCmp.factory({
                     omit: readonly,
                     disabled: dumpDisabled,
                     tooltip: dumpDisabled
-                        ? 'Specify directory on server to enable heap dumps'
+                        ? 'Missing required config xhMemoryMonitoringConfig.heapDumpDir'
                         : null,
                     onClick: () => model.dumpHeapAsync()
                 }),
