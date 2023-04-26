@@ -8,7 +8,6 @@ import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
-import {Column} from './columns/Column';
 import {div, fragment, frame} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
@@ -17,7 +16,6 @@ import {
     LayoutProps,
     lookup,
     PlainObject,
-    SizingMode,
     useLocalModel,
     uses,
     XH
@@ -28,7 +26,7 @@ import {
     ModalSupportModel
 } from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
-import {computed, observer} from '@xh/hoist/mobx';
+import {computed, observable, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed, logDebug, logWithDebug} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -135,24 +133,10 @@ class GridLocalModel extends HoistModel {
 
     @lookup(GridModel)
     private model: GridModel;
-    agOptions: GridOptions;
+    @observable.ref agOptions: GridOptions;
     viewRef = createRef<HTMLElement>();
-    private fixedRowHeight: number;
     private rowKeyNavSupport: RowKeyNavSupport;
     private prevRs: RecordSet;
-
-    getRowHeight(node) {
-        const {model, agOptions} = this,
-            {sizingMode, groupRowHeight} = model,
-            {groupDisplayType} = agOptions;
-
-        if (node?.group) {
-            return groupRowHeight ?? groupDisplayType === 'groupRows'
-                ? (AgGrid as any).getGroupRowHeightForSizingMode(sizingMode)
-                : (AgGrid as any).getRowHeightForSizingMode(sizingMode);
-        }
-        return this.fixedRowHeight;
-    }
 
     /** @returns true if any root-level records have children */
     @computed
@@ -183,10 +167,10 @@ class GridLocalModel extends HoistModel {
             this.modalReaction()
         );
 
-        this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
+        this.agOptions = this.generateAgOptions();
     }
 
-    private createDefaultAgOptions(): GridOptions {
+    private generateAgOptions(): GridOptions {
         const {model} = this,
             {clicksToEdit, selModel} = model;
 
@@ -220,7 +204,9 @@ class GridLocalModel extends HoistModel {
             suppressRowClickSelection: !selModel.isEnabled,
             isRowSelectable: () => selModel.isEnabled,
             tooltipShowDelay: 0,
-            getRowHeight: ({node}) => this.getRowHeight(node),
+            getRowHeight: this.useRowHeightOptimization
+                ? null
+                : ({node}) => this.getRowHeight(node),
             getRowClass: ({data}) => (model.rowClassFn ? model.rowClassFn(data) : null),
             rowClassRules: model.rowClassRules,
             noRowsOverlayComponent: observer(() => div(this.emptyText)),
@@ -286,7 +272,7 @@ class GridLocalModel extends HoistModel {
             };
         }
 
-        return ret;
+        return merge(ret, this.componentProps.agOptions ?? {});
     }
 
     //------------------------
@@ -367,18 +353,66 @@ class GridLocalModel extends HoistModel {
         };
     }
 
+    //----------------------
+    // Row Height Management
+    //----------------------
+    @computed
+    get calculatedRowHeight() {
+        const {model} = this,
+            AgGridCmp = AgGrid as any;
+        return max([
+            AgGridCmp.getRowHeightForSizingMode(model.sizingMode),
+            maxBy(model.getVisibleLeafColumns(), 'rowHeight')?.rowHeight
+        ]);
+    }
+
+    @computed
+    get calculatedGroupRowHeight() {
+        const {sizingMode, groupRowHeight} = this.model,
+            {groupDisplayType} = this.agOptions,
+            AgGridCmp = AgGrid as any;
+        return groupRowHeight ?? groupDisplayType === 'groupRows'
+            ? AgGridCmp.getGroupRowHeightForSizingMode(sizingMode)
+            : AgGridCmp.getRowHeightForSizingMode(sizingMode);
+    }
+
+    @computed
+    get useRowHeightOptimization() {
+        // When true, we can set fixed row heights explicitly, rather than using functional form.
+        // This avoid slow scrolling.
+        const agOpts = this.componentProps.agOptions,
+            cols = this.model.getVisibleLeafColumns();
+        return !agOpts?.getRowHeight && !agOpts?.rowHeight && !cols.some(c => c.autoHeight);
+    }
+
     rowHeightReaction() {
         const {model} = this;
         return {
-            track: () => [model.getVisibleLeafColumns(), model.sizingMode],
-            run: ([visibleCols, sizingMode]: [Column[], SizingMode]) => {
-                this.fixedRowHeight = max([
-                    (AgGrid as any).getRowHeightForSizingMode(sizingMode),
-                    maxBy(visibleCols, 'rowHeight')?.rowHeight
-                ]);
-            },
-            fireImmediately: true
+            track: () => [
+                this.useRowHeightOptimization,
+                this.calculatedRowHeight,
+                this.calculatedGroupRowHeight
+            ],
+            run: ([useRowHeightOptimization]) => {
+                this.agOptions = this.generateAgOptions();
+                model.agApi?.resetRowHeights();
+                if (useRowHeightOptimization) {
+                    this.setRowHeights();
+                }
+            }
         };
+    }
+
+    setRowHeights() {
+        const {agApi} = this.model;
+        agApi?.forEachNode(node => {
+            node.setRowHeight(this.getRowHeight(node));
+        });
+        agApi?.onRowHeightChanged();
+    }
+
+    getRowHeight(node) {
+        return node.group ? this.calculatedGroupRowHeight : this.calculatedRowHeight;
     }
 
     columnsReaction() {
@@ -623,6 +657,8 @@ class GridLocalModel extends HoistModel {
                 model.autosizeAsync({columns});
             }
         }
+
+        if (this.useRowHeightOptimization) this.setRowHeights();
 
         model.noteAgExpandStateChange();
 

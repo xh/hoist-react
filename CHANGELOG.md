@@ -1,5 +1,11 @@
 # Changelog
 
+## 56.1.1 - 2023-04-27
+
+### ⚙️ Technical
+* Optimize scrolling performance for Grids.
+
+
 ## 56.1.0 - 2023-04-14
 * Add support for new memory management diagnostics provided by hoist-core
  (requires hoist-core 16.1.0 for full operation).

@@ -38,6 +38,7 @@ export type {
     HeaderValueGetterParams,
     ICellRendererParams,
     ITooltipParams,
+    IRowNode,
     RowClassParams,
     ValueGetterParams,
     ValueSetterParams,
