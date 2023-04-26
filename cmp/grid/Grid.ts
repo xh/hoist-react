@@ -167,10 +167,10 @@ class GridLocalModel extends HoistModel {
             this.modalReaction()
         );
 
-        this.agOptions = this.generateAgOptions();
+        this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
     }
 
-    private generateAgOptions(): GridOptions {
+    private createDefaultAgOptions(): GridOptions {
         const {model} = this,
             {clicksToEdit, selModel} = model;
 
@@ -270,7 +270,7 @@ class GridLocalModel extends HoistModel {
             };
         }
 
-        return merge(ret, this.componentProps.agOptions ?? {});
+        return ret;
     }
 
     //------------------------
