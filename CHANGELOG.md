@@ -1,10 +1,9 @@
 # Changelog
 
-## 56.1.1 - 2023-04-27
+## 57.0.0-SNAPSHOT - unreleased
 
 ### ⚙️ Technical
 * Optimize scrolling performance for Grids.
-
 
 ## 56.1.0 - 2023-04-14
 * Add support for new memory management diagnostics provided by hoist-core
@@ -12,7 +11,6 @@
 
 ### 🐞 Bug Fixes
 * Fixes bug with display/reporting of exceptions during app initialization sequence.
-
 
 ## v56.0.0 - 2023-03-29
 
