@@ -26,7 +26,7 @@ import {
     ModalSupportModel
 } from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
-import {computed, observable, observer} from '@xh/hoist/mobx';
+import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed, logDebug, logWithDebug} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -133,7 +133,7 @@ class GridLocalModel extends HoistModel {
 
     @lookup(GridModel)
     private model: GridModel;
-    @observable.ref agOptions: GridOptions;
+    agOptions: GridOptions;
     viewRef = createRef<HTMLElement>();
     private rowKeyNavSupport: RowKeyNavSupport;
     private prevRs: RecordSet;
@@ -204,9 +204,7 @@ class GridLocalModel extends HoistModel {
             suppressRowClickSelection: !selModel.isEnabled,
             isRowSelectable: () => selModel.isEnabled,
             tooltipShowDelay: 0,
-            getRowHeight: this.useRowHeightOptimization
-                ? null
-                : ({node}) => this.getRowHeight(node),
+            getRowHeight: ({node}) => this.getRowHeight(node),
             getRowClass: ({data}) => (model.rowClassFn ? model.rowClassFn(data) : null),
             rowClassRules: model.rowClassRules,
             noRowsOverlayComponent: observer(() => div(this.emptyText)),
@@ -376,34 +374,34 @@ class GridLocalModel extends HoistModel {
             : AgGridCmp.getRowHeightForSizingMode(sizingMode);
     }
 
+    rowHeightReaction() {
+        const {model} = this;
+        return {
+            track: () => [
+                this.useScrollOptimization,
+                this.calculatedRowHeight,
+                this.calculatedGroupRowHeight
+            ],
+            run: () => {
+                model.agApi?.resetRowHeights();
+                this.applyScrollOptimizationAsync();
+            },
+            debounce: 1
+        };
+    }
+
     @computed
-    get useRowHeightOptimization() {
-        // When true, we can set fixed row heights explicitly, rather than using functional form.
-        // This avoid slow scrolling.
+    get useScrollOptimization() {
+        // When true, we can set fixed row heights explicitly after data loading.
+        // This improves slow scrolling from using functional form only.
         const agOpts = this.componentProps.agOptions,
             cols = this.model.getVisibleLeafColumns();
         return !agOpts?.getRowHeight && !agOpts?.rowHeight && !cols.some(c => c.autoHeight);
     }
 
-    rowHeightReaction() {
-        const {model} = this;
-        return {
-            track: () => [
-                this.useRowHeightOptimization,
-                this.calculatedRowHeight,
-                this.calculatedGroupRowHeight
-            ],
-            run: ([useRowHeightOptimization]) => {
-                this.agOptions = this.generateAgOptions();
-                model.agApi?.resetRowHeights();
-                if (useRowHeightOptimization) {
-                    this.setRowHeights();
-                }
-            }
-        };
-    }
-
-    setRowHeights() {
+    async applyScrollOptimizationAsync() {
+        if (!this.useScrollOptimization) return;
+        await wait();
         const {agApi} = this.model;
         agApi?.forEachNode(node => {
             node.setRowHeight(this.getRowHeight(node));
@@ -658,11 +656,10 @@ class GridLocalModel extends HoistModel {
             }
         }
 
-        if (this.useRowHeightOptimization) this.setRowHeights();
-
         model.noteAgExpandStateChange();
 
         this.prevRs = newRs;
+        this.applyScrollOptimizationAsync();
     }
 
     syncSelection() {
