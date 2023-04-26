@@ -10,6 +10,7 @@ import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/Co
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {isArray, isNil} from 'lodash';
 import {CustomTabModel} from './CustomTabModel';
+import moment from 'moment';
 
 type OperatorOptionValue = 'blank' | 'not blank' | FieldFilterOperator;
 
@@ -28,7 +29,7 @@ export class CustomRowModel extends HoistModel {
     /** FieldFilter config output of this row. */
     @computed.struct
     get value(): FieldFilterSpec {
-        const {field} = this.fieldSpec;
+        const {field, fieldType} = this.fieldSpec;
 
         let op = this.op,
             value = this.inputVal;
@@ -39,6 +40,13 @@ export class CustomRowModel extends HoistModel {
         } else if (op === 'not blank') {
             op = '!=';
             value = null;
+        } else if (fieldType === 'date' && ['>', '<='].includes(op)) {
+            // Special handling for '>' & '<=' date queries.
+            let newVal = moment(value, ['YYYY-MM-DD', 'YYYYMMDD'], true);
+            if (!newVal.isValid()) return null;
+
+            newVal = moment(newVal).endOf('day');
+            value = newVal.toDate();
         } else if (isNil(value)) {
             return null;
         }
