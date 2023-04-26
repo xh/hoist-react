@@ -204,7 +204,7 @@ class GridLocalModel extends HoistModel {
             suppressRowClickSelection: !selModel.isEnabled,
             isRowSelectable: () => selModel.isEnabled,
             tooltipShowDelay: 0,
-            getRowHeight: ({node}) => this.getRowHeight(node),
+            getRowHeight: this.defaultGetRowHeight,
             getRowClass: ({data}) => (model.rowClassFn ? model.rowClassFn(data) : null),
             rowClassRules: model.rowClassRules,
             noRowsOverlayComponent: observer(() => div(this.emptyText)),
@@ -374,8 +374,11 @@ class GridLocalModel extends HoistModel {
             : AgGridCmp.getRowHeightForSizingMode(sizingMode);
     }
 
+    defaultGetRowHeight = ({node}) => {
+        return node.group ? this.calculatedGroupRowHeight : this.calculatedRowHeight;
+    };
+
     rowHeightReaction() {
-        const {model} = this;
         return {
             track: () => [
                 this.useScrollOptimization,
@@ -383,8 +386,10 @@ class GridLocalModel extends HoistModel {
                 this.calculatedGroupRowHeight
             ],
             run: () => {
-                model.agApi?.resetRowHeights();
-                this.applyScrollOptimizationAsync();
+                const {agApi} = this.model;
+                if (!agApi) return;
+                agApi.resetRowHeights();
+                this.applyScrollOptimization();
             },
             debounce: 1
         };
@@ -392,25 +397,30 @@ class GridLocalModel extends HoistModel {
 
     @computed
     get useScrollOptimization() {
-        // When true, we can set fixed row heights explicitly after data loading.
-        // This improves slow scrolling from using functional form only.
-        const agOpts = this.componentProps.agOptions,
-            cols = this.model.getVisibleLeafColumns();
-        return !agOpts?.getRowHeight && !agOpts?.rowHeight && !cols.some(c => c.autoHeight);
+        // When true, we preemptively evaluate and assign functional row heights after data loading.
+        // This improves slow scrolling but means function not guaranteed to be re-called
+        // when node is rendered in viewport.
+        const {model, agOptions} = this;
+        return (
+            agOptions.getRowHeight &&
+            !agOptions.rowHeight &&
+            !model.getVisibleLeafColumns().some(c => c.autoHeight) &&
+            model.experimental.useScrollOptimization !== false
+        );
     }
 
-    async applyScrollOptimizationAsync() {
+    applyScrollOptimization() {
         if (!this.useScrollOptimization) return;
-        await wait();
-        const {agApi} = this.model;
-        agApi?.forEachNode(node => {
-            node.setRowHeight(this.getRowHeight(node));
-        });
-        agApi?.onRowHeightChanged();
-    }
+        const {agApi, agColumnApi} = this.model,
+            {getRowHeight} = this.agOptions,
+            params = {api: agApi, columnApi: agColumnApi, context: null} as any;
 
-    getRowHeight(node) {
-        return node.group ? this.calculatedGroupRowHeight : this.calculatedRowHeight;
+        agApi.forEachNode(node => {
+            params.node = node;
+            params.data = node.data;
+            node.setRowHeight(getRowHeight(params));
+        });
+        agApi.onRowHeightChanged();
     }
 
     columnsReaction() {
@@ -659,7 +669,7 @@ class GridLocalModel extends HoistModel {
         model.noteAgExpandStateChange();
 
         this.prevRs = newRs;
-        this.applyScrollOptimizationAsync();
+        this.applyScrollOptimization();
     }
 
     syncSelection() {
