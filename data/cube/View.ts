@@ -78,7 +78,7 @@ export class View extends HoistBase {
 
     /** Cube info associated with this View when last updated. */
     @observable.ref
-    info: Record<string, any> = null;
+    info: PlainObject = null;
 
     /** timestamp (ms) of the last time this view's data was changed. */
     @observable

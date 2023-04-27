@@ -5,6 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
+import {PlainObject} from '@xh/hoist/core';
 import {
     Aggregator,
     AverageAggregator,
@@ -64,11 +65,7 @@ export interface CubeFieldSpec extends FieldSpec {
  * @param value - value of record on dimension
  * @param appliedDims - *all* applied dimension values for this record
  */
-export type CanAggregateFn = (
-    dimension: string,
-    value: any,
-    appliedDims: Record<string, any>
-) => boolean;
+export type CanAggregateFn = (dimension: string, value: any, appliedDims: PlainObject) => boolean;
 
 /**
  * Metadata used to define a measure or dimension in Cube. For properties present on raw data source
