@@ -2,6 +2,9 @@
 
 ## 57.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+* Optimize scrolling performance for `Grid` and `DataView`
+
 ## 56.1.0 - 2023-04-14
 * Add support for new memory management diagnostics provided by hoist-core
  (requires hoist-core 16.1.0 for full operation).
