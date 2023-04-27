@@ -207,5 +207,5 @@ export class RecordAction {
 
 interface DisplayFnData extends ActionFnData {
     /** Default display config for the action */
-    defaultConfig?: Record<string, any>;
+    defaultConfig?: PlainObject;
 }

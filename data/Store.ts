@@ -118,7 +118,7 @@ export interface StoreConfig {
      *  Flags for experimental features. These features are designed for early client-access and
      *  testing, but are not yet part of the Hoist API.
      */
-    experimental?: Record<string, any>;
+    experimental?: PlainObject;
 }
 
 /**

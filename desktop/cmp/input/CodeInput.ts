@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, managed, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, managed, PlainObject, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
@@ -50,7 +50,7 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
      * Configuration object with any properties supported by the CodeMirror API.
      * @see {@link https://codemirror.net/doc/manual.html#api_configuration|CodeMirror Docs}
      */
-    editorProps?: Record<string, any>;
+    editorProps?: PlainObject;
 
     /**
      * True to enable case-insensitive searching within the input. Default false, except in

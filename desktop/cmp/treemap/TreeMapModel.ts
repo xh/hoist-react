@@ -257,7 +257,7 @@ export class TreeMapModel extends HoistModel {
     }
 
     @computed
-    get expandState(): Record<string, any> {
+    get expandState(): PlainObject {
         const {gridModel} = this;
         return gridModel?.treeMode ? gridModel.expandState : {};
     }
