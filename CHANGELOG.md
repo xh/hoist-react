@@ -4,6 +4,8 @@
 
 ### ⚙️ Technical
 * Optimize scrolling performance for `Grid` and `DataView`
+* Improve `GridFilter`'s filtering of date `fieldType` to default to end of day when
+  `FieldFilterOperator` is > or <=.
 
 ## 56.1.0 - 2023-04-14
 * Add support for new memory management diagnostics provided by hoist-core
