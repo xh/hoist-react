@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core/model';
-import {CSSProperties, HTMLAttributes, Ref} from 'react';
+import {CSSProperties, HTMLAttributes, ReactNode, Ref} from 'react';
 
 /**
  * Props interface for Hoist Components.
@@ -39,6 +39,11 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
      * any base class name provided by the component definition itself.
      */
     className?: string;
+
+    /**
+     * Support children on TSX elements
+     */
+    children?: ReactNode | undefined;
 }
 
 /**
