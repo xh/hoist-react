@@ -2,6 +2,10 @@
 
 ## 57.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Typescript API Adjustments
+
+* Added generic type T to `XH.prompt()`, to enable return type of `Promise<T | false>`.
+
 ## 56.1.1 - 2023-04-28
 * Expose `margin` property on DashContainerModel.
 

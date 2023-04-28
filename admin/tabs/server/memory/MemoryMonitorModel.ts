@@ -185,7 +185,7 @@ export class MemoryMonitorModel extends HoistModel {
     async dumpHeapAsync() {
         try {
             const appEnv = XH.getEnv('appEnvironment').toLowerCase(),
-                filename = await XH.prompt({
+                filename = await XH.prompt<string>({
                     title: 'Dump Heap',
                     icon: Icon.fileArchive(),
                     message: `Specify a filename for the heap dump (to be saved in ${this.heapDumpDir})`,
