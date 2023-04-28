@@ -47,6 +47,9 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
     /** True to include a button in each stack header showing the dash context menu. */
     showMenuButton?: boolean;
 
+    /** Size of the space between widgets */
+    borderWidth?: number;
+
     /**
      * Custom settings to be passed to the GoldenLayout instance.
      * @see http://golden-layout.com/docs/Config.html
@@ -126,6 +129,7 @@ export class DashContainerModel extends DashModel<
     renderMode: RenderMode;
     refreshMode: RefreshMode;
     goldenLayoutSettings: PlainObject;
+    borderWidth: number;
 
     get isEmpty(): boolean {
         return this.goldenLayout && this.viewModels.length === 0;
@@ -149,6 +153,7 @@ export class DashContainerModel extends DashModel<
         contentLocked = false,
         renameLocked = false,
         showMenuButton = false,
+        borderWidth = 6,
         goldenLayoutSettings,
         persistWith = null,
         emptyText = 'No views have been added to the container.',
@@ -177,6 +182,7 @@ export class DashContainerModel extends DashModel<
         this.contentLocked = contentLocked;
         this.renameLocked = renameLocked;
         this.showMenuButton = showMenuButton;
+        this.borderWidth = borderWidth;
         this.goldenLayoutSettings = goldenLayoutSettings;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
@@ -571,7 +577,7 @@ export class DashContainerModel extends DashModel<
                         ...this.goldenLayoutSettings
                     },
                     dimensions: {
-                        borderWidth: 6,
+                        borderWidth: this.borderWidth,
                         headerHeight: 25
                     }
                 },

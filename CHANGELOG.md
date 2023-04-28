@@ -2,6 +2,9 @@
 
 ## 57.0.0-SNAPSHOT - unreleased
 
+## 56.1.1 - 2023-04-28
+* Expose `borderWidth` property on DashContainerModel.
+
 ### ⚙️ Technical
 * Optimize scrolling performance for `Grid` and `DataView`
 
