@@ -6,7 +6,7 @@
 
 * Added generic type T to `XH.prompt()`, to enable return type of `Promise<T | false>`.
 
-## 56.1.1 - 2023-04-28
+## 56.2.0 - 2023-04-28
 * Expose `margin` property on DashContainerModel.
 
 ### ⚙️ Technical
