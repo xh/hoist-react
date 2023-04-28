@@ -47,7 +47,7 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
     /** True to include a button in each stack header showing the dash context menu. */
     showMenuButton?: boolean;
 
-    /** Size of resizer between widgets */
+    /** Size of the space between widgets */
     borderWidth?: number;
 
     /**
