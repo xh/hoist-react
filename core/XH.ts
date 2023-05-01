@@ -484,7 +484,7 @@ export class XHApi {
      *
      * @returns value of input if user confirms, false if user cancels.
      */
-    prompt<T>(config: MessageSpec): Promise<T | false> {
+    prompt(config: MessageSpec): Promise<any> {
         return this.acm.messageSourceModel.prompt(config);
     }
 

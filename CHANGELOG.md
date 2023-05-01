@@ -4,7 +4,6 @@
 
 ### ⚙️ Typescript API Adjustments
 
-* Added generic type T to `XH.prompt()`, to enable return type of `Promise<T | false>`.
 * Improved the recommendation for the app `declare` statement, see
   `docs/upgrade-to-typescript.md` -> `Bootstrap.ts + Service Declarations`.
 

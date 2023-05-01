@@ -299,7 +299,7 @@ export class DashCanvasModel extends DashModel<
 
         if (!allowRename) return;
 
-        XH.prompt<string>({
+        XH.prompt({
             message: `Rename '${view.title}' to`,
             title: 'Rename...',
             icon: Icon.edit(),
