@@ -2,6 +2,9 @@
 
 ## 57.0.0-SNAPSHOT - unreleased
 
+## 56.2.0 - 2023-04-28
+* Expose `margin` property on DashContainerModel.
+
 ### ⚙️ Technical
 * Optimize scrolling performance for `Grid` and `DataView`
 * Improve `GridFilter`'s filtering of date `fieldType` to default to end of day when
