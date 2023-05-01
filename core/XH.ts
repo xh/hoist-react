@@ -453,7 +453,7 @@ export class XHApi {
      * @returns true if user confirms, false if user cancels. If an input is provided, the
      * Promise will resolve to the input value if user confirms.
      */
-    message(config: MessageSpec): Promise<any> {
+    message<T = boolean>(config: MessageSpec): Promise<T | false> {
         return this.acm.messageSourceModel.message(config);
     }
 
