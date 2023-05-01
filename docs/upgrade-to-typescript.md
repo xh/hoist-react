@@ -98,7 +98,9 @@ rename with a `.ts` extension to ensure you have at least one TS file in your bu
 In that same file, add a declaration statement to let TS know about any of your application
 services (`HoistService` instances) that you are initializing. Those are installed on and referenced
 from the `XH` object; for TS to consider references to those services valid, it needs to know that
-the type of the `XH` singleton (`XHApi`) has a property for each of your services.
+the type of the `XH` singleton (`XHApi`) has a property for each of your services. For users of
+IntelliJ, an ignored re-declaration of the XH singleton with this interface helps the IDE properly
+notice uses of these services.
 
 In Toolbox, we have the following within `Bootstrap.ts` to declare five TB-specific services (your
 services will vary of course) and a custom property installed on `HoistUser`, the type returned
@@ -106,6 +108,7 @@ by `XH.getUser()`:
 
 ```typescript
 declare module '@xh/hoist/core' {
+    // Merge interface with XHApi class to include injected services.
     export interface XHApi {
         contactService: ContactService;
         gitHubService: GitHubService;
@@ -113,6 +116,8 @@ declare module '@xh/hoist/core' {
         portfolioService: PortfolioService;
         taskService: TaskService;
     }
+    // @ts-ignore - Help IntelliJ recognize uses of injected service methods from the `XH` singleton.
+    export const XH: XHApi;
 
     export interface HoistUser {
         profilePicUrl: string;

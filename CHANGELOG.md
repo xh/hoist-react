@@ -5,6 +5,8 @@
 ### ⚙️ Typescript API Adjustments
 
 * Added generic type T to `XH.prompt()`, to enable return type of `Promise<T | false>`.
+* Improved the recommendation for the app `declare` statement, see
+  `docs/upgrade-to-typescript.md` -> `Bootstrap.ts + Service Declarations`.
 
 ## 56.2.0 - 2023-04-28
 * Expose `margin` property on DashContainerModel.
