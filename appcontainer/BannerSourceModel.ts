@@ -30,10 +30,12 @@ export class BannerSourceModel extends HoistModel {
     @action
     show(config: BannerSpec): BannerModel {
         if (!config.sortOrder) {
-            config.sortOrder = maxBy(this.bannerModels, it => it.sortOrder).sortOrder + 1;
+            let maxBanner = maxBy(this.bannerModels, it => it.sortOrder);
+            !maxBanner ? (config.sortOrder = 1) : (config.sortOrder = maxBanner.sortOrder + 1);
         }
         const ret = new BannerModel(config);
         this.addModel(ret);
+
         return ret;
     }
 
@@ -63,6 +65,7 @@ export class BannerSourceModel extends HoistModel {
         //     XH.safeDestroy(bannerModel);
         // }
         this.bannerModels = sortBy([...this.bannerModels, model], 'sortOrder');
+        this.bannerModels.map(o => console.log(o.sortOrder));
     }
 
     getBanner(category: string): BannerModel {

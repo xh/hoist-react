@@ -38,7 +38,7 @@ export class BannerModel extends HoistModel {
         icon,
         message,
         intent = 'primary',
-        sortOrder,
+        sortOrder = 0,
         className,
         enableClose = true,
         onClose,
@@ -52,9 +52,7 @@ export class BannerModel extends HoistModel {
         this.icon = icon;
         this.message = message;
         this.intent = intent;
-
         this.sortOrder = sortOrder;
-
         this.className = className;
         this.enableClose = enableClose;
         this.onClose = onClose;

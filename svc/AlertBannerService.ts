@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {div, p} from '@xh/hoist/cmp/layout';
 import {BannerSpec, HoistService, Intent, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -49,7 +50,8 @@ export class AlertBannerService extends HoistService {
         if (!this.enabled) return;
 
         const data = await XH.fetchJson({url: 'xh/alertBanner'}),
-            {active, expires, publishDate, message, intent, iconName, enableClose} = data,
+            {active, expires, publishDate, message, intent, iconName, enableClose, sortOrder} =
+                data,
             {lastDismissed, onClose} = this;
 
         if (
@@ -60,7 +62,7 @@ export class AlertBannerService extends HoistService {
         ) {
             XH.hideBanner('xhAlertBanner');
         } else {
-            const conf = this.genBannerSpec(message, intent, iconName, enableClose);
+            const conf = this.genBannerSpec(message, intent, iconName, enableClose, sortOrder);
             XH.showBanner({...conf, onClose});
         }
     }
@@ -69,7 +71,8 @@ export class AlertBannerService extends HoistService {
         message: string,
         intent: Intent,
         iconName: string,
-        enableClose: boolean
+        enableClose: boolean,
+        sortOrder: number
     ): BannerSpec {
         const icon = iconName ? Icon.icon({iconName, size: 'lg'}) : null,
             msgLines = compact(map(message.split('\n'), trim)),
@@ -96,6 +99,7 @@ export class AlertBannerService extends HoistService {
             intent,
             icon,
             enableClose,
+            sortOrder: BannerModel.BANNER_SORTS.ADMIN_ALERT_SORT,
             actionButtonProps,
             onClick
         };
