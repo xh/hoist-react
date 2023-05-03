@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel, managed, BannerSpec} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {find, reject} from 'lodash';
+import {find, reject, sortBy, maxBy} from 'lodash';
 
 import {BannerModel} from './BannerModel';
 
@@ -22,8 +22,6 @@ export class BannerSourceModel extends HoistModel {
     @observable.ref
     bannerModels: BannerModel[] = [];
 
-    MAX_BANNERS = 4;
-
     constructor() {
         super();
         makeObservable(this);
@@ -31,6 +29,9 @@ export class BannerSourceModel extends HoistModel {
 
     @action
     show(config: BannerSpec): BannerModel {
+        if (!config.sortOrder) {
+            config.sortOrder = maxBy(this.bannerModels, it => it.sortOrder).sortOrder + 1;
+        }
         const ret = new BannerModel(config);
         this.addModel(ret);
         return ret;
@@ -45,19 +46,23 @@ export class BannerSourceModel extends HoistModel {
 
     //-----------------------------------
     // Implementation
-    //------------------------------------
+    //-----------------------------------
     @action
     addModel(model: BannerModel) {
         // Remove existing banner for category
         this.hide(model.category);
 
-        // Add new banner, removing old banners if limit exceeded
-        const models = [...this.bannerModels, model];
-        while (models.length > this.MAX_BANNERS) {
-            const bannerModel = models.shift();
-            XH.safeDestroy(bannerModel);
-        }
-        this.bannerModels = models;
+        // Add new banner in correct order
+
+        // const models = [...this.bannerModels, model];
+
+        // Remove MAX_BANNERS as unnecessary
+
+        // while (models.length > this.MAX_BANNERS) {
+        //     const bannerModel = models.shift();
+        //     XH.safeDestroy(bannerModel);
+        // }
+        this.bannerModels = sortBy([...this.bannerModels, model], 'sortOrder');
     }
 
     getBanner(category: string): BannerModel {

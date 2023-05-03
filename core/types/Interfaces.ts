@@ -140,6 +140,9 @@ export interface BannerSpec {
     message?: ReactNode;
     icon?: ReactElement;
     intent?: Intent;
+
+    sortOrder?: number;
+
     className?: string;
 
     /** The category for the banner. Defaults to 'default'.*/

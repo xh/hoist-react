@@ -19,6 +19,7 @@ import {SizingModeModel} from './SizingModeModel';
 import {ViewportSizeModel} from './ViewportSizeModel';
 import {ThemeModel} from './ThemeModel';
 import {ToastSourceModel} from './ToastSourceModel';
+import {BannerModel} from './BannerModel';
 
 /**
  * Root object for Framework GUI State.
@@ -91,6 +92,7 @@ export class AppContainerModel extends HoistModel {
             message,
             icon: Icon.rocket({size: 'lg'}),
             intent: 'warning',
+            sortOrder: BannerModel.BANNER_SORTS.APP_UPDATE_SORT,
             enableClose: false,
             actionButtonProps: {
                 icon: Icon.refresh(),

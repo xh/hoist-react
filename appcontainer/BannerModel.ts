@@ -18,6 +18,7 @@ export class BannerModel extends HoistModel {
     icon;
     message;
     intent;
+    sortOrder;
     className;
     enableClose;
     onClose;
@@ -25,11 +26,19 @@ export class BannerModel extends HoistModel {
     actionButtonProps;
     props;
 
+    BannerSourceModel;
+
+    static BANNER_SORTS = {
+        APP_UPDATE_SORT: -2,
+        ADMIN_ALERT_SORT: -1
+    };
+
     constructor({
         category = 'default',
         icon,
         message,
         intent = 'primary',
+        sortOrder,
         className,
         enableClose = true,
         onClose,
@@ -43,6 +52,9 @@ export class BannerModel extends HoistModel {
         this.icon = icon;
         this.message = message;
         this.intent = intent;
+
+        this.sortOrder = sortOrder;
+
         this.className = className;
         this.enableClose = enableClose;
         this.onClose = onClose;
