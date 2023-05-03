@@ -140,10 +140,18 @@ export interface BannerSpec {
     message?: ReactNode;
     icon?: ReactElement;
     intent?: Intent;
-    sortOrder?: number;
     className?: string;
 
-    /** The category for the banner. Defaults to 'default'.*/
+    /**
+     * Determines order in which banners will be displayed.
+     * @see BannerModel.BANNER_SORTS
+     */
+    sortOrder?: number;
+
+    /**
+     * Showing a banner with a given category will hide any
+     * preexisting banner with the same category.
+     */
     category?: string;
 
     /**
