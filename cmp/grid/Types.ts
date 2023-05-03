@@ -5,7 +5,7 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 
-import {ValueGetterParams} from '@ag-grid-community/core';
+import {ICellEditorParams, ValueGetterParams} from '@ag-grid-community/core';
 import {GridFilterFieldSpecConfig} from '@xh/hoist/cmp/grid/filter/GridFilterFieldSpec';
 import {HSide, PersistOptions, PlainObject, SizingMode, Some} from '@xh/hoist/core';
 import {Store, StoreRecord, View} from '@xh/hoist/data';
@@ -303,6 +303,7 @@ export type ColumnEditorFn = (params: {
     record: StoreRecord;
     column: Column;
     gridModel: GridModel;
+    agParams: ICellEditorParams;
 }) => ReactElement;
 
 /**

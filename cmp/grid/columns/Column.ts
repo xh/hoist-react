@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {ICellEditorParams} from '@ag-grid-community/core';
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
 import {HAlign, HSide, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
 import {
@@ -53,8 +54,7 @@ import {
     ColumnSortValueFn,
     ColumnTooltipFn
 } from '../Types';
-import {ExcelFormat} from '../enums/ExcelFormat';
-import {FunctionComponent} from 'react';
+import {ExcelFormat} from '@xh/hoist/cmp/grid';
 import {ColumnGroup} from './ColumnGroup';
 import type {
     ColDef,
@@ -321,7 +321,7 @@ export interface ColumnSpec {
      * Cell editor Component or a function to create one.  Adding an editor will also
      * install a cellClassRule and tooltip to display the validation state of the cell in question.
      */
-    editor?: FunctionComponent | ColumnEditorFn;
+    editor?: ColumnEditorFn;
 
     /**
      * True if this cell editor should be rendered as a popup over the cell instead of within the
@@ -939,7 +939,7 @@ export class Column {
         }
 
         if (editor) {
-            ret.cellEditor = forwardRef((agParams: PlainObject, ref) => {
+            ret.cellEditor = forwardRef((agParams: ICellEditorParams, ref) => {
                 const props = {
                     record: agParams.data,
                     gridModel,
