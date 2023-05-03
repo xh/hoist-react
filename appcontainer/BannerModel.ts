@@ -29,8 +29,8 @@ export class BannerModel extends HoistModel {
     BannerSourceModel;
 
     static BANNER_SORTS = {
-        APP_UPDATE_SORT: -2,
-        ADMIN_ALERT_SORT: -1
+        APP_UPDATE: -2,
+        ADMIN_ALERT: -1
     };
 
     constructor({

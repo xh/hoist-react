@@ -50,8 +50,7 @@ export class AlertBannerService extends HoistService {
         if (!this.enabled) return;
 
         const data = await XH.fetchJson({url: 'xh/alertBanner'}),
-            {active, expires, publishDate, message, intent, iconName, enableClose, sortOrder} =
-                data,
+            {active, expires, publishDate, message, intent, iconName, enableClose} = data,
             {lastDismissed, onClose} = this;
 
         if (
@@ -62,7 +61,7 @@ export class AlertBannerService extends HoistService {
         ) {
             XH.hideBanner('xhAlertBanner');
         } else {
-            const conf = this.genBannerSpec(message, intent, iconName, enableClose, sortOrder);
+            const conf = this.genBannerSpec(message, intent, iconName, enableClose);
             XH.showBanner({...conf, onClose});
         }
     }
@@ -71,8 +70,7 @@ export class AlertBannerService extends HoistService {
         message: string,
         intent: Intent,
         iconName: string,
-        enableClose: boolean,
-        sortOrder: number
+        enableClose: boolean
     ): BannerSpec {
         const icon = iconName ? Icon.icon({iconName, size: 'lg'}) : null,
             msgLines = compact(map(message.split('\n'), trim)),
@@ -99,7 +97,7 @@ export class AlertBannerService extends HoistService {
             intent,
             icon,
             enableClose,
-            sortOrder: BannerModel.BANNER_SORTS.ADMIN_ALERT_SORT,
+            sortOrder: BannerModel.BANNER_SORTS.ADMIN_ALERT,
             actionButtonProps,
             onClick
         };

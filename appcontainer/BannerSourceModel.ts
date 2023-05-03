@@ -29,12 +29,17 @@ export class BannerSourceModel extends HoistModel {
 
     @action
     show(config: BannerSpec): BannerModel {
-        if (!config.sortOrder) {
-            let maxBanner = maxBy(this.bannerModels, it => it.sortOrder);
-            !maxBanner ? (config.sortOrder = 1) : (config.sortOrder = maxBanner.sortOrder + 1);
-        }
-        const ret = new BannerModel(config);
-        this.addModel(ret);
+        const maxSortOrder = maxBy(this.bannerModels, 'sortOrder')?.sortOrder ?? 0;
+
+        const ret = new BannerModel({
+            ...config,
+            sortOrder: config.sortOrder ?? maxSortOrder + 1
+        });
+
+        // Remove existing banner for category
+        this.hide(ret.category);
+
+        this.bannerModels = sortBy([...this.bannerModels, ret], 'sortOrder');
 
         return ret;
     }
@@ -46,29 +51,7 @@ export class BannerSourceModel extends HoistModel {
         this.bannerModels = reject(this.bannerModels, {category});
     }
 
-    //-----------------------------------
-    // Implementation
-    //-----------------------------------
-    @action
-    addModel(model: BannerModel) {
-        // Remove existing banner for category
-        this.hide(model.category);
-
-        // Add new banner in correct order
-
-        // const models = [...this.bannerModels, model];
-
-        // Remove MAX_BANNERS as unnecessary
-
-        // while (models.length > this.MAX_BANNERS) {
-        //     const bannerModel = models.shift();
-        //     XH.safeDestroy(bannerModel);
-        // }
-        this.bannerModels = sortBy([...this.bannerModels, model], 'sortOrder');
-        this.bannerModels.map(o => console.log(o.sortOrder));
-    }
-
-    getBanner(category: string): BannerModel {
+    private getBanner(category: string): BannerModel {
         return find(this.bannerModels, {category});
     }
 }

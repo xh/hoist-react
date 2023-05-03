@@ -32,11 +32,6 @@ export class AlertBannerModel extends HoistModel {
             },
             {name: 'iconName', displayName: 'Icon'},
             {
-                name: 'sortOrder',
-                displayName: 'SortOrder',
-                initialValue: BannerModel.BANNER_SORTS.ADMIN_ALERT_SORT
-            },
-            {
                 name: 'expires',
                 rules: [dateIs({min: 'now'})]
             },
@@ -79,8 +74,7 @@ export class AlertBannerModel extends HoistModel {
                 formModel.values.message,
                 formModel.values.intent,
                 formModel.values.iconName,
-                formModel.values.enableClose,
-                formModel.values.sortOrder
+                formModel.values.enableClose
             ],
             run: () => this.syncPreview(),
             fireImmediately: true
@@ -120,15 +114,14 @@ export class AlertBannerModel extends HoistModel {
                 vals.message,
                 vals.intent,
                 vals.iconName,
-                vals.enableClose,
-                vals.sortOrder
+                vals.enableClose
             );
         this.bannerModel = new BannerModel(conf);
     }
 
     private async saveInternalAsync() {
         const {formModel, savedValue} = this,
-            {active, message, intent, iconName, enableClose, sortOrder, expires, created} =
+            {active, message, intent, iconName, enableClose, expires, created} =
                 formModel.getData();
 
         await formModel.validateAsync();
@@ -194,7 +187,6 @@ export class AlertBannerModel extends HoistModel {
                 intent,
                 iconName,
                 enableClose,
-                sortOrder,
                 expires: expires?.getTime(),
                 publishDate: preservedPublishDate ?? now,
                 created: created ?? now,
@@ -208,7 +200,7 @@ export class AlertBannerModel extends HoistModel {
         }).track({
             category: 'Audit',
             message: 'Updated Alert Banner',
-            data: {active, message, intent, iconName, enableClose, sortOrder}
+            data: {active, message, intent, iconName, enableClose}
         });
 
         await XH.alertBannerService.checkForBannerAsync();
