@@ -26,8 +26,6 @@ export class BannerModel extends HoistModel {
     actionButtonProps;
     props;
 
-    BannerSourceModel;
-
     /**
      * Sort order for Hoist-provided banners.
      */
@@ -41,7 +39,7 @@ export class BannerModel extends HoistModel {
         icon,
         message,
         intent = 'primary',
-        sortOrder = 0,
+        sortOrder,
         className,
         enableClose = true,
         onClose,

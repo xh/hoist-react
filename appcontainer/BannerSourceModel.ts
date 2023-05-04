@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel, managed, BannerSpec} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {find, reject, sortBy, maxBy} from 'lodash';
+import {find, reject, sortBy, maxBy, without} from 'lodash';
 
 import {BannerModel} from './BannerModel';
 
@@ -29,17 +29,23 @@ export class BannerSourceModel extends HoistModel {
 
     @action
     show(config: BannerSpec): BannerModel {
-        const maxSortOrder = maxBy(this.bannerModels, 'sortOrder')?.sortOrder ?? 0;
+        let {bannerModels} = this,
+            {category} = config,
+            existing = category ? bannerModels.find(it => it.category == category) : null,
+            sortOrder;
 
-        const ret = new BannerModel({
-            ...config,
-            sortOrder: config.sortOrder ?? maxSortOrder + 1
-        });
-
-        // Remove existing banner for category
-        this.hide(ret.category);
-
-        this.bannerModels = sortBy([...this.bannerModels, ret], 'sortOrder');
+        // Removes banner from new banner's category if one exists.
+        // Otherwise, creates the banner and adds it as the bottom banner.
+        if (existing) {
+            bannerModels = without(bannerModels, existing);
+            XH.safeDestroy(existing);
+            sortOrder = config.sortOrder ?? existing.sortOrder;
+        } else {
+            const maxSortOrder = maxBy(bannerModels, 'sortOrder')?.sortOrder ?? 0;
+            sortOrder = config.sortOrder ?? maxSortOrder + 1;
+        }
+        const ret = new BannerModel({...config, sortOrder});
+        this.bannerModels = sortBy([...bannerModels, ret], 'sortOrder');
 
         return ret;
     }
