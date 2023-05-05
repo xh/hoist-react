@@ -30,8 +30,8 @@ export class BannerSourceModel extends HoistModel {
     @action
     show(config: BannerSpec): BannerModel {
         let {bannerModels} = this,
-            {category} = config,
-            existing = category ? bannerModels.find(it => it.category == category) : null,
+            {category = 'default'} = config,
+            existing = bannerModels.find(it => it.category == category),
             sortOrder;
 
         // Removes banner from new banner's category if one exists.
