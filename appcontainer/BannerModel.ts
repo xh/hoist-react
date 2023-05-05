@@ -18,6 +18,7 @@ export class BannerModel extends HoistModel {
     icon;
     message;
     intent;
+    sortOrder;
     className;
     enableClose;
     onClose;
@@ -25,24 +26,36 @@ export class BannerModel extends HoistModel {
     actionButtonProps;
     props;
 
-    constructor({
-        category = 'default',
-        icon,
-        message,
-        intent = 'primary',
-        className,
-        enableClose = true,
-        onClose,
-        onClick,
-        actionButtonProps,
-        ...props
-    }: BannerSpec) {
+    /**
+     * Sort order for Hoist-provided banners.
+     */
+    static BANNER_SORTS = {
+        APP_UPDATE: -2,
+        ADMIN_ALERT: -1
+    };
+
+    constructor(spec: BannerSpec) {
         super();
+
+        const {
+            category = 'default',
+            icon,
+            message,
+            intent = 'primary',
+            sortOrder,
+            className,
+            enableClose = true,
+            onClose,
+            onClick,
+            actionButtonProps,
+            ...props
+        } = spec;
 
         this.category = category;
         this.icon = icon;
         this.message = message;
         this.intent = intent;
+        this.sortOrder = sortOrder;
         this.className = className;
         this.enableClose = enableClose;
         this.onClose = onClose;
