@@ -87,7 +87,8 @@ export class MemoryMonitorModel extends HoistModel {
                         floor: 0,
                         top: '30%',
                         height: '70%',
-                        title: {text: 'Heap (mb)'}
+                        title: {text: 'Heap (mb)'},
+                        offset: 0
                     }
                 ],
                 tooltip: {outside: true, shared: true}
