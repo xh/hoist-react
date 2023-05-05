@@ -34,20 +34,22 @@ export class BannerModel extends HoistModel {
         ADMIN_ALERT: -1
     };
 
-    constructor({
-        category = 'default',
-        icon,
-        message,
-        intent = 'primary',
-        sortOrder,
-        className,
-        enableClose = true,
-        onClose,
-        onClick,
-        actionButtonProps,
-        ...props
-    }: BannerSpec) {
+    constructor(spec: BannerSpec) {
         super();
+
+        const {
+            category = 'default',
+            icon,
+            message,
+            intent = 'primary',
+            sortOrder,
+            className,
+            enableClose = true,
+            onClose,
+            onClick,
+            actionButtonProps,
+            ...props
+        } = spec;
 
         this.category = category;
         this.icon = icon;

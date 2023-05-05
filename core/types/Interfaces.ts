@@ -143,7 +143,8 @@ export interface BannerSpec {
     className?: string;
 
     /**
-     * Determines order in which banners will be displayed.
+     * Determines order in which banner will be displayed.
+     * If not provided, banner will be placed below any existing banners.
      * @see BannerModel.BANNER_SORTS
      */
     sortOrder?: number;

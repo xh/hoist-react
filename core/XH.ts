@@ -524,9 +524,9 @@ export class XHApi {
      * Show a Banner across the top of the viewport. Banners are unique by their
      * category prop - showing a new banner with an existing category will replace it.
      */
-    showBanner(config: BannerSpec | string): BannerModel {
-        if (isString(config)) config = {message: config};
-        return this.acm.bannerSourceModel.show(config);
+    showBanner(spec: BannerSpec | string): BannerModel {
+        if (isString(spec)) spec = {message: spec};
+        return this.acm.bannerSourceModel.show(spec);
     }
 
     /**
