@@ -134,7 +134,6 @@ export interface MessageSpec {
 
 /**
  * Configuration object for an app-wide banner.
- * Additional properties passed to this object will be passed directly to the banner component.
  */
 export interface BannerSpec {
     message?: ReactNode;
