@@ -40,10 +40,8 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
      */
     className?: string;
 
-    /**
-     * Support children on TSX elements
-     */
-    children?: ReactNode | undefined;
+    /** React children. */
+    children?: ReactNode;
 }
 
 /**
