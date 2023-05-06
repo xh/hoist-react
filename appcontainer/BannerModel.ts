@@ -24,7 +24,6 @@ export class BannerModel extends HoistModel {
     onClose;
     onClick;
     actionButtonProps;
-    props;
 
     /**
      * Sort order for Hoist-provided banners.
@@ -47,8 +46,7 @@ export class BannerModel extends HoistModel {
             enableClose = true,
             onClose,
             onClick,
-            actionButtonProps,
-            ...props
+            actionButtonProps
         } = spec;
 
         this.category = category;
@@ -61,6 +59,5 @@ export class BannerModel extends HoistModel {
         this.onClose = onClose;
         this.onClick = onClick;
         this.actionButtonProps = actionButtonProps;
-        this.props = props;
     }
 }

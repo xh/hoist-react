@@ -25,7 +25,7 @@ export const banner = hoistCmp.factory({
     model: uses(BannerModel),
 
     render({model}) {
-        const {icon, message, intent, onClick, className, props} = model;
+        const {icon, message, intent, onClick, className} = model;
 
         return toolbar({
             className: classNames(
@@ -50,8 +50,7 @@ export const banner = hoistCmp.factory({
                 }),
                 actionButton(),
                 dismissButton()
-            ],
-            ...props
+            ]
         });
     }
 });
