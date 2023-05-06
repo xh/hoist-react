@@ -19,6 +19,7 @@ import {SizingModeModel} from './SizingModeModel';
 import {ViewportSizeModel} from './ViewportSizeModel';
 import {ThemeModel} from './ThemeModel';
 import {ToastSourceModel} from './ToastSourceModel';
+import {BannerModel} from './BannerModel';
 
 /**
  * Root object for Framework GUI State.
@@ -87,10 +88,11 @@ export class AppContainerModel extends HoistModel {
             buttonText = mobile ? version : `Update to ${version}`;
 
         XH.showBanner({
-            category: 'app-update',
+            category: 'xhAppUpdate',
             message,
             icon: Icon.rocket({size: 'lg'}),
             intent: 'warning',
+            sortOrder: BannerModel.BANNER_SORTS.APP_UPDATE,
             enableClose: false,
             actionButtonProps: {
                 icon: Icon.refresh(),

@@ -2,9 +2,14 @@
 
 ## 57.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added support for new `sortOrder` argument to `XH.showBanner()`. Prevented banners from unexpectedly changing order.
+
 ### ⚙️ Typescript API Adjustments
 
 * Improved the recommendation for the app `declare` statement within our [TypeScript migration docs](https://github.com/xh/hoist-react/blob/develop/docs/upgrade-to-typescript.md#bootstrapts--service-declarations).
+* Added generic type T to `XH.message()` and `XH.prompt()`, to enable return type of `Promise<T | boolean>`.
 
 ## 56.2.0 - 2023-04-28
 * Expose `margin` property on DashContainerModel.

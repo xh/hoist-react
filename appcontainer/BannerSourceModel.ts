@@ -6,7 +6,7 @@
  */
 import {XH, HoistModel, managed, BannerSpec} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {find, reject} from 'lodash';
+import {find, reject, sortBy, without, last} from 'lodash';
 
 import {BannerModel} from './BannerModel';
 
@@ -22,17 +22,29 @@ export class BannerSourceModel extends HoistModel {
     @observable.ref
     bannerModels: BannerModel[] = [];
 
-    MAX_BANNERS = 4;
-
     constructor() {
         super();
         makeObservable(this);
     }
 
     @action
-    show(config: BannerSpec): BannerModel {
-        const ret = new BannerModel(config);
-        this.addModel(ret);
+    show(spec: BannerSpec): BannerModel {
+        let {bannerModels} = this,
+            ret = new BannerModel(spec);
+
+        // Removes banner from new banner's category if it exists.
+        const existing = find(bannerModels, {category: ret.category});
+        if (existing) {
+            bannerModels = without(bannerModels, existing);
+            XH.safeDestroy(existing);
+        }
+
+        // Place in requested pos, existing pos, or last
+        const maxSortOrder = last(bannerModels)?.sortOrder ?? 0;
+        ret.sortOrder = spec.sortOrder ?? existing?.sortOrder ?? maxSortOrder + 1;
+        bannerModels = sortBy([...bannerModels, ret], 'sortOrder');
+
+        this.bannerModels = bannerModels;
         return ret;
     }
 
@@ -43,24 +55,7 @@ export class BannerSourceModel extends HoistModel {
         this.bannerModels = reject(this.bannerModels, {category});
     }
 
-    //-----------------------------------
-    // Implementation
-    //------------------------------------
-    @action
-    addModel(model: BannerModel) {
-        // Remove existing banner for category
-        this.hide(model.category);
-
-        // Add new banner, removing old banners if limit exceeded
-        const models = [...this.bannerModels, model];
-        while (models.length > this.MAX_BANNERS) {
-            const bannerModel = models.shift();
-            XH.safeDestroy(bannerModel);
-        }
-        this.bannerModels = models;
-    }
-
-    getBanner(category: string): BannerModel {
+    private getBanner(category: string): BannerModel {
         return find(this.bannerModels, {category});
     }
 }
