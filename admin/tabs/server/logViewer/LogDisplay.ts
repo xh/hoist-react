@@ -14,6 +14,8 @@ import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
+import {fmtTimeZone2} from '@xh/hoist/utils/impl';
+// import {fmtTimeZone} from '@xh/hoist/utils/impl';
 import {LogDisplayModel} from './LogDisplayModel';
 import './LogViewer.scss';
 
@@ -90,9 +92,10 @@ const bbar = hoistCmp.factory(() => {
             'Server time:',
             clock({
                 timezone: zone,
-                format: 'HH:mm [GMT]Z',
+                format: 'HH:mm',
                 className: 'xh-font-family-mono xh-font-size-small'
-            })
+            }),
+            fmtTimeZone2(zone, XH.getEnv('serverTimeZoneOffset'))
         ],
         omit: !zone // zone env support requires hoist-core 7.1+
     });

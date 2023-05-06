@@ -17,3 +17,11 @@ export function fmtTimeZone(name: string, offset: number): string {
         ? `${name} (GMT${fmtNumber(offset / HOURS, {withPlusSign: true, asHtml: true})})`
         : `${name}`;
 }
+
+export function fmtTimeZone2(name: string, offset: number): string {
+    if (!name) return '';
+
+    return name !== 'GMT'
+        ? `${name} GMT${fmtNumber(offset / HOURS, {withPlusSign: true, asHtml: true})}0:00`
+        : `${name}`;
+}
