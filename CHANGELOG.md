@@ -4,7 +4,8 @@
 
 ### ⚙️ Technical
 
-* Removed `--xh-banner-height` variable in desktop (Toolbar handles), converted to min-height in mobile.
+* Removed `--xh-banner-height` variable in desktop (Toolbar handles this),
+ converted to min-height in mobile.
 
 ### ⚙️ Typescript API Adjustments
 
