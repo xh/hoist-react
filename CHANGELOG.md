@@ -2,6 +2,10 @@
 
 ## 57.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+
+* Removed `--xh-banner-height` variable in desktop (Toolbar handles), converted to min-height in mobile.
+
 ### ⚙️ Typescript API Adjustments
 
 * Improved the recommendation for the app `declare` statement within our [TypeScript migration docs](https://github.com/xh/hoist-react/blob/develop/docs/upgrade-to-typescript.md#bootstrapts--service-declarations).
