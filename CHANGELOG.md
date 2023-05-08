@@ -25,6 +25,8 @@
     * Mobile banners now specify `min-height: 40px` via the `.xh-banner` class.
     * This change allows banners containing custom components to grow to fit their contents without
       requiring app-level CSS overrides.
+* Added new `--xh-grid-filter-popover-[height|width]-px` CSS variables to support easier custom
+  sizing for grid column header filter popovers.
 
 ### ⚙️ Technical
 
