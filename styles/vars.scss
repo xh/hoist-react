@@ -665,13 +665,6 @@ body {
 
 
   //------------------------
-  // Banners
-  //------------------------
-  --xh-banner-height: var(--banner-height, 40);
-  --xh-banner-height-px: calc(var(--xh-banner-height) * 1px);
-
-
-  //------------------------
   // Tabs
   //------------------------
   --xh-tab-text-color: var(--tab-text-color, var(--xh-text-color));
