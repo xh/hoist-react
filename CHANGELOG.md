@@ -1,6 +1,6 @@
 # Changelog
 
-## 57.0.0-SNAPSHOT - unreleased
+## v57.0.0-SNAPSHOT - unreleased
 
 ### ⚙️ Technical
 
@@ -9,24 +9,46 @@
 
 ### 🎁 New Features
 
-* Added support for new `sortOrder` argument to `XH.showBanner()`. Prevented banners from unexpectedly changing order.
+* Added support for new `sortOrder` argument to `XH.showBanner()`. A default sort order is applied
+  if unspecified, ensuring banners do not unexpectedly change order when refreshed.
 
 ### ⚙️ Typescript API Adjustments
 
-* Improved the recommendation for the app `declare` statement within our [TypeScript migration docs](https://github.com/xh/hoist-react/blob/develop/docs/upgrade-to-typescript.md#bootstrapts--service-declarations).
-* Added generic type T to `XH.message()` and `XH.prompt()`, to enable return type of `Promise<T | boolean>`.
-
-## 56.2.0 - 2023-04-28
-* Expose `margin` property on DashContainerModel.
+* Improved the recommendation for the app `declare` statement within
+  our [TypeScript migration docs](https://github.com/xh/hoist-react/blob/develop/docs/upgrade-to-typescript.md#bootstrapts--service-declarations).
+    * See this [Toolbox commit](https://github.com/xh/toolbox/commit/8df642cf) for a small,
+      recommended app-level change to improve autocompletion and usage checks within IntelliJ.
+* Added generic support to `XH.message()` and `XH.prompt()` signatures with return type
+  of `Promise<T | boolean>`.
+* Moved declaration of optional `children` prop to base `HoistProps` interface - required for TSX
+  support.
 
 ### ⚙️ Technical
-* Optimize scrolling performance for `Grid` and `DataView`
 
-## 56.1.0 - 2023-04-14
-* Add support for new memory management diagnostics provided by hoist-core
- (requires hoist-core 16.1.0 for full operation).
+* Updated internal config defaults to support latest AG Grid v29.3.4+ with use of
+  AG `suppressBrowserResizeObserver` config. Applications are encouraged to update to the latest AG
+  Grid dependencies to take advantage of ongoing performance updates.
+
+## v56.2.0 - 2023-04-28
+
+### 🎁 New Features
+
+* Added `DashContainerModel.margin` config to customize the width of the resize splitters
+  between widgets.
+
+### ⚙️ Technical
+
+* Improve scrolling performance for `Grid` and `DataView` via internal configuration updates.
+
+## v56.1.0 - 2023-04-14
+
+### 🎁 New Features
+
+* Display improved memory management diagnostics within Admin console Memory Monitor.
+    * New metrics require optional-but-recommended update to `hoist-core >= v16.1.0`.
 
 ### 🐞 Bug Fixes
+
 * Fixes bug with display/reporting of exceptions during app initialization sequence.
 
 ## v56.0.0 - 2023-03-29
@@ -49,10 +71,12 @@
     * Add a dependency on `@ag-grid-community/styles` to import new dedicated styles package.
     * Imports of AG Grid CSS files within your app's `Bootstrap.ts` file will also need to be
       updated to import styles from their new location. The recommended imports are now:
+
 ```typescript
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-balham.css';
 ```
+
 * New `xhActivityTrackingConfig` soft-configuration entry places new limits on the size of
   any `data` objects passed to `XH.track()` calls.
     * Any track requests with data objects exceeding this length will be persisted, but without the
@@ -86,20 +110,14 @@ import '@ag-grid-community/styles/ag-theme-balham.css';
 
 ## v55.4.0 - 2023-03-23
 
-### 🐞 Bug Fixes
-* Addresses `AgGrid` v28 regression whereby changing column visibility via state throws an
-  exception and doesn't
-  render the grid when column groups are set via the `groupId` property.
-
 ### 💥 Breaking Changes
-* Hoist now requires `AgGrid` v29.1.0 or higher - update your `AgGrid` dependency in your app's
-`package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
-* `AgGrid` stylesheets are now imported from the new `@ag-grid-community/styles` module. Update
-  your app's `Bootstrap.ts` file to import `ag-grid.css` and `ag-theme-balham.css` from this
-  module, and include it as a dependency in your app's `package.json` file.
 
-### ⚙️ Technical
-* AgGrid `28.1.0 -> 29.1.0`
+* Requires AG Grid v29.0.0 or higher - see release notes for v56.0.0 above.
+
+### 🐞 Bug Fixes
+
+* Addresses `AgGrid` v28 regression whereby changing column visibility via state breaks grid
+  rendering when column groups are set via the `groupId` property.
 
 ## v55.3.2 - 2023-03-22
 
