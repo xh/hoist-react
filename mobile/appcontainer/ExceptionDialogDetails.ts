@@ -51,7 +51,7 @@ export const exceptionDialogDetails = hoistCmp.factory({
                     icon: Icon.envelope(),
                     text: 'Send Message',
                     onClick: () => {
-                        XH.prompt({
+                        XH.prompt<string>({
                             title: 'Send Message',
                             message: null,
                             input: {
@@ -63,8 +63,8 @@ export const exceptionDialogDetails = hoistCmp.factory({
                             },
                             confirmProps: {icon: Icon.envelope(), text: 'Send'}
                         }).then(userMessage => {
-                            model.userMessage = userMessage;
-                            if (model.userMessage) {
+                            if (userMessage) {
+                                model.userMessage = userMessage;
                                 model.sendReportAsync();
                             }
                         });
