@@ -2,6 +2,12 @@
 
 ## v57.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Ensure that non-committed values are also checked when filtering a store with a FieldFilter.
+ This will maximize chances that records under edit will not disappear from user view due to
+ active filters.
+
 ## v56.3.0 - 2023-05-08
 
 ### 🎁 New Features
