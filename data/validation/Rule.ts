@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {Awaitable, Some} from '../../core';
+import {Awaitable, PlainObject, Some} from '../../core';
 import {castArray} from 'lodash';
 import {StoreRecord} from '../StoreRecord';
 import {BaseFieldModel} from '../../cmp/form';
@@ -32,7 +32,7 @@ export class Rule {
  */
 export type Constraint<T = any> = (
     fieldState: FieldState<T>,
-    allValues: Record<string, any>
+    allValues: PlainObject
 ) => Awaitable<Some<string>>;
 
 /**
@@ -43,7 +43,7 @@ export type Constraint<T = any> = (
  * @param allValues - current values for all fields in form or record, keyed by field name.
  * @returns true if this rule is currently active.
  */
-export type When = (entity: any, allValues: Record<string, any>) => boolean;
+export type When = (entity: any, allValues: PlainObject) => boolean;
 
 export interface FieldState<T = any> {
     /** Current value of the field */

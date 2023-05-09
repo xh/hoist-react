@@ -236,7 +236,7 @@ export function pluralize(s: string, count?: number, includeCount?: boolean): st
 }
 
 /**
- * Returns the number with an ordinal suffix (ie. 1 => '1st', 11 => '11th').
+ * Returns the number with an ordinal suffix (i.e. 1 becomes '1st', 11 becomes '11th').
  *
  * @param n - the number to ordinalize
  */

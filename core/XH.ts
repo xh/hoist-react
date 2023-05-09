@@ -453,7 +453,7 @@ export class XHApi {
      * @returns true if user confirms, false if user cancels. If an input is provided, the
      * Promise will resolve to the input value if user confirms.
      */
-    message(config: MessageSpec): Promise<any> {
+    message<T = unknown>(config: MessageSpec): Promise<T | boolean> {
         return this.acm.messageSourceModel.message(config);
     }
 
@@ -484,7 +484,7 @@ export class XHApi {
      *
      * @returns value of input if user confirms, false if user cancels.
      */
-    prompt(config: MessageSpec): Promise<any> {
+    prompt<T = unknown>(config: MessageSpec): Promise<T | false> {
         return this.acm.messageSourceModel.prompt(config);
     }
 
@@ -524,9 +524,9 @@ export class XHApi {
      * Show a Banner across the top of the viewport. Banners are unique by their
      * category prop - showing a new banner with an existing category will replace it.
      */
-    showBanner(config: BannerSpec | string): BannerModel {
-        if (isString(config)) config = {message: config};
-        return this.acm.bannerSourceModel.show(config);
+    showBanner(spec: BannerSpec | string): BannerModel {
+        if (isString(spec)) spec = {message: spec};
+        return this.acm.bannerSourceModel.show(spec);
     }
 
     /**

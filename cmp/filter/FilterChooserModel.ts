@@ -60,7 +60,7 @@ export interface FilterChooserConfig {
     fieldSpecs?: Array<FilterChooserFieldSpecConfig | string>;
 
     /** Default properties to be assigned to all FilterChooserFieldSpecs created by this model. */
-    fieldSpecDefaults?: FilterChooserFieldSpecConfig;
+    fieldSpecDefaults?: Partial<FilterChooserFieldSpecConfig>;
 
     /**
      * Store or cube View that should actually be filtered as this model's value changes.
@@ -460,7 +460,7 @@ export class FilterChooserModel extends HoistModel {
     //--------------------------------
     parseFieldSpecs(
         specs: Array<FilterChooserFieldSpecConfig | string>,
-        fieldSpecDefaults: FilterChooserFieldSpecConfig
+        fieldSpecDefaults: Partial<FilterChooserFieldSpecConfig>
     ): Array<FilterChooserFieldSpec> {
         const {valueSource} = this;
 

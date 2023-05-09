@@ -91,13 +91,14 @@ function renderBlurb() {
             xhLogo(),
             div(
                 p(
-                    'Built with Hoist: a plugin for rich web-application development provided by ',
+                    'Built with Hoist, a toolkit for rapid application development from ',
                     a({
-                        href: 'http://xh.io',
+                        href: 'https://xh.io',
                         target: '_blank',
                         rel: 'noopener noreferrer',
                         item: 'Extremely Heavy'
-                    })
+                    }),
+                    '.'
                 ),
                 p(
                     'Please contact ',

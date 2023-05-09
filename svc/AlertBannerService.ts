@@ -4,6 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
+import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {div, p} from '@xh/hoist/cmp/layout';
 import {BannerSpec, HoistService, Intent, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -96,6 +97,7 @@ export class AlertBannerService extends HoistService {
             intent,
             icon,
             enableClose,
+            sortOrder: BannerModel.BANNER_SORTS.ADMIN_ALERT,
             actionButtonProps,
             onClick
         };

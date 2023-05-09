@@ -69,7 +69,7 @@ async function initServicesInternalAsync(svcs: HoistService[]) {
             it.name = svcs[idx].constructor.name;
         });
 
-        throw this.exception({
+        throw XH.exception({
             message: [
                 'Failed to initialize services: ',
                 ...errs.map(it => it.reason.message + ' (' + it.name + ')')

@@ -6,8 +6,8 @@
  */
 .xh-app {
   .xh-column-header-filter {
-    width: 240px;
-    height: 350px;
+    height: var(--xh-grid-filter-popover-height-px);
+    width: var(--xh-grid-filter-popover-width-px);
 
     &__icon {
       flex: none !important;

@@ -13,7 +13,7 @@ import {fmtNumber} from '@xh/hoist/format';
 export function fmtTimeZone(name: string, offset: number): string {
     if (!name) return '';
 
-    return name !== 'GMT'
-        ? `${name} (GMT${fmtNumber(offset / HOURS, {withPlusSign: true, asHtml: true})})`
-        : `${name}`;
+    return name === 'GMT' || name === 'UTC'
+        ? name
+        : `${name} (GMT${fmtNumber(offset / HOURS, {withPlusSign: true, asHtml: true})})`;
 }

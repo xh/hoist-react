@@ -5,7 +5,15 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 import {div, fragment} from '@xh/hoist/cmp/layout';
-import {Content, hoistCmp, HoistModel, HoistProps, useLocalModel, XH} from '@xh/hoist/core';
+import {
+    Content,
+    hoistCmp,
+    HoistModel,
+    HoistProps,
+    PlainObject,
+    useLocalModel,
+    XH
+} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {createObservableRef, elementFromContent} from '@xh/hoist/utils/react';
@@ -59,7 +67,7 @@ export interface PopoverProps extends HoistProps {
     popoverClassName?: string;
 
     /** Escape hatch to provide additional options to the PopperJS implementation */
-    popperOptions?: Record<string, any>;
+    popperOptions?: PlainObject;
 }
 
 /**
