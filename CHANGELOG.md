@@ -8,6 +8,10 @@
  This will maximize chances that records under edit will not disappear from user view due to
  active filters.
 
+### ⚙️ Typescript API Adjustments
+
+* Improved return types for `FetchService` methods and corrected `FetchOptions` interface.
+
 ## v56.3.0 - 2023-05-08
 
 ### 🎁 New Features
