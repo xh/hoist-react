@@ -85,7 +85,6 @@ const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
 
 const bbar = hoistCmp.factory(() => {
     const zone = XH.getEnv('serverTimeZone');
-    console.log('zone: ' + zone);
 
     return toolbar({
         items: [
