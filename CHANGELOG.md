@@ -8,6 +8,10 @@
  This will maximize chances that records under edit will not disappear from user view due to
  active filters.
 
+### 🐞 Bug Fixes
+
+* Fix bug where Grid ColumnHeaders could throw when `groupDisplayType` was set to `singleColumn`.
+
 ### ⚙️ Typescript API Adjustments
 
 * Improved return types for `FetchService` methods and corrected `FetchOptions` interface.
