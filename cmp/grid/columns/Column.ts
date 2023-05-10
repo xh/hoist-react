@@ -703,7 +703,7 @@ export class Column {
                 lockPinned: !gridModel.enableColumnPinning || XH.isMobileApp,
                 pinned: this.pinned,
                 lockVisible: !this.hideable || !gridModel.colChooserModel || XH.isMobileApp,
-                headerComponentParams: {gridModel, xhColumn: this},
+                headerComponentParams: {xhColumn: this},
                 suppressColumnsToolPanel: this.excludeFromChooser,
                 suppressFiltersToolPanel: this.excludeFromChooser,
                 enableCellChangeFlash: this.highlightOnChange,
