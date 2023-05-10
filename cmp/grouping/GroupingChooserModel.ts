@@ -51,6 +51,9 @@ export interface GroupingChooserConfig {
 
     /** Maximum number of dimensions allowed in a single grouping. */
     maxDepth?: number;
+
+    /** False (default) requires user to click outside Popover for table to update. */
+    commitOnChange?: boolean;
 }
 
 /**
@@ -86,6 +89,7 @@ export class GroupingChooserModel extends HoistModel {
     @managed provider: PersistenceProvider = null;
     persistValue: boolean = false;
     persistFavorites: boolean = false;
+    commitOnChange: boolean = false;
 
     // Implementation fields for Control
     @observable.ref pendingValue: string[] = [];
@@ -167,18 +171,21 @@ export class GroupingChooserModel extends HoistModel {
             }
         }
 
-        console.log('pvalue: ' + this.pendingValue);
-        console.log('value: ' + this.value);
-        console.log('dimensions: ' + JSON.stringify(this.dimensions));
+        this.addReaction({
+            track: () => this.pendingValue,
+            run: () => {
+                if (this.commitOnChange) this.setValue(this.pendingValue);
+            }
+        });
+
         this.setValue(value);
         this.setFavorites(favorites);
-        console.log('favorites: ' + favorites);
     }
 
     @action
     setValue(value: string[]) {
         if (!this.validateValue(value)) {
-            console.warn('Attempted to set GroupingChooser to invalid value: ' + value);
+            console.warn('Attempted to set GroupingChooser to invalid value: ', value);
             return;
         }
         this.value = value;
@@ -211,7 +218,6 @@ export class GroupingChooserModel extends HoistModel {
     addPendingDim(dimName: string) {
         if (!dimName) return;
         this.pendingValue = [...this.pendingValue, dimName];
-        this.setValue(this.pendingValue);
     }
 
     @action
@@ -220,7 +226,6 @@ export class GroupingChooserModel extends HoistModel {
         const pendingValue = [...this.pendingValue];
         pendingValue[idx] = dimName;
         this.pendingValue = pendingValue;
-        this.setValue(this.pendingValue);
     }
 
     @action
@@ -228,7 +233,6 @@ export class GroupingChooserModel extends HoistModel {
         const pendingValue = [...this.pendingValue];
         pendingValue.splice(idx, 1);
         this.pendingValue = pendingValue;
-        this.setValue(this.pendingValue);
     }
 
     @action
@@ -239,7 +243,6 @@ export class GroupingChooserModel extends HoistModel {
 
         pendingValue.splice(toIdx, 0, pendingValue.splice(fromIdx, 1)[0]);
         this.pendingValue = pendingValue;
-        this.setValue(this.pendingValue);
     }
 
     @action
