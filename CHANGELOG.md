@@ -12,6 +12,10 @@
 
 * Fix bug where Grid ColumnHeaders could throw when `groupDisplayType` was set to `singleColumn`.
 
+### ⚙️ Technical
+* Adjustment to core model lookup in Hoist components to better support automated testing.
+Components no longer strictly require rendering within an `AppContainer`.
+
 ### ⚙️ Typescript API Adjustments
 
 * Improved return types for `FetchService` methods and corrected `FetchOptions` interface.
