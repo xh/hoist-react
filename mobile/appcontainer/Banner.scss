@@ -8,7 +8,7 @@ body.xh-app .xh-banner {
   padding: var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-px);
   display: flex;
   align-items: center;
-  height: var(--xh-banner-height-px);
+  min-height: 40px;
 
   &__click_target > .xh-icon {
     margin-right: var(--xh-pad-px);

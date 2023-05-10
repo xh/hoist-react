@@ -5,8 +5,6 @@
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
 body.xh-app .xh-banner {
-  height: var(--xh-banner-height-px);
-
   &__click_target {
     &--clickable {
       cursor: pointer;

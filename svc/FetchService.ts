@@ -4,7 +4,7 @@
  *
  * Copyright © 2022 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH, Exception, PlainObject, Thunkable} from '@xh/hoist/core';
+import {HoistService, XH, Exception, PlainObject, Thunkable, FetchResponse} from '@xh/hoist/core';
 import {isLocalDate, SECONDS, ONE_MINUTE, olderThan} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
@@ -61,10 +61,8 @@ export class FetchService extends HoistService {
      * Send a request via the underlying fetch API.
      * @returns Promise which resolves to a Fetch Response.
      */
-    fetch(opts: FetchOptions): Promise<any> {
-        return this.managedFetchAsync(opts, aborter =>
-            this.fetchInternalAsync(opts, aborter)
-        ) as any;
+    fetch(opts: FetchOptions): Promise<FetchResponse> {
+        return this.managedFetchAsync(opts, aborter => this.fetchInternalAsync(opts, aborter));
     }
 
     /**
@@ -81,7 +79,7 @@ export class FetchService extends HoistService {
                 aborter
             );
             return this.NO_JSON_RESPONSES.includes(r.status) ? null : r.json();
-        }) as any;
+        });
     }
 
     /**
@@ -142,7 +140,10 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
-    private async managedFetchAsync(opts: FetchOptions, fn: (ctl: AbortController) => any) {
+    private async managedFetchAsync(
+        opts: FetchOptions,
+        fn: (ctl: AbortController) => Promise<FetchResponse>
+    ): Promise<FetchResponse> {
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
             aborter = new AbortController();
@@ -177,7 +178,7 @@ export class FetchService extends HoistService {
         }
     }
 
-    private async fetchInternalAsync(opts, aborter): Promise<any> {
+    private async fetchInternalAsync(opts, aborter): Promise<FetchResponse> {
         const {defaultHeaders} = this;
         let {url, method, headers, body, params} = opts;
         throwIf(!url, 'No url specified in call to fetchService.');
@@ -236,7 +237,7 @@ export class FetchService extends HoistService {
             }
         }
 
-        const ret: any = await fetch(url, fetchOpts);
+        const ret = (await fetch(url, fetchOpts)) as FetchResponse;
 
         if (!ret.ok) {
             ret.responseText = await this.safeResponseTextAsync(ret);
@@ -300,8 +301,11 @@ export interface FetchOptions {
     /** URL for the request. Relative urls will be appended to XH.baseUrl. */
     url: string;
 
-    /** Data to send in the request body (for POSTs/PUTs of JSON).*/
-    body?: PlainObject;
+    /**
+     * Data to send in the request body (for POSTs/PUTs of JSON).
+     * When using `fetch`, provide a string. Otherwise, provide a PlainObject.
+     */
+    body?: PlainObject | string;
 
     /**
      * Parameters to encode and append as a query string, or send with the request body
