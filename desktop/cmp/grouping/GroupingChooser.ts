@@ -26,7 +26,7 @@ export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> 
     /** Min height in pixels of the popover menu itself. */
     popoverMinHeight?: number;
 
-    /** Position for chooser popover, as per Blueprint docs. */
+    /** Position of popover relative to target button. */
     popoverPosition?: 'bottom' | 'top';
 
     /** Title for popover (default "GROUP BY") or null to suppress. */
