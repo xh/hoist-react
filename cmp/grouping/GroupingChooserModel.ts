@@ -52,7 +52,7 @@ export interface GroupingChooserConfig {
     /** Maximum number of dimensions allowed in a single grouping. */
     maxDepth?: number;
 
-    /** False (default) requires user to click outside Popover for table to update. */
+    /** False (default) waits for the user to dismiss the popover before updating the external/observable value. */
     commitOnChange?: boolean;
 }
 
