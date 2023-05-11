@@ -59,9 +59,9 @@ const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
             placeholder: 'Filter',
             leftIcon: Icon.filter(),
             enableClear: true,
-            width: 160
+            flex: 1
         }),
-        gridFindField({width: 160}),
+        gridFindField({flex: 1}),
         '-',
         switchInput({
             bind: 'tail',
