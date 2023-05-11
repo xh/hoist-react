@@ -2,6 +2,11 @@
 
 ## 57.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `commitOnChange` property to `GroupingChooserModel` enabling grouping to update while
+ popover remains open.
+
 ## v56.4.0 - 2023-05-10
 
 ### 🎁 New Features
