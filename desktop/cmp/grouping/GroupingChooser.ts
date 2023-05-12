@@ -12,7 +12,7 @@ import {select, MENU_PORTAL_ID} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuDivider, menuItem, popover, Position} from '@xh/hoist/kit/blueprint';
+import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -26,8 +26,8 @@ export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> 
     /** Min height in pixels of the popover menu itself. */
     popoverMinHeight?: number;
 
-    /** Position for chooser popover, as per Blueprint docs. */
-    popoverPosition?: Position;
+    /** Position of popover relative to target button. */
+    popoverPosition?: 'bottom' | 'top';
 
     /** Title for popover (default "GROUP BY") or null to suppress. */
     popoverTitle?: string;
@@ -74,12 +74,11 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             item: popover({
                 isOpen,
                 popoverRef: model.popoverRef,
-                popoverClassName: classNames(
-                    'xh-grouping-chooser-popover',
-                    editorIsOpen ? 'xh-popup--framed' : null
-                ),
-                position: favoritesIsOpen ? 'bottom-right' : popoverPosition,
-                minimal: favoritesIsOpen,
+                popoverClassName: 'xh-grouping-chooser-popover xh-popup--framed',
+                // right align favorites popover to match star icon
+                // left align editor to keep in place when button changing size when commitOnChange: true
+                position: favoritesIsOpen ? `${popoverPosition}-right` : `${popoverPosition}-left`,
+                minimal: styleButtonAsInput,
                 target: fragment(
                     button({
                         text: label,
@@ -125,7 +124,7 @@ const editor = hoistCmp.factory<GroupingChooserModel>({
             width: popoverWidth,
             minHeight: popoverMinHeight,
             items: [
-                div({className: 'xh-popup__title', item: popoverTitle}),
+                div({className: 'xh-popup__title', item: popoverTitle, omit: !popoverTitle}),
                 dimensionList({emptyText}),
                 addDimensionControl(),
                 filler()

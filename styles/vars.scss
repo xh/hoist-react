@@ -502,6 +502,10 @@ body {
   --xh-grid-multifield-line-height: var(--grid-multifield-line-height, 14);
   --xh-grid-multifield-line-height-px: calc(var(--xh-grid-multifield-line-height) * 1px);
 
+  // Grid column-header-based filter popover (desktop only)
+  --xh-grid-filter-popover-height-px: var(--grid-filter-popover-height-px, 350px);
+  --xh-grid-filter-popover-width-px: var(--grid-filter-popover-width-px, 240px);
+
   // Dark Grid
   &.xh-dark {
     --xh-grid-bg-hover: var(--grid-bg-hover, hsl(200, 50%, 22%));
@@ -662,13 +666,6 @@ body {
     --xh-scrollbar-bg: var(--scrollbar-bg, var(--xh-black));
     --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '900')});
   }
-
-
-  //------------------------
-  // Banners
-  //------------------------
-  --xh-banner-height: var(--banner-height, 40);
-  --xh-banner-height-px: calc(var(--xh-banner-height) * 1px);
 
 
   //------------------------

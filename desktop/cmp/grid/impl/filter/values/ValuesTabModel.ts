@@ -213,7 +213,6 @@ export class ValuesTabModel extends HoistModel {
             sizingMode: 'compact',
             stripeRows: false,
             sortBy: 'value',
-            colDefaults: {sortable: false},
             onRowClicked: ({data: record}) => {
                 this.setRecsChecked(!record.get('isChecked'), record.get('value'));
             },
@@ -233,6 +232,7 @@ export class ValuesTabModel extends HoistModel {
                     pinned: true,
                     align: 'center',
                     headerAlign: 'center',
+                    sortable: false,
                     rendererIsComplex: true,
                     renderer: (v, {record}) => {
                         return checkbox({

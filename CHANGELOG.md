@@ -2,22 +2,89 @@
 
 ## 57.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `commitOnChange` property to `GroupingChooserModel` enabling grouping to update while
+ popover remains open.
+
 ### ⚙️ Typescript API Adjustments
 
-* Improved the recommendation for the app `declare` statement within our [TypeScript migration docs](https://github.com/xh/hoist-react/blob/develop/docs/upgrade-to-typescript.md#bootstrapts--service-declarations).
 * Corrected the type of `ColumnSpec.editor`.
 
-## 56.2.0 - 2023-04-28
-* Expose `margin` property on DashContainerModel.
+## v56.4.0 - 2023-05-10
 
-### ⚙️ Technical
-* Optimize scrolling performance for `Grid` and `DataView`
+### 🎁 New Features
 
-## 56.1.0 - 2023-04-14
-* Add support for new memory management diagnostics provided by hoist-core
- (requires hoist-core 16.1.0 for full operation).
+* Ensure that non-committed values are also checked when filtering a store with a FieldFilter.
+ This will maximize chances that records under edit will not disappear from user view due to
+ active filters.
 
 ### 🐞 Bug Fixes
+
+* Fix bug where Grid ColumnHeaders could throw when `groupDisplayType` was set to `singleColumn`.
+
+### ⚙️ Technical
+* Adjustment to core model lookup in Hoist components to better support automated testing.
+Components no longer strictly require rendering within an `AppContainer`.
+
+### ⚙️ Typescript API Adjustments
+
+* Improved return types for `FetchService` methods and corrected `FetchOptions` interface.
+
+## v56.3.0 - 2023-05-08
+
+### 🎁 New Features
+
+* Added support for new `sortOrder` argument to `XH.showBanner()`. A default sort order is applied
+  if unspecified, ensuring banners do not unexpectedly change order when refreshed.
+
+### ⚙️ Typescript API Adjustments
+
+* Improved the recommendation for the app `declare` statement within
+  our [TypeScript migration docs](https://github.com/xh/hoist-react/blob/develop/docs/upgrade-to-typescript.md#bootstrapts--service-declarations).
+    * See this [Toolbox commit](https://github.com/xh/toolbox/commit/8df642cf) for a small,
+      recommended app-level change to improve autocompletion and usage checks within IntelliJ.
+* Added generic support to `XH.message()` and `XH.prompt()` signatures with return type
+  of `Promise<T | boolean>`.
+* Moved declaration of optional `children` prop to base `HoistProps` interface - required for TSX
+  support.
+
+### ✨ Styles
+
+* Removed `--xh-banner-height` CSS var.
+    * Desktop banners are implemented via `Toolbar`, which correctly sets a min height.
+    * Mobile banners now specify `min-height: 40px` via the `.xh-banner` class.
+    * This change allows banners containing custom components to grow to fit their contents without
+      requiring app-level CSS overrides.
+* Added new `--xh-grid-filter-popover-[height|width]-px` CSS variables to support easier custom
+  sizing for grid column header filter popovers.
+
+### ⚙️ Technical
+
+* Updated internal config defaults to support latest AG Grid v29.3.4+ with use of
+  AG `suppressBrowserResizeObserver` config. Applications are encouraged to update to the latest AG
+  Grid dependencies to take advantage of ongoing performance updates.
+
+## v56.2.0 - 2023-04-28
+
+### 🎁 New Features
+
+* Added `DashContainerModel.margin` config to customize the width of the resize splitters
+  between widgets.
+
+### ⚙️ Technical
+
+* Improve scrolling performance for `Grid` and `DataView` via internal configuration updates.
+
+## v56.1.0 - 2023-04-14
+
+### 🎁 New Features
+
+* Display improved memory management diagnostics within Admin console Memory Monitor.
+    * New metrics require optional-but-recommended update to `hoist-core >= v16.1.0`.
+
+### 🐞 Bug Fixes
+
 * Fixes bug with display/reporting of exceptions during app initialization sequence.
 
 ## v56.0.0 - 2023-03-29
@@ -40,10 +107,12 @@
     * Add a dependency on `@ag-grid-community/styles` to import new dedicated styles package.
     * Imports of AG Grid CSS files within your app's `Bootstrap.ts` file will also need to be
       updated to import styles from their new location. The recommended imports are now:
+
 ```typescript
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-balham.css';
 ```
+
 * New `xhActivityTrackingConfig` soft-configuration entry places new limits on the size of
   any `data` objects passed to `XH.track()` calls.
     * Any track requests with data objects exceeding this length will be persisted, but without the
@@ -77,20 +146,14 @@ import '@ag-grid-community/styles/ag-theme-balham.css';
 
 ## v55.4.0 - 2023-03-23
 
-### 🐞 Bug Fixes
-* Addresses `AgGrid` v28 regression whereby changing column visibility via state throws an
-  exception and doesn't
-  render the grid when column groups are set via the `groupId` property.
-
 ### 💥 Breaking Changes
-* Hoist now requires `AgGrid` v29.1.0 or higher - update your `AgGrid` dependency in your app's
-`package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
-* `AgGrid` stylesheets are now imported from the new `@ag-grid-community/styles` module. Update
-  your app's `Bootstrap.ts` file to import `ag-grid.css` and `ag-theme-balham.css` from this
-  module, and include it as a dependency in your app's `package.json` file.
 
-### ⚙️ Technical
-* AgGrid `28.1.0 -> 29.1.0`
+* Requires AG Grid v29.0.0 or higher - see release notes for v56.0.0 above.
+
+### 🐞 Bug Fixes
+
+* Addresses `AgGrid` v28 regression whereby changing column visibility via state breaks grid
+  rendering when column groups are set via the `groupId` property.
 
 ## v55.3.2 - 2023-03-22
 
@@ -1031,7 +1094,7 @@ to use TypeScript for its own app-level code.
   with the select library component and touch devices.
 * Ensure `Column.autosizeBufferPx` is respected if provided.
 
-### ✨ Style
+### ✨ Styles
 
 * New `--xh-menu-item` CSS vars added, with tweaks to default desktop menu styling.
 * Highlight background color added to mobile menu items while pressed.
@@ -1155,7 +1218,7 @@ to use TypeScript for its own app-level code.
 * Triggering inline editing of text or select editor cells by typing characters will no longer lose
   the first character pressed.
 
-### ✨ Style
+### ✨ Styles
 
 * New `TreeStyle.COLORS` and `TreeStyle.COLORS_AND_BORDERS` tree grid styles have been added. Use
   the `--xh-grid-tree-group-color-level-*` CSS vars to customize colors as needed.
@@ -1197,7 +1260,7 @@ to use TypeScript for its own app-level code.
   `agOptions`.
 * Fixes an issue on iOS where `NumberInput` would incorrectly bring up a text keyboard.
 
-### ✨ Style
+### ✨ Styles
 
 * Reduced default Grid header and group row heights to minimize their use of vertical space,
   especially at larger sizing modes. As before, apps can override via the `AgGrid.HEADER_HEIGHTS`
@@ -1222,7 +1285,7 @@ to use TypeScript for its own app-level code.
 * The in-app changelog will no longer prompt the user with the "What's New" button if category-based
   filtering results in a version without any release notes.
 
-### ✨ Style
+### ✨ Styles
 
 * New CSS vars added to support easier customization of desktop Tab font/size/color. Tabs now
   respect standard `--xh-font-size` by default.
@@ -1244,7 +1307,7 @@ to use TypeScript for its own app-level code.
 * Mobile `Select` input now supports async `queryFn` prop for parity with desktop.
 * `TreeMapModel` now supports new `maxLabels` config for improved performance.
 
-### ✨ Style
+### ✨ Styles
 
 * Hoist's default font is now [Inter](https://rsms.me/inter/), shipped and bundled via the
   `inter-ui` npm package. Inter is a modern, open-source font that leverages optical sizing to
@@ -1305,7 +1368,7 @@ to use TypeScript for its own app-level code.
 
 * Fixed an issue preventing `FormField` labels from rendering if `fieldDefaults` was undefined.
 
-### ✨ Style
+### ✨ Styles
 
 * New `Badge.compact` prop sets size to half that of parent element when true (default false). The
   `position` prop has been removed in favor of customizing placement of the component.
@@ -1359,7 +1422,7 @@ to use TypeScript for its own app-level code.
       and
       `selectedIds`, respectively, in `StoreSelectionModel`
 
-### ✨ Style
+### ✨ Styles
 
 * Higher contrast on grid context menus for improved legibility.
 
@@ -1427,7 +1490,7 @@ to use TypeScript for its own app-level code.
   custom handling in a raw `AgGrid` component, see the example here:
   https://www.ag-grid.com/javascript-grid/row-selection/#example-selection-with-keyboard-arrow-keys
 
-### ✨ Style
+### ✨ Styles
 
 * The red and green color values applied in dark mode have been lightened for improved legibility.
 * The default `colorSpec` config for number formatters has changed to use new dedicated CSS classes
@@ -1483,7 +1546,7 @@ to use TypeScript for its own app-level code.
 * `withShortDebug` has been deprecated. Use `withDebug` instead, which has the identical behavior.
   This API simplification mirrors a recent change to `hoist-core`.
 
-### ✨ Style
+### ✨ Styles
 
 * If the first child of a `Placeholder` component is a Hoist icon, it will not automatically be
   styled to 4x size with reduced opacity. (See new Toolbox example under the "Other" tab.)
@@ -1652,7 +1715,7 @@ your dev-utils dependency for your project to build.
 * Improvements to exception serialization, especially for any raw javascript `Error` thrown by
   client-side code.
 
-### ✨ Style
+### ✨ Styles
 
 * Buttons nested inline within desktop input components (e.g. clear buttons) tweaked to avoid
   odd-looking background highlight on hover.
@@ -2005,7 +2068,7 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 * Fix issue where grid row striping inadvertently disabled by default for non-tree grids.
 * Fix issue where grid empty text cleared on autosize.
 
-### ✨ Style
+### ✨ Styles
 
 * Default `Chart` themes reworked in both light and dark modes to better match overall Hoist theme.
 
@@ -2314,7 +2377,7 @@ below regarding related updates to `GridModel.columns` config processing.
     * `StoreFilterField.filterOptions` has been removed. Set `filterIncludesChildren` directly on
       the store instead.
 
-### ✨ Style
+### ✨ Styles
 
 * CSS variables for "intents" - most commonly used on buttons - have been reworked to use HSL color
   values and support several standard variations of lightness and transparency.
@@ -3663,7 +3726,7 @@ leverage the context for model support discussed above.
 * When checking for a possible expired session within `XH.handleException()`, prompt for app login
   only for Ajax requests made to relative URLs (not e.g. remote APIs accessed via CORS). #1189
 
-### ✨ Style
+### ✨ Styles
 
 * Panel splitter collapse button more visible in dark theme. CSS vars to customize further fixed.
 * The mobile app menu button has been moved to the right side of the top appBar, consistent with its
@@ -3920,7 +3983,7 @@ leverage the context for model support discussed above.
 * FetchService's fetch methods no longer support `acceptJson` parameter. Instead, pass an {"Accept":
   "application/json"} header using the `headers` parameter.
 
-### ✨ Style
+### ✨ Styles
 
 * Black point + grid colors adjusted in dark theme to better blend with overall blue-gray tint.
 * Mobile styles have been adjusted to increase the default font size and grid row height, in

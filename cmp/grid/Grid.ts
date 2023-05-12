@@ -197,8 +197,8 @@ class GridLocalModel extends HoistModel {
                 clipboardCopy: Icon.copy({asHtml: true})
             },
             components: {
-                agColumnHeader: props => columnHeader(props),
-                agColumnGroupHeader: props => columnGroupHeader(props)
+                agColumnHeader: props => columnHeader({...props, gridModel: model}),
+                agColumnGroupHeader: props => columnGroupHeader({...props, gridModel: model})
             },
             rowSelection: selModel.mode == 'disabled' ? undefined : selModel.mode,
             suppressRowClickSelection: !selModel.isEnabled,

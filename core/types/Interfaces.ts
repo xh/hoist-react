@@ -134,7 +134,6 @@ export interface MessageSpec {
 
 /**
  * Configuration object for an app-wide banner.
- * Additional properties passed to this object will be passed directly to the banner component.
  */
 export interface BannerSpec {
     message?: ReactNode;
@@ -142,7 +141,17 @@ export interface BannerSpec {
     intent?: Intent;
     className?: string;
 
-    /** The category for the banner. Defaults to 'default'.*/
+    /**
+     * Determines order in which banner will be displayed.
+     * If not provided, banner will be placed below any existing banners.
+     * @see BannerModel.BANNER_SORTS
+     */
+    sortOrder?: number;
+
+    /**
+     * Showing a banner with a given category will hide any
+     * preexisting banner with the same category.
+     */
     category?: string;
 
     /**
