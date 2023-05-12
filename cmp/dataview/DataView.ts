@@ -7,22 +7,33 @@
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
 import {
+    BoxProps,
     hoistCmp,
     HoistModel,
-    useLocalModel,
-    uses,
+    HoistProps,
     lookup,
     PlainObject,
-    HoistProps,
-    BoxProps
+    useLocalModel,
+    uses
 } from '@xh/hoist/core';
+import type {GridOptions} from '@xh/hoist/kit/ag-grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {isFunction} from 'lodash';
-
+import {isFunction, merge} from 'lodash';
 import './DataView.scss';
 import {DataViewModel} from './DataViewModel';
 
-export interface DataViewProps extends HoistProps<DataViewModel>, BoxProps {}
+export interface DataViewProps extends HoistProps<DataViewModel>, BoxProps {
+    /**
+     * Options for ag-Grid's API.
+     *
+     * This constitutes an 'escape hatch' for applications that need to get to the underlying
+     * ag-Grid API. It should be used with care. Settings made here might be overwritten and/or
+     * interfere with the implementation of this component and its use of the ag-Grid API.
+     *
+     * Note that changes to these options after the component's initial render will be ignored.
+     */
+    agOptions?: GridOptions;
+}
 
 /**
  * A DataView is a specialized version of the Grid component. It displays its data within a
@@ -61,7 +72,12 @@ class DataViewLocalModel extends HoistModel {
             run: () => model.gridModel.agApi?.resetRowHeights()
         });
 
-        this.agOptions = {
+        this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
+    }
+
+    private createDefaultAgOptions(): GridOptions {
+        const {model} = this;
+        return {
             headerHeight: 0,
             suppressMakeColumnVisibleAfterUnGroup: true,
             getRowHeight: agParams => {

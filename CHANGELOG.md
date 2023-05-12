@@ -8,6 +8,11 @@
   value as the user adjusts their choices within the control.
 * Enabled user-driven sorting for the list of available values within Grid column filters.
 
+### ⚙️ Technical
+
+* `DataView` now supports an `agOptions` prop to allow passing arbitrary AG Grid props to the
+  underlying grid instance. (Always supported by `Grid`, now also supported by `DataView`.)
+
 ## v56.4.0 - 2023-05-10
 
 ### 🎁 New Features
