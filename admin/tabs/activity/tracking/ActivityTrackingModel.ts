@@ -10,7 +10,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {Cube, CubeFieldSpec, FieldSpec} from '@xh/hoist/data';
-import {fmtDate, fmtNumber} from '@xh/hoist/format';
+import {fmtNumber} from '@xh/hoist/format';
 import {action, computed, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import * as Col from '@xh/hoist/admin/columns';
@@ -129,19 +129,8 @@ export class ActivityTrackingModel extends HoistModel {
                 },
                 {
                     field: 'dateCreated',
+                    fieldType: 'localDate',
                     example: 'YYYY-MM-DD',
-                    valueParser: (v, op) => {
-                        let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
-                        if (!ret.isValid()) return null;
-
-                        // Note special handling for '>' & '<=' queries.
-                        if (['>', '<='].includes(op)) {
-                            ret = moment(ret).endOf('day');
-                        }
-
-                        return ret.toDate();
-                    },
-                    valueRenderer: v => fmtDate(v),
                     ops: ['>', '>=', '<', '<=']
                 }
             ],

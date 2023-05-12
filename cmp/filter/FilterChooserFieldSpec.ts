@@ -12,6 +12,7 @@ import {FieldFilterOperator} from '@xh/hoist/data/filter/Types';
 import {parseFieldValue, View} from '@xh/hoist/data';
 import {fmtDate, parseNumber} from '@xh/hoist/format';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isFunction, isNil} from 'lodash';
 import {isValidElement, ReactNode} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
@@ -133,7 +134,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         // suggest values from already-filtered fields that will expand the results when selected.
         const sourceStore = source instanceof View ? source.cube.store : source;
         sourceStore.allRecords.forEach(rec => {
-            const val = rec.get(field);
+            const val = this.valueFromRecord(rec);
             if (!isNil(val)) {
                 if (sourceStore.getField(field).type === 'tags') {
                     val.forEach(it => values.add(it));
@@ -144,6 +145,17 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         });
 
         this.values = Array.from(values);
+    }
+
+    valueFromRecord(record) {
+        const {field, fieldType} = this,
+            recFieldType = record.fields.find(it => it.name === field).type;
+        let val = record.get(field);
+
+        if (fieldType === 'localDate' && recFieldType === 'date') {
+            val = LocalDate.from(val);
+        }
+        return val;
     }
 }
 
