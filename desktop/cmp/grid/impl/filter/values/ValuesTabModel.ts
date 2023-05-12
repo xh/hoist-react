@@ -228,11 +228,11 @@ export class ValuesTabModel extends HoistModel {
                         });
                     },
                     width: 28,
-                    sortable: false,
                     autosizable: false,
                     pinned: true,
                     align: 'center',
                     headerAlign: 'center',
+                    sortable: false,
                     rendererIsComplex: true,
                     renderer: (v, {record}) => {
                         return checkbox({
