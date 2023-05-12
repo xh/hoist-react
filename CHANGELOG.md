@@ -4,24 +4,26 @@
 
 ### 🎁 New Features
 
-* Added `commitOnChange` property to `GroupingChooserModel` enabling grouping to update while
- popover remains open.
+* Added new `GroupingChooserModel.commitOnChange` config - enable to update the observable grouping
+  value as the user adjusts their choices within the control.
+* Enabled user-driven sorting for the list of available values within Grid column filters.
 
 ## v56.4.0 - 2023-05-10
 
 ### 🎁 New Features
 
 * Ensure that non-committed values are also checked when filtering a store with a FieldFilter.
- This will maximize chances that records under edit will not disappear from user view due to
- active filters.
+  This will maximize chances that records under edit will not disappear from user view due to
+  active filters.
 
 ### 🐞 Bug Fixes
 
 * Fix bug where Grid ColumnHeaders could throw when `groupDisplayType` was set to `singleColumn`.
 
 ### ⚙️ Technical
+
 * Adjustment to core model lookup in Hoist components to better support automated testing.
-Components no longer strictly require rendering within an `AppContainer`.
+  Components no longer strictly require rendering within an `AppContainer`.
 
 ### ⚙️ Typescript API Adjustments
 
