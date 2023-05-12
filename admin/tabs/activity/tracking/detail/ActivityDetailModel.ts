@@ -31,7 +31,18 @@ export class ActivityDetailModel extends HoistModel {
             sortBy: 'dateCreated|desc',
             colChooserModel: true,
             enableExport: true,
-            filterModel: true,
+            filterModel: {
+                fieldSpecs: [
+                    'username',
+                    'category',
+                    'msg',
+                    'device',
+                    'browser',
+                    'userAgent',
+                    'elapsed',
+                    {field: 'dateCreated', fieldType: 'localDate'}
+                ]
+            },
             exportOptions: {
                 columns: 'ALL',
                 filename: `${XH.appCode}-activity-detail`

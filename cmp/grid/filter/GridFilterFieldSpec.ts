@@ -12,6 +12,7 @@ import {
     BaseFilterFieldSpec,
     BaseFilterFieldSpecConfig
 } from '@xh/hoist/data/filter/BaseFilterFieldSpec';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {castArray, compact, flatten, isDate, isEmpty, uniqBy} from 'lodash';
 import {GridFilterModel} from './GridFilterModel';
 
@@ -127,8 +128,15 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
     }
 
     valueFromRecord(record) {
-        const {filterModel, field} = this;
-        return filterModel.toDisplayValue(record.get(field));
+        const {filterModel, field, fieldType} = this,
+            recFieldType = record.fields.find(it => it.name === field).type;
+        let val = record.get(field);
+
+        if (fieldType === 'localDate' && recFieldType === 'date') {
+            val = LocalDate.from(val);
+        }
+
+        return filterModel.toDisplayValue(val);
     }
 
     getUniqueValue(value) {
