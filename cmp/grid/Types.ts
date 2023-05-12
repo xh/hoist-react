@@ -295,16 +295,22 @@ export type ColumnEditableFn = (params: {
 }) => boolean;
 
 /**
- * Function to return one Grid cell editor.  This value will be used to create a new Component
- * whenever editing is initiated on a cell.
+ * Function to return one Grid cell editor. This function will be used to create a new
+ * Component, whenever editing is initiated on a cell.
  * @returns the react element to use as the cell editor.
  */
-export type ColumnEditorFn = (params: {
+export type ColumnEditorFn = (props: ColumnEditorProps, nil?: any) => ReactElement;
+
+/**
+ * The object passed into the first argument of {@link ColumnSpec.editor}.
+ * Satisfies the {@link EditorProps} of an editor component.
+ */
+export type ColumnEditorProps = {
     record: StoreRecord;
     column: Column;
     gridModel: GridModel;
     agParams: ICellEditorParams;
-}) => ReactElement;
+};
 
 /**
  * Function to update the value of a StoreRecord field after inline editing

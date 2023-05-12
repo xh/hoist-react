@@ -33,7 +33,14 @@ import {
     keysIn,
     toString
 } from 'lodash';
-import {createElement, forwardRef, isValidElement, ReactNode, useImperativeHandle} from 'react';
+import {
+    createElement,
+    forwardRef,
+    FunctionComponent,
+    isValidElement,
+    ReactNode,
+    useImperativeHandle
+} from 'react';
 import {GridModel} from '../GridModel';
 import {GridSorter} from '../GridSorter';
 import {managedRenderer} from '../impl/Utils';
@@ -43,6 +50,7 @@ import {
     ColumnComparator,
     ColumnEditableFn,
     ColumnEditorFn,
+    ColumnEditorProps,
     ColumnExcelFormatFn,
     ColumnExportValueFn,
     ColumnGetValueFn,
@@ -318,10 +326,10 @@ export interface ColumnSpec {
     editable?: boolean | ColumnEditableFn;
 
     /**
-     * Cell editor Component or a function to create one.  Adding an editor will also
-     * install a cellClassRule and tooltip to display the validation state of the cell in question.
+     * Cell editor Component or a function to create one. Adding an editor will also install a
+     * cellClassRule and tooltip to display the validation state of the cell in question.
      */
-    editor?: ColumnEditorFn;
+    editor?: FunctionComponent<ColumnEditorProps> | ColumnEditorFn;
 
     /**
      * True if this cell editor should be rendered as a popup over the cell instead of within the
@@ -455,7 +463,7 @@ export class Column {
     autosizeBufferPx: number;
     autoHeight: boolean;
     editable: boolean | ColumnEditableFn;
-    editor: ColumnEditorFn;
+    editor: FunctionComponent<ColumnEditorProps> | ColumnEditorFn;
     editorIsPopup: boolean;
     setValueFn: ColumnSetValueFn;
     getValueFn: ColumnGetValueFn;
