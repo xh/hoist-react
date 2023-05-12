@@ -5,6 +5,7 @@
 ### ⚙️ Typescript API Adjustments
 
 * Improved the recommendation for the app `declare` statement within our [TypeScript migration docs](https://github.com/xh/hoist-react/blob/develop/docs/upgrade-to-typescript.md#bootstrapts--service-declarations).
+* Corrected the type of `ColumnSpec.editor`.
 
 ## 56.2.0 - 2023-04-28
 * Expose `margin` property on DashContainerModel.
