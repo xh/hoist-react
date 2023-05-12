@@ -5228,7 +5228,7 @@ and AG Grid upgrade, and more. 🚀
 
 ------------------------------------------
 
-Copyright © 2022 Extremely Heavy Industries Inc. - all rights reserved
+Copyright © 2023 Extremely Heavy Industries Inc. - all rights reserved
 
 ------------------------------------------
 

@@ -396,4 +396,4 @@ sudo docker system prune -af
 
 📫☎️🌎 info@xh.io | <https://xh.io/contact>
 
-Copyright © 2022 Extremely Heavy Industries Inc.
+Copyright © 2023 Extremely Heavy Industries Inc.
