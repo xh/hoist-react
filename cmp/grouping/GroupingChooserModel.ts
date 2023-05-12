@@ -51,6 +51,9 @@ export interface GroupingChooserConfig {
 
     /** Maximum number of dimensions allowed in a single grouping. */
     maxDepth?: number;
+
+    /** False (default) waits for the user to dismiss the popover before updating the external/observable value. */
+    commitOnChange?: boolean;
 }
 
 /**
@@ -86,6 +89,7 @@ export class GroupingChooserModel extends HoistModel {
     @managed provider: PersistenceProvider = null;
     persistValue: boolean = false;
     persistFavorites: boolean = false;
+    commitOnChange: boolean = false;
 
     // Implementation fields for Control
     @observable.ref pendingValue: string[] = [];
@@ -167,6 +171,13 @@ export class GroupingChooserModel extends HoistModel {
             }
         }
 
+        this.addReaction({
+            track: () => this.pendingValue,
+            run: () => {
+                if (this.commitOnChange) this.setValue(this.pendingValue);
+            }
+        });
+
         this.setValue(value);
         this.setFavorites(favorites);
     }
@@ -174,7 +185,7 @@ export class GroupingChooserModel extends HoistModel {
     @action
     setValue(value: string[]) {
         if (!this.validateValue(value)) {
-            console.warn('Attempted to set GroupingChooser to invalid value: ' + value);
+            console.warn('Attempted to set GroupingChooser to invalid value: ', value);
             return;
         }
         this.value = value;
