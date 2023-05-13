@@ -61,6 +61,10 @@ const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
             enableClear: true,
             flex: 1
         }),
+        button({
+            text: 'RGX',
+            onClick: () => model.setRegexOption(!model.getRegexOption())
+        }),
         gridFindField({flex: 1}),
         '-',
         switchInput({
