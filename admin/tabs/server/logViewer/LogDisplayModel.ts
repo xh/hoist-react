@@ -37,19 +37,16 @@ export class LogDisplayModel extends HoistModel {
     @managed
     gridModel: GridModel;
 
+    @bindable
     @persist
     regexOption: boolean = false;
 
+    @bindable
+    @persist
+    caseSensitive: boolean = false;
+
     get tailActive(): boolean {
         return this.tail && !this.gridModel.hasSelection;
-    }
-
-    public getRegexOption(): boolean {
-        return this.regexOption;
-    }
-
-    public setRegexOption(newRegex) {
-        this.regexOption = newRegex;
     }
 
     constructor(parent: LogViewerModel) {
@@ -90,13 +87,21 @@ export class LogDisplayModel extends HoistModel {
         }
 
         try {
+            console.log(
+                'rgx: ',
+                this.regexOption,
+                'pattern: ',
+                this.regexOption ? this.pattern : escapeRegExp(this.pattern)
+            );
             const response = await XH.fetchJson({
                 url: 'logViewerAdmin/getFile',
                 params: {
                     filename: parent.file,
                     startLine: this.startLine,
                     maxLines: this.maxLines,
-                    pattern: this.regexOption ? this.pattern : escapeRegExp(this.pattern)
+                    pattern: this.regexOption ? this.pattern : escapeRegExp(this.pattern),
+                    regexOption: this.regexOption,
+                    caseSensitive: this.caseSensitive
                 },
                 loadSpec
             });
