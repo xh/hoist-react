@@ -64,12 +64,16 @@ const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
         button({
             text: 'Cc',
             onClick: () => (model.caseSensitive = !model.caseSensitive),
-            active: model.caseSensitive
+            active: model.caseSensitive,
+            intent: model.caseSensitive ? 'primary' : null,
+            style: {color: 'white'}
         }),
         button({
             text: '.*',
             onClick: () => (model.regexOption = !model.regexOption),
-            active: model.regexOption
+            active: model.regexOption,
+            intent: model.regexOption ? 'primary' : null,
+            style: {color: 'white'}
         }),
         gridFindField({flex: 1}),
         '-',
