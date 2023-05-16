@@ -14,8 +14,8 @@ import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {fmtTimeZone} from '@xh/hoist/utils/impl';
 import {checkMinVersion} from '@xh/hoist/utils/js';
+import {fmtTimeZone} from '@xh/hoist/utils/impl';
 import {LogDisplayModel} from './LogDisplayModel';
 import './LogViewer.scss';
 
