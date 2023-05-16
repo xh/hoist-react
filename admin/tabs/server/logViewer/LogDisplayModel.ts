@@ -87,12 +87,6 @@ export class LogDisplayModel extends HoistModel {
         }
 
         try {
-            console.log(
-                'rgx: ',
-                this.regexOption,
-                'pattern: ',
-                this.regexOption ? this.pattern : escapeRegExp(this.pattern)
-            );
             const response = await XH.fetchJson({
                 url: 'logViewerAdmin/getFile',
                 params: {
