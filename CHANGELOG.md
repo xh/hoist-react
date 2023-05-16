@@ -7,6 +7,10 @@
 * Added new `GroupingChooserModel.commitOnChange` config - enable to update the observable grouping
   value as the user adjusts their choices within the control.
 * Enabled user-driven sorting for the list of available values within Grid column filters.
+* `Select` has a new prop `enableTooltipsOnTags` which can be used to show tooltips on tags selected
+   in a multi-select (`enableMulti` === true).  Set `enableTooltipsOnTags` to true if you
+   know some tag labels will be too long, and therefore elided when selected, and could use a
+   tooltip to help identify them.
 
 ### ⚙️ Technical
 

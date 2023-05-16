@@ -18,6 +18,7 @@ import {
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
+import {tooltip} from '@xh/hoist/kit/blueprint';
 import {
     reactAsyncCreatableSelect,
     reactAsyncSelect,
@@ -74,6 +75,13 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
 
     /** True to allow entry/selection of multiple values - "tag picker" style. */
     enableMulti?: boolean;
+
+    /** True to show tooltips on all selected tags when enableMulti is true.  Set to true if you
+     * know some tag labels will be too long, and therefore elided when selected, and could use a
+     * tooltip to help identify them.  Defaults to false.
+     * Ignored if enableMulti is false.
+     */
+    enableTooltipsOnTags?: boolean;
 
     /**
      * True to use react-windowed-select for improved performance on large option lists.
@@ -259,6 +267,10 @@ class SelectInputModel extends HoistInputModel {
 
     get hideSelectedOptionCheck(): boolean {
         return this.componentProps.hideSelectedOptionCheck || this.hideSelectedOptions;
+    }
+
+    get showTooltipsOnTags(): boolean {
+        return this.componentProps.enableMulti && this.componentProps.enableTooltipsOnTags;
     }
 
     // Managed value for underlying text input under certain conditions
@@ -609,6 +621,23 @@ class SelectInputModel extends HoistInputModel {
         };
     }
 
+    getMultiValueLabelCmp() {
+        return this.showTooltipsOnTags
+            ? props => {
+                  props = {
+                      ...props,
+                      children: tooltip({
+                          targetClassName: 'xh-select__multi-value__label__tooltip__target',
+                          content: props.children,
+                          target: props.children
+                      })
+                  };
+
+                  return createElement(components.MultiValueLabel, props);
+              }
+            : components.MultiValueLabel;
+    }
+
     noOptionsMessageFn = params => {
         // account for bug in react-windowed-select https://github.com/jacobworrel/react-windowed-select/issues/19
         if (!params) return '';
@@ -663,7 +692,8 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
                 DropdownIndicator: model.getDropdownIndicatorCmp(),
                 ClearIndicator: model.getClearIndicatorCmp(),
                 IndicatorSeparator: () => null,
-                ValueContainer: model.getValueContainerCmp()
+                ValueContainer: model.getValueContainerCmp(),
+                MultiValueLabel: model.getMultiValueLabelCmp()
             },
 
             // A shared div is created lazily here as needed, appended to the body, and assigned

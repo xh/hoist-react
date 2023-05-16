@@ -93,6 +93,12 @@
 
       &__label {
         color: var(--xh-text-color);
+
+        &__tooltip {
+          &__target {
+            display: inherit;
+          }
+        }
       }
 
       &__remove {
