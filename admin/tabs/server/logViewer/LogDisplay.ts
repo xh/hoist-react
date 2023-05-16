@@ -15,6 +15,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {fmtTimeZone} from '@xh/hoist/utils/impl';
+import {checkMinVersion} from '@xh/hoist/utils/js';
 import {LogDisplayModel} from './LogDisplayModel';
 import './LogViewer.scss';
 
@@ -36,6 +37,8 @@ export const logDisplay = hoistCmp.factory({
 });
 
 const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
+    const supportFileAttrs = checkMinVersion(XH.getEnv('hoistCoreVersion'), '16.0.0');
+
     return toolbar(
         label('Start line:'),
         numberInput({
@@ -66,7 +69,8 @@ const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
             onClick: () => (model.caseSensitive = !model.caseSensitive),
             active: model.caseSensitive,
             intent: model.caseSensitive ? 'primary' : null,
-            style: {color: 'white'}
+            style: {color: 'white'},
+            omit: !supportFileAttrs
         }),
         button({
             text: '.*',
