@@ -76,10 +76,10 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     /** True to allow entry/selection of multiple values - "tag picker" style. */
     enableMulti?: boolean;
 
-    /** True to show tooltips on all selected tags when enableMulti is true.  Set to true if you
-     * know some tag labels will be too long, and therefore elided when selected, and could use a
-     * tooltip to help identify them.  Defaults to false.
-     * Ignored if enableMulti is false.
+    /**
+     * True to enable tooltips on selected tags when `enableMulti: true`. Enable when the space
+     * available to the select component might not support showing the full text of each tag's
+     * value. Ignored when `enableMulti: false`.
      */
     enableTooltipsOnTags?: boolean;
 

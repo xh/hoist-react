@@ -96,8 +96,8 @@
 
         &__tooltip {
           &__target {
-            // This is needed to overide BP styling
-            // which was breaking react-select's ellipsis styling
+            // Required to override tooltip styling applied by Blueprint, which was breaking the
+            // react-select styles that elide overly-long values.
             display: inherit;
           }
         }
