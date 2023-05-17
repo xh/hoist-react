@@ -37,7 +37,7 @@ export const logDisplay = hoistCmp.factory({
 });
 
 const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
-    const supportFileAttrs = checkMinVersion(XH.getEnv('hoistCoreVersion'), '16.0.0');
+    const supportFileAttrs = checkMinVersion(XH.getEnv('hoistCoreVersion'), '16.2.0');
 
     return toolbar(
         label('Start line:'),
