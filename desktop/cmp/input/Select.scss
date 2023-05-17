@@ -96,6 +96,8 @@
 
         &__tooltip {
           &__target {
+            // This is needed to overide BP styling
+            // which was breaking react-select's ellipsis styling
             display: inherit;
           }
         }
