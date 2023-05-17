@@ -4,6 +4,13 @@
 
 ### 🎁 New Features
 
+* Added `regexOption` and `caseSensitive` option buttons for the admin `LogDisplay` filter input
+  field. Regex escaping handled on client side if `regexOption` is selected. Since `caseSensitive`
+  is handled by the server, the corresponding button appears only for users running
+  `hoist-core >= v16.2.0`.
+
+### 🎁 New Features
+
 * Added new `GroupingChooserModel.commitOnChange` config - enable to update the observable grouping
   value as the user adjusts their choices within the control.
 * Enabled user-driven sorting for the list of available values within Grid column filters.

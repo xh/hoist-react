@@ -6,7 +6,7 @@
  */
 import {clock} from '@xh/hoist/cmp/clock';
 import {grid} from '@xh/hoist/cmp/grid';
-import {hspacer, label} from '@xh/hoist/cmp/layout';
+import {fragment, hspacer, label} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
@@ -37,8 +37,6 @@ export const logDisplay = hoistCmp.factory({
 });
 
 const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
-    const supportFileAttrs = checkMinVersion(XH.getEnv('hoistCoreVersion'), '16.2.0');
-
     return toolbar(
         label('Start line:'),
         numberInput({
@@ -61,23 +59,24 @@ const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
             bind: 'pattern',
             placeholder: 'Filter',
             leftIcon: Icon.filter(),
-            enableClear: true,
-            flex: 1
-        }),
-        button({
-            text: 'Cc',
-            onClick: () => (model.caseSensitive = !model.caseSensitive),
-            active: model.caseSensitive,
-            intent: model.caseSensitive ? 'primary' : null,
-            style: {color: 'white'},
-            omit: !supportFileAttrs
-        }),
-        button({
-            text: '.*',
-            onClick: () => (model.regexOption = !model.regexOption),
-            active: model.regexOption,
-            intent: model.regexOption ? 'primary' : null,
-            style: {color: 'white'}
+            flex: 1,
+            rightElement: fragment(
+                button({
+                    text: 'Cc',
+                    onClick: () => (model.caseSensitive = !model.caseSensitive),
+                    className: model.caseSensitive
+                        ? 'xh-log-display__filter-button xh-log-display__filter-button--active'
+                        : 'xh-log-display__filter-button xh-log-display__filter-button--inactive',
+                    omit: !checkMinVersion(XH.getEnv('hoistCoreVersion'), '16.2.0')
+                }),
+                button({
+                    text: '.*',
+                    onClick: () => (model.regexOption = !model.regexOption),
+                    className: model.regexOption
+                        ? 'xh-log-display__filter-button xh-log-display__filter-button--active'
+                        : 'xh-log-display__filter-button xh-log-display__filter-button--inactive'
+                })
+            )
         }),
         gridFindField({flex: 1}),
         '-',
