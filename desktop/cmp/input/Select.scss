@@ -105,6 +105,14 @@
         }
       }
     }
+
+    &__tooltip {
+      &__target {
+        // Required to override tooltip styling applied by Blueprint, which was breaking the
+        // react-select styles that elide overly-long values.
+        display: inherit;
+      }
+    }
   }
 }
 
