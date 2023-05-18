@@ -4,10 +4,8 @@
 
 ### 🎁 New Features
 
-* Added `regexOption` and `caseSensitive` option buttons for the admin `LogDisplay` filter input
-  field. Regex escaping handled on client side if `regexOption` is selected. Since `caseSensitive`
-  is handled by the server, the corresponding button appears only for users running
-  `hoist-core >= v16.2.0`.
+* Added `regexOption` and `caseSensitive` props to the `LogDisplayModel`. (Case-sensitive search
+  requires `hoist-core >= v16.2.0`).
 
 ### 🎁 New Features
 
