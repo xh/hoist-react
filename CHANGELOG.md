@@ -13,6 +13,10 @@
 * `DataView` now supports an `agOptions` prop to allow passing arbitrary AG Grid props to the
   underlying grid instance. (Always supported by `Grid`, now also supported by `DataView`.)
 
+### 🐞 Bug Fixes
+
+* Fixed Panel with modal support enabled occasionally rendering over child popovers.
+
 ## v56.4.0 - 2023-05-10
 
 ### 🎁 New Features
