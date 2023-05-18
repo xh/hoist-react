@@ -224,7 +224,7 @@ export class Cube extends HoistBase {
      */
     async updateDataAsync(
         rawData: PlainObject[] | StoreTransaction,
-        infoUpdates: PlainObject
+        infoUpdates: PlainObject = {}
     ): Promise<void> {
         // 1) Process data
         const changeLog = this.store.updateData(rawData);
