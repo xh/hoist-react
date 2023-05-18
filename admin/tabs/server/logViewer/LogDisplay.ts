@@ -67,6 +67,7 @@ const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
                     className: model.caseSensitive
                         ? 'xh-log-display__filter-button xh-log-display__filter-button--active'
                         : 'xh-log-display__filter-button xh-log-display__filter-button--inactive',
+                    tooltip: 'Case-sensitive filter option',
                     omit: !checkMinVersion(XH.getEnv('hoistCoreVersion'), '16.2.0')
                 }),
                 button({
@@ -74,7 +75,8 @@ const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
                     onClick: () => (model.regexOption = !model.regexOption),
                     className: model.regexOption
                         ? 'xh-log-display__filter-button xh-log-display__filter-button--active'
-                        : 'xh-log-display__filter-button xh-log-display__filter-button--inactive'
+                        : 'xh-log-display__filter-button xh-log-display__filter-button--inactive',
+                    tooltip: 'Regex filter option'
                 })
             )
         }),
