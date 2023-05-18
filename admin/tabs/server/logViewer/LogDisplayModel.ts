@@ -11,7 +11,7 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
-import {maxBy} from 'lodash';
+import {escapeRegExp, maxBy} from 'lodash';
 import {LogViewerModel} from './LogViewerModel';
 
 /**
@@ -36,6 +36,14 @@ export class LogDisplayModel extends HoistModel {
 
     @managed
     gridModel: GridModel;
+
+    @bindable
+    @persist
+    regexOption: boolean = false;
+
+    @bindable
+    @persist
+    caseSensitive: boolean = false;
 
     get tailActive(): boolean {
         return this.tail && !this.gridModel.hasSelection;
@@ -85,7 +93,9 @@ export class LogDisplayModel extends HoistModel {
                     filename: parent.file,
                     startLine: this.startLine,
                     maxLines: this.maxLines,
-                    pattern: this.pattern
+                    pattern: this.regexOption ? this.pattern : escapeRegExp(this.pattern),
+                    regexOption: this.regexOption,
+                    caseSensitive: this.caseSensitive
                 },
                 loadSpec
             });

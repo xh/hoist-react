@@ -4,6 +4,11 @@
 
 ### 🎁 New Features
 
+* Added `regexOption` and `caseSensitive` props to the `LogDisplayModel`. (Case-sensitive search
+  requires `hoist-core >= v16.2.0`).
+
+### 🎁 New Features
+
 * Added new `GroupingChooserModel.commitOnChange` config - enable to update the observable grouping
   value as the user adjusts their choices within the control. Default behavior is unchanged,
   requiring user to dismiss the popover to commit the new value.
