@@ -93,14 +93,6 @@
 
       &__label {
         color: var(--xh-text-color);
-
-        &__tooltip {
-          &__target {
-            // Required to override tooltip styling applied by Blueprint, which was breaking the
-            // react-select styles that elide overly-long values.
-            display: inherit;
-          }
-        }
       }
 
       &__remove {
@@ -110,6 +102,19 @@
       &--is-disabled {
         .xh-select__multi-value__label {
           color: var(--xh-input-disabled-text-color);
+        }
+      }
+    }
+
+    &__single-value,
+    &__multi-value {
+      &__label {
+        &__tooltip {
+          &__target {
+            // Required to override tooltip styling applied by Blueprint, which was breaking the
+            // react-select styles that elide overly-long values.
+            display: inherit;
+          }
         }
       }
     }

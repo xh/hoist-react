@@ -7,7 +7,7 @@
 * Added new `GroupingChooserModel.commitOnChange` config - enable to update the observable grouping
   value as the user adjusts their choices within the control. Default behavior is unchanged,
   requiring user to dismiss the popover to commit the new value.
-* Added new `Select.enableTooltipsOnTags` prop - enable for multi-value inputs where the text of a
+* Added new `Select.enableTooltips` prop - enable for select inputs where the text of a
   selected value might be elided due to space constraints. The tooltip will display the full text.
 * Enabled user-driven sorting for the list of available values within Grid column filters.
 

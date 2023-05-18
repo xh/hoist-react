@@ -43,8 +43,9 @@ import {
     merge
 } from 'lodash';
 import {ReactElement, ReactNode} from 'react';
-import {components} from 'react-select';
+import {components, MultiValueProps} from 'react-select';
 import './Select.scss';
+import {SingleValueProps} from 'react-select/src/components/SingleValue';
 
 export const MENU_PORTAL_ID = 'xh-select-input-portal';
 
@@ -77,11 +78,10 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     enableMulti?: boolean;
 
     /**
-     * True to enable tooltips on selected tags when `enableMulti: true`. Enable when the space
-     * available to the select component might not support showing the full text of each tag's
-     * value. Ignored when `enableMulti: false`.
+     * True to enable tooltips on selected values. Enable when the space
+     * available to the select component might not support showing the value's full text.
      */
-    enableTooltipsOnMulti?: boolean;
+    enableTooltips?: boolean;
 
     /**
      * True to use react-windowed-select for improved performance on large option lists.
@@ -267,10 +267,6 @@ class SelectInputModel extends HoistInputModel {
 
     get hideSelectedOptionCheck(): boolean {
         return this.componentProps.hideSelectedOptionCheck || this.hideSelectedOptions;
-    }
-
-    get showTooltipsOnMulti(): boolean {
-        return this.componentProps.enableMulti && this.componentProps.enableTooltipsOnMulti;
     }
 
     // Managed value for underlying text input under certain conditions
@@ -622,20 +618,21 @@ class SelectInputModel extends HoistInputModel {
     }
 
     getMultiValueLabelCmp() {
-        return this.showTooltipsOnMulti
+        return this.componentProps.enableTooltips
             ? props => {
-                  props = {
-                      ...props,
-                      children: tooltip({
-                          targetClassName: 'xh-select__multi-value__label__tooltip__target',
-                          content: props.children,
-                          target: props.children
-                      })
-                  };
-
+                  props = this.addTooltip(props, 'xh-select__multi-value__label__tooltip__target');
                   return createElement(components.MultiValueLabel, props);
               }
             : components.MultiValueLabel;
+    }
+
+    getSingleValueCmp() {
+        return this.componentProps.enableTooltips
+            ? props => {
+                  props = this.addTooltip(props, 'xh-select__single-value__label__tooltip__target');
+                  return createElement(components.SingleValue, props);
+              }
+            : components.SingleValue;
     }
 
     noOptionsMessageFn = params => {
@@ -663,6 +660,20 @@ class SelectInputModel extends HoistInputModel {
             document.body.appendChild(portal);
         }
         return portal;
+    }
+
+    private addTooltip(
+        props: SingleValueProps<any, any> | MultiValueProps<any, any>,
+        targetClassName: string
+    ): SingleValueProps<any, any> | MultiValueProps<any, any> {
+        return {
+            ...props,
+            children: tooltip({
+                targetClassName,
+                content: props.children,
+                target: props.children
+            })
+        };
     }
 }
 
@@ -693,7 +704,8 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
                 ClearIndicator: model.getClearIndicatorCmp(),
                 IndicatorSeparator: () => null,
                 ValueContainer: model.getValueContainerCmp(),
-                MultiValueLabel: model.getMultiValueLabelCmp()
+                MultiValueLabel: model.getMultiValueLabelCmp(),
+                SingleValue: model.getSingleValueCmp()
             },
 
             // A shared div is created lazily here as needed, appended to the body, and assigned
