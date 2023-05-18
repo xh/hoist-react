@@ -81,7 +81,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * available to the select component might not support showing the full text of each tag's
      * value. Ignored when `enableMulti: false`.
      */
-    enableTooltipsOnTags?: boolean;
+    enableTooltipsOnMulti?: boolean;
 
     /**
      * True to use react-windowed-select for improved performance on large option lists.
@@ -269,8 +269,8 @@ class SelectInputModel extends HoistInputModel {
         return this.componentProps.hideSelectedOptionCheck || this.hideSelectedOptions;
     }
 
-    get showTooltipsOnTags(): boolean {
-        return this.componentProps.enableMulti && this.componentProps.enableTooltipsOnTags;
+    get showTooltipsOnMulti(): boolean {
+        return this.componentProps.enableMulti && this.componentProps.enableTooltipsOnMulti;
     }
 
     // Managed value for underlying text input under certain conditions
@@ -622,7 +622,7 @@ class SelectInputModel extends HoistInputModel {
     }
 
     getMultiValueLabelCmp() {
-        return this.showTooltipsOnTags
+        return this.showTooltipsOnMulti
             ? props => {
                   props = {
                       ...props,
