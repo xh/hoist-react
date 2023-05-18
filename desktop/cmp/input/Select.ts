@@ -43,9 +43,8 @@ import {
     merge
 } from 'lodash';
 import {ReactElement, ReactNode} from 'react';
-import {components, MultiValueProps} from 'react-select';
+import {components} from 'react-select';
 import './Select.scss';
-import {SingleValueProps} from 'react-select/src/components/SingleValue';
 
 export const MENU_PORTAL_ID = 'xh-select-input-portal';
 
@@ -620,7 +619,7 @@ class SelectInputModel extends HoistInputModel {
     getMultiValueLabelCmp() {
         return this.componentProps.enableTooltips
             ? props => {
-                  props = this.addTooltip(props, 'xh-select__multi-value__label__tooltip__target');
+                  props = this.withTooltip(props, 'xh-select__tooltip__target');
                   return createElement(components.MultiValueLabel, props);
               }
             : components.MultiValueLabel;
@@ -629,7 +628,7 @@ class SelectInputModel extends HoistInputModel {
     getSingleValueCmp() {
         return this.componentProps.enableTooltips
             ? props => {
-                  props = this.addTooltip(props, 'xh-select__single-value__label__tooltip__target');
+                  props = this.withTooltip(props, 'xh-select__tooltip__target');
                   return createElement(components.SingleValue, props);
               }
             : components.SingleValue;
@@ -662,10 +661,7 @@ class SelectInputModel extends HoistInputModel {
         return portal;
     }
 
-    private addTooltip(
-        props: SingleValueProps<any, any> | MultiValueProps<any, any>,
-        targetClassName: string
-    ): SingleValueProps<any, any> | MultiValueProps<any, any> {
+    private withTooltip(props: PlainObject, targetClassName: string): PlainObject {
         return {
             ...props,
             children: tooltip({
