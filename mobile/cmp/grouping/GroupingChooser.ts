@@ -255,7 +255,7 @@ const favoritesButton = hoistCmp.factory<GroupingChooserModel>({
             icon: Icon.favorite(),
             minimal: true,
             className: 'xh-grouping-chooser__favorite-button',
-            onClick: () => model.openFavoritesMenu()
+            onClick: () => model.toggleFavoritesMenu()
         });
     }
 });

@@ -199,31 +199,19 @@ export class GroupingChooserModel extends HoistModel {
 
     @action
     toggleEditor() {
-        // showEditor() {
-        console.log('te');
-        // this.editorIsOpen = true;
         this.pendingValue = this.value;
         this.editorIsOpen = !this.editorIsOpen;
         this.favoritesIsOpen = false;
     }
 
     @action
-    openFavoritesMenu() {
-        console.log('ofm');
-        this.favoritesIsOpen = true;
-        this.editorIsOpen = false;
-    }
-
-    @action
     toggleFavoritesMenu() {
-        console.log('tf');
         this.favoritesIsOpen = !this.favoritesIsOpen;
         this.editorIsOpen = false;
     }
 
     @action
     closePopover() {
-        console.log('cp');
         this.editorIsOpen = false;
         this.favoritesIsOpen = false;
     }
@@ -264,7 +252,6 @@ export class GroupingChooserModel extends HoistModel {
 
     @action
     commitPendingValueAndClose() {
-        console.log('cpvc');
         const {pendingValue, value} = this;
         if (!isEqual(value, pendingValue) && this.validateValue(pendingValue)) {
             this.setValue(pendingValue);

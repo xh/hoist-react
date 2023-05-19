@@ -57,7 +57,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             popoverMinHeight,
             popoverTitle = 'Group By',
             popoverPosition = 'bottom',
-            styleButtonAsInput = false,
+            styleButtonAsInput = true,
             ...rest
         },
         ref
@@ -314,7 +314,6 @@ const favoritesIcon = hoistCmp.factory<GroupingChooserModel>({
             item: Icon.favorite(),
             className: 'xh-grouping-chooser__favorite-icon',
             onClick: e => {
-                // model.openFavoritesMenu();
                 model.toggleFavoritesMenu();
                 e.stopPropagation();
             }
