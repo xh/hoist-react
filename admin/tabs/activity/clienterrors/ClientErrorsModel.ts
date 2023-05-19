@@ -8,11 +8,10 @@ import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {fmtDate, fmtJson} from '@xh/hoist/format';
+import {fmtJson} from '@xh/hoist/format';
 import {action, bindable, observable, makeObservable, comparer} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import * as Col from '@xh/hoist/admin/columns';
-import moment from 'moment';
 
 export class ClientErrorsModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminClientErrorsState'};
@@ -93,20 +92,7 @@ export class ClientErrorsModel extends HoistModel {
                 },
                 {
                     field: 'dateCreated',
-                    example: 'YYYY-MM-DD',
-                    valueParser: (v, op) => {
-                        let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
-                        if (!ret.isValid()) return null;
-
-                        // Note special handling for '>' & '<=' queries.
-                        if (['>', '<='].includes(op)) {
-                            ret = moment(ret).endOf('day');
-                        }
-
-                        return ret.toDate();
-                    },
-                    valueRenderer: v => fmtDate(v),
-                    ops: ['>', '>=', '<', '<=']
+                    fieldType: 'localDate'
                 }
             ],
             persistWith: this.persistWith
