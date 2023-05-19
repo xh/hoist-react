@@ -135,7 +135,7 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
 
     /**
      * Detects difference in date-based fieldType defined on fieldSpec and source field, indicating
-     * custom value parsing for < and >= operators.
+     * custom value parsing for > and <= operators.
      */
     get isMismatchedDateFieldType(): boolean {
         const sourceField = this.source.fields.find(f => f.name === this.field);
