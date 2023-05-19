@@ -74,7 +74,9 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
         this.forceSelection = forceSelection ?? false;
         this.values = values ?? (this.isBoolFieldType ? [true, false] : null);
         this.hasExplicitValues = !isEmpty(this.values);
-        this.enableValues = this.hasExplicitValues || (enableValues ?? this.isEnumerableByDefault);
+        this.enableValues =
+            !this.isMismatchedDateFieldType &&
+            (this.hasExplicitValues || (enableValues ?? this.isEnumerableByDefault));
     }
 
     /** Full Field derived from source. */
