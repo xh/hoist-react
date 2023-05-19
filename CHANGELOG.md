@@ -4,24 +4,39 @@
 
 ### 🎁 New Features
 
-* Added `commitOnChange` property to `GroupingChooserModel` enabling grouping to update while
- popover remains open.
+* Added `regexOption` and `caseSensitive` props to the `LogDisplayModel`. (Case-sensitive search
+  requires `hoist-core >= v16.2.0`).
+
+### 🎁 New Features
+
+* Added new `GroupingChooserModel.commitOnChange` config - enable to update the observable grouping
+  value as the user adjusts their choices within the control. Default behavior is unchanged,
+  requiring user to dismiss the popover to commit the new value.
+* Added new `Select.enableTooltips` prop - enable for select inputs where the text of a
+  selected value might be elided due to space constraints. The tooltip will display the full text.
+* Enabled user-driven sorting for the list of available values within Grid column filters.
+
+### ⚙️ Technical
+
+* `DataView` now supports an `agOptions` prop to allow passing arbitrary AG Grid props to the
+  underlying grid instance. (Always supported by `Grid`, now also supported by `DataView`.)
 
 ## v56.4.0 - 2023-05-10
 
 ### 🎁 New Features
 
 * Ensure that non-committed values are also checked when filtering a store with a FieldFilter.
- This will maximize chances that records under edit will not disappear from user view due to
- active filters.
+  This will maximize chances that records under edit will not disappear from user view due to
+  active filters.
 
 ### 🐞 Bug Fixes
 
 * Fix bug where Grid ColumnHeaders could throw when `groupDisplayType` was set to `singleColumn`.
 
 ### ⚙️ Technical
+
 * Adjustment to core model lookup in Hoist components to better support automated testing.
-Components no longer strictly require rendering within an `AppContainer`.
+  Components no longer strictly require rendering within an `AppContainer`.
 
 ### ⚙️ Typescript API Adjustments
 
@@ -5221,7 +5236,7 @@ and AG Grid upgrade, and more. 🚀
 
 ------------------------------------------
 
-Copyright © 2022 Extremely Heavy Industries Inc. - all rights reserved
+Copyright © 2023 Extremely Heavy Industries Inc. - all rights reserved
 
 ------------------------------------------
 

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {box, div, filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
@@ -26,7 +26,7 @@ export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> 
     /** Min height in pixels of the popover menu itself. */
     popoverMinHeight?: number;
 
-    /** Position for chooser popover, as per Blueprint docs. */
+    /** Position of popover relative to target button. */
     popoverPosition?: 'bottom' | 'top';
 
     /** Title for popover (default "GROUP BY") or null to suppress. */
@@ -57,7 +57,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             popoverMinHeight,
             popoverTitle = 'Group By',
             popoverPosition = 'bottom',
-            styleButtonAsInput = false,
+            styleButtonAsInput = true,
             ...rest
         },
         ref
@@ -66,14 +66,6 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             isOpen = editorIsOpen || favoritesIsOpen,
             label = isEmpty(value) && allowEmpty ? emptyText : model.getValueLabel(value),
             [layoutProps, buttonProps] = splitLayoutProps(rest);
-
-        let content = null;
-
-        if (favoritesIsOpen) {
-            content = favoritesMenu();
-        } else if (editorIsOpen) {
-            content = editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText});
-        }
 
         return box({
             ref,
@@ -99,34 +91,22 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                         ),
                         minimal: styleButtonAsInput,
                         ...buttonProps,
-                        // onClick: () => model.showEditor()
-                        onClick: () => model.toggleEditor()
+                        onClick: () => model.showEditor()
                     }),
                     favoritesIcon()
                 ),
-                // content: favoritesIsOpen
-                //     ? favoritesMenu()
-                //     : editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText}),
-                content: content,
+                content: favoritesIsOpen
+                    ? favoritesMenu()
+                    : editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText}),
                 onInteraction: (nextOpenState, e) => {
                     if (isOpen && nextOpenState === false) {
-                        console.log('Interacting');
                         // Prevent clicks with Select controls from closing popover
                         const id = MENU_PORTAL_ID,
                             selectPortal = document.getElementById(id)?.contains(e?.target),
-                            selectClick = e?.target?.classList.contains('xh-select__single-value'),
-                            groupByClick =
-                                e?.target?.classList.contains(
-                                    'xh-grouping-chooser-button--with-favorites'
-                                ) ||
-                                e?.target?.parentElement?.classList.contains(
-                                    'xh-grouping-chooser-button--with-favorites'
-                                );
+                            selectClick = e?.target?.classList.contains('xh-select__single-value');
 
                         if (!selectPortal && !selectClick) {
-                            if (!groupByClick) {
-                                model.commitPendingValueAndClose();
-                            }
+                            model.commitPendingValueAndClose();
                         }
                     }
                 }
@@ -322,8 +302,7 @@ const favoritesIcon = hoistCmp.factory<GroupingChooserModel>({
             item: Icon.favorite(),
             className: 'xh-grouping-chooser__favorite-icon',
             onClick: e => {
-                // model.openFavoritesMenu();
-                model.toggleFavoritesMenu();
+                model.openFavoritesMenu();
                 e.stopPropagation();
             }
         });

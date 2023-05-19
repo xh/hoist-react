@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {
@@ -32,8 +32,8 @@ import {
 export interface GroupingChooserConfig {
     /**
      * Dimensions available for selection. When using GroupingChooser to create Cube queries,
-     * it is recommended to pass the `dimensions` from the related cube (or a filtered subset thereof).
-     * (Note that CubeField meets the DimensionSpec interface).
+     * it is recommended to pass the `dimensions` from the related cube (or a subset thereof).
+     * Note that {@link CubeField} meets the `DimensionSpec` interface.
      */
     dimensions?: (DimensionSpec | string)[];
 
@@ -52,7 +52,10 @@ export interface GroupingChooserConfig {
     /** Maximum number of dimensions allowed in a single grouping. */
     maxDepth?: number;
 
-    /** False (default) requires user to click outside Popover for table to update. */
+    /**
+     * False (default) waits for the user to dismiss the popover before updating the
+     * external/observable value.
+     */
     commitOnChange?: boolean;
 }
 
@@ -85,11 +88,11 @@ export class GroupingChooserModel extends HoistModel {
     dimensionNames: string[];
     allowEmpty: boolean;
     maxDepth: number;
+    commitOnChange: boolean;
 
     @managed provider: PersistenceProvider = null;
     persistValue: boolean = false;
     persistFavorites: boolean = false;
-    commitOnChange: boolean = false;
 
     // Implementation fields for Control
     @observable.ref pendingValue: string[] = [];
@@ -123,7 +126,8 @@ export class GroupingChooserModel extends HoistModel {
         initialFavorites = [],
         persistWith = null,
         allowEmpty = false,
-        maxDepth = null
+        maxDepth = null,
+        commitOnChange = false
     }: GroupingChooserConfig) {
         super();
         makeObservable(this);
@@ -132,6 +136,7 @@ export class GroupingChooserModel extends HoistModel {
         this.dimensionNames = keys(this.dimensions);
         this.allowEmpty = allowEmpty;
         this.maxDepth = maxDepth;
+        this.commitOnChange = commitOnChange;
 
         throwIf(isEmpty(this.dimensions), 'Must provide valid dimensions available for selection.');
 
@@ -193,32 +198,20 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     @action
-    toggleEditor() {
-        // showEditor() {
-        console.log('te');
-        // this.editorIsOpen = true;
+    showEditor() {
         this.pendingValue = this.value;
-        this.editorIsOpen = !this.editorIsOpen;
+        this.editorIsOpen = true;
         this.favoritesIsOpen = false;
     }
 
     @action
     openFavoritesMenu() {
-        console.log('ofm');
         this.favoritesIsOpen = true;
         this.editorIsOpen = false;
     }
 
     @action
-    toggleFavoritesMenu() {
-        console.log('tf');
-        this.favoritesIsOpen = !this.favoritesIsOpen;
-        this.editorIsOpen = false;
-    }
-
-    @action
     closePopover() {
-        console.log('cp');
         this.editorIsOpen = false;
         this.favoritesIsOpen = false;
     }
@@ -259,7 +252,6 @@ export class GroupingChooserModel extends HoistModel {
 
     @action
     commitPendingValueAndClose() {
-        console.log('cpvc');
         const {pendingValue, value} = this;
         if (!isEqual(value, pendingValue) && this.validateValue(pendingValue)) {
             this.setValue(pendingValue);

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
@@ -18,6 +18,7 @@ import {
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
+import {tooltip} from '@xh/hoist/kit/blueprint';
 import {
     reactAsyncCreatableSelect,
     reactAsyncSelect,
@@ -74,6 +75,12 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
 
     /** True to allow entry/selection of multiple values - "tag picker" style. */
     enableMulti?: boolean;
+
+    /**
+     * True to enable tooltips on selected values. Enable when the space
+     * available to the select component might not support showing the value's full text.
+     */
+    enableTooltips?: boolean;
 
     /**
      * True to use react-windowed-select for improved performance on large option lists.
@@ -362,7 +369,7 @@ class SelectInputModel extends HoistInputModel {
         super.noteFocused();
     }
 
-    selectText() {
+    private selectText() {
         const {reactSelect} = this;
         if (!reactSelect) return;
 
@@ -430,7 +437,7 @@ class SelectInputModel extends HoistInputModel {
         return this.findOption(external, !isNil(external));
     }
 
-    findOption(value, createIfNotFound, options = this.internalOptions) {
+    private findOption(value, createIfNotFound, options = this.internalOptions) {
         // Do a depth-first search of options
         for (const option of options) {
             if (option.options) {
@@ -455,7 +462,7 @@ class SelectInputModel extends HoistInputModel {
         return internal.value;
     }
 
-    normalizeOptions(options, depth = 0) {
+    private normalizeOptions(options, depth = 0) {
         throwIf(depth > 1, 'Grouped select options support only one-deep nesting.');
 
         options = options || [];
@@ -465,11 +472,11 @@ class SelectInputModel extends HoistInputModel {
     // Normalize / clone a single source value into a normalized option object. Supports Strings
     // and Objects. Objects are validated/defaulted to ensure a label+value or label+options sublist,
     // with other fields brought along to support Selects emitting value objects with ad hoc properties.
-    toOption(src, depth) {
+    private toOption(src, depth) {
         return isPlainObject(src) ? this.objectToOption(src, depth) : this.valueToOption(src);
     }
 
-    objectToOption(src, depth) {
+    private objectToOption(src, depth) {
         const {componentProps} = this,
             labelField = withDefault(componentProps.labelField, 'label'),
             valueField = withDefault(componentProps.valueField, 'value');
@@ -492,7 +499,7 @@ class SelectInputModel extends HoistInputModel {
               };
     }
 
-    valueToOption(src) {
+    private valueToOption(src) {
         return {label: src != null ? src.toString() : '-null-', value: src};
     }
 
@@ -542,7 +549,7 @@ class SelectInputModel extends HoistInputModel {
         return optionRenderer(opt);
     };
 
-    optionRenderer = opt => {
+    private optionRenderer = opt => {
         if (this.hideSelectedOptionCheck) {
             return div(opt.label);
         }
@@ -609,6 +616,24 @@ class SelectInputModel extends HoistInputModel {
         };
     }
 
+    getMultiValueLabelCmp() {
+        return this.componentProps.enableTooltips
+            ? props => {
+                  props = this.withTooltip(props, 'xh-select__tooltip__target');
+                  return createElement(components.MultiValueLabel, props);
+              }
+            : components.MultiValueLabel;
+    }
+
+    getSingleValueCmp() {
+        return this.componentProps.enableTooltips
+            ? props => {
+                  props = this.withTooltip(props, 'xh-select__tooltip__target');
+                  return createElement(components.SingleValue, props);
+              }
+            : components.SingleValue;
+    }
+
     noOptionsMessageFn = params => {
         // account for bug in react-windowed-select https://github.com/jacobworrel/react-windowed-select/issues/19
         if (!params) return '';
@@ -634,6 +659,17 @@ class SelectInputModel extends HoistInputModel {
             document.body.appendChild(portal);
         }
         return portal;
+    }
+
+    private withTooltip(props: PlainObject, targetClassName: string): PlainObject {
+        return {
+            ...props,
+            children: tooltip({
+                targetClassName,
+                content: props.children,
+                target: props.children
+            })
+        };
     }
 }
 
@@ -663,7 +699,9 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
                 DropdownIndicator: model.getDropdownIndicatorCmp(),
                 ClearIndicator: model.getClearIndicatorCmp(),
                 IndicatorSeparator: () => null,
-                ValueContainer: model.getValueContainerCmp()
+                ValueContainer: model.getValueContainerCmp(),
+                MultiValueLabel: model.getMultiValueLabelCmp(),
+                SingleValue: model.getSingleValueCmp()
             },
 
             // A shared div is created lazily here as needed, appended to the body, and assigned
