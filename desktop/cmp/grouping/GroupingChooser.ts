@@ -67,14 +67,6 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             label = isEmpty(value) && allowEmpty ? emptyText : model.getValueLabel(value),
             [layoutProps, buttonProps] = splitLayoutProps(rest);
 
-        let content = null;
-
-        if (favoritesIsOpen) {
-            content = favoritesMenu();
-        } else if (editorIsOpen) {
-            content = editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText});
-        }
-
         return box({
             ref,
             className,
@@ -99,15 +91,15 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                         ),
                         minimal: styleButtonAsInput,
                         ...buttonProps,
-                        // onClick: () => model.showEditor()
                         onClick: () => model.toggleEditor()
                     }),
                     favoritesIcon()
                 ),
-                // content: favoritesIsOpen
-                //     ? favoritesMenu()
-                //     : editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText}),
-                content: content,
+                content: favoritesIsOpen
+                    ? favoritesMenu()
+                    : editorIsOpen
+                    ? editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText})
+                    : null,
                 onInteraction: (nextOpenState, e) => {
                     if (isOpen && nextOpenState === false) {
                         console.log('Interacting');
