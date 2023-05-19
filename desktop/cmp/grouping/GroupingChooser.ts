@@ -57,7 +57,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             popoverMinHeight,
             popoverTitle = 'Group By',
             popoverPosition = 'bottom',
-            styleButtonAsInput = true,
+            styleButtonAsInput = false,
             ...rest
         },
         ref
@@ -66,6 +66,14 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             isOpen = editorIsOpen || favoritesIsOpen,
             label = isEmpty(value) && allowEmpty ? emptyText : model.getValueLabel(value),
             [layoutProps, buttonProps] = splitLayoutProps(rest);
+
+        let content = null;
+
+        if (favoritesIsOpen) {
+            content = favoritesMenu();
+        } else if (editorIsOpen) {
+            content = editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText});
+        }
 
         return box({
             ref,
@@ -91,22 +99,34 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                         ),
                         minimal: styleButtonAsInput,
                         ...buttonProps,
-                        onClick: () => model.showEditor()
+                        // onClick: () => model.showEditor()
+                        onClick: () => model.toggleEditor()
                     }),
                     favoritesIcon()
                 ),
-                content: favoritesIsOpen
-                    ? favoritesMenu()
-                    : editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText}),
+                // content: favoritesIsOpen
+                //     ? favoritesMenu()
+                //     : editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText}),
+                content: content,
                 onInteraction: (nextOpenState, e) => {
                     if (isOpen && nextOpenState === false) {
+                        console.log('Interacting');
                         // Prevent clicks with Select controls from closing popover
                         const id = MENU_PORTAL_ID,
                             selectPortal = document.getElementById(id)?.contains(e?.target),
-                            selectClick = e?.target?.classList.contains('xh-select__single-value');
+                            selectClick = e?.target?.classList.contains('xh-select__single-value'),
+                            groupByClick =
+                                e?.target?.classList.contains(
+                                    'xh-grouping-chooser-button--with-favorites'
+                                ) ||
+                                e?.target?.parentElement?.classList.contains(
+                                    'xh-grouping-chooser-button--with-favorites'
+                                );
 
                         if (!selectPortal && !selectClick) {
-                            model.commitPendingValueAndClose();
+                            if (!groupByClick) {
+                                model.commitPendingValueAndClose();
+                            }
                         }
                     }
                 }
@@ -302,7 +322,8 @@ const favoritesIcon = hoistCmp.factory<GroupingChooserModel>({
             item: Icon.favorite(),
             className: 'xh-grouping-chooser__favorite-icon',
             onClick: e => {
-                model.openFavoritesMenu();
+                // model.openFavoritesMenu();
+                model.toggleFavoritesMenu();
                 e.stopPropagation();
             }
         });

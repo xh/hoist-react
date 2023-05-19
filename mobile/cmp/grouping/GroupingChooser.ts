@@ -66,7 +66,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                     item: span(label),
                     ...buttonProps,
                     // onClick: () => model.showEditor()
-                    onClick: () => model.showEditor()
+                    onClick: () => model.toggleEditor()
                 }),
                 favoritesButton()
             ]
