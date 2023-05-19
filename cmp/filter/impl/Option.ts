@@ -70,7 +70,12 @@ export function fieldFilterOption({filter, fieldSpec, isExact = false}): FilterC
         displayValue = filter.op === '!=' ? 'not blank' : 'blank';
     } else {
         displayOp = filter.op;
-        fieldType = fieldType === 'tags' ? 'string' : fieldType;
+        fieldType =
+            fieldType === 'tags'
+                ? 'string'
+                : fieldSpec.isMismatchedDateFieldType
+                ? 'date'
+                : fieldType;
         displayValue = fieldSpec.renderValue(
             parseFieldValue(filter.value, fieldType, null),
             filter.op

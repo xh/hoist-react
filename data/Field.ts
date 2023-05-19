@@ -145,7 +145,7 @@ export function parseFieldValue(
         case 'date':
             return isDate(val) ? val : new Date(val);
         case 'localDate':
-            return isLocalDate(val) ? val : LocalDate.from(val);
+            return isLocalDate(val) ? val : LocalDate.get(val);
     }
 
     throw XH.exception(`Unknown field type '${type}'`);
