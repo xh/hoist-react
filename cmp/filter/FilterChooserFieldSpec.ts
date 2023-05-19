@@ -13,7 +13,6 @@ import {parseFieldValue, View} from '@xh/hoist/data';
 import {fmtDate, parseNumber} from '@xh/hoist/format';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
-import moment from 'moment';
 import {isValidElement, ReactNode} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 
@@ -124,19 +123,9 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
             return input => parseNumber(input);
         }
 
-        // Default date parser if fieldSpec's fieldType does not match source field's fieldType,
-        // indicating need for special handling for '>' & '<=' queries.
+        // Default date parser if fieldSpec's fieldType does not match source field's fieldType.
         if (!valueParser && this.isMismatchedDateFieldType) {
-            return (v, op) => {
-                let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
-                if (!ret.isValid()) return null;
-
-                if (['>', '<='].includes(op)) {
-                    ret = ret.endOf('day');
-                }
-
-                return ret.toDate();
-            };
+            return (v, op) => this.parseDate(v, op);
         }
         return valueParser;
     }

@@ -7,6 +7,7 @@
 import {HoistBase} from '@xh/hoist/core';
 import {Field, Store, FieldFilter, FieldType, genDisplayName, View} from '@xh/hoist/data';
 import {isEmpty} from 'lodash';
+import moment from 'moment';
 import {FieldFilterOperator} from './Types';
 
 export interface BaseFilterFieldSpecConfig {
@@ -158,6 +159,18 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
             this.supportsOperator(op) &&
             (op === '=' || op === '!=' || op === 'includes' || op === 'excludes')
         );
+    }
+
+    parseDate(v: any, op: FieldFilterOperator): Date {
+        let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
+        if (!ret.isValid()) return null;
+
+        // Note special handling for '>' & '<=' queries.
+        if (['>', '<='].includes(op)) {
+            ret = ret.endOf('day');
+        }
+
+        return ret.toDate();
     }
 
     //------------------------

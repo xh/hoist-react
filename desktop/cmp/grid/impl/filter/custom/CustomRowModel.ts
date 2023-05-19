@@ -9,7 +9,6 @@ import {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
 import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {isArray, isNil} from 'lodash';
-import moment from 'moment';
 import {CustomTabModel} from './CustomTabModel';
 
 type OperatorOptionValue = 'blank' | 'not blank' | FieldFilterOperator;
@@ -41,16 +40,7 @@ export class CustomRowModel extends HoistModel {
             op = '!=';
             value = null;
         } else if (isMismatchedDateFieldType) {
-            // Default date parser if fieldSpec's fieldType does not match source field's fieldType,
-            // indicating need for special handling for '>' & '<=' queries.
-            let newVal = moment(value, ['YYYY-MM-DD', 'YYYYMMDD'], true);
-            if (!newVal.isValid()) return null;
-
-            if (['>', '<='].includes(op)) {
-                newVal = newVal.endOf('day');
-            }
-
-            value = newVal.toDate();
+            value = this.fieldSpec.parseDate(value, op);
         } else if (isNil(value)) {
             return null;
         }
