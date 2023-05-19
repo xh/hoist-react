@@ -41,10 +41,11 @@ export class CustomRowModel extends HoistModel {
             op = '!=';
             value = null;
         } else if (isMismatchedDateFieldType) {
+            // Default date parser if fieldSpec's fieldType does not match source field's fieldType,
+            // indicating need for special handling for '>' & '<=' queries.
             let newVal = moment(value, ['YYYY-MM-DD', 'YYYYMMDD'], true);
             if (!newVal.isValid()) return null;
 
-            // Note special handling for '>' & '<=' queries.
             if (['>', '<='].includes(op)) {
                 newVal = newVal.endOf('day');
             }

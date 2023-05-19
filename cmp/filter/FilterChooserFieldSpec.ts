@@ -124,12 +124,13 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
             return input => parseNumber(input);
         }
 
+        // Default date parser if fieldSpec's fieldType does not match source field's fieldType,
+        // indicating need for special handling for '>' & '<=' queries.
         if (!valueParser && this.isMismatchedDateFieldType) {
             return (v, op) => {
                 let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
                 if (!ret.isValid()) return null;
 
-                // Note special handling for '>' & '<=' queries.
                 if (['>', '<='].includes(op)) {
                     ret = ret.endOf('day');
                 }
