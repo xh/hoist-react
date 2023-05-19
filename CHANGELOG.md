@@ -6,8 +6,8 @@
 
 * Added `regexOption` and `caseSensitive` props to the `LogDisplayModel`. (Case-sensitive search
   requires `hoist-core >= v16.2.0`).
-* Improved filtering of date `fieldType` to end of day when operator is > or <=. Developers will
-  need to indicate `localDate` as the `fieldSpec.fieldType` to trigger this behavior.
+* Improved filtering of `date` `fieldType` to end of day when operator is '>' or '<='. Developers
+  will need to indicate `localDate` as the `fieldSpec.fieldType` to trigger this behavior.
 
 ### 🎁 New Features
 
