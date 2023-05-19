@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
@@ -213,7 +213,6 @@ export class ValuesTabModel extends HoistModel {
             sizingMode: 'compact',
             stripeRows: false,
             sortBy: 'value',
-            colDefaults: {sortable: false},
             onRowClicked: ({data: record}) => {
                 this.setRecsChecked(!record.get('isChecked'), record.get('value'));
             },
@@ -233,6 +232,7 @@ export class ValuesTabModel extends HoistModel {
                     pinned: true,
                     align: 'center',
                     headerAlign: 'center',
+                    sortable: false,
                     rendererIsComplex: true,
                     renderer: (v, {record}) => {
                         return checkbox({

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {HoistBase, managed, PlainObject} from '@xh/hoist/core';
@@ -224,7 +224,7 @@ export class Cube extends HoistBase {
      */
     async updateDataAsync(
         rawData: PlainObject[] | StoreTransaction,
-        infoUpdates: PlainObject
+        infoUpdates: PlainObject = {}
     ): Promise<void> {
         // 1) Process data
         const changeLog = this.store.updateData(rawData);
