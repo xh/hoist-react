@@ -160,6 +160,6 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         this.showBrowserContextMenu = showBrowserContextMenu;
         this.disableXssProtection = disableXssProtection;
 
-        Object.freeze(this);
+        // Object.freeze(this);
     }
 }
