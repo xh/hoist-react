@@ -130,6 +130,11 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
         return this.fieldType === 'bool';
     }
 
+    get isMismatchedDateFieldType(): boolean {
+        const sourceField = this.source.fields.find(f => f.name === this.field);
+        return this.fieldType === 'localDate' && sourceField.type === 'date';
+    }
+
     loadValues() {
         if (!this.hasExplicitValues && this.enableValues) {
             this.loadValuesFromSource();
@@ -165,6 +170,7 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
     private getDefaultOperators(): FieldFilterOperator[] {
         if (this.isBoolFieldType) return ['='];
         if (this.isCollectionType) return ['includes', 'excludes'];
+        if (this.isMismatchedDateFieldType) return ['>', '>=', '<', '<='];
         return this.isValueType
             ? ['=', '!=', 'like', 'not like', 'begins', 'ends']
             : ['>', '>=', '<', '<=', '=', '!='];

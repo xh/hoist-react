@@ -129,9 +129,7 @@ export class ActivityTrackingModel extends HoistModel {
                 },
                 {
                     field: 'dateCreated',
-                    fieldType: 'localDate',
-                    example: 'YYYY-MM-DD',
-                    ops: ['>', '>=', '<', '<=']
+                    fieldType: 'localDate'
                 }
             ],
             persistWith: this.persistWith

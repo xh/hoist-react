@@ -12,8 +12,8 @@ import {FieldFilterOperator} from '@xh/hoist/data/filter/Types';
 import {parseFieldValue, View} from '@xh/hoist/data';
 import {fmtDate, parseNumber} from '@xh/hoist/format';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
-import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isFunction, isNil} from 'lodash';
+import moment from 'moment';
 import {isValidElement, ReactNode} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 
@@ -123,6 +123,20 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         if (!valueParser && (this.fieldType === 'int' || this.fieldType === 'number')) {
             return input => parseNumber(input);
         }
+
+        if (!valueParser && this.isMismatchedDateFieldType) {
+            return (v, op) => {
+                let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
+                if (!ret.isValid()) return null;
+
+                // Note special handling for '>' & '<=' queries.
+                if (['>', '<='].includes(op)) {
+                    ret = ret.endOf('day');
+                }
+
+                return ret.toDate();
+            };
+        }
         return valueParser;
     }
 
@@ -134,7 +148,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         // suggest values from already-filtered fields that will expand the results when selected.
         const sourceStore = source instanceof View ? source.cube.store : source;
         sourceStore.allRecords.forEach(rec => {
-            const val = this.valueFromRecord(rec);
+            const val = rec.get(field);
             if (!isNil(val)) {
                 if (sourceStore.getField(field).type === 'tags') {
                     val.forEach(it => values.add(it));
@@ -145,17 +159,6 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         });
 
         this.values = Array.from(values);
-    }
-
-    valueFromRecord(record) {
-        const {field, fieldType} = this,
-            recFieldType = record.fields.find(it => it.name === field).type;
-        let val = record.get(field);
-
-        if (fieldType === 'localDate' && recFieldType === 'date') {
-            val = LocalDate.from(val);
-        }
-        return val;
     }
 }
 
