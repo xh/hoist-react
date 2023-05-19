@@ -271,7 +271,7 @@ export interface ReactionSpec<T = any> extends IReactionOptions<T, any> {
     when?: () => boolean;
 
     /** Function to run - second arg to underlying reaction()/when() call. */
-    run?: (data?: T) => any;
+    run?: (curr?: T, prev?: T) => void;
 
     /** Specify to debounce run function */
     debounce?: DebounceSpec;
