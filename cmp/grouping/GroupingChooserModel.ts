@@ -196,9 +196,9 @@ export class GroupingChooserModel extends HoistModel {
     toggleEditor() {
         // showEditor() {
         console.log('te');
+        // this.editorIsOpen = true;
         this.pendingValue = this.value;
         this.editorIsOpen = !this.editorIsOpen;
-        // this.editorIsOpen = true;
         this.favoritesIsOpen = false;
     }
 
