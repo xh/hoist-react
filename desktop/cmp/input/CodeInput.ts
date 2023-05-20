@@ -83,7 +83,7 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
      */
     readonly?: boolean;
 
-    /** True to display a copy button at bottom-right of input. */
+    /** True (default) to display a copy button at bottom-right of input. */
     showCopyButton?: boolean;
 
     /**
@@ -148,7 +148,7 @@ class CodeInputModel extends HoistInputModel {
     }
 
     get showCopyButton(): boolean {
-        return withDefault(this.componentProps.showCopyButton, false);
+        return withDefault(this.componentProps.showCopyButton, true);
     }
 
     get showFullscreenButton(): boolean {
@@ -182,14 +182,14 @@ class CodeInputModel extends HoistInputModel {
     }
 
     get actionButtons(): ReactElement[] {
-        const {showCopyButton, showFormatButton, showFullscreenButton, editor} = this;
+        const {showCopyButton, showFormatButton, showFullscreenButton} = this;
         return compact([
             showCopyButton
                 ? clipboardButton({
                       text: null,
                       title: 'Copy to clipboard',
                       successMessage: 'Contents copied to clipboard',
-                      getCopyText: () => editor.getValue()
+                      getCopyText: () => this.internalValue
                   })
                 : null,
             showFormatButton

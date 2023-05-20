@@ -6,15 +6,13 @@
 
 * Added `regexOption` and `caseSensitive` props to the `LogDisplayModel`. (Case-sensitive search
   requires `hoist-core >= v16.2.0`).
-
-### 🎁 New Features
-
 * Added new `GroupingChooserModel.commitOnChange` config - enable to update the observable grouping
   value as the user adjusts their choices within the control. Default behavior is unchanged,
   requiring user to dismiss the popover to commit the new value.
 * Added new `Select.enableTooltips` prop - enable for select inputs where the text of a
   selected value might be elided due to space constraints. The tooltip will display the full text.
 * Enabled user-driven sorting for the list of available values within Grid column filters.
+* Enabled copy-to-clipboard button in JSON inputs by default.
 
 ### ⚙️ Technical
 
@@ -24,6 +22,7 @@
 ### 🐞 Bug Fixes
 
 * Fixed Panel with modal support enabled occasionally rendering over child popovers.
+* Fixed asynchronous `editor` access in `CodeInput` through `HoistInputModel`.
 
 ## v56.4.0 - 2023-05-10
 
