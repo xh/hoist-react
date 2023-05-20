@@ -102,7 +102,6 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                     : null,
                 onInteraction: (nextOpenState, e) => {
                     if (isOpen && nextOpenState === false) {
-                        console.log('Interacting');
                         // Prevent clicks with Select controls from closing popover
                         const id = MENU_PORTAL_ID,
                             selectPortal = document.getElementById(id)?.contains(e?.target),
@@ -115,10 +114,8 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                                     'xh-grouping-chooser-button--with-favorites'
                                 );
 
-                        if (!selectPortal && !selectClick) {
-                            if (!groupByClick) {
-                                model.commitPendingValueAndClose();
-                            }
+                        if (!selectPortal && !selectClick && !groupByClick) {
+                            model.commitPendingValueAndClose();
                         }
                     }
                 }
