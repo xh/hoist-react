@@ -12,7 +12,7 @@
 * Added new `Select.enableTooltips` prop - enable for select inputs where the text of a
   selected value might be elided due to space constraints. The tooltip will display the full text.
 * Enabled user-driven sorting for the list of available values within Grid column filters.
-* Enabled copy-to-clipboard button in JSON inputs by default.
+* Updated `CodeInput.showCopyButton` (copy-to-clipboard feature) default to true (enabled).
 
 ### ⚙️ Technical
 
@@ -21,8 +21,9 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed Panel with modal support enabled occasionally rendering over child popovers.
-* Fixed asynchronous `editor` access in `CodeInput` through `HoistInputModel`.
+* Fixed layout bug where popovers triggered from a parent `Panel` with `modalSupport` active could
+  render beneath that parent's own modal dialog.
+* Fixed broken `CodeInput` copy-to-clipboard feature.
 
 ## v56.4.0 - 2023-05-10
 
