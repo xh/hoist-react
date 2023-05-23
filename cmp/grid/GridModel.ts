@@ -57,7 +57,7 @@ import {
     withDefault
 } from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
-import {
+import _, {
     castArray,
     clone,
     cloneDeep,
@@ -1524,10 +1524,19 @@ export class GridModel extends HoistModel {
         if (isEmpty(cols)) return;
 
         const ids = this.collectIds(cols);
-        ensureUnique(
-            ids,
-            'All colIds and groupIds in a GridModel columns collection must be unique.'
-        );
+
+        const nonUnique = _(ids)
+            .groupBy()
+            .pickBy(x => x.length > 1)
+            .keys();
+
+        const exceptionMessage = nonUnique.size()
+            ? `${nonUnique} colId/groupId${
+                  nonUnique.size() > 1 ? 's are' : ' is'
+              } not unique. Use the 'ColumnSpec'/'ColumnGroupSpec' configs to resolve a unique ID for each columns collection.`
+            : 'colIds and groupIds are unique in this GridModel columns collection.';
+
+        ensureUnique(ids, exceptionMessage);
 
         const treeCols = cols.filter(it => it.isTreeColumn);
         warnIf(
