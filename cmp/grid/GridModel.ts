@@ -1530,7 +1530,7 @@ export class GridModel extends HoistModel {
         if (!nonUnique.isEmpty()) {
             const msg =
                 `Non-unique ids: [${nonUnique}] ` +
-                'Use "ColumnSpec"/"ColumnGroupSpec" configs to resolve a unique ID for each column/group.';
+                "Use 'ColumnSpec'/'ColumnGroupSpec' configs to resolve a unique ID for each column/group.";
             throw XH.exception(msg);
         }
 
