@@ -5,7 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {Exception} from '@xh/hoist/core/exception/Exception';
-import {
+import _, {
     forOwn,
     isArray,
     isEmpty,
@@ -199,7 +199,16 @@ export function ensureNotEmpty(obj: any, exceptionMessage?: string) {
  * @param exceptionMessage - error to throw if non-unique values found.
  */
 export function ensureUnique(arr: any[], exceptionMessage?: string) {
-    exceptionMessage = exceptionMessage ?? 'All items in the provided array must be unique.';
+    let nonUnique = _(arr)
+        .groupBy()
+        .pickBy(x => x.length > 1)
+        .keys();
+
+    exceptionMessage = nonUnique.size()
+        ? `${nonUnique} colId${
+              nonUnique.size() > 1 ? "'s are" : ' is'
+          } not unique. Use the 'ColumnSpec' config to resolve a unique ID for each column.`
+        : exceptionMessage;
     throwIf(arr.length != uniq(arr).length, exceptionMessage);
 }
 
