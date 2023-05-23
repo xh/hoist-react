@@ -49,7 +49,6 @@ import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
     deepFreeze,
-    ensureUnique,
     logWithDebug,
     throwIf,
     warnIf,
@@ -1524,19 +1523,16 @@ export class GridModel extends HoistModel {
         if (isEmpty(cols)) return;
 
         const ids = this.collectIds(cols);
-
         const nonUnique = _(ids)
             .groupBy()
             .pickBy(x => x.length > 1)
             .keys();
-
-        const exceptionMessage = nonUnique.size()
-            ? `${nonUnique} colId/groupId${
-                  nonUnique.size() > 1 ? 's are' : ' is'
-              } not unique. Use the 'ColumnSpec'/'ColumnGroupSpec' configs to resolve a unique ID for each columns collection.`
-            : 'colIds and groupIds are unique in this GridModel columns collection.';
-
-        ensureUnique(ids, exceptionMessage);
+        if (!nonUnique.isEmpty()) {
+            const msg =
+                `Non-unique ids: [${nonUnique}] ` +
+                'Use "ColumnSpec"/"ColumnGroupSpec" configs to resolve a unique ID for each column/group.';
+            throw XH.exception(msg);
+        }
 
         const treeCols = cols.filter(it => it.isTreeColumn);
         warnIf(
