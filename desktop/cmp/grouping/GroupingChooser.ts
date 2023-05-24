@@ -100,25 +100,8 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                     : editorIsOpen
                     ? editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText})
                     : null,
-                onInteraction: (nextOpenState, e) => {
-                    if (isOpen && nextOpenState === false) {
-                        // Prevent clicks with Select controls from closing popover
-                        const id = MENU_PORTAL_ID,
-                            selectPortal = document.getElementById(id)?.contains(e?.target),
-                            selectClick = e?.target?.classList.contains('xh-select__single-value'),
-                            groupByClick =
-                                e?.target?.classList.contains(
-                                    'xh-grouping-chooser-button--with-favorites'
-                                ) ||
-                                e?.target?.parentElement?.classList.contains(
-                                    'xh-grouping-chooser-button--with-favorites'
-                                );
-
-                        if (!selectPortal && !selectClick && !groupByClick) {
-                            model.commitPendingValueAndClose();
-                        }
-                    }
-                }
+                onInteraction: (nextOpenState, e) =>
+                    targetIsControlButtonOrPortal(isOpen, e, model, nextOpenState)
             })
         });
     }
@@ -299,6 +282,29 @@ function getDimOptions(dims, model) {
         return {value: dimName, label: model.getDimDisplayName(dimName)};
     });
     return sortBy(ret, 'label');
+}
+
+function targetIsControlButtonOrPortal(isOpen, e, model, nextOpenState) {
+    if (isOpen && nextOpenState === false) {
+        // Prevent clicks with Select controls from closing popover
+        const id = MENU_PORTAL_ID,
+            selectPortal = document.getElementById(id)?.contains(e?.target),
+            selectClick = e?.target?.classList.contains('xh-select__single-value');
+        // Determines if grouping-chooser is a parent - if not, close popover
+        let editorClick = false;
+        let elem = e?.target;
+        if (!elem) return false;
+        while (elem) {
+            elem.classList.contains('xh-grouping-chooser-button--with-favorites')
+                ? ((editorClick = true), (elem = false))
+                : (elem = elem.parentElement);
+            if (elem.classList.contains('xh-tiled-bg')) elem = false;
+        }
+
+        if (!selectPortal && !selectClick && !editorClick) {
+            model.commitPendingValueAndClose();
+        }
+    }
 }
 
 //------------------
