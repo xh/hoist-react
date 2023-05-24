@@ -101,7 +101,9 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                     ? editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText})
                     : null,
                 onInteraction: (nextOpenState, e) =>
-                    targetIsControlButtonOrPortal(isOpen, e, model, nextOpenState)
+                    if (isOpen && nextOpenState === false && e?.target && !targetIsControlButtonOrPortal(e.target)) {
+                        model.commitPendingValueAndClose();
+                    }
             })
         });
     }
@@ -284,36 +286,21 @@ function getDimOptions(dims, model) {
     return sortBy(ret, 'label');
 }
 
-/**
- * Determines if an event's target (a click) is separate from
- * the GroupingChooser button in which case any popovers that are open close
- */
-function targetIsControlButtonOrPortal(isOpen, e, model, nextOpenState) {
-    if (isOpen && nextOpenState === false) {
-        // Prevent clicks with Select controls from closing popover
-        const id = MENU_PORTAL_ID,
-            selectPortal = document.getElementById(id)?.contains(e?.target),
-            selectClick = targetWithin(e, 'xh-select__single-value'),
-            editorClick = targetWithin(e, 'xh-grouping-chooser-button--with-favorites');
-
-        if (!selectPortal && !selectClick && !editorClick) {
-            model.commitPendingValueAndClose();
-        }
-    }
+function targetIsControlButtonOrPortal(target) {       
+    const selectPortal = document.getElementById(MENU_PORTAL_ID)?.contains(target),
+        selectClick = targetWithin(target, 'xh-select__single-value'),
+        editorClick = targetWithin(target, 'xh-grouping-chooser-button--with-favorites');
+    return selectPortal || selectClick || editorClick;
 }
 
 /**
  * Determines whether any of event's target's parents have a specific class name
  */
-function targetWithin(e, className): boolean {
-    let elem = e?.target;
-    while (elem) {
-        if (elem.classList.contains(className)) {
-            return true;
-        }
-        elem = elem.parentElement;
+function targetWithin(target, className): boolean {
+    for (let elem = target; elem; elem = elem.parentElement) {
+        if (elem.classList.contains(className)) return true;
     }
-    return elem;
+    return false;
 }
 
 //------------------
