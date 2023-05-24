@@ -100,10 +100,16 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                     : editorIsOpen
                     ? editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText})
                     : null,
-                onInteraction: (nextOpenState, e) =>
-                    if (isOpen && nextOpenState === false && e?.target && !targetIsControlButtonOrPortal(e.target)) {
+                onInteraction: (nextOpenState, e) => {
+                    if (
+                        isOpen &&
+                        nextOpenState === false &&
+                        e?.target &&
+                        !targetIsControlButtonOrPortal(e.target)
+                    ) {
                         model.commitPendingValueAndClose();
                     }
+                }
             })
         });
     }
@@ -286,7 +292,7 @@ function getDimOptions(dims, model) {
     return sortBy(ret, 'label');
 }
 
-function targetIsControlButtonOrPortal(target) {       
+function targetIsControlButtonOrPortal(target) {
     const selectPortal = document.getElementById(MENU_PORTAL_ID)?.contains(target),
         selectClick = targetWithin(target, 'xh-select__single-value'),
         editorClick = targetWithin(target, 'xh-grouping-chooser-button--with-favorites');
@@ -294,7 +300,7 @@ function targetIsControlButtonOrPortal(target) {
 }
 
 /**
- * Determines whether any of event's target's parents have a specific class name
+ * Determines whether any of the target's parents have a specific class name
  */
 function targetWithin(target, className): boolean {
     for (let elem = target; elem; elem = elem.parentElement) {
