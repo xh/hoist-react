@@ -293,7 +293,6 @@ function targetIsControlButtonOrPortal(isOpen, e, model, nextOpenState) {
         // Determines if grouping-chooser is a parent - if not, close popover
         let editorClick = false;
         let elem = e?.target;
-        if (!elem) return false;
         while (elem) {
             elem.classList.contains('xh-grouping-chooser-button--with-favorites')
                 ? ((editorClick = true), (elem = false))
