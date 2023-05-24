@@ -49,7 +49,6 @@ import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
     deepFreeze,
-    ensureUnique,
     logWithDebug,
     throwIf,
     warnIf,
@@ -57,7 +56,7 @@ import {
     withDefault
 } from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
-import {
+import _, {
     castArray,
     clone,
     cloneDeep,
@@ -1524,10 +1523,16 @@ export class GridModel extends HoistModel {
         if (isEmpty(cols)) return;
 
         const ids = this.collectIds(cols);
-        ensureUnique(
-            ids,
-            'All colIds and groupIds in a GridModel columns collection must be unique.'
-        );
+        const nonUnique = _(ids)
+            .groupBy()
+            .pickBy(x => x.length > 1)
+            .keys();
+        if (!nonUnique.isEmpty()) {
+            const msg =
+                `Non-unique ids: [${nonUnique}] ` +
+                "Use 'ColumnSpec'/'ColumnGroupSpec' configs to resolve a unique ID for each column/group.";
+            throw XH.exception(msg);
+        }
 
         const treeCols = cols.filter(it => it.isTreeColumn);
         warnIf(

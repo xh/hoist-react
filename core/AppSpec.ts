@@ -159,7 +159,5 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         this.lockoutMessage = lockoutMessage;
         this.showBrowserContextMenu = showBrowserContextMenu;
         this.disableXssProtection = disableXssProtection;
-
-        Object.freeze(this);
     }
 }
