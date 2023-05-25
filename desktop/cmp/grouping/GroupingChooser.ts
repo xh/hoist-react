@@ -91,23 +91,23 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                         ),
                         minimal: styleButtonAsInput,
                         ...buttonProps,
-                        onClick: () => model.showEditor()
+                        onClick: () => model.toggleEditor()
                     }),
                     favoritesIcon()
                 ),
                 content: favoritesIsOpen
                     ? favoritesMenu()
-                    : editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText}),
+                    : editorIsOpen
+                    ? editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText})
+                    : null,
                 onInteraction: (nextOpenState, e) => {
-                    if (isOpen && nextOpenState === false) {
-                        // Prevent clicks with Select controls from closing popover
-                        const id = MENU_PORTAL_ID,
-                            selectPortal = document.getElementById(id)?.contains(e?.target),
-                            selectClick = e?.target?.classList.contains('xh-select__single-value');
-
-                        if (!selectPortal && !selectClick) {
-                            model.commitPendingValueAndClose();
-                        }
+                    if (
+                        isOpen &&
+                        nextOpenState === false &&
+                        e?.target &&
+                        !targetIsControlButtonOrPortal(e.target)
+                    ) {
+                        model.commitPendingValueAndClose();
                     }
                 }
             })
@@ -292,6 +292,23 @@ function getDimOptions(dims, model) {
     return sortBy(ret, 'label');
 }
 
+function targetIsControlButtonOrPortal(target) {
+    const selectPortal = document.getElementById(MENU_PORTAL_ID)?.contains(target),
+        selectClick = targetWithin(target, 'xh-select__single-value'),
+        editorClick = targetWithin(target, 'xh-grouping-chooser-button--with-favorites');
+    return selectPortal || selectClick || editorClick;
+}
+
+/**
+ * Determines whether any of the target's parents have a specific class name
+ */
+function targetWithin(target, className): boolean {
+    for (let elem = target; elem; elem = elem.parentElement) {
+        if (elem.classList.contains(className)) return true;
+    }
+    return false;
+}
+
 //------------------
 // Favorites
 //------------------
@@ -302,7 +319,7 @@ const favoritesIcon = hoistCmp.factory<GroupingChooserModel>({
             item: Icon.favorite(),
             className: 'xh-grouping-chooser__favorite-icon',
             onClick: e => {
-                model.openFavoritesMenu();
+                model.toggleFavoritesMenu();
                 e.stopPropagation();
             }
         });

@@ -65,7 +65,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                     className: 'xh-grouping-chooser-button',
                     item: span(label),
                     ...buttonProps,
-                    onClick: () => model.showEditor()
+                    onClick: () => model.toggleEditor()
                 }),
                 favoritesButton()
             ]
@@ -254,7 +254,7 @@ const favoritesButton = hoistCmp.factory<GroupingChooserModel>({
             icon: Icon.favorite(),
             minimal: true,
             className: 'xh-grouping-chooser__favorite-button',
-            onClick: () => model.openFavoritesMenu()
+            onClick: () => model.toggleFavoritesMenu()
         });
     }
 });
