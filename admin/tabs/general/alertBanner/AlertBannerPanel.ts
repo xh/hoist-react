@@ -15,6 +15,7 @@ import {buttonGroupInput, dateInput, switchInput, textArea} from '@xh/hoist/desk
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+import {popover} from '@xh/hoist/kit/blueprint';
 import {LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {AlertBannerModel} from './AlertBannerModel';
 import './AlertBannerPanel.scss';
@@ -75,6 +76,13 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                 div({
                     className: 'xh-alert-banner-panel__form-panel__fields',
                     items: [
+                        formField({
+                            field: 'presets',
+                            item: popover({
+                                target: button({text: 'Banner Presets'}),
+                                content: button({text: 'asdf3'})
+                            })
+                        }),
                         formField({
                             field: 'message',
                             item: textArea({
