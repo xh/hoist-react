@@ -167,9 +167,11 @@ export class FetchService extends HoistService {
 
             if (e.isHoistException) throw e;
 
-            // Just two other cases where we expect this to throw -- Typically we get a failed response)
+            // Just three other cases where we expect this to throw -- Typically we get a failed response)
             throw e.name === 'AbortError'
                 ? Exception.fetchAborted(opts, e)
+                : e.name === 'SyntaxError' // May be thrown by JSON.parse()
+                ? Exception.create(e)
                 : Exception.serverUnavailable(opts, e);
         } finally {
             if (autoAborters[autoAbortKey] === aborter) {
