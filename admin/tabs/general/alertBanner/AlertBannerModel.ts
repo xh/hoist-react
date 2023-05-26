@@ -14,12 +14,18 @@ import {AppModel} from '@xh/hoist/admin/AppModel';
 
 export class AlertBannerModel extends HoistModel {
     savedValue;
+    savedPresets;
 
     @managed
     formModel = new FormModel({
         readonly: AppModel.readonly,
         fields: [
             {name: 'active'},
+            {
+                name: 'presets',
+                initialValue: '',
+                displayName: 'Presets'
+            },
             {
                 name: 'message',
                 initialValue: '',
@@ -89,6 +95,7 @@ export class AlertBannerModel extends HoistModel {
         console.log('fm', formModel);
 
         const value = await XH.fetchJson({url: 'alertBannerAdmin/alertSpec'}),
+            // presets = await XH.fetchJson({url: 'alertBannerAdmin/alertPresets'}),
             initialValues = {
                 ...value,
                 expires: value.expires ? new Date(value.expires) : null
