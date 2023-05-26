@@ -78,7 +78,7 @@ export class FetchService extends HoistService {
                 },
                 aborter
             );
-            return this.NO_JSON_RESPONSES.includes(r.status) ? null : r.json();
+            return this.NO_JSON_RESPONSES.includes(r.status) ? null : this.jsonAsync(r);
         });
     }
 
@@ -284,6 +284,11 @@ export class FetchService extends HoistService {
         } catch (ignore) {
             return null;
         }
+    }
+
+    private async jsonAsync(response: Response) {
+        const text = await response.text();
+        return text ? JSON.parse(text) : undefined;
     }
 
     private qsFilterFn = (prefix, value) => {
