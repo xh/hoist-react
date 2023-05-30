@@ -4,7 +4,8 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed broken change handler for mobile's `NumberInput`, `SearchInput`, and `TextInput`.
+* Fixed broken change handler for mobile inputs that wrap around Onsen UI inputs, including
+  `NumberInput`, `SearchInput`, and `TextInput`.
 
 ## 56.5.0 - 2023-05-26
 
