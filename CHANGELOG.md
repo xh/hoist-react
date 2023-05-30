@@ -4,7 +4,7 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed broken `commitOnChange` feature for mobile's `NumberInput`, `SearchInput`, and `TextInput`.
+* Fixed broken change handler for mobile's `NumberInput`, `SearchInput`, and `TextInput`.
 
 ## 56.5.0 - 2023-05-26
 
