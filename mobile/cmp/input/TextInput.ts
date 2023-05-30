@@ -130,7 +130,7 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
                 className: 'xh-text-input__input',
                 style: {textAlign: withDefault(props.textAlign, 'left')},
 
-                onChange: model.onChange,
+                onInput: model.onChange,
                 onKeyDown: model.onKeyDown,
                 onBlur: model.onBlur,
                 onFocus: model.onFocus

@@ -2,6 +2,10 @@
 
 ## 57.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed broken `commitOnChange` feature for mobile's `NumberInput`, `SearchInput`, and `TextInput`.
+
 ## 56.5.0 - 2023-05-26
 
 ### 🎁 New Features
