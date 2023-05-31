@@ -19,9 +19,6 @@ within its `configureWebpack()` build script factory.
 * `preflight.js` - included by later HDU versions (see above) before any other Hoist or application
   code runs on the page. Used to start page load timing and run a low-level filter for browser
   compatibility.
-* `requiredBlueprintIcons.js` - included by HDU >= v5.2 as a (very) streamlined replacement for the
-  full set of Blueprint JS icons otherwise required by that library. See the comment at the top of
-  the file for additional details and links.
 * `spinner.png` - included by HDU >= 5.11 and embedded within static `index-no-inline.html` entry
   page to provide visual indicator that something is happening when JS app has yet to d/l and start.
 
