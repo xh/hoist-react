@@ -87,7 +87,7 @@
     "@ag-grid-community/client-side-row-model": "29.x",
     "@ag-grid-community/core": "29.x",
     "@ag-grid-community/react": "29.x",
-    "@xh/hoist-dev-utils": "^6.1.2",
+    "@xh/hoist-dev-utils": "^6.2.0",
     "eslint-config-prettier": "8.x",
     "eslint-plugin-tsdoc": "^0.2.17",
     "husky": "^8.0.3",
