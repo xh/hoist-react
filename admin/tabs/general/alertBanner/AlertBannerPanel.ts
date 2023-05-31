@@ -9,7 +9,7 @@ import {code, div, filler, hframe, p, placeholder, span, vbox} from '@xh/hoist/c
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {banner} from '@xh/hoist/desktop/appcontainer/Banner';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {buttonGroupInput, dateInput, switchInput, textArea} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -21,42 +21,14 @@ import {isEmpty, truncate} from 'lodash';
 import {AlertBannerModel} from './AlertBannerModel';
 import './AlertBannerPanel.scss';
 
-export interface AlertBannerPanelProps extends ButtonProps<AlertBannerModel> {
-    /** Text to represent empty state (i.e. value = null or []) */
-    emptyText?: string;
-
-    /** Min height in pixels of the popover menu itself. */
-    popoverMinHeight?: number;
-
-    /** Position of popover relative to target button. */
-    popoverPosition?: 'bottom' | 'top';
-
-    /** Title for popover (default "GROUP BY") or null to suppress. */
-    popoverTitle?: string;
-
-    /** Width in pixels of the popover menu itself. */
-    popoverWidth?: number;
-
-    /** True (default) to style target button as an input field - blends better in toolbars. */
-    styleButtonAsInput?: boolean;
-}
-
 export const alertBannerPanel = hoistCmp.factory({
     model: creates(AlertBannerModel),
 
-    render({
-        emptyText = 'Ungrouped',
-        popoverWidth = 250,
-        popoverMinHeight,
-        popoverTitle = 'Group By'
-    }) {
+    render() {
         return panel({
             className: 'xh-alert-banner-panel',
             mask: 'onLoad',
-            item: hframe(
-                formPanel(emptyText, popoverWidth, popoverMinHeight, popoverTitle),
-                previewPanel()
-            )
+            item: hframe(formPanel(), previewPanel())
         });
     }
 });
