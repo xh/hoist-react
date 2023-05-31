@@ -254,7 +254,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(
             },
             spellCheck: false,
 
-            onChange: model.onValueChange,
+            onInput: model.onValueChange,
             onKeyDown: model.onKeyDown,
             onBlur: model.onBlur,
             onFocus: model.onFocus,
