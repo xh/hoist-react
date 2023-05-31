@@ -7,11 +7,6 @@
 * Added `presetMenu` to the Admin `AlertBannerPanel` - enable the user to save preset banner message
   configurations and load them later to be activated or edited.
 
-### 🐞 Bug Fixes
-
-* Fixed moving `Color` label in Admin `AlertBannerPanel` resulting from `Icon.placeholder()` with
-  same icon, opacity 0 when intent button deselected.
-
 ### 📚 Libraries
 
 * @blueprintjs/core `^4.14 -> ^4.20` (apps might have already updated to a newer minor version)

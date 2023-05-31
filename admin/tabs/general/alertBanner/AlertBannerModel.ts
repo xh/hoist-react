@@ -89,8 +89,6 @@ export class AlertBannerModel extends HoistModel {
         const {formModel} = this;
         if (formModel.isDirty && loadSpec.isAutoRefresh) return;
 
-        formModel.fieldList.map(f => console.log(f.name, ': ', f.value));
-
         const value = await XH.fetchJson({url: 'alertBannerAdmin/alertSpec'}),
             initialValues = {
                 ...value,
