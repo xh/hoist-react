@@ -2,6 +2,16 @@
 
 ## 57.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed a bug where mobile `NumberInput`, `SearchInput`, `Checkbox` and `SwitchInput` could not
+  receive refs.
+
+* ### 💥 Breaking Changes
+
+* The internal DOM structure of mobile `NumberInput`, `SearchInput`, `Checkbox` and `SwitchInput`
+  has changed. You may need to update styling that targets the inner structure of these components.
+
 ## 56.5.0 - 2023-05-26
 
 ### 🎁 New Features

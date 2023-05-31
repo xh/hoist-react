@@ -5,6 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, StyleProps, LayoutProps, HSide} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
@@ -234,31 +235,31 @@ const cmp = hoistCmp.factory<NumberInputModel>(
             type = hasFocus && !enableShorthandUnits ? 'number' : 'text',
             inputMode = !enableShorthandUnits ? 'decimal' : 'text';
 
-        return input({
-            type,
-            inputMode,
+        return hbox({
+            ref,
             className,
-            value: renderValue,
-            disabled: props.disabled,
-            min: props.min,
-            max: props.max,
-            placeholder: props.placeholder,
-            modifier: props.modifier,
-            tabIndex: props.tabIndex,
-
             style: {
                 ...props.style,
                 ...layoutProps,
                 width: withDefault(width, null),
                 textAlign: withDefault(props.textAlign, 'right')
             },
-            spellCheck: false,
-
-            onChange: model.onValueChange,
-            onKeyDown: model.onKeyDown,
-            onBlur: model.onBlur,
-            onFocus: model.onFocus,
-            ref
+            item: input({
+                type,
+                inputMode,
+                value: renderValue,
+                disabled: props.disabled,
+                min: props.min,
+                max: props.max,
+                placeholder: props.placeholder,
+                modifier: props.modifier,
+                tabIndex: props.tabIndex,
+                spellCheck: false,
+                onChange: model.onValueChange,
+                onKeyDown: model.onKeyDown,
+                onBlur: model.onBlur,
+                onFocus: model.onFocus
+            })
         });
     }
 );

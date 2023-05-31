@@ -1,6 +1,10 @@
 .xh-input.xh-number-input {
   background: var(--xh-input-bg);
 
+  & > ons-input {
+    flex: 1;
+  }
+
   .text-input,
   .text-input__label {
     height: 30px;

@@ -5,6 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {checkbox as onsenCheckbox} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
@@ -36,20 +37,20 @@ class CheckboxInputModel extends HoistInputModel {
 // Implementation
 //----------------------------------
 const cmp = hoistCmp.factory<CheckboxInputModel>(({model, className, ...props}, ref) => {
-    return onsenCheckbox({
-        checked: !!model.renderValue,
-
-        disabled: props.disabled,
-        modifier: props.modifier,
-        tabIndex: props.tabIndex,
-
-        style: props.style,
-
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        onChange: e => model.noteValueChange(e.target.checked),
-
+    return box({
+        ref,
         className,
-        ref
+        style: props.style,
+        item: onsenCheckbox({
+            checked: !!model.renderValue,
+
+            disabled: props.disabled,
+            modifier: props.modifier,
+            tabIndex: props.tabIndex,
+
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            onChange: e => model.noteValueChange(e.target.checked)
+        })
     });
 });

@@ -1,5 +1,10 @@
 .xh-input.xh-search-input {
   background: var(--xh-input-bg);
+
+  & > ons-search-input {
+    flex: 1;
+  }
+
   .search-input {
     height: 30px;
   }

@@ -5,6 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistInputProps, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, StyleProps} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
@@ -36,20 +37,20 @@ class SwitchInputModel extends HoistInputModel {
 // Implementation
 //-----------------------
 const cmp = hoistCmp.factory<SwitchInputModel>(({model, className, ...props}, ref) => {
-    return switchControl({
-        checked: !!model.renderValue,
-
-        disabled: props.disabled,
-        modifier: props.modifier,
-        tabIndex: props.tabIndex,
-
+    return box({
+        ref,
         className,
         style: props.style,
+        item: switchControl({
+            checked: !!model.renderValue,
 
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        onChange: e => model.noteValueChange(e.target.checked),
+            disabled: props.disabled,
+            modifier: props.modifier,
+            tabIndex: props.tabIndex,
 
-        ref
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            onChange: e => model.noteValueChange(e.target.checked)
+        })
     });
 });

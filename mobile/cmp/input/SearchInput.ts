@@ -5,6 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, HSide} from '@xh/hoist/core';
 import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
@@ -75,16 +76,8 @@ class SearchInputModel extends HoistInputModel {
 
 const cmp = hoistCmp.factory<SearchInputModel>(({model, className, ...props}, ref) => {
     const {width, ...layoutProps} = getLayoutProps(props);
-
-    return onsenSearchInput({
-        value: model.renderValue || '',
-
-        disabled: props.disabled,
-        modifier: props.modifier,
-        placeholder: props.placeholder,
-        spellCheck: withDefault(props.spellCheck, false),
-        tabIndex: props.tabIndex,
-
+    return hbox({
+        ref,
         className,
         style: {
             ...props.style,
@@ -92,11 +85,19 @@ const cmp = hoistCmp.factory<SearchInputModel>(({model, className, ...props}, re
             width: withDefault(width, null),
             textAlign: withDefault(props.textAlign, 'left')
         },
+        item: onsenSearchInput({
+            value: model.renderValue || '',
 
-        onChange: model.onChange,
-        onKeyDown: model.onKeyDown,
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        ref
+            disabled: props.disabled,
+            modifier: props.modifier,
+            placeholder: props.placeholder,
+            spellCheck: withDefault(props.spellCheck, false),
+            tabIndex: props.tabIndex,
+
+            onChange: model.onChange,
+            onKeyDown: model.onKeyDown,
+            onBlur: model.onBlur,
+            onFocus: model.onFocus
+        })
     });
 });
