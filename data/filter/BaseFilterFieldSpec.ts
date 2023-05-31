@@ -75,9 +75,7 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
         this.forceSelection = forceSelection ?? false;
         this.values = values ?? (this.isBoolFieldType ? [true, false] : null);
         this.hasExplicitValues = !isEmpty(this.values);
-        this.enableValues =
-            !this.isMismatchedDateFieldType &&
-            (this.hasExplicitValues || (enableValues ?? this.isEnumerableByDefault));
+        this.enableValues = this.hasExplicitValues || (enableValues ?? this.isEnumerableByDefault);
     }
 
     /** Full Field derived from source. */
@@ -94,6 +92,9 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
      * Type 'value' indicates the field should use equality operators:
      * `(=, !=, like, not like, begins, ends)`
      * against a suggested exact value or user-provided input.
+     *
+     * Type 'collection' indicates the field should use:
+     * `(includes, excludes)`
      */
     get filterType(): 'range' | 'value' | 'collection' {
         switch (this.fieldType) {
@@ -112,9 +113,11 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
     get isRangeType(): boolean {
         return this.filterType === 'range';
     }
+
     get isValueType(): boolean {
         return this.filterType === 'value';
     }
+
     get isCollectionType(): boolean {
         return this.filterType === 'collection';
     }
@@ -134,10 +137,10 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
     }
 
     /**
-     * Detects difference in date-based fieldType defined on fieldSpec and source field, indicating
-     * custom value parsing for > and <= operators.
+     * Convenience mode where a Date field can be filtered as if it is a LocalDate, to
+     * support comparative operators without time precision.
      */
-    get isMismatchedDateFieldType(): boolean {
+    get filterDateAsLocalDate(): boolean {
         const sourceField = this.source.fields.find(f => f.name === this.field);
         return this.fieldType === 'localDate' && sourceField.type === 'date';
     }
@@ -161,7 +164,7 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
         );
     }
 
-    parseDate(v: any, op: FieldFilterOperator): Date {
+    parseLocalDateAsDate(v: any, op: FieldFilterOperator): Date {
         let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
         if (!ret.isValid()) return null;
 
@@ -189,13 +192,14 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
     private getDefaultOperators(): FieldFilterOperator[] {
         if (this.isBoolFieldType) return ['='];
         if (this.isCollectionType) return ['includes', 'excludes'];
-        if (this.isMismatchedDateFieldType) return ['>', '>=', '<', '<='];
+        if (this.filterDateAsLocalDate) return ['>', '>=', '<', '<='];
         return this.isValueType
             ? ['=', '!=', 'like', 'not like', 'begins', 'ends']
             : ['>', '>=', '<', '<=', '=', '!='];
     }
 
     private get isEnumerableByDefault(): boolean {
+        if (this.filterDateAsLocalDate) return false;
         switch (this.fieldType) {
             case 'int':
             case 'number':

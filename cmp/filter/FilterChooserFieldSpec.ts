@@ -124,8 +124,8 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         }
 
         // Default date parser if fieldSpec's fieldType does not match source field's fieldType.
-        if (!valueParser && this.isMismatchedDateFieldType) {
-            return (v, op) => this.parseDate(v, op);
+        if (!valueParser && this.filterDateAsLocalDate) {
+            return (v, op) => this.parseLocalDateAsDate(v, op);
         }
         return valueParser;
     }
