@@ -7,6 +7,11 @@
 * Fixed broken change handler for mobile inputs that wrap around Onsen UI inputs, including
   `NumberInput`, `SearchInput`, and `TextInput`.
 
+### 📚 Libraries
+
+* @blueprintjs/core `^4.14 -> ^4.20` (apps might have already updated to a newer minor version)
+* dompurify `2.4 -> 3.0`
+
 ## 56.5.0 - 2023-05-26
 
 ### 🎁 New Features
