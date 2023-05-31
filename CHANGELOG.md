@@ -1,15 +1,16 @@
 # Changelog
 
-## 56.6.0 - 2023-05-31
+## 56.6.0 - 2023-06-01
 
 ### 🎁 New Features
 * New global property `AgGrid.DEFAULT_PROPS` to provide application wide defaults for any instances
 of the `AgGrid` Component.
 
 ### ⚙️ Technical
-* The default of the `suppressBrowserResizeObserver` to `true` added in v56.3.0, has been removed.
-This workaround was deemed problematic and not necessary in most cases.  If you need this setting
-for your application, please set it with the new `DEFAULT_PROPS` property described above.
+* The workaround of defaulting the AgGrid prop `suppressBrowserResizeObserver` to `true`, added in
+v56.3.0, has been removed. This workaround can cause problems and should not be needed for upcoming
+`AgGrid` versions. If you do need this setting for your application, please set it with the new
+`DEFAULT_PROPS` property described above.
 
 ### 📚 Libraries
 
