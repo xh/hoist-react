@@ -5,7 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {form} from '@xh/hoist/cmp/form';
-import {code, div, filler, hbox, hframe, p, placeholder} from '@xh/hoist/cmp/layout';
+import {code, div, filler, hframe, p, placeholder, span, vbox} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {banner} from '@xh/hoist/desktop/appcontainer/Banner';
@@ -15,10 +15,12 @@ import {buttonGroupInput, dateInput, switchInput, textArea} from '@xh/hoist/desk
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {popover} from '@xh/hoist/kit/blueprint';
+import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
+import {isEmpty, truncate} from 'lodash';
 import {AlertBannerModel} from './AlertBannerModel';
 import './AlertBannerPanel.scss';
+import {fmtDateTimeSec} from '@xh/hoist/format';
 
 export interface AlertBannerPanelProps extends ButtonProps<AlertBannerModel> {
     /** Text to represent empty state (i.e. value = null or []) */
@@ -105,25 +107,6 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(
                     div({
                         className: 'xh-alert-banner-panel__form-panel__fields',
                         items: [
-                            hbox({
-                                className: 'xh-form-field xh-form-field-inline',
-                                items: [
-                                    div({
-                                        className: 'xh-form-field-label',
-                                        item: 'Presets'
-                                    }),
-                                    popover({
-                                        target: button({text: 'Banner Presets'}),
-                                        content: presetEditor({
-                                            popoverWidth,
-                                            popoverMinHeight,
-                                            popoverTitle,
-                                            emptyText
-                                        })
-                                    }),
-                                    button({text: 'Bkmk'})
-                                ]
-                            }),
                             formField({
                                 field: 'message',
                                 item: textArea({
@@ -204,6 +187,14 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(
                 ]
             }),
             bbar: [
+                popover({
+                    target: button({
+                        text: 'Select a preset...',
+                        icon: Icon.bookmark(),
+                        outlined: true
+                    }),
+                    content: presetMenu()
+                }),
                 filler(),
                 button({
                     text: 'Reset',
@@ -240,45 +231,67 @@ const previewPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
 });
 
 //------------------
-// Preset Editor
+// Preset Menu
 //------------------
-const presetEditor = hoistCmp.factory<AlertBannerModel>({
-    render({popoverWidth, popoverMinHeight, popoverTitle, emptyText}) {
-        return panel({
-            width: popoverWidth,
-            minHeight: popoverMinHeight,
-            items: [
-                div({className: 'xh-popup__title', item: popoverTitle, omit: !popoverTitle}),
-                presetList({emptyText}),
-                filler()
-            ]
-        });
+const presetMenu = hoistCmp.factory<AlertBannerModel>({
+    render({model}) {
+        const savedPresets = model.savedPresets,
+            {message, intent, iconName, enableClose} = model.formModel.values,
+            items = [];
+
+        if (isEmpty(savedPresets)) {
+            items.push(menuItem({text: 'No presets saved...', disabled: true}));
+        } else {
+            items.push(...savedPresets.map(preset => presetMenuItem({preset})));
+        }
+
+        items.push(
+            menuDivider(),
+            menuItem({
+                icon: Icon.add({intent: 'success'}),
+                disabled:
+                    !model.formModel.fields.message.value ||
+                    model.isPreset({message, intent, iconName, enableClose}),
+                text: 'Add current',
+                onClick: e => {
+                    model.addPreset();
+                    e.stopPropagation();
+                }
+            })
+        );
+
+        return menu({items, style: {maxHeight: '400px', overflowY: 'auto'}});
     }
 });
 
-const presetList = hoistCmp.factory<AlertBannerModel>({
-    render({model, emptyText}) {
-        return panel({
-            className: 'xh-panel',
-            item: 'No presets yet'
+const presetMenuItem = hoistCmp.factory<AlertBannerModel>({
+    render({model, preset}) {
+        const {iconName, intent, message} = preset;
+        return menuItem({
+            icon: iconName
+                ? Icon.icon({iconName, intent, prefix: 'fas', size: 'lg'})
+                : Icon.placeholder({size: 'lg'}),
+            text: vbox({
+                items: [
+                    truncate(message, {length: 50}),
+                    span({
+                        item: `Last Edited By: ${XH.getUser().username} at ${fmtDateTimeSec(
+                            Date.now()
+                        )}`,
+                        className: 'xh-font-size-small xh-text-color-muted'
+                    })
+                ]
+            }),
+            multiline: true,
+            onClick: () => model.loadPreset(preset),
+            labelElement: button({
+                icon: Icon.delete(),
+                intent: 'danger',
+                onClick: e => {
+                    model.removePreset(preset);
+                    e.stopPropagation();
+                }
+            })
         });
-
-        // return dragDropContext({
-        //     onDragEnd: result => model.onDragEnd(result),
-        //     item: droppable({
-        //         droppableId: 'dimension-list',
-        //         item: dndProps =>
-        //             div({
-        //                 ref: dndProps.innerRef,
-        //                 className: 'xh-grouping-chooser__list',
-        //                 items: [
-        //                     ...model.pendingValue.map((dimension, idx) =>
-        //                         dimensionRow({dimension, idx})
-        //                     ),
-        //                     dndProps.placeholder
-        //                 ]
-        //             })
-        //     })
-        // });
     }
 });

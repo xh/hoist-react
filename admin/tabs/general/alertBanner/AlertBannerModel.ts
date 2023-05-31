@@ -7,25 +7,21 @@
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSpec, managed, XH, Intent} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, XH, Intent, PlainObject} from '@xh/hoist/core';
 import {dateIs, required} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {AppModel} from '@xh/hoist/admin/AppModel';
+import {isEqual, sortBy, without} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
     savedValue;
-    savedPresets;
+    @observable savedPresets: PlainObject[] = [];
 
     @managed
     formModel = new FormModel({
         readonly: AppModel.readonly,
         fields: [
             {name: 'active'},
-            {
-                name: 'presets',
-                initialValue: '',
-                displayName: 'Presets'
-            },
             {
                 name: 'message',
                 initialValue: '',
@@ -88,18 +84,22 @@ export class AlertBannerModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
+        await this.loadPresetsAsync();
         const {formModel} = this;
         if (formModel.isDirty && loadSpec.isAutoRefresh) return;
 
         // DEBUG
-        console.log('fm', formModel);
+        // console.log('fm', formModel.fields.map(f)=>(f.value) );
+        formModel.fieldList.map(f => console.log(f.name, ': ', f.value));
 
         const value = await XH.fetchJson({url: 'alertBannerAdmin/alertSpec'}),
-            // presets = await XH.fetchJson({url: 'alertBannerAdmin/alertPresets'}),
             initialValues = {
                 ...value,
                 expires: value.expires ? new Date(value.expires) : null
             };
+
+        // DEBUG
+        console.log('form value', value);
 
         this.savedValue = value;
         formModel.init(initialValues);
@@ -112,6 +112,49 @@ export class AlertBannerModel extends HoistModel {
     resetForm() {
         this.formModel.reset();
         this.refreshAsync();
+    }
+
+    loadPreset(preset: PlainObject) {
+        this.formModel.setValues({...preset, expires: null});
+    }
+
+    @action
+    addPreset() {
+        const {message, intent, iconName, enableClose} = this.formModel.values;
+        this.savedPresets = sortBy(
+            [...this.savedPresets, {message, intent, iconName, enableClose}],
+            [preset => preset.intent, preset => preset.message]
+        );
+        this.savePresetsAsync();
+    }
+
+    @action
+    removePreset(preset: PlainObject) {
+        this.savedPresets = without(this.savedPresets, preset);
+        this.savePresetsAsync();
+    }
+
+    isPreset(preset: PlainObject) {
+        return this.savedPresets.some(v => isEqual(v, preset));
+    }
+
+    async loadPresetsAsync() {
+        try {
+            this.savedPresets = await XH.fetchJson({url: 'alertBannerAdmin/alertPresets'});
+        } catch (e) {
+            XH.handleException(e);
+        }
+    }
+
+    async savePresetsAsync() {
+        try {
+            await XH.fetchService.postJson({
+                url: 'alertBannerAdmin/setAlertPresets',
+                body: this.savedPresets
+            });
+        } catch (e) {
+            XH.handleException(e);
+        }
     }
 
     //----------------
