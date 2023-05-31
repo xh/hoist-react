@@ -93,7 +93,7 @@ const cmp = hoistCmp.factory<SearchInputModel>(({model, className, ...props}, re
             textAlign: withDefault(props.textAlign, 'left')
         },
 
-        onChange: model.onChange,
+        onInput: model.onChange,
         onKeyDown: model.onKeyDown,
         onBlur: model.onBlur,
         onFocus: model.onFocus,
