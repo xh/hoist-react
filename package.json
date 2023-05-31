@@ -30,8 +30,8 @@
     ]
   },
   "dependencies": {
-    "@blueprintjs/core": "^4.14.1",
-    "@blueprintjs/datetime": "^4.4.10",
+    "@blueprintjs/core": "^4.20.0",
+    "@blueprintjs/datetime": "^4.4.35",
     "@fortawesome/fontawesome-pro": "^6.2.1",
     "@fortawesome/fontawesome-svg-core": "^6.2.1",
     "@fortawesome/pro-light-svg-icons": "^6.2.1",
@@ -87,7 +87,7 @@
     "@ag-grid-community/client-side-row-model": "29.x",
     "@ag-grid-community/core": "29.x",
     "@ag-grid-community/react": "29.x",
-    "@xh/hoist-dev-utils": "^6.1.2",
+    "@xh/hoist-dev-utils": "^6.2.0",
     "eslint-config-prettier": "8.x",
     "eslint-plugin-tsdoc": "^0.2.17",
     "husky": "^8.0.3",
