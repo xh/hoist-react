@@ -9,6 +9,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, XH, Intent, PlainObject} from '@xh/hoist/core';
 import {dateIs, required} from '@xh/hoist/data';
+import {fmtDateTime} from '@xh/hoist/format';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {isEqual, sortBy, without} from 'lodash';
@@ -88,8 +89,6 @@ export class AlertBannerModel extends HoistModel {
         const {formModel} = this;
         if (formModel.isDirty && loadSpec.isAutoRefresh) return;
 
-        // DEBUG
-        // console.log('fm', formModel.fields.map(f)=>(f.value) );
         formModel.fieldList.map(f => console.log(f.name, ': ', f.value));
 
         const value = await XH.fetchJson({url: 'alertBannerAdmin/alertSpec'}),
@@ -97,9 +96,6 @@ export class AlertBannerModel extends HoistModel {
                 ...value,
                 expires: value.expires ? new Date(value.expires) : null
             };
-
-        // DEBUG
-        console.log('form value', value);
 
         this.savedValue = value;
         formModel.init(initialValues);
@@ -121,8 +117,9 @@ export class AlertBannerModel extends HoistModel {
     @action
     addPreset() {
         const {message, intent, iconName, enableClose} = this.formModel.values;
+        const dateCreated = fmtDateTime(Date.now());
         this.savedPresets = sortBy(
-            [...this.savedPresets, {message, intent, iconName, enableClose}],
+            [...this.savedPresets, {message, intent, iconName, enableClose, dateCreated}],
             [preset => preset.intent, preset => preset.message]
         );
         this.savePresetsAsync();

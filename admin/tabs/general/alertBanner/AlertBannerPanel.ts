@@ -20,7 +20,6 @@ import {LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {isEmpty, truncate} from 'lodash';
 import {AlertBannerModel} from './AlertBannerModel';
 import './AlertBannerPanel.scss';
-import {fmtDateTimeSec} from '@xh/hoist/format';
 
 export interface AlertBannerPanelProps extends ButtonProps<AlertBannerModel> {
     /** Text to represent empty state (i.e. value = null or []) */
@@ -62,156 +61,157 @@ export const alertBannerPanel = hoistCmp.factory({
     }
 });
 
-const formPanel = hoistCmp.factory<AlertBannerModel>(
-    ({model, emptyText, popoverWidth, popoverMinHeight, popoverTitle}) => {
-        const {formModel} = model,
-            {isDirty, isValid} = formModel;
+const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
+    const {formModel} = model,
+        {isDirty, isValid} = formModel;
 
-        return panel({
-            title: 'Settings',
-            icon: Icon.gear(),
-            compactHeader: true,
-            className: 'xh-alert-banner-panel__form-panel',
-            item: form({
-                fieldDefaults: {
-                    inline: true,
-                    commitOnChange: true,
-                    labelWidth: 100
-                },
-                items: [
-                    div({
-                        className: 'xh-alert-banner-panel__disabled-warning',
-                        items: [
-                            p('Feature currently disabled via ', code('xhAlertBannerConfig'), '.'),
-                            p(
-                                'Banners can be configured and previewed here, but they will not be shown to any app users.'
-                            ),
-                            p(
-                                'To enable, update or create the config above. Note that users (including you!) will need to reload this app in their browser to pick up the config change. Contact support@xh.io for assistance.'
-                            )
-                        ],
-                        omit: XH.alertBannerService.enabled
-                    }),
-                    div({
-                        className: 'xh-alert-banner-panel__intro',
-                        items: [
-                            p(`Show an alert banner to all ${XH.appName} users.`),
-                            p(
-                                `Configure and preview below. Banner will appear to all users within ${
-                                    XH.alertBannerService.interval / SECONDS
-                                }s once marked Active and saved.`
-                            )
-                        ],
-                        omit: !XH.alertBannerService.enabled
-                    }),
-                    div({
-                        className: 'xh-alert-banner-panel__form-panel__fields',
-                        items: [
-                            formField({
-                                field: 'message',
-                                item: textArea({
-                                    flex: 'none',
-                                    height: 150,
-                                    placeholder: 'Enter a brief message here.'
-                                }),
-                                info: 'First line shown in banner / any additional in pop-up.'
+    return panel({
+        title: 'Settings',
+        icon: Icon.gear(),
+        compactHeader: true,
+        className: 'xh-alert-banner-panel__form-panel',
+        item: form({
+            fieldDefaults: {
+                inline: true,
+                commitOnChange: true,
+                labelWidth: 100
+            },
+            items: [
+                div({
+                    className: 'xh-alert-banner-panel__disabled-warning',
+                    items: [
+                        p('Feature currently disabled via ', code('xhAlertBannerConfig'), '.'),
+                        p(
+                            'Banners can be configured and previewed here, but they will not be shown to any app users.'
+                        ),
+                        p(
+                            'To enable, update or create the config above. Note that users (including you!) will need to reload this app in their browser to pick up the config change. Contact support@xh.io for assistance.'
+                        )
+                    ],
+                    omit: XH.alertBannerService.enabled
+                }),
+                div({
+                    className: 'xh-alert-banner-panel__intro',
+                    items: [
+                        p(`Show an alert banner to all ${XH.appName} users.`),
+                        p(
+                            `Configure, preview and save presets below. Banner will appear to all users within ${
+                                XH.alertBannerService.interval / SECONDS
+                            }s once marked Active and saved.`
+                        ),
+                        p(
+                            `Save a configuration as a preset with the 'Add Current' button at the bottom of the preset menu below. Load a configuration to activate or edit by selecting one of the presets in the same menu.`
+                        )
+                    ],
+                    omit: !XH.alertBannerService.enabled
+                }),
+                div({
+                    className: 'xh-alert-banner-panel__form-panel__fields',
+                    items: [
+                        formField({
+                            field: 'message',
+                            item: textArea({
+                                flex: 'none',
+                                height: 150,
+                                placeholder: 'Enter a brief message here.'
                             }),
-                            formField({
-                                field: 'intent',
-                                item: buttonGroupInput({
-                                    items: model.intentOptions.map(intent =>
-                                        button({
-                                            intent,
-                                            minimal: false,
-                                            icon:
-                                                formModel.values.intent === intent
-                                                    ? Icon.check()
-                                                    : Icon.placeholder(),
-                                            value: intent
-                                        })
-                                    )
-                                })
-                            }),
-                            formField({
-                                field: 'iconName',
-                                item: buttonGroupInput({
-                                    enableClear: true,
-                                    outlined: true,
-                                    items: model.iconOptions.map(iconName =>
-                                        button({
-                                            icon: Icon.icon({iconName}),
-                                            value: iconName
-                                        })
-                                    )
-                                })
-                            }),
-                            formField({
-                                field: 'enableClose',
-                                info: 'Allow users to close and hide this banner.',
-                                item: switchInput()
-                            }),
-                            formField({
-                                field: 'expires',
-                                info: relativeTimestamp({
-                                    timestamp: formModel.values.expires,
-                                    options: {
-                                        allowFuture: true,
-                                        emptyResult:
-                                            'Set a date & time to automatically hide this banner.'
-                                    }
-                                }),
-                                item: dateInput({
-                                    enableClear: true,
-                                    minDate: LocalDate.today().date,
-                                    timePrecision: 'minute'
-                                })
-                            }),
-                            formField({
-                                field: 'active',
-                                info: 'Enable and save to show this banner to all users.',
-                                item: switchInput()
-                            }),
-                            formField({
-                                omit: !formModel.values.updated,
-                                field: 'updated',
-                                className: 'xh-alert-banner-panel__form-panel__fields--ro',
-                                readonlyRenderer: dateTimeRenderer({})
-                            }),
-                            formField({
-                                omit: !formModel.values.updatedBy,
-                                field: 'updatedBy',
-                                className: 'xh-alert-banner-panel__form-panel__fields--ro'
+                            info: 'First line shown in banner / any additional in pop-up.'
+                        }),
+                        formField({
+                            field: 'intent',
+                            item: buttonGroupInput({
+                                items: model.intentOptions.map(intent =>
+                                    button({
+                                        intent,
+                                        minimal: false,
+                                        // Opacity solution to account for Icon.placeholder() causing label to move when primary deselected
+                                        icon: Icon.check({
+                                            opacity: formModel.values.intent === intent ? 1 : 0
+                                        }),
+                                        value: intent
+                                    })
+                                )
                             })
-                        ]
-                    })
-                ]
-            }),
-            bbar: [
-                popover({
-                    target: button({
-                        text: 'Select a preset...',
-                        icon: Icon.bookmark(),
-                        outlined: true
-                    }),
-                    content: presetMenu()
-                }),
-                filler(),
-                button({
-                    text: 'Reset',
-                    disabled: !isDirty,
-                    onClick: () => model.resetForm()
-                }),
-                button({
-                    text: 'Save',
-                    icon: Icon.check(),
-                    intent: 'success',
-                    disabled: !isValid || !isDirty,
-                    onClick: () => model.saveAsync()
+                        }),
+                        formField({
+                            field: 'iconName',
+                            item: buttonGroupInput({
+                                enableClear: true,
+                                outlined: true,
+                                items: model.iconOptions.map(iconName =>
+                                    button({
+                                        icon: Icon.icon({iconName}),
+                                        value: iconName
+                                    })
+                                )
+                            })
+                        }),
+                        formField({
+                            field: 'enableClose',
+                            info: 'Allow users to close and hide this banner.',
+                            item: switchInput()
+                        }),
+                        formField({
+                            field: 'expires',
+                            info: relativeTimestamp({
+                                timestamp: formModel.values.expires,
+                                options: {
+                                    allowFuture: true,
+                                    emptyResult:
+                                        'Set a date & time to automatically hide this banner.'
+                                }
+                            }),
+                            item: dateInput({
+                                enableClear: true,
+                                minDate: LocalDate.today().date,
+                                timePrecision: 'minute'
+                            })
+                        }),
+                        formField({
+                            field: 'active',
+                            info: 'Enable and save to show this banner to all users.',
+                            item: switchInput()
+                        }),
+                        formField({
+                            omit: !formModel.values.updated,
+                            field: 'updated',
+                            className: 'xh-alert-banner-panel__form-panel__fields--ro',
+                            readonlyRenderer: dateTimeRenderer({})
+                        }),
+                        formField({
+                            omit: !formModel.values.updatedBy,
+                            field: 'updatedBy',
+                            className: 'xh-alert-banner-panel__form-panel__fields--ro'
+                        })
+                    ]
                 })
             ]
-        });
-    }
-);
+        }),
+        bbar: [
+            popover({
+                target: button({
+                    text: 'Select a preset...',
+                    icon: Icon.bookmark(),
+                    outlined: true
+                }),
+                content: presetMenu()
+            }),
+            filler(),
+            button({
+                text: 'Reset',
+                disabled: !isDirty,
+                onClick: () => model.resetForm()
+            }),
+            button({
+                text: 'Save',
+                icon: Icon.check(),
+                intent: 'success',
+                disabled: !isValid || !isDirty,
+                onClick: () => model.saveAsync()
+            })
+        ]
+    });
+});
 
 const previewPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
     const {bannerModel} = model;
@@ -266,7 +266,7 @@ const presetMenu = hoistCmp.factory<AlertBannerModel>({
 
 const presetMenuItem = hoistCmp.factory<AlertBannerModel>({
     render({model, preset}) {
-        const {iconName, intent, message} = preset;
+        const {iconName, intent, message, dateCreated} = preset;
         return menuItem({
             icon: iconName
                 ? Icon.icon({iconName, intent, prefix: 'fas', size: 'lg'})
@@ -275,9 +275,7 @@ const presetMenuItem = hoistCmp.factory<AlertBannerModel>({
                 items: [
                     truncate(message, {length: 50}),
                     span({
-                        item: `Last Edited By: ${XH.getUser().username} at ${fmtDateTimeSec(
-                            Date.now()
-                        )}`,
+                        item: `Saved by: ${XH.getUser().username} (${dateCreated})`,
                         className: 'xh-font-size-small xh-text-color-muted'
                     })
                 ]

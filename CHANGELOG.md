@@ -2,6 +2,16 @@
 
 ## 57.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `presetMenu` to the Admin `AlertBannerPanel` - enable the user to save preset banner message
+  configurations and load them later to be activated or edited.
+
+### 🐞 Bug Fixes
+
+* Fixed moving `Color` label in Admin `AlertBannerPanel` resulting from `Icon.placeholder()` with
+  same icon, opacity 0 when intent button deselected.
+
 ## 56.5.0 - 2023-05-26
 
 ### 🎁 New Features
