@@ -82,9 +82,9 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             ),
             ...layoutProps,
             item: createElement(AgGridReact, {
+                ...AgGrid['DEFAULT_PROPS'],
                 // Default some ag-grid props, but allow overriding.
                 getRowHeight: impl.getRowHeight,
-                suppressBrowserResizeObserver: true,
                 // Pass others on directly.
                 ...agGridProps,
 
@@ -123,6 +123,14 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
     AgGrid.HEADER_HEIGHTS_MOBILE = {large: 42, standard: 38, compact: 34, tiny: 30};
     AgGrid.getHeaderHeightForSizingMode = mode =>
         (XH.isMobileApp ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
+
+    /**
+     * Default props to apply to all instances of the AgGrid Component in this application.
+     *
+     * Note that these settings will be overridden by any values provided by the application
+     * to any particular grid instance.
+     */
+    AgGrid.DEFAULT_PROPS = {};
 })(AgGrid);
 
 class AgGridLocalModel extends HoistModel {
