@@ -8,7 +8,7 @@ import {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, uses, lookup} from '@xh/hoist/core';
-import {Toaster, ToasterPosition} from '@xh/hoist/kit/blueprint';
+import {OverlayToaster, ToasterPosition} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
 import {isElement, map} from 'lodash';
 import {wait} from '../../promise';
@@ -94,7 +94,7 @@ class ToastSourceLocalModel extends HoistModel {
         // We want to just memoize this by two args (one object)?  Is there a library for this?
         const toasters = toasterMap.get(container) || {};
         if (!toasters[position])
-            toasters[position] = Toaster.create({position, className}, container);
+            toasters[position] = OverlayToaster.create({position, className}, container);
         toasterMap.set(container, toasters);
         return toasters[position];
     }
