@@ -12,6 +12,12 @@
 * Fixed moving `Color` label in Admin `AlertBannerPanel` resulting from `Icon.placeholder()` with
   same icon, opacity 0 when intent button deselected.
 
+### 📚 Libraries
+
+* @blueprintjs/core `^4.14 -> ^4.20` (apps might have already updated to a newer minor version)
+* dompurify `2.4 -> 3.0`
+
+
 ## 56.5.0 - 2023-05-26
 
 ### 🎁 New Features
