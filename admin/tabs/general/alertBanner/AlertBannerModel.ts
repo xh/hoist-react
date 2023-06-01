@@ -9,7 +9,6 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, XH, Intent, PlainObject} from '@xh/hoist/core';
 import {dateIs, required} from '@xh/hoist/data';
-import {fmtDateTime} from '@xh/hoist/format';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {isEqual, sortBy, without} from 'lodash';
@@ -114,23 +113,52 @@ export class AlertBannerModel extends HoistModel {
 
     @action
     addPreset() {
-        const {message, intent, iconName, enableClose} = this.formModel.values;
-        const dateCreated = fmtDateTime(Date.now());
+        const {message, intent, iconName, enableClose} = this.formModel.values,
+            dateCreated = Date.now(),
+            createdBy = XH.getUsername();
         this.savedPresets = sortBy(
-            [...this.savedPresets, {message, intent, iconName, enableClose, dateCreated}],
-            [preset => preset.intent, preset => preset.message]
+            [
+                ...this.savedPresets,
+                {message, intent, iconName, enableClose, dateCreated, createdBy}
+            ],
+            ['intent', 'message']
         );
         this.savePresetsAsync();
     }
 
     @action
-    removePreset(preset: PlainObject) {
+    async removePreset(preset: PlainObject) {
+        await XH.confirm({
+            message: fragment(
+                p(
+                    'You are removing a preset banner configuration. A user may have saved this, see the preset subtext for the creator.'
+                ),
+                p(
+                    'Choose below whether you would like to remove this configuration from the admin list of saved presets.'
+                )
+            ),
+            cancelProps: {
+                text: 'Cancel',
+                outlined: true,
+                autoFocus: false
+            },
+            confirmProps: {
+                text: 'Remove',
+                intent: 'danger',
+                outlined: true,
+                autoFocus: false
+            }
+        });
         this.savedPresets = without(this.savedPresets, preset);
         this.savePresetsAsync();
     }
 
     isPreset(preset: PlainObject) {
         return this.savedPresets.some(v => isEqual(v, preset));
+    }
+
+    get currentValuesSavedAsPreset() {
+        return true;
     }
 
     async loadPresetsAsync() {

@@ -13,7 +13,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {buttonGroupInput, dateInput, switchInput, textArea} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {dateTimeRenderer} from '@xh/hoist/format';
+import {dateTimeRenderer, fmtDateTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
@@ -207,7 +207,7 @@ const previewPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
 //------------------
 const presetMenu = hoistCmp.factory<AlertBannerModel>({
     render({model}) {
-        const savedPresets = model.savedPresets,
+        const {savedPresets} = model,
             {message, intent, iconName, enableClose} = model.formModel.values,
             items = [];
 
@@ -223,7 +223,13 @@ const presetMenu = hoistCmp.factory<AlertBannerModel>({
                 icon: Icon.add({intent: 'success'}),
                 disabled:
                     !model.formModel.fields.message.value ||
-                    model.isPreset({message, intent, iconName, enableClose}),
+                    savedPresets.some(
+                        it =>
+                            it.message === message &&
+                            it.iconName === iconName &&
+                            it.intent === intent &&
+                            it.enableClose === enableClose
+                    ),
                 text: 'Add current',
                 onClick: e => {
                     model.addPreset();
@@ -238,7 +244,7 @@ const presetMenu = hoistCmp.factory<AlertBannerModel>({
 
 const presetMenuItem = hoistCmp.factory<AlertBannerModel>({
     render({model, preset}) {
-        const {iconName, intent, message, dateCreated} = preset;
+        const {iconName, intent, message, dateCreated, createdBy} = preset;
         return menuItem({
             icon: iconName
                 ? Icon.icon({iconName, intent, prefix: 'fas', size: 'lg'})
@@ -247,7 +253,7 @@ const presetMenuItem = hoistCmp.factory<AlertBannerModel>({
                 items: [
                     truncate(message, {length: 50}),
                     span({
-                        item: `Saved by: ${XH.getUser().username} (${dateCreated})`,
+                        item: `Saved by ${createdBy} (${fmtDateTime(dateCreated)})`,
                         className: 'xh-font-size-small xh-text-color-muted'
                     })
                 ]
