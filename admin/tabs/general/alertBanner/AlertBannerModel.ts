@@ -11,7 +11,7 @@ import {HoistModel, LoadSpec, managed, XH, Intent, PlainObject} from '@xh/hoist/
 import {dateIs, required} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {AppModel} from '@xh/hoist/admin/AppModel';
-import {isEqual, sortBy, without} from 'lodash';
+import {sortBy, without} from 'lodash';
 import {computed} from 'mobx';
 
 export class AlertBannerModel extends HoistModel {
@@ -129,7 +129,7 @@ export class AlertBannerModel extends HoistModel {
 
     @action
     async removePreset(preset: PlainObject) {
-        await XH.confirm({
+        const confirmRemove = await XH.confirm({
             message: fragment(
                 p(
                     'You are removing a preset banner configuration. A user may have saved this, see the preset subtext for the creator.'
@@ -150,12 +150,10 @@ export class AlertBannerModel extends HoistModel {
                 autoFocus: false
             }
         });
-        this.savedPresets = without(this.savedPresets, preset);
-        this.savePresetsAsync();
-    }
-
-    isPreset(preset: PlainObject) {
-        return this.savedPresets.some(v => isEqual(v, preset));
+        if (confirmRemove) {
+            this.savedPresets = without(this.savedPresets, preset);
+            this.savePresetsAsync();
+        }
     }
 
     @computed
