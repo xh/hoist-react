@@ -1,16 +1,29 @@
 # Changelog
 
+## 57.0.0-SNAPSHOT - unreleased
+
+### 🐞 Bug Fixes
+
+* Fixed a bug where Onsen components wrappers could not forward refs.
+
 ## 56.6.0 - 2023-06-01
 
 ### 🎁 New Features
+
 * New global property `AgGrid.DEFAULT_PROPS` to provide application wide defaults for any instances
-of the `AgGrid` Component.
+  of `AgGrid` and `Grid` components.
 
 ### ⚙️ Technical
-* The workaround of defaulting the AgGrid prop `suppressBrowserResizeObserver` to `true`, added in
-v56.3.0, has been removed. This workaround can cause problems and should not be needed for upcoming
-`AgGrid` versions. If you do need this setting for your application, please set it with the new
-`DEFAULT_PROPS` property described above.
+
+* The workaround of defaulting the AG Grid prop `suppressBrowserResizeObserver: true`, added in
+  v56.3.0, has been removed. This workaround can cause sizing issues with flex columns and should
+  not be needed once [the underlying issue](https://github.com/ag-grid/ag-grid/issues/6562) is fixed
+  in an upcoming AG Grid release.
+    * As of this release date, we recommend apps stay at AG Grid 29.2. This does not include the
+      latest AG performance improvements, but avoids the sizing issues present in 29.3.5.
+    * If you want to take the latest AG Grid 29.3.5, please re-enable
+      the `suppressBrowserResizeObserver` flag with the new `DEFAULT_PROPS` static described
+      above. Scan your app carefully for column sizing issues.
 
 ### 🐞 Bug Fixes
 
@@ -20,7 +33,6 @@ v56.3.0, has been removed. This workaround can cause problems and should not be 
 ### 📚 Libraries
 
 * @blueprintjs/core `^4.14 -> ^4.20` (apps might have already updated to a newer minor version)
-* dompurify `2.4 -> 3.0`
 
 ### 🎁 New Features
 
