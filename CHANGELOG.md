@@ -8,11 +8,31 @@
 * standardizing alert or downtime banners, where pre-approved language can be added as a preset and
 * then easily loaded into a banner by members of an application support team.
 
+### 🐞 Bug Fixes
+
+* Fixed a bug where Onsen components wrappers could not forward refs.
+
+## 56.6.0 - 2023-06-01
+
+### 🎁 New Features
+* New global property `AgGrid.DEFAULT_PROPS` to provide application wide defaults for any instances
+of the `AgGrid` Component.
+
+### ⚙️ Technical
+* The workaround of defaulting the AgGrid prop `suppressBrowserResizeObserver` to `true`, added in
+v56.3.0, has been removed. This workaround can cause problems and should not be needed for upcoming
+`AgGrid` versions. If you do need this setting for your application, please set it with the new
+`DEFAULT_PROPS` property described above.
+
+### 🐞 Bug Fixes
+
+* Fixed broken change handler for mobile inputs that wrap around Onsen UI inputs, including
+  `NumberInput`, `SearchInput`, and `TextInput`.
+
 ### 📚 Libraries
 
 * @blueprintjs/core `^4.14 -> ^4.20` (apps might have already updated to a newer minor version)
 * dompurify `2.4 -> 3.0`
-
 
 ## 56.5.0 - 2023-05-26
 
