@@ -4,8 +4,9 @@
 
 ### 🎁 New Features
 
-* Added `presetMenu` to the Admin `AlertBannerPanel` - enable the user to save preset banner message
-  configurations and load them later to be activated or edited.
+* Enhanced the Admin alert banner feature with a new ability to save messages as presets. Useful for
+* standardizing alert or downtime banners, where pre-approved language can be added as a preset and
+* then easily loaded into a banner by members of an application support team.
 
 ### 📚 Libraries
 

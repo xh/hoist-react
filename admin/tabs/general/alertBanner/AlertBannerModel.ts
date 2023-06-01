@@ -11,12 +11,12 @@ import {HoistModel, LoadSpec, managed, XH, Intent, PlainObject} from '@xh/hoist/
 import {dateIs, required} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {AppModel} from '@xh/hoist/admin/AppModel';
-import {sortBy, without} from 'lodash';
+import _, {sortBy, without} from 'lodash';
 import {computed} from 'mobx';
 
 export class AlertBannerModel extends HoistModel {
     savedValue;
-    @observable savedPresets: PlainObject[] = [];
+    @observable.ref savedPresets: PlainObject[] = [];
 
     @managed
     formModel = new FormModel({
@@ -113,7 +113,7 @@ export class AlertBannerModel extends HoistModel {
     }
 
     @action
-    addPreset() {
+    async addPreset() {
         const {message, intent, iconName, enableClose} = this.formModel.values,
             dateCreated = Date.now(),
             createdBy = XH.getUsername();
@@ -124,25 +124,13 @@ export class AlertBannerModel extends HoistModel {
             ],
             ['intent', 'message']
         );
-        this.savePresetsAsync();
+        await this.savePresetsAsync();
     }
 
     @action
     async removePreset(preset: PlainObject) {
         const confirmRemove = await XH.confirm({
-            message: fragment(
-                p(
-                    'You are removing a preset banner configuration. A user may have saved this, see the preset subtext for the creator.'
-                ),
-                p(
-                    'Choose below whether you would like to remove this configuration from the admin list of saved presets.'
-                )
-            ),
-            cancelProps: {
-                text: 'Cancel',
-                outlined: true,
-                autoFocus: false
-            },
+            message: 'Are you sure you wish to delete this preset?',
             confirmProps: {
                 text: 'Remove',
                 intent: 'danger',
@@ -152,20 +140,14 @@ export class AlertBannerModel extends HoistModel {
         });
         if (confirmRemove) {
             this.savedPresets = without(this.savedPresets, preset);
-            this.savePresetsAsync();
+            await this.savePresetsAsync();
         }
     }
 
     @computed
     get currentValuesSavedAsPreset() {
         const {message, intent, iconName, enableClose} = this.formModel.values;
-        return this.savedPresets.some(
-            it =>
-                it.message === message &&
-                it.iconName === iconName &&
-                it.intent === intent &&
-                it.enableClose === enableClose
-        );
+        return _(this.savedPresets).some({message, intent, iconName, enableClose});
     }
 
     async loadPresetsAsync() {
@@ -182,6 +164,24 @@ export class AlertBannerModel extends HoistModel {
                 url: 'alertBannerAdmin/setAlertPresets',
                 body: this.savedPresets
             });
+        } catch (e) {
+            XH.handleException(e);
+        }
+    }
+
+    async saveBannerSpecAsync(value) {
+        const {active, message, intent, iconName, enableClose} = value;
+        try {
+            await XH.fetchService
+                .postJson({
+                    url: 'alertBannerAdmin/setAlertSpec',
+                    body: value
+                })
+                .track({
+                    category: 'Audit',
+                    message: 'Updated Alert Banner',
+                    data: {active, message, intent, iconName, enableClose}
+                });
         } catch (e) {
             XH.handleException(e);
         }
@@ -277,14 +277,18 @@ export class AlertBannerModel extends HoistModel {
                 updatedBy: XH.getUsername()
             };
 
-        await XH.fetchJson({
-            url: 'alertBannerAdmin/setAlertSpec',
-            params: {value: JSON.stringify(value)}
-        }).track({
-            category: 'Audit',
-            message: 'Updated Alert Banner',
-            data: {active, message, intent, iconName, enableClose}
-        });
+        // {active, message, intent, iconName, enableClose}
+        // DEBUG
+        console.log('in save internal async');
+        this.saveBannerSpecAsync(value);
+        // await XH.fetchJson({
+        //     url: 'alertBannerAdmin/setAlertSpec',
+        //     params: {value: JSON.stringify(value)}
+        // }).track({
+        //     category: 'Audit',
+        //     message: 'Updated Alert Banner',
+        //     data: {active, message, intent, iconName, enableClose}
+        // });
 
         await XH.alertBannerService.checkForBannerAsync();
         await this.refreshAsync();

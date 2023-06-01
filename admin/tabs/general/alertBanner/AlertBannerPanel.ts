@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {AppModel} from '@xh/hoist/admin/AppModel';
 import {form} from '@xh/hoist/cmp/form';
 import {code, div, filler, hframe, p, placeholder, span, vbox} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
@@ -13,6 +14,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {buttonGroupInput, dateInput, switchInput, textArea} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dateTimeRenderer, fmtDateTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
@@ -116,12 +118,14 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                                         value: iconName
                                     })
                                 )
-                            })
+                            }),
+                            readonlyRenderer: v => (v ? Icon.icon({iconName: v}) : 'No icon')
                         }),
                         formField({
                             field: 'enableClose',
                             info: 'Allow users to close and hide this banner.',
-                            item: switchInput()
+                            item: switchInput(),
+                            readonlyRenderer: v => switchInput({value: v, disabled: true})
                         }),
                         formField({
                             field: 'expires',
@@ -137,12 +141,14 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                                 enableClear: true,
                                 minDate: LocalDate.today().date,
                                 timePrecision: 'minute'
-                            })
+                            }),
+                            readonlyRenderer: v => fmtDateTime(v, {nullDisplay: 'Never'})
                         }),
                         formField({
                             field: 'active',
                             info: 'Enable and save to show this banner to all users.',
-                            item: switchInput()
+                            item: switchInput(),
+                            readonlyRenderer: v => switchInput({value: v, disabled: true})
                         }),
                         formField({
                             omit: !formModel.values.updated,
@@ -159,29 +165,32 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                 })
             ]
         }),
-        bbar: [
-            popover({
-                target: button({
-                    text: 'Select a preset...',
-                    icon: Icon.bookmark(),
-                    outlined: true
+        bbar: toolbar({
+            items: [
+                popover({
+                    target: button({
+                        text: 'Select a preset...',
+                        icon: Icon.bookmark(),
+                        outlined: true
+                    }),
+                    content: presetMenu()
                 }),
-                content: presetMenu()
-            }),
-            filler(),
-            button({
-                text: 'Reset',
-                disabled: !isDirty,
-                onClick: () => model.resetForm()
-            }),
-            button({
-                text: 'Save',
-                icon: Icon.check(),
-                intent: 'success',
-                disabled: !isValid || !isDirty,
-                onClick: () => model.saveAsync()
-            })
-        ]
+                filler(),
+                button({
+                    text: 'Reset',
+                    disabled: !isDirty,
+                    onClick: () => model.resetForm()
+                }),
+                button({
+                    text: 'Save',
+                    icon: Icon.check(),
+                    intent: 'success',
+                    disabled: !isValid || !isDirty,
+                    onClick: () => model.saveAsync()
+                })
+            ],
+            omit: AppModel.readonly
+        })
     });
 });
 
