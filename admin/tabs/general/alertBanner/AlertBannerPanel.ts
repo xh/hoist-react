@@ -208,7 +208,6 @@ const previewPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
 const presetMenu = hoistCmp.factory<AlertBannerModel>({
     render({model}) {
         const {savedPresets} = model,
-            {message, intent, iconName, enableClose} = model.formModel.values,
             items = [];
 
         if (isEmpty(savedPresets)) {
@@ -221,15 +220,7 @@ const presetMenu = hoistCmp.factory<AlertBannerModel>({
             menuDivider(),
             menuItem({
                 icon: Icon.add({intent: 'success'}),
-                disabled:
-                    !model.formModel.fields.message.value ||
-                    savedPresets.some(
-                        it =>
-                            it.message === message &&
-                            it.iconName === iconName &&
-                            it.intent === intent &&
-                            it.enableClose === enableClose
-                    ),
+                disabled: !model.formModel.fields.message.value || model.currentValuesSavedAsPreset,
                 text: 'Add current',
                 onClick: e => {
                     model.addPreset();

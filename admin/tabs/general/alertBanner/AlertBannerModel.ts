@@ -12,6 +12,7 @@ import {dateIs, required} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {isEqual, sortBy, without} from 'lodash';
+import {computed} from 'mobx';
 
 export class AlertBannerModel extends HoistModel {
     savedValue;
@@ -157,8 +158,16 @@ export class AlertBannerModel extends HoistModel {
         return this.savedPresets.some(v => isEqual(v, preset));
     }
 
+    @computed
     get currentValuesSavedAsPreset() {
-        return true;
+        const {message, intent, iconName, enableClose} = this.formModel.values;
+        return this.savedPresets.some(
+            it =>
+                it.message === message &&
+                it.iconName === iconName &&
+                it.intent === intent &&
+                it.enableClose === enableClose
+        );
     }
 
     async loadPresetsAsync() {
