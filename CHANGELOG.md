@@ -2,6 +2,10 @@
 
 ## 57.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed a bug where Onsen components wrappers could not forward refs.
+
 ## 56.6.0 - 2023-06-01
 
 ### 🎁 New Features
