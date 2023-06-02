@@ -20,7 +20,7 @@ export class AlertBannerModel extends HoistModel {
 
     @managed
     formModel = new FormModel({
-        readonly: AppModel.readonly,
+        disabled: AppModel.readonly,
         fields: [
             {name: 'active'},
             {
@@ -277,19 +277,7 @@ export class AlertBannerModel extends HoistModel {
                 updatedBy: XH.getUsername()
             };
 
-        // {active, message, intent, iconName, enableClose}
-        // DEBUG
-        console.log('in save internal async');
-        this.saveBannerSpecAsync(value);
-        // await XH.fetchJson({
-        //     url: 'alertBannerAdmin/setAlertSpec',
-        //     params: {value: JSON.stringify(value)}
-        // }).track({
-        //     category: 'Audit',
-        //     message: 'Updated Alert Banner',
-        //     data: {active, message, intent, iconName, enableClose}
-        // });
-
+        await this.saveBannerSpecAsync(value);
         await XH.alertBannerService.checkForBannerAsync();
         await this.refreshAsync();
     }

@@ -15,7 +15,7 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {buttonGroupInput, dateInput, switchInput, textArea} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {dateTimeRenderer, fmtDateTime} from '@xh/hoist/format';
+import {fmtDateTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
@@ -51,31 +51,34 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                 labelWidth: 100
             },
             items: [
-                div({
-                    className: 'xh-alert-banner-panel__disabled-warning',
-                    items: [
-                        p('Feature currently disabled via ', code('xhAlertBannerConfig'), '.'),
-                        p(
-                            'Banners can be configured and previewed here, but they will not be shown to any app users.'
-                        ),
-                        p(
-                            'To enable, update or create the config above. Note that users (including you!) will need to reload this app in their browser to pick up the config change. Contact support@xh.io for assistance.'
-                        )
-                    ],
-                    omit: XH.alertBannerService.enabled
-                }),
-                div({
-                    className: 'xh-alert-banner-panel__intro',
-                    items: [
-                        p(`Show an alert banner to all ${XH.appName} users.`),
-                        p(
-                            `Configure and preview below. Presets can be saved and loaded via bottom bar menu. Banner will appear to all users within ${
-                                XH.alertBannerService.interval / SECONDS
-                            }s once marked Active and saved.`
-                        )
-                    ],
-                    omit: !XH.alertBannerService.enabled
-                }),
+                XH.alertBannerService.enabled
+                    ? div({
+                          className: 'xh-alert-banner-panel__intro',
+                          items: [
+                              p(`Show an alert banner to all ${XH.appName} users.`),
+                              p(
+                                  `Configure and preview below. Presets can be saved and loaded via bottom bar menu. Banner will appear to all users within ${
+                                      XH.alertBannerService.interval / SECONDS
+                                  }s once marked Active and saved.`
+                              )
+                          ]
+                      })
+                    : div({
+                          className: 'xh-alert-banner-panel__disabled-warning',
+                          items: [
+                              p(
+                                  'Feature currently disabled via ',
+                                  code('xhAlertBannerConfig'),
+                                  '.'
+                              ),
+                              p(
+                                  'Banners can be configured and previewed here, but they will not be shown to any app users.'
+                              ),
+                              p(
+                                  'To enable, update or create the config above. Note that users (including you!) will need to reload this app in their browser to pick up the config change. Contact support@xh.io for assistance.'
+                              )
+                          ]
+                      }),
                 div({
                     className: 'xh-alert-banner-panel__form-panel__fields',
                     items: [
@@ -115,14 +118,12 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                                         value: iconName
                                     })
                                 )
-                            }),
-                            readonlyRenderer: v => (v ? Icon.icon({iconName: v}) : 'No icon')
+                            })
                         }),
                         formField({
                             field: 'enableClose',
                             info: 'Allow users to close and hide this banner.',
-                            item: switchInput(),
-                            readonlyRenderer: v => switchInput({value: v, disabled: true})
+                            item: switchInput()
                         }),
                         formField({
                             field: 'expires',
@@ -138,20 +139,17 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                                 enableClear: true,
                                 minDate: LocalDate.today().date,
                                 timePrecision: 'minute'
-                            }),
-                            readonlyRenderer: v => fmtDateTime(v, {nullDisplay: 'Never'})
+                            })
                         }),
                         formField({
                             field: 'active',
                             info: 'Enable and save to show this banner to all users.',
-                            item: switchInput(),
-                            readonlyRenderer: v => switchInput({value: v, disabled: true})
+                            item: switchInput()
                         }),
                         formField({
                             omit: !formModel.values.updated,
                             field: 'updated',
-                            className: 'xh-alert-banner-panel__form-panel__fields--ro',
-                            readonlyRenderer: dateTimeRenderer({})
+                            className: 'xh-alert-banner-panel__form-panel__fields--ro'
                         }),
                         formField({
                             omit: !formModel.values.updatedBy,
