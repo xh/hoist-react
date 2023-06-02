@@ -113,7 +113,7 @@ export class AlertBannerModel extends HoistModel {
     }
 
     @action
-    async addPreset() {
+    addPreset() {
         const {message, intent, iconName, enableClose} = this.formModel.values,
             dateCreated = Date.now(),
             createdBy = XH.getUsername();
@@ -124,24 +124,24 @@ export class AlertBannerModel extends HoistModel {
             ],
             ['intent', 'message']
         );
-        await this.savePresetsAsync();
+        this.savePresetsAsync();
     }
 
     @action
-    async removePreset(preset: PlainObject) {
-        const confirmRemove = await XH.confirm({
+    removePreset(preset: PlainObject) {
+        XH.confirm({
             message: 'Are you sure you wish to delete this preset?',
             confirmProps: {
                 text: 'Remove',
                 intent: 'danger',
                 outlined: true,
                 autoFocus: false
+            },
+            onConfirm: () => {
+                this.savedPresets = without(this.savedPresets, preset);
+                this.savePresetsAsync();
             }
         });
-        if (confirmRemove) {
-            this.savedPresets = without(this.savedPresets, preset);
-            await this.savePresetsAsync();
-        }
     }
 
     @computed

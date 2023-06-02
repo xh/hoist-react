@@ -69,12 +69,9 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                     items: [
                         p(`Show an alert banner to all ${XH.appName} users.`),
                         p(
-                            `Configure, preview and save presets below. Banner will appear to all users within ${
+                            `Configure and preview below. Presets can be saved and loaded via bottom bar menu. Banner will appear to all users within ${
                                 XH.alertBannerService.interval / SECONDS
                             }s once marked Active and saved.`
-                        ),
-                        p(
-                            `Save a configuration as a preset with the 'Add Current' button at the bottom of the preset menu below. Load a configuration to activate or edit by selecting one of the presets in the same menu.`
                         )
                     ],
                     omit: !XH.alertBannerService.enabled
@@ -169,8 +166,8 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
             items: [
                 popover({
                     target: button({
-                        text: 'Select a preset...',
                         icon: Icon.bookmark(),
+                        text: 'Presets',
                         outlined: true
                     }),
                     content: presetMenu()
