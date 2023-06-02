@@ -2,6 +2,12 @@
 
 ## 57.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Enhanced the Admin alert banner feature with a new ability to save messages as presets. Useful for
+* standardizing alert or downtime banners, where pre-approved language can be added as a preset and
+* then easily loaded into a banner by members of an application support team.
+
 ### 🐞 Bug Fixes
 
 * Fixed a bug where Onsen components wrappers could not forward refs.
