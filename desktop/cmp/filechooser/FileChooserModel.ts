@@ -5,7 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -13,6 +13,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isEmpty} from 'codemirror/src/util/misc';
 import filesize from 'filesize';
 import {find, uniqBy, without} from 'lodash';
+import {runInAction} from 'mobx';
 
 export class FileChooserModel extends HoistModel {
     @observable.ref
@@ -113,13 +114,31 @@ export class FileChooserModel extends HoistModel {
     }
 
     @action
-    onDrop(accepted, rejected, enableMulti) {
+    onDrop(accepted, rejected, enableMulti, maxFileSize) {
         if (!isEmpty(accepted)) {
             if (!enableMulti) {
                 this.setSingleFile(accepted[0]);
             } else {
                 this.addFiles(accepted);
             }
+        }
+        if (!isEmpty(rejected)) {
+            XH.dangerToast(
+                `Unable to accept ${
+                    rejected.length > 1
+                        ? `${rejected.length} files for upload - each `
+                        : 'file for upload - it '
+                }
+                ${
+                    maxFileSize
+                        ? `may exceed the size limit of
+                ${Math.round(maxFileSize / 1000000)}MB or be`
+                        : 'is'
+                } of an unsupported type.`
+            );
+            runInAction(() => {
+                this.lastRejectedCount = 0;
+            });
         }
         this.lastRejectedCount = rejected.length;
     }

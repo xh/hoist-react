@@ -115,7 +115,8 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                             )
                         });
                     },
-                    onDrop: (accepted, rejected) => model.onDrop(accepted, rejected, enableMulti)
+                    onDrop: (accepted, rejected) =>
+                        model.onDrop(accepted, rejected, enableMulti, maxSize)
                 }),
                 grid({
                     flex: 1,
