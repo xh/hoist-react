@@ -11,6 +11,7 @@
 ### 🐞 Bug Fixes
 
 * Fixed a bug where Onsen components wrappers could not forward refs.
+* Fixed `fetchJson` and related methods throwing on non-204 successful results without contents.
 
 ## 56.6.0 - 2023-06-01
 
@@ -64,7 +65,6 @@
 * Fixed layout bug where popovers triggered from a parent `Panel` with `modalSupport` active could
   render beneath that parent's own modal dialog.
 * Fixed broken `CodeInput` copy-to-clipboard feature.
-* Fixed `fetchJson` and related methods throwing on non-204 successful results without contents.
 
 ## v56.4.0 - 2023-05-10
 

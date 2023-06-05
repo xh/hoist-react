@@ -66,7 +66,7 @@ export class FetchService extends HoistService {
     }
 
     /**
-     * Send an HTTP request and decode the response as JSON.
+     * Send an HTTP request and decode the response as JSON (if any).
      * @returns the decoded JSON object, or null if the response had no content.
      */
     fetchJson(opts: FetchOptions): Promise<any> {
@@ -78,7 +78,9 @@ export class FetchService extends HoistService {
                 },
                 aborter
             );
-            return this.NO_JSON_RESPONSES.includes(r.status) ? null : this.jsonAsync(r);
+            // Cleanly return null for an empty response body (i.e. avoid throwing on body parsing).
+            // Successful 2xx HTTP status codes (e.g. 200 OK, 202 ACCEPTED) might or might not return a body.
+            return this.NO_JSON_RESPONSES.includes(r.status) ? null : r.json().catch(() => null);
         });
     }
 
@@ -167,11 +169,9 @@ export class FetchService extends HoistService {
 
             if (e.isHoistException) throw e;
 
-            // Just three other cases where we expect this to throw -- Typically we get a failed response)
+            // Just two other cases where we expect this to throw -- Typically we get a failed response)
             throw e.name === 'AbortError'
                 ? Exception.fetchAborted(opts, e)
-                : e.name === 'SyntaxError' // May be thrown by JSON.parse()
-                ? Exception.create(e)
                 : Exception.serverUnavailable(opts, e);
         } finally {
             if (autoAborters[autoAbortKey] === aborter) {
@@ -286,11 +286,6 @@ export class FetchService extends HoistService {
         } catch (ignore) {
             return null;
         }
-    }
-
-    private async jsonAsync(response: Response) {
-        const text = await response.text();
-        return text ? JSON.parse(text) : undefined;
     }
 
     private qsFilterFn = (prefix, value) => {
