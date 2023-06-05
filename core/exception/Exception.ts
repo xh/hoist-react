@@ -100,6 +100,22 @@ export class Exception {
     }
 
     /**
+     * Create an Error to throw when a fetchJson call encounters a SyntaxError.
+     * @param fetchOptions - original options passed to FetchService.
+     * @param cause - object thrown by native {@link Body.json}.
+     */
+    static fetchJsonParseError(fetchOptions: FetchOptions, cause: SyntaxError): FetchException {
+        return this.createFetchException({
+            name: 'FetchJson Parse Error',
+            message:
+                'Error on parsing request body as JSON.' +
+                ' Use "XH.fetch()" instead of "XH.fetchJson()" to process request body manually.',
+            fetchOptions,
+            cause
+        });
+    }
+
+    /**
      * Create an Error to throw when a fetch call is aborted.
      * @param fetchOptions - original options passed to FetchService.
      * @param cause - object thrown by native fetch
