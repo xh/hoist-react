@@ -86,8 +86,6 @@ export class IdleService extends HoistService {
 
     private updateIdleDuration() {
         const mn = Math.round((Date.now() - XH.lastActivityMs) / MINUTES);
-        if (this.idleFor === mn) return;
-
         runInAction(() => (this.idleFor = mn));
     }
 }
