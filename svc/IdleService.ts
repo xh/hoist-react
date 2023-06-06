@@ -7,6 +7,7 @@
 import {HoistService, XH, managed} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
+import {observable, runInAction, makeObservable} from 'mobx';
 
 /**
  * Manage the idling/suspension of this application after a certain period of user inactivity
@@ -15,7 +16,7 @@ import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
  * system from unattended clients and/or as a "belt-and-suspenders" defence against memory
  * leaks or other performance issues that can arise with long-running sessions.
  *
- * This service consults the `xhIdleConfig` soft-config and the `xh.disableIdleDetection`
+ * This service consults the `xhIdleConfig` soft-config and the `xh.xhIdleDetectionDisabled`
  * user preference to determine if and when it should suspend the app.
  */
 export class IdleService extends HoistService {
@@ -23,12 +24,16 @@ export class IdleService extends HoistService {
 
     static instance: IdleService;
 
+    @observable idleFor = 0;
+
     @managed
     private timer: Timer = null;
     private timeout = null;
 
     constructor() {
         super();
+        makeObservable(this);
+
         this.addReaction({
             when: () => XH.appIsRunning,
             run: this.startMonitoring
@@ -45,13 +50,22 @@ export class IdleService extends HoistService {
             configEnabled = configTimeout > 0,
             userEnabled = !XH.getPref('xhIdleDetectionDisabled');
 
+        this.createIdleDurationTimer();
+
         if (configEnabled && userEnabled) {
             this.timeout = configTimeout;
-            this.createTimer();
+            this.createSuspendTimer();
         }
     }
 
-    private createTimer() {
+    private createIdleDurationTimer() {
+        this.timer = Timer.create({
+            runFn: () => this.updateIdleDuration(),
+            interval: 500
+        });
+    }
+
+    private createSuspendTimer() {
         this.timer = Timer.create({
             runFn: () => this.checkInactivityTimeout(),
             interval: 500
@@ -62,5 +76,12 @@ export class IdleService extends HoistService {
         if (olderThan(XH.lastActivityMs, this.timeout)) {
             XH.suspendApp({reason: 'IDLE'});
         }
+    }
+
+    private updateIdleDuration() {
+        const mn = Math.round((Date.now() - XH.lastActivityMs) / MINUTES);
+        if (this.idleFor === mn) return;
+
+        runInAction(() => (this.idleFor = mn));
     }
 }
