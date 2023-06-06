@@ -5,8 +5,10 @@
 ### 🎁 New Features
 
 * Enhanced the Admin alert banner feature with a new ability to save messages as presets. Useful for
-* standardizing alert or downtime banners, where pre-approved language can be added as a preset and
-* then easily loaded into a banner by members of an application support team.
+  standardizing alert or downtime banners, where pre-approved language can be added as a preset and
+  then easily loaded into a banner by members of an application support team.
+* IdleService exposes the observable property `idleFor` which apps can use to implement their own
+  alternative solutions to full app suspension due to inactivity.
 
 ### 🐞 Bug Fixes
 
