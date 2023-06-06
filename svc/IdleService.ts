@@ -24,7 +24,7 @@ export class IdleService extends HoistService {
 
     static instance: IdleService;
 
-    @observable idleFor = 0;
+    @observable idleFor: number = 0;
 
     @managed
     private timer: Timer = null;
