@@ -108,9 +108,8 @@ export class Exception {
         return this.createFetchException({
             name: 'Json Parsing Error.',
             message:
-                'Error on parsing the response body as JSON. The server may have returned an invalid ' +
-                'unexpected empty response Use "XH.fetch()" to process the ' +
-                'response manually.',
+                'Error parsing the response body as JSON. The server may have returned an invalid ' +
+                'or empty response. Use "XH.fetch()" to process the response manually.',
             fetchOptions,
             cause
         });
