@@ -12,7 +12,7 @@
 ### 🐞 Bug Fixes
 
 * Fixed a bug where Onsen components wrappers could not forward refs.
-* Improved the error log of `fetchJson` and related methods when throwing on parsing the JSON body.
+* Improved the exceptions thrown by fetchService when errors occur parsing response JSON.
 
 ## 56.6.0 - 2023-06-01
 
