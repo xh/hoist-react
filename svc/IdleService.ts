@@ -18,6 +18,12 @@ import {observable, runInAction, makeObservable} from 'mobx';
  *
  * This service consults the `xhIdleConfig` soft-config and the `xh.xhIdleDetectionDisabled`
  * user preference to determine if and when it should suspend the app.
+ *
+ * This service also exposes the observable property `idleFor` which holds the number of minutes
+ * that the app has been idle.  Apps that do not want to use Hoist's app suspension (maybe because
+ * it will cause users to lose unsaved state) can set up their own "lighter touch" shutdown of resource
+ * intensive recurring data calls at whatever threshold of `idleFor` needed.  Apps can resume those
+ * calls when the `idleFor` value becomes 0 as activity is detected.
  */
 export class IdleService extends HoistService {
     override xhImpl = true;
