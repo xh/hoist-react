@@ -78,7 +78,13 @@ export class FetchService extends HoistService {
                 },
                 aborter
             );
-            return this.NO_JSON_RESPONSES.includes(r.status) ? null : r.json();
+            if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
+
+            try {
+                return r.json();
+            } catch (e) {
+                throw e.name === 'SyntaxError' ? Exception.fetchJsonParseError(opts, e) : e;
+            }
         });
     }
 
@@ -167,11 +173,9 @@ export class FetchService extends HoistService {
 
             if (e.isHoistException) throw e;
 
-            // Just three other cases where we expect this to throw -- (Typically we get a failed response)
+            // Just two other cases where we expect this to *throw* -- Typically we get a fail status
             throw e.name === 'AbortError'
                 ? Exception.fetchAborted(opts, e)
-                : e.name === 'SyntaxError'
-                ? Exception.fetchJsonParseError(opts, e)
                 : Exception.serverUnavailable(opts, e);
         } finally {
             if (autoAborters[autoAbortKey] === aborter) {
