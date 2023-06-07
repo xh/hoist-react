@@ -4,10 +4,9 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH, managed} from '@xh/hoist/core';
-import {Timer} from '@xh/hoist/utils/async';
+import {HoistService, XH} from '@xh/hoist/core';
 import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
-import {observable, runInAction, makeObservable} from 'mobx';
+import {debounce as lodashDebounce} from 'lodash';
 
 /**
  * Manage the idling/suspension of this application after a certain period of user inactivity
@@ -18,74 +17,36 @@ import {observable, runInAction, makeObservable} from 'mobx';
  *
  * This service consults the `xhIdleConfig` soft-config and the `xhIdleDetectionDisabled`
  * user preference to determine if and when it should suspend the app.
- *
- * This service also exposes the observable property `idleFor` which holds the number of minutes
- * that the app has been idle.  Apps that do not want to use Hoist's app suspension (maybe because
- * it will cause users to lose unsaved state) can set up their own "lighter touch" shutdown of resource
- * intensive recurring data calls at whatever threshold of `idleFor` needed.  Apps can resume those
- * calls when the `idleFor` value becomes 0 as activity is detected.
  */
 export class IdleService extends HoistService {
     override xhImpl = true;
 
     static instance: IdleService;
 
-    @observable idleFor: number = 0;
-
-    @managed
-    private timer: Timer = null;
-    private timeout = null;
-
     constructor() {
         super();
-        makeObservable(this);
+
+        const debouncedSuspender = lodashDebounce(this.maybeSuspend, 3 * MINUTES);
 
         this.addReaction({
             when: () => XH.appIsRunning,
-            run: this.startMonitoring
+            run: () =>
+                this.addReaction({
+                    track: () => XH.lastActivityMs,
+                    run: debouncedSuspender
+                })
         });
     }
 
-    //------------------------
-    // Implementation
-    //------------------------
-    private startMonitoring() {
+    private maybeSuspend() {
         const idleConfig = XH.getConf('xhIdleConfig', {}),
             {appTimeouts = {}, timeout} = idleConfig,
             configTimeout = (appTimeouts[XH.clientAppCode] ?? timeout ?? -1) * MINUTES,
             configEnabled = configTimeout > 0,
             userEnabled = !XH.getPref('xhIdleDetectionDisabled');
 
-        this.createIdleDurationTimer();
-
-        if (configEnabled && userEnabled) {
-            this.timeout = configTimeout;
-            this.createSuspendTimer();
-        }
-    }
-
-    private createIdleDurationTimer() {
-        this.timer = Timer.create({
-            runFn: () => this.updateIdleDuration(),
-            interval: 500
-        });
-    }
-
-    private createSuspendTimer() {
-        this.timer = Timer.create({
-            runFn: () => this.checkInactivityTimeout(),
-            interval: 500
-        });
-    }
-
-    private checkInactivityTimeout() {
-        if (olderThan(XH.lastActivityMs, this.timeout)) {
+        if (configEnabled && userEnabled && olderThan(XH.lastActivityMs, configTimeout)) {
             XH.suspendApp({reason: 'IDLE'});
         }
-    }
-
-    private updateIdleDuration() {
-        const mn = Math.round((Date.now() - XH.lastActivityMs) / MINUTES);
-        runInAction(() => (this.idleFor = mn));
     }
 }
