@@ -5,7 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
-import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
+import {MINUTES} from '@xh/hoist/utils/datetime';
 import {debounce as lodashDebounce} from 'lodash';
 
 /**
@@ -26,27 +26,29 @@ export class IdleService extends HoistService {
     constructor() {
         super();
 
-        const debouncedSuspender = lodashDebounce(this.maybeSuspend, 3 * MINUTES);
-
         this.addReaction({
             when: () => XH.appIsRunning,
-            run: () =>
-                this.addReaction({
-                    track: () => XH.lastActivityMs,
-                    run: debouncedSuspender
-                })
+            run: () => this.startMonitoring()
         });
     }
 
-    private maybeSuspend() {
+    //------------------------
+    // Implementation
+    //------------------------
+    private startMonitoring() {
+        const userEnabled = !XH.getPref('xhIdleDetectionDisabled');
+        if (!userEnabled) return;
+
         const idleConfig = XH.getConf('xhIdleConfig', {}),
             {appTimeouts = {}, timeout} = idleConfig,
-            configTimeout = (appTimeouts[XH.clientAppCode] ?? timeout ?? -1) * MINUTES,
-            configEnabled = configTimeout > 0,
-            userEnabled = !XH.getPref('xhIdleDetectionDisabled');
+            appSuspendTimeout = (appTimeouts[XH.clientAppCode] ?? timeout ?? -1) * MINUTES,
+            appSuspendEnabled = appSuspendTimeout > 0;
 
-        if (configEnabled && userEnabled && olderThan(XH.lastActivityMs, configTimeout)) {
-            XH.suspendApp({reason: 'IDLE'});
+        if (appSuspendEnabled) {
+            this.addReaction({
+                track: () => XH.lastActivityMs,
+                run: lodashDebounce(() => XH.suspendApp({reason: 'IDLE'}), appSuspendTimeout)
+            });
         }
     }
 }
