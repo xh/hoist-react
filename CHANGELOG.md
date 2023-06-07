@@ -9,8 +9,7 @@
   then easily loaded into a banner by members of an application support team (
   requires `hoist-core >= v16.3.0`).
 * Added bindable `readonly` property to `LeftRightChooserModel`.
-* IdleService exposes the observable property `idleFor` which apps can use to implement their own
-  alternative solutions to full app suspension due to inactivity.
+* Getter XH.lastActivityMs can now be observed by MobX reactions.
 
 
 ### 🐞 Bug Fixes
