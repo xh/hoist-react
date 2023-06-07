@@ -9,9 +9,8 @@ import {div} from '@xh/hoist/cmp/layout';
 import {HoistModel, HSide, managed, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {computed, makeObservable} from '@xh/hoist/mobx';
+import {bindable, computed} from '@xh/hoist/mobx';
 import {FilterTestFn, StoreConfig, StoreRecord} from '@xh/hoist/data';
-import {observable} from 'mobx';
 
 export interface LeftRightChooserConfig {
     data?: LeftRightChooserItem[];
@@ -74,7 +73,7 @@ export class LeftRightChooserModel extends HoistModel {
     @managed leftModel: GridModel;
     @managed rightModel: GridModel;
 
-    @observable readonly = false;
+    @bindable readonly = false;
 
     onChange: () => void;
 
@@ -136,7 +135,6 @@ export class LeftRightChooserModel extends HoistModel {
         xhImpl = false
     }: LeftRightChooserConfig) {
         super();
-        makeObservable(this);
         this.xhImpl = xhImpl;
 
         this.onChange = onChange;
