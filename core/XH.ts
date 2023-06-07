@@ -255,7 +255,7 @@ export class XHApi {
     @observable
     appState: AppState = 'PRE_AUTH';
 
-    /** milliseconds timestamp at moment of last user activity / interaction was last detected. */
+    /** milliseconds timestamp at moment user activity / interaction was last detected. */
     get lastActivityMs(): number {
         return this._lastActivityMs;
     }

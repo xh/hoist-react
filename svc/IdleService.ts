@@ -16,7 +16,7 @@ import {observable, runInAction, makeObservable} from 'mobx';
  * system from unattended clients and/or as a "belt-and-suspenders" defence against memory
  * leaks or other performance issues that can arise with long-running sessions.
  *
- * This service consults the `xhIdleConfig` soft-config and the `xh.xhIdleDetectionDisabled`
+ * This service consults the `xhIdleConfig` soft-config and the `xhIdleDetectionDisabled`
  * user preference to determine if and when it should suspend the app.
  *
  * This service also exposes the observable property `idleFor` which holds the number of minutes
