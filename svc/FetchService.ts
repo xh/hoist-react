@@ -168,8 +168,7 @@ export class FetchService extends HoistService {
                     `Timed out loading '${opts.url}' - no response after ${e.interval}ms.`;
                 throw Exception.fetchTimeout(opts, e, msg);
             }
-            console.log('hi');
-            console.log(e);
+
             if (e.isHoistException) throw e;
 
             // Just two other cases where we expect this to *throw* -- Typically we get a fail status
