@@ -11,9 +11,13 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {computed, makeObservable} from '@xh/hoist/mobx';
 import {FilterTestFn, StoreConfig, StoreRecord} from '@xh/hoist/data';
+import {observable} from 'mobx';
 
 export interface LeftRightChooserConfig {
     data?: LeftRightChooserItem[];
+
+    /** True to globally prevent the user from moving items between sides. */
+    readonly?: boolean;
 
     /** Callback for when items change sides. */
     onChange?: () => void;
@@ -70,6 +74,8 @@ export class LeftRightChooserModel extends HoistModel {
     @managed leftModel: GridModel;
     @managed rightModel: GridModel;
 
+    @observable readonly = false;
+
     onChange: () => void;
 
     hasDescription: boolean;
@@ -120,6 +126,7 @@ export class LeftRightChooserModel extends HoistModel {
         leftGroupingEnabled = true,
         leftGroupingExpanded = true,
         leftEmptyText = null,
+        readonly = false,
         rightTitle = 'Selected',
         rightSorted = false,
         rightGroupingEnabled = true,
@@ -138,6 +145,7 @@ export class LeftRightChooserModel extends HoistModel {
         this.rightGroupingEnabled = rightGroupingEnabled;
         this.leftGroupingExpanded = leftGroupingExpanded;
         this.rightGroupingExpanded = rightGroupingExpanded;
+        this.readonly = readonly;
 
         const store: StoreConfig = {
             fields: [
@@ -213,7 +221,7 @@ export class LeftRightChooserModel extends HoistModel {
     moveRows(rows: StoreRecord[]) {
         rows.forEach(rec => {
             const {locked, side} = rec.data;
-            if (locked) return;
+            if (locked || this.readonly) return;
             rec.raw.side = side === 'left' ? 'right' : 'left';
         });
 

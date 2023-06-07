@@ -8,6 +8,7 @@
   standardizing alert or downtime banners, where pre-approved language can be added as a preset and
   then easily loaded into a banner by members of an application support team (
   requires `hoist-core >= v16.3.0`).
+* Added observable `readonly` property to `LeftRightChooserModel`.
 
 ### 🐞 Bug Fixes
 
