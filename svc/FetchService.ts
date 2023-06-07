@@ -80,11 +80,9 @@ export class FetchService extends HoistService {
             );
             if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
 
-            try {
-                return r.json();
-            } catch (e) {
-                throw e.name === 'SyntaxError' ? Exception.fetchJsonParseError(opts, e) : e;
-            }
+            return r.json().catchWhen('SyntaxError', e => {
+                throw Exception.fetchJsonParseError(opts, e);
+            });
         });
     }
 
@@ -170,7 +168,8 @@ export class FetchService extends HoistService {
                     `Timed out loading '${opts.url}' - no response after ${e.interval}ms.`;
                 throw Exception.fetchTimeout(opts, e, msg);
             }
-
+            console.log('hi');
+            console.log(e);
             if (e.isHoistException) throw e;
 
             // Just two other cases where we expect this to *throw* -- Typically we get a fail status

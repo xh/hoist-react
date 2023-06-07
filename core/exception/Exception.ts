@@ -102,7 +102,7 @@ export class Exception {
     /**
      * Create an Error to throw when a fetchJson call encounters a SyntaxError.
      * @param fetchOptions - original options passed to FetchService.
-     * @param cause - object thrown by native {@link Body.json}.
+     * @param cause - object thrown by native {@link response.json}.
      */
     static fetchJsonParseError(fetchOptions: FetchOptions, cause: any): FetchException {
         return this.createFetchException({
