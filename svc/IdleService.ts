@@ -28,7 +28,7 @@ export class IdleService extends HoistService {
 
         this.addReaction({
             when: () => XH.appIsRunning,
-            run: () => this.startMonitoring()
+            run: this.startMonitoring
         });
     }
 
