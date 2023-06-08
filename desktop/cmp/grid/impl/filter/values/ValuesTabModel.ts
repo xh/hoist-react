@@ -9,6 +9,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {FieldFilterSpec} from '@xh/hoist/data';
 import {ColumnHeaderFilterModel} from '../ColumnHeaderFilterModel';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
+import {LocalDate} from '@xh/hoist/utils/datetime/LocalDate';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, difference, isEmpty, partition, uniq, without} from 'lodash';
 
@@ -63,11 +64,20 @@ export class ValuesTabModel extends HoistModel {
     }
 
     get values() {
-        return this.fieldSpec.values;
+        const {filterDateAsLocalDate, values} = this.fieldSpec;
+
+        if (filterDateAsLocalDate) {
+            const valuesAsLocalDates = values?.map(it => LocalDate.from(it));
+            return uniq(valuesAsLocalDates);
+        }
+        return values;
     }
 
     get valueCount() {
-        return this.fieldSpec.valueCount;
+        const {filterDateAsLocalDate, valueCount} = this.fieldSpec;
+
+        if (filterDateAsLocalDate) return this.values.length;
+        return valueCount;
     }
 
     get hasHiddenValues() {
@@ -254,6 +264,7 @@ export class ValuesTabModel extends HoistModel {
                     },
                     renderer: (value, context) => {
                         if (value === BLANK_PLACEHOLDER) return value;
+                        if (fieldSpec.filterDateAsLocalDate) return value;
                         return renderer ? renderer(value, context) : value;
                     }
                 }

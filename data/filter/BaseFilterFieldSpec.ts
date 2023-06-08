@@ -199,7 +199,6 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
     }
 
     private get isEnumerableByDefault(): boolean {
-        if (this.filterDateAsLocalDate) return false;
         switch (this.fieldType) {
             case 'int':
             case 'number':
