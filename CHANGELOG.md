@@ -2,9 +2,18 @@
 
 ## 57.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Enhanced the Admin alert banner feature with a new ability to save messages as presets. Useful for
+  standardizing alert or downtime banners, where pre-approved language can be added as a preset and
+  then easily loaded into a banner by members of an application support team (
+  requires `hoist-core >= v16.3.0`).
+* Added bindable `readonly` property to `LeftRightChooserModel`.
+
 ### 🐞 Bug Fixes
 
 * Fixed a bug where Onsen components wrappers could not forward refs.
+* Improved the exceptions thrown by fetchService when errors occur parsing response JSON.
 
 ## 56.6.0 - 2023-06-01
 

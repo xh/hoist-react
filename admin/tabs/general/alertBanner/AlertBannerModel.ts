@@ -7,17 +7,21 @@
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSpec, managed, XH, Intent} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, XH, Intent, PlainObject} from '@xh/hoist/core';
 import {dateIs, required} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {AppModel} from '@xh/hoist/admin/AppModel';
+import {checkMinVersion} from '@xh/hoist/utils/js';
+import _, {sortBy, without} from 'lodash';
+import {computed} from 'mobx';
 
 export class AlertBannerModel extends HoistModel {
     savedValue;
+    @observable.ref savedPresets: PlainObject[] = [];
 
     @managed
     formModel = new FormModel({
-        readonly: AppModel.readonly,
+        disabled: AppModel.readonly,
         fields: [
             {name: 'active'},
             {
@@ -64,6 +68,10 @@ export class AlertBannerModel extends HoistModel {
         ];
     }
 
+    get supportPresets() {
+        return checkMinVersion(XH.getEnv('hoistCoreVersion'), '16.3.0');
+    }
+
     constructor() {
         super();
         makeObservable(this);
@@ -82,6 +90,7 @@ export class AlertBannerModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
+        await this.loadPresetsAsync();
         const {formModel} = this;
         if (formModel.isDirty && loadSpec.isAutoRefresh) return;
 
@@ -102,6 +111,86 @@ export class AlertBannerModel extends HoistModel {
     resetForm() {
         this.formModel.reset();
         this.refreshAsync();
+    }
+
+    loadPreset(preset: PlainObject) {
+        this.formModel.setValues({...preset, expires: null});
+    }
+
+    @action
+    addPreset() {
+        const {message, intent, iconName, enableClose} = this.formModel.values,
+            dateCreated = Date.now(),
+            createdBy = XH.getUsername();
+        this.savedPresets = sortBy(
+            [
+                ...this.savedPresets,
+                {message, intent, iconName, enableClose, dateCreated, createdBy}
+            ],
+            ['intent', 'message']
+        );
+        this.savePresetsAsync();
+    }
+
+    @action
+    removePreset(preset: PlainObject) {
+        XH.confirm({
+            message: 'Are you sure you wish to delete this preset?',
+            confirmProps: {
+                text: 'Remove',
+                intent: 'danger',
+                outlined: true,
+                autoFocus: false
+            },
+            onConfirm: () => {
+                this.savedPresets = without(this.savedPresets, preset);
+                this.savePresetsAsync();
+            }
+        });
+    }
+
+    @computed
+    get currentValuesSavedAsPreset() {
+        const {message, intent, iconName, enableClose} = this.formModel.values;
+        return _(this.savedPresets).some({message, intent, iconName, enableClose});
+    }
+
+    async loadPresetsAsync() {
+        if (!this.supportPresets) return;
+        try {
+            this.savedPresets = await XH.fetchJson({url: 'alertBannerAdmin/alertPresets'});
+        } catch (e) {
+            XH.handleException(e);
+        }
+    }
+
+    async savePresetsAsync() {
+        try {
+            await XH.fetchService.postJson({
+                url: 'alertBannerAdmin/setAlertPresets',
+                body: this.savedPresets
+            });
+        } catch (e) {
+            XH.handleException(e);
+        }
+    }
+
+    async saveBannerSpecAsync(value) {
+        const {active, message, intent, iconName, enableClose} = value;
+        try {
+            await XH.fetchService
+                .postJson({
+                    url: 'alertBannerAdmin/setAlertSpec',
+                    body: value
+                })
+                .track({
+                    category: 'Audit',
+                    message: 'Updated Alert Banner',
+                    data: {active, message, intent, iconName, enableClose}
+                });
+        } catch (e) {
+            XH.handleException(e);
+        }
     }
 
     //----------------
@@ -194,15 +283,7 @@ export class AlertBannerModel extends HoistModel {
                 updatedBy: XH.getUsername()
             };
 
-        await XH.fetchJson({
-            url: 'alertBannerAdmin/setAlertSpec',
-            params: {value: JSON.stringify(value)}
-        }).track({
-            category: 'Audit',
-            message: 'Updated Alert Banner',
-            data: {active, message, intent, iconName, enableClose}
-        });
-
+        await this.saveBannerSpecAsync(value);
         await XH.alertBannerService.checkForBannerAsync();
         await this.refreshAsync();
     }
