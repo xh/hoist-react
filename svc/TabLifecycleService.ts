@@ -26,6 +26,11 @@ export class TabLifecycleService extends HoistService {
         return this._state;
     }
 
+    @observable private _lastActivityMs: number;
+    get lastActivityMs() {
+        return this.state === 'active' ? Date.now() : this._lastActivityMs;
+    }
+
     constructor() {
         super();
 
@@ -57,6 +62,9 @@ export class TabLifecycleService extends HoistService {
         const prevState = this.state;
         if (nextState !== prevState) {
             console.log(`State change: ${prevState} >>> ${nextState}`);
+            if (prevState === 'active') {
+                runInAction(() => (this._lastActivityMs = Date.now()));
+            }
             runInAction(() => (this._state = nextState));
         }
     };
