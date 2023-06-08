@@ -5,6 +5,8 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
+import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
+import {isNumber} from 'lodash';
 import {observable, runInAction} from 'mobx';
 
 /**
@@ -40,6 +42,18 @@ export class TabLifecycleService extends HoistService {
             when: () => XH.appIsRunning,
             run: this.startMonitoring
         });
+    }
+
+    tabIsInactive(thresholdMn?: number): boolean {
+        console.log('age of last activity: ', (Date.now() - this.lastActivityMs) / MINUTES);
+        if (
+            this.state === 'passive' &&
+            isNumber(thresholdMn) &&
+            olderThan(this.lastActivityMs, thresholdMn * MINUTES)
+        )
+            return true;
+
+        return this.state !== 'active';
     }
 
     //------------------------
