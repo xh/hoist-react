@@ -47,6 +47,7 @@ import {
     JsonBlobService,
     LocalStorageService,
     PrefService,
+    TabLifecycleService,
     TrackService,
     WebSocketService,
     FetchOptions
@@ -152,6 +153,7 @@ export class XHApi {
     jsonBlobService: JsonBlobService;
     localStorageService: LocalStorageService;
     prefService: PrefService;
+    tabLifecycleService: TabLifecycleService;
     trackService: TrackService;
     webSocketService: WebSocketService;
 
@@ -799,6 +801,7 @@ export class XHApi {
                 AlertBannerService,
                 AutoRefreshService,
                 ChangelogService,
+                TabLifecycleService,
                 IdleService,
                 InspectorService,
                 GridAutosizeService,
