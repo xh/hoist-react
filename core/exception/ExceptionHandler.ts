@@ -93,6 +93,10 @@ export class ExceptionHandler {
 
     constructor() {
         window.addEventListener('unload', () => (this.#isUnloading = true));
+        window.addEventListener('unhandledrejection', e => {
+            this.handleException(e.reason, {showAlert: false});
+            e.preventDefault();
+        });
     }
 
     /**
