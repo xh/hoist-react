@@ -9,7 +9,7 @@ import {BaseFieldConfig} from '@xh/hoist/cmp/form';
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, PlainObject, ElementSpec, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {RecordAction, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
+import {RecordAction, RecordActionLike, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {pluralize, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
@@ -29,7 +29,7 @@ export interface RestGridConfig extends GridConfig {
     toolbarActions?: Array<RecordAction | RecordActionSpec>;
 
     /** actions to display in the grid context menu. Defaults to add, edit, delete. */
-    menuActions?: Array<RecordAction | RecordActionSpec>;
+    menuActions?: Array<RecordActionLike>;
 
     /** Actions to display in the form toolbar. Defaults to delete. */
     formActions?: Array<RecordAction | RecordActionSpec>;
@@ -89,7 +89,7 @@ export class RestGridModel extends HoistModel {
     readonly: boolean;
     editors: RestGridEditor[];
     toolbarActions: Array<RecordAction | RecordActionSpec>;
-    menuActions: Array<RecordAction | RecordActionSpec>;
+    menuActions: Array<RecordActionLike>;
     formActions: Array<RecordAction | RecordActionSpec>;
     prepareCloneFn: (input: {record: StoreRecord; clone: PlainObject}) => void;
     unit: string;
