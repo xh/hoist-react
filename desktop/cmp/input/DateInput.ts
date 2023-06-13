@@ -24,7 +24,7 @@ import moment from 'moment';
 import {createRef, ReactElement, ReactNode} from 'react';
 import './DateInput.scss';
 import {PopperBoundary, PopperModifiers} from '@blueprintjs/core';
-import {ITimePickerProps} from '@blueprintjs/datetime';
+import {IDatePickerProps, ITimePickerProps} from '@blueprintjs/datetime';
 import {DayPickerProps} from 'react-day-picker';
 
 export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps {
@@ -32,6 +32,8 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
 
     /** Props passed to ReactDayPicker component, as per DayPicker docs. */
     dayPickerProps?: DayPickerProps;
+
+    bpDatePickerProps?: IDatePickerProps;
 
     /** Enable using the DatePicker popover. Default true. */
     enablePicker?: boolean;
@@ -461,7 +463,8 @@ const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref)
                 timePrecision: model.timePrecision,
                 timePickerProps: model.timePrecision
                     ? assign({selectAllOnFocus: true}, props.timePickerProps)
-                    : undefined
+                    : undefined,
+                ...props.bpDatePickerProps
             }),
 
             item: div({
