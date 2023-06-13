@@ -10,6 +10,10 @@
   requires `hoist-core >= v16.3.0`).
 * Added bindable `readonly` property to `LeftRightChooserModel`.
 
+
+### ⚙️ Technical
+* Support the `HOIST_IMPERSONATOR` role introduced in hoist-core `v16.3.0`
+
 ### 🐞 Bug Fixes
 
 * Fixed a bug where Onsen components wrappers could not forward refs.
