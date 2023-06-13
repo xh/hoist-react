@@ -65,19 +65,11 @@ export class ValuesTabModel extends HoistModel {
 
     get values() {
         const {filterDateAsLocalDate, values} = this.fieldSpec;
-
-        if (filterDateAsLocalDate) {
-            const valuesAsLocalDates = values?.map(it => LocalDate.from(it));
-            return uniq(valuesAsLocalDates);
-        }
-        return values;
+        return filterDateAsLocalDate ? values?.map(it => LocalDate.from(it)) : values;
     }
 
     get valueCount() {
-        const {filterDateAsLocalDate, valueCount} = this.fieldSpec;
-
-        if (filterDateAsLocalDate) return this.values.length;
-        return valueCount;
+        return this.fieldSpec.valueCount;
     }
 
     get hasHiddenValues() {
