@@ -9,7 +9,7 @@ import {BaseFieldConfig} from '@xh/hoist/cmp/form';
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, PlainObject, ElementSpec, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {RecordAction, RecordActionLike, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
+import {RecordActionLike, StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {pluralize, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
@@ -26,13 +26,13 @@ export interface RestGridConfig extends GridConfig {
     readonly?: boolean;
 
     /** Actions to display in the toolbar. Defaults to add, edit, delete. */
-    toolbarActions?: Array<RecordAction | RecordActionSpec>;
+    toolbarActions?: Array<RecordActionLike>;
 
     /** actions to display in the grid context menu. Defaults to add, edit, delete. */
     menuActions?: Array<RecordActionLike>;
 
     /** Actions to display in the form toolbar. Defaults to delete. */
-    formActions?: Array<RecordAction | RecordActionSpec>;
+    formActions?: Array<RecordActionLike>;
 
     /** Warning to display before actions on a selection of  records. */
     actionWarning?: {
@@ -88,9 +88,9 @@ export class RestGridModel extends HoistModel {
     //----------------
     readonly: boolean;
     editors: RestGridEditor[];
-    toolbarActions: Array<RecordAction | RecordActionSpec>;
+    toolbarActions: Array<RecordActionLike>;
     menuActions: Array<RecordActionLike>;
-    formActions: Array<RecordAction | RecordActionSpec>;
+    formActions: Array<RecordActionLike>;
     prepareCloneFn: (input: {record: StoreRecord; clone: PlainObject}) => void;
     unit: string;
     filterFields: string[] = null;

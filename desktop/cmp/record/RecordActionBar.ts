@@ -7,8 +7,9 @@
 
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
-import {RecordActionSpec, RecordAction, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
-import {buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
+import {RecordAction, RecordActionLike, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
+import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {button, buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
@@ -16,7 +17,7 @@ import {recordActionButton, RecordActionButtonProps} from './impl/RecordActionBu
 
 export interface RecordActionBarProps extends ButtonGroupProps {
     /** Actions to include. */
-    actions: Array<RecordActionSpec | RecordAction>;
+    actions: Array<RecordActionLike>;
 
     /** The StoreRecord to associate with the actions. Required if selModel is omitted. */
     record?: StoreRecord;
@@ -65,14 +66,17 @@ export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordAct
         return buttonGroup({
             vertical,
             items: actions.filter(Boolean).map(action =>
-                recordActionButton({
-                    action: action instanceof RecordAction ? action : new RecordAction(action),
-                    record,
-                    selModel,
-                    gridModel,
-                    column,
-                    ...buttonProps
-                })
+                action !== '-' && action !== '|'
+                    ? recordActionButton({
+                          action:
+                              action instanceof RecordAction ? action : new RecordAction(action),
+                          record,
+                          selModel,
+                          gridModel,
+                          column,
+                          ...buttonProps
+                      })
+                    : button({text: toolbarSep(), disabled: true})
             ),
             ...rest
         });
