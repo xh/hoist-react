@@ -103,10 +103,15 @@ export class ColumnGroup {
         const {headerName, gridModel} = this;
         return {
             groupId: this.groupId,
-            headerValueGetter: agParams =>
-                isFunction(headerName)
+            headerValueGetter: agParams => {
+                // headerValueGetter should always return a string
+                // for display in draggable shadow box, aGrid Tool panel.
+                // Hoist ColumnHeader will handle display of Element values in the header.
+                const ret = isFunction(headerName)
                     ? headerName({columnGroup: this, gridModel, agParams})
-                    : headerName,
+                    : headerName;
+                return isString(ret) ? ret : genDisplayName(this.groupId);
+            },
             headerClass: getAgHeaderClassFn(this),
             headerGroupComponentParams: {gridModel, xhColumnGroup: this},
             children: this.children.map(it => it.getAgSpec()),
