@@ -4,10 +4,8 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH} from '@xh/hoist/core';
-import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
-import {isNumber} from 'lodash';
-import {observable, runInAction} from 'mobx';
+import {HoistService} from '@xh/hoist/core';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 
 /**
  * Manage the idling/suspension of this application after a certain period of user inactivity
@@ -19,41 +17,33 @@ import {observable, runInAction} from 'mobx';
  * This service consults the `xhIdleConfig` soft-config and the `xhIdleDetectionDisabled`
  * user preference to determine if and when it should suspend the app.
  */
-export class TabLifecycleService extends HoistService {
+export class PageLifecycleService extends HoistService {
     override xhImpl = true;
-    static instance: TabLifecycleService;
+    static instance: PageLifecycleService;
 
     @observable private _state: string;
     get state() {
         return this._state;
     }
 
-    @observable private _lastActivityMs: number;
-    get lastActivityMs() {
-        return this.state === 'active' ? Date.now() : this._lastActivityMs;
-    }
-
     constructor() {
         super();
+        makeObservable(this);
 
         this._state = this.getLiveState();
-
-        this.addReaction({
-            when: () => XH.appIsRunning,
-            run: this.startMonitoring
-        });
+        this.startListeners();
     }
 
-    tabIsInactive(thresholdMn?: number): boolean {
-        console.log('age of last activity: ', (Date.now() - this.lastActivityMs) / MINUTES);
-        if (
-            this.state === 'passive' &&
-            isNumber(thresholdMn) &&
-            olderThan(this.lastActivityMs, thresholdMn * MINUTES)
-        )
-            return true;
+    get pageIsActive(): boolean {
+        return this.state === 'active';
+    }
 
-        return this.state !== 'active';
+    get pageIsPassive(): boolean {
+        return this.state === 'passive';
+    }
+
+    get pageIsVisible(): boolean {
+        return this.pageIsActive || this.pageIsPassive;
     }
 
     //------------------------
@@ -72,25 +62,19 @@ export class TabLifecycleService extends HoistService {
         return 'passive';
     }
 
-    private logStateChange = nextState => {
-        const prevState = this.state;
-        if (nextState !== prevState) {
-            console.log(`State change: ${prevState} >>> ${nextState}`);
-            if (prevState === 'active') {
-                runInAction(() => (this._lastActivityMs = Date.now()));
-            }
-            runInAction(() => (this._state = nextState));
-        }
-    };
+    @action
+    private setState(nextState) {
+        this._state = nextState;
+    }
 
-    private startMonitoring() {
+    private startListeners() {
         // Options used for all event listeners.
         const opts = {capture: true};
 
         // These lifecycle events can all use the same listener to observe state
         // changes.
         ['pageshow', 'focus', 'blur', 'visibilitychange', 'resume'].forEach(type => {
-            window.addEventListener(type, () => this.logStateChange(this.getLiveState()), opts);
+            window.addEventListener(type, () => this.setState(this.getLiveState()), opts);
         });
 
         // The next two listeners, on the other hand, can determine the next
@@ -99,7 +83,7 @@ export class TabLifecycleService extends HoistService {
             'freeze',
             () => {
                 // In the freeze event, the next state is always frozen.
-                this.logStateChange('frozen');
+                this.setState('frozen');
             },
             opts
         );
@@ -111,7 +95,7 @@ export class TabLifecycleService extends HoistService {
                 // to enter the back/forward cache, which is also in the frozen state.
                 // If the event's persisted property is not `true` the page is
                 // about to be unloaded.
-                this.logStateChange(event.persisted ? 'frozen' : 'terminated');
+                this.setState(event.persisted ? 'frozen' : 'terminated');
             },
             opts
         );

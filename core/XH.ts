@@ -28,8 +28,7 @@ import {
     makeObservable,
     observable,
     reaction as mobxReaction,
-    when as mobxWhen,
-    runInAction
+    when as mobxWhen
 } from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {
@@ -47,7 +46,6 @@ import {
     JsonBlobService,
     LocalStorageService,
     PrefService,
-    TabLifecycleService,
     TrackService,
     WebSocketService,
     FetchOptions
@@ -55,15 +53,7 @@ import {
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {checkMinVersion, getClientDeviceInfo, throwIf} from '@xh/hoist/utils/js';
-import {
-    camelCase,
-    compact,
-    debounce as lodashDebounce,
-    flatten,
-    isBoolean,
-    isString,
-    uniqueId
-} from 'lodash';
+import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import {createRoot} from 'react-dom/client';
 import parser from 'ua-parser-js';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
@@ -101,7 +91,7 @@ declare const xhIsDevelopmentMode: boolean;
  */
 export class XHApi {
     private _initCalled: boolean = false;
-    @observable private _lastActivityMs: number = Date.now();
+    private _lastActivityMs: number = Date.now();
     private _uaParser: any = null;
 
     constructor() {
@@ -153,7 +143,6 @@ export class XHApi {
     jsonBlobService: JsonBlobService;
     localStorageService: LocalStorageService;
     prefService: PrefService;
-    tabLifecycleService: TabLifecycleService;
     trackService: TrackService;
     webSocketService: WebSocketService;
 
@@ -266,7 +255,7 @@ export class XHApi {
     @observable
     appState: AppState = 'PRE_AUTH';
 
-    /** milliseconds timestamp at moment user activity / interaction was last detected. */
+    /** milliseconds since user activity / interaction was last detected. */
     get lastActivityMs(): number {
         return this._lastActivityMs;
     }
@@ -801,7 +790,6 @@ export class XHApi {
                 AlertBannerService,
                 AutoRefreshService,
                 ChangelogService,
-                TabLifecycleService,
                 IdleService,
                 InspectorService,
                 GridAutosizeService,
@@ -939,16 +927,9 @@ export class XHApi {
 
     private createActivityListeners() {
         ['keydown', 'mousemove', 'mousedown', 'scroll', 'touchmove', 'touchstart'].forEach(name => {
-            window.addEventListener(
-                name,
-                lodashDebounce(
-                    () => {
-                        runInAction(() => (this._lastActivityMs = Date.now()));
-                    },
-                    500,
-                    {leading: true}
-                )
-            );
+            window.addEventListener(name, () => {
+                this._lastActivityMs = Date.now();
+            });
         });
     }
 
