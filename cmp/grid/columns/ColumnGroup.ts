@@ -8,7 +8,6 @@ import {HAlign, PlainObject, Some, Thunkable} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString} from 'lodash';
-import {ReactNode} from 'react';
 import {GridModel} from '../GridModel';
 import {ColumnHeaderClassFn, ColumnHeaderNameFn} from '../Types';
 import {Column, ColumnSpec, getAgHeaderClassFn} from './Column';
@@ -21,7 +20,7 @@ export interface ColumnGroupSpec {
     /** Unique identifier for the ColumnGroup within its grid. */
     groupId?: string;
     /** Display text for column group header. */
-    headerName?: ReactNode | ColumnHeaderNameFn;
+    headerName?: string | ColumnHeaderNameFn;
     /** CSS classes to add to the header. */
     headerClass?: Some<string> | ColumnHeaderClassFn;
     /** Horizontal alignment of header contents. */
@@ -47,7 +46,7 @@ export class ColumnGroup {
     readonly children: Array<ColumnGroup | Column>;
     readonly gridModel: GridModel;
     readonly groupId: string;
-    readonly headerName: ReactNode | ColumnHeaderNameFn;
+    readonly headerName: string | ColumnHeaderNameFn;
     readonly headerClass: Some<string> | ColumnHeaderClassFn;
     readonly headerAlign: HAlign;
 

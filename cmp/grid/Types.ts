@@ -279,7 +279,7 @@ export type ColumnHeaderNameFn = (params: {
     columnGroup?: ColumnGroup;
     gridModel: GridModel;
     agParams: HeaderValueGetterParams;
-}) => ReactNode;
+}) => string;
 
 /**
  * Function to determine if a Column should be editable or not. This function will be

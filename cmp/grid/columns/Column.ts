@@ -32,7 +32,7 @@ import {
     keysIn,
     toString
 } from 'lodash';
-import {createElement, forwardRef, isValidElement, ReactNode, useImperativeHandle} from 'react';
+import {createElement, forwardRef, isValidElement, useImperativeHandle} from 'react';
 import {GridModel} from '../GridModel';
 import {GridSorter} from '../GridSorter';
 import {managedRenderer} from '../impl/Utils';
@@ -98,7 +98,7 @@ export interface ColumnSpec {
      * User-facing text/element displayed in the Column header, or a function to produce the same.
      * Defaulted from `displayName`.
      */
-    headerName?: ColumnHeaderNameFn | ReactNode;
+    headerName?: ColumnHeaderNameFn | string;
 
     /** Tooltip text for grid header.*/
     headerTooltip?: string;
@@ -410,7 +410,7 @@ export class Column {
     colId: string;
     isTreeColumn: boolean;
     displayName: string;
-    headerName: ColumnHeaderNameFn | ReactNode;
+    headerName: ColumnHeaderNameFn | string;
     headerTooltip: string;
     headerHasExpandCollapse: boolean;
     headerAlign: HAlign;
