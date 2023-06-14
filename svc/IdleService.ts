@@ -4,9 +4,9 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH} from '@xh/hoist/core';
-import {MINUTES} from '@xh/hoist/utils/datetime';
-import {debounce as lodashDebounce} from 'lodash';
+import {HoistService, XH, managed} from '@xh/hoist/core';
+import {Timer} from '@xh/hoist/utils/async';
+import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
 
 /**
  * Manage the idling/suspension of this application after a certain period of user inactivity
@@ -23,9 +23,12 @@ export class IdleService extends HoistService {
 
     static instance: IdleService;
 
+    @managed
+    private timer: Timer = null;
+    private timeout = null;
+
     constructor() {
         super();
-
         this.addReaction({
             when: () => XH.appIsRunning,
             run: this.startMonitoring
@@ -36,19 +39,28 @@ export class IdleService extends HoistService {
     // Implementation
     //------------------------
     private startMonitoring() {
-        const userEnabled = !XH.getPref('xhIdleDetectionDisabled');
-        if (!userEnabled) return;
-
         const idleConfig = XH.getConf('xhIdleConfig', {}),
             {appTimeouts = {}, timeout} = idleConfig,
-            appSuspendTimeout = (appTimeouts[XH.clientAppCode] ?? timeout ?? -1) * MINUTES,
-            appSuspendEnabled = appSuspendTimeout > 0;
+            configTimeout = (appTimeouts[XH.clientAppCode] ?? timeout ?? -1) * MINUTES,
+            configEnabled = configTimeout > 0,
+            userEnabled = !XH.getPref('xhIdleDetectionDisabled');
 
-        if (appSuspendEnabled) {
-            this.addReaction({
-                track: () => XH.lastActivityMs,
-                run: lodashDebounce(() => XH.suspendApp({reason: 'IDLE'}), appSuspendTimeout)
-            });
+        if (configEnabled && userEnabled) {
+            this.timeout = configTimeout;
+            this.createTimer();
+        }
+    }
+
+    private createTimer() {
+        this.timer = Timer.create({
+            runFn: () => this.checkInactivityTimeout(),
+            interval: 500
+        });
+    }
+
+    private checkInactivityTimeout() {
+        if (olderThan(XH.lastActivityMs, this.timeout)) {
+            XH.suspendApp({reason: 'IDLE'});
         }
     }
 }
