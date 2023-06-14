@@ -10,12 +10,13 @@
   requires `hoist-core >= v16.3.0`).
 * Added bindable `readonly` property to `LeftRightChooserModel`.
 
-
 ### ⚙️ Technical
 * Support the `HOIST_IMPERSONATOR` role introduced in hoist-core `v16.3.0`
+* Hoist now supports and requires ag-Grid v30 or higher. This version includes critical
+performance improvements to scrolling without the problematic 'ResizeObserver' issues discussed
+below.
 
 ### 🐞 Bug Fixes
-
 * Fixed a bug where Onsen components wrappers could not forward refs.
 * Improved the exceptions thrown by fetchService when errors occur parsing response JSON.
 
