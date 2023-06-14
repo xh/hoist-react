@@ -32,7 +32,7 @@ import {
     keysIn,
     toString
 } from 'lodash';
-import {createElement, forwardRef, isValidElement, useImperativeHandle} from 'react';
+import {createElement, forwardRef, isValidElement, ReactNode, useImperativeHandle} from 'react';
 import {GridModel} from '../GridModel';
 import {GridSorter} from '../GridSorter';
 import {managedRenderer} from '../impl/Utils';
@@ -410,7 +410,7 @@ export class Column {
     colId: string;
     isTreeColumn: boolean;
     displayName: string;
-    headerName: ColumnHeaderNameFn | string;
+    headerName: ColumnHeaderNameFn | ReactNode;
     headerTooltip: string;
     headerHasExpandCollapse: boolean;
     headerAlign: HAlign;

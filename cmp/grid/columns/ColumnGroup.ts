@@ -8,6 +8,7 @@ import {HAlign, PlainObject, Some, Thunkable} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString} from 'lodash';
+import {ReactNode} from 'react';
 import {GridModel} from '../GridModel';
 import {ColumnHeaderClassFn, ColumnHeaderNameFn} from '../Types';
 import {Column, ColumnSpec, getAgHeaderClassFn} from './Column';
@@ -20,7 +21,7 @@ export interface ColumnGroupSpec {
     /** Unique identifier for the ColumnGroup within its grid. */
     groupId?: string;
     /** Display text for column group header. */
-    headerName?: string | ColumnHeaderNameFn;
+    headerName?: ReactNode | ColumnHeaderNameFn;
     /** CSS classes to add to the header. */
     headerClass?: Some<string> | ColumnHeaderClassFn;
     /** Horizontal alignment of header contents. */
@@ -46,7 +47,7 @@ export class ColumnGroup {
     readonly children: Array<ColumnGroup | Column>;
     readonly gridModel: GridModel;
     readonly groupId: string;
-    readonly headerName: string | ColumnHeaderNameFn;
+    readonly headerName: ReactNode | ColumnHeaderNameFn;
     readonly headerClass: Some<string> | ColumnHeaderClassFn;
     readonly headerAlign: HAlign;
 
@@ -102,10 +103,15 @@ export class ColumnGroup {
         const {headerName, gridModel} = this;
         return {
             groupId: this.groupId,
-            headerValueGetter: agParams =>
-                isFunction(headerName)
+            headerValueGetter: agParams => {
+                // headerValueGetter should always return a string
+                // for display in draggable shadow box, aGrid Tool panel.
+                // Hoist ColumnHeader will handle display of Element values in the header.
+                const ret = isFunction(headerName)
                     ? headerName({columnGroup: this, gridModel, agParams})
-                    : headerName,
+                    : headerName;
+                return isString(ret) ? ret : genDisplayName(this.groupId);
+            },
             headerClass: getAgHeaderClassFn(this),
             headerGroupComponentParams: {gridModel, xhColumnGroup: this},
             children: this.children.map(it => it.getAgSpec()),

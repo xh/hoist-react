@@ -219,14 +219,14 @@ export class ValuesTabModel extends HoistModel {
             columns: [
                 {
                     field: 'isChecked',
-                    headerName: (({gridModel}) => {
+                    headerName: ({gridModel}) => {
                         return checkbox({
                             disabled: gridModel.store.empty,
                             displayUnsetState: true,
                             value: this.allVisibleRecsChecked,
                             onChange: () => this.toggleAllRecsChecked()
                         });
-                    }) as any,
+                    },
                     width: 28,
                     autosizable: false,
                     pinned: true,
