@@ -12,7 +12,6 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isNil} from 'lodash';
 import {ForwardedRef, ReactElement, useImperativeHandle} from 'react';
 
 /**
@@ -97,11 +96,12 @@ class InlineEditorModel extends HoistModel {
 
         inputEl.focus();
 
-        const {charPress} = this.agParams;
-        if (isNil(charPress)) {
-            inputEl.select();
+        const {eventKey} = this.agParams;
+        // Enter initial keystroke in value (if single char and not special key e.g (F2 or Enter).
+        if (eventKey?.length == 1) {
+            ref.current.noteValueChange(eventKey);
         } else {
-            ref.current.noteValueChange(charPress);
+            inputEl.select();
         }
     }
 
