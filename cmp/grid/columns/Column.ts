@@ -98,7 +98,7 @@ export interface ColumnSpec {
      * User-facing text/element displayed in the Column header, or a function to produce the same.
      * Defaulted from `displayName`.
      */
-    headerName?: ColumnHeaderNameFn | string;
+    headerName?: ColumnHeaderNameFn | ReactNode;
 
     /** Tooltip text for grid header.*/
     headerTooltip?: string;
