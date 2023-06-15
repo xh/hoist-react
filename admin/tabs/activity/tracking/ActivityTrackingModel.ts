@@ -207,16 +207,10 @@ export class ActivityTrackingModel extends HoistModel {
         const {enabled, cube, formModel} = this;
         if (!enabled) return;
 
-        const params = formModel.getData();
-
-        // TODO - revert formatting when most apps have migrated to Hoist-Core 13
-        params.startDay = params.startDay.format('YYYYMMDD');
-        params.endDay = params.endDay.format('YYYYMMDD');
-
         try {
             const data = await XH.fetchJson({
                 url: 'trackLogAdmin',
-                params,
+                params: formModel.getData(),
                 loadSpec
             });
 

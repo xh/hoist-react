@@ -11,7 +11,6 @@ import {HoistModel, LoadSpec, managed, XH, Intent, PlainObject} from '@xh/hoist/
 import {dateIs, required} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {AppModel} from '@xh/hoist/admin/AppModel';
-import {checkMinVersion} from '@xh/hoist/utils/js';
 import _, {sortBy, without} from 'lodash';
 import {computed} from 'mobx';
 
@@ -69,7 +68,7 @@ export class AlertBannerModel extends HoistModel {
     }
 
     get supportPresets() {
-        return checkMinVersion(XH.getEnv('hoistCoreVersion'), '16.3.0');
+        return XH.environmentService.isMinHoistCoreVersion('16.3.0');
     }
 
     constructor() {
