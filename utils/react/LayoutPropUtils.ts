@@ -23,7 +23,7 @@ import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
  *     height, minHeight, maxHeight, width, minWidth, maxWidth,
  *     flex, flexBasis, flexDirection, flexGrow, flexShrink, flexWrap,
  *     alignItems, alignSelf, alignContent, justifyContent,
- *     overflow, overflowX, overflowY,
+ *     overflow, overflowX, overflowY, textOverflow,
  *     top, left, position, display
  *
  * NOTE - this system relies on Components respecting and responding to these properties.
@@ -101,7 +101,7 @@ const dimKeys = [
 ];
 const flexKeys = ['flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap'];
 const alignKeys = ['alignItems', 'alignSelf', 'alignContent', 'justifyContent'];
-const overflowKeys = ['overflow', 'overflowX', 'overflowY'];
+const overflowKeys = ['overflow', 'overflowX', 'overflowY', 'textOverflow'];
 const otherKeys = ['top', 'left', 'position', 'display'];
 const allKeys = [...dimKeys, ...flexKeys, ...alignKeys, ...overflowKeys, ...otherKeys];
 
