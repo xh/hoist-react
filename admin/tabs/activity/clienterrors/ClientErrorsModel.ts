@@ -208,7 +208,7 @@ export class ClientErrorsModel extends HoistModel {
     }
 
     getDefaultStartDay() {
-        return LocalDate.currentAppDay().subtract(6);
+        return LocalDate.currentAppDay();
     }
     getDefaultEndDay() {
         return LocalDate.currentAppDay();
