@@ -1997,7 +1997,7 @@
     eslint-plugin-react-hooks "^4.6"
     typescript "^4.9"
 
-"@xh/hoist-dev-utils@^6.2.0":
+"@xh/hoist-dev-utils@^6.3.0":
   version "6.3.0"
   resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-6.3.0.tgz#0bc5b286166f9303e5e6d2bd825e5fde94ed4782"
   integrity sha512-knnfCrKJZc+5MueIzPByxi9ka1dJd7dkijeY5xxkT1ChqUNHlPt60+OSL4XaStfDeJYFohBqzszoXG6xl8ukBg==
