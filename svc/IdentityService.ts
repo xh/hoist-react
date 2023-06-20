@@ -6,7 +6,6 @@
  */
 import {HoistService, HoistUser, XH} from '@xh/hoist/core';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
-import {checkMinVersion} from '@xh/hoist/utils/js/VersionUtils';
 
 /**
  * Provides basic information related to the authenticated user, including application roles.
@@ -162,7 +161,7 @@ export class IdentityService extends HoistService {
     }
 
     private canUserImpersonate(user: HoistUser): boolean {
-        const hasPerm = checkMinVersion(XH.environmentService.get('hoistCoreVersion'), '16.3.0')
+        const hasPerm = XH.environmentService.isMinHoistCoreVersion('16.3.0')
             ? user.hasRole(`HOIST_IMPERSONATOR`)
             : user.isHoistAdmin;
         return hasPerm && XH.getConf('xhEnableImpersonation');

@@ -16,6 +16,10 @@
 performance improvements to scrolling without the problematic 'ResizeObserver' issues discussed
 below.
 
+### 💥 Breaking Changes
+* The deprecated `@settable` decorator has now been removed. Use `@bindable` instead.
+* The deprecated class `@xh/hoist/admin/App` has been removed.  Use `@xh/hoist/admin/AppComponent` instead.
+
 ### 🐞 Bug Fixes
 * Fixed a bug where Onsen components wrappers could not forward refs.
 * Improved the exceptions thrown by fetchService when errors occur parsing response JSON.

@@ -11,7 +11,7 @@ import {observable, action, makeObservable} from '@xh/hoist/mobx';
 import hoistPkg from '@xh/hoist/package.json';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
-import {deepFreeze} from '@xh/hoist/utils/js';
+import {checkMaxVersion, checkMinVersion, deepFreeze} from '@xh/hoist/utils/js';
 import {defaults} from 'lodash';
 import mobxPkg from 'mobx/package.json';
 import {version as reactVersion} from 'react';
@@ -78,6 +78,14 @@ export class EnvironmentService extends HoistService {
 
     isTest(): boolean {
         return this.get('appEnvironment') === 'Test';
+    }
+
+    isMinHoistCoreVersion(version: string): boolean {
+        return checkMinVersion(this.get('hoistCoreVersion'), version);
+    }
+
+    isMaxHoistCoreVersion(version: string): boolean {
+        return checkMaxVersion(this.get('hoistCoreVersion'), version);
     }
 
     //------------------------------
