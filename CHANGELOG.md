@@ -9,6 +9,8 @@
   then easily loaded into a banner by members of an application support team (
   requires `hoist-core >= v16.3.0`).
 * Added bindable `readonly` property to `LeftRightChooserModel`.
+* Improved filtering of fields with `type: date` to use the end of day when for '>' or '<=' operators.
+  Developers should specify `localDate` as the `fieldSpec.fieldType` to opt into this behavior.
 
 ### ⚙️ Technical
 * Support the `HOIST_IMPERSONATOR` role introduced in hoist-core `v16.3.0`
@@ -47,11 +49,6 @@ below.
 ### 📚 Libraries
 
 * @blueprintjs/core `^4.14 -> ^4.20` (apps might have already updated to a newer minor version)
-
-### 🎁 New Features
-
-* Improved filtering of `date` `fieldType` to end of day when operator is '>' or '<='. Developers
-  will need to indicate `localDate` as the `fieldSpec.fieldType` to trigger this behavior.
 
 ## 56.5.0 - 2023-05-26
 

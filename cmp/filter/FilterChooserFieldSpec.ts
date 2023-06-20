@@ -123,7 +123,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
             return input => parseNumber(input);
         }
 
-        // Default date parser if fieldSpec's fieldType does not match source field's fieldType.
+        // Default date parser if fieldSpec's fieldType is localDate and record's field type is date.
         if (!valueParser && this.filterDateAsLocalDate) {
             return (v, op) => this.parseLocalDateAsDate(v, op);
         }
