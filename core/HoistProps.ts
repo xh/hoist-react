@@ -105,6 +105,7 @@ export interface LayoutProps {
     overflow?: string;
     overflowX?: string;
     overflowY?: string;
+    textOverflow?: string;
 
     top?: string | number;
     left?: string | number;

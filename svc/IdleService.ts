@@ -15,7 +15,7 @@ import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
  * system from unattended clients and/or as a "belt-and-suspenders" defence against memory
  * leaks or other performance issues that can arise with long-running sessions.
  *
- * This service consults the `xhIdleConfig` soft-config and the `xh.disableIdleDetection`
+ * This service consults the `xhIdleConfig` soft-config and the `xhIdleDetectionDisabled`
  * user preference to determine if and when it should suspend the app.
  */
 export class IdleService extends HoistService {
