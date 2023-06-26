@@ -115,7 +115,7 @@ export function isJSON(obj: any): boolean {
 /**
  * Throw an exception if a condition evaluates as truthy.
  */
-export function throwIf(condition: any, message: string) {
+export function throwIf(condition: any, message: unknown) {
     if (condition) {
         throw Exception.create(message);
     }
@@ -124,7 +124,7 @@ export function throwIf(condition: any, message: string) {
 /**
  * Log a warning to the console if a condition evaluates as truthy.
  */
-export function warnIf(condition: any, message: string) {
+export function warnIf(condition: any, message: any) {
     if (condition) {
         console.warn(message);
     }
@@ -133,7 +133,7 @@ export function warnIf(condition: any, message: string) {
 /**
  * Log an error to the console if a condition evaluates as truthy.
  */
-export function errorIf(condition: any, message: string) {
+export function errorIf(condition: any, message: any) {
     if (condition) {
         console.error(message);
     }
