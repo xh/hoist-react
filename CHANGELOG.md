@@ -1,6 +1,9 @@
 # Changelog
 
 ## 58.0.0-SNAPSHOT - unreleased
+### 🎁 New Features
+* New service `PageLifecycleService`:  Can be used to adjust to page lifecycle states:
+  'active' | 'passive' | 'hidden'| 'frozen' | 'terminated';
 
 ## 57.0.0 - 2023-06-20
 
