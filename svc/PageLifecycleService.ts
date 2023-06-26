@@ -8,21 +8,21 @@ import {HoistService} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 
 /**
- * Manage the idling/suspension of this application after a certain period of user inactivity
- * to cancel background tasks and prompt the user to reload the page when they wish to resume
- * using the app. This approach is typically employed to reduce potential load on back-end
- * system from unattended clients and/or as a "belt-and-suspenders" defence against memory
- * leaks or other performance issues that can arise with long-running sessions.
+ * The PageLifecycleService offers observable access to the five states of a page's lifecycle.
+ * The service's getters can be checked or monitored to disable, skip, or shutdown
+ * recurring processes if an app is `passive` (visible but not focused) or `hidden` (in a browser tab that is not
+ * visible, or in a browser that is behind another window).
+ * The `state` property can be monitored to check for any state, including the `frozen` or `terminated`
+ * states, which might trigger an action to preserve user state.
  *
- * This service consults the `xhIdleConfig` soft-config and the `xhIdleDetectionDisabled`
- * user preference to determine if and when it should suspend the app.
+ * @see LifeCycleState
  */
 export class PageLifecycleService extends HoistService {
     override xhImpl = true;
     static instance: PageLifecycleService;
 
-    @observable private _state: string;
-    get state() {
+    @observable private _state: LifeCycleState;
+    get state(): LifeCycleState {
         return this._state;
     }
 
@@ -101,3 +101,6 @@ export class PageLifecycleService extends HoistService {
         );
     }
 }
+
+type LiveState = 'active' | 'passive' | 'hidden';
+type LifeCycleState = LiveState | 'frozen' | 'terminated';

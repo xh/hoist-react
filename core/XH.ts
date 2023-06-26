@@ -45,6 +45,7 @@ import {
     InspectorService,
     JsonBlobService,
     LocalStorageService,
+    PageLifecycleService,
     PrefService,
     TrackService,
     WebSocketService,
@@ -142,6 +143,7 @@ export class XHApi {
     inspectorService: InspectorService;
     jsonBlobService: JsonBlobService;
     localStorageService: LocalStorageService;
+    pageLifecycleService: PageLifecycleService;
     prefService: PrefService;
     trackService: TrackService;
     webSocketService: WebSocketService;
@@ -787,6 +789,7 @@ export class XHApi {
             }
 
             await this.installServicesAsync(
+                PageLifecycleService,
                 AlertBannerService,
                 AutoRefreshService,
                 ChangelogService,
