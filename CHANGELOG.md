@@ -2,6 +2,9 @@
 
 ## 58.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Enhancement to `TabSwitcher` to allow navigation using arrow keys when focused.
+
 ## 57.0.0 - 2023-06-20
 
 ### 🎁 New Features
