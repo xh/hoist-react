@@ -5,7 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {span} from '@xh/hoist/cmp/layout';
-import {defaults, isBoolean, isFinite, isFunction, isNil, isPlainObject, isString} from 'lodash';
+import {defaults, isBoolean, isFinite, isFunction, isNil, isString} from 'lodash';
 import Numbro from 'numbro';
 import numbro from 'numbro';
 import {CSSProperties, ReactNode} from 'react';
@@ -293,7 +293,7 @@ function fmtNumberElement(v: number, str: string, sign: '+' | '-', opts?: Number
 
     // CSS classes
     const cls = [];
-    if (colorSpec) cls.push(valueClass(v, colorSpec));
+    if (colorSpec) cls.push(calcClassFromColorSpec(v, colorSpec));
     if (tooltip) cls.push('xh-title-tip');
 
     // Compile child items
@@ -325,7 +325,7 @@ function fmtNumberElement(v: number, str: string, sign: '+' | '-', opts?: Number
 
     return span({
         className: cls.join(' '),
-        style: valueStyle(v, colorSpec),
+        style: calcStyleFromColorSpec(v, colorSpec),
         title: processToolTip(tooltip, opts),
         items: items
     });
@@ -372,8 +372,8 @@ function fmtNumberString(
 
     if (colorSpec) {
         ret = fmtSpan(ret, {
-            className: valueClass(v, colorSpec),
-            style: valueStyle(v, colorSpec),
+            className: calcClassFromColorSpec(v, colorSpec),
+            style: calcStyleFromColorSpec(v, colorSpec),
             asHtml
         }) as string;
     }
@@ -398,16 +398,15 @@ function signGlyph(v: number, asHtml: boolean = false) {
         : DOWN_TICK;
 }
 
-function valueClass(v: number, colorSpec: ColorSpec | boolean): string {
+function calcClassFromColorSpec(v: number, colorSpec: ColorSpec | boolean): string {
+    if (colorSpec === true) colorSpec = DEFAULT_COLOR_SPEC;
     if (!isFinite(v) || !colorSpec) return '';
-
-    colorSpec = isPlainObject(colorSpec) ? (colorSpec as ColorSpec) : DEFAULT_COLOR_SPEC;
 
     const possibleClassName = v < 0 ? colorSpec.neg : v > 0 ? colorSpec.pos : colorSpec.neutral;
     return isString(possibleClassName) ? possibleClassName : '';
 }
 
-function valueStyle(v: number, colorSpec: ColorSpec | boolean): CSSProperties {
+function calcStyleFromColorSpec(v: number, colorSpec: ColorSpec | boolean): CSSProperties {
     if (!isFinite(v) || isBoolean(colorSpec)) return {};
 
     const possibleStyles = v < 0 ? colorSpec.neg : v > 0 ? colorSpec.pos : colorSpec.neutral;
