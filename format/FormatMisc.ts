@@ -5,8 +5,8 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {span} from '@xh/hoist/cmp/layout';
-import {capitalize, isNil} from 'lodash';
-import {ReactNode} from 'react';
+import {capitalize, isNil, kebabCase, map} from 'lodash';
+import {CSSProperties, ReactNode} from 'react';
 
 export interface FormatOptions<T = any> {
     /** Display value for null values. */
@@ -24,6 +24,7 @@ export interface FormatOptions<T = any> {
 
 export interface SpanFormatOptions extends FormatOptions {
     className?: string;
+    style?: CSSProperties;
     title?: string;
 
     /** Set to true to add a space before the v to be wrapped.*/
@@ -45,10 +46,11 @@ export function fmtSpan(v: any, opts?: SpanFormatOptions): ReactNode {
         title = null,
         leadSpc = false,
         trailSpc = false,
-        asHtml = false
+        asHtml = false,
+        style = {}
     } = opts ?? {};
     if (v == null) return '';
-    let delOpts = {className, title, leadSpc, trailSpc};
+    let delOpts = {className, title, leadSpc, style, trailSpc};
     return asHtml ? fmtSpanHtml(v, delOpts) : fmtSpanElement(v, delOpts);
 }
 
@@ -84,22 +86,24 @@ export function capitalizeWords(str: string): string {
 // Implementation
 //-----------------
 function fmtSpanElement(v, opts) {
-    const {className, title, leadSpc, trailSpc} = opts,
+    const {className, title, leadSpc, style, trailSpc} = opts,
         txt = (leadSpc ? ' ' : '') + v + (trailSpc ? ' ' : '');
 
     return span({
         className,
+        style,
         title,
         item: txt
     });
 }
 
 function fmtSpanHtml(v, opts) {
-    const {className, title, leadSpc, trailSpc} = opts,
+    const {className, title, leadSpc, style, trailSpc} = opts,
         txt = (leadSpc ? ' ' : '') + v;
 
     let ret = '<span';
     ret += className ? ` class="${className}"` : '';
+    ret += style ? ` style="${map(style, (v, k) => `${kebabCase(k)}: ${v};`).join(' ')}"` : '';
     ret += title ? ` title="${title}"` : '';
     ret += `>${txt}</span>`;
 

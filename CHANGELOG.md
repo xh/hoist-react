@@ -2,6 +2,10 @@
 
 ## 58.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Enhance `NumberFormatOptions.colorSpec` to accept custom CSS properties in addition to class names
+
 ## 57.0.0 - 2023-06-20
 
 ### 🎁 New Features
