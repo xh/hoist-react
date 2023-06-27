@@ -3,7 +3,9 @@
 ## 58.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-* Enhancement to `TabSwitcher` to allow navigation using arrow keys when focused.
+
+* Enhance `NumberFormatOptions.colorSpec` to accept custom CSS properties in addition to class names
+* Enhance `TabSwitcher` to allow navigation using arrow keys when focused.
 
 ## 57.0.0 - 2023-06-20
 
