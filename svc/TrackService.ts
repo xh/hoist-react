@@ -26,7 +26,8 @@ export class TrackService extends HoistService {
             maxRows: {
                 default: 10000,
                 options: [1000, 5000, 10000, 25000]
-            }
+            },
+            logData: false
         });
     }
 
@@ -90,15 +91,7 @@ export class TrackService extends HoistService {
 
             if (options.category) params.category = options.category;
             if (options.data) params.data = JSON.stringify(options.data);
-
-            const {maxDataLength} = this.conf;
-            if (params.data?.length > maxDataLength) {
-                console.warn(
-                    `[TrackService] | Track log includes ${params.data.length} chars of JSON data | exceeds limit of ${maxDataLength} | data will not be persisted`,
-                    options.data
-                );
-                params.data = null;
-            }
+            if (options.logData !== undefined) params.logData = options.logData.toString();
 
             if (options.elapsed !== undefined) params.elapsed = options.elapsed;
             if (options.severity) params.severity = options.severity;

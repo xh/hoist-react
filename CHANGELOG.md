@@ -6,6 +6,9 @@
 
 * Enhance `NumberFormatOptions.colorSpec` to accept custom CSS properties in addition to class names
 
+* Added new option `TrackOptions.logData` to provide support for logging application data in
+  `TrackService.`  Requires hoist-core v16.4.
+
 ## 57.0.0 - 2023-06-20
 
 ### 🎁 New Features
