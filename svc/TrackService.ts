@@ -91,10 +91,18 @@ export class TrackService extends HoistService {
 
             if (options.category) params.category = options.category;
             if (options.data) params.data = JSON.stringify(options.data);
-            if (options.logData !== undefined) params.logData = options.logData.toString();
-
-            if (options.elapsed !== undefined) params.elapsed = options.elapsed;
             if (options.severity) params.severity = options.severity;
+            if (options.logData !== undefined) params.logData = options.logData.toString();
+            if (options.elapsed !== undefined) params.elapsed = options.elapsed;
+
+            const {maxDataLength} = this.conf;
+            if (params.data?.length > maxDataLength) {
+                console.warn(
+                    `[TrackService] | Track log includes ${params.data.length} chars of JSON data | exceeds limit of ${maxDataLength} | data will not be persisted`,
+                    options.data
+                );
+                params.data = null;
+            }
 
             const elapsedStr = params.elapsed != null ? `${params.elapsed}ms` : null,
                 consoleMsg = ['[Track]', params.category, params.msg, elapsedStr]
