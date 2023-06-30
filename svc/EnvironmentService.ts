@@ -97,10 +97,13 @@ export class EnvironmentService extends HoistService {
     }
 
     private startVersionChecking() {
+        // Todo: Remove use of `xhAppVersionCheckSecs` in future
+        const interval =
+            XH.getConf('xhAppVersionCheck', {})?.interval ??
+            XH.getConf('xhAppVersionCheckSecs', null);
         Timer.create({
             runFn: this.checkServerVersionAsync,
-            interval: 'xhAppVersionCheckSecs',
-            intervalUnits: SECONDS
+            interval: interval * SECONDS
         });
     }
 
