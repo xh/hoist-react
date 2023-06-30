@@ -185,7 +185,8 @@ export class AlertBannerModel extends HoistModel {
                 .track({
                     category: 'Audit',
                     message: 'Updated Alert Banner',
-                    data: {active, message, intent, iconName, enableClose}
+                    data: {active, message, intent, iconName, enableClose},
+                    logData: ['active']
                 });
         } catch (e) {
             XH.handleException(e);
