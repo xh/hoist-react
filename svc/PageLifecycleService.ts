@@ -6,22 +6,26 @@
  */
 import {HoistService} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {logDebug} from '@xh/hoist/utils/js';
+import {computed} from 'mobx';
 
 /**
- * The PageLifecycleService offers observable access to the five states of a page's lifecycle.
- * The service's getters can be checked or monitored to disable, skip, or shutdown
- * recurring processes if an app is `passive` (visible but not focused) or `hidden` (in a browser tab that is not
- * visible, or in a browser that is behind another window).
- * The `state` property can be monitored to check for any state, including the `frozen` or `terminated`
- * states, which might trigger an action to preserve user state.
+ * This service offers observable access to the five states of a page's lifecycle, which change
+ * due to changes to the focused/visible state of the browser tab and the browser window as a whole,
+ * as well as built-in browser behaviors around navigation and performance optimizations.
  *
- * @see LifeCycleState
+ * Apps can react to this service's public getters to pause background processes (e.g. expensive
+ * refresh operations) when the app is no longer visible to the user and resume them when the user
+ * switches back and re-activates the tab.
+ *
+ * The {@link LifeCycleState} type lists the possible states, with descriptive comments.
+ * See {@link https://developer.chrome.com/blog/page-lifecycle-api/} for a useful overview.
  */
 export class PageLifecycleService extends HoistService {
-    override xhImpl = true;
     static instance: PageLifecycleService;
 
     @observable private _state: LifeCycleState;
+
     get state(): LifeCycleState {
         return this._state;
     }
@@ -34,14 +38,17 @@ export class PageLifecycleService extends HoistService {
         this.startListeners();
     }
 
+    @computed
     get pageIsActive(): boolean {
         return this.state === 'active';
     }
 
+    @computed
     get pageIsPassive(): boolean {
         return this.state === 'passive';
     }
 
+    @computed
     get pageIsVisible(): boolean {
         return this.pageIsActive || this.pageIsPassive;
     }
@@ -49,9 +56,6 @@ export class PageLifecycleService extends HoistService {
     //------------------------
     // Implementation
     //------------------------
-
-    // This state & event detection taken from the example at
-    // https://developer.chrome.com/blog/page-lifecycle-api/
     private getLiveState() {
         if (document.visibilityState === 'hidden') {
             return 'hidden';
@@ -64,43 +68,53 @@ export class PageLifecycleService extends HoistService {
 
     @action
     private setState(nextState) {
+        if (this._state === nextState) return;
+
+        logDebug(`State change: ${this._state} → ${nextState}`, this);
         this._state = nextState;
     }
 
+    // See article linked in doc comment above for details on these event handlers.
     private startListeners() {
-        // Options used for all event listeners.
         const opts = {capture: true};
 
-        // These lifecycle events can all use the same listener to observe state
-        // changes.
         ['pageshow', 'focus', 'blur', 'visibilitychange', 'resume'].forEach(type => {
             window.addEventListener(type, () => this.setState(this.getLiveState()), opts);
         });
 
-        // The next two listeners, on the other hand, can determine the next
-        // state from the event itself.
-        window.addEventListener(
-            'freeze',
-            () => {
-                // In the freeze event, the next state is always frozen.
-                this.setState('frozen');
-            },
-            opts
-        );
+        window.addEventListener('freeze', () => this.setState('frozen'), opts);
 
         window.addEventListener(
             'pagehide',
-            event => {
-                // If the event's persisted property is `true` the page is about
-                // to enter the back/forward cache, which is also in the frozen state.
-                // If the event's persisted property is not `true` the page is
-                // about to be unloaded.
-                this.setState(event.persisted ? 'frozen' : 'terminated');
-            },
+            e => this.setState(e.persisted ? 'frozen' : 'terminated'),
             opts
         );
     }
 }
 
-type LiveState = 'active' | 'passive' | 'hidden';
-type LifeCycleState = LiveState | 'frozen' | 'terminated';
+export type LifeCycleState =
+    /**
+     * Window/tab is visible and focused.
+     */
+    | 'active'
+    /**
+     * Window/tab is visible but not focused - i.e. the browser is visible on the screen and this
+     * tab is active, but another application in the OS is currently focused, or the user is
+     * interacting with controls in the browser outside of this page, like the URL bar.
+     */
+    | 'passive'
+    /**
+     * Window/tab is not visible - browser is either on another tab within the same window, or the
+     * entire browser is minimized or hidden behind another application in the OS.
+     */
+    | 'hidden'
+    /**
+     * Page has been frozen by the browser due to inactivity (as a perf/memory/power optimization)
+     * or because the user has navigated away and the page is in the back/forward cache (but not
+     * yet completely unloaded / terminated).
+     */
+    | 'frozen'
+    /**
+     * The page is in the process of being unloaded by the browser (this is a terminal state x_x).
+     */
+    | 'terminated';
