@@ -5,6 +5,14 @@
 * New service `PageLifecycleService`:  Can be used to adjust to page lifecycle states:
   'active' | 'passive' | 'hidden'| 'frozen' | 'terminated';
 
+### 🎁 New Features
+
+* Enhance `NumberFormatOptions.colorSpec` to accept custom CSS properties in addition to class names
+* Enhance `TabSwitcher` to allow navigation using arrow keys when focused.
+
+* Added new option `TrackOptions.logData` to provide support for logging application data in
+  `TrackService.`  Requires hoist-core v16.4.
+
 ## 57.0.0 - 2023-06-20
 
 ### 🎁 New Features

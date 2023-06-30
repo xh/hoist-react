@@ -913,7 +913,8 @@ export class XHApi {
                                 appBuild: this.appBuild,
                                 locationHref: window.location.href,
                                 ...getClientDeviceInfo()
-                            }
+                            },
+                            logData: ['appVersion', 'appBuild']
                         });
                         disposer();
                         break;
