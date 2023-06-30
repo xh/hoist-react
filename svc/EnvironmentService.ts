@@ -106,18 +106,22 @@ export class EnvironmentService extends HoistService {
 
     private checkServerVersionAsync = async () => {
         const data = await XH.fetchJson({url: 'xh/version'}),
-            {appVersion, appBuild, shouldUpdate} = data;
+            {appVersion, appBuild, shouldRequireRefresh, shouldUpdate} = data;
 
         // Compare latest version/build info from server against the same info (also supplied by
         // server) when the app initialized. A change indicates an update to the app and will
-        // prompt the user to refresh via the Banner, unless suppressed via shouldUpdate flag.
-        // Builds are checked here to trigger refresh prompts across SNAPSHOT updates for projects
-        // with active dev/QA users.
-        if (
-            shouldUpdate &&
-            (appVersion !== this.get('appVersion') || appBuild !== this.get('appBuild'))
-        ) {
-            XH.appContainerModel.showUpdateBanner(appVersion, appBuild);
+        // force the user to refresh or prompt the user to refresh via the banner according to the
+        // flags set in `xhAppVersionCheck`. Builds are checked here to trigger refresh prompts
+        // across SNAPSHOT updates for projects with active dev/QA users.
+        if (appVersion !== this.get('appVersion') || appBuild !== this.get('appBuild')) {
+            if (shouldRequireRefresh) {
+                XH.suspendApp({
+                    reason: 'APP_UPDATE',
+                    message: `A new version of ${XH.clientAppName} is available!`
+                });
+            } else if (shouldUpdate) {
+                XH.appContainerModel.showUpdateBanner(appVersion, appBuild);
+            }
         }
 
         // Note that the case of version mismatches across the client and server we do *not* show
