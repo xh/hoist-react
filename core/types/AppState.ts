@@ -23,5 +23,5 @@ export type AppState = (typeof AppState)[keyof typeof AppState];
 
 export interface AppSuspendData {
     message?: string;
-    reason: 'IDLE'|'SERVER_FORCE';
+    reason: 'IDLE' | 'SERVER_FORCE' | 'APP_UPDATE';
 }

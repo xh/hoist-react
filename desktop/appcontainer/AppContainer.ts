@@ -152,9 +152,9 @@ const appLoadMask = hoistCmp.factory<AppContainerModel>(({model}) =>
     mask({bind: model.appLoadModel, spinner: true})
 );
 
-const suspendedView = hoistCmp.factory({
-    render() {
-        if (XH.suspendData?.reason === 'IDLE') {
+const suspendedView = hoistCmp.factory<AppContainerModel>({
+    render({model}) {
+        if (model.appStateModel.suspendData?.reason === 'IDLE') {
             const content = XH.appSpec.idlePanel ?? idlePanel;
             return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
         }

@@ -34,10 +34,9 @@ export class PrefService extends HoistService {
 
     constructor() {
         super();
-        const lcSvc = XH.pageLifecycleService;
         this.addReaction({
-            track: () => XH.pageState
-            run: (state) => {
+            track: () => XH.pageState,
+            run: state => {
                 if (state != 'active') this.pushPendingAsync();
             }
         });

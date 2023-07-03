@@ -4,7 +4,6 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {AppSuspendData} from '@xh/hoist/core/types/AppState';
 import {
     HoistService,
     AppSpec,
@@ -19,19 +18,14 @@ import {
     Theme,
     PlainObject,
     HoistException,
-    PageState
+    PageState,
+    AppSuspendData
 } from './';
 import {Store} from '@xh/hoist/data';
 import {instanceManager} from './impl/InstanceManager';
 import {installServicesAsync} from './impl/InstallServices';
 import {Icon} from '@xh/hoist/icon';
-import {
-    action,
-    makeObservable,
-    observable,
-    reaction as mobxReaction,
-    when as mobxWhen
-} from '@xh/hoist/mobx';
+import {action} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {
     AlertBannerService,
@@ -47,16 +41,14 @@ import {
     InspectorService,
     JsonBlobService,
     LocalStorageService,
-    PageStateService,
     PrefService,
     TrackService,
     WebSocketService,
     FetchOptions
 } from '@xh/hoist/svc';
-import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
-import {checkMinVersion, getClientDeviceInfo, logDebug, throwIf} from '@xh/hoist/utils/js';
-import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
+import {checkMinVersion, throwIf} from '@xh/hoist/utils/js';
+import {camelCase, compact, flatten, isString, uniqueId} from 'lodash';
 import {createRoot} from 'react-dom/client';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {ToastModel} from '../appcontainer/ToastModel';
@@ -92,12 +84,12 @@ declare const xhIsDevelopmentMode: boolean;
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
 export class XHApi {
-    private _initCalled: boolean = false;
-
-    constructor() {
-        makeObservable(this);
-        this.exceptionHandler = new ExceptionHandler();
-    }
+    //----------------
+    // Core Delegates
+    //----------------
+    appContainerModel: AppContainerModel = new AppContainerModel();
+    routerModel: RouterModel = new RouterModel();
+    exceptionHandler: ExceptionHandler = new ExceptionHandler();
 
     //----------------------------------------------------------------------------------------------
     // Metadata - set via webpack.DefinePlugin at build time.
@@ -141,7 +133,6 @@ export class XHApi {
     inspectorService: InspectorService;
     jsonBlobService: JsonBlobService;
     localStorageService: LocalStorageService;
-    pageStateService: PageStateService;
     prefService: PrefService;
     trackService: TrackService;
     webSocketService: WebSocketService;
@@ -161,10 +152,6 @@ export class XHApi {
     // Aliased methods
     // Shortcuts to common core service methods and appSpec properties.
     //----------------------------------------------------------------------------------------------
-    get pageState(): PageState {
-        return XH.pageStateService.state;
-    }
-
     fetch(opts: FetchOptions) {
         return this.fetchService.fetch(opts);
     }
@@ -242,16 +229,25 @@ export class XHApi {
         return this.acm.userAgentModel.isDesktop;
     }
 
-    //---------------------------
-    // Models/Handlers
-    //---------------------------
-    appContainerModel: AppContainerModel = new AppContainerModel();
-    routerModel: RouterModel = new RouterModel();
-    exceptionHandler: ExceptionHandler = null;
+    /**
+     * The lifecycle state of the page, which changes due to changes to the focused/visible state
+     * of the browser tab and the browser window as a whole, as well as built-in browser behaviors
+     * around navigation and performance optimizations.
+     *
+     *  Apps can react to this stat to pause background processes (e.g. expensive refresh
+     *  operations) when the app is no longer visible to the user and resume them when the user
+     *  switches back and re-activates the tab.
+     *
+     *  The {@link LifeCycleState} type lists the possible states, with descriptive comments.
+     *   See {@link https://developer.chrome.com/blog/page-lifecycle-api/} for a useful overview.
+     */
+    get pageState(): PageState {
+        return this.acm.pageStateModel.state;
+    }
 
     /** current lifecycle state of the application. */
-    get appState() {
-        return this.acm.appStateModel.appState;
+    get appState(): AppState {
+        return this.acm.appStateModel.state;
     }
 
     /** milliseconds timestamp at moment user activity / interaction was last detected. */
@@ -299,6 +295,15 @@ export class XHApi {
         return installServicesAsync(serviceClasses);
     }
 
+    /**
+     * Suspend all app activity and display, including timers and web sockets.
+     *
+     * Suspension is a terminal state, requiring user to reload the app.
+     * Used for idling, forced version upgrades, and ad-hoc killing of problematic clients.
+     */
+    suspendApp(suspendData: AppSuspendData) {
+        this.acm.appStateModel.suspendApp(suspendData);
+    }
 
     /**
      * Trigger a full reload of the current application.
@@ -659,6 +664,7 @@ export class XHApi {
     //---------------------------------
     // Framework Methods
     //---------------------------------
+    private initCalled = false;
     /**
      * Called when application container first mounted in order to trigger initial
      * authentication and initialization of framework and application.
@@ -666,10 +672,10 @@ export class XHApi {
      */
     async initAsync() {
         // Avoid multiple calls, which can occur if AppContainer remounted.
-        if (this._initCalled) return;
-        this._initCalled = true;
+        if (this.initCalled) return;
+        this.initCalled = true;
 
-        const {appSpec, isMobileApp, isPhone, isTablet, isDesktop, baseUrl} = this;
+        const {appSpec, isMobileApp, isPhone, isTablet, isDesktop} = this;
 
         // Add xh css classes to power Hoist CSS selectors.
         document.body.classList.add(
@@ -748,7 +754,6 @@ export class XHApi {
             }
 
             await this.installServicesAsync(
-                PageStateService,
                 AlertBannerService,
                 AutoRefreshService,
                 ChangelogService,

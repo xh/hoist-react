@@ -42,10 +42,9 @@ export class FetchService extends HoistService {
     defaultTimeout = (30 * SECONDS) as any;
 
     override async initAsync(): Promise<void> {
-
         // pre-flight to allows clean recognition when we have no server.
         try {
-            await XH.fetch({url: 'ping'});
+            await this.fetch({url: 'ping'});
         } catch (e) {
             const {baseUrl} = XH,
                 pingURL = baseUrl.startsWith('http')

@@ -4,8 +4,16 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, RootRefreshContextModel, TaskObserver, XH} from '@xh/hoist/core';
+import {
+    AppState,
+    HoistModel,
+    managed,
+    RootRefreshContextModel,
+    TaskObserver,
+    XH
+} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {when as mobxWhen} from '@xh/hoist/mobx';
 import {isEmpty} from 'lodash';
 import {AboutDialogModel} from './AboutDialogModel';
 import {BannerSourceModel} from './BannerSourceModel';
@@ -22,6 +30,7 @@ import {ToastSourceModel} from './ToastSourceModel';
 import {BannerModel} from './BannerModel';
 import {UserAgentModel} from './UserAgentModel';
 import {AppStateModel} from './AppStateModel';
+import {PageStateModel} from './PageStateModel';
 
 /**
  * Root object for Framework GUI State.
@@ -33,6 +42,7 @@ export class AppContainerModel extends HoistModel {
     /** Link any async operations that should mask the entire application to this model. */
     @managed appLoadModel = TaskObserver.trackAll();
     @managed appStateModel = new AppStateModel();
+    @managed pageStateModel = new PageStateModel();
 
     @managed aboutDialogModel = new AboutDialogModel();
     @managed changelogDialogModel = new ChangelogDialogModel();
@@ -55,6 +65,7 @@ export class AppContainerModel extends HoistModel {
         const models = [
             this.appLoadModel,
             this.appStateModel,
+            this.pageStateModel,
             this.aboutDialogModel,
             this.changelogDialogModel,
             this.exceptionDialogModel,
@@ -71,6 +82,8 @@ export class AppContainerModel extends HoistModel {
             this.userAgentModel
         ];
         models.forEach((m: any) => m.init?.());
+
+        this.bindInitSequenceToAppLoadModel();
     }
 
     /**
@@ -110,5 +123,11 @@ export class AppContainerModel extends HoistModel {
 
     hasAboutDialog() {
         return !isEmpty(this.aboutDialogModel.getItems());
+    }
+
+    private bindInitSequenceToAppLoadModel() {
+        const terminalStates: AppState[] = ['RUNNING', 'SUSPENDED', 'LOAD_FAILED', 'ACCESS_DENIED'],
+            loadingPromise = mobxWhen(() => terminalStates.includes(this.appStateModel.state));
+        loadingPromise.linkTo(XH.appLoadModel);
     }
 }

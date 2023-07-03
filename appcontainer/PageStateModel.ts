@@ -4,25 +4,19 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistService, PageState} from '@xh/hoist/core';
+import {HoistModel, PageState} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {logDebug} from '@xh/hoist/utils/js';
-import {computed} from 'mobx';
 
 /**
- * This service offers observable access to the five states of a page's lifecycle, which change
- * due to changes to the focused/visible state of the browser tab and the browser window as a whole,
- * as well as built-in browser behaviors around navigation and performance optimizations.
+ * Implementation of PageState maintenance.
  *
- * Apps can react to this service's public getters to pause background processes (e.g. expensive
- * refresh operations) when the app is no longer visible to the user and resume them when the user
- * switches back and re-activates the tab.
+ * Based on https://developer.chrome.com/blog/page-lifecycle-api/
  *
- * The {@link LifeCycleState} type lists the possible states, with descriptive comments.
- * See {@link https://developer.chrome.com/blog/page-lifecycle-api/} for a useful overview.
+ * @internal
  */
-export class PageStateService extends HoistService {
-    static instance: PageStateService;
+export class PageStateModel extends HoistModel {
+    override xhImpl = true;
 
     @observable state: PageState;
 
@@ -34,28 +28,14 @@ export class PageStateService extends HoistService {
         this.addListeners();
     }
 
-    get pageIsActive(): boolean {
-        return this.state === 'active';
-    }
-
-    get pageIsPassive(): boolean {
-        return this.state === 'passive';
-    }
-
-    get pageIsVisible(): boolean {
-        return this.pageIsActive || this.pageIsPassive;
-    }
-
     //------------------------
     // Implementation
-    //
-    // Based on https://developer.chrome.com/blog/page-lifecycle-api/
     //------------------------
     @action
     private setState(nextState: PageState) {
         if (this.state === nextState) return;
 
-        logDebug(`Page State change: ${this.state} → ${nextState}`, this);
+        logDebug(`PageState change: ${this.state} → ${nextState}`, this);
         this.state = nextState;
     }
 

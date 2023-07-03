@@ -5,11 +5,9 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {AppState, AppSuspendData, HoistModel, XH} from '@xh/hoist/core';
-import {action, observable, when as mobxWhen} from '@xh/hoist/mobx';
+import {action, makeObservable, observable, reaction} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {getClientDeviceInfo, logDebug} from '@xh/hoist/utils/js';
-import {reaction as mobxReaction} from 'mobx/dist/api/autorun';
-import parser from 'ua-parser-js';
 
 /**
  * Support for Core Hoist Application state and loading.
@@ -19,49 +17,41 @@ import parser from 'ua-parser-js';
 export class AppStateModel extends HoistModel {
     override xhImpl = true;
 
-    @observable appState: AppState = 'PRE_AUTH';
+    @observable state: AppState = 'PRE_AUTH';
 
     lastActivityMs: number = Date.now();
     suspendData: AppSuspendData;
 
     constructor() {
         super();
-        this.bindInitSequenceToAppLoadModel();
+        makeObservable(this);
         this.trackLoad();
         this.createActivityListeners();
     }
 
     @action
     setAppState(nextState: AppState) {
-        if (this.appState === nextState) return;
+        if (this.state === nextState) return;
 
-        logDebug(`Application State change: ${this.appState} → ${nextState}`, this);
-        this.appState = nextState;
+        logDebug(`AppState change: ${this.state} → ${nextState}`, this);
+        this.state = nextState;
     }
 
-    /**
-     * Suspend all app activity and display, including timers and web sockets.
-     *
-     * Suspension is a terminal state, requiring user to reload the app.
-     * Used for idling, forced version upgrades, and ad-hoc killing of problematic clients.
-     * @internal
-     */
     suspendApp(suspendData: AppSuspendData) {
-        if (this.appState === 'SUSPENDED') return;
+        if (this.state === 'SUSPENDED') return;
         this.suspendData = suspendData;
         this.setAppState('SUSPENDED');
         XH.webSocketService.shutdown();
         Timer.cancelAll();
     }
 
-
-    trackLoad() {
+    private trackLoad() {
         let loadStarted = window['_xhLoadTimestamp'], // set in index.html
             loginStarted = null,
             loginElapsed = 0;
 
-        const disposer = mobxReaction(
-            () => this.appState,
+        const disposer = reaction(
+            () => this.state,
             state => {
                 const now = Date.now();
                 switch (state) {
@@ -94,12 +84,6 @@ export class AppStateModel extends HoistModel {
     //---------------------
     // Implementation
     //---------------------
-    private bindInitSequenceToAppLoadModel() {
-        const terminalStates: AppState[] = ['RUNNING', 'SUSPENDED', 'LOAD_FAILED', 'ACCESS_DENIED'],
-            loadingPromise = mobxWhen(() => terminalStates.includes(this.appState));
-        loadingPromise.linkTo(XH.appLoadModel);
-    }
-
     private createActivityListeners() {
         ['keydown', 'mousemove', 'mousedown', 'scroll', 'touchmove', 'touchstart'].forEach(name => {
             window.addEventListener(name, () => {
