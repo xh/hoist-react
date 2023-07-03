@@ -43,7 +43,7 @@ function unauthorizedMessage() {
             : `the roles [${user.roles.join(', ')}]`;
 
     return div(
-        p(XH.accessDeniedMessage ?? ''),
+        p(XH.identityService.accessDeniedMessage ?? ''),
         p(`You are logged in as ${user.username} and have ${roleMsg}.`),
         p({
             item: appSpec.lockoutMessage,

@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {AppSuspendData} from '@xh/hoist/core/types/AppState';
 import {
     HoistService,
     AppSpec,
@@ -17,7 +18,8 @@ import {
     HoistServiceClass,
     Theme,
     PlainObject,
-    HoistException
+    HoistException,
+    PageState
 } from './';
 import {Store} from '@xh/hoist/data';
 import {instanceManager} from './impl/InstanceManager';
@@ -45,7 +47,7 @@ import {
     InspectorService,
     JsonBlobService,
     LocalStorageService,
-    PageLifecycleService,
+    PageStateService,
     PrefService,
     TrackService,
     WebSocketService,
@@ -53,10 +55,9 @@ import {
 } from '@xh/hoist/svc';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
-import {checkMinVersion, getClientDeviceInfo, throwIf} from '@xh/hoist/utils/js';
+import {checkMinVersion, getClientDeviceInfo, logDebug, throwIf} from '@xh/hoist/utils/js';
 import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
 import {createRoot} from 'react-dom/client';
-import parser from 'ua-parser-js';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {ToastModel} from '../appcontainer/ToastModel';
 import {BannerModel} from '../appcontainer/BannerModel';
@@ -92,13 +93,10 @@ declare const xhIsDevelopmentMode: boolean;
  */
 export class XHApi {
     private _initCalled: boolean = false;
-    private _lastActivityMs: number = Date.now();
-    private _uaParser: any = null;
 
     constructor() {
         makeObservable(this);
         this.exceptionHandler = new ExceptionHandler();
-        this.bindInitSequenceToAppLoadModel();
     }
 
     //----------------------------------------------------------------------------------------------
@@ -143,7 +141,7 @@ export class XHApi {
     inspectorService: InspectorService;
     jsonBlobService: JsonBlobService;
     localStorageService: LocalStorageService;
-    pageLifecycleService: PageLifecycleService;
+    pageStateService: PageStateService;
     prefService: PrefService;
     trackService: TrackService;
     webSocketService: WebSocketService;
@@ -163,6 +161,10 @@ export class XHApi {
     // Aliased methods
     // Shortcuts to common core service methods and appSpec properties.
     //----------------------------------------------------------------------------------------------
+    get pageState(): PageState {
+        return XH.pageStateService.state;
+    }
+
     fetch(opts: FetchOptions) {
         return this.fetchService.fetch(opts);
     }
@@ -229,47 +231,38 @@ export class XHApi {
     }
 
     get isPhone(): boolean {
-        return this.uaParser.getDevice().type === 'mobile';
+        return this.acm.userAgentModel.isPhone;
     }
 
     get isTablet(): boolean {
-        return this.uaParser.getDevice().type === 'tablet';
+        return this.acm.userAgentModel.isTablet;
     }
 
     get isDesktop(): boolean {
-        return this.uaParser.getDevice().type === undefined;
+        return this.acm.userAgentModel.isDesktop;
     }
 
     //---------------------------
-    // Models
+    // Models/Handlers
     //---------------------------
     appContainerModel: AppContainerModel = new AppContainerModel();
     routerModel: RouterModel = new RouterModel();
-
-    //---------------------------
-    // Other State
-    //---------------------------
-    suspendData = null;
-    accessDeniedMessage: string = null;
     exceptionHandler: ExceptionHandler = null;
 
     /** current lifecycle state of the application. */
-    @observable
-    appState: AppState = 'PRE_AUTH';
+    get appState() {
+        return this.acm.appStateModel.appState;
+    }
 
     /** milliseconds timestamp at moment user activity / interaction was last detected. */
     get lastActivityMs(): number {
-        return this._lastActivityMs;
+        return this.acm.appStateModel.lastActivityMs;
     }
 
     /** true if application initialized and running (observable). */
     get appIsRunning(): boolean {
         return this.appState === 'RUNNING';
     }
-
-    /** The currently authenticated user. */
-    @observable
-    authUsername: string = null;
 
     /** Root level application model. */
     appModel: HoistAppModel = null;
@@ -306,16 +299,6 @@ export class XHApi {
         return installServicesAsync(serviceClasses);
     }
 
-    /**
-     * Transition the application state.
-     * @internal
-     */
-    @action
-    setAppState(appState: AppState) {
-        if (this.appState != appState) {
-            this.appState = appState;
-        }
-    }
 
     /**
      * Trigger a full reload of the current application.
@@ -688,8 +671,6 @@ export class XHApi {
 
         const {appSpec, isMobileApp, isPhone, isTablet, isDesktop, baseUrl} = this;
 
-        if (appSpec.trackAppLoad) this.trackLoad();
-
         // Add xh css classes to power Hoist CSS selectors.
         document.body.classList.add(
             ...compact([
@@ -701,8 +682,6 @@ export class XHApi {
             ])
         );
 
-        this.createActivityListeners();
-
         // Disable browser context menu on long-press, used to show (app) context menus and as an
         // alternate gesture for tree grid drill-own.
         if (isMobileApp) {
@@ -711,24 +690,6 @@ export class XHApi {
 
         try {
             await this.installServicesAsync(FetchService);
-
-            // pre-flight allows clean recognition when we have no server.
-            try {
-                await XH.fetch({url: 'ping'});
-            } catch (e) {
-                const pingURL = baseUrl.startsWith('http')
-                    ? `${baseUrl}ping`
-                    : `${window.location.origin}${baseUrl}ping`;
-
-                throw this.exception({
-                    name: 'UI Server Unavailable',
-                    detail: e.message,
-                    message:
-                        'Client cannot reach UI server.  Please check UI server at the ' +
-                        `following location: ${pingURL}`
-                });
-            }
-
             this.setAppState('PRE_AUTH');
 
             // consult (optional) pre-auth init for app
@@ -766,9 +727,7 @@ export class XHApi {
         try {
             // Install identity service and confirm access
             await this.installServicesAsync(IdentityService);
-            const access = this.checkAccess();
-            if (!access.hasAccess) {
-                this.accessDeniedMessage = access.message || 'Access denied.';
+            if (!this.identityService.checkAccess()) {
                 this.setAppState('ACCESS_DENIED');
                 return;
             }
@@ -789,7 +748,7 @@ export class XHApi {
             }
 
             await this.installServicesAsync(
-                PageLifecycleService,
+                PageStateService,
                 AlertBannerService,
                 AutoRefreshService,
                 ChangelogService,
@@ -818,39 +777,11 @@ export class XHApi {
         }
     }
 
-    /**
-     * Suspend all app activity and display, including timers and web sockets.
-     *
-     * Suspension is a terminal state, requiring user to reload the app.
-     * Used for idling, forced version upgrades, and ad-hoc killing of problematic clients.
-     * @internal
-     */
-    suspendApp(suspendData) {
-        if (XH.appState === 'SUSPENDED') return;
-        this.suspendData = suspendData;
-        XH.setAppState('SUSPENDED');
-        XH.webSocketService.shutdown();
-        Timer.cancelAll();
-    }
-
     //------------------------
     // Implementation
     //------------------------
-    private checkAccess(): any {
-        const user = XH.getUser(),
-            {checkAccess} = this.appSpec;
-
-        if (isString(checkAccess)) {
-            return user.hasRole(checkAccess)
-                ? {hasAccess: true}
-                : {
-                      hasAccess: false,
-                      message: `User needs the role "${checkAccess}" to access this application.`
-                  };
-        } else {
-            const ret = checkAccess(user);
-            return isBoolean(ret) ? {hasAccess: ret} : ret;
-        }
+    private setAppState(nextState: AppState) {
+        this.acm.appStateModel.setAppState(nextState);
     }
 
     private setDocTitle() {
@@ -885,61 +816,6 @@ export class XHApi {
 
     private get acm(): AppContainerModel {
         return this.appContainerModel;
-    }
-
-    private bindInitSequenceToAppLoadModel() {
-        const terminalStates: AppState[] = ['RUNNING', 'SUSPENDED', 'LOAD_FAILED', 'ACCESS_DENIED'],
-            loadingPromise = mobxWhen(() => terminalStates.includes(this.appState));
-        loadingPromise.linkTo(this.appLoadModel);
-    }
-
-    private trackLoad() {
-        let loadStarted = window['_xhLoadTimestamp'], // set in index.html
-            loginStarted = null,
-            loginElapsed = 0;
-
-        const disposer = mobxReaction(
-            () => this.appState,
-            state => {
-                const now = Date.now();
-                switch (state) {
-                    case 'RUNNING':
-                        XH.track({
-                            category: 'App',
-                            message: `Loaded ${this.clientAppCode}`,
-                            elapsed: now - loadStarted - loginElapsed,
-                            data: {
-                                appVersion: this.appVersion,
-                                appBuild: this.appBuild,
-                                locationHref: window.location.href,
-                                ...getClientDeviceInfo()
-                            },
-                            logData: ['appVersion', 'appBuild']
-                        });
-                        disposer();
-                        break;
-
-                    case 'LOGIN_REQUIRED':
-                        loginStarted = now;
-                        break;
-                    default:
-                        if (loginStarted) loginElapsed = now - loginStarted;
-                }
-            }
-        );
-    }
-
-    private createActivityListeners() {
-        ['keydown', 'mousemove', 'mousedown', 'scroll', 'touchmove', 'touchstart'].forEach(name => {
-            window.addEventListener(name, () => {
-                this._lastActivityMs = Date.now();
-            });
-        });
-    }
-
-    private get uaParser() {
-        if (!this._uaParser) this._uaParser = new parser();
-        return this._uaParser;
     }
 
     private parseAppSpec() {}

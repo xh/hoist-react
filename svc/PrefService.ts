@@ -34,9 +34,14 @@ export class PrefService extends HoistService {
 
     constructor() {
         super();
-        const pushFn = () => this.pushPendingAsync();
-        window.addEventListener('beforeunload', pushFn);
-        this.pushPendingBuffered = debounce(pushFn, 5 * SECONDS);
+        const lcSvc = XH.pageLifecycleService;
+        this.addReaction({
+            track: () => XH.pageState
+            run: (state) => {
+                if (state != 'active') this.pushPendingAsync();
+            }
+        });
+        this.pushPendingBuffered = debounce(() => this.pushPendingAsync(), 5 * SECONDS);
     }
 
     override async initAsync() {

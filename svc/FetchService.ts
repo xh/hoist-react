@@ -41,6 +41,28 @@ export class FetchService extends HoistService {
     defaultHeaders = {};
     defaultTimeout = (30 * SECONDS) as any;
 
+    override async initAsync(): Promise<void> {
+
+        // pre-flight to allows clean recognition when we have no server.
+        try {
+            await XH.fetch({url: 'ping'});
+        } catch (e) {
+            const {baseUrl} = XH,
+                pingURL = baseUrl.startsWith('http')
+                    ? `${baseUrl}ping`
+                    : `${window.location.origin}${baseUrl}ping`;
+
+            throw XH.exception({
+                name: 'UI Server Unavailable',
+                detail: e.message,
+                message:
+                    'Client cannot reach UI server.  Please check UI server at the ' +
+                    `following location: ${pingURL}`,
+                logOnServer: false
+            });
+        }
+    }
+
     /**
      * Set default headers to be sent with all subsequent requests.
      * @param headers - to be sent with all fetch requests, or a function to generate.

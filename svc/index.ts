@@ -18,6 +18,6 @@ export * from './InspectorService';
 export * from './JsonBlobService';
 export * from './LocalStorageService';
 export * from './PrefService';
-export * from './PageLifecycleService';
+export * from './PageStateService';
 export * from './TrackService';
 export * from './WebSocketService';

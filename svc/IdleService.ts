@@ -60,7 +60,7 @@ export class IdleService extends HoistService {
 
     private checkInactivityTimeout() {
         if (olderThan(XH.lastActivityMs, this.timeout)) {
-            XH.suspendApp({reason: 'IDLE'});
+            XH.appContainerModel.appStateModel.suspendApp({reason: 'IDLE'});
         }
     }
 }

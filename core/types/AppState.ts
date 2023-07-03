@@ -20,3 +20,8 @@ export const AppState = Object.freeze({
 
 // eslint-disable-next-line
 export type AppState = (typeof AppState)[keyof typeof AppState];
+
+export interface AppSuspendData {
+    message?: string;
+    reason: 'IDLE'|'SERVER_FORCE';
+}

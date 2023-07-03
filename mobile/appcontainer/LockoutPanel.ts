@@ -26,7 +26,7 @@ export const lockoutPanel = hoistCmp.factory({
             div({
                 className: 'xh-lockout-panel',
                 item: div(
-                    XH.accessDeniedMessage ?? '',
+                    XH.identityService.accessDeniedMessage ?? '',
                     vspacer(10),
                     `You are logged in as ${user.username} and have the roles [${
                         user.roles.join(', ') || '--'

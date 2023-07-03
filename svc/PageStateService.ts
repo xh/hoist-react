@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistService} from '@xh/hoist/core';
+import {HoistService, PageState} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {logDebug} from '@xh/hoist/utils/js';
 import {computed} from 'mobx';
@@ -21,61 +21,53 @@ import {computed} from 'mobx';
  * The {@link LifeCycleState} type lists the possible states, with descriptive comments.
  * See {@link https://developer.chrome.com/blog/page-lifecycle-api/} for a useful overview.
  */
-export class PageLifecycleService extends HoistService {
-    static instance: PageLifecycleService;
+export class PageStateService extends HoistService {
+    static instance: PageStateService;
 
-    @observable private _state: LifeCycleState;
-
-    get state(): LifeCycleState {
-        return this._state;
-    }
+    @observable state: PageState;
 
     constructor() {
         super();
         makeObservable(this);
 
-        this._state = this.getLiveState();
-        this.startListeners();
+        this.state = this.getLiveState();
+        this.addListeners();
     }
 
-    @computed
     get pageIsActive(): boolean {
         return this.state === 'active';
     }
 
-    @computed
     get pageIsPassive(): boolean {
         return this.state === 'passive';
     }
 
-    @computed
     get pageIsVisible(): boolean {
         return this.pageIsActive || this.pageIsPassive;
     }
 
     //------------------------
     // Implementation
+    //
+    // Based on https://developer.chrome.com/blog/page-lifecycle-api/
     //------------------------
-    private getLiveState() {
-        if (document.visibilityState === 'hidden') {
-            return 'hidden';
-        }
-        if (document.hasFocus()) {
-            return 'active';
-        }
-        return 'passive';
-    }
-
     @action
-    private setState(nextState) {
-        if (this._state === nextState) return;
+    private setState(nextState: PageState) {
+        if (this.state === nextState) return;
 
-        logDebug(`State change: ${this._state} → ${nextState}`, this);
-        this._state = nextState;
+        logDebug(`Page State change: ${this.state} → ${nextState}`, this);
+        this.state = nextState;
     }
 
-    // See article linked in doc comment above for details on these event handlers.
-    private startListeners() {
+    private getLiveState(): 'hidden' | 'active' | 'passive' {
+        return document.visibilityState === 'hidden'
+            ? 'hidden'
+            : document.hasFocus()
+            ? 'active'
+            : 'passive';
+    }
+
+    private addListeners() {
         const opts = {capture: true};
 
         ['pageshow', 'focus', 'blur', 'visibilitychange', 'resume'].forEach(type => {
@@ -83,7 +75,6 @@ export class PageLifecycleService extends HoistService {
         });
 
         window.addEventListener('freeze', () => this.setState('frozen'), opts);
-
         window.addEventListener(
             'pagehide',
             e => this.setState(e.persisted ? 'frozen' : 'terminated'),
@@ -91,30 +82,3 @@ export class PageLifecycleService extends HoistService {
         );
     }
 }
-
-export type LifeCycleState =
-    /**
-     * Window/tab is visible and focused.
-     */
-    | 'active'
-    /**
-     * Window/tab is visible but not focused - i.e. the browser is visible on the screen and this
-     * tab is active, but another application in the OS is currently focused, or the user is
-     * interacting with controls in the browser outside of this page, like the URL bar.
-     */
-    | 'passive'
-    /**
-     * Window/tab is not visible - browser is either on another tab within the same window, or the
-     * entire browser is minimized or hidden behind another application in the OS.
-     */
-    | 'hidden'
-    /**
-     * Page has been frozen by the browser due to inactivity (as a perf/memory/power optimization)
-     * or because the user has navigated away and the page is in the back/forward cache (but not
-     * yet completely unloaded / terminated).
-     */
-    | 'frozen'
-    /**
-     * The page is in the process of being unloaded by the browser (this is a terminal state x_x).
-     */
-    | 'terminated';
