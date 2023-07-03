@@ -97,27 +97,37 @@ export class EnvironmentService extends HoistService {
     }
 
     private startVersionChecking() {
+        // Todo: `xhAppVersionCheckSecs` checked for backwards compatibility with hoist-core v16.3.0
+        // and earlier - remove in future.
+        const interval =
+            XH.getConf('xhAppVersionCheck', {})?.interval ??
+            XH.getConf('xhAppVersionCheckSecs', null);
         Timer.create({
             runFn: this.checkServerVersionAsync,
-            interval: 'xhAppVersionCheckSecs',
-            intervalUnits: SECONDS
+            interval: interval * SECONDS
         });
     }
 
     private checkServerVersionAsync = async () => {
         const data = await XH.fetchJson({url: 'xh/version'}),
-            {appVersion, appBuild, shouldUpdate} = data;
+            {appVersion, appBuild, mode, shouldUpdate} = data;
 
         // Compare latest version/build info from server against the same info (also supplied by
         // server) when the app initialized. A change indicates an update to the app and will
-        // prompt the user to refresh via the Banner, unless suppressed via shouldUpdate flag.
-        // Builds are checked here to trigger refresh prompts across SNAPSHOT updates for projects
-        // with active dev/QA users.
-        if (
-            shouldUpdate &&
-            (appVersion !== this.get('appVersion') || appBuild !== this.get('appBuild'))
-        ) {
-            XH.appContainerModel.showUpdateBanner(appVersion, appBuild);
+        // force the user to refresh or prompt the user to refresh via the banner according to the
+        // `mode` set in `xhAppVersionCheck`. Builds are checked here to trigger refresh prompts
+        // across SNAPSHOT updates for projects with active dev/QA users.
+        if (appVersion !== this.get('appVersion') || appBuild !== this.get('appBuild')) {
+            if (mode === 'promptReload' || shouldUpdate) {
+                // Todo: `shouldUpdate` checked for backwards compatibility with hoist-core v16.3.0
+                // and earlier - remove in future.
+                XH.appContainerModel.showUpdateBanner(appVersion, appBuild);
+            } else if (mode === 'forceReload') {
+                XH.suspendApp({
+                    reason: 'APP_UPDATE',
+                    message: `A new version of ${XH.clientAppName} is available!`
+                });
+            }
         }
 
         // Note that the case of version mismatches across the client and server we do *not* show

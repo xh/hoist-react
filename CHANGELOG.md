@@ -4,6 +4,9 @@
 
 ### 🎁 New Features
 
+* Deprecated config `xhAppVersionCheckEnabled` in favor of object based `xhAppVersionCheck`. Apps will
+  seamlessly migrate the existing value to this new config's `mode` flag. While backwards compatible
+  with older versions of hoist-core, the new `forceReload` mode requires `hoist-core >= v16.4.0`.
 * Enhance `NumberFormatOptions.colorSpec` to accept custom CSS properties in addition to class names
 * Enhance `TabSwitcher` to allow navigation using arrow keys when focused.
 
