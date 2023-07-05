@@ -2,6 +2,7 @@ import {hoistCmp, MenuItemLike} from '@xh/hoist/core';
 import {button, buttonGroup, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuItem, popover} from '@xh/hoist/kit/blueprint';
+import {wait} from '@xh/hoist/promise';
 import classNames from 'classnames';
 import {castArray} from 'lodash';
 import './SplitButton.scss';
@@ -93,13 +94,16 @@ const menuTriggerButton = hoistCmp.factory({
             }),
             content: menu({
                 className: classNames(className, 'xh-split-button__menu'),
-                items: menuItems.map((it, idx) =>
-                    menuItem({
+                items: menuItems.map((item, idx) => {
+                    const {actionFn, ...rest} = item;
+
+                    return menuItem({
                         key: idx,
-                        className: classNames(it.className, 'xh-split-button__menu-item'),
-                        ...it
-                    })
-                )
+                        className: classNames(item.className, 'xh-split-button__menu-item'),
+                        onClick: actionFn ? () => wait().then(actionFn) : null, // do async to allow menu to close
+                        ...rest
+                    });
+                })
             })
         });
     }
