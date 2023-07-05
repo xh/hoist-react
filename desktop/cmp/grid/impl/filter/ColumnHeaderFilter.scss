@@ -1,0 +1,48 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2023 Extremely Heavy Industries Inc.
+ */
+.xh-app {
+  .xh-column-header-filter {
+    height: var(--xh-grid-filter-popover-height-px);
+    width: var(--xh-grid-filter-popover-width-px);
+
+    &__icon {
+      flex: none !important;
+      width: var(--xh-grid-header-icon-width);
+      color: var(--xh-grid-header-icon-color);
+    }
+
+    --tab-switcher-button-height: calc(var(--xh-font-size-small) * 2px);
+    &__tab-switcher {
+      min-height: var(--tab-switcher-button-height);
+      max-height: var(--tab-switcher-button-height);
+      margin-right: var(--xh-pad-half-px);
+
+      &__button {
+        --xh-focus-outline: 0;
+
+        width: 60px;
+        font-size: var(--xh-font-size-small-px) !important;
+        min-height: var(--tab-switcher-button-height) !important;
+        max-height: var(--tab-switcher-button-height) !important;
+
+        &.xh-button--active {
+          background-color: var(--xh-intent-primary) !important;
+          // Ensure text visible regardless of --xh-panel-title-text-color
+          color: white !important;
+        }
+      }
+    }
+  }
+
+  .xh-column-header--hoverable:not(:hover) {
+    .xh-column-header-filter__icon {
+      &:not(&--active, &--open) {
+        display: none;
+      }
+    }
+  }
+}

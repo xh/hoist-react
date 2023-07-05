@@ -1,0 +1,16 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2023 Extremely Heavy Industries Inc.
+ */
+.xh-tile-frame {
+  // Scrollbar will be shown above the content in order to not take up width.
+  // Consider increasing the spacing for TileFrames that are expected to scroll.
+  overflow-y: overlay !important;
+  overflow-x: overlay !important;
+
+  &__tile {
+    position: absolute !important;
+  }
+}

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 // Host div for Select option menu portal.
@@ -40,11 +40,11 @@
       }
 
       &__left-icon {
-        display: inherit;
-        margin-left: 4px;
-        width: 12px;
         color: var(--xh-text-color-muted);
+        display: inherit;
         font-size: var(--xh-font-size-large-px);
+        margin-left: 7px;
+        width: var(--xh-font-size-large-px);
       }
     }
 
@@ -105,6 +105,51 @@
         }
       }
     }
+
+    &__tooltip {
+      &__target {
+        // Required to override tooltip styling applied by Blueprint, which was breaking the
+        // react-select styles that elide overly-long values.
+        display: inherit;
+      }
+    }
+  }
+}
+
+.xh-select--has-height {
+  > div {
+    height: 100%;
+  }
+
+  // This ".xh-select" is the prefix for nested BEM values below, not itself a level of nesting.
+  .xh-select {
+    &__control {
+      height: 100%;
+
+      &__left-icon {
+        height: 100%;
+        padding-top: 7px;
+      }
+    }
+
+    &__placeholder {
+      height: 100%;
+      padding-top: var(--xh-pad-half-px);
+    }
+
+    &__value-container {
+      align-content: flex-start;
+      margin: 1px;
+      height: calc(100% - 2px);
+      overflow-y: auto !important;
+    }
+
+    &__indicators {
+      position: absolute;
+      top: var(--xh-pad-half-px);
+      right: var(--xh-pad-half-px);
+      flex-direction: column;
+    }
   }
 }
 
@@ -145,6 +190,7 @@
     &__value-container--is-multi {
       height: 28px;
       overflow-y: auto !important;
+      line-height: 1.2; // Ensure the line-height does not cause the scrollbar to appear
     }
   }
 }

@@ -1,0 +1,122 @@
+.xh-ag-grid {
+  .ag-cell.ag-cell-inline-editing {
+    display: flex;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    height: 100%;
+    border: none;
+
+    // Remove the border when focused on a cell which is being inline edited as we already add a
+    // border around the input, so this causes some undesirable extra padding on the contents of the
+    // cell
+    &.ag-cell-focus {
+      border: none !important;
+    }
+
+    .xh-date-input__wrapper,
+    .bp4-popover-wrapper,
+    .bp4-popover-target > div {
+      display: flex;
+      flex: 1;
+      height: 100%;
+      width: 100%;
+    }
+
+    .xh-inline-editor {
+      width: 100%;
+      height: 100%;
+
+      .bp4-input-group {
+        display: flex;
+        flex: 1;
+        height: 100%;
+        width: 100%;
+
+        .bp4-input-action {
+          button {
+            min-height: 18px;
+
+            .xh-icon {
+              margin-top: 3px;
+              font-size: var(--xh-font-size-px);
+            }
+          }
+        }
+
+        input {
+          width: 100%;
+          height: 100%;
+          font-family: var(--xh-grid-font-family);
+        }
+      }
+
+      &.xh-select-editor {
+        .xh-select__control,
+        .xh-select__value-container,
+        .xh-select__input {
+          min-height: 100%;
+          max-height: 100%;
+        }
+
+        .xh-select__value-container,
+        .xh-select__value-container > * {
+          margin: 0;
+          padding-top: 0;
+          padding-bottom: 0;
+        }
+      }
+
+      &.xh-boolean-editor {
+        flex: 1 1 auto;
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        padding: 0;
+
+        .bp4-control-indicator {
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  &--standard .xh-inline-editor {
+    &.xh-select-editor .xh-select__value-container,
+    input {
+      padding-left: var(--xh-grid-cell-lr-pad-px);
+      padding-right: var(--xh-grid-cell-lr-pad-px);
+      font-size: var(--xh-grid-font-size-px);
+      line-height: var(--xh-grid-font-size-px);
+    }
+  }
+
+  &--large .xh-inline-editor {
+    &.xh-select-editor .xh-select__value-container,
+    input {
+      padding-left: var(--xh-grid-large-cell-lr-pad-px);
+      padding-right: var(--xh-grid-large-cell-lr-pad-px);
+      font-size: var(--xh-grid-large-font-size-px);
+      line-height: var(--xh-grid-large-font-size-px);
+    }
+  }
+
+  &--compact .xh-inline-editor {
+    &.xh-select-editor .xh-select__value-container,
+    input {
+      padding-left: var(--xh-grid-compact-cell-lr-pad-px);
+      padding-right: var(--xh-grid-compact-cell-lr-pad-px);
+      font-size: var(--xh-grid-compact-font-size-px);
+      line-height: var(--xh-grid-compact-font-size-px);
+    }
+  }
+
+  &--tiny .xh-inline-editor {
+    &.xh-select-editor .xh-select__value-container,
+    input {
+      padding-left: var(--xh-grid-tiny-cell-lr-pad-px);
+      padding-right: var(--xh-grid-tiny-cell-lr-pad-px);
+      font-size: var(--xh-grid-tiny-font-size-px);
+      line-height: var(--xh-grid-tiny-font-size-px);
+    }
+  }
+}

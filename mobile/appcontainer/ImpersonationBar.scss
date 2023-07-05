@@ -1,20 +1,30 @@
 .xh-impersonation-bar {
-  padding-left: 10px;
-  display: flex;
   align-items: center;
-  color: white;
   background-color: var(--xh-blue-dark);
-  font-size: 14px;
+  color: white;
+  display: flex;
+  padding-left: var(--xh-pad-px);
 
   & > svg {
-    margin-right: 10px;
+    margin-right: var(--xh-pad-px);
   }
 
   .xh-select {
+    border-color: transparent;
     flex: 1;
+
+    &__control {
+      background-color: rgb(0, 0, 0, 0.3);
+    }
+
+    &__single-value,
+    &__input {
+      color: white;
+    }
   }
 
   .xh-button {
-    margin: 5px;
+    color: white !important;
+    margin: var(--xh-pad-half-px);
   }
 }

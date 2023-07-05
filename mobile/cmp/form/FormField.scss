@@ -6,11 +6,19 @@
     padding: 0 0 3px;
   }
 
-  .xh-form-field-fill {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+  .xh-form-field-inner {
+    // Used for unsizeable children
+    &--block {
+      display: block;
+    }
+
+    // Used for sizeable children that should fill the FormField
+    &--flex {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
   }
 
   .xh-form-field-info,

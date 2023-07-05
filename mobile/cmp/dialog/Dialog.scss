@@ -1,18 +1,29 @@
 .xh-dialog {
   position: fixed;
 
-  & > .dialog {
-    max-width: calc(100% - var(--xh-pad-double-px));
+  & > .dialog-mask {
+    background-color: var(--xh-backdrop-bg);
+  }
+
+  & > .dialog .dialog-container {
+    display: flex;
+    flex-direction: column;
+    max-width: calc(100vw - var(--xh-pad-double-px));
+    max-height: calc(100vh - var(--xh-pad-double-px));
+    // Background on inner onsen container deliberately set to *border* color - this avoids small
+    // but noticeable gaps around the edges. The dialog body gets a defined background below for
+    // the actual contents of the component.
+    background-color: var(--xh-popup-border-color);
+    border: var(--xh-popup-border-width-px) solid var(--xh-popup-border-color);
   }
 
   &__title {
-    display: flex;
     align-items: center;
+    background-color: var(--xh-popup-title-bg);
+    color: var(--xh-popup-title-text-color);
+    display: flex;
+    font-size: var(--xh-popup-title-font-size-px);
     padding: var(--xh-pad-px);
-    color: var(--xh-title-text-color);
-    border-bottom: var(--xh-border-solid);
-    background-color: var(--xh-title-bg);
-    font-size: var(--xh-title-font-size-px);
 
     svg {
       margin-right: var(--xh-pad-px);
@@ -22,6 +33,7 @@
   &__inner {
     padding: var(--xh-pad-px);
     background-color: var(--xh-bg);
+    overflow-y: auto;
   }
 
   &__toolbar {

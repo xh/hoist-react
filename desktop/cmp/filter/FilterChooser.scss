@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 .xh-filter-chooser {
-  .bp3-popover-wrapper,
-  .bp3-popover-target {
+  .bp4-popover-wrapper,
+  .bp4-popover-target {
     display: flex;
     flex: 1;
   }
@@ -50,9 +50,18 @@
 
   &__message {
     color: var(--xh-text-color-muted);
+    background: var(--xh-bg);
   }
 
   &__field {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    .prefix {
+      color: var(--xh-text-color-muted);
+    }
+
     .name {
       margin-left: var(--xh-pad-half-px);
       color: var(--xh-intent-primary);
@@ -69,12 +78,21 @@
       font-weight: bold;
     }
   }
+
+  &__minimal-field {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--xh-intent-primary);
+  }
 }
 
 .xh-filter-chooser-favorite-icon {
   margin-left: var(--xh-pad-half-px);
-  &--active {
-    color: var(--xh-orange) !important;
+
+  // Matched to GroupingChooser equivalent.
+  &.svg-inline--fa {
+    width: 12px;
   }
 }
 

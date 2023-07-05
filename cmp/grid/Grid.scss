@@ -2,25 +2,21 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2020 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+
+@use 'sass:math';
 
 .xh-grid:not(.xh-data-view) {
   //------------------------
   // Core Header Classes
   //------------------------
-  .ag-header-cell,
-  .ag-header-group-cell {
-    > .ag-react-container {
-      width: 100%;
-    }
-  }
-
   .xh-grid-group-header {
     display: flex;
     flex-direction: row;
     align-items: center;
     min-height: 32px;
+    width: 100%;
 
     &--expandable {
       cursor: pointer;
@@ -33,18 +29,16 @@
     }
 
     svg {
-      margin-left: var(--xh-pad-half-px);
       color: var(--xh-grid-header-icon-color);
     }
   }
 
   .xh-grid-header {
-    margin-top: 1px;
     display: flex;
     flex-direction: row;
     align-items: center;
-    min-height: 32px;
     cursor: pointer;
+    width: 100%;
 
     span {
       flex: 1;
@@ -53,10 +47,10 @@
     }
 
     .xh-grid-header-sort-icon,
-    .xh-grid-header-menu-icon {
+    .xh-grid-header-menu-icon,
+    .xh-grid-header-expand-collapse-icon {
       color: var(--xh-grid-header-icon-color);
-      margin-left: var(--xh-pad-half-px);
-      width: 1.5em;
+      width: var(--xh-grid-header-icon-width);
     }
 
     &.xh-grid-header-multisort .xh-grid-header-sort-icon svg {
@@ -65,6 +59,13 @@
 
     .xh-grid-header-menu-icon {
       cursor: pointer;
+    }
+
+    // Prevent sticky hover effects on touch screens
+    @media (hover: hover) {
+      .xh-grid-header-expand-collapse-icon:hover {
+        color: var(--xh-text-color-highlight);
+      }
     }
   }
 
@@ -82,14 +83,71 @@
     }
   }
 
+  // Floating viewports host total rows.
+  .ag-floating-bottom,
+  .ag-floating-top {
+    // Background on viewport itself covers area left blank by presence of a flex column.
+    background-color: var(--xh-grid-total-row-bg);
+
+    .ag-row-pinned.ag-row-first {
+      background-color: var(--xh-grid-total-row-bg);
+    }
+  }
+
   //------------------------
   // Core Cell Classes
   //------------------------
-
   // No LR padding when center aligned - not relevant / allows narrow cols (icons) to center align.
   .ag-cell.xh-align-center {
     padding-left: 0;
     padding-right: 0;
+  }
+
+  // Render badge on invalid cells
+  .ag-cell.xh-cell--invalid {
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      border-color: transparent;
+      border-right-color: var(--xh-intent-danger);
+      border-top-color: var(--xh-intent-danger);
+      border-style: solid;
+    }
+
+    // Render badge on top of nested editor, and move to account for padding while editing
+    &.ag-cell-inline-editing::before {
+      z-index: 1;
+      margin-top: 1px;
+      margin-right: 1px;
+    }
+  }
+
+  .xh-ag-grid {
+    &--tiny {
+      .ag-cell.xh-cell--invalid::before {
+        border-width: 3px;
+      }
+    }
+
+    &--compact {
+      .ag-cell.xh-cell--invalid::before {
+        border-width: 4px;
+      }
+    }
+
+    &--standard {
+      .ag-cell.xh-cell--invalid::before {
+        border-width: 5px;
+      }
+    }
+
+    &--large {
+      .ag-cell.xh-cell--invalid::before {
+        border-width: 6px;
+      }
+    }
   }
 }
 
@@ -99,53 +157,98 @@
 .xh-grid--hierarchical:not(.xh-data-view) {
   // Generate indentations for tree grids with hierarchical data.
   .ag-ltr {
-    .ag-row-group-indent-0 {
-      padding-left: calc(0 * var(--xh-grid-tree-indent));
-    }
+    @for $i from 0 to 10 {
+      .ag-row-group-indent-#{$i} {
+        padding-left: calc(#{$i} * var(--xh-grid-tree-indent));
+      }
 
-    .ag-row-group-indent-1 {
-      padding-left: calc(1 * var(--xh-grid-tree-indent));
+      .ag-row-level-#{$i} {
+        .ag-row-group-leaf-indent {
+          margin-left: var(--xh-grid-tree-indent);
+        }
+      }
     }
-
-    .ag-row-group-indent-2 {
-      padding-left: calc(2 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-3 {
-      padding-left: calc(3 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-4 {
-      padding-left: calc(4 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-5 {
-      padding-left: calc(5 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-6 {
-      padding-left: calc(6 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-7 {
-      padding-left: calc(7 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-8 {
-      padding-left: calc(8 * var(--xh-grid-tree-indent));
-    }
-
-    .ag-row-group-indent-9 {
-      padding-left: calc(9 * var(--xh-grid-tree-indent));
-    }
-  }
-
-  .ag-ltr .ag-row-group-leaf-indent {
-    margin-left: var(--xh-grid-tree-indent);
   }
 
   .ag-group-contracted + .ag-group-value:not(:empty) {
     margin-left: 0;
+  }
+
+  // Adjust left padding for tree columns.
+  .ag-cell.xh-tree-column {
+    padding-left: calc(var(--xh-grid-tree-indent) - var(--xh-grid-tree-icon-px));
+  }
+
+  // Suppress (almost all) left padding in tree column header when actively showing expand/collapse
+  // affordance - this allows space for the icon without clipping.
+  .ag-header-cell.xh-column-header--with-expand-collapse {
+    padding-left: 2px;
+  }
+
+  //------------------------
+  // Tree grid styling modes
+  //------------------------
+  // Generate a set of selectors targeting all expected max-depth levels, then style all rows
+  // *not* at that max depth with parent/group row highlights or colors. For trees with mixed-depth
+  // branches, some such "parent" rows might not actually have children and therefore won't be
+  // identified as groups by AG-Grid row classes, but this keeps the styling consistent for all
+  // rows at the same level.
+  @for $i from 0 to 10 {
+    // With highlights
+    &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
+      @for $level from 0 to 9 {
+        $l: 94 + (math.div($level, ($i + 1)) * 6);
+
+        .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
+          &:not(.ag-row-selected),
+          &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+            background-color: hsl(205, 70%, $l * 1%);
+          }
+        }
+      }
+
+      .xh-ag-grid--show-hover {
+        .ag-row:not(.ag-row-level-#{$i}) {
+          &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
+            background-color: var(--xh-grid-bg-hover);
+          }
+        }
+      }
+    }
+
+    // With colors
+    &.xh-grid--tree-style-colors.xh-grid--max-depth-#{$i} {
+      .ag-floating-bottom,
+      .ag-floating-top {
+        background-color: var(--xh-grid-tree-group-color-level-0);
+      }
+
+      @for $level from 0 to 9 {
+        .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
+          &:not(.ag-row-selected),
+          &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+            background-color: var(--xh-grid-tree-group-color-level-#{$level});
+          }
+        }
+      }
+    }
+  }
+
+  &.xh-grid--tree-style-borders {
+    .ag-row-level-0 {
+      &:not(.ag-row-first) {
+        border-top: 1px solid var(--xh-grid-tree-group-border-color);
+      }
+    }
+
+    // Floating viewports host total rows.
+    .ag-floating-bottom {
+      border-color: var(--xh-grid-tree-group-border-color);
+    }
+
+    .ag-floating-top {
+      border-color: var(--xh-grid-tree-group-border-color);
+    }
   }
 }
 
@@ -154,6 +257,56 @@
   .ag-ltr .ag-row-group-leaf-indent {
     margin-left: 0;
   }
+}
+
+.xh-dark .xh-grid--hierarchical:not(.xh-data-view) {
+  @for $i from 0 to 10 {
+    // With highlights
+    &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
+      @for $level from 0 to 9 {
+        $l: 18 - (math.div($level, ($i + 1)) * 11);
+
+        .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
+          &:not(.ag-row-selected),
+          &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+            background-color: hsl(200, 50%, $l * 1%);
+          }
+        }
+      }
+
+      .xh-ag-grid--show-hover {
+        .ag-row:not(.ag-row-level-#{$i}) {
+          &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
+            background-color: var(--xh-grid-bg-hover);
+          }
+        }
+      }
+    }
+
+    // With colors
+    &.xh-grid--tree-style-colors.xh-grid--max-depth-#{$i} {
+      .ag-floating-bottom,
+      .ag-floating-top {
+        background-color: var(--xh-grid-tree-group-color-level-0);
+      }
+
+      @for $level from 0 to 9 {
+        .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
+          &:not(.ag-row-selected),
+          &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
+            background-color: var(--xh-grid-tree-group-color-level-#{$level});
+          }
+        }
+      }
+    }
+  }
+}
+
+//------------------------
+// Row highlight
+//------------------------
+.xh-grid--highlight-row-on-click .xh-ag-grid .ag-row .ag-cell-data-changed {
+  background-color: var(--xh-grid-selected-row-bg) !important;
 }
 
 //------------------------
@@ -194,15 +347,43 @@
 .xh-grid-tooltip {
   position: absolute;
 
+  &.ag-tooltip-hiding,
   &:empty {
     display: none;
   }
 
-  // Default minimal styling. This is not applied when using a custom tooltipElement.
+  // Default minimal styling. This is not applied when using a custom tooltip.
   &--default {
     padding: var(--xh-pad-half-px);
     background: var(--xh-bg);
     border: var(--xh-border-solid);
+  }
+
+  // Validation tooltip styling. Adjust depending on if within a default or custom tooltip.
+  &--validation {
+    margin: 0;
+
+    &--single {
+      list-style-type: none;
+    }
+  }
+
+  &--default > .xh-grid-tooltip--validation {
+    padding: 0 var(--xh-pad-half-px) 0 2em;
+
+    &--single {
+      padding: 0 var(--xh-pad-half-px);
+    }
+  }
+
+  &--custom > .xh-grid-tooltip--validation {
+    padding: var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-half-px) 2em;
+    background: var(--xh-bg);
+    border: var(--xh-border-solid);
+
+    &--single {
+      padding: var(--xh-pad-half-px);
+    }
   }
 }
 
@@ -247,7 +428,7 @@
 }
 
 .xh-grid-autosize-header {
-  padding: 0 var(--xh-grid-cell-lr-pad-px);
+  padding: 0 var(--xh-grid-header-lr-pad-px);
   font-size: var(--xh-grid-header-font-size-px);
   font-weight: var(--xh-grid-header-font-weight);
   font-family: var(--xh-grid-header-font-family);
@@ -258,8 +439,7 @@
 
   .xh-grid-header-sort-icon,
   .xh-grid-header-menu-icon {
-    margin-left: var(--xh-pad-half-px);
-    width: 1.5em;
+    width: var(--xh-grid-header-icon-width);
     display: none;
   }
 
@@ -288,5 +468,39 @@
   &--tiny {
     font-size: var(--xh-grid-tiny-header-font-size-px);
     padding: 0 var(--xh-grid-tiny-header-lr-pad-px);
+  }
+}
+
+.xh-grid-menu-option {
+  &--intent-success {
+    color: var(--xh-intent-success-darker);
+  }
+  &--intent-primary {
+    color: var(--xh-intent-primary-darker);
+  }
+  &--intent-warning {
+    color: var(--xh-intent-warning-darker);
+  }
+  &--intent-danger {
+    color: var(--xh-intent-danger-darker);
+  }
+
+  // Dark theme
+  .xh-dark & {
+    &--intent-success {
+      color: var(--xh-intent-success-lighter);
+    }
+
+    &--intent-primary {
+      color: var(--xh-intent-primary-lighter);
+    }
+
+    &--intent-warning {
+      color: var(--xh-intent-warning-lighter);
+    }
+
+    &--intent-danger {
+      color: var(--xh-intent-danger-lighter);
+    }
   }
 }

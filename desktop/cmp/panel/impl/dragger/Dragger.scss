@@ -20,13 +20,21 @@
   }
 
   /** The reversal here is intentional.  Side here refers to 'side' of PanelModel we are shown within. */
-  &.top { bottom: 0; }
+  &.top {
+    bottom: 0;
+  }
 
-  &.bottom { top: 0; }
+  &.bottom {
+    top: 0;
+  }
 
-  &.right { left: 0; }
+  &.right {
+    left: 0;
+  }
 
-  &.left { right: 0; }
+  &.left {
+    right: 0;
+  }
 }
 
 .xh-resizable-dragger-visible {

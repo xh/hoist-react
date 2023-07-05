@@ -1,0 +1,63 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2023 Extremely Heavy Industries Inc.
+ */
+body.xh-app .xh-banner {
+  padding: var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-px);
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+
+  &__click_target > .xh-icon {
+    margin-right: var(--xh-pad-px);
+  }
+
+  &__message {
+    flex: 1;
+    margin-right: var(--xh-pad-half-px);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  &__action-button {
+    color: white !important;
+    border-color: white !important;
+    min-width: 60px;
+    margin-right: var(--xh-pad-half-px);
+  }
+
+  &__dismiss-button {
+    color: white !important;
+  }
+
+  &.xh-intent-primary {
+    color: white;
+    background-color: var(--xh-intent-primary);
+  }
+
+  &.xh-intent-danger {
+    color: white;
+    background-color: var(--xh-intent-danger);
+  }
+
+  &.xh-intent-success {
+    color: white;
+    background-color: var(--xh-intent-success);
+  }
+
+  &.xh-intent-warning {
+    color: white;
+    background-color: var(--xh-intent-warning);
+  }
+
+  &.xh-intent-none {
+    .xh-banner__action-button,
+    .xh-banner__dismiss-button {
+      border-color: unset !important;
+      color: unset !important;
+    }
+  }
+}

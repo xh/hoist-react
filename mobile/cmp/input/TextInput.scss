@@ -1,7 +1,19 @@
-.xh-input.xh-text-input {
+.xh-text-input {
+  background: var(--xh-input-bg);
+
   .text-input,
   .text-input__label {
     height: 30px;
     padding: 0 var(--xh-pad-px);
+  }
+
+  &__input {
+    flex: 1;
+  }
+
+  &__clear-button {
+    padding-right: 8px;
+    padding-left: 0;
+    color: var(--xh-text-color-muted) !important;
   }
 }
