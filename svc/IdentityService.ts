@@ -83,11 +83,12 @@ export class IdentityService extends HoistService {
         } else {
             const ret = checkAccess(user);
             if (isBoolean(ret)) return ret;
-            this.accessDeniedMessage = ret.message;
+            if (ret.message) {
+                this.accessDeniedMessage = ret.message;
+            }
             return ret.hasAccess;
         }
     }
-
 
     //------------------------
     // Impersonation

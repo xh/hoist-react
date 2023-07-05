@@ -33,9 +33,9 @@ export class PageStateModel extends HoistModel {
     //------------------------
     @action
     private setState(nextState: PageState) {
-        if (this.state === nextState) return;
-
-        logDebug(`PageState change: ${this.state} → ${nextState}`, this);
+        if (this.state !== nextState) {
+            logDebug(`PageState change: ${this.state} → ${nextState}`, this);
+        }
         this.state = nextState;
     }
 

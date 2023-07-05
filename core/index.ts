@@ -18,7 +18,6 @@ export * from './AppSpec';
 export * from './HoistProps';
 export * from './HoistComponent';
 export * from './RefreshContextView';
-export * from './RouterModel';
 export * from './HoistAppModel';
 
 export * from './exception/ExceptionHandler';

@@ -31,9 +31,9 @@ export class AppStateModel extends HoistModel {
 
     @action
     setAppState(nextState: AppState) {
-        if (this.state === nextState) return;
-
-        logDebug(`AppState change: ${this.state} → ${nextState}`, this);
+        if (this.state !== nextState) {
+            logDebug(`AppState change: ${this.state} → ${nextState}`, this);
+        }
         this.state = nextState;
     }
 
