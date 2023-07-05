@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {viewport, div, p, filler} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -16,11 +17,11 @@ import './SuspendPanel.scss';
  * Generic Panel to display when the app is suspended.
  * @internal
  */
-export const suspendPanel = hoistCmp.factory({
+export const suspendPanel = hoistCmp.factory<AppContainerModel>({
     displayName: 'SuspendPanel',
 
-    render() {
-        const message = XH.suspendData?.message;
+    render({model}) {
+        const message = model.appStateModel.suspendData?.message;
         return viewport({
             alignItems: 'center',
             justifyContent: 'center',

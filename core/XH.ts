@@ -4,11 +4,12 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
+import {Router, State} from 'router5';
 import {
     HoistService,
     AppSpec,
     AppState,
-    createElement,
     Exception,
     ExceptionHandlerOptions,
     ExceptionHandler,
@@ -17,20 +18,16 @@ import {
     HoistServiceClass,
     Theme,
     PlainObject,
-    HoistException
+    HoistException,
+    PageState,
+    AppSuspendData
 } from './';
 import {Store} from '@xh/hoist/data';
 import {instanceManager} from './impl/InstanceManager';
 import {installServicesAsync} from './impl/InstallServices';
 import {Icon} from '@xh/hoist/icon';
-import {
-    action,
-    makeObservable,
-    observable,
-    reaction as mobxReaction,
-    when as mobxWhen
-} from '@xh/hoist/mobx';
-import {never, wait} from '@xh/hoist/promise';
+import {action} from '@xh/hoist/mobx';
+import {never} from '@xh/hoist/promise';
 import {
     AlertBannerService,
     AutoRefreshService,
@@ -50,28 +47,15 @@ import {
     WebSocketService,
     FetchOptions
 } from '@xh/hoist/svc';
-import {Timer} from '@xh/hoist/utils/async';
-import {MINUTES} from '@xh/hoist/utils/datetime';
-import {checkMinVersion, getClientDeviceInfo, throwIf} from '@xh/hoist/utils/js';
-import {camelCase, compact, flatten, isBoolean, isString, uniqueId} from 'lodash';
-import {createRoot} from 'react-dom/client';
-import parser from 'ua-parser-js';
+import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {ToastModel} from '../appcontainer/ToastModel';
 import {BannerModel} from '../appcontainer/BannerModel';
 import '../styles/XH.scss';
 import {ModelSelector, HoistModel, RefreshContextModel} from './model';
-import {
-    HoistAppModel,
-    RouterModel,
-    BannerSpec,
-    ToastSpec,
-    MessageSpec,
-    HoistUser,
-    TaskObserver
-} from './';
+import {HoistAppModel, BannerSpec, ToastSpec, MessageSpec, HoistUser, TaskObserver} from './';
 
-const MIN_HOIST_CORE_VERSION = '16.0';
+export const MIN_HOIST_CORE_VERSION = '16.0';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
@@ -84,21 +68,16 @@ declare const xhIsDevelopmentMode: boolean;
  * Top-level Singleton model for Hoist. This is the main entry point for the API.
  *
  * Provides access to the built-in Hoist services, metadata about the application and environment,
- * and convenience aliases to the most common framework operations. It also maintains key observable
- * application state regarding dialogs, loading, and exceptions.
+ * and convenience aliases to the most common framework operations.
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
 export class XHApi {
-    private _initCalled: boolean = false;
-    private _lastActivityMs: number = Date.now();
-    private _uaParser: any = null;
-
-    constructor() {
-        makeObservable(this);
-        this.exceptionHandler = new ExceptionHandler();
-        this.bindInitSequenceToAppLoadModel();
-    }
+    //----------------
+    // Core Delegates
+    //----------------
+    appContainerModel: AppContainerModel = new AppContainerModel();
+    exceptionHandler: ExceptionHandler = new ExceptionHandler();
 
     //----------------------------------------------------------------------------------------------
     // Metadata - set via webpack.DefinePlugin at build time.
@@ -152,6 +131,7 @@ export class XHApi {
     /** Get a reference to a singleton service by full class. */
     getService<T extends HoistService>(cls: HoistServiceClass<T>): T;
 
+    /** Get a reference to a singleton service. */
     getService(arg: any) {
         const name = isString(arg) ? arg : camelCase(arg.name);
         return this[name];
@@ -227,65 +207,61 @@ export class XHApi {
     }
 
     get isPhone(): boolean {
-        return this.uaParser.getDevice().type === 'mobile';
+        return this.acm.userAgentModel.isPhone;
     }
 
     get isTablet(): boolean {
-        return this.uaParser.getDevice().type === 'tablet';
+        return this.acm.userAgentModel.isTablet;
     }
 
     get isDesktop(): boolean {
-        return this.uaParser.getDevice().type === undefined;
+        return this.acm.userAgentModel.isDesktop;
     }
 
-    //---------------------------
-    // Models
-    //---------------------------
-    appContainerModel: AppContainerModel = new AppContainerModel();
-    routerModel: RouterModel = new RouterModel();
+    /**
+     * The lifecycle state of the page, which changes due to changes to the focused/visible state
+     * of the browser tab and the browser window as a whole, as well as built-in browser behaviors
+     * around navigation and performance optimizations.
+     *
+     *  Apps can react to this stat to pause background processes (e.g. expensive refresh
+     *  operations) when the app is no longer visible to the user and resume them when the user
+     *  switches back and re-activates the tab.
+     *
+     *  The {@link LifeCycleState} type lists the possible states, with descriptive comments.
+     *  See {@link https://developer.chrome.com/blog/page-lifecycle-api/} for a useful overview.
+     */
+    get pageState(): PageState {
+        return this.acm.pageStateModel.state;
+    }
 
-    //---------------------------
-    // Other State
-    //---------------------------
-    suspendData = null;
-    accessDeniedMessage: string = null;
-    exceptionHandler: ExceptionHandler = null;
+    /** Current lifecycle state of the application. */
+    get appState(): AppState {
+        return this.acm.appStateModel.state;
+    }
 
-    /** current lifecycle state of the application. */
-    @observable
-    appState: AppState = 'PRE_AUTH';
-
-    /** milliseconds timestamp at moment user activity / interaction was last detected. */
+    /** Milliseconds timestamp at moment user activity / interaction was last detected. */
     get lastActivityMs(): number {
-        return this._lastActivityMs;
+        return this.acm.appStateModel.lastActivityMs;
     }
 
-    /** true if application initialized and running (observable). */
+    /** True if application initialized and running (observable). */
     get appIsRunning(): boolean {
         return this.appState === 'RUNNING';
     }
 
-    /** The currently authenticated user. */
-    @observable
-    authUsername: string = null;
-
     /** Root level application model. */
-    appModel: HoistAppModel = null;
+    get appModel(): HoistAppModel {
+        return this.acm.appModel;
+    }
 
     /** Specifications for this application, provided in call to `XH.renderApp()`. */
-    appSpec: AppSpec = null;
+    get appSpec(): AppSpec {
+        return this.acm.appSpec;
+    }
 
     /** Main entry point. Initialize and render application code. */
     renderApp<T extends HoistAppModel>(appSpec: AppSpec<T>) {
-        // Remove the pre-load exception handler installed by preflight.js
-        window.onerror = null;
-        const spinner = document.getElementById('xh-preload-spinner');
-        if (spinner) spinner.style.display = 'none';
-        this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
-
-        const root = createRoot(document.getElementById('xh-root')),
-            rootView = createElement(appSpec.containerClass, {model: this.appContainerModel});
-        root.render(rootView);
+        this.acm.renderApp(appSpec);
     }
 
     /**
@@ -305,14 +281,13 @@ export class XHApi {
     }
 
     /**
-     * Transition the application state.
-     * @internal
+     * Suspend all app activity and display, including timers and web sockets.
+     *
+     * Suspension is a terminal state, requiring user to reload the app.
+     * Used for idling, forced version upgrades, and ad-hoc killing of problematic clients.
      */
-    @action
-    setAppState(appState: AppState) {
-        if (this.appState != appState) {
-            this.appState = appState;
-        }
+    suspendApp(suspendData: AppSuspendData) {
+        this.acm.appStateModel.suspendApp(suspendData);
     }
 
     /**
@@ -379,12 +354,12 @@ export class XHApi {
     //------------------------
     // Sizing Mode Support
     //------------------------
-    setSizingMode(sizingMode: SizingMode) {
-        return this.acm.sizingModeModel.setSizingMode(sizingMode);
-    }
-
     get sizingMode(): SizingMode {
         return this.acm.sizingModeModel.sizingMode;
+    }
+
+    setSizingMode(sizingMode: SizingMode) {
+        return this.acm.sizingModeModel.setSizingMode(sizingMode);
     }
 
     //------------------------
@@ -408,11 +383,15 @@ export class XHApi {
     //-------------------------
     // Routing support
     //-------------------------
+    get routerModel(): RouterModel {
+        return this.acm.routerModel;
+    }
+
     /**
      * Underlying Router5 Router object implementing the routing state.
      * Applications should use this property to directly access the Router5 API.
      */
-    get router() {
+    get router(): Router {
         return this.routerModel.router;
     }
 
@@ -420,7 +399,7 @@ export class XHApi {
      * The current routing state as an observable property.
      * @see RoutingManager.currentState
      */
-    get routerState() {
+    get routerState(): State {
         return this.routerModel.currentState;
     }
 
@@ -671,275 +650,9 @@ export class XHApi {
         return uniqueId('xh-id-');
     }
 
-    //---------------------------------
-    // Framework Methods
-    //---------------------------------
-    /**
-     * Called when application container first mounted in order to trigger initial
-     * authentication and initialization of framework and application.
-     * @internal
-     */
-    async initAsync() {
-        // Avoid multiple calls, which can occur if AppContainer remounted.
-        if (this._initCalled) return;
-        this._initCalled = true;
-
-        const {appSpec, isMobileApp, isPhone, isTablet, isDesktop, baseUrl} = this;
-
-        if (appSpec.trackAppLoad) this.trackLoad();
-
-        // Add xh css classes to power Hoist CSS selectors.
-        document.body.classList.add(
-            ...compact([
-                'xh-app',
-                isMobileApp ? 'xh-mobile' : 'xh-standard',
-                isDesktop ? 'xh-desktop' : null,
-                isPhone ? 'xh-phone' : null,
-                isTablet ? 'xh-tablet' : null
-            ])
-        );
-
-        this.createActivityListeners();
-
-        // Disable browser context menu on long-press, used to show (app) context menus and as an
-        // alternate gesture for tree grid drill-own.
-        if (isMobileApp) {
-            window.addEventListener('contextmenu', e => e.preventDefault(), {capture: true});
-        }
-
-        try {
-            await this.installServicesAsync(FetchService);
-
-            // pre-flight allows clean recognition when we have no server.
-            try {
-                await XH.fetch({url: 'ping'});
-            } catch (e) {
-                const pingURL = baseUrl.startsWith('http')
-                    ? `${baseUrl}ping`
-                    : `${window.location.origin}${baseUrl}ping`;
-
-                throw this.exception({
-                    name: 'UI Server Unavailable',
-                    detail: e.message,
-                    message:
-                        'Client cannot reach UI server.  Please check UI server at the ' +
-                        `following location: ${pingURL}`
-                });
-            }
-
-            this.setAppState('PRE_AUTH');
-
-            // consult (optional) pre-auth init for app
-            const modelClass: any = this.appSpec.modelClass;
-            await modelClass.preAuthAsync();
-
-            // Check if user has already been authenticated (prior login, OAuth, SSO)...
-            const userIsAuthenticated = await this.getAuthStatusFromServerAsync();
-
-            // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
-            if (!userIsAuthenticated) {
-                throwIf(
-                    appSpec.isSSO,
-                    'Unable to complete required authentication (SSO/Oauth failure).'
-                );
-                this.setAppState('LOGIN_REQUIRED');
-                return;
-            }
-
-            // ...if so, continue with initialization.
-            await this.completeInitAsync();
-        } catch (e) {
-            this.setAppState('LOAD_FAILED');
-            this.handleException(e, {requireReload: true});
-        }
-    }
-
-    /**
-     * Complete initialization. Called after the client has confirmed that the user is generally
-     * authenticated and known to the server (regardless of application roles at this point).
-     * @internal
-     */
-    @action
-    async completeInitAsync() {
-        try {
-            // Install identity service and confirm access
-            await this.installServicesAsync(IdentityService);
-            const access = this.checkAccess();
-            if (!access.hasAccess) {
-                this.accessDeniedMessage = access.message || 'Access denied.';
-                this.setAppState('ACCESS_DENIED');
-                return;
-            }
-
-            // Complete initialization process
-            this.setAppState('INITIALIZING');
-            await this.installServicesAsync(ConfigService, LocalStorageService);
-            await this.installServicesAsync(TrackService);
-            await this.installServicesAsync(EnvironmentService, PrefService, JsonBlobService);
-
-            // Confirm hoist-core version after environment service loaded
-            const hcVersion = XH.environmentService.get('hoistCoreVersion');
-            if (!checkMinVersion(hcVersion, MIN_HOIST_CORE_VERSION)) {
-                throw XH.exception(`
-                    This version of Hoist React requires the server to run Hoist Core
-                    v${MIN_HOIST_CORE_VERSION} or greater. Version ${hcVersion} detected.
-                `);
-            }
-
-            await this.installServicesAsync(
-                AlertBannerService,
-                AutoRefreshService,
-                ChangelogService,
-                IdleService,
-                InspectorService,
-                GridAutosizeService,
-                GridExportService,
-                WebSocketService
-            );
-            this.acm.init();
-
-            this.setDocTitle();
-
-            // Delay to workaround hot-reload styling issues in dev.
-            await wait(XH.isDevelopmentMode ? 300 : 1);
-
-            const modelClass: any = this.appSpec.modelClass;
-            this.appModel = modelClass.instance = new modelClass();
-            await this.appModel.initAsync();
-            this.startRouter();
-            this.startOptionsDialog();
-            this.setAppState('RUNNING');
-        } catch (e) {
-            this.setAppState('LOAD_FAILED');
-            this.handleException(e, {requireReload: true});
-        }
-    }
-
-    /**
-     * Suspend all app activity and display, including timers and web sockets.
-     *
-     * Suspension is a terminal state, requiring user to reload the app.
-     * Used for idling, forced version upgrades, and ad-hoc killing of problematic clients.
-     * @internal
-     */
-    suspendApp(suspendData) {
-        if (XH.appState === 'SUSPENDED') return;
-        this.suspendData = suspendData;
-        XH.setAppState('SUSPENDED');
-        XH.webSocketService.shutdown();
-        Timer.cancelAll();
-    }
-
-    //------------------------
-    // Implementation
-    //------------------------
-    private checkAccess(): any {
-        const user = XH.getUser(),
-            {checkAccess} = this.appSpec;
-
-        if (isString(checkAccess)) {
-            return user.hasRole(checkAccess)
-                ? {hasAccess: true}
-                : {
-                      hasAccess: false,
-                      message: `User needs the role "${checkAccess}" to access this application.`
-                  };
-        } else {
-            const ret = checkAccess(user);
-            return isBoolean(ret) ? {hasAccess: ret} : ret;
-        }
-    }
-
-    private setDocTitle() {
-        const env = XH.getEnv('appEnvironment'),
-            {clientAppName} = this.appSpec;
-        document.title = env === 'Production' ? clientAppName : `${clientAppName} (${env})`;
-    }
-
-    private async getAuthStatusFromServerAsync(): Promise<boolean> {
-        return await this.fetchService
-            .fetchJson({
-                url: 'xh/authStatus',
-                timeout: 3 * MINUTES // Accommodate delay for user at a credentials prompt
-            })
-            .then(r => r.authenticated)
-            .catch(e => {
-                // 401s normal / expected for non-SSO apps when user not yet logged in.
-                if (e.httpStatus === 401) return false;
-                // Other exceptions indicate e.g. connectivity issue, server down - raise to user.
-                throw e;
-            });
-    }
-
-    private startRouter() {
-        this.routerModel.addRoutes(this.appModel.getRoutes());
-        this.router.start();
-    }
-
-    private startOptionsDialog() {
-        this.acm.optionsDialogModel.setOptions(this.appModel.getAppOptions());
-    }
-
     private get acm(): AppContainerModel {
         return this.appContainerModel;
     }
-
-    private bindInitSequenceToAppLoadModel() {
-        const terminalStates: AppState[] = ['RUNNING', 'SUSPENDED', 'LOAD_FAILED', 'ACCESS_DENIED'],
-            loadingPromise = mobxWhen(() => terminalStates.includes(this.appState));
-        loadingPromise.linkTo(this.appLoadModel);
-    }
-
-    private trackLoad() {
-        let loadStarted = window['_xhLoadTimestamp'], // set in index.html
-            loginStarted = null,
-            loginElapsed = 0;
-
-        const disposer = mobxReaction(
-            () => this.appState,
-            state => {
-                const now = Date.now();
-                switch (state) {
-                    case 'RUNNING':
-                        XH.track({
-                            category: 'App',
-                            message: `Loaded ${this.clientAppCode}`,
-                            elapsed: now - loadStarted - loginElapsed,
-                            data: {
-                                appVersion: this.appVersion,
-                                appBuild: this.appBuild,
-                                locationHref: window.location.href,
-                                ...getClientDeviceInfo()
-                            },
-                            logData: ['appVersion', 'appBuild']
-                        });
-                        disposer();
-                        break;
-
-                    case 'LOGIN_REQUIRED':
-                        loginStarted = now;
-                        break;
-                    default:
-                        if (loginStarted) loginElapsed = now - loginStarted;
-                }
-            }
-        );
-    }
-
-    private createActivityListeners() {
-        ['keydown', 'mousemove', 'mousedown', 'scroll', 'touchmove', 'touchstart'].forEach(name => {
-            window.addEventListener(name, () => {
-                this._lastActivityMs = Date.now();
-            });
-        });
-    }
-
-    private get uaParser() {
-        if (!this._uaParser) this._uaParser = new parser();
-        return this._uaParser;
-    }
-
-    private parseAppSpec() {}
 }
 
 /** app-wide singleton instance. */

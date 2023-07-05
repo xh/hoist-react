@@ -9,31 +9,38 @@
   with older versions of hoist-core, the new `forceReload` mode requires `hoist-core >= v16.4.0`.
 * Enhance `NumberFormatOptions.colorSpec` to accept custom CSS properties in addition to class names
 * Enhance `TabSwitcher` to allow navigation using arrow keys when focused.
-
 * Added new option `TrackOptions.logData` to provide support for logging application data in
   `TrackService.`  Requires hoist-core v16.4.
+* New `XH.pageState` provides observable access to the current lifecycle state of the
+  application, allowing apps to react to changes in page visibility and focus, as well as detecting
+  when the browser has frozen a tab due to inactivity or navigation.
+
 
 ## 57.0.0 - 2023-06-20
 
 ### 🎁 New Features
 
-* Enhanced the Admin alert banner feature with a new ability to save messages as presets. Useful for
-  standardizing alert or downtime banners, where pre-approved language can be added as a preset and
-  then easily loaded into a banner by members of an application support team (
+* Enhanced Admin alert banners with the ability to save messages as presets. Useful for
+  standardizing alert or downtime banners, where pre-approved language can be saved as a preset for
+  later loaded into a banner by members of an application support team (
   requires `hoist-core >= v16.3.0`).
 * Added bindable `readonly` property to `LeftRightChooserModel`.
 
 ### ⚙️ Technical
+
 * Support the `HOIST_IMPERSONATOR` role introduced in hoist-core `v16.3.0`
 * Hoist now supports and requires ag-Grid v30 or higher. This version includes critical
-performance improvements to scrolling without the problematic 'ResizeObserver' issues discussed
-below.
+  performance improvements to scrolling without the problematic 'ResizeObserver' issues discussed
+  below.
 
 ### 💥 Breaking Changes
+
 * The deprecated `@settable` decorator has now been removed. Use `@bindable` instead.
-* The deprecated class `@xh/hoist/admin/App` has been removed.  Use `@xh/hoist/admin/AppComponent` instead.
+* The deprecated class `@xh/hoist/admin/App` has been removed. Use `@xh/hoist/admin/AppComponent`
+  instead.
 
 ### 🐞 Bug Fixes
+
 * Fixed a bug where Onsen components wrappers could not forward refs.
 * Improved the exceptions thrown by fetchService when errors occur parsing response JSON.
 
