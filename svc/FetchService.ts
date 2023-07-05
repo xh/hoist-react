@@ -41,7 +41,7 @@ export class FetchService extends HoistService {
     defaultHeaders = {};
     defaultTimeout = (30 * SECONDS) as any;
 
-    override async initAsync(): Promise<void> {
+    override async initAsync() {
         // pre-flight to allows clean recognition when we have no server.
         try {
             await this.fetch({url: 'ping'});

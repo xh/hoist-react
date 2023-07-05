@@ -4,6 +4,8 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
+import {Router, State} from 'router5';
 import {
     HoistService,
     AppSpec,
@@ -66,8 +68,7 @@ declare const xhIsDevelopmentMode: boolean;
  * Top-level Singleton model for Hoist. This is the main entry point for the API.
  *
  * Provides access to the built-in Hoist services, metadata about the application and environment,
- * and convenience aliases to the most common framework operations. It also maintains key observable
- * application state regarding dialogs, loading, and exceptions.
+ * and convenience aliases to the most common framework operations.
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
@@ -130,6 +131,7 @@ export class XHApi {
     /** Get a reference to a singleton service by full class. */
     getService<T extends HoistService>(cls: HoistServiceClass<T>): T;
 
+    /** Get a reference to a singleton service. */
     getService(arg: any) {
         const name = isString(arg) ? arg : camelCase(arg.name);
         return this[name];
@@ -226,7 +228,7 @@ export class XHApi {
      *  switches back and re-activates the tab.
      *
      *  The {@link LifeCycleState} type lists the possible states, with descriptive comments.
-     *   See {@link https://developer.chrome.com/blog/page-lifecycle-api/} for a useful overview.
+     *  See {@link https://developer.chrome.com/blog/page-lifecycle-api/} for a useful overview.
      */
     get pageState(): PageState {
         return this.acm.pageStateModel.state;
@@ -381,7 +383,7 @@ export class XHApi {
     //-------------------------
     // Routing support
     //-------------------------
-    get routerModel() {
+    get routerModel(): RouterModel {
         return this.acm.routerModel;
     }
 
@@ -389,7 +391,7 @@ export class XHApi {
      * Underlying Router5 Router object implementing the routing state.
      * Applications should use this property to directly access the Router5 API.
      */
-    get router() {
+    get router(): Router {
         return this.routerModel.router;
     }
 
@@ -397,7 +399,7 @@ export class XHApi {
      * The current routing state as an observable property.
      * @see RoutingManager.currentState
      */
-    get routerState() {
+    get routerState(): State {
         return this.routerModel.currentState;
     }
 

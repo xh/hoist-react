@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {div, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -16,17 +17,18 @@ import './LockoutPanel.scss';
  *
  * @internal
  */
-export const lockoutPanel = hoistCmp.factory({
+export const lockoutPanel = hoistCmp.factory<AppContainerModel>({
     displayName: 'LockoutPanel',
-    render() {
+    render({model}) {
         const user = XH.getUser(),
-            {appSpec, identityService} = XH;
+            {appSpec, appStateModel} = model,
+            {identityService} = XH;
 
         return page(
             div({
                 className: 'xh-lockout-panel',
                 item: div(
-                    XH.identityService.accessDeniedMessage ?? '',
+                    appStateModel.accessDeniedMessage ?? '',
                     vspacer(10),
                     `You are logged in as ${user.username} and have the roles [${
                         user.roles.join(', ') || '--'

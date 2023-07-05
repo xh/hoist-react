@@ -8,6 +8,7 @@ import {AppState, AppSuspendData, HoistModel, XH} from '@xh/hoist/core';
 import {action, makeObservable, observable, reaction} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {getClientDeviceInfo, logDebug} from '@xh/hoist/utils/js';
+import {isBoolean, isString} from 'lodash';
 
 /**
  * Support for Core Hoist Application state and loading.
@@ -21,6 +22,7 @@ export class AppStateModel extends HoistModel {
 
     lastActivityMs: number = Date.now();
     suspendData: AppSuspendData;
+    accessDeniedMessage: string = 'Access Denied';
 
     constructor() {
         super();
@@ -45,6 +47,27 @@ export class AppStateModel extends HoistModel {
         Timer.cancelAll();
     }
 
+    checkAccess(): boolean {
+        const user = XH.getUser(),
+            {checkAccess} = XH.appSpec;
+
+        if (isString(checkAccess)) {
+            if (user.hasRole(checkAccess)) return true;
+            this.accessDeniedMessage = `User needs the role "${checkAccess}" to access this application.`;
+            return false;
+        } else {
+            const ret = checkAccess(user);
+            if (isBoolean(ret)) return ret;
+            if (ret.message) {
+                this.accessDeniedMessage = ret.message;
+            }
+            return ret.hasAccess;
+        }
+    }
+
+    //------------------
+    // Implementation
+    //------------------
     private trackLoad() {
         let loadStarted = window['_xhLoadTimestamp'], // set in index.html
             loginStarted = null,

@@ -180,7 +180,7 @@ export class AppContainerModel extends HoistModel {
         try {
             // Install identity service and confirm access
             await installServicesAsync(IdentityService);
-            if (!XH.identityService.checkAccess()) {
+            if (!this.appStateModel.checkAccess()) {
                 this.setAppState('ACCESS_DENIED');
                 return;
             }
@@ -332,6 +332,6 @@ export class AppContainerModel extends HoistModel {
     private bindInitSequenceToAppLoadModel() {
         const terminalStates: AppState[] = ['RUNNING', 'SUSPENDED', 'LOAD_FAILED', 'ACCESS_DENIED'],
             loadingPromise = mobxWhen(() => terminalStates.includes(this.appStateModel.state));
-        loadingPromise.linkTo(XH.appLoadModel);
+        loadingPromise.linkTo(this.appLoadModel);
     }
 }

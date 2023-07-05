@@ -6,7 +6,6 @@
  */
 import {HoistService, HoistUser, XH} from '@xh/hoist/core';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
-import {isBoolean, isString} from 'lodash';
 
 /**
  * Provides basic information related to the authenticated user, including application roles.
@@ -20,8 +19,6 @@ export class IdentityService extends HoistService {
 
     private _authUser: HoistUser;
     private _apparentUser: HoistUser;
-
-    public accessDeniedMessage: string = 'Access Denied';
 
     override async initAsync() {
         const data = await XH.fetchJson({url: 'xh/getIdentity'});
@@ -70,24 +67,6 @@ export class IdentityService extends HoistService {
         return XH.fetchJson({url: 'xh/logout'})
             .then(() => XH.reloadApp())
             .catchDefault();
-    }
-
-    checkAccess(): boolean {
-        const {user} = this,
-            {checkAccess} = XH.appSpec;
-
-        if (isString(checkAccess)) {
-            if (user.hasRole(checkAccess)) return true;
-            this.accessDeniedMessage = `User needs the role "${checkAccess}" to access this application.`;
-            return false;
-        } else {
-            const ret = checkAccess(user);
-            if (isBoolean(ret)) return ret;
-            if (ret.message) {
-                this.accessDeniedMessage = ret.message;
-            }
-            return ret.hasAccess;
-        }
     }
 
     //------------------------
