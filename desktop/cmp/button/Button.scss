@@ -61,12 +61,12 @@
       border-radius: 0;
       &.xh-button--standard,
       &.xh-button--outlined {
-        &:first-child {
+        &:first-child:not(.xh-split-button__trigger-right) {
           border-bottom-left-radius: var(--xh-button-border-radius-px);
           border-top-left-radius: var(--xh-button-border-radius-px);
         }
 
-        &:last-child {
+        &:last-child:not(.xh-split-button__trigger-left) {
           border-bottom-right-radius: var(--xh-button-border-radius-px);
           border-top-right-radius: var(--xh-button-border-radius-px);
         }
