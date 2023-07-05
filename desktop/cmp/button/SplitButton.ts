@@ -12,7 +12,7 @@ import './SplitButton.scss';
 
 export interface SplitButtonProps extends ButtonProps {
     menuItems: MenuItemLike[];
-    menuSide: 'left' | 'right';
+    menuSide?: 'left' | 'right';
 }
 export const [SplitButton, splitButton] = hoistCmp.withFactory<SplitButtonProps>({
     displayName: 'SplitButton',
