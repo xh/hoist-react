@@ -18,13 +18,13 @@ import {logDebug} from '@xh/hoist/utils/js';
 export class PageStateModel extends HoistModel {
     override xhImpl = true;
 
-    @observable state: PageState;
+    @observable state: PageState = null;
 
     constructor() {
         super();
         makeObservable(this);
 
-        this.state = this.getLiveState();
+        this.setState(this.getLiveState());
         this.addListeners();
     }
 
@@ -33,9 +33,9 @@ export class PageStateModel extends HoistModel {
     //------------------------
     @action
     private setState(nextState: PageState) {
-        if (this.state !== nextState) {
-            logDebug(`PageState change: ${this.state} → ${nextState}`, this);
-        }
+        if (this.state == 'terminated' || this.state == nextState) return;
+
+        logDebug(`PageState change: ${this.state} → ${nextState}`, this);
         this.state = nextState;
     }
 
