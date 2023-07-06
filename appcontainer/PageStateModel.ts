@@ -5,7 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistModel, PageState} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {logDebug} from '@xh/hoist/utils/js';
 
 /**
@@ -26,6 +26,21 @@ export class PageStateModel extends HoistModel {
 
         this.setState(this.getLiveState());
         this.addListeners();
+    }
+
+    @computed
+    get isActive(): boolean {
+        return this.state === 'active';
+    }
+
+    @computed
+    get isPassive(): boolean {
+        return this.state === 'passive';
+    }
+
+    @computed
+    get isVisible(): boolean {
+        return this.isActive || this.isPassive;
     }
 
     //------------------------
