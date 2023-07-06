@@ -71,7 +71,7 @@ export const actionCol: ColumnSpec = {
                 className: classNames('bp4-small', 'xh-record-action-button', className),
                 onClick: ev => {
                     ev.stopPropagation();
-                    action.call({record, selectedRecords: [record], gridModel, column});
+                    action.call({record, selectedRecords: [record], gridModel, column, ev});
                 }
             });
         });

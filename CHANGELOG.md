@@ -14,6 +14,7 @@
 * New `XH.pageState` provides observable access to the current lifecycle state of the
   application, allowing apps to react to changes in page visibility and focus, as well as detecting
   when the browser has frozen a tab due to inactivity or navigation.
+* `RecordAction.actionFn` methods now receive the mouse event `ev` that triggered the method call.
 
 
 ## 57.0.0 - 2023-06-20

@@ -6,7 +6,7 @@
  */
 
 import {isBoolean, isEmpty, isNil, isNumber, isString} from 'lodash';
-import {ReactElement} from 'react';
+import React, {ReactElement} from 'react';
 import {Intent, PlainObject} from '../core';
 import {StoreRecord} from './StoreRecord';
 import {GridModel, Column} from '../cmp/grid';
@@ -76,6 +76,8 @@ export interface ActionFnData {
 
     /** Column where action occurred (if any). */
     column?: Column;
+
+    ev?: React.MouseEvent<HTMLElement, MouseEvent>;
 
     /** Additional data provided by the context where this action presides */
     [x: string]: any;
