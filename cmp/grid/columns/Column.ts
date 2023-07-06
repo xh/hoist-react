@@ -263,7 +263,7 @@ export interface ColumnSpec {
      * `headerName` contains markup or other characters not suitable for use within an Excel or
      * CSV file header.
      */
-    exportName?: string;
+    exportName?: string | ColumnHeaderNameFn;
 
     /**
      * Alternate field name to reference or function to call when producing a value for a file
