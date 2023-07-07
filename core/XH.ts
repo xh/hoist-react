@@ -20,7 +20,8 @@ import {
     PlainObject,
     HoistException,
     PageState,
-    AppSuspendData
+    AppSuspendData,
+    FetchResponse
 } from './';
 import {Store} from '@xh/hoist/data';
 import {instanceManager} from './impl/InstanceManager';
@@ -54,6 +55,7 @@ import {BannerModel} from '../appcontainer/BannerModel';
 import '../styles/XH.scss';
 import {ModelSelector, HoistModel, RefreshContextModel} from './model';
 import {HoistAppModel, BannerSpec, ToastSpec, MessageSpec, HoistUser, TaskObserver} from './';
+import {CancelFn} from 'router5/types/types/base';
 
 export const MIN_HOIST_CORE_VERSION = '16.0';
 
@@ -73,10 +75,13 @@ declare const xhIsDevelopmentMode: boolean;
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
 export class XHApi {
-    //----------------
-    // Core Delegates
-    //----------------
+    //--------------------------
+    // Implementation Delegates
+    //--------------------------
+    /** Core implementation model hosting all application state. */
     appContainerModel: AppContainerModel = new AppContainerModel();
+
+    /** Provider of centralized Exception Handling for application. */
     exceptionHandler: ExceptionHandler = new ExceptionHandler();
 
     //----------------------------------------------------------------------------------------------
@@ -84,25 +89,25 @@ export class XHApi {
     // See @xh/hoist-dev-utils/configureWebpack.
     //----------------------------------------------------------------------------------------------
     /** short internal code for the application. */
-    appCode: string = xhAppCode;
+    readonly appCode: string = xhAppCode;
 
     /** user-facing display name for the app. See also `XH.clientAppName`. */
-    appName: string = xhAppName;
+    readonly appName: string = xhAppName;
 
     /** semVer or Snapshot version of the client build. */
-    appVersion: string = xhAppVersion;
+    readonly appVersion: string = xhAppVersion;
 
     /**
      * optional identifier for the client build (e.g. a git commit hash or a
      * build ID from a CI system). Varies depending on how builds are configured.
      */
-    appBuild: string = xhAppBuild;
+    readonly appBuild: string = xhAppBuild;
 
     /** root URL context/path - prepended to all relative fetch requests. */
-    baseUrl: string = xhBaseUrl;
+    readonly baseUrl: string = xhBaseUrl;
 
     /** true if app is running in a local development environment. */
-    isDevelopmentMode: boolean = xhIsDevelopmentMode;
+    readonly isDevelopmentMode: boolean = xhIsDevelopmentMode;
 
     //----------------------------------------------------------------------------------------------
     // Hoist Core Services
@@ -125,128 +130,15 @@ export class XHApi {
     trackService: TrackService;
     webSocketService: WebSocketService;
 
-    /** Get a reference to a singleton service by camel case name.*/
-    getService(name: string): HoistService;
-
-    /** Get a reference to a singleton service by full class. */
-    getService<T extends HoistService>(cls: HoistServiceClass<T>): T;
-
-    /** Get a reference to a singleton service. */
-    getService(arg: any) {
-        const name = isString(arg) ? arg : camelCase(arg.name);
-        return this[name];
-    }
-
-    //----------------------------------------------------------------------------------------------
-    // Aliased methods
-    // Shortcuts to common core service methods and appSpec properties.
-    //----------------------------------------------------------------------------------------------
-    fetch(opts: FetchOptions) {
-        return this.fetchService.fetch(opts);
-    }
-
-    fetchJson(opts: FetchOptions) {
-        return this.fetchService.fetchJson(opts);
-    }
-
+    //----------------------------
+    // Immutable Getters
+    //----------------------------
     /**
-     * Primary convenience alias for reading soft configuration values.
-     * @param key - identifier of the config to return.
-     * @param defaultVal - value to return if there is no client-side config with this key.
-     * @returns the soft-configured value.
+     * Tracks globally loading promises.
+     * Apps should link any async operations that should mask the entire viewport to this model.
      */
-    getConf(key: string, defaultVal?: any): any {
-        return this.configService.get(key, defaultVal);
-    }
-
-    /**
-     * Primary convenience alias for reading user preference values.
-     * @param key - identifier of the pref to return.
-     * @param defaultVal - value to return if there is no pref with this key.
-     * @returns the user's preference, or the data-driven default if pref not yet set by user.
-     */
-    getPref(key: string, defaultVal?: any): any {
-        return this.prefService.get(key, defaultVal);
-    }
-
-    /**
-     * Primary convenience alias for setting user preference values.
-     * @param key - identifier of the pref to set.
-     * @param val - the new value to persist for the current user.
-     */
-    setPref(key: string, val: any) {
-        return this.prefService.set(key, val);
-    }
-
-    track(opts: string | TrackOptions) {
-        return this.trackService?.track(opts);
-    }
-
-    getEnv(key: string) {
-        return this.environmentService?.get(key) ?? null;
-    }
-
-    getUser(): HoistUser {
-        return this.identityService?.user ?? null;
-    }
-
-    getUsername(): string {
-        return this.identityService?.username ?? null;
-    }
-
-    get isMobileApp(): boolean {
-        return this.appSpec.isMobileApp;
-    }
-
-    get clientAppCode(): string {
-        return this.appSpec.clientAppCode;
-    }
-
-    get clientAppName(): string {
-        return this.appSpec.clientAppName;
-    }
-
-    get isPhone(): boolean {
-        return this.acm.userAgentModel.isPhone;
-    }
-
-    get isTablet(): boolean {
-        return this.acm.userAgentModel.isTablet;
-    }
-
-    get isDesktop(): boolean {
-        return this.acm.userAgentModel.isDesktop;
-    }
-
-    /**
-     * The lifecycle state of the page, which changes due to changes to the focused/visible state
-     * of the browser tab and the browser window as a whole, as well as built-in browser behaviors
-     * around navigation and performance optimizations.
-     *
-     *  Apps can react to this stat to pause background processes (e.g. expensive refresh
-     *  operations) when the app is no longer visible to the user and resume them when the user
-     *  switches back and re-activates the tab.
-     *
-     *  The {@link LifeCycleState} type lists the possible states, with descriptive comments.
-     *  See {@link https://developer.chrome.com/blog/page-lifecycle-api/} for a useful overview.
-     */
-    get pageState(): PageState {
-        return this.acm.pageStateModel.state;
-    }
-
-    /** Current lifecycle state of the application. */
-    get appState(): AppState {
-        return this.acm.appStateModel.state;
-    }
-
-    /** Milliseconds timestamp at moment user activity / interaction was last detected. */
-    get lastActivityMs(): number {
-        return this.acm.appStateModel.lastActivityMs;
-    }
-
-    /** True if application initialized and running (observable). */
-    get appIsRunning(): boolean {
-        return this.appState === 'RUNNING';
+    get appLoadModel(): TaskObserver {
+        return this.acm.appLoadModel;
     }
 
     /** Root level application model. */
@@ -259,25 +151,180 @@ export class XHApi {
         return this.acm.appSpec;
     }
 
-    /** Main entry point. Initialize and render application code. */
-    renderApp<T extends HoistAppModel>(appSpec: AppSpec<T>) {
-        this.acm.renderApp(appSpec);
+    /** Short code for this particular JS client application. */
+    get clientAppCode(): string {
+        return this.appSpec.clientAppCode;
+    }
+
+    /** Display name for this particular JS client application. */
+    get clientAppName(): string {
+        return this.appSpec.clientAppName;
+    }
+
+    /** True if the app should use the Hoist mobile toolkit.*/
+    get isMobileApp(): boolean {
+        return this.appSpec.isMobileApp;
+    }
+
+    /** True if the app is running on a desktop. */
+    get isDesktop(): boolean {
+        return this.acm.userAgentModel.isDesktop;
+    }
+
+    /** True if the app is running on a mobile phone. */
+    get isPhone(): boolean {
+        return this.acm.userAgentModel.isPhone;
+    }
+
+    /** True if the app is running on a tablet. */
+    get isTablet(): boolean {
+        return this.acm.userAgentModel.isTablet;
+    }
+
+    /** The global RefreshContextModel for this application.*/
+    get refreshContextModel(): RefreshContextModel {
+        return this.acm.refreshContextModel;
+    }
+
+    //-------------------
+    // State Getters
+    //-------------------
+    /**
+     * Current lifecycle state of the application. (observable)
+     *
+     * The {@link AppState} type lists the possible states, with descriptive comments.
+     */
+    get appState(): AppState {
+        return this.acm.appStateModel.state;
+    }
+
+    /** Shortcut for testing if appState is 'RUNNING'. (observable) */
+    get appIsRunning(): boolean {
+        return this.appState === 'RUNNING';
+    }
+
+    /** Milliseconds timestamp at moment user activity was last detected. */
+    get lastActivityMs(): number {
+        return this.acm.appStateModel.lastActivityMs;
     }
 
     /**
-     * Install HoistServices on XH.
+     * The lifecycle state of the page. (observable)
      *
-     * @param serviceClasses - Classes extending HoistService
+     * This state changes due to changes to the focused/visible state
+     * of the browser tab and the browser window as a whole, as well as built-in browser behaviors
+     * around navigation and performance optimizations.
      *
-     * This method will create, initialize, and install the services classes listed on XH.
-     * All services will be initialized concurrently. To guarantee execution order of service
-     * initialization, make multiple calls to this method with await.
+     * Apps can react to this stat to pause background processes (e.g. expensive refresh
+     * operations) when the app is no longer visible to the user and resume them when the user
+     * switches back and re-activates the tab.
      *
-     * Applications must choose a unique name of the form xxxService to avoid naming collisions.
-     * If naming collisions are detected, an error will be thrown.
+     * The {@link PageState} type lists the possible states, with descriptive comments.
+     * See {@link https://developer.chrome.com/blog/page-lifecycle-api/} for a useful overview.
      */
-    async installServicesAsync(...serviceClasses: HoistServiceClass[]) {
-        return installServicesAsync(serviceClasses);
+    get pageState(): PageState {
+        return this.acm.pageStateModel.state;
+    }
+
+    /** Shortcut for testing if pageState is 'active'. (observable) */
+    get pageIsActive(): boolean {
+        return this.pageState === 'active';
+    }
+
+    /** Shortcut for testing if pageState is 'passive'. (observable) */
+    get pageIsPassive(): boolean {
+        return this.pageState === 'passive';
+    }
+
+    /** Shortcut for testing if pageState is 'active' or 'passive'. (observable) */
+    get pageIsVisible(): boolean {
+        return this.pageIsActive || this.pageIsPassive;
+    }
+
+    //----------------------------------------
+    // Delegating methods
+    //----------------------------------------
+    /**
+     * Send a request via the underlying fetch API.
+     * @see FetchService.fetch
+     */
+    fetch(opts: FetchOptions): Promise<FetchResponse> {
+        return this.fetchService.fetch(opts);
+    }
+
+    /**
+     * Send an HTTP request and decode the response as JSON.
+     * @see FetchService.fetchJson
+     */
+    fetchJson(opts: FetchOptions): Promise<any> {
+        return this.fetchService.fetchJson(opts);
+    }
+
+    /**
+     * Read soft configuration values.
+     * @see ConfigService.get
+     */
+    getConf(key: string, defaultVal?: any): any {
+        return this.configService.get(key, defaultVal);
+    }
+
+    /**
+     * Read user preference values.
+     * @see PrefService.get
+     */
+    getPref(key: string, defaultVal?: any): any {
+        return this.prefService.get(key, defaultVal);
+    }
+
+    /**
+     * Set user preference values.
+     * @see PrefService.set
+     */
+    setPref(key: string, val: any) {
+        return this.prefService.set(key, val);
+    }
+
+    /**
+     * Track User Activity.
+     * @see TrackService.track
+     */
+    track(opts: string | TrackOptions) {
+        return this.trackService?.track(opts);
+    }
+
+    /**
+     * Read an environment property.
+     * @see EnvironmentService.get
+     */
+    getEnv(key: string): any {
+        return this.environmentService?.get(key) ?? null;
+    }
+
+    /**
+     * The current acting user.
+     * @see IdentityService.user
+     */
+    getUser(): HoistUser {
+        return this.identityService?.user ?? null;
+    }
+
+    /**
+     * Current acting user's username.
+     * @see IdentityService.username
+     */
+    getUsername(): string {
+        return this.identityService?.username ?? null;
+    }
+
+    //----------------------
+    // App lifecycle support
+    //----------------------
+    /**
+     * Main entry point to start an application.
+     * Initialize and render application code.
+     */
+    renderApp<T extends HoistAppModel>(appSpec: AppSpec<T>) {
+        this.acm.renderApp(appSpec);
     }
 
     /**
@@ -316,21 +363,6 @@ export class XHApi {
         return this.refreshContextModel.refreshAsync();
     }
 
-    /**
-     * Tracks globally loading promises.
-     * Apps should link any async operations that should mask the entire viewport to this model.
-     */
-    get appLoadModel(): TaskObserver {
-        return this.acm.appLoadModel;
-    }
-
-    /**
-     * The global RefreshContextModel for this application.
-     */
-    get refreshContextModel(): RefreshContextModel {
-        return this.acm.refreshContextModel;
-    }
-
     //------------------------
     // Theme Support
     //------------------------
@@ -346,7 +378,7 @@ export class XHApi {
         return this.acm.themeModel.setTheme(value, persist);
     }
 
-    /** Is the app currently rendering in dark theme? */
+    /** Is the app currently rendering in dark theme? (observable) */
     get darkTheme(): boolean {
         return this.acm.themeModel.darkTheme;
     }
@@ -354,10 +386,12 @@ export class XHApi {
     //------------------------
     // Sizing Mode Support
     //------------------------
+    /** Standard size used by Grid. (observable) */
     get sizingMode(): SizingMode {
         return this.acm.sizingModeModel.sizingMode;
     }
 
+    /** Set standard size used by Grid. */
     setSizingMode(sizingMode: SizingMode) {
         return this.acm.sizingModeModel.setSizingMode(sizingMode);
     }
@@ -383,6 +417,10 @@ export class XHApi {
     //-------------------------
     // Routing support
     //-------------------------
+    /**
+     * Model hosting observable router5 state.  Not typically used by applications.
+     * Use {@link routerState} instead.
+     */
     get routerModel(): RouterModel {
         return this.acm.routerModel;
     }
@@ -396,7 +434,7 @@ export class XHApi {
     }
 
     /**
-     * The current routing state as an observable property.
+     * The current routing state of the application. (observable)
      * @see RoutingManager.currentState
      */
     get routerState(): State {
@@ -404,18 +442,18 @@ export class XHApi {
     }
 
     /** Route the app - shortcut to this.router.navigate. */
-    navigate(...args) {
+    navigate(...args): CancelFn {
         // @ts-ignore
         return this.router.navigate(...args);
     }
 
-    /** Add a routeName to the current route, preserving params */
-    appendRoute(routeName: string, newParams?: PlainObject) {
+    /** Add a routeName to the current route, preserving params. */
+    appendRoute(routeName: string, newParams?: PlainObject): CancelFn {
         return this.routerModel.appendRoute(routeName, newParams);
     }
 
-    /** Remove last routeName from the current route, preserving params */
-    popRoute() {
+    /** Remove last routeName from the current route, preserving params. */
+    popRoute(): CancelFn {
         return this.routerModel.popRoute();
     }
 
@@ -589,9 +627,34 @@ export class XHApi {
         this.acm.optionsDialogModel.show();
     }
 
-    //---------------------------
-    // Miscellaneous
-    //---------------------------
+    /** Get a reference to a singleton service by camel case name.*/
+    getService(name: string): HoistService;
+
+    /** Get a reference to a singleton service by full class. */
+    getService<T extends HoistService>(cls: HoistServiceClass<T>): T;
+
+    /** Get a reference to a singleton service. */
+    getService(arg: any) {
+        const name = isString(arg) ? arg : camelCase(arg.name);
+        return this[name];
+    }
+
+    /**
+     * Install HoistServices on XH.
+     *
+     * @param serviceClasses - Classes extending HoistService
+     *
+     * This method will create, initialize, and install the services classes listed on XH.
+     * All services will be initialized concurrently. To guarantee execution order of service
+     * initialization, make multiple calls to this method with await.
+     *
+     * Applications must choose a unique name of the form xxxService to avoid naming collisions.
+     * If naming collisions are detected, an error will be thrown.
+     */
+    async installServicesAsync(...serviceClasses: HoistServiceClass[]) {
+        return installServicesAsync(serviceClasses);
+    }
+
     /**
      * Return a collection of Models currently 'active' in this application.
      *
@@ -650,6 +713,9 @@ export class XHApi {
         return uniqueId('xh-id-');
     }
 
+    //----------------
+    // Implementation
+    //----------------
     private get acm(): AppContainerModel {
         return this.appContainerModel;
     }
