@@ -2,14 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {ElementFactory, elementFactory, HoistModel} from '@xh/hoist/core';
 import onsen from 'onsenui';
 import 'onsenui/css/onsen-css-components.css';
 import 'onsenui/css/onsenui.css';
 import {createElement, forwardRef, FunctionComponent} from 'react';
-import {isForwardRef} from 'react-is';
 import * as ons from 'react-onsenui';
 import {omitBy} from 'lodash';
 import './styles.scss';
@@ -56,20 +55,11 @@ export const [dialog, Dialog] = wrappedCmp(ons.Dialog),
  * There is no reason for an Onsen Component to ever receive a HoistModel prop, so we can safely
  * strip them out here.
  */
-function safeCmp(rawCmp): FunctionComponent {
-    return isForwardRef(rawCmp)
-        ? forwardRef((props, ref) => {
-              const safeProps = omitBy(props, it => it instanceof HoistModel);
-              safeProps.ref = ref;
-              return createElement(rawCmp, safeProps);
-          })
-        : props => {
-              const safeProps = omitBy(props, it => it instanceof HoistModel);
-              return createElement(rawCmp, safeProps);
-          };
-}
-
 function wrappedCmp(rawCmp): [ElementFactory, FunctionComponent] {
-    const cmp = safeCmp(rawCmp);
+    const cmp = forwardRef((props, ref) => {
+        const safeProps = omitBy(props, it => it instanceof HoistModel);
+        if (ref) safeProps.ref = ref;
+        return createElement(rawCmp, safeProps);
+    });
     return [elementFactory(cmp), cmp];
 }

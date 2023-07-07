@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {HoistBase, PlainObject, Some} from '@xh/hoist/core';
@@ -78,7 +78,7 @@ export class View extends HoistBase {
 
     /** Cube info associated with this View when last updated. */
     @observable.ref
-    info: Record<string, any> = null;
+    info: PlainObject = null;
 
     /** timestamp (ms) of the last time this view's data was changed. */
     @observable

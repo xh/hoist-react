@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
@@ -118,7 +118,7 @@ export interface StoreConfig {
      *  Flags for experimental features. These features are designed for early client-access and
      *  testing, but are not yet part of the Hoist API.
      */
-    experimental?: Record<string, any>;
+    experimental?: PlainObject;
 }
 
 /**

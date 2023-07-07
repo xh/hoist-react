@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2023 Extremely Heavy Industries Inc.
+ */
 import {HoistModel, lookup, XH} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {consumeEvent} from '@xh/hoist/utils/js';

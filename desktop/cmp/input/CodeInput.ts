@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, managed, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, managed, PlainObject, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
@@ -50,7 +50,7 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
      * Configuration object with any properties supported by the CodeMirror API.
      * @see {@link https://codemirror.net/doc/manual.html#api_configuration|CodeMirror Docs}
      */
-    editorProps?: Record<string, any>;
+    editorProps?: PlainObject;
 
     /**
      * True to enable case-insensitive searching within the input. Default false, except in
@@ -83,7 +83,7 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
      */
     readonly?: boolean;
 
-    /** True to display a copy button at bottom-right of input. */
+    /** True (default) to display a copy button at bottom-right of input. */
     showCopyButton?: boolean;
 
     /**
@@ -148,7 +148,7 @@ class CodeInputModel extends HoistInputModel {
     }
 
     get showCopyButton(): boolean {
-        return withDefault(this.componentProps.showCopyButton, false);
+        return withDefault(this.componentProps.showCopyButton, true);
     }
 
     get showFullscreenButton(): boolean {
@@ -182,14 +182,14 @@ class CodeInputModel extends HoistInputModel {
     }
 
     get actionButtons(): ReactElement[] {
-        const {showCopyButton, showFormatButton, showFullscreenButton, editor} = this;
+        const {showCopyButton, showFormatButton, showFullscreenButton} = this;
         return compact([
             showCopyButton
                 ? clipboardButton({
                       text: null,
                       title: 'Copy to clipboard',
                       successMessage: 'Contents copied to clipboard',
-                      getCopyText: () => editor.getValue()
+                      getCopyText: () => this.internalValue
                   })
                 : null,
             showFormatButton

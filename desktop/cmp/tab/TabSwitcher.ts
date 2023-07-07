@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
@@ -20,7 +20,7 @@ import {
     tooltip as bpTooltip
 } from '@xh/hoist/kit/blueprint';
 import {makeObservable, bindable} from '@xh/hoist/mobx';
-import {debounced, isDisplayed, throwIf} from '@xh/hoist/utils/js';
+import {consumeEvent, debounced, isDisplayed, throwIf} from '@xh/hoist/utils/js';
 import {
     createObservableRef,
     getLayoutProps,
@@ -138,7 +138,8 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                         items,
                         selectedTabId: activeTabId,
                         onChange: tabId => model.activateTab(tabId)
-                    })
+                    }),
+                    onKeyDown: e => impl.onKeyDown(e)
                 }),
                 overflowMenu({
                     tabs: impl.overflowTabs,
@@ -200,6 +201,18 @@ class TabSwitcherLocalModel extends HoistModel {
 
     get overflowTabs() {
         return compact(this.overflowIds.map(id => this.model.findTab(id)));
+    }
+
+    onKeyDown(e: KeyboardEvent) {
+        const {key} = e,
+            {model, vertical} = this;
+        if ((key === 'ArrowDown' && vertical) || (key === 'ArrowRight' && !vertical)) {
+            model.activateNextTab(true);
+            consumeEvent(e);
+        } else if ((key === 'ArrowUp' && vertical) || (key === 'ArrowLeft' && !vertical)) {
+            model.activatePrevTab(true);
+            consumeEvent(e);
+        }
     }
 
     constructor(model, enableOverflow, vertical) {

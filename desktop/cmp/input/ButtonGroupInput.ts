@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistModel, Intent, XH} from '@xh/hoist/core';
@@ -103,13 +103,15 @@ class ButtonGroupInputModel extends HoistInputModel {
 const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props}, ref) => {
     const {
         children,
-        //  HoistInput Props
+        // HoistInput Props
         bind,
         disabled,
         onChange,
         onCommit,
         tabIndex,
         value,
+        // FormField Props
+        commitOnChange,
         // ButtonGroupInput Props
         enableClear,
         enableMulti,

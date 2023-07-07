@@ -1,46 +1,278 @@
 # Changelog
 
-## v56.0.0-SNAPSHOT - unreleased
+## 58.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
 
-* `DashCanvas` views can now be programmatically added with specified width and height dimensions.
-* `FetchService` now has a public `abort` method for manually aborting a pending fetch request.
+* Deprecated `xhAppVersionCheckEnabled` config in favor of object-based `xhAppVersionCheck`. Hoist
+  will auto-migrate the existing value to this new config's `mode` flag. While backwards
+  compatible with older versions of hoist-core, the new `forceReload` mode
+  requires `hoist-core >= v16.4`.
+* Enhanced `NumberFormatOptions.colorSpec` to accept CSS properties in addition to class names.
+* Enhanced `TabSwitcher` to allow navigation using arrow keys when focused.
+* Added new option `TrackOptions.logData` to provide support for logging application data in
+  `TrackService.`  Requires `hoist-core >= v16.4`.
+* New `XH.pageState` provides observable access to the current lifecycle state of the app, allowing
+  apps to react to changes in page visibility and focus, as well as detecting when the browser has
+  frozen a tab due to inactivity or navigation.
 
 ### 💥 Breaking Changes
-* "Local" Preference support in PreferenceService is no longer supported.  Application should use
-  `LocalStorageService` instead. With v56, the `local` flag on any preferences will be ignored, and
-  all preferences will be saved on the server instead.  Note that Hoist v56 will execute a one-time
-  migration of any existing preferences from browser Local Storage to the server on app load.
-* The use of `tooltipElement` on `Column` is removed. Use `tooltip` instead.
-* The prop `fill` on `TextArea` and `NumberInput` component has been removed.  Use the standard
-  flex` layout prop instead.
-* The previously deprecated properties on mobile buttons `Button.modifier.outline` and
- `Button.modifier.quiet` have been removed.
-* The previously deprecated property `AppMenuButton.extraItems.onClick` has been removed.  Use
-`actionFn` instead.
+
 * The `Column.getValueFn` and `Column.renderer` functions will no longer be passed the `agParams`
-argument.  This argument was not passed consistently by Hoist when calling these functions; and was
-specifically omitted during operations such as column sizing, tooltip generation and Grid content
-searching.  We do not expect this argument was being used in practice by applications, but
-applications should ensure this is the case, and adjust these callbacks if necessary.
+  argument.  This argument was not passed consistently by Hoist when calling these functions; and was
+  specifically omitted during operations such as column sizing, tooltip generation and Grid content
+  searching.  We do not expect this argument was being used in practice by applications, but
+  applications should ensure this is the case, and adjust these callbacks if necessary.
+
+
+## 57.0.0 - 2023-06-20
+
+### 🎁 New Features
+
+* Enhanced Admin alert banners with the ability to save messages as presets. Useful for
+  standardizing alert or downtime banners, where pre-approved language can be saved as a preset for
+  later loaded into a banner by members of an application support team (
+  requires `hoist-core >= v16.3.0`).
+* Added bindable `readonly` property to `LeftRightChooserModel`.
+
+### ⚙️ Technical
+
+* Support the `HOIST_IMPERSONATOR` role introduced in hoist-core `v16.3.0`
+* Hoist now supports and requires ag-Grid v30 or higher. This version includes critical
+  performance improvements to scrolling without the problematic 'ResizeObserver' issues discussed
+  below.
+
+### 💥 Breaking Changes
+
+* The deprecated `@settable` decorator has now been removed. Use `@bindable` instead.
+* The deprecated class `@xh/hoist/admin/App` has been removed. Use `@xh/hoist/admin/AppComponent`
+  instead.
+
+### 🐞 Bug Fixes
+
+* Fixed a bug where Onsen components wrappers could not forward refs.
+* Improved the exceptions thrown by fetchService when errors occur parsing response JSON.
+
+## 56.6.0 - 2023-06-01
+
+### 🎁 New Features
+
+* New global property `AgGrid.DEFAULT_PROPS` to provide application wide defaults for any instances
+  of `AgGrid` and `Grid` components.
+
+### ⚙️ Technical
+
+* The workaround of defaulting the AG Grid prop `suppressBrowserResizeObserver: true`, added in
+  v56.3.0, has been removed. This workaround can cause sizing issues with flex columns and should
+  not be needed once [the underlying issue](https://github.com/ag-grid/ag-grid/issues/6562) is fixed
+  in an upcoming AG Grid release.
+    * As of this release date, we recommend apps stay at AG Grid 29.2. This does not include the
+      latest AG performance improvements, but avoids the sizing issues present in 29.3.5.
+    * If you want to take the latest AG Grid 29.3.5, please re-enable
+      the `suppressBrowserResizeObserver` flag with the new `DEFAULT_PROPS` static described
+      above. Scan your app carefully for column sizing issues.
+
+### 🐞 Bug Fixes
+
+* Fixed broken change handler for mobile inputs that wrap around Onsen UI inputs, including
+  `NumberInput`, `SearchInput`, and `TextInput`.
+
+### 📚 Libraries
+
+* @blueprintjs/core `^4.14 -> ^4.20` (apps might have already updated to a newer minor version)
+
+## 56.5.0 - 2023-05-26
+
+### 🎁 New Features
+
+* Added `regexOption` and `caseSensitive` props to the `LogDisplayModel`. (Case-sensitive search
+  requires `hoist-core >= v16.2.0`).
+* Added new `GroupingChooserModel.commitOnChange` config - enable to update the observable grouping
+  value as the user adjusts their choices within the control. Default behavior is unchanged,
+  requiring user to dismiss the popover to commit the new value.
+* Added new `Select.enableTooltips` prop - enable for select inputs where the text of a
+  selected value might be elided due to space constraints. The tooltip will display the full text.
+* Enabled user-driven sorting for the list of available values within Grid column filters.
+* Updated `CodeInput.showCopyButton` (copy-to-clipboard feature) default to true (enabled).
+
+### ⚙️ Technical
+
+* `DataView` now supports an `agOptions` prop to allow passing arbitrary AG Grid props to the
+  underlying grid instance. (Always supported by `Grid`, now also supported by `DataView`.)
+
+### 🐞 Bug Fixes
+
+* Fixed layout bug where popovers triggered from a parent `Panel` with `modalSupport` active could
+  render beneath that parent's own modal dialog.
+* Fixed broken `CodeInput` copy-to-clipboard feature.
+
+## v56.4.0 - 2023-05-10
+
+### 🎁 New Features
+
+* Ensure that non-committed values are also checked when filtering a store with a FieldFilter.
+  This will maximize chances that records under edit will not disappear from user view due to
+  active filters.
+
+### 🐞 Bug Fixes
+
+* Fix bug where Grid ColumnHeaders could throw when `groupDisplayType` was set to `singleColumn`.
+
+### ⚙️ Technical
+
+* Adjustment to core model lookup in Hoist components to better support automated testing.
+  Components no longer strictly require rendering within an `AppContainer`.
 
 ### ⚙️ Typescript API Adjustments
 
-* New typescript types for all Hoist exceptions.
-* Integration of ag-Grid community types into hoist-react.
+* Improved return types for `FetchService` methods and corrected `FetchOptions` interface.
+
+## v56.3.0 - 2023-05-08
+
+### 🎁 New Features
+
+* Added support for new `sortOrder` argument to `XH.showBanner()`. A default sort order is applied
+  if unspecified, ensuring banners do not unexpectedly change order when refreshed.
+
+### ⚙️ Typescript API Adjustments
+
+* Improved the recommendation for the app `declare` statement within
+  our [TypeScript migration docs](https://github.com/xh/hoist-react/blob/develop/docs/upgrade-to-typescript.md#bootstrapts--service-declarations).
+    * See this [Toolbox commit](https://github.com/xh/toolbox/commit/8df642cf) for a small,
+      recommended app-level change to improve autocompletion and usage checks within IntelliJ.
+* Added generic support to `XH.message()` and `XH.prompt()` signatures with return type
+  of `Promise<T | boolean>`.
+* Moved declaration of optional `children` prop to base `HoistProps` interface - required for TSX
+  support.
+
+### ✨ Styles
+
+* Removed `--xh-banner-height` CSS var.
+    * Desktop banners are implemented via `Toolbar`, which correctly sets a min height.
+    * Mobile banners now specify `min-height: 40px` via the `.xh-banner` class.
+    * This change allows banners containing custom components to grow to fit their contents without
+      requiring app-level CSS overrides.
+* Added new `--xh-grid-filter-popover-[height|width]-px` CSS variables to support easier custom
+  sizing for grid column header filter popovers.
 
 ### ⚙️ Technical
-* This version requires an update to hoist-core v16.0.0
+
+* Updated internal config defaults to support latest AG Grid v29.3.4+ with use of
+  AG `suppressBrowserResizeObserver` config. Applications are encouraged to update to the latest AG
+  Grid dependencies to take advantage of ongoing performance updates.
+
+## v56.2.0 - 2023-04-28
+
+### 🎁 New Features
+
+* Added `DashContainerModel.margin` config to customize the width of the resize splitters
+  between widgets.
+
+### ⚙️ Technical
+
+* Improve scrolling performance for `Grid` and `DataView` via internal configuration updates.
+
+## v56.1.0 - 2023-04-14
+
+### 🎁 New Features
+
+* Display improved memory management diagnostics within Admin console Memory Monitor.
+    * New metrics require optional-but-recommended update to `hoist-core >= v16.1.0`.
+
+### 🐞 Bug Fixes
+
+* Fixes bug with display/reporting of exceptions during app initialization sequence.
+
+## v56.0.0 - 2023-03-29
+
+### 🎁 New Features
+
+* `PanelModel` now supports a `defaultSize` property specified in percentage as well as pixels
+  (e.g. `defaultSize: '20%'` as well as `defaultSize: 200`).
+* `DashCanvas` views can now be programmatically added with specified width and height dimensions.
+* New `FetchService.abort()` API allows manually aborting a pending fetch request.
+* Hoist exceptions have been enhanced and standardized, including new TypeScript types. The
+  `Error.cause` property is now populated for wrapping exceptions.
+* New `GridModel.headerMenuDisplay` config for limiting column header menu visibility to on hover.
+
+### 💥 Breaking Changes
+
+* Requires Hoist Core v16 or higher.
+* Requires AG Grid v29.0.0 or higher - update your AG Grid dependency in your app's `package.json`
+  file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for details.
+    * Add a dependency on `@ag-grid-community/styles` to import new dedicated styles package.
+    * Imports of AG Grid CSS files within your app's `Bootstrap.ts` file will also need to be
+      updated to import styles from their new location. The recommended imports are now:
+
+```typescript
+import '@ag-grid-community/styles/ag-grid.css';
+import '@ag-grid-community/styles/ag-theme-balham.css';
+```
+
+* New `xhActivityTrackingConfig` soft-configuration entry places new limits on the size of
+  any `data` objects passed to `XH.track()` calls.
+    * Any track requests with data objects exceeding this length will be persisted, but without the
+      requested data.
+    * Activity tracking can also be disabled (completely) via this same config.
+* "Local" preferences are no longer supported. Application should use `LocalStorageService` instead.
+  With v56, the `local` flag on any preferences will be ignored, and all preferences will be saved
+  on the server instead.
+    * Note that Hoist will execute a one-time migration of any existing local preference values
+      from the user's browser to the server on app load.
+* Removed `Column.tooltipElement`. Use `tooltip` instead.
+* Removed `fill` prop on `TextArea` and `NumberInput` component. Use `flex` instead.
+* Removed previously deprecated `Button.modifier.outline` and `Button.modifier.quiet` (mobile only).
+* Removed previously deprecated `AppMenuButton.extraItems.onClick`. Use `actionFn` instead.
+
+### ⚙️ Typescript API Adjustments
+
+* New Typescript types for all Hoist exceptions.
+* Integration of AG Grid community types.
+
+### ⚙️ Technical
+
+* Hoist source code has been reformatted with Prettier.
+* Admin Console modules that have been disabled via config are no longer hidden completely, but
+  instead will render a placeholder pointing to the relevant config name.
+
+### 📚 Libraries
+
+* mobx `6.7 -> 6.8`
+* dompurify `2.4 -> 3.0`
+
+## v55.4.0 - 2023-03-23
+
+### 💥 Breaking Changes
+
+* Requires AG Grid v29.0.0 or higher - see release notes for v56.0.0 above.
+
+### 🐞 Bug Fixes
+
+* Addresses `AgGrid` v28 regression whereby changing column visibility via state breaks grid
+  rendering when column groups are set via the `groupId` property.
+
+## v55.3.2 - 2023-03-22
+
+### 🐞 Bug Fixes
+
+* Fixed issue where a filter on a `LocalDate` field created via `FilterChooser` would cause a
+  grid column filter on the same field to fail to properly render when shown.
+
+## v55.3.1 - 2023-03-14
+
+### 🐞 Bug Fixes
+
 * Revert native `structuredClone` to lodash `deepClone` throughout toolkit.
 
 ## v55.3.0 - 2023-03-03
 
 ### 🐞 Bug Fixes
+
 * Grid column filters scroll their internal grid horizontally to avoid clipping longer values.
 * Minor improvements to the same grid filter dialog's alignment and labelling.
 
 ### ⚙️ Technical
+
 * Use native `structuredClone` instead of lodash `deepClone` throughout toolkit.
 
 ## v55.2.1 - 2023-02-24
@@ -348,9 +580,9 @@ to use TypeScript for its own app-level code.
   match. Previously only a class reference could be provided.
 * New check within service initialization to ensure that app service classes extend `HoistService`
   as required. (Has always been the expectation, but was not previously enforced.)
-* `GridModel` will once again immediately sync data with its underlying ag-Grid component. This
-  reverses a v50.0.0 change that introduced a minimal debounce in order to work around an ag-Grid
-  rendering bug. The ag-Grid bug has been resolved, and this workaround is no longer needed.
+* `GridModel` will once again immediately sync data with its underlying AG Grid component. This
+  reverses a v50.0.0 change that introduced a minimal debounce in order to work around an AG Grid
+  rendering bug. The AG Grid bug has been resolved, and this workaround is no longer needed.
 * `GridExportService` has improved support for columns of `FieldType.AUTO` and for columns with
   multiple data types and custom export functions. (`hoist-core >= 14.3` required for these
   particular improvements, but not for this Hoist React version in general.)
@@ -446,8 +678,8 @@ to use TypeScript for its own app-level code.
 
 ### 💥 Breaking Changes
 
-* Hoist now requires ag-Grid v28.0.0 or higher - update your ag-Grid dependency in your app's
-  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
+* Hoist now requires AG Grid v28.0.0 or higher - update your AG Grid dependency in your app's
+  `package.json` file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for details.
 * The data reactions between `GridModel` and the underlying Ag-Grid is now minimally debounced. This
   avoids multiple data updates during a single event loop tick, which can corrupt Ag-Grid's
   underlying state in the latest versions of that library.
@@ -611,9 +843,9 @@ to use TypeScript for its own app-level code.
 
 ### 💥 Breaking Changes
 
-* Hoist now requires ag-Grid v27.2.0 or higher - update your ag-Grid dependency in your app's
-  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
-  NOTE that ag-Grid 27 includes a big breaking change to render cell contents via native React
+* Hoist now requires AG Grid v27.2.0 or higher - update your AG Grid dependency in your app's
+  `package.json` file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for details.
+  NOTE that AG Grid 27 includes a big breaking change to render cell contents via native React
   elements rather than HTML, along with other major API changes. To accommodate these changes, the
   following changes are required in Hoist apps:
     * `Column.renderer` must now return a React Element rather than an HTML string (plain strings
@@ -630,7 +862,7 @@ to use TypeScript for its own app-level code.
 
 ### 🐞 Bug Fixes
 
-* Set ag-Grid's `suppressLastEmptyLineOnPaste` to true to work around a bug with Excel (Windows)
+* Set AG Grid's `suppressLastEmptyLineOnPaste` to true to work around a bug with Excel (Windows)
   that adds an empty line beneath the range pasted from the clipboard in editable grids.
 * Fixes an issue where `NumberInput` would initially render blank values if `max` or `min` were
   set.
@@ -750,11 +982,11 @@ to use TypeScript for its own app-level code.
 
 ### Technical
 
-* This release modifies our workaround to handle the ag-Grid v26 changes to cast all of their node
-  ids to strings. The initial approach in v46.0.0 - matching the ag-Grid behavior by casting all
+* This release modifies our workaround to handle the AG Grid v26 changes to cast all of their node
+  ids to strings. The initial approach in v46.0.0 - matching the AG Grid behavior by casting all
   `StoreRecord` ids to strings - was deemed too problematic for applications and has been reverted.
   Numerical ids in Store are once again fully supported.
-* To accommodate the ag-Grid changes, applications that are using ag-Grid APIs (e.g.
+* To accommodate the AG Grid changes, applications that are using AG Grid APIs (e.g.
   `agApi.getNode()`) should be sure to use the new property `StoreRecord.agId` to locate and compare
   records. We expect such usages to be rare in application code.
 
@@ -794,8 +1026,8 @@ to use TypeScript for its own app-level code.
 
 ### 💥 Breaking Changes
 
-* Hoist now requires ag-Grid v26.2.0 or higher - update your ag-Grid dependency in your app's
-  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/changelog) for details.
+* Hoist now requires AG Grid v26.2.0 or higher - update your AG Grid dependency in your app's
+  `package.json` file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for details.
 * ~~`StoreRecord.id` must now be a String. Integers IDs were previously supported, but will be cast
   Strings during record creation.~~
     * ~~Apps using numeric record IDs for internal or server-side APIs will need to be reviewed and
@@ -958,7 +1190,7 @@ to use TypeScript for its own app-level code.
   with the select library component and touch devices.
 * Ensure `Column.autosizeBufferPx` is respected if provided.
 
-### ✨ Style
+### ✨ Styles
 
 * New `--xh-menu-item` CSS vars added, with tweaks to default desktop menu styling.
 * Highlight background color added to mobile menu items while pressed.
@@ -1002,7 +1234,7 @@ to use TypeScript for its own app-level code.
 ### 🐞 Bug Fixes
 
 * Always enforce a minimal `wait()` within `GridModel.autosizeAsync()` to ensure that the Grid has
-  reacted to any data changes and ag-Grid accurately reports on expanded rows to measure.
+  reacted to any data changes and AG Grid accurately reports on expanded rows to measure.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v43.1.0...v43.2.0)
 
@@ -1082,7 +1314,7 @@ to use TypeScript for its own app-level code.
 * Triggering inline editing of text or select editor cells by typing characters will no longer lose
   the first character pressed.
 
-### ✨ Style
+### ✨ Styles
 
 * New `TreeStyle.COLORS` and `TreeStyle.COLORS_AND_BORDERS` tree grid styles have been added. Use
   the `--xh-grid-tree-group-color-level-*` CSS vars to customize colors as needed.
@@ -1124,7 +1356,7 @@ to use TypeScript for its own app-level code.
   `agOptions`.
 * Fixes an issue on iOS where `NumberInput` would incorrectly bring up a text keyboard.
 
-### ✨ Style
+### ✨ Styles
 
 * Reduced default Grid header and group row heights to minimize their use of vertical space,
   especially at larger sizing modes. As before, apps can override via the `AgGrid.HEADER_HEIGHTS`
@@ -1149,7 +1381,7 @@ to use TypeScript for its own app-level code.
 * The in-app changelog will no longer prompt the user with the "What's New" button if category-based
   filtering results in a version without any release notes.
 
-### ✨ Style
+### ✨ Styles
 
 * New CSS vars added to support easier customization of desktop Tab font/size/color. Tabs now
   respect standard `--xh-font-size` by default.
@@ -1171,7 +1403,7 @@ to use TypeScript for its own app-level code.
 * Mobile `Select` input now supports async `queryFn` prop for parity with desktop.
 * `TreeMapModel` now supports new `maxLabels` config for improved performance.
 
-### ✨ Style
+### ✨ Styles
 
 * Hoist's default font is now [Inter](https://rsms.me/inter/), shipped and bundled via the
   `inter-ui` npm package. Inter is a modern, open-source font that leverages optical sizing to
@@ -1232,7 +1464,7 @@ to use TypeScript for its own app-level code.
 
 * Fixed an issue preventing `FormField` labels from rendering if `fieldDefaults` was undefined.
 
-### ✨ Style
+### ✨ Styles
 
 * New `Badge.compact` prop sets size to half that of parent element when true (default false). The
   `position` prop has been removed in favor of customizing placement of the component.
@@ -1286,7 +1518,7 @@ to use TypeScript for its own app-level code.
       and
       `selectedIds`, respectively, in `StoreSelectionModel`
 
-### ✨ Style
+### ✨ Styles
 
 * Higher contrast on grid context menus for improved legibility.
 
@@ -1350,11 +1582,11 @@ to use TypeScript for its own app-level code.
   now be called without any args to establish a Promise chain and/or introduce a minimal amount of
   asynchronousity.
 * ⚠ Note that the raw `AgGrid` component no longer enhances the native keyboard handling provided by
-  ag-Grid. All Hoist key handling customizations are now limited to `Grid`. If you wish to provide
+  AG Grid. All Hoist key handling customizations are now limited to `Grid`. If you wish to provide
   custom handling in a raw `AgGrid` component, see the example here:
   https://www.ag-grid.com/javascript-grid/row-selection/#example-selection-with-keyboard-arrow-keys
 
-### ✨ Style
+### ✨ Styles
 
 * The red and green color values applied in dark mode have been lightened for improved legibility.
 * The default `colorSpec` config for number formatters has changed to use new dedicated CSS classes
@@ -1410,7 +1642,7 @@ to use TypeScript for its own app-level code.
 * `withShortDebug` has been deprecated. Use `withDebug` instead, which has the identical behavior.
   This API simplification mirrors a recent change to `hoist-core`.
 
-### ✨ Style
+### ✨ Styles
 
 * If the first child of a `Placeholder` component is a Hoist icon, it will not automatically be
   styled to 4x size with reduced opacity. (See new Toolbox example under the "Other" tab.)
@@ -1490,8 +1722,8 @@ to use TypeScript for its own app-level code.
   values from dominating the color range of the TreeMap.
 * The classes `Rule` and `ValidationState` and all constraint functions (e.g. `required`,
   `validEmail`, `numberIs`, etc.) have been moved from the `cmp\form` package to the `data` package.
-* Hoist grids now require ag-Grid v25.3.0 or higher - update your ag-Grid dependency in your app's
-  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
+* Hoist grids now require AG Grid v25.3.0 or higher - update your AG Grid dependency in your app's
+  `package.json` file. See the [AG Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
   details.
 * Hoist charts now require Highcharts v9.1.0 or higher - update your Highcharts dependency in your
   app's `package.json` file. See the
@@ -1579,7 +1811,7 @@ your dev-utils dependency for your project to build.
 * Improvements to exception serialization, especially for any raw javascript `Error` thrown by
   client-side code.
 
-### ✨ Style
+### ✨ Styles
 
 * Buttons nested inline within desktop input components (e.g. clear buttons) tweaked to avoid
   odd-looking background highlight on hover.
@@ -1650,8 +1882,8 @@ your dev-utils dependency for your project to build.
     * This change allows Hoist to defer construction of the `AppModel` until Hoist itself has been
       initialized, and also better reflects the special status of this function and when it is
       called in the Hoist lifecycle.
-* Hoist grids now require ag-Grid v25.1.0 or higher - update your ag-Grid dependency in your app's
-  `package.json` file. See the [ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
+* Hoist grids now require AG Grid v25.1.0 or higher - update your AG Grid dependency in your app's
+  `package.json` file. See the [AG Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
   details.
 
 ### ⚙️ Technical
@@ -1691,7 +1923,7 @@ your dev-utils dependency for your project to build.
 ### 🐞 Bug Fixes
 
 * Fix to edge-case where `Grid` would lose its selection if set on the model prior to the component
-  mounting and ag-Grid full rendering.
+  mounting and AG Grid full rendering.
 * Fix to prevent unintended triggering of app auto-refresh immediately after init.
 
 ### ⚙️ Technical
@@ -1810,7 +2042,7 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 
 * All `HoistModel` and `HoistService` classes must be adjusted as described above.
 * `@HoistComponent` has been deprecated and moved to `@xh\hoist\deprecated`
-* Hoist grids now require ag-Grid v25.0.1 or higher - if your app uses ag-Grid, update your ag-Grid
+* Hoist grids now require AG Grid v25.0.1 or higher - if your app uses AG Grid, update your AG Grid
   dependency in your app's `package.json` file.
 * The `uses()` function (called within `hoistComponent()` factory configs for model context lookups)
   and the `useContextModel()` function no longer accept class names as strings. Pass the class
@@ -1906,10 +2138,10 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
       a
       `HoistInputModel`. In order to get the DOM element associated with the component use the new
       `domEl` property of that model rather than the`HoistComponent.getDOMNode()` method.
-* Hoist grids now require ag-Grid v24.1.0 or higher - update your ag-Grid dependency in your app's
-  `package.json` file. ag-Grid v24.1.0
+* Hoist grids now require AG Grid v24.1.0 or higher - update your AG Grid dependency in your app's
+  `package.json` file. AG Grid v24.1.0
   [lists 5 breaking changes](https://www.ag-grid.com/ag-grid-changelog/), including the two called
-  out below. *Note that these cautions apply only to direct use of the ag-Grid APIs* - if your app
+  out below. *Note that these cautions apply only to direct use of the AG Grid APIs* - if your app
   is using the Hoist `Grid` and `GridModel` exclusively, there should be no need to adjust code
   around columns or grid state, as the related Hoist classes have been updated to handle these
   changes.
@@ -1932,7 +2164,7 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 * Fix issue where grid row striping inadvertently disabled by default for non-tree grids.
 * Fix issue where grid empty text cleared on autosize.
 
-### ✨ Style
+### ✨ Styles
 
 * Default `Chart` themes reworked in both light and dark modes to better match overall Hoist theme.
 
@@ -2241,7 +2473,7 @@ below regarding related updates to `GridModel.columns` config processing.
     * `StoreFilterField.filterOptions` has been removed. Set `filterIncludesChildren` directly on
       the store instead.
 
-### ✨ Style
+### ✨ Styles
 
 * CSS variables for "intents" - most commonly used on buttons - have been reworked to use HSL color
   values and support several standard variations of lightness and transparency.
@@ -2418,12 +2650,12 @@ wide variety of enterprise software projects. For any questions regarding this c
 * `PinPad` and `PinPadModel` have been moved to `@xh/hoist/cmp/pinpad`, and is now available for use
   with both standard and mobile toolkits.
 * Third-party dependencies updated to properly reflect application-level licensing requirements.
-  Applications must now import and provide their licensed version of ag-Grid, and Highcharts to
+  Applications must now import and provide their licensed version of AG Grid, and Highcharts to
   Hoist. See file `Bootstrap.js` in Toolbox for an example.
 
 ### 🐞 Bug Fixes
 
-* Sorting special columns generated by custom ag-Grid configurations (e.g. auto-group columns) no
+* Sorting special columns generated by custom AG Grid configurations (e.g. auto-group columns) no
   longer throws with an error.
 * The `deepFreeze()` util - used to freeze data in `Record` instances - now only attempts to freeze
   a whitelist of object types that are known to be safely freezable. Custom application classes and
@@ -2444,7 +2676,7 @@ project, as per note in Breaking Changes above.
 
 ### 📚 Optional Libraries
 
-* ag-Grid `23.0.2` > `23.2.0` (See Toolbox app for example on this upgrade)
+* AG Grid `23.0.2` > `23.2.0` (See Toolbox app for example on this upgrade)
 * Highcharts `8.0.4 -> 8.1.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v34.0.0...v35.0.0)
@@ -2546,7 +2778,7 @@ project, as per note in Breaking Changes above.
 
 ### 🎁 New Features
 
-* Added smart auto-resizing of columns in `GridModel` Unlike ag-Grid's native auto-resizing support,
+* Added smart auto-resizing of columns in `GridModel` Unlike AG Grid's native auto-resizing support,
   Hoist's auto-resizing will also take into account collapsed rows, off-screen cells that are not
   currently rendered in the DOM, and summary rows. See the new `GridAutosizeService` for details.
     * This feature is currently marked as 'experimental' and must be enabled by passing a special
@@ -2669,15 +2901,15 @@ project, as per note in Breaking Changes above.
 
 ### 🐞 Bug Fixes
 
-* Suppresses a console warning from ag-Grid for `GridModel`s that do not specify an `emptyText`.
+* Suppresses a console warning from AG Grid for `GridModel`s that do not specify an `emptyText`.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v32.0.2...v32.0.3)
 
 ## v32.0.2 - 2020-04-03
 
-⚠ Note that this release includes a *new major version of ag-Grid*. Please consult the
-[ag-Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for versions 22-23 to review
-possible breaking changes to any direct/custom use of ag-Grid APIs and props within applications.
+⚠ Note that this release includes a *new major version of AG Grid*. Please consult the
+[AG Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for versions 22-23 to review
+possible breaking changes to any direct/custom use of AG Grid APIs and props within applications.
 
 ### 🎁 New Features
 
@@ -2717,7 +2949,7 @@ possible breaking changes to any direct/custom use of ag-Grid APIs and props wit
 
 ### ⚙️ Technical
 
-* Flex columns now use the built-in ag-Grid flex functionality.
+* Flex columns now use the built-in AG Grid flex functionality.
 
 ### 📚 Libraries
 
@@ -3022,7 +3254,7 @@ Note the following more specific changes to these related classes:
 
 ### 🎁 New Features
 
-* Added keyboard support to ag-Grid context menus.
+* Added keyboard support to AG Grid context menus.
 * Added `GridModel.setEmptyText()` to allow updates to placeholder text after initial construction.
 * Added `GridModel.ensureSelectionVisible()` to scroll the currently selected row into view.
 * When a `TreeMap` is bound to a `GridModel`, the grid will now respond to map selection changes by
@@ -3179,7 +3411,7 @@ Note the following more specific changes to these related classes:
 ### 🐞 Bug Fixes
 
 * Tree columns can now specify `renderer` or `elementRenderer` configs without breaking the standard
-  ag-Grid group cell renderer auto-applied to tree columns (#1397).
+  AG Grid group cell renderer auto-applied to tree columns (#1397).
 * Use of a custom `Column.comparator` function will no longer break agGrid-provided column header
   filter menus (#1400).
 * The MS Edge browser does not return a standard Promise from `async` functions, so the the return
@@ -3189,9 +3421,9 @@ Note the following more specific changes to these related classes:
 
 ### ⚙️ Technical
 
-* Grid column group headers now use a custom React component instead of the default ag-Grid column
+* Grid column group headers now use a custom React component instead of the default AG Grid column
   header, resulting in a different DOM structure and CSS classes. Existing CSS overrides of the
-  ag-Grid column group headers may need to be updated to work with the new structure/classes.
+  AG Grid column group headers may need to be updated to work with the new structure/classes.
 * We have configured `stylelint` to enforce greater consistency in our stylesheets within this
   project. The initial linting run resulted in a large number of updates to our SASS files, almost
   exclusively whitespace changes. No functional changes are intended/expected. We have also enabled
@@ -3370,14 +3602,14 @@ leverage the context for model support discussed above.
     * `Store.addData()` has been removed. Use `Store.updateData()` instead.
 * `Column` takes an additional property `rendererIsComplex`. Application must set this flag to
   `true` to indicate if a column renderer uses values other than its own bound field. This change
-  provides an efficiency boost by allowing ag-Grid to use its default change detection instead of
+  provides an efficiency boost by allowing AG Grid to use its default change detection instead of
   forcing a cell refresh on any change.
 
 ### ⚙️ Technical
 
-* `Grid` will now update the underlying ag-Grid using ag-Grid transactions rather than relying on
+* `Grid` will now update the underlying AG Grid using AG Grid transactions rather than relying on
   agGrid `deltaRowMode`. This is intended to provide the best possible grid performance and
-  generally streamline the use of the ag-Grid Api.
+  generally streamline the use of the AG Grid Api.
 
 ### 🐞 Bug Fixes
 
@@ -3448,8 +3680,8 @@ leverage the context for model support discussed above.
 
 ### ⚙️ Technical
 
-* `AgGridModel` will now throw an exception if any of its methods which depend on ag-Grid state are
-  called before the grid has been fully initialized (ag-Grid onGridReady event has fired).
+* `AgGridModel` will now throw an exception if any of its methods which depend on AG Grid state are
+  called before the grid has been fully initialized (AG Grid onGridReady event has fired).
   Applications can check the new `isReady` property on `AgGridModel` before calling such methods
   to️️ verify the grid is fully initialized.
 
@@ -3590,7 +3822,7 @@ leverage the context for model support discussed above.
 * When checking for a possible expired session within `XH.handleException()`, prompt for app login
   only for Ajax requests made to relative URLs (not e.g. remote APIs accessed via CORS). #1189
 
-### ✨ Style
+### ✨ Styles
 
 * Panel splitter collapse button more visible in dark theme. CSS vars to customize further fixed.
 * The mobile app menu button has been moved to the right side of the top appBar, consistent with its
@@ -3628,7 +3860,7 @@ leverage the context for model support discussed above.
   summaryRecord (see above) as either a pinned top or bottom row.
 * `GridModel` also adds a `enableColumnPinning` config to enable/disable user-driven pinning. On
   desktop, if enabled, users can pin columns by dragging them to the left or right edges of the grid
-  (the default ag-Grid gesture). Column pinned state is now also captured and maintained by the
+  (the default AG Grid gesture). Column pinned state is now also captured and maintained by the
   overall grid state system.
 * The desktop column chooser now options in a non-modal popover when triggered from the standard
   `ColChooserButton` component. This offers a quicker and less disruptive alternative to the modal
@@ -3752,13 +3984,13 @@ leverage the context for model support discussed above.
 * A new `DockContainer` component provides a user-friendly way to render multiple child components
   "docked" to its bottom edge. Each child view is rendered with a configurable header and controls
   to allow the user to expand it, collapse it, or optionally "pop it out" into a modal dialog.
-* A new `AgGrid` component provides a much lighter Hoist wrapper around ag-Grid while maintaining
-  consistent styling and layout support. This allows apps to use any features supported by ag-Grid
+* A new `AgGrid` component provides a much lighter Hoist wrapper around AG Grid while maintaining
+  consistent styling and layout support. This allows apps to use any features supported by AG Grid
   without conflicting with functionality added by the core Hoist `Grid`.
     * Note that this lighter wrapper lacks a number of core Hoist features and integrations,
       including store support, grid state, enhanced column and renderer APIs, absolute value
       sorting, and more.
-    * An associated `AgGridModel` provides access to to the ag-Grid APIs, minimal styling configs,
+    * An associated `AgGridModel` provides access to to the AG Grid APIs, minimal styling configs,
       and several utility methods for managing Grid state.
 * Added `GridModel.groupSortFn` config to support custom group sorting (replaces any use of
   `agOptions.defaultGroupSortComparator`).
@@ -3783,14 +4015,14 @@ leverage the context for model support discussed above.
 ### ⚙️ Technical
 
 * `Grid` now performs an important performance workaround when loading a new dataset that would
-  result in the removal of a significant amount of existing records/rows. The underlying ag-Grid
+  result in the removal of a significant amount of existing records/rows. The underlying AG Grid
   component has a serious bottleneck here (acknowledged as AG-2879 in their bug tracker). The Hoist
   grid wrapper will now detect when this is likely and proactively clear all data using a different
   API call before loading the new dataset.
 * The implementations `Store`, `RecordSet`, and `Record` have been updated to more efficiently
   re-use existing record references when loading, updating, or filtering data in a store. This keeps
   the Record objects within a store as stable as possible, and allows additional optimizations by
-  ag-Grid and its `deltaRowDataMode`.
+  AG Grid and its `deltaRowDataMode`.
 * When loading raw data into store `Record`s, Hoist will now perform additional conversions based on
   the declared `Field.type`. The unused `Field.nullable` has been removed.
 * `LocalStorageService` now uses both the `appCode` and current username for its namespace key,
@@ -3816,7 +4048,7 @@ leverage the context for model support discussed above.
 
 ### 📚 Libraries
 
-* Rollback ag-Grid to v20.0.0 after running into new performance issues with large datasets and
+* Rollback AG Grid to v20.0.0 after running into new performance issues with large datasets and
   `deltaRowDataMode`. Updates to tree filtering logic, also related to grid performance issues with
   filtered tree results returning much larger record counts.
 
@@ -3829,7 +4061,7 @@ leverage the context for model support discussed above.
 * An app can also now specify default headers to be sent with every fetch request via
   `XH.fetchService.setDefaultHeaders()`. You can pass either a plain object, or a closure which
   returns one.
-* `Grid` supports a new `onGridReady` prop, allowing apps to hook into the ag-Grid event callback
+* `Grid` supports a new `onGridReady` prop, allowing apps to hook into the AG Grid event callback
   without inadvertently short-circuiting the Grid's own internal handler.
 
 ### 💥 Breaking Changes
@@ -3847,7 +4079,7 @@ leverage the context for model support discussed above.
 * FetchService's fetch methods no longer support `acceptJson` parameter. Instead, pass an {"Accept":
   "application/json"} header using the `headers` parameter.
 
-### ✨ Style
+### ✨ Styles
 
 * Black point + grid colors adjusted in dark theme to better blend with overall blue-gray tint.
 * Mobile styles have been adjusted to increase the default font size and grid row height, in
@@ -3862,7 +4094,7 @@ leverage the context for model support discussed above.
 
 ### 📚 Libraries
 
-* ag-Grid `~20.1 -> ~20.2` (fixes ag-grid sorting bug with treeMode)
+* AG Grid `~20.1 -> ~20.2` (fixes ag-grid sorting bug with treeMode)
 * @blueprint/core `3.14 -> 3.15`
 * @blueprint/datetime `3.7 -> 3.8`
 * react-dropzone `10.0 -> 10.1`
@@ -4018,7 +4250,7 @@ leverage the context for model support discussed above.
 
 * @blueprintjs/core `3.13 -> 3.14`
 * @xh/hoist-dev-utils `3.5 -> 3.6`
-* ag-Grid `~20.0 -> ~20.1`
+* ag-grid `~20.0 -> ~20.1`
 * react-dropzone `~8.0 -> ~9.0`
 * react-select `~2.3 -> ~2.4`
 * router5 `~6.6 -> ~7.0`
@@ -4066,7 +4298,7 @@ leverage the context for model support discussed above.
 
 ### 💥 Breaking Changes
 
-* ag-Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
+* AG Grid has been updated to v20.0.0. Most apps shouldn't require any changes - however, if you are
   using `agOptions` to set sorting, filtering or resizing properties, these may need to change:
 
   For the `Grid`, `agOptions.enableColResize`, `agOptions.enableSorting`
@@ -4093,7 +4325,7 @@ leverage the context for model support discussed above.
 ### 📚 Libraries
 
 * @blueprintjs/core `3.12 -> 3.13`
-* ag-Grid `~19.1.4 -> ~20.0.0`
+* ag-grid `~19.1.4 -> ~20.0.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v18.1.2...v19.0.0)
 
@@ -4298,7 +4530,7 @@ leverage the context for model support discussed above.
 
 * Support for ComboBoxes and Dropdowns have been improved dramatically, via a new `Select` component
   based on react-select.
-* The ag-Grid based `Grid` and `GridModel` are now available on both mobile and desktop. We have
+* The AG Grid based `Grid` and `GridModel` are now available on both mobile and desktop. We have
   also added new support for multi-row/multi-field columns via the new `multiFieldRenderer` renderer
   function.
 * The app initialization lifecycle has been restructured so that no App classes are constructed
@@ -4339,7 +4571,7 @@ leverage the context for model support discussed above.
 
 ### ⚙️ Technical
 
-* ag-Grid has been upgraded to v19.1
+* AG Grid has been upgraded to v19.1
 * mobx has been upgraded to v5.6
 * React has been upgraded to v16.6
 * Allow browsers with proper support for Proxy (e.g Edge) to access Hoist Applications.
@@ -4409,7 +4641,7 @@ list. Note, this component is being replaced in Hoist v16 by the react-select li
 
 * Upgraded hoist-dev-utils to 3.0.3. Client builds now use the latest Webpack 4 and Babel 7 for
   noticeably faster builds and recompiles during CI and at development time.
-* GridModel now has a top-level agColumnApi property to provide a direct handle on the ag-Grid
+* GridModel now has a top-level agColumnApi property to provide a direct handle on the AG Grid
   Column API object.
 
 ### ⚙️ Technical
@@ -4463,12 +4695,12 @@ list. Note, this component is being replaced in Hoist v16 by the react-select li
   StoreContextMenu supports a new "expandCollapseAll" string token to insert context menu items.
   These are added to the default menu, but auto-hide when the grid is not in a grouped state.
 * The Grid component provides a new onKeyDown prop, which takes a callback and will fire on any
-  keypress targeted within the Grid. Note such a handler is not provided directly by ag-Grid.
+  keypress targeted within the Grid. Note such a handler is not provided directly by AG Grid.
 * The Column class supports pinned as a top-level config. Supports passing true to pin to the left.
 
 ### 🐞 Bug Fixes
 
-* Updates to Grid column widths made via ag-Grid's "autosize to fit" API are properly persisted to
+* Updates to Grid column widths made via AG Grid's "autosize to fit" API are properly persisted to
   grid state.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v14.0.0...v14.1.0)
@@ -4652,7 +4884,7 @@ Hoist React v12 is a relatively large release, with multiple refactorings around
 #### ⭐️ Grid Columns
 
 **A new `Column` class describes a top-level API for columns and their supported options** and is
-intended to be a cross-platform layer on top of ag-Grid and TBD mobile grid implementations.
+intended to be a cross-platform layer on top of AG Grid and TBD mobile grid implementations.
 
 * The desktop `GridModel` class now accepts a collection of `Column` configuration objects to define
   its available columns.
@@ -4668,8 +4900,8 @@ intended to be a cross-platform layer on top of ag-Grid and TBD mobile grid impl
   provided the value, the row-level record, and a metadata object with the column's `colId`. An
   `elementRenderer` config is also available for cells that should render a Component.
 * An `agOptions` config key continues to provide a way to pass arbitrary options to the underlying
-  ag-Grid instance (for desktop implementations). This is considered an "escape hatch" and should be
-  used with care, but can provide a bridge to required ag-Grid features as the Hoist-level API
+  AG Grid instance (for desktop implementations). This is considered an "escape hatch" and should be
+  used with care, but can provide a bridge to required AG Grid features as the Hoist-level API
   continues to develop.
 * The "factory pattern" for Column templates / defaults has been removed, replaced by a simpler
   approach that recommends exporting simple configuration partials and spreading them into
@@ -4764,7 +4996,7 @@ resizing and collapsing behavior** (#534).
       and be available as public CSS selectors.
 * Relevant `HoistField` components support inline `leftIcon` and `rightElement` props. `DayField`
   adds support for `minDay / maxDay` props.
-* Styling for the built-in ag-Grid loading overlay has been simplified and improved (#401).
+* Styling for the built-in AG Grid loading overlay has been simplified and improved (#401).
 * Grid column definitions can now specify an `excludeFromExport` config to drop them from
   server-generated Excel/CSV exports (#485).
 
@@ -4787,7 +5019,7 @@ resizing and collapsing behavior** (#534).
 ### 🐞 Bug Fixes
 
 * Grid `export` context menu token now defaults to server-side 'exportExcel' export.
-    * Specify the `exportLocal` token to return a menu item for local ag-Grid export.
+    * Specify the `exportLocal` token to return a menu item for local AG Grid export.
 * Columns with `field === null` skipped for server-side export (considered spacer / structural
   columns).
 
@@ -4850,14 +5082,14 @@ resizing and collapsing behavior** (#534).
     * ⚠️ Note this also involved a change to the `TabContainerModel` API - `activateTab()` is now
       the public method to set the active tab and ensure both the tab and the route land in the
       correct state.
-* Remove unintended focused cell borders that came back with the prior ag-Grid upgrade.
+* Remove unintended focused cell borders that came back with the prior AG Grid upgrade.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v8.0.0...v9.0.0)
 
 ## v8.0.0
 
 Hoist React v8 brings a big set of improvements and fixes, some API and package re-organizations,
-and ag-Grid upgrade, and more. 🚀
+and AG Grid upgrade, and more. 🚀
 
 ### 💥 Breaking Changes
 
@@ -4957,7 +5189,7 @@ and ag-Grid upgrade, and more. 🚀
 
 ### 🐞 Bug Fixes
 
-* Improvements to `Grid` component's interaction with underlying ag-Grid instance, avoiding extra
+* Improvements to `Grid` component's interaction with underlying AG Grid instance, avoiding extra
   renderings and unwanted loss of state. 03de0ae7
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v6.0.0...v7.0.0)
@@ -5089,7 +5321,7 @@ and ag-Grid upgrade, and more. 🚀
 
 ------------------------------------------
 
-Copyright © 2022 Extremely Heavy Industries Inc. - all rights reserved
+Copyright © 2023 Extremely Heavy Industries Inc. - all rights reserved
 
 ------------------------------------------
 

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {errorBoundary} from '@xh/hoist/appcontainer/ErrorBoundary';
@@ -53,8 +53,8 @@ export const AppContainer = hoistCmp({
     displayName: 'AppContainer',
     model: uses(AppContainerModel),
 
-    render() {
-        useOnMount(() => XH.initAsync());
+    render({model}) {
+        useOnMount(() => model.initAsync());
 
         return fragment(
             errorBoundary(viewForState()),
@@ -89,10 +89,10 @@ function viewForState() {
     }
 }
 
-const lockoutView = hoistCmp.factory({
+const lockoutView = hoistCmp.factory<AppContainerModel>({
     displayName: 'LockoutView',
-    render() {
-        const content = XH.appSpec.lockoutPanel ?? lockoutPanel;
+    render({model}) {
+        const content = model.appSpec.lockoutPanel ?? lockoutPanel;
         return elementFromContent(content);
     }
 });
@@ -107,7 +107,9 @@ const appContainerView = hoistCmp.factory<AppContainerModel>({
                 bannerList(),
                 refreshContextView({
                     model: model.refreshContextModel,
-                    item: frame(createElement(XH.appSpec.componentClass, {model: XH.appModel}))
+                    item: frame(
+                        createElement(model.appSpec.componentClass, {model: model.appModel})
+                    )
                 }),
                 versionBar()
             ),
@@ -133,10 +135,10 @@ const bannerList = hoistCmp.factory<AppContainerModel>({
     }
 });
 
-const suspendedView = hoistCmp.factory({
-    render() {
-        if (XH.suspendData?.reason === 'IDLE') {
-            const content = XH.appSpec.idlePanel ?? idlePanel;
+const suspendedView = hoistCmp.factory<AppContainerModel>({
+    render({model}) {
+        if (model.appStateModel.suspendData?.reason === 'IDLE') {
+            const content = model.appSpec.idlePanel ?? idlePanel;
             return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
         }
         return suspendPanel();

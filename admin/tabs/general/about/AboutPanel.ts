@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {div, h2, hbox, span, table, tbody, td, th, tr, a, p} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
@@ -91,13 +91,14 @@ function renderBlurb() {
             xhLogo(),
             div(
                 p(
-                    'Built with Hoist: a plugin for rich web-application development provided by ',
+                    'Built with Hoist, a toolkit for rapid application development from ',
                     a({
-                        href: 'http://xh.io',
+                        href: 'https://xh.io',
                         target: '_blank',
                         rel: 'noopener noreferrer',
                         item: 'Extremely Heavy'
-                    })
+                    }),
+                    '.'
                 ),
                 p(
                     'Please contact ',

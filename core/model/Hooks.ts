@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {useContext, useEffect, useState} from 'react';
@@ -67,7 +67,7 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
     if (isLinking) {
         model._modelLookup = modelLookup;
         each(model['_xhInjectedParentProperties'], (selector, name) => {
-            const parentModel = modelLookup.lookupModel(selector);
+            const parentModel = modelLookup?.lookupModel(selector);
             if (!parentModel) {
                 throw XH.exception(
                     `Failed to resolve @lookup for property '${name}' with selector ${formatSelector(
@@ -81,7 +81,7 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
 
         // Linked models with an impl parent that are not explicitly marked should be marked as impl.
         if (isUndefined(model.xhImpl)) {
-            const parentModel = modelLookup.lookupModel('*');
+            const parentModel = modelLookup?.lookupModel('*');
             if (parentModel?.xhImpl === true) {
                 model.xhImpl = true;
             }

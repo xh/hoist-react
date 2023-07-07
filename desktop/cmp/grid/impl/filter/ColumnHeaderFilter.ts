@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {div, filler} from '@xh/hoist/cmp/layout';
@@ -15,6 +15,7 @@ import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {stopPropagation} from '@xh/hoist/utils/js';
 import './ColumnHeaderFilter.scss';
+import classNames from 'classnames';
 import {ColumnHeaderFilterModel} from './ColumnHeaderFilterModel';
 
 /**
@@ -30,7 +31,11 @@ export const columnHeaderFilter = hoistCmp.factory({
         const {isOpen, hasFilter} = model;
         return popover({
             isOpen,
-            className: 'xh-column-header-filter__icon',
+            className: classNames(
+                'xh-column-header-filter__icon',
+                isOpen ? 'xh-column-header-filter__icon--open' : null,
+                hasFilter ? 'xh-column-header-filter__icon--active' : null
+            ),
             popoverClassName: 'xh-popup--framed',
             position: 'right-top',
             boundary: 'viewport',

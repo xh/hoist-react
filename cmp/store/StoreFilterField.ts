@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {DefaultHoistProps, hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
-import {Filter, Store} from '@xh/hoist/data';
+import {FilterTestFn, Store} from '@xh/hoist/data';
 import {storeFilterFieldImpl as desktopStoreFilterFieldImpl} from '@xh/hoist/dynamics/desktop';
 import {storeFilterFieldImpl as mobileStoreFilterFieldImpl} from '@xh/hoist/dynamics/mobile';
 import {StoreFilterFieldImplModel} from './impl/StoreFilterFieldImplModel';
@@ -64,7 +64,7 @@ export interface StoreFilterFieldProps extends DefaultHoistProps {
      * in order to manually apply the filter of this component to a store.
      * NOTE that calls to this function are NOT buffered and will be made on each keystroke.
      */
-    onFilterChange?: (filter: Filter) => any;
+    onFilterChange?: (filter: FilterTestFn) => any;
 
     /** Text to display when the input is empty. */
     placeholder?: string;

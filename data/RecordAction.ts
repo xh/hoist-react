@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {isBoolean, isEmpty, isNil, isNumber, isString} from 'lodash';
@@ -207,5 +207,5 @@ export class RecordAction {
 
 interface DisplayFnData extends ActionFnData {
     /** Default display config for the action */
-    defaultConfig?: Record<string, any>;
+    defaultConfig?: PlainObject;
 }

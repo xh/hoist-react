@@ -2,9 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH, Exception, PlainObject, Thunkable} from '@xh/hoist/core';
+import {HoistService, XH, Exception, PlainObject, Thunkable, FetchResponse} from '@xh/hoist/core';
 import {isLocalDate, SECONDS, ONE_MINUTE, olderThan} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
@@ -41,6 +41,27 @@ export class FetchService extends HoistService {
     defaultHeaders = {};
     defaultTimeout = (30 * SECONDS) as any;
 
+    override async initAsync() {
+        // pre-flight to allows clean recognition when we have no server.
+        try {
+            await this.fetch({url: 'ping'});
+        } catch (e) {
+            const {baseUrl} = XH,
+                pingURL = baseUrl.startsWith('http')
+                    ? `${baseUrl}ping`
+                    : `${window.location.origin}${baseUrl}ping`;
+
+            throw XH.exception({
+                name: 'UI Server Unavailable',
+                detail: e.message,
+                message:
+                    'Client cannot reach UI server.  Please check UI server at the ' +
+                    `following location: ${pingURL}`,
+                logOnServer: false
+            });
+        }
+    }
+
     /**
      * Set default headers to be sent with all subsequent requests.
      * @param headers - to be sent with all fetch requests, or a function to generate.
@@ -61,15 +82,13 @@ export class FetchService extends HoistService {
      * Send a request via the underlying fetch API.
      * @returns Promise which resolves to a Fetch Response.
      */
-    fetch(opts: FetchOptions): Promise<any> {
-        return this.managedFetchAsync(opts, aborter =>
-            this.fetchInternalAsync(opts, aborter)
-        ) as any;
+    fetch(opts: FetchOptions): Promise<FetchResponse> {
+        return this.managedFetchAsync(opts, aborter => this.fetchInternalAsync(opts, aborter));
     }
 
     /**
      * Send an HTTP request and decode the response as JSON.
-     * @returns the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response has status in {@link NO_JSON_RESPONSES}.
      */
     fetchJson(opts: FetchOptions): Promise<any> {
         return this.managedFetchAsync(opts, async aborter => {
@@ -80,13 +99,17 @@ export class FetchService extends HoistService {
                 },
                 aborter
             );
-            return this.NO_JSON_RESPONSES.includes(r.status) ? null : r.json();
-        }) as any;
+            if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
+
+            return r.json().catchWhen('SyntaxError', e => {
+                throw Exception.fetchJsonParseError(opts, e);
+            });
+        });
     }
 
     /**
      * Send a GET request and decode the response as JSON.
-     * @returns the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
     getJson(opts: FetchOptions): Promise<any> {
         return this.fetchJson({method: 'GET', ...opts});
@@ -94,7 +117,7 @@ export class FetchService extends HoistService {
 
     /**
      * Send a POST request with a JSON body and decode the response as JSON.
-     * @returns the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
     postJson(opts: FetchOptions): Promise<any> {
         return this.sendJsonInternalAsync({method: 'POST', ...opts});
@@ -102,7 +125,7 @@ export class FetchService extends HoistService {
 
     /**
      * Send a PUT request with a JSON body and decode the response as JSON.
-     * @returns the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
     putJson(opts: FetchOptions): Promise<any> {
         return this.sendJsonInternalAsync({method: 'PUT', ...opts});
@@ -110,7 +133,7 @@ export class FetchService extends HoistService {
 
     /**
      * Send a PATCH request with a JSON body and decode the response as JSON.
-     * @returns the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
     patchJson(opts: FetchOptions): Promise<any> {
         return this.sendJsonInternalAsync({method: 'PATCH', ...opts});
@@ -118,7 +141,7 @@ export class FetchService extends HoistService {
 
     /**
      * Send a DELETE request with optional JSON body and decode the optional response as JSON.
-     * @returns the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
     deleteJson(opts: FetchOptions): Promise<any> {
         return this.sendJsonInternalAsync({method: 'DELETE', ...opts});
@@ -142,7 +165,10 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
-    private async managedFetchAsync(opts: FetchOptions, fn: (ctl: AbortController) => any) {
+    private async managedFetchAsync(
+        opts: FetchOptions,
+        fn: (ctl: AbortController) => Promise<FetchResponse>
+    ): Promise<FetchResponse> {
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
             aborter = new AbortController();
@@ -158,14 +184,17 @@ export class FetchService extends HoistService {
         } catch (e) {
             if (e.isTimeout) {
                 aborter.abort();
-                throw Exception.fetchTimeout(opts, e, timeout?.message);
+                const msg =
+                    timeout?.message ??
+                    `Timed out loading '${opts.url}' - no response after ${e.interval}ms.`;
+                throw Exception.fetchTimeout(opts, e, msg);
             }
 
             if (e.isHoistException) throw e;
 
-            // Just two other cases where we expect this to throw -- Typically we get a failed response)
+            // Just two other cases where we expect this to *throw* -- Typically we get a fail status
             throw e.name === 'AbortError'
-                ? Exception.fetchAborted(opts)
+                ? Exception.fetchAborted(opts, e)
                 : Exception.serverUnavailable(opts, e);
         } finally {
             if (autoAborters[autoAbortKey] === aborter) {
@@ -174,7 +203,7 @@ export class FetchService extends HoistService {
         }
     }
 
-    private async fetchInternalAsync(opts, aborter): Promise<any> {
+    private async fetchInternalAsync(opts, aborter): Promise<FetchResponse> {
         const {defaultHeaders} = this;
         let {url, method, headers, body, params} = opts;
         throwIf(!url, 'No url specified in call to fetchService.');
@@ -233,7 +262,7 @@ export class FetchService extends HoistService {
             }
         }
 
-        const ret: any = await fetch(url, fetchOpts);
+        const ret = (await fetch(url, fetchOpts)) as FetchResponse;
 
         if (!ret.ok) {
             ret.responseText = await this.safeResponseTextAsync(ret);
@@ -297,8 +326,11 @@ export interface FetchOptions {
     /** URL for the request. Relative urls will be appended to XH.baseUrl. */
     url: string;
 
-    /** Data to send in the request body (for POSTs/PUTs of JSON).*/
-    body?: PlainObject;
+    /**
+     * Data to send in the request body (for POSTs/PUTs of JSON).
+     * When using `fetch`, provide a string. Otherwise, provide a PlainObject.
+     */
+    body?: PlainObject | string;
 
     /**
      * Parameters to encode and append as a query string, or send with the request body

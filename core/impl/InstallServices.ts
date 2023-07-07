@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistService, HoistServiceClass, Some, XH} from '@xh/hoist/core';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
@@ -69,7 +69,7 @@ async function initServicesInternalAsync(svcs: HoistService[]) {
             it.name = svcs[idx].constructor.name;
         });
 
-        throw this.exception({
+        throw XH.exception({
             message: [
                 'Failed to initialize services: ',
                 ...errs.map(it => it.reason.message + ' (' + it.name + ')')

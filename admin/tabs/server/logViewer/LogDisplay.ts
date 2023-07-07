@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {clock} from '@xh/hoist/cmp/clock';
 import {grid} from '@xh/hoist/cmp/grid';
-import {hspacer, label} from '@xh/hoist/cmp/layout';
+import {fragment, hspacer, label} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
@@ -14,6 +14,7 @@ import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
+import {fmtTimeZone} from '@xh/hoist/utils/impl';
 import {LogDisplayModel} from './LogDisplayModel';
 import './LogViewer.scss';
 
@@ -57,10 +58,28 @@ const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
             bind: 'pattern',
             placeholder: 'Filter',
             leftIcon: Icon.filter(),
-            enableClear: true,
-            width: 160
+            flex: 1,
+            rightElement: fragment(
+                button({
+                    text: 'Cc',
+                    onClick: () => (model.caseSensitive = !model.caseSensitive),
+                    className: model.caseSensitive
+                        ? 'xh-log-display__filter-button xh-log-display__filter-button--active'
+                        : 'xh-log-display__filter-button xh-log-display__filter-button--inactive',
+                    tooltip: 'Case-sensitive filter option',
+                    omit: !XH.environmentService.isMinHoistCoreVersion('16.2.0')
+                }),
+                button({
+                    text: '.*',
+                    onClick: () => (model.regexOption = !model.regexOption),
+                    className: model.regexOption
+                        ? 'xh-log-display__filter-button xh-log-display__filter-button--active'
+                        : 'xh-log-display__filter-button xh-log-display__filter-button--inactive',
+                    tooltip: 'Regex filter option'
+                })
+            )
         }),
-        gridFindField({width: 160}),
+        gridFindField({flex: 1}),
         '-',
         switchInput({
             bind: 'tail',
@@ -87,11 +106,11 @@ const bbar = hoistCmp.factory(() => {
 
     return toolbar({
         items: [
-            'Server time:',
+            'Server time: ',
             clock({
                 timezone: zone,
-                format: 'HH:mm [GMT]Z',
-                className: 'xh-font-family-mono xh-font-size-small'
+                format: 'HH:mm',
+                suffix: fmtTimeZone(zone, XH.getEnv('serverTimeZoneOffset'))
             })
         ],
         omit: !zone // zone env support requires hoist-core 7.1+

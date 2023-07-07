@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
@@ -10,7 +10,6 @@ import {RecordActionSpec, UrlStore} from '@xh/hoist/data';
 import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable, observable} from '@xh/hoist/mobx';
-import {checkMinVersion} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
 import {createRef} from 'react';
 import {LogDisplayModel} from './LogDisplayModel';
@@ -20,7 +19,6 @@ import {AppModel} from '@xh/hoist/admin/AppModel';
  * @internal
  */
 export class LogViewerModel extends HoistModel {
-    // Overall State
     @observable file: string = null;
 
     viewRef = createRef<HTMLElement>();
@@ -30,6 +28,10 @@ export class LogViewerModel extends HoistModel {
 
     @managed
     filesGridModel: GridModel;
+
+    get enabled(): boolean {
+        return XH.getConf('xhEnableLogViewer', true);
+    }
 
     get selectedRecord() {
         return this.filesGridModel.selectedRecord;
@@ -48,7 +50,6 @@ export class LogViewerModel extends HoistModel {
         text: 'Download',
         icon: Icon.download(),
         recordsRequired: 1,
-        disabled: !checkMinVersion(XH.environmentService.get('hoistCoreVersion'), '9.4'),
         actionFn: () => this.downloadSelectedAsync()
     };
 
@@ -67,8 +68,12 @@ export class LogViewerModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const store = this.filesGridModel.store as UrlStore,
-            selModel = this.filesGridModel.selModel;
+        const {enabled, filesGridModel} = this;
+        if (!enabled) return;
+
+        const store = filesGridModel.store as UrlStore,
+            selModel = filesGridModel.selModel;
+
         try {
             await store.loadAsync(loadSpec);
             if (selModel.isEmpty) {
@@ -134,8 +139,6 @@ export class LogViewerModel extends HoistModel {
     // Implementation
     //---------------------------------
     private createGridModel() {
-        const supportFileAttrs = checkMinVersion(XH.getEnv('hoistCoreVersion'), '13.2.0');
-
         return new GridModel({
             enableExport: true,
             selModel: 'multiple',
@@ -155,14 +158,12 @@ export class LogViewerModel extends HoistModel {
                 {
                     field: 'size',
                     width: 80,
-                    renderer: fileSizeRenderer,
-                    omit: !supportFileAttrs
+                    renderer: fileSizeRenderer
                 },
                 {
                     field: 'lastModified',
                     width: 110,
-                    renderer: compactDateRenderer({sameDayFmt: 'HH:mm:ss'}),
-                    omit: !supportFileAttrs
+                    renderer: compactDateRenderer({sameDayFmt: 'HH:mm:ss'})
                 }
             ],
             autosizeOptions: {mode: 'managed'},

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {Exception} from '@xh/hoist/core/exception/Exception';
 import {
@@ -115,7 +115,7 @@ export function isJSON(obj: any): boolean {
 /**
  * Throw an exception if a condition evaluates as truthy.
  */
-export function throwIf(condition: any, message: string) {
+export function throwIf(condition: any, message: unknown) {
     if (condition) {
         throw Exception.create(message);
     }
@@ -124,7 +124,7 @@ export function throwIf(condition: any, message: string) {
 /**
  * Log a warning to the console if a condition evaluates as truthy.
  */
-export function warnIf(condition: any, message: string) {
+export function warnIf(condition: any, message: any) {
     if (condition) {
         console.warn(message);
     }
@@ -133,7 +133,7 @@ export function warnIf(condition: any, message: string) {
 /**
  * Log an error to the console if a condition evaluates as truthy.
  */
-export function errorIf(condition: any, message: string) {
+export function errorIf(condition: any, message: any) {
     if (condition) {
         console.error(message);
     }
@@ -220,7 +220,7 @@ export function ensureUniqueBy(arr: any[], uniqueKey: string, exceptionMessage?:
 /**
  * Returns the singular version of the plural word passed to it.
  */
-export function singularize(s: string) {
+export function singularize(s: string): string {
     return _inflection.singularize(s);
 }
 
@@ -231,8 +231,17 @@ export function singularize(s: string) {
  * @param count - if provided, will pluralize to match this number
  * @param includeCount - include count in the output
  */
-export function pluralize(s: string, count?: number, includeCount?: boolean) {
+export function pluralize(s: string, count?: number, includeCount?: boolean): string {
     return _inflection.pluralize(s, count, includeCount);
+}
+
+/**
+ * Returns the number with an ordinal suffix (i.e. 1 becomes '1st', 11 becomes '11th').
+ *
+ * @param n - the number to ordinalize
+ */
+export function ordinalize(n: number): string {
+    return _inflection.ordinalize(n);
 }
 
 /**

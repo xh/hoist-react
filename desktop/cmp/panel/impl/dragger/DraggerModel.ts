@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistModel, lookup, XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -55,7 +55,8 @@ export class DraggerModel extends HoistModel {
     private onDragStart = e => {
         const dragger = e.target;
         this.panelEl = dragger.parentElement;
-        const {panelEl: panel, panelModel} = this;
+        const {panelEl: panel, panelModel} = this,
+            {vertical} = panelModel;
 
         throwIf(
             !panel.nextElementSibling && !panel.previousElementSibling,
@@ -68,7 +69,7 @@ export class DraggerModel extends HoistModel {
 
         const {clientX, clientY} = this.parseEventPositions(e);
         this.resizeState = {startX: clientX, startY: clientY};
-        this.startSize = panelModel.size;
+        this.startSize = panel[vertical ? 'offsetHeight' : 'offsetWidth'];
         this.panelParent = panel.parentElement;
         panelModel.setIsResizing(true);
 

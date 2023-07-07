@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {serverEnvPanel} from '@xh/hoist/admin/tabs/server/environment/ServerEnvPanel';
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import {hoistCmp, XH} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {ehCachePanel} from './ehcache/EhCachePanel';
 import {logLevelPanel} from './logLevel/LogLevelPanel';
@@ -21,12 +21,7 @@ export const serverTab = hoistCmp.factory(() =>
             route: 'default.server',
             switcher: {orientation: 'left'},
             tabs: [
-                {
-                    id: 'logViewer',
-                    icon: Icon.fileText(),
-                    content: logViewer,
-                    omit: !XH.getConf('xhEnableLogViewer', true)
-                },
+                {id: 'logViewer', icon: Icon.fileText(), content: logViewer},
                 {id: 'logLevels', icon: Icon.settings(), content: logLevelPanel},
                 {
                     id: 'memory',

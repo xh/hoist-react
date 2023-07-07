@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {placeholder, frame} from '@xh/hoist/cmp/layout';
 import {
@@ -35,13 +35,18 @@ export interface AgGridProps extends HoistProps<AgGridModel>, GridOptions, Layou
  * via the `model` prop to control additional Hoist customizations.
  *
  * This component complements and contrasts with the primary Hoist `Grid` class, which provides a
- * significantly more managed and opinionated wrapper around ag-Grid and a number of Hoist-specific
+ * significantly more managed and opinionated use of ag-Grid and a number of Hoist-specific
  * extensions and customizations. That fully managed component is expected to cover the majority of
  * use cases within Hoist apps and is recommended as the primary grid class within the toolkit.
  *
  * This wrapper is provided for advanced usages of grid that wish to leverage features of the
  * underlying component not yet supported by the Hoist layer - most notably pivoting - where the
  * managed option would conflict with or complicate access to those features.
+ *
+ * Note that this component uses the ag-Grid `getRowHeight` prop to provide the grid with row
+ * heights.  As of 4/2023, this may cause scrolling to be slow in large data sets, and
+ * applications may wish to set this prop to `null` and use either a fixed `rowWidth` property, or
+ * an explicit per-row setting instead. See GridModel for a more efficient, data aware approach.
  */
 export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
     displayName: 'AgGrid',
@@ -77,6 +82,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             ),
             ...layoutProps,
             item: createElement(AgGridReact, {
+                ...AgGrid['DEFAULT_PROPS'],
                 // Default some ag-grid props, but allow overriding.
                 getRowHeight: impl.getRowHeight,
                 // Pass others on directly.
@@ -117,6 +123,14 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
     AgGrid.HEADER_HEIGHTS_MOBILE = {large: 42, standard: 38, compact: 34, tiny: 30};
     AgGrid.getHeaderHeightForSizingMode = mode =>
         (XH.isMobileApp ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
+
+    /**
+     * Default props to apply to all instances of the AgGrid Component in this application.
+     *
+     * Note that these settings will be overridden by any values provided by the application
+     * to any particular grid instance.
+     */
+    AgGrid.DEFAULT_PROPS = {};
 })(AgGrid);
 
 class AgGridLocalModel extends HoistModel {
@@ -125,8 +139,10 @@ class AgGridLocalModel extends HoistModel {
     @lookup(AgGridModel) model: AgGridModel;
 
     get headerHeight() {
-        const {hideHeaders, sizingMode} = this.model;
-        return hideHeaders ? 0 : (AgGrid as any).getHeaderHeightForSizingMode(sizingMode);
+        const {hideHeaders, sizingMode} = this.model,
+            AgGridCmp = AgGrid as any;
+
+        return hideHeaders ? 0 : AgGridCmp.getHeaderHeightForSizingMode(sizingMode);
     }
 
     override onLinked() {
@@ -141,13 +157,18 @@ class AgGridLocalModel extends HoistModel {
         }
     }
 
+    getRowHeight = ({node}) => {
+        const {sizingMode} = this.model,
+            {groupDisplayType} = this.componentProps,
+            AgGridCmp = AgGrid as any;
+        return node.group && groupDisplayType === 'groupRows'
+            ? AgGridCmp.getGroupRowHeightForSizingMode(sizingMode)
+            : AgGridCmp.getRowHeightForSizingMode(sizingMode);
+    };
+
     noteGridReady = agParams => {
         this.model.handleGridReady(agParams);
         this.componentProps.onGridReady?.(agParams);
-    };
-
-    getRowHeight = () => {
-        return (AgGrid as any).getRowHeightForSizingMode(this.model.sizingMode);
     };
 
     override destroy() {

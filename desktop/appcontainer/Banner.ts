@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {XH, uses, hoistCmp} from '@xh/hoist/core';
@@ -25,7 +25,7 @@ export const banner = hoistCmp.factory({
     model: uses(BannerModel),
 
     render({model}) {
-        const {icon, message, intent, onClick, className, props} = model;
+        const {icon, message, intent, onClick, className} = model;
 
         return toolbar({
             className: classNames(
@@ -50,8 +50,7 @@ export const banner = hoistCmp.factory({
                 }),
                 actionButton(),
                 dismissButton()
-            ],
-            ...props
+            ]
         });
     }
 });

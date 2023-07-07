@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {
     HoistModel,
@@ -60,7 +60,7 @@ export interface FilterChooserConfig {
     fieldSpecs?: Array<FilterChooserFieldSpecConfig | string>;
 
     /** Default properties to be assigned to all FilterChooserFieldSpecs created by this model. */
-    fieldSpecDefaults?: FilterChooserFieldSpecConfig;
+    fieldSpecDefaults?: Partial<FilterChooserFieldSpecConfig>;
 
     /**
      * Store or cube View that should actually be filtered as this model's value changes.
@@ -88,7 +88,7 @@ export interface FilterChooserConfig {
     initialFavorites?: FilterChooserFilterLike[] | (() => FilterChooserFilterLike[]);
 
     /**
-     * true to offer all field suggestions when the control is focussed with an empty query,
+     * true to offer all field suggestions when the control is focused with an empty query,
      * to aid discoverability.
      */
     suggestFieldsWhenEmpty?: boolean;
@@ -460,7 +460,7 @@ export class FilterChooserModel extends HoistModel {
     //--------------------------------
     parseFieldSpecs(
         specs: Array<FilterChooserFieldSpecConfig | string>,
-        fieldSpecDefaults: FilterChooserFieldSpecConfig
+        fieldSpecDefaults: Partial<FilterChooserFieldSpecConfig>
     ): Array<FilterChooserFieldSpec> {
         const {valueSource} = this;
 

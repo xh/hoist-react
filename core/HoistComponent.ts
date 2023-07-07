@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {
     CreatesSpec,
@@ -43,8 +43,10 @@ import {
 } from 'react';
 
 /**
- * Configuration for creating a Component.  May be specified either as a render function,
- * or an object containing a render function and associated metadata.
+ * Type representing props passed to a HoistComponent's render function.
+ *
+ * This type removes from its base type several props that are used by HoistComponent itself and
+ * not provided to the render function.
  */
 export type RenderPropsOf<P extends HoistProps> = P & {
     /** Pre-processed by HoistComponent internals into a mounted model.  Never passed to render. */
@@ -52,15 +54,12 @@ export type RenderPropsOf<P extends HoistProps> = P & {
 
     /** Pre-processed by HoistComponent internals and attached to model.  Never passed to render. */
     modelRef: never;
-
-    /**
-     *  React Children. Populated on props by React internally, before rendering.  Applications
-     *  will typically provide children to a component via JSX or the `item(s)` property passed to
-     *  an element factory.
-     */
-    children?: ReactNode;
 };
 
+/**
+ * Configuration for creating a Component.  May be specified either as a render function,
+ * or an object containing a render function and associated metadata.
+ */
 export type ComponentConfig<P extends HoistProps> =
     | ((props: RenderPropsOf<P>, ref?: ForwardedRef<any>) => ReactNode)
     | {
@@ -387,7 +386,7 @@ function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): 
     if (spec.createFromConfig) {
         if (isPlainObject(model)) {
             // 1a) legacy, pre-typescript
-            apiDeprecated('model', {msg: "Use 'modelConfig' instead", v: 'v57'});
+            apiDeprecated('model', {msg: "Use 'modelConfig' instead", v: 'v58'});
             return {model: new selector(model), isLinked: true, fromContext: false};
         }
         if (isPlainObject(modelConfig)) {

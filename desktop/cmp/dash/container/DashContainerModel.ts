@@ -2,11 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {
     managed,
     PersistenceProvider,
+    PlainObject,
     RefreshMode,
     RenderMode,
     TaskObserver,
@@ -46,11 +47,14 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
     /** True to include a button in each stack header showing the dash context menu. */
     showMenuButton?: boolean;
 
+    /** Between items in pixels. */
+    margin?: number;
+
     /**
      * Custom settings to be passed to the GoldenLayout instance.
      * @see http://golden-layout.com/docs/Config.html
      */
-    goldenLayoutSettings?: Record<string, any>;
+    goldenLayoutSettings?: PlainObject;
 }
 
 /**
@@ -124,7 +128,8 @@ export class DashContainerModel extends DashModel<
     //-----------------------------
     renderMode: RenderMode;
     refreshMode: RefreshMode;
-    goldenLayoutSettings: Record<string, any>;
+    goldenLayoutSettings: PlainObject;
+    margin: number;
 
     get isEmpty(): boolean {
         return this.goldenLayout && this.viewModels.length === 0;
@@ -148,6 +153,7 @@ export class DashContainerModel extends DashModel<
         contentLocked = false,
         renameLocked = false,
         showMenuButton = false,
+        margin = 6,
         goldenLayoutSettings,
         persistWith = null,
         emptyText = 'No views have been added to the container.',
@@ -176,6 +182,7 @@ export class DashContainerModel extends DashModel<
         this.contentLocked = contentLocked;
         this.renameLocked = renameLocked;
         this.showMenuButton = showMenuButton;
+        this.margin = margin;
         this.goldenLayoutSettings = goldenLayoutSettings;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
@@ -570,7 +577,7 @@ export class DashContainerModel extends DashModel<
                         ...this.goldenLayoutSettings
                     },
                     dimensions: {
-                        borderWidth: 6,
+                        borderWidth: this.margin,
                         headerHeight: 25
                     }
                 },

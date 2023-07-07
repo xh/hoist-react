@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {Exception} from './Exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
 import {stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
-import {forOwn, has, isArray, isNil, isObject, omitBy, set} from 'lodash';
-import {HoistException, XH} from '../';
+import {forOwn, has, isArray, isNil, isObject, omitBy, pick, set} from 'lodash';
+import {HoistException, PlainObject, XH} from '../';
 
 export interface ExceptionHandlerOptions {
     /** Text (ideally user-friendly) describing the error. */
@@ -89,12 +89,6 @@ export class ExceptionHandler {
         timeout: 10000
     };
 
-    #isUnloading = false;
-
-    constructor() {
-        window.addEventListener('unload', () => (this.#isUnloading = true));
-    }
-
     /**
      * Called by Hoist internally to handle exceptions, with built-in support for parsing certain
      * Hoist-specific exception options, displaying an appropriate error dialog to users, and
@@ -116,7 +110,7 @@ export class ExceptionHandler {
      * @param options - provides further control over how the exception is shown and/or logged.
      */
     handleException(exception: unknown, options?: ExceptionHandlerOptions) {
-        if (this.#isUnloading) return;
+        if (XH.pageState == 'terminated' || XH.pageState == 'frozen') return;
 
         const {e, opts} = this.parseArgs(exception, options);
 
@@ -156,7 +150,8 @@ export class ExceptionHandler {
      * @param options - provides further control over how the exception is shown and/or logged.
      */
     showException(exception: unknown, options?: ExceptionHandlerOptions) {
-        if (this.#isUnloading) return;
+        if (XH.pageState == 'terminated' || XH.pageState == 'frozen') return;
+
         const {e, opts} = this.parseArgs(exception, options);
         XH.appContainerModel.exceptionDialogModel.show(e, opts);
     }
@@ -209,13 +204,17 @@ export class ExceptionHandler {
         try {
             // 1) Create basic structure.
             // Raw Error does not have 'own' properties, so be explicit about core name/message/stack
+            // Protect against long or circular cause chains.
             // Order here intentional for serialization
-            let ret: any = {
+            let ret: PlainObject = {
                 name: exception.name,
                 message: exception.message
             };
             Object.assign(ret, exception);
             ret.stack = exception.stack?.split(/\n/g);
+            if (ret.cause) {
+                ret.cause = pick(ret.cause, ['name', 'message']);
+            }
 
             ret = omitBy(ret, isNil);
 

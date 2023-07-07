@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, PlainObject} from '@xh/hoist/core';
 import {ValidationState} from '@xh/hoist/data';
@@ -79,7 +79,7 @@ export class FormModel extends HoistModel {
      *
      * See {@link getData} instead if you need to get or react to the values of *any/all* fields.
      */
-    get values(): Record<string, any> {
+    get values(): PlainObject {
         return this.valuesProxy;
     }
 

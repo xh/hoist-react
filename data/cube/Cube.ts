@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {HoistBase, managed, PlainObject} from '@xh/hoist/core';
@@ -205,7 +205,7 @@ export class Cube extends HoistBase {
      * @param rawData - flat array of lowest/leaf level data rows.
      * @param info - optional metadata to associate with this cube/dataset.
      */
-    async loadDataAsync(rawData: PlainObject[], info: Record<string, any> = {}): Promise<void> {
+    async loadDataAsync(rawData: PlainObject[], info: PlainObject = {}): Promise<void> {
         this.store.loadData(rawData);
         this.setInfo(info);
         await forEachAsync(this._connectedViews, v => v.noteCubeLoaded());
@@ -224,7 +224,7 @@ export class Cube extends HoistBase {
      */
     async updateDataAsync(
         rawData: PlainObject[] | StoreTransaction,
-        infoUpdates: PlainObject
+        infoUpdates: PlainObject = {}
     ): Promise<void> {
         // 1) Process data
         const changeLog = this.store.updateData(rawData);
@@ -248,7 +248,7 @@ export class Cube extends HoistBase {
      * Populate the metadata associated with this cube.
      * @param infoUpdates - new key-value pairs to be applied to existing info on this cube.
      */
-    updateInfo(infoUpdates: Record<string, any> = {}) {
+    updateInfo(infoUpdates: PlainObject = {}) {
         this.setInfo({...this.info, ...infoUpdates});
         this._connectedViews.forEach(v => v.noteCubeUpdated(null));
     }
@@ -257,7 +257,7 @@ export class Cube extends HoistBase {
     // Implementation
     //---------------------
     @action
-    private setInfo(info: Record<string, any>) {
+    private setInfo(info: PlainObject) {
         this.info = Object.freeze(info);
     }
 

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {box, fragment} from '@xh/hoist/cmp/layout';
@@ -67,15 +67,15 @@ const inlineContainer = hoistCmp.factory<ModalSupportModel>({
 // Dialog cmp, inside which to place the child cmp when `model.isModal = true`
 const modalContainer = hoistCmp.factory<ModalSupportModel>({
     render({model}) {
-        if (!model.isModal) return null;
-
-        const {width, height, canOutsideClickClose} = model;
+        const {isModal, width, height, canOutsideClickClose} = model;
         return dialog({
             className: 'xh-modal-support__modal',
             style: {width, height},
             canOutsideClickClose,
-            isOpen: true,
+            isOpen: isModal,
             onClose: () => model.toggleIsModal(),
+            // Creates the dialog's portal immediately and keeps it around, to preserve correct ordering relative to any internal popups.
+            lazy: false,
             item: box({
                 ref: model.modalRef,
                 flexDirection: 'column',

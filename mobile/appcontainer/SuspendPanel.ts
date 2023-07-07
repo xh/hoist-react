@@ -2,9 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
+import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {XH, hoistCmp} from '@xh/hoist/core';
 import {vframe, div, p} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/mobile/cmp/panel';
@@ -17,11 +18,11 @@ import './SuspendPanel.scss';
  * Generic Panel to display when the app is suspended.
  * @internal
  */
-export const suspendPanel = hoistCmp.factory({
+export const suspendPanel = hoistCmp.factory<AppContainerModel>({
     displayName: 'SuspendPanel',
 
-    render() {
-        const message = XH.suspendData?.message;
+    render({model}) {
+        const message = model.appStateModel.suspendData?.message;
         return panel({
             className: 'xh-suspend-panel',
             title: `Reload Required`,

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
 import {HAlign, HSide, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
@@ -263,7 +263,7 @@ export interface ColumnSpec {
      * `headerName` contains markup or other characters not suitable for use within an Excel or
      * CSV file header.
      */
-    exportName?: string;
+    exportName?: string | ColumnHeaderNameFn;
 
     /**
      * Alternate field name to reference or function to call when producing a value for a file
@@ -703,7 +703,7 @@ export class Column {
                 lockPinned: !gridModel.enableColumnPinning || XH.isMobileApp,
                 pinned: this.pinned,
                 lockVisible: !this.hideable || !gridModel.colChooserModel || XH.isMobileApp,
-                headerComponentParams: {gridModel, xhColumn: this},
+                headerComponentParams: {xhColumn: this},
                 suppressColumnsToolPanel: this.excludeFromChooser,
                 suppressFiltersToolPanel: this.excludeFromChooser,
                 enableCellChangeFlash: this.highlightOnChange,
@@ -1059,6 +1059,10 @@ export function getAgHeaderClassFn(
 
         if (column instanceof Column && column.isTreeColumn && column.headerHasExpandCollapse) {
             r.push('xh-column-header--with-expand-collapse');
+        }
+
+        if (gridModel.headerMenuDisplay === 'hover') {
+            r.push('xh-column-header--hoverable');
         }
 
         return r;

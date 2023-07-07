@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {box, div, filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
@@ -12,7 +12,7 @@ import {select, MENU_PORTAL_ID} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuDivider, menuItem, popover, Position} from '@xh/hoist/kit/blueprint';
+import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -26,8 +26,8 @@ export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> 
     /** Min height in pixels of the popover menu itself. */
     popoverMinHeight?: number;
 
-    /** Position for chooser popover, as per Blueprint docs. */
-    popoverPosition?: Position;
+    /** Position of popover relative to target button. */
+    popoverPosition?: 'bottom' | 'top';
 
     /** Title for popover (default "GROUP BY") or null to suppress. */
     popoverTitle?: string;
@@ -74,12 +74,11 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             item: popover({
                 isOpen,
                 popoverRef: model.popoverRef,
-                popoverClassName: classNames(
-                    'xh-grouping-chooser-popover',
-                    editorIsOpen ? 'xh-popup--framed' : null
-                ),
-                position: favoritesIsOpen ? 'bottom-right' : popoverPosition,
-                minimal: favoritesIsOpen,
+                popoverClassName: 'xh-grouping-chooser-popover xh-popup--framed',
+                // right align favorites popover to match star icon
+                // left align editor to keep in place when button changing size when commitOnChange: true
+                position: favoritesIsOpen ? `${popoverPosition}-right` : `${popoverPosition}-left`,
+                minimal: styleButtonAsInput,
                 target: fragment(
                     button({
                         text: label,
@@ -92,23 +91,23 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                         ),
                         minimal: styleButtonAsInput,
                         ...buttonProps,
-                        onClick: () => model.showEditor()
+                        onClick: () => model.toggleEditor()
                     }),
                     favoritesIcon()
                 ),
                 content: favoritesIsOpen
                     ? favoritesMenu()
-                    : editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText}),
+                    : editorIsOpen
+                    ? editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText})
+                    : null,
                 onInteraction: (nextOpenState, e) => {
-                    if (isOpen && nextOpenState === false) {
-                        // Prevent clicks with Select controls from closing popover
-                        const id = MENU_PORTAL_ID,
-                            selectPortal = document.getElementById(id)?.contains(e?.target),
-                            selectClick = e?.target?.classList.contains('xh-select__single-value');
-
-                        if (!selectPortal && !selectClick) {
-                            model.commitPendingValueAndClose();
-                        }
+                    if (
+                        isOpen &&
+                        nextOpenState === false &&
+                        e?.target &&
+                        !targetIsControlButtonOrPortal(e.target)
+                    ) {
+                        model.commitPendingValueAndClose();
                     }
                 }
             })
@@ -125,7 +124,7 @@ const editor = hoistCmp.factory<GroupingChooserModel>({
             width: popoverWidth,
             minHeight: popoverMinHeight,
             items: [
-                div({className: 'xh-popup__title', item: popoverTitle}),
+                div({className: 'xh-popup__title', item: popoverTitle, omit: !popoverTitle}),
                 dimensionList({emptyText}),
                 addDimensionControl(),
                 filler()
@@ -293,6 +292,23 @@ function getDimOptions(dims, model) {
     return sortBy(ret, 'label');
 }
 
+function targetIsControlButtonOrPortal(target) {
+    const selectPortal = document.getElementById(MENU_PORTAL_ID)?.contains(target),
+        selectClick = targetWithin(target, 'xh-select__single-value'),
+        editorClick = targetWithin(target, 'xh-grouping-chooser-button--with-favorites');
+    return selectPortal || selectClick || editorClick;
+}
+
+/**
+ * Determines whether any of the target's parents have a specific class name
+ */
+function targetWithin(target, className): boolean {
+    for (let elem = target; elem; elem = elem.parentElement) {
+        if (elem.classList.contains(className)) return true;
+    }
+    return false;
+}
+
 //------------------
 // Favorites
 //------------------
@@ -303,7 +319,7 @@ const favoritesIcon = hoistCmp.factory<GroupingChooserModel>({
             item: Icon.favorite(),
             className: 'xh-grouping-chooser__favorite-icon',
             onClick: e => {
-                model.openFavoritesMenu();
+                model.toggleFavoritesMenu();
                 e.stopPropagation();
             }
         });

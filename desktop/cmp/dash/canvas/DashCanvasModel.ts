@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
@@ -299,7 +299,7 @@ export class DashCanvasModel extends DashModel<
 
         if (!allowRename) return;
 
-        XH.prompt({
+        XH.prompt<string>({
             message: `Rename '${view.title}' to`,
             title: 'Rename...',
             icon: Icon.edit(),

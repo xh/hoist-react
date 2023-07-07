@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {div, frame, p} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, PlainObject} from '@xh/hoist/core';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {isEmpty, isNil, isString} from 'lodash';
@@ -28,7 +28,7 @@ export interface ErrorMessageProps extends HoistProps {
      * Error to display. If undefined, this component will look for an error property on its model.
      * If no error is found, this component will not be displayed.
      */
-    error?: Error | string | Record<string, any>;
+    error?: Error | string | PlainObject;
     /**
      * Message to display for the error.
      * Defaults to the error, or any 'message' property contained within it.

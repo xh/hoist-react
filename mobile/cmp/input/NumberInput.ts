@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistProps, StyleProps, LayoutProps, HSide} from '@xh/hoist/core';
@@ -254,7 +254,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(
             },
             spellCheck: false,
 
-            onChange: model.onValueChange,
+            onInput: model.onValueChange,
             onKeyDown: model.onKeyDown,
             onBlur: model.onBlur,
             onFocus: model.onFocus,

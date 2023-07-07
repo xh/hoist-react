@@ -2,13 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
-import {Column} from './columns/Column';
 import {div, fragment, frame} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
@@ -17,7 +16,6 @@ import {
     LayoutProps,
     lookup,
     PlainObject,
-    SizingMode,
     useLocalModel,
     uses,
     XH
@@ -137,22 +135,8 @@ class GridLocalModel extends HoistModel {
     private model: GridModel;
     agOptions: GridOptions;
     viewRef = createRef<HTMLElement>();
-    private fixedRowHeight: number;
     private rowKeyNavSupport: RowKeyNavSupport;
     private prevRs: RecordSet;
-
-    getRowHeight(node) {
-        const {model, agOptions} = this,
-            {sizingMode, groupRowHeight} = model,
-            {groupDisplayType} = agOptions;
-
-        if (node?.group) {
-            return groupRowHeight ?? groupDisplayType === 'groupRows'
-                ? (AgGrid as any).getGroupRowHeightForSizingMode(sizingMode)
-                : (AgGrid as any).getRowHeightForSizingMode(sizingMode);
-        }
-        return this.fixedRowHeight;
-    }
 
     /** @returns true if any root-level records have children */
     @computed
@@ -213,14 +197,14 @@ class GridLocalModel extends HoistModel {
                 clipboardCopy: Icon.copy({asHtml: true})
             },
             components: {
-                agColumnHeader: props => columnHeader(props),
-                agColumnGroupHeader: props => columnGroupHeader(props)
+                agColumnHeader: props => columnHeader({...props, gridModel: model}),
+                agColumnGroupHeader: props => columnGroupHeader({...props, gridModel: model})
             },
             rowSelection: selModel.mode == 'disabled' ? undefined : selModel.mode,
             suppressRowClickSelection: !selModel.isEnabled,
             isRowSelectable: () => selModel.isEnabled,
             tooltipShowDelay: 0,
-            getRowHeight: ({node}) => this.getRowHeight(node),
+            getRowHeight: this.defaultGetRowHeight,
             getRowClass: ({data}) => (model.rowClassFn ? model.rowClassFn(data) : null),
             rowClassRules: model.rowClassRules,
             noRowsOverlayComponent: observer(() => div(this.emptyText)),
@@ -329,9 +313,7 @@ class GridLocalModel extends HoistModel {
             track: () => [model.isReady, store._filtered, model.showSummary, store.summaryRecord],
             run: () => {
                 if (model.isReady) this.syncData();
-            },
-            // TODO:  Remove after we are sure we don't need debounce workaround
-            debounce: model.experimental.syncDataImmediately === false ? 0 : null
+            }
         };
     }
 
@@ -367,18 +349,76 @@ class GridLocalModel extends HoistModel {
         };
     }
 
+    //----------------------
+    // Row Height Management
+    //----------------------
+    @computed
+    get calculatedRowHeight() {
+        const {model} = this,
+            AgGridCmp = AgGrid as any;
+        return max([
+            AgGridCmp.getRowHeightForSizingMode(model.sizingMode),
+            maxBy(model.getVisibleLeafColumns(), 'rowHeight')?.rowHeight
+        ]);
+    }
+
+    @computed
+    get calculatedGroupRowHeight() {
+        const {sizingMode, groupRowHeight} = this.model,
+            {groupDisplayType} = this.agOptions,
+            AgGridCmp = AgGrid as any;
+        return groupRowHeight ?? groupDisplayType === 'groupRows'
+            ? AgGridCmp.getGroupRowHeightForSizingMode(sizingMode)
+            : AgGridCmp.getRowHeightForSizingMode(sizingMode);
+    }
+
+    defaultGetRowHeight = ({node}) => {
+        return node.group ? this.calculatedGroupRowHeight : this.calculatedRowHeight;
+    };
+
     rowHeightReaction() {
-        const {model} = this;
         return {
-            track: () => [model.getVisibleLeafColumns(), model.sizingMode],
-            run: ([visibleCols, sizingMode]: [Column[], SizingMode]) => {
-                this.fixedRowHeight = max([
-                    (AgGrid as any).getRowHeightForSizingMode(sizingMode),
-                    maxBy(visibleCols, 'rowHeight')?.rowHeight
-                ]);
+            track: () => [
+                this.useScrollOptimization,
+                this.calculatedRowHeight,
+                this.calculatedGroupRowHeight
+            ],
+            run: () => {
+                const {agApi} = this.model;
+                if (!agApi) return;
+                agApi.resetRowHeights();
+                this.applyScrollOptimization();
             },
-            fireImmediately: true
+            debounce: 1
         };
+    }
+
+    @computed
+    get useScrollOptimization() {
+        // When true, we preemptively evaluate and assign functional row heights after data loading.
+        // This improves slow scrolling but means function not guaranteed to be re-called
+        // when node is rendered in viewport.
+        const {model, agOptions} = this;
+        return (
+            agOptions.getRowHeight &&
+            !agOptions.rowHeight &&
+            !model.getVisibleLeafColumns().some(c => c.autoHeight) &&
+            model.experimental.useScrollOptimization !== false
+        );
+    }
+
+    applyScrollOptimization() {
+        if (!this.useScrollOptimization) return;
+        const {agApi, agColumnApi} = this.model,
+            {getRowHeight} = this.agOptions,
+            params = {api: agApi, columnApi: agColumnApi, context: null} as any;
+
+        agApi.forEachNode(node => {
+            params.node = node;
+            params.data = node.data;
+            node.setRowHeight(getRowHeight(params));
+        });
+        agApi.onRowHeightChanged();
     }
 
     columnsReaction() {
@@ -627,6 +667,7 @@ class GridLocalModel extends HoistModel {
         model.noteAgExpandStateChange();
 
         this.prevRs = newRs;
+        this.applyScrollOptimization();
     }
 
     syncSelection() {

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {ExcelFormat} from '@xh/hoist/cmp/grid';
 import {HoistService, XH} from '@xh/hoist/core';
@@ -157,7 +157,8 @@ export class GridExportService extends HoistService {
                 XH.track({
                     category: 'Export',
                     message: `Downloaded ${filename}${fileExt}`,
-                    data: {rows: rows.length, columns: exportColumns.length}
+                    data: {rows: rows.length, columns: exportColumns.length},
+                    logData: true
                 });
             }
         } catch (e) {

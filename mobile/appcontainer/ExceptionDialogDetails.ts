@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 import {filler, fragment, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
@@ -51,7 +51,7 @@ export const exceptionDialogDetails = hoistCmp.factory({
                     icon: Icon.envelope(),
                     text: 'Send Message',
                     onClick: () => {
-                        XH.prompt({
+                        XH.prompt<string>({
                             title: 'Send Message',
                             message: null,
                             input: {
@@ -63,8 +63,8 @@ export const exceptionDialogDetails = hoistCmp.factory({
                             },
                             confirmProps: {icon: Icon.envelope(), text: 'Send'}
                         }).then(userMessage => {
-                            model.userMessage = userMessage;
-                            if (model.userMessage) {
+                            if (userMessage) {
+                                model.userMessage = userMessage;
                                 model.sendReportAsync();
                             }
                         });
