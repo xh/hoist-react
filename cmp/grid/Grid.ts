@@ -313,9 +313,7 @@ class GridLocalModel extends HoistModel {
             track: () => [model.isReady, store._filtered, model.showSummary, store.summaryRecord],
             run: () => {
                 if (model.isReady) this.syncData();
-            },
-            // TODO:  Remove after we are sure we don't need debounce workaround
-            debounce: model.experimental.syncDataImmediately === false ? 0 : null
+            }
         };
     }
 

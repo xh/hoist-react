@@ -50,7 +50,7 @@ export class LoginPanelModel extends HoistModel {
 
             if (resp.success) {
                 this.warning = '';
-                await XH.completeInitAsync();
+                await XH.appContainerModel.completeInitAsync();
             } else {
                 this.warning = 'Login incorrect.';
             }

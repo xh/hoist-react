@@ -10,7 +10,6 @@ import {RecordActionSpec, UrlStore} from '@xh/hoist/data';
 import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable, observable} from '@xh/hoist/mobx';
-import {checkMinVersion} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
 import {createRef} from 'react';
 import {LogDisplayModel} from './LogDisplayModel';
@@ -51,7 +50,6 @@ export class LogViewerModel extends HoistModel {
         text: 'Download',
         icon: Icon.download(),
         recordsRequired: 1,
-        disabled: !checkMinVersion(XH.environmentService.get('hoistCoreVersion'), '9.4'),
         actionFn: () => this.downloadSelectedAsync()
     };
 
@@ -141,8 +139,6 @@ export class LogViewerModel extends HoistModel {
     // Implementation
     //---------------------------------
     private createGridModel() {
-        const supportFileAttrs = checkMinVersion(XH.getEnv('hoistCoreVersion'), '13.2.0');
-
         return new GridModel({
             enableExport: true,
             selModel: 'multiple',
@@ -162,14 +158,12 @@ export class LogViewerModel extends HoistModel {
                 {
                     field: 'size',
                     width: 80,
-                    renderer: fileSizeRenderer,
-                    omit: !supportFileAttrs
+                    renderer: fileSizeRenderer
                 },
                 {
                     field: 'lastModified',
                     width: 110,
-                    renderer: compactDateRenderer({sameDayFmt: 'HH:mm:ss'}),
-                    omit: !supportFileAttrs
+                    renderer: compactDateRenderer({sameDayFmt: 'HH:mm:ss'})
                 }
             ],
             autosizeOptions: {mode: 'managed'},

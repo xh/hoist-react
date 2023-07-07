@@ -14,7 +14,6 @@ import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {checkMinVersion} from '@xh/hoist/utils/js';
 import {fmtTimeZone} from '@xh/hoist/utils/impl';
 import {LogDisplayModel} from './LogDisplayModel';
 import './LogViewer.scss';
@@ -68,7 +67,7 @@ const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
                         ? 'xh-log-display__filter-button xh-log-display__filter-button--active'
                         : 'xh-log-display__filter-button xh-log-display__filter-button--inactive',
                     tooltip: 'Case-sensitive filter option',
-                    omit: !checkMinVersion(XH.getEnv('hoistCoreVersion'), '16.2.0')
+                    omit: !XH.environmentService.isMinHoistCoreVersion('16.2.0')
                 }),
                 button({
                     text: '.*',

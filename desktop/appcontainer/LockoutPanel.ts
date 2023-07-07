@@ -35,36 +35,39 @@ export const lockoutPanel = hoistCmp.factory({
     }
 });
 
-function unauthorizedMessage() {
-    const {appSpec, identityService} = XH,
-        user = XH.getUser(),
-        roleMsg = isEmpty(user.roles)
-            ? 'no roles assigned'
-            : `the roles [${user.roles.join(', ')}]`;
+const unauthorizedMessage = hoistCmp.factory<AppContainerModel>({
+    render({model}) {
+        const {identityService} = XH,
+            {appSpec, appStateModel} = model,
+            user = XH.getUser(),
+            roleMsg = isEmpty(user.roles)
+                ? 'no roles assigned'
+                : `the roles [${user.roles.join(', ')}]`;
 
-    return div(
-        p(XH.accessDeniedMessage ?? ''),
-        p(`You are logged in as ${user.username} and have ${roleMsg}.`),
-        p({
-            item: appSpec.lockoutMessage,
-            omit: !appSpec.lockoutMessage
-        }),
-        hbox(
-            filler(),
-            logoutButton({
-                text: 'Logout',
-                intent: null,
-                minimal: false
+        return div(
+            p(appStateModel.accessDeniedMessage ?? ''),
+            p(`You are logged in as ${user.username} and have ${roleMsg}.`),
+            p({
+                item: appSpec.lockoutMessage,
+                omit: !appSpec.lockoutMessage
             }),
-            hspacer(5),
-            button({
-                omit: !identityService.isImpersonating,
-                icon: Icon.impersonate(),
-                text: 'End Impersonation',
-                minimal: false,
-                onClick: () => identityService.endImpersonateAsync()
-            }),
-            filler()
-        )
-    );
-}
+            hbox(
+                filler(),
+                logoutButton({
+                    text: 'Logout',
+                    intent: null,
+                    minimal: false
+                }),
+                hspacer(5),
+                button({
+                    omit: !identityService.isImpersonating,
+                    icon: Icon.impersonate(),
+                    text: 'End Impersonation',
+                    minimal: false,
+                    onClick: () => identityService.endImpersonateAsync()
+                }),
+                filler()
+            )
+        );
+    }
+});

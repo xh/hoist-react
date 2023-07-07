@@ -386,7 +386,7 @@ function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): 
     if (spec.createFromConfig) {
         if (isPlainObject(model)) {
             // 1a) legacy, pre-typescript
-            apiDeprecated('model', {msg: "Use 'modelConfig' instead", v: 'v57'});
+            apiDeprecated('model', {msg: "Use 'modelConfig' instead", v: 'v58'});
             return {model: new selector(model), isLinked: true, fromContext: false};
         }
         if (isPlainObject(modelConfig)) {

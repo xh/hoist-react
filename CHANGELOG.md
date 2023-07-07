@@ -1,24 +1,48 @@
 # Changelog
 
-## 57.0.0-SNAPSHOT - unreleased
+## 58.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
 
-* Enhanced the Admin alert banner feature with a new ability to save messages as presets. Useful for
-  standardizing alert or downtime banners, where pre-approved language can be added as a preset and
-  then easily loaded into a banner by members of an application support team (
+* Deprecated `xhAppVersionCheckEnabled` config in favor of object-based `xhAppVersionCheck`. Hoist
+  will auto-migrate the existing value to this new config's `mode` flag. While backwards
+  compatible with older versions of hoist-core, the new `forceReload` mode
+  requires `hoist-core >= v16.4`.
+* Enhanced `NumberFormatOptions.colorSpec` to accept CSS properties in addition to class names.
+* Enhanced `TabSwitcher` to allow navigation using arrow keys when focused.
+* Added new option `TrackOptions.logData` to provide support for logging application data in
+  `TrackService.`  Requires `hoist-core >= v16.4`.
+* New `XH.pageState` provides observable access to the current lifecycle state of the app, allowing
+  apps to react to changes in page visibility and focus, as well as detecting when the browser has
+  frozen a tab due to inactivity or navigation.
+
+## 57.0.0 - 2023-06-20
+
+### 🎁 New Features
+
+* Enhanced Admin alert banners with the ability to save messages as presets. Useful for
+  standardizing alert or downtime banners, where pre-approved language can be saved as a preset for
+  later loaded into a banner by members of an application support team (
   requires `hoist-core >= v16.3.0`).
 * Added bindable `readonly` property to `LeftRightChooserModel`.
 * Improved filtering of fields with `type: date` to use the end of day when for '>' or '<=' operators.
   Developers should specify `localDate` as the `fieldSpec.fieldType` to opt into this behavior.
 
 ### ⚙️ Technical
+
 * Support the `HOIST_IMPERSONATOR` role introduced in hoist-core `v16.3.0`
 * Hoist now supports and requires ag-Grid v30 or higher. This version includes critical
-performance improvements to scrolling without the problematic 'ResizeObserver' issues discussed
-below.
+  performance improvements to scrolling without the problematic 'ResizeObserver' issues discussed
+  below.
+
+### 💥 Breaking Changes
+
+* The deprecated `@settable` decorator has now been removed. Use `@bindable` instead.
+* The deprecated class `@xh/hoist/admin/App` has been removed. Use `@xh/hoist/admin/AppComponent`
+  instead.
 
 ### 🐞 Bug Fixes
+
 * Fixed a bug where Onsen components wrappers could not forward refs.
 * Improved the exceptions thrown by fetchService when errors occur parsing response JSON.
 
