@@ -4,17 +4,17 @@
 
 ### 🎁 New Features
 
-* Deprecated config `xhAppVersionCheckEnabled` in favor of object based `xhAppVersionCheck`. Apps will
-  seamlessly migrate the existing value to this new config's `mode` flag. While backwards compatible
-  with older versions of hoist-core, the new `forceReload` mode requires `hoist-core >= v16.4.0`.
-* Enhance `NumberFormatOptions.colorSpec` to accept custom CSS properties in addition to class names
-* Enhance `TabSwitcher` to allow navigation using arrow keys when focused.
+* Deprecated `xhAppVersionCheckEnabled` config in favor of object-based `xhAppVersionCheck`. Hoist
+  will auto-migrate the existing value to this new config's `mode` flag. While backwards
+  compatible with older versions of hoist-core, the new `forceReload` mode
+  requires `hoist-core >= v16.4`.
+* Enhanced `NumberFormatOptions.colorSpec` to accept CSS properties in addition to class names.
+* Enhanced `TabSwitcher` to allow navigation using arrow keys when focused.
 * Added new option `TrackOptions.logData` to provide support for logging application data in
-  `TrackService.`  Requires hoist-core v16.4.
-* New `XH.pageState` provides observable access to the current lifecycle state of the
-  application, allowing apps to react to changes in page visibility and focus, as well as detecting
-  when the browser has frozen a tab due to inactivity or navigation.
-
+  `TrackService.`  Requires `hoist-core >= v16.4`.
+* New `XH.pageState` provides observable access to the current lifecycle state of the app, allowing
+  apps to react to changes in page visibility and focus, as well as detecting when the browser has
+  frozen a tab due to inactivity or navigation.
 
 ## 57.0.0 - 2023-06-20
 
