@@ -15,6 +15,9 @@
 * New `XH.pageState` provides observable access to the current lifecycle state of the app, allowing
   apps to react to changes in page visibility and focus, as well as detecting when the browser has
   frozen a tab due to inactivity or navigation.
+* Improved filtering of fields with `type: date` to use the end of day when evaluating `>` or `<=`
+  operators, resulting in more intuitive results when a user inputs or selects a `yyyy-mm-dd`
+  comparison value. Spec `fieldSpec.fieldType: 'localDate'` to opt-in to this behavior.
 
 ## 57.0.0 - 2023-06-20
 
@@ -25,8 +28,6 @@
   later loaded into a banner by members of an application support team (
   requires `hoist-core >= v16.3.0`).
 * Added bindable `readonly` property to `LeftRightChooserModel`.
-* Improved filtering of fields with `type: date` to use the end of day when for '>' or '<=' operators.
-  Developers should specify `localDate` as the `fieldSpec.fieldType` to opt into this behavior.
 
 ### ⚙️ Technical
 
