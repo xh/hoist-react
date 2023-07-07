@@ -32,6 +32,6 @@ export class UserAgentModel extends HoistModel {
     // Implementation
     //---------------------
     private get uaParser() {
-        return (this._uaParser = this._uaParser ?? new parser());
+        return this._uaParser = this._uaParser ?? new parser();
     }
 }
