@@ -407,7 +407,7 @@ function calcClassFromColorSpec(v: number, colorSpec: ColorSpec | boolean): stri
 }
 
 function calcStyleFromColorSpec(v: number, colorSpec: ColorSpec | boolean): CSSProperties {
-    if (!isFinite(v) || isBoolean(colorSpec)) return {};
+    if (!isFinite(v) || isBoolean(colorSpec) || !colorSpec) return {};
 
     const possibleStyles = v < 0 ? colorSpec.neg : v > 0 ? colorSpec.pos : colorSpec.neutral;
     return !isString(possibleStyles) ? possibleStyles : {};
