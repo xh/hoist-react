@@ -334,10 +334,11 @@ export class TabContainerModel extends HoistModel {
 
     private syncWithRouter() {
         const {tabs, route} = this,
-            {router} = XH;
+            {router} = XH,
+            {params} = router.getState();
 
         if (router.isActive(route)) {
-            const tab = tabs.find(t => router.isActive(route + '.' + t.id));
+            const tab = tabs.find(t => router.isActive(route + '.' + t.id, params));
             if (tab && !tab.isActive && !tab.disabled) {
                 this.setActiveTabIdInternal(tab.id);
             }
