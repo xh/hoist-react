@@ -2,14 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 // Ag-grid installs an outer div around itself.
-// This should use height: auto rather than height: 100%, to allow layoutConfig to work.
 .xh-ag-grid > div {
   width: 100%;
-  height: auto !important;
 }
 
 .xh-mobile {
@@ -306,14 +304,6 @@
     .ag-cell {
       padding-left: var(--xh-grid-tiny-cell-lr-pad-px);
       padding-right: var(--xh-grid-tiny-cell-lr-pad-px);
-
-      .xh-check-box {
-        padding-top: 1px;
-
-        .bp4-control-indicator {
-          font-size: calc(var(--xh-grid-tiny-font-size-px) + 2px);
-        }
-      }
     }
 
     .ag-header-cell,
@@ -377,6 +367,11 @@
       color: var(--xh-grid-empty-text-color);
     }
   }
+
+  // Set Blueprint controls - specifically checkboxes - to match grid size.
+  .bp4-control .bp4-control-indicator {
+    font-size: 1em;
+  }
 }
 
 //------------------------
@@ -414,7 +409,8 @@ body.xh-app {
     border: var(--xh-menu-border);
 
     // Matching box-shadow of Blueprint context menu popover
-    box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.2), 0 2px 4px rgba(16, 22, 26, 0.4), 0 8px 24px rgba(16, 22, 26, 0.4);
+    box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.2), 0 2px 4px rgba(16, 22, 26, 0.4),
+      0 8px 24px rgba(16, 22, 26, 0.4);
 
     .ag-menu-option.ag-menu-option-active {
       background-color: var(--xh-menu-item-highlight-bg);

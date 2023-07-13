@@ -7,13 +7,13 @@ Grails / Gradle based server. That is technically the domain of
 [Hoist Core](https://github.com/xh/hoist-core) but is detailed here to provide a consolidated look
 at the build process.
 
-***At a high level, the build process:***
+**_At a high level, the build process:_**
 
-* Builds the Grails back-end via Gradle, producing a WAR file.
-* Builds the JS front-end via Webpack, producing a set of production ready client assets.
-* Copies both outputs into a pair of Docker containers and publishes those containers as the
-  end-product of the build.
-* Deploys the new images, immediately or in a later step.
+-   Builds the Grails back-end via Gradle, producing a WAR file.
+-   Builds the JS front-end via Webpack, producing a set of production ready client assets.
+-   Copies both outputs into a pair of Docker containers and publishes those containers as the
+    end-product of the build.
+-   Deploys the new images, immediately or in a later step.
 
 Hoist does not mandate the use of any particular CI system, although we recommend and use
 [Jetbrains Teamcity](https://www.jetbrains.com/teamcity/) across multiple project deployments. The
@@ -53,7 +53,7 @@ Project names can be set by creating a `settings.gradle` in the project root wit
 rootProject.name="appCode"
 ```
 
-*If you have such a file in your project, this build step should be ignored / skipped entirely.*
+_If you have such a file in your project, this build step should be ignored / skipped entirely._
 
 However, we sometimes do not check in a `settings.gradle` with each app project as we commonly build
 and
@@ -83,11 +83,11 @@ server-side into a WAR.
 This step takes an application version as well as an optional build tag, both of which are baked
 into the build:
 
-* `xhAppVersion` - an x.y.z version for releases, or `x.y-SNAPSHOT` for transient builds.
-* `xhAppBuild` - this is an optional arg that gets baked into the server and client and exposed as a
-  variable for display in the built-in Hoist admin client. We use it to pass a git commit hash,
-  which then provides another way to cross-reference exactly what snapshot of the codebase was used
-  to build any given running application.
+-   `xhAppVersion` - an x.y.z version for releases, or `x.y-SNAPSHOT` for transient builds.
+-   `xhAppBuild` - this is an optional arg that gets baked into the server and client and exposed as a
+    variable for display in the built-in Hoist admin client. We use it to pass a git commit hash,
+    which then provides another way to cross-reference exactly what snapshot of the codebase was used
+    to build any given running application.
 
 Both version and build can be left unspecified, in which case the version will default to the
 version specified within the app’s `gradle.properties` file (the build tag is nullable). Our
@@ -219,8 +219,8 @@ Dockerfile.
 
 The `app.conf` referenced here is an app-specific nginx configuration that should be checked in
 alongside the Dockerfile. It should setup the available routes to serve each bundled client app,
-configure SSL certificates if needed, do any required redirects, and (importantly) include a *proxy
-configuration* to pass traffic through from the nginx container to the Tomcat container. Hoist
+configure SSL certificates if needed, do any required redirects, and (importantly) include a _proxy
+configuration_ to pass traffic through from the nginx container to the Tomcat container. Hoist
 deploys typically bind only the nginx ports to the host machine, then link the nginx and Tomcat
 containers together via Docker so there’s a single point of entry (nginx) for incoming requests.
 This means that no CORS or further, external proxy configuration is required to have the
@@ -280,28 +280,28 @@ server {
 }
 ```
 
-***Note that this example configuration:***
+**_Note that this example configuration:_**
 
-* Uses `appCode` as a placeholder - use the same code as configured in the app’s server and client
-  builds!
-* Calls several optional nginx config includes, sourced from the base `xh-nginx` image. The base
-  image also copies in [an overall config](https://github.com/xh/xh-nginx/blob/master/xh.conf) that
-  enables gzip compression and sets the `$expires` variable referenced above.
-* Redirects insecure requests to HTTPS on port 443 and terminates SSL itself, using certificates
-  sourced from `/appCode/ssl` - the conventional location for Hoist apps to store certs and keys
-  within an attached Docker volume.
-* Sets up locations for each client-app entry point / bundle - here we are shipping two JS apps with
-  this container: `app` - the business-user facing app itself - and `admin` - the built-in Hoist
-  Admin console. Apps might have other entry points, such as `mobile` or other more specific
-  bundles.
-* Uses the `try_files` directive to attempt to service requests at sub-paths by handing back asset
-  files if they exist, but otherwise falling back to `index.html` within that path. This allows for
-  the use of HTML5 “pushState” routing, where in-app routes are written to the URL without the use
-  of a traditional `#` symbol (e.g. <http://host/app/details/123>).
-* Creates a proxy endpoint at `/api/` to pass traffic through to the Tomcat back-end. This path is
-  expected by the JS client, which will automatically prepend it to the path of any local/relative
-  Ajax requests. This can be customized if needed on the client by adjusting the `baserUrl` param
-  passed to `configureWebpack()`.
+-   Uses `appCode` as a placeholder - use the same code as configured in the app’s server and client
+    builds!
+-   Calls several optional nginx config includes, sourced from the base `xh-nginx` image. The base
+    image also copies in [an overall config](https://github.com/xh/xh-nginx/blob/master/xh.conf) that
+    enables gzip compression and sets the `$expires` variable referenced above.
+-   Redirects insecure requests to HTTPS on port 443 and terminates SSL itself, using certificates
+    sourced from `/appCode/ssl` - the conventional location for Hoist apps to store certs and keys
+    within an attached Docker volume.
+-   Sets up locations for each client-app entry point / bundle - here we are shipping two JS apps with
+    this container: `app` - the business-user facing app itself - and `admin` - the built-in Hoist
+    Admin console. Apps might have other entry points, such as `mobile` or other more specific
+    bundles.
+-   Uses the `try_files` directive to attempt to service requests at sub-paths by handing back asset
+    files if they exist, but otherwise falling back to `index.html` within that path. This allows for
+    the use of HTML5 “pushState” routing, where in-app routes are written to the URL without the use
+    of a traditional `#` symbol (e.g. <http://host/app/details/123>).
+-   Creates a proxy endpoint at `/api/` to pass traffic through to the Tomcat back-end. This path is
+    expected by the JS client, which will automatically prepend it to the path of any local/relative
+    Ajax requests. This can be customized if needed on the client by adjusting the `baserUrl` param
+    passed to `configureWebpack()`.
 
 The build system now simply needs to copy the built client-side resources into the Docker context
 and build the image. The sample below is simplified, but could also include the return code checks
@@ -339,20 +339,20 @@ Container Service (ECS).
 
 Regardless of the specific implementation, the following points should apply:
 
-* Both `appCode-tomcat` and `appCode-nginx` containers should be deployed as a service / pair, and
-  be kept at the same version.
-* The Tomcat container does not need to have any ports exposed/mapped onto the host (although it
-  could if direct access is desired).
-* The nginx container typically exposes ports 80 and 443, although if a load balancer or similar is
-  also in play that might vary (and would require appropriate adjustments to the `app.conf` nginx
-  file outlined above).
-* The nginx container must be able to reach the Tomcat container at the same name included in its
-  `app.conf` file - by convention, it expects to use `appCode-tomcat`. With straight Docker, this
-  can be accomplished via the `--link` option (see below).
-* A shared volume can be used to host the instance config .yml file for the Grails server, SSL certs
-  as required for nginx, and logs if so configured. This volume must be created in advance on the
-  host and populated with any required bootstrap files. How that’s done again will depend on the
-  particular Docker environment in play.
+-   Both `appCode-tomcat` and `appCode-nginx` containers should be deployed as a service / pair, and
+    be kept at the same version.
+-   The Tomcat container does not need to have any ports exposed/mapped onto the host (although it
+    could if direct access is desired).
+-   The nginx container typically exposes ports 80 and 443, although if a load balancer or similar is
+    also in play that might vary (and would require appropriate adjustments to the `app.conf` nginx
+    file outlined above).
+-   The nginx container must be able to reach the Tomcat container at the same name included in its
+    `app.conf` file - by convention, it expects to use `appCode-tomcat`. With straight Docker, this
+    can be accomplished via the `--link` option (see below).
+-   A shared volume can be used to host the instance config .yml file for the Grails server, SSL certs
+    as required for nginx, and logs if so configured. This volume must be created in advance on the
+    host and populated with any required bootstrap files. How that’s done again will depend on the
+    particular Docker environment in play.
 
 A sample Teamcity SSH-exec runner using Docker directly:
 
@@ -392,10 +392,8 @@ echo "Deploying $nginxImage complete"
 sudo docker system prune -af
 ```
 
-------------------------------------------
+---
 
 📫☎️🌎 info@xh.io | <https://xh.io/contact>
 
-Copyright © 2022 Extremely Heavy Industries Inc.
-
-
+Copyright © 2023 Extremely Heavy Industries Inc.

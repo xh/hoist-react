@@ -1,0 +1,11 @@
+/.yarn
+/.github
+/build
+/public
+/docs
+/static
+/styles
+/kit/golden-layout
+yarn.lock
+webpack.config.intellij.js
+*.md

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 //-----------------------------------------------
@@ -96,7 +96,6 @@
   }
 }
 
-
 //---------------------------
 // Default/light theme colors
 //---------------------------
@@ -120,28 +119,44 @@
         // highlight on hover for a disabled button. Note that :active pseudo-selector here is
         // triggered while button is being "held down" by user.
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-button-bg-lighter)}
-          &:active {background-color: var(--xh-button-bg-darkest)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-button-bg-lighter);
+          }
+          &:active {
+            background-color: var(--xh-button-bg-darkest);
+          }
         }
       }
 
       &.xh-button--intent-primary {
         color: white;
         background-color: var(--xh-intent-primary);
-        &.xh-button--active {background-color: var(--xh-intent-primary-darkest)}
+        &.xh-button--active {
+          background-color: var(--xh-intent-primary-darkest);
+        }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-primary-darker)}
-          &:active {background-color: var(--xh-intent-primary-darkest)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-intent-primary-darker);
+          }
+          &:active {
+            background-color: var(--xh-intent-primary-darkest);
+          }
         }
       }
 
       &.xh-button--intent-success {
         color: white;
         background-color: var(--xh-intent-success);
-        &.xh-button--active {background-color: var(--xh-intent-success-darkest)}
+        &.xh-button--active {
+          background-color: var(--xh-intent-success-darkest);
+        }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-success-darker)}
-          &:active {background-color: var(--xh-intent-success-darkest)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-intent-success-darker);
+          }
+          &:active {
+            background-color: var(--xh-intent-success-darkest);
+          }
         }
       }
 
@@ -152,24 +167,32 @@
         background-color: var(--xh-intent-warning);
         &.xh-button--active {
           color: white;
-          background-color: var(--xh-intent-warning-darkest)
+          background-color: var(--xh-intent-warning-darkest);
         }
         &.xh-button--enabled {
           &:hover:not(:active):not(.xh-button--active) {
             color: white;
-            background-color: var(--xh-intent-warning-darker)
+            background-color: var(--xh-intent-warning-darker);
           }
-          &:active {background-color: var(--xh-intent-warning-darkest)}
+          &:active {
+            background-color: var(--xh-intent-warning-darkest);
+          }
         }
       }
 
       &.xh-button--intent-danger {
         color: white;
         background-color: var(--xh-intent-danger);
-        &.xh-button--active {background-color: var(--xh-intent-danger-darkest)}
+        &.xh-button--active {
+          background-color: var(--xh-intent-danger-darkest);
+        }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-danger-darker)}
-          &:active {background-color: var(--xh-intent-danger-darkest)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-intent-danger-darker);
+          }
+          &:active {
+            background-color: var(--xh-intent-danger-darkest);
+          }
         }
       }
     }
@@ -186,8 +209,12 @@
           color: var(--xh-button-active-text-color);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-button-bg-darker)}
-          &:active {background-color: var(--xh-button-bg-darkest)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-button-bg-darker);
+          }
+          &:active {
+            background-color: var(--xh-button-bg-darkest);
+          }
         }
       }
 
@@ -195,10 +222,16 @@
         color: var(--xh-intent-primary-darker);
         background-color: transparent;
         border-color: var(--xh-intent-primary);
-        &.xh-button--active {background-color: var(--xh-intent-primary-trans2)}
+        &.xh-button--active {
+          background-color: var(--xh-intent-primary-trans2);
+        }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-primary-trans1)}
-          &:active {background-color: var(--xh-intent-primary-trans2)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-intent-primary-trans1);
+          }
+          &:active {
+            background-color: var(--xh-intent-primary-trans2);
+          }
         }
       }
 
@@ -206,10 +239,16 @@
         color: var(--xh-intent-success-darker);
         background-color: transparent;
         border-color: var(--xh-intent-success);
-        &.xh-button--active {background-color: var(--xh-intent-success-trans2)}
+        &.xh-button--active {
+          background-color: var(--xh-intent-success-trans2);
+        }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-success-trans1)}
-          &:active {background-color: var(--xh-intent-success-trans2)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-intent-success-trans1);
+          }
+          &:active {
+            background-color: var(--xh-intent-success-trans2);
+          }
         }
       }
 
@@ -217,10 +256,16 @@
         color: var(--xh-intent-warning-darker);
         background-color: transparent;
         border-color: var(--xh-intent-warning);
-        &.xh-button--active {background-color: var(--xh-intent-warning-trans2)}
+        &.xh-button--active {
+          background-color: var(--xh-intent-warning-trans2);
+        }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-warning-trans1)}
-          &:active {background-color: var(--xh-intent-warning-trans2)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-intent-warning-trans1);
+          }
+          &:active {
+            background-color: var(--xh-intent-warning-trans2);
+          }
         }
       }
 
@@ -228,10 +273,16 @@
         color: var(--xh-intent-danger-darker);
         background-color: transparent;
         border-color: var(--xh-intent-danger);
-        &.xh-button--active {background-color: var(--xh-intent-danger-trans2)}
+        &.xh-button--active {
+          background-color: var(--xh-intent-danger-trans2);
+        }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-danger-trans1)}
-          &:active {background-color: var(--xh-intent-danger-trans2)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-intent-danger-trans1);
+          }
+          &:active {
+            background-color: var(--xh-intent-danger-trans2);
+          }
         }
       }
     }
@@ -254,48 +305,76 @@
           color: var(--xh-button-active-text-color);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-button-bg-darker)}
-          &:active {background-color: var(--xh-button-bg-darkest)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-button-bg-darker);
+          }
+          &:active {
+            background-color: var(--xh-button-bg-darkest);
+          }
         }
       }
 
       &.xh-button--intent-primary {
         color: white;
         background-color: var(--xh-intent-primary);
-        &.xh-button--active {background-color: var(--xh-intent-primary-darkest)}
+        &.xh-button--active {
+          background-color: var(--xh-intent-primary-darkest);
+        }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-primary-darker)}
-          &:active {background-color: var(--xh-intent-primary-darkest)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-intent-primary-darker);
+          }
+          &:active {
+            background-color: var(--xh-intent-primary-darkest);
+          }
         }
       }
 
       &.xh-button--intent-success {
         color: white;
         background-color: var(--xh-intent-success);
-        &.xh-button--active {background-color: var(--xh-intent-success-darkest)}
+        &.xh-button--active {
+          background-color: var(--xh-intent-success-darkest);
+        }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-success-darker)}
-          &:active {background-color: var(--xh-intent-success-darkest)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-intent-success-darker);
+          }
+          &:active {
+            background-color: var(--xh-intent-success-darkest);
+          }
         }
       }
 
       &.xh-button--intent-warning {
         color: white;
         background-color: var(--xh-intent-warning);
-        &.xh-button--active {background-color: var(--xh-intent-warning-darkest)}
+        &.xh-button--active {
+          background-color: var(--xh-intent-warning-darkest);
+        }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-warning-darker)}
-          &:active {background-color: var(--xh-intent-warning-darkest)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-intent-warning-darker);
+          }
+          &:active {
+            background-color: var(--xh-intent-warning-darkest);
+          }
         }
       }
 
       &.xh-button--intent-danger {
         color: white;
         background-color: var(--xh-intent-danger);
-        &.xh-button--active {background-color: var(--xh-intent-danger-darkest)}
+        &.xh-button--active {
+          background-color: var(--xh-intent-danger-darkest);
+        }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-danger-darker)}
-          &:active {background-color: var(--xh-intent-danger-darkest)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-intent-danger-darker);
+          }
+          &:active {
+            background-color: var(--xh-intent-danger-darkest);
+          }
         }
       }
     }
@@ -312,8 +391,12 @@
           color: var(--xh-button-active-text-color);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-button-bg-darker)}
-          &:active {background-color: var(--xh-button-bg-lighter)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-button-bg-darker);
+          }
+          &:active {
+            background-color: var(--xh-button-bg-lighter);
+          }
         }
       }
 
@@ -321,10 +404,16 @@
         color: var(--xh-intent-primary-lighter);
         background-color: transparent;
         border-color: var(--xh-intent-primary-lighter);
-        &.xh-button--active {background-color: var(--xh-intent-primary-trans2)}
+        &.xh-button--active {
+          background-color: var(--xh-intent-primary-trans2);
+        }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-primary-trans1)}
-          &:active {background-color: var(--xh-intent-primary-trans2)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-intent-primary-trans1);
+          }
+          &:active {
+            background-color: var(--xh-intent-primary-trans2);
+          }
         }
       }
 
@@ -332,10 +421,16 @@
         color: var(--xh-intent-success-lighter);
         background-color: transparent;
         border-color: var(--xh-intent-success-lighter);
-        &.xh-button--active {background-color: var(--xh-intent-success-trans2)}
+        &.xh-button--active {
+          background-color: var(--xh-intent-success-trans2);
+        }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-success-trans1)}
-          &:active {background-color: var(--xh-intent-success-trans2)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-intent-success-trans1);
+          }
+          &:active {
+            background-color: var(--xh-intent-success-trans2);
+          }
         }
       }
 
@@ -343,10 +438,16 @@
         color: var(--xh-intent-warning-lighter);
         background-color: transparent;
         border-color: var(--xh-intent-warning-lighter);
-        &.xh-button--active {background-color: var(--xh-intent-warning-trans2)}
+        &.xh-button--active {
+          background-color: var(--xh-intent-warning-trans2);
+        }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-warning-trans1)}
-          &:active {background-color: var(--xh-intent-warning-trans2)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-intent-warning-trans1);
+          }
+          &:active {
+            background-color: var(--xh-intent-warning-trans2);
+          }
         }
       }
 
@@ -354,10 +455,16 @@
         color: var(--xh-intent-danger-lighter);
         background-color: transparent;
         border-color: var(--xh-intent-danger-lighter);
-        &.xh-button--active {background-color: var(--xh-intent-danger-trans2)}
+        &.xh-button--active {
+          background-color: var(--xh-intent-danger-trans2);
+        }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-danger-trans1)}
-          &:active {background-color: var(--xh-intent-danger-trans2)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-intent-danger-trans1);
+          }
+          &:active {
+            background-color: var(--xh-intent-danger-trans2);
+          }
         }
       }
     }
@@ -376,8 +483,12 @@
     .xh-button.bp4-button.xh-button--minimal {
       &.xh-button--intent-none {
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active) {background-color: var(--xh-intent-neutral-trans1)}
-          &:active {background-color: var(--xh-intent-neutral-trans2)}
+          &:hover:not(:active):not(.xh-button--active) {
+            background-color: var(--xh-intent-neutral-trans1);
+          }
+          &:active {
+            background-color: var(--xh-intent-neutral-trans2);
+          }
         }
       }
     }

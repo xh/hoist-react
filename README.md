@@ -7,6 +7,8 @@ Additional docs of interest:
   \- notes on CI configuration and build/deploy considerations.
 * [docs/development-environment.md](https://github.com/xh/hoist-react/blob/develop/docs/development-environment.md)
   \- notes on local development environment configuration for Hoist and app developers.
+* [docs/upgrade-to-typescript.md](https://github.com/xh/hoist-react/blob/develop/docs/upgrade-to-typescript.md)
+  \- guide on upgrading hoist applications to typescript.
 
 Hoist is a web application development toolkit developed by [Extremely Heavy](https://xh.io/).
 
@@ -401,4 +403,4 @@ will be filled in as soon as possible. These include planned notes on:
 
 📫☎️🌎 info@xh.io | <https://xh.io/contact>
 
-Copyright © 2022 Extremely Heavy Industries Inc.
+Copyright © 2023 Extremely Heavy Industries Inc.
