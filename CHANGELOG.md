@@ -2,6 +2,11 @@
 
 ## 59.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed bug where `TabContainerModel` with routing enabled would drop route params when navigating
+  between tabs.
+
 ## 58.0.0 - 2023-07-07
 
 ### 🎁 New Features

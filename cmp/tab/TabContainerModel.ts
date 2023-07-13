@@ -288,7 +288,8 @@ export class TabContainerModel extends HoistModel {
 
         const {route} = this;
         if (route) {
-            XH.navigate(route + '.' + tab.id);
+            const {params} = XH.router.getState();
+            XH.navigate(route + '.' + tab.id, params);
         } else {
             this.setActiveTabIdInternal(tab.id);
         }
