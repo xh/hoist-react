@@ -56,11 +56,9 @@ export class ColChooserModel extends HoistModel {
             rightTitle: 'Displayed Columns',
             rightEmptyText: 'No columns will be visible.',
             leftSorted: true,
-            rightGroupingEnabled: false,
             onChange: () => {
                 if (this.commitOnChange) this.commit();
-            },
-            xhImpl: true
+            }
         });
     }
 

@@ -4,6 +4,7 @@
  *
  * Copyright © 2021 Extremely Heavy Industries Inc.
  */
+import {StoreConfig} from '@xh/hoist/data';
 import {filter, isEmpty, sortBy, maxBy, includes} from 'lodash';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div} from '@xh/hoist/cmp/layout';
@@ -11,28 +12,36 @@ import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {computed, makeObservable} from '@xh/hoist/mobx';
 
+type Node = {
+    children: Node[];
+    text?: string;
+    side?: string;
+    sortOrder?: number;
+    id?: string;
+    value?: string;
+    isLeaf?: boolean;
+    description?: string;
+    exclude?: boolean;
+    locked?: boolean;
+};
 
 /**
  * A Model for managing the state of a LeftRightChooser.
  */
 export class LRChooserModel extends HoistModel {
+    @managed leftModel: GridModel;
 
-    /** @type {GridModel} */
-    @managed leftModel;
+    @managed rightModel: GridModel;
 
-    /** @type {GridModel} */
-    @managed rightModel;
-
-    /** @type {function} */
     onChange;
 
     hasDescription = false;
 
-    _data = null;
-    _lastSelectedSide = null;
-    _inRightGrid = false;
-    _dropTargetId = null;
-    _dropEdge = null;
+    private data = null;
+    private lastSelectedSide = null;
+    private inRightGrid = false;
+    private dropTargetId = null;
+    private dropEdge = null;
 
     /**
      * Filter for data rows to determine if they should be shown.
@@ -53,8 +62,7 @@ export class LRChooserModel extends HoistModel {
     /** Currently 'selected' values on the right-hand side. */
     @computed
     get rightValues() {
-        return sortBy(this.rightModel.store.allRecords, 'data.sortOrder')
-            .map(it => it.raw.value);
+        return sortBy(this.rightModel.store.allRecords, 'data.sortOrder').map(it => it.raw.value);
     }
 
     /** Currently 'deselected' values on the left-hand side. */
@@ -66,17 +74,18 @@ export class LRChooserModel extends HoistModel {
     /** Currently 'selected' leaf columns on the right-hand side. */
     @computed
     get rightLeaves() {
-        return sortBy(filter(this.rightModel.store.allRecords, 'raw.isLeaf'), 'data.sortOrder')
-            .map(it => it.raw.value);
+        return sortBy(filter(this.rightModel.store.allRecords, 'raw.isLeaf'), 'data.sortOrder').map(
+            it => it.raw.value
+        );
     }
 
     /** Currently 'deselected' leaf columns on the left-hand side. */
     @computed
     get leftLeaves() {
-        return sortBy(filter(this.leftModel.store.allRecords, 'raw.isLeaf'), 'data.sortOrder')
-            .map(it => it.raw.value);
+        return sortBy(filter(this.leftModel.store.allRecords, 'raw.isLeaf'), 'data.sortOrder').map(
+            it => it.raw.value
+        );
     }
-
 
     /**
      * @param {Object} c - LrChooserModel configuration.
@@ -105,7 +114,7 @@ export class LRChooserModel extends HoistModel {
         super();
         makeObservable(this);
         this.onChange = onChange;
-        const store = {
+        const store: StoreConfig = {
             fields: [
                 {name: 'text', type: 'string'},
                 {name: 'value', type: 'string'},
@@ -121,16 +130,18 @@ export class LRChooserModel extends HoistModel {
         const leftTextCol = {
                 field: 'text',
                 flex: true,
-                headerName: () => leftTitle + (showCounts ? ` (${this.leftModel.store.count})` : ''),
-                renderer: this.getTextColRenderer('left'),
+                headerName: () =>
+                    leftTitle + (showCounts ? ` (${this.leftModel.store.count})` : ''),
+                renderer: this.getTextColRenderer(),
                 sortable: false,
                 isTreeColumn: true
             },
             rightTextCol = {
                 field: 'text',
                 flex: true,
-                headerName: () => rightTitle + (showCounts ? ` (${this.rightModel.store.count})` : ''),
-                renderer: this.getTextColRenderer('right'),
+                headerName: () =>
+                    rightTitle + (showCounts ? ` (${this.rightModel.store.count})` : ''),
+                renderer: this.getTextColRenderer(),
                 sortable: false,
                 isTreeColumn: true
             },
@@ -146,7 +157,7 @@ export class LRChooserModel extends HoistModel {
             selModel: 'multiple',
             sortBy: leftSorted ? 'text' : 'sortOrder',
             emptyText: leftEmptyText,
-            onRowDoubleClicked: (e) => this.onRowDoubleClicked(e),
+            onRowDoubleClicked: e => this.onRowDoubleClicked(e),
             columns: [leftTextCol]
         });
 
@@ -156,29 +167,26 @@ export class LRChooserModel extends HoistModel {
             selModel: 'multiple',
             sortBy: rightSorted ? 'text' : 'sortOrder',
             emptyText: rightEmptyText,
-            onRowDoubleClicked: (e) => this.onRowDoubleClicked(e),
+            onRowDoubleClicked: e => this.onRowDoubleClicked(e),
             columns: [idxCol, rightTextCol],
             rowClassRules: {
                 'xh-lr-chooser__drop-above': ({data}) => {
-                    return data.id === this._dropTargetId && this._dropEdge === 'above';
+                    return data.id === this.dropTargetId && this.dropEdge === 'above';
                 },
                 'xh-lr-chooser__drop-below': ({data}) => {
-                    return data.id === this._dropTargetId && this._dropEdge === 'below';
+                    return data.id === this.dropTargetId && this.dropEdge === 'below';
                 }
             }
         });
 
         this.setData(data);
 
-        this.addReaction(
-            this.syncSelectionReaction(),
-            this.loadReaction()
-        );
+        this.addReaction(this.syncSelectionReaction(), this.loadReaction());
     }
 
     setData(data) {
         this.hasDescription = data.some(it => it.description);
-        this._data = this.preprocessData(data);
+        this.data = this.preprocessData(data);
         this.refreshStores();
     }
 
@@ -216,7 +224,7 @@ export class LRChooserModel extends HoistModel {
 
     // Row Drag Event Handlers
     onLeftDragEnd(e) {
-        const rows = (e.nodes).map(r => r.data);
+        const rows = e.nodes.map(r => r.data);
         if (rows[0].raw.side === 'right') {
             this.swapSides(rows);
             this.onChange?.();
@@ -224,9 +232,9 @@ export class LRChooserModel extends HoistModel {
     }
 
     onRightDragEnd(e) {
-        this._dropTargetId = null;
+        this.dropTargetId = null;
         this.rightModel.agApi.redrawRows();
-        const rows = (e.nodes).map(r => r.data),
+        const rows = e.nodes.map(r => r.data),
             overRow = e.overNode?.data;
 
         if (rows[0] === overRow) return;
@@ -247,34 +255,34 @@ export class LRChooserModel extends HoistModel {
             this.rearrangeRows(swapped, overRow);
         }
         this.merge();
-        this._inRightGrid = false;
+        this.inRightGrid = false;
         this.onChange?.();
     }
 
     onRowDragMove(e) {
-        if (!this._inRightGrid) {
-            this._dropTargetId = null;
+        if (!this.inRightGrid) {
+            this.dropTargetId = null;
         } else {
             const dropRow = e.overNode?.data;
             if (dropRow) {
-                this._dropTargetId = dropRow.id;
-                this._dropEdge = 'above';
+                this.dropTargetId = dropRow.id;
+                this.dropEdge = 'above';
             } else {
                 const rightStore = this.rightModel.store.allRecords;
-                this._dropTargetId = maxBy(rightStore, rec => rec.data.sortOrder).id;
-                this._dropEdge = 'below';
+                this.dropTargetId = maxBy(rightStore, rec => rec.data.sortOrder).id;
+                this.dropEdge = 'below';
             }
         }
         this.rightModel.agApi.redrawRows();
     }
 
     onRightDragEnter() {
-        this._inRightGrid = true;
+        this.inRightGrid = true;
     }
 
     onRightDragLeave() {
-        this._inRightGrid = false;
-        this._dropTargetId = null;
+        this.inRightGrid = false;
+        this.dropTargetId = null;
         this.rightModel.agApi.redrawRows();
     }
 
@@ -294,10 +302,10 @@ export class LRChooserModel extends HoistModel {
             let toIndex = overRow.data.sortOrder,
                 rightRoots = this.rightModel.store.rootRecords;
             const row = rows[0],
-                splitting = !isEmpty(row.allAncestors) && (row.parentId !== overRow.parentId),
-                depth = splitting ?
-                    row.allAncestors?.length + this.getNestingDepth([row]) :
-                    this.getNestingDepth(rows);
+                splitting = !isEmpty(row.allAncestors) && row.parentId !== overRow.parentId,
+                depth = splitting
+                    ? row.allAncestors?.length + this.getNestingDepth([row])
+                    : this.getNestingDepth(rows);
             // shift rows by the number of rows being inserted, including nesting
             this.shiftRows(rightRoots, toIndex, depth);
             if (splitting) {
@@ -325,7 +333,9 @@ export class LRChooserModel extends HoistModel {
             row.raw.sortOrder = lastSortOrder;
         };
 
-        rows.forEach(row => {row.forEachDescendant(append)});
+        rows.forEach(row => {
+            row.forEachDescendant(append);
+        });
     }
 
     split(row, toIndex, side) {
@@ -334,7 +344,7 @@ export class LRChooserModel extends HoistModel {
             newAncestors = this.makeNewAncestors(row, toIndex, side, ancestors),
             newNode = this.makeNewNode(row, toIndex, side, newAncestors);
 
-        let data = this._data;
+        let data = this.data;
 
         // 2) append the new node to the new ancestors
         newAncestors[newAncestors.length - 1].children = [newNode];
@@ -342,7 +352,7 @@ export class LRChooserModel extends HoistModel {
         // 3) remove the original node row from its previous ancestor
         ancestors[ancestors.length - 1].raw.children = filter(
             ancestors[ancestors.length - 1].raw.children,
-            (col => col.id !== row.id)
+            col => col.id !== row.id
         );
 
         // 4) remove any drifting nodes
@@ -357,13 +367,13 @@ export class LRChooserModel extends HoistModel {
 
         // 5) put the new ancestors in _data to be refreshed
         data.push(newAncestors[0]);
-        this._data = data;
+        this.data = data;
 
         this.refreshStores();
     }
 
     merge() {
-        let data = sortBy(this._data, 'sortOrder'),
+        let data = sortBy(this.data, 'sortOrder'),
             idsToDelete = [],
             rowOne,
             rowTwo;
@@ -384,7 +394,7 @@ export class LRChooserModel extends HoistModel {
             return !row.isLeaf && isEmpty(row.children);
         }
 
-        this._data = filter(data, row => !includes(idsToDelete, row.id) && !isObsolete(row));
+        this.data = filter(data, row => !includes(idsToDelete, row.id) && !isObsolete(row));
 
         this.refreshStores();
     }
@@ -399,7 +409,8 @@ export class LRChooserModel extends HoistModel {
                 rowTwo = rows[j];
                 if (rowOne.text === rowTwo.text) {
                     rowOne.children.push(...rowTwo.children);
-                    if (!isEmpty(rowOne.children)) rowOne.children = this.mergeRecursive(rowOne.children);
+                    if (!isEmpty(rowOne.children))
+                        rowOne.children = this.mergeRecursive(rowOne.children);
                     rowOne.children = this.reorderChildren(rowOne.children, rowOne.sortOrder);
                     idsToDelete.push(rowTwo.id);
                 }
@@ -439,7 +450,7 @@ export class LRChooserModel extends HoistModel {
         rows.forEach(row => {
             const {locked, side} = row.raw;
             if (locked) return;
-            row.raw.side = (side === 'left' ? 'right' : 'left');
+            row.raw.side = side === 'left' ? 'right' : 'left';
         });
 
         this.refreshStores();
@@ -466,7 +477,7 @@ export class LRChooserModel extends HoistModel {
     makeNewNode(row, toIndex, side, ancestors) {
         const {isLeaf, children, text, value, exclude, locked, description, name} = row.raw,
             nextAncestor = ancestors[ancestors.length - 1],
-            newNode = {
+            newNode: Node = {
                 children: children,
                 text: text,
                 side,
@@ -511,7 +522,7 @@ export class LRChooserModel extends HoistModel {
                 sortOrder += idx;
                 child.sortOrder = sortOrder;
                 if (!isEmpty(child.children)) {
-                    child.children = traverse(child.children, sortOrder);
+                    child.children = traverse(child.children);
                 }
                 return child;
             });
@@ -531,10 +542,12 @@ export class LRChooserModel extends HoistModel {
         let sortOrder = 0,
             rightStore = sortBy(this.rightModel.store.rootRecords, 'raw.sortOrder');
 
-        rightStore.forEach(rec => rec.forEachDescendant(row => {
-            row.raw.sortOrder = sortOrder;
-            sortOrder++;
-        }));
+        rightStore.forEach(rec =>
+            rec.forEachDescendant(row => {
+                row.raw.sortOrder = sortOrder;
+                sortOrder++;
+            })
+        );
         this.refreshStores();
     }
 
@@ -558,12 +571,12 @@ export class LRChooserModel extends HoistModel {
         return {
             track: () => [leftSel.selectedRecord, rightSel.selectedRecord],
             run: () => {
-                const lastSelectedSide = this._lastSelectedSide;
+                const lastSelectedSide = this.lastSelectedSide;
                 if (leftSel.selectedRecord && lastSelectedSide !== 'left') {
-                    this._lastSelectedSide = 'left';
+                    this.lastSelectedSide = 'left';
                     rightSel.clear();
                 } else if (rightSel.selectedRecord && lastSelectedSide !== 'right') {
-                    this._lastSelectedSide = 'right';
+                    this.lastSelectedSide = 'right';
                     leftSel.clear();
                 }
             }
@@ -571,30 +584,25 @@ export class LRChooserModel extends HoistModel {
     }
 
     refreshStores() {
-        const data = this._data,
+        const data = this.data,
             {leftModel, rightModel} = this;
 
-        const leftData = [{
-                id: 'leftRoot',
-                name: 'root',
-                children: data.filter(it => it.side === 'left')
-            }], rightData = [{
-                id: 'rightRoot',
-                name: 'root',
-                children: data.filter(it => it.side === 'right')
-            }];
+        const leftData = [
+                {
+                    id: 'leftRoot',
+                    name: 'root',
+                    children: data.filter(it => it.side === 'left')
+                }
+            ],
+            rightData = [
+                {
+                    id: 'rightRoot',
+                    name: 'root',
+                    children: data.filter(it => it.side === 'right')
+                }
+            ];
 
         leftModel.store.loadData(leftData);
         rightModel.store.loadData(rightData);
     }
 }
-
-/**
- * @typedef {Object} LeftRightChooserItemDef - data record object for a LeftRightChooser value item.
- * @property {string} text - primary label for the item.
- * @property {string} value - value that the item represents.
- * @property {string} [description] - user-friendly, longer description of the item.
- * @property {string} [side] - initial side of the item - one of ['left', 'right'] - default left.
- * @property {boolean} [locked] - true to prevent the user from moving the item between sides.
- * @property {boolean} [exclude] - true to exclude the item from the chooser entirely.
- */

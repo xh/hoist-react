@@ -2,18 +2,29 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {GridOptions} from '@ag-grid-community/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {hframe, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import {cloneDeep} from 'lodash';
-import PT from 'prop-types';
 import {chooserToolbar} from '../../../../leftrightchooser/impl/ChooserToolbar';
 import {description} from '../../../../leftrightchooser/impl/Description';
 import {LRChooserModel} from './LRChooserModel';
 import './LRChooser.scss';
 
+export interface LRChooserProps extends HoistProps, BoxProps {
+    model?: LRChooserModel;
+}
+
+type LeftGridOptions = {
+    agOptions: GridOptions;
+};
+
+type RightGridOptions = {
+    agOptions: GridOptions;
+};
 
 /**
  * A component for moving a list of items between two arbitrary groups. By convention, the left
@@ -21,7 +32,7 @@ import './LRChooser.scss';
  * A next panel is also available to display a more in-depth description for any selected item.
  * @see LrChooserModel
  */
-export const [LRChooser, lrChooser] = hoistCmp.withFactory({
+export const [LRChooser, lrChooser] = hoistCmp.withFactory<LRChooserProps>({
     displayName: 'LeftRightChooser',
     model: uses(LRChooserModel),
     className: 'xh-lr-chooser',
@@ -36,16 +47,16 @@ export const [LRChooser, lrChooser] = hoistCmp.withFactory({
                     rowDragEntireRow: true,
                     rowDragMultiRow: true,
                     animateRows: true,
-                    onRowDragMove: (e) => model.onRowDragMove(e)
+                    onRowDragMove: e => model.onRowDragMove(e)
                 }
             },
-            leftGridOptions = cloneDeep(gridOptions),
-            rightGridOptions = cloneDeep(gridOptions);
+            leftGridOptions: LeftGridOptions = cloneDeep(gridOptions),
+            rightGridOptions: RightGridOptions = cloneDeep(gridOptions);
 
-        leftGridOptions.agOptions.onRowDragEnd = (e) => model.onLeftDragEnd(e);
-        rightGridOptions.agOptions.onRowDragEnd = (e) => model.onRightDragEnd(e);
-        rightGridOptions.agOptions.onRowDragLeave = (e) => model.onRightDragLeave(e);
-        rightGridOptions.agOptions.onRowDragEnter = (e) => model.onRightDragEnter(e);
+        leftGridOptions.agOptions.onRowDragEnd = e => model.onLeftDragEnd(e);
+        rightGridOptions.agOptions.onRowDragEnd = e => model.onRightDragEnd(e);
+        rightGridOptions.agOptions.onRowDragLeave = () => model.onRightDragLeave();
+        rightGridOptions.agOptions.onRowDragEnter = () => model.onRightDragEnter();
 
         return vbox({
             ref,
@@ -64,9 +75,3 @@ export const [LRChooser, lrChooser] = hoistCmp.withFactory({
         });
     }
 });
-lrChooser.propTypes = {
-    /** Primary component model instance. */
-    model: PT.oneOfType([PT.instanceOf(LRChooserModel), PT.object])
-};
-
-
