@@ -28,6 +28,7 @@ import {
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNumber} from 'lodash';
+import {ReactNode} from 'react';
 
 /**
  * Configuration for a DataView.
@@ -63,7 +64,7 @@ export interface DataViewConfig extends GridConfig {
     selModel?: StoreSelectionModel | StoreSelectionConfig | 'single' | 'multiple' | 'disabled';
 
     /** Text/HTML to display if view has no records.*/
-    emptyText?: string;
+    emptyText?: ReactNode;
 
     /** True to highlight the currently hovered row.*/
     showHover?: boolean;
