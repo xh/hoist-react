@@ -2,6 +2,9 @@
 
 ## 59.0.0-SNAPSHOT - unreleased
 
+### 📚 Libraries
+* typescript `4.9 -> 5.2`
+
 ## 58.0.1 - 2023-07-13
 
 ### 🐞 Bug Fixes
