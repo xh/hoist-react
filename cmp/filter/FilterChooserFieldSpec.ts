@@ -14,7 +14,7 @@ import {fmtDate, parseNumber} from '@xh/hoist/format';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
 import {isValidElement, ReactNode} from 'react';
-import {renderToStaticMarkup} from 'react-dom/server';
+import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 
 export interface FilterChooserFieldSpecConfig extends BaseFilterFieldSpecConfig {
     /**
@@ -83,7 +83,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
             ret = this.valueRenderer(value, op);
             if (isValidElement(ret)) {
                 // Prevents [object Object] rendering
-                ret = renderToStaticMarkup(ret as any);
+                ret = renderToStaticMarkup(ret);
             }
         } else if (this.isDateBasedFieldType) {
             ret = fmtDate(value);

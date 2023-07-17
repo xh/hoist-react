@@ -12,7 +12,7 @@ import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import copy from 'clipboard-copy';
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
 import {isValidElement} from 'react';
-import {renderToStaticMarkup} from 'react-dom/server';
+import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 import {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
 
 import type {GetContextMenuItemsParams, MenuItemDef} from '@xh/hoist/kit/ag-grid';
@@ -202,7 +202,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                         // That's the contract for `RecordAction.text`, but even more importantly, we end up piping
                         // those actions into Ag-Grid context menus, which *only* accept strings / HTML markup
                         // and *not* ReactElements (as of AG v28.2).
-                        text = isValidElement(elem) ? renderToStaticMarkup(elem as any) : elem;
+                        text = isValidElement(elem) ? renderToStaticMarkup(elem) : elem;
 
                     return {text};
                 };

@@ -25,7 +25,7 @@ import {
     takeRight
 } from 'lodash';
 import {isValidElement} from 'react';
-import {renderToStaticMarkup} from 'react-dom/server';
+import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 import {Column} from '../columns';
 import {GridModel} from '../GridModel';
 
@@ -133,7 +133,7 @@ export class ColumnWidthCalculator {
                     value = renderMemo.get(rawValue);
                 } else {
                     value = renderer(rawValue, ctx);
-                    if (isValidElement(value)) value = renderToStaticMarkup(value as any);
+                    if (isValidElement(value)) value = renderToStaticMarkup(value);
                     renderMemo?.set(rawValue, value);
                 }
             }
@@ -233,7 +233,7 @@ export class ColumnWidthCalculator {
 
         if (isNil(headerValue)) return '';
         if (isString(headerValue)) return headerValue;
-        if (isValidElement(headerValue)) return renderToStaticMarkup(headerValue as any);
+        if (isValidElement(headerValue)) return renderToStaticMarkup(headerValue);
         throw XH.exception(
             'Unable to get column header html because value is not a string or valid react element'
         );
