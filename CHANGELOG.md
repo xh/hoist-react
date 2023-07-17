@@ -4,7 +4,8 @@
 
 ### 📚 Libraries
 * typescript `4.9 -> 5.2`
-
+* mobx `6.8 -> 6.9`
+*
 ## 58.0.1 - 2023-07-13
 
 ### 🐞 Bug Fixes
