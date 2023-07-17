@@ -22,7 +22,7 @@ import '@xh/hoist/desktop/register';
 import {action, makeObservable, observable, comparer, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, isString} from 'lodash';
+import {isNil, isNumber, isString} from 'lodash';
 import {createRef} from 'react';
 import {ModalSupportConfig, ModalSupportModel} from '../modalsupport/';
 
@@ -293,7 +293,7 @@ export class PanelModel extends HoistModel {
             const el = this._resizeRef?.current,
                 currSize = this.vertical ? el?.offsetHeight : el?.offsetWidth,
                 {size} = this;
-            if (isNil(currSize) || isNil(size) || size < currSize) {
+            if (isNil(currSize) || isNil(size) || (isNumber(size) && size < currSize)) {
                 this.size = this.defaultSize;
             }
         }

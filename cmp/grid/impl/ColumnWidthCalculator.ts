@@ -133,7 +133,7 @@ export class ColumnWidthCalculator {
                     value = renderMemo.get(rawValue);
                 } else {
                     value = renderer(rawValue, ctx);
-                    if (isValidElement(value)) value = renderToStaticMarkup(value);
+                    if (isValidElement(value)) value = renderToStaticMarkup(value as any);
                     renderMemo?.set(rawValue, value);
                 }
             }
@@ -233,7 +233,7 @@ export class ColumnWidthCalculator {
 
         if (isNil(headerValue)) return '';
         if (isString(headerValue)) return headerValue;
-        if (isValidElement(headerValue)) return renderToStaticMarkup(headerValue);
+        if (isValidElement(headerValue)) return renderToStaticMarkup(headerValue as any);
         throw XH.exception(
             'Unable to get column header html because value is not a string or valid react element'
         );

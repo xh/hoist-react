@@ -83,7 +83,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
             ret = this.valueRenderer(value, op);
             if (isValidElement(ret)) {
                 // Prevents [object Object] rendering
-                ret = renderToStaticMarkup(ret);
+                ret = renderToStaticMarkup(ret as any);
             }
         } else if (this.isDateBasedFieldType) {
             ret = fmtDate(value);

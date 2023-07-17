@@ -202,7 +202,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                         // That's the contract for `RecordAction.text`, but even more importantly, we end up piping
                         // those actions into Ag-Grid context menus, which *only* accept strings / HTML markup
                         // and *not* ReactElements (as of AG v28.2).
-                        text = isValidElement(elem) ? renderToStaticMarkup(elem) : elem;
+                        text = isValidElement(elem) ? renderToStaticMarkup(elem as any) : elem;
 
                     return {text};
                 };
