@@ -13,21 +13,10 @@ import {
     PlainObject,
     XH
 } from '@xh/hoist/core';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {genDisplayName} from '@xh/hoist/data';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {createObservableRef} from '@xh/hoist/utils/react';
-import {
-    cloneDeep,
-    difference,
-    isFunction,
-    isArray,
-    isEmpty,
-    isEqual,
-    isString,
-    keys,
-    sortBy
-} from 'lodash';
+import {cloneDeep, isArray, isEmpty, isEqual, isFunction, isString, keys, sortBy} from 'lodash';
 
 export interface GroupingChooserConfig {
     /**
@@ -94,32 +83,6 @@ export class GroupingChooserModel extends HoistModel {
     persistValue: boolean = false;
     persistFavorites: boolean = false;
 
-    // Implementation fields for Control
-    @observable.ref pendingValue: string[] = [];
-    @observable editorIsOpen: boolean = false;
-    @observable favoritesIsOpen: boolean = false;
-
-    popoverRef = createObservableRef<HTMLElement>();
-
-    @computed
-    get availableDims(): string[] {
-        return difference(this.dimensionNames, this.pendingValue);
-    }
-
-    @computed
-    get isValid(): boolean {
-        return this.validateValue(this.pendingValue);
-    }
-
-    @computed
-    get isAddEnabled(): boolean {
-        const {pendingValue, maxDepth, dimensionNames, availableDims} = this,
-            limit =
-                maxDepth > 0 ? Math.min(maxDepth, dimensionNames.length) : dimensionNames.length,
-            atMaxDepth = pendingValue.length === limit;
-        return !atMaxDepth && !isEmpty(availableDims);
-    }
-
     constructor({
         dimensions,
         initialValue = [],
@@ -176,13 +139,6 @@ export class GroupingChooserModel extends HoistModel {
             }
         }
 
-        this.addReaction({
-            track: () => this.pendingValue,
-            run: () => {
-                if (this.commitOnChange) this.setValue(this.pendingValue);
-            }
-        });
-
         this.setValue(value);
         this.setFavorites(favorites);
     }
@@ -194,69 +150,6 @@ export class GroupingChooserModel extends HoistModel {
             return;
         }
         this.value = value;
-        this.pendingValue = value;
-    }
-
-    @action
-    toggleEditor() {
-        this.pendingValue = this.value;
-        this.editorIsOpen = !this.editorIsOpen;
-        this.favoritesIsOpen = false;
-    }
-
-    @action
-    toggleFavoritesMenu() {
-        this.favoritesIsOpen = !this.favoritesIsOpen;
-        this.editorIsOpen = false;
-    }
-
-    @action
-    closePopover() {
-        this.editorIsOpen = false;
-        this.favoritesIsOpen = false;
-    }
-
-    //-------------------------
-    // Value handling
-    //-------------------------
-    @action
-    addPendingDim(dimName: string) {
-        if (!dimName) return;
-        this.pendingValue = [...this.pendingValue, dimName];
-    }
-
-    @action
-    replacePendingDimAtIdx(dimName: string, idx: number) {
-        if (!dimName) return this.removePendingDimAtIdx(idx);
-        const pendingValue = [...this.pendingValue];
-        pendingValue[idx] = dimName;
-        this.pendingValue = pendingValue;
-    }
-
-    @action
-    removePendingDimAtIdx(idx: number) {
-        const pendingValue = [...this.pendingValue];
-        pendingValue.splice(idx, 1);
-        this.pendingValue = pendingValue;
-    }
-
-    @action
-    movePendingDimToIndex(dimName: string, toIdx: number) {
-        const pendingValue = [...this.pendingValue],
-            dim = pendingValue.find(it => it === dimName),
-            fromIdx = pendingValue.indexOf(dim);
-
-        pendingValue.splice(toIdx, 0, pendingValue.splice(fromIdx, 1)[0]);
-        this.pendingValue = pendingValue;
-    }
-
-    @action
-    commitPendingValueAndClose() {
-        const {pendingValue, value} = this;
-        if (!isEqual(value, pendingValue) && this.validateValue(pendingValue)) {
-            this.setValue(pendingValue);
-        }
-        this.closePopover();
     }
 
     validateValue(value) {
@@ -290,15 +183,6 @@ export class GroupingChooserModel extends HoistModel {
 
     getDimDisplayName(dimName: string) {
         return this.dimensions[dimName].displayName;
-    }
-
-    //--------------------
-    // Drag Drop
-    //--------------------
-    onDragEnd(result) {
-        const {draggableId, destination} = result;
-        if (!destination) return;
-        this.movePendingDimToIndex(draggableId, destination.index);
     }
 
     //--------------------

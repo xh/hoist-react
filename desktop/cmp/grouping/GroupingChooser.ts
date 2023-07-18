@@ -6,17 +6,18 @@
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {box, div, filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, HoistProps, useLocalModel, uses} from '@xh/hoist/core';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
-import {select, MENU_PORTAL_ID} from '@xh/hoist/desktop/cmp/input';
+import {MENU_PORTAL_ID, select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {createObservableRef, splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, isEmpty, sortBy} from 'lodash';
+import {compact, difference, isEmpty, isEqual, sortBy} from 'lodash';
 import './GroupingChooser.scss';
 
 export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> {
@@ -37,6 +38,126 @@ export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> 
 
     /** True (default) to style target button as an input field - blends better in toolbars. */
     styleButtonAsInput?: boolean;
+}
+
+class GroupingChooserLocalModel extends HoistModel {
+    private readonly model: GroupingChooserModel;
+
+    @observable.ref pendingValue: string[] = [];
+    @observable editorIsOpen: boolean = false;
+    @observable favoritesIsOpen: boolean = false;
+
+    popoverRef = createObservableRef<HTMLElement>();
+
+    constructor(model: GroupingChooserModel) {
+        super();
+        makeObservable(this);
+
+        this.model = model;
+
+        this.addReaction({
+            track: () => this.pendingValue,
+            run: () => {
+                if (model.commitOnChange) model.setValue(this.pendingValue);
+            }
+        });
+    }
+
+    @computed
+    get availableDims(): string[] {
+        return difference(this.model.dimensionNames, this.pendingValue);
+    }
+
+    @computed
+    get isValid(): boolean {
+        return this.model.validateValue(this.pendingValue);
+    }
+
+    @computed
+    get isAddEnabled(): boolean {
+        const {pendingValue, availableDims} = this,
+            {maxDepth, dimensionNames} = this.model,
+            limit =
+                maxDepth > 0 ? Math.min(maxDepth, dimensionNames.length) : dimensionNames.length,
+            atMaxDepth = pendingValue.length === limit;
+        return !atMaxDepth && !isEmpty(availableDims);
+    }
+
+    @action
+    toggleEditor() {
+        this.pendingValue = this.model.value;
+        this.editorIsOpen = !this.editorIsOpen;
+        this.favoritesIsOpen = false;
+    }
+
+    @action
+    toggleFavoritesMenu() {
+        this.favoritesIsOpen = !this.favoritesIsOpen;
+        this.editorIsOpen = false;
+    }
+
+    @action
+    closePopover() {
+        this.editorIsOpen = false;
+        this.favoritesIsOpen = false;
+    }
+
+    //-------------------------
+    // Value handling
+    //-------------------------
+
+    @action
+    addPendingDim(dimName: string) {
+        if (!dimName) return;
+        this.pendingValue = [...this.pendingValue, dimName];
+    }
+
+    @action
+    replacePendingDimAtIdx(dimName: string, idx: number) {
+        if (!dimName) return this.removePendingDimAtIdx(idx);
+        const pendingValue = [...this.pendingValue];
+        pendingValue[idx] = dimName;
+        this.pendingValue = pendingValue;
+    }
+
+    @action
+    removePendingDimAtIdx(idx: number) {
+        const pendingValue = [...this.pendingValue];
+        pendingValue.splice(idx, 1);
+        this.pendingValue = pendingValue;
+    }
+
+    @action
+    movePendingDimToIndex(dimName: string, toIdx: number) {
+        const pendingValue = [...this.pendingValue],
+            dim = pendingValue.find(it => it === dimName),
+            fromIdx = pendingValue.indexOf(dim);
+
+        pendingValue.splice(toIdx, 0, pendingValue.splice(fromIdx, 1)[0]);
+        this.pendingValue = pendingValue;
+    }
+
+    @action
+    commitPendingValueAndClose() {
+        const {pendingValue, model} = this,
+            {value} = model;
+
+        if (!isEqual(value, pendingValue) && model.validateValue(pendingValue)) {
+            model.setValue(pendingValue);
+        }
+
+        this.closePopover();
+    }
+
+    //--------------------
+    // Drag Drop
+    //--------------------
+
+    onDragEnd(result) {
+        const {draggableId, destination} = result;
+        if (!destination) return;
+        this.movePendingDimToIndex(draggableId, destination.index);
+    }
 }
 
 /**
@@ -62,7 +183,9 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
         },
         ref
     ) {
-        const {editorIsOpen, favoritesIsOpen, persistFavorites, value, allowEmpty} = model,
+        const {persistFavorites, value, allowEmpty} = model,
+            impl = useLocalModel(() => new GroupingChooserLocalModel(model)),
+            {editorIsOpen, favoritesIsOpen} = impl,
             isOpen = editorIsOpen || favoritesIsOpen,
             label = isEmpty(value) && allowEmpty ? emptyText : model.getValueLabel(value),
             [layoutProps, buttonProps] = splitLayoutProps(rest);
@@ -73,7 +196,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             ...layoutProps,
             item: popover({
                 isOpen,
-                popoverRef: model.popoverRef,
+                popoverRef: impl.popoverRef,
                 popoverClassName: 'xh-grouping-chooser-popover xh-popup--framed',
                 // right align favorites popover to match star icon
                 // left align editor to keep in place when button changing size when commitOnChange: true
@@ -91,14 +214,14 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                         ),
                         minimal: styleButtonAsInput,
                         ...buttonProps,
-                        onClick: () => model.toggleEditor()
+                        onClick: () => impl.toggleEditor()
                     }),
-                    favoritesIcon()
+                    favoritesIcon({impl})
                 ),
                 content: favoritesIsOpen
                     ? favoritesMenu()
                     : editorIsOpen
-                    ? editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText})
+                    ? editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText, impl})
                     : null,
                 onInteraction: (nextOpenState, e) => {
                     if (
@@ -107,7 +230,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                         e?.target &&
                         !targetIsControlButtonOrPortal(e.target)
                     ) {
-                        model.commitPendingValueAndClose();
+                        impl.commitPendingValueAndClose();
                     }
                 }
             })
@@ -115,27 +238,45 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
     }
 });
 
+interface WithLocalModelProps extends HoistProps<GroupingChooserModel> {
+    impl: GroupingChooserLocalModel;
+}
+
 //------------------
 // Editor
 //------------------
-const editor = hoistCmp.factory<GroupingChooserModel>({
-    render({popoverWidth, popoverMinHeight, popoverTitle, emptyText}) {
+
+interface EditorProps
+    extends WithLocalModelProps,
+        Pick<
+            GroupingChooserProps,
+            'emptyText' | 'popoverMinHeight' | 'popoverWidth' | 'popoverTitle'
+        > {
+    impl: GroupingChooserLocalModel;
+}
+
+const editor = hoistCmp.factory<EditorProps>({
+    render({popoverWidth, popoverMinHeight, popoverTitle, emptyText, impl}) {
         return panel({
             width: popoverWidth,
             minHeight: popoverMinHeight,
             items: [
                 div({className: 'xh-popup__title', item: popoverTitle, omit: !popoverTitle}),
-                dimensionList({emptyText}),
-                addDimensionControl(),
+                dimensionList({emptyText, impl}),
+                addDimensionControl({impl}),
                 filler()
             ]
         });
     }
 });
 
-const dimensionList = hoistCmp.factory<GroupingChooserModel>({
-    render({model, emptyText}) {
-        if (isEmpty(model.pendingValue)) {
+interface DimensionListProps extends WithLocalModelProps {
+    emptyText: string;
+}
+
+const dimensionList = hoistCmp.factory<DimensionListProps>({
+    render({model, emptyText, impl}) {
+        if (isEmpty(impl.pendingValue)) {
             return model.allowEmpty
                 ? hbox({
                       className: 'xh-grouping-chooser__row',
@@ -145,7 +286,7 @@ const dimensionList = hoistCmp.factory<GroupingChooserModel>({
         }
 
         return dragDropContext({
-            onDragEnd: result => model.onDragEnd(result),
+            onDragEnd: result => impl.onDragEnd(result),
             item: droppable({
                 droppableId: 'dimension-list',
                 item: dndProps =>
@@ -153,8 +294,8 @@ const dimensionList = hoistCmp.factory<GroupingChooserModel>({
                         ref: dndProps.innerRef,
                         className: 'xh-grouping-chooser__list',
                         items: [
-                            ...model.pendingValue.map((dimension, idx) =>
-                                dimensionRow({dimension, idx})
+                            ...impl.pendingValue.map((dimension, idx) =>
+                                dimensionRow({dimension, idx, impl})
                             ),
                             dndProps.placeholder
                         ]
@@ -164,10 +305,15 @@ const dimensionList = hoistCmp.factory<GroupingChooserModel>({
     }
 });
 
-const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
-    render({model, dimension, idx}) {
+interface DimensionRowProps extends WithLocalModelProps {
+    dimension: string;
+    idx: number;
+}
+
+const dimensionRow = hoistCmp.factory<DimensionRowProps>({
+    render({model, dimension, idx, impl}) {
         // The options for this select include its current value
-        const options = getDimOptions([...model.availableDims, dimension], model);
+        const options = getDimOptions([...impl.availableDims, dimension], model);
 
         return draggable({
             key: dimension,
@@ -182,7 +328,7 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
                 let transform = dndProps.draggableProps.style.transform;
                 if (dndState.isDragging || dndState.isDropAnimating) {
                     let rowValues = parseTransform(transform),
-                        popoverValues = parseTransform(model.popoverRef.current.style.transform);
+                        popoverValues = parseTransform(impl.popoverRef.current.style.transform);
 
                     // Account for drop animation
                     if (dndState.isDropAnimating) {
@@ -219,7 +365,7 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
                                 flex: 1,
                                 width: null,
                                 hideDropdownIndicator: true,
-                                onChange: newDim => model.replacePendingDimAtIdx(newDim, idx)
+                                onChange: newDim => impl.replacePendingDimAtIdx(newDim, idx)
                             })
                         }),
                         button({
@@ -227,7 +373,7 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
                             intent: 'danger',
                             tabIndex: -1,
                             className: 'xh-grouping-chooser__row__remove-btn',
-                            onClick: () => model.removePendingDimAtIdx(idx)
+                            onClick: () => impl.removePendingDimAtIdx(idx)
                         })
                     ],
                     ref: dndProps.innerRef,
@@ -242,10 +388,10 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
     }
 });
 
-const addDimensionControl = hoistCmp.factory<GroupingChooserModel>({
-    render({model}) {
-        if (!model.isAddEnabled) return null;
-        const options = getDimOptions(model.availableDims, model);
+const addDimensionControl = hoistCmp.factory<WithLocalModelProps>({
+    render({model, impl}) {
+        if (!impl.isAddEnabled) return null;
+        const options = getDimOptions(impl.availableDims, model);
         return div({
             className: 'xh-grouping-chooser__add-control',
             items: [
@@ -263,7 +409,7 @@ const addDimensionControl = hoistCmp.factory<GroupingChooserModel>({
                     width: null,
                     hideDropdownIndicator: true,
                     hideSelectedOptionCheck: true,
-                    onChange: newDim => model.addPendingDim(newDim)
+                    onChange: newDim => impl.addPendingDim(newDim)
                 })
             ]
         });
@@ -312,14 +458,15 @@ function targetWithin(target, className): boolean {
 //------------------
 // Favorites
 //------------------
-const favoritesIcon = hoistCmp.factory<GroupingChooserModel>({
-    render({model}) {
+
+const favoritesIcon = hoistCmp.factory<WithLocalModelProps>({
+    render({model, impl}) {
         if (!model.persistFavorites) return null;
         return div({
             item: Icon.favorite(),
             className: 'xh-grouping-chooser__favorite-icon',
             onClick: e => {
-                model.toggleFavoritesMenu();
+                impl.toggleFavoritesMenu();
                 e.stopPropagation();
             }
         });
@@ -353,7 +500,12 @@ const favoritesMenu = hoistCmp.factory<GroupingChooserModel>({
     }
 });
 
-const favoriteMenuItem = hoistCmp.factory<GroupingChooserModel>({
+interface FavoriteMenuItemProps extends HoistProps<GroupingChooserModel> {
+    value: string[];
+    label: string;
+}
+
+const favoriteMenuItem = hoistCmp.factory<FavoriteMenuItemProps>({
     render({model, value, label}) {
         return menuItem({
             text: label,
