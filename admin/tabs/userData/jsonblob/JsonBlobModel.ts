@@ -4,7 +4,11 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed} from '@xh/hoist/core';
+import {AppModel} from '@xh/hoist/admin/AppModel';
+import * as Col from '@xh/hoist/admin/columns';
+import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {FieldSpec} from '@xh/hoist/data';
+import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
     addAction,
     cloneAction,
@@ -12,17 +16,12 @@ import {
     editAction,
     RestGridModel
 } from '@xh/hoist/desktop/cmp/rest';
-import {makeObservable, observable, action} from '@xh/hoist/mobx';
 import {fmtDateTime} from '@xh/hoist/format';
-import {textArea} from '@xh/hoist/desktop/cmp/input';
-import * as Col from '@xh/hoist/admin/columns';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isDate} from 'lodash';
-import {LoadSpec} from '../../../core';
+import {DifferModel} from '../../../differ/DifferModel';
 import * as JBCol from './JsonBlobColumns';
-import {AppModel} from '@xh/hoist/admin/AppModel';
-
-import {DifferModel} from '../../differ/DifferModel';
-import {FieldSpec} from '@xh/hoist/data';
 
 export class JsonBlobModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminJsonBlobState'};
@@ -47,6 +46,7 @@ export class JsonBlobModel extends HoistModel {
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,
+            exportOptions: {filename: `${XH.appCode}-json-blobs-${LocalDate.today()}`},
             selModel: 'multiple',
             store: {
                 url: 'rest/jsonBlobAdmin',
