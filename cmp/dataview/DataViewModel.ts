@@ -33,12 +33,8 @@ import {ReactNode} from 'react';
 /**
  * Configuration for a DataView.
  *
- *  Additional properties not specified here will be passed to the underlying
- *  GridModel. Note this is for advanced usage - not all configs supported, and many will
- *  override DataView defaults in ways that will break this component.
  */
-export interface DataViewConfig extends GridConfig {
-    // TODO: Accept grid keys without publicizing them?
+export interface DataViewConfig {
     /** A Store instance, or a config to create one. */
     store?: Store | StoreConfig;
 
@@ -105,6 +101,13 @@ export interface DataViewConfig extends GridConfig {
      * the row's data. (Note that this may be null - e.g. for clicks on full-width group rows.)
      */
     onRowDoubleClicked?: (e: any) => void;
+
+    /**
+     * "escape hatch" object to pass directly to GridModel. Note these options may be used
+     * / overwritten by the framework itself, and are not all guaranteed to be compatible
+     * with its usages of GridModel.
+     */
+    gridOptions?: GridOptions;
 }
 
 export type ItemHeightFn = (params: {
@@ -145,7 +148,7 @@ export class DataViewModel extends HoistModel {
             rowClassRules,
             onRowClicked,
             onRowDoubleClicked,
-            ...restArgs
+            gridOptions
         } = config;
 
         throwIf(
@@ -186,7 +189,7 @@ export class DataViewModel extends HoistModel {
             onRowClicked,
             onRowDoubleClicked,
             columns,
-            ...restArgs
+            ...gridOptions
         });
     }
 
@@ -262,3 +265,11 @@ export class DataViewModel extends HoistModel {
         return this.gridModel.setSortBy(sorters);
     }
 }
+
+/**
+ * the `GridOptions` interface contains all `GridConfig` properties, less those
+ * specified in the above `DataViewConfig`, allowing an "escape hatch" for
+ * developers to alter the underlying `GridConfig`. Note that such alteration is
+ * not guaranteed by the DataView and may have unintended consequences.
+ */
+export interface GridOptions extends Omit<GridConfig, keyof DataViewConfig> {}

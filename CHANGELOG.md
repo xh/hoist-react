@@ -2,6 +2,12 @@
 
 ## 59.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* `DataViewConfig` no longer directly supports the passing of `GridConfig` parameters.
+  Instead, all direct `GridConfig` toggles must be passed through the new `gridOptions`
+  parameter. See PR ![3421](https://github.com/xh/hoist-react/pull/3421)
+
 ## 58.0.1 - 2023-07-13
 
 ### 🐞 Bug Fixes
