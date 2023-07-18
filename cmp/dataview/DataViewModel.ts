@@ -103,11 +103,11 @@ export interface DataViewConfig {
     onRowDoubleClicked?: (e: any) => void;
 
     /**
-     * "escape hatch" object to pass directly to GridModel. Note these options may be used
+     * "Escape hatch" object to pass directly to GridModel. Note these options may be used
      * / overwritten by the framework itself, and are not all guaranteed to be compatible
      * with its usages of GridModel.
      */
-    gridOptions?: GridOptions;
+    gridOptions?: Omit<GridConfig, keyof DataViewConfig>;
 }
 
 export type ItemHeightFn = (params: {
@@ -265,11 +265,3 @@ export class DataViewModel extends HoistModel {
         return this.gridModel.setSortBy(sorters);
     }
 }
-
-/**
- * the `GridOptions` interface contains all `GridConfig` properties, less those
- * specified in the above `DataViewConfig`, allowing an "escape hatch" for
- * developers to alter the underlying `GridConfig`. Note that such alteration is
- * not guaranteed by the DataView and may have unintended consequences.
- */
-export interface GridOptions extends Omit<GridConfig, keyof DataViewConfig> {}
