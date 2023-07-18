@@ -2,6 +2,11 @@
 
 ## 59.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed bug where having multiple `GroupingChooser` components rendered using the same model would
+  result in the popover for all components showing on click.
+
 ## 58.0.1 - 2023-07-13
 
 ### 🐞 Bug Fixes
