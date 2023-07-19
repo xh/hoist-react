@@ -4,16 +4,17 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {AppModel} from '@xh/hoist/admin/AppModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec, UrlStore} from '@xh/hoist/data';
 import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable, observable} from '@xh/hoist/mobx';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import download from 'downloadjs';
 import {createRef} from 'react';
 import {LogDisplayModel} from './LogDisplayModel';
-import {AppModel} from '@xh/hoist/admin/AppModel';
 
 /**
  * @internal
@@ -141,6 +142,7 @@ export class LogViewerModel extends HoistModel {
     private createGridModel() {
         return new GridModel({
             enableExport: true,
+            exportOptions: {filename: `${XH.appCode}-logs-${LocalDate.today()}`},
             selModel: 'multiple',
             store: new UrlStore({
                 url: 'logViewerAdmin/listFiles',

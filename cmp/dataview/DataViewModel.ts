@@ -28,16 +28,13 @@ import {
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNumber} from 'lodash';
+import {ReactNode} from 'react';
 
 /**
  * Configuration for a DataView.
  *
- *  Additional properties not specified here will be passed to the underlying
- *  GridModel. Note this is for advanced usage - not all configs supported, and many will
- *  override DataView defaults in ways that will break this component.
  */
-export interface DataViewConfig extends GridConfig {
-    // TODO: Accept grid keys without publicizing them?
+export interface DataViewConfig {
     /** A Store instance, or a config to create one. */
     store?: Store | StoreConfig;
 
@@ -63,7 +60,7 @@ export interface DataViewConfig extends GridConfig {
     selModel?: StoreSelectionModel | StoreSelectionConfig | 'single' | 'multiple' | 'disabled';
 
     /** Text/HTML to display if view has no records.*/
-    emptyText?: string;
+    emptyText?: ReactNode;
 
     /** True to highlight the currently hovered row.*/
     showHover?: boolean;
@@ -104,6 +101,13 @@ export interface DataViewConfig extends GridConfig {
      * the row's data. (Note that this may be null - e.g. for clicks on full-width group rows.)
      */
     onRowDoubleClicked?: (e: any) => void;
+
+    /**
+     * "Escape hatch" object to pass directly to GridModel. Note these options may be used
+     * / overwritten by the framework itself, and are not all guaranteed to be compatible
+     * with its usages of GridModel.
+     */
+    gridOptions?: Omit<GridConfig, keyof DataViewConfig>;
 }
 
 export type ItemHeightFn = (params: {
@@ -144,7 +148,7 @@ export class DataViewModel extends HoistModel {
             rowClassRules,
             onRowClicked,
             onRowDoubleClicked,
-            ...restArgs
+            gridOptions
         } = config;
 
         throwIf(
@@ -185,7 +189,7 @@ export class DataViewModel extends HoistModel {
             onRowClicked,
             onRowDoubleClicked,
             columns,
-            ...restArgs
+            ...gridOptions
         });
     }
 

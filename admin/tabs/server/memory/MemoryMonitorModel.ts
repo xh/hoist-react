@@ -10,6 +10,7 @@ import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {fmtTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {forOwn, sortBy} from 'lodash';
 import * as MCol from '../../monitor/MonitorColumns';
 
@@ -29,9 +30,10 @@ export class MemoryMonitorModel extends HoistModel {
         super();
 
         this.gridModel = new GridModel({
-            sortBy: 'timestamp|desc',
             enableExport: true,
+            exportOptions: {filename: `${XH.appCode}-memory-monitor-${LocalDate.today()}`},
             filterModel: true,
+            sortBy: 'timestamp|desc',
             store: {idSpec: 'timestamp'},
             colDefaults: {filterable: true},
             headerMenuDisplay: 'hover',

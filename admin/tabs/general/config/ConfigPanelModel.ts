@@ -4,7 +4,10 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed, LoadSpec} from '@xh/hoist/core';
+import {AppModel} from '@xh/hoist/admin/AppModel';
+import * as Col from '@xh/hoist/admin/columns';
+import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {FieldSpec} from '@xh/hoist/data';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
     addAction,
@@ -15,12 +18,10 @@ import {
     RestStore
 } from '@xh/hoist/desktop/cmp/rest';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import * as Col from '@xh/hoist/admin/columns';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isNil, truncate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
 import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
-import {AppModel} from '@xh/hoist/admin/AppModel';
-import {FieldSpec} from '@xh/hoist/data';
 
 export class ConfigPanelModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminConfigState'};
@@ -48,6 +49,7 @@ export class ConfigPanelModel extends HoistModel {
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,
+            exportOptions: {filename: `${XH.appCode}-configs-${LocalDate.today()}`},
             selModel: 'multiple',
             store: new RestStore({
                 url: 'rest/configAdmin',

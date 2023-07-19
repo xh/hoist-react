@@ -2,10 +2,18 @@
 
 ## 59.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* `DataViewConfig` no longer directly supports the passing of `GridConfig` parameters.
+  Instead, all direct `GridConfig` toggles must be passed through the new `gridOptions`
+  parameter.
+
 ### 📚 Libraries
-* typescript `4.9 -> 5.2`
+
 * mobx `6.8 -> 6.9`
-*
+* semver `7.3 -> 7.5`
+* typescript `4.9 -> 5.2`
+
 ## 58.0.1 - 2023-07-13
 
 ### 🐞 Bug Fixes
