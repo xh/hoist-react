@@ -52,8 +52,7 @@ export function elementFromContent(content: Content, addProps?: object): ReactEl
 }
 
 /**
- * Type-script friendly wrapper for native react renderToStaticMarkup
- * @param element
+ * TypeScript friendly wrapper for React renderToStaticMarkup.
  */
 export function renderToStaticMarkup(element: ReactElement): string {
     return reactRenderToStaticMarkup(element as any);
