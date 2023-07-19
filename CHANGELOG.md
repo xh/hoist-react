@@ -2,10 +2,25 @@
 
 ## 59.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* Apps should update their Typescript dependency to v5.1. This should be a drop-in for most
+  applications, or require only minor changes. Note that Hoist has not yet adopted the updated
+  approach to decorators added in TS v5, maintaining compatibility with the "legacy" syntax.
+* `DataViewConfig` no longer directly supports `GridConfig` parameters - instead, nest `GridConfig`
+  options you wish to set via the new `gridOptions` parameter. Please note that, as before, not
+  all `GridConfig` options are supported by (or make sense for) the `DataView` component.
+
 ### 🐞 Bug Fixes
 
 * Fixed bug where having multiple `GroupingChooser` components rendered using the same model would
   result in the popover for all components showing on click.
+
+### 📚 Libraries
+
+* mobx `6.8 -> 6.9`
+* semver `7.3 -> 7.5`
+* typescript `4.9 -> 5.1`
 
 ## 58.0.1 - 2023-07-13
 
@@ -33,11 +48,10 @@
 ### 💥 Breaking Changes
 
 * The `Column.getValueFn` and `Column.renderer` functions will no longer be passed the `agParams`
-  argument.  This argument was not passed consistently by Hoist when calling these functions; and was
+  argument. This argument was not passed consistently by Hoist when calling these functions; and was
   specifically omitted during operations such as column sizing, tooltip generation and Grid content
-  searching.  We do not expect this argument was being used in practice by applications, but
+  searching. We do not expect this argument was being used in practice by applications, but
   applications should ensure this is the case, and adjust these callbacks if necessary.
-
 
 ## 57.0.0 - 2023-06-20
 
