@@ -13,7 +13,8 @@ import {
     RowClassFn,
     RowClassRuleFn,
     GridSorterLike,
-    GridContextMenuSpec
+    GridContextMenuSpec,
+    GridGroupSortFn
 } from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, PlainObject, Some} from '@xh/hoist/core';
 import {
@@ -52,6 +53,16 @@ export interface DataViewConfig {
     /** Function used to render group rows. */
     groupRowRenderer?: GroupRowRenderer;
 
+    /** True (default) to show a count of group member rows within each full-width group row. */
+    showGroupRowCounts?: boolean;
+
+    /**
+     * Function to use to sort full-row groups.  Called with two group values to compare
+     * in the form of a standard JS comparator.  Default is an ascending string sort.
+     * Set to `null` to prevent sorting of groups.
+     */
+    groupSortFn?: GridGroupSortFn;
+
     /** Sort specification. */
     sortBy?: Some<GridSorterLike>;
 
@@ -60,6 +71,9 @@ export interface DataViewConfig {
 
     /** Text/HTML to display if view has no records.*/
     emptyText?: ReactNode;
+
+    /** True (default) to hide empty text until after the Store has been loaded at least once. */
+    hideEmptyTextBeforeLoad?: boolean;
 
     /** True to highlight the currently hovered row.*/
     showHover?: boolean;
@@ -136,9 +150,12 @@ export class DataViewModel extends HoistModel {
             groupBy,
             groupRowHeight,
             groupRowRenderer,
+            showGroupRowCounts,
+            groupSortFn,
             sortBy,
             selModel,
             emptyText,
+            hideEmptyTextBeforeLoad,
             showHover = false,
             rowBorders = false,
             stripeRows = false,
@@ -178,11 +195,14 @@ export class DataViewModel extends HoistModel {
             selModel,
             contextMenu,
             emptyText,
+            hideEmptyTextBeforeLoad,
             showHover,
             rowBorders,
             stripeRows,
             groupBy,
             groupRowRenderer,
+            showGroupRowCounts,
+            groupSortFn,
             rowClassFn,
             rowClassRules,
             onRowClicked,
