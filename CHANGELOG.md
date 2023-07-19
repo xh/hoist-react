@@ -11,6 +11,11 @@
   options you wish to set via the new `gridOptions` parameter. Please note that, as before, not
   all `GridConfig` options are supported by (or make sense for) the `DataView` component.
 
+### 🐞 Bug Fixes
+
+* `ButtonGroupInput` now allows `null` values for buttons as long as both `enableClear` and
+  `enableMulti` are false
+
 ### 📚 Libraries
 
 * mobx `6.8 -> 6.9`
