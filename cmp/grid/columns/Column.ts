@@ -32,14 +32,7 @@ import {
     keysIn,
     toString
 } from 'lodash';
-import {
-    Attributes,
-    createElement,
-    forwardRef,
-    isValidElement,
-    ReactNode,
-    useImperativeHandle
-} from 'react';
+import {createElement, forwardRef, isValidElement, ReactNode, useImperativeHandle} from 'react';
 import {GridModel} from '../GridModel';
 import {GridSorter} from '../GridSorter';
 import {managedRenderer} from '../impl/Utils';
@@ -462,7 +455,7 @@ export class Column {
     autosizeBufferPx: number;
     autoHeight: boolean;
     editable: boolean | ColumnEditableFn;
-    editor: FunctionComponent | ColumnEditorFn;
+    editor: ColumnEditorFn;
     editorIsPopup: boolean;
     setValueFn: ColumnSetValueFn;
     getValueFn: ColumnGetValueFn;
@@ -948,8 +941,7 @@ export class Column {
                     ref
                 };
                 // Can be a component or elem factory/ ad-hoc render function.
-                if ((editor as any).isHoistComponent)
-                    return createElement(editor, props as Attributes);
+                if ((editor as any).isHoistComponent) return createElement(editor, props);
                 if (isFunction(editor)) return editor(props);
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
             });

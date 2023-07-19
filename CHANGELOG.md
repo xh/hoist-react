@@ -11,6 +11,11 @@
   options you wish to set via the new `gridOptions` parameter. Please note that, as before, not
   all `GridConfig` options are supported by (or make sense for) the `DataView` component.
 
+### 🐞 Bug Fixes
+
+* Fixed bug where having multiple `GroupingChooser` components rendered using the same model would
+  result in the popover for all components showing on click.
+
 ### 📚 Libraries
 
 * mobx `6.8 -> 6.9`

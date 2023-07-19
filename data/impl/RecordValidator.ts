@@ -110,7 +110,7 @@ export class RecordValidator {
         if (this.ruleIsActive(record, field, rule)) {
             const promises = rule.check.map(async constraint => {
                 const fieldState = {value, name, displayName, record};
-                return constraint(fieldState, values);
+                return await constraint(fieldState, values);
             });
 
             const ret = await Promise.all(promises);

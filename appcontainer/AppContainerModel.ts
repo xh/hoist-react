@@ -296,7 +296,7 @@ export class AppContainerModel extends HoistModel {
     // Implementation
     //-----------------------------
     private async getAuthStatusFromServerAsync(): Promise<boolean> {
-        return XH.fetchService
+        return await XH.fetchService
             .fetchJson({
                 url: 'xh/authStatus',
                 timeout: 3 * MINUTES // Accommodate delay for user at a credentials prompt

@@ -12,7 +12,7 @@ import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import copy from 'clipboard-copy';
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
 import {isValidElement} from 'react';
-import {renderToStaticMarkup} from '@xh/hoist/utils/react';
+import {renderToStaticMarkup} from 'react-dom/server';
 import {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
 
 import type {GetContextMenuItemsParams, MenuItemDef} from '@xh/hoist/kit/ag-grid';

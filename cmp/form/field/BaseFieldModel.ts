@@ -351,7 +351,7 @@ export abstract class BaseFieldModel extends HoistModel {
                 const {value, name, displayName} = this,
                     fieldState = {value, name, displayName, fieldModel: this};
 
-                return constraint(fieldState, this.formModel.values);
+                return await constraint(fieldState, this.formModel.values);
             });
 
             const ret = await Promise.all(promises);

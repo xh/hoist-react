@@ -325,10 +325,7 @@ export class QueryEngine {
 // Local Helper functions
 //------------------------
 function caselessStartsWith(target, queryStr) {
-    return target
-        ?.toString()
-        .toLowerCase()
-        .startsWith(queryStr?.toString().toLowerCase());
+    return target?.toString().toLowerCase().startsWith(queryStr?.toString().toLowerCase());
 }
 
 function caselessEquals(target, queryStr) {
