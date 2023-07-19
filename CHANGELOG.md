@@ -8,6 +8,10 @@
   Instead, all direct `GridConfig` toggles must be passed through the new `gridOptions`
   parameter.
 
+### 📚 Libraries
+
+* semver `7.3 -> 7.5`
+
 ## 58.0.1 - 2023-07-13
 
 ### 🐞 Bug Fixes
