@@ -9,13 +9,13 @@ import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {HoistModel} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {difference, isEmpty, isEqual} from 'lodash';
+import {compact, difference, isEmpty, isEqual, sortBy} from 'lodash';
 
 /**
  * @internal
  */
 export class GroupingChooserLocalModel extends HoistModel {
-    private readonly model: GroupingChooserModel;
+    readonly parentModel: GroupingChooserModel;
 
     @observable.ref pendingValue: string[] = [];
     @observable editorIsOpen: boolean = false;
@@ -23,43 +23,50 @@ export class GroupingChooserLocalModel extends HoistModel {
 
     popoverRef = createObservableRef<HTMLElement>();
 
-    constructor(model: GroupingChooserModel) {
+    constructor(parentModel: GroupingChooserModel) {
         super();
         makeObservable(this);
 
-        this.model = model;
+        this.parentModel = parentModel;
 
         this.addReaction({
             track: () => this.pendingValue,
             run: () => {
-                if (model.commitOnChange) model.setValue(this.pendingValue);
+                if (parentModel.commitOnChange) parentModel.setValue(this.pendingValue);
             }
         });
     }
 
     @computed
     get availableDims(): string[] {
-        return difference(this.model.dimensionNames, this.pendingValue);
+        return difference(this.parentModel.dimensionNames, this.pendingValue);
     }
 
     @computed
     get isValid(): boolean {
-        return this.model.validateValue(this.pendingValue);
+        return this.parentModel.validateValue(this.pendingValue);
     }
 
     @computed
     get isAddEnabled(): boolean {
         const {pendingValue, availableDims} = this,
-            {maxDepth, dimensionNames} = this.model,
+            {maxDepth, dimensionNames} = this.parentModel,
             limit =
                 maxDepth > 0 ? Math.min(maxDepth, dimensionNames.length) : dimensionNames.length,
             atMaxDepth = pendingValue.length === limit;
         return !atMaxDepth && !isEmpty(availableDims);
     }
 
+    buildDimOptions(dims: string[]) {
+        const ret = compact(dims).map(dimName => {
+            return {value: dimName, label: this.parentModel.getDimDisplayName(dimName)};
+        });
+        return sortBy(ret, 'label');
+    }
+
     @action
     toggleEditor() {
-        this.pendingValue = this.model.value;
+        this.pendingValue = this.parentModel.value;
         this.editorIsOpen = !this.editorIsOpen;
         this.favoritesIsOpen = false;
     }
@@ -113,11 +120,11 @@ export class GroupingChooserLocalModel extends HoistModel {
 
     @action
     commitPendingValueAndClose() {
-        const {pendingValue, model} = this,
-            {value} = model;
+        const {pendingValue, parentModel} = this,
+            {value} = parentModel;
 
-        if (!isEqual(value, pendingValue) && model.validateValue(pendingValue)) {
-            model.setValue(pendingValue);
+        if (!isEqual(value, pendingValue) && parentModel.validateValue(pendingValue)) {
+            parentModel.setValue(pendingValue);
         }
 
         this.closePopover();
