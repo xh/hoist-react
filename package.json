@@ -56,8 +56,8 @@
     "inter-ui": "~3.19.3",
     "lodash": "~4.17.21",
     "lodash-inflection": "~1.5.0",
-    "mobx": "~6.8.0",
-    "mobx-react-lite": "~3.4.0",
+    "mobx": "~6.9.1",
+    "mobx-react-lite": "~3.4.3",
     "moment": "~2.29.1",
     "numbro": "~2.3.6",
     "onsenui": "~2.12.8",
@@ -87,7 +87,7 @@
     "@ag-grid-community/client-side-row-model": "30.x",
     "@ag-grid-community/core": "30.x",
     "@ag-grid-community/react": "30.x",
-    "@xh/hoist-dev-utils": "^6.3.0",
+    "@xh/hoist-dev-utils": "^7.0.0-SNAPSHOT",
     "eslint": "8.x",
     "eslint-config-prettier": "8.x",
     "eslint-plugin-tsdoc": "0.x",
@@ -99,8 +99,8 @@
     "react-dom": "^18.2.0",
     "stylelint": "15.x",
     "stylelint-config-standard-scss": "10.x",
-    "type-fest": "^3.10.0",
-    "typescript": "~4.9.5"
+    "type-fest": "4.x",
+    "typescript": "~5.1.6"
   },
   "resolutions": {
     "core-js": "^3.0"

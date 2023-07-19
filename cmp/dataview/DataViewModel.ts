@@ -32,7 +32,6 @@ import {ReactNode} from 'react';
 
 /**
  * Configuration for a DataView.
- *
  */
 export interface DataViewConfig {
     /** A Store instance, or a config to create one. */

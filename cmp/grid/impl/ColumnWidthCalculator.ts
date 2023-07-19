@@ -25,7 +25,7 @@ import {
     takeRight
 } from 'lodash';
 import {isValidElement} from 'react';
-import {renderToStaticMarkup} from 'react-dom/server';
+import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 import {Column} from '../columns';
 import {GridModel} from '../GridModel';
 
