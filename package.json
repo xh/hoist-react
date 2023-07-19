@@ -99,7 +99,7 @@
     "react-dom": "^18.2.0",
     "stylelint": "15.x",
     "stylelint-config-standard-scss": "10.x",
-    "type-fest": "^3.10.0",
+    "type-fest": "4.x",
     "typescript": "~5.1.6"
   },
   "resolutions": {
