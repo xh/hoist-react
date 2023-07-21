@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {PersistenceProvider, XH} from '@xh/hoist/core';
+import {managed, PersistenceProvider, RefreshContextModel, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
 import '@xh/hoist/desktop/register';
@@ -95,6 +95,9 @@ export class DashCanvasModel extends DashModel<
     //----------------------------
     // Implementation properties
     //----------------------------
+    @managed
+    refreshContextModel: RefreshContextModel;
+
     @observable.ref layout: any[] = [];
     ref = createObservableRef<HTMLElement>();
     isResizing: boolean;
@@ -181,6 +184,8 @@ export class DashCanvasModel extends DashModel<
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
         this.extraMenuItems = extraMenuItems;
+
+        this.refreshContextModel = new RefreshContextModel();
 
         // Read state from provider -- fail gently
         let persistState = null;
