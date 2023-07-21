@@ -12,7 +12,9 @@
   all `GridConfig` options are supported by (or make sense for) the `DataView` component.
 
 ### 🎁 New Features
-* New `DashCanvasModel.refreshContextModel` allows apps to programmatically refresh a `DashCanvas`.
+
+* New `DashCanvas.refreshContextModel` allows apps to programmatically refresh a `DashCanvas` and
+ `DashContainer`.
 
 ### 📚 Libraries
 
