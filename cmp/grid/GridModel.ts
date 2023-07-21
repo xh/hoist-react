@@ -1287,7 +1287,7 @@ export class GridModel extends HoistModel {
         }
 
         colIds = castArray(colIds).filter(id => {
-            if (!this.isColumnVisible(id)) return false;
+            if (!options.includeHiddenColumns && !this.isColumnVisible(id)) return false;
             const col = this.getColumn(id);
             return col && col.autosizable && !col.flex && includeColFn(col);
         });

@@ -2,6 +2,13 @@
 
 ## 59.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* New `GridAutosizeOptions.includeHiddenColumns` config controls whether hidden columns should
+  also be included during the autosize process. Default of `false`. Useful when applications
+  provide quick toggles between different column sets and would prefer to take the up-front cost of
+  autosizing rather than doing it after the user loads a column set.
+
 ### 💥 Breaking Changes
 
 * Apps should update their Typescript dependency to v5.1. This should be a drop-in for most
