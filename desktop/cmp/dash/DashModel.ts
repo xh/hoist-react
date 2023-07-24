@@ -18,7 +18,7 @@ export abstract class DashModel<VSPEC, VSTATE, VMODEL> extends HoistModel {
     @observable.ref state: VSTATE[];
     @managed @observable.ref viewModels: VMODEL[] = [];
 
-    @managed refreshContextModel: RefreshContextModel;
+    @managed readonly refreshContextModel: RefreshContextModel;
 
     //-----------------------------
     // Settable State
