@@ -13,16 +13,14 @@ export class RolesWidgetModel extends HoistModel {
     @managed store = new Store({
         fields: [{name: 'name', type: 'string'}],
         idSpec: r => {
-            console.log(r);
-            let result = 'role-' + this.roleId + '_role-' + r['name'];
-            console.log(result);
-            return result;
+            return 'role-' + this.roleId + '_role-' + r['name'];
         }
     });
 
     @managed gridModel = new GridModel({
         emptyText: 'No inherited roles',
         store: this.store,
+        hideHeaders: true,
         columns: [{field: 'name'}]
     });
 

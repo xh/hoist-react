@@ -2,9 +2,9 @@ import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {makeObservable, observable} from 'mobx';
 import {AllRolesPanelModel} from './../AllRolesPanelModel';
 import {DashContainerModel} from '@xh/hoist/desktop/cmp/dash';
-import {p} from '@xh/hoist/cmp/layout';
 import {rolesWidget} from './RolesWidget';
 import {usersWidget} from './UsersWidget';
+import {allUsersWidget} from './AllUsersWidget';
 
 export class RoleDetailPanelModel extends HoistModel {
     @observable roleId = null;
@@ -21,21 +21,21 @@ export class RoleDetailPanelModel extends HoistModel {
                 content: [
                     {
                         type: 'column',
-                        width: 60,
+                        width: 50,
                         content: [
                             {
                                 type: 'view',
-                                id: 'inheritedRoles'
+                                id: 'assignedUsers'
                             },
                             {
                                 type: 'view',
-                                id: 'assignedUsers'
+                                id: 'inheritedRoles'
                             }
                         ]
                     },
                     {
                         type: 'column',
-                        width: 40,
+                        width: 50,
                         content: [
                             {
                                 type: 'view',
@@ -63,7 +63,7 @@ export class RoleDetailPanelModel extends HoistModel {
                 id: 'effectiveUsers',
                 title: 'Impacted Users',
                 unique: true,
-                content: p('filler for effective users')
+                content: allUsersWidget()
             }
         ]
     });

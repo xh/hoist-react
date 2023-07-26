@@ -4,7 +4,7 @@ import {AllRolesPanelModel} from '../AllRolesPanelModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {Store} from '@xh/hoist/data';
 
-export class UsersWidgetModel extends HoistModel {
+export class AllUsersWidgetModel extends HoistModel {
     @observable roleId = null;
     @observable roleDetails = null;
 
@@ -36,7 +36,7 @@ export class UsersWidgetModel extends HoistModel {
                 this.store.clear();
                 this.roleId = role?.id ?? null;
                 this.roleDetails = role?.data ?? null;
-                this.store.loadData(this.records_of_users(this.roleDetails?.assignedUsers));
+                this.store.loadData(this.records_of_users(this.roleDetails?.allUsers));
             },
             debounce: 30
         });
