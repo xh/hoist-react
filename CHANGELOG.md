@@ -23,6 +23,7 @@
 
 * Fixed bug where `TabContainerModel` with routing enabled would drop route params when navigating
   between tabs.
+* Fixed `fmtNumber` returning '-0' when rounding small negative numbers to zero
 
 ## 58.0.0 - 2023-07-07
 
