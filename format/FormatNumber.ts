@@ -138,14 +138,15 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
 
     if (isInvalidInput(v)) return nullDisplay;
 
-    if (v === 0 && zeroDisplay != null) return zeroDisplay;
-
     formatConfig =
         formatConfig || buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma);
     const str = numbro(v).format(formatConfig).replace('-', '');
     let sign = null;
 
-    if (v > 0 && withPlusSign) {
+    // Test for various formats of zero
+    if (/^0+.?0*$/.test(str)) {
+        if (zeroDisplay != null) return zeroDisplay;
+    } else if (v > 0 && withPlusSign) {
         sign = '+';
     } else if (v < 0 && !ledger) {
         sign = '-';
