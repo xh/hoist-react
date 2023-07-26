@@ -2,6 +2,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {makeObservable} from '@xh/hoist/mobx';
 import {RolesTabModel} from './RolesTabModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {compactDateRenderer} from '@xh/hoist/format';
 
 export class AllRolesPanelModel extends HoistModel {
     @managed gridModel: GridModel;
@@ -28,9 +29,9 @@ export class AllRolesPanelModel extends HoistModel {
             store: this.parentModel.store,
             columns: [
                 {field: 'name'},
-                {field: 'groupName'},
-                {field: 'notes'},
-                {field: 'lastUpdated'},
+                {field: 'groupName', hidden: true},
+                {field: 'notes', flex: true},
+                {field: 'lastUpdated', renderer: compactDateRenderer()},
                 {field: 'lastUpdatedBy'}
             ]
         });

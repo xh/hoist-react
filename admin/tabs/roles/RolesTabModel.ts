@@ -1,7 +1,7 @@
 import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data/Store';
 import {AllRolesPanelModel} from './AllRolesPanelModel';
-import {RoleDetailPanelModel} from './RoleDetailPanelModel';
+import {RoleDetailPanelModel} from './details/RoleDetailPanelModel';
 
 export class RolesTabModel extends HoistModel {
     @managed store = this.createStore();
