@@ -109,7 +109,11 @@ export class AppModel extends HoistAppModel {
             },
             {
                 name: 'roles',
-                path: '/roles'
+                path: '/roles',
+                children: [
+                    {name: 'inspector', path: '/inspector'},
+                    {name: 'visualizer', path: '/visualizer'}
+                ]
             }
         ];
     }

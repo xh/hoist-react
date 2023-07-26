@@ -1,19 +1,20 @@
 import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data/Store';
 import {AllRolesPanelModel} from './AllRolesPanelModel';
-import {RoleDetailPanelModel} from './details/RoleDetailPanelModel';
 
 export class RolesTabModel extends HoistModel {
     @managed store = this.createStore();
 
+    // remove the refedrence to parentModel (let it find)
     @managed allRolesPanelModel = new AllRolesPanelModel({parentModel: this});
-    @managed roleDetailPanelModel = new RoleDetailPanelModel();
+    // definitely don't need to create this model twice
+    // @managed roleDetailPanelModel = new RoleDetailPanelModel();
+
+    // could add a getter that references the allRolesPanel model to get the selected role (then can just reference the parent)
 
     private createStore() {
         return new Store({
-            processRawData: r => {
-                return {...r};
-            },
+            idSpec: 'name',
             fields: [
                 {name: 'name', type: 'string'},
                 {name: 'groupName', type: 'string'},
@@ -28,7 +29,7 @@ export class RolesTabModel extends HoistModel {
     }
 
     override async doLoadAsync() {
-        const data = await XH.fetchJson({url: 'rest/rolesAdmin'});
-        this.store.loadData(data['data']);
+        const resp = await XH.fetchJson({url: 'rest/rolesAdmin'});
+        this.store.loadData(resp.data);
     }
 }

@@ -1,6 +1,6 @@
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {makeObservable, observable} from 'mobx';
-import {AllRolesPanelModel} from './../AllRolesPanelModel';
+import {AllRolesPanelModel} from '../AllRolesPanelModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {Store} from '@xh/hoist/data';
 

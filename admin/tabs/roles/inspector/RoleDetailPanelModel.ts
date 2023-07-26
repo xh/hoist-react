@@ -1,6 +1,6 @@
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {makeObservable, observable} from 'mobx';
-import {AllRolesPanelModel} from './../AllRolesPanelModel';
+import {AllRolesPanelModel} from '../AllRolesPanelModel';
 import {DashContainerModel} from '@xh/hoist/desktop/cmp/dash';
 import {rolesWidget} from './RolesWidget';
 import {usersWidget} from './UsersWidget';
