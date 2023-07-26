@@ -15,7 +15,6 @@ export const rolesTab = hoistCmp.factory({
                 panel({
                     title: 'Role Details',
                     item: roleDetailPanel(),
-                    compactHeader: true,
                     modelConfig: {
                         side: 'right',
                         defaultSize: '50%'

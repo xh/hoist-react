@@ -36,13 +36,15 @@ export class UsersWidgetModel extends HoistModel {
                 this.store.clear();
                 this.roleId = role?.id ?? null;
                 this.roleDetails = role?.data ?? null;
-                this.store.loadData(this.records_of_users(this.roleDetails?.assignedUsers));
+                this.store.loadData(this.records_of_users(this.roleDetails?.assignedUsers) ?? []);
             },
-            debounce: 30
+            debounce: 30,
+            fireImmediately: true
         });
     }
 
     private records_of_users(users: string[]) {
+        if (!users) return [];
         return users.map((str, index) => ({name: str}));
     }
 }

@@ -36,9 +36,10 @@ export class RolesWidgetModel extends HoistModel {
                 this.store.clear();
                 this.roleId = role?.id ?? null;
                 this.roleDetails = role?.data ?? null;
-                this.store.loadData(this.roleDetails?.inherits);
+                this.store.loadData(this.roleDetails?.inherits ?? []);
             },
-            debounce: 30
+            debounce: 30,
+            fireImmediately: true
         });
     }
 }
