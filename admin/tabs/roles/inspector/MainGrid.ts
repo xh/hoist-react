@@ -5,7 +5,7 @@ import {RolesTabModel} from '../RolesTabModel';
 import {compactDateRenderer} from '@xh/hoist/format';
 import {InspectorTabModel} from './InspectorTab';
 
-class RolesGridModel extends HoistModel {
+class MainGridModel extends HoistModel {
     @managed gridModel: GridModel;
 
     @lookup(() => InspectorTabModel) parent: InspectorTabModel;
@@ -24,7 +24,6 @@ class RolesGridModel extends HoistModel {
             track: () => this.gridModel.selectedRecord,
             run: role => {
                 this.parent.selectedRole = role?.data ?? null;
-                console.log('role details: ' + this.parent.selectedRole);
             }
         });
     }
@@ -46,8 +45,8 @@ class RolesGridModel extends HoistModel {
     }
 }
 
-export const rolesGrid = hoistCmp.factory({
-    model: creates(RolesGridModel),
+export const mainGrid = hoistCmp.factory({
+    model: creates(MainGridModel),
 
     render() {
         return grid();
