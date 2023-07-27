@@ -1,29 +1,9 @@
 import {RolesTabModel} from './RolesTabModel';
 import {creates, hoistCmp} from '@xh/hoist/core';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {allRolesPanel} from './AllRolesPanel';
-import {roleDetailPanel} from './inspector/RoleDetailPanel';
-import {hframe} from '@xh/hoist/cmp/layout';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
-import {treeGraph} from './visualizer/TreeGraph';
-
-const roleInspector = () =>
-    hframe({
-        items: [
-            allRolesPanel(),
-            panel({
-                title: 'Role Details',
-                item: roleDetailPanel(),
-                modelConfig: {
-                    side: 'right',
-                    defaultSize: '50%'
-                }
-            })
-        ]
-    });
-
-const roleVisualizer = treeGraph;
+import {visualizerTab} from './visualizer/VisualizerTab';
+import {inspectorTab} from './inspector/InspectorTab';
 
 export const rolesTab = hoistCmp.factory({
     model: creates(RolesTabModel),
@@ -36,13 +16,13 @@ export const rolesTab = hoistCmp.factory({
                         id: 'inspector',
                         title: 'Inspector',
                         icon: Icon.treeList(),
-                        content: roleInspector
+                        content: inspectorTab
                     },
                     {
                         id: 'visualizer',
                         title: 'Visualizer',
                         icon: Icon.chartLine(),
-                        content: roleVisualizer
+                        content: visualizerTab
                     }
                 ],
                 route: 'default.roles',
