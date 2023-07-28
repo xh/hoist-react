@@ -3,10 +3,10 @@ import {GridModel, grid} from '@xh/hoist/cmp/grid';
 import {makeObservable} from 'mobx';
 import {Store} from '@xh/hoist/data';
 import {InspectorTabModel} from '../../InspectorTab';
-import {span} from '@xh/hoist/cmp/layout';
+import {div} from '@xh/hoist/cmp/layout';
 
 class allTabModel extends HoistModel {
-    @lookup(() => InspectorTabModel) mainGrid: InspectorTabModel;
+    @lookup(() => InspectorTabModel) inspectorTab: InspectorTabModel;
 
     @managed store = new Store({
         fields: [
@@ -26,9 +26,11 @@ class allTabModel extends HoistModel {
                 field: 'reason',
                 renderer: (v, {record}) => {
                     const reason = record.data?.reason;
-                    return span({
-                        className: 'role-reason',
-                        item: `via their role ${reason}`
+                    return div({
+                        style: {
+                            fontStyle: 'italic'
+                        },
+                        item: `via ${reason}`
                     });
                 }
             }
@@ -42,7 +44,7 @@ class allTabModel extends HoistModel {
 
     override onLinked() {
         this.addReaction({
-            track: () => this.mainGrid.selectedRole,
+            track: () => this.inspectorTab.selectedRole,
             run: role => {
                 this.store.clear();
 

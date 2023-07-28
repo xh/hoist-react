@@ -7,7 +7,7 @@ import {roleDetails} from './detail/RoleDetails';
 import {hr, placeholder, vframe} from '@xh/hoist/cmp/layout';
 
 class DetailPanelModel extends HoistModel {
-    @lookup(() => InspectorTabModel) mainGrid: InspectorTabModel;
+    @lookup(() => InspectorTabModel) inspectorTab: InspectorTabModel;
 
     constructor() {
         super();
@@ -21,7 +21,7 @@ export const detailPanel = hoistCmp.factory({
     render({model}) {
         return panel({
             title: 'Role Details',
-            item: model.mainGrid.selectedRole
+            item: model.inspectorTab.selectedRole
                 ? vframe(
                       roleDetails(),
                       hr({

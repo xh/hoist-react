@@ -1,34 +1,35 @@
-import {HoistModel, creates, hoistCmp, lookup, managed} from '@xh/hoist/core';
+import {HoistModel, XH, creates, hoistCmp, lookup, managed} from '@xh/hoist/core';
 import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {form} from '@xh/hoist/cmp/form';
-import {dateInput, textInput} from '@xh/hoist/desktop/cmp/input';
+import {dateInput, select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {InspectorTabModel} from '../InspectorTab';
-import {makeObservable} from 'mobx';
-import {LocalDate} from '@xh/hoist/utils/datetime';
+import {makeObservable, observable} from 'mobx';
 import {FormModel} from '@xh/hoist/cmp/form';
+import {Store} from '@xh/hoist/data';
 
 class RoleDetailsModel extends HoistModel {
-    @lookup(() => InspectorTabModel) mainGrid: InspectorTabModel;
+    @lookup(() => InspectorTabModel) inspectorTab: InspectorTabModel;
+
+    @managed roleNameStore = new Store({
+        fields: [{name: 'roleName', type: 'string'}],
+        idSpec: 'roleName'
+    });
 
     @managed
     formModel = new FormModel({
         fields: [
             {
-                name: 'name',
-                initialValue: 'Testing'
+                name: 'name'
             },
             {
-                name: 'group',
-                initialValue: 'QA'
+                name: 'groupName'
             },
             {
-                name: 'lastUpdated',
-                initialValue: LocalDate.today()
+                name: 'lastUpdated'
             },
             {
-                name: 'lastUpdatedBy',
-                initialValue: 'Joe'
+                name: 'lastUpdatedBy'
             },
             {
                 name: 'notes'
@@ -39,16 +40,48 @@ class RoleDetailsModel extends HoistModel {
         ]
     });
 
+    @observable
+    roleOptions = [];
+
     constructor() {
         super();
         makeObservable(this);
+    }
+
+    override onLinked() {
+        this.addReaction({
+            track: () => this.inspectorTab.selectedRole,
+            run: role => {
+                // assign values
+                this.formModel.fields['name'].setValue(this.inspectorTab.selectedRole?.name);
+                this.formModel.fields['groupName'].setValue(
+                    this.inspectorTab.selectedRole?.groupName
+                );
+                this.formModel.fields['lastUpdated'].setValue(
+                    this.inspectorTab.selectedRole?.lastUpdated
+                );
+                this.formModel.fields['lastUpdatedBy'].setValue(
+                    this.inspectorTab.selectedRole?.lastUpdatedBy
+                );
+                this.formModel.fields['notes'].setValue(this.inspectorTab.selectedRole?.notes);
+                this.formModel.fields['inherits'].setValue(
+                    this.inspectorTab.selectedRole?.inherits
+                );
+            },
+            fireImmediately: true
+        });
+    }
+
+    override async doLoadAsync() {
+        const resp = await XH.fetchJson({url: 'rolesAdmin/allCurrentRoles'});
+        this.roleOptions = resp ?? [];
     }
 }
 
 export const roleDetails = hoistCmp.factory({
     model: creates(RoleDetailsModel),
 
-    render() {
+    render({model}) {
         return div({
             item: form({
                 item: vbox(
@@ -59,7 +92,10 @@ export const roleDetails = hoistCmp.factory({
                                 flex: 1,
                                 items: [
                                     formField({field: 'name', item: textInput()}),
-                                    formField({field: 'group', item: textInput()})
+                                    formField({
+                                        field: 'groupName',
+                                        item: textInput()
+                                    })
                                 ]
                             }),
                             vbox({
@@ -67,15 +103,28 @@ export const roleDetails = hoistCmp.factory({
                                 items: [
                                     formField({
                                         field: 'lastUpdated',
-                                        item: dateInput()
+                                        item: dateInput(),
+                                        disabled: true
                                     }),
-                                    formField({field: 'lastUpdatedBy', item: textInput()})
+                                    formField({
+                                        field: 'lastUpdatedBy',
+                                        item: textInput(),
+                                        disabled: true
+                                    })
                                 ]
                             })
                         ]
                     }),
-                    formField({field: 'notes', item: textInput()}),
-                    formField({field: 'inherits', item: textInput()})
+                    formField({field: 'notes', item: textArea()}),
+                    formField({
+                        field: 'inherits',
+                        item: select({
+                            enableMulti: true,
+                            // need to handle the workflow of if a user inputs a completely new role...
+                            // enableCreate: true
+                            options: model.roleOptions
+                        })
+                    })
                 )
             }),
             style: {

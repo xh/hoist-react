@@ -4,6 +4,10 @@ import {makeObservable} from 'mobx';
 import {RolesTabModel} from '../RolesTabModel';
 import {compactDateRenderer} from '@xh/hoist/format';
 import {InspectorTabModel} from './InspectorTab';
+import {vframe} from '@xh/hoist/cmp/layout';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {Icon} from '@xh/hoist/icon';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 
 class MainGridModel extends HoistModel {
     @managed gridModel: GridModel;
@@ -49,6 +53,29 @@ export const mainGrid = hoistCmp.factory({
     model: creates(MainGridModel),
 
     render() {
-        return grid();
+        return vframe(
+            toolbar({
+                items: [
+                    button({
+                        icon: Icon.add(),
+                        text: 'Add User',
+                        intent: 'success'
+                    }),
+                    button({
+                        icon: Icon.edit(),
+                        text: 'Edit',
+                        intent: 'primary'
+                    }),
+                    button({
+                        icon: Icon.delete(),
+                        text: 'Delete',
+                        intent: 'danger'
+                    })
+                ],
+                compact: true
+                // vertical: true
+            }),
+            grid()
+        );
     }
 });
