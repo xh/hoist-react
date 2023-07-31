@@ -1,4 +1,4 @@
-import {HoistModel, creates, hoistCmp, lookup, managed} from '@xh/hoist/core';
+import {HoistModel, XH, creates, hoistCmp, lookup, managed} from '@xh/hoist/core';
 import {GridModel, grid} from '@xh/hoist/cmp/grid';
 import {makeObservable} from 'mobx';
 import {Store} from '@xh/hoist/data';
@@ -20,7 +20,8 @@ class assignedTabModel extends HoistModel {
         emptyText: 'No users assigned to this role',
         store: this.store,
         hideHeaders: true,
-        columns: [{field: 'user'}]
+        columns: [{field: 'user'}],
+        selModel: 'multiple'
     });
 
     constructor() {
@@ -66,8 +67,9 @@ export const assignedTab = hoistCmp.factory({
                         intent: 'danger'
                     })
                 ],
-                compact: true
+                compact: true,
                 // vertical: true
+                omit: XH.getConf('xhAdminRoleController') != 'WRITE'
             }),
             grid({model: model.gridModel})
         );

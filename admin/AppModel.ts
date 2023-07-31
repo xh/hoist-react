@@ -57,7 +57,7 @@ export class AppModel extends HoistAppModel {
     }
 
     getTabRoutes(): Route[] {
-        return [
+        let routes = [
             {
                 name: 'general',
                 path: '/general',
@@ -106,20 +106,23 @@ export class AppModel extends HoistAppModel {
                     {name: 'userPrefs', path: '/userPrefs'},
                     {name: 'jsonBlobs', path: '/jsonBlobs'}
                 ]
-            },
-            {
+            }
+        ];
+        if (['WRITE', 'READ'].includes(XH.getConf('xhAdminRoleController'))) {
+            routes.push({
                 name: 'roles',
                 path: '/roles',
                 children: [
                     {name: 'inspector', path: '/inspector'},
                     {name: 'visualizer', path: '/visualizer'}
                 ]
-            }
-        ];
+            });
+        }
+        return routes;
     }
 
     createTabs(): TabConfig[] {
-        return [
+        let tabs = [
             {
                 id: 'general',
                 icon: Icon.info(),
@@ -144,12 +147,15 @@ export class AppModel extends HoistAppModel {
                 id: 'userData',
                 icon: Icon.users(),
                 content: userDataTab
-            },
-            {
+            }
+        ];
+        if (['WRITE', 'READ'].includes(XH.getConf('xhAdminRoleController'))) {
+            tabs.push({
                 id: 'roles',
                 icon: Icon.roles(),
                 content: rolesTab
-            }
-        ];
+            });
+        }
+        return tabs;
     }
 }

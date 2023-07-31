@@ -34,7 +34,8 @@ class allTabModel extends HoistModel {
                     });
                 }
             }
-        ]
+        ],
+        selModel: 'multiple'
     });
 
     constructor() {

@@ -91,10 +91,15 @@ export const roleDetails = hoistCmp.factory({
                             vbox({
                                 flex: 1,
                                 items: [
-                                    formField({field: 'name', item: textInput()}),
+                                    formField({
+                                        field: 'name',
+                                        item: textInput(),
+                                        disabled: XH.getConf('xhAdminRoleController') != 'WRITE'
+                                    }),
                                     formField({
                                         field: 'groupName',
-                                        item: textInput()
+                                        item: textInput(),
+                                        disabled: XH.getConf('xhAdminRoleController') != 'WRITE'
                                     })
                                 ]
                             }),
@@ -115,7 +120,11 @@ export const roleDetails = hoistCmp.factory({
                             })
                         ]
                     }),
-                    formField({field: 'notes', item: textArea()}),
+                    formField({
+                        field: 'notes',
+                        item: textArea(),
+                        disabled: XH.getConf('xhAdminRoleController') != 'WRITE'
+                    }),
                     formField({
                         field: 'inherits',
                         item: select({
@@ -123,7 +132,8 @@ export const roleDetails = hoistCmp.factory({
                             // need to handle the workflow of if a user inputs a completely new role...
                             // enableCreate: true
                             options: model.roleOptions
-                        })
+                        }),
+                        disabled: XH.getConf('xhAdminRoleController') != 'WRITE'
                     })
                 )
             }),

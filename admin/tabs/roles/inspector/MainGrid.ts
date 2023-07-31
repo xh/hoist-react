@@ -1,4 +1,4 @@
-import {HoistModel, creates, hoistCmp, lookup, managed} from '@xh/hoist/core';
+import {HoistModel, XH, creates, hoistCmp, lookup, managed} from '@xh/hoist/core';
 import {GridModel, grid} from '@xh/hoist/cmp/grid';
 import {makeObservable} from 'mobx';
 import {RolesTabModel} from '../RolesTabModel';
@@ -58,7 +58,7 @@ export const mainGrid = hoistCmp.factory({
                 items: [
                     button({
                         icon: Icon.add(),
-                        text: 'Add User',
+                        text: 'Add Role',
                         intent: 'success'
                     }),
                     button({
@@ -72,8 +72,9 @@ export const mainGrid = hoistCmp.factory({
                         intent: 'danger'
                     })
                 ],
-                compact: true
+                compact: true,
                 // vertical: true
+                omit: XH.getConf('xhAdminRoleController') != 'WRITE'
             }),
             grid()
         );
