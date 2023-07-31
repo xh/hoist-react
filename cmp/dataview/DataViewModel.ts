@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {RowClickedEvent, RowDoubleClickedEvent} from '@ag-grid-community/core';
 import {
     ColumnRenderer,
     ColumnSpec,
@@ -97,13 +98,13 @@ export interface DataViewConfig extends GridConfig {
      * Callback when a row is clicked - will receive an event with a data node containing
      * the row's data. (Note that this may be null - e.g. for clicks on full-width group rows.)
      */
-    onRowClicked?: (e: any) => void;
+    onRowClicked?: (e: RowClickedEvent) => void;
 
     /**
-     * Callback when a row is double clicked - will receive an event with a data node containing
+     * Callback when a row is double-clicked - will receive an event with a data node containing
      * the row's data. (Note that this may be null - e.g. for clicks on full-width group rows.)
      */
-    onRowDoubleClicked?: (e: any) => void;
+    onRowDoubleClicked?: (e: RowDoubleClickedEvent) => void;
 }
 
 export type ItemHeightFn = (params: {
