@@ -41,8 +41,8 @@ export const actionCol: ColumnSpec = {
     filterable: false,
     excludeFromExport: true,
     rendererIsComplex: true,
-    renderer: (value, {record, column, agParams}) => {
-        if (agParams.node.group || (record && record.isSummary)) return null;
+    renderer: (value, {record, column}) => {
+        if (!record || record?.isSummary) return null;
 
         const {actions, actionsShowOnHoverOnly, gridModel} = column;
         if (isEmpty(actions)) return null;

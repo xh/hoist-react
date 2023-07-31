@@ -89,12 +89,6 @@ export class ExceptionHandler {
         timeout: 10000
     };
 
-    #isUnloading = false;
-
-    constructor() {
-        window.addEventListener('unload', () => (this.#isUnloading = true));
-    }
-
     /**
      * Called by Hoist internally to handle exceptions, with built-in support for parsing certain
      * Hoist-specific exception options, displaying an appropriate error dialog to users, and
@@ -116,7 +110,7 @@ export class ExceptionHandler {
      * @param options - provides further control over how the exception is shown and/or logged.
      */
     handleException(exception: unknown, options?: ExceptionHandlerOptions) {
-        if (this.#isUnloading) return;
+        if (XH.pageState == 'terminated' || XH.pageState == 'frozen') return;
 
         const {e, opts} = this.parseArgs(exception, options);
 
@@ -156,7 +150,8 @@ export class ExceptionHandler {
      * @param options - provides further control over how the exception is shown and/or logged.
      */
     showException(exception: unknown, options?: ExceptionHandlerOptions) {
-        if (this.#isUnloading) return;
+        if (XH.pageState == 'terminated' || XH.pageState == 'frozen') return;
+
         const {e, opts} = this.parseArgs(exception, options);
         XH.appContainerModel.exceptionDialogModel.show(e, opts);
     }

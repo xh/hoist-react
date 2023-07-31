@@ -4,9 +4,42 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, RootRefreshContextModel, TaskObserver, XH} from '@xh/hoist/core';
+import {
+    AppSpec,
+    AppState,
+    createElement,
+    HoistAppModel,
+    HoistModel,
+    managed,
+    RootRefreshContextModel,
+    TaskObserver,
+    XH
+} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {isEmpty} from 'lodash';
+import {action, when as mobxWhen} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
+import {createRoot} from 'react-dom/client';
+import {
+    AlertBannerService,
+    AutoRefreshService,
+    ChangelogService,
+    ConfigService,
+    EnvironmentService,
+    FetchService,
+    GridAutosizeService,
+    GridExportService,
+    IdentityService,
+    IdleService,
+    InspectorService,
+    JsonBlobService,
+    LocalStorageService,
+    PrefService,
+    TrackService,
+    WebSocketService
+} from '@xh/hoist/svc';
+import {MINUTES} from '@xh/hoist/utils/datetime';
+import {checkMinVersion, throwIf} from '@xh/hoist/utils/js';
+import {compact, isEmpty} from 'lodash';
 import {AboutDialogModel} from './AboutDialogModel';
 import {BannerSourceModel} from './BannerSourceModel';
 import {ChangelogDialogModel} from './ChangelogDialogModel';
@@ -20,16 +53,32 @@ import {ViewportSizeModel} from './ViewportSizeModel';
 import {ThemeModel} from './ThemeModel';
 import {ToastSourceModel} from './ToastSourceModel';
 import {BannerModel} from './BannerModel';
+import {UserAgentModel} from './UserAgentModel';
+import {AppStateModel} from './AppStateModel';
+import {PageStateModel} from './PageStateModel';
+import {RouterModel} from './RouterModel';
+import {installServicesAsync} from '../core/impl/InstallServices';
+import {MIN_HOIST_CORE_VERSION} from '../core/XH';
 
 /**
  * Root object for Framework GUI State.
  */
 export class AppContainerModel extends HoistModel {
+    private initCalled = false;
+
+    //---------------------------------
+    // Immutable Application State
+    //--------------------------------
+    appSpec: AppSpec = null;
+    appModel: HoistAppModel = null;
+
     //------------
     // Sub-models
     //------------
-    /** Link any async operations that should mask the entire application to this model. */
     @managed appLoadModel = TaskObserver.trackAll();
+    @managed appStateModel = new AppStateModel();
+    @managed pageStateModel = new PageStateModel();
+    @managed routerModel = new RouterModel();
 
     @managed aboutDialogModel = new AboutDialogModel();
     @managed changelogDialogModel = new ChangelogDialogModel();
@@ -46,25 +95,162 @@ export class AppContainerModel extends HoistModel {
     @managed sizingModeModel = new SizingModeModel();
     @managed viewportSizeModel = new ViewportSizeModel();
     @managed themeModel = new ThemeModel();
+    @managed userAgentModel = new UserAgentModel();
 
-    init() {
-        const models = [
-            this.appLoadModel,
-            this.aboutDialogModel,
-            this.changelogDialogModel,
-            this.exceptionDialogModel,
-            this.feedbackDialogModel,
-            this.impersonationBarModel,
-            this.optionsDialogModel,
-            this.bannerSourceModel,
-            this.messageSourceModel,
-            this.toastSourceModel,
-            this.refreshContextModel,
-            this.sizingModeModel,
-            this.viewportSizeModel,
-            this.themeModel
-        ];
-        models.forEach((m: any) => m.init?.());
+    /**
+     * Main entry point. Initialize and render application code.
+     */
+    renderApp<T extends HoistAppModel>(appSpec: AppSpec<T>) {
+        // Remove the pre-load exception handler installed by preflight.js
+        window.onerror = null;
+        const spinner = document.getElementById('xh-preload-spinner');
+        if (spinner) spinner.style.display = 'none';
+        this.appSpec = appSpec instanceof AppSpec ? appSpec : new AppSpec(appSpec);
+
+        const root = createRoot(document.getElementById('xh-root')),
+            rootView = createElement(appSpec.containerClass, {model: this});
+        root.render(rootView);
+    }
+
+    /**
+     * Called when application container first mounted in order to trigger initial
+     * authentication and initialization of framework and application.
+     */
+    async initAsync() {
+        // Avoid multiple calls, which can occur if AppContainer remounted.
+        if (this.initCalled) return;
+        this.initCalled = true;
+
+        const {appSpec} = this,
+            {isPhone, isTablet, isDesktop} = this.userAgentModel,
+            {isMobileApp} = appSpec;
+
+        // Add xh css classes to power Hoist CSS selectors.
+        document.body.classList.add(
+            ...compact([
+                'xh-app',
+                isMobileApp ? 'xh-mobile' : 'xh-standard',
+                isDesktop ? 'xh-desktop' : null,
+                isPhone ? 'xh-phone' : null,
+                isTablet ? 'xh-tablet' : null
+            ])
+        );
+
+        // Disable browser context menu on long-press, used to show (app) context menus and as an
+        // alternate gesture for tree grid drill-own.
+        if (isMobileApp) {
+            window.addEventListener('contextmenu', e => e.preventDefault(), {capture: true});
+        }
+
+        try {
+            await installServicesAsync(FetchService);
+            this.setAppState('PRE_AUTH');
+
+            // consult (optional) pre-auth init for app
+            const modelClass: any = this.appSpec.modelClass;
+            await modelClass.preAuthAsync();
+
+            // Check if user has already been authenticated (prior login, OAuth, SSO)...
+            const userIsAuthenticated = await this.getAuthStatusFromServerAsync();
+
+            // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
+            if (!userIsAuthenticated) {
+                throwIf(
+                    appSpec.isSSO,
+                    'Unable to complete required authentication (SSO/Oauth failure).'
+                );
+                this.setAppState('LOGIN_REQUIRED');
+                return;
+            }
+
+            // ...if so, continue with initialization.
+            await this.completeInitAsync();
+        } catch (e) {
+            this.setAppState('LOAD_FAILED');
+            XH.handleException(e, {requireReload: true});
+        }
+    }
+
+    /**
+     * Complete initialization. Called after the client has confirmed that the user is generally
+     * authenticated and known to the server (regardless of application roles at this point).
+     */
+    @action
+    async completeInitAsync() {
+        try {
+            // Install identity service and confirm access
+            await installServicesAsync(IdentityService);
+            if (!this.appStateModel.checkAccess()) {
+                this.setAppState('ACCESS_DENIED');
+                return;
+            }
+
+            // Complete initialization process
+            this.setAppState('INITIALIZING');
+            await installServicesAsync([ConfigService, LocalStorageService]);
+            await installServicesAsync(TrackService);
+            await installServicesAsync([EnvironmentService, PrefService, JsonBlobService]);
+
+            // Confirm hoist-core version after environment service loaded
+            const hcVersion = XH.environmentService.get('hoistCoreVersion');
+            if (!checkMinVersion(hcVersion, MIN_HOIST_CORE_VERSION)) {
+                throw XH.exception(`
+                    This version of Hoist React requires the server to run Hoist Core
+                    v${MIN_HOIST_CORE_VERSION} or greater. Version ${hcVersion} detected.
+                `);
+            }
+
+            await installServicesAsync([
+                AlertBannerService,
+                AutoRefreshService,
+                ChangelogService,
+                IdleService,
+                InspectorService,
+                GridAutosizeService,
+                GridExportService,
+                WebSocketService
+            ]);
+
+            // init all models other than Router
+            const models = [
+                this.appLoadModel,
+                this.appStateModel,
+                this.pageStateModel,
+                this.routerModel,
+                this.aboutDialogModel,
+                this.changelogDialogModel,
+                this.exceptionDialogModel,
+                this.feedbackDialogModel,
+                this.impersonationBarModel,
+                this.optionsDialogModel,
+                this.bannerSourceModel,
+                this.messageSourceModel,
+                this.toastSourceModel,
+                this.refreshContextModel,
+                this.sizingModeModel,
+                this.viewportSizeModel,
+                this.themeModel,
+                this.userAgentModel
+            ];
+            models.forEach((m: any) => m.init?.());
+
+            this.bindInitSequenceToAppLoadModel();
+
+            this.setDocTitle();
+
+            // Delay to workaround hot-reload styling issues in dev.
+            await wait(XH.isDevelopmentMode ? 300 : 1);
+
+            const modelClass: any = this.appSpec.modelClass;
+            this.appModel = modelClass.instance = new modelClass();
+            await this.appModel.initAsync();
+            this.startRouter();
+            this.startOptionsDialog();
+            this.setAppState('RUNNING');
+        } catch (e) {
+            this.setAppState('LOAD_FAILED');
+            XH.handleException(e, {requireReload: true});
+        }
     }
 
     /**
@@ -104,5 +290,48 @@ export class AppContainerModel extends HoistModel {
 
     hasAboutDialog() {
         return !isEmpty(this.aboutDialogModel.getItems());
+    }
+
+    //----------------------------
+    // Implementation
+    //-----------------------------
+    private async getAuthStatusFromServerAsync(): Promise<boolean> {
+        return XH.fetchService
+            .fetchJson({
+                url: 'xh/authStatus',
+                timeout: 3 * MINUTES // Accommodate delay for user at a credentials prompt
+            })
+            .then(r => r.authenticated)
+            .catch(e => {
+                // 401s normal / expected for non-SSO apps when user not yet logged in.
+                if (e.httpStatus === 401) return false;
+                // Other exceptions indicate e.g. connectivity issue, server down - raise to user.
+                throw e;
+            });
+    }
+
+    private setDocTitle() {
+        const env = XH.getEnv('appEnvironment'),
+            {clientAppName} = this.appSpec;
+        document.title = env === 'Production' ? clientAppName : `${clientAppName} (${env})`;
+    }
+
+    private startRouter() {
+        this.routerModel.addRoutes(this.appModel.getRoutes());
+        this.routerModel.router.start();
+    }
+
+    private startOptionsDialog() {
+        this.optionsDialogModel.setOptions(this.appModel.getAppOptions());
+    }
+
+    private setAppState(nextState: AppState) {
+        this.appStateModel.setAppState(nextState);
+    }
+
+    private bindInitSequenceToAppLoadModel() {
+        const terminalStates: AppState[] = ['RUNNING', 'SUSPENDED', 'LOAD_FAILED', 'ACCESS_DENIED'],
+            loadingPromise = mobxWhen(() => terminalStates.includes(this.appStateModel.state));
+        loadingPromise.linkTo(this.appLoadModel);
     }
 }

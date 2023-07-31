@@ -6,6 +6,7 @@
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {forOwn} from 'lodash';
 
 /**
@@ -22,6 +23,7 @@ export class ServerEnvModel extends HoistModel {
             groupBy: 'type',
             sortBy: 'name',
             enableExport: true,
+            exportOptions: {filename: `${XH.appCode}-env-${LocalDate.today()}`},
             store: {idSpec: XH.genId},
             columns: [
                 {

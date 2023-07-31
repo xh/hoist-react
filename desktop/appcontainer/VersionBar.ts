@@ -19,6 +19,7 @@ export const versionBar = hoistCmp.factory({
             env = XH.getEnv('appEnvironment'),
             version = XH.getEnv('clientVersion'),
             build = XH.getEnv('clientBuild'),
+            isAdminApp = window.location.pathname?.startsWith('/admin/'),
             versionAndBuild =
                 !build || build === 'UNKNOWN' ? version : `${version} (build ${build})`;
 
@@ -36,6 +37,10 @@ export const versionBar = hoistCmp.factory({
                 Icon.search({
                     omit: !inspectorSvc.enabled,
                     onClick: () => inspectorSvc.toggleActive()
+                }),
+                Icon.wrench({
+                    omit: isAdminApp || !XH.getUser().isHoistAdminReader,
+                    onClick: () => window.open('/admin')
                 })
             ]
         });

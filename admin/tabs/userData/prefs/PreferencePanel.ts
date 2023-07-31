@@ -4,18 +4,17 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-
-import {creates, hoistCmp} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
-import {restGrid} from '@xh/hoist/desktop/cmp/rest';
+import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
+import {differ} from '../../../differ/Differ';
+import {regroupDialog} from '../../../regroup/RegroupDialog';
+import {PreferenceModel} from './PreferenceModel';
 
-import {JsonBlobModel} from './JsonBlobModel';
-import {differ} from '../../differ/Differ';
-
-export const jsonBlobPanel = hoistCmp.factory({
-    model: creates(JsonBlobModel),
+export const preferencePanel = hoistCmp.factory({
+    model: creates(PreferenceModel),
 
     render({model}) {
         return fragment(
@@ -28,7 +27,8 @@ export const jsonBlobPanel = hoistCmp.factory({
                     });
                 }
             }),
-            differ({omit: !model.differModel})
+            differ({omit: !model.differModel}),
+            regroupDialog()
         );
     }
 });
