@@ -4,6 +4,13 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {
+    CellClickedEvent,
+    CellContextMenuEvent,
+    CellDoubleClickedEvent,
+    RowClickedEvent,
+    RowDoubleClickedEvent
+} from '@ag-grid-community/core';
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {
     Column,
@@ -233,34 +240,34 @@ export interface GridConfig {
 
     /**
      * Callback when a row is clicked - will receive an event with a data node containing
-     * the row's data. (Note that this may be null - e.g. for clicks on full-width group rows.)
+     * the row's data. (Note that the event may be null - e.g. for clicks on full-width group rows.)
      */
-    onRowClicked?: (e: any) => void;
+    onRowClicked?: (e: RowClickedEvent) => void;
 
     /**
-     * Callback when a row is double clicked - will receive an event with a data node containing
-     * the row's data. (Note that this may be null - e.g. for clicks on full-width group rows.)
+     * Callback when a row is double-clicked - will receive an event with a data node containing
+     * the row's data. (Note that the event may be null - e.g. for clicks on full-width group rows.)
      */
-    onRowDoubleClicked?: (e: any) => void;
+    onRowDoubleClicked?: (e: RowDoubleClickedEvent) => void;
 
     /**
      * Callback when a cell is clicked. Function will receive an event with a data node,
      * cell value, and column.
      */
-    onCellClicked?: (e: any) => void;
+    onCellClicked?: (e: CellClickedEvent) => void;
 
     /**
-     * Callback when a cell is double clicked. Function will receive an event with a data node,
+     * Callback when a cell is double-clicked. Function will receive an event with a data node,
      * cell value, and column.
      */
-    onCellDoubleClicked?: (e: any) => void;
+    onCellDoubleClicked?: (e: CellDoubleClickedEvent) => void;
 
     /**
      * Callback when the context menu is opened. Function will receive an event with a data
      * node containing the row's data. Note that this event can also be triggered via a
      * long press (aka tap and hold) on mobile devices.
      */
-    onCellContextMenu?: (e: any) => void;
+    onCellContextMenu?: (e: CellContextMenuEvent) => void;
 
     /**
      * Number of clicks required to expand / collapse a parent row in a tree grid. Defaults
@@ -382,11 +389,11 @@ export class GridModel extends HoistModel {
     colDefaults: Partial<ColumnSpec>;
     experimental: PlainObject;
     onKeyDown: (e: KeyboardEvent) => void;
-    onRowClicked: (e: any) => void;
-    onRowDoubleClicked: (e: any) => void;
-    onCellClicked: (e: any) => void;
-    onCellDoubleClicked: (e: any) => void;
-    onCellContextMenu: (e: any) => void;
+    onRowClicked: (e: RowClickedEvent) => void;
+    onRowDoubleClicked: (e: RowDoubleClickedEvent) => void;
+    onCellClicked: (e: CellClickedEvent) => void;
+    onCellDoubleClicked: (e: CellDoubleClickedEvent) => void;
+    onCellContextMenu: (e: CellContextMenuEvent) => void;
     appData: PlainObject;
 
     @managed filterModel: GridFilterModel;
