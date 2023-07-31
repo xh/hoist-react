@@ -14,7 +14,8 @@ import {
     RowClassFn,
     RowClassRuleFn,
     GridSorterLike,
-    GridContextMenuSpec
+    GridContextMenuSpec,
+    GridGroupSortFn
 } from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, PlainObject, Some} from '@xh/hoist/core';
 import {
@@ -29,16 +30,12 @@ import {
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNumber} from 'lodash';
+import {ReactNode} from 'react';
 
 /**
  * Configuration for a DataView.
- *
- *  Additional properties not specified here will be passed to the underlying
- *  GridModel. Note this is for advanced usage - not all configs supported, and many will
- *  override DataView defaults in ways that will break this component.
  */
-export interface DataViewConfig extends GridConfig {
-    // TODO: Accept grid keys without publicizing them?
+export interface DataViewConfig {
     /** A Store instance, or a config to create one. */
     store?: Store | StoreConfig;
 
@@ -57,6 +54,16 @@ export interface DataViewConfig extends GridConfig {
     /** Function used to render group rows. */
     groupRowRenderer?: GroupRowRenderer;
 
+    /** True (default) to show a count of group member rows within each full-width group row. */
+    showGroupRowCounts?: boolean;
+
+    /**
+     * Function to use to sort full-row groups.  Called with two group values to compare
+     * in the form of a standard JS comparator.  Default is an ascending string sort.
+     * Set to `null` to prevent sorting of groups.
+     */
+    groupSortFn?: GridGroupSortFn;
+
     /** Sort specification. */
     sortBy?: Some<GridSorterLike>;
 
@@ -64,7 +71,10 @@ export interface DataViewConfig extends GridConfig {
     selModel?: StoreSelectionModel | StoreSelectionConfig | 'single' | 'multiple' | 'disabled';
 
     /** Text/HTML to display if view has no records.*/
-    emptyText?: string;
+    emptyText?: ReactNode;
+
+    /** True (default) to hide empty text until after the Store has been loaded at least once. */
+    hideEmptyTextBeforeLoad?: boolean;
 
     /** True to highlight the currently hovered row.*/
     showHover?: boolean;
@@ -105,6 +115,13 @@ export interface DataViewConfig extends GridConfig {
      * the row's data. (Note that this may be null - e.g. for clicks on full-width group rows.)
      */
     onRowDoubleClicked?: (e: RowDoubleClickedEvent) => void;
+
+    /**
+     * "Escape hatch" object to pass directly to GridModel. Note these options may be used
+     * / overwritten by the framework itself, and are not all guaranteed to be compatible
+     * with its usages of GridModel.
+     */
+    gridOptions?: Omit<GridConfig, keyof DataViewConfig>;
 }
 
 export type ItemHeightFn = (params: {
@@ -134,9 +151,12 @@ export class DataViewModel extends HoistModel {
             groupBy,
             groupRowHeight,
             groupRowRenderer,
+            showGroupRowCounts,
+            groupSortFn,
             sortBy,
             selModel,
             emptyText,
+            hideEmptyTextBeforeLoad,
             showHover = false,
             rowBorders = false,
             stripeRows = false,
@@ -145,7 +165,7 @@ export class DataViewModel extends HoistModel {
             rowClassRules,
             onRowClicked,
             onRowDoubleClicked,
-            ...restArgs
+            gridOptions
         } = config;
 
         throwIf(
@@ -176,17 +196,20 @@ export class DataViewModel extends HoistModel {
             selModel,
             contextMenu,
             emptyText,
+            hideEmptyTextBeforeLoad,
             showHover,
             rowBorders,
             stripeRows,
             groupBy,
             groupRowRenderer,
+            showGroupRowCounts,
+            groupSortFn,
             rowClassFn,
             rowClassRules,
             onRowClicked,
             onRowDoubleClicked,
             columns,
-            ...restArgs
+            ...gridOptions
         });
     }
 
