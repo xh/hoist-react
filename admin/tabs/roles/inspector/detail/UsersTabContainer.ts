@@ -17,7 +17,7 @@ export const usersTabContainer = hoistCmp.factory({
                     },
                     {
                         id: 'all',
-                        title: 'All Users',
+                        title: 'Computed Users',
                         icon: Icon.users(),
                         content: allTab
                     }

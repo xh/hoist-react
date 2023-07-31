@@ -4,7 +4,7 @@ import {InspectorTabModel} from './InspectorTab';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {usersTabContainer} from './detail/UsersTabContainer';
 import {roleDetails} from './detail/RoleDetails';
-import {hr, placeholder, vframe} from '@xh/hoist/cmp/layout';
+import {placeholder, vframe} from '@xh/hoist/cmp/layout';
 
 class DetailPanelModel extends HoistModel {
     @lookup(() => InspectorTabModel) inspectorTab: InspectorTabModel;
@@ -22,16 +22,7 @@ export const detailPanel = hoistCmp.factory({
         return panel({
             title: 'Role Details',
             item: model.inspectorTab.selectedRole
-                ? vframe(
-                      roleDetails(),
-                      hr({
-                          style: {
-                              width: '60%',
-                              border: 'var(--xh-border-solid)'
-                          }
-                      }),
-                      usersTabContainer()
-                  )
+                ? vframe(roleDetails(), usersTabContainer())
                 : placeholder('Select a role to view details'),
             compactHeader: true,
             modelConfig: {

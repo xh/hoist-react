@@ -20,6 +20,7 @@ export const rolesTab = hoistCmp.factory({
                     },
                     {
                         id: 'visualizer',
+                        // TODO: could the visualizer just be a popup that you can open?
                         title: 'Visualizer',
                         icon: Icon.chartLine(),
                         content: visualizerTab

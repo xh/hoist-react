@@ -4,7 +4,7 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {form} from '@xh/hoist/cmp/form';
 import {dateInput, select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {InspectorTabModel} from '../InspectorTab';
-import {makeObservable, observable} from 'mobx';
+import {makeObservable} from 'mobx';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {Store} from '@xh/hoist/data';
 
@@ -40,7 +40,7 @@ class RoleDetailsModel extends HoistModel {
         ]
     });
 
-    @observable
+    @managed
     roleOptions = [];
 
     constructor() {

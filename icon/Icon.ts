@@ -598,7 +598,7 @@ export const Icon = {
         return Icon.icon({...p, iconName: 'rocket'});
     },
     roles(p?: IconProps) {
-        return Icon.icon({...p, iconName: 'user-secret'});
+        return Icon.icon({...p, iconName: 'user-shield'});
     },
     server(p?: IconProps) {
         return Icon.icon({...p, iconName: 'server'});

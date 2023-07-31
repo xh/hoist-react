@@ -1,12 +1,12 @@
 import {HoistModel, XH, creates, hoistCmp, lookup, managed} from '@xh/hoist/core';
 import {GridModel, grid} from '@xh/hoist/cmp/grid';
 import {makeObservable} from 'mobx';
-import {Store} from '@xh/hoist/data';
+import {RecordAction, Store} from '@xh/hoist/data';
 import {InspectorTabModel} from '../../InspectorTab';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {vframe} from '@xh/hoist/cmp/layout';
+import {hframe} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 
 class assignedTabModel extends HoistModel {
     @lookup(() => InspectorTabModel) inspectorTab: InspectorTabModel;
@@ -33,42 +33,42 @@ class assignedTabModel extends HoistModel {
         this.addReaction({
             track: () => this.inspectorTab.selectedRole,
             run: role => {
-                this.store.clear();
-
-                this.store.loadData(
-                    role?.assignedUsers?.map((it: string, _) => ({user: it})) ?? []
-                );
+                this.store.loadData(role?.assignedUsers?.map(user => ({user})) ?? []);
             },
             fireImmediately: true
         });
     }
+
+    addUserAction = new RecordAction({
+        icon: Icon.add(),
+        // text: 'Assign User',
+        intent: 'success',
+        actionFn: () => window.alert('User assigned')
+    });
+
+    deleteUserAction = new RecordAction({
+        icon: Icon.delete(),
+        // text: 'Delete',
+        intent: 'danger',
+        actionFn: () => window.alert('User deleted'),
+        recordsRequired: true
+    });
 }
 
 export const assignedTab = hoistCmp.factory({
     model: creates(assignedTabModel),
 
     render({model}) {
-        return vframe(
+        return hframe(
             toolbar({
-                items: [
-                    button({
-                        icon: Icon.add(),
-                        text: 'Assign User',
-                        intent: 'success'
-                    }),
-                    button({
-                        icon: Icon.edit(),
-                        text: 'Edit',
-                        intent: 'primary'
-                    }),
-                    button({
-                        icon: Icon.delete(),
-                        text: 'Delete',
-                        intent: 'danger'
-                    })
-                ],
+                item: recordActionBar({
+                    selModel: model.gridModel.selModel,
+                    gridModel: model.gridModel,
+                    actions: [model.addUserAction, model.deleteUserAction],
+                    vertical: true
+                }),
                 compact: true,
-                // vertical: true
+                vertical: true,
                 omit: XH.getConf('xhAdminRoleController') != 'WRITE'
             }),
             grid({model: model.gridModel})

@@ -1,8 +1,9 @@
-import {hframe} from '@xh/hoist/cmp/layout';
+import {hframe, vframe} from '@xh/hoist/cmp/layout';
 import {HoistModel, creates, hoistCmp} from '@xh/hoist/core';
 import {detailPanel} from './DetailPanel';
 import {makeObservable, observable} from 'mobx';
 import {mainGrid} from './MainGrid';
+import {changesToolbar as changesToolbar} from './ChangesToolbar';
 
 export class InspectorTabModel extends HoistModel {
     @observable.ref selectedRole = null;
@@ -17,8 +18,7 @@ export const inspectorTab = hoistCmp.factory({
     model: creates(InspectorTabModel),
 
     render() {
-        return hframe({
-            items: [mainGrid(), detailPanel()]
-        });
+        // TODO: make the mainGrid a panel as well
+        return vframe(changesToolbar(), hframe(mainGrid(), detailPanel()));
     }
 });
