@@ -40,6 +40,11 @@
     cursor: pointer;
     width: 100%;
 
+    &--hidden .ag-header {
+      border-bottom-width: 0;
+      min-height: 0 !important;
+    }
+
     span {
       flex: 1;
       overflow: hidden;
