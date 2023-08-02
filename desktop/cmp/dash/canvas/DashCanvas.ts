@@ -6,7 +6,7 @@
  */
 import {ContextMenu} from '@blueprintjs/core';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {elementFactory, hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
+import {elementFactory, hoistCmp, HoistProps, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
@@ -40,42 +40,45 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
         const isDraggable = !model.layoutLocked,
             isResizable = !model.layoutLocked;
 
-        return div({
-            className: classNames(
-                className,
-                isDraggable ? `${className}--draggable` : null,
-                isResizable ? `${className}--resizable` : null
-            ),
-            ref: model.ref,
-            onContextMenu: e => onContextMenu(e, model),
-            items: [
-                reactGridLayout({
-                    layout: model.rglLayout,
-                    cols: model.columns,
-                    rowHeight: model.rowHeight,
-                    isDraggable,
-                    isResizable,
-                    compactType: model.compact ? 'vertical' : null,
-                    margin: model.margin,
-                    maxRows: model.maxRows,
-                    containerPadding: model.containerPadding,
-                    autoSize: true,
-                    isBounded: true,
-                    draggableHandle:
-                        '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
-                    draggableCancel: '.xh-button',
-                    onLayoutChange: layout => model.onRglLayoutChange(layout),
-                    onResizeStart: () => (model.isResizing = true),
-                    onResizeStop: () => (model.isResizing = false),
-                    items: model.viewModels.map(vm =>
-                        div({
-                            key: vm.id,
-                            item: dashCanvasView({model: vm})
-                        })
-                    )
-                }),
-                emptyContainerOverlay()
-            ]
+        return refreshContextView({
+            model: model.refreshContextModel,
+            item: div({
+                className: classNames(
+                    className,
+                    isDraggable ? `${className}--draggable` : null,
+                    isResizable ? `${className}--resizable` : null
+                ),
+                ref: model.ref,
+                onContextMenu: e => onContextMenu(e, model),
+                items: [
+                    reactGridLayout({
+                        layout: model.rglLayout,
+                        cols: model.columns,
+                        rowHeight: model.rowHeight,
+                        isDraggable,
+                        isResizable,
+                        compactType: model.compact ? 'vertical' : null,
+                        margin: model.margin,
+                        maxRows: model.maxRows,
+                        containerPadding: model.containerPadding,
+                        autoSize: true,
+                        isBounded: true,
+                        draggableHandle:
+                            '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
+                        draggableCancel: '.xh-button',
+                        onLayoutChange: layout => model.onRglLayoutChange(layout),
+                        onResizeStart: () => (model.isResizing = true),
+                        onResizeStop: () => (model.isResizing = false),
+                        items: model.viewModels.map(vm =>
+                            div({
+                                key: vm.id,
+                                item: dashCanvasView({model: vm})
+                            })
+                        )
+                    }),
+                    emptyContainerOverlay()
+                ]
+            })
         });
     }
 });
