@@ -6,7 +6,7 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {div, frame, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses, ModelLookupContext, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, uses, ModelLookupContext, HoistProps, refreshContextView} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {useOnMount, useOnResize} from '@xh/hoist/utils/react';
@@ -36,11 +36,14 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory<DashContainer
             model.containerRef,
             useOnResize(() => model.onResize(), {debounce: 100})
         );
-        return frame(
-            frame({className, ref}),
-            mask({spinner: true, bind: model.loadingStateTask}),
-            emptyContainerOverlay()
-        );
+        return refreshContextView({
+            model: model.refreshContextModel,
+            item: frame(
+                frame({className, ref}),
+                mask({spinner: true, bind: model.loadingStateTask}),
+                emptyContainerOverlay()
+            )
+        });
     }
 });
 

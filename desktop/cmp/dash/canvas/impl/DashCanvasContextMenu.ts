@@ -32,13 +32,19 @@ export const dashCanvasContextMenu = hoistCmp.factory({
 //---------------------------
 function createMenuItems({dashCanvasModel, position}) {
     const addMenuItems = createViewMenuItems({dashCanvasModel, position}),
-        {extraMenuItems, contentLocked} = dashCanvasModel;
+        {extraMenuItems, contentLocked, refreshContextModel} = dashCanvasModel;
     return [
         {
             text: 'Add',
             icon: Icon.add(),
             hidden: contentLocked || isEmpty(addMenuItems),
             items: addMenuItems
+        },
+        {
+            text: 'Refresh',
+            icon: Icon.refresh(),
+            hidden: !refreshContextModel.refreshTargets.length,
+            actionFn: () => refreshContextModel.refreshAsync()
         },
         '-',
         ...(extraMenuItems ?? [])
