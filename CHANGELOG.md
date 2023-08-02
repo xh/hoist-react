@@ -19,7 +19,7 @@
   autosizing rather than doing it after the user loads a column set.
 * New `DashModel.refreshContextModel` allows apps to programmatically refresh all widgets within
   a `DashCanvas` or `DashContainer`.
-* New `NumberFormatOptions.strictZeroUnsigned` config to not signe zeros (ie '-0.0') when precision
+* New `NumberFormatOptions.strictZeroUnsigned` config to not sign zeros (ie '-0.0') when precision
   rounds small numbers to zero.
 
 ### 🐞 Bug Fixes
