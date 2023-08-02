@@ -13,6 +13,10 @@
 
 ### 🎁 New Features
 
+* New `GridAutosizeOptions.includeHiddenColumns` config controls whether hidden columns should
+  also be included during the autosize process. Default of `false`. Useful when applications
+  provide quick toggles between different column sets and would prefer to take the up-front cost of
+  autosizing rather than doing it after the user loads a column set.
 * New `DashModel.refreshContextModel` allows apps to programmatically refresh all widgets within
   a `DashCanvas` or `DashContainer`.
 
