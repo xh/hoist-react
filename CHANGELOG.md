@@ -29,8 +29,6 @@
 * mobx `6.8 -> 6.9`
 * semver `7.3 -> 7.5`
 * typescript `4.9 -> 5.1`
-* react-select `4.3.1 -> 5.7.4`
-* react-windowed-select `3.1.2 -> 5.1.0`
 
 ## 58.0.1 - 2023-07-13
 
@@ -3483,7 +3481,7 @@ _"The one with the hooks."_
 **Hoist now fully supports React functional components and hooks.** The new `hoistComponent`
 function is now the recommended method for defining new components and their corresponding element
 factories. See that (within HoistComponentFunctional.js) and the new `useLocalModel()` and
-`useContextModel()` hooks (within [core/model](core/model)) for more information.
+`useContextModel()` hooks (within [core/hooks](core/hooks)) for more information.
 
 Along with the performance benefits and the ability to use React hooks, Hoist functional components
 are designed to read and write their models via context. This allows a much less verbose
