@@ -11,6 +11,10 @@
   options you wish to set via the new `gridOptions` parameter. Please note that, as before, not
   all `GridConfig` options are supported by (or make sense for) the `DataView` component.
 
+### 🐞 Bug Fixes
+
+* Fixed bug where `manuallySized` was not being set properly on column state
+
 ### 🎁 New Features
 
 * New `DashCanvas.refreshContextModel` allows apps to programmatically refresh a `DashCanvas` and
