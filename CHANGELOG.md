@@ -4,9 +4,12 @@
 
 ### 💥 Breaking Changes
 
-* Apps should update their Typescript dependency to v5.1. This should be a drop-in for most
+* Apps must update their `typescript` dependency to v5.1. This should be a drop-in for most
   applications, or require only minor changes. Note that Hoist has not yet adopted the updated
   approach to decorators added in TS v5, maintaining compatibility with the "legacy" syntax.
+* Apps must also update their `@xh/hoist-dev-utils` dependency to v7.0.0 or higher.
+    * We recommend specifying this as `"@xh/hoist-dev-utils": "7.x"` in your `package.json` to
+      automatically pick up future minor releases.
 * `DataViewConfig` no longer directly supports `GridConfig` parameters - instead, nest `GridConfig`
   options you wish to set via the new `gridOptions` parameter. Please note that, as before, not
   all `GridConfig` options are supported by (or make sense for) the `DataView` component.
