@@ -870,9 +870,11 @@ export class GridModel extends HoistModel {
     get isReady(): boolean {
         return this.agGridModel.isReady;
     }
+
     get agApi() {
         return this.agGridModel.agApi;
     }
+
     get agColumnApi() {
         return this.agGridModel.agColumnApi;
     }
@@ -880,9 +882,11 @@ export class GridModel extends HoistModel {
     get sizingMode(): SizingMode {
         return this.agGridModel.sizingMode;
     }
+
     set sizingMode(v: SizingMode) {
         this.agGridModel.sizingMode = v;
     }
+
     setSizingMode(v: SizingMode) {
         this.agGridModel.sizingMode = v;
     }
@@ -890,9 +894,11 @@ export class GridModel extends HoistModel {
     get showHover(): boolean {
         return this.agGridModel.showHover;
     }
+
     set showHover(v: boolean) {
         this.agGridModel.showHover = v;
     }
+
     setShowHover(v: boolean) {
         this.agGridModel.showHover = v;
     }
@@ -900,9 +906,11 @@ export class GridModel extends HoistModel {
     get rowBorders(): boolean {
         return this.agGridModel.rowBorders;
     }
+
     set rowBorders(v: boolean) {
         this.agGridModel.rowBorders = v;
     }
+
     setRowBorders(v: boolean) {
         this.agGridModel.rowBorders = v;
     }
@@ -910,9 +918,11 @@ export class GridModel extends HoistModel {
     get stripeRows(): boolean {
         return this.agGridModel.stripeRows;
     }
+
     set stripeRows(v: boolean) {
         this.agGridModel.stripeRows = v;
     }
+
     setStripeRows(v: boolean) {
         this.agGridModel.stripeRows = v;
     }
@@ -920,9 +930,11 @@ export class GridModel extends HoistModel {
     get cellBorders(): boolean {
         return this.agGridModel.cellBorders;
     }
+
     set cellBorders(v: boolean) {
         this.agGridModel.cellBorders = v;
     }
+
     setCellBorders(v: boolean) {
         this.agGridModel.cellBorders = v;
     }
@@ -930,9 +942,11 @@ export class GridModel extends HoistModel {
     get showCellFocus(): boolean {
         return this.agGridModel.showCellFocus;
     }
+
     set showCellFocus(v: boolean) {
         this.agGridModel.showCellFocus = v;
     }
+
     setShowCellFocus(v: boolean) {
         this.agGridModel.showCellFocus = v;
     }
@@ -940,9 +954,11 @@ export class GridModel extends HoistModel {
     get hideHeaders(): boolean {
         return this.agGridModel.hideHeaders;
     }
+
     set hideHeaders(v: boolean) {
         this.agGridModel.hideHeaders = v;
     }
+
     setHideHeaders(v: boolean) {
         this.agGridModel.hideHeaders = v;
     }
@@ -1263,10 +1279,11 @@ export class GridModel extends HoistModel {
     /**
      * Autosize columns to fit their contents.
      *
-     * @param options - overrides of default autosize options to use for this action.
+     * This method will ignore columns with a flex value or with `autosizable: false`. Hidden
+     * columns are also ignored unless {@link GridAutosizeOptions.includeHiddenColumns} has been
+     * set to true.
      *
-     * This method will ignore hidden columns, columns with a flex value, and columns with
-     * autosizable = false.
+     * @param options - optional overrides of this model's configured {@link autosizeOptions}.
      */
     @logWithDebug
     async autosizeAsync(options: GridAutosizeOptions = {}) {
