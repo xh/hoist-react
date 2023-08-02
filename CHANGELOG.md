@@ -14,6 +14,7 @@
 ### 🐞 Bug Fixes
 
 * Fixed bug where `manuallySized` was not being set properly on column state
+* Grid header bottom border still rendering when hiding grid headers fix.
 
 ### 📚 Libraries
 
