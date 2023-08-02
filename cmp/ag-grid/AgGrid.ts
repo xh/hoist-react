@@ -87,7 +87,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
                 cellBorders ? 'xh-ag-grid--cell-borders' : 'xh-ag-grid--no-cell-borders',
                 showCellFocus ? 'xh-ag-grid--show-cell-focus' : 'xh-ag-grid--no-cell-focus',
                 isDesktop && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover',
-                hideHeaders ? 'xh-grid-header--hidden' : null
+                hideHeaders ? 'xh-grid-header--hide-headers' : null
             ),
             ...layoutProps,
             item: createElement(AgGridReact, {
