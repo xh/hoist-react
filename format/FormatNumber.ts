@@ -53,6 +53,9 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
     /** True to prepend positive numbers with a '+'. */
     withPlusSign?: boolean;
 
+    /** True to not display a signed zero -0.0 (and +0.0 withPlusSign) in cases where a small number is rounded to zero. */
+    strictZeroUnsigned?: boolean;
+
     /** True to prepend an up / down arrow. */
     withSignGlyph?: boolean;
 
@@ -124,6 +127,7 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
         ledger = false,
         forceLedgerAlign = true,
         withPlusSign = false,
+        strictZeroUnsigned = false,
         withSignGlyph = false,
         withCommas = true,
         omitFourDigitComma = false,
@@ -143,10 +147,17 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
     const str = numbro(v).format(formatConfig).replace('-', '');
     let sign = null;
 
-    // Test for various formats of zero
-    if (/^0+.?0*$/.test(str)) {
-        if (zeroDisplay != null) return zeroDisplay;
-    } else if (v > 0 && withPlusSign) {
+    // Tests for zero strings at various precisions
+    if (strictZeroUnsigned && /^0+.?0*$/.test(str)) {
+        // Treat rounded zeros as a true zero, for sign checks
+        v = 0;
+    }
+
+    if (v === 0 && zeroDisplay != null) {
+        return zeroDisplay;
+    }
+
+    if (v > 0 && withPlusSign) {
         sign = '+';
     } else if (v < 0 && !ledger) {
         sign = '-';
