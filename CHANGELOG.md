@@ -27,6 +27,10 @@
 
 * Fixed bug where `manuallySized` was not being set properly on column state
 
+### ⚙️ Technical
+
+* Prevent Blueprint Toaster from triggering ReactDOM.render console warnings
+
 ### 📚 Libraries
 
 * mobx `6.8 -> 6.9`
