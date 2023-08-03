@@ -27,7 +27,7 @@ export class DetailPanelModel extends HoistModel {
     async loadRoleDetails(roleId) {}
 
     override async doLoadAsync() {
-        this.roleDetails = null;
+        // this.roleDetails = null;
         // prevent this from making a request if no roleId (ie on initial page load)
         if (this.roleId) {
             const roleId = this.roleId;
@@ -37,6 +37,8 @@ export class DetailPanelModel extends HoistModel {
             });
             // await wait(2 * SECONDS);
             this.roleDetails = await resp;
+        } else {
+            this.roleDetails = null;
         }
     }
 }
