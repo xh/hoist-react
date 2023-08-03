@@ -4,24 +4,24 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {placeholder, frame} from '@xh/hoist/cmp/layout';
+import {frame, placeholder} from '@xh/hoist/cmp/layout';
 import {
+    createElement,
+    hoistCmp,
     HoistModel,
+    HoistProps,
     LayoutProps,
+    lookup,
     useLocalModel,
     uses,
-    hoistCmp,
-    createElement,
-    XH,
-    lookup,
-    HoistProps
+    XH
 } from '@xh/hoist/core';
+import {AgGridReact, GridOptions} from '@xh/hoist/kit/ag-grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isNil} from 'lodash';
 import './AgGrid.scss';
 import {AgGridModel} from './AgGridModel';
-import {AgGridReact, GridOptions} from '@xh/hoist/kit/ag-grid';
 
 export interface AgGridProps extends HoistProps<AgGridModel>, GridOptions, LayoutProps {}
 
@@ -87,7 +87,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
                 cellBorders ? 'xh-ag-grid--cell-borders' : 'xh-ag-grid--no-cell-borders',
                 showCellFocus ? 'xh-ag-grid--show-cell-focus' : 'xh-ag-grid--no-cell-focus',
                 isDesktop && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover',
-                hideHeaders ? 'xh-grid-header--hide-headers' : null
+                hideHeaders ? 'xh-ag-grid--hide-headers' : null
             ),
             ...layoutProps,
             item: createElement(AgGridReact, {
