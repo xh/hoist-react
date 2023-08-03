@@ -1,13 +1,10 @@
-import {RolesTabModel} from './RolesTabModel';
-import {creates, hoistCmp} from '@xh/hoist/core';
 import {tabContainer} from '@xh/hoist/cmp/tab';
+import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {visualizerTab} from './visualizer/VisualizerTab';
 import {inspectorTab} from './inspector/InspectorTab';
+import {visualizerTab} from './visualizer/VisualizerTab';
 
 export const rolesTab = hoistCmp.factory({
-    model: creates(RolesTabModel),
-
     render() {
         return tabContainer({
             modelConfig: {

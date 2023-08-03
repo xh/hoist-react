@@ -1,15 +1,15 @@
-import {HoistModel, XH, creates, hoistCmp, lookup, managed} from '@xh/hoist/core';
 import {GridModel, grid} from '@xh/hoist/cmp/grid';
-import {makeObservable} from 'mobx';
+import {vframe} from '@xh/hoist/cmp/layout';
+import {HoistModel, XH, creates, hoistCmp, managed} from '@xh/hoist/core';
 import {RecordAction, Store} from '@xh/hoist/data';
-import {InspectorTabModel} from '../../InspectorTab';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {hframe} from '@xh/hoist/cmp/layout';
-import {Icon} from '@xh/hoist/icon';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {Icon} from '@xh/hoist/icon';
+import {makeObservable, observable} from 'mobx';
+import {DetailPanelModel} from '../../DetailPanel';
 
 class assignedTabModel extends HoistModel {
-    @lookup(() => InspectorTabModel) inspectorTab: InspectorTabModel;
+    @observable.ref roleDetails = null;
 
     @managed store = new Store({
         fields: [{name: 'user', type: 'string'}],
@@ -31,8 +31,9 @@ class assignedTabModel extends HoistModel {
 
     override onLinked() {
         this.addReaction({
-            track: () => this.inspectorTab.selectedRole,
+            track: () => this.lookupModel(DetailPanelModel).roleDetails,
             run: role => {
+                this.store.clear();
                 this.store.loadData(role?.assignedUsers?.map(user => ({user})) ?? []);
             },
             fireImmediately: true
@@ -59,17 +60,15 @@ export const assignedTab = hoistCmp.factory({
     model: creates(assignedTabModel),
 
     render({model}) {
-        return hframe(
+        return vframe(
             toolbar({
                 item: recordActionBar({
                     selModel: model.gridModel.selModel,
                     gridModel: model.gridModel,
-                    actions: [model.addUserAction, model.deleteUserAction],
-                    vertical: true
+                    actions: [model.addUserAction, model.deleteUserAction]
                 }),
                 compact: true,
-                vertical: true,
-                omit: XH.getConf('xhAdminRoleController') != 'WRITE'
+                omit: !XH.getConf('xhRoleManagerConfig').canWrite
             }),
             grid({model: model.gridModel})
         );

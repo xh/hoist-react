@@ -1,7 +1,5 @@
-import {chart} from '@xh/hoist/cmp/chart';
-import {creates, hoistCmp} from '@xh/hoist/core';
-import {ChartModel} from '@xh/hoist/cmp/chart';
-import {HoistModel, managed} from '@xh/hoist/core';
+import {ChartModel, chart} from '@xh/hoist/cmp/chart';
+import {HoistModel, creates, hoistCmp, managed} from '@xh/hoist/core';
 
 const data = [
     [undefined, 'Proto Indo-European'],

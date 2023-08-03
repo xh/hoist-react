@@ -119,7 +119,7 @@ export class AppModel extends HoistAppModel {
     }
 
     createTabs(): TabConfig[] {
-        const showRoles = ['WRITE', 'READ'].includes(XH.getConf('xhAdminRoleController'));
+        const showRoles = XH.getConf('xhRoleManagerConfig').enabled;
 
         return [
             {

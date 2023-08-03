@@ -1,24 +1,36 @@
-import {hframe, vframe} from '@xh/hoist/cmp/layout';
-import {HoistModel, creates, hoistCmp} from '@xh/hoist/core';
-import {detailPanel} from './DetailPanel';
+import {hframe} from '@xh/hoist/cmp/layout';
+import {HoistModel, creates, hoistCmp, managed} from '@xh/hoist/core';
 import {makeObservable, observable} from 'mobx';
+import {DetailPanelModel, detailPanel} from './DetailPanel';
 import {mainGrid} from './MainGrid';
-import {changesToolbar as changesToolbar} from './ChangesToolbar';
 
 export class InspectorTabModel extends HoistModel {
-    @observable.ref selectedRole = null;
+    @observable.ref selectedRoleId = null;
+
+    @managed detailModel = new DetailPanelModel();
 
     constructor() {
         super();
         makeObservable(this);
+    }
+
+    override onLinked() {
+        super.onLinked();
+
+        this.addReaction({
+            track: () => this.selectedRoleId,
+            run: async role => {
+                this.detailModel.roleId = role;
+            },
+            fireImmediately: true
+        });
     }
 }
 
 export const inspectorTab = hoistCmp.factory({
     model: creates(InspectorTabModel),
 
-    render() {
-        // TODO: make the mainGrid a panel as well
-        return vframe(changesToolbar(), hframe(mainGrid(), detailPanel()));
+    render({model}) {
+        return hframe(mainGrid(), detailPanel());
     }
 });

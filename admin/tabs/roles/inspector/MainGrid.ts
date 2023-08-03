@@ -1,26 +1,26 @@
-import {HoistModel, XH, creates, hoistCmp, lookup, managed} from '@xh/hoist/core';
 import {GridModel, grid} from '@xh/hoist/cmp/grid';
-import {makeObservable} from 'mobx';
-import {RolesTabModel} from '../RolesTabModel';
-import {compactDateRenderer} from '@xh/hoist/format';
-import {InspectorTabModel} from './InspectorTab';
-import {vframe} from '@xh/hoist/cmp/layout';
-import {Icon} from '@xh/hoist/icon';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {div, span, vframe} from '@xh/hoist/cmp/layout';
+import {HoistModel, XH, creates, hoistCmp, lookup, managed} from '@xh/hoist/core';
+import {RecordAction, Store} from '@xh/hoist/data';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
-import {RecordAction} from '@xh/hoist/data';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {compactDateRenderer} from '@xh/hoist/format';
+import {Icon} from '@xh/hoist/icon';
+import {makeObservable} from 'mobx';
 import moment from 'moment';
+import {InspectorTabModel} from './InspectorTab';
 import './InspectorTab.scss';
-import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 
 // move from mainGrid to roleList or the like
 class MainGridModel extends HoistModel {
     @managed gridModel: GridModel;
 
+    @managed store = this.createStore();
+
     // look through JS annotations to understand why this laziness is necessary
     // what determines parse order
     @lookup(() => InspectorTabModel) parent: InspectorTabModel;
-    @lookup(() => RolesTabModel) rolesStore: RolesTabModel;
 
     constructor() {
         super();
@@ -37,13 +37,30 @@ class MainGridModel extends HoistModel {
         this.addReaction({
             track: () => this.gridModel.selectedRecord,
             run: record => {
-                this.parent.selectedRole = record?.data;
-            }
+                this.parent.selectedRoleId = record?.data.roleId;
+            },
+            fireImmediately: true
         });
     }
 
-    private isModifiedRow(record) {
-        return !record?.isCommitted && record?.children.length == 0;
+    override async doLoadAsync() {
+        const resp = await XH.fetchJson({url: 'rolesAdmin'});
+        this.store.loadData(resp);
+    }
+
+    private createStore() {
+        return new Store({
+            idSpec: 'roleId',
+            fields: [
+                {name: 'roleId', type: 'number'},
+                {name: 'name', type: 'string'},
+                {name: 'groupName', type: 'string'},
+                {name: 'lastUpdated', type: 'date'},
+                {name: 'lastUpdatedBy', type: 'string'},
+                {name: 'assignedUserCount', type: 'number'},
+                {name: 'allUserCount', type: 'number'}
+            ]
+        });
     }
 
     private createGridModel() {
@@ -53,40 +70,53 @@ class MainGridModel extends HoistModel {
             sortBy: 'name|asc',
             groupBy: 'groupName',
             selModel: 'multiple',
-            store: this.rolesStore.store,
+            store: this.store,
             columns: [
-                {
-                    ...actionCol,
-                    width: calcActionColWidth(1),
-                    actions: [
-                        {
-                            icon: Icon.circle(),
-                            intent: 'warning',
-                            displayFn: ({record}) => ({disabled: !this.isModifiedRow(record)})
-                        }
-                    ]
-                },
                 {field: 'name'},
                 {field: 'groupName', hidden: true},
                 {field: 'lastUpdated', renderer: compactDateRenderer()},
-                {field: 'lastUpdatedBy'}
-            ],
-            rowClassFn: record => {
-                return this.isModifiedRow(record) ? 'xh-roles-modified-value' : '';
-            }
+                {field: 'lastUpdatedBy'},
+                {
+                    colId: 'numUsers',
+                    displayName: '# Users (assigned | all)',
+                    rendererIsComplex: true,
+                    align: 'center',
+                    renderer: (_, {record}) => {
+                        const {assignedUserCount, allUserCount} = record.data;
+                        return div({
+                            items: [
+                                span({
+                                    item: assignedUserCount,
+                                    style: {flex: 1, textAlign: 'right'}
+                                }),
+                                span({
+                                    item: '|',
+                                    style: {margin: '0 0.2em', color: 'var(--xh-text-color-muted)'}
+                                }),
+                                span({item: allUserCount, style: {flex: 1, textAlign: 'left'}})
+                            ],
+                            style: {
+                                fontFamily: 'monospace',
+                                display: 'flex',
+                                justifyContent: 'center'
+                            }
+                        });
+                    }
+                }
+            ]
         });
     }
 
     addRoleAction = new RecordAction({
         icon: Icon.add(),
         text: 'Create Role',
-        intent: 'primary',
+        intent: 'success',
         actionFn: () => {
             XH.toast({
                 intent: 'primary',
                 message: 'New role successfully created.'
             });
-            this.rolesStore.store.addRecords([
+            this.gridModel.store.addRecords([
                 {
                     id: XH.genId(),
                     // TODO: want to deduplicate additions (ie make it New Role (1))?
@@ -109,7 +139,7 @@ class MainGridModel extends HoistModel {
                     intent: 'danger',
                     message: `Role ${record.data.name} deleted!`
                 });
-                this.rolesStore.store.removeRecords(record);
+                this.store.removeRecords(record);
             });
         },
         recordsRequired: true
@@ -122,18 +152,18 @@ export const mainGrid = hoistCmp.factory({
     render({model}) {
         const {gridModel} = model;
 
-        return vframe(
-            toolbar({
-                item: recordActionBar({
-                    gridModel,
-                    selModel: gridModel.selModel,
-                    actions: [model.addRoleAction, model.deleteRoleAction]
+        return panel({
+            item: vframe(
+                toolbar({
+                    item: recordActionBar({
+                        gridModel,
+                        selModel: gridModel.selModel,
+                        actions: [model.addRoleAction, model.deleteRoleAction]
+                    }),
+                    omit: !XH.getConf('xhRoleManagerConfig').canWrite
                 }),
-                // compact: true,
-                // vertical: true
-                omit: XH.getConf('xhAdminRoleController') != 'WRITE'
-            }),
-            grid()
-        );
+                grid()
+            )
+        });
     }
 });

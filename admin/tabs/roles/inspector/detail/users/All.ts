@@ -1,12 +1,12 @@
-import {HoistModel, creates, hoistCmp, lookup, managed} from '@xh/hoist/core';
 import {GridModel, grid} from '@xh/hoist/cmp/grid';
-import {makeObservable} from 'mobx';
-import {Store} from '@xh/hoist/data';
-import {InspectorTabModel} from '../../InspectorTab';
 import {div} from '@xh/hoist/cmp/layout';
+import {HoistModel, creates, hoistCmp, managed} from '@xh/hoist/core';
+import {Store} from '@xh/hoist/data';
+import {makeObservable, observable} from 'mobx';
+import {DetailPanelModel} from '../../DetailPanel';
 
 class allTabModel extends HoistModel {
-    @lookup(() => InspectorTabModel) inspectorTab: InspectorTabModel;
+    @observable.ref roleDetails = null;
 
     @managed store = new Store({
         fields: [
@@ -45,10 +45,9 @@ class allTabModel extends HoistModel {
 
     override onLinked() {
         this.addReaction({
-            track: () => this.inspectorTab.selectedRole,
+            track: () => this.lookupModel(DetailPanelModel).roleDetails,
             run: role => {
                 this.store.clear();
-
                 this.store.loadData(role?.allUsers ?? []);
             },
             fireImmediately: true

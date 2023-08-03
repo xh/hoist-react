@@ -1,8 +1,8 @@
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp} from '@xh/hoist/core';
-import {assignedTab} from './users/Assigned';
-import {allTab} from './users/All';
 import {Icon} from '@xh/hoist/icon';
+import {allTab} from './users/All';
+import {assignedTab} from './users/Assigned';
 
 export const usersTabContainer = hoistCmp.factory({
     render() {
