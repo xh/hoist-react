@@ -22,10 +22,13 @@
   autosizing rather than doing it after the user loads a column set.
 * New `DashModel.refreshContextModel` allows apps to programmatically refresh all widgets within
   a `DashCanvas` or `DashContainer`.
+* New `NumberFormatOptions.strictZero` config to not sign zeros (ie '-0.0') when precision
+  rounds small numbers to zero.
 
 ### 🐞 Bug Fixes
 
 * Fixed bug where `manuallySized` was not being set properly on column state
+* Grid header bottom border still rendering when hiding grid headers fix.
 
 ### ⚙️ Technical
 
