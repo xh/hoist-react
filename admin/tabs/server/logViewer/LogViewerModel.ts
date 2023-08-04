@@ -7,7 +7,7 @@
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {RecordActionSpec, UrlStore} from '@xh/hoist/data';
+import {RecordActionSpec} from '@xh/hoist/data';
 import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable, observable} from '@xh/hoist/mobx';
@@ -72,11 +72,19 @@ export class LogViewerModel extends HoistModel {
         const {enabled, filesGridModel} = this;
         if (!enabled) return;
 
-        const store = filesGridModel.store as UrlStore,
+        const store = filesGridModel.store,
             selModel = filesGridModel.selModel;
 
+        // Get the data from 'listFileInfo`.
+        const data = await XH.fetchJson({
+            url: 'logViewerAdmin/listFileInfo'
+        });
+
+        const {logRootPath} = data;
+        this.logDisplayModel.logRootPath = logRootPath;
+
         try {
-            await store.loadAsync(loadSpec);
+            await store.loadData(data.files);
             if (selModel.isEmpty) {
                 const latestAppLog = store.records.find(
                     rec => rec.data.filename === `${XH.appCode}.log`
@@ -124,6 +132,9 @@ export class LogViewerModel extends HoistModel {
                     params: {filename}
                 });
 
+            // DEBUG
+            console.log('RESPONSE: ', response);
+
             const blob = await response.blob();
             download(blob, filename);
 
@@ -144,16 +155,14 @@ export class LogViewerModel extends HoistModel {
             enableExport: true,
             exportOptions: {filename: `${XH.appCode}-logs-${LocalDate.today()}`},
             selModel: 'multiple',
-            store: new UrlStore({
-                url: 'logViewerAdmin/listFiles',
+            store: {
                 idSpec: 'filename',
-                dataRoot: 'files',
                 fields: [
                     {name: 'filename', type: 'string', displayName: 'Name'},
                     {name: 'size', type: 'number', displayName: 'Size'},
                     {name: 'lastModified', type: 'number', displayName: 'Modified'}
                 ]
-            }),
+            },
             sortBy: 'lastModified|desc',
             columns: [
                 {field: 'filename', flex: 1, minWidth: 160},

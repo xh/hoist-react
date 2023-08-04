@@ -30,4 +30,15 @@
       color: var(--xh-text-color-muted) !important;
     }
   }
+
+  &__bottom-bar {
+    justify-content: space-between;
+    &--server-time {
+      display: flex;
+    }
+  }
+
+  &__log-root-path {
+    margin-left: auto;
+  }
 }
