@@ -43,11 +43,11 @@ class ToastSourceLocalModel extends HoistModel {
         const {sourceModel} = this;
         this.addReaction({
             track: () => [sourceModel.toastModels, map(sourceModel.toastModels, 'isOpen')] as const,
-            run: ([models]) => this.displayPendingToasts(models)
+            run: ([models]) => this.displayPendingToastsAsync(models)
         });
     }
 
-    async displayPendingToasts(models: ToastModel[]) {
+    async displayPendingToastsAsync(models: ToastModel[]) {
         for (const model: ToastModel & {bpId} of models) {
             let {bpId, isOpen, icon, intent, actionButtonProps, position, containerRef, ...rest} =
                 model;
@@ -56,7 +56,7 @@ class ToastSourceLocalModel extends HoistModel {
             if (!!bpId === isOpen) continue;
 
             // 2) ...otherwise this toast needs to be shown or hidden with bp api
-            let toaster = await this.getToaster(position as ToasterPosition, containerRef);
+            let toaster = await this.getToasterAsync(position as ToasterPosition, containerRef);
             if (!bpId) {
                 model.bpId = toaster.show({
                     className: classNames('xh-toast', `xh-toast--${intent}`),
@@ -82,7 +82,7 @@ class ToastSourceLocalModel extends HoistModel {
      * @param position - position on screen where toast should appear.
      * @param containerRef - DOM Element used to position (contain) the toast.
      */
-    async getToaster(position: ToasterPosition, containerRef: HTMLElement) {
+    async getToasterAsync(position: ToasterPosition, containerRef: HTMLElement) {
         if (containerRef && !isElement(containerRef)) {
             console.warn(
                 'containerRef argument for Toast must be a DOM element. Argument will be ignored.'
@@ -101,10 +101,11 @@ class ToastSourceLocalModel extends HoistModel {
         return toasters[position];
     }
 
-    /** Workaround to avoid calling OverlayToaster.create(). It uses ReactDOM.render
+    /** Work around to avoid calling OverlayToaster.create(). It uses ReactDOM.render
      * that gives a warning because it is deprecated in React 18.
 
-     * Is currently set to be removed in Blueprint v6.0
+     * The use of ReactDOM.render set to be removed from OverlayToaster.create() in Blueprint v6.0
+     * https://github.com/palantir/blueprint/issues/5212#issuecomment-1294958195
      * */
     private createToaster(props?: OverlayToasterProps, container = document.body) {
         const containerElement = document.createElement('div');
@@ -116,10 +117,10 @@ class ToastSourceLocalModel extends HoistModel {
                     ...props,
                     usePortal: false,
                     ref: instance => {
-                        if (!instance) {
-                            reject(new Error('[Blueprint] Unable to create toaster.'));
-                        } else {
+                        if (instance) {
                             resolve(instance);
+                        } else {
+                            reject(new Error('[Blueprint] Unable to create toaster.'));
                         }
                     }
                 })
