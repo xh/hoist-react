@@ -4,12 +4,21 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {OverlayToasterProps} from '@blueprintjs/core/src/components/toast/toaster';
 import {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import {div} from '@xh/hoist/cmp/layout';
-import {elementFactory, hoistCmp, HoistModel, lookup, useLocalModel, uses} from '@xh/hoist/core';
+import {
+    elementFactory,
+    hoistCmp,
+    HoistModel,
+    lookup,
+    PlainObject,
+    useLocalModel,
+    uses,
+    XH
+} from '@xh/hoist/core';
 import {OverlayToaster, ToasterPosition} from '@xh/hoist/kit/blueprint';
+import {getOrCreate} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isElement, map} from 'lodash';
 import {createRoot} from 'react-dom/client';
@@ -48,9 +57,11 @@ class ToastSourceLocalModel extends HoistModel {
     }
 
     async displayPendingToastsAsync(models: ToastModel[]) {
-        for (const model: ToastModel & {bpId} of models) {
-            let {bpId, isOpen, icon, intent, actionButtonProps, position, containerRef, ...rest} =
+        for (const model of models) {
+            const {isOpen, icon, intent, actionButtonProps, position, containerRef, ...rest} =
                 model;
+
+            const bpId = model['bpId'];
 
             // 1) If toast is visible and sent to bp, or already obsolete -- nothing to do
             if (!!bpId === isOpen) continue;
@@ -58,7 +69,7 @@ class ToastSourceLocalModel extends HoistModel {
             // 2) ...otherwise this toast needs to be shown or hidden with bp api
             let toaster = await this.getToasterAsync(position as ToasterPosition, containerRef);
             if (!bpId) {
-                model.bpId = toaster.show({
+                model['bpId'] = toaster.show({
                     className: classNames('xh-toast', `xh-toast--${intent}`),
                     icon: div({className: 'xh-toast__icon', item: icon}),
                     action: actionButtonProps,
@@ -80,48 +91,46 @@ class ToastSourceLocalModel extends HoistModel {
      * If non-default values are needed for a toaster, a different method must be used.
      *
      * @param position - position on screen where toast should appear.
-     * @param containerRef - DOM Element used to position (contain) the toast.
+     * @param container - DOM Element used to position (contain) the toast.
      */
-    async getToasterAsync(position: ToasterPosition, containerRef: HTMLElement) {
-        if (containerRef && !isElement(containerRef)) {
-            console.warn(
-                'containerRef argument for Toast must be a DOM element. Argument will be ignored.'
-            );
-            containerRef = null;
+    async getToasterAsync(position: ToasterPosition, container: HTMLElement) {
+        if (container && !isElement(container)) {
+            console.warn('container for Toast must be a DOM element. Argument will be ignored.');
+            container = null;
         }
-        const toasterMap = this._toasterMap,
-            container = containerRef ? containerRef : document.body,
-            className = `xh-toast-container ${containerRef ? 'xh-toast-container--anchored' : ''}`;
+        const className = `xh-toast-container ${container ? 'xh-toast-container--anchored' : ''}`;
 
-        // We want to just memoize this by two args (one object)?  Is there a library for this?
-        const toasters = toasterMap.get(container) || {};
-        if (!toasters[position])
+        container = container ?? document.body;
+
+        // We want to just memoize this by two args, one of which is an object?
+        const toasterMap = this._toasterMap,
+            toasters = getOrCreate(toasterMap, container, () => ({}));
+        if (!toasters[position]) {
             toasters[position] = await this.createToaster({position, className}, container);
-        toasterMap.set(container, toasters);
+        }
         return toasters[position];
     }
 
-    /** Work around to avoid calling OverlayToaster.create(). It uses ReactDOM.render
+    /**
+     * Workaround to avoid calling OverlayToaster.create(). It uses ReactDOM.render
      * that gives a warning because it is deprecated in React 18.
-
+     *
      * The use of ReactDOM.render set to be removed from OverlayToaster.create() in Blueprint v6.0
      * https://github.com/palantir/blueprint/issues/5212#issuecomment-1294958195
-     * */
-    private createToaster(props?: OverlayToasterProps, container = document.body) {
+     */
+    private createToaster(props: PlainObject, container: HTMLElement): Promise<OverlayToaster> {
         const containerElement = document.createElement('div');
         container.appendChild(containerElement);
         const root = createRoot(containerElement);
-        return new Promise<OverlayToaster>((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             root.render(
                 overlayToaster({
                     ...props,
                     usePortal: false,
                     ref: instance => {
-                        if (instance) {
-                            resolve(instance);
-                        } else {
-                            reject(new Error('[Blueprint] Unable to create toaster.'));
-                        }
+                        instance
+                            ? resolve(instance)
+                            : reject(XH.exception('Unable to create Blueprint toaster.'));
                     }
                 })
             );
