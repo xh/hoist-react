@@ -6,7 +6,7 @@
  */
 import {clock} from '@xh/hoist/cmp/clock';
 import {grid} from '@xh/hoist/cmp/grid';
-import {div, fragment, hspacer, label} from '@xh/hoist/cmp/layout';
+import {code, div, fragment, hspacer, label} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
@@ -105,16 +105,14 @@ const bbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
     const zone = XH.getEnv('serverTimeZone');
 
     return toolbar({
-        // DEBUG
-        // style: {justifyContent: 'space-between'},
         className: 'xh-log-display__bottom-bar',
         items: [
             div({
                 className: 'xh-log-display__bottom-bar--server-time',
                 items: [
                     div({item: ['Server time: ']}),
+                    hspacer(5),
                     clock({
-                        style: {marginLeft: '5px'},
                         timezone: zone,
                         format: 'HH:mm',
                         suffix: fmtTimeZone(zone, XH.getEnv('serverTimeZoneOffset'))
@@ -122,8 +120,7 @@ const bbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
                 ]
             }),
             div({
-                // className: 'logDisplayLogRootPath',
-                items: ['Log Location: ', model.logRootPath]
+                items: ['Log Location: ', code({item: model.logRootPath})]
             })
         ],
         omit: !zone // zone env support requires hoist-core 7.1+

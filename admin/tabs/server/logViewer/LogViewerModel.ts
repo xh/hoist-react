@@ -132,9 +132,6 @@ export class LogViewerModel extends HoistModel {
                     params: {filename}
                 });
 
-            // DEBUG
-            console.log('RESPONSE: ', response);
-
             const blob = await response.blob();
             download(blob, filename);
 
