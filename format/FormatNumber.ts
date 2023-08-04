@@ -53,7 +53,11 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
     /** True to prepend positive numbers with a '+'. */
     withPlusSign?: boolean;
 
-    /** False to not display a signed zero (ie -0.0) in cases where a small number is rounded to zero. */
+    /**
+     * If set to false, small numbers that would show only digits of zero due to precision will be
+     * formatted as exactly zero. In particular, if a zeroDisplay is specified it will be used and
+     * sign-based glyphs, '+/-' characters, and colors will not be shown.  Default true.
+     */
     strictZero?: boolean;
 
     /** True to prepend an up / down arrow. */

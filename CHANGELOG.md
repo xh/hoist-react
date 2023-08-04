@@ -22,8 +22,10 @@
   autosizing rather than doing it after the user loads a column set.
 * New `DashModel.refreshContextModel` allows apps to programmatically refresh all widgets within
   a `DashCanvas` or `DashContainer`.
-* New `NumberFormatOptions.strictZero` config to not sign zeros (ie '-0.0') when precision
-  rounds small numbers to zero.
+* New `NumberFormatOptions.strictZero`. If set to false, small numbers that would show only digits
+  of zero due to precision will be formatted as *exactly* zero. In particular, if a zeroDisplay
+  is specified it will be used and sign-based glyphs, '+/-' characters, and colors will not
+  be shown.
 
 ### 🐞 Bug Fixes
 
