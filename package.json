@@ -89,7 +89,7 @@
     "@ag-grid-community/react": "30.x",
     "@xh/hoist-dev-utils": "7.x",
     "eslint": "8.x",
-    "eslint-config-prettier": "8.x",
+    "eslint-config-prettier": "9.x",
     "eslint-plugin-tsdoc": "0.x",
     "husky": "8.x",
     "lint-staged": "13.x",
