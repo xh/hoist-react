@@ -25,13 +25,21 @@
   autosizing rather than doing it after the user loads a column set.
 * New `DashModel.refreshContextModel` allows apps to programmatically refresh all widgets within
   a `DashCanvas` or `DashContainer`.
-* New `NumberFormatOptions.strictZero` config to not sign zeros (ie '-0.0') when precision
-  rounds small numbers to zero.
+* New `NumberFormatOptions.strictZero`. If set to false, small numbers that would show only digits
+  of zero due to precision will be formatted as *exactly* zero. In particular, if a zeroDisplay
+  is specified it will be used and sign-based glyphs, '+/-' characters, and colors will not
+  be shown.
 
 ### 🐞 Bug Fixes
 
-* Fixed bug where `manuallySized` was not being set properly on column state
-* Grid header bottom border still rendering when hiding grid headers fix.
+* `ButtonGroupInput` now allows `null` values for buttons as long as both `enableClear` and
+  `enableMulti` are false.
+* Fixed bug where `manuallySized` was not being set properly on column state.
+* Suppressed extra top border added to Grids when `hideHeaders: true`.
+
+### ⚙️ Technical
+
+* Suppressed dev-time console warnings thrown by Blueprint Toaster.
 
 ### 📚 Libraries
 
