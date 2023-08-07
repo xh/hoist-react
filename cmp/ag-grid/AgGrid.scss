@@ -57,6 +57,10 @@
       color: var(--xh-grid-header-text-color);
     }
   }
+  &--hide-headers .ag-header {
+    border-bottom-width: 0;
+    min-height: 0 !important;
+  }
 
   //------------------------
   // Core Row Classes
