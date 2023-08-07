@@ -7,6 +7,9 @@
 * Apps must update their `typescript` dependency to v5.1. This should be a drop-in for most
   applications, or require only minor changes. Note that Hoist has not yet adopted the updated
   approach to decorators added in TS v5, maintaining compatibility with the "legacy" syntax.
+* Apps must update their `highcharts` dependency to v11.1. This should be a drop-in for most
+  applications.
+  * Visit https://www.highcharts.com/blog/changelog/ for specific changes.
 * Apps must also update their `@xh/hoist-dev-utils` dependency to v7.0.0 or higher.
     * We recommend specifying this as `"@xh/hoist-dev-utils": "7.x"` in your `package.json` to
       automatically pick up future minor releases.
@@ -35,6 +38,7 @@
 * mobx `6.8 -> 6.9`
 * semver `7.3 -> 7.5`
 * typescript `4.9 -> 5.1`
+* highcharts `10.3 -> 11.1`
 
 ## 58.0.1 - 2023-07-13
 
