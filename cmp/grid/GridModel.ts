@@ -4,6 +4,13 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {
+    CellClickedEvent,
+    CellContextMenuEvent,
+    CellDoubleClickedEvent,
+    RowClickedEvent,
+    RowDoubleClickedEvent
+} from '@ag-grid-community/core';
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {
     Column,
@@ -224,43 +231,39 @@ export interface GridConfig {
     groupSortFn?: GridGroupSortFn;
 
     /**
-     * Callback when a key down event is detected on the grid. Function will receive an event
-     * with the standard 'target' element. Note that the ag-Grid API provides limited ability to
-     * customize keyboard handling. This handler is designed to allow applications to workaround
-     * this.
+     * Callback when a key down event is detected on the grid. Note that the ag-Grid API provides
+     * limited ability to customize keyboard handling. This handler is designed to allow
+     * applications to work around this.
      */
     onKeyDown?: (e: KeyboardEvent) => void;
 
     /**
-     * Callback when a row is clicked - will receive an event with a data node containing
-     * the row's data. (Note that this may be null - e.g. for clicks on full-width group rows.)
+     * Callback when a row is clicked. (Note that the event received may be null - e.g. for
+     * clicks on full-width group rows.)
      */
-    onRowClicked?: (e: any) => void;
+    onRowClicked?: (e: RowClickedEvent) => void;
 
     /**
-     * Callback when a row is double clicked - will receive an event with a data node containing
-     * the row's data. (Note that this may be null - e.g. for clicks on full-width group rows.)
+     * Callback when a row is double-clicked. (Note that the event received may be null - e.g.
+     * for clicks on full-width group rows.)
      */
-    onRowDoubleClicked?: (e: any) => void;
+    onRowDoubleClicked?: (e: RowDoubleClickedEvent) => void;
 
     /**
-     * Callback when a cell is clicked. Function will receive an event with a data node,
-     * cell value, and column.
+     * Callback when a cell is clicked.
      */
-    onCellClicked?: (e: any) => void;
+    onCellClicked?: (e: CellClickedEvent) => void;
 
     /**
-     * Callback when a cell is double clicked. Function will receive an event with a data node,
-     * cell value, and column.
+     * Callback when a cell is double-clicked.
      */
-    onCellDoubleClicked?: (e: any) => void;
+    onCellDoubleClicked?: (e: CellDoubleClickedEvent) => void;
 
     /**
-     * Callback when the context menu is opened. Function will receive an event with a data
-     * node containing the row's data. Note that this event can also be triggered via a
-     * long press (aka tap and hold) on mobile devices.
+     * Callback when the context menu is opened. Note that the event received can also be
+     * triggered via a long press (aka tap and hold) on mobile devices.
      */
-    onCellContextMenu?: (e: any) => void;
+    onCellContextMenu?: (e: CellContextMenuEvent) => void;
 
     /**
      * Number of clicks required to expand / collapse a parent row in a tree grid. Defaults
@@ -382,11 +385,11 @@ export class GridModel extends HoistModel {
     colDefaults: Partial<ColumnSpec>;
     experimental: PlainObject;
     onKeyDown: (e: KeyboardEvent) => void;
-    onRowClicked: (e: any) => void;
-    onRowDoubleClicked: (e: any) => void;
-    onCellClicked: (e: any) => void;
-    onCellDoubleClicked: (e: any) => void;
-    onCellContextMenu: (e: any) => void;
+    onRowClicked: (e: RowClickedEvent) => void;
+    onRowDoubleClicked: (e: RowDoubleClickedEvent) => void;
+    onCellClicked: (e: CellClickedEvent) => void;
+    onCellDoubleClicked: (e: CellDoubleClickedEvent) => void;
+    onCellContextMenu: (e: CellContextMenuEvent) => void;
     appData: PlainObject;
 
     @managed filterModel: GridFilterModel;
@@ -867,9 +870,11 @@ export class GridModel extends HoistModel {
     get isReady(): boolean {
         return this.agGridModel.isReady;
     }
+
     get agApi() {
         return this.agGridModel.agApi;
     }
+
     get agColumnApi() {
         return this.agGridModel.agColumnApi;
     }
@@ -877,9 +882,11 @@ export class GridModel extends HoistModel {
     get sizingMode(): SizingMode {
         return this.agGridModel.sizingMode;
     }
+
     set sizingMode(v: SizingMode) {
         this.agGridModel.sizingMode = v;
     }
+
     setSizingMode(v: SizingMode) {
         this.agGridModel.sizingMode = v;
     }
@@ -887,9 +894,11 @@ export class GridModel extends HoistModel {
     get showHover(): boolean {
         return this.agGridModel.showHover;
     }
+
     set showHover(v: boolean) {
         this.agGridModel.showHover = v;
     }
+
     setShowHover(v: boolean) {
         this.agGridModel.showHover = v;
     }
@@ -897,9 +906,11 @@ export class GridModel extends HoistModel {
     get rowBorders(): boolean {
         return this.agGridModel.rowBorders;
     }
+
     set rowBorders(v: boolean) {
         this.agGridModel.rowBorders = v;
     }
+
     setRowBorders(v: boolean) {
         this.agGridModel.rowBorders = v;
     }
@@ -907,9 +918,11 @@ export class GridModel extends HoistModel {
     get stripeRows(): boolean {
         return this.agGridModel.stripeRows;
     }
+
     set stripeRows(v: boolean) {
         this.agGridModel.stripeRows = v;
     }
+
     setStripeRows(v: boolean) {
         this.agGridModel.stripeRows = v;
     }
@@ -917,9 +930,11 @@ export class GridModel extends HoistModel {
     get cellBorders(): boolean {
         return this.agGridModel.cellBorders;
     }
+
     set cellBorders(v: boolean) {
         this.agGridModel.cellBorders = v;
     }
+
     setCellBorders(v: boolean) {
         this.agGridModel.cellBorders = v;
     }
@@ -927,9 +942,11 @@ export class GridModel extends HoistModel {
     get showCellFocus(): boolean {
         return this.agGridModel.showCellFocus;
     }
+
     set showCellFocus(v: boolean) {
         this.agGridModel.showCellFocus = v;
     }
+
     setShowCellFocus(v: boolean) {
         this.agGridModel.showCellFocus = v;
     }
@@ -937,9 +954,11 @@ export class GridModel extends HoistModel {
     get hideHeaders(): boolean {
         return this.agGridModel.hideHeaders;
     }
+
     set hideHeaders(v: boolean) {
         this.agGridModel.hideHeaders = v;
     }
+
     setHideHeaders(v: boolean) {
         this.agGridModel.hideHeaders = v;
     }
@@ -1260,10 +1279,11 @@ export class GridModel extends HoistModel {
     /**
      * Autosize columns to fit their contents.
      *
-     * @param options - overrides of default autosize options to use for this action.
+     * This method will ignore columns with a flex value or with `autosizable: false`. Hidden
+     * columns are also ignored unless {@link GridAutosizeOptions.includeHiddenColumns} has been
+     * set to true.
      *
-     * This method will ignore hidden columns, columns with a flex value, and columns with
-     * autosizable = false.
+     * @param options - optional overrides of this model's configured {@link autosizeOptions}.
      */
     @logWithDebug
     async autosizeAsync(options: GridAutosizeOptions = {}) {
@@ -1287,7 +1307,7 @@ export class GridModel extends HoistModel {
         }
 
         colIds = castArray(colIds).filter(id => {
-            if (!this.isColumnVisible(id)) return false;
+            if (!options.includeHiddenColumns && !this.isColumnVisible(id)) return false;
             const col = this.getColumn(id);
             return col && col.autosizable && !col.flex && includeColFn(col);
         });
