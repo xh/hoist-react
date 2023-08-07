@@ -29,12 +29,14 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed bug where `manuallySized` was not being set properly on column state
-* Grid header bottom border still rendering when hiding grid headers fix.
+* `ButtonGroupInput` now allows `null` values for buttons as long as both `enableClear` and
+  `enableMulti` are false.
+* Fixed bug where `manuallySized` was not being set properly on column state.
+* Suppressed extra top border added to Grids when `hideHeaders: true`.
 
 ### ⚙️ Technical
 
-* Prevent Blueprint Toaster from triggering ReactDOM.render console warnings
+* Suppressed dev-time console warnings thrown by Blueprint Toaster.
 
 ### 📚 Libraries
 
