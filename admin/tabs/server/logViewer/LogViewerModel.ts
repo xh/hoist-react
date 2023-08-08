@@ -76,9 +76,9 @@ export class LogViewerModel extends HoistModel {
             selModel = filesGridModel.selModel;
 
         try {
-            // Get the data from 'listFiles`.
             const data = await XH.fetchJson({
-                url: 'logViewerAdmin/listFiles'
+                url: 'logViewerAdmin/listFiles',
+                loadSpec
             });
 
             this.logDisplayModel.logRootPath = data.logRootPath;

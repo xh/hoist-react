@@ -6,7 +6,7 @@
  */
 import {clock} from '@xh/hoist/cmp/clock';
 import {grid} from '@xh/hoist/cmp/grid';
-import {code, div, fragment, hspacer, label} from '@xh/hoist/cmp/layout';
+import {code, div, fragment, hspacer, label, filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
@@ -101,28 +101,24 @@ const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
     );
 });
 
-const bbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
-    const zone = XH.getEnv('serverTimeZone');
+const bbar = hoistCmp.factory<LogDisplayModel>({
+    render({model}) {
+        const zone = XH.getEnv('serverTimeZone'),
+            offset = XH.getEnv('serverTimeZoneOffset'),
+            {logRootPath} = model;
 
-    return toolbar({
-        className: 'xh-log-display__bottom-bar',
-        items: [
-            div({
-                className: 'xh-log-display__bottom-bar--server-time',
-                items: [
-                    div({item: ['Server time: ']}),
-                    hspacer(5),
-                    clock({
-                        timezone: zone,
-                        format: 'HH:mm',
-                        suffix: fmtTimeZone(zone, XH.getEnv('serverTimeZoneOffset'))
-                    })
-                ]
+        return toolbar(
+            div('Server time: '),
+            clock({
+                timezone: zone,
+                format: 'HH:mm',
+                suffix: fmtTimeZone(zone, offset)
             }),
+            filler(),
             div({
-                items: ['Log Location: ', code({item: model.logRootPath})]
+                omit: !logRootPath,
+                items: ['Log Location: ', code(logRootPath)]
             })
-        ],
-        omit: !zone // zone env support requires hoist-core 7.1+
-    });
+        );
+    }
 });
