@@ -1,5 +1,5 @@
 import {GridModel, grid} from '@xh/hoist/cmp/grid';
-import {div, span, vframe} from '@xh/hoist/cmp/layout';
+import {vframe} from '@xh/hoist/cmp/layout';
 import {HoistModel, XH, creates, hoistCmp, lookup, managed} from '@xh/hoist/core';
 import {RecordAction, Store} from '@xh/hoist/data';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -37,7 +37,8 @@ class MainGridModel extends HoistModel {
         this.addReaction({
             track: () => this.gridModel.selectedRecord,
             run: record => {
-                this.parent.selectedRoleId = record?.data.roleId;
+                this.parent.selectedRoleName = record?.data.name;
+                console.log('Main Grid: ' + this.parent.selectedRoleName);
             },
             fireImmediately: true
         });
@@ -50,15 +51,12 @@ class MainGridModel extends HoistModel {
 
     private createStore() {
         return new Store({
-            idSpec: 'roleId',
+            idSpec: 'name',
             fields: [
-                {name: 'roleId', type: 'number'},
                 {name: 'name', type: 'string'},
                 {name: 'groupName', type: 'string'},
                 {name: 'lastUpdated', type: 'date'},
-                {name: 'lastUpdatedBy', type: 'string'},
-                {name: 'assignedUserCount', type: 'number'},
-                {name: 'allUserCount', type: 'number'}
+                {name: 'lastUpdatedBy', type: 'string'}
             ]
         });
     }
@@ -75,34 +73,7 @@ class MainGridModel extends HoistModel {
                 {field: 'name'},
                 {field: 'groupName', hidden: true},
                 {field: 'lastUpdated', renderer: compactDateRenderer()},
-                {field: 'lastUpdatedBy'},
-                {
-                    colId: 'numUsers',
-                    displayName: '# Users (assigned | all)',
-                    rendererIsComplex: true,
-                    align: 'center',
-                    renderer: (_, {record}) => {
-                        const {assignedUserCount, allUserCount} = record.data;
-                        return div({
-                            items: [
-                                span({
-                                    item: assignedUserCount,
-                                    style: {flex: 1, textAlign: 'right'}
-                                }),
-                                span({
-                                    item: '|',
-                                    style: {margin: '0 0.2em', color: 'var(--xh-text-color-muted)'}
-                                }),
-                                span({item: allUserCount, style: {flex: 1, textAlign: 'left'}})
-                            ],
-                            style: {
-                                fontFamily: 'monospace',
-                                display: 'flex',
-                                justifyContent: 'center'
-                            }
-                        });
-                    }
-                }
+                {field: 'lastUpdatedBy'}
             ]
         });
     }

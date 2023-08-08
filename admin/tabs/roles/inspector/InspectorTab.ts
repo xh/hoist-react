@@ -5,7 +5,7 @@ import {DetailPanelModel, detailPanel} from './DetailPanel';
 import {mainGrid} from './MainGrid';
 
 export class InspectorTabModel extends HoistModel {
-    @observable.ref selectedRoleId = null;
+    @observable.ref selectedRoleName = null;
 
     @managed detailModel = new DetailPanelModel();
 
@@ -18,9 +18,10 @@ export class InspectorTabModel extends HoistModel {
         super.onLinked();
 
         this.addReaction({
-            track: () => this.selectedRoleId,
+            track: () => this.selectedRoleName,
             run: async role => {
-                this.detailModel.roleId = role;
+                this.detailModel.roleName = role;
+                console.log('Inspector tab: ' + this.selectedRoleName);
             },
             fireImmediately: true
         });

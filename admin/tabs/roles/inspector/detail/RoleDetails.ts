@@ -1,5 +1,5 @@
 import {div, vbox} from '@xh/hoist/cmp/layout';
-import {HoistModel, creates, hoistCmp} from '@xh/hoist/core';
+import {HoistModel, XH, creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {compactDateRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -72,7 +72,8 @@ export const roleDetails = hoistCmp.factory({
                             button({
                                 icon: Icon.edit(),
                                 intent: 'warning',
-                                style: {height: '2em'}
+                                style: {height: '2em'},
+                                omit: !XH.getConf('xhRoleManagerConfig').canWrite
                             })
                         ],
                         style: {
@@ -95,9 +96,9 @@ export const roleDetails = hoistCmp.factory({
                                                       position: 'absolute',
                                                       borderRadius: '100%',
                                                       backgroundColor: 'pink',
-                                                      width: '1em',
-                                                      height: '1em',
-                                                      left: '0.5em'
+                                                      width: '0.8em',
+                                                      height: '0.8em',
+                                                      left: '0.4em'
                                                   }
                                               }),
                                               roleName
@@ -107,8 +108,8 @@ export const roleDetails = hoistCmp.factory({
                                               display: 'flex',
                                               alignItems: 'center',
                                               paddingBlock: '0.1em',
-                                              paddingInline: '2em 0.5em',
-                                              borderRadius: '0.5em',
+                                              paddingInline: '1.6em 0.5em',
+                                              borderRadius: '9999px',
                                               color: 'var(--xh-appbar-color)',
                                               backgroundColor: 'var(--xh-appbar-bg)',
                                               width: 'fit-content'
@@ -160,19 +161,3 @@ export const roleDetails = hoistCmp.factory({
         });
     }
 });
-
-// TODO: would prefer to pull this out (above) as its own component, but the
-// key doesn't seem to be getting set properly
-// const inheritanceTag = hoistCmp.factory({
-//     render({roleName}) {
-//         return span({
-//             item: roleName,
-//             style: {
-//                 padding: '2px 10px',
-//                 borderRadius: '4px',
-//                 color: 'var(--xh-gray-light)'
-//             },
-//             key
-//         });
-//     }
-// });

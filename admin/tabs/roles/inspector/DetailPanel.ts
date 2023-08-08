@@ -1,4 +1,4 @@
-import {hr, placeholder, vframe} from '@xh/hoist/cmp/layout';
+import {placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {HoistModel, XH, hoistCmp, uses} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {bindable} from '@xh/hoist/mobx';
@@ -7,7 +7,7 @@ import {roleDetails} from './detail/RoleDetails';
 import {usersTabContainer} from './detail/UsersTabContainer';
 
 export class DetailPanelModel extends HoistModel {
-    @bindable roleId = null;
+    @bindable roleName = null;
 
     @bindable.ref roleDetails = null;
 
@@ -16,24 +16,22 @@ export class DetailPanelModel extends HoistModel {
         makeObservable(this);
 
         this.addReaction({
-            track: () => this.roleId,
-            run: roleId => {
+            track: () => this.roleName,
+            run: _ => {
                 this.loadAsync();
             },
             fireImmediately: true
         });
     }
 
-    async loadRoleDetails(roleId) {}
-
     override async doLoadAsync() {
         // this.roleDetails = null;
-        // prevent this from making a request if no roleId (ie on initial page load)
-        if (this.roleId) {
-            const roleId = this.roleId;
+        // prevent this from making a request if no roleName (ie on initial page load)
+        if (this.roleName) {
+            const roleName = this.roleName;
             const resp = await XH.fetchJson({
                 url: 'rolesAdmin/roleDetails',
-                params: {roleId}
+                params: {roleName: roleName}
             });
             // await wait(2 * SECONDS);
             this.roleDetails = await resp;
@@ -48,12 +46,8 @@ export const detailPanel = hoistCmp.factory({
 
     render({model}) {
         return panel({
-            item: model.roleId
-                ? vframe(
-                      roleDetails(),
-                      hr({style: {width: '60%', border: 'var(--xh-border-solid)'}}),
-                      usersTabContainer()
-                  )
+            item: model.roleName
+                ? vframe(roleDetails(), usersTabContainer())
                 : placeholder('Select a role to view details'),
             modelConfig: {
                 side: 'right',
