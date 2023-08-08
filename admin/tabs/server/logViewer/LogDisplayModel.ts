@@ -46,7 +46,6 @@ export class LogDisplayModel extends HoistModel {
     caseSensitive: boolean = false;
 
     @bindable
-    @persist
     logRootPath: string;
 
     get tailActive(): boolean {

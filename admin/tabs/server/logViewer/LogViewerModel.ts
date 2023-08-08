@@ -75,16 +75,15 @@ export class LogViewerModel extends HoistModel {
         const store = filesGridModel.store,
             selModel = filesGridModel.selModel;
 
-        // Get the data from 'listFileInfo`.
-        const data = await XH.fetchJson({
-            url: 'logViewerAdmin/listFileInfo'
-        });
-
-        const {logRootPath} = data;
-        this.logDisplayModel.logRootPath = logRootPath;
-
         try {
-            await store.loadData(data.files);
+            // Get the data from 'listFiles`.
+            const data = await XH.fetchJson({
+                url: 'logViewerAdmin/listFiles'
+            });
+
+            this.logDisplayModel.logRootPath = data.logRootPath;
+
+            store.loadData(data.files);
             if (selModel.isEmpty) {
                 const latestAppLog = store.records.find(
                     rec => rec.data.filename === `${XH.appCode}.log`
