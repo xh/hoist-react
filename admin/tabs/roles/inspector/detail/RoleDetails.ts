@@ -5,7 +5,8 @@ import {compactDateRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable} from '@xh/hoist/mobx';
 import {makeObservable} from 'mobx';
-import {DetailPanelModel} from '../DetailPanel';
+import {InspectorTabModel} from '../InspectorTab';
+import {rolesTags} from './RolesTags';
 
 class RoleDetailsModel extends HoistModel {
     @bindable.ref roleDetails = null;
@@ -25,19 +26,12 @@ class RoleDetailsModel extends HoistModel {
 
     override onLinked() {
         this.addReaction({
-            track: () => this.lookupModel(DetailPanelModel).roleDetails,
+            track: () => this.lookupModel(InspectorTabModel).selectedRoleDetails,
             run: role => {
                 this.roleDetails = role;
-            }
+            },
+            fireImmediately: true
         });
-    }
-
-    reset() {
-        window.alert('Reset ✅');
-    }
-
-    async submitAsync() {
-        window.alert('Submitted ✅');
     }
 }
 
@@ -69,12 +63,31 @@ export const roleDetails = hoistCmp.factory({
                                     boxSizing: 'content-box'
                                 }
                             }),
-                            button({
-                                icon: Icon.edit(),
-                                intent: 'warning',
-                                style: {height: '2em'},
-                                omit: !XH.getConf('xhRoleManagerConfig').canWrite
-                            })
+                            div(
+                                button({
+                                    icon: Icon.edit(),
+                                    intent: 'warning',
+                                    onClick: () => {
+                                        model.lookupModel(InspectorTabModel)?.editRole();
+                                    },
+                                    style: {height: '2em'},
+                                    omit: !XH.getConf('xhRoleManagerConfig').canWrite
+                                }),
+                                button({
+                                    icon: Icon.delete(),
+                                    intent: 'danger',
+                                    style: {height: '2em'},
+                                    omit: !XH.getConf('xhRoleManagerConfig').canWrite,
+                                    onClick: () => {
+                                        model
+                                            .lookupModel(InspectorTabModel)
+                                            .getImpactDelete(
+                                                model.lookupModel(InspectorTabModel)
+                                                    .selectedRoleName
+                                            );
+                                    }
+                                })
+                            )
                         ],
                         style: {
                             display: 'flex',
@@ -86,56 +99,15 @@ export const roleDetails = hoistCmp.factory({
                         // 'Inherits',
                         items: [
                             div('Inherits: '),
-                            model.roleDetails?.inherits?.length != 0
-                                ? model.roleDetails?.inherits.map(roleName =>
-                                      // see below as to why this (yet) isn't pulled out..
-                                      div({
-                                          item: [
-                                              div({
-                                                  style: {
-                                                      position: 'absolute',
-                                                      borderRadius: '100%',
-                                                      backgroundColor: 'pink',
-                                                      width: '0.8em',
-                                                      height: '0.8em',
-                                                      left: '0.4em'
-                                                  }
-                                              }),
-                                              roleName
-                                          ],
-                                          style: {
-                                              position: 'relative',
-                                              display: 'flex',
-                                              alignItems: 'center',
-                                              paddingBlock: '0.1em',
-                                              paddingInline: '1.6em 0.5em',
-                                              borderRadius: '9999px',
-                                              color: 'var(--xh-appbar-color)',
-                                              backgroundColor: 'var(--xh-appbar-bg)',
-                                              width: 'fit-content'
-                                              //   boxSizing: 'border-box'
-                                          },
-                                          key: roleName
-                                      })
-                                  )
-                                : div({
-                                      item: 'None',
-                                      style: {
-                                          color: 'var(--xh-text-color-muted)',
-                                          //   to prevent downward shift if no inheritance
-                                          marginBottom: '0.2em'
-                                      }
-                                  })
+                            rolesTags({roles: model.roleDetails?.inheritedRoles ?? []})
                         ],
                         style: {
                             display: 'flex',
                             flexWrap: 'wrap',
                             alignContent: 'flex-start',
-                            columnGap: '0.5em',
+                            columnGap: '0.2em',
                             minHeight: '1lh',
-                            maxHeight: '8lh',
                             rowGap: '0.4em',
-                            overflowY: 'scroll',
                             marginBottom: '1lh'
                         }
                     }),
@@ -143,7 +115,7 @@ export const roleDetails = hoistCmp.factory({
                         item:
                             model.roleDetails?.notes ??
                             div({item: 'No notes', style: {color: 'var(--xh-text-color-muted)'}}),
-                        style: {maxHeight: '8lh', overflowY: 'scroll', marginBottom: '1lh'}
+                        style: {maxHeight: '6.5lh', overflowY: 'scroll', marginBottom: '1lh'}
                     }),
                     div({
                         item: model.lastModifiedStr,

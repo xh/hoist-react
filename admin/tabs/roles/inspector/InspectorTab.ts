@@ -1,13 +1,16 @@
-import {hframe} from '@xh/hoist/cmp/layout';
-import {HoistModel, creates, hoistCmp, managed} from '@xh/hoist/core';
-import {makeObservable, observable} from 'mobx';
-import {DetailPanelModel, detailPanel} from './DetailPanel';
+import {fragment, hframe, p} from '@xh/hoist/cmp/layout';
+import {HoistModel, XH, creates, hoistCmp, managed} from '@xh/hoist/core';
+import {bindable} from '@xh/hoist/mobx';
+import {makeObservable} from 'mobx';
+import {detailPanel} from './DetailPanel';
+import {RoleDialogModel, roleDialog} from './Dialog';
 import {mainGrid} from './MainGrid';
 
 export class InspectorTabModel extends HoistModel {
-    @observable.ref selectedRoleName = null;
+    @bindable selectedRoleName = null;
+    @bindable.ref selectedRoleDetails = null;
 
-    @managed detailModel = new DetailPanelModel();
+    @managed dialogModel = new RoleDialogModel();
 
     constructor() {
         super();
@@ -20,11 +23,39 @@ export class InspectorTabModel extends HoistModel {
         this.addReaction({
             track: () => this.selectedRoleName,
             run: async role => {
-                this.detailModel.roleName = role;
-                console.log('Inspector tab: ' + this.selectedRoleName);
+                // this.detailModel.roleName = role;
             },
             fireImmediately: true
         });
+    }
+
+    addRole() {
+        this.dialogModel.openDialog('add');
+    }
+
+    editRole() {
+        this.dialogModel.openDialog('edit');
+    }
+
+    async getImpactEdit(roleDetails) {
+        const resp = await XH.fetchJson({
+            url: 'rolesAdmin/effectiveChanges',
+            params: {roleDetails: roleDetails}
+        });
+        return resp;
+    }
+
+    async getImpactDelete(roleName) {
+        const resp = await XH.fetchJson({
+            url: 'rolesAdmin/effectiveChanges',
+            params: {changeType: 'delete', roleName: roleName}
+        });
+        XH.confirm({
+            message: p(
+                `Caution! You're attemping to delete the role ${roleName}, which will also impact ${resp['userCount']} users and ${resp['inheritedRolesCount']} other (inheriting) roles. Are you sure you want to continue?`
+            )
+        });
+        return resp;
     }
 }
 
@@ -32,6 +63,6 @@ export const inspectorTab = hoistCmp.factory({
     model: creates(InspectorTabModel),
 
     render({model}) {
-        return hframe(mainGrid(), detailPanel());
+        return fragment(hframe(mainGrid(), detailPanel()), roleDialog(model.dialogModel));
     }
 });

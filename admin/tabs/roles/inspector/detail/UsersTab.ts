@@ -1,13 +1,10 @@
 import {GridModel, grid} from '@xh/hoist/cmp/grid';
-import {div} from '@xh/hoist/cmp/layout';
 import {HoistModel, creates, hoistCmp, managed} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
-import {makeObservable, observable} from 'mobx';
-import {DetailPanelModel} from '../../DetailPanel';
+import {makeObservable} from 'mobx';
+import {InspectorTabModel} from '../InspectorTab';
 
-class allTabModel extends HoistModel {
-    @observable.ref roleDetails = null;
-
+class UsersTabModel extends HoistModel {
     @managed store = new Store({
         fields: [
             {name: 'user', type: 'string'},
@@ -24,19 +21,23 @@ class allTabModel extends HoistModel {
             {field: 'user'},
             {
                 field: 'reason',
-                renderer: (v, {record}) => {
-                    const reason = record.data?.reason;
-                    return div({
-                        style: {
-                            fontStyle: 'italic'
-                        },
-                        item: `via ${reason}`
-                    });
-                }
+                hidden: true
             }
         ],
-        selModel: 'multiple'
+        groupBy: 'reason',
+        showGroupRowCounts: true,
+        groupRowRenderer: ({value}) => this.roleReason(value),
+        sortBy: 'user'
     });
+
+    roleReason(parentRoleName) {
+        const currentRoleName = this.lookupModel(InspectorTabModel).selectedRoleName;
+        if (parentRoleName == currentRoleName) {
+            return 'Assigned';
+        } else {
+            return 'via ' + parentRoleName;
+        }
+    }
 
     constructor() {
         super();
@@ -45,7 +46,7 @@ class allTabModel extends HoistModel {
 
     override onLinked() {
         this.addReaction({
-            track: () => this.lookupModel(DetailPanelModel).roleDetails,
+            track: () => this.lookupModel(InspectorTabModel).selectedRoleDetails,
             run: role => {
                 this.store.clear();
                 this.store.loadData(role?.allUsers ?? []);
@@ -55,8 +56,8 @@ class allTabModel extends HoistModel {
     }
 }
 
-export const allTab = hoistCmp.factory({
-    model: creates(allTabModel),
+export const usersTab = hoistCmp.factory({
+    model: creates(UsersTabModel),
 
     render({model}) {
         return grid({model: model.gridModel});

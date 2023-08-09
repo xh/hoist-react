@@ -1,5 +1,6 @@
+import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel, grid} from '@xh/hoist/cmp/grid';
-import {vframe} from '@xh/hoist/cmp/layout';
+import {fragment, vframe} from '@xh/hoist/cmp/layout';
 import {HoistModel, XH, creates, hoistCmp, lookup, managed} from '@xh/hoist/core';
 import {RecordAction, Store} from '@xh/hoist/data';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -8,19 +9,22 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {compactDateRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from 'mobx';
-import moment from 'moment';
+import {RoleDialogModel} from './Dialog';
 import {InspectorTabModel} from './InspectorTab';
 import './InspectorTab.scss';
 
 // move from mainGrid to roleList or the like
-class MainGridModel extends HoistModel {
+export class MainGridModel extends HoistModel {
     @managed gridModel: GridModel;
+    @managed formModel: FormModel;
 
     @managed store = this.createStore();
 
     // look through JS annotations to understand why this laziness is necessary
     // what determines parse order
     @lookup(() => InspectorTabModel) parent: InspectorTabModel;
+    // TODO: don't need to store this here locally
+    @lookup(() => RoleDialogModel) dialogModel: RoleDialogModel;
 
     constructor() {
         super();
@@ -38,7 +42,6 @@ class MainGridModel extends HoistModel {
             track: () => this.gridModel.selectedRecord,
             run: record => {
                 this.parent.selectedRoleName = record?.data.name;
-                console.log('Main Grid: ' + this.parent.selectedRoleName);
             },
             fireImmediately: true
         });
@@ -56,7 +59,8 @@ class MainGridModel extends HoistModel {
                 {name: 'name', type: 'string'},
                 {name: 'groupName', type: 'string'},
                 {name: 'lastUpdated', type: 'date'},
-                {name: 'lastUpdatedBy', type: 'string'}
+                {name: 'lastUpdatedBy', type: 'string'},
+                {name: 'color', type: 'string'}
             ]
         });
     }
@@ -69,6 +73,7 @@ class MainGridModel extends HoistModel {
             groupBy: 'groupName',
             selModel: 'multiple',
             store: this.store,
+            fullRowEditing: true,
             columns: [
                 {field: 'name'},
                 {field: 'groupName', hidden: true},
@@ -83,37 +88,8 @@ class MainGridModel extends HoistModel {
         text: 'Create Role',
         intent: 'success',
         actionFn: () => {
-            XH.toast({
-                intent: 'primary',
-                message: 'New role successfully created.'
-            });
-            this.gridModel.store.addRecords([
-                {
-                    id: XH.genId(),
-                    // TODO: want to deduplicate additions (ie make it New Role (1))?
-                    name: 'New Role',
-                    groupName: 'New Group',
-                    lastUpdated: moment.now(),
-                    lastUpdatedBy: XH.getUsername()
-                }
-            ]);
+            this.dialogModel.openDialog('add');
         }
-    });
-
-    deleteRoleAction = new RecordAction({
-        icon: Icon.delete(),
-        text: 'Delete',
-        intent: 'danger',
-        actionFn: ({selectedRecords}) => {
-            selectedRecords.forEach(record => {
-                XH.toast({
-                    intent: 'danger',
-                    message: `Role ${record.data.name} deleted!`
-                });
-                this.store.removeRecords(record);
-            });
-        },
-        recordsRequired: true
     });
 }
 
@@ -123,18 +99,20 @@ export const mainGrid = hoistCmp.factory({
     render({model}) {
         const {gridModel} = model;
 
-        return panel({
-            item: vframe(
-                toolbar({
-                    item: recordActionBar({
-                        gridModel,
-                        selModel: gridModel.selModel,
-                        actions: [model.addRoleAction, model.deleteRoleAction]
+        return fragment(
+            panel({
+                item: vframe(
+                    toolbar({
+                        item: recordActionBar({
+                            gridModel,
+                            selModel: gridModel.selModel,
+                            actions: [model.addRoleAction]
+                        }),
+                        omit: !XH.getConf('xhRoleManagerConfig').canWrite
                     }),
-                    omit: !XH.getConf('xhRoleManagerConfig').canWrite
-                }),
-                grid()
-            )
-        });
+                    grid()
+                )
+            })
+        );
     }
 });
