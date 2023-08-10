@@ -1,12 +1,9 @@
 import {div, vbox} from '@xh/hoist/cmp/layout';
-import {HoistModel, XH, creates, hoistCmp} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {HoistModel, creates, hoistCmp} from '@xh/hoist/core';
 import {compactDateRenderer} from '@xh/hoist/format';
-import {Icon} from '@xh/hoist/icon';
 import {bindable} from '@xh/hoist/mobx';
 import {makeObservable} from 'mobx';
 import {InspectorTabModel} from '../InspectorTab';
-import {rolesTags} from './RolesTags';
 
 class RoleDetailsModel extends HoistModel {
     @bindable.ref roleDetails = null;
@@ -43,71 +40,14 @@ export const roleDetails = hoistCmp.factory({
             items: [
                 vbox(
                     div({
-                        items: [
-                            div({
-                                items: [
-                                    div({
-                                        item: model.roleDetails?.name ?? 'Role Name',
-                                        style: {fontSize: '1.3em'}
-                                    }),
-                                    div({
-                                        item: model.roleDetails?.groupName ?? 'Role Group',
-                                        style: {
-                                            fontSize: '0.9em',
-                                            color: 'var(--xh-text-color-muted)',
-                                            marginBottom: '1.5lh'
-                                        }
-                                    })
-                                ],
-                                style: {
-                                    boxSizing: 'content-box'
-                                }
-                            }),
-                            div(
-                                button({
-                                    icon: Icon.edit(),
-                                    intent: 'warning',
-                                    onClick: () => {
-                                        model.lookupModel(InspectorTabModel)?.editRole();
-                                    },
-                                    style: {height: '2em'},
-                                    omit: !XH.getConf('xhRoleManagerConfig').canWrite
-                                }),
-                                button({
-                                    icon: Icon.delete(),
-                                    intent: 'danger',
-                                    style: {height: '2em'},
-                                    omit: !XH.getConf('xhRoleManagerConfig').canWrite,
-                                    onClick: () => {
-                                        model
-                                            .lookupModel(InspectorTabModel)
-                                            .getImpactDelete(
-                                                model.lookupModel(InspectorTabModel)
-                                                    .selectedRoleName
-                                            );
-                                    }
-                                })
-                            )
-                        ],
-                        style: {
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignContent: 'flex-start'
-                        }
+                        item: model.roleDetails?.name ?? 'Role Name',
+                        style: {fontSize: '1.3em'}
                     }),
                     div({
-                        // 'Inherits',
-                        items: [
-                            div('Inherits: '),
-                            rolesTags({roles: model.roleDetails?.inheritedRoles ?? []})
-                        ],
+                        item: model.roleDetails?.groupName ?? 'Role Group',
                         style: {
-                            display: 'flex',
-                            flexWrap: 'wrap',
-                            alignContent: 'flex-start',
-                            columnGap: '0.2em',
-                            minHeight: '1lh',
-                            rowGap: '0.4em',
+                            fontSize: '0.9em',
+                            color: 'var(--xh-text-color-muted)',
                             marginBottom: '1lh'
                         }
                     }),
@@ -133,3 +73,29 @@ export const roleDetails = hoistCmp.factory({
         });
     }
 });
+
+// div(
+//     button({
+//         icon: Icon.edit(),
+//         intent: 'warning',
+//         onClick: () => {
+//             model.lookupModel(InspectorTabModel)?.editRole();
+//         },
+//         style: {height: '2em'},
+//         omit: !XH.getConf('xhRoleManagerConfig').canWrite
+//     }),
+//     button({
+//         icon: Icon.delete(),
+//         intent: 'danger',
+//         style: {height: '2em'},
+//         omit: !XH.getConf('xhRoleManagerConfig').canWrite,
+//         onClick: () => {
+//             model
+//                 .lookupModel(InspectorTabModel)
+//                 .getImpactDelete(
+//                     model.lookupModel(InspectorTabModel)
+//                         .selectedRoleName
+//                 );
+//         }
+//     })
+// )

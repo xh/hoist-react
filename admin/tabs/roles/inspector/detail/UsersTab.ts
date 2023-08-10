@@ -1,4 +1,5 @@
 import {GridModel, grid} from '@xh/hoist/cmp/grid';
+import {div} from '@xh/hoist/cmp/layout';
 import {HoistModel, creates, hoistCmp, managed} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
 import {makeObservable} from 'mobx';
@@ -16,18 +17,25 @@ class UsersTabModel extends HoistModel {
     @managed gridModel = new GridModel({
         emptyText: 'No user are assigned or inherit this role',
         store: this.store,
-        hideHeaders: true,
+        // hideHeaders: true,
         columns: [
             {field: 'user'},
             {
                 field: 'reason',
-                hidden: true
+                renderer: value =>
+                    div({
+                        item: `${this.roleReason(value)}`,
+                        style: {color: 'var(--xh-text-color-muted)'}
+                    })
             }
         ],
-        groupBy: 'reason',
-        showGroupRowCounts: true,
-        groupRowRenderer: ({value}) => this.roleReason(value),
-        sortBy: 'user'
+        // TODO: want to a compound sort, reason and then user
+        // TODO: this is sorting by the underlying value not the displayed...
+        // TODO:   need to make it store the correct value in the store when loading...
+        sortBy: {
+            colId: 'reason',
+            sort: 'asc'
+        }
     });
 
     roleReason(parentRoleName) {

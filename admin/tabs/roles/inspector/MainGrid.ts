@@ -1,13 +1,10 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel, grid} from '@xh/hoist/cmp/grid';
-import {fragment, vframe} from '@xh/hoist/cmp/layout';
+import {fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, XH, creates, hoistCmp, lookup, managed} from '@xh/hoist/core';
-import {RecordAction, Store} from '@xh/hoist/data';
+import {Store} from '@xh/hoist/data';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {compactDateRenderer} from '@xh/hoist/format';
-import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from 'mobx';
 import {RoleDialogModel} from './Dialog';
 import {InspectorTabModel} from './InspectorTab';
@@ -34,6 +31,7 @@ export class MainGridModel extends HoistModel {
     override onLinked() {
         super.onLinked();
         this.gridModel = this.createGridModel();
+        this.parent.selModel = this.gridModel.selModel;
 
         // could just look this up and store directly
         // this.rolesStore = this.lookupModel(RolesTabModel).store
@@ -82,36 +80,15 @@ export class MainGridModel extends HoistModel {
             ]
         });
     }
-
-    addRoleAction = new RecordAction({
-        icon: Icon.add(),
-        text: 'Create Role',
-        intent: 'success',
-        actionFn: () => {
-            this.dialogModel.openDialog('add');
-        }
-    });
 }
 
 export const mainGrid = hoistCmp.factory({
     model: creates(MainGridModel),
 
-    render({model}) {
-        const {gridModel} = model;
-
+    render() {
         return fragment(
             panel({
-                item: vframe(
-                    toolbar({
-                        item: recordActionBar({
-                            gridModel,
-                            selModel: gridModel.selModel,
-                            actions: [model.addRoleAction]
-                        }),
-                        omit: !XH.getConf('xhRoleManagerConfig').canWrite
-                    }),
-                    grid()
-                )
+                item: grid()
             })
         );
     }

@@ -1,4 +1,5 @@
 import {GridModel, grid} from '@xh/hoist/cmp/grid';
+import {div} from '@xh/hoist/cmp/layout';
 import {HoistModel, creates, hoistCmp, managed} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
 import {makeObservable} from 'mobx';
@@ -16,18 +17,21 @@ class InheritedRolesTabModel extends HoistModel {
     @managed gridModel = new GridModel({
         emptyText: "This role doesn't inherit any additional roles",
         store: this.store,
-        hideHeaders: true,
         columns: [
             {field: 'role'},
             {
                 field: 'reason',
-                hidden: true
+                renderer: value =>
+                    div({
+                        item: `${this.roleReason(value)}`,
+                        style: {color: 'var(--xh-text-color-muted)'}
+                    })
             }
         ],
-        groupBy: 'reason',
-        groupRowRenderer: ({value}) => this.roleReason(value),
-        groupSortFn: (a, b) => this.roleReason(a).localeCompare(this.roleReason(b)),
-        sortBy: 'role'
+        sortBy: {
+            colId: 'reason',
+            sort: 'asc'
+        }
     });
 
     roleReason(parentRoleName) {

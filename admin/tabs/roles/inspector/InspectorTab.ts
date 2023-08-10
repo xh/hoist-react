@@ -1,5 +1,9 @@
-import {fragment, hframe, p} from '@xh/hoist/cmp/layout';
+import {fragment, hframe, p, vframe} from '@xh/hoist/cmp/layout';
 import {HoistModel, XH, creates, hoistCmp, managed} from '@xh/hoist/core';
+import {RecordAction} from '@xh/hoist/data';
+import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {Icon} from '@xh/hoist/icon';
 import {bindable} from '@xh/hoist/mobx';
 import {makeObservable} from 'mobx';
 import {detailPanel} from './DetailPanel';
@@ -9,6 +13,7 @@ import {mainGrid} from './MainGrid';
 export class InspectorTabModel extends HoistModel {
     @bindable selectedRoleName = null;
     @bindable.ref selectedRoleDetails = null;
+    @bindable selModel;
 
     @managed dialogModel = new RoleDialogModel();
 
@@ -29,13 +34,35 @@ export class InspectorTabModel extends HoistModel {
         });
     }
 
-    addRole() {
-        this.dialogModel.openDialog('add');
-    }
+    addRoleAction = new RecordAction({
+        icon: Icon.add(),
+        text: 'Add',
+        intent: 'success',
+        actionFn: () => {
+            this.dialogModel.openDialog('add');
+        }
+    });
 
-    editRole() {
-        this.dialogModel.openDialog('edit');
-    }
+    editRoleAction = new RecordAction({
+        icon: Icon.edit(),
+        text: 'Edit',
+        intent: 'primary',
+        actionFn: () => {
+            this.dialogModel.openDialog('edit');
+        },
+        recordsRequired: 1
+    });
+
+    deleteRoleAction = new RecordAction({
+        icon: Icon.delete(),
+        text: 'Delete',
+        intent: 'danger',
+        actionFn: ({record}) => {
+            console.log(record);
+            this.getImpactDelete(record.data.name);
+        },
+        recordsRequired: 1
+    });
 
     async getImpactEdit(roleDetails) {
         const resp = await XH.fetchJson({
@@ -63,6 +90,25 @@ export const inspectorTab = hoistCmp.factory({
     model: creates(InspectorTabModel),
 
     render({model}) {
-        return fragment(hframe(mainGrid(), detailPanel()), roleDialog(model.dialogModel));
+        console.log(model.selModel);
+        return fragment(
+            vframe(
+                toolbar({
+                    item: model.selModel
+                        ? recordActionBar({
+                              selModel: model.selModel,
+                              actions: [
+                                  model.addRoleAction,
+                                  model.editRoleAction,
+                                  model.deleteRoleAction
+                              ]
+                          })
+                        : null,
+                    omit: !XH.getConf('xhRoleManagerConfig').canWrite
+                }),
+                hframe(mainGrid(), detailPanel())
+            ),
+            roleDialog(model.dialogModel)
+        );
     }
 });
