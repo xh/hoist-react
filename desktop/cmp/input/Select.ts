@@ -24,7 +24,8 @@ import {
     reactAsyncSelect,
     reactCreatableSelect,
     reactSelect,
-    reactWindowedSelect
+    reactWindowedSelect,
+    ClassNamesConfig
 } from '@xh/hoist/kit/react-select';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -51,6 +52,12 @@ export const MENU_PORTAL_ID = 'xh-select-input-portal';
 export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     /** True to focus the control on render. */
     autoFocus?: boolean;
+
+    /**
+     * Takes an object with keys for the various react-select inner components and values
+     * with a callback function to return the desired class.
+     */
+    classNames?: ClassNamesConfig;
 
     /**
      * Function to return a "create a new option" string prompt. Requires `enableCreate` true.
@@ -711,6 +718,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             inputId: props.id,
             classNamePrefix: 'xh-select',
             theme: model.getThemeConfig(),
+            classNames: props.classNames,
 
             onBlur: model.onBlur,
             onChange: model.onSelectChange,
