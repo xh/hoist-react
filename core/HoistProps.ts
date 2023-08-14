@@ -42,6 +42,8 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
 
     /** React children. */
     children?: ReactNode;
+
+    testId?: string;
 }
 
 /**

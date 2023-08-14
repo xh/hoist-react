@@ -5,11 +5,12 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {DefaultHoistProps, elementFactory, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import {getTestId} from '@xh/hoist/utils/js';
+import {useCached} from '@xh/hoist/utils/react';
 import equal from 'fast-deep-equal';
 import {createContext, useContext} from 'react';
-import {useCached} from '@xh/hoist/utils/react';
-import {FormModel} from './FormModel';
 import {BaseFormFieldProps} from './BaseFormFieldProps';
+import {FormModel} from './FormModel';
 
 /** @internal */
 export interface FormContextType {
@@ -18,6 +19,8 @@ export interface FormContextType {
 
     /** Reference to associated FormModel. */
     model?: FormModel;
+
+    testId?: string;
 }
 
 /** @internal */
@@ -30,6 +33,7 @@ export interface FormProps extends HoistProps<FormModel> {
      * @see FormField (note there are both desktop and mobile implementations).
      */
     fieldDefaults?: Partial<BaseFormFieldProps> & DefaultHoistProps;
+    testId?: string;
 }
 
 /**
@@ -50,14 +54,14 @@ export const [Form, form] = hoistCmp.withFactory<FormProps>({
     displayName: 'Form',
     model: uses(FormModel, {publishMode: 'none'}),
 
-    render({model, fieldDefaults = {}, children}) {
+    render({model, fieldDefaults = {}, children, ...props}) {
         // gather own and inherited field defaults...
         const parentDefaults = useContext(FormContext).fieldDefaults;
         if (parentDefaults) fieldDefaults = {...parentDefaults, ...fieldDefaults};
 
         // ...and deliver as a cached context to avoid spurious re-renders
         const formContext = useCached(
-            {model, fieldDefaults},
+            {model, fieldDefaults, ...getTestId(props)},
             (a, b) => a.model === b.model && equal(a.fieldDefaults, b.fieldDefaults)
         );
         return formContextProvider({value: formContext, items: children});

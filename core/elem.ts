@@ -7,11 +7,11 @@
 import {castArray, isFunction, isNil, isPlainObject} from 'lodash';
 import {
     createElement as reactCreateElement,
-    isValidElement,
-    ReactNode,
-    ReactElement,
     ForwardedRef,
-    Key
+    isValidElement,
+    Key,
+    ReactElement,
+    ReactNode
 } from 'react';
 import {PlainObject, Some, Thunkable} from './types/Types';
 
@@ -60,6 +60,8 @@ export type ElementSpec<P extends PlainObject> = P & {
     /** React key for this component. */
     key?: Key;
 
+    testId?: string;
+
     //----------------------------
     // Technical -- Escape support
     //----------------------------
@@ -81,7 +83,7 @@ export type ElementFactory<P = any> = ((...args: ReactNode[]) => ReactElement<P,
  * @param spec - element spec.
  */
 export function createElement<P = any>(type: any, spec: ElementSpec<P>): ReactElement<P, any> {
-    const {omit, item, items, ...props} = spec;
+    const {omit, item, items, testId, ...props} = spec;
 
     // 1) Convenience omission syntax.
     if (isFunction(omit) ? omit() : omit) return null;
@@ -97,6 +99,9 @@ export function createElement<P = any>(type: any, spec: ElementSpec<P>): ReactEl
             delete props[key];
         }
     });
+
+    // 4) Alias testId to data-testid
+    if (testId) props['data-testid'] = testId;
 
     return reactCreateElement(type, props as P, ...children) as any;
 }

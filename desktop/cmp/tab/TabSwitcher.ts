@@ -19,8 +19,8 @@ import {
     tabs as bpTabs,
     tooltip as bpTooltip
 } from '@xh/hoist/kit/blueprint';
-import {makeObservable, bindable} from '@xh/hoist/mobx';
-import {consumeEvent, debounced, isDisplayed, throwIf} from '@xh/hoist/utils/js';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {consumeEvent, debounced, getTestId, isDisplayed, throwIf} from '@xh/hoist/utils/js';
 import {
     createObservableRef,
     getLayoutProps,
@@ -90,7 +90,8 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
         if (!vertical && isFinite(tabMaxWidth)) tabStyle.maxWidth = tabMaxWidth + 'px';
 
         const items = tabs.map(tab => {
-            const {id, title, icon, disabled, tooltip, showRemoveAction, excludeFromSwitcher} = tab;
+            const {id, title, icon, disabled, tooltip, showRemoveAction, excludeFromSwitcher} = tab,
+                testId = getTestId(props)?.testId ? getTestId(props, id) : undefined;
             if (excludeFromSwitcher) return null;
             return bpTab({
                 id,
@@ -103,12 +104,14 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                     hoverOpenDelay: 1000,
                     position: flipOrientation(orientation),
                     item: hframe({
+                        ...testId,
                         className: 'xh-tab-switcher__tab',
                         tabIndex: -1,
                         items: [
                             icon,
                             span(title),
                             button({
+                                testId: (testId ? getTestId(props, '-remove') : undefined)?.testId,
                                 omit: !showRemoveAction,
                                 tabIndex: -1,
                                 icon: Icon.x(),
@@ -129,6 +132,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
             ),
             items: [
                 div({
+                    ...getTestId(props),
                     ref,
                     className: `xh-tab-switcher__scroll`,
                     item: bpTabs({

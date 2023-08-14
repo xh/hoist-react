@@ -5,12 +5,13 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {div, hbox, placeholder, vbox} from '@xh/hoist/cmp/layout';
+import {TabContainerModel, TabContainerProps} from '@xh/hoist/cmp/tab';
+import {getTestId} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import '../Tabs.scss';
 import {tabSwitcher} from '../TabSwitcher';
 import {tab} from './Tab';
-import {TabContainerModel, TabContainerProps} from '@xh/hoist/cmp/tab';
 
 /**
  * Desktop implementation of TabContainer.
@@ -27,13 +28,14 @@ export function tabContainerImpl({model, className, ...props}: TabContainerProps
     }
 
     return container({
+        ...getTestId(props),
         ...layoutProps,
         className,
-        item: getChildren(model)
+        item: getChildren(model, getTestId(props).testId)
     });
 }
 
-function getChildren(model: TabContainerModel) {
+function getChildren(model: TabContainerModel, testId: string) {
     const {tabs, activeTabId, switcher} = model,
         switcherBefore = ['left', 'top'].includes(switcher?.orientation),
         switcherAfter = ['right', 'bottom'].includes(switcher?.orientation);
@@ -46,7 +48,7 @@ function getChildren(model: TabContainerModel) {
     }
 
     return [
-        switcherBefore ? tabSwitcher({key: 'switcher', ...switcher}) : null,
+        switcherBefore ? tabSwitcher({key: 'switcher', ...switcher, testId}) : null,
         ...tabs.map(tabModel => {
             const tabId = tabModel.id,
                 style = activeTabId !== tabId ? hideStyle : undefined;
@@ -58,7 +60,7 @@ function getChildren(model: TabContainerModel) {
                 item: tab({model: tabModel})
             });
         }),
-        switcherAfter ? tabSwitcher({key: 'switcher', ...switcher}) : null
+        switcherAfter ? tabSwitcher({key: 'switcher', ...switcher, testId}) : null
     ];
 }
 

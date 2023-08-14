@@ -12,10 +12,10 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
+import {getTestId, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
-import {ReactElement, ReactNode, Ref, FocusEvent} from 'react';
+import {FocusEvent, ReactElement, ReactNode, Ref} from 'react';
 
 export interface TextInputProps extends HoistProps, HoistInputProps, LayoutProps, StyleProps {
     value?: string;
@@ -122,7 +122,7 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
     return div({
         item: inputGroup({
             value: model.renderValue || '',
-
+            ...getTestId(props, 'text-input'),
             autoComplete: withDefault(
                 props.autoComplete,
                 props.type === 'password' ? 'new-password' : 'off'
@@ -134,7 +134,9 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
             placeholder: props.placeholder,
             rightElement:
                 props.rightElement ||
-                (props.enableClear && !props.disabled && isClearable ? clearButton() : null),
+                (props.enableClear && !props.disabled && isClearable
+                    ? clearButton(getTestId(props, 'text-input'))
+                    : null),
             round: withDefault(props.round, false),
             spellCheck: withDefault(props.spellCheck, false),
             tabIndex: props.tabIndex,
@@ -163,8 +165,9 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
     });
 });
 
-const clearButton = hoistCmp.factory<TextInputModel>(({model}) =>
+const clearButton = hoistCmp.factory<TextInputModel>(({model, ...props}) =>
     button({
+        ...getTestId(props, 'clear'),
         icon: Icon.cross(),
         tabIndex: -1,
         minimal: true,

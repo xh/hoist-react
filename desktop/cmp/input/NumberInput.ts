@@ -6,12 +6,12 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps, StyleProps, LayoutProps, HSide} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {fmtNumber, parseNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
-import {apiRemoved, debounced, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved, debounced, getTestId, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber, round} from 'lodash';
 import {ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
@@ -250,6 +250,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
 
     // Render BP input.
     return numericInput({
+        ...getTestId(props, 'number-input'),
         value: renderValue,
         allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
         buttonPosition: 'none',

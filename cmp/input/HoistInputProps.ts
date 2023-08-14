@@ -27,6 +27,9 @@ export interface HoistInputProps {
     /** Tab order for focus control, or -1 to skip. If unset, browser layout-based order. */
     tabIndex?: number;
 
+    /** Set the default 'data-testid' attribute on HTML element. TODO Add ability to change attribute name with config */
+    testId?: string;
+
     /** Value of the control, if provided directly. */
     value?: any;
 }

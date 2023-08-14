@@ -4,8 +4,9 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
-import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
+import {BaseFormFieldProps, FieldModel, FormContext, FormContextType} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
 import {DefaultHoistProps, hoistCmp, HSide, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
@@ -13,13 +14,12 @@ import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {errorIf, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {errorIf, getTestId, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getReactElementName} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
 import {Children, cloneElement, ReactElement, ReactNode, useContext, useState} from 'react';
 import './FormField.scss';
-import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
 
 export interface FormFieldProps extends BaseFormFieldProps {
     /**
@@ -162,6 +162,9 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
+        const fieldTestId: string = defaultTestIdString(props, formContext, model.name);
+        const labelTestId: string = fieldTestId ? `${fieldTestId}-label` : undefined;
+
         // generate actual element child to render
         let childEl: ReactElement =
             !child || readonly
@@ -174,7 +177,8 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                       disabled,
                       displayNotValid,
                       leftErrorIcon,
-                      commitOnChange
+                      commitOnChange,
+                      testId: fieldTestId
                   });
 
         if (minimal) {
@@ -197,6 +201,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             ...getLayoutProps(props),
             items: [
                 labelEl({
+                    testId: labelTestId,
                     omit: !label,
                     className: 'xh-form-field-label',
                     items: [label, requiredIndicator],
@@ -208,6 +213,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                     }
                 }),
                 div({
+                    testId: fieldTestId,
                     className: classNames(
                         'xh-form-field-inner',
                         childIsSizeable ? 'xh-form-field-inner--flex' : 'xh-form-field-inner--block'
@@ -253,7 +259,8 @@ const editableChild = hoistCmp.factory<FieldModel>({
         disabled,
         displayNotValid,
         leftErrorIcon,
-        commitOnChange
+        commitOnChange,
+        ...rest
     }) {
         const {props} = child;
 
@@ -263,7 +270,9 @@ const editableChild = hoistCmp.factory<FieldModel>({
             bind: 'value',
             id: childId,
             disabled: props.disabled || disabled,
-            ref: composeRefs(model?.boundInputRef, child.ref)
+            ref: composeRefs(model?.boundInputRef, child.ref),
+            'data-testid': getTestId(rest).testId,
+            ...getTestId(rest)
         };
 
         // If a sizeable child input doesn't specify its own dimensions,
@@ -346,4 +355,14 @@ function defaultProp(
 ): any {
     const fieldDefault = formContext.fieldDefaults ? formContext.fieldDefaults[name] : null;
     return withDefault(props[name], fieldDefault, defaultVal);
+}
+function defaultTestIdString(
+    props: Partial<FormFieldProps>,
+    formContext: FormContextType,
+    fieldName: string
+): any {
+    const computedFieldTestId = formContext.testId
+        ? `${formContext.testId}-${fieldName}`
+        : undefined;
+    return withDefault(getTestId(props).testId, computedFieldTestId);
 }
