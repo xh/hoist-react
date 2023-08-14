@@ -31,7 +31,7 @@ export class MainGridModel extends HoistModel {
     override onLinked() {
         super.onLinked();
         this.gridModel = this.createGridModel();
-        this.parent.selModel = this.gridModel.selModel;
+        this.parent.mainGridModel = this.gridModel;
 
         // could just look this up and store directly
         // this.rolesStore = this.lookupModel(RolesTabModel).store
@@ -58,7 +58,7 @@ export class MainGridModel extends HoistModel {
                 {name: 'groupName', type: 'string'},
                 {name: 'lastUpdated', type: 'date'},
                 {name: 'lastUpdatedBy', type: 'string'},
-                {name: 'color', type: 'string'}
+                {name: 'notes', type: 'string'}
             ]
         });
     }
@@ -71,12 +71,13 @@ export class MainGridModel extends HoistModel {
             groupBy: 'groupName',
             selModel: 'multiple',
             store: this.store,
-            fullRowEditing: true,
+            enableExport: true,
             columns: [
                 {field: 'name'},
                 {field: 'groupName', hidden: true},
                 {field: 'lastUpdated', renderer: compactDateRenderer()},
-                {field: 'lastUpdatedBy'}
+                {field: 'lastUpdatedBy'},
+                {field: 'notes', flex: 1}
             ]
         });
     }

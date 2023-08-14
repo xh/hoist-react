@@ -47,7 +47,8 @@ export const roleDialog = hoistCmp.factory({
                   item: div({
                       item: roleUpdateForm()
                   }),
-                  icon: model.reason === 'add' ? Icon.add() : Icon.edit()
+                  icon: model.reason === 'add' ? Icon.add() : Icon.edit(),
+                  style: {width: '600px'}
               })
             : null;
     }
