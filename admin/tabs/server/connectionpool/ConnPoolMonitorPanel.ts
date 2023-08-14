@@ -62,21 +62,19 @@ export const connPoolMonitorPanel = hoistCmp.factory({
                 '-',
                 exportButton()
             ],
-            items: hframe({
-                items: [
-                    vframe(
-                        grid(),
-                        panel({
-                            modelConfig: {
-                                side: 'bottom',
-                                defaultSize: 400
-                            },
-                            item: chart()
-                        })
-                    ),
-                    poolConfigPanel()
-                ]
-            }),
+            items: hframe(
+                vframe(
+                    grid(),
+                    panel({
+                        modelConfig: {
+                            side: 'bottom',
+                            defaultSize: 400
+                        },
+                        item: chart()
+                    })
+                ),
+                poolConfigPanel()
+            ),
             mask: 'onLoad'
         });
     }
