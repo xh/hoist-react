@@ -26,6 +26,8 @@
   of zero due to precision will be formatted as *exactly* zero. In particular, if a zeroDisplay
   is specified it will be used and sign-based glyphs, '+/-' characters, and colors will not
   be shown.
+* New tab for monitoring JDBC connection pool stats added to the Admin Console. Apps with `hoist-core >= v17.2` will
+  collect and display metrics for their primary datasource on a configurable frequency.
 
 ### 🐞 Bug Fixes
 
