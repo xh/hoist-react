@@ -23,21 +23,27 @@
   also be included during the autosize process. Default of `false`. Useful when applications
   provide quick toggles between different column sets and would prefer to take the up-front cost of
   autosizing rather than doing it after the user loads a column set.
+* New `NumberFormatOptions.strictZero` formatter config controls display of values that round to
+  zero at the specified precision. Set to `false` to format those values as if they were *exactly*
+  zero, triggering display of any `zeroDisplay` value and suppressing sign-based glyphs, '+/-'
+  characters, and styling.
 * New `DashModel.refreshContextModel` allows apps to programmatically refresh all widgets within
   a `DashCanvas` or `DashContainer`.
-* New `NumberFormatOptions.strictZero`. If set to false, small numbers that would show only digits
-  of zero due to precision will be formatted as *exactly* zero. In particular, if a zeroDisplay
-  is specified it will be used and sign-based glyphs, '+/-' characters, and colors will not
-  be shown.
-* New tab for monitoring JDBC connection pool stats added to the Admin Console. Apps with `hoist-core >= v17.2` will
-  collect and display metrics for their primary datasource on a configurable frequency.
+* New tab for monitoring JDBC connection pool stats added to the Admin Console. Apps
+  with `hoist-core >= v17.2` will collect and display metrics for their primary datasource on a
+  configurable frequency.
+* `ButtonGroupInput` now allows `null` values for buttons as long as both `enableClear` and
+  `enableMulti` are false.
 
 ### 🐞 Bug Fixes
 
-* `ButtonGroupInput` now allows `null` values for buttons as long as both `enableClear` and
-  `enableMulti` are false.
+* Fixed bug where a titled panel collapsed to either the left or right side of a layout could cause
+  severe layout performance degradation (and even browser hangs) when resizing the browser window in
+  the latest Chrome v115.
+    * Note this required some adjustments to the internal DOM structure of `PanelHeader` - highly
+      specific CSS selectors or visual tests may be affected.
 * Fixed bug where `manuallySized` was not being set properly on column state.
-* Suppressed extra top border added to Grids when `hideHeaders: true`.
+* Suppressed extra top border on Grids with `hideHeaders: true`.
 
 ### ⚙️ Technical
 
