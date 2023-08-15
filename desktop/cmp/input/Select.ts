@@ -114,7 +114,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     hideSelectedOptionCheck?: boolean;
 
     /**
-     * True to hide options in the drop down menu if they have been selected.
+     * True to hide options in the drop-down menu if they have been selected.
      * Defaults to same as enableMulti.
      */
     hideSelectedOptions?: boolean;

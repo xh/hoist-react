@@ -67,6 +67,10 @@
       line-height: 15px;
     }
 
+    &__input-container {
+      color: var(--xh-input-text-color);
+    }
+
     &__indicators > div {
       display: flex;
       align-items: flex-end;
