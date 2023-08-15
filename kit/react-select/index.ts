@@ -12,7 +12,6 @@ import Creatable from 'react-select/creatable';
 import WindowedSelect from 'react-windowed-select';
 
 export {Select, AsyncSelect, AsyncCreatable, Creatable, WindowedSelect};
-export type {ClassNamesConfig} from 'react-select';
 
 export const reactSelect = elementFactory(Select),
     reactCreatableSelect = elementFactory(Creatable),
