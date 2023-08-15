@@ -29,6 +29,8 @@
   of zero due to precision will be formatted as *exactly* zero. In particular, if a zeroDisplay
   is specified it will be used and sign-based glyphs, '+/-' characters, and colors will not
   be shown.
+* New tab for monitoring JDBC connection pool stats added to the Admin Console. Apps with `hoist-core >= v17.2` will
+  collect and display metrics for their primary datasource on a configurable frequency.
 
 ### 🐞 Bug Fixes
 
@@ -47,6 +49,8 @@
 * semver `7.3 -> 7.5`
 * typescript `4.9 -> 5.1`
 * highcharts `10.3 -> 11.1`
+* react-select `4.3.1 -> 5.7.4`
+* react-windowed-select `3.1.2 -> 5.1.0`
 
 ## 58.0.1 - 2023-07-13
 
@@ -3499,7 +3503,7 @@ _"The one with the hooks."_
 **Hoist now fully supports React functional components and hooks.** The new `hoistComponent`
 function is now the recommended method for defining new components and their corresponding element
 factories. See that (within HoistComponentFunctional.js) and the new `useLocalModel()` and
-`useContextModel()` hooks (within [core/hooks](core/hooks)) for more information.
+`useContextModel()` hooks (within [core/model](core/model)) for more information.
 
 Along with the performance benefits and the ability to use React hooks, Hoist functional components
 are designed to read and write their models via context. This allows a much less verbose
