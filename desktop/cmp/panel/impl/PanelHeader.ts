@@ -4,12 +4,12 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {box, filler, hbox, vbox} from '@xh/hoist/cmp/layout';
+import {box, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {button, modalToggleButton} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
-import {isEmpty, isNil} from 'lodash';
+import {isEmpty, isNil, isString} from 'lodash';
 import {PanelModel} from '../PanelModel';
 import './PanelHeader.scss';
 
@@ -48,7 +48,9 @@ export const panelHeader = hoistCmp.factory({
                         ? box({
                               className: titleCls,
                               flex: 1,
-                              item: title
+                              item: isString(title)
+                                  ? span({className: `${titleCls}__inner`, item: title})
+                                  : title
                           })
                         : filler(),
                     hbox({
@@ -66,20 +68,20 @@ export const panelHeader = hoistCmp.factory({
         }
 
         // 2) ...otherwise its a narrow, sidebar
-        const isLeft = side === 'left';
         return vbox({
             className: classNames(className, sideCls, compactCls),
             flex: 1,
             items: [
-                isLeft ? filler() : collapseButton({panelModel}),
+                collapseButton({panelModel}),
                 icon || null,
                 title
                     ? box({
                           className: titleCls,
-                          item: title
+                          item: isString(title)
+                              ? span({className: `${titleCls}__inner`, item: title})
+                              : title
                       })
-                    : null,
-                !isLeft ? filler() : collapseButton({panelModel})
+                    : null
             ],
             onDoubleClick
         });
