@@ -44,6 +44,7 @@
       specific CSS selectors or visual tests may be affected.
 * Fixed bug where `manuallySized` was not being set properly on column state.
 * Suppressed extra top border on Grids with `hideHeaders: true`.
+* Fixed bug where mobile `Dialog`'s max height was not properly constrained to the viewport.
 
 ### ⚙️ Technical
 
