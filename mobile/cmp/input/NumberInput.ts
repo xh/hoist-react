@@ -90,6 +90,7 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>
 class NumberInputModel extends HoistInputModel {
     override xhImpl = true;
 
+    static numericValidator = /((\.\d+)|(\d+(\.\d+)?))\b/i;
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
     constructor() {
@@ -107,6 +108,10 @@ class NumberInputModel extends HoistInputModel {
 
     get scaleFactor() {
         return withDefault(this.componentProps.scaleFactor, 1);
+    }
+
+    get enableShorthandUnits() {
+        return withDefault(this.componentProps.enableShorthandUnits, false);
     }
 
     override select() {
@@ -205,7 +210,7 @@ class NumberInputModel extends HoistInputModel {
         value = value.toString();
         value = value.replace(/,/g, '');
 
-        if (NumberInputModel.shorthandValidator.test(value)) {
+        if (this.enableShorthandUnits && NumberInputModel.shorthandValidator.test(value)) {
             const num = +value.substring(0, value.length - 1),
                 lastChar = value.charAt(value.length - 1).toLowerCase();
 
@@ -230,13 +235,17 @@ const cmp = hoistCmp.factory<NumberInputModel>(
         const {width, ...layoutProps} = getLayoutProps(props),
             {hasFocus} = model,
             renderValue = model.formatRenderValue(model.renderValue),
-            // use 'number' to edit values, but 'text' to displaying formatted values.
-            type = hasFocus && !enableShorthandUnits ? 'number' : 'text',
-            inputMode = !enableShorthandUnits ? 'decimal' : 'text';
+            inputMode = enableShorthandUnits ? 'text' : 'decimal',
+            // Constrain valid characters when editing values, but not when displaying formatted values.
+            pattern = !hasFocus
+                ? null
+                : enableShorthandUnits
+                ? NumberInputModel.shorthandValidator
+                : NumberInputModel.numericValidator;
 
         return input({
-            type,
             inputMode,
+            pattern,
             className,
             value: renderValue,
             disabled: props.disabled,
