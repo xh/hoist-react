@@ -66,7 +66,7 @@ export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordAct
         return buttonGroup({
             vertical,
             items: actions.filter(Boolean).map(action =>
-                action !== '-' && action !== '|'
+                action !== '-'
                     ? recordActionButton({
                           action:
                               action instanceof RecordAction ? action : new RecordAction(action),

@@ -56,7 +56,7 @@ export interface RecordActionSpec {
     recordsRequired?: boolean | number;
 }
 
-export type RecordActionLike = RecordAction | RecordActionSpec | '-' | '|';
+export type RecordActionLike = RecordAction | RecordActionSpec | '-';
 
 /**
  * Data passed to the Action Function of a RecordAction
