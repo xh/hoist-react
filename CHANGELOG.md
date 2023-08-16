@@ -42,10 +42,14 @@
   the latest Chrome v115.
     * Note this required some adjustments to the internal DOM structure of `PanelHeader` - highly
       specific CSS selectors or visual tests may be affected.
+    * Note Panels accept a *custom component* as titles, not just a strings. No transforms
+      are applied in this case when the panel is collapsed to the left or right - the custom title
+      component is responsible for its own styling. Please avoid custom component titles for
+      left/right collapsible panels, at least when in a collapsed state.
 * Fixed bug where `manuallySized` was not being set properly on column state.
-* Suppressed extra top border on Grids with `hideHeaders: true`.
-* Fixed bug where mobile `Dialog`'s max height was not properly constrained to the viewport.
+* Fixed bug where mobile `Dialog` max height was not properly constrained to the viewport.
 * Fixed bug where mobile `NumberInput` would clear when trying to enter decimals on certain devices.
+* Suppressed extra top border on Grids with `hideHeaders: true`.
 
 ### ⚙️ Technical
 
