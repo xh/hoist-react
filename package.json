@@ -92,7 +92,7 @@
     "eslint-config-prettier": "9.x",
     "eslint-plugin-tsdoc": "0.x",
     "husky": "8.x",
-    "lint-staged": "13.x",
+    "lint-staged": "14.x",
     "postcss": "8.x",
     "prettier": "3.x",
     "react": "^18.2.0",
