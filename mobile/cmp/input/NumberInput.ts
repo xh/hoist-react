@@ -90,7 +90,6 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>
 class NumberInputModel extends HoistInputModel {
     override xhImpl = true;
 
-    static numericValidator = /((\.\d+)|(\d+(\.\d+)?))\b/i;
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
     constructor() {
@@ -233,28 +232,20 @@ class NumberInputModel extends HoistInputModel {
 const cmp = hoistCmp.factory<NumberInputModel>(
     ({model, className, enableShorthandUnits, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props),
-            {hasFocus} = model,
             renderValue = model.formatRenderValue(model.renderValue),
-            inputMode = enableShorthandUnits ? 'text' : 'decimal',
-            // Constrain valid characters when editing values, but not when displaying formatted values.
-            pattern = !hasFocus
-                ? null
-                : enableShorthandUnits
-                ? NumberInputModel.shorthandValidator
-                : NumberInputModel.numericValidator;
+            inputMode = enableShorthandUnits ? 'text' : 'decimal';
 
+        // Using type=text rather than type=number, to support shorthand units and rich
+        // rendering but also because of issues with typing in decimal point (see #3450)
+        // Rely on inputMode, and Hoist's parsing to enforce numbers only.
         return input({
             inputMode,
-            pattern,
             className,
             value: renderValue,
             disabled: props.disabled,
-            min: props.min,
-            max: props.max,
             placeholder: props.placeholder,
             modifier: props.modifier,
             tabIndex: props.tabIndex,
-
             style: {
                 ...props.style,
                 ...layoutProps,
