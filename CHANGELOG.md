@@ -1,5 +1,7 @@
 # Changelog
 
+## 60.0.0-SNAPSHOT - unreleased
+
 ## 59.0.0 - 2023-08-17
 
 ### 💥 Breaking Changes
