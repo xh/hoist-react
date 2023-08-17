@@ -91,8 +91,10 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
 
         const items = tabs.map(tab => {
             const {id, title, icon, disabled, tooltip, showRemoveAction, excludeFromSwitcher} = tab,
-                testId = getTestId(props)?.testId ? getTestId(props, id) : undefined;
+                testId = getTestId(props, id);
+
             if (excludeFromSwitcher) return null;
+
             return bpTab({
                 id,
                 disabled,
@@ -104,14 +106,14 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                     hoverOpenDelay: 1000,
                     position: flipOrientation(orientation),
                     item: hframe({
-                        ...testId,
+                        testId,
                         className: 'xh-tab-switcher__tab',
                         tabIndex: -1,
                         items: [
                             icon,
                             span(title),
                             button({
-                                testId: (testId ? getTestId(props, '-remove') : undefined)?.testId,
+                                testId: getTestId(testId, 'remove-btn'),
                                 omit: !showRemoveAction,
                                 tabIndex: -1,
                                 icon: Icon.x(),
@@ -125,6 +127,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
 
         return box({
             ...layoutProps,
+            testId: props.testId,
             className: classNames(
                 className,
                 `xh-tab-switcher--${orientation}`,
@@ -132,7 +135,6 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
             ),
             items: [
                 div({
-                    ...getTestId(props),
                     ref,
                     className: `xh-tab-switcher__scroll`,
                     item: bpTabs({

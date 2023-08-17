@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core/model';
+import {HoistModel} from '@xh/hoist/core';
 import {CSSProperties, HTMLAttributes, ReactNode, Ref} from 'react';
 
 /**
@@ -42,8 +42,6 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
 
     /** React children. */
     children?: ReactNode;
-
-    testId?: string;
 }
 
 /**
@@ -66,10 +64,16 @@ export interface DefaultHoistProps<M extends HoistModel = HoistModel> extends Ho
  */
 export interface BoxProps
     extends LayoutProps,
+        TestSupportProps,
         Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'contextMenu'> {}
 
 export interface StyleProps {
     style?: CSSProperties;
+}
+
+export interface TestSupportProps {
+    testId?: string;
+    parentTestId?: string;
 }
 
 export interface LayoutProps {

@@ -1,5 +1,7 @@
 import {PlainObject} from '@xh/hoist/core';
+import {isString} from 'lodash';
 
-export function getTestId(props: PlainObject, name?: string): {testId: string} {
-    return {testId: name ? `${props['data-testid']}-${name}` : props['data-testid']};
+export function getTestId(propsOrTestId: PlainObject | string, suffix?: string): string {
+    const testId = isString(propsOrTestId) ? propsOrTestId : propsOrTestId?.testId;
+    return testId && suffix ? `${testId}-${suffix}` : testId;
 }

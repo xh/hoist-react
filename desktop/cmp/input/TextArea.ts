@@ -9,7 +9,7 @@ import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cm
 import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
-import {apiRemoved, getTestId, withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {Ref} from 'react';
 import './TextArea.scss';
@@ -91,8 +91,7 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
         placeholder: props.placeholder,
         spellCheck: withDefault(props.spellCheck, false),
         tabIndex: props.tabIndex,
-
-        ...getTestId(props, 'text-area'),
+        'data-testid': props.testId,
         id: props.id,
         className,
         style: {

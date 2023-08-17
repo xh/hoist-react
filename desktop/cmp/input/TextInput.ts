@@ -122,7 +122,6 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
     return div({
         item: inputGroup({
             value: model.renderValue || '',
-            ...getTestId(props, 'text-input'),
             autoComplete: withDefault(
                 props.autoComplete,
                 props.type === 'password' ? 'new-password' : 'off'
@@ -135,7 +134,7 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
             rightElement:
                 props.rightElement ||
                 (props.enableClear && !props.disabled && isClearable
-                    ? clearButton(getTestId(props, 'text-input'))
+                    ? clearButton({testId: getTestId(props, 'clear-btn')})
                     : null),
             round: withDefault(props.round, false),
             spellCheck: withDefault(props.spellCheck, false),
@@ -154,6 +153,7 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
         }),
 
         className,
+        'data-testid': props.testId,
         style: {
             width: withDefault(width, 200),
             flex: withDefault(flex, null)
@@ -165,12 +165,12 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
     });
 });
 
-const clearButton = hoistCmp.factory<TextInputModel>(({model, ...props}) =>
+const clearButton = hoistCmp.factory<TextInputModel>(({model, testId}) =>
     button({
-        ...getTestId(props, 'clear'),
         icon: Icon.cross(),
         tabIndex: -1,
         minimal: true,
+        testId,
         onClick: () => {
             model.noteValueChange(null);
             model.doCommit();

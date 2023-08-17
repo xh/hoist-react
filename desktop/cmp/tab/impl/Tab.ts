@@ -25,7 +25,7 @@ export const tab = hoistCmp.factory({
     className: 'xh-tab',
     model: uses(TabModel, {publishMode: 'limited'}),
 
-    render({model, className}) {
+    render({model, className, testId}) {
         let {content, isActive, renderMode, refreshContextModel} = model,
             wasActivated = useRef(false);
 
@@ -41,6 +41,7 @@ export const tab = hoistCmp.factory({
         return frame({
             display: isActive ? 'flex' : 'none',
             className,
+            testId,
             item: refreshContextView({
                 model: refreshContextModel,
                 item: elementFromContent(content, {flex: 1})

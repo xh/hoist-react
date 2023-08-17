@@ -60,7 +60,7 @@ export type ElementSpec<P extends PlainObject> = P & {
     /** React key for this component. */
     key?: Key;
 
-    testId?: string;
+    'data-testid'?: string;
 
     //----------------------------
     // Technical -- Escape support
@@ -83,7 +83,7 @@ export type ElementFactory<P = any> = ((...args: ReactNode[]) => ReactElement<P,
  * @param spec - element spec.
  */
 export function createElement<P = any>(type: any, spec: ElementSpec<P>): ReactElement<P, any> {
-    const {omit, item, items, testId, ...props} = spec;
+    const {omit, item, items, ...props} = spec;
 
     // 1) Convenience omission syntax.
     if (isFunction(omit) ? omit() : omit) return null;
@@ -99,9 +99,6 @@ export function createElement<P = any>(type: any, spec: ElementSpec<P>): ReactEl
             delete props[key];
         }
     });
-
-    // 4) Alias testId to data-testid
-    if (testId) props['data-testid'] = testId;
 
     return reactCreateElement(type, props as P, ...children) as any;
 }

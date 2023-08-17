@@ -5,7 +5,6 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {DefaultHoistProps, elementFactory, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
-import {getTestId} from '@xh/hoist/utils/js';
 import {useCached} from '@xh/hoist/utils/react';
 import equal from 'fast-deep-equal';
 import {createContext, useContext} from 'react';
@@ -61,7 +60,11 @@ export const [Form, form] = hoistCmp.withFactory<FormProps>({
 
         // ...and deliver as a cached context to avoid spurious re-renders
         const formContext = useCached(
-            {model, fieldDefaults, ...getTestId(props)},
+            {
+                model,
+                fieldDefaults,
+                testId: props.testId
+            },
             (a, b) => a.model === b.model && equal(a.fieldDefaults, b.fieldDefaults)
         );
         return formContextProvider({value: formContext, items: children});

@@ -11,7 +11,7 @@ import '@xh/hoist/desktop/register';
 import {fmtNumber, parseNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
-import {apiRemoved, debounced, getTestId, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved, debounced, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber, round} from 'lodash';
 import {ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
@@ -250,7 +250,6 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
 
     // Render BP input.
     return numericInput({
-        ...getTestId(props, 'number-input'),
         value: renderValue,
         allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
         buttonPosition: 'none',
@@ -276,6 +275,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
             flex: withDefault(flex, null),
             textAlign: withDefault(props.textAlign, 'right')
         },
+        'data-testid': props.testId,
         onBlur: model.onBlur,
         onFocus: model.onFocus,
         onKeyDown: model.onKeyDown,

@@ -17,7 +17,7 @@ import {tab} from './Tab';
  * Desktop implementation of TabContainer.
  * @internal
  */
-export function tabContainerImpl({model, className, ...props}: TabContainerProps) {
+export function tabContainerImpl({model, className, testId, ...props}: TabContainerProps) {
     const layoutProps = getLayoutProps(props),
         vertical = ['left', 'right'].includes(model.switcher?.orientation),
         container = vertical ? hbox : vbox;
@@ -28,17 +28,18 @@ export function tabContainerImpl({model, className, ...props}: TabContainerProps
     }
 
     return container({
-        ...getTestId(props),
         ...layoutProps,
         className,
-        item: getChildren(model, getTestId(props).testId)
+        testId,
+        item: getChildren(model, testId)
     });
 }
 
 function getChildren(model: TabContainerModel, testId: string) {
     const {tabs, activeTabId, switcher} = model,
         switcherBefore = ['left', 'top'].includes(switcher?.orientation),
-        switcherAfter = ['right', 'bottom'].includes(switcher?.orientation);
+        switcherAfter = ['right', 'bottom'].includes(switcher?.orientation),
+        switcherTestId = getTestId(testId, 'switcher');
 
     if (isEmpty(tabs)) {
         return div({
@@ -48,7 +49,7 @@ function getChildren(model: TabContainerModel, testId: string) {
     }
 
     return [
-        switcherBefore ? tabSwitcher({key: 'switcher', ...switcher, testId}) : null,
+        switcherBefore ? tabSwitcher({key: 'switcher', testId: switcherTestId, ...switcher}) : null,
         ...tabs.map(tabModel => {
             const tabId = tabModel.id,
                 style = activeTabId !== tabId ? hideStyle : undefined;
@@ -57,10 +58,13 @@ function getChildren(model: TabContainerModel, testId: string) {
                 className: 'xh-tab-wrapper',
                 style,
                 key: tabId,
-                item: tab({model: tabModel})
+                item: tab({
+                    model: tabModel,
+                    testId: getTestId(testId, tabId)
+                })
             });
         }),
-        switcherAfter ? tabSwitcher({key: 'switcher', ...switcher, testId}) : null
+        switcherAfter ? tabSwitcher({key: 'switcher', testId: switcherTestId, ...switcher}) : null
     ];
 }
 

@@ -5,7 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, StyleProps, HoistProps, HSide} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -71,8 +71,8 @@ const cmp = hoistCmp.factory<CheckboxInputModel>(({model, className, ...props}, 
         inline: withDefault(props.inline, true),
         label: props.label,
         tabIndex: props.tabIndex,
-
         id: props.id,
+        'data-testid': props.testId,
         className,
         style: props.style,
 
