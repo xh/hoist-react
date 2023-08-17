@@ -2,6 +2,11 @@
 
 ## 60.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added new `collapsedTitle` prop to `Panel` to make it easier to display different a title
+  when the panel is collapsed.
+
 ## 59.0.0 - 2023-08-17
 
 ### 💥 Breaking Changes
@@ -44,10 +49,6 @@
   the latest Chrome v115.
     * Note this required some adjustments to the internal DOM structure of `PanelHeader` - highly
       specific CSS selectors or visual tests may be affected.
-    * Note Panels accept a *custom component* as titles, not just a strings. No transforms
-      are applied in this case when the panel is collapsed to the left or right - the custom title
-      component is responsible for its own styling. Please avoid custom component titles for
-      left/right collapsible panels, at least when in a collapsed state.
 * Fixed bug where `manuallySized` was not being set properly on column state.
 * Fixed bug where mobile `Dialog` max height was not properly constrained to the viewport.
 * Fixed bug where mobile `NumberInput` would clear when trying to enter decimals on certain devices.

@@ -9,7 +9,7 @@ import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {button, modalToggleButton} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import classNames from 'classnames';
-import {isEmpty, isNil, isString} from 'lodash';
+import {isEmpty, isNil} from 'lodash';
 import {PanelModel} from '../PanelModel';
 import './PanelHeader.scss';
 
@@ -22,6 +22,7 @@ export const panelHeader = hoistCmp.factory({
         const panelModel = useContextModel(PanelModel),
             {collapsed, collapsible, isModal, vertical, side} = panelModel,
             {title, icon, compact} = props,
+            collapsedTitle = props.collapsedTitle ?? title,
             headerItems = props.headerItems ?? [];
 
         if (isNil(title) && isNil(icon) && isEmpty(headerItems)) return null;
@@ -48,9 +49,7 @@ export const panelHeader = hoistCmp.factory({
                         ? box({
                               className: titleCls,
                               flex: 1,
-                              item: isString(title)
-                                  ? span({className: `${titleCls}__inner`, item: title})
-                                  : title
+                              item: span({className: `${titleCls}__inner`, item: title})
                           })
                         : filler(),
                     hbox({
@@ -74,12 +73,10 @@ export const panelHeader = hoistCmp.factory({
             items: [
                 collapseButton({panelModel}),
                 icon || null,
-                title
+                collapsedTitle
                     ? box({
                           className: titleCls,
-                          item: isString(title)
-                              ? span({className: `${titleCls}__inner`, item: title})
-                              : title
+                          item: span({className: `${titleCls}__inner`, item: collapsedTitle})
                       })
                     : null
             ],
