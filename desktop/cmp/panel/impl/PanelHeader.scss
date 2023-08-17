@@ -37,30 +37,22 @@
   &.xh-vbox {
     width: var(--xh-title-height-px);
 
+    & > .xh-icon {
+      margin: var(--xh-pad-px) 0 0 0;
+    }
+
     .xh-panel-header__title {
-      writing-mode: vertical-lr;
-      -ms-block-progression: lr;
+      height: 100%;
 
-      // Width has to be font-size +5px for alignment // @see https://github.com/xh/hoist-react/issues/2335
-      width: calc(1em + 5px);
-    }
-
-    &.xh-panel-header--left {
-      flex-direction: column-reverse !important;
-
-      & > .svg-inline--fa {
-        margin: var(--xh-pad-px) 0 0 0;
-      }
-
-      .xh-panel-header__title {
-        transform: rotate(180deg);
+      &__inner {
+        margin-top: 50%;
+        transform: rotate(90deg);
+        height: calc(1em + 5px);
       }
     }
 
-    &.xh-panel-header--right {
-      & > .svg-inline--fa {
-        margin: 0 0 10px 0;
-      }
+    &.xh-panel-header--left .xh-panel-header__title__inner {
+      transform: rotate(270deg);
     }
   }
 

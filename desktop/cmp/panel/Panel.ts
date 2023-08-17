@@ -82,6 +82,9 @@ export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'titl
 
     /** Title text added to the panel's header. */
     title?: ReactNode;
+
+    /** Title to be used when the panel is collapsed. Defaults to `title`. */
+    collapsedTitle?: ReactNode;
 }
 
 /**
@@ -114,6 +117,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             title,
             icon,
             compactHeader,
+            collapsedTitle,
             headerItems,
             mask: maskProp,
             loadingIndicator: loadingIndicatorProp,
@@ -183,7 +187,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         let item = vbox({
             className: 'xh-panel__content',
             items: [
-                panelHeader({title, icon, compact: compactHeader, headerItems}),
+                panelHeader({title, icon, compact: compactHeader, collapsedTitle, headerItems}),
                 coreContents,
                 parseLoadDecorator(maskProp, 'mask', contextModel),
                 parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)

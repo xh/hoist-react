@@ -1,12 +1,24 @@
 # Changelog
 
-## 59.0.0-SNAPSHOT - unreleased
+## 60.0.0-SNAPSHOT - unreleased
+
+## 59.0.1 - 2023-08-17
+
+### 🎁 New Features
+
+* Added new `collapsedTitle` prop to `Panel` to make it easier to display different a title
+  when the panel is collapsed.
+
+## 59.0.0 - 2023-08-17
 
 ### 💥 Breaking Changes
 
 * Apps must update their `typescript` dependency to v5.1. This should be a drop-in for most
   applications, or require only minor changes. Note that Hoist has not yet adopted the updated
   approach to decorators added in TS v5, maintaining compatibility with the "legacy" syntax.
+* Apps that use and provide the `highcharts` library should be sure to update the version to v11.1.
+  This should be a drop-in for most applications.
+    * Visit https://www.highcharts.com/blog/changelog/ for specific changes.
 * Apps must also update their `@xh/hoist-dev-utils` dependency to v7.0.0 or higher.
     * We recommend specifying this as `"@xh/hoist-dev-utils": "7.x"` in your `package.json` to
       automatically pick up future minor releases.
@@ -20,21 +32,29 @@
   also be included during the autosize process. Default of `false`. Useful when applications
   provide quick toggles between different column sets and would prefer to take the up-front cost of
   autosizing rather than doing it after the user loads a column set.
+* New `NumberFormatOptions.strictZero` formatter config controls display of values that round to
+  zero at the specified precision. Set to `false` to format those values as if they were *exactly*
+  zero, triggering display of any `zeroDisplay` value and suppressing sign-based glyphs, '+/-'
+  characters, and styling.
 * New `DashModel.refreshContextModel` allows apps to programmatically refresh all widgets within
   a `DashCanvas` or `DashContainer`.
-* New `NumberFormatOptions.strictZero`. If set to false, small numbers that would show only digits
-  of zero due to precision will be formatted as *exactly* zero. In particular, if a zeroDisplay
-  is specified it will be used and sign-based glyphs, '+/-' characters, and colors will not
-  be shown.
-* New tab for monitoring JDBC connection pool stats added to the Admin Console. Apps with `hoist-core >= v17.2` will
-  collect and display metrics for their primary datasource on a configurable frequency.
+* New tab for monitoring JDBC connection pool stats added to the Admin Console. Apps
+  with `hoist-core >= v17.2` will collect and display metrics for their primary datasource on a
+  configurable frequency.
+* `ButtonGroupInput` now allows `null` values for buttons as long as both `enableClear` and
+  `enableMulti` are false.
 
 ### 🐞 Bug Fixes
 
-* `ButtonGroupInput` now allows `null` values for buttons as long as both `enableClear` and
-  `enableMulti` are false.
+* Fixed bug where a titled panel collapsed to either the left or right side of a layout could cause
+  severe layout performance degradation (and even browser hangs) when resizing the browser window in
+  the latest Chrome v115.
+    * Note this required some adjustments to the internal DOM structure of `PanelHeader` - highly
+      specific CSS selectors or visual tests may be affected.
 * Fixed bug where `manuallySized` was not being set properly on column state.
-* Suppressed extra top border added to Grids when `hideHeaders: true`.
+* Fixed bug where mobile `Dialog` max height was not properly constrained to the viewport.
+* Fixed bug where mobile `NumberInput` would clear when trying to enter decimals on certain devices.
+* Suppressed extra top border on Grids with `hideHeaders: true`.
 
 ### ⚙️ Technical
 
@@ -45,6 +65,7 @@
 * mobx `6.8 -> 6.9`
 * semver `7.3 -> 7.5`
 * typescript `4.9 -> 5.1`
+* highcharts `10.3 -> 11.1`
 * react-select `4.3.1 -> 5.7.4`
 * react-windowed-select `3.1.2 -> 5.1.0`
 
