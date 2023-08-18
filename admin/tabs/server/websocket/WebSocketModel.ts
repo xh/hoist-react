@@ -5,9 +5,10 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import * as Col from '@xh/hoist/admin/columns';
+import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, p} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, lookup, managed, XH} from '@xh/hoist/core';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
@@ -20,6 +21,8 @@ import * as WSCol from './WebSocketColumns';
 
 export class WebSocketModel extends HoistModel {
     viewRef = createRef<HTMLElement>();
+
+    @lookup(() => ServerTabModel) parent: ServerTabModel;
 
     @observable
     lastRefresh: number;
@@ -83,11 +86,19 @@ export class WebSocketModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const data = await XH.fetchJson({url: 'webSocketAdmin/allChannels'});
-        this.gridModel.loadData(data);
-        runInAction(() => {
-            this.lastRefresh = Date.now();
-        });
+        try {
+            const data = await XH.fetchJson({
+                url: 'webSocketAdmin/allChannels',
+                params: {instance: this.parent.instance},
+                loadSpec
+            });
+            this.gridModel.loadData(data);
+            runInAction(() => {
+                this.lastRefresh = Date.now();
+            });
+        } catch (e) {
+            XH.handleException(e);
+        }
     }
 
     async forceSuspendOnSelectedAsync() {
@@ -118,6 +129,7 @@ export class WebSocketModel extends HoistModel {
                     params: {
                         channelKey: rec.data.key,
                         topic: XH.webSocketService.FORCE_APP_SUSPEND_TOPIC,
+                        instance: this.parent.instance,
                         message
                     }
                 })

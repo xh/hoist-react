@@ -63,6 +63,7 @@ export class AppModel extends HoistAppModel {
                 children: [
                     {name: 'about', path: '/about'},
                     {name: 'config', path: '/config'},
+                    {name: 'logLevels', path: '/logLevels'},
                     {name: 'users', path: '/users'},
                     {name: 'alertBanner', path: '/alertBanner'}
                 ]
@@ -81,7 +82,6 @@ export class AppModel extends HoistAppModel {
                 path: '/server',
                 children: [
                     {name: 'logViewer', path: '/logViewer'},
-                    {name: 'logLevels', path: '/logLevels'},
                     {name: 'memory', path: '/memory'},
                     {name: 'connectionPool', path: '/connectionPool'},
                     {name: 'environment', path: '/environment'},

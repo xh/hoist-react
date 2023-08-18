@@ -4,8 +4,9 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, lookup, managed, XH} from '@xh/hoist/core';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {forOwn} from 'lodash';
 
@@ -15,6 +16,8 @@ import {forOwn} from 'lodash';
  */
 export class ServerEnvModel extends HoistModel {
     @managed gridModel: GridModel;
+
+    @lookup(() => ServerTabModel) parent: ServerTabModel;
 
     constructor() {
         super();
@@ -46,7 +49,10 @@ export class ServerEnvModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const resp = await XH.fetchJson({url: 'envAdmin'}),
+        const resp = await XH.fetchJson({
+                url: 'envAdmin',
+                params: {instance: this.parent.instance}
+            }),
             data = [];
 
         forOwn(resp.environment, (value, name) => {

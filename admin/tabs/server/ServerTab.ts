@@ -4,33 +4,33 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {connPoolMonitorPanel} from '@xh/hoist/admin/tabs/server/connectionpool/ConnPoolMonitorPanel';
-import {serverEnvPanel} from '@xh/hoist/admin/tabs/server/environment/ServerEnvPanel';
+import {grid} from '@xh/hoist/cmp/grid';
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import {hoistCmp} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
-import {ehCachePanel} from './ehcache/EhCachePanel';
-import {logLevelPanel} from './logLevel/LogLevelPanel';
-import {logViewer} from './logViewer/LogViewer';
-import {memoryMonitorPanel} from './memory/MemoryMonitorPanel';
-import {servicePanel} from './services/ServicePanel';
-import {webSocketPanel} from './websocket/WebSocketPanel';
+import {creates, hoistCmp} from '@xh/hoist/core';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
+import {div, hframe, placeholder} from '@xh/hoist/cmp/layout';
+import {ServerTabModel} from './ServerTabModel';
 
-export const serverTab = hoistCmp.factory(() =>
-    tabContainer({
-        modelConfig: {
-            route: 'default.server',
-            switcher: {orientation: 'left'},
-            tabs: [
-                {id: 'logViewer', icon: Icon.fileText(), content: logViewer},
-                {id: 'logLevels', icon: Icon.settings(), content: logLevelPanel},
-                {id: 'memory', icon: Icon.server(), content: memoryMonitorPanel},
-                {id: 'connectionPool', icon: Icon.database(), content: connPoolMonitorPanel},
-                {id: 'environment', icon: Icon.globe(), content: serverEnvPanel},
-                {id: 'services', icon: Icon.gears(), content: servicePanel},
-                {id: 'ehCache', icon: Icon.memory(), title: 'Caches', content: ehCachePanel},
-                {id: 'webSockets', title: 'WebSockets', icon: Icon.bolt(), content: webSocketPanel}
-            ]
-        }
-    })
-);
+export const serverTab = hoistCmp.factory({
+    model: creates(ServerTabModel),
+    render({model}) {
+        const {instance} = model;
+        return hframe(
+            panel({
+                width: 160,
+                item: div(
+                    grid({agOptions: {domLayout: 'autoHeight'}}),
+                    tabSwitcher({
+                        height: 1000,
+                        omit: !instance,
+                        orientation: 'left'
+                    })
+                )
+            }),
+            instance
+                ? tabContainer({flex: 1})
+                : placeholder('Please choose an instance at the right')
+        );
+    }
+});

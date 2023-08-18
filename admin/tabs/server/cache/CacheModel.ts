@@ -9,10 +9,9 @@ import * as Col from '@xh/hoist/cmp/grid/columns';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {trimEnd} from 'lodash';
 
-export class EhCacheModel extends HoistModel {
-    override persistWith = {localStorageKey: 'xhAdminEhCacheState'};
+export class CacheModel extends HoistModel {
+    override persistWith = {localStorageKey: 'xhAdminHzCacheState'};
 
     @managed
     gridModel = new GridModel({
@@ -21,33 +20,23 @@ export class EhCacheModel extends HoistModel {
         enableExport: true,
         exportOptions: {filename: `${XH.appCode}-eh-caches-${LocalDate.today()}`},
         store: new UrlStore({
-            url: 'ehCacheAdmin/listCaches',
+            url: 'hzCacheAdmin/listCaches',
             fields: [
                 {name: 'name', type: 'string'},
-                {name: 'heapSize', type: 'int'},
-                {name: 'entries', type: 'int'},
-                {name: 'status', type: 'string'}
+                {name: 'size', type: 'int'}
             ],
-            idSpec: 'name',
-            processRawData: row => {
-                return {
-                    ...row,
-                    heapSize: parseFloat(trimEnd(row.heapSize, 'MB'))
-                };
-            }
+            idSpec: 'name'
         }),
         sortBy: 'name',
         columns: [
             {field: 'name', width: 360},
-            {field: 'heapSize', ...Col.number, headerName: 'Heap Size (MB)', width: 130},
-            {field: 'entries', ...Col.number, width: 120},
-            {field: 'status', width: 120}
+            {field: 'size', ...Col.number, width: 130}
         ]
     });
 
     async clearAllAsync() {
         try {
-            await XH.fetchJson({url: 'ehCacheAdmin/clearAllCaches'});
+            await XH.fetchJson({url: 'hzCacheAdmin/clearAllCaches'});
             await this.refreshAsync();
             XH.successToast('Hibernate caches cleared.');
         } catch (e) {

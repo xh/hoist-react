@@ -5,8 +5,9 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
+import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, lookup, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -23,6 +24,8 @@ export class LogViewerModel extends HoistModel {
     @observable file: string = null;
 
     viewRef = createRef<HTMLElement>();
+
+    @lookup(() => ServerTabModel) parent: ServerTabModel;
 
     @managed
     logDisplayModel = new LogDisplayModel(this);
@@ -78,6 +81,7 @@ export class LogViewerModel extends HoistModel {
         try {
             const data = await XH.fetchJson({
                 url: 'logViewerAdmin/listFiles',
+                params: {instance: this.parent.instance},
                 loadSpec
             });
 
@@ -112,7 +116,10 @@ export class LogViewerModel extends HoistModel {
             const filenames = recs.map(r => r.data.filename);
             await XH.fetch({
                 url: 'logViewerAdmin/deleteFiles',
-                params: {filenames}
+                params: {
+                    filenames,
+                    instance: this.parent.instance
+                }
             });
             await this.refreshAsync();
         } catch (e) {
@@ -128,7 +135,10 @@ export class LogViewerModel extends HoistModel {
             const {filename} = selectedRecord.data,
                 response = await XH.fetch({
                     url: 'logViewerAdmin/download',
-                    params: {filename}
+                    params: {
+                        filename,
+                        instance: this.parent.instance
+                    }
                 });
 
             const blob = await response.blob();

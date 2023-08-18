@@ -4,9 +4,10 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, lookup, managed, PlainObject, XH} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
 import {bindable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
@@ -18,6 +19,8 @@ export class ConnPoolMonitorModel extends HoistModel {
     get supported(): boolean {
         return XH.environmentService.isMinHoistCoreVersion(this.minHoistCoreVersion);
     }
+
+    @lookup(() => ServerTabModel) parent: ServerTabModel;
 
     @bindable enabled: boolean = true;
     @bindable poolConfiguration: PlainObject = {};
@@ -96,7 +99,8 @@ export class ConnPoolMonitorModel extends HoistModel {
 
         try {
             const resp = await XH.fetchJson({
-                url: 'connectionPoolMonitorAdmin',
+                url: 'connectionPoolMonitorAdmin/snapshots',
+                params: {instance: this.parent.instance},
                 loadSpec
             });
 

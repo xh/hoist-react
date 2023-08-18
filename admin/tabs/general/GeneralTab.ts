@@ -5,6 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {configPanel} from '@xh/hoist/admin/tabs/general/config/ConfigPanel';
+import {logLevelPanel} from '@xh/hoist/admin/tabs/general/logLevel/LogLevelPanel';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {XH, hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -20,6 +21,7 @@ export const generalTab = hoistCmp.factory(() =>
             tabs: [
                 {id: 'about', icon: Icon.info(), content: aboutPanel},
                 {id: 'config', icon: Icon.settings(), content: configPanel},
+                {id: 'logLevels', icon: Icon.settings(), content: logLevelPanel},
                 {id: 'users', icon: Icon.users(), content: userPanel, omit: hideUsersTab()},
                 {id: 'alertBanner', icon: Icon.bullhorn(), content: alertBannerPanel}
             ]

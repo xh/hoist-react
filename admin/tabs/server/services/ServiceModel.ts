@@ -4,20 +4,21 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {UrlStore} from '@xh/hoist/data';
+import {HoistModel, LoadSpec, lookup, managed, XH} from '@xh/hoist/core';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isEmpty, lowerFirst} from 'lodash';
 
 export class ServiceModel extends HoistModel {
+    @lookup(() => ServerTabModel) parent: ServerTabModel;
+
     @managed
     gridModel: GridModel = new GridModel({
         enableExport: true,
         exportOptions: {filename: `${XH.appCode}-services-${LocalDate.today()}`},
         hideHeaders: true,
-        store: new UrlStore({
-            url: 'serviceAdmin/listServices',
+        store: {
             idSpec: XH.genId,
             processRawData: this.processRawData,
             fields: [
@@ -25,7 +26,7 @@ export class ServiceModel extends HoistModel {
                 {name: 'name', type: 'string'},
                 {name: 'displayName', type: 'string'}
             ]
-        }),
+        },
         selModel: 'multiple',
         sortBy: 'displayName',
         groupBy: 'provider',
@@ -36,13 +37,17 @@ export class ServiceModel extends HoistModel {
     });
 
     async clearCachesAsync() {
-        const {selectedRecords} = this.gridModel;
-        if (isEmpty(selectedRecords)) return;
+        const {selectedRecords} = this.gridModel,
+            {instance} = this.parent;
+        if (isEmpty(selectedRecords) || !instance) return;
 
         try {
             await XH.fetchJson({
-                url: 'serviceAdmin/clearCaches',
-                params: {names: selectedRecords.map(it => it.data.name)}
+                url: 'serviceManagerAdmin/clearCaches',
+                params: {
+                    instance,
+                    names: selectedRecords.map(it => it.data.name)
+                }
             });
             await this.refreshAsync();
             XH.successToast('Service caches cleared.');
@@ -52,7 +57,16 @@ export class ServiceModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        return this.gridModel.loadAsync(loadSpec).catchDefault();
+        try {
+            const data = await XH.fetchJson({
+                url: 'serviceManagerAdmin/listServices',
+                params: {instance: this.parent.instance},
+                loadSpec
+            });
+            return this.gridModel.loadData(data);
+        } catch (e) {
+            XH.handleException(e);
+        }
     }
 
     private processRawData(r) {

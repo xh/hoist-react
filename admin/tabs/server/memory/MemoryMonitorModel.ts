@@ -4,9 +4,10 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, lookup, managed, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {fmtTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -17,6 +18,8 @@ import * as MCol from '../../monitor/MonitorColumns';
 export class MemoryMonitorModel extends HoistModel {
     @managed gridModel: GridModel;
     @managed chartModel: ChartModel;
+
+    @lookup(() => ServerTabModel) parent: ServerTabModel;
 
     get enabled(): boolean {
         return this.conf.enabled;
@@ -104,6 +107,7 @@ export class MemoryMonitorModel extends HoistModel {
         try {
             const snapsByTimestamp = await XH.fetchJson({
                 url: 'memoryMonitorAdmin/snapshots',
+                params: {instance: this.parent.instance},
                 loadSpec
             });
 
@@ -167,7 +171,10 @@ export class MemoryMonitorModel extends HoistModel {
 
     async takeSnapshotAsync() {
         try {
-            await XH.fetchJson({url: 'memoryMonitorAdmin/takeSnapshot'}).linkTo(this.loadModel);
+            await XH.fetchJson({
+                url: 'memoryMonitorAdmin/takeSnapshot',
+                params: {instance: this.parent.instance}
+            }).linkTo(this.loadModel);
             await this.loadAsync();
             XH.successToast('Updated snapshot loaded');
         } catch (e) {
@@ -177,7 +184,10 @@ export class MemoryMonitorModel extends HoistModel {
 
     async requestGcAsync() {
         try {
-            await XH.fetchJson({url: 'memoryMonitorAdmin/requestGc'}).linkTo(this.loadModel);
+            await XH.fetchJson({
+                url: 'memoryMonitorAdmin/requestGc',
+                params: {instance: this.parent.instance}
+            }).linkTo(this.loadModel);
             await this.loadAsync();
             XH.successToast('GC run complete');
         } catch (e) {
@@ -200,7 +210,10 @@ export class MemoryMonitorModel extends HoistModel {
             if (!filename) return;
             await XH.fetchJson({
                 url: 'memoryMonitorAdmin/dumpHeap',
-                params: {filename}
+                params: {
+                    instance: this.parent.instance,
+                    filename
+                }
             }).linkTo(this.loadModel);
             await this.loadAsync();
             XH.successToast('Heap dumped successfully to ' + filename);

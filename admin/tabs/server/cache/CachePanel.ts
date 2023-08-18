@@ -13,10 +13,10 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {toolbarSeparator} from '@xh/hoist/desktop/cmp/toolbar';
 import {AppModel} from '@xh/hoist/admin/AppModel';
-import {EhCacheModel} from './EhCacheModel';
+import {CacheModel} from './CacheModel';
 
-export const ehCachePanel = hoistCmp.factory({
-    model: creates(EhCacheModel),
+export const cachePanel = hoistCmp.factory({
+    model: creates(CacheModel),
 
     render({model}) {
         const {readonly} = AppModel;
@@ -26,7 +26,7 @@ export const ehCachePanel = hoistCmp.factory({
             tbar: [
                 Icon.info(),
                 span({
-                    item: 'Hibernate (Ehcache) caches for server-side domain objects',
+                    item: 'Hazelcast caches',
                     className: 'xh-bold'
                 }),
                 filler(),
