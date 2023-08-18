@@ -154,9 +154,10 @@ export class ConnPoolMonitorModel extends HoistModel {
 
     async takeSnapshotAsync() {
         try {
-            await XH.fetchJson({url: 'connectionPoolMonitorAdmin/takeSnapshot'}).linkTo(
-                this.loadModel
-            );
+            await XH.fetchJson({
+                url: 'connectionPoolMonitorAdmin/takeSnapshot',
+                params: {instance: this.parent.instance}
+            }).linkTo(this.loadModel);
             await this.refreshAsync();
             XH.successToast('Updated snapshot loaded.');
         } catch (e) {
@@ -166,9 +167,10 @@ export class ConnPoolMonitorModel extends HoistModel {
 
     async resetStatsAsync() {
         try {
-            await XH.fetchJson({url: 'connectionPoolMonitorAdmin/resetStats'}).linkTo(
-                this.loadModel
-            );
+            await XH.fetchJson({
+                url: 'connectionPoolMonitorAdmin/resetStats',
+                params: {instance: this.parent.instance}
+            }).linkTo(this.loadModel);
             await this.refreshAsync();
             XH.successToast('Connection pool stats reset.');
         } catch (e) {

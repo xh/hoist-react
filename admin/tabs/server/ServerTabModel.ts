@@ -42,7 +42,9 @@ export class ServerTabModel extends HoistModel {
         super();
         this.addReaction({
             track: () => this.instance,
-            run: () => this.tabModel.refreshContextModel.refreshAsync()
+            run: () => {
+                if (this.instance) this.tabModel.refreshContextModel.refreshAsync();
+            }
         });
     }
 

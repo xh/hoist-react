@@ -20,7 +20,7 @@ export const serverTab = hoistCmp.factory({
             panel({
                 width: 160,
                 item: div(
-                    grid({agOptions: {domLayout: 'autoHeight'}}),
+                    grid({height: 100}),
                     tabSwitcher({
                         height: 1000,
                         omit: !instance,
