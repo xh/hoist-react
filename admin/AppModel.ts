@@ -78,8 +78,8 @@ export class AppModel extends HoistAppModel {
                 ]
             },
             {
-                name: 'server',
-                path: '/server',
+                name: 'servers',
+                path: '/servers',
                 children: [
                     {name: 'logViewer', path: '/logViewer'},
                     {name: 'memory', path: '/memory'},
@@ -123,7 +123,7 @@ export class AppModel extends HoistAppModel {
                 content: activityTab
             },
             {
-                id: 'server',
+                id: 'servers',
                 icon: Icon.server(),
                 content: serverTab
             },

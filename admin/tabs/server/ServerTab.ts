@@ -9,28 +9,36 @@ import {tabContainer} from '@xh/hoist/cmp/tab';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
-import {div, hframe, placeholder} from '@xh/hoist/cmp/layout';
+import {hbox, hspacer, placeholder, strong, vframe} from '@xh/hoist/cmp/layout';
 import {ServerTabModel} from './ServerTabModel';
+import {Icon} from '@xh/hoist/icon';
 
 export const serverTab = hoistCmp.factory({
     model: creates(ServerTabModel),
     render({model}) {
         const {instance} = model;
-        return hframe(
+        return vframe(
             panel({
-                width: 160,
-                item: div(
-                    grid({height: 100}),
-                    tabSwitcher({
-                        height: 1000,
-                        omit: !instance,
-                        orientation: 'left'
-                    })
-                )
+                modelConfig: {
+                    side: 'top',
+                    defaultSize: 125,
+                    minSize: 75,
+                    collapsible: false
+                },
+                item: grid()
             }),
             instance
-                ? tabContainer({flex: 1})
-                : placeholder('Please choose an instance at the right')
+                ? panel({
+                      icon: Icon.server(),
+                      compactHeader: true,
+                      title: hbox({
+                          alignItems: 'center',
+                          items: [strong(instance), hspacer(20), tabSwitcher()]
+                      }),
+                      flex: 1,
+                      item: tabContainer()
+                  })
+                : placeholder('Choose an instance above to see more details')
         );
     }
 });

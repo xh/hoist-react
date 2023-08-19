@@ -11,28 +11,31 @@ import {logViewer} from '@xh/hoist/admin/tabs/server/logViewer/LogViewer';
 import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/server/memory/MemoryMonitorPanel';
 import {servicePanel} from '@xh/hoist/admin/tabs/server/services/ServicePanel';
 import {webSocketPanel} from '@xh/hoist/admin/tabs/server/websocket/WebSocketPanel';
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {strong} from '@xh/hoist/cmp/layout';
+import {GridModel, numberCol} from '@xh/hoist/cmp/grid';
+import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import * as MCol from '../monitor/MonitorColumns';
+import {badge} from '@xh/hoist/cmp/badge';
+import {hbox} from '@xh/hoist/cmp/layout';
 
 export class ServerTabModel extends HoistModel {
     @managed gridModel: GridModel = this.createGridModel();
     @managed tabModel: TabContainerModel = this.createTabModel();
 
     get instance(): string {
-        const {gridModel} = this,
-            {store} = gridModel,
-            rec = store.count === 1 ? store.records[0] : gridModel.selectedRecord;
-        return rec?.data.name;
+        return this.gridModel.selectedRecord?.data.name;
     }
 
     override async doLoadAsync() {
         const {gridModel} = this;
-        const data = await XH.fetchJson({
-            url: 'clusterAdmin/listInstances'
-        });
+        let data = await XH.fetchJson({url: 'clusterAdmin/allInstances'});
+        data = data.map(row => ({
+            ...row,
+            usedHeapMb: row.memory.usedHeapMb,
+            usedPctMax: row.memory.usedPctMax
+        }));
 
         gridModel.loadData(data);
         gridModel.preSelectFirstAsync();
@@ -56,18 +59,45 @@ export class ServerTabModel extends HoistModel {
                 idSpec: 'name',
                 fields: [
                     {name: 'name', type: 'string'},
-                    {name: 'isMaster', type: 'bool'}
+                    {name: 'isMaster', type: 'bool'},
+                    {name: 'isLocal', type: 'bool'},
+                    {name: 'wsConnections', type: 'int'},
+                    {name: 'startupTime', type: 'date'},
+                    {name: 'address', type: 'string'}
                 ]
             },
-            sortBy: 'isMaster',
-            hideHeaders: true,
+            sortBy: ['isMaster', 'name'],
             columns: [
                 {
                     field: 'name',
                     flex: 1,
                     renderer: (v, {record}) => {
-                        return record.data.isMaster ? strong(v + ' (master)') : v;
+                        const content = [v];
+                        if (record.data.isMaster) content.push(badge('master'));
+                        if (record.data.isLocal) content.push(badge('local'));
+                        return hbox(content);
                     }
+                },
+                {
+                    field: 'startupTime',
+                    headerName: 'Uptime',
+                    renderer: v => getRelativeTimestamp(v, {pastSuffix: ''})
+                },
+                {
+                    field: 'wsConnections',
+                    headerName: 'Web Sockets',
+                    ...numberCol
+                },
+                {
+                    ...MCol.usedHeapMb,
+                    headerName: 'Heap (MB)'
+                },
+                {
+                    ...MCol.usedPctMax,
+                    headerName: 'Heap (% Max)'
+                },
+                {
+                    field: 'address'
                 }
             ],
             autosizeOptions: {mode: 'managed'}
@@ -76,7 +106,7 @@ export class ServerTabModel extends HoistModel {
 
     createTabModel() {
         return new TabContainerModel({
-            route: 'default.server',
+            route: 'default.servers',
             switcher: false,
             tabs: [
                 {id: 'logViewer', icon: Icon.fileText(), content: logViewer},
