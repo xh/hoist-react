@@ -12,7 +12,6 @@ import {creates, hoistCmp} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {Icon} from '@xh/hoist/icon';
 
 export const serverEnvPanel = hoistCmp.factory({
     model: creates(ServerEnvModel),
@@ -22,9 +21,8 @@ export const serverEnvPanel = hoistCmp.factory({
 
         return panel({
             tbar: [
-                Icon.info(),
                 span({
-                    item: 'Server-side environment variables and JVM system properties',
+                    item: 'Environment variables and JVM system properties',
                     className: 'xh-bold'
                 }),
                 filler(),

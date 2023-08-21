@@ -7,7 +7,7 @@
 import {MemoryMonitorModel} from '@xh/hoist/admin/tabs/server/memory/MemoryMonitorModel';
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler} from '@xh/hoist/cmp/layout';
+import {filler, span} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
@@ -30,13 +30,19 @@ export const memoryMonitorPanel = hoistCmp.factory({
             dumpDisabled = isNil(model.heapDumpDir);
         return panel({
             tbar: [
+                span({
+                    item: 'Memory Usage',
+                    className: 'xh-bold'
+                }),
+                filler(),
+                gridCountLabel({unit: 'snapshot'}),
+                '-',
                 button({
                     text: 'Take Snapshot',
                     icon: Icon.camera(),
                     omit: readonly,
                     onClick: () => model.takeSnapshotAsync()
                 }),
-                '-',
                 button({
                     text: 'Request GC',
                     icon: Icon.trash(),
@@ -55,9 +61,6 @@ export const memoryMonitorPanel = hoistCmp.factory({
                         : null,
                     onClick: () => model.dumpHeapAsync()
                 }),
-                filler(),
-                gridCountLabel({unit: 'snapshot'}),
-                '-',
                 exportButton()
             ],
             items: [

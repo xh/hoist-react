@@ -6,7 +6,7 @@
  */
 import {WebSocketModel} from '@xh/hoist/admin/tabs/server/websocket/WebSocketModel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, box, fragment, p} from '@xh/hoist/cmp/layout';
+import {filler, box, fragment, p, span} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {XH, creates, hoistCmp} from '@xh/hoist/core';
@@ -25,6 +25,16 @@ export const webSocketPanel = hoistCmp.factory({
 
         return panel({
             tbar: [
+                span({
+                    item: 'Websocket Connections',
+                    className: 'xh-bold'
+                }),
+                filler(),
+                relativeTimestamp({bind: 'lastRefresh'}),
+                toolbarSep(),
+                gridCountLabel({unit: 'client'}),
+                toolbarSep(),
+                storeFilterField(),
                 button({
                     text: 'Force suspend',
                     icon: Icon.stopCircle(),
@@ -33,12 +43,6 @@ export const webSocketPanel = hoistCmp.factory({
                     omit: AppModel.readonly,
                     onClick: () => model.forceSuspendOnSelectedAsync()
                 }),
-                filler(),
-                relativeTimestamp({bind: 'lastRefresh'}),
-                toolbarSep(),
-                gridCountLabel({unit: 'client'}),
-                toolbarSep(),
-                storeFilterField(),
                 exportButton()
             ],
             item: grid(),

@@ -24,9 +24,8 @@ export const servicePanel = hoistCmp.factory({
         return panel({
             mask: 'onLoad',
             tbar: [
-                Icon.info(),
                 span({
-                    item: 'Service classes for server-side Hoist and application-level business logic',
+                    item: 'Services for Hoist and Applications',
                     className: 'xh-bold'
                 }),
                 filler(),
