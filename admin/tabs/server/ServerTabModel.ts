@@ -14,18 +14,23 @@ import {webSocketPanel} from '@xh/hoist/admin/tabs/server/websocket/WebSocketPan
 import {GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import * as MCol from '../monitor/MonitorColumns';
 import {badge} from '@xh/hoist/cmp/badge';
 import {hbox} from '@xh/hoist/cmp/layout';
+import {ReactNode} from 'react';
 
 export class ServerTabModel extends HoistModel {
     @managed gridModel: GridModel = this.createGridModel();
     @managed tabModel: TabContainerModel = this.createTabModel();
 
-    get instance(): string {
-        return this.gridModel.selectedRecord?.data.name;
+    get instance(): PlainObject {
+        return this.gridModel.selectedRecord?.data;
+    }
+
+    get instanceName(): string {
+        return this.instance?.name;
     }
 
     override async doLoadAsync() {
@@ -72,10 +77,7 @@ export class ServerTabModel extends HoistModel {
                     field: 'name',
                     flex: 1,
                     renderer: (v, {record}) => {
-                        const content = [v];
-                        if (record.data.isMaster) content.push(badge('master'));
-                        if (record.data.isLocal) content.push(badge('local'));
-                        return hbox(content);
+                        return this.formatInstance(record.data);
                     }
                 },
                 {
@@ -132,5 +134,12 @@ export class ServerTabModel extends HoistModel {
                 }
             ]
         });
+    }
+
+    formatInstance(instance: PlainObject): ReactNode {
+        const content = [instance.name];
+        if (instance.isMaster) content.push(badge('master'));
+        if (instance.isLocal) content.push(badge('local'));
+        return hbox(content);
     }
 }

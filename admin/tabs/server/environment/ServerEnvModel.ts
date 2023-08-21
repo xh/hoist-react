@@ -51,7 +51,7 @@ export class ServerEnvModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         const resp = await XH.fetchJson({
                 url: 'envAdmin',
-                params: {instance: this.parent.instance}
+                params: {instance: this.parent.instanceName}
             }),
             data = [];
 

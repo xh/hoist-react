@@ -89,7 +89,7 @@ export class WebSocketModel extends HoistModel {
         try {
             const data = await XH.fetchJson({
                 url: 'webSocketAdmin/allChannels',
-                params: {instance: this.parent.instance},
+                params: {instance: this.parent.instanceName},
                 loadSpec
             });
             this.gridModel.loadData(data);
@@ -129,7 +129,7 @@ export class WebSocketModel extends HoistModel {
                     params: {
                         channelKey: rec.data.key,
                         topic: XH.webSocketService.FORCE_APP_SUSPEND_TOPIC,
-                        instance: this.parent.instance,
+                        instance: this.parent.instanceName,
                         message
                     }
                 })

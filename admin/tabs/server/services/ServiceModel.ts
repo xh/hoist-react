@@ -38,14 +38,14 @@ export class ServiceModel extends HoistModel {
 
     async clearCachesAsync() {
         const {selectedRecords} = this.gridModel,
-            {instance} = this.parent;
-        if (isEmpty(selectedRecords) || !instance) return;
+            {instanceName} = this.parent;
+        if (isEmpty(selectedRecords) || !instanceName) return;
 
         try {
             await XH.fetchJson({
                 url: 'serviceManagerAdmin/clearCaches',
                 params: {
-                    instance,
+                    instance: instanceName,
                     names: selectedRecords.map(it => it.data.name)
                 }
             });
@@ -60,7 +60,7 @@ export class ServiceModel extends HoistModel {
         try {
             const data = await XH.fetchJson({
                 url: 'serviceManagerAdmin/listServices',
-                params: {instance: this.parent.instance},
+                params: {instance: this.parent.instanceName},
                 loadSpec
             });
             return this.gridModel.loadData(data);

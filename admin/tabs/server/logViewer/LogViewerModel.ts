@@ -81,7 +81,7 @@ export class LogViewerModel extends HoistModel {
         try {
             const data = await XH.fetchJson({
                 url: 'logViewerAdmin/listFiles',
-                params: {instance: this.parent.instance},
+                params: {instance: this.parent.instanceName},
                 loadSpec
             });
 
@@ -118,7 +118,7 @@ export class LogViewerModel extends HoistModel {
                 url: 'logViewerAdmin/deleteFiles',
                 params: {
                     filenames,
-                    instance: this.parent.instance
+                    instance: this.parent.instanceName
                 }
             });
             await this.refreshAsync();
@@ -137,7 +137,7 @@ export class LogViewerModel extends HoistModel {
                     url: 'logViewerAdmin/download',
                     params: {
                         filename,
-                        instance: this.parent.instance
+                        instance: this.parent.instanceName
                     }
                 });
 

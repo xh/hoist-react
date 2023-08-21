@@ -9,9 +9,8 @@ import {tabContainer} from '@xh/hoist/cmp/tab';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
-import {hbox, hspacer, placeholder, strong, vframe} from '@xh/hoist/cmp/layout';
+import {box, hbox, hspacer, placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {ServerTabModel} from './ServerTabModel';
-import {Icon} from '@xh/hoist/icon';
 
 export const serverTab = hoistCmp.factory({
     model: creates(ServerTabModel),
@@ -29,11 +28,14 @@ export const serverTab = hoistCmp.factory({
             }),
             instance
                 ? panel({
-                      icon: Icon.server(),
                       compactHeader: true,
                       title: hbox({
                           alignItems: 'center',
-                          items: [strong(instance), hspacer(20), tabSwitcher()]
+                          items: [
+                              box({width: 150, item: model.formatInstance(instance)}),
+                              hspacer(25),
+                              tabSwitcher()
+                          ]
                       }),
                       flex: 1,
                       item: tabContainer()

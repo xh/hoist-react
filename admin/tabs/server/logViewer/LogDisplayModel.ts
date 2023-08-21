@@ -98,7 +98,7 @@ export class LogDisplayModel extends HoistModel {
                     maxLines: this.maxLines,
                     pattern: this.regexOption ? this.pattern : escapeRegExp(this.pattern),
                     caseSensitive: this.caseSensitive,
-                    instance: parent.parent.instance
+                    instance: parent.parent.instanceName
                 },
                 loadSpec
             });

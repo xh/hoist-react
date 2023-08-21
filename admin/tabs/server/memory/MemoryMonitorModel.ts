@@ -107,7 +107,7 @@ export class MemoryMonitorModel extends HoistModel {
         try {
             const snapsByTimestamp = await XH.fetchJson({
                 url: 'memoryMonitorAdmin/snapshots',
-                params: {instance: this.parent.instance},
+                params: {instance: this.parent.instanceName},
                 loadSpec
             });
 
@@ -173,7 +173,7 @@ export class MemoryMonitorModel extends HoistModel {
         try {
             await XH.fetchJson({
                 url: 'memoryMonitorAdmin/takeSnapshot',
-                params: {instance: this.parent.instance}
+                params: {instance: this.parent.instanceName}
             }).linkTo(this.loadModel);
             await this.loadAsync();
             XH.successToast('Updated snapshot loaded');
@@ -186,7 +186,7 @@ export class MemoryMonitorModel extends HoistModel {
         try {
             await XH.fetchJson({
                 url: 'memoryMonitorAdmin/requestGc',
-                params: {instance: this.parent.instance}
+                params: {instance: this.parent.instanceName}
             }).linkTo(this.loadModel);
             await this.loadAsync();
             XH.successToast('GC run complete');
@@ -211,7 +211,7 @@ export class MemoryMonitorModel extends HoistModel {
             await XH.fetchJson({
                 url: 'memoryMonitorAdmin/dumpHeap',
                 params: {
-                    instance: this.parent.instance,
+                    instance: this.parent.instanceName,
                     filename
                 }
             }).linkTo(this.loadModel);

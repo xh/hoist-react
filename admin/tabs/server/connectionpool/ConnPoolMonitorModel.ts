@@ -100,7 +100,7 @@ export class ConnPoolMonitorModel extends HoistModel {
         try {
             const resp = await XH.fetchJson({
                 url: 'connectionPoolMonitorAdmin/snapshots',
-                params: {instance: this.parent.instance},
+                params: {instance: this.parent.instanceName},
                 loadSpec
             });
 
@@ -156,7 +156,7 @@ export class ConnPoolMonitorModel extends HoistModel {
         try {
             await XH.fetchJson({
                 url: 'connectionPoolMonitorAdmin/takeSnapshot',
-                params: {instance: this.parent.instance}
+                params: {instance: this.parent.instanceName}
             }).linkTo(this.loadModel);
             await this.refreshAsync();
             XH.successToast('Updated snapshot loaded.');
@@ -169,7 +169,7 @@ export class ConnPoolMonitorModel extends HoistModel {
         try {
             await XH.fetchJson({
                 url: 'connectionPoolMonitorAdmin/resetStats',
-                params: {instance: this.parent.instance}
+                params: {instance: this.parent.instanceName}
             }).linkTo(this.loadModel);
             await this.refreshAsync();
             XH.successToast('Connection pool stats reset.');
