@@ -26,7 +26,7 @@ export const cachePanel = hoistCmp.factory({
             tbar: [
                 Icon.info(),
                 span({
-                    item: 'Hazelcast caches',
+                    item: 'Hazelcast Caches',
                     className: 'xh-bold'
                 }),
                 filler(),

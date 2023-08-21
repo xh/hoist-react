@@ -109,7 +109,7 @@ export class ServerTabModel extends HoistModel {
             route: 'default.servers',
             switcher: false,
             tabs: [
-                {id: 'logViewer', icon: Icon.fileText(), content: logViewer},
+                {id: 'logViewer', title: 'Logs', icon: Icon.fileText(), content: logViewer},
                 {id: 'memory', icon: Icon.server(), content: memoryMonitorPanel},
                 {
                     id: 'connectionPool',
