@@ -12,6 +12,11 @@
     white-space: nowrap;
     font-family: var(--xh-panel-title-font-family);
     font-size: var(--xh-panel-title-font-size-px);
+
+    &__inner {
+      display: flex;
+      flex: 1;
+    }
   }
 
   &__items {
@@ -45,6 +50,8 @@
       height: 100%;
 
       &__inner {
+        display: block;
+        flex: none;
         margin-top: 50%;
         transform: rotate(90deg);
         height: calc(1em + 5px);
