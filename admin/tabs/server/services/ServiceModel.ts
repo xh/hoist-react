@@ -5,10 +5,11 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {compactDateCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, lookup, managed, XH} from '@xh/hoist/core';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isEmpty, lowerFirst} from 'lodash';
+import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 
 export class ServiceModel extends HoistModel {
     @lookup(() => ServerTabModel) parent: ServerTabModel;
@@ -17,14 +18,15 @@ export class ServiceModel extends HoistModel {
     gridModel: GridModel = new GridModel({
         enableExport: true,
         exportOptions: {filename: `${XH.appCode}-services-${LocalDate.today()}`},
-        hideHeaders: true,
         store: {
-            idSpec: XH.genId,
+            idSpec: 'name',
             processRawData: this.processRawData,
             fields: [
                 {name: 'provider', type: 'string'},
                 {name: 'name', type: 'string'},
-                {name: 'displayName', type: 'string'}
+                {name: 'displayName', type: 'string'},
+                {name: 'initializedDate', type: 'date', displayName: 'Initialized'},
+                {name: 'lastCachesCleared', type: 'date', displayName: 'Last Cleared'}
             ]
         },
         selModel: 'multiple',
@@ -32,7 +34,12 @@ export class ServiceModel extends HoistModel {
         groupBy: 'provider',
         columns: [
             {field: 'provider', hidden: true},
-            {field: 'displayName', minWidth: 300, flex: true}
+            {field: 'displayName', minWidth: 300, flex: true},
+            {
+                field: 'lastCachesCleared',
+                renderer: v => getRelativeTimestamp(v)
+            },
+            {field: 'initializedDate', ...compactDateCol}
         ]
     });
 
@@ -48,7 +55,7 @@ export class ServiceModel extends HoistModel {
                     instance: instanceName,
                     names: selectedRecords.map(it => it.data.name)
                 }
-            });
+            }).linkTo(this.loadModel);
             await this.refreshAsync();
             XH.successToast('Service caches cleared.');
         } catch (e) {
