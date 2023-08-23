@@ -34,6 +34,10 @@ export class ServerTabModel extends HoistModel {
         return this.instance?.name;
     }
 
+    get isMultiInstance(): boolean {
+        return this.gridModel.store.allCount > 1;
+    }
+
     override async doLoadAsync() {
         const {gridModel} = this;
         let data = await XH.fetchJson({url: 'clusterAdmin/allInstances'});

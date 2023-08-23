@@ -10,12 +10,10 @@ import {filler, box, fragment, p, span} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {XH, creates, hoistCmp} from '@xh/hoist/core';
-import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
+import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {Icon} from '@xh/hoist/icon';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
-import {AppModel} from '@xh/hoist/admin/AppModel';
 
 export const webSocketPanel = hoistCmp.factory({
     model: creates(WebSocketModel),
@@ -35,14 +33,6 @@ export const webSocketPanel = hoistCmp.factory({
                 gridCountLabel({unit: 'client'}),
                 toolbarSep(),
                 storeFilterField(),
-                button({
-                    text: 'Force suspend',
-                    icon: Icon.stopCircle(),
-                    intent: 'danger',
-                    disabled: !model.gridModel.hasSelection,
-                    omit: AppModel.readonly,
-                    onClick: () => model.forceSuspendOnSelectedAsync()
-                }),
                 exportButton()
             ],
             item: grid(),

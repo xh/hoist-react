@@ -9,11 +9,23 @@ import * as Col from '@xh/hoist/cmp/grid/columns';
 import {HoistModel, LoadSpec, lookup, managed, XH} from '@xh/hoist/core';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
+import {RecordActionSpec} from '@xh/hoist/data';
+import {Icon} from '@xh/hoist/icon';
+import {AppModel} from '@xh/hoist/admin/AppModel';
 
 export class HibernateModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminHibernateState'};
 
     @lookup(() => ServerTabModel) parent: ServerTabModel;
+
+    clearAction: RecordActionSpec = {
+        icon: Icon.reset(),
+        text: 'Clear Caches',
+        intent: 'danger',
+        actionFn: () => this.clearAsync(),
+        displayFn: () => ({hidden: AppModel.readonly}),
+        recordsRequired: true
+    };
 
     @managed
     gridModel = new GridModel({
@@ -21,6 +33,7 @@ export class HibernateModel extends HoistModel {
         colChooserModel: true,
         enableExport: true,
         selModel: 'multiple',
+        contextMenu: [this.clearAction, '-', ...GridModel.defaultContextMenu],
         exportOptions: {filename: `${XH.appCode}-hibernate-${LocalDate.today()}`},
         store: {
             fields: [

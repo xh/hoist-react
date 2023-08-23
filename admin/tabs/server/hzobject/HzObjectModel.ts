@@ -9,11 +9,26 @@ import * as Col from '@xh/hoist/cmp/grid/columns';
 import {HoistModel, LoadSpec, lookup, managed, XH} from '@xh/hoist/core';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
+import {Icon} from '@xh/hoist/icon';
+import {RecordActionSpec} from '@xh/hoist/data';
+import {AppModel} from '@xh/hoist/admin/AppModel';
 
 export class HzObjectModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminHzObjectState'};
 
     @lookup(() => ServerTabModel) parent: ServerTabModel;
+
+    clearAction: RecordActionSpec = {
+        icon: Icon.reset(),
+        text: 'Clear Objects',
+        intent: 'danger',
+        actionFn: () => this.clearAsync(),
+        displayFn: () => ({
+            hidden: AppModel.readonly,
+            disabled: this.gridModel.selectedRecords.some(r => r.data.objectType == 'Topic'),
+        }),
+        recordsRequired: true
+    };
 
     @managed
     gridModel = new GridModel({
@@ -22,6 +37,7 @@ export class HzObjectModel extends HoistModel {
         colChooserModel: true,
         enableExport: true,
         exportOptions: {filename: `${XH.appCode}-hz-objects-${LocalDate.today()}`},
+        contextMenu: [this.clearAction, '-', ...GridModel.defaultContextMenu],
         store: {
             fields: [
                 {name: 'name', type: 'string'},

@@ -18,6 +18,8 @@ import {isDisplayed} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import {createRef} from 'react';
 import * as WSCol from './WebSocketColumns';
+import {RecordActionSpec} from '@xh/hoist/data';
+import {AppModel} from '@xh/hoist/admin/AppModel';
 
 export class WebSocketModel extends HoistModel {
     viewRef = createRef<HTMLElement>();
@@ -33,6 +35,15 @@ export class WebSocketModel extends HoistModel {
     @managed
     private _timer: Timer;
 
+    forceSuspendAction: RecordActionSpec = {
+        text: 'Force suspend',
+        icon: Icon.stopCircle(),
+        intent: 'danger',
+        actionFn: () => this.forceSuspendAsync(),
+        displayFn: () => ({hidden: AppModel.readonly}),
+        recordsRequired: true
+    };
+
     constructor() {
         super();
         makeObservable(this);
@@ -42,6 +53,7 @@ export class WebSocketModel extends HoistModel {
             enableExport: true,
             exportOptions: {filename: `${XH.appCode}-ws-connections-${LocalDate.today()}`},
             selModel: 'multiple',
+            contextMenu: [this.forceSuspendAction, '-', ...GridModel.defaultContextMenu],
             store: {
                 idSpec: 'key',
                 processRawData: row => {
@@ -101,7 +113,7 @@ export class WebSocketModel extends HoistModel {
         }
     }
 
-    async forceSuspendOnSelectedAsync() {
+    async forceSuspendAsync() {
         const {selectedRecords} = this.gridModel;
         if (isEmpty(selectedRecords)) return;
 

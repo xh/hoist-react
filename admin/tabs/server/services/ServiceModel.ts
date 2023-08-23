@@ -10,14 +10,42 @@ import {HoistModel, LoadSpec, lookup, managed, XH} from '@xh/hoist/core';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isEmpty, lowerFirst} from 'lodash';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
+import {RecordActionSpec} from '@xh/hoist/data';
+import {Icon} from '@xh/hoist/icon';
+import {AppModel} from '@xh/hoist/admin/AppModel';
 
 export class ServiceModel extends HoistModel {
     @lookup(() => ServerTabModel) parent: ServerTabModel;
+
+    clearCachesAction: RecordActionSpec = {
+        icon: Icon.reset(),
+        text: 'Clear Selected',
+        intent: 'danger',
+        actionFn: () => this.clearCachesAsync(false),
+        displayFn: () => ({
+            hidden: AppModel.readonly,
+            text: `Clear Caches (@ ${this.parent.instanceName})`
+        }),
+        recordsRequired: true
+    };
+
+    clearClusterCachesAction: RecordActionSpec = {
+        icon: Icon.reset(),
+        text: 'Clear Caches (entire cluster)',
+        intent: 'danger',
+        actionFn: () => this.clearCachesAsync(true),
+        displayFn: () => ({
+            hidden: AppModel.readonly,
+            disabled: !this.parent.isMultiInstance,
+        }),
+        recordsRequired: true
+    };
 
     @managed
     gridModel: GridModel = new GridModel({
         enableExport: true,
         exportOptions: {filename: `${XH.appCode}-services-${LocalDate.today()}`},
+        contextMenu: [this.clearCachesAction, this.clearClusterCachesAction, '-', ...GridModel.defaultContextMenu],
         store: {
             idSpec: 'name',
             processRawData: this.processRawData,
@@ -43,16 +71,15 @@ export class ServiceModel extends HoistModel {
         ]
     });
 
-    async clearCachesAsync() {
-        const {selectedRecords} = this.gridModel,
-            {instanceName} = this.parent;
-        if (isEmpty(selectedRecords) || !instanceName) return;
+    async clearCachesAsync(entireCluster: boolean) {
+        const {selectedRecords} = this.gridModel;
+        if (isEmpty(selectedRecords)) return;
 
         try {
             await XH.fetchJson({
                 url: 'serviceManagerAdmin/clearCaches',
                 params: {
-                    instance: instanceName,
+                    instance: entireCluster ? null : this.parent.instanceName,
                     names: selectedRecords.map(it => it.data.name)
                 }
             }).linkTo(this.loadModel);
