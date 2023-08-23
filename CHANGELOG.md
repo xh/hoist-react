@@ -15,7 +15,7 @@
 
 ### 🎁 New Features
 
-* Added new `Panel.collapsedTitle` prop to make it easier to display different a title when the
+* Added new `Panel.collapsedTitle` prop to make it easier to display a different title when the
   panel is collapsed.
 
 ## 59.0.0 - 2023-08-17
