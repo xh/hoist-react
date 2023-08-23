@@ -5,6 +5,8 @@
 ### 🐞 Bug Fixes
 
 * Restored support for `Select.selectOnFocus` (had broken with upgrade to `react-select` in v59.0).
+* Fixed `DateInput` bug caused by changes in Chrome v116 - clicking on inputs
+  with `enableTextInput: false` now open the date picker popup as expected.
 
 ## 59.0.1 - 2023-08-17
 
