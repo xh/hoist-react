@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {cachePanel} from '@xh/hoist/admin/tabs/server/cache/CachePanel';
+import {hzObjectPanel} from '@xh/hoist/admin/tabs/server/hazelcast/HzObjectPanel';
 import {connPoolMonitorPanel} from '@xh/hoist/admin/tabs/server/connectionpool/ConnPoolMonitorPanel';
 import {serverEnvPanel} from '@xh/hoist/admin/tabs/server/environment/ServerEnvPanel';
 import {logViewer} from '@xh/hoist/admin/tabs/server/logViewer/LogViewer';
@@ -75,7 +75,6 @@ export class ServerTabModel extends HoistModel {
             columns: [
                 {
                     field: 'name',
-                    flex: 1,
                     renderer: (v, {record}) => {
                         return this.formatInstance(record.data);
                     }
@@ -112,26 +111,17 @@ export class ServerTabModel extends HoistModel {
             switcher: false,
             tabs: [
                 {id: 'logViewer', title: 'Logs', icon: Icon.fileText(), content: logViewer},
-                {id: 'memory', icon: Icon.server(), content: memoryMonitorPanel},
-                {
-                    id: 'connectionPool',
-                    icon: Icon.database(),
-                    content: connPoolMonitorPanel
-                },
+                {id: 'memory', icon: Icon.memory(), content: memoryMonitorPanel},
+                {id: 'connectionPool', icon: Icon.database(), content: connPoolMonitorPanel},
                 {id: 'environment', icon: Icon.globe(), content: serverEnvPanel},
                 {id: 'services', icon: Icon.gears(), content: servicePanel},
                 {
-                    id: 'ehCache',
-                    icon: Icon.memory(),
-                    title: 'Caches',
-                    content: cachePanel
+                    id: 'objects',
+                    icon: Icon.grip(),
+                    title: 'Distributed Objects',
+                    content: hzObjectPanel
                 },
-                {
-                    id: 'webSockets',
-                    title: 'WebSockets',
-                    icon: Icon.bolt(),
-                    content: webSocketPanel
-                }
+                {id: 'webSockets', icon: Icon.bolt(), content: webSocketPanel}
             ]
         });
     }

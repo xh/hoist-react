@@ -13,10 +13,10 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {toolbarSeparator} from '@xh/hoist/desktop/cmp/toolbar';
 import {AppModel} from '@xh/hoist/admin/AppModel';
-import {CacheModel} from './CacheModel';
+import {HzObjectModel} from './HzObjectModel';
 
-export const cachePanel = hoistCmp.factory({
-    model: creates(CacheModel),
+export const hzObjectPanel = hoistCmp.factory({
+    model: creates(HzObjectModel),
 
     render({model}) {
         const {readonly} = AppModel;
@@ -24,9 +24,8 @@ export const cachePanel = hoistCmp.factory({
         return panel({
             mask: 'onLoad',
             tbar: [
-                Icon.info(),
                 span({
-                    item: 'Hazelcast Caches',
+                    item: 'Distributed Objects',
                     className: 'xh-bold'
                 }),
                 filler(),

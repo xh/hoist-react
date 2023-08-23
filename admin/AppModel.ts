@@ -86,7 +86,7 @@ export class AppModel extends HoistAppModel {
                     {name: 'connectionPool', path: '/connectionPool'},
                     {name: 'environment', path: '/environment'},
                     {name: 'services', path: '/services'},
-                    {name: 'ehCache', path: '/ehCache'},
+                    {name: 'objects', path: '/objects'},
                     {name: 'webSockets', path: '/webSockets'}
                 ]
             },
