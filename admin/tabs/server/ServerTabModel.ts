@@ -4,7 +4,8 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {hzObjectPanel} from '@xh/hoist/admin/tabs/server/hazelcast/HzObjectPanel';
+import {hzObjectPanel} from '@xh/hoist/admin/tabs/server/hzobject/HzObjectPanel';
+import {hibernatePanel} from '@xh/hoist/admin/tabs/server/hibernate/HibernatePanel';
 import {connPoolMonitorPanel} from '@xh/hoist/admin/tabs/server/connectionpool/ConnPoolMonitorPanel';
 import {serverEnvPanel} from '@xh/hoist/admin/tabs/server/environment/ServerEnvPanel';
 import {logViewer} from '@xh/hoist/admin/tabs/server/logViewer/LogViewer';
@@ -111,16 +112,12 @@ export class ServerTabModel extends HoistModel {
             switcher: false,
             tabs: [
                 {id: 'logViewer', title: 'Logs', icon: Icon.fileText(), content: logViewer},
-                {id: 'memory', icon: Icon.memory(), content: memoryMonitorPanel},
+                {id: 'memory', icon: Icon.chartLine(), content: memoryMonitorPanel},
                 {id: 'connectionPool', icon: Icon.database(), content: connPoolMonitorPanel},
                 {id: 'environment', icon: Icon.globe(), content: serverEnvPanel},
                 {id: 'services', icon: Icon.gears(), content: servicePanel},
-                {
-                    id: 'objects',
-                    icon: Icon.grip(),
-                    title: 'Distributed Objects',
-                    content: hzObjectPanel
-                },
+                {id: 'objects', icon: Icon.grip(), content: hzObjectPanel},
+                {id: 'hibernate', icon: Icon.memory(), content: hibernatePanel},
                 {id: 'webSockets', icon: Icon.bolt(), content: webSocketPanel}
             ]
         });

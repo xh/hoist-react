@@ -87,6 +87,7 @@ export class AppModel extends HoistAppModel {
                     {name: 'environment', path: '/environment'},
                     {name: 'services', path: '/services'},
                     {name: 'objects', path: '/objects'},
+                    {name: 'hibernate', path: '/hibernate'},
                     {name: 'webSockets', path: '/webSockets'}
                 ]
             },

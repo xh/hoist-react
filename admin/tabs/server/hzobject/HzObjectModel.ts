@@ -19,13 +19,12 @@ export class HzObjectModel extends HoistModel {
     gridModel = new GridModel({
         persistWith: this.persistWith,
         colChooserModel: true,
-        groupBy: 'objectType',
         enableExport: true,
         exportOptions: {filename: `${XH.appCode}-hz-objects-${LocalDate.today()}`},
         store: {
             fields: [
                 {name: 'name', type: 'string'},
-                {name: 'objectType', type: 'string'},
+                {name: 'objectType', type: 'string', displayName: 'Type'},
                 {name: 'size', type: 'int'},
                 {name: 'stats', type: 'json'}
             ],
@@ -39,9 +38,15 @@ export class HzObjectModel extends HoistModel {
         ]
     });
 
-    async clearAllAsync() {
+    async clearAsync() {
         try {
-            await XH.fetchJson({url: 'hzObjectAdmin/clearAllCaches'});
+            await XH.fetchJson({
+                url: 'hzObjectAdmin/clearObjects',
+                params: {
+                    instance: this.parent.instanceName,
+                    names: this.gridModel.selectedIds
+                }
+            });
             await this.refreshAsync();
             XH.successToast('Objects cleared.');
         } catch (e) {

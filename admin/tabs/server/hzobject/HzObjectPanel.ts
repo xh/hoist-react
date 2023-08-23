@@ -31,13 +31,14 @@ export const hzObjectPanel = hoistCmp.factory({
                 filler(),
                 button({
                     icon: Icon.reset(),
-                    text: 'Clear All',
+                    text: 'Clear Selected',
                     intent: 'danger',
-                    onClick: () => model.clearAllAsync(),
+                    disabled: !model.gridModel.hasSelection,
+                    onClick: () => model.clearAsync(),
                     omit: readonly
                 }),
                 toolbarSeparator({omit: readonly}),
-                gridCountLabel({unit: 'cache'}),
+                gridCountLabel({unit: 'objects'}),
                 '-',
                 storeFilterField({matchMode: 'any'}),
                 exportButton()
