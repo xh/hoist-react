@@ -373,9 +373,11 @@ class SelectInputModel extends HoistInputModel {
         const {reactSelect} = this;
         if (!reactSelect) return;
 
+        // TODO - selectOnFocus is fixed and while loop still harmlessly works but couldn't find any
+        //  use cases with levels of nesting.
         // Use of windowedMode, creatable and async variants will create levels of nesting we must
         // traverse to get to the underlying Select comp and its inputRef.
-        let selectComp = reactSelect.select;
+        let selectComp = reactSelect;
         while (selectComp && !selectComp.inputRef) {
             selectComp = selectComp.select;
         }
