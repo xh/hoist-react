@@ -18,6 +18,7 @@ export class HzObjectModel extends HoistModel {
     @managed
     gridModel = new GridModel({
         persistWith: this.persistWith,
+        selModel: 'multiple',
         colChooserModel: true,
         enableExport: true,
         exportOptions: {filename: `${XH.appCode}-hz-objects-${LocalDate.today()}`},

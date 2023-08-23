@@ -19,7 +19,8 @@ export const hzObjectPanel = hoistCmp.factory({
     model: creates(HzObjectModel),
 
     render({model}) {
-        const {readonly} = AppModel;
+        const {readonly} = AppModel,
+            {selModel} = model.gridModel;
 
         return panel({
             mask: 'onLoad',
@@ -33,7 +34,7 @@ export const hzObjectPanel = hoistCmp.factory({
                     icon: Icon.reset(),
                     text: 'Clear Selected',
                     intent: 'danger',
-                    disabled: !model.gridModel.hasSelection,
+                    disabled: !selModel.selectedRecords.some(r => r.data.objectType != 'Topic'),
                     onClick: () => model.clearAsync(),
                     omit: readonly
                 }),

@@ -20,6 +20,7 @@ export class HibernateModel extends HoistModel {
         persistWith: this.persistWith,
         colChooserModel: true,
         enableExport: true,
+        selModel: 'multiple',
         exportOptions: {filename: `${XH.appCode}-hibernate-${LocalDate.today()}`},
         store: {
             fields: [
