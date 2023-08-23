@@ -2,12 +2,18 @@
 
 ## 60.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Restored support for `Select.selectOnFocus` (had broken with upgrade to `react-select` in v59.0).
+* Fixed `DateInput` bug caused by changes in Chrome v116 - clicking on inputs
+  with `enableTextInput: false` now open the date picker popup as expected.
+
 ## 59.0.1 - 2023-08-17
 
 ### 🎁 New Features
 
-* Added new `collapsedTitle` prop to `Panel` to make it easier to display different a title
-  when the panel is collapsed.
+* Added new `Panel.collapsedTitle` prop to make it easier to display different a title when the
+  panel is collapsed.
 
 ## 59.0.0 - 2023-08-17
 
@@ -66,8 +72,8 @@
 * semver `7.3 -> 7.5`
 * typescript `4.9 -> 5.1`
 * highcharts `10.3 -> 11.1`
-* react-select `4.3.1 -> 5.7.4`
-* react-windowed-select `3.1.2 -> 5.1.0`
+* react-select `4.3 -> 5.7`
+* react-windowed-select `3.1 -> 5.1`
 
 ## 58.0.1 - 2023-07-13
 
