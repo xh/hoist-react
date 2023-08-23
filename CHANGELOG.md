@@ -11,6 +11,11 @@
   element itself. Restores previous flexbox container behavior (when not L/R collapsed) for apps
   that are providing custom components as titles.
 
+### 📚 Libraries
+
+* react-select `5.7 -> 4.3`
+* react-windowed-select `5.1 -> 3.1`
+
 ## 59.0.1 - 2023-08-17
 
 ### 🎁 New Features
