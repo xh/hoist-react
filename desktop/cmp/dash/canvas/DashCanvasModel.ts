@@ -198,18 +198,19 @@ export class DashCanvasModel extends DashModel<
         this.loadState(persistState?.state ?? initialState);
         this.state = this.buildState();
 
-        this.addReaction({
-            track: () => this.viewState,
-            run: () => this.publishState()
-        });
-
-        this.addReaction({
-            when: () => !!this.ref.current,
-            run: () => {
-                const {current: node} = this.ref;
-                this.scrollbarVisible = node.offsetWidth > node.clientWidth;
+        this.addReaction(
+            {
+                track: () => this.viewState,
+                run: () => this.publishState()
+            },
+            {
+                when: () => !!this.ref.current,
+                run: () => {
+                    const {current: node} = this.ref;
+                    this.scrollbarVisible = node.offsetWidth > node.clientWidth;
+                }
             }
-        });
+        );
     }
 
     /** Removes all views from the canvas */
@@ -377,6 +378,12 @@ export class DashCanvasModel extends DashModel<
         return model;
     }
 
+    // Trigger window resize event when component becomes visible to ensure layout adjusted to
+    // current window size - fixes https://github.com/xh/hoist-react/issues/3215
+    onVisibleChange(visible: boolean) {
+        if (visible) this.fireWindowResizeEvent();
+    }
+
     onRglLayoutChange(rglLayout) {
         rglLayout = rglLayout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
         this.setLayout(rglLayout);
@@ -396,7 +403,7 @@ export class DashCanvasModel extends DashModel<
         if (!node) return;
         const scrollbarVisible = node.offsetWidth > node.clientWidth;
         if (scrollbarVisible !== this.scrollbarVisible) {
-            window.dispatchEvent(new Event('resize'));
+            this.fireWindowResizeEvent();
             this.scrollbarVisible = scrollbarVisible;
         }
     }
@@ -521,5 +528,9 @@ export class DashCanvasModel extends DashModel<
         }
 
         return {x: defaultX, y: endY ?? rows};
+    }
+
+    private fireWindowResizeEvent() {
+        window.dispatchEvent(new Event('resize'));
     }
 }
