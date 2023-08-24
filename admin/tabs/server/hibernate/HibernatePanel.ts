@@ -5,12 +5,14 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, span} from '@xh/hoist/cmp/layout';
+import {filler, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {creates, hoistCmp} from '@xh/hoist/core';
+import {creates, hoistCmp, uses} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {HibernateModel} from './HibernateModel';
+import {jsonInput} from '@xh/hoist/desktop/cmp/input';
+import {fmtJson} from '@xh/hoist/format';
 
 export const hibernatePanel = hoistCmp.factory({
     model: creates(HibernateModel),
@@ -29,7 +31,37 @@ export const hibernatePanel = hoistCmp.factory({
                 storeFilterField({matchMode: 'any'}),
                 exportButton()
             ],
-            item: grid()
+            item: hframe(grid(), detailsPanel())
+        });
+    }
+});
+
+const detailsPanel = hoistCmp.factory({
+    model: uses(HibernateModel),
+    render({model}) {
+        const data = model.gridModel.selectedRecord?.data;
+        return panel({
+            title: data ? `Stats - ${data.name}` : 'Stats',
+            compactHeader: true,
+            modelConfig: {
+                side: 'right',
+                defaultSize: 350,
+                collapsible: true,
+                resizable: false
+            },
+            item: data
+                ? panel({
+                      flex: 1,
+                      className: 'xh-border-left',
+                      items: jsonInput({
+                          readonly: true,
+                          width: '100%',
+                          height: '100%',
+                          value: fmtJson(JSON.stringify(data.stats)),
+                          showFullscreenButton: false
+                      })
+                  })
+                : placeholder('Select a cache')
         });
     }
 });

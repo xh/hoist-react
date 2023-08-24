@@ -36,7 +36,7 @@ export class ServiceModel extends HoistModel {
         actionFn: () => this.clearCachesAsync(true),
         displayFn: () => ({
             hidden: AppModel.readonly,
-            disabled: !this.parent.isMultiInstance,
+            disabled: !this.parent.isMultiInstance
         }),
         recordsRequired: true
     };
@@ -45,7 +45,12 @@ export class ServiceModel extends HoistModel {
     gridModel: GridModel = new GridModel({
         enableExport: true,
         exportOptions: {filename: `${XH.appCode}-services-${LocalDate.today()}`},
-        contextMenu: [this.clearCachesAction, this.clearClusterCachesAction, '-', ...GridModel.defaultContextMenu],
+        contextMenu: [
+            this.clearCachesAction,
+            this.clearClusterCachesAction,
+            '-',
+            ...GridModel.defaultContextMenu
+        ],
         store: {
             idSpec: 'name',
             processRawData: this.processRawData,
@@ -54,7 +59,8 @@ export class ServiceModel extends HoistModel {
                 {name: 'name', type: 'string'},
                 {name: 'displayName', type: 'string'},
                 {name: 'initializedDate', type: 'date', displayName: 'Initialized'},
-                {name: 'lastCachesCleared', type: 'date', displayName: 'Last Cleared'}
+                {name: 'lastCachesCleared', type: 'date', displayName: 'Last Cleared'},
+                {name: 'stats', type: 'json'}
             ]
         },
         selModel: 'multiple',

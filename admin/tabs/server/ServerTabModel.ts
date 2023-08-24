@@ -80,6 +80,7 @@ export class ServerTabModel extends HoistModel {
             columns: [
                 {
                     field: 'name',
+                    rendererIsComplex: true,
                     renderer: (v, {record}) => {
                         return this.formatInstance(record.data);
                     }
