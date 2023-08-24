@@ -10,6 +10,8 @@
 * Flex inner title element added to `Panel` headers in v59.0, and set `display:flex` on the new
   element itself. Restores previous flexbox container behavior (when not L/R collapsed) for apps
   that are providing custom components as titles.
+* `DashCanvas` now properly updates its layout when shown if the browser window had been resized
+  while the component was hidden (e.g. in an inactive tab).
 
 ## 59.0.1 - 2023-08-17
 
