@@ -12,6 +12,8 @@
   that are providing custom components as titles.
 * `DashCanvas` now properly updates its layout when shown if the browser window had been resized
   while the component was hidden (e.g. in an inactive tab).
+* Reverted upgrade to `react-select` in v59.0.0 due to issues found with `selectEditor` / inline
+  grid editing. We will revisit this upgrade in a future release.
 
 ### 📚 Libraries
 
