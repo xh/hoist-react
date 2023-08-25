@@ -11,7 +11,6 @@ import {
     HoistAppModel,
     HoistModel,
     managed,
-    PlainObject,
     RootRefreshContextModel,
     TaskObserver,
     XH
@@ -193,13 +192,8 @@ export class AppContainerModel extends HoistModel {
             await installServicesAsync(TrackService);
             await installServicesAsync([EnvironmentService, PrefService, JsonBlobService]);
 
-            // Apply workaround for mysterious Chromium bug that caused BigNumber to lose
-            // precision after a certain number of invocations.
-            // See https://github.com/MikeMcl/bignumber.js/issues/354
-            // See https://bugs.chromium.org/p/v8/issues/detail?id=14271#c11
-            const flags = XH.getConf('xhFlags', {}) as PlainObject;
-            if (flags.applyBigNumberWorkaround) {
-                (numbro as any).BigNumber.clone();
+            if (XH.flags.applyBigNumberWorkaround) {
+                numbro['BigNumber'].clone();
             }
 
             // Confirm hoist-core version after environment service loaded
