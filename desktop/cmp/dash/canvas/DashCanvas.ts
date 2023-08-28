@@ -5,6 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {ContextMenu} from '@blueprintjs/core';
+import composeRefs from '@seznam/compose-react-refs';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {
     elementFactory,
@@ -18,6 +19,7 @@ import {
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
+import {useOnVisibleChange} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
@@ -44,9 +46,15 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
     className: 'xh-dash-canvas',
     model: uses(DashCanvasModel),
 
-    render({className, model, ...props}) {
+    render({className, model, ...props}, ref) {
         const isDraggable = !model.layoutLocked,
             isResizable = !model.layoutLocked;
+
+        ref = composeRefs(
+            ref,
+            model.ref,
+            useOnVisibleChange(viz => model.onVisibleChange(viz))
+        );
 
         return refreshContextView({
             model: model.refreshContextModel,
@@ -56,7 +64,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                     isDraggable ? `${className}--draggable` : null,
                     isResizable ? `${className}--resizable` : null
                 ),
-                ref: model.ref,
+                ref,
                 onContextMenu: e => onContextMenu(e, model),
                 items: [
                     reactGridLayout({

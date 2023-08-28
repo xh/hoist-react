@@ -1,5 +1,10 @@
 .xh-inspector {
-  .xh-modal-support__host > .xh-panel__content > .xh-panel-header {
+  & > .xh-panel__content > .xh-panel-header {
+    background-color: hsl(33, 93%, 40%);
+    color: white;
+  }
+
+  .xh-modal-support__host > div > .xh-panel__content > .xh-panel-header {
     background-color: hsl(33, 93%, 40%);
     color: white;
   }

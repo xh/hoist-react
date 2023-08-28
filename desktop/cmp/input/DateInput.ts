@@ -486,6 +486,7 @@ const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref)
                     testId: getTestId(props, 'dateTextInput'),
                     ...getLayoutProps(props)
                 }),
+                className: 'xh-date-input__click-target',
                 onClick: !enableTextInput && !disabled ? model.onOpenPopoverClick : null
             })
         }),

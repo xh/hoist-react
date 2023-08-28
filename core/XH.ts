@@ -361,6 +361,22 @@ export class XHApi {
         return this.refreshContextModel.refreshAsync();
     }
 
+    /**
+     * Flags for controlling experimental, hotfix, or otherwise provisional features.
+     *
+     * Configure via `xhFlags` config.
+     *
+     * Currently supported (subject to changes without API notice):
+     *
+     *  - applyBigNumberWorkaround -  workaround for mysterious Chromium bug that causes
+     *      BigNumber to lose precision after a certain number of invocations.
+     *      See https://github.com/MikeMcl/bignumber.js/issues/354
+     *      See https://bugs.chromium.org/p/v8/issues/detail?id=14271#c11
+     */
+    get flags(): PlainObject {
+        return XH.getConf('xhFlags', {});
+    }
+
     //------------------------
     // Theme Support
     //------------------------
