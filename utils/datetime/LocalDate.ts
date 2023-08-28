@@ -72,6 +72,11 @@ export class LocalDate {
         return this.from(moment());
     }
 
+    // TODO - exportOptions.filename
+    static getExportFilename(ModuleName: string): string {
+        return ModuleName;
+    }
+
     /** LocalDate representing the current day in the App TimeZone */
     static currentAppDay(): LocalDate {
         const svc = XH.environmentService,
