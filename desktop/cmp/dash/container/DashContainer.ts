@@ -48,7 +48,6 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory<DashContainer
             item: frame(
                 frame({className, ref, testId}),
                 mask({spinner: true, bind: model.loadingStateTask}),
-
                 emptyContainerOverlay()
             )
         });

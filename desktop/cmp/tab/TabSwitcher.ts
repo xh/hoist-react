@@ -94,7 +94,6 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                 testId = getTestId(props, id);
 
             if (excludeFromSwitcher) return null;
-
             return bpTab({
                 id,
                 disabled,

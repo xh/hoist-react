@@ -134,6 +134,7 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
     return div({
         item: inputGroup({
             value: model.renderValue || '',
+
             autoComplete: withDefault(
                 props.autoComplete,
                 props.type === 'password' ? 'new-password' : 'off'

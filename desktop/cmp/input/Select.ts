@@ -556,6 +556,7 @@ class SelectInputModel extends HoistInputModel {
         if (this.hideSelectedOptionCheck) {
             return div(opt.label);
         }
+
         return castArray(this.externalValue).includes(opt.value)
             ? hbox({
                   items: [
@@ -775,6 +776,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
 
     const factory = model.getSelectFactory();
     merge(rsProps, props.rsOptions);
+
     return box({
         item: factory(rsProps),
         className: classNames(className, height ? 'xh-select--has-height' : null),
