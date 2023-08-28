@@ -3,6 +3,7 @@ export * from './enums/RenderMode';
 export * from './enums/SizingMode';
 export * from './types/Interfaces';
 export * from './types/Types';
+export * from './types/AppState';
 export * from './elem';
 export * from './persist/';
 export * from './TaskObserver';
@@ -13,12 +14,10 @@ export * from './load';
 export * from './model';
 export * from './HoistService';
 
-export * from './AppState';
 export * from './AppSpec';
 export * from './HoistProps';
 export * from './HoistComponent';
 export * from './RefreshContextView';
-export * from './RouterModel';
 export * from './HoistAppModel';
 
 export * from './exception/ExceptionHandler';

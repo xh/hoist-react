@@ -109,6 +109,10 @@ class NumberInputModel extends HoistInputModel {
         return withDefault(this.componentProps.scaleFactor, 1);
     }
 
+    get enableShorthandUnits() {
+        return withDefault(this.componentProps.enableShorthandUnits, false);
+    }
+
     override select() {
         // first focus, and then wait one tick for value to be put into input element
         this.focus();
@@ -205,7 +209,7 @@ class NumberInputModel extends HoistInputModel {
         value = value.toString();
         value = value.replace(/,/g, '');
 
-        if (NumberInputModel.shorthandValidator.test(value)) {
+        if (this.enableShorthandUnits && NumberInputModel.shorthandValidator.test(value)) {
             const num = +value.substring(0, value.length - 1),
                 lastChar = value.charAt(value.length - 1).toLowerCase();
 
@@ -228,24 +232,20 @@ class NumberInputModel extends HoistInputModel {
 const cmp = hoistCmp.factory<NumberInputModel>(
     ({model, className, enableShorthandUnits, ...props}, ref) => {
         const {width, ...layoutProps} = getLayoutProps(props),
-            {hasFocus} = model,
             renderValue = model.formatRenderValue(model.renderValue),
-            // use 'number' to edit values, but 'text' to displaying formatted values.
-            type = hasFocus && !enableShorthandUnits ? 'number' : 'text',
-            inputMode = !enableShorthandUnits ? 'decimal' : 'text';
+            inputMode = enableShorthandUnits ? 'text' : 'decimal';
 
+        // Using type=text rather than type=number, to support shorthand units and rich
+        // rendering but also because of issues with typing in decimal point (see #3450)
+        // Rely on inputMode, and Hoist's parsing to enforce numbers only.
         return input({
-            type,
             inputMode,
             className,
             value: renderValue,
             disabled: props.disabled,
-            min: props.min,
-            max: props.max,
             placeholder: props.placeholder,
             modifier: props.modifier,
             tabIndex: props.tabIndex,
-
             style: {
                 ...props.style,
                 ...layoutProps,

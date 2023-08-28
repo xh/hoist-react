@@ -4,10 +4,11 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {box, filler, hbox, vbox} from '@xh/hoist/cmp/layout';
+import {box, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {button, modalToggleButton} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty, isNil} from 'lodash';
 import {PanelModel} from '../PanelModel';
@@ -22,6 +23,8 @@ export const panelHeader = hoistCmp.factory({
         const panelModel = useContextModel(PanelModel),
             {collapsed, collapsible, isModal, vertical, side} = panelModel,
             {title, icon, compact} = props,
+            collapsedTitle = withDefault(props.collapsedTitle, title),
+            displayedTitle = collapsed ? collapsedTitle : title,
             headerItems = props.headerItems ?? [];
 
         if (isNil(title) && isNil(icon) && isEmpty(headerItems)) return null;
@@ -44,11 +47,11 @@ export const panelHeader = hoistCmp.factory({
                 className: classNames(className, compactCls),
                 items: [
                     icon || null,
-                    title
+                    displayedTitle
                         ? box({
                               className: titleCls,
                               flex: 1,
-                              item: title
+                              item: span({className: `${titleCls}__inner`, item: displayedTitle})
                           })
                         : filler(),
                     hbox({
@@ -66,20 +69,18 @@ export const panelHeader = hoistCmp.factory({
         }
 
         // 2) ...otherwise its a narrow, sidebar
-        const isLeft = side === 'left';
         return vbox({
             className: classNames(className, sideCls, compactCls),
             flex: 1,
             items: [
-                isLeft ? filler() : collapseButton({panelModel}),
+                collapseButton({panelModel}),
                 icon || null,
-                title
+                displayedTitle
                     ? box({
                           className: titleCls,
-                          item: title
+                          item: span({className: `${titleCls}__inner`, item: displayedTitle})
                       })
-                    : null,
-                !isLeft ? filler() : collapseButton({panelModel})
+                    : null
             ],
             onDoubleClick
         });

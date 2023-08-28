@@ -4,17 +4,17 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {AppModel} from '@xh/hoist/admin/AppModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {RecordActionSpec, UrlStore} from '@xh/hoist/data';
+import {RecordActionSpec} from '@xh/hoist/data';
 import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable, observable} from '@xh/hoist/mobx';
-import {checkMinVersion} from '@xh/hoist/utils/js';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import download from 'downloadjs';
 import {createRef} from 'react';
 import {LogDisplayModel} from './LogDisplayModel';
-import {AppModel} from '@xh/hoist/admin/AppModel';
 
 /**
  * @internal
@@ -51,7 +51,6 @@ export class LogViewerModel extends HoistModel {
         text: 'Download',
         icon: Icon.download(),
         recordsRequired: 1,
-        disabled: !checkMinVersion(XH.environmentService.get('hoistCoreVersion'), '9.4'),
         actionFn: () => this.downloadSelectedAsync()
     };
 
@@ -73,11 +72,18 @@ export class LogViewerModel extends HoistModel {
         const {enabled, filesGridModel} = this;
         if (!enabled) return;
 
-        const store = filesGridModel.store as UrlStore,
+        const store = filesGridModel.store,
             selModel = filesGridModel.selModel;
 
         try {
-            await store.loadAsync(loadSpec);
+            const data = await XH.fetchJson({
+                url: 'logViewerAdmin/listFiles',
+                loadSpec
+            });
+
+            this.logDisplayModel.logRootPath = data.logRootPath;
+
+            store.loadData(data.files);
             if (selModel.isEmpty) {
                 const latestAppLog = store.records.find(
                     rec => rec.data.filename === `${XH.appCode}.log`
@@ -141,35 +147,30 @@ export class LogViewerModel extends HoistModel {
     // Implementation
     //---------------------------------
     private createGridModel() {
-        const supportFileAttrs = checkMinVersion(XH.getEnv('hoistCoreVersion'), '13.2.0');
-
         return new GridModel({
             enableExport: true,
+            exportOptions: {filename: `${XH.appCode}-logs-${LocalDate.today()}`},
             selModel: 'multiple',
-            store: new UrlStore({
-                url: 'logViewerAdmin/listFiles',
+            store: {
                 idSpec: 'filename',
-                dataRoot: 'files',
                 fields: [
                     {name: 'filename', type: 'string', displayName: 'Name'},
                     {name: 'size', type: 'number', displayName: 'Size'},
                     {name: 'lastModified', type: 'number', displayName: 'Modified'}
                 ]
-            }),
+            },
             sortBy: 'lastModified|desc',
             columns: [
                 {field: 'filename', flex: 1, minWidth: 160},
                 {
                     field: 'size',
                     width: 80,
-                    renderer: fileSizeRenderer,
-                    omit: !supportFileAttrs
+                    renderer: fileSizeRenderer
                 },
                 {
                     field: 'lastModified',
                     width: 110,
-                    renderer: compactDateRenderer({sameDayFmt: 'HH:mm:ss'}),
-                    omit: !supportFileAttrs
+                    renderer: compactDateRenderer({sameDayFmt: 'HH:mm:ss'})
                 }
             ],
             autosizeOptions: {mode: 'managed'},

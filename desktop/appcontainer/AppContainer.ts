@@ -68,8 +68,8 @@ export const AppContainer = hoistCmp({
     displayName: 'AppContainer',
     model: uses(AppContainerModel),
 
-    render() {
-        useOnMount(() => XH.initAsync());
+    render({model}) {
+        useOnMount(() => model.initAsync());
 
         return fragment(
             hotkeysProvider(
@@ -106,10 +106,10 @@ function viewForState() {
     }
 }
 
-const lockoutView = hoistCmp.factory({
+const lockoutView = hoistCmp.factory<AppContainerModel>({
     displayName: 'LockoutView',
-    render() {
-        const content = XH.appSpec.lockoutPanel ?? lockoutPanel;
+    render({model}) {
+        const content = model.appSpec.lockoutPanel ?? lockoutPanel;
         return elementFromContent(content);
     }
 });
@@ -119,7 +119,7 @@ const appContainerView = hoistCmp.factory({
     model: uses(AppContainerModel),
 
     render({model}) {
-        const {appSpec, appModel} = XH;
+        const {appSpec, appModel} = model;
         let ret: ReactElement = viewport(
             vframe(
                 impersonationBar(),
@@ -152,10 +152,10 @@ const appLoadMask = hoistCmp.factory<AppContainerModel>(({model}) =>
     mask({bind: model.appLoadModel, spinner: true})
 );
 
-const suspendedView = hoistCmp.factory({
-    render() {
-        if (XH.suspendData?.reason === 'IDLE') {
-            const content = XH.appSpec.idlePanel ?? idlePanel;
+const suspendedView = hoistCmp.factory<AppContainerModel>({
+    render({model}) {
+        if (model.appStateModel.suspendData?.reason === 'IDLE') {
+            const content = model.appSpec.idlePanel ?? idlePanel;
             return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
         }
         return suspendPanel();

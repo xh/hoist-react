@@ -57,6 +57,10 @@
       color: var(--xh-grid-header-text-color);
     }
   }
+  &--hide-headers .ag-header {
+    border-bottom-width: 0;
+    min-height: 0 !important;
+  }
 
   //------------------------
   // Core Row Classes
@@ -409,7 +413,9 @@ body.xh-app {
     border: var(--xh-menu-border);
 
     // Matching box-shadow of Blueprint context menu popover
-    box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.2), 0 2px 4px rgba(16, 22, 26, 0.4),
+    box-shadow:
+      0 0 0 1px rgba(16, 22, 26, 0.2),
+      0 2px 4px rgba(16, 22, 26, 0.4),
       0 8px 24px rgba(16, 22, 26, 0.4);
 
     .ag-menu-option.ag-menu-option-active {

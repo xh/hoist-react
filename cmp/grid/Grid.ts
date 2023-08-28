@@ -313,9 +313,7 @@ class GridLocalModel extends HoistModel {
             track: () => [model.isReady, store._filtered, model.showSummary, store.summaryRecord],
             run: () => {
                 if (model.isReady) this.syncData();
-            },
-            // TODO:  Remove after we are sure we don't need debounce workaround
-            debounce: model.experimental.syncDataImmediately === false ? 0 : null
+            }
         };
     }
 
@@ -713,7 +711,7 @@ class GridLocalModel extends HoistModel {
     // Catches column resizing on call to autoSize API.
     onColumnResized = ev => {
         if (!isDisplayed(this.viewRef.current) || !ev.finished) return;
-        if (ev.source === 'uiColumnDragged') {
+        if (ev.source === 'uiColumnResized') {
             const colId = ev.columns[0].colId,
                 width = ev.columnApi.getColumnState().find(it => it.colId === colId)?.width;
             this.model.noteColumnManuallySized(colId, width);

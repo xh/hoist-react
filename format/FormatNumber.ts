@@ -5,10 +5,10 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {span} from '@xh/hoist/cmp/layout';
-import {defaults, isFinite, isFunction, isNil, isPlainObject, isString} from 'lodash';
+import {defaults, isBoolean, isFinite, isFunction, isNil, isString} from 'lodash';
 import Numbro from 'numbro';
 import numbro from 'numbro';
-import {ReactNode} from 'react';
+import {CSSProperties, ReactNode} from 'react';
 import {fmtSpan, FormatOptions} from './FormatMisc';
 import {createRenderer} from './FormatUtils';
 import {saveOriginal} from './impl/Utils';
@@ -53,6 +53,13 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
     /** True to prepend positive numbers with a '+'. */
     withPlusSign?: boolean;
 
+    /**
+     * If set to false, small numbers that would show only digits of zero due to precision will be
+     * formatted as exactly zero. In particular, if a zeroDisplay is specified it will be used and
+     * sign-based glyphs, '+/-' characters, and colors will not be shown.  Default true.
+     */
+    strictZero?: boolean;
+
     /** True to prepend an up / down arrow. */
     withSignGlyph?: boolean;
 
@@ -75,7 +82,7 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
 
     /**
      * Color output based on the sign of the value. True to use red/green/grey defaults, or provide
-     * an object with alternate CSS classes.
+     * an object with alternate CSS classes or properties.
      */
     colorSpec?: boolean | ColorSpec;
 
@@ -94,14 +101,14 @@ export interface QuantityFormatOptions extends NumberFormatOptions {
 
 /** Config for pos/neg/neutral color classes. */
 export interface ColorSpec {
-    /** CSS color class to wrap around positive values */
-    pos?: string;
+    /** CSS color class or CSS Style Properties to apply to positive values */
+    pos?: string | CSSProperties;
 
-    /** CSS class to wrap around negative values */
-    neg?: string;
+    /** CSS color class or CSS Style Properties to apply to negative values */
+    neg?: string | CSSProperties;
 
-    /** CSS class to wrap around zero values. */
-    neutral?: string;
+    /** CSS color class or CSS Style Properties to apply to  zero values. */
+    neutral?: string | CSSProperties;
 }
 
 /**
@@ -124,6 +131,7 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
         ledger = false,
         forceLedgerAlign = true,
         withPlusSign = false,
+        strictZero = true,
         withSignGlyph = false,
         withCommas = true,
         omitFourDigitComma = false,
@@ -138,12 +146,20 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
 
     if (isInvalidInput(v)) return nullDisplay;
 
-    if (v === 0 && zeroDisplay != null) return zeroDisplay;
-
     formatConfig =
         formatConfig || buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma);
     const str = numbro(v).format(formatConfig).replace('-', '');
     let sign = null;
+
+    // Tests for zero strings at various precisions
+    if (!strictZero && /^0+.?0*$/.test(str)) {
+        // Treat rounded zeros as a true zero, for sign checks
+        v = 0;
+    }
+
+    if (v === 0 && zeroDisplay != null) {
+        return zeroDisplay;
+    }
 
     if (v > 0 && withPlusSign) {
         sign = '+';
@@ -293,7 +309,7 @@ function fmtNumberElement(v: number, str: string, sign: '+' | '-', opts?: Number
 
     // CSS classes
     const cls = [];
-    if (colorSpec) cls.push(valueColor(v, colorSpec));
+    if (colorSpec) cls.push(calcClassFromColorSpec(v, colorSpec));
     if (tooltip) cls.push('xh-title-tip');
 
     // Compile child items
@@ -325,6 +341,7 @@ function fmtNumberElement(v: number, str: string, sign: '+' | '-', opts?: Number
 
     return span({
         className: cls.join(' '),
+        style: calcStyleFromColorSpec(v, colorSpec),
         title: processToolTip(tooltip, opts),
         items: items
     });
@@ -370,7 +387,11 @@ function fmtNumberString(
     }
 
     if (colorSpec) {
-        ret = fmtSpan(ret, {className: valueColor(v, colorSpec), asHtml}) as string;
+        ret = fmtSpan(ret, {
+            className: calcClassFromColorSpec(v, colorSpec),
+            style: calcStyleFromColorSpec(v, colorSpec),
+            asHtml
+        }) as string;
     }
 
     if (tooltip) {
@@ -393,13 +414,19 @@ function signGlyph(v: number, asHtml: boolean = false) {
         : DOWN_TICK;
 }
 
-function valueColor(v: number, colorSpec: ColorSpec | boolean) {
+function calcClassFromColorSpec(v: number, colorSpec: ColorSpec | boolean): string {
+    if (colorSpec === true) colorSpec = DEFAULT_COLOR_SPEC;
     if (!isFinite(v) || !colorSpec) return '';
 
-    colorSpec = isPlainObject(colorSpec) ? (colorSpec as ColorSpec) : DEFAULT_COLOR_SPEC;
-    if (v < 0) return colorSpec.neg;
-    if (v > 0) return colorSpec.pos;
-    return colorSpec.neutral;
+    const possibleClassName = v < 0 ? colorSpec.neg : v > 0 ? colorSpec.pos : colorSpec.neutral;
+    return isString(possibleClassName) ? possibleClassName : '';
+}
+
+function calcStyleFromColorSpec(v: number, colorSpec: ColorSpec | boolean): CSSProperties {
+    if (!isFinite(v) || isBoolean(colorSpec) || !colorSpec) return {};
+
+    const possibleStyles = v < 0 ? colorSpec.neg : v > 0 ? colorSpec.pos : colorSpec.neutral;
+    return !isString(possibleStyles) ? possibleStyles : {};
 }
 
 function buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma): Numbro.Format {

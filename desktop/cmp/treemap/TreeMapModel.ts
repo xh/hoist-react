@@ -98,7 +98,7 @@ export interface TreeMapConfig {
     onClick?: (StoreRecord, MouseEvent) => void;
 
     /**
-     * Callback to call when a node is double clicked.
+     * Callback to call when a node is double-clicked.
      * If not provided, by default will expand / collapse a record when using a GridModel.
      */
     onDoubleClick?: (StoreRecord, MouseEvent) => void;
