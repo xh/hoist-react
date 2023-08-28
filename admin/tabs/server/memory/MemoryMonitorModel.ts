@@ -31,7 +31,7 @@ export class MemoryMonitorModel extends HoistModel {
 
         this.gridModel = new GridModel({
             enableExport: true,
-            exportOptions: {filename: `${XH.appCode}-memory-monitor-${LocalDate.today()}`},
+            exportOptions: {filename: LocalDate.getExportFilename('memory-monitor')},
             filterModel: true,
             sortBy: 'timestamp|desc',
             store: {idSpec: 'timestamp'},

@@ -73,8 +73,8 @@ export class LocalDate {
     }
 
     // TODO - exportOptions.filename
-    static getExportFilename(ModuleName: string): string {
-        return ModuleName;
+    static getExportFilename(moduleName: string): string {
+        return `${XH.appCode}-${moduleName}-${this.today()}`;
     }
 
     /** LocalDate representing the current day in the App TimeZone */
