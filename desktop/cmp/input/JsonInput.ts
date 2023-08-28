@@ -6,13 +6,15 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
+import {fmtJson} from '@xh/hoist/format';
 import * as codemirror from 'codemirror';
 import 'codemirror/mode/javascript/javascript';
-import {fmtJson} from '@xh/hoist/format';
 import {codeInput, CodeInputProps} from './CodeInput';
 import {jsonlint} from './impl/jsonlint';
 
-export type JsonInputProps = CodeInputProps;
+export interface JsonInputProps extends CodeInputProps {
+    testId?: string;
+}
 
 /**
  * Code-editor style input for editing and validating JSON, powered by CodeMirror.
@@ -25,6 +27,7 @@ export const [JsonInput, jsonInput] = hoistCmp.withFactory<JsonInputProps>({
             linter: linter,
             formatter: fmtJson,
             mode: 'application/json',
+            testId: props.testId,
             ...props,
             ref
         });

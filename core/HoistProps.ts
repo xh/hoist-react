@@ -73,7 +73,6 @@ export interface StyleProps {
 
 export interface TestSupportProps {
     testId?: string;
-    parentTestId?: string;
 }
 
 export interface LayoutProps {

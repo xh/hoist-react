@@ -6,16 +6,16 @@
  */
 import {box, span} from '@xh/hoist/cmp/layout';
 import {
+    BoxProps,
     hoistCmp,
     HoistModel,
+    HoistProps,
     managed,
     useLocalModel,
-    XH,
-    BoxProps,
-    HoistProps
+    XH
 } from '@xh/hoist/core';
 import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
-import {action, observable, makeObservable, computed} from '@xh/hoist/mobx';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -75,13 +75,14 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<Relat
     displayName: 'RelativeTimestamp',
     className: 'xh-relative-timestamp',
 
-    render({className, ...props}, ref) {
+    render({className, testId, ...props}, ref) {
         const impl = useLocalModel(RelativeTimestampLocalModel);
 
         return box({
             className,
             ...getLayoutProps(props),
             ref,
+            testId,
             item: span({
                 className: 'xh-title-tip',
                 item: impl.display,

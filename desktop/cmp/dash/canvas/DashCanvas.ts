@@ -6,7 +6,15 @@
  */
 import {ContextMenu} from '@blueprintjs/core';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {elementFactory, hoistCmp, HoistProps, refreshContextView, uses, XH} from '@xh/hoist/core';
+import {
+    elementFactory,
+    hoistCmp,
+    HoistProps,
+    refreshContextView,
+    TestSupportProps,
+    uses,
+    XH
+} from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
@@ -18,7 +26,7 @@ import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
 
-export type DashCanvasProps = HoistProps<DashCanvasModel>;
+export type DashCanvasProps = HoistProps<DashCanvasModel> & TestSupportProps;
 
 /**
  * Dashboard-style container that allows users to drag-and-drop child widgets into flexible layouts.
@@ -36,7 +44,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
     className: 'xh-dash-canvas',
     model: uses(DashCanvasModel),
 
-    render({className, model}) {
+    render({className, model, ...props}) {
         const isDraggable = !model.layoutLocked,
             isResizable = !model.layoutLocked;
 
@@ -77,7 +85,8 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                         )
                     }),
                     emptyContainerOverlay()
-                ]
+                ],
+                'data-testid': props.testId
             })
         });
     }

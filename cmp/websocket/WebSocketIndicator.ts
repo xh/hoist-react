@@ -22,7 +22,7 @@ export const [WebSocketIndicator, webSocketIndicator] =
         displayName: 'WebSocketIndicator',
         model: false,
 
-        render({iconOnly, ...props}) {
+        render({iconOnly, testId, ...props}) {
             const {enabled, connected, lastMessageTime} = XH.webSocketService;
             let icon, txt, tooltip;
 
@@ -51,6 +51,7 @@ export const [WebSocketIndicator, webSocketIndicator] =
                 ],
                 title: tooltip,
                 alignItems: 'center',
+                testId,
                 ...props
             });
         }

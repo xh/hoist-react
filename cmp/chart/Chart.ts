@@ -6,19 +6,19 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
-import {placeholder} from '../layout';
 import {
-    lookup,
+    BoxProps,
     hoistCmp,
     HoistModel,
+    HoistProps,
+    lookup,
+    PlainObject,
     useLocalModel,
     uses,
-    XH,
-    BoxProps,
-    HoistProps,
-    PlainObject
+    XH
 } from '@xh/hoist/core';
 import {useContextMenu} from '@xh/hoist/dynamics/desktop';
+import {Icon} from '@xh/hoist/icon';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {runInAction} from '@xh/hoist/mobx';
 import {
@@ -28,13 +28,13 @@ import {
     useOnVisibleChange
 } from '@xh/hoist/utils/react';
 import {assign, castArray, cloneDeep, forOwn, isEqual, isPlainObject, merge, omit} from 'lodash';
-import {Icon} from '@xh/hoist/icon';
+import {placeholder} from '../layout';
+import './Chart.scss';
 import {ChartModel} from './ChartModel';
-import {installZoomoutGesture} from './impl/zoomout';
 import {installCopyToClipboard} from './impl/copyToClipboard';
+import {installZoomoutGesture} from './impl/zoomout';
 import {DarkTheme} from './theme/Dark';
 import {LightTheme} from './theme/Light';
-import './Chart.scss';
 
 installZoomoutGesture(Highcharts);
 installCopyToClipboard(Highcharts);
@@ -58,7 +58,7 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
     model: uses(ChartModel),
     className: 'xh-chart',
 
-    render({model, className, aspectRatio, ...props}, ref) {
+    render({model, className, aspectRatio, testId, ...props}, ref) {
         if (!Highcharts) {
             console.error(
                 'Highcharts has not been imported in to this application. Please import and ' +
@@ -85,6 +85,7 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
         const coreContents = box({
             ...layoutProps,
             className,
+            testId,
             ref,
             item: div({
                 style: {margin: 'auto'},

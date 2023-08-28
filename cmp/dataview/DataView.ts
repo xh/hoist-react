@@ -44,13 +44,14 @@ export const [DataView, dataView] = hoistCmp.withFactory<DataViewProps>({
     model: uses(DataViewModel),
     className: 'xh-data-view',
 
-    render({model, className, ...props}, ref) {
+    render({model, className, testId, ...props}, ref) {
         const [layoutProps] = splitLayoutProps(props),
             impl = useLocalModel(DataViewLocalModel);
 
         return grid({
             ...layoutProps,
             className,
+            testId,
             ref,
             model: model.gridModel,
             agOptions: impl.agOptions

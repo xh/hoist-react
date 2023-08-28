@@ -4,30 +4,30 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {PopperBoundary, PopperModifiers} from '@blueprintjs/core';
+import {ITimePickerProps} from '@blueprintjs/datetime';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HSide, Some, HoistProps, LayoutProps} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide, LayoutProps, Some, TestSupportProps} from '@xh/hoist/core';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
-import {TextInputModel, textInput} from '@xh/hoist/desktop/cmp/input';
+import {textInput, TextInputModel} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {datePicker as bpDatePicker, popover, Position} from '@xh/hoist/kit/blueprint';
-import {makeObservable, bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
-import {consumeEvent, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {consumeEvent, getTestId, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {assign, castArray, clone, trim} from 'lodash';
 import moment from 'moment';
 import {createRef, ReactElement, ReactNode} from 'react';
-import './DateInput.scss';
-import {PopperBoundary, PopperModifiers} from '@blueprintjs/core';
-import {ITimePickerProps} from '@blueprintjs/datetime';
 import {DayPickerProps} from 'react-day-picker';
+import './DateInput.scss';
 
-export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps {
+export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps, TestSupportProps {
     value?: Date | LocalDate;
 
     /** Props passed to ReactDayPicker component, as per DayPicker docs. */
@@ -483,6 +483,7 @@ const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref)
                     selectOnFocus: props.selectOnFocus,
                     inputRef: model.inputRef,
                     ref: model.textInputRef,
+                    testId: getTestId(props, 'dateTextInput'),
                     ...getLayoutProps(props)
                 }),
                 onClick: !enableTextInput && !disabled ? model.onOpenPopoverClick : null

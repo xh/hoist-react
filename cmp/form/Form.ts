@@ -4,7 +4,14 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {DefaultHoistProps, elementFactory, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import {
+    DefaultHoistProps,
+    elementFactory,
+    hoistCmp,
+    HoistProps,
+    TestSupportProps,
+    uses
+} from '@xh/hoist/core';
 import {useCached} from '@xh/hoist/utils/react';
 import equal from 'fast-deep-equal';
 import {createContext, useContext} from 'react';
@@ -26,13 +33,12 @@ export interface FormContextType {
 export const FormContext = createContext<FormContextType>({});
 const formContextProvider = elementFactory(FormContext.Provider);
 
-export interface FormProps extends HoistProps<FormModel> {
+export interface FormProps extends HoistProps<FormModel>, TestSupportProps {
     /**
      * Defaults for certain props on child/nested FormFields.
      * @see FormField (note there are both desktop and mobile implementations).
      */
     fieldDefaults?: Partial<BaseFormFieldProps> & DefaultHoistProps;
-    testId?: string;
 }
 
 /**

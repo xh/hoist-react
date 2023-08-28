@@ -9,7 +9,7 @@ import {hoistCmp, HoistProps, HSide} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
 import {computed, makeObservable} from '@xh/hoist/mobx';
-import {withDefault} from '@xh/hoist/utils/js';
+import {getTestId, withDefault} from '@xh/hoist/utils/js';
 import {filter, isObject} from 'lodash';
 import './RadioInput.scss';
 
@@ -22,6 +22,8 @@ export interface RadioInputProps extends HoistProps, HoistInputProps {
 
     /** Array of available options */
     options: (RadioOption | any)[];
+
+    testId?: string;
 }
 
 export interface RadioOption {
@@ -99,6 +101,7 @@ const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref
             label: opt.label,
             value: opt.value,
             className: 'xh-radio-input-option',
+            'data-testid': getTestId(props.testId, `${opt.value}`),
             onFocus: model.onFocus,
             onBlur: model.onBlur
         });

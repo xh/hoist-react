@@ -367,5 +367,5 @@ function getFormFieldTestId(
     formContext: FormContextType,
     fieldName: string
 ): string {
-    return props.testId ?? formContext.testId ? `${formContext.testId}-${fieldName}` : undefined;
+    return props.testId ?? (formContext.testId ? `${formContext.testId}-${fieldName}` : undefined);
 }
