@@ -28,7 +28,7 @@ export class UserModel extends HoistModel {
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,
-            exportOptions: {filename: `${XH.appCode}-users-${LocalDate.today()}`},
+            exportOptions: {filename: () => `${XH.appCode}-users-${LocalDate.today()}`},
             store: {idSpec: 'username'},
             sortBy: 'username',
             columns: [

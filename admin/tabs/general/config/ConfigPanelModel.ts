@@ -49,7 +49,7 @@ export class ConfigPanelModel extends HoistModel {
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,
-            exportOptions: {filename: `${XH.appCode}-configs-${LocalDate.today()}`},
+            exportOptions: {filename: () => `${XH.appCode}-configs-${LocalDate.today()}`},
             selModel: 'multiple',
             store: new RestStore({
                 url: 'rest/configAdmin',

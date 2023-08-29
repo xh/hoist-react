@@ -20,7 +20,7 @@ const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminFeedbackState'},
     colChooserModel: true,
     enableExport: true,
-    exportOptions: {filename: `${XH.appCode}-feedback-${LocalDate.today()}`},
+    exportOptions: {filename: () => `${XH.appCode}-feedback-${LocalDate.today()}`},
     emptyText: 'No feedback reported...',
     store: {
         url: 'rest/feedbackAdmin',

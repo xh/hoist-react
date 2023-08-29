@@ -22,7 +22,7 @@ const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminUserPreferenceState'},
     colChooserModel: true,
     enableExport: true,
-    exportOptions: {filename: `${XH.appCode}-user-prefs-${LocalDate.today()}`},
+    exportOptions: {filename: () => `${XH.appCode}-user-prefs-${LocalDate.today()}`},
     selModel: 'multiple',
     store: {
         url: 'rest/userPreferenceAdmin',

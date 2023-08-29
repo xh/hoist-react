@@ -46,7 +46,7 @@ export class JsonBlobModel extends HoistModel {
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,
-            exportOptions: {filename: `${XH.appCode}-json-blobs-${LocalDate.today()}`},
+            exportOptions: {filename: () => `${XH.appCode}-json-blobs-${LocalDate.today()}`},
             selModel: 'multiple',
             store: {
                 url: 'rest/jsonBlobAdmin',

@@ -37,7 +37,7 @@ export class WebSocketModel extends HoistModel {
         this.gridModel = new GridModel({
             emptyText: 'No clients connected.',
             enableExport: true,
-            exportOptions: {filename: `${XH.appCode}-ws-connections-${LocalDate.today()}`},
+            exportOptions: {filename: () => `${XH.appCode}-ws-connections-${LocalDate.today()}`},
             selModel: 'multiple',
             store: {
                 idSpec: 'key',

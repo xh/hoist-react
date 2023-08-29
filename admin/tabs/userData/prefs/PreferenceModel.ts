@@ -41,7 +41,7 @@ export class PreferenceModel extends HoistModel {
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,
-            exportOptions: {filename: `${XH.appCode}-prefs-${LocalDate.today()}`},
+            exportOptions: {filename: () => `${XH.appCode}-prefs-${LocalDate.today()}`},
             selModel: 'multiple',
             store: {
                 url: 'rest/preferenceAdmin',

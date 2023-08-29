@@ -23,7 +23,7 @@ export class ServerEnvModel extends HoistModel {
             groupBy: 'type',
             sortBy: 'name',
             enableExport: true,
-            exportOptions: {filename: `${XH.appCode}-env-${LocalDate.today()}`},
+            exportOptions: {filename: () => `${XH.appCode}-env-${LocalDate.today()}`},
             store: {idSpec: XH.genId},
             columns: [
                 {

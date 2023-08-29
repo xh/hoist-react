@@ -19,7 +19,7 @@ export class EhCacheModel extends HoistModel {
         persistWith: this.persistWith,
         colChooserModel: true,
         enableExport: true,
-        exportOptions: {filename: `${XH.appCode}-eh-caches-${LocalDate.today()}`},
+        exportOptions: {filename: () => `${XH.appCode}-eh-caches-${LocalDate.today()}`},
         store: new UrlStore({
             url: 'ehCacheAdmin/listCaches',
             fields: [

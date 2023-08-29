@@ -14,7 +14,7 @@ export class ServiceModel extends HoistModel {
     @managed
     gridModel: GridModel = new GridModel({
         enableExport: true,
-        exportOptions: {filename: `${XH.appCode}-services-${LocalDate.today()}`},
+        exportOptions: {filename: () => `${XH.appCode}-services-${LocalDate.today()}`},
         hideHeaders: true,
         store: new UrlStore({
             url: 'serviceAdmin/listServices',

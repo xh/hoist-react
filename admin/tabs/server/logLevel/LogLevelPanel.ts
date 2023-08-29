@@ -20,7 +20,7 @@ const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminLogLevelState'},
     colChooserModel: true,
     enableExport: true,
-    exportOptions: {filename: `${XH.appCode}-log-levels-${LocalDate.today()}`},
+    exportOptions: {filename: () => `${XH.appCode}-log-levels-${LocalDate.today()}`},
     store: {
         url: 'rest/logLevelAdmin',
         fieldDefaults: {disableXssProtection: true},

@@ -149,7 +149,7 @@ export class LogViewerModel extends HoistModel {
     private createGridModel() {
         return new GridModel({
             enableExport: true,
-            exportOptions: {filename: `${XH.appCode}-logs-${LocalDate.today()}`},
+            exportOptions: {filename: () => `${XH.appCode}-logs-${LocalDate.today()}`},
             selModel: 'multiple',
             store: {
                 idSpec: 'filename',

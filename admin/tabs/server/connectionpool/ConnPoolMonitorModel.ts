@@ -35,7 +35,7 @@ export class ConnPoolMonitorModel extends HoistModel {
 
         this.gridModel = new GridModel({
             enableExport: true,
-            exportOptions: {filename: `${XH.appCode}-conn-pool-monitor-${LocalDate.today()}`},
+            exportOptions: {filename: () => `${XH.appCode}-conn-pool-monitor-${LocalDate.today()}`},
             filterModel: true,
             sortBy: 'timestamp|desc',
             store: {idSpec: 'timestamp'},
