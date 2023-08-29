@@ -2,6 +2,17 @@
 
 ## 60.0.0-SNAPSHOT - unreleased
 
+## 59.0.3 - 2023-08-25
+
+### ⚙️ Technical
+
+* New `XH.flags` property to govern experimental, hotfix, or otherwise provisional features.
+
+* Provide temporary workaround to chromium bug effecting BigNumber.  Enabled via flag
+  `applyBigNumberWorkaround`.  See https://github.com/MikeMcl/bignumber.js/issues/354.
+
+## 59.0.2 - 2023-08-24
+
 ### 🐞 Bug Fixes
 
 * Restored support for `Select.selectOnFocus` (had broken with upgrade to `react-select` in v59.0).
@@ -10,6 +21,15 @@
 * Flex inner title element added to `Panel` headers in v59.0, and set `display:flex` on the new
   element itself. Restores previous flexbox container behavior (when not L/R collapsed) for apps
   that are providing custom components as titles.
+* `DashCanvas` now properly updates its layout when shown if the browser window had been resized
+  while the component was hidden (e.g. in an inactive tab).
+* Reverted upgrade to `react-select` in v59.0.0 due to issues found with `selectEditor` / inline
+  grid editing. We will revisit this upgrade in a future release.
+
+### 📚 Libraries
+
+* react-select `5.7 -> 4.3`
+* react-windowed-select `5.1 -> 3.1`
 
 ## 59.0.1 - 2023-08-17
 
