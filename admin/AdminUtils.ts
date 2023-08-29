@@ -14,4 +14,4 @@ export function getExportFilenameWithDate(moduleName: string): () => string {
 
 /** Returns the name of the file to be exported from a grid/panel with the app code prepended
  * and the current date appended. */
-export const getExportFilenameDateless = (moduleName: string) => `${XH.appCode}-${moduleName}`;
+export const getExportFilenameNoDate = (moduleName: string) => `${XH.appCode}-${moduleName}`;

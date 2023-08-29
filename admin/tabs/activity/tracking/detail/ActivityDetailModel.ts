@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {getExportFilenameDateless} from '@xh/hoist/admin/AdminUtils';
+import {getExportFilenameNoDate} from '@xh/hoist/admin/AdminUtils';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {managed, HoistModel, lookup} from '@xh/hoist/core';
@@ -35,7 +35,7 @@ export class ActivityDetailModel extends HoistModel {
             filterModel: true,
             exportOptions: {
                 columns: 'ALL',
-                filename: getExportFilenameDateless('activity-detail')
+                filename: getExportFilenameNoDate('activity-detail')
             },
             emptyText: 'Select a group on the left to see detailed tracking logs.',
             columns: [
