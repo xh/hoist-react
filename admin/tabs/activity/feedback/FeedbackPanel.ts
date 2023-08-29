@@ -4,13 +4,13 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {getExportFilename} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
-import {hoistCmp, XH} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {deleteAction, restGrid, RestGridConfig} from '@xh/hoist/desktop/cmp/rest';
-import {LocalDate} from '@xh/hoist/utils/datetime';
 
 export const feedbackPanel = hoistCmp.factory(() =>
     restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}})
@@ -20,7 +20,7 @@ const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminFeedbackState'},
     colChooserModel: true,
     enableExport: true,
-    exportOptions: {filename: () => `${XH.appCode}-feedback-${LocalDate.today()}`},
+    exportOptions: {filename: getExportFilename('feedback')},
     emptyText: 'No feedback reported...',
     store: {
         url: 'rest/feedbackAdmin',
