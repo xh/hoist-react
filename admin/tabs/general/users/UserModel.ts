@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {getExportFilename} from '@xh/hoist/admin/AdminUtils';
+import {getExportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
@@ -28,7 +28,7 @@ export class UserModel extends HoistModel {
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,
-            exportOptions: {filename: getExportFilename('users')},
+            exportOptions: {filename: getExportFilenameWithDate('users')},
             store: {idSpec: 'username'},
             sortBy: 'username',
             columns: [

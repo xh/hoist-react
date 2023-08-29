@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {getExportFilename} from '@xh/hoist/admin/AdminUtils';
+import {getExportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {forOwn} from 'lodash';
@@ -23,7 +23,7 @@ export class ServerEnvModel extends HoistModel {
             groupBy: 'type',
             sortBy: 'name',
             enableExport: true,
-            exportOptions: {filename: getExportFilename('env')},
+            exportOptions: {filename: getExportFilenameWithDate('env')},
             store: {idSpec: XH.genId},
             columns: [
                 {

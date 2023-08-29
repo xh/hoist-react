@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {getExportFilename} from '@xh/hoist/admin/AdminUtils';
+import {getExportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
@@ -149,7 +149,7 @@ export class LogViewerModel extends HoistModel {
     private createGridModel() {
         return new GridModel({
             enableExport: true,
-            exportOptions: {filename: getExportFilename('logs')},
+            exportOptions: {filename: getExportFilenameWithDate('logs')},
             selModel: 'multiple',
             store: {
                 idSpec: 'filename',

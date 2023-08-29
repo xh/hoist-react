@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {getExportFilename} from '@xh/hoist/admin/AdminUtils';
+import {getExportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
 import {hoistCmp} from '@xh/hoist/core';
@@ -20,7 +20,7 @@ const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminLogLevelState'},
     colChooserModel: true,
     enableExport: true,
-    exportOptions: {filename: getExportFilename('log-levels')},
+    exportOptions: {filename: getExportFilenameWithDate('log-levels')},
     store: {
         url: 'rest/logLevelAdmin',
         fieldDefaults: {disableXssProtection: true},

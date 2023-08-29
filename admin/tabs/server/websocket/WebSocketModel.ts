@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {getExportFilename} from '@xh/hoist/admin/AdminUtils';
+import {getExportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, p} from '@xh/hoist/cmp/layout';
@@ -38,7 +38,7 @@ export class WebSocketModel extends HoistModel {
         this.gridModel = new GridModel({
             emptyText: 'No clients connected.',
             enableExport: true,
-            exportOptions: {filename: getExportFilename('ws-connections')},
+            exportOptions: {filename: getExportFilenameWithDate('ws-connections')},
             selModel: 'multiple',
             store: {
                 idSpec: 'key',

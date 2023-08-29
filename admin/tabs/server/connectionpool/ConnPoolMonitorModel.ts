@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {getExportFilename} from '@xh/hoist/admin/AdminUtils';
+import {getExportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
@@ -35,7 +35,7 @@ export class ConnPoolMonitorModel extends HoistModel {
 
         this.gridModel = new GridModel({
             enableExport: true,
-            exportOptions: {filename: getExportFilename('conn-pool-monitor')},
+            exportOptions: {filename: getExportFilenameWithDate('conn-pool-monitor')},
             filterModel: true,
             sortBy: 'timestamp|desc',
             store: {idSpec: 'timestamp'},

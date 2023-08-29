@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {getExportFilename} from '@xh/hoist/admin/AdminUtils';
+import {getExportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
@@ -46,7 +46,7 @@ export class JsonBlobModel extends HoistModel {
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,
-            exportOptions: {filename: getExportFilename('json-blobs')},
+            exportOptions: {filename: getExportFilenameWithDate('json-blobs')},
             selModel: 'multiple',
             store: {
                 url: 'rest/jsonBlobAdmin',

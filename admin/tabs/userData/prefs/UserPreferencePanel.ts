@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {getExportFilename} from '@xh/hoist/admin/AdminUtils';
+import {getExportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
 import {hoistCmp} from '@xh/hoist/core';
@@ -22,7 +22,7 @@ const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminUserPreferenceState'},
     colChooserModel: true,
     enableExport: true,
-    exportOptions: {filename: getExportFilename('user-prefs')},
+    exportOptions: {filename: getExportFilenameWithDate('user-prefs')},
     selModel: 'multiple',
     store: {
         url: 'rest/userPreferenceAdmin',
