@@ -7,12 +7,13 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {
-    BoxProps,
     hoistCmp,
     HoistModel,
     HoistProps,
+    LayoutProps,
     lookup,
     PlainObject,
+    TestSupportProps,
     useLocalModel,
     uses,
     XH
@@ -39,7 +40,7 @@ import {LightTheme} from './theme/Light';
 installZoomoutGesture(Highcharts);
 installCopyToClipboard(Highcharts);
 
-export interface ChartProps extends HoistProps<ChartModel>, BoxProps {
+export interface ChartProps extends HoistProps<ChartModel>, LayoutProps, TestSupportProps {
     /**
      * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will
      * respect this ratio within the available space.  Otherwise, the chart will stretch on both

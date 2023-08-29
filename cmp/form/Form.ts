@@ -26,6 +26,11 @@ export interface FormContextType {
     /** Reference to associated FormModel. */
     model?: FormModel;
 
+    /**
+     *  The base testId for generating formField testId's. If a testId is given to a formField it
+     *  will respect the given testId over the generated one.
+     *  This testId will not be visible as this component isn't rendered onto the DOM.
+     * */
     testId?: string;
 }
 
@@ -59,7 +64,7 @@ export const [Form, form] = hoistCmp.withFactory<FormProps>({
     displayName: 'Form',
     model: uses(FormModel, {publishMode: 'none'}),
 
-    render({model, fieldDefaults = {}, children, ...props}) {
+    render({model, fieldDefaults = {}, testId, children}) {
         // gather own and inherited field defaults...
         const parentDefaults = useContext(FormContext).fieldDefaults;
         if (parentDefaults) fieldDefaults = {...parentDefaults, ...fieldDefaults};
@@ -69,7 +74,7 @@ export const [Form, form] = hoistCmp.withFactory<FormProps>({
             {
                 model,
                 fieldDefaults,
-                testId: props.testId
+                testId
             },
             (a, b) => a.model === b.model && equal(a.fieldDefaults, b.fieldDefaults)
         );

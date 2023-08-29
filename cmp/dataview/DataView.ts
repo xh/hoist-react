@@ -7,12 +7,13 @@
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
 import {
-    BoxProps,
     hoistCmp,
     HoistModel,
     HoistProps,
+    LayoutProps,
     lookup,
     PlainObject,
+    TestSupportProps,
     useLocalModel,
     uses
 } from '@xh/hoist/core';
@@ -22,7 +23,7 @@ import {isFunction, merge} from 'lodash';
 import './DataView.scss';
 import {DataViewModel} from './DataViewModel';
 
-export interface DataViewProps extends HoistProps<DataViewModel>, BoxProps {
+export interface DataViewProps extends HoistProps<DataViewModel>, LayoutProps, TestSupportProps {
     /**
      * Options for ag-Grid's API.
      *

@@ -72,7 +72,6 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
             enableMulti = true,
             enableAddMulti = enableMulti,
             showFileGrid = true,
-            testId,
             ...props
         },
         ref
@@ -82,7 +81,6 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
 
         return hbox({
             ref,
-            'data-testid': testId,
             ...props,
             items: [
                 dropzone({

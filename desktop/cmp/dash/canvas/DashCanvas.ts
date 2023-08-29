@@ -46,7 +46,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
     className: 'xh-dash-canvas',
     model: uses(DashCanvasModel),
 
-    render({className, model, ...props}, ref) {
+    render({className, model, testId}, ref) {
         const isDraggable = !model.layoutLocked,
             isResizable = !model.layoutLocked;
 
@@ -94,7 +94,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                     }),
                     emptyContainerOverlay()
                 ],
-                'data-testid': props.testId
+                'data-testid': testId
             })
         });
     }

@@ -75,14 +75,14 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<Relat
     displayName: 'RelativeTimestamp',
     className: 'xh-relative-timestamp',
 
-    render({className, testId, ...props}, ref) {
+    render({className, ...props}, ref) {
         const impl = useLocalModel(RelativeTimestampLocalModel);
 
         return box({
             className,
             ...getLayoutProps(props),
             ref,
-            testId,
+            ...props,
             item: span({
                 className: 'xh-title-tip',
                 item: impl.display,

@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, TestSupportProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {fmtJson} from '@xh/hoist/format';
 import * as codemirror from 'codemirror';
@@ -12,9 +12,7 @@ import 'codemirror/mode/javascript/javascript';
 import {codeInput, CodeInputProps} from './CodeInput';
 import {jsonlint} from './impl/jsonlint';
 
-export interface JsonInputProps extends CodeInputProps {
-    testId?: string;
-}
+export type JsonInputProps = CodeInputProps & TestSupportProps;
 
 /**
  * Code-editor style input for editing and validating JSON, powered by CodeMirror.
