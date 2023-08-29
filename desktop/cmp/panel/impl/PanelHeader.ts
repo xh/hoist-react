@@ -22,7 +22,7 @@ export const panelHeader = hoistCmp.factory({
     render({className, ...props}) {
         const panelModel = useContextModel(PanelModel),
             {collapsed, collapsible, isModal, vertical, side} = panelModel,
-            {title, icon, compact, headerClassName} = props,
+            {title, icon, compact} = props,
             collapsedTitle = withDefault(props.collapsedTitle, title),
             displayedTitle = collapsed ? collapsedTitle : title,
             headerItems = props.headerItems ?? [];
@@ -44,7 +44,7 @@ export const panelHeader = hoistCmp.factory({
         // 1) Classic "top" title bar
         if (!collapsed || vertical || isModal) {
             return hbox({
-                className: classNames(className, headerClassName, compactCls),
+                className: classNames(className, compactCls),
                 items: [
                     icon || null,
                     displayedTitle
@@ -70,7 +70,7 @@ export const panelHeader = hoistCmp.factory({
 
         // 2) ...otherwise its a narrow, sidebar
         return vbox({
-            className: classNames(className, headerClassName, sideCls, compactCls),
+            className: classNames(className, sideCls, compactCls),
             flex: 1,
             items: [
                 collapseButton({panelModel}),

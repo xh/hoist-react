@@ -1,14 +1,4 @@
 .xh-inspector {
-  & > .xh-panel__content > .xh-panel-header {
-    background-color: hsl(33, 93%, 40%);
-    color: white;
-  }
-
-  .xh-modal-support__host > div > .xh-panel__content > .xh-panel-header {
-    background-color: hsl(33, 93%, 40%);
-    color: white;
-  }
-
   .xh-font-family-mono {
     font-size: 0.9em;
   }
@@ -24,5 +14,5 @@
 
 .xh-inspector-panel-header {
   background-color: hsl(33, 93%, 40%);
-  color: red;
+  color: white;
 }

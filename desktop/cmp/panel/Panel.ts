@@ -196,7 +196,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                     icon,
                     compact: compactHeader,
                     collapsedTitle,
-                    headerClassName,
+                    className: headerClassName,
                     headerItems
                 }),
                 coreContents,
