@@ -4,11 +4,11 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {LocalDate} from '@xh/hoist/utils/datetime';
 import {keyBy, keys} from 'lodash';
 
 export class UserModel extends HoistModel {
@@ -28,7 +28,7 @@ export class UserModel extends HoistModel {
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,
-            exportOptions: {filename: `${XH.appCode}-users-${LocalDate.today()}`},
+            exportOptions: {filename: exportFilenameWithDate('users')},
             store: {idSpec: 'username'},
             sortBy: 'username',
             columns: [
