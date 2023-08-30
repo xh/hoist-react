@@ -2,6 +2,10 @@
 
 ## 60.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.
+
 ## 59.0.3 - 2023-08-25
 
 ### ⚙️ Technical
