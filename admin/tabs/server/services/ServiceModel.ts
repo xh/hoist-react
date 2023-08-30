@@ -18,7 +18,7 @@ export class ServiceModel extends HoistModel {
         hideHeaders: true,
         store: new UrlStore({
             url: 'serviceAdmin/listServices',
-            idSpec: XH.genId,
+            idSpec: data => `${data.provider}-${data.name}`,
             processRawData: this.processRawData,
             fields: [
                 {name: 'provider', type: 'string'},
