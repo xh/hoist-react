@@ -2,6 +2,19 @@
 
 ## 60.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.
+
+## 59.0.3 - 2023-08-25
+
+### ⚙️ Technical
+
+* New `XH.flags` property to govern experimental, hotfix, or otherwise provisional features.
+
+* Provide temporary workaround to chromium bug effecting BigNumber.  Enabled via flag
+  `applyBigNumberWorkaround`.  See https://github.com/MikeMcl/bignumber.js/issues/354.
+
 ## 59.0.2 - 2023-08-24
 
 ### 🐞 Bug Fixes
