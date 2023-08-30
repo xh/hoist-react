@@ -5,6 +5,7 @@
 ### 🎁 New Features
 
 * Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.
+* Improved styling for disabled `checkbox` inputs.
 
 ## 59.0.3 - 2023-08-25
 
