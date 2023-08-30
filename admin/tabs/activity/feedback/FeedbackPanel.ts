@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {getExportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
+import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
 import {hoistCmp} from '@xh/hoist/core';
@@ -20,7 +20,7 @@ const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminFeedbackState'},
     colChooserModel: true,
     enableExport: true,
-    exportOptions: {filename: getExportFilenameWithDate('feedback')},
+    exportOptions: {filename: exportFilenameWithDate('feedback')},
     emptyText: 'No feedback reported...',
     store: {
         url: 'rest/feedbackAdmin',

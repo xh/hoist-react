@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {getExportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
+import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
@@ -41,7 +41,7 @@ export class PreferenceModel extends HoistModel {
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,
-            exportOptions: {filename: getExportFilenameWithDate('prefs')},
+            exportOptions: {filename: exportFilenameWithDate('prefs')},
             selModel: 'multiple',
             store: {
                 url: 'rest/preferenceAdmin',

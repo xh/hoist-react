@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {getExportFilenameNoDate} from '@xh/hoist/admin/AdminUtils';
+import {exportFilename} from '@xh/hoist/admin/AdminUtils';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
@@ -44,7 +44,7 @@ export class ClientErrorsModel extends HoistModel {
             colChooserModel: true,
             enableExport: true,
             exportOptions: {
-                filename: getExportFilenameNoDate('client-errors'),
+                filename: exportFilename('client-errors'),
                 columns: 'ALL'
             },
             emptyText: 'No errors reported...',

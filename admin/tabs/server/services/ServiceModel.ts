@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {getExportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
+import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
@@ -14,7 +14,7 @@ export class ServiceModel extends HoistModel {
     @managed
     gridModel: GridModel = new GridModel({
         enableExport: true,
-        exportOptions: {filename: getExportFilenameWithDate('services')},
+        exportOptions: {filename: exportFilenameWithDate('services')},
         hideHeaders: true,
         store: new UrlStore({
             url: 'serviceAdmin/listServices',
