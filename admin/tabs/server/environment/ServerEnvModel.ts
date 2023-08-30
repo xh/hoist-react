@@ -24,7 +24,7 @@ export class ServerEnvModel extends HoistModel {
             sortBy: 'name',
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('env')},
-            store: {idSpec: XH.genId},
+            store: {idSpec: data => `${data.type}-${data.name}`},
             columns: [
                 {
                     field: {name: 'type', type: 'string'},
