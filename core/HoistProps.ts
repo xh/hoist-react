@@ -71,7 +71,15 @@ export interface StyleProps {
     style?: CSSProperties;
 }
 
+/** Additional props to support reliable selection of components for automated testing. */
 export interface TestSupportProps {
+    /**
+     * Unique identifier for this component for the purposes of locating and interacting with
+     * its primary/outer DOM element using automated testing tools. Hoist components that support
+     * this interface will add a "data-testid" attribute to an appropriate DOM element - typically
+     * (but not always) the outermost tag in their rendered markup. Some components may generate
+     * and apply additional child testIds to support testing of nested elements.
+     */
     testId?: string;
 }
 
