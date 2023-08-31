@@ -161,8 +161,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (readonly) classes.push('xh-form-field-readonly');
         if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
-        const testId = getFormFieldTestId(props, formContext, model.name),
-            childTestId = getTestId(testId, 'input');
+        const testId = getFormFieldTestId(props, formContext, model.name);
 
         // generate actual element child to render
         let childEl: ReactElement =
@@ -170,7 +169,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                 ? readonlyChild({
                       model,
                       readonlyRenderer,
-                      testId: childTestId
+                      testId: getTestId(testId, 'readonly-display')
                   })
                 : editableChild({
                       model,
@@ -181,7 +180,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                       displayNotValid,
                       leftErrorIcon,
                       commitOnChange,
-                      testId: childTestId
+                      testId: getTestId(testId, 'input')
                   });
 
         if (minimal) {
@@ -198,11 +197,11 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         }
 
         return box({
-            testId,
             ref,
             key: model?.xhId,
             className: classNames(className, classes),
             ...getLayoutProps(props),
+            testId,
             items: [
                 labelEl({
                     omit: !label,
