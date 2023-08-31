@@ -27,10 +27,11 @@ export interface FormContextType {
     model?: FormModel;
 
     /**
-     *  The base testId for generating formField testId's. If a testId is given to a formField it
-     *  will respect the given testId over the generated one.
-     *  This testId will not be visible as this component isn't rendered onto the DOM.
-     * */
+     *  Not rendered into the DOM directly - `Form` is a context provider and not a concrete
+     *  component - but will auto-generate and apply a testId of `${formTestId}-${fieldName}`
+     *  for every child {@link FormField} component, providing a centralized way to wire up
+     *  a form and all of its fields for testing.
+     */
     testId?: string;
 }
 
