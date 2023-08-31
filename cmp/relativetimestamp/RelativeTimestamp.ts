@@ -19,7 +19,6 @@ import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
 import moment from 'moment';
 
 interface RelativeTimestampProps extends HoistProps, BoxProps {
@@ -75,14 +74,13 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<Relat
     displayName: 'RelativeTimestamp',
     className: 'xh-relative-timestamp',
 
-    render({className, ...props}, ref) {
+    render({className, bind, timestamp, options, ...rest}, ref) {
         const impl = useLocalModel(RelativeTimestampLocalModel);
 
         return box({
             className,
-            ...getLayoutProps(props),
             ref,
-            ...props,
+            ...rest,
             item: span({
                 className: 'xh-title-tip',
                 item: impl.display,
