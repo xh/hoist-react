@@ -60,6 +60,11 @@ export type ElementSpec<P extends PlainObject> = P & {
     /** React key for this component. */
     key?: Key;
 
+    /**
+     * Supports passing a "data-testid" prop to built-in tags (e.g. `div`), to be rendered as an
+     * HTML attribute. See {@link TestSupportProps} for the higher-level `testId` prop that most
+     * Hoist components accept and should use.
+     */
     'data-testid'?: string;
 
     //----------------------------

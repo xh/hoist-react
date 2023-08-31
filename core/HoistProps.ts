@@ -67,11 +67,16 @@ export interface BoxProps
         TestSupportProps,
         Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'contextMenu'> {}
 
+/**
+ * Props for Components that accept standard HTML `style` attributes.
+ */
 export interface StyleProps {
     style?: CSSProperties;
 }
 
-/** Additional props to support reliable selection of components for automated testing. */
+/**
+ * Props to support reliable selection of components for automated testing.
+ */
 export interface TestSupportProps {
     /**
      * Unique identifier for this component for the purposes of locating and interacting with
