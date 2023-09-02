@@ -38,7 +38,8 @@ export class HibernateModel extends HoistModel {
         store: {
             fields: [
                 {name: 'name', type: 'string'},
-                {name: 'size', type: 'int'}
+                {name: 'size', type: 'int'},
+                {name: 'stats', type: 'json'}
             ],
             idSpec: 'name'
         },
