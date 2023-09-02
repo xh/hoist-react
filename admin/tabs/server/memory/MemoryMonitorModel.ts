@@ -5,13 +5,13 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
+import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, lookup, managed, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {fmtTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {LocalDate} from '@xh/hoist/utils/datetime';
 import {forOwn, sortBy} from 'lodash';
 import * as MCol from '../../monitor/MonitorColumns';
 
@@ -34,7 +34,7 @@ export class MemoryMonitorModel extends HoistModel {
 
         this.gridModel = new GridModel({
             enableExport: true,
-            exportOptions: {filename: `${XH.appCode}-memory-monitor-${LocalDate.today()}`},
+            exportOptions: {filename: exportFilenameWithDate('memory-monitor')},
             filterModel: true,
             sortBy: 'timestamp|desc',
             store: {idSpec: 'timestamp'},

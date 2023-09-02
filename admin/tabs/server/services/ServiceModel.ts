@@ -5,9 +5,9 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
+import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {compactDateCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, lookup, managed, XH} from '@xh/hoist/core';
-import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isEmpty, lowerFirst} from 'lodash';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {RecordActionSpec} from '@xh/hoist/data';
@@ -44,13 +44,14 @@ export class ServiceModel extends HoistModel {
     @managed
     gridModel: GridModel = new GridModel({
         enableExport: true,
-        exportOptions: {filename: `${XH.appCode}-services-${LocalDate.today()}`},
+        exportOptions: {filename: exportFilenameWithDate('services')},
         contextMenu: [
             this.clearCachesAction,
             this.clearClusterCachesAction,
             '-',
             ...GridModel.defaultContextMenu
         ],
+        hideHeaders: true,
         store: {
             idSpec: 'name',
             processRawData: this.processRawData,

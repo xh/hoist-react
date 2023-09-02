@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {exportFilename} from '@xh/hoist/admin/AdminUtils';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
@@ -159,7 +160,7 @@ export class ActivityTrackingModel extends HoistModel {
             },
             colChooserModel: true,
             enableExport: true,
-            exportOptions: {filename: `${XH.appCode}-activity-summary`},
+            exportOptions: {filename: exportFilename('activity-summary')},
             emptyText: 'No activity reported...',
             sortBy: ['cubeLabel'],
             columns: [
