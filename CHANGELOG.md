@@ -4,8 +4,11 @@
 
 ### 🎁 New Features
 
+* Provides support for administering multi-instances of Hoist servers.  Requires and is required by
+  `hoist-core>=18`.
 * Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.
 * Improved styling for disabled `checkbox` inputs.
+
 
 ## 59.0.3 - 2023-08-25
 
