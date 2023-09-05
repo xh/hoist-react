@@ -5,7 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps, HSide, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
 import {computed, makeObservable} from '@xh/hoist/mobx';
@@ -13,7 +13,7 @@ import {getTestId, withDefault} from '@xh/hoist/utils/js';
 import {filter, isObject} from 'lodash';
 import './RadioInput.scss';
 
-export interface RadioInputProps extends HoistProps, HoistInputProps, TestSupportProps {
+export interface RadioInputProps extends HoistProps, HoistInputProps {
     /** True to display each radio button inline with each other. */
     inline?: boolean;
 
@@ -99,7 +99,7 @@ const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref
             label: opt.label,
             value: opt.value,
             className: 'xh-radio-input-option',
-            'data-testid': getTestId(props.testId, `${opt.value}`),
+            'data-testid': getTestId(props.testId, `${opt.label}`),
             onFocus: model.onFocus,
             onBlur: model.onBlur
         });
@@ -112,6 +112,7 @@ const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref
         inline: props.inline,
         selectedValue: model.renderValue,
         onChange: model.onChange,
+        testId: props.testId,
         ref
     });
 });

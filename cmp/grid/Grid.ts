@@ -91,7 +91,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     model: uses(GridModel),
     className: 'xh-grid',
 
-    render({model, className, ...props}, ref) {
+    render({model, className, testId, ...props}, ref) {
         const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} =
                 model,
             impl = useLocalModel(GridLocalModel),
@@ -115,7 +115,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                     ...getLayoutProps(props),
                     ...impl.agOptions
                 }),
-                testId: props.testId,
+                testId,
                 onKeyDown: impl.onKeyDown,
                 ref: composeRefs(impl.viewRef, ref)
             }),

@@ -8,7 +8,7 @@ import {PopperBoundary, PopperModifiers} from '@blueprintjs/core';
 import {ITimePickerProps} from '@blueprintjs/datetime';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, HSide, LayoutProps, Some, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide, LayoutProps, Some} from '@xh/hoist/core';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {textInput, TextInputModel} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -27,7 +27,7 @@ import {createRef, ReactElement, ReactNode} from 'react';
 import {DayPickerProps} from 'react-day-picker';
 import './DateInput.scss';
 
-export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps, TestSupportProps {
+export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps {
     value?: Date | LocalDate;
 
     /** Props passed to ReactDayPicker component, as per DayPicker docs. */
@@ -396,7 +396,8 @@ const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref)
                 omit: !enableClear || !isClearable || disabled,
                 icon: Icon.cross(),
                 tabIndex: -1,
-                onClick: model.onClearBtnClick
+                onClick: model.onClearBtnClick,
+                testId: getTestId(props, 'clear')
             }),
             button({
                 className: classNames(
@@ -406,7 +407,8 @@ const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref)
                 icon: Icon.calendar(),
                 tabIndex: enableTextInput || disabled ? -1 : undefined,
                 elementRef: model.buttonRef,
-                onClick: enablePicker && !disabled ? model.onOpenPopoverClick : null
+                onClick: enablePicker && !disabled ? model.onOpenPopoverClick : null,
+                testId: getTestId(props, 'picker')
             })
         ]
     });
@@ -483,7 +485,7 @@ const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref)
                     selectOnFocus: props.selectOnFocus,
                     inputRef: model.inputRef,
                     ref: model.textInputRef,
-                    testId: getTestId(props, 'dateTextInput'),
+                    testId: getTestId(props),
                     ...getLayoutProps(props)
                 }),
                 className: 'xh-date-input__click-target',

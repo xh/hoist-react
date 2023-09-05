@@ -7,14 +7,7 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {
-    hoistCmp,
-    HoistProps,
-    HSide,
-    LayoutProps,
-    StyleProps,
-    TestSupportProps
-} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -24,12 +17,7 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import {FocusEvent, ReactElement, ReactNode, Ref} from 'react';
 
-export interface TextInputProps
-    extends HoistProps,
-        HoistInputProps,
-        LayoutProps,
-        StyleProps,
-        TestSupportProps {
+export interface TextInputProps extends HoistProps, HoistInputProps, LayoutProps, StyleProps {
     value?: string;
 
     /**
@@ -147,7 +135,7 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
             rightElement:
                 props.rightElement ||
                 (props.enableClear && !props.disabled && isClearable
-                    ? clearButton({testId: getTestId(props, 'clearBtn')})
+                    ? clearButton({testId: getTestId(props, 'clear-btn')})
                     : null),
             round: withDefault(props.round, false),
             spellCheck: withDefault(props.spellCheck, false),

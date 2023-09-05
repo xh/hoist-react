@@ -5,6 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
+import {Property} from 'csstype';
 import {CSSProperties, HTMLAttributes, ReactNode, Ref} from 'react';
 
 /**
@@ -110,10 +111,10 @@ export interface LayoutProps {
 
     flex?: string | number;
     flexBasis?: string | number;
-    flexDirection?: string | number;
+    flexDirection?: Property.FlexDirection;
     flexGrow?: string | number;
     flexShrink?: string | number;
-    flexWrap?: string | number;
+    flexWrap?: Property.FlexWrap;
 
     alignItems?: string;
     alignSelf?: string;
@@ -121,12 +122,12 @@ export interface LayoutProps {
     justifyContent?: string;
 
     overflow?: string;
-    overflowX?: string;
-    overflowY?: string;
+    overflowX?: Property.OverflowX;
+    overflowY?: Property.OverflowY;
     textOverflow?: string;
 
     top?: string | number;
     left?: string | number;
-    position?: string;
+    position?: Property.Position;
     display?: string;
 }

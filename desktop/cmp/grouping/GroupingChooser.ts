@@ -86,7 +86,6 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                 minimal: styleButtonAsInput,
                 target: fragment(
                     button({
-                        testId,
                         text: label,
                         title: label,
                         tabIndex: -1,
@@ -97,7 +96,8 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                         ),
                         minimal: styleButtonAsInput,
                         ...buttonProps,
-                        onClick: () => model.toggleEditor()
+                        onClick: () => model.toggleEditor(),
+                        testId
                     }),
                     favoritesIcon({testId: favoritesIconTestId})
                 ),

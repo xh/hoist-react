@@ -5,7 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {div, frame, p} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, PlainObject, TestSupportProps} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistProps, PlainObject} from '@xh/hoist/core';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {isEmpty, isNil, isString} from 'lodash';
@@ -13,7 +13,7 @@ import {isValidElement, MouseEvent, ReactNode} from 'react';
 
 import './ErrorMessage.scss';
 
-export interface ErrorMessageProps extends HoistProps, TestSupportProps {
+export interface ErrorMessageProps extends HoistProps, Omit<BoxProps, 'title'> {
     /**
      * If provided, will render a "Retry" button that calls this function.
      * Use `actionButtonProps` for further control over this button.
@@ -45,14 +45,13 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
     className: 'xh-error-message',
     render(
         {
-            className,
             model,
             error = (model as any)?.error,
             message,
             title,
-            testId,
             actionFn,
-            actionButtonProps
+            actionButtonProps,
+            ...props
         },
         ref
     ) {
@@ -71,8 +70,7 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
         }
 
         return frame({
-            className,
-            testId,
+            ...props,
             item: div({
                 ref,
                 className: 'xh-error-message__inner',
