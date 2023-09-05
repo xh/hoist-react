@@ -12,6 +12,8 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import {ReactNode} from 'react';
 
+import './Checkbox.scss';
+
 export interface CheckboxProps extends HoistProps, HoistInputProps, StyleProps {
     value?: boolean;
 

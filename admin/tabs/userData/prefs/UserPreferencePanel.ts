@@ -4,12 +4,12 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
-import {hoistCmp, XH} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
 import {restGrid, RestGridConfig} from '@xh/hoist/desktop/cmp/rest';
-import {LocalDate} from '@xh/hoist/utils/datetime';
 
 export const userPreferencePanel = hoistCmp.factory(() =>
     restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}})
@@ -22,7 +22,7 @@ const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminUserPreferenceState'},
     colChooserModel: true,
     enableExport: true,
-    exportOptions: {filename: `${XH.appCode}-user-prefs-${LocalDate.today()}`},
+    exportOptions: {filename: exportFilenameWithDate('user-prefs')},
     selModel: 'multiple',
     store: {
         url: 'rest/userPreferenceAdmin',

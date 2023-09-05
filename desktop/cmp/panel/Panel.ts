@@ -35,6 +35,9 @@ export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'titl
     /** True to style panel header (if displayed) with reduced padding and font-size. */
     compactHeader?: boolean;
 
+    /** CSS class name specific to the panel's header. */
+    headerClassName?: string;
+
     /** Items to be added to the right-side of the panel's header. */
     headerItems?: ReactNode[];
 
@@ -118,6 +121,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             icon,
             compactHeader,
             collapsedTitle,
+            headerClassName,
             headerItems,
             mask: maskProp,
             loadingIndicator: loadingIndicatorProp,
@@ -187,7 +191,14 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         let item = vbox({
             className: 'xh-panel__content',
             items: [
-                panelHeader({title, icon, compact: compactHeader, collapsedTitle, headerItems}),
+                panelHeader({
+                    title,
+                    icon,
+                    compact: compactHeader,
+                    collapsedTitle,
+                    className: headerClassName,
+                    headerItems
+                }),
                 coreContents,
                 parseLoadDecorator(maskProp, 'mask', contextModel),
                 parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
