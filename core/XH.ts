@@ -5,27 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
-import {Router, State} from 'router5';
-import {
-    HoistService,
-    AppSpec,
-    AppState,
-    Exception,
-    ExceptionHandlerOptions,
-    ExceptionHandler,
-    TrackOptions,
-    SizingMode,
-    HoistServiceClass,
-    Theme,
-    PlainObject,
-    HoistException,
-    PageState,
-    AppSuspendData,
-    FetchResponse
-} from './';
 import {Store} from '@xh/hoist/data';
-import {instanceManager} from './impl/InstanceManager';
-import {installServicesAsync} from './impl/InstallServices';
 import {Icon} from '@xh/hoist/icon';
 import {action} from '@xh/hoist/mobx';
 import {never} from '@xh/hoist/promise';
@@ -35,6 +15,7 @@ import {
     ChangelogService,
     ConfigService,
     EnvironmentService,
+    FetchOptions,
     FetchService,
     GridAutosizeService,
     GridExportService,
@@ -45,17 +26,41 @@ import {
     LocalStorageService,
     PrefService,
     TrackService,
-    WebSocketService,
-    FetchOptions
+    WebSocketService
 } from '@xh/hoist/svc';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
-import {AppContainerModel} from '../appcontainer/AppContainerModel';
-import {ToastModel} from '../appcontainer/ToastModel';
-import {BannerModel} from '../appcontainer/BannerModel';
-import '../styles/XH.scss';
-import {ModelSelector, HoistModel, RefreshContextModel} from './model';
-import {HoistAppModel, BannerSpec, ToastSpec, MessageSpec, HoistUser, TaskObserver} from './';
+import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
+import {AppContainerModel} from '../appcontainer/AppContainerModel';
+import {BannerModel} from '../appcontainer/BannerModel';
+import {ToastModel} from '../appcontainer/ToastModel';
+import '../styles/XH.scss';
+import {
+    AppSpec,
+    AppState,
+    AppSuspendData,
+    BannerSpec,
+    Exception,
+    ExceptionHandler,
+    ExceptionHandlerOptions,
+    FetchResponse,
+    HoistAppModel,
+    HoistException,
+    HoistService,
+    HoistServiceClass,
+    HoistUser,
+    MessageSpec,
+    PageState,
+    PlainObject,
+    SizingMode,
+    TaskObserver,
+    Theme,
+    ToastSpec,
+    TrackOptions
+} from './';
+import {installServicesAsync} from './impl/InstallServices';
+import {instanceManager} from './impl/InstanceManager';
+import {HoistModel, ModelSelector, RefreshContextModel} from './model';
 
 export const MIN_HOIST_CORE_VERSION = '16.0';
 
@@ -679,6 +684,10 @@ export class XHApi {
     /** All Stores registered with this application. */
     getStores(): Store[] {
         return Array.from(instanceManager.stores);
+    }
+
+    getActiveModelByTestId(testId: string) {
+        return this.getActiveModels().find(it => it.componentProps.testId === testId);
     }
 
     /**
