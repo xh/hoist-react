@@ -5,7 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase, PlainObject, Some} from '@xh/hoist/core';
+import {HoistBase, PlainObject, Some, XH} from '@xh/hoist/core';
 import {
     Cube,
     CubeField,
@@ -99,7 +99,7 @@ export class View extends HoistBase {
         const {query, stores = [], connect = false} = config;
 
         this.query = query;
-        this.stores = castArray(stores);
+        this.stores = this.parseStores(stores);
         this._rowCache = new Map();
         this.fullUpdate();
 
@@ -185,7 +185,7 @@ export class View extends HoistBase {
 
     /** Set stores to be loaded/reloaded with data from this view. */
     setStores(stores: Some<Store>) {
-        this.stores = castArray(stores);
+        this.stores = this.parseStores(stores);
         this.loadStores();
     }
 
@@ -461,6 +461,16 @@ export class View extends HoistBase {
 
     private get aggregatorsAreSimple() {
         return this.fields.every(({aggregator}) => !aggregator || aggregator.dependsOnChildrenOnly);
+    }
+
+    private parseStores(stores: Some<Store>): Store[] {
+        const ret = castArray(stores);
+        if (ret.find(it => it.reuseRecords === true)) {
+            throw XH.exception(
+                'Store.reuseRecords cannot be used on a Store that is connected to a Cube View'
+            );
+        }
+        return ret;
     }
 
     override destroy() {
