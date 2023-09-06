@@ -6,10 +6,10 @@
  */
 import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
-import {compactDateCol, GridModel} from '@xh/hoist/cmp/grid';
+import {adminDateTimeSec} from '@xh/hoist/admin/tabs/server/Utils';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, lookup, managed, XH} from '@xh/hoist/core';
 import {isEmpty, lowerFirst} from 'lodash';
-import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {AppModel} from '@xh/hoist/admin/AppModel';
@@ -19,7 +19,7 @@ export class ServiceModel extends HoistModel {
 
     clearCachesAction: RecordActionSpec = {
         icon: Icon.reset(),
-        text: 'Clear Selected',
+        text: 'Clear Caches',
         intent: 'danger',
         actionFn: () => this.clearCachesAsync(false),
         displayFn: () => ({
@@ -35,8 +35,7 @@ export class ServiceModel extends HoistModel {
         intent: 'danger',
         actionFn: () => this.clearCachesAsync(true),
         displayFn: () => ({
-            hidden: AppModel.readonly,
-            disabled: !this.parent.isMultiInstance
+            hidden: AppModel.readonly || !this.parent.isMultiInstance
         }),
         recordsRequired: true
     };
@@ -51,7 +50,6 @@ export class ServiceModel extends HoistModel {
             '-',
             ...GridModel.defaultContextMenu
         ],
-        hideHeaders: true,
         store: {
             idSpec: 'name',
             processRawData: this.processRawData,
@@ -69,12 +67,9 @@ export class ServiceModel extends HoistModel {
         groupBy: 'provider',
         columns: [
             {field: 'provider', hidden: true},
-            {field: 'displayName', minWidth: 300, flex: true},
-            {
-                field: 'lastCachesCleared',
-                renderer: v => getRelativeTimestamp(v)
-            },
-            {field: 'initializedDate', ...compactDateCol}
+            {field: 'displayName'},
+            {field: 'lastCachesCleared', ...adminDateTimeSec},
+            {field: 'initializedDate', ...adminDateTimeSec}
         ]
     });
 

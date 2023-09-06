@@ -11,6 +11,7 @@ import {serverEnvPanel} from '@xh/hoist/admin/tabs/server/environment/ServerEnvP
 import {logViewer} from '@xh/hoist/admin/tabs/server/logViewer/LogViewer';
 import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/server/memory/MemoryMonitorPanel';
 import {servicePanel} from '@xh/hoist/admin/tabs/server/services/ServicePanel';
+import {adminDateTimeSec} from '@xh/hoist/admin/tabs/server/Utils';
 import {webSocketPanel} from '@xh/hoist/admin/tabs/server/websocket/WebSocketPanel';
 import {GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
@@ -86,11 +87,6 @@ export class ServerTabModel extends HoistModel {
                     }
                 },
                 {
-                    field: 'startupTime',
-                    headerName: 'Uptime',
-                    renderer: v => getRelativeTimestamp(v, {pastSuffix: ''})
-                },
-                {
                     field: 'wsConnections',
                     headerName: 'Web Sockets',
                     ...numberCol
@@ -105,6 +101,16 @@ export class ServerTabModel extends HoistModel {
                 },
                 {
                     field: 'address'
+                },
+                {
+                    field: 'startupTime',
+                    ...adminDateTimeSec
+                },
+                {
+                    colId: 'uptime',
+                    field: 'startupTime',
+                    renderer: v => getRelativeTimestamp(v, {pastSuffix: ''}),
+                    rendererIsComplex: true
                 }
             ],
             autosizeOptions: {mode: 'managed'}

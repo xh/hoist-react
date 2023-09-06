@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {numberRenderer} from '@xh/hoist/format';
+import {dateTimeRenderer, numberRenderer} from '@xh/hoist/format';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 
@@ -46,7 +46,8 @@ export const code: ColumnSpec = {
 
 export const timestamp: ColumnSpec = {
     field: {name: 'timestamp', type: 'date'},
-    ...Col.dateTime
+    ...Col.dateTime,
+    renderer: dateTimeRenderer({fmt: 'MM-DD h:mm:ssa'})
 };
 
 export const totalHeapMb: ColumnSpec = {
