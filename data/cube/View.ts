@@ -5,7 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase, PlainObject, Some, XH} from '@xh/hoist/core';
+import {HoistBase, PlainObject, Some} from '@xh/hoist/core';
 import {
     Cube,
     CubeField,
@@ -465,11 +465,13 @@ export class View extends HoistBase {
 
     private parseStores(stores: Some<Store>): Store[] {
         const ret = castArray(stores);
-        if (ret.find(it => it.reuseRecords === true)) {
-            throw XH.exception(
-                'Store.reuseRecords cannot be used on a Store that is connected to a Cube View'
-            );
-        }
+
+        // Views mutate the rows they feed to connected stores  -- `reuseRecords` not appropriate
+        throwIf(
+            ret.some(s => s.reuseRecords),
+            'Store.reuseRecords cannot be used on a Store that is connected to a Cube View'
+        );
+
         return ret;
     }
 
