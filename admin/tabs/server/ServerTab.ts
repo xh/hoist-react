@@ -7,6 +7,7 @@
 import {grid} from '@xh/hoist/cmp/grid';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {creates, hoistCmp} from '@xh/hoist/core';
+import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
 import {box, hspacer, placeholder, vframe} from '@xh/hoist/cmp/layout';
@@ -37,7 +38,8 @@ export const serverTab = hoistCmp.factory({
                       flex: 1,
                       item: tabContainer()
                   })
-                : placeholder('Choose an instance above to see more details')
+                : placeholder('Choose an instance above to see more details'),
+            mask({bind: model.loadModel})
         );
     }
 });

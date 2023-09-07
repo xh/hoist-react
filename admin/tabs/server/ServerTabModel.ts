@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {AppModel} from '@xh/hoist/admin/AppModel';
 import {hzObjectPanel} from '@xh/hoist/admin/tabs/server/hzobject/HzObjectPanel';
 import {hibernatePanel} from '@xh/hoist/admin/tabs/server/hibernate/HibernatePanel';
 import {connPoolMonitorPanel} from '@xh/hoist/admin/tabs/server/connectionpool/ConnPoolMonitorPanel';
@@ -17,6 +18,7 @@ import {GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
+import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import * as MCol from '../monitor/MonitorColumns';
 import {badge} from '@xh/hoist/cmp/badge';
@@ -24,6 +26,15 @@ import {hbox} from '@xh/hoist/cmp/layout';
 import {ReactNode} from 'react';
 
 export class ServerTabModel extends HoistModel {
+    shutdownAction: RecordActionSpec = {
+        icon: Icon.skull(),
+        text: 'Shutdown Instance',
+        intent: 'danger',
+        actionFn: ({record}) => this.shutdownInstanceAsync(record.data),
+        displayFn: () => ({hidden: AppModel.readonly}),
+        recordsRequired: 1
+    };
+
     @managed gridModel: GridModel = this.createGridModel();
     @managed tabModel: TabContainerModel = this.createTabModel();
 
@@ -66,6 +77,7 @@ export class ServerTabModel extends HoistModel {
         return new GridModel({
             enableExport: false,
             selModel: 'single',
+            contextMenu: [this.shutdownAction, '-', ...GridModel.defaultContextMenu],
             store: {
                 idSpec: 'name',
                 fields: [
@@ -139,5 +151,31 @@ export class ServerTabModel extends HoistModel {
         if (instance.isMaster) content.push(badge('master'));
         if (instance.isLocal) content.push(badge('local'));
         return hbox(content);
+    }
+
+    async shutdownInstanceAsync(instance: PlainObject) {
+        if (
+            !(await XH.confirm({
+                message: `Are you SURE you want to shutdown instance '${instance.name}'? `,
+                title: 'Shutdown Instance?',
+                confirmProps: {
+                    icon: Icon.skull(),
+                    text: 'Shutdown Now',
+                    intent: 'danger'
+                },
+                cancelProps: {
+                    autoFocus: true
+                }
+            }))
+        )
+            return;
+
+        await XH.fetchJson({
+            url: 'clusterAdmin/shutdownInstance',
+            params: {instance: instance.name}
+        })
+            .finally(() => this.loadAsync())
+            .linkTo({observer: this.loadModel, message: 'Attempting instance shutdown'})
+            .catchDefault();
     }
 }
