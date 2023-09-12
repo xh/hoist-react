@@ -5,8 +5,8 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/server/BaseInstanceModel';
-import {adminDateTimeSec, exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
-
+import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
+import {timestampNoYear} from '@xh/hoist/admin/columns';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {isEmpty, lowerFirst} from 'lodash';
@@ -67,8 +67,8 @@ export class ServiceModel extends BaseInstanceModel {
         columns: [
             {field: 'provider', hidden: true},
             {field: 'displayName'},
-            {field: 'lastCachesCleared', ...adminDateTimeSec},
-            {field: 'initializedDate', ...adminDateTimeSec}
+            {...timestampNoYear, field: 'lastCachesCleared'},
+            {...timestampNoYear, field: 'initializedDate'}
         ]
     });
 

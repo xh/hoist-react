@@ -6,7 +6,6 @@
  */
 import {ColumnSpec, dateTimeSec} from '@xh/hoist/cmp/grid';
 import {XH} from '@xh/hoist/core';
-import {dateTimeRenderer} from '@xh/hoist/format';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 
 /**
@@ -23,12 +22,3 @@ export function exportFilename(moduleName: string): string {
 export function exportFilenameWithDate(moduleName: string): () => string {
     return () => `${XH.appCode}-${moduleName}-${LocalDate.today()}`;
 }
-
-/**
- * A precise datetime column without the year.
- * Useful for managing/monitoring processes without a lot of long-term history
- */
-export const adminDateTimeSec: ColumnSpec = {
-    ...dateTimeSec,
-    renderer: dateTimeRenderer({fmt: 'MM-DD h:mm:ssa'})
-};

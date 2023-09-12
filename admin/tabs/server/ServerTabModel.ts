@@ -5,14 +5,15 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
+import {timestampNoYear} from '@xh/hoist/admin/columns';
 import {hzObjectPanel} from '@xh/hoist/admin/tabs/server/hzobject/HzObjectPanel';
 import {hibernatePanel} from '@xh/hoist/admin/tabs/server/hibernate/HibernatePanel';
 import {connPoolMonitorPanel} from '@xh/hoist/admin/tabs/server/connectionpool/ConnPoolMonitorPanel';
 import {serverEnvPanel} from '@xh/hoist/admin/tabs/server/environment/ServerEnvPanel';
 import {logViewer} from '@xh/hoist/admin/tabs/server/logViewer/LogViewer';
+import {usedHeapMb, usedPctMax} from '@xh/hoist/admin/tabs/server/memory/MemoryMonitorModel';
 import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/server/memory/MemoryMonitorPanel';
 import {servicePanel} from '@xh/hoist/admin/tabs/server/services/ServicePanel';
-import {adminDateTimeSec} from '@xh/hoist/admin/AdminUtils';
 import {webSocketPanel} from '@xh/hoist/admin/tabs/server/websocket/WebSocketPanel';
 import {GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
@@ -20,7 +21,6 @@ import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import * as MCol from '../monitor/MonitorColumns';
 import {badge} from '@xh/hoist/cmp/badge';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {ReactNode} from 'react';
@@ -94,7 +94,7 @@ export class ServerTabModel extends HoistModel {
                     {name: 'address', type: 'string'}
                 ]
             },
-            sortBy: ['isMaster', 'name'],
+            //sortBy: ['isMaster', 'name'],
             columns: [
                 {
                     field: 'name',
@@ -109,11 +109,11 @@ export class ServerTabModel extends HoistModel {
                     ...numberCol
                 },
                 {
-                    ...MCol.usedHeapMb,
+                    ...usedHeapMb,
                     headerName: 'Heap (MB)'
                 },
                 {
-                    ...MCol.usedPctMax,
+                    ...usedPctMax,
                     headerName: 'Heap (% Max)'
                 },
                 {
@@ -121,7 +121,7 @@ export class ServerTabModel extends HoistModel {
                 },
                 {
                     field: 'startupTime',
-                    ...adminDateTimeSec
+                    ...timestampNoYear
                 },
                 {
                     colId: 'uptime',

@@ -5,15 +5,15 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
+import {timestampNoYear} from '@xh/hoist/admin/columns';
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/server/BaseInstanceModel';
 import {ChartModel} from '@xh/hoist/cmp/chart';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
-import {fmtTime} from '@xh/hoist/format';
+import {fmtTime, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {forOwn, sortBy} from 'lodash';
-import * as MCol from '../../monitor/MonitorColumns';
 
 export class MemoryMonitorModel extends BaseInstanceModel {
     @managed gridModel: GridModel;
@@ -39,22 +39,22 @@ export class MemoryMonitorModel extends BaseInstanceModel {
             colDefaults: {filterable: true},
             headerMenuDisplay: 'hover',
             columns: [
-                MCol.timestamp,
+                {...timestampNoYear},
                 {
                     groupId: 'heap',
                     headerAlign: 'center',
                     children: [
-                        MCol.totalHeapMb,
-                        MCol.maxHeapMb,
-                        MCol.freeHeapMb,
-                        MCol.usedHeapMb,
-                        MCol.usedPctMax
+                        totalHeapMb,
+                        maxHeapMb,
+                        freeHeapMb,
+                        usedHeapMb,
+                        usedPctMax
                     ]
                 },
                 {
                     groupId: 'GC',
                     headerAlign: 'center',
-                    children: [MCol.collectionCount, MCol.avgCollectionTime, MCol.pctCollectionTime]
+                    children: [collectionCount, avgCollectionTime, pctCollectionTime]
                 }
             ]
         });
@@ -224,3 +224,80 @@ export class MemoryMonitorModel extends BaseInstanceModel {
         return XH.getConf('xhMemoryMonitoringConfig', {heapDumpDir: null, enabled: true});
     }
 }
+
+const mbCol = {width: 150, renderer: numberRenderer({precision: 2, withCommas: true})},
+    pctCol = {width: 150, renderer: numberRenderer({precision: 2, withCommas: true, label: '%'})},
+    msCol = {width: 150, renderer: numberRenderer({precision: 0, withCommas: false})};
+
+
+export const totalHeapMb: ColumnSpec = {
+    field: {
+        name: 'totalHeapMb',
+        type: 'number',
+        displayName: 'Total (mb)'
+    },
+    ...mbCol
+};
+
+export const maxHeapMb: ColumnSpec = {
+    field: {
+        name: 'maxHeapMb',
+        type: 'number',
+        displayName: 'Max (mb)'
+    },
+    ...mbCol
+};
+
+export const freeHeapMb: ColumnSpec = {
+    field: {
+        name: 'freeHeapMb',
+        type: 'number',
+        displayName: 'Free (mb)'
+    },
+    ...mbCol
+};
+
+export const usedHeapMb: ColumnSpec = {
+    field: {
+        name: 'usedHeapMb',
+        type: 'number',
+        displayName: 'Used (mb)'
+    },
+    ...mbCol
+};
+
+export const usedPctMax: ColumnSpec = {
+    field: {
+        name: 'usedPctMax',
+        type: 'number',
+        displayName: 'Used (pct Max)'
+    },
+    ...pctCol
+};
+
+export const avgCollectionTime: ColumnSpec = {
+    field: {
+        name: 'avgCollectionTime',
+        type: 'number',
+        displayName: 'Avg (ms)'
+    },
+    ...msCol
+};
+
+export const collectionCount: ColumnSpec = {
+    field: {
+        name: 'collectionCount',
+        type: 'number',
+        displayName: '# GCs'
+    },
+    ...msCol
+};
+
+export const pctCollectionTime: ColumnSpec = {
+    field: {
+        name: 'pctCollectionTime',
+        type: 'number',
+        displayName: '% Time in GC'
+    },
+    ...pctCol
+};

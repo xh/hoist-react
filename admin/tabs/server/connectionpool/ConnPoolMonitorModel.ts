@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {timestampNoYear} from '@xh/hoist/admin/columns';
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/server/BaseInstanceModel';
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {ChartModel} from '@xh/hoist/cmp/chart';
@@ -43,7 +44,7 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
             headerMenuDisplay: 'hover',
             colDefaults: {filterable: true, align: 'right'},
             columns: [
-                MCol.timestamp,
+                {...timestampNoYear},
                 {field: 'size'},
                 {field: 'active'},
                 {field: 'idle'},
