@@ -6,10 +6,10 @@
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
-import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
+import {BaseInstanceModel} from '@xh/hoist/admin/tabs/server/BaseInstanceModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, p} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSpec, lookup, managed, XH} from '@xh/hoist/core';
+import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
@@ -22,10 +22,8 @@ import * as WSCol from './WebSocketColumns';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 
-export class WebSocketModel extends HoistModel {
+export class WebSocketModel extends BaseInstanceModel {
     viewRef = createRef<HTMLElement>();
-
-    @lookup(() => ServerTabModel) parent: ServerTabModel;
 
     @observable
     lastRefresh: number;
@@ -102,7 +100,7 @@ export class WebSocketModel extends HoistModel {
         try {
             const data = await XH.fetchJson({
                 url: 'webSocketAdmin/allChannels',
-                params: {instance: this.parent.instanceName},
+                params: {instance: this.instanceName},
                 loadSpec
             });
             this.gridModel.loadData(data);
@@ -110,7 +108,7 @@ export class WebSocketModel extends HoistModel {
                 this.lastRefresh = Date.now();
             });
         } catch (e) {
-            XH.handleException(e);
+            this.handleLoadException(e, loadSpec);
         }
     }
 
@@ -142,7 +140,7 @@ export class WebSocketModel extends HoistModel {
                     params: {
                         channelKey: rec.data.key,
                         topic: XH.webSocketService.FORCE_APP_SUSPEND_TOPIC,
-                        instance: this.parent.instanceName,
+                        instance: this.instanceName,
                         message
                     }
                 })

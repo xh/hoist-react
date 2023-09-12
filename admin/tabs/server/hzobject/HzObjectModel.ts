@@ -4,19 +4,17 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {BaseInstanceModel} from '@xh/hoist/admin/tabs/server/BaseInstanceModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {HoistModel, LoadSpec, lookup, managed, XH} from '@xh/hoist/core';
+import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
 import {Icon} from '@xh/hoist/icon';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 
-export class HzObjectModel extends HoistModel {
+export class HzObjectModel extends BaseInstanceModel {
     override persistWith = {localStorageKey: 'xhAdminHzObjectState'};
-
-    @lookup(() => ServerTabModel) parent: ServerTabModel;
 
     clearAction: RecordActionSpec = {
         icon: Icon.reset(),
@@ -60,7 +58,7 @@ export class HzObjectModel extends HoistModel {
             await XH.fetchJson({
                 url: 'hzObjectAdmin/clearObjects',
                 params: {
-                    instance: this.parent.instanceName,
+                    instance: this.instanceName,
                     names: this.gridModel.selectedIds
                 }
             });
@@ -76,12 +74,12 @@ export class HzObjectModel extends HoistModel {
             const response = await XH.fetchJson({
                 url: 'hzObjectAdmin/listObjects',
                 params: {
-                    instance: this.parent.instanceName
+                    instance: this.instanceName
                 }
             });
             return this.gridModel.loadData(response);
         } catch (e) {
-            XH.handleException(e);
+            this.handleLoadException(e, loadSpec);
         }
     }
 }

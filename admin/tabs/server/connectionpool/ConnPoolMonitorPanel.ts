@@ -32,14 +32,6 @@ export const connPoolMonitorPanel = hoistCmp.factory({
             });
         }
 
-        if (model.lastLoadException) {
-            return errorMessage({
-                title: 'Error loading connection pool snapshots.',
-                error: model.lastLoadException,
-                actionFn: () => model.refreshAsync()
-            });
-        }
-
         const {readonly} = AppModel;
         return panel({
             tbar: [

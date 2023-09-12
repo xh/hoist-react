@@ -4,23 +4,21 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
+import {BaseInstanceModel} from '@xh/hoist/admin/tabs/server/BaseInstanceModel';
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, lookup, managed, PlainObject, XH} from '@xh/hoist/core';
+import {LoadSpec, lookup, managed, PlainObject, XH} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
 import {bindable} from '@xh/hoist/mobx';
 import {forOwn, sortBy} from 'lodash';
 import * as MCol from '../../monitor/MonitorColumns';
 
-export class ConnPoolMonitorModel extends HoistModel {
+export class ConnPoolMonitorModel extends BaseInstanceModel {
     readonly minHoistCoreVersion = '17.2.0';
     get supported(): boolean {
         return XH.environmentService.isMinHoistCoreVersion(this.minHoistCoreVersion);
     }
-
-    @lookup(() => ServerTabModel) parent: ServerTabModel;
 
     @bindable enabled: boolean = true;
     @bindable poolConfiguration: PlainObject = {};
@@ -100,7 +98,7 @@ export class ConnPoolMonitorModel extends HoistModel {
         try {
             const resp = await XH.fetchJson({
                 url: 'connectionPoolMonitorAdmin/snapshots',
-                params: {instance: this.parent.instanceName},
+                params: {instance: this.instanceName},
                 loadSpec
             });
 
@@ -144,11 +142,7 @@ export class ConnPoolMonitorModel extends HoistModel {
                 }
             ]);
         } catch (e) {
-            XH.handleException(e, {showAlert: false});
-            if (!loadSpec.isAutoRefresh) {
-                this.clear();
-                throw e;
-            }
+            this.handleLoadException(e, loadSpec);
         }
     }
 
@@ -156,7 +150,7 @@ export class ConnPoolMonitorModel extends HoistModel {
         try {
             await XH.fetchJson({
                 url: 'connectionPoolMonitorAdmin/takeSnapshot',
-                params: {instance: this.parent.instanceName}
+                params: {instance: this.instanceName}
             }).linkTo(this.loadModel);
             await this.refreshAsync();
             XH.successToast('Updated snapshot loaded.');
@@ -169,7 +163,7 @@ export class ConnPoolMonitorModel extends HoistModel {
         try {
             await XH.fetchJson({
                 url: 'connectionPoolMonitorAdmin/resetStats',
-                params: {instance: this.parent.instanceName}
+                params: {instance: this.instanceName}
             }).linkTo(this.loadModel);
             await this.refreshAsync();
             XH.successToast('Connection pool stats reset.');

@@ -12,7 +12,6 @@ import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {HibernateModel} from './HibernateModel';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
-import {fmtStats} from '../Utils';
 
 export const hibernatePanel = hoistCmp.factory({
     model: creates(HibernateModel),
@@ -56,7 +55,7 @@ const detailsPanel = hoistCmp.factory({
                           readonly: true,
                           width: '100%',
                           height: '100%',
-                          value: fmtStats(data.stats),
+                          value: model.fmtStats(data.stats),
                           showFullscreenButton: false
                       })
                   })

@@ -4,18 +4,17 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
-import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
-import {adminDateTimeSec} from '@xh/hoist/admin/tabs/server/Utils';
+import {BaseInstanceModel} from '@xh/hoist/admin/tabs/server/BaseInstanceModel';
+import {adminDateTimeSec, exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
+
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, lookup, managed, XH} from '@xh/hoist/core';
+import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {isEmpty, lowerFirst} from 'lodash';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 
-export class ServiceModel extends HoistModel {
-    @lookup(() => ServerTabModel) parent: ServerTabModel;
+export class ServiceModel extends BaseInstanceModel {
 
     clearCachesAction: RecordActionSpec = {
         icon: Icon.reset(),
@@ -24,7 +23,7 @@ export class ServiceModel extends HoistModel {
         actionFn: () => this.clearCachesAsync(false),
         displayFn: () => ({
             hidden: AppModel.readonly,
-            text: `Clear Caches (@ ${this.parent.instanceName})`
+            text: `Clear Caches (@ ${this.instanceName})`
         }),
         recordsRequired: true
     };
@@ -81,7 +80,7 @@ export class ServiceModel extends HoistModel {
             await XH.fetchJson({
                 url: 'serviceManagerAdmin/clearCaches',
                 params: {
-                    instance: entireCluster ? null : this.parent.instanceName,
+                    instance: entireCluster ? null : this.instanceName,
                     names: selectedRecords.map(it => it.data.name)
                 }
             }).linkTo(this.loadModel);
@@ -96,12 +95,12 @@ export class ServiceModel extends HoistModel {
         try {
             const data = await XH.fetchJson({
                 url: 'serviceManagerAdmin/listServices',
-                params: {instance: this.parent.instanceName},
+                params: {instance: this.instanceName},
                 loadSpec
             });
             return this.gridModel.loadData(data);
         } catch (e) {
-            XH.handleException(e);
+            this.handleLoadException(e, loadSpec);
         }
     }
 

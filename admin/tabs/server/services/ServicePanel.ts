@@ -4,7 +4,6 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {fmtStats} from '../Utils';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
@@ -13,7 +12,6 @@ import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {ServiceModel} from './ServiceModel';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
-import {fmtJson} from '@xh/hoist/format';
 
 export const servicePanel = hoistCmp.factory({
     model: creates(ServiceModel),
@@ -67,7 +65,7 @@ const detailsPanel = hoistCmp.factory({
                           readonly: true,
                           width: '100%',
                           height: '100%',
-                          value: fmtStats(data.stats)
+                          value: model.fmtStats(data.stats)
                       })
                   })
                 : placeholder('Select a service')

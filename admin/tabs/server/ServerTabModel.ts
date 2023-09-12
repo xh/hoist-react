@@ -12,7 +12,7 @@ import {serverEnvPanel} from '@xh/hoist/admin/tabs/server/environment/ServerEnvP
 import {logViewer} from '@xh/hoist/admin/tabs/server/logViewer/LogViewer';
 import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/server/memory/MemoryMonitorPanel';
 import {servicePanel} from '@xh/hoist/admin/tabs/server/services/ServicePanel';
-import {adminDateTimeSec} from '@xh/hoist/admin/tabs/server/Utils';
+import {adminDateTimeSec} from '@xh/hoist/admin/AdminUtils';
 import {webSocketPanel} from '@xh/hoist/admin/tabs/server/websocket/WebSocketPanel';
 import {GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
@@ -52,15 +52,20 @@ export class ServerTabModel extends HoistModel {
 
     override async doLoadAsync() {
         const {gridModel} = this;
-        let data = await XH.fetchJson({url: 'clusterAdmin/allInstances'});
-        data = data.map(row => ({
-            ...row,
-            usedHeapMb: row.memory.usedHeapMb,
-            usedPctMax: row.memory.usedPctMax
-        }));
+        try {
 
-        gridModel.loadData(data);
-        gridModel.preSelectFirstAsync();
+            let data = await XH.fetchJson({url: 'clusterAdmin/allInstances'});
+            data = data.map(row => ({
+                ...row,
+                usedHeapMb: row.memory.usedHeapMb,
+                usedPctMax: row.memory.usedPctMax
+            }));
+
+            gridModel.loadData(data);
+            await gridModel.preSelectFirstAsync();
+        } catch (e) {
+            XH.handleException(e);
+        }
     }
 
     constructor() {

@@ -6,9 +6,9 @@
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
-import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
+import {BaseInstanceModel} from '@xh/hoist/admin/tabs/server/BaseInstanceModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, lookup, managed, XH} from '@xh/hoist/core';
+import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -20,12 +20,10 @@ import {LogDisplayModel} from './LogDisplayModel';
 /**
  * @internal
  */
-export class LogViewerModel extends HoistModel {
+export class LogViewerModel extends BaseInstanceModel {
     @observable file: string = null;
 
     viewRef = createRef<HTMLElement>();
-
-    @lookup(() => ServerTabModel) parent: ServerTabModel;
 
     @managed
     logDisplayModel = new LogDisplayModel(this);
@@ -81,7 +79,7 @@ export class LogViewerModel extends HoistModel {
         try {
             const data = await XH.fetchJson({
                 url: 'logViewerAdmin/listFiles',
-                params: {instance: this.parent.instanceName},
+                params: {instance: this.instanceName},
                 loadSpec
             });
 
@@ -97,7 +95,7 @@ export class LogViewerModel extends HoistModel {
                 }
             }
         } catch (e) {
-            XH.handleException(e, {title: 'Error loading list of available log files'});
+            this.handleLoadException(e, loadSpec);
         }
     }
 
@@ -118,7 +116,7 @@ export class LogViewerModel extends HoistModel {
                 url: 'logViewerAdmin/deleteFiles',
                 params: {
                     filenames,
-                    instance: this.parent.instanceName
+                    instance: this.instanceName
                 }
             });
             await this.refreshAsync();
@@ -137,7 +135,7 @@ export class LogViewerModel extends HoistModel {
                     url: 'logViewerAdmin/download',
                     params: {
                         filename,
-                        instance: this.parent.instanceName
+                        instance: this.instanceName
                     }
                 });
 
