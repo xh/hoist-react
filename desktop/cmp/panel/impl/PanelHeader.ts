@@ -27,7 +27,7 @@ export const panelHeader = hoistCmp.factory({
             displayedTitle = collapsed ? collapsedTitle : title,
             headerItems = props.headerItems ?? [];
 
-        if (isNil(title) && isNil(icon) && isEmpty(headerItems)) return null;
+        if (isNil(displayedTitle) && isNil(icon) && isEmpty(headerItems)) return null;
 
         const onDoubleClick = () => {
             if (isModal) {
@@ -42,7 +42,7 @@ export const panelHeader = hoistCmp.factory({
             compactCls = compact ? 'xh-panel-header--compact' : null;
 
         // 1) Classic "top" title bar
-        if (!collapsed || vertical || isModal) {
+        if ((!collapsed || vertical || isModal) && (title || icon || headerItems)) {
             return hbox({
                 className: classNames(className, compactCls),
                 items: [
