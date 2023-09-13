@@ -61,8 +61,8 @@ export const AppContainer = hoistCmp({
         return fragment(
             errorBoundary({
                 modelConfig: {
-                    handler: {requireReload: true},
-                    renderer: () => null
+                    errorHandler: {requireReload: true},
+                    errorRenderer: () => null
                 },
                 item: viewForState()
             }),
