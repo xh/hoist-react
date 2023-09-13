@@ -5,7 +5,7 @@
 ### 🎁 New Features
 
 * Provide new `ErrorBoundary` component for finer-grained application handling of React Errors.
-* Added `ErrorBoundary` to `TabContainer`'s `Tab`, and mobile `PageContainer`s `Page`.  This
+* Added `ErrorBoundary` to `TabContainer`'s `Tab`, and mobile `Navigator`s `Page`.  This
 provides better isolation of application content, minimizing the chance that any individual
 component can crash the entire app.
 * Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.

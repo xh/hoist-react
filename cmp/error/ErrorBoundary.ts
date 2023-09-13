@@ -22,14 +22,13 @@ import {ErrorBoundaryModel} from './ErrorBoundaryModel'
  */
 export const [ErrorBoundary, errorBoundary] = hoistCmp.withFactory<ErrorBoundaryModel>({
     displayName: 'ErrorBoundary',
-    model: uses(ErrorBoundaryModel, {createDefault: true, fromContext: false}),
+    model: uses(ErrorBoundaryModel, {createDefault: true, fromContext: false, publishMode: 'limited'}),
     render({model, ...props}) {
         let {error, errorRenderer} = model;
 
         if (!error) return reactErrorBoundary({model, ...props});
         if (errorRenderer) return errorRenderer(error);
-
-        const cmp = XH.isDesktop ? desktopErrorMessage : mobileErrorMessage;
+        const cmp = XH.isMobileApp ? mobileErrorMessage :  desktopErrorMessage;
         return cmp({
             error,
             title: 'An error occurred rendering this component. ',

@@ -18,6 +18,7 @@ import {computed, makeObservable} from '@xh/hoist/mobx';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
 import {NavigatorModel} from './NavigatorModel';
+import {ErrorBoundaryModel} from '@xh/hoist/cmp/error/ErrorBoundaryModel';
 
 export interface PageConfig {
     /** Unique ID. Must match a configured Router5 route name. */
@@ -73,6 +74,7 @@ export class PageModel extends HoistModel {
 
     navigatorModel;
     @managed refreshContextModel;
+    @managed errorBoundaryModel;
 
     private _renderMode: RenderMode;
     private _refreshMode: RefreshMode;
@@ -128,5 +130,6 @@ export class PageModel extends HoistModel {
         this._refreshMode = refreshMode;
 
         this.refreshContextModel = new ManagedRefreshContextModel(this);
+        this.errorBoundaryModel = new ErrorBoundaryModel();
     }
 }

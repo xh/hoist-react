@@ -27,7 +27,7 @@ export const tab = hoistCmp.factory({
     model: uses(TabModel, {publishMode: 'limited'}),
 
     render({model, className}) {
-        let {content, isActive, renderMode, refreshContextModel} = model,
+        let {content, isActive, renderMode, refreshContextModel, errorBoundaryModel} = model,
             wasActivated = useRef(false);
 
         if (!wasActivated.current && isActive) wasActivated.current = true;
@@ -42,10 +42,10 @@ export const tab = hoistCmp.factory({
         return frame({
             display: isActive ? 'flex' : 'none',
             className,
-            item: errorBoundary({
-                model: model.errorBoundaryModel,
-                item: refreshContextView({
-                    model: refreshContextModel,
+            item: refreshContextView({
+                model: refreshContextModel,
+                item: errorBoundary({
+                    model:errorBoundaryModel,
                     item: elementFromContent(content, {flex: 1})
                 })
             })
