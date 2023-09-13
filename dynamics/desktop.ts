@@ -29,6 +29,9 @@ export let useContextMenu = null;
 
 export let ModalSupportModel = null;
 
+export let errorMessage = null;
+
+
 /**
  * Provide implementations of functions and classes exported in this file.
  *
@@ -48,4 +51,6 @@ export function installDesktopImpls(impls) {
     useContextMenu = impls.useContextMenu;
 
     ModalSupportModel = impls.ModalSupportModel;
+
+    errorMessage = impls.errorMessage;
 }

@@ -20,6 +20,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 import {TabContainerModel} from '@xh/hoist/cmp/tab/TabContainerModel';
 import {ReactElement, ReactNode} from 'react';
+import {ErrorBoundaryModel} from '@xh/hoist/cmp/error/ErrorBoundaryModel';
 
 export interface TabConfig {
     /** Unique ID, used by container for locating tabs and generating routes. */
@@ -94,8 +95,10 @@ export class TabModel extends HoistModel {
     private _renderMode: RenderMode;
     private _refreshMode: RefreshMode;
 
+
     containerModel: TabContainerModel;
     @managed refreshContextModel: RefreshContextModel;
+    @managed errorBoundaryModel: ErrorBoundaryModel;
 
     get isTabModel() {
         return true;
@@ -139,6 +142,7 @@ export class TabModel extends HoistModel {
 
         this.refreshContextModel = new ManagedRefreshContextModel(this);
         this.refreshContextModel.xhImpl = true;
+        this.errorBoundaryModel = new ErrorBoundaryModel();
     }
 
     activate() {

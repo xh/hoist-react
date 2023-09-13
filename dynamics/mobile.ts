@@ -21,6 +21,8 @@ export let pinPadImpl = null;
 export let colChooser = null;
 export let ColChooserModel = null;
 
+export let errorMessage = null;
+
 /**
  * Provide implementations of functions and classes exported in this file.
  *
@@ -32,4 +34,6 @@ export function installMobileImpls(impls) {
     pinPadImpl = impls.pinPadImpl;
     colChooser = impls.colChooser;
     ColChooserModel = impls.ColChooserModel;
+
+    errorMessage = impls.errorMessage;
 }
