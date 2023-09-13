@@ -44,6 +44,9 @@ export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'titl
     /** An icon placed at the left-side of the panel's header. */
     icon?: ReactElement;
 
+    /** Icon to be used when the panel is collapsed. Defaults to `icon`. */
+    collapsedIcon?: ReactElement;
+
     /** Context Menu to show on context clicking this panel. */
     contextMenu?: ContextMenuSpec;
 
@@ -121,6 +124,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             icon,
             compactHeader,
             collapsedTitle,
+            collapsedIcon,
             headerClassName,
             headerItems,
             mask: maskProp,
@@ -196,6 +200,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                     icon,
                     compact: compactHeader,
                     collapsedTitle,
+                    collapsedIcon,
                     className: headerClassName,
                     headerItems
                 }),

@@ -25,9 +25,11 @@ export const panelHeader = hoistCmp.factory({
             {title, icon, compact} = props,
             collapsedTitle = withDefault(props.collapsedTitle, title),
             displayedTitle = collapsed ? collapsedTitle : title,
+            collapsedIcon = withDefault(props.collapsedIcon, icon),
+            displayedIcon = collapsed ? collapsedIcon : icon,
             headerItems = props.headerItems ?? [];
 
-        if (isNil(displayedTitle) && isNil(icon) && isEmpty(headerItems)) return null;
+        if (isNil(displayedTitle) && isNil(displayedIcon) && isEmpty(headerItems)) return null;
 
         const onDoubleClick = () => {
             if (isModal) {
@@ -46,7 +48,7 @@ export const panelHeader = hoistCmp.factory({
             return hbox({
                 className: classNames(className, compactCls),
                 items: [
-                    icon || null,
+                    displayedIcon || null,
                     displayedTitle
                         ? box({
                               className: titleCls,
@@ -74,7 +76,7 @@ export const panelHeader = hoistCmp.factory({
             flex: 1,
             items: [
                 collapseButton({panelModel}),
-                icon || null,
+                displayedIcon || null,
                 displayedTitle
                     ? box({
                           className: titleCls,
