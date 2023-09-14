@@ -46,7 +46,7 @@ export const panelHeader = hoistCmp.factory({
             sideCls = `xh-panel-header--${side}`,
             compactCls = compact ? 'xh-panel-header--compact' : null;
 
-        // 2) Display the classic "top" title bar
+        // 2) Display the classic "top" title bar for expanded, top/bottom or modal panels
         if (!collapsed || vertical || isModal) {
             return hbox({
                 className: classNames(className, compactCls),
@@ -73,7 +73,7 @@ export const panelHeader = hoistCmp.factory({
             });
         }
 
-        // 3) Otherwise, display the collapsed/side vertical header
+        // 3) Otherwise, display the "side" title bar
         return vbox({
             className: classNames(className, sideCls, compactCls),
             flex: 1,
