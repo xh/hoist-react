@@ -32,9 +32,9 @@ export const inspectorPanel = hoistCmp.factory({
                 side: 'bottom',
                 persistWith: XH.inspectorService.persistWith,
                 modalSupport: true,
+                errorBoundary: true,
                 showModalToggleButton: true,
                 showHeaderCollapseButton: false,
-                errorBoundary: true,
                 xhImpl: true
             },
             compactHeader: true,
