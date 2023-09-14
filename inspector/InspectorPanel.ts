@@ -34,6 +34,7 @@ export const inspectorPanel = hoistCmp.factory({
                 modalSupport: true,
                 showModalToggleButton: true,
                 showHeaderCollapseButton: false,
+                errorBoundary: true,
                 xhImpl: true
             },
             compactHeader: true,

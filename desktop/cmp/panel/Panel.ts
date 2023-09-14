@@ -13,7 +13,8 @@ import {
     TaskObserver,
     useContextModel,
     uses,
-    hoistCmp
+    hoistCmp,
+    HoistModel
 } from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
@@ -30,6 +31,7 @@ import './Panel.scss';
 import {PanelModel} from './PanelModel';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
 import {ContextMenuSpec} from '../contextmenu/ContextMenu';
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 
 export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'title'> {
     /** True to style panel header (if displayed) with reduced padding and font-size. */
@@ -154,7 +156,8 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             vertical,
             showSplitter,
             refreshContextModel,
-            modalSupportModel
+            modalSupportModel,
+            errorBoundaryModel
         } = model;
 
         if (collapsed) {
@@ -187,7 +190,12 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         coreContents = useContextMenu(coreContents, contextMenu);
         coreContents = useHotkeys(coreContents, hotkeys);
 
-        // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
+        // Apply error boundary to content *excluding* header and affordances.  Allows us to manage
+        if (errorBoundaryModel) {
+            coreContents = errorBoundary({model: errorBoundaryModel, item: coreContents});
+        }
+
+        // 3) Prepare core layout with header above core.  This is what layout props are trampolined to
         let item = vbox({
             className: 'xh-panel__content',
             items: [
@@ -200,29 +208,29 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                     headerItems
                 }),
                 coreContents,
-                parseLoadDecorator(maskProp, 'mask', contextModel),
-                parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
+                parseLoadDecorator(maskProp, 'mask', model, contextModel),
+                parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', model, contextModel)
             ],
             ...rest
         });
 
+
+        // 4) Additional optional wrappers
         if (refreshContextModel) {
             item = refreshContextView({model: refreshContextModel, item});
         }
 
-        // 3) Wrap in modal support if needed.  Inner frame ensures className is still present in
-        // DOM when rendered in Dialog
         if (modalSupportModel) {
             item = modalSupport({
                 model: modalSupportModel,
-                item: frame({
+                item: frame({ // Frame ensures className is still present when rendered in Dialog
                     item,
                     className: model.isModal ? className : undefined
                 })
             });
         }
 
-        // 4) Return wrapped in resizable affordances if needed, or equivalent layout box
+        // 5) Return wrapped in resizable affordances if needed, or equivalent layout box
         item =
             resizable || collapsible || showSplitter
                 ? resizeContainer({ref, item, className})
@@ -232,9 +240,11 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
     }
 });
 
-function parseLoadDecorator(prop, name, contextModel) {
+function parseLoadDecorator(prop: any, name: string, model: PanelModel, contextModel: HoistModel) {
+    // Masks are rendered outside ErrorBoundary to cover title, but should never be shown in error state.
+    if (!prop || model.errorBoundaryModel?.error) return null;
+
     const cmp = (name === 'mask' ? mask : loadingIndicator) as any;
-    if (!prop) return null;
     if (isValidElement(prop)) return prop;
     if (prop === true) return cmp({isDisplayed: true});
     if (prop === 'onLoad') {
