@@ -27,9 +27,12 @@ export const panelHeader = hoistCmp.factory({
             displayedTitle = collapsed ? collapsedTitle : title,
             collapsedIcon = withDefault(props.collapsedIcon, icon),
             displayedIcon = collapsed ? collapsedIcon : icon,
-            headerItems = props.headerItems ?? [];
+            headerItems = props.headerItems ?? [],
+            displayedHeaderItems = collapsed && !isModal ? [] : headerItems;
 
-        if (isNil(displayedTitle) && isNil(displayedIcon) && isEmpty(headerItems)) return null;
+        // 1) No header (no items to display)
+        if (isNil(displayedTitle) && isNil(displayedIcon) && isEmpty(displayedHeaderItems))
+            return null;
 
         const onDoubleClick = () => {
             if (isModal) {
@@ -43,8 +46,8 @@ export const panelHeader = hoistCmp.factory({
             sideCls = `xh-panel-header--${side}`,
             compactCls = compact ? 'xh-panel-header--compact' : null;
 
-        // 1) Classic "top" title bar
-        if ((!collapsed || vertical || isModal) && (title || icon || headerItems)) {
+        // 2) Display the classic "top" title bar
+        if (!collapsed || vertical || isModal) {
             return hbox({
                 className: classNames(className, compactCls),
                 items: [
@@ -59,7 +62,7 @@ export const panelHeader = hoistCmp.factory({
                     hbox({
                         className: 'xh-panel-header__items',
                         items: [
-                            ...(!collapsed || isModal ? headerItems : []),
+                            ...displayedHeaderItems,
                             modalButton({panelModel}),
                             collapseButton({panelModel})
                         ],
@@ -70,7 +73,7 @@ export const panelHeader = hoistCmp.factory({
             });
         }
 
-        // 2) ...otherwise its a narrow, sidebar
+        // 3) Otherwise, display the collapsed/side vertical header
         return vbox({
             className: classNames(className, sideCls, compactCls),
             flex: 1,
