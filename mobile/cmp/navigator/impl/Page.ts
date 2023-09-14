@@ -26,8 +26,7 @@ export const page = hoistCmp.factory({
     model: uses(PageModel, {publishMode: 'limited'}),
 
     render({model}) {
-        const {content, props, isActive, renderMode, refreshContextModel, errorBoundaryModel} =
-                model,
+        const {content, props, isActive, renderMode, refreshContextModel} = model,
             wasActivated = useRef(false);
 
         if (!wasActivated.current && isActive) wasActivated.current = true;
@@ -44,10 +43,7 @@ export const page = hoistCmp.factory({
             model: refreshContextModel,
             item: onsenPage({
                 className: 'xh-page',
-                item: errorBoundary({
-                    model: errorBoundaryModel,
-                    item: elementFromContent(content, props)
-                })
+                item: errorBoundary(elementFromContent(content, props))
             })
         });
     }
