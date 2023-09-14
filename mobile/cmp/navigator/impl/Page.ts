@@ -26,7 +26,8 @@ export const page = hoistCmp.factory({
     model: uses(PageModel, {publishMode: 'limited'}),
 
     render({model}) {
-        const {content, props, isActive, renderMode, refreshContextModel, errorBoundaryModel} = model,
+        const {content, props, isActive, renderMode, refreshContextModel, errorBoundaryModel} =
+                model,
             wasActivated = useRef(false);
 
         if (!wasActivated.current && isActive) wasActivated.current = true;

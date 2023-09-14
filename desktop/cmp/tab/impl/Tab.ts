@@ -45,7 +45,7 @@ export const tab = hoistCmp.factory({
             item: refreshContextView({
                 model: refreshContextModel,
                 item: errorBoundary({
-                    model:errorBoundaryModel,
+                    model: errorBoundaryModel,
                     item: elementFromContent(content, {flex: 1})
                 })
             })

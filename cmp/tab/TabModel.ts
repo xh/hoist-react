@@ -95,7 +95,6 @@ export class TabModel extends HoistModel {
     private _renderMode: RenderMode;
     private _refreshMode: RefreshMode;
 
-
     containerModel: TabContainerModel;
     @managed refreshContextModel: RefreshContextModel;
     @managed errorBoundaryModel: ErrorBoundaryModel;

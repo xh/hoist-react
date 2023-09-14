@@ -5,33 +5,25 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {ExceptionHandlerOptions, HoistModel, XH} from '@xh/hoist/core';
-import React, {ReactNode} from 'react';
-import {action, makeObservable, observable} from 'mobx';
 import {isFunction} from 'lodash';
+import {action, makeObservable, observable} from 'mobx';
+import {ReactNode} from 'react';
 
 export interface ErrorBoundaryConfig {
     /**
-     * Function to handle exception.  May also be specified as a
-     * config for XH.handleException.
-     *
-     * Defaults to {showAlert: false}
+     * Config for {@link XH.handleException}, or a custom function to handle any error caught by
+     * the boundary. Defaults to `{showAlert: false}`.
      */
     errorHandler?: ExceptionHandlerOptions | ((e: unknown) => void);
 
     /**
-     * Function to render error.
-     *
-     * If not specified, error will be displayed using a platform appropriate
-     * ErrorMessage component.
+     * Function to render any error caught by the boundary - return will be rendered in lieu of the
+     * component's normal children. Defaults to a platform-appropriate {@link ErrorMessage}.
      */
     errorRenderer?: (e: unknown) => ReactNode;
 }
 
-/**
- * Model for ErrorBoundary.
- */
 export class ErrorBoundaryModel extends HoistModel {
-
     errorHandler: ExceptionHandlerOptions | ((e: unknown) => void);
     errorRenderer: (e: unknown) => ReactNode;
 
@@ -49,45 +41,37 @@ export class ErrorBoundaryModel extends HoistModel {
     }
 
     /**
-     * Handle the exception and replace the contents of the component
-     * with an exception display.
+     * Handle the exception and replace the contents of the component with a rendered error.
      *
-     * This method does not need to be called for React Lifecycle events
-     * that occur within its rendered content. It is publicly available
-     * for applications that wish to use this component to show other caught
-     * exceptions (e.g. from http requests).
+     * This method does not need to be called for React Lifecycle events that occur within its
+     * rendered content - that is handled automatically by the component. It is publicly available
+     * for apps that wish to use this component to handle and display other caught exceptions.
      *
-     * For exceptions that have already been handled see showException()
-     * instead.
+     * For exceptions that have already been handled, call {@link showError} instead.
      */
     @action
     handleError(e: unknown) {
         let handler = this.errorHandler;
         if (handler) {
-            isFunction(handler) ?
-                handler(e) :
-                XH.handleException(e, handler as any);
+            isFunction(handler) ? handler(e) : XH.handleException(e, handler as any);
         }
         this.error = e;
     }
 
     /**
-     * Replace the contents of the panel with an exception display.
+     * Replace the contents of the component with a rendered error.
      *
-     * Note that unlike handleException() this method will *not* report
-     * or otherwise handle the exception.
+     * Note that unlike {@link handleError} this method will *not* report or take any other action
+     * on the error. It is intended for use with exceptions that have already been handled.
      */
     @action
     showError(e: unknown) {
         this.error = e;
     }
 
-    /**
-     * Reset this component to hide any exception and reshow its
-     * specified content.
-     */
+    /** Reset this component to clear the current error and attempt to re-render its contents. */
     @action
-    reset() {
+    clear() {
         this.error = null;
     }
 }

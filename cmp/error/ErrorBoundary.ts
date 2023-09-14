@@ -5,43 +5,53 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {elementFactory, hoistCmp, uses, XH} from '@xh/hoist/core';
-import React, {Component, ReactNode} from 'react';
-import {errorMessage as mobileErrorMessage} from '@xh/hoist/dynamics/mobile';
 import {errorMessage as desktopErrorMessage} from '@xh/hoist/dynamics/desktop';
-import {ErrorBoundaryModel} from './ErrorBoundaryModel'
+import {errorMessage as mobileErrorMessage} from '@xh/hoist/dynamics/mobile';
+import {Component, ReactNode} from 'react';
+import {ErrorBoundaryModel} from './ErrorBoundaryModel';
 
 /**
- * ErrorBoundary catches React lifecycle errors from children components, protecting
- * them bringing down the entire application.  It will swap out the error inducing
- * content with an ErrorMessage component, giving the user the chance to report the
- * exception and optionally try again.
+ * A wrapper component that will catch an otherwise unhandled React lifecycle error from any child
+ * component, preventing such an error from bringing down the entire app. Upon catching an error,
+ * this comp will swap out its children with an `ErrorMessage` component (or other configured
+ * renderer), giving the user the chance to report the exception and optionally try again.
  *
- * By default, ErrorBoundary will only handle exceptions that occur during the React
- * lifecycle, but applications that wish to use this component to display all exceptions
- * may explicitly use it to handle other exceptions, including http exceptions.
+ * This wrapper will automatically only catch and handle exceptions that occur during the React
+ * lifecycle, but applications that wish to use this component to display other caught exceptions
+ * may explicitly use it to handle those exceptions.
  */
 export const [ErrorBoundary, errorBoundary] = hoistCmp.withFactory<ErrorBoundaryModel>({
     displayName: 'ErrorBoundary',
-    model: uses(ErrorBoundaryModel, {createDefault: true, fromContext: false, publishMode: 'limited'}),
+    model: uses(ErrorBoundaryModel, {
+        createDefault: true,
+        fromContext: false,
+        publishMode: 'limited'
+    }),
+
     render({model, ...props}) {
         let {error, errorRenderer} = model;
 
         if (!error) return reactErrorBoundary({model, ...props});
         if (errorRenderer) return errorRenderer(error);
-        const cmp = XH.isMobileApp ? mobileErrorMessage :  desktopErrorMessage;
+
+        const cmp = XH.isMobileApp ? mobileErrorMessage : desktopErrorMessage;
         return cmp({
             error,
-            title: 'An error occurred rendering this component. ',
-            actionFn: () => model.reset()
+            title: 'Unexpected error while rendering this component',
+            actionFn: () => model.clear()
         });
     }
 });
 
 //------------------------------------------------------------------
 // Standard recipe from React Docs, requires class based component
+// See https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary
 //------------------------------------------------------------------
-class ReactErrorBoundary extends Component<{children: ReactNode, model: ErrorBoundaryModel}, {error: unknown}> {
-    override state =  {error: null};
+class ReactErrorBoundary extends Component<
+    {children: ReactNode; model: ErrorBoundaryModel},
+    {error: unknown}
+> {
+    override state = {error: null};
     override render() {
         return !this.state.error ? this.props.children : null;
     }
@@ -54,4 +64,4 @@ class ReactErrorBoundary extends Component<{children: ReactNode, model: ErrorBou
         this.props.model.handleError(e);
     }
 }
-const reactErrorBoundary = elementFactory(ReactErrorBoundary)
+const reactErrorBoundary = elementFactory(ReactErrorBoundary);
