@@ -10,7 +10,10 @@
    that any individual component can crash the entire app.
 * New `PanelModel.errorBoundary` property to optionally place an `ErrorBoundary` on the contents
    of any `Panel`.
-* Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.
+* Improvements and fixes to panel header, including:
+    * Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.
+    * Improved `Panel.collapsedTitle` prop and added `Panel.collapsedIcon` prop. These two props now
+     fully govern header display when collapsed.
 * Improved styling for disabled `checkbox` inputs.
 * Added new `Markdown` component for rendering Markdown formatted strings as markup. This includes
   bundling `react-markdown` in Hoist. If your app already uses `react-markdown` or similar, you should

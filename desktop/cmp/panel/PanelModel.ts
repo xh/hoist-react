@@ -145,11 +145,14 @@ export class PanelModel extends HoistModel {
     //---------------------
     // Observable State
     //---------------------
-    /** Is the Panel rendering in a collapsed state? */
+    /**
+     * True when collapsed in its "home" location as per this model's state.
+     * See also {@link isRenderedCollapsed}, which takes modal state into account.
+     */
     @observable
     collapsed: boolean = false;
 
-    /** Size in pixels or percents along sizing dimension.  Used when object is *not* collapsed. */
+    /** Size in pixels or percents along sizing dimension. Used when object is *not* collapsed. */
     @bindable
     size: number | string = null;
 
@@ -166,8 +169,13 @@ export class PanelModel extends HoistModel {
         return !!this.modalSupportModel;
     }
 
+    /** True when both collapsed and not currently in a modal - i.e. *really* collapsed. */
+    get isRenderedCollapsed(): boolean {
+        return this.collapsed && !this.isModal;
+    }
+
     get isActive(): boolean {
-        return !this.collapsed;
+        return !this.isRenderedCollapsed;
     }
 
     //-----------------
@@ -237,8 +245,8 @@ export class PanelModel extends HoistModel {
         this.refreshMode = refreshMode;
         this.showSplitter = showSplitter;
         this.showSplitterCollapseButton = showSplitterCollapseButton;
-        this.showHeaderCollapseButton = showHeaderCollapseButton;
-        this.showModalToggleButton = showModalToggleButton;
+        this.showHeaderCollapseButton = collapsible && showHeaderCollapseButton;
+        this.showModalToggleButton = modalSupport && showModalToggleButton;
 
         // Set up various optional functionality;
         if (modalSupport) {
@@ -355,6 +363,10 @@ export class PanelModel extends HoistModel {
     // Does the Panel come before the resizing affordances?
     get contentFirst(): boolean {
         return this.side === 'top' || this.side === 'left';
+    }
+
+    get isCollapsedToLeftOrRight(): boolean {
+        return this.isRenderedCollapsed && !this.vertical;
     }
 
     enforceSizeLimits() {

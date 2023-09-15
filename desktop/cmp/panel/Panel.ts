@@ -46,6 +46,9 @@ export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'titl
     /** An icon placed at the left-side of the panel's header. */
     icon?: ReactElement;
 
+    /** Icon to be used when the panel is collapsed. Defaults to `icon`. */
+    collapsedIcon?: ReactElement;
+
     /** Context Menu to show on context clicking this panel. */
     contextMenu?: ContextMenuSpec;
 
@@ -123,6 +126,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             icon,
             compactHeader,
             collapsedTitle,
+            collapsedIcon,
             headerClassName,
             headerItems,
             mask: maskProp,
@@ -151,7 +155,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         const {
             resizable,
             collapsible,
-            collapsed,
+            isRenderedCollapsed,
             renderMode,
             vertical,
             showSplitter,
@@ -160,14 +164,14 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             errorBoundaryModel
         } = model;
 
-        if (collapsed) {
+        if (isRenderedCollapsed) {
             delete layoutProps[`min${vertical ? 'Height' : 'Width'}`];
             delete layoutProps[vertical ? 'height' : 'width'];
         }
 
         let coreContents = null;
         if (
-            !collapsed ||
+            !isRenderedCollapsed ||
             renderMode === 'always' ||
             (renderMode === 'lazy' && wasDisplayed.current)
         ) {
@@ -176,7 +180,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             };
 
             coreContents = vframe({
-                style: {display: collapsed ? 'none' : 'flex'},
+                style: {display: isRenderedCollapsed ? 'none' : 'flex'},
                 items: Children.toArray([
                     parseToolbar(tbar),
                     ...castArray(children),
@@ -184,13 +188,13 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                 ])
             });
         }
-        if (!collapsed) wasDisplayed.current = true;
+        if (!isRenderedCollapsed) wasDisplayed.current = true;
 
         // decorate with hooks (internally conditional, of course)
         coreContents = useContextMenu(coreContents, contextMenu);
         coreContents = useHotkeys(coreContents, hotkeys);
 
-        // Apply error boundary to content *excluding* header and affordances.  Allows us t
+        // Apply error boundary to content *excluding* header and affordances.
         if (errorBoundaryModel) {
             coreContents = errorBoundary({model: errorBoundaryModel, item: coreContents});
         }
@@ -204,6 +208,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                     icon,
                     compact: compactHeader,
                     collapsedTitle,
+                    collapsedIcon,
                     className: headerClassName,
                     headerItems
                 }),
