@@ -5,10 +5,10 @@
 ### 🎁 New Features
 
 * Provide new `ErrorBoundary` component for finer-grained application handling of React Errors.
-* Hoist now wraps `Tab`, `DashCanvasView`, `DashContainerView`, and `Page` in an `ErrorBoundary`.
-  This provides better isolation of application content, minimizing the chance that any individual
-  component can crash the entire app.
-  New `PanelModel.errorBoundary` property to optionally place an `ErrorBoundary` on the contents
+* Hoist now wraps `Tab`, `DashCanvasView`, `DashContainerView`,`DockView`, and `Page` in an
+  `ErrorBoundary`.   This provides better isolation of application content, minimizing the chance
+   that any individual component can crash the entire app.
+* New `PanelModel.errorBoundary` property to optionally place an `ErrorBoundary` on the contents
    of any `Panel`.
 * Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.
 * Improved styling for disabled `checkbox` inputs.

@@ -190,7 +190,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         coreContents = useContextMenu(coreContents, contextMenu);
         coreContents = useHotkeys(coreContents, hotkeys);
 
-        // Apply error boundary to content *excluding* header and affordances.  Allows us to manage
+        // Apply error boundary to content *excluding* header and affordances.  Allows us t
         if (errorBoundaryModel) {
             coreContents = errorBoundary({model: errorBoundaryModel, item: coreContents});
         }
@@ -208,12 +208,11 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                     headerItems
                 }),
                 coreContents,
-                parseLoadDecorator(maskProp, 'mask', model, contextModel),
-                parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', model, contextModel)
+                parseLoadDecorator(maskProp, 'mask', contextModel),
+                parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
             ],
             ...rest
         });
-
 
         // 4) Additional optional wrappers
         if (refreshContextModel) {
@@ -223,7 +222,8 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         if (modalSupportModel) {
             item = modalSupport({
                 model: modalSupportModel,
-                item: frame({ // Frame ensures className is still present when rendered in Dialog
+                item: frame({
+                    // Frame ensures className is still present when rendered in Dialog
                     item,
                     className: model.isModal ? className : undefined
                 })
@@ -240,10 +240,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
     }
 });
 
-function parseLoadDecorator(prop: any, name: string, model: PanelModel, contextModel: HoistModel) {
-    // Masks are rendered outside ErrorBoundary to cover title, but should never be shown in error state.
-    if (!prop || model.errorBoundaryModel?.error) return null;
-
+function parseLoadDecorator(prop: any, name: string, contextModel: HoistModel) {
     const cmp = (name === 'mask' ? mask : loadingIndicator) as any;
     if (isValidElement(prop)) return prop;
     if (prop === true) return cmp({isDisplayed: true});
