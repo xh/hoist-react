@@ -43,18 +43,17 @@ export interface ErrorMessageProps extends HoistProps {
  */
 export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessageProps>({
     className: 'xh-error-message',
-    render(
-        {
+    render(props, ref) {
+        let {
             className,
             model,
-            error = (model as any)?.error,
+            error = model?.['error'],
             message,
             title,
             actionFn,
             actionButtonProps
-        },
-        ref
-    ) {
+        } = props;
+
         if (actionFn) {
             actionButtonProps = {...actionButtonProps, onClick: actionFn};
         }

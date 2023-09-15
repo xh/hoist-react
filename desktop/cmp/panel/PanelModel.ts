@@ -25,6 +25,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {isNil, isNumber, isString} from 'lodash';
 import {createRef} from 'react';
 import {ModalSupportConfig, ModalSupportModel} from '../modalsupport/';
+import {ErrorBoundaryConfig, ErrorBoundaryModel} from '@xh/hoist/cmp/error/ErrorBoundaryModel';
 
 export interface PanelConfig {
     /** Can panel be resized? */
@@ -62,9 +63,16 @@ export interface PanelConfig {
 
     /**
      * Set to true to enable built-in support for showing panel contents in a modal, or provide a
-     * config to further configure.
+     * config to further configure. Default false.
      */
     modalSupport?: boolean | ModalSupportConfig;
+
+    /**
+     * Set to true to place an ErrorBoundary around the panel, or provide a
+     * config to further configure.  Default false.
+     */
+    errorBoundary?: boolean | ErrorBoundaryConfig;
+
 
     /** How should collapsed content be rendered? Ignored if collapsible is false. */
     renderMode?: RenderMode;
@@ -126,6 +134,7 @@ export class PanelModel extends HoistModel {
 
     @managed modalSupportModel: ModalSupportModel;
     @managed refreshContextModel: RefreshContextModel;
+    @managed errorBoundaryModel: ErrorBoundaryModel;
     @managed provider: PersistenceProvider;
 
     //----------------
@@ -185,6 +194,7 @@ export class PanelModel extends HoistModel {
         defaultCollapsed = false,
         side,
         modalSupport = false,
+        errorBoundary = false,
         renderMode = 'lazy',
         refreshMode = 'onShowLazy',
         persistWith = null,
@@ -238,6 +248,7 @@ export class PanelModel extends HoistModel {
         this.showHeaderCollapseButton = collapsible && showHeaderCollapseButton;
         this.showModalToggleButton = modalSupport && showModalToggleButton;
 
+        // Set up various optional functionality;
         if (modalSupport) {
             this.modalSupportModel =
                 modalSupport === true
@@ -245,7 +256,13 @@ export class PanelModel extends HoistModel {
                     : new ModalSupportModel(modalSupport);
         }
 
-        // Set up various optional functionality;
+        if (errorBoundary) {
+            this.errorBoundaryModel =
+                errorBoundary === true
+                    ? new ErrorBoundaryModel()
+                    : new ErrorBoundaryModel(errorBoundary)
+        }
+
         if (collapsible) {
             this.refreshContextModel = new ManagedRefreshContextModel(this);
         }
