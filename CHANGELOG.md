@@ -10,9 +10,10 @@
    that any individual component can crash the entire app.
 * New `PanelModel.errorBoundary` property to optionally place an `ErrorBoundary` on the contents
    of any `Panel`.
-* Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.
-* `Panel.collapsedTitle` will now display the header even if there is no title when expanded.
-* Added new `Panel.collapsedIcon` prop to display the header even if there is no icon when expanded.
+* Improvements and fixes to panel header, including:
+    * Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.
+    * Improved `Panel.collapsedTitle` prop and added `Panel.collapsedIcon` prop. These two props now
+     fully govern header display when collapsed.
 * Improved styling for disabled `checkbox` inputs.
 
 ## 59.0.3 - 2023-08-25

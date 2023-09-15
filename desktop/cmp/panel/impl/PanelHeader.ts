@@ -43,6 +43,11 @@ export const panelHeader = hoistCmp.factory({
         const headerItems = props.headerItems ?? [],
             displayedHeaderItems = isRenderedCollapsed ? [] : [...headerItems];
 
+        // Return null if nothing to display.
+        if (isNil(displayedTitle) && isNil(displayedIcon) && isEmpty(displayedHeaderItems)) {
+            return null;
+        }
+
         if (showModalToggleButton && !isRenderedCollapsed) {
             displayedHeaderItems.push(modalToggleButton());
         }
@@ -61,11 +66,6 @@ export const panelHeader = hoistCmp.factory({
         const titleCls = 'xh-panel-header__title',
             sideCls = `xh-panel-header--${side}`,
             compactCls = compact ? 'xh-panel-header--compact' : null;
-
-        // Return null if nothing to display.
-        if (isNil(displayedTitle) && isNil(displayedIcon) && isEmpty(displayedHeaderItems)) {
-            return null;
-        }
 
         // Return a vertically oriented header if collapsed to left or right side.
         if (isCollapsedToLeftOrRight) {
