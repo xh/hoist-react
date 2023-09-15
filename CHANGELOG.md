@@ -12,6 +12,15 @@
    of any `Panel`.
 * Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.
 * Improved styling for disabled `checkbox` inputs.
+* Added new `Markdown` component for rendering Markdown formatted strings as markup. This includes
+  bundling `react-markdown` in Hoist. If your app already uses `react-markdown` or similar, you should
+  move to use the new `Markdown` component to benefit from future upgrades.
+* Enabled Banners to render bold, italics and links using Markdown syntax.
+
+### 📚 Libraries
+
+* react-markdown `8.0.7`
+* remark-breaks `3.0.3`
 
 ## 59.0.3 - 2023-08-25
 

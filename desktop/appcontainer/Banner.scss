@@ -21,6 +21,31 @@ body.xh-app .xh-banner {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+
+    // Disallow most markdown styling except **bold**, *italics* and (links)
+    h1,
+    h2,
+    h3,
+    h4,
+    p,
+    ul,
+    li,
+    a,
+    code {
+      display: inline;
+      margin: unset;
+      padding: unset;
+      color: unset;
+      font-weight: unset;
+      font-size: unset;
+      font-family: unset;
+      list-style: none;
+    }
+
+    // Render links with an underline
+    a {
+      text-decoration: underline;
+    }
   }
 
   &__action-button,
