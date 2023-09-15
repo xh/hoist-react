@@ -194,7 +194,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         coreContents = useContextMenu(coreContents, contextMenu);
         coreContents = useHotkeys(coreContents, hotkeys);
 
-        // Apply error boundary to content *excluding* header and affordances.  Allows us t
+        // Apply error boundary to content *excluding* header and affordances.
         if (errorBoundaryModel) {
             coreContents = errorBoundary({model: errorBoundaryModel, item: coreContents});
         }
