@@ -153,7 +153,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         const {
             resizable,
             collapsible,
-            collapsed,
+            isRenderedCollapsed,
             renderMode,
             vertical,
             showSplitter,
@@ -161,14 +161,14 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             modalSupportModel
         } = model;
 
-        if (collapsed) {
+        if (isRenderedCollapsed) {
             delete layoutProps[`min${vertical ? 'Height' : 'Width'}`];
             delete layoutProps[vertical ? 'height' : 'width'];
         }
 
         let coreContents = null;
         if (
-            !collapsed ||
+            !isRenderedCollapsed ||
             renderMode === 'always' ||
             (renderMode === 'lazy' && wasDisplayed.current)
         ) {
@@ -177,7 +177,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             };
 
             coreContents = vframe({
-                style: {display: collapsed ? 'none' : 'flex'},
+                style: {display: isRenderedCollapsed ? 'none' : 'flex'},
                 items: Children.toArray([
                     parseToolbar(tbar),
                     ...castArray(children),
@@ -185,7 +185,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                 ])
             });
         }
-        if (!collapsed) wasDisplayed.current = true;
+        if (!isRenderedCollapsed) wasDisplayed.current = true;
 
         // decorate with hooks (internally conditional, of course)
         coreContents = useContextMenu(coreContents, contextMenu);
