@@ -41,7 +41,7 @@ export const panelHeader = hoistCmp.factory({
         // As can headerItems, which include app-specified controls (never shown when collapsed)
         // as well as (maybe) built-in modal/collapse toggle buttons.
         const headerItems = props.headerItems ?? [],
-            displayedHeaderItems = collapsed ? [] : headerItems;
+            displayedHeaderItems = collapsed ? [] : [...headerItems];
 
         if (showModalToggleButton) {
             displayedHeaderItems.push(modalToggleButton());
