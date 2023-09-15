@@ -11,6 +11,7 @@ import '@xh/hoist/mobile/register';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
 import './Tabs.scss';
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 
 /**
  * @internal
@@ -43,7 +44,7 @@ export const tab = hoistCmp.factory({
             model: refreshContextModel,
             item: page({
                 className: 'xh-tab-page',
-                item: elementFromContent(content)
+                item: errorBoundary(elementFromContent(content))
             })
         });
     }

@@ -5,18 +5,17 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {Icon} from '@xh/hoist/icon';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {isDisplayed} from '@xh/hoist/utils/js';
-import {createObservableRef} from '@xh/hoist/utils/react';
-import {min, sortBy} from 'lodash';
+import {pluralize} from '@xh/hoist/utils/js';
+import {isEqual, min, sortBy} from 'lodash';
 
 export class MonitorResultsModel extends HoistModel {
     @observable.ref results = [];
     @observable lastRun = null;
     @managed timer = null;
-    viewRef = createObservableRef<HTMLElement>();
 
     @computed
     get passed(): number {
@@ -38,6 +37,18 @@ export class MonitorResultsModel extends HoistModel {
         return this.results.filter(monitor => monitor.status === 'INACTIVE').length;
     }
 
+    get countsByStatus() {
+        const {passed, warned, failed, inactive} = this;
+        return {OK: passed, WARN: warned, FAIL: failed, INACTIVE: inactive};
+    }
+
+    get worstStatus() {
+        if (this.failed) return 'FAIL';
+        if (this.warned) return 'WARN';
+        if (this.passed) return 'OK';
+        return 'INACTIVE';
+    }
+
     constructor() {
         super();
         makeObservable(this);
@@ -50,7 +61,7 @@ export class MonitorResultsModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        if (!isDisplayed(this.viewRef.current)) return;
+        if (!XH.pageIsVisible) return;
 
         return XH.fetchJson({url: 'monitorResultsAdmin/results', loadSpec})
             .then(rows => {
@@ -76,16 +87,42 @@ export class MonitorResultsModel extends HoistModel {
     //-------------------
     @action
     private completeLoad(vals) {
+        const prevCounts = this.countsByStatus;
         this.results = sortBy(Object.values(vals), 'sortOrder');
-        this.getLastRun();
-    }
 
-    @action
-    private getLastRun() {
+        const counts = this.countsByStatus,
+            worst = this.worstStatus;
+
+        let intent = null,
+            icon = null;
+        switch (worst) {
+            case 'FAIL':
+                intent = 'danger';
+                icon = Icon.error();
+                break;
+            case 'WARN':
+                intent = 'warning';
+                icon = Icon.warning();
+                break;
+            case 'OK':
+                intent = 'success';
+                icon = Icon.checkCircle();
+        }
+
+        // This is imperfect, in that e.g. two monitors could swap their status and we would not
+        // alert, but this approach is easy and seemed reasonable enough for this low-stakes toast.
+        if (!isEqual(prevCounts, counts) && worst !== 'INACTIVE') {
+            XH.toast({
+                message: `Status update: ${pluralize('monitor', counts[worst], true)} @ ${worst}`,
+                timeout: 6000,
+                icon,
+                intent
+            });
+        }
+
         const lastRun = min(
             this.results.filter(monitor => monitor.status !== 'UNKNOWN').map(it => it.date)
         );
-
         this.lastRun = lastRun ? new Date(lastRun) : null;
     }
 }

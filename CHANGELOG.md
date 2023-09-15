@@ -4,11 +4,26 @@
 
 ### 🎁 New Features
 
-* Provides support for administering multi-instances of Hoist servers.  Requires and is required by
-  `hoist-core>=18`.
-* Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.
+* Provide new `ErrorBoundary` component for finer-grained application handling of React Errors.
+* Hoist now wraps `Tab`, `DashCanvasView`, `DashContainerView`,`DockView`, and `Page` in an
+  `ErrorBoundary`.   This provides better isolation of application content, minimizing the chance
+   that any individual component can crash the entire app.
+* New `PanelModel.errorBoundary` property to optionally place an `ErrorBoundary` on the contents
+   of any `Panel`.
+* Improvements and fixes to panel header, including:
+    * Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.
+    * Improved `Panel.collapsedTitle` prop and added `Panel.collapsedIcon` prop. These two props now
+     fully govern header display when collapsed.
 * Improved styling for disabled `checkbox` inputs.
+* Added new `Markdown` component for rendering Markdown formatted strings as markup. This includes
+  bundling `react-markdown` in Hoist. If your app already uses `react-markdown` or similar, you should
+  move to use the new `Markdown` component to benefit from future upgrades.
+* Enabled Banners to render bold, italics and links using Markdown syntax.
 
+### 📚 Libraries
+
+* react-markdown `8.0.7`
+* remark-breaks `3.0.3`
 
 ## 59.0.3 - 2023-08-25
 
