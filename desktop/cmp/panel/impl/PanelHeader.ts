@@ -22,7 +22,7 @@ export const panelHeader = hoistCmp.factory({
     render({className, ...props}) {
         const panelModel = useContextModel(PanelModel),
             {
-                isRenderedCollapsed: collapsed,
+                isRenderedCollapsed,
                 isCollapsedToLeftOrRight,
                 collapsible,
                 isModal,
@@ -34,16 +34,16 @@ export const panelHeader = hoistCmp.factory({
 
         // Title and icon can vary based on collapsed state.
         const collapsedTitle = withDefault(props.collapsedTitle, title),
-            displayedTitle = (collapsed ? collapsedTitle : title) ?? null,
+            displayedTitle = (isRenderedCollapsed ? collapsedTitle : title) ?? null,
             collapsedIcon = withDefault(props.collapsedIcon, icon),
-            displayedIcon = (collapsed ? collapsedIcon : icon) ?? null;
+            displayedIcon = (isRenderedCollapsed ? collapsedIcon : icon) ?? null;
 
         // As can headerItems, which include app-specified controls (never shown when collapsed)
         // as well as (maybe) built-in modal/collapse toggle buttons.
         const headerItems = props.headerItems ?? [],
-            displayedHeaderItems = collapsed ? [] : [...headerItems];
+            displayedHeaderItems = isRenderedCollapsed ? [] : [...headerItems];
 
-        if (showModalToggleButton) {
+        if (showModalToggleButton && !isRenderedCollapsed) {
             displayedHeaderItems.push(modalToggleButton());
         }
         if (showHeaderCollapseButton && !isModal) {
