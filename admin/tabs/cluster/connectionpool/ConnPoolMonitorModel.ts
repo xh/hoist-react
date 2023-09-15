@@ -4,16 +4,15 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {timestampNoYear} from '@xh/hoist/admin/columns';
-import {BaseInstanceModel} from '@xh/hoist/admin/tabs/server/BaseInstanceModel';
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
+import {timestampNoYear} from '@xh/hoist/admin/columns';
+import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {LoadSpec, lookup, managed, PlainObject, XH} from '@xh/hoist/core';
+import {LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
 import {bindable} from '@xh/hoist/mobx';
 import {forOwn, sortBy} from 'lodash';
-import * as MCol from '../../monitor/MonitorColumns';
 
 export class ConnPoolMonitorModel extends BaseInstanceModel {
     readonly minHoistCoreVersion = '17.2.0';

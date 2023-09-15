@@ -6,26 +6,31 @@
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
-import {hzObjectPanel} from '@xh/hoist/admin/tabs/server/hzobject/HzObjectPanel';
-import {hibernatePanel} from '@xh/hoist/admin/tabs/server/hibernate/HibernatePanel';
-import {connPoolMonitorPanel} from '@xh/hoist/admin/tabs/server/connectionpool/ConnPoolMonitorPanel';
-import {serverEnvPanel} from '@xh/hoist/admin/tabs/server/environment/ServerEnvPanel';
-import {logViewer} from '@xh/hoist/admin/tabs/server/logViewer/LogViewer';
-import {usedHeapMb, usedPctMax} from '@xh/hoist/admin/tabs/server/memory/MemoryMonitorModel';
-import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/server/memory/MemoryMonitorPanel';
-import {servicePanel} from '@xh/hoist/admin/tabs/server/services/ServicePanel';
-import {webSocketPanel} from '@xh/hoist/admin/tabs/server/websocket/WebSocketPanel';
+import {connPoolMonitorPanel} from '@xh/hoist/admin/tabs/cluster/connectionpool/ConnPoolMonitorPanel';
+import {serverEnvPanel} from '@xh/hoist/admin/tabs/cluster/environment/ServerEnvPanel';
+import {hibernatePanel} from '@xh/hoist/admin/tabs/cluster/hibernate/HibernatePanel';
+import {hzObjectPanel} from '@xh/hoist/admin/tabs/cluster/hzobject/HzObjectPanel';
+import {logViewer} from '@xh/hoist/admin/tabs/cluster/logs/LogViewer';
+import {usedHeapMb, usedPctMax} from '@xh/hoist/admin/tabs/cluster/memory/MemoryMonitorModel';
+import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/cluster/memory/MemoryMonitorPanel';
+import {servicePanel} from '@xh/hoist/admin/tabs/cluster/services/ServicePanel';
+import {webSocketPanel} from '@xh/hoist/admin/tabs/cluster/websocket/WebSocketPanel';
+import {badge} from '@xh/hoist/cmp/badge';
 import {GridModel, numberCol} from '@xh/hoist/cmp/grid';
+import {hbox} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {badge} from '@xh/hoist/cmp/badge';
-import {hbox} from '@xh/hoist/cmp/layout';
 import {ReactNode} from 'react';
 
-export class ServerTabModel extends HoistModel {
+export class ClusterTabModel extends HoistModel {
+    override persistWith = {localStorageKey: 'xhAdminClusterTabState'};
+
+    @managed gridModel: GridModel = this.createGridModel();
+    @managed tabModel: TabContainerModel = this.createTabModel();
+
     shutdownAction: RecordActionSpec = {
         icon: Icon.skull(),
         text: 'Shutdown Instance',
@@ -34,9 +39,6 @@ export class ServerTabModel extends HoistModel {
         displayFn: () => ({hidden: AppModel.readonly}),
         recordsRequired: 1
     };
-
-    @managed gridModel: GridModel = this.createGridModel();
-    @managed tabModel: TabContainerModel = this.createTabModel();
 
     get instance(): PlainObject {
         return this.gridModel.selectedRecord?.data;
@@ -50,11 +52,10 @@ export class ServerTabModel extends HoistModel {
         return this.gridModel.store.allCount > 1;
     }
 
-    override async doLoadAsync() {
+    override async doLoadAsync(loadSpec: LoadSpec) {
         const {gridModel} = this;
         try {
-
-            let data = await XH.fetchJson({url: 'clusterAdmin/allInstances'});
+            let data = await XH.fetchJson({url: 'clusterAdmin/allInstances', loadSpec});
             data = data.map(row => ({
                 ...row,
                 usedHeapMb: row.memory.usedHeapMb,
@@ -80,9 +81,6 @@ export class ServerTabModel extends HoistModel {
 
     private createGridModel() {
         return new GridModel({
-            enableExport: false,
-            selModel: 'single',
-            contextMenu: [this.shutdownAction, '-', ...GridModel.defaultContextMenu],
             store: {
                 idSpec: 'name',
                 fields: [
@@ -94,7 +92,6 @@ export class ServerTabModel extends HoistModel {
                     {name: 'address', type: 'string'}
                 ]
             },
-            //sortBy: ['isMaster', 'name'],
             columns: [
                 {
                     field: 'name',
@@ -104,9 +101,7 @@ export class ServerTabModel extends HoistModel {
                     }
                 },
                 {
-                    field: 'wsConnections',
-                    headerName: 'Web Sockets',
-                    ...numberCol
+                    field: 'address'
                 },
                 {
                     ...usedHeapMb,
@@ -117,11 +112,13 @@ export class ServerTabModel extends HoistModel {
                     headerName: 'Heap (% Max)'
                 },
                 {
-                    field: 'address'
+                    field: 'wsConnections',
+                    headerName: 'WS Connections',
+                    ...numberCol
                 },
                 {
-                    field: 'startupTime',
-                    ...timestampNoYear
+                    ...timestampNoYear,
+                    field: 'startupTime'
                 },
                 {
                     colId: 'uptime',
@@ -130,30 +127,40 @@ export class ServerTabModel extends HoistModel {
                     rendererIsComplex: true
                 }
             ],
-            autosizeOptions: {mode: 'managed'}
+            contextMenu: [this.shutdownAction, '-', ...GridModel.defaultContextMenu]
         });
     }
 
     createTabModel() {
         return new TabContainerModel({
-            route: 'default.servers',
+            route: 'default.cluster',
             switcher: false,
             tabs: [
-                {id: 'logViewer', title: 'Logs', icon: Icon.fileText(), content: logViewer},
-                {id: 'memory', icon: Icon.chartLine(), content: memoryMonitorPanel},
+                {id: 'logs', icon: Icon.fileText(), content: logViewer},
+                {id: 'memory', icon: Icon.memory(), content: memoryMonitorPanel},
                 {id: 'connectionPool', icon: Icon.database(), content: connPoolMonitorPanel},
                 {id: 'environment', icon: Icon.globe(), content: serverEnvPanel},
                 {id: 'services', icon: Icon.gears(), content: servicePanel},
-                {id: 'objects', icon: Icon.grip(), content: hzObjectPanel},
-                {id: 'hibernate', icon: Icon.memory(), content: hibernatePanel},
-                {id: 'webSockets', icon: Icon.bolt(), content: webSocketPanel}
+                {
+                    id: 'objects',
+                    title: 'Distributed Objects',
+                    icon: Icon.grip(),
+                    content: hzObjectPanel
+                },
+                {
+                    id: 'hibernate',
+                    title: 'Hibernate Caches',
+                    icon: Icon.database(),
+                    content: hibernatePanel
+                },
+                {id: 'webSockets', title: 'WebSockets', icon: Icon.bolt(), content: webSocketPanel}
             ]
         });
     }
 
     formatInstance(instance: PlainObject): ReactNode {
         const content = [instance.name];
-        if (instance.isMaster) content.push(badge('master'));
+        if (instance.isMaster) content.push(badge({item: 'master', intent: 'primary'}));
         if (instance.isLocal) content.push(badge('local'));
         return hbox(content);
     }

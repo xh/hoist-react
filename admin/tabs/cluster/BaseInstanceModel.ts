@@ -4,13 +4,13 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {ServerTabModel} from '@xh/hoist/admin/tabs/server/ServerTabModel';
+import {ClusterTabModel} from '@xh/hoist/admin/tabs/cluster/ClusterTabModel';
 import {HoistModel, LoadSpec, lookup, PlainObject, XH} from '@xh/hoist/core';
 import {fmtDateTimeSec, fmtJson} from '@xh/hoist/format';
 import {cloneDeep, forOwn, isNumber, isPlainObject} from 'lodash';
 
 export class BaseInstanceModel extends HoistModel {
-    @lookup(() => ServerTabModel) parent: ServerTabModel;
+    @lookup(() => ClusterTabModel) parent: ClusterTabModel;
 
     get instanceName(): string {
         return this.parent.instanceName;
@@ -21,7 +21,6 @@ export class BaseInstanceModel extends HoistModel {
         this.processDates(stats);
         return fmtJson(JSON.stringify(stats));
     }
-
 
     handleLoadException(e: unknown, loadSpec: LoadSpec) {
         const instanceNotFound = !this.isInstanceNotFound(e);

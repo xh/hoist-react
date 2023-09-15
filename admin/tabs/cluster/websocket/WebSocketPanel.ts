@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {WebSocketModel} from '@xh/hoist/admin/tabs/server/websocket/WebSocketModel';
+import {WebSocketModel} from '@xh/hoist/admin/tabs/cluster/websocket/WebSocketModel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, box, fragment, p, span} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
@@ -24,11 +24,11 @@ export const webSocketPanel = hoistCmp.factory({
         return panel({
             tbar: [
                 span({
-                    item: 'Websocket Connections',
+                    item: 'WebSocket Connections',
                     className: 'xh-bold'
                 }),
                 filler(),
-                relativeTimestamp({bind: 'lastRefresh'}),
+                relativeTimestamp({bind: 'lastRefresh', options: {prefix: 'Refreshed'}}),
                 toolbarSep(),
                 gridCountLabel({unit: 'client'}),
                 toolbarSep(),

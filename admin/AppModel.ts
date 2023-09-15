@@ -12,7 +12,7 @@ import {Route} from 'router5';
 import {activityTab} from './tabs/activity/ActivityTab';
 import {generalTab} from './tabs/general/GeneralTab';
 import {monitorTab} from './tabs/monitor/MonitorTab';
-import {serverTab} from './tabs/server/ServerTab';
+import {clusterTab} from '@xh/hoist/admin/tabs/cluster/ClusterTab';
 import {userDataTab} from './tabs/userData/UserDataTab';
 
 export class AppModel extends HoistAppModel {
@@ -69,19 +69,10 @@ export class AppModel extends HoistAppModel {
                 ]
             },
             {
-                name: 'activity',
-                path: '/activity',
+                name: 'cluster',
+                path: '/cluster',
                 children: [
-                    {name: 'tracking', path: '/tracking'},
-                    {name: 'clientErrors', path: '/clientErrors'},
-                    {name: 'feedback', path: '/feedback'}
-                ]
-            },
-            {
-                name: 'servers',
-                path: '/servers',
-                children: [
-                    {name: 'logViewer', path: '/logViewer'},
+                    {name: 'logs', path: '/logs'},
                     {name: 'memory', path: '/memory'},
                     {name: 'connectionPool', path: '/connectionPool'},
                     {name: 'environment', path: '/environment'},
@@ -89,6 +80,15 @@ export class AppModel extends HoistAppModel {
                     {name: 'objects', path: '/objects'},
                     {name: 'hibernate', path: '/hibernate'},
                     {name: 'webSockets', path: '/webSockets'}
+                ]
+            },
+            {
+                name: 'activity',
+                path: '/activity',
+                children: [
+                    {name: 'tracking', path: '/tracking'},
+                    {name: 'clientErrors', path: '/clientErrors'},
+                    {name: 'feedback', path: '/feedback'}
                 ]
             },
             {
@@ -119,14 +119,14 @@ export class AppModel extends HoistAppModel {
                 content: generalTab
             },
             {
+                id: 'cluster',
+                icon: Icon.server(),
+                content: clusterTab
+            },
+            {
                 id: 'activity',
                 icon: Icon.analytics(),
                 content: activityTab
-            },
-            {
-                id: 'servers',
-                icon: Icon.server(),
-                content: serverTab
             },
             {
                 id: 'monitor',

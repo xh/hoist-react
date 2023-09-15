@@ -4,7 +4,6 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {dateTimeRenderer,} from '@xh/hoist/format';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 
@@ -39,6 +38,3 @@ export const code: ColumnSpec = {
     field: {name: 'code', type: 'string'},
     width: 150
 };
-
-
-

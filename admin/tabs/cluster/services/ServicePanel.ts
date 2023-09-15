@@ -10,56 +10,67 @@ import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, uses} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {HzObjectModel} from './HzObjectModel';
+import {ServiceModel} from './ServiceModel';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
+import {Icon} from '@xh/hoist/icon';
 
-export const hzObjectPanel = hoistCmp.factory({
-    model: creates(HzObjectModel),
+export const servicePanel = hoistCmp.factory({
+    model: creates(ServiceModel),
 
     render() {
         return panel({
             mask: 'onLoad',
             tbar: [
                 span({
-                    item: 'Distributed Objects',
+                    item: 'Hoist + Application Services',
                     className: 'xh-bold'
                 }),
                 filler(),
-                gridCountLabel({unit: 'objects'}),
+                gridCountLabel({unit: 'service'}),
                 '-',
                 storeFilterField({matchMode: 'any'}),
                 exportButton()
             ],
-            item: hframe(grid(), detailsPanel())
+            item: hframe(
+                grid({
+                    flex: 1,
+                    agOptions: {
+                        groupRowRendererParams: {
+                            innerRenderer: params => params.value + ' Services'
+                        }
+                    }
+                }),
+                detailsPanel()
+            )
         });
     }
 });
 
 const detailsPanel = hoistCmp.factory({
-    model: uses(HzObjectModel),
+    model: uses(ServiceModel),
     render({model}) {
         const data = model.gridModel.selectedRecord?.data;
         return panel({
             title: data ? `Stats - ${data.name}` : 'Stats',
+            icon: Icon.info(),
             compactHeader: true,
             modelConfig: {
                 side: 'right',
-                defaultSize: 450,
-                collapsible: true
+                defaultSize: 450
             },
             item: data
                 ? panel({
-                      flex: 1,
-                      className: 'xh-border-left',
                       items: jsonInput({
                           readonly: true,
                           width: '100%',
                           height: '100%',
-                          value: model.fmtStats(data.stats),
-                          showFullscreenButton: false
+                          enableSearch: true,
+                          showFullscreenButton: false,
+                          editorProps: {lineNumbers: false},
+                          value: model.fmtStats(data.stats)
                       })
                   })
-                : placeholder('Select an object')
+                : placeholder(Icon.info(), 'Select a service.')
         });
     }
 });

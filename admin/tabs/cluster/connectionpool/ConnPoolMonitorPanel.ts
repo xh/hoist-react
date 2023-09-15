@@ -5,7 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
-import {ConnPoolMonitorModel} from '@xh/hoist/admin/tabs/server/connectionpool/ConnPoolMonitorModel';
+import {ConnPoolMonitorModel} from '@xh/hoist/admin/tabs/cluster/connectionpool/ConnPoolMonitorModel';
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, hframe, span, vframe} from '@xh/hoist/cmp/layout';
@@ -36,7 +36,7 @@ export const connPoolMonitorPanel = hoistCmp.factory({
         return panel({
             tbar: [
                 span({
-                    item: 'Connection Pool',
+                    item: 'JDBC Connection Pool',
                     className: 'xh-bold'
                 }),
                 filler(),
@@ -54,6 +54,7 @@ export const connPoolMonitorPanel = hoistCmp.factory({
                     omit: readonly,
                     onClick: () => model.resetStatsAsync()
                 }),
+                '-',
                 exportButton()
             ],
             items: hframe(
@@ -77,20 +78,22 @@ export const connPoolMonitorPanel = hoistCmp.factory({
 const poolConfigPanel = hoistCmp.factory<ConnPoolMonitorModel>({
     render({model}) {
         return panel({
-            title: 'Connection Pool Configuration',
-            icon: Icon.gears(),
+            title: 'Pool Configuration',
+            icon: Icon.info(),
             compactHeader: true,
             modelConfig: {
-                defaultSize: 500,
-                defaultCollapsed: true,
-                side: 'right'
+                side: 'right',
+                defaultSize: 450,
+                defaultCollapsed: true
             },
             item: jsonInput({
-                value: JSON.stringify(model.poolConfiguration, null, 2),
                 readonly: true,
                 height: '100%',
                 width: '100%',
-                enableSearch: true
+                enableSearch: true,
+                showFullscreenButton: false,
+                editorProps: {lineNumbers: false},
+                value: JSON.stringify(model.poolConfiguration, null, 2)
             })
         });
     }

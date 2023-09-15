@@ -6,7 +6,7 @@
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
-import {BaseInstanceModel} from '@xh/hoist/admin/tabs/server/BaseInstanceModel';
+import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';
@@ -43,13 +43,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
                 {
                     groupId: 'heap',
                     headerAlign: 'center',
-                    children: [
-                        totalHeapMb,
-                        maxHeapMb,
-                        freeHeapMb,
-                        usedHeapMb,
-                        usedPctMax
-                    ]
+                    children: [totalHeapMb, maxHeapMb, freeHeapMb, usedHeapMb, usedPctMax]
                 },
                 {
                     groupId: 'GC',
@@ -228,7 +222,6 @@ export class MemoryMonitorModel extends BaseInstanceModel {
 const mbCol = {width: 150, renderer: numberRenderer({precision: 2, withCommas: true})},
     pctCol = {width: 150, renderer: numberRenderer({precision: 2, withCommas: true, label: '%'})},
     msCol = {width: 150, renderer: numberRenderer({precision: 0, withCommas: false})};
-
 
 export const totalHeapMb: ColumnSpec = {
     field: {

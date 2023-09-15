@@ -11,10 +11,11 @@ import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
 import {box, hspacer, placeholder, vframe} from '@xh/hoist/cmp/layout';
-import {ServerTabModel} from './ServerTabModel';
+import {ClusterTabModel} from './ClusterTabModel';
+import {Icon} from '@xh/hoist/icon';
 
-export const serverTab = hoistCmp.factory({
-    model: creates(ServerTabModel),
+export const clusterTab = hoistCmp.factory({
+    model: creates(ClusterTabModel),
     render({model}) {
         const {instance} = model;
         return vframe(
@@ -23,7 +24,8 @@ export const serverTab = hoistCmp.factory({
                     side: 'top',
                     defaultSize: 105,
                     minSize: 75,
-                    collapsible: false
+                    collapsible: false,
+                    persistWith: model.persistWith
                 },
                 item: grid()
             }),
@@ -38,7 +40,7 @@ export const serverTab = hoistCmp.factory({
                       flex: 1,
                       item: tabContainer()
                   })
-                : placeholder('Choose an instance above to see more details'),
+                : placeholder(Icon.server(), 'Select an instance above.'),
             mask({bind: model.loadModel})
         );
     }

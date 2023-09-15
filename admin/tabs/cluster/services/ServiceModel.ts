@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {BaseInstanceModel} from '@xh/hoist/admin/tabs/server/BaseInstanceModel';
+import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
 import {GridModel} from '@xh/hoist/cmp/grid';
@@ -15,7 +15,6 @@ import {Icon} from '@xh/hoist/icon';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 
 export class ServiceModel extends BaseInstanceModel {
-
     clearCachesAction: RecordActionSpec = {
         icon: Icon.reset(),
         text: 'Clear Caches',

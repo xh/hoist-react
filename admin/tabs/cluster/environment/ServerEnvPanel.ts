@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {ServerEnvModel} from '@xh/hoist/admin/tabs/server/environment/ServerEnvModel';
+import {ServerEnvModel} from '@xh/hoist/admin/tabs/cluster/environment/ServerEnvModel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
@@ -22,7 +22,7 @@ export const serverEnvPanel = hoistCmp.factory({
         return panel({
             tbar: [
                 span({
-                    item: 'Environment variables and JVM system properties',
+                    item: 'Environment variables + JVM system properties',
                     className: 'xh-bold'
                 }),
                 filler(),

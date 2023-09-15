@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {MemoryMonitorModel} from '@xh/hoist/admin/tabs/server/memory/MemoryMonitorModel';
+import {MemoryMonitorModel} from '@xh/hoist/admin/tabs/cluster/memory/MemoryMonitorModel';
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, span} from '@xh/hoist/cmp/layout';
@@ -59,6 +59,7 @@ export const memoryMonitorPanel = hoistCmp.factory({
                         : null,
                     onClick: () => model.dumpHeapAsync()
                 }),
+                '-',
                 exportButton()
             ],
             items: [
