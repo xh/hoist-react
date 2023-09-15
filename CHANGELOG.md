@@ -12,6 +12,8 @@
    of any `Panel`.
 * Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.
 * Improved styling for disabled `checkbox` inputs.
+* Added new `reactMarkdown` component for rendering Markdown formatted strings as markup.
+* Enabled Banners to render bold, italics and links using Markdown syntax.
 
 ## 59.0.3 - 2023-08-25
 
