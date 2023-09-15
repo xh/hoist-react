@@ -10,6 +10,7 @@ import {hframe, div} from '@xh/hoist/cmp/layout';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {reactMarkdown} from '@xh/hoist/kit/react-markdown';
 import {isFunction, isEmpty} from 'lodash';
 import classNames from 'classnames';
 
@@ -43,7 +44,7 @@ export const banner = hoistCmp.factory({
                         icon,
                         div({
                             className: 'xh-banner__message',
-                            item: message,
+                            item: reactMarkdown(message),
                             onClick
                         })
                     ]
