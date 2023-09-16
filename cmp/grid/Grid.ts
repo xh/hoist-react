@@ -711,7 +711,7 @@ class GridLocalModel extends HoistModel {
     // Catches column resizing on call to autoSize API.
     onColumnResized = ev => {
         if (!isDisplayed(this.viewRef.current) || !ev.finished) return;
-        if (ev.source === 'uiColumnDragged') {
+        if (ev.source === 'uiColumnResized') {
             const colId = ev.columns[0].colId,
                 width = ev.columnApi.getColumnState().find(it => it.colId === colId)?.width;
             this.model.noteColumnManuallySized(colId, width);

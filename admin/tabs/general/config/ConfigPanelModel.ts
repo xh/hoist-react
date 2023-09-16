@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
@@ -18,7 +19,6 @@ import {
     RestStore
 } from '@xh/hoist/desktop/cmp/rest';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isNil, truncate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
 import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
@@ -49,7 +49,7 @@ export class ConfigPanelModel extends HoistModel {
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,
-            exportOptions: {filename: `${XH.appCode}-configs-${LocalDate.today()}`},
+            exportOptions: {filename: exportFilenameWithDate('configs')},
             selModel: 'multiple',
             store: new RestStore({
                 url: 'rest/configAdmin',

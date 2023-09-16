@@ -114,7 +114,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     hideSelectedOptionCheck?: boolean;
 
     /**
-     * True to hide options in the drop down menu if they have been selected.
+     * True to hide options in the drop-down menu if they have been selected.
      * Defaults to same as enableMulti.
      */
     hideSelectedOptions?: boolean;
@@ -373,9 +373,12 @@ class SelectInputModel extends HoistInputModel {
         const {reactSelect} = this;
         if (!reactSelect) return;
 
-        // Use of windowedMode, creatable and async variants will create levels of nesting we must
-        // traverse to get to the underlying Select comp and its inputRef.
-        let selectComp = reactSelect.select;
+        // TODO - after update to react-select v5 in HR v59, could not identify any cases that
+        //  still required the while loop below. Had been required due to nested layers of
+        //  components when using enableWindowed, enableCreate, and/or queryFn. Leaving in place to
+        //  avoid breaking some edge-case we're not finding, but could review/simplify once update
+        //  is baked in a bit more.
+        let selectComp = reactSelect;
         while (selectComp && !selectComp.inputRef) {
             selectComp = selectComp.select;
         }

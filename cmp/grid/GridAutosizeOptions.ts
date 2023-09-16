@@ -40,6 +40,12 @@ export interface GridAutosizeOptions {
     includeCollapsedChildren?: boolean;
 
     /**
+     * True to also autosize hidden columns.
+     * Note that setting this to true can have performance impacts for grids with many columns hidden by default.
+     */
+    includeHiddenColumns?: boolean;
+
+    /**
      * Columns ids to autosize, or a function for testing if the given column should be
      * autosized. Typically used when calling autosizeAsync() manually. To generally exclude
      * a column from autosizing, see the autosizable option on columns.

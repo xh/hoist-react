@@ -15,6 +15,7 @@ import {elementFromContent} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {useRef} from 'react';
 import './Dock.scss';
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 
 interface DockViewProps extends HoistProps<DockViewModel> {
     /** True to style docked headers with reduced padding and font-size. */
@@ -57,7 +58,7 @@ export const dockView = hoistCmp.factory<DockViewProps>({
                           model: refreshContextModel,
                           item: div({
                               className: 'xh-dock-view__body',
-                              item: elementFromContent(model.content)
+                              item: errorBoundary(elementFromContent(model.content))
                           })
                       });
 

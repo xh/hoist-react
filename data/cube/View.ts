@@ -99,7 +99,7 @@ export class View extends HoistBase {
         const {query, stores = [], connect = false} = config;
 
         this.query = query;
-        this.stores = castArray(stores);
+        this.stores = this.parseStores(stores);
         this._rowCache = new Map();
         this.fullUpdate();
 
@@ -185,7 +185,7 @@ export class View extends HoistBase {
 
     /** Set stores to be loaded/reloaded with data from this view. */
     setStores(stores: Some<Store>) {
-        this.stores = castArray(stores);
+        this.stores = this.parseStores(stores);
         this.loadStores();
     }
 
@@ -461,6 +461,18 @@ export class View extends HoistBase {
 
     private get aggregatorsAreSimple() {
         return this.fields.every(({aggregator}) => !aggregator || aggregator.dependsOnChildrenOnly);
+    }
+
+    private parseStores(stores: Some<Store>): Store[] {
+        const ret = castArray(stores);
+
+        // Views mutate the rows they feed to connected stores  -- `reuseRecords` not appropriate
+        throwIf(
+            ret.some(s => s.reuseRecords),
+            'Store.reuseRecords cannot be used on a Store that is connected to a Cube View'
+        );
+
+        return ret;
     }
 
     override destroy() {

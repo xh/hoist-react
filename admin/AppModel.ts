@@ -83,10 +83,11 @@ export class AppModel extends HoistAppModel {
                 children: [
                     {name: 'logViewer', path: '/logViewer'},
                     {name: 'logLevels', path: '/logLevels'},
+                    {name: 'memory', path: '/memory'},
+                    {name: 'connectionPool', path: '/connectionPool'},
                     {name: 'environment', path: '/environment'},
                     {name: 'services', path: '/services'},
                     {name: 'ehCache', path: '/ehCache'},
-                    {name: 'memory', path: '/memory'},
                     {name: 'webSockets', path: '/webSockets'}
                 ]
             },

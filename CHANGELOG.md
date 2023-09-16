@@ -1,21 +1,125 @@
 # Changelog
 
-## 59.0.0-SNAPSHOT - unreleased
+## 60.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* Provide new `ErrorBoundary` component for finer-grained application handling of React Errors.
+* Hoist now wraps `Tab`, `DashCanvasView`, `DashContainerView`,`DockView`, and `Page` in an
+  `ErrorBoundary`.   This provides better isolation of application content, minimizing the chance
+   that any individual component can crash the entire app.
+* New `PanelModel.errorBoundary` property to optionally place an `ErrorBoundary` on the contents
+   of any `Panel`.
+* Improvements and fixes to panel header, including:
+    * Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.
+    * Improved `Panel.collapsedTitle` prop and added `Panel.collapsedIcon` prop. These two props now
+     fully govern header display when collapsed.
+* Improved styling for disabled `checkbox` inputs.
+* Added new `Markdown` component for rendering Markdown formatted strings as markup. This includes
+  bundling `react-markdown` in Hoist. If your app already uses `react-markdown` or similar, you should
+  move to use the new `Markdown` component to benefit from future upgrades.
+* Enabled Banners to render bold, italics and links using Markdown syntax.
+
+### 📚 Libraries
+
+* react-markdown `8.0.7`
+* remark-breaks `3.0.3`
+
+## 59.0.3 - 2023-08-25
+
+### ⚙️ Technical
+
+* New `XH.flags` property to govern experimental, hotfix, or otherwise provisional features.
+
+* Provide temporary workaround to chromium bug effecting BigNumber.  Enabled via flag
+  `applyBigNumberWorkaround`.  See https://github.com/MikeMcl/bignumber.js/issues/354.
+
+## 59.0.2 - 2023-08-24
+
+### 🐞 Bug Fixes
+
+* Restored support for `Select.selectOnFocus` (had broken with upgrade to `react-select` in v59.0).
+* Fixed `DateInput` bug caused by changes in Chrome v116 - clicking on inputs
+  with `enableTextInput: false` now open the date picker popup as expected.
+* Flex inner title element added to `Panel` headers in v59.0, and set `display:flex` on the new
+  element itself. Restores previous flexbox container behavior (when not L/R collapsed) for apps
+  that are providing custom components as titles.
+* `DashCanvas` now properly updates its layout when shown if the browser window had been resized
+  while the component was hidden (e.g. in an inactive tab).
+* Reverted upgrade to `react-select` in v59.0.0 due to issues found with `selectEditor` / inline
+  grid editing. We will revisit this upgrade in a future release.
+
+### 📚 Libraries
+
+* react-select `5.7 -> 4.3`
+* react-windowed-select `5.1 -> 3.1`
+
+## 59.0.1 - 2023-08-17
+
+### 🎁 New Features
+
+* Added new `Panel.collapsedTitle` prop to make it easier to display a different title when the
+  panel is collapsed.
+
+## 59.0.0 - 2023-08-17
 
 ### 💥 Breaking Changes
 
-* Apps should update their Typescript dependency to v5.1. This should be a drop-in for most
+* Apps must update their `typescript` dependency to v5.1. This should be a drop-in for most
   applications, or require only minor changes. Note that Hoist has not yet adopted the updated
   approach to decorators added in TS v5, maintaining compatibility with the "legacy" syntax.
+* Apps that use and provide the `highcharts` library should be sure to update the version to v11.1.
+  This should be a drop-in for most applications.
+    * Visit https://www.highcharts.com/blog/changelog/ for specific changes.
+* Apps must also update their `@xh/hoist-dev-utils` dependency to v7.0.0 or higher.
+    * We recommend specifying this as `"@xh/hoist-dev-utils": "7.x"` in your `package.json` to
+      automatically pick up future minor releases.
 * `DataViewConfig` no longer directly supports `GridConfig` parameters - instead, nest `GridConfig`
   options you wish to set via the new `gridOptions` parameter. Please note that, as before, not
   all `GridConfig` options are supported by (or make sense for) the `DataView` component.
+
+### 🎁 New Features
+
+* New `GridAutosizeOptions.includeHiddenColumns` config controls whether hidden columns should
+  also be included during the autosize process. Default of `false`. Useful when applications
+  provide quick toggles between different column sets and would prefer to take the up-front cost of
+  autosizing rather than doing it after the user loads a column set.
+* New `NumberFormatOptions.strictZero` formatter config controls display of values that round to
+  zero at the specified precision. Set to `false` to format those values as if they were *exactly*
+  zero, triggering display of any `zeroDisplay` value and suppressing sign-based glyphs, '+/-'
+  characters, and styling.
+* New `DashModel.refreshContextModel` allows apps to programmatically refresh all widgets within
+  a `DashCanvas` or `DashContainer`.
+* New tab for monitoring JDBC connection pool stats added to the Admin Console. Apps
+  with `hoist-core >= v17.2` will collect and display metrics for their primary datasource on a
+  configurable frequency.
+* `ButtonGroupInput` now allows `null` values for buttons as long as both `enableClear` and
+  `enableMulti` are false.
+
+### 🐞 Bug Fixes
+
+* Fixed bug where a titled panel collapsed to either the left or right side of a layout could cause
+  severe layout performance degradation (and even browser hangs) when resizing the browser window in
+  the latest Chrome v115.
+    * Note this required some adjustments to the internal DOM structure of `PanelHeader` - highly
+      specific CSS selectors or visual tests may be affected.
+* Fixed bug where `manuallySized` was not being set properly on column state.
+* Fixed bug where mobile `Dialog` max height was not properly constrained to the viewport.
+* Fixed bug where mobile `NumberInput` would clear when trying to enter decimals on certain devices.
+* Suppressed extra top border on Grids with `hideHeaders: true`.
+
+### ⚙️ Technical
+
+* Suppressed dev-time console warnings thrown by Blueprint Toaster.
 
 ### 📚 Libraries
 
 * mobx `6.8 -> 6.9`
 * semver `7.3 -> 7.5`
 * typescript `4.9 -> 5.1`
+* highcharts `10.3 -> 11.1`
+* react-select `4.3 -> 5.7`
+* react-windowed-select `3.1 -> 5.1`
 
 ## 58.0.1 - 2023-07-13
 
@@ -3468,7 +3572,7 @@ _"The one with the hooks."_
 **Hoist now fully supports React functional components and hooks.** The new `hoistComponent`
 function is now the recommended method for defining new components and their corresponding element
 factories. See that (within HoistComponentFunctional.js) and the new `useLocalModel()` and
-`useContextModel()` hooks (within [core/hooks](core/hooks)) for more information.
+`useContextModel()` hooks (within [core/model](core/model)) for more information.
 
 Along with the performance benefits and the ability to use React hooks, Hoist functional components
 are designed to read and write their models via context. This allows a much less verbose
