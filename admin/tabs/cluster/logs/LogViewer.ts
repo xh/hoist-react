@@ -30,8 +30,8 @@ export const logViewer = hoistCmp.factory({
             ref: model.viewRef,
             items: [
                 panel({
-                    // collapsedTitle: 'Logs',
-                    // collapsedIcon: Icon.fileText(),
+                    collapsedTitle: 'Log Files',
+                    collapsedIcon: Icon.fileText(),
                     modelConfig: {
                         side: 'left',
                         defaultSize: 380

@@ -10,6 +10,7 @@ import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, uses} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {isEmpty} from 'lodash';
 import {ServiceModel} from './ServiceModel';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
@@ -49,28 +50,34 @@ export const servicePanel = hoistCmp.factory({
 const detailsPanel = hoistCmp.factory({
     model: uses(ServiceModel),
     render({model}) {
-        const data = model.gridModel.selectedRecord?.data;
+        const recData = model.gridModel.selectedRecord?.data,
+            svcName = recData?.name,
+            stats = recData?.stats,
+            hasStats = !isEmpty(stats);
+
         return panel({
-            title: data ? `Stats - ${data.name}` : 'Stats',
+            title: recData ? `Stats: ${svcName}` : 'Stats',
             icon: Icon.info(),
             compactHeader: true,
             modelConfig: {
                 side: 'right',
                 defaultSize: 450
             },
-            item: data
-                ? panel({
-                      items: jsonInput({
-                          readonly: true,
-                          width: '100%',
-                          height: '100%',
-                          enableSearch: true,
-                          showFullscreenButton: false,
-                          editorProps: {lineNumbers: false},
-                          value: model.fmtStats(data.stats)
+            item: recData
+                ? hasStats
+                    ? panel({
+                          item: jsonInput({
+                              readonly: true,
+                              width: '100%',
+                              height: '100%',
+                              enableSearch: true,
+                              showFullscreenButton: false,
+                              editorProps: {lineNumbers: false},
+                              value: model.fmtStats(stats)
+                          })
                       })
-                  })
-                : placeholder(Icon.info(), 'Select a service.')
+                    : placeholder(Icon.gears(), `${svcName} did not report any stats.`)
+                : placeholder(Icon.gears(), 'Select a service.')
         });
     }
 });

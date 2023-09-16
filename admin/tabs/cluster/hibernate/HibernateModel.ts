@@ -4,18 +4,16 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
+import {AppModel} from '@xh/hoist/admin/AppModel';
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';
-import {LocalDate} from '@xh/hoist/utils/datetime';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {AppModel} from '@xh/hoist/admin/AppModel';
 
 export class HibernateModel extends BaseInstanceModel {
-    override persistWith = {localStorageKey: 'xhAdminHibernateState'};
-
     clearAction: RecordActionSpec = {
         icon: Icon.reset(),
         text: 'Clear Caches',
@@ -27,12 +25,10 @@ export class HibernateModel extends BaseInstanceModel {
 
     @managed
     gridModel = new GridModel({
-        persistWith: this.persistWith,
-        colChooserModel: true,
         enableExport: true,
         selModel: 'multiple',
-        contextMenu: [this.clearAction, '-', ...GridModel.defaultContextMenu],
-        exportOptions: {filename: `${XH.appCode}-hibernate-${LocalDate.today()}`},
+        exportOptions: {filename: exportFilenameWithDate('hibernate')},
+        sortBy: 'name',
         store: {
             fields: [
                 {name: 'name', type: 'string'},
@@ -41,8 +37,8 @@ export class HibernateModel extends BaseInstanceModel {
             ],
             idSpec: 'name'
         },
-        sortBy: 'name',
-        columns: [{field: 'name'}, {field: 'size', ...Col.number, width: 130}]
+        columns: [{field: 'name'}, {field: 'size', ...Col.number, width: 130}],
+        contextMenu: [this.clearAction, '-', ...GridModel.defaultContextMenu]
     });
 
     async clearAsync() {
@@ -53,7 +49,8 @@ export class HibernateModel extends BaseInstanceModel {
                     instance: this.instanceName,
                     names: this.gridModel.selectedIds
                 }
-            });
+            }).linkTo(this.loadModel);
+
             await this.refreshAsync();
             XH.successToast('Objects cleared.');
         } catch (e) {

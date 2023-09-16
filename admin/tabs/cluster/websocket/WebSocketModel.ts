@@ -119,13 +119,18 @@ export class WebSocketModel extends BaseInstanceModel {
         const message = await XH.prompt<string>({
             title: 'Force suspend',
             icon: Icon.stopCircle(),
-            confirmProps: {text: 'Force Suspend', icon: Icon.stopCircle(), intent: 'danger'},
+            confirmProps: {
+                text: 'Force Suspend',
+                icon: Icon.stopCircle(),
+                intent: 'danger',
+                outlined: true
+            },
             cancelProps: {autoFocus: true},
             message: div(
                 p(
                     `This action will force ${selectedRecords.length} connected client(s) into suspended mode, halting all background refreshes and other activity, masking the UI, and requiring users to reload the app to continue.`
                 ),
-                p('If desired, you can enter a message below to display within the suspended app.')
+                p('Enter an optional message below to display within the suspended app.')
             ),
             input: {
                 item: textInput({placeholder: 'User-facing message (optional)'}),

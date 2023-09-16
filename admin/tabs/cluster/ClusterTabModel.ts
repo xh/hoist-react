@@ -6,7 +6,7 @@
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
-import {connPoolMonitorPanel} from '@xh/hoist/admin/tabs/cluster/connectionpool/ConnPoolMonitorPanel';
+import {connPoolMonitorPanel} from '@xh/hoist/admin/tabs/cluster/connpool/ConnPoolMonitorPanel';
 import {serverEnvPanel} from '@xh/hoist/admin/tabs/cluster/environment/ServerEnvPanel';
 import {hibernatePanel} from '@xh/hoist/admin/tabs/cluster/hibernate/HibernatePanel';
 import {hzObjectPanel} from '@xh/hoist/admin/tabs/cluster/hzobject/HzObjectPanel';
@@ -28,9 +28,6 @@ import {ReactNode} from 'react';
 export class ClusterTabModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminClusterTabState'};
 
-    @managed gridModel: GridModel = this.createGridModel();
-    @managed tabModel: TabContainerModel = this.createTabModel();
-
     shutdownAction: RecordActionSpec = {
         icon: Icon.skull(),
         text: 'Shutdown Instance',
@@ -39,6 +36,9 @@ export class ClusterTabModel extends HoistModel {
         displayFn: () => ({hidden: AppModel.readonly}),
         recordsRequired: 1
     };
+
+    @managed gridModel: GridModel = this.createGridModel();
+    @managed tabModel: TabContainerModel = this.createTabModel();
 
     get instance(): PlainObject {
         return this.gridModel.selectedRecord?.data;
@@ -138,7 +138,12 @@ export class ClusterTabModel extends HoistModel {
             tabs: [
                 {id: 'logs', icon: Icon.fileText(), content: logViewer},
                 {id: 'memory', icon: Icon.memory(), content: memoryMonitorPanel},
-                {id: 'connectionPool', icon: Icon.database(), content: connPoolMonitorPanel},
+                {
+                    id: 'jdbcPool',
+                    title: 'JDBC Pool',
+                    icon: Icon.database(),
+                    content: connPoolMonitorPanel
+                },
                 {id: 'environment', icon: Icon.globe(), content: serverEnvPanel},
                 {id: 'services', icon: Icon.gears(), content: servicePanel},
                 {
@@ -168,8 +173,8 @@ export class ClusterTabModel extends HoistModel {
     async shutdownInstanceAsync(instance: PlainObject) {
         if (
             !(await XH.confirm({
-                message: `Are you SURE you want to shutdown instance '${instance.name}'? `,
-                title: 'Shutdown Instance?',
+                message: `Are you SURE you want to shutdown instance ${instance.name}?`,
+                title: 'Please confirm...',
                 confirmProps: {
                     icon: Icon.skull(),
                     text: 'Shutdown Now',

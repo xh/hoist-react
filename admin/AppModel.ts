@@ -74,7 +74,7 @@ export class AppModel extends HoistAppModel {
                 children: [
                     {name: 'logs', path: '/logs'},
                     {name: 'memory', path: '/memory'},
-                    {name: 'connectionPool', path: '/connectionPool'},
+                    {name: 'jdbcPool', path: '/jdbcPool'},
                     {name: 'environment', path: '/environment'},
                     {name: 'services', path: '/services'},
                     {name: 'objects', path: '/objects'},

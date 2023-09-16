@@ -41,7 +41,7 @@ const detailsPanel = hoistCmp.factory({
     render({model}) {
         const data = model.gridModel.selectedRecord?.data;
         return panel({
-            title: data ? `Stats - ${data.name}` : 'Stats',
+            title: data ? `Stats: ${data.name}` : 'Stats',
             icon: Icon.info(),
             compactHeader: true,
             modelConfig: {
@@ -50,9 +50,7 @@ const detailsPanel = hoistCmp.factory({
             },
             item: data
                 ? panel({
-                      flex: 1,
-                      className: 'xh-border-left',
-                      items: jsonInput({
+                      item: jsonInput({
                           readonly: true,
                           width: '100%',
                           height: '100%',
@@ -61,7 +59,7 @@ const detailsPanel = hoistCmp.factory({
                           value: model.fmtStats(data.stats)
                       })
                   })
-                : placeholder(Icon.info(), 'Select an object.')
+                : placeholder(Icon.grip(), 'Select an object.')
         });
     }
 });

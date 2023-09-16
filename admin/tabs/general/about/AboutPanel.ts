@@ -40,6 +40,7 @@ function renderTables() {
             item: tbody(
                 row('App Name / Code', `${get('appName')} / ${get('appCode')}`),
                 row('Environment', get('appEnvironment')),
+                row('Instance Name', get('instanceName')),
                 row('Database', get('databaseConnectionString')),
                 row(
                     'DB User / Create Mode',

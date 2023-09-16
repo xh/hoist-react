@@ -4,15 +4,15 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
+import {AppModel} from '@xh/hoist/admin/AppModel';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
+import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';
-import {isEmpty, lowerFirst} from 'lodash';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {AppModel} from '@xh/hoist/admin/AppModel';
+import {isEmpty, lowerFirst} from 'lodash';
 
 export class ServiceModel extends BaseInstanceModel {
     clearCachesAction: RecordActionSpec = {
@@ -40,14 +40,9 @@ export class ServiceModel extends BaseInstanceModel {
 
     @managed
     gridModel: GridModel = new GridModel({
+        selModel: 'multiple',
         enableExport: true,
         exportOptions: {filename: exportFilenameWithDate('services')},
-        contextMenu: [
-            this.clearCachesAction,
-            this.clearClusterCachesAction,
-            '-',
-            ...GridModel.defaultContextMenu
-        ],
         store: {
             idSpec: 'name',
             processRawData: this.processRawData,
@@ -60,14 +55,26 @@ export class ServiceModel extends BaseInstanceModel {
                 {name: 'stats', type: 'json'}
             ]
         },
-        selModel: 'multiple',
         sortBy: 'displayName',
         groupBy: 'provider',
         columns: [
             {field: 'provider', hidden: true},
-            {field: 'displayName'},
+            {
+                field: 'stats',
+                headerName: '',
+                width: 34,
+                align: 'center',
+                renderer: v => (isEmpty(v) ? '' : Icon.info({title: 'Stats available'}))
+            },
+            {field: 'displayName', flex: 1},
             {...timestampNoYear, field: 'lastCachesCleared'},
             {...timestampNoYear, field: 'initializedDate'}
+        ],
+        contextMenu: [
+            this.clearCachesAction,
+            this.clearClusterCachesAction,
+            '-',
+            ...GridModel.defaultContextMenu
         ]
     });
 
