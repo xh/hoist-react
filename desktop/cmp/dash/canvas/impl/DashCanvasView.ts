@@ -47,7 +47,9 @@ export const dashCanvasView = hoistCmp.factory({
             ...headerProps,
             item: box({
                 ref: useOnResize(dims => model.onContentsResized(dims), {debounce: 100}),
-                item: errorBoundary(elementFromContent(viewSpec.content, {flex: 1, viewModel: model})),
+                item: errorBoundary(
+                    elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
+                ),
                 flex: autoHeight ? 'none' : 'auto'
             })
         });
