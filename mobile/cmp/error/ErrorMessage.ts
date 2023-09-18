@@ -28,7 +28,7 @@ export interface ErrorMessageProps extends HoistProps {
     actionButtonProps?: ButtonProps;
 
     /**
-     * True to provide a link to display additional details to user in a popup.
+     * If provided, will render a "Details" button that calls this function.
      * Use `detailsButtonProps` for further control over this button.  Default false.
      */
     detailsFn?: (error: unknown) => void;
@@ -127,7 +127,6 @@ const actionButton = hoistCmp.factory<ButtonProps>(props => {
     return button({
         text: 'Retry',
         icon: Icon.refresh(),
-        minimal: true,
         ...props
     });
 });
@@ -136,7 +135,6 @@ const detailsButton = hoistCmp.factory<ButtonProps>(props => {
     return button({
         text: 'Show Details',
         icon: Icon.detail(),
-        minimal: true,
         ...props
     });
 });
