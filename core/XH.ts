@@ -56,6 +56,7 @@ import '../styles/XH.scss';
 import {ModelSelector, HoistModel, RefreshContextModel} from './model';
 import {HoistAppModel, BannerSpec, ToastSpec, MessageSpec, HoistUser, TaskObserver} from './';
 import {CancelFn} from 'router5/types/types/base';
+import {apiDeprecated} from '@xh/hoist/utils/js';
 
 export const MIN_HOIST_CORE_VERSION = '16.0';
 
@@ -576,16 +577,11 @@ export class XHApi {
         this.exceptionHandler.handleException(exception, options);
     }
 
-    /**
-     * Show an exception. This method is an alias for {@link ExceptionHandler.showException}.
-     *
-     * Intended to be used for the deferred / user-initiated showing of exceptions that have
-     * already been appropriately logged. Apps should typically prefer {@link handleException}.
-     *
-     * @param exception - thrown object, will be coerced into a {@link HoistException}.
-     * @param options - provides further control over how the exception is shown and/or logged.
-     */
     showException(exception: unknown, options?: ExceptionHandlerOptions) {
+        apiDeprecated('showException', {
+            msg: 'Use XH.exceptionHandler.showException instead',
+            v: '62'
+        });
         this.exceptionHandler.showException(exception, options);
     }
 

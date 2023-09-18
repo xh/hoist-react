@@ -4,12 +4,14 @@
 
 ### 🎁 New Features
 
-* Provide new `ErrorBoundary` component for finer-grained application handling of React Errors.
-* Hoist now wraps `Tab`, `DashCanvasView`, `DashContainerView`,`DockView`, and `Page` in an
-  `ErrorBoundary`.   This provides better isolation of application content, minimizing the chance
-   that any individual component can crash the entire app.
-* New `PanelModel.errorBoundary` property to optionally place an `ErrorBoundary` on the contents
-   of any `Panel`.
+* Improvements to Error Handling/Display:
+    * Provide new `ErrorBoundary` component for finer-grained application handling of React Errors.
+    * Hoist now wraps `Tab`, `DashCanvasView`, `DashContainerView`,`DockView`, and `Page` in an
+      `ErrorBoundary`.   This provides better isolation of application content, minimizing the chance
+      that any individual component can crash the entire app.
+    * New `PanelModel.errorBoundary` property to optionally place an `ErrorBoundary` on the contents
+      of any `Panel`.
+    * `ErrorMessage` component now provides an ability to show additional exception details.
 * Improvements and fixes to panel header, including:
     * Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.
     * Improved `Panel.collapsedTitle` prop and added `Panel.collapsedIcon` prop. These two props now
@@ -19,6 +21,9 @@
   bundling `react-markdown` in Hoist. If your app already uses `react-markdown` or similar, you should
   move to use the new `Markdown` component to benefit from future upgrades.
 * Enabled Banners to render bold, italics and links using Markdown syntax.
+
+### ⚙️ Technical
+* `XH.showException` has been deprecated.  Use similar methods on `XH.exceptionHandler` instead.
 
 ### 📚 Libraries
 

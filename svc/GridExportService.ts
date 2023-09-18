@@ -253,7 +253,7 @@ export class GridExportService extends HoistService {
                     item: '(show details...)',
                     onClick: () => {
                         failToast?.dismiss();
-                        XH.exceptionHandler.showException(e);
+                        XH.exceptionHandler.showExceptionDetails(e);
                     }
                 })
             ),

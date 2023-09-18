@@ -4,14 +4,15 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {div, frame, p} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, PlainObject} from '@xh/hoist/core';
+import {div, filler, frame, hbox, p} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
-import {isEmpty, isNil, isString} from 'lodash';
+import {isNil, isString} from 'lodash';
 import {isValidElement, ReactNode, MouseEvent} from 'react';
 
 import './ErrorMessage.scss';
+import {Icon} from '@xh/hoist/icon';
 
 export interface ErrorMessageProps extends HoistProps {
     /**
@@ -19,21 +20,36 @@ export interface ErrorMessageProps extends HoistProps {
      * Use `actionButtonProps` for further control over this button.
      */
     actionFn?: (e: MouseEvent) => void;
+
     /**
      * If provided, component will render an inline action button - prompting to user to take some
      * action that might resolve the error, such as retrying a failed data load.
      */
     actionButtonProps?: ButtonProps;
+
+    /**
+     * True to provide a link to display additional details to user in a popup.
+     * Use `detailsButtonProps` for further control over this button.  Default false.
+     */
+    detailsFn?: (error: unknown) => void;
+
+    /**
+     * If provided, component will render an inline details button.
+     */
+    detailsButtonProps?: ButtonProps;
+
     /**
      * Error to display. If undefined, this component will look for an error property on its model.
      * If no error is found, this component will not be displayed.
      */
-    error?: Error | string | PlainObject;
+    error?: unknown;
+
     /**
      * Message to display for the error.
      * Defaults to the error, or any 'message' property contained within it.
      */
     message?: ReactNode;
+
     /** Optional title to display above the message. */
     title?: ReactNode;
 }
@@ -43,21 +59,18 @@ export interface ErrorMessageProps extends HoistProps {
  */
 export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessageProps>({
     className: 'xh-error-message',
-    render(
-        {
+    render(props, ref) {
+        let {
             className,
             model,
-            error = (model as any)?.error,
+            error = model?.['error'],
             message,
             title,
             actionFn,
-            actionButtonProps
-        },
-        ref
-    ) {
-        if (actionFn) {
-            actionButtonProps = {...actionButtonProps, onClick: actionFn};
-        }
+            actionButtonProps,
+            detailsFn,
+            detailsButtonProps
+        } = props;
 
         if (isNil(error)) return null;
 
@@ -68,12 +81,26 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
                 message = error.message;
             }
         }
+
+        const buttons = [];
+        if (actionFn) {
+            actionButtonProps = {...actionButtonProps, onClick: error => actionFn(error)};
+        }
+
+        if (detailsFn) {
+            detailsButtonProps = {...detailsButtonProps, onClick: error => detailsFn(error)};
+        }
+
+        if (detailsButtonProps) buttons.push(detailsButton(detailsButtonProps));
+        if (detailsButtonProps && actionButtonProps) buttons.push(filler());
+        if (actionButtonProps) buttons.push(actionButton(actionButtonProps));
+
         return frame({
             ref,
             className,
             item: div({
                 className: 'xh-error-message__inner',
-                items: [titleCmp({title}), messageCmp({message}), actionButton({actionButtonProps})]
+                items: [titleCmp({title}), messageCmp({message, error}), hbox(buttons)]
             })
         });
     }
@@ -92,9 +119,19 @@ const messageCmp = hoistCmp.factory(({message}) => {
 });
 
 const actionButton = hoistCmp.factory(({actionButtonProps}) => {
-    if (isEmpty(actionButtonProps)) return null;
     return button({
         text: 'Retry',
+        icon: Icon.refresh(),
+        minimal: true,
         ...actionButtonProps
+    });
+});
+
+const detailsButton = hoistCmp.factory(({detailsButtonProps}) => {
+    return button({
+        text: 'Show Details',
+        icon: Icon.detail(),
+        minimal: true,
+        ...detailsButtonProps
     });
 });
