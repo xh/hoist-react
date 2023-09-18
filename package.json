@@ -59,7 +59,7 @@
     "mobx": "~6.9.1",
     "mobx-react-lite": "~3.4.3",
     "moment": "~2.29.1",
-    "numbro": "~2.3.6",
+    "numbro": "~2.4.0",
     "onsenui": "~2.12.8",
     "qs": "~6.11.0",
     "react-beautiful-dnd": "~13.1.0",

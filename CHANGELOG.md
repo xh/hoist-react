@@ -24,6 +24,7 @@
 
 ### 📚 Libraries
 
+* numbro `2.3 -> 2.4`
 * react-markdown `added @ 8.0`
 * remark-breaks `added @ 3.0`
 
