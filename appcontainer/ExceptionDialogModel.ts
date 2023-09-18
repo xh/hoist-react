@@ -50,6 +50,12 @@ export class ExceptionDialogModel extends HoistModel {
     }
 
     @action
+    showDetails(exception: HoistException, options: ExceptionHandlerOptions) {
+        this.show(exception, options);
+        this.openDetails();
+    }
+
+    @action
     close() {
         this.displayData = null;
         this.detailsIsOpen = false;

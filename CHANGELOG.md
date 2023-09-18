@@ -10,6 +10,7 @@
       that any individual component can crash the entire app.
     * A new `PanelModel.errorBoundary` prop allows developers to opt-in to an `ErrorBoundary`
       wrapper around the contents of any panel.
+    * `ErrorMessage` component now provides an ability to show additional exception details.
 * Added new `Markdown` component for rendering Markdown formatted strings as markup. This includes
   bundling `react-markdown` in Hoist.
     * If your app already uses `react-markdown` or similar, we recommend updating to use the
@@ -21,6 +22,9 @@
     * Improved `Panel.collapsedTitle` prop and added `Panel.collapsedIcon` prop. These two props now
       fully govern header display when collapsed.
 * Improved styling for disabled `checkbox` inputs.
+
+### ⚙️ Technical
+* `XH.showException` has been deprecated.  Use similar methods on `XH.exceptionHandler` instead.
 
 ### 📚 Libraries
 

@@ -77,7 +77,13 @@ export const AppContainer = hoistCmp({
             hotkeysProvider(
                 errorBoundary({
                     modelConfig: {
-                        errorHandler: {requireReload: true},
+                        errorHandler: {
+                            title: 'Critical Error',
+                            message:
+                                XH.clientAppName +
+                                ' encountered a critical error and cannot be displayed.',
+                            requireReload: true
+                        },
                         errorRenderer: () => null
                     },
                     item: viewForState()

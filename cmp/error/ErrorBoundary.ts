@@ -38,7 +38,8 @@ export const [ErrorBoundary, errorBoundary] = hoistCmp.withFactory<ErrorBoundary
         return cmp({
             error,
             title: 'Unexpected error while rendering this component',
-            actionFn: () => model.clear()
+            actionFn: () => model.clear(),
+            detailsFn: () => XH.exceptionHandler.showExceptionDetails(error)
         });
     }
 });
