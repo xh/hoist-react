@@ -9,6 +9,7 @@ import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
 import {DashViewModel} from '../../DashViewModel';
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 
 /**
  * Implementation component to show an item within a DashContainer.  This component
@@ -44,7 +45,7 @@ export const dashContainerView = hoistCmp.factory({
             className,
             item: refreshContextView({
                 model: refreshContextModel,
-                item: elementFromContent(viewSpec.content, {flex: 1})
+                item: errorBoundary(elementFromContent(viewSpec.content, {flex: 1}))
             })
         });
     }

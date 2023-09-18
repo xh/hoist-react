@@ -21,13 +21,39 @@ export const panelHeader = hoistCmp.factory({
 
     render({className, ...props}) {
         const panelModel = useContextModel(PanelModel),
-            {collapsed, collapsible, isModal, vertical, side} = panelModel,
-            {title, icon, compact} = props,
-            collapsedTitle = withDefault(props.collapsedTitle, title),
-            displayedTitle = collapsed ? collapsedTitle : title,
-            headerItems = props.headerItems ?? [];
+            {
+                isRenderedCollapsed,
+                isCollapsedToLeftOrRight,
+                collapsible,
+                isModal,
+                side,
+                showModalToggleButton,
+                showHeaderCollapseButton
+            } = panelModel,
+            {title, icon, compact} = props;
 
-        if (isNil(title) && isNil(icon) && isEmpty(headerItems)) return null;
+        // Title and icon can vary based on collapsed state.
+        const collapsedTitle = withDefault(props.collapsedTitle, title),
+            displayedTitle = (isRenderedCollapsed ? collapsedTitle : title) ?? null,
+            collapsedIcon = withDefault(props.collapsedIcon, icon),
+            displayedIcon = (isRenderedCollapsed ? collapsedIcon : icon) ?? null;
+
+        // As can headerItems, which include app-specified controls (never shown when collapsed)
+        // as well as (maybe) built-in modal/collapse toggle buttons.
+        const headerItems = props.headerItems ?? [],
+            displayedHeaderItems = isRenderedCollapsed ? [] : [...headerItems];
+
+        // Return null if nothing to display.
+        if (isNil(displayedTitle) && isNil(displayedIcon) && isEmpty(displayedHeaderItems)) {
+            return null;
+        }
+
+        if (showModalToggleButton && !isRenderedCollapsed) {
+            displayedHeaderItems.push(modalToggleButton());
+        }
+        if (showHeaderCollapseButton && !isModal) {
+            displayedHeaderItems.push(collapseToggleButton({panelModel}));
+        }
 
         const onDoubleClick = () => {
             if (isModal) {
@@ -41,12 +67,13 @@ export const panelHeader = hoistCmp.factory({
             sideCls = `xh-panel-header--${side}`,
             compactCls = compact ? 'xh-panel-header--compact' : null;
 
-        // 1) Classic "top" title bar
-        if (!collapsed || vertical || isModal) {
-            return hbox({
-                className: classNames(className, compactCls),
+        // Return a vertically oriented header if collapsed to left or right side.
+        if (isCollapsedToLeftOrRight) {
+            return vbox({
+                className: classNames(className, sideCls, compactCls),
+                flex: 1,
                 items: [
-                    icon || null,
+                    displayedIcon,
                     displayedTitle
                         ? box({
                               className: titleCls,
@@ -54,44 +81,38 @@ export const panelHeader = hoistCmp.factory({
                               item: span({className: `${titleCls}__inner`, item: displayedTitle})
                           })
                         : filler(),
-                    hbox({
-                        className: 'xh-panel-header__items',
-                        items: [
-                            ...(!collapsed || isModal ? headerItems : []),
-                            modalButton({panelModel}),
-                            collapseButton({panelModel})
-                        ],
-                        onDoubleClick: e => e.stopPropagation()
-                    })
+                    ...displayedHeaderItems
                 ],
                 onDoubleClick
             });
         }
 
-        // 2) ...otherwise its a narrow, sidebar
-        return vbox({
-            className: classNames(className, sideCls, compactCls),
-            flex: 1,
+        // Return a standard horizontal header otherwise.
+        // Panel is expanded, modal, and/or collapsed to the top or bottom side.
+        return hbox({
+            className: classNames(className, compactCls),
             items: [
-                collapseButton({panelModel}),
-                icon || null,
+                displayedIcon,
                 displayedTitle
                     ? box({
                           className: titleCls,
+                          flex: 1,
                           item: span({className: `${titleCls}__inner`, item: displayedTitle})
                       })
-                    : null
+                    : filler(),
+                hbox({
+                    className: 'xh-panel-header__items',
+                    items: displayedHeaderItems,
+                    onDoubleClick: e => e.stopPropagation()
+                })
             ],
             onDoubleClick
         });
     }
 });
 
-const collapseButton = hoistCmp.factory(({panelModel}) => {
-    const {showHeaderCollapseButton, collapsible, isModal} = panelModel as PanelModel;
-    if (!showHeaderCollapseButton || !collapsible || isModal) return null;
-
-    const {vertical, collapsed, contentFirst} = panelModel,
+const collapseToggleButton = hoistCmp.factory(({panelModel}) => {
+    const {vertical, collapsed, contentFirst} = panelModel as PanelModel,
         directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],
         idx = contentFirst !== collapsed ? 0 : 1,
         chevron = directions[idx];
@@ -101,10 +122,4 @@ const collapseButton = hoistCmp.factory(({panelModel}) => {
         onClick: () => panelModel.toggleCollapsed(),
         minimal: true
     });
-});
-
-const modalButton = hoistCmp.factory(({panelModel}) => {
-    const {showModalToggleButton, hasModalSupport} = panelModel as PanelModel;
-    if (!showModalToggleButton || !hasModalSupport) return null;
-    return modalToggleButton();
 });

@@ -4,10 +4,12 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {box, frame, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {
     BoxProps,
     hoistCmp,
+    HoistModel,
     HoistProps,
     refreshContextView,
     Some,
@@ -43,6 +45,9 @@ export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'titl
 
     /** An icon placed at the left-side of the panel's header. */
     icon?: ReactElement;
+
+    /** Icon to be used when the panel is collapsed. Defaults to `icon`. */
+    collapsedIcon?: ReactElement;
 
     /** Context Menu to show on context clicking this panel. */
     contextMenu?: ContextMenuSpec;
@@ -121,6 +126,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             icon,
             compactHeader,
             collapsedTitle,
+            collapsedIcon,
             headerClassName,
             headerItems,
             mask: maskProp,
@@ -149,22 +155,23 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         const {
             resizable,
             collapsible,
-            collapsed,
+            isRenderedCollapsed,
             renderMode,
             vertical,
             showSplitter,
             refreshContextModel,
-            modalSupportModel
+            modalSupportModel,
+            errorBoundaryModel
         } = model;
 
-        if (collapsed) {
+        if (isRenderedCollapsed) {
             delete layoutProps[`min${vertical ? 'Height' : 'Width'}`];
             delete layoutProps[vertical ? 'height' : 'width'];
         }
 
         let coreContents = null;
         if (
-            !collapsed ||
+            !isRenderedCollapsed ||
             renderMode === 'always' ||
             (renderMode === 'lazy' && wasDisplayed.current)
         ) {
@@ -173,7 +180,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             };
 
             coreContents = vframe({
-                style: {display: collapsed ? 'none' : 'flex'},
+                style: {display: isRenderedCollapsed ? 'none' : 'flex'},
                 items: Children.toArray([
                     parseToolbar(tbar),
                     ...castArray(children),
@@ -181,13 +188,18 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                 ])
             });
         }
-        if (!collapsed) wasDisplayed.current = true;
+        if (!isRenderedCollapsed) wasDisplayed.current = true;
 
         // decorate with hooks (internally conditional, of course)
         coreContents = useContextMenu(coreContents, contextMenu);
         coreContents = useHotkeys(coreContents, hotkeys);
 
-        // 3) Prepare combined layout with header above core.  This is what layout props are trampolined to
+        // Apply error boundary to content *excluding* header and affordances.
+        if (errorBoundaryModel) {
+            coreContents = errorBoundary({model: errorBoundaryModel, item: coreContents});
+        }
+
+        // 3) Prepare core layout with header above core.  This is what layout props are trampolined to
         let item = vbox({
             className: 'xh-panel__content',
             items: [
@@ -196,6 +208,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                     icon,
                     compact: compactHeader,
                     collapsedTitle,
+                    collapsedIcon,
                     className: headerClassName,
                     headerItems
                 }),
@@ -206,16 +219,16 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             ...rest
         });
 
+        // 4) Additional optional wrappers
         if (refreshContextModel) {
             item = refreshContextView({model: refreshContextModel, item});
         }
 
-        // 3) Wrap in modal support if needed.  Inner frame ensures className is still present in
-        // DOM when rendered in Dialog
         if (modalSupportModel) {
             item = modalSupport({
                 model: modalSupportModel,
                 item: frame({
+                    // Frame ensures className is still present when rendered in Dialog
                     item,
                     className: model.isModal ? className : undefined,
                     testId: model.isModal ? testId : undefined
@@ -223,8 +236,8 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             });
         }
 
-        // 4) Return wrapped in resizable affordances if needed, or equivalent layout box
-        if (model.isModal) testId = undefined; // If testId rendered in model do not render in nonmodal container
+        // 5) Return wrapped in resizable affordances if needed, or equivalent layout box
+        if (model.isModal) testId = undefined; // If testId rendered in modal do not render in nonmodal container
         item =
             resizable || collapsible || showSplitter
                 ? resizeContainer({ref, item, className, testId})
@@ -234,9 +247,8 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
     }
 });
 
-function parseLoadDecorator(prop, name, contextModel) {
+function parseLoadDecorator(prop: any, name: string, contextModel: HoistModel) {
     const cmp = (name === 'mask' ? mask : loadingIndicator) as any;
-    if (!prop) return null;
     if (isValidElement(prop)) return prop;
     if (prop === true) return cmp({isDisplayed: true});
     if (prop === 'onLoad') {

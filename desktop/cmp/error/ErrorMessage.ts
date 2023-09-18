@@ -10,7 +10,6 @@ import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {isEmpty, isNil, isString} from 'lodash';
 import {isValidElement, MouseEvent, ReactNode} from 'react';
-
 import './ErrorMessage.scss';
 
 export interface ErrorMessageProps extends HoistProps, Omit<BoxProps, 'title'> {
@@ -43,18 +42,17 @@ export interface ErrorMessageProps extends HoistProps, Omit<BoxProps, 'title'> {
  */
 export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessageProps>({
     className: 'xh-error-message',
-    render(
-        {
+    render(props, ref) {
+        let {
             model,
-            error = (model as any)?.error,
+            error = model?.['error'],
             message,
             title,
             actionFn,
             actionButtonProps,
-            ...props
-        },
-        ref
-    ) {
+            ...rest
+        } = props;
+
         if (actionFn) {
             actionButtonProps = {...actionButtonProps, onClick: actionFn};
         }
@@ -70,7 +68,7 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
         }
 
         return frame({
-            ...props,
+            ...rest,
             item: div({
                 ref,
                 className: 'xh-error-message__inner',
