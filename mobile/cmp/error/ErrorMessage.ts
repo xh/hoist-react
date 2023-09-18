@@ -82,7 +82,6 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
             }
         }
 
-        const buttons = [];
         if (actionFn) {
             actionButtonProps = {...actionButtonProps, onClick: error => actionFn(error)};
         }
@@ -91,16 +90,22 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
             detailsButtonProps = {...detailsButtonProps, onClick: error => detailsFn(error)};
         }
 
+        let buttons = [],
+            buttonBar = null;
         if (detailsButtonProps) buttons.push(detailsButton(detailsButtonProps));
-        if (detailsButtonProps && actionButtonProps) buttons.push(filler());
         if (actionButtonProps) buttons.push(actionButton(actionButtonProps));
+        if (buttons.length == 1) {
+            buttonBar = buttons[0];
+        } else if (buttons.length == 2) {
+            buttonBar = hbox(buttons[0], filler(), buttons[1]);
+        }
 
         return frame({
             ref,
             className,
             item: div({
                 className: 'xh-error-message__inner',
-                items: [titleCmp({title}), messageCmp({message, error}), hbox(buttons)]
+                items: [titleCmp({title}), messageCmp({message, error}), buttonBar]
             })
         });
     }
@@ -118,20 +123,20 @@ const messageCmp = hoistCmp.factory(({message}) => {
     return null;
 });
 
-const actionButton = hoistCmp.factory(({actionButtonProps}) => {
+const actionButton = hoistCmp.factory<ButtonProps>(props => {
     return button({
         text: 'Retry',
         icon: Icon.refresh(),
         minimal: true,
-        ...actionButtonProps
+        ...props
     });
 });
 
-const detailsButton = hoistCmp.factory(({detailsButtonProps}) => {
+const detailsButton = hoistCmp.factory<ButtonProps>(props => {
     return button({
         text: 'Show Details',
         icon: Icon.detail(),
         minimal: true,
-        ...detailsButtonProps
+        ...props
     });
 });
