@@ -8,7 +8,7 @@ import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cm
 import {hoistCmp, HoistProps, HSide, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
+import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import {ReactNode} from 'react';
 
@@ -74,7 +74,7 @@ const cmp = hoistCmp.factory<CheckboxInputModel>(({model, className, ...props}, 
         label: props.label,
         tabIndex: props.tabIndex,
         id: props.id,
-        'data-testid': props.testId,
+        [TEST_ID]: props.testId,
         className,
         style: props.style,
 

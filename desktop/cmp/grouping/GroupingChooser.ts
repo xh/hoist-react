@@ -109,7 +109,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                           popoverMinHeight,
                           popoverTitle,
                           emptyText,
-                          editorTestId
+                          testId: editorTestId
                       })
                     : null,
                 onInteraction: (nextOpenState, e) => {

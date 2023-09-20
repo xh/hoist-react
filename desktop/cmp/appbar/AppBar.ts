@@ -12,7 +12,7 @@ import {appMenuButton, AppMenuButtonProps, refreshButton} from '@xh/hoist/deskto
 import {whatsNewButton} from '@xh/hoist/desktop/cmp/button/WhatsNewButton';
 import '@xh/hoist/desktop/register';
 import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
+import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import './AppBar.scss';
@@ -104,7 +104,7 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
                     ]
                 })
             ],
-            'data-testid': testId
+            [TEST_ID]: testId
         });
     }
 });
