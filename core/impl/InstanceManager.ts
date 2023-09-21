@@ -5,6 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
+import {throwIf} from '@xh/hoist/utils/js';
 import {HoistService, HoistModel} from './..';
 import {Store} from '@xh/hoist/data';
 import {observable, makeObservable} from '@xh/hoist/mobx';
@@ -24,6 +25,8 @@ class InstanceManager {
     @observable.shallow
     stores: Set<Store> = new Set();
 
+    private modelsByTestId: Map<string, HoistModel> = new Map();
+
     registerModel(m: HoistModel) {
         wait().thenAction(() => this.models.add(m));
     }
@@ -42,6 +45,20 @@ class InstanceManager {
 
     unregisterStore(s: Store) {
         wait().thenAction(() => this.stores.delete(s));
+    }
+
+    registerModelWithTestId(testId: string, m: HoistModel) {
+        this.modelsByTestId.set(testId, m);
+    }
+
+    unregisterModelWithTestId(testId: string) {
+        this.modelsByTestId.delete(testId);
+    }
+
+    getModelByTestId(testId: string): HoistModel {
+        const model = this.modelsByTestId.get(testId);
+        throwIf(!model, `No model found for component with testId: ${testId}`);
+        return model;
     }
 
     constructor() {
