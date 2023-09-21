@@ -14,7 +14,7 @@ import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {errorIf, getTestId, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {errorIf, getTestId, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getReactElementName} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
@@ -247,7 +247,7 @@ const readonlyChild = hoistCmp.factory({
         const value = model ? model['value'] : null;
         return div({
             className: 'xh-form-field-readonly-display',
-            'data-testid': testId,
+            [TEST_ID]: testId,
             item: readonlyRenderer(value)
         });
     }
@@ -268,7 +268,6 @@ const editableChild = hoistCmp.factory<FieldModel>({
         testId
     }) {
         const {props} = child;
-        testId = props.testId ?? testId;
 
         // Overrides -- be sure not to clobber selected properties on child
         const overrides: DefaultHoistProps = {
@@ -277,7 +276,7 @@ const editableChild = hoistCmp.factory<FieldModel>({
             id: childId,
             disabled: props.disabled || disabled,
             ref: composeRefs(model?.boundInputRef, child.ref),
-            testId
+            testId: props.testId ?? testId
         };
 
         // If a sizeable child input doesn't specify its own dimensions,

@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {TEST_ID} from '@xh/hoist/utils/js';
 import {castArray, isFunction, isNil, isPlainObject} from 'lodash';
 import {
     createElement as reactCreateElement,
@@ -65,7 +66,7 @@ export type ElementSpec<P extends PlainObject> = P & {
      * HTML attribute. See {@link TestSupportProps} for the higher-level `testId` prop that most
      * Hoist components accept and should use.
      */
-    'data-testid'?: string;
+    [TEST_ID]?: string;
 
     //----------------------------
     // Technical -- Escape support

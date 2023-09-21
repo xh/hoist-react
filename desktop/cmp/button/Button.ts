@@ -17,7 +17,7 @@ import {
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
+import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {ReactElement, ReactNode} from 'react';
@@ -106,7 +106,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             autoFocus,
             className: classNames(className, classes),
             elementRef: composeRefs(ref, elementRef),
-            'data-testid': testId,
+            [TEST_ID]: testId,
             disabled,
             icon,
             intent,

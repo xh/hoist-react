@@ -5,6 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {BoxProps, hoistCmp, HoistProps} from '@xh/hoist/core';
+import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {merge} from 'lodash';
 import {div} from './Tags';
@@ -36,7 +37,7 @@ export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
         restProps = merge(
             {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
             {style: layoutProps},
-            {'data-testid': testId},
+            {[TEST_ID]: testId},
             restProps
         );
 

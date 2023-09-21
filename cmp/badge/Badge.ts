@@ -6,6 +6,7 @@
  */
 import {div} from '@xh/hoist/cmp/layout';
 import {BoxProps, hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
+import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {merge} from 'lodash';
@@ -44,7 +45,7 @@ export const [Badge, badge] = hoistCmp.withFactory<BadgeProps>({
         const divProps = merge(
             {className: classNames(className, classes)},
             {style: layoutProps},
-            {'data-testid': testId},
+            {[TEST_ID]: testId},
             restProps
         );
 

@@ -28,7 +28,7 @@ import {
 } from '@xh/hoist/kit/react-select';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {getTestId, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {getTestId, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import debouncePromise from 'debounce-promise';
@@ -592,14 +592,14 @@ class SelectInputModel extends HoistInputModel {
     }
 
     _menuCmp = null;
-    getMenuCmp() {
+    getMenuCmp(propsTestId = null) {
         if (!this._menuCmp) {
-            const testId = getTestId(this.componentProps, 'menu');
+            const testId = getTestId(propsTestId, 'menu');
             this._menuCmp = testId
                 ? props =>
                       createElement(components.Menu, {
                           ...props,
-                          innerProps: {'data-testid': testId, ...props.innerProps}
+                          innerProps: {[TEST_ID]: testId, ...props.innerProps}
                       })
                 : components.Menu;
         }
@@ -613,13 +613,13 @@ class SelectInputModel extends HoistInputModel {
     }
 
     // As per example @ https://react-select.com/components#replaceable-components
-    getClearIndicatorCmp() {
+    getClearIndicatorCmp(propsTestId = null) {
         return props => {
             const {ref, ...restInnerProps} = props.innerProps;
             return div({
                 ...restInnerProps,
                 ref,
-                'data-testid': getTestId(this.componentProps, 'clear-btn'),
+                [TEST_ID]: getTestId(propsTestId, 'clear-btn'),
                 item: Icon.x({className: 'xh-select__indicator'})
             });
         };
@@ -717,7 +717,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             components: {
                 DropdownIndicator: model.getDropdownIndicatorCmp(),
                 ClearIndicator: model.getClearIndicatorCmp(),
-                Menu: model.getMenuCmp(),
+                Menu: model.getMenuCmp(props.testId),
                 IndicatorSeparator: () => null,
                 ValueContainer: model.getValueContainerCmp(),
                 MultiValueLabel: model.getMultiValueLabelCmp(),

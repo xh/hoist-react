@@ -25,7 +25,6 @@ export const [JsonInput, jsonInput] = hoistCmp.withFactory<JsonInputProps>({
             linter: linter,
             formatter: fmtJson,
             mode: 'application/json',
-            testId: props.testId,
             ...props,
             ref
         });

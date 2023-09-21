@@ -15,6 +15,7 @@ import {
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
+import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {SetOptional} from 'type-fest';
 
@@ -49,7 +50,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
             fill,
             minimal,
             vertical,
-            'data-testid': testId,
+            [TEST_ID]: testId,
             style: {
                 ...style,
                 ...layoutProps

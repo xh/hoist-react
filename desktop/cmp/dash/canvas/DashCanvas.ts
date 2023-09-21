@@ -19,6 +19,7 @@ import {
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
+import {TEST_ID} from '@xh/hoist/utils/js';
 import {useOnVisibleChange} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
@@ -94,7 +95,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                     }),
                     emptyContainerOverlay()
                 ],
-                'data-testid': testId
+                [TEST_ID]: testId
             })
         });
     }
