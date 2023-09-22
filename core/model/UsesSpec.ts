@@ -33,7 +33,8 @@ export function uses<T extends HoistModel>(
         publishMode = 'default',
         createFromConfig = true,
         createDefault = false,
-        optional = false
+        optional = false,
+        supportTestId = false
     }: UsesOptions = {}
 ): UsesSpec<T> {
     return new UsesSpec(
@@ -42,7 +43,8 @@ export function uses<T extends HoistModel>(
         publishMode,
         createFromConfig,
         createDefault,
-        optional
+        optional,
+        supportTestId
     );
 }
 
@@ -67,6 +69,9 @@ export interface UsesOptions {
 
     /** True to specify a model that is optional.  Default false. */
     optional?: boolean;
+
+    /** True to allow model to be looked up via an associated component's testId prop. */
+    supportTestId?: boolean;
 }
 
 export class UsesSpec<T extends HoistModel> {
@@ -76,8 +81,17 @@ export class UsesSpec<T extends HoistModel> {
     selector: ModelSelector<T>;
     createFromConfig: boolean;
     createDefault: boolean;
+    supportTestId: boolean;
 
-    constructor(selector, fromContext, publishMode, createFromConfig, createDefault, optional) {
+    constructor(
+        selector,
+        fromContext,
+        publishMode,
+        createFromConfig,
+        createDefault,
+        optional,
+        supportTestId
+    ) {
         ensureIsSelector(selector);
         this.fromContext = fromContext;
         this.publishMode = publishMode;
@@ -85,5 +99,6 @@ export class UsesSpec<T extends HoistModel> {
         this.selector = selector;
         this.createFromConfig = createFromConfig;
         this.createDefault = createDefault;
+        this.supportTestId = supportTestId;
     }
 }

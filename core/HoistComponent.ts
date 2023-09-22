@@ -321,7 +321,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
                 delete props.modelConfig;
                 ctx.props = props;
                 ctx.modelLookup = newLookup ?? modelLookup;
-                if (testId && model) {
+                if (spec.supportTestId) {
                     instanceManager.registerModelWithTestId(testId, model);
                     useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
                 }
