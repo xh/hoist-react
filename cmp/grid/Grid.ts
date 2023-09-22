@@ -88,7 +88,7 @@ export interface GridProps extends HoistProps<GridModel>, LayoutProps, TestSuppo
  */
 export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     displayName: 'Grid',
-    model: uses(GridModel, {supportTestId: true}),
+    model: uses(GridModel),
     className: 'xh-grid',
 
     render({model, className, testId, ...props}, ref) {

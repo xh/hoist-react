@@ -315,16 +315,13 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
         const managedRender = () => {
             let ctx = localModelContext;
             try {
-                const {testId} = props;
                 props.model = model;
                 delete props.modelRef;
                 delete props.modelConfig;
                 ctx.props = props;
                 ctx.modelLookup = newLookup ?? modelLookup;
-                if (spec.supportTestId) {
-                    instanceManager.registerModelWithTestId(testId, model);
-                    useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
-                }
+                instanceManager.registerModelWithTestId(props.testId, model);
+                useOnUnmount(() => instanceManager.unregisterModelWithTestId(props.testId));
                 return render(props, ref);
             } finally {
                 ctx.props = null;

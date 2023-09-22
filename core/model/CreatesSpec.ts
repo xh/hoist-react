@@ -28,15 +28,12 @@ export function creates<T extends HoistModel>(
     spec: Thunkable<HoistModelClass<T>> | (() => T),
     opts: CreatesOptions = {}
 ): CreatesSpec<T> {
-    return new CreatesSpec(spec, opts?.publishMode ?? 'default', opts?.supportTestId ?? false);
+    return new CreatesSpec(spec, opts?.publishMode ?? 'default');
 }
 
 export interface CreatesOptions {
     /** Mode for publishing this model to context. */
     publishMode?: ModelPublishMode;
-
-    /** True to allow model to be looked up via its associated component's testId prop. */
-    supportTestId?: boolean;
 }
 
 export class CreatesSpec<T extends HoistModel> {
@@ -44,11 +41,9 @@ export class CreatesSpec<T extends HoistModel> {
     optional: boolean = false;
     publishMode: ModelPublishMode;
     createFn: () => T;
-    supportTestId: boolean;
 
-    constructor(spec, publishMode: ModelPublishMode, supportTestId: boolean) {
+    constructor(spec, publishMode: ModelPublishMode) {
         this.publishMode = publishMode;
-        this.supportTestId = supportTestId;
         if (spec.isHoistModel) {
             throwIf(
                 spec.lookupModel,
