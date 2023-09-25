@@ -683,7 +683,7 @@ export class XHApi {
     }
 
     getActiveModelByTestId(testId: string) {
-        return this.getActiveModels().find(it => it.componentProps.testId === testId);
+        return instanceManager.getModelByTestId(testId);
     }
 
     /**
