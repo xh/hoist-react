@@ -32,7 +32,7 @@ export const banner = hoistCmp.factory({
             className: classNames(
                 'xh-banner',
                 className,
-                intent ? `xh-intent-${intent}` : `xh-intent-none`
+                intent ? `xh-bg-intent-${intent}` : `xh-bg-intent-none`
             ),
             items: [
                 hframe({

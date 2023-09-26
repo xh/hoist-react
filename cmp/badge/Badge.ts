@@ -30,7 +30,7 @@ export const [Badge, badge] = hoistCmp.withFactory<BadgeProps>({
         const classes = [];
 
         if (intent) {
-            classes.push(`xh-badge--intent-${intent}`);
+            classes.push(`xh-bg-intent-${intent}`);
         }
 
         if (compact) {
