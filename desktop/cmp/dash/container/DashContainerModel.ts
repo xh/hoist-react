@@ -22,7 +22,7 @@ import {wait} from '@xh/hoist/promise';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {cloneDeep, defaultsDeep, find, isFinite, isNil, reject, startCase} from 'lodash';
+import {cloneDeep, defaultsDeep, find, isFinite, isNil, last, reject, startCase} from 'lodash';
 import {createRoot} from 'react-dom/client';
 import {DashConfig, DashModel} from '../';
 import {DashViewModel, DashViewState} from '../DashViewModel';
@@ -290,7 +290,8 @@ export class DashContainerModel extends DashModel<
 
         if (!isFinite(index)) index = container.contentItems.length;
         container.addChild(goldenLayoutConfig(viewSpec), index);
-        wait(1).then(() => this.onStackActiveItemChange(container));
+        const stack = container.isStack ? container : last(container.contentItems);
+        wait(1).then(() => this.onStackActiveItemChange(stack));
     }
 
     /**
