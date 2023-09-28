@@ -2,6 +2,10 @@
 
 ## 60.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fix bug where `DashContainerModel.addView` would throw when adding a view to a row or column
+
 ## 59.1.0 - 2023-09-20
 
 ### 🎁 New Features
