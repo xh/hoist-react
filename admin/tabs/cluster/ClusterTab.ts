@@ -29,7 +29,7 @@ export const clusterTab = hoistCmp.factory({
                 },
                 item: grid()
             }),
-            instance
+            instance?.isReady
                 ? panel({
                       compactHeader: true,
                       tbar: [
@@ -40,7 +40,7 @@ export const clusterTab = hoistCmp.factory({
                       flex: 1,
                       item: tabContainer()
                   })
-                : placeholder(Icon.server(), 'Select an instance above.'),
+                : placeholder(Icon.server(), 'Select a running instance above.'),
             mask({bind: model.loadModel})
         );
     }

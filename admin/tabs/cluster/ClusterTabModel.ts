@@ -58,8 +58,8 @@ export class ClusterTabModel extends HoistModel {
             let data = await XH.fetchJson({url: 'clusterAdmin/allInstances', loadSpec});
             data = data.map(row => ({
                 ...row,
-                usedHeapMb: row.memory.usedHeapMb,
-                usedPctMax: row.memory.usedPctMax
+                usedHeapMb: row.memory?.usedHeapMb,
+                usedPctMax: row.memory?.usedPctMax
             }));
 
             gridModel.loadData(data);
@@ -87,12 +87,24 @@ export class ClusterTabModel extends HoistModel {
                     {name: 'name', type: 'string'},
                     {name: 'isMaster', type: 'bool'},
                     {name: 'isLocal', type: 'bool'},
+                    {name: 'isReady', type: 'bool'},
                     {name: 'wsConnections', type: 'int'},
                     {name: 'startupTime', type: 'date'},
                     {name: 'address', type: 'string'}
                 ]
             },
             columns: [
+                {
+                    field: 'isReady',
+                    headerName: '',
+                    align: 'center',
+                    width: 40,
+                    renderer: v =>
+                        v
+                            ? Icon.circle({prefix: 'fas', className: 'xh-green'})
+                            : Icon.circle({prefix: 'fal', className: 'xh-white'}),
+                    tooltip: v => (v ? 'Ready' : 'Not Ready')
+                },
                 {
                     field: 'name',
                     rendererIsComplex: true,
