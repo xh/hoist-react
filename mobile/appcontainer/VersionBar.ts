@@ -18,7 +18,8 @@ export const versionBar = hoistCmp.factory({
         if (!isShowing()) return null;
 
         const env = XH.getEnv('appEnvironment'),
-            version = XH.getEnv('clientVersion');
+            version = XH.getEnv('clientVersion'),
+            instance = XH.getEnv('instanceName');
 
         return box({
             justifyContent: 'center',
@@ -26,7 +27,7 @@ export const versionBar = hoistCmp.factory({
             flex: 'none',
             className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
             items: [
-                [XH.appName, env, version].join(' • '),
+                [env, version, instance].join(' • '),
                 button({
                     icon: Icon.info(),
                     minimal: true,

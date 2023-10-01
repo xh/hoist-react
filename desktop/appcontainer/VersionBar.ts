@@ -17,6 +17,7 @@ export const versionBar = hoistCmp.factory({
 
         const inspectorSvc = XH.inspectorService,
             env = XH.getEnv('appEnvironment'),
+            instance = XH.getEnv('instanceName'),
             version = XH.getEnv('clientVersion'),
             build = XH.getEnv('clientBuild'),
             isAdminApp = window.location.pathname?.startsWith('/admin/'),
@@ -29,7 +30,7 @@ export const versionBar = hoistCmp.factory({
             flex: 'none',
             className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
             items: [
-                [XH.appName, env, versionAndBuild].join(' • '),
+                [XH.appName, env, versionAndBuild, instance].join(' • '),
                 Icon.info({
                     omit: !XH.appContainerModel.hasAboutDialog(),
                     onClick: () => XH.showAboutDialog()
