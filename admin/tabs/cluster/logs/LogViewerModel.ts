@@ -12,7 +12,7 @@ import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable, observable} from '@xh/hoist/mobx';
+import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import download from 'downloadjs';
 import {createRef} from 'react';
 import {LogDisplayModel} from './LogDisplayModel';
@@ -30,6 +30,9 @@ export class LogViewerModel extends BaseInstanceModel {
 
     @managed
     filesGridModel: GridModel;
+
+    @bindable
+    instanceOnly: boolean = true;
 
     get enabled(): boolean {
         return XH.getConf('xhEnableLogViewer', true);
@@ -67,10 +70,15 @@ export class LogViewerModel extends BaseInstanceModel {
                 this.file = rec?.data?.filename;
             }
         });
+
+        this.addReaction({
+            track: () => this.instanceOnly,
+            run: () => this.loadAsync()
+        });
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {enabled, filesGridModel} = this;
+        const {enabled, filesGridModel, instanceOnly, instanceName} = this;
         if (!enabled) return;
 
         const store = filesGridModel.store,
@@ -79,16 +87,20 @@ export class LogViewerModel extends BaseInstanceModel {
         try {
             const data = await XH.fetchJson({
                 url: 'logViewerAdmin/listFiles',
-                params: {instance: this.instanceName},
+                params: {instance: instanceName},
                 loadSpec
             });
 
+            const files = instanceOnly
+                ? data.files.filter(f => f.filename.includes(instanceName))
+                : data.files;
+
             this.logDisplayModel.logRootPath = data.logRootPath;
 
-            store.loadData(data.files);
+            store.loadData(files);
             if (selModel.isEmpty) {
                 const latestAppLog = store.records.find(
-                    rec => rec.data.filename === `${XH.appCode}.log`
+                    rec => rec.data.filename === `${XH.appCode}-${instanceName}.log`
                 );
                 if (latestAppLog) {
                     selModel.select(latestAppLog);
