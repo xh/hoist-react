@@ -7,6 +7,7 @@
 import {ClusterTabModel} from '@xh/hoist/admin/tabs/cluster/ClusterTabModel';
 import {HoistModel, LoadSpec, lookup, PlainObject, XH} from '@xh/hoist/core';
 import {fmtDateTimeSec, fmtJson} from '@xh/hoist/format';
+import {DAYS} from '@xh/hoist/utils/datetime';
 import {cloneDeep, forOwn, isNumber, isPlainObject} from 'lodash';
 
 export class BaseInstanceModel extends HoistModel {
@@ -18,7 +19,7 @@ export class BaseInstanceModel extends HoistModel {
 
     fmtStats(stats: PlainObject): string {
         stats = cloneDeep(stats);
-        this.processDates(stats);
+        this.processTimestamps(stats);
         return fmtJson(JSON.stringify(stats));
     }
 
@@ -37,13 +38,18 @@ export class BaseInstanceModel extends HoistModel {
     //-------------------
     // Implementation
     //-------------------
-    private processDates(stats: PlainObject) {
+    private processTimestamps(stats: PlainObject) {
         forOwn(stats, (v, k) => {
-            if ((k.endsWith('Time') || k.endsWith('Date') || k == 'timestamp') && isNumber(v)) {
+            // Convert numbers that look like recent timestamps to date values.
+            if (
+                (k.endsWith('Time') || k.endsWith('Date') || k == 'timestamp') &&
+                isNumber(v) &&
+                v > Date.now() - 365 * DAYS
+            ) {
                 stats[k] = v ? fmtDateTimeSec(v) : null;
             }
             if (isPlainObject(v)) {
-                this.processDates(v);
+                this.processTimestamps(v);
             }
         });
     }
