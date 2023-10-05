@@ -664,12 +664,29 @@ export class XHApi {
      * Get a collection of Models currently 'active' in the app, returned in creation-time order.
      * This will include all models that have not yet had `destroy()` called on them.
      */
-    getActiveModels(selector: ModelSelector = '*'): HoistModel[] {
+    getActiveModels<T extends HoistModel>(selector: ModelSelector = '*'): T[] {
         const ret = [];
         instanceManager.models.forEach(m => {
             if (m.matchesSelector(selector, true)) ret.push(m);
         });
         return ret;
+    }
+
+    /** Get the first active model that matches the given selector, or null if none found. */
+    getModel<T extends HoistModel>(selector: ModelSelector = '*'): T {
+        instanceManager.models.forEach(m => {
+            if (m.matchesSelector(selector, true)) return m;
+        });
+        return null;
+    }
+
+    /**
+     * Get the first active model that has been assigned the given testId, or null if none found.
+     * Note that a small subset of models are automatically assigned the testId of their component.
+     * @see InstanceManager.testSupportedModels
+     */
+    getModelByTestId<T extends HoistModel>(testId: string): T {
+        return instanceManager.getModelByTestId(testId) as T;
     }
 
     /** All services registered with this application. */
@@ -680,10 +697,6 @@ export class XHApi {
     /** All Stores registered with this application. */
     getStores(): Store[] {
         return Array.from(instanceManager.stores);
-    }
-
-    getActiveModelByTestId(testId: string) {
-        return instanceManager.getModelByTestId(testId);
     }
 
     /**
