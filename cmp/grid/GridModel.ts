@@ -65,6 +65,7 @@ import {
 import equal from 'fast-deep-equal';
 import _, {
     castArray,
+    chain,
     clone,
     cloneDeep,
     compact,
@@ -1547,6 +1548,17 @@ export class GridModel extends HoistModel {
             .groupBy()
             .pickBy(x => x.length > 1)
             .keys();
+
+        // DEBUG
+        const nonUnique2 = chain(ids)
+            .groupBy()
+            .pickBy(x => x.length > 1)
+            .keys()
+            .value();
+
+        // DEBUG
+        console.log('nonUnique', nonUnique, '2', nonUnique2 /* nonUnique nonUnique2*/);
+
         if (!nonUnique.isEmpty()) {
             const msg =
                 `Non-unique ids: [${nonUnique}] ` +
