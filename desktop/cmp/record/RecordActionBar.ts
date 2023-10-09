@@ -80,7 +80,6 @@ export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordAct
                     selModel,
                     gridModel,
                     column,
-                    testId: `${testId}-${action.text}-action`,
                     ...buttonProps
                 })
             ),
