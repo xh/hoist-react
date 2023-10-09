@@ -46,18 +46,21 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
     model: uses(RestGridModel, {publishMode: 'limited'}),
     className: 'xh-rest-grid',
 
-    render({model, extraToolbarItems, mask = true, agOptions, formClassName, ...props}, ref) {
+    render(
+        {model, extraToolbarItems, mask = true, agOptions, formClassName, testId, ...props},
+        ref
+    ) {
         const {formModel, gridModel} = model;
 
         return fragment(
             panel({
                 ref,
                 ...props,
-                tbar: restGridToolbar({model, extraToolbarItems}),
-                item: grid({model: gridModel, agOptions}),
+                tbar: restGridToolbar({model, extraToolbarItems, testId}),
+                item: grid({model: gridModel, agOptions, testId: `${testId}-grid`}),
                 mask: getMaskFromProp(model, mask)
             }),
-            restForm({model: formModel, className: formClassName})
+            restForm({model: formModel, className: formClassName, testId: `${testId}-form`})
         );
     }
 });
