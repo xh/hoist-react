@@ -2,7 +2,13 @@
   position: fixed;
   margin: 0 !important;
   z-index: 21;
-  max-height: 90vh;
+  /**
+   * Use `svh` units target the *smallest* viewport height, which is preferred to using `vh` on mobile.
+   * Including `px` units as a fallback for older browsers that may not support `vh`/`svh` units.
+   * https://css-tricks.com/the-large-small-and-dynamic-viewports/
+   */
+  max-height: 500px;
+  max-height: 80svh;
 
   &__title {
     padding: var(--xh-pad-half-px);
