@@ -7,6 +7,7 @@
 * `DashContainerModel` fixes:
   * Fix bug where `addView` would throw when adding a view to a row or column
   * Fix bug where `allowRemove` flag was dropped from state for containers
+  * Fix bug in `DockContainer` where adding / removing views would cause other views to be remounted
 * Fix erroneous `GridModel` warning when using a tree column within a column group
 * Fix regression to alert banners. Resume allowing elements as messages
 
