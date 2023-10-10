@@ -10,7 +10,7 @@ import {hframe, div} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {markdown} from '@xh/hoist/cmp/markdown';
-import {isEmpty, isFunction} from 'lodash';
+import {isEmpty, isFunction, isString} from 'lodash';
 import classNames from 'classnames';
 
 import './Banner.scss';
@@ -42,7 +42,7 @@ export const banner = hoistCmp.factory({
                         icon,
                         div({
                             className: 'xh-banner__message',
-                            item: markdown({content: message}),
+                            item: isString(message) ? markdown({content: message}) : message,
                             onClick
                         })
                     ]
