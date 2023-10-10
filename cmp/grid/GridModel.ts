@@ -63,7 +63,7 @@ import {
     withDefault
 } from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
-import _, {
+import {
     castArray,
     clone,
     cloneDeep,
@@ -1543,11 +1543,9 @@ export class GridModel extends HoistModel {
         if (isEmpty(cols)) return;
 
         const ids = this.collectIds(cols);
-        const nonUnique = _(ids)
-            .groupBy()
-            .pickBy(x => x.length > 1)
-            .keys();
-        if (!nonUnique.isEmpty()) {
+        const nonUnique = ids.filter((item, index) => ids.indexOf(item) !== index);
+
+        if (!isEmpty(nonUnique)) {
             const msg =
                 `Non-unique ids: [${nonUnique}] ` +
                 "Use 'ColumnSpec'/'ColumnGroupSpec' configs to resolve a unique ID for each column/group.";
