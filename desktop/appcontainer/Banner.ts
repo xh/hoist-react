@@ -11,7 +11,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {markdown} from '@xh/hoist/cmp/markdown';
-import {isFunction, isEmpty} from 'lodash';
+import {isFunction, isEmpty, isString} from 'lodash';
 import classNames from 'classnames';
 
 import './Banner.scss';
@@ -44,7 +44,7 @@ export const banner = hoistCmp.factory({
                         icon,
                         div({
                             className: 'xh-banner__message',
-                            item: markdown({content: message}),
+                            item: isString(message) ? markdown({content: message}) : message,
                             onClick
                         })
                     ]

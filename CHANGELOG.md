@@ -8,6 +8,7 @@
   * Fix bug where `addView` would throw when adding a view to a row or column
   * Fix bug where `allowRemove` flag was dropped from state for containers
 * Fix erroneous `GridModel` warning when using a tree column within a column group
+* Fix regression to alert banners. Resume allowing elements as messages
 
 ## 59.1.0 - 2023-09-20
 
