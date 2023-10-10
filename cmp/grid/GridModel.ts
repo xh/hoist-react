@@ -1554,7 +1554,7 @@ export class GridModel extends HoistModel {
             throw XH.exception(msg);
         }
 
-        const treeCols = cols.filter(it => it.isTreeColumn);
+        const treeCols = this.gatherLeaves(cols).filter(it => it.isTreeColumn);
         warnIf(
             this.treeMode && treeCols.length != 1,
             'Grids in treeMode should include exactly one column with isTreeColumn:true.'
