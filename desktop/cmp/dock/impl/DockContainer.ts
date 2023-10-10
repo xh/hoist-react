@@ -25,6 +25,7 @@ export function dockContainerImpl(
         className: classNames(className, `xh-dock-container--${model.direction}`),
         items: model.views.map(viewModel => {
             return dockView({
+                key: viewModel.xhId,
                 model: viewModel,
                 compactHeaders
             });
