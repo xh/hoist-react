@@ -11,6 +11,10 @@
 * Fix erroneous `GridModel` warning when using a tree column within a column group
 * Fix regression to alert banners. Resume allowing elements as messages
 
+### ⚙️ Typescript API Adjustments
+
+* Add type for `ActionFnData.record`
+
 ## 59.1.0 - 2023-09-20
 
 ### 🎁 New Features
