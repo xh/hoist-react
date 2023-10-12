@@ -20,7 +20,8 @@ import {
     GridAutosizeMode,
     GridFilterModelConfig,
     GridGroupSortFn,
-    TreeStyle
+    TreeStyle,
+    ColumnCellClassRuleFn
 } from '@xh/hoist/cmp/grid';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {br, fragment} from '@xh/hoist/cmp/layout';
@@ -72,6 +73,7 @@ import {
     defaultsDeep,
     every,
     find,
+    first,
     forEach,
     isArray,
     isEmpty,
@@ -81,6 +83,7 @@ import {
     isString,
     isUndefined,
     keysIn,
+    last,
     max,
     min,
     omit,
@@ -1252,7 +1255,7 @@ export class GridModel extends HoistModel {
         return find(this.columnState, {colId});
     }
 
-    buildColumn(config: ColumnGroupSpec | ColumnSpec) {
+    buildColumn(config: ColumnGroupSpec | ColumnSpec, borderedGroup?: ColumnGroupSpec) {
         // Merge leaf config with defaults.
         // Ensure *any* tooltip setting on column itself always wins.
         if (this.colDefaults && !this.isGroupSpec(config)) {
@@ -1265,12 +1268,17 @@ export class GridModel extends HoistModel {
         if (omit) return null;
 
         if (this.isGroupSpec(config)) {
-            const children = compact(config.children.map(c => this.buildColumn(c))) as Array<
-                ColumnGroup | Column
-            >;
+            if (config.showLeftRightBorders) borderedGroup = config;
+            const children = compact(
+                config.children.map(c => this.buildColumn(c, borderedGroup))
+            ) as Array<ColumnGroup | Column>;
             return !isEmpty(children)
                 ? new ColumnGroup(config as ColumnGroupSpec, this, children)
                 : null;
+        }
+
+        if (borderedGroup) {
+            config = this.enhanceConfigWithGroupBorders(config, borderedGroup);
         }
 
         return new Column(config, this);
@@ -1750,4 +1758,68 @@ export class GridModel extends HoistModel {
     defaultGroupSortFn = (a, b) => {
         return a < b ? -1 : a > b ? 1 : 0;
     };
+
+    private enhanceConfigWithGroupBorders(config: ColumnSpec, group: ColumnGroupSpec): ColumnSpec {
+        const LEFT_BORDER_CLASS = 'xh-cell--group-border-left',
+            RIGHT_BORDER_CLASS = 'xh-cell--group-border-right';
+
+        let didApplyListener = false;
+
+        const createGroupBorderFn =
+            (side: 'left' | 'right'): ColumnCellClassRuleFn =>
+            ({api, column, columnApi, ...ctx}) => {
+                if (!api || !column || !columnApi) return false;
+
+                const prevCol = columnApi.getDisplayedColBefore(column);
+                if (side === 'left') {
+                    // Don't render a left-border if column is first visible
+                    if (!prevCol) return false;
+
+                    const prevColDef = prevCol.getColDef(),
+                        prevRule = prevColDef.cellClassRules[RIGHT_BORDER_CLASS];
+
+                    // Don't render a left-border if previous column already has a right-border
+                    if (
+                        isFunction(prevRule) &&
+                        prevRule({
+                            ...ctx,
+                            api,
+                            colDef: prevColDef,
+                            column: prevCol,
+                            columnApi
+                        })
+                    ) {
+                        return false;
+                    }
+                }
+
+                if (!didApplyListener) {
+                    // Re-evaluate cell class rules when column is re-ordered
+                    // (consider specifying columns in the call to refreshCells())
+                    column.addEventListener(
+                        'leftChanged',
+                        ({source}) => source === 'uiColumnMoved' && api.refreshCells()
+                    );
+                    didApplyListener = true;
+                }
+
+                const getter = side === 'left' ? first : last;
+                for (let parent = column?.getParent(); parent; parent = parent.getParent()) {
+                    if (
+                        group.groupId === parent.getGroupId() &&
+                        getter(parent.getDisplayedLeafColumns()) === column
+                    )
+                        return true;
+                }
+            };
+
+        return {
+            ...config,
+            cellClassRules: {
+                ...config.cellClassRules,
+                [LEFT_BORDER_CLASS]: createGroupBorderFn('left'),
+                [RIGHT_BORDER_CLASS]: createGroupBorderFn('right')
+            }
+        };
+    }
 }
