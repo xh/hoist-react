@@ -24,7 +24,7 @@ export class HzObjectModel extends BaseInstanceModel {
         displayFn: ({selectedRecords}) => ({
             hidden: AppModel.readonly,
             disabled:
-                isEmpty(selectedRecords) || selectedRecords.some(r => r.data.objectType == 'Topic')
+                isEmpty(selectedRecords) || selectedRecords.every(r => r.data.objectType == 'Topic')
         }),
         recordsRequired: true
     };
@@ -41,6 +41,8 @@ export class HzObjectModel extends BaseInstanceModel {
                 {name: 'name', type: 'string'},
                 {name: 'objectType', type: 'string', displayName: 'Type'},
                 {name: 'size', type: 'int'},
+                {name: 'lastUpdateTime', type: 'date'},
+                {name: 'lastAccessTime', type: 'date'},
                 {name: 'stats', type: 'json'}
             ],
             idSpec: 'name'
@@ -51,14 +53,34 @@ export class HzObjectModel extends BaseInstanceModel {
             {field: 'size', displayName: 'Entry Count', ...Col.number, width: 130},
             {
                 ...timestampNoYear,
-                field: {name: 'lastUpdateTime', type: 'date'},
-                displayName: 'Last Updated'
+                field: 'lastUpdateTime',
+                displayName: 'Last Update'
+            },
+            {
+                ...timestampNoYear,
+                field: 'lastAccessTime',
+                displayName: 'Last Access'
             }
         ],
         contextMenu: [this.clearAction, '-', ...GridModel.defaultContextMenu]
     });
 
     async clearAsync() {
+        const {gridModel} = this;
+        if (
+            gridModel.selectedRecords.some(
+                it => it.data.objectType != 'Cache' && !it.data.name.startsWith('cache')
+            ) &&
+            !(await XH.confirm({
+                title: 'Warning',
+                message:
+                    'Your selection contains objects that may not be caches.' +
+                    'This may impact application behavior.  Continue?'
+            }))
+        ) {
+            return;
+        }
+
         try {
             await XH.fetchJson({
                 url: 'hzObjectAdmin/clearObjects',
@@ -75,6 +97,20 @@ export class HzObjectModel extends BaseInstanceModel {
         }
     }
 
+    async clearHibernateCachesAsync() {
+        try {
+            await XH.fetchJson({
+                url: 'hzObjectAdmin/clearHibernateCaches',
+                params: {instance: this.instanceName}
+            }).linkTo(this.loadModel);
+
+            await this.refreshAsync();
+            XH.successToast('Hibernate Caches Cleared.');
+        } catch (e) {
+            XH.handleException(e);
+        }
+    }
+
     override async doLoadAsync(loadSpec: LoadSpec) {
         try {
             const response = await XH.fetchJson({
@@ -82,10 +118,6 @@ export class HzObjectModel extends BaseInstanceModel {
                 params: {
                     instance: this.instanceName
                 }
-            });
-
-            response.forEach(it => {
-                it.lastUpdateTime = it.stats?.lastUpdateTime;
             });
 
             return this.gridModel.loadData(response);

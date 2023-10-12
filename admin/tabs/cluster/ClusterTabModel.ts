@@ -8,7 +8,6 @@ import {AppModel} from '@xh/hoist/admin/AppModel';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
 import {connPoolMonitorPanel} from '@xh/hoist/admin/tabs/cluster/connpool/ConnPoolMonitorPanel';
 import {serverEnvPanel} from '@xh/hoist/admin/tabs/cluster/environment/ServerEnvPanel';
-import {hibernatePanel} from '@xh/hoist/admin/tabs/cluster/hibernate/HibernatePanel';
 import {hzObjectPanel} from '@xh/hoist/admin/tabs/cluster/hzobject/HzObjectPanel';
 import {logViewer} from '@xh/hoist/admin/tabs/cluster/logs/LogViewer';
 import {usedHeapMb, usedPctMax} from '@xh/hoist/admin/tabs/cluster/memory/MemoryMonitorModel';
@@ -163,12 +162,6 @@ export class ClusterTabModel extends HoistModel {
                     title: 'Distributed Objects',
                     icon: Icon.grip(),
                     content: hzObjectPanel
-                },
-                {
-                    id: 'hibernate',
-                    title: 'Hibernate Caches',
-                    icon: Icon.database(),
-                    content: hibernatePanel
                 },
                 {id: 'webSockets', title: 'WebSockets', icon: Icon.bolt(), content: webSocketPanel}
             ]

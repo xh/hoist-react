@@ -8,7 +8,7 @@ import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, uses} from '@xh/hoist/core';
-import {exportButton} from '@xh/hoist/desktop/cmp/button';
+import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {HzObjectModel} from './HzObjectModel';
@@ -17,7 +17,7 @@ import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 export const hzObjectPanel = hoistCmp.factory({
     model: creates(HzObjectModel),
 
-    render() {
+    render({model}) {
         return panel({
             mask: 'onLoad',
             tbar: [
@@ -28,6 +28,12 @@ export const hzObjectPanel = hoistCmp.factory({
                 filler(),
                 gridCountLabel({unit: 'objects'}),
                 '-',
+                button({
+                    icon: Icon.reset(),
+                    text: 'Clear All Hibernate Caches',
+                    tooltip: 'Clear the Hibernate caches using the native Hibernate API',
+                    onClick: () => model.clearHibernateCachesAsync()
+                }),
                 storeFilterField({matchMode: 'any'}),
                 exportButton()
             ],
