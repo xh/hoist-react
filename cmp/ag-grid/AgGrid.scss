@@ -119,15 +119,11 @@
     }
   }
 
+  // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
+  // Without this collapsed groups (which don't stripe) blend together in a solid block.
   &--no-row-borders {
-    .ag-row {
-      border-color: transparent;
-
-      // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
-      // Without this collapsed groups (which don't stripe) blend together in a solid block.
-      &.ag-row-group.ag-full-width-row {
-        border-color: var(--xh-grid-group-border-color);
-      }
+    .ag-row:not(&.ag-row-group.ag-full-width-row) {
+      border: none;
     }
   }
 
@@ -227,7 +223,7 @@
   &--no-cell-borders {
     .ag-cell,
     .ag-context-menu-open .ag-cell-focus:not(.ag-cell-range-selected) {
-      border-color: transparent;
+      border: none;
     }
   }
 
@@ -235,7 +231,16 @@
   &--no-cell-focus {
     .ag-has-focus {
       .ag-cell-focus:not(.ag-cell-range-selected) {
-        border-color: transparent;
+        border: none;
+
+        // TODO - Duped from Grid.scss.  Is there a way to DRY this up?
+        &.ag-cell.xh-cell--group-border-left {
+          border-left: var(--xh-border-solid);
+        }
+
+        &.ag-cell.xh-cell--group-border-right {
+          border-right: var(--xh-border-solid);
+        }
       }
     }
   }
