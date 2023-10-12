@@ -5,6 +5,14 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
+@mixin group-border($side) {
+  border-#{$side}: var(--xh-border-solid);
+}
+
+@mixin pinned-border {
+  border-right: 1px solid var(--xh-grid-pinned-column-border-color);
+}
+
 // Ag-grid installs an outer div around itself.
 .xh-ag-grid > div {
   width: 100%;
@@ -184,7 +192,7 @@
   }
 
   .ag-cell.ag-cell-last-left-pinned:not(.ag-cell-focus) {
-    border-right: 1px solid var(--xh-grid-pinned-column-border-color);
+    @include pinned-border;
   }
 
   // We use flexbox to consistently vertically center cell contents across
@@ -233,13 +241,16 @@
       .ag-cell-focus:not(.ag-cell-range-selected) {
         border: none;
 
-        // TODO - Duped from Grid.scss.  Is there a way to DRY this up?
+        &.ag-cell.ag-cell-last-left-pinned {
+          @include pinned-border;
+        }
+
         &.ag-cell.xh-cell--group-border-left {
-          border-left: var(--xh-border-solid);
+          @include group-border(left);
         }
 
         &.ag-cell.xh-cell--group-border-right {
-          border-right: var(--xh-border-solid);
+          @include group-border(right);
         }
       }
     }

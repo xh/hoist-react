@@ -6,6 +6,7 @@
  */
 
 @use 'sass:math';
+@use '../ag-grid/AgGrid';
 
 .xh-grid:not(.xh-data-view) {
   //------------------------
@@ -126,11 +127,11 @@
 
   // Render left / right group borders
   .ag-cell.xh-cell--group-border-left {
-    border-left: var(--xh-border-solid);
+    @include AgGrid.group-border(left);
   }
 
   .ag-cell.xh-cell--group-border-right {
-    border-right: var(--xh-border-solid);
+    @include AgGrid.group-border(right);
   }
 
   .xh-ag-grid {
