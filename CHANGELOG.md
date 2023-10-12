@@ -2,6 +2,10 @@
 
 ## 60.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Add the ability to render left / right borders along `ColumnGroup` edges
+
 ### 🐞 Bug Fixes
 
 * `DashContainerModel` fixes:
