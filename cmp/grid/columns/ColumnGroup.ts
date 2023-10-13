@@ -27,7 +27,7 @@ export interface ColumnGroupSpec {
     /** Horizontal alignment of header contents. */
     headerAlign?: HAlign;
     /** True to render borders on column group edges. */
-    showLeftRightBorders?: boolean;
+    borders?: boolean;
 
     /**
      * "Escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note
@@ -52,7 +52,7 @@ export class ColumnGroup {
     readonly headerName: ReactNode | ColumnHeaderNameFn;
     readonly headerClass: Some<string> | ColumnHeaderClassFn;
     readonly headerAlign: HAlign;
-    readonly showLeftRightBorders: boolean;
+    readonly borders: boolean;
 
     /**
      * "Escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note
@@ -82,7 +82,7 @@ export class ColumnGroup {
             headerClass,
             headerAlign,
             agOptions,
-            showLeftRightBorders,
+            borders,
             ...rest
         } = config;
 
@@ -98,7 +98,7 @@ export class ColumnGroup {
         this.headerName = withDefault(headerName, genDisplayName(this.groupId));
         this.headerClass = headerClass;
         this.headerAlign = headerAlign;
-        this.showLeftRightBorders = withDefault(showLeftRightBorders, false);
+        this.borders = withDefault(borders, true);
         this.children = children;
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
