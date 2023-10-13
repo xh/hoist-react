@@ -218,7 +218,7 @@ export class InstancesModel extends HoistModel {
                             icon: Icon.refresh({intent: 'success'}),
                             tooltip: 'Call loadAsync()',
                             actionFn: ({record}) =>
-                                (this.getInstance(record.id) as any)?.loadAsync(),
+                                (this.getInstance(record.id as string) as any)?.loadAsync(),
                             displayFn: ({record}) => ({hidden: !record.data.hasLoadSupport})
                         }
                     ]

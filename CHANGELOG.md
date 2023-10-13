@@ -4,7 +4,9 @@
 
 ### 🎁 New Features
 
+* New `DockViewConfig.onClose` hook invoked when a user attempts to remove a `DockContainer` view
 * Add the ability to render left / right borders along `ColumnGroup` edges
+
 
 ### 🐞 Bug Fixes
 
@@ -14,6 +16,10 @@
   * Fix bug in `DockContainer` where adding / removing views would cause other views to be remounted
 * Fix erroneous `GridModel` warning when using a tree column within a column group
 * Fix regression to alert banners. Resume allowing elements as messages
+
+### ⚙️ Typescript API Adjustments
+
+* Add type for `ActionFnData.record`
 
 ## 59.1.0 - 2023-09-20
 
