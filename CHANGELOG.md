@@ -5,6 +5,7 @@
 ### 🎁 New Features
 
 * New `DockViewConfig.onClose` hook invoked when a user attempts to remove a `DockContainer` view
+* Add `GridModel` APIs to lookup and show / hide entire column groups
 
 ### 🐞 Bug Fixes
 

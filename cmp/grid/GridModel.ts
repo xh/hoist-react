@@ -1179,6 +1179,10 @@ export class GridModel extends HoistModel {
         return this.findColumn(this.columns, colId);
     }
 
+    getColumnGroup(groupId: string): ColumnGroup {
+        return this.findColumnGroup(this.columns, groupId);
+    }
+
     /** Return all leaf-level columns - i.e. excluding column groups. */
     getLeafColumns(): Column[] {
         return this.gatherLeaves(this.columns);
@@ -1217,6 +1221,22 @@ export class GridModel extends HoistModel {
         this.setColumnVisible(colId, false);
     }
 
+    setColumnGroupVisible(groupId: string, visible: boolean) {
+        this.applyColumnStateChanges(
+            this.getColumnGroup(groupId)
+                .getLeafColumns()
+                .map(({colId}) => ({colId, hidden: !visible}))
+        );
+    }
+
+    showColumnGroup(groupId: string) {
+        this.setColumnGroupVisible(groupId, true);
+    }
+
+    hideColumnGroup(groupId: string) {
+        this.setColumnGroupVisible(groupId, false);
+    }
+
     /**
      * Determine if a leaf-level column is currently pinned.
      *
@@ -1228,7 +1248,7 @@ export class GridModel extends HoistModel {
         return state ? state.pinned : null;
     }
 
-    /** Return matching leaf-level Column object from the provided collection.*/
+    /** Return matching leaf-level Column object from the provided collection. */
     findColumn(cols: Array<Column | ColumnGroup>, colId: string): Column {
         for (let col of cols) {
             if (col instanceof ColumnGroup) {
@@ -1236,6 +1256,18 @@ export class GridModel extends HoistModel {
                 if (ret) return ret;
             } else {
                 if (col.colId === colId) return col;
+            }
+        }
+        return null;
+    }
+
+    /** Return matching ColumnGroup from the provided collection. */
+    findColumnGroup(cols: Array<Column | ColumnGroup>, groupId: string): ColumnGroup {
+        for (let col of cols) {
+            if (col instanceof ColumnGroup) {
+                if (col.groupId === groupId) return col;
+                const ret = this.findColumnGroup(col.children, groupId);
+                if (ret) return ret;
             }
         }
         return null;
