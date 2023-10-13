@@ -8,6 +8,7 @@ import {
     CellClickedEvent,
     CellContextMenuEvent,
     CellDoubleClickedEvent,
+    ColumnEvent,
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@ag-grid-community/core';
@@ -1781,14 +1782,12 @@ export class GridModel extends HoistModel {
             if (!api || !column || !columnApi) return false;
 
             // Re-evaluate cell class rules when column is re-ordered
+            // See https://www.ag-grid.com/javascript-data-grid/column-object/#reference-events
             if (!column['xhAppliedGroupBorderListener']) {
                 column['xhAppliedGroupBorderListener'] = true;
-                column.addEventListener(
-                    'leftChanged', // todo - find this event in ag's docs
-                    ({source}) => {
-                        if (source === 'uiColumnMoved') api.refreshCells();
-                    }
-                );
+                column.addEventListener('leftChanged', ({api, columns, source}: ColumnEvent) => {
+                    if (source === 'uiColumnMoved') api.refreshCells({columns});
+                });
             }
 
             // Don't render a left-border if col is first or if prev col already has right-border

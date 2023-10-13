@@ -127,11 +127,17 @@
     }
   }
 
-  // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
-  // Without this collapsed groups (which don't stripe) blend together in a solid block.
   &--no-row-borders {
-    .ag-row:not(&.ag-row-group.ag-full-width-row) {
-      border: none;
+    .ag-row {
+      border-bottom: none;
+      border-top: none;
+
+      // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
+      // Without this collapsed groups (which don't stripe) blend together in a solid block.
+      &.ag-row-group.ag-full-width-row {
+        border-bottom: 1px solid var(--xh-grid-group-border-color);
+        border-top: 1px solid var(--xh-grid-group-border-color);
+      }
     }
   }
 
