@@ -1179,6 +1179,22 @@ export class GridModel extends HoistModel {
         return this.findColumn(this.columns, colId);
     }
 
+    getColumnGroup(groupId: string): ColumnGroup {
+        return this.findColumnGroup(this.columns, groupId);
+    }
+
+    getDescendantColumns(group: ColumnGroup): Column[] {
+        const ret: Column[] = [];
+        for (let child of group.children) {
+            if (child instanceof Column) {
+                ret.push(child);
+            } else {
+                ret.push(...this.getDescendantColumns(child));
+            }
+        }
+        return ret;
+    }
+
     /** Return all leaf-level columns - i.e. excluding column groups. */
     getLeafColumns(): Column[] {
         return this.gatherLeaves(this.columns);
@@ -1217,6 +1233,20 @@ export class GridModel extends HoistModel {
         this.setColumnVisible(colId, false);
     }
 
+    setColumnGroupVisible(groupId: string, visible: boolean) {
+        const group = this.getColumnGroup(groupId),
+            columns = this.getDescendantColumns(group);
+        this.applyColumnStateChanges(columns.map(({colId}) => ({colId, hidden: !visible})));
+    }
+
+    showColumnGroup(groupId: string) {
+        this.setColumnGroupVisible(groupId, true);
+    }
+
+    hideColumnGroup(groupId: string) {
+        this.setColumnGroupVisible(groupId, false);
+    }
+
     /**
      * Determine if a leaf-level column is currently pinned.
      *
@@ -1236,6 +1266,18 @@ export class GridModel extends HoistModel {
                 if (ret) return ret;
             } else {
                 if (col.colId === colId) return col;
+            }
+        }
+        return null;
+    }
+
+    /** Return matching ColumnGroup from the provided collection.*/
+    findColumnGroup(cols: Array<Column | ColumnGroup>, groupId: string): ColumnGroup {
+        for (let col of cols) {
+            if (col instanceof ColumnGroup) {
+                if (col.groupId === groupId) return col;
+                const ret = this.findColumnGroup(col.children, groupId);
+                if (ret) return ret;
             }
         }
         return null;
