@@ -1258,7 +1258,7 @@ export class GridModel extends HoistModel {
         return state ? state.pinned : null;
     }
 
-    /** Return matching leaf-level Column object from the provided collection.*/
+    /** Return matching leaf-level Column object from the provided collection. */
     findColumn(cols: Array<Column | ColumnGroup>, colId: string): Column {
         for (let col of cols) {
             if (col instanceof ColumnGroup) {
@@ -1271,7 +1271,7 @@ export class GridModel extends HoistModel {
         return null;
     }
 
-    /** Return matching ColumnGroup from the provided collection.*/
+    /** Return matching ColumnGroup from the provided collection. */
     findColumnGroup(cols: Array<Column | ColumnGroup>, groupId: string): ColumnGroup {
         for (let col of cols) {
             if (col instanceof ColumnGroup) {
