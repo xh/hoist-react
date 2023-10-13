@@ -1183,18 +1183,6 @@ export class GridModel extends HoistModel {
         return this.findColumnGroup(this.columns, groupId);
     }
 
-    getDescendantColumns(group: ColumnGroup): Column[] {
-        const ret: Column[] = [];
-        for (let child of group.children) {
-            if (child instanceof Column) {
-                ret.push(child);
-            } else {
-                ret.push(...this.getDescendantColumns(child));
-            }
-        }
-        return ret;
-    }
-
     /** Return all leaf-level columns - i.e. excluding column groups. */
     getLeafColumns(): Column[] {
         return this.gatherLeaves(this.columns);
@@ -1234,9 +1222,11 @@ export class GridModel extends HoistModel {
     }
 
     setColumnGroupVisible(groupId: string, visible: boolean) {
-        const group = this.getColumnGroup(groupId),
-            columns = this.getDescendantColumns(group);
-        this.applyColumnStateChanges(columns.map(({colId}) => ({colId, hidden: !visible})));
+        this.applyColumnStateChanges(
+            this.getColumnGroup(groupId)
+                .getLeafColumns()
+                .map(({colId}) => ({colId, hidden: !visible}))
+        );
     }
 
     showColumnGroup(groupId: string) {
