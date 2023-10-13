@@ -2,6 +2,10 @@
 
 ## 60.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* New `DockViewConfig.onClose` hook invoked when a user attempts to remove a `DockContainer` view
+
 ### 🐞 Bug Fixes
 
 * `DashContainerModel` fixes:
