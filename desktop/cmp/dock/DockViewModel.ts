@@ -54,7 +54,7 @@ export interface DockViewConfig {
     /** true (default) to allow popping out of the dock and displaying in a modal Dialog. */
     allowDialog?: boolean;
     /** Awaitable callback invoked on close. Return false to prevent close. */
-    onClose?: () => Awaitable<false | void>;
+    onClose?: () => Awaitable<boolean | void>;
 }
 
 /**
@@ -77,7 +77,7 @@ export class DockViewModel extends HoistModel {
     collapsedWidth: number;
     allowClose: boolean;
     allowDialog: boolean;
-    onClose?: () => Awaitable<false | void>;
+    onClose?: () => Awaitable<boolean | void>;
 
     containerModel: DockContainerModel;
     @managed refreshContextModel: RefreshContextModel;
@@ -113,7 +113,7 @@ export class DockViewModel extends HoistModel {
         collapsed = false,
         allowClose = true,
         allowDialog = true,
-        onClose = () => {}
+        onClose
     }: DockViewConfig) {
         super();
         makeObservable(this);
@@ -200,8 +200,8 @@ export class DockViewModel extends HoistModel {
     // Actions
     //-----------------------
     close() {
-        Promise.resolve(this.onClose()).then(
-            v => v !== false && this.containerModel.removeView(this.id)
-        );
+        Promise.resolve(this.onClose?.()).then(v => {
+            if (v !== false) this.containerModel.removeView(this.id);
+        });
     }
 }
