@@ -124,4 +124,10 @@ export class ColumnGroup {
             ...this.agOptions
         };
     }
+
+    getLeafColumns(): Column[] {
+        return this.children.flatMap(child =>
+            child instanceof Column ? child : child.getLeafColumns()
+        );
+    }
 }
