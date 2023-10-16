@@ -5,6 +5,14 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
+@mixin group-border($side) {
+  border-#{$side}: var(--xh-border-solid);
+}
+
+@mixin pinned-border {
+  border-right: 1px solid var(--xh-grid-pinned-column-border-color);
+}
+
 // Ag-grid installs an outer div around itself.
 .xh-ag-grid > div {
   width: 100%;
@@ -121,12 +129,14 @@
 
   &--no-row-borders {
     .ag-row {
-      border-color: transparent;
+      border-bottom: none;
+      border-top: none;
 
       // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
       // Without this collapsed groups (which don't stripe) blend together in a solid block.
       &.ag-row-group.ag-full-width-row {
-        border-color: var(--xh-grid-group-border-color);
+        border-bottom: 1px solid var(--xh-grid-group-border-color);
+        border-top: 1px solid var(--xh-grid-group-border-color);
       }
     }
   }
@@ -188,7 +198,7 @@
   }
 
   .ag-cell.ag-cell-last-left-pinned:not(.ag-cell-focus) {
-    border-right: 1px solid var(--xh-grid-pinned-column-border-color);
+    @include pinned-border;
   }
 
   // We use flexbox to consistently vertically center cell contents across
@@ -227,7 +237,7 @@
   &--no-cell-borders {
     .ag-cell,
     .ag-context-menu-open .ag-cell-focus:not(.ag-cell-range-selected) {
-      border-color: transparent;
+      border: none;
     }
   }
 
@@ -235,7 +245,19 @@
   &--no-cell-focus {
     .ag-has-focus {
       .ag-cell-focus:not(.ag-cell-range-selected) {
-        border-color: transparent;
+        border: none;
+
+        &.ag-cell.ag-cell-last-left-pinned {
+          @include pinned-border;
+        }
+
+        &.ag-cell.xh-cell--group-border-left {
+          @include group-border(left);
+        }
+
+        &.ag-cell.xh-cell--group-border-right {
+          @include group-border(right);
+        }
       }
     }
   }
