@@ -8,6 +8,9 @@
 * Add `GridModel` APIs to lookup and show / hide entire column groups
 * Left / right borders are now rendered along `Grid` `ColumnGroup` edges by default.  Control
  with new boolean property `ColumnGroupSpec.borders`
+* The Cube package has been enhanced to support `Query` specific post-processing functions.  See
+new properties `Query.omitFn`, `Query.bucketSpecFn` and `Query.lockFn`.  These properties default
+to their respective properties on `Cube`.
 
 ### 🐞 Bug Fixes
 
