@@ -351,9 +351,9 @@ export class View extends HoistBase {
         parentId: string,
         appliedDimensions: PlainObject
     ): BaseRow[] {
-        if (!this.cube.bucketSpecFn) return rows;
+        if (!this.query.bucketSpecFn) return rows;
 
-        const bucketSpec = this.cube.bucketSpecFn(rows);
+        const bucketSpec = this.query.bucketSpecFn(rows);
         if (!bucketSpec) return rows;
 
         if (!this.query.includeLeaves && rows[0]?.isLeaf) return rows;
