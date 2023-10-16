@@ -6,6 +6,7 @@
 
 * New `DockViewConfig.onClose` hook invoked when a user attempts to remove a `DockContainer` view
 * Add `GridModel` APIs to lookup and show / hide entire column groups
+* Left / right borders are now rendered along `Grid` `ColumnGroup` edges by default
 
 ### 🐞 Bug Fixes
 

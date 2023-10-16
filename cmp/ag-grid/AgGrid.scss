@@ -5,6 +5,10 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
+@mixin group-border($side) {
+  border-#{$side}: var(--xh-border-solid);
+}
+
 @mixin pinned-border($side) {
   border-#{$side}: 1px solid var(--xh-grid-pinned-column-border-color);
 }
@@ -256,6 +260,14 @@
 
           &.ag-cell-first-right-pinned {
             @include pinned-border(left);
+          }
+
+          &.xh-cell--group-border-left {
+            @include group-border(left);
+          }
+
+          &.xh-cell--group-border-right {
+            @include group-border(right);
           }
         }
       }
