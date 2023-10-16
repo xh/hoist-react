@@ -60,11 +60,11 @@ export class ServiceModel extends BaseInstanceModel {
         columns: [
             {field: 'provider', hidden: true},
             {
-                field: 'stats',
+                field: 'hasStats',
                 headerName: '',
                 width: 34,
                 align: 'center',
-                renderer: v => (isEmpty(v) ? '' : Icon.info({title: 'Stats available'}))
+                renderer: v => (v ? Icon.info({title: 'Stats available'}) : '')
             },
             {field: 'displayName', flex: 1},
             {...timestampNoYear, field: 'lastCachesCleared'},

@@ -77,8 +77,8 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
         if (!message) {
             if (isString(error)) {
                 message = error;
-            } else if (error.message) {
-                message = error.message;
+            } else {
+                message = error.message || error.name || 'Unknown Error';
             }
         }
 

@@ -4,16 +4,14 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {detailsPanel} from '@xh/hoist/admin/tabs/cluster/services/DetailsPanel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
+import {filler, hframe, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {creates, hoistCmp, uses} from '@xh/hoist/core';
+import {creates, hoistCmp} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {isEmpty} from 'lodash';
 import {ServiceModel} from './ServiceModel';
-import {jsonInput} from '@xh/hoist/desktop/cmp/input';
-import {Icon} from '@xh/hoist/icon';
 
 export const servicePanel = hoistCmp.factory({
     model: creates(ServiceModel),
@@ -43,41 +41,6 @@ export const servicePanel = hoistCmp.factory({
                 }),
                 detailsPanel()
             )
-        });
-    }
-});
-
-const detailsPanel = hoistCmp.factory({
-    model: uses(ServiceModel),
-    render({model}) {
-        const recData = model.gridModel.selectedRecord?.data,
-            svcName = recData?.name,
-            stats = recData?.stats,
-            hasStats = !isEmpty(stats);
-
-        return panel({
-            title: recData ? `Stats: ${svcName}` : 'Stats',
-            icon: Icon.info(),
-            compactHeader: true,
-            modelConfig: {
-                side: 'right',
-                defaultSize: 450
-            },
-            item: recData
-                ? hasStats
-                    ? panel({
-                          item: jsonInput({
-                              readonly: true,
-                              width: '100%',
-                              height: '100%',
-                              enableSearch: true,
-                              showFullscreenButton: false,
-                              editorProps: {lineNumbers: false},
-                              value: model.fmtStats(stats)
-                          })
-                      })
-                    : placeholder(Icon.gears(), `${svcName} did not report any stats.`)
-                : placeholder(Icon.gears(), 'Select a service.')
         });
     }
 });
