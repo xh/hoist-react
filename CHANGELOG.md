@@ -22,6 +22,7 @@ to their respective properties on `Cube`.
   * Fix bug in `DockContainer` where adding / removing views would cause other views to be remounted
 * Fix erroneous `GridModel` warning when using a tree column within a column group
 * Fix regression to alert banners. Resume allowing elements as messages
+* Fix `Grid` cell border styling inconsistencies
 
 ### ⚙️ Typescript API Adjustments
 
