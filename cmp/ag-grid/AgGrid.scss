@@ -128,16 +128,17 @@
   }
 
   &--no-row-borders {
-    .ag-row {
+    .ag-row,
+    .ag-cell {
       border-bottom: none;
       border-top: none;
+    }
 
-      // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
-      // Without this collapsed groups (which don't stripe) blend together in a solid block.
-      &.ag-row-group.ag-full-width-row {
-        border-bottom: 1px solid var(--xh-grid-group-border-color);
-        border-top: 1px solid var(--xh-grid-group-border-color);
-      }
+    // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
+    // Without this collapsed groups (which don't stripe) blend together in a solid block.
+    .ag-row.ag-row-group.ag-full-width-row {
+      border-bottom: 1px solid var(--xh-grid-group-border-color);
+      border-top: 1px solid var(--xh-grid-group-border-color);
     }
   }
 
@@ -243,15 +244,28 @@
   &--no-cell-borders {
     .ag-cell,
     .ag-context-menu-open .ag-cell-focus:not(.ag-cell-range-selected) {
-      border: none;
+      // Preserve left and right borders to avoid jumpiness upon cell focus
+      border-top: none;
+      border-bottom: none;
+      border-left-color: transparent;
+      border-right-color: transparent;
     }
   }
 
   // Cell focus
   &--no-cell-focus {
+    // Preserve cell borders when enabled upon "invisible" cell focus
+    &.xh-ag-grid--cell-borders .ag-has-focus .ag-cell-focus:not(.ag-cell-range-selected) {
+      border-right-color: var(--xh-grid-border-color);
+    }
+
     .ag-has-focus {
       .ag-cell-focus:not(.ag-cell-range-selected) {
-        border: none;
+        // Preserve left and right borders to avoid jumpiness upon cell focus
+        border-top: none;
+        border-bottom: none;
+        border-left-color: transparent;
+        border-right-color: transparent;
 
         &.ag-cell {
           &.ag-cell-last-left-pinned {
@@ -275,7 +289,7 @@
   }
 
   &--show-cell-focus {
-    .ag-cell-focus {
+    .ag-cell-focus:focus-within {
       border-color: var(--xh-grid-cell-focus-border-color) !important;
     }
   }
