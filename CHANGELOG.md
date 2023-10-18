@@ -4,7 +4,7 @@
 
 ### 🐞 Bug Fixes
 * Fix to pass correct arguments to `ErrorMessageProps.actionFn` and `ErrorMessageProps.detailsFn`
-* Better default error text in `ErroMessage`
+* Better default error text in `ErrorMessage`
 
 ## 59.2.0 - 2023-10-16
 
