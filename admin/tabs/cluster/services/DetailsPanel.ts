@@ -39,7 +39,7 @@ const stats = hoistCmp.factory<DetailsModel>({
         if (!loadModel.isPending && lastLoadException) {
             return errorMessage({
                 error: lastLoadException,
-                detailsFn: e => XH.exceptionHandler.showException(e)
+                detailsFn: e => XH.exceptionHandler.showExceptionDetails(e)
             });
         }
 

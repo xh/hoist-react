@@ -83,11 +83,11 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
         }
 
         if (actionFn) {
-            actionButtonProps = {...actionButtonProps, onClick: error => actionFn(error)};
+            actionButtonProps = {...actionButtonProps, onClick: () => actionFn(error)};
         }
 
         if (detailsFn) {
-            detailsButtonProps = {...detailsButtonProps, onClick: error => detailsFn(error)};
+            detailsButtonProps = {...detailsButtonProps, onClick: () => detailsFn(error)};
         }
 
         let buttons = [],
