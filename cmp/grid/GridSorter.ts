@@ -49,19 +49,19 @@ export class GridSorter {
     }
 
     /** Comparator to use with instances of GridSorter.*/
-    comparator(v1, v2) {
+    comparator(v1: any, v2: any, bottomNull: boolean) {
         if (this.abs) {
             v1 = isNumber(v1) ? Math.abs(v1) : v1;
             v2 = isNumber(v2) ? Math.abs(v2) : v2;
         }
-        return GridSorter.defaultComparator(v1, v2);
+        return GridSorter.defaultComparator(v1, v2, bottomNull, this.sort);
     }
 
     /** Static comparator to use when a GridSorter instance is not available.*/
-    static defaultComparator(v1, v2) {
+    static defaultComparator(v1: any, v2: any, bottomNull: boolean, sortDir: 'asc' | 'desc') {
         if (isNil(v1) && isNil(v2)) return 0;
-        if (isNil(v1)) return -1;
-        if (isNil(v2)) return 1;
+        if (isNil(v1)) return bottomNull && sortDir === 'asc' ? 1 : -1;
+        if (isNil(v2)) return bottomNull && sortDir === 'asc' ? -1 : 1;
 
         if (v1.toNumber) v1 = v1.toNumber();
         if (v2.toNumber) v2 = v2.toNumber();

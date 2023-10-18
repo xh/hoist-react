@@ -2,6 +2,11 @@
 
 ## 60.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `Column.bottomNullSort` - when true, columms will always sort null values to the bottom,
+  regardless of sort direction.
+
 ### 🐞 Bug Fixes
 * Fix to pass correct arguments to `ErrorMessageProps.actionFn` and `ErrorMessageProps.detailsFn`
 * Better default error text in `ErrorMessage`
