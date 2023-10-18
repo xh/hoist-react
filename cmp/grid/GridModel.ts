@@ -1461,7 +1461,7 @@ export class GridModel extends HoistModel {
         if (omit) return null;
 
         if (this.isGroupSpec(config)) {
-            if (config.borders) borderedGroup = config;
+            if (config.borders !== false) borderedGroup = config;
             const children = compact(
                 config.children.map(c => this.buildColumn(c, borderedGroup))
             ) as Array<ColumnGroup | Column>;
