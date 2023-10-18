@@ -2,6 +2,10 @@
 
 ## 60.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+* Fix to pass correct arguments to `ErrorMessageProps.actionFn` and `ErrorMessageProps.detailsFn`
+* Better default error text in `ErroMessage`
+
 ## 59.2.0 - 2023-10-16
 
 ### 🎁 New Features
