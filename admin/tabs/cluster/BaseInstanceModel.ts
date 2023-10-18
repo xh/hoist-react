@@ -24,7 +24,7 @@ export class BaseInstanceModel extends HoistModel {
     }
 
     handleLoadException(e: unknown, loadSpec: LoadSpec) {
-        const instanceNotFound = !this.isInstanceNotFound(e);
+        const instanceNotFound = this.isInstanceNotFound(e);
         XH.handleException(e, {
             showAlert: !loadSpec.isAutoRefresh && !instanceNotFound,
             logOnServer: !instanceNotFound
