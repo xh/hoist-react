@@ -16,10 +16,11 @@ export const versionBar = hoistCmp.factory({
         if (!isShowing()) return null;
 
         const inspectorSvc = XH.inspectorService,
-            env = XH.getEnv('appEnvironment'),
-            instance = XH.getEnv('instanceName'),
-            version = XH.getEnv('clientVersion'),
-            build = XH.getEnv('clientBuild'),
+            envSvc = XH.environmentService,
+            env = envSvc.get('appEnvironment'),
+            version = envSvc.get('clientVersion'),
+            build = envSvc.get('clientBuild'),
+            instance = envSvc.serverInstance,
             isAdminApp = window.location.pathname?.startsWith('/admin/'),
             versionAndBuild =
                 !build || build === 'UNKNOWN' ? version : `${version} (build ${build})`;

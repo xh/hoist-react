@@ -17,9 +17,10 @@ export const versionBar = hoistCmp.factory({
     render() {
         if (!isShowing()) return null;
 
-        const env = XH.getEnv('appEnvironment'),
-            version = XH.getEnv('clientVersion'),
-            instance = XH.getEnv('instanceName');
+        const svc = XH.environmentService,
+            env = svc.get('appEnvironment'),
+            version = svc.get('clientVersion'),
+            instance = svc.serverInstance;
 
         return box({
             justifyContent: 'center',
