@@ -185,15 +185,17 @@ export interface ColumnSpec {
     absSort?: boolean;
 
     /**
-     * True to always sort null / undefined values to the bottom, regardless of sort order.
-     */
-    bottomNullSort?: boolean;
-
-    /**
      * Alternate field name to reference or function to call when producing a value for this column
      * to be sorted by.
      */
     sortValue?: string | ColumnSortValueFn;
+
+    /**
+     * Values to match or functions to check to determine if a value should always be sorted
+     * to the bottom, regardless of sort order. If more than one entry is provided, values will be
+     * sorted according to the order they should appear here.
+     */
+    sortToBottom?: Array<any | ((v: any) => boolean)>;
 
     /** Function to compare cell values for sorting.*/
     comparator?: ColumnComparator;
@@ -438,8 +440,8 @@ export class Column {
     rowHeight: number;
     sortingOrder: ColumnSortSpec[];
     absSort: boolean;
-    bottomNullSort: boolean;
     sortValue: string | ColumnSortValueFn;
+    sortToBottom: Array<any | ((v: any) => boolean)>;
     comparator: ColumnComparator;
     resizable: boolean;
     sortable: boolean;
@@ -510,9 +512,9 @@ export class Column {
             flex,
             rowHeight,
             absSort,
-            bottomNullSort,
             sortingOrder,
             sortValue,
+            sortToBottom,
             comparator,
             resizable,
             movable,
@@ -605,9 +607,9 @@ export class Column {
         this.rowHeight = rowHeight;
 
         this.absSort = withDefault(absSort, false);
-        this.bottomNullSort = withDefault(bottomNullSort, false);
         this.sortingOrder = this.parseSortingOrder(sortingOrder);
         this.sortValue = sortValue;
+        this.sortToBottom = sortToBottom;
         this.comparator = comparator;
 
         this.resizable = withDefault(resizable, true);
@@ -905,7 +907,7 @@ export class Column {
         if (this.comparator === undefined) {
             // Use default comparator with appropriate inputs
             ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
-                const {gridModel, colId, bottomNullSort} = this,
+                const {gridModel, colId, sortToBottom} = this,
                     // Note: sortCfg and agNodes can be undefined if comparator called during show
                     // of agGrid column header set filter menu.
                     sortCfg = find(gridModel.sortBy, {colId}),
@@ -916,12 +918,12 @@ export class Column {
                 valueA = this.getSortValue(valueA, recordA);
                 valueB = this.getSortValue(valueB, recordB);
 
-                return this.defaultComparator(valueA, valueB, bottomNullSort, sortDir);
+                return this.defaultComparator(valueA, valueB, sortToBottom, sortDir);
             };
         } else {
             // ...or process custom comparator with the Hoist-defined comparatorFn API.
             ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
-                const {gridModel, colId, bottomNullSort} = this,
+                const {gridModel, colId, sortToBottom} = this,
                     // Note: sortCfg and agNodes can be undefined if comparator called during show
                     // of agGrid column header set filter menu.
                     sortCfg = find(gridModel.sortBy, {colId}),
@@ -935,7 +937,7 @@ export class Column {
                         column: this,
                         gridModel,
                         defaultComparator: (a, b) => {
-                            return this.defaultComparator(a, b, bottomNullSort, sortDir);
+                            return this.defaultComparator(a, b, sortToBottom, sortDir);
                         },
                         agNodeA,
                         agNodeB
@@ -992,13 +994,13 @@ export class Column {
     private defaultComparator = (
         v1: any,
         v2: any,
-        bottomNull: boolean,
+        sortToBottom: Array<any | ((v: any) => boolean)>,
         sortDir: 'asc' | 'desc'
     ) => {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
         return sortCfg
-            ? sortCfg.comparator(v1, v2, bottomNull)
-            : GridSorter.defaultComparator(v1, v2, bottomNull, sortDir);
+            ? sortCfg.comparator(v1, v2, sortToBottom)
+            : GridSorter.defaultComparator(v1, v2, sortToBottom, sortDir);
     };
 
     private defaultSetValueFn = ({value, record, store, field}) => {

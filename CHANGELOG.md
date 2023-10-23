@@ -4,7 +4,7 @@
 
 ### 🎁 New Features
 
-* Added `Column.bottomNullSort` - when true, columms will always sort null values to the bottom,
+* Added `Column.sortToBottom` which supports always sorting specified values to the bottom,
   regardless of sort direction.
 
 ### 🐞 Bug Fixes
