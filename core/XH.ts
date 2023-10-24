@@ -20,7 +20,8 @@ import {
     PlainObject,
     HoistException,
     PageState,
-    AppSuspendData
+    AppSuspendData,
+    FetchResponse
 } from './';
 import {Store} from '@xh/hoist/data';
 import {instanceManager} from './impl/InstanceManager';
@@ -54,6 +55,8 @@ import {BannerModel} from '../appcontainer/BannerModel';
 import '../styles/XH.scss';
 import {ModelSelector, HoistModel, RefreshContextModel} from './model';
 import {HoistAppModel, BannerSpec, ToastSpec, MessageSpec, HoistUser, TaskObserver} from './';
+import {CancelFn} from 'router5/types/types/base';
+import {apiDeprecated} from '@xh/hoist/utils/js';
 
 export const MIN_HOIST_CORE_VERSION = '16.0';
 
@@ -73,36 +76,39 @@ declare const xhIsDevelopmentMode: boolean;
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
 export class XHApi {
-    //----------------
-    // Core Delegates
-    //----------------
+    //--------------------------
+    // Implementation Delegates
+    //--------------------------
+    /** Core implementation model hosting all application state. */
     appContainerModel: AppContainerModel = new AppContainerModel();
+
+    /** Provider of centralized exception handling for the app. */
     exceptionHandler: ExceptionHandler = new ExceptionHandler();
 
     //----------------------------------------------------------------------------------------------
     // Metadata - set via webpack.DefinePlugin at build time.
     // See @xh/hoist-dev-utils/configureWebpack.
     //----------------------------------------------------------------------------------------------
-    /** short internal code for the application. */
-    appCode: string = xhAppCode;
+    /** Short internal code for the application. */
+    readonly appCode: string = xhAppCode;
 
-    /** user-facing display name for the app. See also `XH.clientAppName`. */
-    appName: string = xhAppName;
+    /** User-facing display name for the app. See also {@link clientAppName}. */
+    readonly appName: string = xhAppName;
 
-    /** semVer or Snapshot version of the client build. */
-    appVersion: string = xhAppVersion;
+    /** SemVer or snapshot version of the client build. */
+    readonly appVersion: string = xhAppVersion;
 
     /**
-     * optional identifier for the client build (e.g. a git commit hash or a
-     * build ID from a CI system). Varies depending on how builds are configured.
+     * Optional identifier for the client build (e.g. a git commit hash or a build ID).
+     * Varies depending on an app's particular build configuration.
      */
-    appBuild: string = xhAppBuild;
+    readonly appBuild: string = xhAppBuild;
 
-    /** root URL context/path - prepended to all relative fetch requests. */
-    baseUrl: string = xhBaseUrl;
+    /** Root URL context/path - prepended to all relative fetch requests. */
+    readonly baseUrl: string = xhBaseUrl;
 
-    /** true if app is running in a local development environment. */
-    isDevelopmentMode: boolean = xhIsDevelopmentMode;
+    /** True if the app is running in a local development environment. */
+    readonly isDevelopmentMode: boolean = xhIsDevelopmentMode;
 
     //----------------------------------------------------------------------------------------------
     // Hoist Core Services
@@ -125,128 +131,15 @@ export class XHApi {
     trackService: TrackService;
     webSocketService: WebSocketService;
 
-    /** Get a reference to a singleton service by camel case name.*/
-    getService(name: string): HoistService;
-
-    /** Get a reference to a singleton service by full class. */
-    getService<T extends HoistService>(cls: HoistServiceClass<T>): T;
-
-    /** Get a reference to a singleton service. */
-    getService(arg: any) {
-        const name = isString(arg) ? arg : camelCase(arg.name);
-        return this[name];
-    }
-
-    //----------------------------------------------------------------------------------------------
-    // Aliased methods
-    // Shortcuts to common core service methods and appSpec properties.
-    //----------------------------------------------------------------------------------------------
-    fetch(opts: FetchOptions) {
-        return this.fetchService.fetch(opts);
-    }
-
-    fetchJson(opts: FetchOptions) {
-        return this.fetchService.fetchJson(opts);
-    }
-
+    //----------------------------
+    // Immutable Getters
+    //----------------------------
     /**
-     * Primary convenience alias for reading soft configuration values.
-     * @param key - identifier of the config to return.
-     * @param defaultVal - value to return if there is no client-side config with this key.
-     * @returns the soft-configured value.
+     * Tracks globally loading promises.
+     * Apps should link any async operations that should mask the entire viewport to this model.
      */
-    getConf(key: string, defaultVal?: any): any {
-        return this.configService.get(key, defaultVal);
-    }
-
-    /**
-     * Primary convenience alias for reading user preference values.
-     * @param key - identifier of the pref to return.
-     * @param defaultVal - value to return if there is no pref with this key.
-     * @returns the user's preference, or the data-driven default if pref not yet set by user.
-     */
-    getPref(key: string, defaultVal?: any): any {
-        return this.prefService.get(key, defaultVal);
-    }
-
-    /**
-     * Primary convenience alias for setting user preference values.
-     * @param key - identifier of the pref to set.
-     * @param val - the new value to persist for the current user.
-     */
-    setPref(key: string, val: any) {
-        return this.prefService.set(key, val);
-    }
-
-    track(opts: string | TrackOptions) {
-        return this.trackService?.track(opts);
-    }
-
-    getEnv(key: string) {
-        return this.environmentService?.get(key) ?? null;
-    }
-
-    getUser(): HoistUser {
-        return this.identityService?.user ?? null;
-    }
-
-    getUsername(): string {
-        return this.identityService?.username ?? null;
-    }
-
-    get isMobileApp(): boolean {
-        return this.appSpec.isMobileApp;
-    }
-
-    get clientAppCode(): string {
-        return this.appSpec.clientAppCode;
-    }
-
-    get clientAppName(): string {
-        return this.appSpec.clientAppName;
-    }
-
-    get isPhone(): boolean {
-        return this.acm.userAgentModel.isPhone;
-    }
-
-    get isTablet(): boolean {
-        return this.acm.userAgentModel.isTablet;
-    }
-
-    get isDesktop(): boolean {
-        return this.acm.userAgentModel.isDesktop;
-    }
-
-    /**
-     * The lifecycle state of the page, which changes due to changes to the focused/visible state
-     * of the browser tab and the browser window as a whole, as well as built-in browser behaviors
-     * around navigation and performance optimizations.
-     *
-     *  Apps can react to this stat to pause background processes (e.g. expensive refresh
-     *  operations) when the app is no longer visible to the user and resume them when the user
-     *  switches back and re-activates the tab.
-     *
-     *  The {@link LifeCycleState} type lists the possible states, with descriptive comments.
-     *  See {@link https://developer.chrome.com/blog/page-lifecycle-api/} for a useful overview.
-     */
-    get pageState(): PageState {
-        return this.acm.pageStateModel.state;
-    }
-
-    /** Current lifecycle state of the application. */
-    get appState(): AppState {
-        return this.acm.appStateModel.state;
-    }
-
-    /** Milliseconds timestamp at moment user activity / interaction was last detected. */
-    get lastActivityMs(): number {
-        return this.acm.appStateModel.lastActivityMs;
-    }
-
-    /** True if application initialized and running (observable). */
-    get appIsRunning(): boolean {
-        return this.appState === 'RUNNING';
+    get appLoadModel(): TaskObserver {
+        return this.acm.appLoadModel;
     }
 
     /** Root level application model. */
@@ -259,25 +152,179 @@ export class XHApi {
         return this.acm.appSpec;
     }
 
-    /** Main entry point. Initialize and render application code. */
-    renderApp<T extends HoistAppModel>(appSpec: AppSpec<T>) {
-        this.acm.renderApp(appSpec);
+    /** Short code for this particular JS client application. */
+    get clientAppCode(): string {
+        return this.appSpec.clientAppCode;
+    }
+
+    /** Display name for this particular JS client application. */
+    get clientAppName(): string {
+        return this.appSpec.clientAppName;
+    }
+
+    /** True if the app should use the Hoist mobile toolkit.*/
+    get isMobileApp(): boolean {
+        return this.appSpec.isMobileApp;
+    }
+
+    /** True if the app is running on a desktop. */
+    get isDesktop(): boolean {
+        return this.acm.userAgentModel.isDesktop;
+    }
+
+    /** True if the app is running on a mobile phone. */
+    get isPhone(): boolean {
+        return this.acm.userAgentModel.isPhone;
+    }
+
+    /** True if the app is running on a tablet. */
+    get isTablet(): boolean {
+        return this.acm.userAgentModel.isTablet;
+    }
+
+    /** The global RefreshContextModel for this application.*/
+    get refreshContextModel(): RefreshContextModel {
+        return this.acm.refreshContextModel;
+    }
+
+    //-------------------
+    // State Getters
+    //-------------------
+    /**
+     * Current lifecycle state of the application. (observable)
+     * The {@link AppState} type lists the possible states, with descriptive comments.
+     */
+    get appState(): AppState {
+        return this.acm.appStateModel.state;
+    }
+
+    /** Shortcut for testing if appState is 'RUNNING'. (observable) */
+    get appIsRunning(): boolean {
+        return this.appState === 'RUNNING';
+    }
+
+    /** Milliseconds timestamp for the last time user interaction with the page was detected. */
+    get lastActivityMs(): number {
+        return this.acm.appStateModel.lastActivityMs;
     }
 
     /**
-     * Install HoistServices on XH.
+     * The lifecycle state of the page. (observable)
      *
-     * @param serviceClasses - Classes extending HoistService
+     * This state changes due to changes to the focused/visible state of the browser tab and the
+     * browser window as a whole, as well as built-in browser behaviors around navigation and
+     * performance optimizations.
      *
-     * This method will create, initialize, and install the services classes listed on XH.
-     * All services will be initialized concurrently. To guarantee execution order of service
-     * initialization, make multiple calls to this method with await.
+     * Apps can react to this stat to pause background processes (e.g. expensive refreshes) when
+     * the app is no longer visible to the user and resume them when the user switches back and
+     * re-activates the tab.
      *
-     * Applications must choose a unique name of the form xxxService to avoid naming collisions.
-     * If naming collisions are detected, an error will be thrown.
+     * The {@link PageState} type lists the possible states, with descriptive comments.
+     * See {@link https://developer.chrome.com/blog/page-lifecycle-api/} for a useful overview.
      */
-    async installServicesAsync(...serviceClasses: HoistServiceClass[]) {
-        return installServicesAsync(serviceClasses);
+    get pageState(): PageState {
+        return this.acm.pageStateModel.state;
+    }
+
+    /** Shortcut for testing if pageState is 'active'. (observable) */
+    get pageIsActive(): boolean {
+        return this.pageState === 'active';
+    }
+
+    /** Shortcut for testing if pageState is 'passive'. (observable) */
+    get pageIsPassive(): boolean {
+        return this.pageState === 'passive';
+    }
+
+    /** Shortcut for testing if pageState is 'active' or 'passive'. (observable) */
+    get pageIsVisible(): boolean {
+        return this.pageIsActive || this.pageIsPassive;
+    }
+
+    //----------------------------------------
+    // Delegating methods
+    //----------------------------------------
+    /**
+     * Send a request via the underlying fetch API.
+     * @see FetchService.fetch
+     */
+    fetch(opts: FetchOptions): Promise<FetchResponse> {
+        return this.fetchService.fetch(opts);
+    }
+
+    /**
+     * Send an HTTP request and decode the response as JSON.
+     * @see FetchService.fetchJson
+     */
+    fetchJson(opts: FetchOptions): Promise<any> {
+        return this.fetchService.fetchJson(opts);
+    }
+
+    /**
+     * Read soft configuration values.
+     * @see ConfigService.get
+     */
+    getConf(key: string, defaultVal?: any): any {
+        return this.configService.get(key, defaultVal);
+    }
+
+    /**
+     * Read user preference values.
+     * @see PrefService.get
+     */
+    getPref(key: string, defaultVal?: any): any {
+        return this.prefService.get(key, defaultVal);
+    }
+
+    /**
+     * Set user preference values.
+     * @see PrefService.set
+     */
+    setPref(key: string, val: any) {
+        return this.prefService.set(key, val);
+    }
+
+    /**
+     * Track user activity.
+     * @see TrackService.track
+     */
+    track(opts: string | TrackOptions) {
+        return this.trackService?.track(opts);
+    }
+
+    /**
+     * Read an environment property.
+     * @see EnvironmentService.get
+     */
+    getEnv(key: string): any {
+        return this.environmentService?.get(key) ?? null;
+    }
+
+    /**
+     * @returns the current acting user.
+     * @see IdentityService.user
+     */
+    getUser(): HoistUser {
+        return this.identityService?.user ?? null;
+    }
+
+    /**
+     * @returns the current acting user's username.
+     * @see IdentityService.username
+     */
+    getUsername(): string {
+        return this.identityService?.username ?? null;
+    }
+
+    //----------------------
+    // App lifecycle support
+    //----------------------
+    /**
+     * Main entry point to start the client app - initializes and renders application code.
+     * Call from the app's entry-point file within your project's `/client-app/src/apps/` folder.
+     */
+    renderApp<T extends HoistAppModel>(appSpec: AppSpec<T>) {
+        this.acm.renderApp(appSpec);
     }
 
     /**
@@ -293,9 +340,8 @@ export class XHApi {
     /**
      * Trigger a full reload of the current application.
      *
-     * This method will reload the entire application document in the browser.
-     * To simply trigger a refresh of the loadable content within the application,
-     * see {@link XH.refreshAppAsync} instead.
+     * This method will reload the entire application document in the browser - to trigger a
+     * refresh of the loadable content within the app, use {@link refreshAppAsync} instead.
      */
     @action
     reloadApp() {
@@ -309,26 +355,27 @@ export class XHApi {
      * This method will do an "in-place" refresh of the loadable content as defined by the app.
      * It is a short-cut to `XH.refreshContextModel.refreshAsync()`.
      *
-     * To trigger a full reload of the application document in the browser (including code)
-     * see {@link XH.reloadApp} instead.
+     * To trigger a full reload of the app document in the browser (including code) use
+     * {@link reloadApp} instead.
      */
     refreshAppAsync() {
         return this.refreshContextModel.refreshAsync();
     }
 
     /**
-     * Tracks globally loading promises.
-     * Apps should link any async operations that should mask the entire viewport to this model.
+     * Flags for controlling experimental, hotfix, or otherwise provisional features.
+     *
+     * Configure via `xhFlags` config.
+     *
+     * Currently supported (subject to changes without API notice):
+     *
+     *  - applyBigNumberWorkaround -  workaround for mysterious Chromium bug that causes
+     *      BigNumber to lose precision after a certain number of invocations.
+     *      See https://github.com/MikeMcl/bignumber.js/issues/354
+     *      See https://bugs.chromium.org/p/v8/issues/detail?id=14271#c11
      */
-    get appLoadModel(): TaskObserver {
-        return this.acm.appLoadModel;
-    }
-
-    /**
-     * The global RefreshContextModel for this application.
-     */
-    get refreshContextModel(): RefreshContextModel {
-        return this.acm.refreshContextModel;
+    get flags(): PlainObject {
+        return XH.getConf('xhFlags', {});
     }
 
     //------------------------
@@ -339,14 +386,12 @@ export class XHApi {
         return this.acm.themeModel.toggleTheme();
     }
 
-    /**
-     * Sets the theme directly (useful for custom app option controls).
-     */
+    /** Set the theme directly (useful for custom app option controls). */
     setTheme(value: Theme, persist: boolean = true) {
         return this.acm.themeModel.setTheme(value, persist);
     }
 
-    /** Is the app currently rendering in dark theme? */
+    /** True if the dark theme is currently active. (observable) */
     get darkTheme(): boolean {
         return this.acm.themeModel.darkTheme;
     }
@@ -354,10 +399,12 @@ export class XHApi {
     //------------------------
     // Sizing Mode Support
     //------------------------
+    /** Standard size used by Grid. (observable) */
     get sizingMode(): SizingMode {
         return this.acm.sizingModeModel.sizingMode;
     }
 
+    /** Set standard size used by Grid. */
     setSizingMode(sizingMode: SizingMode) {
         return this.acm.sizingModeModel.setSizingMode(sizingMode);
     }
@@ -370,12 +417,12 @@ export class XHApi {
         return this.acm.viewportSizeModel.size;
     }
 
-    /** Is the viewport in portrait orientation? (observable) */
+    /** True if the viewport is currently in the portrait orientation. (observable) */
     get isPortrait(): boolean {
         return this.acm.viewportSizeModel.isPortrait;
     }
 
-    /** Is the viewport in landscape orientation? (observable) */
+    /** True if the viewport is currently in the landscape orientation. (observable) */
     get isLandscape(): boolean {
         return this.acm.viewportSizeModel.isLandscape;
     }
@@ -383,6 +430,10 @@ export class XHApi {
     //-------------------------
     // Routing support
     //-------------------------
+    /**
+     * Model hosting observable router5 state. Not typically used by applications.
+     * Use {@link routerState} instead.
+     */
     get routerModel(): RouterModel {
         return this.acm.routerModel;
     }
@@ -396,26 +447,26 @@ export class XHApi {
     }
 
     /**
-     * The current routing state as an observable property.
+     * The current routing state of the application. (observable)
      * @see RoutingManager.currentState
      */
     get routerState(): State {
         return this.routerModel.currentState;
     }
 
-    /** Route the app - shortcut to this.router.navigate. */
-    navigate(...args) {
+    /** Route the app - shortcut to `XH.router.navigate()`. */
+    navigate(...args): CancelFn {
         // @ts-ignore
         return this.router.navigate(...args);
     }
 
-    /** Add a routeName to the current route, preserving params */
-    appendRoute(routeName: string, newParams?: PlainObject) {
+    /** Add a routeName to the current route, preserving params. */
+    appendRoute(routeName: string, newParams?: PlainObject): CancelFn {
         return this.routerModel.appendRoute(routeName, newParams);
     }
 
-    /** Remove last routeName from the current route, preserving params */
-    popRoute() {
+    /** Remove last routeName from the current route, preserving params. */
+    popRoute(): CancelFn {
         return this.routerModel.popRoute();
     }
 
@@ -430,7 +481,7 @@ export class XHApi {
      * `cancelProps` argument of the following form `cancelProps: {..., autoFocus: true}`.
      *
      * @returns true if user confirms, false if user cancels. If an input is provided, the
-     * Promise will resolve to the input value if user confirms.
+     * returned Promise will resolve to the input value if user confirms, false if user cancels.
      */
     message<T = unknown>(config: MessageSpec): Promise<T | boolean> {
         return this.acm.messageSourceModel.message(config);
@@ -475,42 +526,34 @@ export class XHApi {
         return this.acm.toastSourceModel.show(config);
     }
 
-    /**
-     * Show a toast with default intent and icon indicating success.
-     */
+    /** Show a toast with default intent and icon indicating success. */
     successToast(config: ToastSpec | string): ToastModel {
         if (isString(config)) config = {message: config};
         return this.toast({intent: 'success', icon: Icon.success(), ...config});
     }
 
-    /**
-     * Show a toast with default intent and icon indicating a warning.
-     */
+    /** Show a toast with default intent and icon indicating a warning. */
     warningToast(config: ToastSpec | string): ToastModel {
         if (isString(config)) config = {message: config};
         return this.toast({intent: 'warning', icon: Icon.warning(), ...config});
     }
 
-    /**
-     * Show a toast with intent and icon indicating a serious issue.
-     */
+    /** Show a toast with intent and icon indicating a serious issue. */
     dangerToast(config: ToastSpec | string): ToastModel {
         if (isString(config)) config = {message: config};
         return this.toast({intent: 'danger', icon: Icon.danger(), ...config});
     }
 
     /**
-     * Show a Banner across the top of the viewport. Banners are unique by their
-     * category prop - showing a new banner with an existing category will replace it.
+     * Show a Banner across the top of the viewport. Banners are unique by their category prop.
+     * Showing a new banner with an existing category name will replace the previous banner.
      */
     showBanner(spec: BannerSpec | string): BannerModel {
         if (isString(spec)) spec = {message: spec};
         return this.acm.bannerSourceModel.show(spec);
     }
 
-    /**
-     * Hide banner by category name.
-     */
+    /** Hide banner by category name. */
     hideBanner(category: string = 'default') {
         return this.acm.bannerSourceModel.hide(category);
     }
@@ -527,32 +570,27 @@ export class XHApi {
      * See also Promise.catchDefault(). That method will delegate its arguments to this method
      * and provides a more convenient interface for catching exceptions in Promise chains.
      *
-     * @param exception - thrown object, will be coerced into a HoistException by Exception.create().
+     * @param exception - thrown object, will be coerced into a {@link HoistException}.
      * @param options - provides further control over how the exception is shown and/or logged.
      */
     handleException(exception: unknown, options?: ExceptionHandlerOptions) {
         this.exceptionHandler.handleException(exception, options);
     }
 
-    /**
-     * Show an exception. This method is an alias for {@link ExceptionHandler.showException}.
-     *
-     * Intended to be used for the deferred / user-initiated showing of exceptions that have
-     * already been appropriately logged. Applications should typically prefer `handleException`.
-     *
-     * @param exception - thrown object, will be coerced into a HoistException by Exception.create().
-     * @param options - provides further control over how the exception is shown and/or logged.
-     */
     showException(exception: unknown, options?: ExceptionHandlerOptions) {
+        apiDeprecated('showException', {
+            msg: 'Use XH.exceptionHandler.showException instead',
+            v: '62'
+        });
         this.exceptionHandler.showException(exception, options);
     }
 
     /**
      * Create a new exception - See {@link Exception}.
      *
-     * @param src - If a native JS Error, it will be enhanced into a HoistException and returned.
-     *      If a plain object, all properties will be set on a new HoistException.
-     *      Other inputs will be treated as the `message` of a new HoistException.
+     * @param src - if a native JS Error, it will be enhanced into a `HoistException` and returned.
+     *      If a plain object, all properties will be set on a new `HoistException`.
+     *      Other inputs will be treated as the `message` of a new `HoistException`.
      */
     exception(src: unknown): HoistException {
         return Exception.create(src);
@@ -579,7 +617,7 @@ export class XHApi {
         this.acm.feedbackDialogModel.show({message});
     }
 
-    /** Show the impersonation bar to allow switching users. */
+    /** Show the impersonation bar to allow an authorized admin to switch between users. */
     showImpersonationBar() {
         this.acm.impersonationBarModel.show();
     }
@@ -589,14 +627,37 @@ export class XHApi {
         this.acm.optionsDialogModel.show();
     }
 
-    //---------------------------
-    // Miscellaneous
-    //---------------------------
+    /** Get a reference to a singleton service by camel case name. */
+    getService(name: string): HoistService;
+
+    /** Get a reference to a singleton service by full class. */
+    getService<T extends HoistService>(cls: HoistServiceClass<T>): T;
+
+    /** Get a reference to a singleton service. */
+    getService(arg: any) {
+        const name = isString(arg) ? arg : camelCase(arg.name);
+        return this[name];
+    }
+
     /**
-     * Return a collection of Models currently 'active' in this application.
+     * Install HoistServices on 'XH'.
      *
-     * This will include all models that have not had `destroy()`
-     * called on them.  Models will be returned in creation order.
+     * This method will create, initialize, and install the provided services classes on `XH`.
+     * All services will be initialized concurrently. To guarantee execution order of service
+     * initialization, make multiple calls to this method with `await`.
+     *
+     * Applications must choose a unique name of the form xxxService to avoid naming collisions.
+     * If naming collisions are detected, an error will be thrown.
+     *
+     * @param serviceClasses - classes extending HoistService
+     */
+    async installServicesAsync(...serviceClasses: HoistServiceClass[]) {
+        return installServicesAsync(serviceClasses);
+    }
+
+    /**
+     * Get a collection of Models currently 'active' in the app, returned in creation-time order.
+     * This will include all models that have not yet had `destroy()` called on them.
      */
     getActiveModels(selector: ModelSelector = '*'): HoistModel[] {
         const ret = [];
@@ -617,7 +678,7 @@ export class XHApi {
     }
 
     /**
-     * Resets user preferences and any persistent local application state, then reloads the app.
+     * Reset user preferences and any persistent local application state, then reload the app.
      */
     async restoreDefaultsAsync() {
         await this.appModel.restoreDefaultsAsync();
@@ -628,8 +689,8 @@ export class XHApi {
      * Helper method to destroy resources safely (e.g. child HoistModels). Will quietly skip args
      * that are null / undefined or that do not implement destroy().
      *
-     * @param args - objects to be destroyed. If any argument is an array,
-     *      each element in the array will be destroyed (this is *not* done recursively);.
+     * @param args - objects to be destroyed. If any argument is an array, each top-level element
+     *      in the array will be destroyed. (Note this is *not* done recursively.)
      */
     safeDestroy(...args: (any | any[])[]) {
         if (args) {
@@ -641,8 +702,8 @@ export class XHApi {
     }
 
     /**
-     * Generate an ID string, unique within this run of the client application and suitable
-     * for local-to-client uses such as auto-generated store record identifiers.
+     * Generate an ID string, unique within this run of the client application and suitable for
+     * local-to-client uses, such as auto-generated store record identifiers.
      *
      * Deliberately *not* intended to be globally unique, suitable for reuse, or to appear as such.
      */
@@ -650,12 +711,15 @@ export class XHApi {
         return uniqueId('xh-id-');
     }
 
+    //----------------
+    // Implementation
+    //----------------
     private get acm(): AppContainerModel {
         return this.appContainerModel;
     }
 }
 
-/** app-wide singleton instance. */
+/** The app-wide singleton instance. */
 export const XH = new XHApi();
 
 // Install reference to XH singleton on window (this is the one global Hoist adds directly).

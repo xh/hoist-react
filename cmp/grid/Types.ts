@@ -5,7 +5,6 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
-import {ValueGetterParams} from '@ag-grid-community/core';
 import {GridFilterFieldSpecConfig} from '@xh/hoist/cmp/grid/filter/GridFilterFieldSpec';
 import {HSide, PersistOptions, PlainObject, SizingMode, Some} from '@xh/hoist/core';
 import {Store, StoreRecord, View} from '@xh/hoist/data';
@@ -191,10 +190,7 @@ export interface CellContext {
  *      re-run whenever the record (and not just the primary value) changes.
  * @returns the formatted value for display.
  */
-export type ColumnRenderer<T = any> = (
-    value: T,
-    context: CellContext & {agParams: ICellRendererParams}
-) => ReactNode;
+export type ColumnRenderer<T = any> = (value: T, context: CellContext) => ReactNode;
 
 /**
  * Function to return a value to export for a grid cell.
@@ -327,7 +323,6 @@ export type ColumnGetValueFn<T = any> = (params: {
     store: Store;
     column: Column;
     gridModel: GridModel;
-    agParams: ValueGetterParams | ITooltipParams;
 }) => T;
 
 export interface ColumnSortSpec {

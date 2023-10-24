@@ -7,7 +7,7 @@
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
-import {errorBoundary} from '@xh/hoist/appcontainer/ErrorBoundary';
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
 import {suspendPanel} from '@xh/hoist/desktop/appcontainer/SuspendPanel';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
@@ -40,6 +40,7 @@ import {optionsDialog} from './OptionsDialog';
 import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
 import {ReactElement} from 'react';
+import {errorMessage} from '../cmp/error/ErrorMessage';
 
 installDesktopImpls({
     tabContainerImpl,
@@ -52,7 +53,8 @@ installDesktopImpls({
     ColChooserModel,
     ColumnHeaderFilterModel,
     useContextMenu,
-    ModalSupportModel
+    ModalSupportModel,
+    errorMessage
 });
 /**
  * Top-level wrapper for Desktop applications.
@@ -73,7 +75,19 @@ export const AppContainer = hoistCmp({
 
         return fragment(
             hotkeysProvider(
-                errorBoundary(viewForState()),
+                errorBoundary({
+                    modelConfig: {
+                        errorHandler: {
+                            title: 'Critical Error',
+                            message:
+                                XH.clientAppName +
+                                ' encountered a critical error and cannot be displayed.',
+                            requireReload: true
+                        },
+                        errorRenderer: () => null
+                    },
+                    item: viewForState()
+                }),
                 // Modal component helpers rendered here at top-level to support display of messages
                 // and exceptions at any point during the app lifecycle.
                 exceptionDialog(),

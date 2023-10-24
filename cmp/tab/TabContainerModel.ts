@@ -15,6 +15,7 @@ import {
     PersistOptions
 } from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {find, isString, isUndefined, without, difference, findLast} from 'lodash';
@@ -151,6 +152,7 @@ export class TabContainerModel extends HoistModel {
                 track: () => XH.routerState,
                 run: this.syncWithRouter
             });
+            wait().then(() => this.syncWithRouter());
 
             this.forwardRouterToTab(this.activeTabId);
         } else if (persistWith) {
@@ -288,7 +290,8 @@ export class TabContainerModel extends HoistModel {
 
         const {route} = this;
         if (route) {
-            XH.navigate(route + '.' + tab.id);
+            const {params} = XH.router.getState();
+            XH.navigate(route + '.' + tab.id, params);
         } else {
             this.setActiveTabIdInternal(tab.id);
         }
@@ -333,10 +336,11 @@ export class TabContainerModel extends HoistModel {
 
     private syncWithRouter() {
         const {tabs, route} = this,
-            {router} = XH;
+            {router} = XH,
+            state = router.getState();
 
-        if (router.isActive(route)) {
-            const tab = tabs.find(t => router.isActive(route + '.' + t.id));
+        if (state && router.isActive(route)) {
+            const tab = tabs.find(t => router.isActive(route + '.' + t.id, state.params));
             if (tab && !tab.isActive && !tab.disabled) {
                 this.setActiveTabIdInternal(tab.id);
             }

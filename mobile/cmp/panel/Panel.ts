@@ -29,6 +29,9 @@ export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
     /** A toolbar to be docked at the bottom of the panel. */
     bbar?: Some<ReactNode>;
 
+    /** CSS class name specific to the panel's header. */
+    headerClassName?: string;
+
     /** Items to be added to the right-side of the panel's header. */
     headerItems?: ReactNode[];
 
@@ -83,6 +86,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             bbar,
             title,
             icon,
+            headerClassName,
             headerItems,
             mask: maskProp,
             loadingIndicator: loadingIndicatorProp,
@@ -112,7 +116,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         return vbox({
             className: classNames(className, scrollable ? 'xh-panel--scrollable' : null),
             items: [
-                panelHeader({title, icon, headerItems}),
+                panelHeader({title, icon, className: headerClassName, headerItems}),
                 parseToolbar(tbar),
                 coreContents,
                 parseToolbar(bbar),

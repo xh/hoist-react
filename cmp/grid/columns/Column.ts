@@ -32,7 +32,14 @@ import {
     keysIn,
     toString
 } from 'lodash';
-import {createElement, forwardRef, isValidElement, ReactNode, useImperativeHandle} from 'react';
+import {
+    Attributes,
+    createElement,
+    forwardRef,
+    isValidElement,
+    ReactNode,
+    useImperativeHandle
+} from 'react';
 import {GridModel} from '../GridModel';
 import {GridSorter} from '../GridSorter';
 import {managedRenderer} from '../impl/Utils';
@@ -263,7 +270,7 @@ export interface ColumnSpec {
      * `headerName` contains markup or other characters not suitable for use within an Excel or
      * CSV file header.
      */
-    exportName?: string;
+    exportName?: string | ColumnHeaderNameFn;
 
     /**
      * Alternate field name to reference or function to call when producing a value for a file
@@ -455,7 +462,7 @@ export class Column {
     autosizeBufferPx: number;
     autoHeight: boolean;
     editable: boolean | ColumnEditableFn;
-    editor: ColumnEditorFn;
+    editor: FunctionComponent | ColumnEditorFn;
     editorIsPopup: boolean;
     setValueFn: ColumnSetValueFn;
     getValueFn: ColumnGetValueFn;
@@ -729,8 +736,7 @@ export class Column {
                         field,
                         store: record?.store,
                         column: this,
-                        gridModel,
-                        agParams
+                        gridModel
                     });
                 },
                 suppressKeyboardEvent: ({editing, event}) => {
@@ -776,12 +782,7 @@ export class Column {
         if (!agOptions.cellRenderer) {
             setRenderer(agParams => {
                 let ret = renderer
-                    ? renderer(agParams.value, {
-                          record: agParams.data,
-                          column: this,
-                          gridModel,
-                          agParams
-                      })
+                    ? renderer(agParams.value, {record: agParams.data, column: this, gridModel})
                     : agParams.value;
 
                 ret = isNil(ret) || isValidElement(ret) ? ret : toString(ret);
@@ -808,7 +809,6 @@ export class Column {
                             field,
                             column: this,
                             gridModel,
-                            agParams,
                             store
                         });
 
@@ -948,7 +948,8 @@ export class Column {
                     ref
                 };
                 // Can be a component or elem factory/ ad-hoc render function.
-                if ((editor as any).isHoistComponent) return createElement(editor, props);
+                if ((editor as any).isHoistComponent)
+                    return createElement(editor, props as Attributes);
                 if (isFunction(editor)) return editor(props);
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
             });

@@ -58,7 +58,7 @@ export class AppOption {
     async getValueAsync(name) {
         const {valueGetter, prefName} = this;
         if (isFunction(valueGetter)) {
-            return await valueGetter();
+            return valueGetter();
         } else {
             return XH.prefService.get(prefName);
         }

@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {isDate, isNil} from 'lodash';
 import moment from 'moment';
 
 export const MILLISECONDS = 1,
@@ -21,7 +22,9 @@ export const MILLISECONDS = 1,
  * Returns true if input time is null.
  */
 export function olderThan(t: Date | number, millis: number) {
-    return !t || t < Date.now() - millis;
+    if (isNil(t)) return true;
+    t = isDate(t) ? t.getTime() : t;
+    return t < Date.now() - millis;
 }
 
 /** Returns midnight browser local time for the provided date, or current date. */

@@ -195,8 +195,7 @@ export class GridExportService extends HoistService {
             field,
             column,
             gridModel,
-            store: record.store,
-            agParams: null
+            store: record.store
         });
         // Modify value using exportValue
         if (isString(exportValue) && record.data[exportValue] !== null) {
@@ -254,7 +253,7 @@ export class GridExportService extends HoistService {
                     item: '(show details...)',
                     onClick: () => {
                         failToast?.dismiss();
-                        XH.exceptionHandler.showException(e);
+                        XH.exceptionHandler.showExceptionDetails(e);
                     }
                 })
             ),

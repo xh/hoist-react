@@ -4,6 +4,14 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {
+    CellClickedEvent,
+    CellContextMenuEvent,
+    CellDoubleClickedEvent,
+    ColumnEvent,
+    RowClickedEvent,
+    RowDoubleClickedEvent
+} from '@ag-grid-community/core';
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {
     Column,
@@ -13,7 +21,8 @@ import {
     GridAutosizeMode,
     GridFilterModelConfig,
     GridGroupSortFn,
-    TreeStyle
+    TreeStyle,
+    ColumnCellClassRuleFn
 } from '@xh/hoist/cmp/grid';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {br, fragment} from '@xh/hoist/cmp/layout';
@@ -56,7 +65,7 @@ import {
     withDefault
 } from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
-import _, {
+import {
     castArray,
     clone,
     cloneDeep,
@@ -65,6 +74,7 @@ import _, {
     defaultsDeep,
     every,
     find,
+    first,
     forEach,
     isArray,
     isEmpty,
@@ -74,6 +84,7 @@ import _, {
     isString,
     isUndefined,
     keysIn,
+    last,
     max,
     min,
     omit,
@@ -224,43 +235,39 @@ export interface GridConfig {
     groupSortFn?: GridGroupSortFn;
 
     /**
-     * Callback when a key down event is detected on the grid. Function will receive an event
-     * with the standard 'target' element. Note that the ag-Grid API provides limited ability to
-     * customize keyboard handling. This handler is designed to allow applications to workaround
-     * this.
+     * Callback when a key down event is detected on the grid. Note that the ag-Grid API provides
+     * limited ability to customize keyboard handling. This handler is designed to allow
+     * applications to work around this.
      */
     onKeyDown?: (e: KeyboardEvent) => void;
 
     /**
-     * Callback when a row is clicked - will receive an event with a data node containing
-     * the row's data. (Note that this may be null - e.g. for clicks on full-width group rows.)
+     * Callback when a row is clicked. (Note that the event received may be null - e.g. for
+     * clicks on full-width group rows.)
      */
-    onRowClicked?: (e: any) => void;
+    onRowClicked?: (e: RowClickedEvent) => void;
 
     /**
-     * Callback when a row is double clicked - will receive an event with a data node containing
-     * the row's data. (Note that this may be null - e.g. for clicks on full-width group rows.)
+     * Callback when a row is double-clicked. (Note that the event received may be null - e.g.
+     * for clicks on full-width group rows.)
      */
-    onRowDoubleClicked?: (e: any) => void;
+    onRowDoubleClicked?: (e: RowDoubleClickedEvent) => void;
 
     /**
-     * Callback when a cell is clicked. Function will receive an event with a data node,
-     * cell value, and column.
+     * Callback when a cell is clicked.
      */
-    onCellClicked?: (e: any) => void;
+    onCellClicked?: (e: CellClickedEvent) => void;
 
     /**
-     * Callback when a cell is double clicked. Function will receive an event with a data node,
-     * cell value, and column.
+     * Callback when a cell is double-clicked.
      */
-    onCellDoubleClicked?: (e: any) => void;
+    onCellDoubleClicked?: (e: CellDoubleClickedEvent) => void;
 
     /**
-     * Callback when the context menu is opened. Function will receive an event with a data
-     * node containing the row's data. Note that this event can also be triggered via a
-     * long press (aka tap and hold) on mobile devices.
+     * Callback when the context menu is opened. Note that the event received can also be
+     * triggered via a long press (aka tap and hold) on mobile devices.
      */
-    onCellContextMenu?: (e: any) => void;
+    onCellContextMenu?: (e: CellContextMenuEvent) => void;
 
     /**
      * Number of clicks required to expand / collapse a parent row in a tree grid. Defaults
@@ -382,11 +389,11 @@ export class GridModel extends HoistModel {
     colDefaults: Partial<ColumnSpec>;
     experimental: PlainObject;
     onKeyDown: (e: KeyboardEvent) => void;
-    onRowClicked: (e: any) => void;
-    onRowDoubleClicked: (e: any) => void;
-    onCellClicked: (e: any) => void;
-    onCellDoubleClicked: (e: any) => void;
-    onCellContextMenu: (e: any) => void;
+    onRowClicked: (e: RowClickedEvent) => void;
+    onRowDoubleClicked: (e: RowDoubleClickedEvent) => void;
+    onCellClicked: (e: CellClickedEvent) => void;
+    onCellDoubleClicked: (e: CellDoubleClickedEvent) => void;
+    onCellContextMenu: (e: CellContextMenuEvent) => void;
     appData: PlainObject;
 
     @managed filterModel: GridFilterModel;
@@ -867,9 +874,11 @@ export class GridModel extends HoistModel {
     get isReady(): boolean {
         return this.agGridModel.isReady;
     }
+
     get agApi() {
         return this.agGridModel.agApi;
     }
+
     get agColumnApi() {
         return this.agGridModel.agColumnApi;
     }
@@ -877,9 +886,11 @@ export class GridModel extends HoistModel {
     get sizingMode(): SizingMode {
         return this.agGridModel.sizingMode;
     }
+
     set sizingMode(v: SizingMode) {
         this.agGridModel.sizingMode = v;
     }
+
     setSizingMode(v: SizingMode) {
         this.agGridModel.sizingMode = v;
     }
@@ -887,9 +898,11 @@ export class GridModel extends HoistModel {
     get showHover(): boolean {
         return this.agGridModel.showHover;
     }
+
     set showHover(v: boolean) {
         this.agGridModel.showHover = v;
     }
+
     setShowHover(v: boolean) {
         this.agGridModel.showHover = v;
     }
@@ -897,9 +910,11 @@ export class GridModel extends HoistModel {
     get rowBorders(): boolean {
         return this.agGridModel.rowBorders;
     }
+
     set rowBorders(v: boolean) {
         this.agGridModel.rowBorders = v;
     }
+
     setRowBorders(v: boolean) {
         this.agGridModel.rowBorders = v;
     }
@@ -907,9 +922,11 @@ export class GridModel extends HoistModel {
     get stripeRows(): boolean {
         return this.agGridModel.stripeRows;
     }
+
     set stripeRows(v: boolean) {
         this.agGridModel.stripeRows = v;
     }
+
     setStripeRows(v: boolean) {
         this.agGridModel.stripeRows = v;
     }
@@ -917,9 +934,11 @@ export class GridModel extends HoistModel {
     get cellBorders(): boolean {
         return this.agGridModel.cellBorders;
     }
+
     set cellBorders(v: boolean) {
         this.agGridModel.cellBorders = v;
     }
+
     setCellBorders(v: boolean) {
         this.agGridModel.cellBorders = v;
     }
@@ -927,9 +946,11 @@ export class GridModel extends HoistModel {
     get showCellFocus(): boolean {
         return this.agGridModel.showCellFocus;
     }
+
     set showCellFocus(v: boolean) {
         this.agGridModel.showCellFocus = v;
     }
+
     setShowCellFocus(v: boolean) {
         this.agGridModel.showCellFocus = v;
     }
@@ -937,9 +958,11 @@ export class GridModel extends HoistModel {
     get hideHeaders(): boolean {
         return this.agGridModel.hideHeaders;
     }
+
     set hideHeaders(v: boolean) {
         this.agGridModel.hideHeaders = v;
     }
+
     setHideHeaders(v: boolean) {
         this.agGridModel.hideHeaders = v;
     }
@@ -1160,6 +1183,10 @@ export class GridModel extends HoistModel {
         return this.findColumn(this.columns, colId);
     }
 
+    getColumnGroup(groupId: string): ColumnGroup {
+        return this.findColumnGroup(this.columns, groupId);
+    }
+
     /** Return all leaf-level columns - i.e. excluding column groups. */
     getLeafColumns(): Column[] {
         return this.gatherLeaves(this.columns);
@@ -1198,6 +1225,22 @@ export class GridModel extends HoistModel {
         this.setColumnVisible(colId, false);
     }
 
+    setColumnGroupVisible(groupId: string, visible: boolean) {
+        this.applyColumnStateChanges(
+            this.getColumnGroup(groupId)
+                .getLeafColumns()
+                .map(({colId}) => ({colId, hidden: !visible}))
+        );
+    }
+
+    showColumnGroup(groupId: string) {
+        this.setColumnGroupVisible(groupId, true);
+    }
+
+    hideColumnGroup(groupId: string) {
+        this.setColumnGroupVisible(groupId, false);
+    }
+
     /**
      * Determine if a leaf-level column is currently pinned.
      *
@@ -1209,7 +1252,7 @@ export class GridModel extends HoistModel {
         return state ? state.pinned : null;
     }
 
-    /** Return matching leaf-level Column object from the provided collection.*/
+    /** Return matching leaf-level Column object from the provided collection. */
     findColumn(cols: Array<Column | ColumnGroup>, colId: string): Column {
         for (let col of cols) {
             if (col instanceof ColumnGroup) {
@@ -1217,6 +1260,18 @@ export class GridModel extends HoistModel {
                 if (ret) return ret;
             } else {
                 if (col.colId === colId) return col;
+            }
+        }
+        return null;
+    }
+
+    /** Return matching ColumnGroup from the provided collection. */
+    findColumnGroup(cols: Array<Column | ColumnGroup>, groupId: string): ColumnGroup {
+        for (let col of cols) {
+            if (col instanceof ColumnGroup) {
+                if (col.groupId === groupId) return col;
+                const ret = this.findColumnGroup(col.children, groupId);
+                if (ret) return ret;
             }
         }
         return null;
@@ -1233,37 +1288,14 @@ export class GridModel extends HoistModel {
         return find(this.columnState, {colId});
     }
 
-    buildColumn(config: ColumnGroupSpec | ColumnSpec) {
-        // Merge leaf config with defaults.
-        // Ensure *any* tooltip setting on column itself always wins.
-        if (this.colDefaults && !this.isGroupSpec(config)) {
-            let colDefaults = {...this.colDefaults};
-            if (config.tooltip) colDefaults.tooltip = null;
-            config = defaultsDeep({}, config, colDefaults);
-        }
-
-        const omit = isFunction(config.omit) ? config.omit() : config.omit;
-        if (omit) return null;
-
-        if (this.isGroupSpec(config)) {
-            const children = compact(config.children.map(c => this.buildColumn(c))) as Array<
-                ColumnGroup | Column
-            >;
-            return !isEmpty(children)
-                ? new ColumnGroup(config as ColumnGroupSpec, this, children)
-                : null;
-        }
-
-        return new Column(config, this);
-    }
-
     /**
      * Autosize columns to fit their contents.
      *
-     * @param options - overrides of default autosize options to use for this action.
+     * This method will ignore columns with a flex value or with `autosizable: false`. Hidden
+     * columns are also ignored unless {@link GridAutosizeOptions.includeHiddenColumns} has been
+     * set to true.
      *
-     * This method will ignore hidden columns, columns with a flex value, and columns with
-     * autosizable = false.
+     * @param options - optional overrides of this model's configured {@link autosizeOptions}.
      */
     @logWithDebug
     async autosizeAsync(options: GridAutosizeOptions = {}) {
@@ -1287,7 +1319,7 @@ export class GridModel extends HoistModel {
         }
 
         colIds = castArray(colIds).filter(id => {
-            if (!this.isColumnVisible(id)) return false;
+            if (!options.includeHiddenColumns && !this.isColumnVisible(id)) return false;
             const col = this.getColumn(id);
             return col && col.autosizable && !col.flex && includeColFn(col);
         });
@@ -1416,6 +1448,35 @@ export class GridModel extends HoistModel {
     //-----------------------
     // Implementation
     //-----------------------
+    private buildColumn(config: ColumnGroupSpec | ColumnSpec, borderedGroup?: ColumnGroupSpec) {
+        // Merge leaf config with defaults.
+        // Ensure *any* tooltip setting on column itself always wins.
+        if (this.colDefaults && !this.isGroupSpec(config)) {
+            let colDefaults = {...this.colDefaults};
+            if (config.tooltip) colDefaults.tooltip = null;
+            config = defaultsDeep({}, config, colDefaults);
+        }
+
+        const omit = isFunction(config.omit) ? config.omit() : config.omit;
+        if (omit) return null;
+
+        if (this.isGroupSpec(config)) {
+            if (config.borders !== false) borderedGroup = config;
+            const children = compact(
+                config.children.map(c => this.buildColumn(c, borderedGroup))
+            ) as Array<ColumnGroup | Column>;
+            return !isEmpty(children)
+                ? new ColumnGroup(config as ColumnGroupSpec, this, children)
+                : null;
+        }
+
+        if (borderedGroup) {
+            config = this.enhanceConfigWithGroupBorders(config, borderedGroup);
+        }
+
+        return new Column(config, this);
+    }
+
     private async autosizeColsInternalAsync(colIds, options) {
         await this.whenReadyAsync();
         if (!this.isReady) return;
@@ -1523,18 +1584,16 @@ export class GridModel extends HoistModel {
         if (isEmpty(cols)) return;
 
         const ids = this.collectIds(cols);
-        const nonUnique = _(ids)
-            .groupBy()
-            .pickBy(x => x.length > 1)
-            .keys();
-        if (!nonUnique.isEmpty()) {
+        const nonUnique = ids.filter((item, index) => ids.indexOf(item) !== index);
+
+        if (!isEmpty(nonUnique)) {
             const msg =
                 `Non-unique ids: [${nonUnique}] ` +
                 "Use 'ColumnSpec'/'ColumnGroupSpec' configs to resolve a unique ID for each column/group.";
             throw XH.exception(msg);
         }
 
-        const treeCols = cols.filter(it => it.isTreeColumn);
+        const treeCols = this.gatherLeaves(cols).filter(it => it.isTreeColumn);
         warnIf(
             this.treeMode && treeCols.length != 1,
             'Grids in treeMode should include exactly one column with isTreeColumn:true.'
@@ -1732,4 +1791,69 @@ export class GridModel extends HoistModel {
     defaultGroupSortFn = (a, b) => {
         return a < b ? -1 : a > b ? 1 : 0;
     };
+
+    private readonly LEFT_BORDER_CLASS = 'xh-cell--group-border-left';
+    private readonly RIGHT_BORDER_CLASS = 'xh-cell--group-border-right';
+
+    private enhanceConfigWithGroupBorders(config: ColumnSpec, group: ColumnGroupSpec): ColumnSpec {
+        return {
+            ...config,
+            cellClassRules: {
+                ...config.cellClassRules,
+                [this.LEFT_BORDER_CLASS]: this.createGroupBorderFn('left', group),
+                [this.RIGHT_BORDER_CLASS]: this.createGroupBorderFn('right', group)
+            }
+        };
+    }
+
+    private createGroupBorderFn(
+        side: 'left' | 'right',
+        group: ColumnGroupSpec
+    ): ColumnCellClassRuleFn {
+        return ({api, column, columnApi, ...ctx}) => {
+            if (!api || !column || !columnApi) return false;
+
+            // Re-evaluate cell class rules when column is re-ordered
+            // See https://www.ag-grid.com/javascript-data-grid/column-object/#reference-events
+            if (!column['xhAppliedGroupBorderListener']) {
+                column['xhAppliedGroupBorderListener'] = true;
+                column.addEventListener('leftChanged', ({api, columns, source}: ColumnEvent) => {
+                    if (source === 'uiColumnMoved') api.refreshCells({columns});
+                });
+            }
+
+            // Don't render a left-border if col is first or if prev col already has right-border
+            if (side === 'left') {
+                const prevCol = columnApi.getDisplayedColBefore(column);
+
+                if (!prevCol) return false;
+
+                const prevColDef = prevCol.getColDef(),
+                    prevRule = prevColDef.cellClassRules[this.RIGHT_BORDER_CLASS];
+                if (
+                    isFunction(prevRule) &&
+                    prevRule({
+                        ...ctx,
+                        api,
+                        colDef: prevColDef,
+                        column: prevCol,
+                        columnApi
+                    })
+                ) {
+                    return false;
+                }
+            }
+
+            // Walk up parent groups to find "bordered" group. Return true if on relevant edge.
+            const getter = side === 'left' ? first : last;
+            for (let parent = column?.getParent(); parent; parent = parent.getParent()) {
+                if (
+                    group.groupId === parent.getGroupId() &&
+                    getter(parent.getDisplayedLeafColumns()) === column
+                ) {
+                    return true;
+                }
+            }
+        };
+    }
 }

@@ -14,7 +14,7 @@ import {fmtDate, parseNumber} from '@xh/hoist/format';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
 import {isValidElement, ReactNode} from 'react';
-import {renderToStaticMarkup} from 'react-dom/server';
+import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 
 export interface FilterChooserFieldSpecConfig extends BaseFilterFieldSpecConfig {
     /**

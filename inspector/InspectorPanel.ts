@@ -26,11 +26,13 @@ export const inspectorPanel = hoistCmp.factory({
             title: `Inspector - Hoist v${XH.environmentService.get('hoistReactVersion')}`,
             icon: Icon.search(),
             className: 'xh-inspector',
+            headerClassName: 'xh-inspector-panel-header',
             modelConfig: {
                 defaultSize: 400,
                 side: 'bottom',
                 persistWith: XH.inspectorService.persistWith,
                 modalSupport: true,
+                errorBoundary: true,
                 showModalToggleButton: true,
                 showHeaderCollapseButton: false,
                 xhImpl: true

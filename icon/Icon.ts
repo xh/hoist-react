@@ -504,6 +504,9 @@ export const Icon = {
     mask(p?: IconProps) {
         return Icon.icon({...p, iconName: 'mask'});
     },
+    memory(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'memory'});
+    },
     minusCircle(p?: IconProps) {
         return Icon.icon({...p, iconName: 'minus-circle'});
     },

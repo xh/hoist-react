@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
@@ -29,9 +30,10 @@ export class MemoryMonitorModel extends HoistModel {
         super();
 
         this.gridModel = new GridModel({
-            sortBy: 'timestamp|desc',
             enableExport: true,
+            exportOptions: {filename: exportFilenameWithDate('memory-monitor')},
             filterModel: true,
+            sortBy: 'timestamp|desc',
             store: {idSpec: 'timestamp'},
             colDefaults: {filterable: true},
             headerMenuDisplay: 'hover',

@@ -18,6 +18,7 @@ import {
 import {Icon} from '@xh/hoist/icon';
 import {action, when as mobxWhen} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
+import numbro from 'numbro';
 import {createRoot} from 'react-dom/client';
 import {
     AlertBannerService,
@@ -191,6 +192,10 @@ export class AppContainerModel extends HoistModel {
             await installServicesAsync(TrackService);
             await installServicesAsync([EnvironmentService, PrefService, JsonBlobService]);
 
+            if (XH.flags.applyBigNumberWorkaround) {
+                numbro['BigNumber'].clone();
+            }
+
             // Confirm hoist-core version after environment service loaded
             const hcVersion = XH.environmentService.get('hoistCoreVersion');
             if (!checkMinVersion(hcVersion, MIN_HOIST_CORE_VERSION)) {
@@ -296,7 +301,7 @@ export class AppContainerModel extends HoistModel {
     // Implementation
     //-----------------------------
     private async getAuthStatusFromServerAsync(): Promise<boolean> {
-        return await XH.fetchService
+        return XH.fetchService
             .fetchJson({
                 url: 'xh/authStatus',
                 timeout: 3 * MINUTES // Accommodate delay for user at a credentials prompt

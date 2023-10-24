@@ -4,16 +4,16 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed, LoadSpec} from '@xh/hoist/core';
-import {makeObservable, observable, action} from '@xh/hoist/mobx';
+import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
+import {AppModel} from '@xh/hoist/admin/AppModel';
+import * as Col from '@xh/hoist/admin/columns';
+import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {FieldSpec} from '@xh/hoist/data';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {addAction, deleteAction, editAction, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
-import * as Col from '@xh/hoist/admin/columns';
-
-import {DifferModel} from '../../differ/DifferModel';
-import {RegroupDialogModel} from '../../regroup/RegroupDialogModel';
-import {AppModel} from '@xh/hoist/admin/AppModel';
-import {FieldSpec} from '@xh/hoist/data';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {DifferModel} from '../../../differ/DifferModel';
+import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
 
 export class PreferenceModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminPreferenceState'};
@@ -41,6 +41,7 @@ export class PreferenceModel extends HoistModel {
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,
+            exportOptions: {filename: exportFilenameWithDate('prefs')},
             selModel: 'multiple',
             store: {
                 url: 'rest/preferenceAdmin',

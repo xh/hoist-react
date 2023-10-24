@@ -5,7 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
-import {errorBoundary} from '@xh/hoist/appcontainer/ErrorBoundary';
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
@@ -30,13 +30,15 @@ import {messageSource} from './MessageSource';
 import {optionsDialog} from './OptionsDialog';
 import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
+import {errorMessage} from '../cmp/error/ErrorMessage';
 
 installMobileImpls({
     tabContainerImpl,
     storeFilterFieldImpl,
     pinPadImpl,
     colChooser,
-    ColChooserModel
+    ColChooserModel,
+    errorMessage
 });
 
 /**
@@ -57,7 +59,19 @@ export const AppContainer = hoistCmp({
         useOnMount(() => model.initAsync());
 
         return fragment(
-            errorBoundary(viewForState()),
+            errorBoundary({
+                modelConfig: {
+                    errorHandler: {
+                        title: 'Critical Error',
+                        message:
+                            XH.clientAppName +
+                            ' encountered a critical error and cannot be displayed.',
+                        requireReload: true
+                    },
+                    errorRenderer: () => null
+                },
+                item: viewForState()
+            }),
             // Modal component helpers rendered here at top-level to support display of messages
             // and exceptions at any point during the app lifecycle.
             exceptionDialog(),
