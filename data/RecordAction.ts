@@ -66,7 +66,7 @@ export interface ActionFnData {
     action?: RecordAction;
 
     /** Row data object (entire row, if any).*/
-    record?: any;
+    record?: StoreRecord;
 
     /** All currently selected records (if any).*/
     selectedRecords?: StoreRecord[];

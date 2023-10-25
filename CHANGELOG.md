@@ -2,6 +2,29 @@
 
 ## 60.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `Column.sortToBottom` which supports always sorting specified values to the bottom,
+  regardless of sort direction.
+
+## 59.2.0 - 2023-10-16
+
+### 🐞 Bug Fixes
+* Fix to pass correct arguments to `ErrorMessageProps.actionFn` and `ErrorMessageProps.detailsFn`
+* Better default error text in `ErrorMessage`
+
+## 59.2.0 - 2023-10-16
+
+### 🎁 New Features
+
+* New `DockViewConfig.onClose` hook invoked when a user attempts to remove a `DockContainer` view
+* Add `GridModel` APIs to lookup and show / hide entire column groups
+* Left / right borders are now rendered along `Grid` `ColumnGroup` edges by default.  Control
+ with new boolean property `ColumnGroupSpec.borders`
+* The Cube package has been enhanced to support `Query` specific post-processing functions.  See
+new properties `Query.omitFn`, `Query.bucketSpecFn` and `Query.lockFn`.  These properties default
+to their respective properties on `Cube`.
+
 ### 🐞 Bug Fixes
 
 * `DashContainerModel` fixes:
@@ -10,6 +33,11 @@
   * Fix bug in `DockContainer` where adding / removing views would cause other views to be remounted
 * Fix erroneous `GridModel` warning when using a tree column within a column group
 * Fix regression to alert banners. Resume allowing elements as messages
+* Fix `Grid` cell border styling inconsistencies
+
+### ⚙️ Typescript API Adjustments
+
+* Add type for `ActionFnData.record`
 
 ## 59.1.0 - 2023-09-20
 
