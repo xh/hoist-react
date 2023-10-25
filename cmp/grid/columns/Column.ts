@@ -907,7 +907,7 @@ export class Column {
         if (this.comparator === undefined) {
             // Use default comparator with appropriate inputs
             ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
-                const {gridModel, colId, sortToBottom} = this,
+                const {gridModel, colId} = this,
                     // Note: sortCfg and agNodes can be undefined if comparator called during show
                     // of agGrid column header set filter menu.
                     sortCfg = find(gridModel.sortBy, {colId}),
@@ -918,12 +918,15 @@ export class Column {
                 valueA = this.getSortValue(valueA, recordA);
                 valueB = this.getSortValue(valueB, recordB);
 
-                return this.defaultComparator(valueA, valueB, sortToBottom, sortDir);
+                const sortToBottom = this.sortToBottomComparator(valueA, valueB, sortDir);
+                if (sortToBottom !== 0) return sortToBottom;
+
+                return this.defaultComparator(valueA, valueB);
             };
         } else {
             // ...or process custom comparator with the Hoist-defined comparatorFn API.
             ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
-                const {gridModel, colId, sortToBottom} = this,
+                const {gridModel, colId} = this,
                     // Note: sortCfg and agNodes can be undefined if comparator called during show
                     // of agGrid column header set filter menu.
                     sortCfg = find(gridModel.sortBy, {colId}),
@@ -936,15 +939,16 @@ export class Column {
                         recordB,
                         column: this,
                         gridModel,
-                        defaultComparator: (a, b) => {
-                            return this.defaultComparator(a, b, sortToBottom, sortDir);
-                        },
+                        defaultComparator: (a, b) => this.defaultComparator(a, b),
                         agNodeA,
                         agNodeB
                     };
 
                 valueA = this.getSortValue(valueA, recordA);
                 valueB = this.getSortValue(valueB, recordB);
+
+                const sortToBottom = this.sortToBottomComparator(valueA, valueB, sortDir);
+                if (sortToBottom !== 0) return sortToBottom;
 
                 return this.comparator(valueA, valueB, sortDir, abs, params);
             };
@@ -991,16 +995,32 @@ export class Column {
     // Implementation
     //--------------------
     // Default comparator sorting to absValue-aware GridSorters in GridModel.sortBy[].
-    private defaultComparator = (
-        v1: any,
-        v2: any,
-        sortToBottom: Array<any | ((v: any) => boolean)>,
-        sortDir: 'asc' | 'desc'
-    ) => {
+    private defaultComparator = (v1, v2) => {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
-        return sortCfg
-            ? sortCfg.comparator(v1, v2, sortToBottom)
-            : GridSorter.defaultComparator(v1, v2, sortToBottom, sortDir);
+        return sortCfg ? sortCfg.comparator(v1, v2) : GridSorter.defaultComparator(v1, v2);
+    };
+
+    private sortToBottomComparator = (v1: any, v2: any, sortDir: 'asc' | 'desc') => {
+        const {sortToBottom} = this,
+            asc = sortDir === 'asc';
+
+        if (isEmpty(sortToBottom)) return 0;
+
+        let v1ToBottom = null,
+            v2ToBottom = null;
+
+        sortToBottom.forEach((it, idx) => {
+            const fn = isFunction(it) ? v => it(v) : v => v === it;
+            if (isNil(v1ToBottom) && fn(v1)) v1ToBottom = idx;
+            if (isNil(v2ToBottom) && fn(v2)) v2ToBottom = idx;
+        });
+
+        if (!isNil(v1ToBottom) && !isNil(v2ToBottom)) {
+            return (v1ToBottom - v2ToBottom) * (asc ? 1 : -1);
+        }
+        if (!isNil(v1ToBottom)) return asc ? 1 : -1;
+        if (!isNil(v2ToBottom)) return asc ? -1 : 1;
+        return 0;
     };
 
     private defaultSetValueFn = ({value, record, store, field}) => {

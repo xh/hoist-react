@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {isNumber, isNil, isString, isEmpty, isFunction} from 'lodash';
+import {isNumber, isNil, isString} from 'lodash';
 
 export type GridSorterLike = GridSorterSpec | string | GridSorter;
 
@@ -49,38 +49,16 @@ export class GridSorter {
     }
 
     /** Comparator to use with instances of GridSorter.*/
-    comparator(v1: any, v2: any, sortToBottom: Array<any | ((v: any) => boolean)>) {
+    comparator(v1, v2) {
         if (this.abs) {
             v1 = isNumber(v1) ? Math.abs(v1) : v1;
             v2 = isNumber(v2) ? Math.abs(v2) : v2;
         }
-        return GridSorter.defaultComparator(v1, v2, sortToBottom, this.sort);
+        return GridSorter.defaultComparator(v1, v2);
     }
 
     /** Static comparator to use when a GridSorter instance is not available.*/
-    static defaultComparator(
-        v1: any,
-        v2: any,
-        sortToBottom: Array<any | ((v: any) => boolean)>,
-        sortDir: 'asc' | 'desc'
-    ) {
-        if (!isEmpty(sortToBottom)) {
-            let v1ToBottom = null,
-                v2ToBottom = null;
-
-            sortToBottom.forEach((it, idx) => {
-                const fn = isFunction(it) ? v => it(v) : v => v === it;
-                if (isNil(v1ToBottom) && fn(v1)) v1ToBottom = idx;
-                if (isNil(v2ToBottom) && fn(v2)) v2ToBottom = idx;
-            });
-
-            if (!isNil(v1ToBottom) && !isNil(v2ToBottom)) {
-                return (v1ToBottom - v2ToBottom) * (sortDir === 'asc' ? 1 : -1);
-            }
-            if (!isNil(v1ToBottom)) return sortDir === 'asc' ? 1 : -1;
-            if (!isNil(v2ToBottom)) return sortDir === 'asc' ? -1 : 1;
-        }
-
+    static defaultComparator(v1, v2) {
         if (isNil(v1) && isNil(v2)) return 0;
         if (isNil(v1)) return -1;
         if (isNil(v2)) return 1;
