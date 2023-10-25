@@ -193,9 +193,9 @@ export interface ColumnSpec {
     /**
      * Values to match or functions to check to determine if a value should always be sorted
      * to the bottom, regardless of sort order. If more than one entry is provided, values will be
-     * sorted according to the order they should appear here.
+     * sorted according to the order they appear here.
      */
-    sortToBottom?: Array<any | ((v: any) => boolean)>;
+    sortToBottom?: Some<unknown | ((v: unknown) => boolean)>;
 
     /** Function to compare cell values for sorting.*/
     comparator?: ColumnComparator;
@@ -441,7 +441,7 @@ export class Column {
     sortingOrder: ColumnSortSpec[];
     absSort: boolean;
     sortValue: string | ColumnSortValueFn;
-    sortToBottom: Array<any | ((v: any) => boolean)>;
+    sortToBottom: Array<(v: unknown) => boolean>;
     comparator: ColumnComparator;
     resizable: boolean;
     sortable: boolean;
@@ -609,7 +609,7 @@ export class Column {
         this.absSort = withDefault(absSort, false);
         this.sortingOrder = this.parseSortingOrder(sortingOrder);
         this.sortValue = sortValue;
-        this.sortToBottom = sortToBottom;
+        this.sortToBottom = this.parseSortToBottom(sortToBottom);
         this.comparator = comparator;
 
         this.resizable = withDefault(resizable, true);
@@ -939,7 +939,7 @@ export class Column {
                         recordB,
                         column: this,
                         gridModel,
-                        defaultComparator: (a, b) => this.defaultComparator(a, b),
+                        defaultComparator: this.defaultComparator,
                         agNodeA,
                         agNodeB
                     };
@@ -1000,26 +1000,20 @@ export class Column {
         return sortCfg ? sortCfg.comparator(v1, v2) : GridSorter.defaultComparator(v1, v2);
     };
 
-    private sortToBottomComparator = (v1: any, v2: any, sortDir: 'asc' | 'desc') => {
-        const {sortToBottom} = this,
-            asc = sortDir === 'asc';
+    private sortToBottomComparator = (v1, v2, sortDir: 'asc' | 'desc') => {
+        const {sortToBottom} = this;
 
-        if (isEmpty(sortToBottom)) return 0;
+        if (isNil(sortToBottom)) return 0;
 
-        let v1ToBottom = null,
-            v2ToBottom = null;
-
-        sortToBottom.forEach((it, idx) => {
-            const fn = isFunction(it) ? v => it(v) : v => v === it;
-            if (isNil(v1ToBottom) && fn(v1)) v1ToBottom = idx;
-            if (isNil(v2ToBottom) && fn(v2)) v2ToBottom = idx;
-        });
-
-        if (!isNil(v1ToBottom) && !isNil(v2ToBottom)) {
-            return (v1ToBottom - v2ToBottom) * (asc ? 1 : -1);
+        for (let fn of sortToBottom) {
+            const v1ToBottom = fn(v1),
+                v2ToBottom = fn(v2);
+            const isAsc = sortDir === 'asc';
+            if (v1ToBottom != v2ToBottom) {
+                return v1ToBottom ? (isAsc ? 1 : -1) : isAsc ? -1 : 1;
+            }
         }
-        if (!isNil(v1ToBottom)) return asc ? 1 : -1;
-        if (!isNil(v2ToBottom)) return asc ? -1 : 1;
+
         return 0;
     };
 
@@ -1053,6 +1047,11 @@ export class Column {
 
     private parseSortingOrder(sortingOrder): ColumnSortSpec[] {
         return sortingOrder?.map(spec => (isString(spec) || spec === null ? {sort: spec} : spec));
+    }
+
+    private parseSortToBottom(sortToBottom): Array<(v: unknown) => boolean> {
+        if (isNil(sortToBottom)) return null;
+        return castArray(sortToBottom).map(v => (isFunction(v) ? v : it => it === v));
     }
 
     private parseFilterable(filterable) {
