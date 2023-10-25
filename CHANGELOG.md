@@ -1,11 +1,13 @@
 # Changelog
 
-## 59.2.0 - 2023-10-16
+## 60.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
 
 * Added `Column.sortToBottom` which supports always sorting specified values to the bottom,
   regardless of sort direction.
+
+## 59.2.0 - 2023-10-16
 
 ### 🐞 Bug Fixes
 * Fix to pass correct arguments to `ErrorMessageProps.actionFn` and `ErrorMessageProps.detailsFn`
