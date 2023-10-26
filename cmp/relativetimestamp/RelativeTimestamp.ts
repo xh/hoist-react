@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {useImperativeHandle} from 'react';
+import {MutableRefObject, useImperativeHandle} from 'react';
 import moment from 'moment';
 import {box, span} from '@xh/hoist/cmp/layout';
 import {
@@ -69,6 +69,10 @@ export interface RelativeTimestampOptions {
     localDateMode?: boolean;
 }
 
+export interface RelativeTimestampRef {
+    model: HoistModel & {lastRun: Date};
+    domEl: HTMLElement;
+}
 /**
  * A component to display the approximate amount of time between a given timestamp and now in a
  * friendly, human readable format (e.g. '6 minutes ago' or 'two hours from now').
@@ -79,9 +83,12 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<Relat
     displayName: 'RelativeTimestamp',
     className: 'xh-relative-timestamp',
 
-    render({className, ...props}, ref) {
+    render({className, ...props}, ref: MutableRefObject<RelativeTimestampRef | HTMLElement>) {
         const impl = useLocalModel(RelativeTimestampLocalModel);
-        useImperativeHandle(ref, () => impl);
+        useImperativeHandle(ref, () => {
+            const domEl = ref.current as HTMLElement;
+            return {model: impl, domEl};
+        });
 
         return box({
             className,

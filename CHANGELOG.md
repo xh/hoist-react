@@ -4,8 +4,16 @@
 
 ### 🎁 New Features
 
+* `RelativeTimestamp` component accepts new option `localDateMode` to calculate differences without time portions.
 * Added `Column.sortToBottom` which supports always sorting specified values to the bottom,
   regardless of sort direction.
+
+### 💥 Breaking Changes
+
+* `RelativeTimestamp` component's `ref` now returns object `{model, domEl}`.  An app that was using
+  `ref.current` to access the `RelativeTimestamp` DOM element should now get the DOM element through `ref.current.domEl`.  A survey of
+  known Hoist apps did not bring up any instances of `RelativeTimestamp`s `ref` being used, but we mention this
+  just in case.
 
 ## 59.2.0 - 2023-10-16
 
