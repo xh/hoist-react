@@ -8,6 +8,7 @@ import {HoistModel, LoadSpec, PlainObject, Some, managed, XH} from '@xh/hoist/co
 import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {StoreRecordOrId, StoreTransaction, genDisplayName} from '@xh/hoist/data';
 import {
+    ColumnHeaderNameFn,
     ColumnSpec,
     Grid,
     GridConfig,
@@ -16,6 +17,7 @@ import {
     multiFieldRenderer
 } from '@xh/hoist/cmp/grid';
 import {castArray, forOwn, isEmpty, isFinite, isString} from 'lodash';
+import {ReactNode} from 'react';
 import {Zone, ZoneLimit, ZoneMapping} from './Types';
 
 export interface MultiZoneGridConfig extends GridConfig {
@@ -106,7 +108,7 @@ export class MultiZoneGridModel extends HoistModel {
         ];
     }
 
-    buildMultiZoneColumn(isLeft: boolean) {
+    buildMultiZoneColumn(isLeft: boolean): ColumnSpec {
         const topMappings = this.mappings[isLeft ? 'tl' : 'tr'],
             bottomMappings = this.mappings[isLeft ? 'bl' : 'br'];
 
@@ -119,13 +121,6 @@ export class MultiZoneGridModel extends HoistModel {
         // Extract the primary column from the top mappings
         const primaryCol = this.findColumnSpec(topMappings[0]);
 
-        let headerName = primaryCol.headerName ?? primaryCol.displayName;
-        if (!headerName) {
-            const {field} = primaryCol;
-            if (!isString(field)) headerName = field.displayName;
-            if (!headerName) headerName = genDisplayName(isString(field) ? field : field.name);
-        }
-
         // Extract the sub-fields from the other mappings
         const subFields = [];
         topMappings.splice(1).forEach(it => {
@@ -137,10 +132,11 @@ export class MultiZoneGridModel extends HoistModel {
 
         return {
             colId: isLeft ? 'left_column' : 'right_column',
-            headerName,
+            headerName: this.getHeaderName(primaryCol),
             field: primaryCol.field,
             renderer: multiFieldRenderer,
             rowHeight: Grid['MULTIFIELD_ROW_HEIGHT'],
+            absSort: primaryCol.absSort,
             flex: isLeft ? 2 : 1,
             resizable: false,
             movable: false,
@@ -199,6 +195,21 @@ export class MultiZoneGridModel extends HoistModel {
             ret[zone] = mapping;
         });
         return ret;
+    }
+
+    getHeaderName(col: ColumnSpec): ColumnHeaderNameFn | ReactNode {
+        // Prefer column's headerName / displayName
+        const ret = col.headerName ?? col.displayName;
+        if (ret) return ret;
+
+        // Otherwise, use the name of the underlying field.
+        const {field} = col;
+        if (!isString(field) && field.displayName) {
+            return field.displayName;
+        } else {
+            const fieldName = isString(field) ? field : field.name;
+            return genDisplayName(fieldName);
+        }
     }
 
     //-----------------------
