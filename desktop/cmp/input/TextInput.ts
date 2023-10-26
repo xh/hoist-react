@@ -135,9 +135,7 @@ const cmp = hoistCmp.factory<TextInputProps & {model: TextInputModel}>(
                 placeholder: props.placeholder,
                 rightElement:
                     props.rightElement ||
-                    (props.enableClear && !props.disabled && isClearable
-                        ? clearButton({testId: getTestId(props, 'clear-btn')})
-                        : null),
+                    (props.enableClear && !props.disabled && isClearable ? clearButton() : null),
                 round: withDefault(props.round, false),
                 spellCheck: withDefault(props.spellCheck, false),
                 tabIndex: props.tabIndex,
@@ -167,12 +165,12 @@ const cmp = hoistCmp.factory<TextInputProps & {model: TextInputModel}>(
     }
 );
 
-const clearButton = hoistCmp.factory<TextInputModel>(({model, testId}) =>
+const clearButton = hoistCmp.factory<TextInputModel>(({model}) =>
     button({
         icon: Icon.cross(),
         tabIndex: -1,
         minimal: true,
-        testId,
+        testId: getTestId(model.componentProps, 'clear-btn'),
         onClick: () => {
             model.noteValueChange(null);
             model.doCommit();

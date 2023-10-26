@@ -11,6 +11,7 @@ import {hoistCmp, HoistProps, PlainObject, Some, uses} from '@xh/hoist/core';
 import {MaskProps} from '@xh/hoist/desktop/cmp/mask';
 import {panel, PanelProps} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
+import {getTestId} from '@xh/hoist/utils/js';
 import {cloneElement, isValidElement, ReactElement, ReactNode} from 'react';
 
 import {restForm} from './impl/RestForm';
@@ -46,21 +47,31 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
     model: uses(RestGridModel, {publishMode: 'limited'}),
     className: 'xh-rest-grid',
 
-    render(
-        {model, extraToolbarItems, mask = true, agOptions, formClassName, testId, ...props},
-        ref
-    ) {
-        const {formModel, gridModel} = model;
+    render(props, ref) {
+        const {
+                model,
+                extraToolbarItems,
+                mask = true,
+                agOptions,
+                formClassName,
+                testId,
+                ...restProps
+            } = props,
+            {formModel, gridModel} = model;
 
         return fragment(
             panel({
                 ref,
-                ...props,
+                ...restProps,
                 tbar: restGridToolbar({model, extraToolbarItems, testId}),
-                item: grid({model: gridModel, agOptions, testId: `${testId}-grid`}),
+                item: grid({model: gridModel, agOptions, testId: getTestId(testId, 'grid')}),
                 mask: getMaskFromProp(model, mask)
             }),
-            restForm({model: formModel, className: formClassName, testId: `${testId}-form`})
+            restForm({
+                model: formModel,
+                className: formClassName,
+                testId: getTestId(testId, 'form')
+            })
         );
     }
 });

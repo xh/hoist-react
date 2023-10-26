@@ -237,7 +237,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         }
 
         // 5) Return wrapped in resizable affordances if needed, or equivalent layout box
-        if (model.isModal) testId = undefined; // If testId rendered in modal do not render in nonmodal container
+        if (model.isModal) testId = undefined; // If testId rendered in modal do not render in non-modal container
         item =
             resizable || collapsible || showSplitter
                 ? resizeContainer({ref, item, className, testId})
