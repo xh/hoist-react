@@ -19,7 +19,7 @@ import {
 import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
 import {action, observable, makeObservable, computed} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
-import {SECONDS} from '@xh/hoist/utils/datetime';
+import {DAYS, LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 
@@ -64,6 +64,9 @@ export interface RelativeTimestampOptions {
 
     /** Time to which the input timestamp is compared. */
     relativeTo?: Date | number;
+
+    /** Do not use time portion of dates when calculating differences. */
+    localDateMode?: boolean;
 }
 
 /**
@@ -147,20 +150,27 @@ export function getRelativeTimestamp(
     timestamp: Date | number,
     options: RelativeTimestampOptions = {}
 ): string {
-    const relTo = options.relativeTo,
+    const localDm = options.localDateMode ?? false,
+        relTo = options.relativeTo,
         relFmt = relTo ? (fmtCompactDate(relTo, {asHtml: true}) as string) : null,
-        relFmtIsTime = relFmt?.includes(':');
+        relFmtIsTime = relFmt?.includes(':'),
+        relToWithTime = relTo && !localDm;
 
     options = {
         allowFuture: false,
         short: XH.isMobileApp,
-        futureSuffix: relTo ? `after ${relFmt}` : 'from now',
-        pastSuffix: relTo ? `before ${relFmt}` : 'ago',
-        equalString: relTo ? `${relFmtIsTime ? 'at' : 'on'}  ${relFmt}` : 'just now',
+        futureSuffix: relToWithTime ? `after ${relFmt}` : 'from now',
+        pastSuffix: relToWithTime ? `before ${relFmt}` : 'ago',
+        equalString: relToWithTime
+            ? `${relFmtIsTime ? 'at' : 'on'}  ${relFmt}`
+            : localDm
+            ? 'today'
+            : 'just now',
         epsilon: 10,
         emptyResult: '',
         prefix: '',
         relativeTo: Date.now(),
+        localDateMode: false,
         ...options
     };
 
@@ -173,8 +183,10 @@ export function getRelativeTimestamp(
 // Implementation
 //------------------------
 function doFormat(timestamp: Date | number, opts: RelativeTimestampOptions): string {
-    const {prefix, equalString, epsilon, allowFuture, short} = opts,
-        diff = toTimestamp(opts.relativeTo) - toTimestamp(timestamp),
+    const {prefix, equalString, epsilon, allowFuture, short, localDateMode} = opts,
+        diff = localDateMode
+            ? getLocalDateDiff(opts.relativeTo, timestamp)
+            : toTimestamp(opts.relativeTo) - toTimestamp(timestamp),
         elapsed = Math.abs(diff),
         isEqual = elapsed <= (epsilon ?? 0) * SECONDS,
         isFuture = !isEqual && diff < 0;
@@ -204,4 +216,8 @@ function doFormat(timestamp: Date | number, opts: RelativeTimestampOptions): str
 
 function toTimestamp(v: Date | number): number {
     return v instanceof Date ? v.getTime() : v;
+}
+
+function getLocalDateDiff(relativeTo: Date | number, timestamp: Date | number): number {
+    return LocalDate.from(relativeTo).diff(LocalDate.from(timestamp)) * DAYS;
 }
