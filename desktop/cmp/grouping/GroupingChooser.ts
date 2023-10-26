@@ -14,7 +14,7 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
-import {getTestId} from '@xh/hoist/utils/js';
+import {getTestId, TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, isEmpty, sortBy} from 'lodash';
@@ -68,8 +68,8 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             isOpen = editorIsOpen || favoritesIsOpen,
             label = isEmpty(value) && allowEmpty ? emptyText : model.getValueLabel(value),
             [layoutProps, buttonProps] = splitLayoutProps(rest),
-            favoritesMenuTestId = getTestId(testId, 'favoritesMenu'),
-            favoritesIconTestId = getTestId(testId, 'favoritesIcon'),
+            favoritesMenuTestId = getTestId(testId, 'favorites-menu'),
+            favoritesIconTestId = getTestId(testId, 'favorites-icon'),
             editorTestId = getTestId(testId, 'editor');
 
         return box({
@@ -326,11 +326,12 @@ function targetWithin(target, className): boolean {
 // Favorites
 //------------------
 const favoritesIcon = hoistCmp.factory<GroupingChooserModel>({
-    render({model}) {
+    render({model, testId}) {
         if (!model.persistFavorites) return null;
         return div({
             item: Icon.favorite(),
             className: 'xh-grouping-chooser__favorite-icon',
+            [TEST_ID]: testId,
             onClick: e => {
                 model.toggleFavoritesMenu();
                 e.stopPropagation();
