@@ -6,6 +6,7 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {div, frame, h1, hbox, p, span, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {PinPadModel} from '@xh/hoist/cmp/pinpad';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
@@ -13,19 +14,19 @@ import {Icon} from '@xh/hoist/icon/Icon';
 import {isNumber} from 'lodash';
 
 import './PinPad.scss';
-import {PinPadModel} from '@xh/hoist/cmp/pinpad';
 
 /**
  * Desktop Implementation of PinPad.
  *
  * @internal
  */
-export function pinPadImpl({model}, ref) {
+export function pinPadImpl({model, testId}, ref) {
     return frame({
         ref: composeRefs(model.ref, ref),
         item: vframe({
             className: 'xh-pinpad__frame',
-            items: [header(), display(), errorDisplay(), keypad()]
+            items: [header(), display(), errorDisplay(), keypad()],
+            testId
         })
     });
 }

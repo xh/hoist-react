@@ -20,7 +20,7 @@ export const serverTab = hoistCmp.factory(() =>
     tabContainer({
         modelConfig: {
             route: 'default.server',
-            switcher: {orientation: 'left'},
+            switcher: {orientation: 'left', testId: 'server-tab-switcher'},
             tabs: [
                 {id: 'logViewer', icon: Icon.fileText(), content: logViewer},
                 {id: 'logLevels', icon: Icon.settings(), content: logLevelPanel},

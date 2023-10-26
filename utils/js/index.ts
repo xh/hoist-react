@@ -10,4 +10,5 @@ export * from './Decorators';
 export * from './LogUtils';
 export * from './DomUtils';
 export * from './BrowserUtils';
+export * from './TestUtils';
 export * from './VersionUtils';

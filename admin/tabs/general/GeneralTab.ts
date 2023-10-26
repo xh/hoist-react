@@ -6,7 +6,7 @@
  */
 import {configPanel} from '@xh/hoist/admin/tabs/general/config/ConfigPanel';
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import {XH, hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {aboutPanel} from './about/AboutPanel';
 import {alertBannerPanel} from './alertBanner/AlertBannerPanel';
@@ -16,7 +16,7 @@ export const generalTab = hoistCmp.factory(() =>
     tabContainer({
         modelConfig: {
             route: 'default.general',
-            switcher: {orientation: 'left'},
+            switcher: {orientation: 'left', testId: 'general-tab-switcher'},
             tabs: [
                 {id: 'about', icon: Icon.info(), content: aboutPanel},
                 {id: 'config', icon: Icon.settings(), content: configPanel},
