@@ -224,26 +224,26 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             item = refreshContextView({model: refreshContextModel, item});
         }
 
+        // 5) Return wrapped in resizable + modal affordances if needed, or equivalent layout box
+
+        const useResizeContainer = resizable || collapsible || showSplitter;
+
+        // 5a) For modalSupport, className + testId need additional frame that will follow content
         if (modalSupportModel) {
             item = modalSupport({
                 model: modalSupportModel,
-                item: frame({
-                    // Frame ensures className is still present when rendered in Dialog
-                    item,
-                    className: model.isModal ? className : undefined,
-                    testId: model.isModal ? testId : undefined
-                })
+                item: frame({item, className, testId})
             });
+
+            return useResizeContainer
+                ? resizeContainer({ref, item})
+                : box({ref, item, ...layoutProps});
         }
 
-        // 5) Return wrapped in resizable affordances if needed, or equivalent layout box
-        if (model.isModal) testId = undefined; // If testId rendered in modal do not render in nonmodal container
-        item =
-            resizable || collapsible || showSplitter
-                ? resizeContainer({ref, item, className, testId})
-                : box({ref, item, className, testId, ...layoutProps});
-
-        return item;
+        // 5b) No modalSupport, className + testId applied directly to parent
+        return useResizeContainer
+            ? resizeContainer({ref, item, className, testId})
+            : box({ref, item, className, testId, ...layoutProps});
     }
 });
 
