@@ -4,11 +4,14 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import '@xh/hoist/mobile/register';
 import {BoxProps, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import {fragment} from '@xh/hoist/cmp/layout';
 import {GridOptions} from '@xh/hoist/kit/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {MultiZoneGridModel} from './MultiZoneGridModel';
+import {multiZoneMapper} from './impl/MultiZoneMapper';
 
 export interface MultiZoneGridProps extends HoistProps<MultiZoneGridModel>, BoxProps {
     /**
@@ -37,12 +40,15 @@ export const [MultiZoneGrid, multiZoneGrid] = hoistCmp.withFactory<MultiZoneGrid
 
     render({model, className, ...props}, ref) {
         const [layoutProps] = splitLayoutProps(props);
-        return grid({
-            ...layoutProps,
-            className,
-            ref,
-            model: model.gridModel,
-            agOptions: props.agOptions
-        });
+        return fragment(
+            grid({
+                ...layoutProps,
+                className,
+                ref,
+                model: model.gridModel,
+                agOptions: props.agOptions
+            }),
+            multiZoneMapper()
+        );
     }
 });

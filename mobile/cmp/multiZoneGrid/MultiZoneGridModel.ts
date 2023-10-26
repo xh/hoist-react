@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import '@xh/hoist/mobile/register';
 import {HoistModel, LoadSpec, PlainObject, Some, managed, XH} from '@xh/hoist/core';
 import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {StoreRecordOrId, StoreTransaction, genDisplayName} from '@xh/hoist/data';
@@ -18,6 +19,7 @@ import {
 } from '@xh/hoist/cmp/grid';
 import {castArray, forOwn, isEmpty, isFinite, isString} from 'lodash';
 import {ReactNode} from 'react';
+import {MultiZoneMapperModel} from './impl/MultiZoneMapperModel';
 import {Zone, ZoneLimit, ZoneMapping} from './Types';
 
 export interface MultiZoneGridConfig extends GridConfig {
@@ -47,6 +49,9 @@ export interface MultiZoneGridConfig extends GridConfig {
 export class MultiZoneGridModel extends HoistModel {
     @managed
     gridModel: GridModel;
+
+    @managed
+    mapperModel: MultiZoneMapperModel;
 
     @observable.ref
     mappings: Record<Zone, ZoneMapping[]>;
@@ -86,10 +91,18 @@ export class MultiZoneGridModel extends HoistModel {
             columns: this.getColumns()
         });
 
+        this.mapperModel = new MultiZoneMapperModel({
+            multiZoneGridModel: this
+        });
+
         this.addReaction({
             track: () => [this.mappings, this.leftColumnSpec, this.rightColumnSpec],
             run: () => this.gridModel.setColumns(this.getColumns())
         });
+    }
+
+    showMapper() {
+        this.mapperModel.open();
     }
 
     setMappings(mappings: Record<Zone, Some<string | ZoneMapping>>) {
