@@ -16,7 +16,7 @@ import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, getTestId, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps, getReactElementName, useOnUnmount} from '@xh/hoist/utils/react';
+import {getLayoutProps, getReactElementName, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
 import {Children, cloneElement, ReactElement, ReactNode, useContext, useState} from 'react';
@@ -164,7 +164,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
         const testId = getFormFieldTestId(props, formContext, model.name);
-        instanceManager.registerModelWithTestId(testId, model);
+        useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
         useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
 
         // generate actual element child to render

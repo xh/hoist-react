@@ -592,9 +592,9 @@ class SelectInputModel extends HoistInputModel {
     }
 
     _menuCmp = null;
-    getMenuCmp(propsTestId = null) {
+    getMenuCmp() {
         if (!this._menuCmp) {
-            const testId = getTestId(propsTestId, 'menu');
+            const testId = getTestId(this.componentProps, 'menu');
             this._menuCmp = testId
                 ? props =>
                       createElement(components.Menu, {
@@ -613,13 +613,13 @@ class SelectInputModel extends HoistInputModel {
     }
 
     // As per example @ https://react-select.com/components#replaceable-components
-    getClearIndicatorCmp(propsTestId = null) {
+    getClearIndicatorCmp() {
         return props => {
             const {ref, ...restInnerProps} = props.innerProps;
             return div({
                 ...restInnerProps,
                 ref,
-                [TEST_ID]: getTestId(propsTestId, 'clear-btn'),
+                [TEST_ID]: getTestId(this.componentProps, 'clear-btn'),
                 item: Icon.x({className: 'xh-select__indicator'})
             });
         };
@@ -717,7 +717,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             components: {
                 DropdownIndicator: model.getDropdownIndicatorCmp(),
                 ClearIndicator: model.getClearIndicatorCmp(),
-                Menu: model.getMenuCmp(props.testId),
+                Menu: model.getMenuCmp(),
                 IndicatorSeparator: () => null,
                 ValueContainer: model.getValueContainerCmp(),
                 MultiValueLabel: model.getMultiValueLabelCmp(),

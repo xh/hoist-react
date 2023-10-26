@@ -26,7 +26,7 @@ import {
     HoistModel
 } from './model';
 import {apiDeprecated, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps, useOnUnmount} from '@xh/hoist/utils/react';
+import {getLayoutProps, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
 import {observer} from '../mobx';
@@ -320,7 +320,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
                 delete props.modelConfig;
                 ctx.props = props;
                 ctx.modelLookup = newLookup ?? modelLookup;
-                instanceManager.registerModelWithTestId(props.testId, model);
+                useOnMount(() => instanceManager.registerModelWithTestId(props.testId, model));
                 useOnUnmount(() => instanceManager.unregisterModelWithTestId(props.testId));
                 return render(props, ref);
             } finally {

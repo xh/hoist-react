@@ -105,9 +105,9 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                     hoverOpenDelay: 1000,
                     position: flipOrientation(orientation),
                     item: hframe({
-                        testId,
                         className: 'xh-tab-switcher__tab',
                         tabIndex: -1,
+                        testId,
                         items: [
                             icon,
                             span(title),

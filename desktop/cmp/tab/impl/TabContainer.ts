@@ -36,20 +36,20 @@ export function tabContainerImpl({model, className, testId, ...props}: TabContai
 }
 
 function getChildren(model: TabContainerModel, testId: string) {
-    const {tabs, activeTabId, switcher} = model,
-        switcherBefore = ['left', 'top'].includes(switcher?.orientation),
-        switcherAfter = ['right', 'bottom'].includes(switcher?.orientation),
-        switcherTestId = getTestId(testId, 'switcher');
-
+    const {tabs} = model;
     if (isEmpty(tabs)) {
-        return div({
-            className: 'xh-tab-wrapper',
-            item: placeholder(model.emptyText)
-        });
+        return div({className: 'xh-tab-wrapper', item: placeholder(model.emptyText)});
     }
 
+    const {activeTabId, switcher} = model,
+        switcherBefore = ['left', 'top'].includes(switcher?.orientation),
+        switcherAfter = ['right', 'bottom'].includes(switcher?.orientation),
+        switcherCmp = switcher
+            ? tabSwitcher({key: 'switcher', testId: getTestId(testId, 'switcher'), ...switcher})
+            : null;
+
     return [
-        switcherBefore ? tabSwitcher({key: 'switcher', testId: switcherTestId, ...switcher}) : null,
+        switcherBefore ? switcherCmp : null,
         ...tabs.map(tabModel => {
             const tabId = tabModel.id,
                 style = activeTabId !== tabId ? hideStyle : undefined;
@@ -58,13 +58,10 @@ function getChildren(model: TabContainerModel, testId: string) {
                 className: 'xh-tab-wrapper',
                 style,
                 key: tabId,
-                item: tab({
-                    model: tabModel,
-                    testId: getTestId(testId, tabId)
-                })
+                item: tab({model: tabModel, testId: getTestId(testId, tabId)})
             });
         }),
-        switcherAfter ? tabSwitcher({key: 'switcher', testId: switcherTestId, ...switcher}) : null
+        switcherAfter ? switcherCmp : null
     ];
 }
 

@@ -97,10 +97,10 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
         }
 
         return box({
-            testId,
             ...layoutProps,
             className: classNames(className, `xh-treemap--${impl.theme}`),
             ref,
+            testId,
             items
         });
     }
