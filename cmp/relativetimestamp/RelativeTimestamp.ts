@@ -4,6 +4,8 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {useImperativeHandle} from 'react';
+import moment from 'moment';
 import {box, span} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
@@ -20,7 +22,6 @@ import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import moment from 'moment';
 
 interface RelativeTimestampProps extends HoistProps, BoxProps {
     /**
@@ -77,6 +78,7 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<Relat
 
     render({className, ...props}, ref) {
         const impl = useLocalModel(RelativeTimestampLocalModel);
+        useImperativeHandle(ref, () => impl);
 
         return box({
             className,
@@ -94,7 +96,9 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<Relat
 class RelativeTimestampLocalModel extends HoistModel {
     override xhImpl = true;
 
-    @observable display = '';
+    @observable display: string = '';
+    @observable lastRun: Date;
+
     model: HoistModel;
 
     @managed
@@ -103,14 +107,14 @@ class RelativeTimestampLocalModel extends HoistModel {
         interval: 5 * SECONDS
     });
 
-    get timestamp() {
+    get timestamp(): Date | number {
         const {model} = this,
             {timestamp, bind} = this.componentProps;
         return withDefault(timestamp, model && bind ? model[bind] : null);
     }
 
     @computed.struct
-    get options() {
+    get options(): RelativeTimestampOptions {
         return this.componentProps.options;
     }
 
@@ -131,6 +135,7 @@ class RelativeTimestampLocalModel extends HoistModel {
     @action
     private refreshDisplay() {
         this.display = getRelativeTimestamp(this.timestamp, this.options);
+        this.lastRun = this.timer.lastRun;
     }
 }
 
@@ -141,7 +146,7 @@ class RelativeTimestampLocalModel extends HoistModel {
 export function getRelativeTimestamp(
     timestamp: Date | number,
     options: RelativeTimestampOptions = {}
-) {
+): string {
     const relTo = options.relativeTo,
         relFmt = relTo ? (fmtCompactDate(relTo, {asHtml: true}) as string) : null,
         relFmtIsTime = relFmt?.includes(':');
@@ -167,7 +172,7 @@ export function getRelativeTimestamp(
 //------------------------
 // Implementation
 //------------------------
-function doFormat(timestamp: Date | number, opts: RelativeTimestampOptions) {
+function doFormat(timestamp: Date | number, opts: RelativeTimestampOptions): string {
     const {prefix, equalString, epsilon, allowFuture, short} = opts,
         diff = toTimestamp(opts.relativeTo) - toTimestamp(timestamp),
         elapsed = Math.abs(diff),
