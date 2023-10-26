@@ -32,7 +32,7 @@ export class InstancesModel extends HoistModel {
     instancesPanelModel: PanelModel;
 
     get statsModel(): StatsModel {
-        return XH.getActiveModels(StatsModel)[0] as StatsModel;
+        return XH.getModels(StatsModel)[0] as StatsModel;
     }
 
     get selectedSyncRun() {
@@ -170,7 +170,7 @@ export class InstancesModel extends HoistModel {
     getInstance(xhId: string): HoistBase {
         if (!xhId) return null;
         return (
-            head(XH.getActiveModels(it => it.xhId === xhId)) ??
+            head(XH.getModels(it => it.xhId === xhId)) ??
             XH.getServices().find(it => it.xhId === xhId) ??
             XH.getStores().find(it => it.xhId === xhId)
         );
