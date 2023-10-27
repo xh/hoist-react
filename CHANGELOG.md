@@ -4,8 +4,26 @@
 
 ### 🎁 New Features
 
-* Added `Column.sortToBottom` which supports always sorting specified values to the bottom,
+* Built-in Hoist support for automated testing:
+   * Core Hoist components now support the `TestSupportProps` interface and accordingly take an
+     optional `testId` prop.  If supplied by application, this prop will be rendered in
+     the DOM using the `data-testid` property and available for testing tools that are running
+     the application.
+   * When given a `testId`, certain composite components (e.g.`TabContainer`, `Form`,`GroupingChooser`
+     etc.) will create and render additional "sub-testIds" on its critical subcomponents. For example,
+     a `TabContainer` will create testIds for its switcher buttons, and a `Form` will create ids on
+     its contained `FormField`s and `HoistInput`s.
+   * This release represents the critical first step in our ongoing work to facilitate automated
+    end-to-end testing of Hoist applications.  Additional hoist-specific utilities for writing
+    tests in libraries such as cypress and playwright are coming soon.
+
+ * Added `Column.sortToBottom` which supports always sorting specified values to the bottom,
   regardless of sort direction.
+
+### 💥 Breaking Changes
+
+* The `XH.getActiveModels` method has been renamed to `XH.getModels` for clarity and consistency.
+  This is not expected to impact applications.
 
 ## 59.2.0 - 2023-10-16
 

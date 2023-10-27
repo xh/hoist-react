@@ -102,7 +102,8 @@
     "stylelint": "15.x",
     "stylelint-config-standard-scss": "11.x",
     "type-fest": "4.x",
-    "typescript": "~5.1.6"
+    "typescript": "~5.1.6",
+    "csstype": "3.x"
   },
   "resolutions": {
     "core-js": "^3.0"

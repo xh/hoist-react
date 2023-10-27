@@ -10,7 +10,7 @@ import {Button, buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/butto
 import '@xh/hoist/desktop/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
-import {isEmpty, filter, without, castArray} from 'lodash';
+import {castArray, filter, isEmpty, without} from 'lodash';
 import {Children, cloneElement, isValidElement} from 'react';
 
 export interface ButtonGroupInputProps
