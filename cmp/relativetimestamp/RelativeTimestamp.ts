@@ -207,9 +207,10 @@ function doFormat(timestamp: Date | number, opts: RelativeTimestampOptions): str
         console.warn(`Unexpected future date provided for timestamp: ${elapsed}ms in the future.`);
         ret = '[????]';
     } else {
+        const duration = getDuration(elapsed, localDateMode);
         // By default, moment will show 'a few seconds' for durations of 0-45 seconds. At the higher
         // end of that range that output is a bit too inaccurate, so we replace as per below.
-        ret = elapsed < 60 * SECONDS ? '<1 minute' : moment.duration(elapsed).humanize();
+        ret = elapsed < 60 * SECONDS ? '<1 minute' : duration.humanize();
 
         // Moment outputs e.g. "a minute" instead of "1 minute". This creates some awkwardness
         // when the leading number comes and goes - "<1 minute" -> "a minute" -> "2 minutes".
@@ -229,4 +230,20 @@ function toTimestamp(v: Date | number): number {
 
 function getLocalDateDiff(relativeTo: Date | number, timestamp: Date | number): number {
     return LocalDate.from(relativeTo).diff(LocalDate.from(timestamp)) * DAYS;
+}
+
+/**
+ * Ensure that moment's "days" duration is always a localDate calculation.
+ * This prevents presenting "2 days ago" for a timestamp representing "yesterday".
+ */
+function getDuration(elapsed: number, localDateMode: boolean): moment.Duration {
+    const duration = moment.duration(elapsed);
+    if (localDateMode || !duration.days()) return duration;
+
+    const atLeastAMonth = ['months', 'years'].some(it => duration[it]());
+    if (atLeastAMonth) return duration;
+
+    // recalculate duration with time value removed, equivalent to localDate
+    elapsed = elapsed - (elapsed % DAYS);
+    return moment.duration(elapsed);
 }
