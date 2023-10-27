@@ -119,7 +119,7 @@ class RelativeTimestampLocalModel extends HoistModel {
         interval: 5 * SECONDS
     });
 
-    get relativeTo() {
+    get relativeTo(): Date | number {
         return this.componentProps.options.relativeTo ?? this.lastRun;
     }
 
