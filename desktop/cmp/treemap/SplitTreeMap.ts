@@ -28,12 +28,13 @@ export const [SplitTreeMap, splitTreeMap] = hoistCmp.withFactory<SplitTreeMapPro
     model: uses(SplitTreeMapModel),
     className: 'xh-split-treemap',
 
-    render({model, className, ...props}, ref) {
+    render({model, className, testId, ...props}, ref) {
         const {primaryMapModel, secondaryMapModel, orientation} = model,
             errors = uniq(compact([primaryMapModel.error, secondaryMapModel.error])),
             container = orientation === 'horizontal' ? hframe : vframe;
 
         return container({
+            testId,
             ref,
             className,
             items: errors.length ? errorPanel({errors}) : childMaps(),

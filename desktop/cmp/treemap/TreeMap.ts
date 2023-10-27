@@ -9,9 +9,10 @@ import {box, div, placeholder} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
     HoistModel,
-    LayoutProps,
     HoistProps,
+    LayoutProps,
     lookup,
+    TestSupportProps,
     useLocalModel,
     uses,
     XH
@@ -35,7 +36,7 @@ import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import './TreeMap.scss';
 import {TreeMapModel} from './TreeMapModel';
 
-export interface TreeMapProps extends HoistProps<TreeMapModel>, LayoutProps {}
+export interface TreeMapProps extends HoistProps<TreeMapModel>, LayoutProps, TestSupportProps {}
 
 /**
  * Component for rendering a TreeMap.
@@ -50,7 +51,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
     model: uses(TreeMapModel),
     className: 'xh-treemap',
 
-    render({model, className, ...props}, ref) {
+    render({model, className, testId, ...props}, ref) {
         if (!Highcharts) {
             console.error(
                 'Highcharts has not been imported in to this application. Please import and ' +
@@ -99,6 +100,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
             ...layoutProps,
             className: classNames(className, `xh-treemap--${impl.theme}`),
             ref,
+            testId,
             items
         });
     }

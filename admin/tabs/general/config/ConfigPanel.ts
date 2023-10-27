@@ -19,6 +19,7 @@ export const configPanel = hoistCmp.factory({
     render({model}) {
         return fragment(
             restGrid({
+                testId: 'config',
                 extraToolbarItems: () => {
                     return button({
                         icon: Icon.diff(),

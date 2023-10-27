@@ -14,7 +14,8 @@ export const addAction: RecordActionSpec = {
     icon: Icon.add(),
     intent: 'success',
     actionFn: ({gridModel}) => gridModel.appData.restGridModel.addRecord(),
-    displayFn: ({gridModel}) => ({hidden: gridModel.appData.restGridModel.readonly})
+    displayFn: ({gridModel}) => ({hidden: gridModel.appData.restGridModel.readonly}),
+    testId: 'add-action-button'
 };
 
 export const editAction: RecordActionSpec = {
@@ -23,14 +24,16 @@ export const editAction: RecordActionSpec = {
     intent: 'primary',
     recordsRequired: 1,
     actionFn: ({record, gridModel}) => gridModel.appData.restGridModel.editRecord(record),
-    displayFn: ({gridModel}) => ({hidden: gridModel.appData.restGridModel.readonly})
+    displayFn: ({gridModel}) => ({hidden: gridModel.appData.restGridModel.readonly}),
+    testId: 'edit-action-button'
 };
 
 export const viewAction: RecordActionSpec = {
     text: 'View',
     icon: Icon.search(),
     recordsRequired: 1,
-    actionFn: ({record, gridModel}) => gridModel.appData.restGridModel.viewRecord(record)
+    actionFn: ({record, gridModel}) => gridModel.appData.restGridModel.viewRecord(record),
+    testId: 'view-action-button'
 };
 
 export const cloneAction: RecordActionSpec = {
@@ -38,7 +41,8 @@ export const cloneAction: RecordActionSpec = {
     icon: Icon.copy(),
     recordsRequired: 1,
     actionFn: ({record, gridModel}) => gridModel.appData.restGridModel.cloneRecord(record),
-    displayFn: ({gridModel}) => ({hidden: gridModel.appData.restGridModel.readonly})
+    displayFn: ({gridModel}) => ({hidden: gridModel.appData.restGridModel.readonly}),
+    testId: 'clone-action-button'
 };
 
 export const deleteAction: RecordActionSpec = {
@@ -49,5 +53,6 @@ export const deleteAction: RecordActionSpec = {
     displayFn: ({gridModel, record}) => ({
         hidden: (record && record.id === null) || gridModel.appData.restGridModel.readonly // Hide this action if we are acting on a "new" record
     }),
-    actionFn: ({gridModel}) => gridModel.appData.restGridModel.confirmDeleteRecords()
+    actionFn: ({gridModel}) => gridModel.appData.restGridModel.confirmDeleteRecords(),
+    testId: 'delete-action-button'
 };
