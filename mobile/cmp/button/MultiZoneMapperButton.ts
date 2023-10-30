@@ -16,7 +16,9 @@ export interface MultiZoneMapperButtonProps extends ButtonProps {
 }
 
 /**
- * Todo
+ * A convenience button to trigger the display of a Mapper UI for MultiZoneGrid configuration.
+ *
+ * Requires a `MultiZoneGridModel.multiZoneMapperModel` config option, set to true for default implementation.
  */
 export const [MultiZoneMapperButton, multiZoneMapperButton] =
     hoistCmp.withFactory<MultiZoneMapperButtonProps>({

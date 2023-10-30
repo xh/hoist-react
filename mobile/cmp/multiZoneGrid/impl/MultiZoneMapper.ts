@@ -6,17 +6,25 @@
  */
 import '@xh/hoist/mobile/register';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {div, filler, hbox, vbox} from '@xh/hoist/cmp/layout';
+import {div, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {dialogPanel} from '@xh/hoist/mobile/cmp/panel';
 import {grid} from '@xh/hoist/cmp/grid';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import {intersperse} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import './MultiZoneMapper.scss';
 import {MultiZoneMapperModel} from './MultiZoneMapperModel';
 
 /**
- * Todo: Document
+ * Hoist UI for user selection and discovery of available MultiZoneGrid columns, enabled via the
+ * `MultiZoneGridModel.multiZoneMapperModel` config option.
+ *
+ * This component displays an example of each of the four zones, with the available columns for
+ * the currently selected zone displayed in a list below. Users can toggle column visibility
+ * and labels for each zone to construct a custom layout for the grid rows.
+ *
+ * It is not necessary to manually create instances of this component within an application.
  */
 export const [MultiZoneMapper, multiZoneMapper] = hoistCmp.withFactory<MultiZoneMapperModel>({
     displayName: 'MultiZoneMapper',
@@ -62,7 +70,6 @@ const zonePicker = hoistCmp.factory<MultiZoneMapperModel>({
         const {leftFlex, rightFlex} = model,
             className = 'xh-multi-zone-mapper__zone-picker';
 
-        // Todo: Display sample / placeholder values in each zone.
         return vbox({
             className,
             items: [
@@ -87,8 +94,9 @@ const zonePicker = hoistCmp.factory<MultiZoneMapperModel>({
 
 const zoneCell = hoistCmp.factory<MultiZoneMapperModel>({
     render({model, zone, flex}) {
-        const {selectedZone} = model,
-            className = 'xh-multi-zone-mapper__zone-picker__zone-cell';
+        const {selectedZone, delimiter} = model,
+            className = 'xh-multi-zone-mapper__zone-picker__zone-cell',
+            samples = model.getSamplesForZone(zone);
 
         return div({
             className: classNames(
@@ -98,7 +106,7 @@ const zoneCell = hoistCmp.factory<MultiZoneMapperModel>({
             ),
             style: {flex},
             onClick: () => (model.selectedZone = zone),
-            items: []
+            items: intersperse(samples, span(delimiter))
         });
     }
 });

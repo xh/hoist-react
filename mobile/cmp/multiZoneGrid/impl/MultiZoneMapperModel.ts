@@ -6,11 +6,14 @@
  */
 import '@xh/hoist/mobile/register';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {span} from '@xh/hoist/cmp/layout';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {StoreRecord} from '@xh/hoist/data';
+import {Column, ColumnRenderer, GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/mobile/cmp/input';
 import {wait} from '@xh/hoist/promise';
 import {cloneDeep, isBoolean, isEmpty, isEqual, isString} from 'lodash';
+import {ReactNode} from 'react';
 import {MultiZoneGridModel} from '../MultiZoneGridModel';
 import {Zone, ZoneLimit, ZoneMapping} from '../Types';
 
@@ -21,7 +24,7 @@ export interface MultiZoneMapperConfig {
     /** True (default) to show Reset button to restore default configuration. */
     showRestoreDefaults?: boolean;
 
-    /** True (default) to group available columns by their chooserGroup */
+    /** True (default) to group columns by their chooserGroup */
     groupColumns?: boolean;
 }
 
@@ -48,7 +51,8 @@ export class MultiZoneMapperModel extends HoistModel {
     @observable.ref
     mappings: Record<Zone, ZoneMapping[]>;
 
-    availableColumns: AvailableColumn[] = [];
+    fields: MapperField[] = [];
+    sampleRecord: StoreRecord;
 
     @computed
     get isDirty(): boolean {
@@ -69,6 +73,10 @@ export class MultiZoneMapperModel extends HoistModel {
         return this.multiZoneGridModel.limits;
     }
 
+    get delimiter(): string {
+        return this.multiZoneGridModel.delimiter;
+    }
+
     constructor(config: MultiZoneMapperConfig) {
         super();
         makeObservable(this);
@@ -79,7 +87,7 @@ export class MultiZoneMapperModel extends HoistModel {
         this.showRestoreDefaults = showRestoreDefaults;
         this.groupColumns = groupColumns;
 
-        this.availableColumns = this.getAvailableColumns();
+        this.fields = this.getFields();
         this.gridModel = this.createGridModel();
 
         this.addReaction(
@@ -114,28 +122,37 @@ export class MultiZoneMapperModel extends HoistModel {
         this.multiZoneGridModel.setMappings(this.mappings);
     }
 
+    getSamplesForZone(zone: Zone): ReactNode[] {
+        return this.mappings[zone].map(mapping => {
+            return this.getSampleForMapping(mapping);
+        });
+    }
+
     //------------------------
     // Zone Mappings
     //------------------------
-    private getAvailableColumns(): AvailableColumn[] {
+    private getFields(): MapperField[] {
         const {multiZoneGridModel} = this;
-        return multiZoneGridModel.availableColumns.map(col => {
-            const fieldName = isString(col.field) ? col.field : col.field.name,
-                displayName = multiZoneGridModel.getDisplayName(fieldName);
+        return multiZoneGridModel.availableColumns.map(it => {
+            const fieldName = isString(it.field) ? it.field : it.field.name,
+                column = multiZoneGridModel.gridModel.getColumn(fieldName),
+                displayName = multiZoneGridModel.getDisplayName(fieldName),
+                label = isString(it.headerName) ? it.headerName : displayName;
 
             return {
                 field: fieldName,
                 displayName: displayName,
-                chooserGroup: col.chooserGroup,
-                show: false,
-                label: false
+                label: label,
+                column: column,
+                renderer: column.renderer,
+                chooserGroup: column.chooserGroup
             };
         });
     }
 
     private createGridModel(): GridModel {
-        const {groupColumns, availableColumns} = this,
-            hasGrouping = groupColumns && availableColumns.some(it => it.chooserGroup);
+        const {groupColumns, fields} = this,
+            hasGrouping = groupColumns && fields.some(it => it.chooserGroup);
 
         return new GridModel({
             store: {idSpec: 'field'},
@@ -169,26 +186,31 @@ export class MultiZoneMapperModel extends HoistModel {
     private syncMapperData() {
         // Copy latest mappings from grid
         this.mappings = cloneDeep(this.multiZoneGridModel.mappings);
+
+        // Take sample record from grid
+        this.sampleRecord = this.getSampleRecord();
+
+        // Sync data for selected zone
         this.syncMapperDataForZone();
     }
 
     private syncMapperDataForZone() {
-        const {availableColumns, mappings, limits, selectedZone} = this,
+        const {fields, mappings, limits, selectedZone} = this,
             mapping = mappings[selectedZone],
             limit = limits?.[selectedZone],
             data = [];
 
         // 1) Determine which fields are shown and labeled for the zone
-        const columns = !isEmpty(limit?.only)
-            ? availableColumns.filter(it => limit.only.includes(it.field))
-            : availableColumns;
+        const allowedFields = !isEmpty(limit?.only)
+            ? fields.filter(it => limit.only.includes(it.field))
+            : fields;
 
-        columns.forEach(col => {
-            const colMapping = mapping.find(it => col.field === it.field),
-                show = !!colMapping,
-                label = colMapping?.showLabel ?? false;
+        allowedFields.forEach(f => {
+            const fieldMapping = mapping.find(it => f.field === it.field),
+                show = !!fieldMapping,
+                label = fieldMapping?.showLabel ?? false;
 
-            data.push({...col, show, label});
+            data.push({...f, show, label});
         });
 
         // 2) Load into display grid
@@ -285,12 +307,53 @@ export class MultiZoneMapperModel extends HoistModel {
         const checkboxes = document.querySelectorAll<HTMLInputElement>('ons-checkbox');
         checkboxes.forEach(it => it.blur());
     }
+
+    //------------------------
+    // Sample Display
+    //------------------------
+    getSampleForMapping(mapping: ZoneMapping): ReactNode {
+        const {fields, sampleRecord} = this,
+            field = fields.find(it => it.field === mapping.field);
+
+        if (!field) return null;
+
+        let value;
+        if (sampleRecord) {
+            value = sampleRecord.data[mapping.field];
+            if (field.renderer) {
+                value = field.renderer(value, {
+                    record: sampleRecord,
+                    column: field.column,
+                    gridModel: this.multiZoneGridModel.gridModel
+                });
+            }
+        }
+
+        // Display a placeholder if the sample record is missing a value for the field
+        if (isEmpty(value)) {
+            return span(`[${field.displayName}]`);
+        }
+
+        // Render label if requested
+        const label = mapping.showLabel ? `${field.label}: ` : null;
+        return span(label, value);
+    }
+
+    private getSampleRecord(): StoreRecord {
+        // Iterate down to a (likely more fully populated) leaf record.
+        let ret = this.multiZoneGridModel.store.records[0];
+        while (ret && !isEmpty(ret.children)) {
+            ret = ret.children[0];
+        }
+        return ret;
+    }
 }
 
-interface AvailableColumn {
+interface MapperField {
     field: string;
     displayName: string;
+    label: string;
+    renderer: ColumnRenderer;
+    column: Column;
     chooserGroup: string;
-    show: boolean;
-    label: boolean;
 }
