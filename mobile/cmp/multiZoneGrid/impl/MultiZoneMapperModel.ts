@@ -158,7 +158,11 @@ export class MultiZoneMapperModel extends HoistModel {
             store: {idSpec: 'field'},
             groupBy: hasGrouping ? 'chooserGroup' : null,
             columns: [
-                {field: 'displayName', flex: 1},
+                {
+                    field: 'displayName',
+                    headerName: 'Field',
+                    flex: 1
+                },
                 {
                     field: 'show',
                     align: 'center',
