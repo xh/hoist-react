@@ -6,10 +6,9 @@
  */
 import '@xh/hoist/mobile/register';
 import {HoistModel, LoadSpec, PlainObject, Some, managed, XH} from '@xh/hoist/core';
-import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {StoreRecordOrId, StoreTransaction, genDisplayName} from '@xh/hoist/data';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {StoreRecordOrId, StoreTransaction} from '@xh/hoist/data';
 import {
-    ColumnHeaderNameFn,
     ColumnSpec,
     Grid,
     GridConfig,
@@ -17,9 +16,8 @@ import {
     GridSorterLike,
     multiFieldRenderer
 } from '@xh/hoist/cmp/grid';
-import {castArray, forOwn, isEmpty, isFinite, isString} from 'lodash';
-import {ReactNode} from 'react';
-import {MultiZoneMapperModel} from './impl/MultiZoneMapperModel';
+import {castArray, forOwn, isEmpty, isFinite, isPlainObject, isString} from 'lodash';
+import {MultiZoneMapperConfig, MultiZoneMapperModel} from './impl/MultiZoneMapperModel';
 import {Zone, ZoneLimit, ZoneMapping} from './Types';
 
 export interface MultiZoneGridConfig extends GridConfig {
@@ -28,17 +26,27 @@ export interface MultiZoneGridConfig extends GridConfig {
      * the multi-zone columns is managed via `mappings` below.
      */
     columns: Array<ColumnSpec>;
+
     /** Mappings of columns to zones. */
     mappings: Record<Zone, Some<string | ZoneMapping>>;
+
     /** Optional configurations for zone constraints. */
     limits?: Partial<Record<Zone, ZoneLimit>>;
+
     /** Optional configs to apply to left column */
     leftColumnSpec?: Partial<ColumnSpec>;
+
     /** Optional configs to apply to right column */
     rightColumnSpec?: Partial<ColumnSpec>;
+
     /** String rendered between consecutive SubFields. */
     delimiter?: string;
+
+    /** Config with which to create a MultiZoneMapperModel, or boolean `true` to enable default. */
+    multiZoneMapperModel?: MultiZoneMapperConfig | boolean;
 }
+
+// Todo: Persistence!
 
 /**
  * MultiZoneGridModel is a wrapper around GridModel, which shows date in a grid with multi-line
@@ -70,8 +78,16 @@ export class MultiZoneGridModel extends HoistModel {
         super();
         makeObservable(this);
 
-        const {columns, limits, mappings, leftColumnSpec, rightColumnSpec, delimiter, ...rest} =
-            config;
+        const {
+            columns,
+            limits,
+            mappings,
+            leftColumnSpec,
+            rightColumnSpec,
+            delimiter,
+            multiZoneMapperModel,
+            ...rest
+        } = config;
 
         this.availableColumns = columns.map(it => ({...it, hidden: true}));
         this.limits = limits;
@@ -81,23 +97,13 @@ export class MultiZoneGridModel extends HoistModel {
         this.rightColumnSpec = rightColumnSpec;
         this.delimiter = delimiter ?? ' • ';
 
-        this.gridModel = new GridModel({
-            ...rest,
-            sizingMode: 'standard',
-            cellBorders: true,
-            rowBorders: true,
-            stripeRows: false,
-            autosizeOptions: {mode: 'disabled'},
-            columns: this.getColumns()
-        });
-
-        this.mapperModel = new MultiZoneMapperModel({
-            multiZoneGridModel: this
-        });
+        this.gridModel = this.createGridModel(rest);
+        this.mapperModel = this.parseMapperModel(multiZoneMapperModel);
 
         this.addReaction({
             track: () => [this.mappings, this.leftColumnSpec, this.rightColumnSpec],
-            run: () => this.gridModel.setColumns(this.getColumns())
+            run: () => this.gridModel.setColumns(this.getColumns()),
+            fireImmediately: true
         });
     }
 
@@ -105,14 +111,32 @@ export class MultiZoneGridModel extends HoistModel {
         this.mapperModel.open();
     }
 
+    @action
     setMappings(mappings: Record<Zone, Some<string | ZoneMapping>>) {
         this.mappings = this.parseMappings(mappings);
+    }
+
+    getDisplayName(field: string): string {
+        const ret = this.gridModel.findColumn(this.gridModel.columns, field);
+        return ret.displayName;
     }
 
     //-----------------------
     // Implementation
     //-----------------------
-    getColumns(): ColumnSpec[] {
+    private createGridModel(config: GridConfig): GridModel {
+        return new GridModel({
+            ...config,
+            sizingMode: 'standard',
+            cellBorders: true,
+            rowBorders: true,
+            stripeRows: false,
+            autosizeOptions: {mode: 'disabled'},
+            columns: this.availableColumns
+        });
+    }
+
+    private getColumns(): ColumnSpec[] {
         return [
             this.buildMultiZoneColumn(true),
             this.buildMultiZoneColumn(false),
@@ -121,7 +145,7 @@ export class MultiZoneGridModel extends HoistModel {
         ];
     }
 
-    buildMultiZoneColumn(isLeft: boolean): ColumnSpec {
+    private buildMultiZoneColumn(isLeft: boolean): ColumnSpec {
         const topMappings = this.mappings[isLeft ? 'tl' : 'tr'],
             bottomMappings = this.mappings[isLeft ? 'bl' : 'br'];
 
@@ -136,7 +160,7 @@ export class MultiZoneGridModel extends HoistModel {
 
         // Extract the sub-fields from the other mappings
         const subFields = [];
-        topMappings.splice(1).forEach(it => {
+        topMappings.slice(1).forEach(it => {
             subFields.push({colId: it.field, label: it.showLabel, position: 'top'});
         });
         bottomMappings.forEach(it => {
@@ -145,7 +169,7 @@ export class MultiZoneGridModel extends HoistModel {
 
         return {
             colId: isLeft ? 'left_column' : 'right_column',
-            headerName: this.getHeaderName(primaryCol),
+            headerName: this.getDisplayName(topMappings[0].field),
             field: primaryCol.field,
             renderer: multiFieldRenderer,
             rowHeight: Grid['MULTIFIELD_ROW_HEIGHT'],
@@ -165,14 +189,16 @@ export class MultiZoneGridModel extends HoistModel {
         };
     }
 
-    findColumnSpec(mapping: ZoneMapping): ColumnSpec {
+    private findColumnSpec(mapping: ZoneMapping): ColumnSpec {
         return this.availableColumns.find(it => {
             const {field} = it;
             return isString(field) ? field === mapping.field : field.name === mapping.field;
         });
     }
 
-    parseMappings(mappings: Record<Zone, Some<string | ZoneMapping>>): Record<Zone, ZoneMapping[]> {
+    private parseMappings(
+        mappings: Record<Zone, Some<string | ZoneMapping>>
+    ): Record<Zone, ZoneMapping[]> {
         const ret = {} as Record<Zone, ZoneMapping[]>;
         forOwn(mappings, (rawMapping, zone) => {
             // 1) Standardize mapping into an array of ZoneMappings
@@ -210,19 +236,14 @@ export class MultiZoneGridModel extends HoistModel {
         return ret;
     }
 
-    getHeaderName(col: ColumnSpec): ColumnHeaderNameFn | ReactNode {
-        // Prefer column's headerName / displayName
-        const ret = col.headerName ?? col.displayName;
-        if (ret) return ret;
-
-        // Otherwise, use the name of the underlying field.
-        const {field} = col;
-        if (!isString(field) && field.displayName) {
-            return field.displayName;
-        } else {
-            const fieldName = isString(field) ? field : field.name;
-            return genDisplayName(fieldName);
+    private parseMapperModel(mapperModel: MultiZoneMapperConfig | boolean): MultiZoneMapperModel {
+        if (isPlainObject(mapperModel)) {
+            return new MultiZoneMapperModel({
+                ...(mapperModel as MultiZoneMapperConfig),
+                multiZoneGridModel: this
+            });
         }
+        return mapperModel ? new MultiZoneMapperModel({multiZoneGridModel: this}) : null;
     }
 
     //-----------------------
@@ -305,5 +326,10 @@ export class MultiZoneGridModel extends HoistModel {
 
     setSortBy(sorters: Some<GridSorterLike>) {
         return this.gridModel.setSortBy(sorters);
+    }
+
+    async restoreDefaultsAsync(): Promise<boolean> {
+        // Todo: Does this work? Do we need to explicitly reset the mappings?
+        return this.gridModel.restoreDefaultsAsync();
     }
 }
