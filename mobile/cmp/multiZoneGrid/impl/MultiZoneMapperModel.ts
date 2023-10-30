@@ -96,7 +96,7 @@ export class MultiZoneMapperModel extends HoistModel {
 
     async restoreDefaultsAsync() {
         const restored = await this.multiZoneGridModel.restoreDefaultsAsync();
-        if (restored) this.syncMapperData();
+        if (restored) this.close();
     }
 
     @action

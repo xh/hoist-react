@@ -5,10 +5,12 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import '@xh/hoist/mobile/register';
-import {HoistModel, LoadSpec, PlainObject, Some, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, PlainObject, Some, managed, XH, Awaitable} from '@xh/hoist/core';
+import {br, fragment} from '@xh/hoist/cmp/layout';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {StoreRecordOrId, StoreTransaction} from '@xh/hoist/data';
 import {
+    Column,
     ColumnSpec,
     Grid,
     GridConfig,
@@ -16,9 +18,12 @@ import {
     GridSorterLike,
     multiFieldRenderer
 } from '@xh/hoist/cmp/grid';
+import {Icon} from '@xh/hoist/icon';
 import {castArray, forOwn, isEmpty, isFinite, isPlainObject, isString} from 'lodash';
+import {ReactNode} from 'react';
 import {MultiZoneMapperConfig, MultiZoneMapperModel} from './impl/MultiZoneMapperModel';
-import {Zone, ZoneLimit, ZoneMapping} from './Types';
+import {MultiZonePersistenceModel} from './impl/MultiZonePersistenceModel';
+import {MultiZoneGridModelPersistOptions, Zone, ZoneLimit, ZoneMapping} from './Types';
 
 export interface MultiZoneGridConfig extends GridConfig {
     /**
@@ -44,9 +49,23 @@ export interface MultiZoneGridConfig extends GridConfig {
 
     /** Config with which to create a MultiZoneMapperModel, or boolean `true` to enable default. */
     multiZoneMapperModel?: MultiZoneMapperConfig | boolean;
-}
 
-// Todo: Persistence!
+    /**
+     * Function to be called when the user triggers MultiZoneGridModel.restoreDefaultsAsync().
+     * This function will be called after the built-in defaults have been restored, and can be
+     * used to restore application specific defaults.
+     */
+    restoreDefaultsFn?: () => Awaitable<boolean>;
+
+    /**
+     * Confirmation warning to be presented to user before restoring default state. Set to
+     * null to skip user confirmation.
+     */
+    restoreDefaultsWarning?: ReactNode;
+
+    /** Options governing persistence. */
+    persistWith?: MultiZoneGridModelPersistOptions;
+}
 
 /**
  * MultiZoneGridModel is a wrapper around GridModel, which shows date in a grid with multi-line
@@ -55,6 +74,13 @@ export interface MultiZoneGridConfig extends GridConfig {
  * This is the primary app entry-point for specifying MultiZoneGrid component options and behavior.
  */
 export class MultiZoneGridModel extends HoistModel {
+    static DEFAULT_RESTORE_DEFAULTS_WARNING = fragment(
+        'This action will clear any customizations you have made to this grid, including zone mappings and sorting.',
+        br(),
+        br(),
+        'OK to proceed?'
+    );
+
     @managed
     gridModel: GridModel;
 
@@ -73,6 +99,11 @@ export class MultiZoneGridModel extends HoistModel {
     availableColumns: ColumnSpec[];
     limits: Partial<Record<Zone, ZoneLimit>>;
     delimiter: string;
+    restoreDefaultsFn: () => Awaitable<boolean>;
+    restoreDefaultsWarning: ReactNode;
+
+    private _defaultState; // initial state provided to ctor - powers restoreDefaults().
+    @managed persistenceModel: MultiZonePersistenceModel;
 
     constructor(config: MultiZoneGridConfig) {
         super();
@@ -86,6 +117,9 @@ export class MultiZoneGridModel extends HoistModel {
             rightColumnSpec,
             delimiter,
             multiZoneMapperModel,
+            restoreDefaultsFn,
+            restoreDefaultsWarning = MultiZoneGridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
+            persistWith,
             ...rest
         } = config;
 
@@ -96,15 +130,60 @@ export class MultiZoneGridModel extends HoistModel {
         this.leftColumnSpec = leftColumnSpec;
         this.rightColumnSpec = rightColumnSpec;
         this.delimiter = delimiter ?? ' • ';
+        this.restoreDefaultsFn = restoreDefaultsFn;
+        this.restoreDefaultsWarning = restoreDefaultsWarning;
+
+        this._defaultState = {
+            mappings: this.mappings,
+            sortBy: rest.sortBy,
+            groupBy: rest.groupBy
+        };
 
         this.gridModel = this.createGridModel(rest);
         this.mapperModel = this.parseMapperModel(multiZoneMapperModel);
+        this.persistenceModel = persistWith
+            ? new MultiZonePersistenceModel(this, persistWith)
+            : null;
 
         this.addReaction({
-            track: () => [this.mappings, this.leftColumnSpec, this.rightColumnSpec],
-            run: () => this.gridModel.setColumns(this.getColumns()),
-            fireImmediately: true
+            track: () => [this.leftColumnSpec, this.rightColumnSpec],
+            run: () => this.gridModel.setColumns(this.getColumns())
         });
+    }
+
+    /**
+     * Restore the mapping, sorting, and grouping configs as specified by the application at
+     * construction time. This is the state without any user changes applied.
+     * This method will clear the persistent grid state saved for this grid, if any.
+     *
+     * @returns true if defaults were restored
+     */
+    async restoreDefaultsAsync(): Promise<boolean> {
+        if (this.restoreDefaultsWarning) {
+            const confirmed = await XH.confirm({
+                title: 'Please Confirm',
+                icon: Icon.warning(),
+                message: this.restoreDefaultsWarning,
+                confirmProps: {
+                    text: 'Yes, restore defaults',
+                    intent: 'primary'
+                }
+            });
+            if (!confirmed) return false;
+        }
+
+        const {mappings, sortBy, groupBy} = this._defaultState;
+        this.setMappings(mappings);
+        this.setSortBy(sortBy);
+        this.setGroupBy(groupBy);
+
+        this.persistenceModel?.clear();
+
+        if (this.restoreDefaultsFn) {
+            await this.restoreDefaultsFn();
+        }
+
+        return true;
     }
 
     showMapper() {
@@ -114,6 +193,7 @@ export class MultiZoneGridModel extends HoistModel {
     @action
     setMappings(mappings: Record<Zone, Some<string | ZoneMapping>>) {
         this.mappings = this.parseMappings(mappings);
+        this.gridModel.setColumns(this.getColumns());
     }
 
     getDisplayName(field: string): string {
@@ -132,7 +212,7 @@ export class MultiZoneGridModel extends HoistModel {
             rowBorders: true,
             stripeRows: false,
             autosizeOptions: {mode: 'disabled'},
-            columns: this.availableColumns
+            columns: this.getColumns()
         });
     }
 
@@ -156,7 +236,7 @@ export class MultiZoneGridModel extends HoistModel {
         }
 
         // Extract the primary column from the top mappings
-        const primaryCol = this.findColumnSpec(topMappings[0]);
+        const primaryCol = new Column(this.findColumnSpec(topMappings[0]), this.gridModel);
 
         // Extract the sub-fields from the other mappings
         const subFields = [];
@@ -168,13 +248,13 @@ export class MultiZoneGridModel extends HoistModel {
         });
 
         return {
+            // Controlled properties
             colId: isLeft ? 'left_column' : 'right_column',
-            headerName: this.getDisplayName(topMappings[0].field),
+            headerName: primaryCol.headerName,
             field: primaryCol.field,
+            flex: isLeft ? 2 : 1,
             renderer: multiFieldRenderer,
             rowHeight: Grid['MULTIFIELD_ROW_HEIGHT'],
-            absSort: primaryCol.absSort,
-            flex: isLeft ? 2 : 1,
             resizable: false,
             movable: false,
             hideable: false,
@@ -185,6 +265,17 @@ export class MultiZoneGridModel extends HoistModel {
                     subFields
                 }
             },
+
+            // Properties inherited from primary column
+            absSort: primaryCol.absSort,
+            sortingOrder: primaryCol.sortingOrder,
+            sortValue: primaryCol.sortValue,
+            sortToBottom: primaryCol.sortToBottom,
+            comparator: primaryCol.comparator,
+            sortable: primaryCol.sortable,
+            getValueFn: primaryCol.getValueFn,
+
+            // Optional overrides
             ...(isLeft ? this.leftColumnSpec : this.rightColumnSpec)
         };
     }
@@ -326,10 +417,5 @@ export class MultiZoneGridModel extends HoistModel {
 
     setSortBy(sorters: Some<GridSorterLike>) {
         return this.gridModel.setSortBy(sorters);
-    }
-
-    async restoreDefaultsAsync(): Promise<boolean> {
-        // Todo: Does this work? Do we need to explicitly reset the mappings?
-        return this.gridModel.restoreDefaultsAsync();
     }
 }

@@ -5,6 +5,8 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
+import {PersistOptions} from '@xh/hoist/core';
+
 export type Zone = 'tl' | 'tr' | 'bl' | 'br';
 
 export interface ZoneMapping {
@@ -21,4 +23,13 @@ export interface ZoneLimit {
     max?: number;
     /** Array of allowed fields for the zone */
     only?: string[];
+}
+
+export interface MultiZoneGridModelPersistOptions extends PersistOptions {
+    /** True to include mapping information (default true) */
+    persistMapping?: boolean;
+    /** True to include grouping information (default true) */
+    persistGrouping?: boolean;
+    /** True to include sorting information (default true) */
+    persistSort?: boolean;
 }
