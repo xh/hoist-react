@@ -157,6 +157,21 @@ export class ExceptionHandler {
     }
 
     /**
+     * Show an exception in full detail, with ability to report and copy to clipboard.
+     * Intended to be used for the deferred / user-initiated showing of exceptions that have
+     * already been appropriately logged. Apps should typically prefer {@link handleException}.
+     *
+     * @param exception - thrown object, will be coerced into a {@link HoistException}.
+     * @param options - provides further control over how the exception is shown.
+     */
+    showExceptionDetails(exception: unknown, options?: ExceptionHandlerOptions) {
+        if (XH.pageState == 'terminated' || XH.pageState == 'frozen') return;
+
+        const {e, opts} = this.parseArgs(exception, options);
+        XH.appContainerModel.exceptionDialogModel.showDetails(e, opts);
+    }
+
+    /**
      * Create a server-side exception entry. Client metadata will be set automatically.
      *
      * This method will swallow any exceptions thrown in the course of its own execution, failing

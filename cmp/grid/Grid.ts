@@ -16,16 +16,28 @@ import {
     LayoutProps,
     lookup,
     PlainObject,
+    TestSupportProps,
     useLocalModel,
     uses,
     XH
 } from '@xh/hoist/core';
+import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
 import {
     colChooser as desktopColChooser,
     gridFilterDialog,
     ModalSupportModel
 } from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
+import {Icon} from '@xh/hoist/icon';
+
+import type {
+    ColDef,
+    ColGroupDef,
+    GetContextMenuItemsParams,
+    GridOptions,
+    GridReadyEvent,
+    ProcessCellForExportParams
+} from '@xh/hoist/kit/ag-grid';
 import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed, logDebug, logWithDebug} from '@xh/hoist/utils/js';
@@ -38,19 +50,8 @@ import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
-import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
-import {Icon} from '@xh/hoist/icon';
 
-import type {
-    ColDef,
-    ColGroupDef,
-    GetContextMenuItemsParams,
-    GridOptions,
-    GridReadyEvent,
-    ProcessCellForExportParams
-} from '@xh/hoist/kit/ag-grid';
-
-export interface GridProps extends HoistProps<GridModel>, LayoutProps {
+export interface GridProps extends HoistProps<GridModel>, LayoutProps, TestSupportProps {
     /**
      * Options for ag-Grid's API.
      *
@@ -90,7 +91,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     model: uses(GridModel),
     className: 'xh-grid',
 
-    render({model, className, ...props}, ref) {
+    render({model, className, testId, ...props}, ref) {
         const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} =
                 model,
             impl = useLocalModel(GridLocalModel),
@@ -114,6 +115,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                     ...getLayoutProps(props),
                     ...impl.agOptions
                 }),
+                testId,
                 onKeyDown: impl.onKeyDown,
                 ref: composeRefs(impl.viewRef, ref)
             }),

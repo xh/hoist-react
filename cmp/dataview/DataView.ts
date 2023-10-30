@@ -7,12 +7,13 @@
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
 import {
-    BoxProps,
     hoistCmp,
     HoistModel,
     HoistProps,
+    LayoutProps,
     lookup,
     PlainObject,
+    TestSupportProps,
     useLocalModel,
     uses
 } from '@xh/hoist/core';
@@ -22,7 +23,7 @@ import {isFunction, merge} from 'lodash';
 import './DataView.scss';
 import {DataViewModel} from './DataViewModel';
 
-export interface DataViewProps extends HoistProps<DataViewModel>, BoxProps {
+export interface DataViewProps extends HoistProps<DataViewModel>, LayoutProps, TestSupportProps {
     /**
      * Options for ag-Grid's API.
      *
@@ -44,13 +45,14 @@ export const [DataView, dataView] = hoistCmp.withFactory<DataViewProps>({
     model: uses(DataViewModel),
     className: 'xh-data-view',
 
-    render({model, className, ...props}, ref) {
+    render({model, className, testId, ...props}, ref) {
         const [layoutProps] = splitLayoutProps(props),
             impl = useLocalModel(DataViewLocalModel);
 
         return grid({
             ...layoutProps,
             className,
+            testId,
             ref,
             model: model.gridModel,
             agOptions: impl.agOptions

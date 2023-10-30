@@ -4,26 +4,90 @@
 
 ### 🎁 New Features
 
-* Provide new `ErrorBoundary` component for finer-grained application handling of React Errors.
-* Hoist now wraps `Tab`, `DashCanvasView`, `DashContainerView`,`DockView`, and `Page` in an
-  `ErrorBoundary`.   This provides better isolation of application content, minimizing the chance
-   that any individual component can crash the entire app.
-* New `PanelModel.errorBoundary` property to optionally place an `ErrorBoundary` on the contents
-   of any `Panel`.
-* Improvements and fixes to panel header, including:
-    * Added new `Panel.headerClassName` prop for straightforward CSS manipulation of panel's header.
-    * Improved `Panel.collapsedTitle` prop and added `Panel.collapsedIcon` prop. These two props now
-     fully govern header display when collapsed.
-* Improved styling for disabled `checkbox` inputs.
+* Built-in Hoist support for automated testing:
+   * Core Hoist components now support the `TestSupportProps` interface and accordingly take an
+     optional `testId` prop.  If supplied by application, this prop will be rendered in
+     the DOM using the `data-testid` property and available for testing tools that are running
+     the application.
+   * When given a `testId`, certain composite components (e.g.`TabContainer`, `Form`,`GroupingChooser`
+     etc.) will create and render additional "sub-testIds" on its critical subcomponents. For example,
+     a `TabContainer` will create testIds for its switcher buttons, and a `Form` will create ids on
+     its contained `FormField`s and `HoistInput`s.
+   * This release represents the critical first step in our ongoing work to facilitate automated
+    end-to-end testing of Hoist applications.  Additional hoist-specific utilities for writing
+    tests in libraries such as cypress and playwright are coming soon.
+
+ * Added `Column.sortToBottom` which supports always sorting specified values to the bottom,
+  regardless of sort direction.
+
+### 💥 Breaking Changes
+
+* The `XH.getActiveModels` method has been renamed to `XH.getModels` for clarity and consistency.
+  This is not expected to impact applications.
+
+## 59.2.0 - 2023-10-16
+
+### 🐞 Bug Fixes
+* Fix to pass correct arguments to `ErrorMessageProps.actionFn` and `ErrorMessageProps.detailsFn`
+* Better default error text in `ErrorMessage`
+
+## 59.2.0 - 2023-10-16
+
+### 🎁 New Features
+
+* New `DockViewConfig.onClose` hook invoked when a user attempts to remove a `DockContainer` view
+* Add `GridModel` APIs to lookup and show / hide entire column groups
+* Left / right borders are now rendered along `Grid` `ColumnGroup` edges by default.  Control
+ with new boolean property `ColumnGroupSpec.borders`
+* The Cube package has been enhanced to support `Query` specific post-processing functions.  See
+new properties `Query.omitFn`, `Query.bucketSpecFn` and `Query.lockFn`.  These properties default
+to their respective properties on `Cube`.
+
+### 🐞 Bug Fixes
+
+* `DashContainerModel` fixes:
+  * Fix bug where `addView` would throw when adding a view to a row or column
+  * Fix bug where `allowRemove` flag was dropped from state for containers
+  * Fix bug in `DockContainer` where adding / removing views would cause other views to be remounted
+* Fix erroneous `GridModel` warning when using a tree column within a column group
+* Fix regression to alert banners. Resume allowing elements as messages
+* Fix `Grid` cell border styling inconsistencies
+
+### ⚙️ Typescript API Adjustments
+
+* Add type for `ActionFnData.record`
+
+## 59.1.0 - 2023-09-20
+
+### 🎁 New Features
+
+* Introduced new `ErrorBoundary` component for finer-grained application handling of React Errors.
+    * Hoist now wraps `Tab`, `DashCanvasView`, `DashContainerView`, `DockView`, and `Page` in an
+      `ErrorBoundary`. This provides better isolation of application content, minimizing the chance
+      that any individual component can crash the entire app.
+    * A new `PanelModel.errorBoundary` prop allows developers to opt-in to an `ErrorBoundary`
+      wrapper around the contents of any panel.
+    * `ErrorMessage` component now provides an ability to show additional exception details.
 * Added new `Markdown` component for rendering Markdown formatted strings as markup. This includes
-  bundling `react-markdown` in Hoist. If your app already uses `react-markdown` or similar, you should
-  move to use the new `Markdown` component to benefit from future upgrades.
-* Enabled Banners to render bold, italics and links using Markdown syntax.
+  bundling `react-markdown` in Hoist.
+    * If your app already uses `react-markdown` or similar, we recommend updating to use the
+      new `Markdown` component exported by Hoist to benefit from future upgrades.
+    * Admin-managed alert banners leverage the new markdown component to support bold, italics and
+      links within alert messages.
+* Improved and fixed up `Panel` headers, including:
+    * Added new `Panel.headerClassName` prop for easier CSS manipulation of panel's header.
+    * Improved `Panel.collapsedTitle` prop and added `Panel.collapsedIcon` prop. These two props now
+      fully govern header display when collapsed.
+* Improved styling for disabled `checkbox` inputs.
+
+### ⚙️ Technical
+* `XH.showException` has been deprecated.  Use similar methods on `XH.exceptionHandler` instead.
 
 ### 📚 Libraries
 
-* react-markdown `8.0.7`
-* remark-breaks `3.0.3`
+* numbro `2.3 -> 2.4`
+* react-markdown `added @ 8.0`
+* remark-breaks `added @ 3.0`
 
 ## 59.0.3 - 2023-08-25
 
@@ -31,8 +95,8 @@
 
 * New `XH.flags` property to govern experimental, hotfix, or otherwise provisional features.
 
-* Provide temporary workaround to chromium bug effecting BigNumber.  Enabled via flag
-  `applyBigNumberWorkaround`.  See https://github.com/MikeMcl/bignumber.js/issues/354.
+* Provide temporary workaround to chromium bug effecting BigNumber. Enabled via flag
+  `applyBigNumberWorkaround`. See https://github.com/MikeMcl/bignumber.js/issues/354.
 
 ## 59.0.2 - 2023-08-24
 

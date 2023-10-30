@@ -4,12 +4,19 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {DefaultHoistProps, elementFactory, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import {
+    DefaultHoistProps,
+    elementFactory,
+    hoistCmp,
+    HoistProps,
+    TestSupportProps,
+    uses
+} from '@xh/hoist/core';
+import {useCached} from '@xh/hoist/utils/react';
 import equal from 'fast-deep-equal';
 import {createContext, useContext} from 'react';
-import {useCached} from '@xh/hoist/utils/react';
-import {FormModel} from './FormModel';
 import {BaseFormFieldProps} from './BaseFormFieldProps';
+import {FormModel} from './FormModel';
 
 /** @internal */
 export interface FormContextType {
@@ -18,13 +25,21 @@ export interface FormContextType {
 
     /** Reference to associated FormModel. */
     model?: FormModel;
+
+    /**
+     *  Not rendered into the DOM directly - `Form` is a context provider and not a concrete
+     *  component - but will auto-generate and apply a testId of `${formTestId}-${fieldName}`
+     *  for every child {@link FormField} component, providing a centralized way to wire up
+     *  a form and all of its fields for testing.
+     */
+    testId?: string;
 }
 
 /** @internal */
 export const FormContext = createContext<FormContextType>({});
 const formContextProvider = elementFactory(FormContext.Provider);
 
-export interface FormProps extends HoistProps<FormModel> {
+export interface FormProps extends HoistProps<FormModel>, TestSupportProps {
     /**
      * Defaults for certain props on child/nested FormFields.
      * @see FormField (note there are both desktop and mobile implementations).
@@ -50,14 +65,18 @@ export const [Form, form] = hoistCmp.withFactory<FormProps>({
     displayName: 'Form',
     model: uses(FormModel, {publishMode: 'none'}),
 
-    render({model, fieldDefaults = {}, children}) {
+    render({model, fieldDefaults = {}, testId, children}) {
         // gather own and inherited field defaults...
         const parentDefaults = useContext(FormContext).fieldDefaults;
         if (parentDefaults) fieldDefaults = {...parentDefaults, ...fieldDefaults};
 
         // ...and deliver as a cached context to avoid spurious re-renders
         const formContext = useCached(
-            {model, fieldDefaults},
+            {
+                model,
+                fieldDefaults,
+                testId
+            },
             (a, b) => a.model === b.model && equal(a.fieldDefaults, b.fieldDefaults)
         );
         return formContextProvider({value: formContext, items: children});

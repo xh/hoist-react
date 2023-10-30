@@ -4,14 +4,15 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {TEST_ID} from '@xh/hoist/utils/js';
 import {castArray, isFunction, isNil, isPlainObject} from 'lodash';
 import {
     createElement as reactCreateElement,
-    isValidElement,
-    ReactNode,
-    ReactElement,
     ForwardedRef,
-    Key
+    isValidElement,
+    Key,
+    ReactElement,
+    ReactNode
 } from 'react';
 import {PlainObject, Some, Thunkable} from './types/Types';
 
@@ -59,6 +60,13 @@ export type ElementSpec<P extends PlainObject> = P & {
 
     /** React key for this component. */
     key?: Key;
+
+    /**
+     * Supports passing a "data-testid" prop to built-in tags (e.g. `div`), to be rendered as an
+     * HTML attribute. See {@link TestSupportProps} for the higher-level `testId` prop that most
+     * Hoist components accept and should use.
+     */
+    [TEST_ID]?: string;
 
     //----------------------------
     // Technical -- Escape support

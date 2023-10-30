@@ -59,7 +59,7 @@
     "mobx": "~6.9.1",
     "mobx-react-lite": "~3.4.3",
     "moment": "~2.29.1",
-    "numbro": "~2.3.6",
+    "numbro": "~2.4.0",
     "onsenui": "~2.12.8",
     "qs": "~6.11.0",
     "react-beautiful-dnd": "~13.1.0",
@@ -100,9 +100,10 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "stylelint": "15.x",
-    "stylelint-config-standard-scss": "10.x",
+    "stylelint-config-standard-scss": "11.x",
     "type-fest": "4.x",
-    "typescript": "~5.1.6"
+    "typescript": "~5.1.6",
+    "csstype": "3.x"
   },
   "resolutions": {
     "core-js": "^3.0"

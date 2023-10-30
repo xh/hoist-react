@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, uses, XH, refreshContextView, BoxProps, HoistProps} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistProps, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {tabContainerImpl as desktopTabContainerImpl} from '@xh/hoist/dynamics/desktop';
 import {tabContainerImpl as mobileTabContainerImpl} from '@xh/hoist/dynamics/mobile';
 import {TabContainerModel} from './TabContainerModel';

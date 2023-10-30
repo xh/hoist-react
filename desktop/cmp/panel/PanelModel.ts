@@ -73,7 +73,6 @@ export interface PanelConfig {
      */
     errorBoundary?: boolean | ErrorBoundaryConfig;
 
-
     /** How should collapsed content be rendered? Ignored if collapsible is false. */
     renderMode?: RenderMode;
 
@@ -260,7 +259,7 @@ export class PanelModel extends HoistModel {
             this.errorBoundaryModel =
                 errorBoundary === true
                     ? new ErrorBoundaryModel()
-                    : new ErrorBoundaryModel(errorBoundary)
+                    : new ErrorBoundaryModel(errorBoundary);
         }
 
         if (collapsible) {

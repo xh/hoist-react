@@ -4,13 +4,15 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {
     CreatesSpec,
     UsesSpec,
     HoistProps,
     DefaultHoistProps,
     elementFactory,
-    ElementFactory
+    ElementFactory,
+    TestSupportProps
 } from './';
 import {
     useModelLinker,
@@ -24,7 +26,7 @@ import {
     HoistModel
 } from './model';
 import {apiDeprecated, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
 import {observer} from '../mobx';
@@ -231,7 +233,7 @@ hoistCmp.withFactory = hoistCmpWithFactory;
 //----------------------------------
 // internal types and core wrappers
 //----------------------------------
-type RenderFn = (props: HoistProps, ref?: ForwardedRef<any>) => ReactNode;
+type RenderFn = (props: HoistProps & TestSupportProps, ref?: ForwardedRef<any>) => ReactNode;
 
 interface Config {
     displayName: string;
@@ -318,6 +320,8 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
                 delete props.modelConfig;
                 ctx.props = props;
                 ctx.modelLookup = newLookup ?? modelLookup;
+                useOnMount(() => instanceManager.registerModelWithTestId(props.testId, model));
+                useOnUnmount(() => instanceManager.unregisterModelWithTestId(props.testId));
                 return render(props, ref);
             } finally {
                 ctx.props = null;

@@ -4,17 +4,26 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {SetOptional} from 'type-fest';
 import {ButtonGroupProps as BpButtonGroupProps} from '@blueprintjs/core';
-import {hoistCmp, HoistModel, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistModel,
+    HoistProps,
+    LayoutProps,
+    StyleProps,
+    TestSupportProps
+} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
+import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {SetOptional} from 'type-fest';
 
 export interface ButtonGroupProps<M extends HoistModel = null>
     extends HoistProps<M>,
         LayoutProps,
         StyleProps,
+        TestSupportProps,
         SetOptional<BpButtonGroupProps, 'children'> {
     /** True to have all buttons fill available width equally. */
     fill?: boolean;
@@ -35,11 +44,13 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
     className: 'xh-button-group',
 
     render(props, ref) {
-        const [layoutProps, {fill, minimal, vertical, style, ...rest}] = splitLayoutProps(props);
+        const [layoutProps, {fill, minimal, vertical, style, testId, ...rest}] =
+            splitLayoutProps(props);
         return bpButtonGroup({
             fill,
             minimal,
             vertical,
+            [TEST_ID]: testId,
             style: {
                 ...style,
                 ...layoutProps

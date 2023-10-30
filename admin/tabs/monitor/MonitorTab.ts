@@ -17,7 +17,7 @@ export const monitorTab = hoistCmp.factory(() => {
         ? tabContainer({
               modelConfig: {
                   route: 'default.monitor',
-                  switcher: {orientation: 'left'},
+                  switcher: {orientation: 'left', testId: 'monitor-tab-switcher'},
                   tabs: [
                       {id: 'status', icon: Icon.shieldCheck(), content: monitorResultsPanel},
                       {id: 'config', icon: Icon.settings(), content: monitorEditorPanel}
