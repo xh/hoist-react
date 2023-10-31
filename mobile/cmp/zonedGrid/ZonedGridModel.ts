@@ -22,14 +22,14 @@ import {
 import {Icon} from '@xh/hoist/icon';
 import {castArray, forOwn, isEmpty, isFinite, isPlainObject, isString} from 'lodash';
 import {ReactNode} from 'react';
-import {MultiZoneMapperConfig, MultiZoneMapperModel} from './impl/MultiZoneMapperModel';
-import {MultiZonePersistenceModel} from './impl/MultiZonePersistenceModel';
-import {MultiZoneGridModelPersistOptions, Zone, ZoneLimit, ZoneMapping} from './Types';
+import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
+import {ZonedGridPersistenceModel} from './impl/ZonedGridPersistenceModel';
+import {ZonedGridModelPersistOptions, Zone, ZoneLimit, ZoneMapping} from './Types';
 
-export interface MultiZoneGridConfig extends GridConfig {
+export interface ZonedGridConfig extends GridConfig {
     /**
      * Available columns for this grid. Note that the actual display of
-     * the multi-zone columns is managed via `mappings` below.
+     * the zoned columns is managed via `mappings` below.
      */
     columns: Array<ColumnSpec>;
 
@@ -57,11 +57,11 @@ export interface MultiZoneGridConfig extends GridConfig {
     /** String rendered between consecutive SubFields. */
     delimiter?: string;
 
-    /** Config with which to create a MultiZoneMapperModel, or boolean `true` to enable default. */
-    multiZoneMapperModel?: MultiZoneMapperConfig | boolean;
+    /** Config with which to create a ZoneMapperModel, or boolean `true` to enable default. */
+    zoneMapperModel?: ZoneMapperConfig | boolean;
 
     /**
-     * Function to be called when the user triggers MultiZoneGridModel.restoreDefaultsAsync().
+     * Function to be called when the user triggers ZonedGridModel.restoreDefaultsAsync().
      * This function will be called after the built-in defaults have been restored, and can be
      * used to restore application specific defaults.
      */
@@ -74,16 +74,16 @@ export interface MultiZoneGridConfig extends GridConfig {
     restoreDefaultsWarning?: ReactNode;
 
     /** Options governing persistence. */
-    persistWith?: MultiZoneGridModelPersistOptions;
+    persistWith?: ZonedGridModelPersistOptions;
 }
 
 /**
- * MultiZoneGridModel is a wrapper around GridModel, which shows date in a grid with multi-line
+ * ZonedGridModel is a wrapper around GridModel, which shows date in a grid with multi-line
  * full-width rows, each broken into four zones for top/bottom and left/right.
  *
- * This is the primary app entry-point for specifying MultiZoneGrid component options and behavior.
+ * This is the primary app entry-point for specifying ZonedGrid component options and behavior.
  */
-export class MultiZoneGridModel extends HoistModel {
+export class ZonedGridModel extends HoistModel {
     static DEFAULT_RESTORE_DEFAULTS_WARNING = fragment(
         'This action will clear any customizations you have made to this grid, including zone mappings and sorting.',
         br(),
@@ -95,7 +95,7 @@ export class MultiZoneGridModel extends HoistModel {
     gridModel: GridModel;
 
     @managed
-    mapperModel: MultiZoneMapperModel;
+    mapperModel: ZoneMapperModel;
 
     @observable.ref
     mappings: Record<Zone, ZoneMapping[]>;
@@ -113,9 +113,9 @@ export class MultiZoneGridModel extends HoistModel {
     restoreDefaultsWarning: ReactNode;
 
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
-    @managed persistenceModel: MultiZonePersistenceModel;
+    @managed persistenceModel: ZonedGridPersistenceModel;
 
-    constructor(config: MultiZoneGridConfig) {
+    constructor(config: ZonedGridConfig) {
         super();
         makeObservable(this);
 
@@ -128,9 +128,9 @@ export class MultiZoneGridModel extends HoistModel {
             leftColumnSpec,
             rightColumnSpec,
             delimiter,
-            multiZoneMapperModel,
+            zoneMapperModel,
             restoreDefaultsFn,
-            restoreDefaultsWarning = MultiZoneGridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
+            restoreDefaultsWarning = ZonedGridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
             persistWith,
             ...rest
         } = config;
@@ -155,9 +155,9 @@ export class MultiZoneGridModel extends HoistModel {
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
 
-        this.mapperModel = this.parseMapperModel(multiZoneMapperModel);
+        this.mapperModel = this.parseMapperModel(zoneMapperModel);
         this.persistenceModel = persistWith
-            ? new MultiZonePersistenceModel(this, persistWith)
+            ? new ZonedGridPersistenceModel(this, persistWith)
             : null;
 
         this.addReaction({
@@ -228,14 +228,14 @@ export class MultiZoneGridModel extends HoistModel {
 
     private getColumns(): ColumnSpec[] {
         return [
-            this.buildMultiZoneColumn(true),
-            this.buildMultiZoneColumn(false),
+            this.buildZonedColumn(true),
+            this.buildZonedColumn(false),
             // Ensure all available columns are provided as hidden columns for lookup by multifield renderer
             ...this.availableColumns
         ];
     }
 
-    private buildMultiZoneColumn(isLeft: boolean): ColumnSpec {
+    private buildZonedColumn(isLeft: boolean): ColumnSpec {
         const topMappings = this.mappings[isLeft ? 'tl' : 'tr'],
             bottomMappings = this.mappings[isLeft ? 'bl' : 'br'];
 
@@ -338,14 +338,14 @@ export class MultiZoneGridModel extends HoistModel {
         return ret;
     }
 
-    private parseMapperModel(mapperModel: MultiZoneMapperConfig | boolean): MultiZoneMapperModel {
+    private parseMapperModel(mapperModel: ZoneMapperConfig | boolean): ZoneMapperModel {
         if (isPlainObject(mapperModel)) {
-            return new MultiZoneMapperModel({
-                ...(mapperModel as MultiZoneMapperConfig),
-                multiZoneGridModel: this
+            return new ZoneMapperModel({
+                ...(mapperModel as ZoneMapperConfig),
+                zonedGridModel: this
             });
         }
-        return mapperModel ? new MultiZoneMapperModel({multiZoneGridModel: this}) : null;
+        return mapperModel ? new ZoneMapperModel({zonedGridModel: this}) : null;
     }
 
     //-----------------------

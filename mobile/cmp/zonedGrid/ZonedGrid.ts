@@ -10,13 +10,10 @@ import {fragment} from '@xh/hoist/cmp/layout';
 import {GridOptions} from '@xh/hoist/kit/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {MultiZoneGridModel} from './MultiZoneGridModel';
-import {multiZoneMapper} from './impl/MultiZoneMapper';
+import {ZonedGridModel} from './ZonedGridModel';
+import {zoneMapper} from './impl/ZoneMapper';
 
-export interface MultiZoneGridProps
-    extends HoistProps<MultiZoneGridModel>,
-        LayoutProps,
-        TestSupportProps {
+export interface ZonedGridProps extends HoistProps<ZonedGridModel>, LayoutProps, TestSupportProps {
     /**
      * Options for ag-Grid's API.
      *
@@ -30,16 +27,16 @@ export interface MultiZoneGridProps
 }
 
 /**
- * A MultiZoneGrid is a specialized version of the Grid component.
+ * A ZonedGrid is a specialized version of the Grid component.
  *
  * It displays its data with multi-line full-width rows, each broken into four zones for
  * top/bottom and left/right - (tl, tr, bl, br). Zone mappings determine which of the
  * available fields should be extracted from the record and rendered into each zone.
  */
-export const [MultiZoneGrid, multiZoneGrid] = hoistCmp.withFactory<MultiZoneGridProps>({
-    displayName: 'MultiZoneGrid',
-    model: uses(MultiZoneGridModel),
-    className: 'xh-multi-zone-grid',
+export const [ZonedGrid, zonedGrid] = hoistCmp.withFactory<ZonedGridProps>({
+    displayName: 'ZonedGrid',
+    model: uses(ZonedGridModel),
+    className: 'xh-zoned-grid',
 
     render({model, className, testId, ...props}, ref) {
         const [layoutProps] = splitLayoutProps(props);
@@ -52,7 +49,7 @@ export const [MultiZoneGrid, multiZoneGrid] = hoistCmp.withFactory<MultiZoneGrid
                 model: model.gridModel,
                 agOptions: props.agOptions
             }),
-            multiZoneMapper()
+            zoneMapper()
         );
     }
 });

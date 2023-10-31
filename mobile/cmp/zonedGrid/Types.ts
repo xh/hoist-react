@@ -37,7 +37,7 @@ export interface MapperField {
     sortingOrder: ColumnSortSpec[];
 }
 
-export interface MultiZoneGridModelPersistOptions extends PersistOptions {
+export interface ZonedGridModelPersistOptions extends PersistOptions {
     /** True to include mapping information (default true) */
     persistMapping?: boolean;
     /** True to include grouping information (default true) */

@@ -7,19 +7,19 @@
 import {HoistModel, managed, PersistenceProvider, PlainObject} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
-import {MultiZoneGridModel} from '../MultiZoneGridModel';
-import {MultiZoneGridModelPersistOptions} from '../Types';
+import {ZonedGridModel} from '../ZonedGridModel';
+import {ZonedGridModelPersistOptions} from '../Types';
 
 /**
- * Model to manage persisting state from GridModel.
+ * Model to manage persisting state from ZonedGridModel.
  * @internal
  */
-export class MultiZonePersistenceModel extends HoistModel {
+export class ZonedGridPersistenceModel extends HoistModel {
     override xhImpl = true;
 
     VERSION = 1; // Increment to abandon state.
 
-    multiZoneGridModel: MultiZoneGridModel;
+    zonedGridModel: ZonedGridModel;
 
     @observable.ref
     state: PlainObject;
@@ -28,19 +28,19 @@ export class MultiZonePersistenceModel extends HoistModel {
     provider: PersistenceProvider;
 
     constructor(
-        multiZoneGridModel: MultiZoneGridModel,
+        zonedGridModel: ZonedGridModel,
         {
             persistMapping = true,
             persistGrouping = true,
             persistSort = true,
             ...persistWith
-        }: MultiZoneGridModelPersistOptions
+        }: ZonedGridModelPersistOptions
     ) {
         super();
         makeObservable(this);
-        this.multiZoneGridModel = multiZoneGridModel;
+        this.zonedGridModel = zonedGridModel;
 
-        persistWith = {path: 'multiZoneGrid', ...persistWith};
+        persistWith = {path: 'zonedGrid', ...persistWith};
 
         // 1) Read state from and attach to provider -- fail gently
         try {
@@ -82,7 +82,7 @@ export class MultiZonePersistenceModel extends HoistModel {
     //--------------------------
     mappingReaction() {
         return {
-            track: () => this.multiZoneGridModel.mappings,
+            track: () => this.zonedGridModel.mappings,
             run: mappings => {
                 this.patchState({mappings});
             }
@@ -91,7 +91,7 @@ export class MultiZonePersistenceModel extends HoistModel {
 
     updateGridMapping() {
         const {mappings} = this.state;
-        if (!isUndefined(mappings)) this.multiZoneGridModel.setMappings(mappings);
+        if (!isUndefined(mappings)) this.zonedGridModel.setMappings(mappings);
     }
 
     //--------------------------
@@ -99,7 +99,7 @@ export class MultiZonePersistenceModel extends HoistModel {
     //--------------------------
     sortReaction() {
         return {
-            track: () => this.multiZoneGridModel.sortBy,
+            track: () => this.zonedGridModel.sortBy,
             run: sortBy => {
                 this.patchState({sortBy: sortBy?.toString()});
             }
@@ -108,7 +108,7 @@ export class MultiZonePersistenceModel extends HoistModel {
 
     updateGridSort() {
         const {sortBy} = this.state;
-        if (!isUndefined(sortBy)) this.multiZoneGridModel.setSortBy(sortBy);
+        if (!isUndefined(sortBy)) this.zonedGridModel.setSortBy(sortBy);
     }
 
     //--------------------------
@@ -116,7 +116,7 @@ export class MultiZonePersistenceModel extends HoistModel {
     //--------------------------
     groupReaction() {
         return {
-            track: () => this.multiZoneGridModel.groupBy,
+            track: () => this.zonedGridModel.groupBy,
             run: groupBy => {
                 this.patchState({groupBy});
             }
@@ -125,7 +125,7 @@ export class MultiZonePersistenceModel extends HoistModel {
 
     updateGridGroupBy() {
         const {groupBy} = this.state;
-        if (!isUndefined(groupBy)) this.multiZoneGridModel.setGroupBy(groupBy);
+        if (!isUndefined(groupBy)) this.zonedGridModel.setGroupBy(groupBy);
     }
 
     //--------------------------

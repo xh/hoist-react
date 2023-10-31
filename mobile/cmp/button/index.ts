@@ -15,4 +15,4 @@ export * from './LogoutButton';
 export * from './RefreshButton';
 export * from './RestoreDefaultsButton';
 export * from './NavigatorBackButton';
-export * from './MultiZoneMapperButton';
+export * from './ZoneMapperButton';

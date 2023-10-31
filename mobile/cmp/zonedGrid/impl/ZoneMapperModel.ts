@@ -14,12 +14,12 @@ import {checkbox} from '@xh/hoist/mobile/cmp/input';
 import {wait} from '@xh/hoist/promise';
 import {cloneDeep, findIndex, isBoolean, isEmpty, isEqual, isFinite, isString} from 'lodash';
 import {ReactNode} from 'react';
-import {MultiZoneGridModel} from '../MultiZoneGridModel';
+import {ZonedGridModel} from '../ZonedGridModel';
 import {MapperField, Zone, ZoneLimit, ZoneMapping} from '../Types';
 
-export interface MultiZoneMapperConfig {
-    /** The MultiZoneGridModel to be configured. */
-    multiZoneGridModel: MultiZoneGridModel;
+export interface ZoneMapperConfig {
+    /** The ZonedGridModel to be configured. */
+    zonedGridModel: ZonedGridModel;
 
     /** True (default) to show Reset button to restore default configuration. */
     showRestoreDefaults?: boolean;
@@ -29,13 +29,14 @@ export interface MultiZoneMapperConfig {
 }
 
 /**
- * State management for the MultiZoneMapper component.
+ * State management for the ZoneMapper component.
  *
  * It is not necessary to manually create instances of this class within an application.
+ *
  * @internal
  */
-export class MultiZoneMapperModel extends HoistModel {
-    multiZoneGridModel: MultiZoneGridModel;
+export class ZoneMapperModel extends HoistModel {
+    zonedGridModel: ZonedGridModel;
     showRestoreDefaults: boolean;
     groupColumns: boolean;
 
@@ -59,26 +60,26 @@ export class MultiZoneMapperModel extends HoistModel {
 
     @computed
     get isDirty(): boolean {
-        const {mappings, sortBy} = this.multiZoneGridModel;
+        const {mappings, sortBy} = this.zonedGridModel;
         return !isEqual(this.mappings, mappings) || !isEqual(this.sortBy, sortBy);
     }
 
     get leftFlex(): number {
-        const ret = this.multiZoneGridModel.leftColumnSpec?.flex;
+        const ret = this.zonedGridModel.leftColumnSpec?.flex;
         return isBoolean(ret) ? 1 : ret ?? 2;
     }
 
     get rightFlex(): number {
-        const ret = this.multiZoneGridModel.rightColumnSpec?.flex;
+        const ret = this.zonedGridModel.rightColumnSpec?.flex;
         return isBoolean(ret) ? 1 : ret ?? 1;
     }
 
     get limits(): Partial<Record<Zone, ZoneLimit>> {
-        return this.multiZoneGridModel.limits;
+        return this.zonedGridModel.limits;
     }
 
     get delimiter(): string {
-        return this.multiZoneGridModel.delimiter;
+        return this.zonedGridModel.delimiter;
     }
 
     get sortByColId() {
@@ -94,13 +95,13 @@ export class MultiZoneMapperModel extends HoistModel {
             });
     }
 
-    constructor(config: MultiZoneMapperConfig) {
+    constructor(config: ZoneMapperConfig) {
         super();
         makeObservable(this);
 
-        const {multiZoneGridModel, showRestoreDefaults = true, groupColumns = true} = config;
+        const {zonedGridModel, showRestoreDefaults = true, groupColumns = true} = config;
 
-        this.multiZoneGridModel = multiZoneGridModel;
+        this.zonedGridModel = zonedGridModel;
         this.showRestoreDefaults = showRestoreDefaults;
         this.groupColumns = groupColumns;
 
@@ -120,7 +121,7 @@ export class MultiZoneMapperModel extends HoistModel {
     }
 
     async restoreDefaultsAsync() {
-        const restored = await this.multiZoneGridModel.restoreDefaultsAsync();
+        const restored = await this.zonedGridModel.restoreDefaultsAsync();
         if (restored) this.close();
     }
 
@@ -136,8 +137,8 @@ export class MultiZoneMapperModel extends HoistModel {
     }
 
     commit() {
-        this.multiZoneGridModel.setMappings(this.mappings);
-        this.multiZoneGridModel.setSortBy(this.sortBy);
+        this.zonedGridModel.setMappings(this.mappings);
+        this.zonedGridModel.setSortBy(this.sortBy);
     }
 
     getSamplesForZone(zone: Zone): ReactNode[] {
@@ -171,10 +172,10 @@ export class MultiZoneMapperModel extends HoistModel {
     // Zone Mappings
     //------------------------
     private getFields(): MapperField[] {
-        const {multiZoneGridModel} = this;
-        return multiZoneGridModel.availableColumns.map(it => {
+        const {zonedGridModel} = this;
+        return zonedGridModel.availableColumns.map(it => {
             const fieldName = isString(it.field) ? it.field : it.field.name,
-                column = multiZoneGridModel.gridModel.getColumn(fieldName),
+                column = zonedGridModel.gridModel.getColumn(fieldName),
                 displayName = column.displayName,
                 label = isString(it.headerName) ? it.headerName : displayName;
 
@@ -230,7 +231,7 @@ export class MultiZoneMapperModel extends HoistModel {
     @action
     private syncMapperData() {
         // Copy latest mappings and sortBy from grid
-        const {mappings, sortBy} = this.multiZoneGridModel;
+        const {mappings, sortBy} = this.zonedGridModel;
         this.mappings = cloneDeep(mappings);
         this.sortBy = sortBy ? cloneDeep(sortBy) : null;
 
@@ -371,7 +372,7 @@ export class MultiZoneMapperModel extends HoistModel {
                 value = field.renderer(value, {
                     record: sampleRecord,
                     column: field.column,
-                    gridModel: this.multiZoneGridModel.gridModel
+                    gridModel: this.zonedGridModel.gridModel
                 });
             }
         }
@@ -388,7 +389,7 @@ export class MultiZoneMapperModel extends HoistModel {
 
     private getSampleRecord(): StoreRecord {
         // Iterate down to a (likely more fully populated) leaf record.
-        let ret = this.multiZoneGridModel.store.records[0];
+        let ret = this.zonedGridModel.store.records[0];
         while (ret && !isEmpty(ret.children)) {
             ret = ret.children[0];
         }

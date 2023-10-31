@@ -14,23 +14,25 @@ import {select} from '@xh/hoist/mobile/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {intersperse} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import './MultiZoneMapper.scss';
-import {MultiZoneMapperModel} from './MultiZoneMapperModel';
+import './ZoneMapper.scss';
+import {ZoneMapperModel} from './ZoneMapperModel';
 
 /**
- * Hoist UI for user selection and discovery of available MultiZoneGrid columns, enabled via the
- * `MultiZoneGridModel.multiZoneMapperModel` config option.
+ * Hoist UI for user selection and discovery of available ZonedGrid columns, enabled via the
+ * `ZonedGridModel.zoneMapperModel` config option.
  *
  * This component displays an example of each of the four zones, with the available columns for
  * the currently selected zone displayed in a list below. Users can toggle column visibility
  * and labels for each zone to construct a custom layout for the grid rows.
  *
  * It is not necessary to manually create instances of this component within an application.
+ *
+ * @internal
  */
-export const [MultiZoneMapper, multiZoneMapper] = hoistCmp.withFactory<MultiZoneMapperModel>({
-    displayName: 'MultiZoneMapper',
-    model: uses(MultiZoneMapperModel),
-    className: 'xh-multi-zone-mapper',
+export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
+    displayName: 'ZoneMapper',
+    model: uses(ZoneMapperModel),
+    className: 'xh-zone-mapper',
     render({model, className}) {
         const {isOpen, showRestoreDefaults, isDirty} = model;
         return dialogPanel({
@@ -66,10 +68,10 @@ export const [MultiZoneMapper, multiZoneMapper] = hoistCmp.withFactory<MultiZone
     }
 });
 
-const zonePicker = hoistCmp.factory<MultiZoneMapperModel>({
+const zonePicker = hoistCmp.factory<ZoneMapperModel>({
     render({model}) {
         const {leftFlex, rightFlex} = model,
-            className = 'xh-multi-zone-mapper__zone-picker';
+            className = 'xh-zone-mapper__zone-picker';
 
         return vbox({
             className,
@@ -93,10 +95,10 @@ const zonePicker = hoistCmp.factory<MultiZoneMapperModel>({
     }
 });
 
-const zoneCell = hoistCmp.factory<MultiZoneMapperModel>({
+const zoneCell = hoistCmp.factory<ZoneMapperModel>({
     render({model, zone, flex}) {
         const {selectedZone, delimiter} = model,
-            className = 'xh-multi-zone-mapper__zone-picker__zone-cell',
+            className = 'xh-zone-mapper__zone-picker__zone-cell',
             samples = model.getSamplesForZone(zone);
 
         return div({
@@ -112,13 +114,13 @@ const zoneCell = hoistCmp.factory<MultiZoneMapperModel>({
     }
 });
 
-const sortPicker = hoistCmp.factory<MultiZoneMapperModel>({
+const sortPicker = hoistCmp.factory<ZoneMapperModel>({
     render({model}) {
         const {sortBy} = model;
         return panel({
             title: 'Sorting',
             icon: Icon.list(),
-            className: 'xh-multi-zone-mapper__sort-picker',
+            className: 'xh-zone-mapper__sort-picker',
             items: hframe(
                 select({
                     bind: 'sortByColId',
