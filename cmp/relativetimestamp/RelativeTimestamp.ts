@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {inRange} from 'lodash';
 import moment from 'moment';
 import {box, span} from '@xh/hoist/cmp/layout';
 import {
@@ -63,8 +64,15 @@ export interface RelativeTimestampOptions {
     /** Time to which the input timestamp is compared. */
     relativeTo?: Date | number;
 
-    /** Do not use time portion of dates when calculating differences. */
-    localDateMode?: boolean;
+    /**
+     * Governs if calendar days should be used for computing string rather than the native
+     * moment 24-hour day. Set to 'limited' to ensure that any output that refers to 'days'
+     * (i.e. between 1 day and 26 days elapsed time) will refer to the difference in
+     * *calendar* days between the timestamps.   Set to 'full' to ensure that any output less
+     * than 25 days will refer to the difference in *calendar* days. Off (default)
+     * will indicate that the standard moment formatting should be used.
+     */
+    localDateMode?: 'full' | 'limited' | 'off';
 }
 
 /**
@@ -139,13 +147,13 @@ class RelativeTimestampLocalModel extends HoistModel {
 
 /**
  * Returns a string describing the approximate amount of time between a given timestamp and the
- * present moment in a friendly, human readable format.
+ * present moment in a friendly, human-readable format.
  */
 export function getRelativeTimestamp(
     timestamp: Date | number,
     options: RelativeTimestampOptions = {}
 ): string {
-    const localDateMode = options.localDateMode ?? false,
+    const {localDateMode} = options,
         relTo = options.relativeTo,
         relFmt = relTo ? (fmtCompactDate(relTo, {asHtml: true}) as string) : null,
         relFmtIsTime = relFmt?.includes(':');
@@ -153,13 +161,18 @@ export function getRelativeTimestamp(
     options = {
         allowFuture: false,
         short: XH.isMobileApp,
-        futureSuffix: relTo ? `after ${relFmt}` : localDateMode ? 'from today' : 'from now',
         pastSuffix: relTo ? `before ${relFmt}` : 'ago',
+        futureSuffix: relTo
+            ? `after ${relFmt}`
+            : localDateMode == 'full'
+            ? 'from today'
+            : 'from now',
         equalString: relTo
             ? `${relFmtIsTime ? 'at' : 'on'}  ${relFmt}`
-            : localDateMode
+            : localDateMode == 'full'
             ? 'today'
             : 'just now',
+
         epsilon: 10,
         emptyResult: '',
         prefix: '',
@@ -177,11 +190,19 @@ export function getRelativeTimestamp(
 // Implementation
 //------------------------
 function doFormat(timestamp: Date | number, opts: RelativeTimestampOptions): string {
-    const {prefix, equalString, epsilon, allowFuture, short, localDateMode} = opts,
-        ldDiff = getLocalDateDiff(opts.relativeTo, timestamp),
-        rawDiff = toTimestamp(opts.relativeTo) - toTimestamp(timestamp),
-        diff = localDateMode ? ldDiff : rawDiff,
-        elapsed = Math.abs(diff),
+    let {relativeTo, localDateMode} = opts,
+        diff = toTimestamp(relativeTo) - toTimestamp(timestamp),
+        elapsed = Math.abs(diff);
+
+    if (
+        (localDateMode == 'limited' && inRange(elapsed, 1 * DAYS, 26 * DAYS)) ||
+        (localDateMode == 'full' && inRange(elapsed, 0, 26 * DAYS))
+    ) {
+        diff = LocalDate.from(relativeTo).diff(LocalDate.from(timestamp)) * DAYS;
+        elapsed = Math.abs(diff);
+    }
+
+    const {prefix, equalString, epsilon, allowFuture, short} = opts,
         isEqual = elapsed <= (epsilon ?? 0) * SECONDS,
         isFuture = !isEqual && diff < 0;
 
@@ -192,14 +213,19 @@ function doFormat(timestamp: Date | number, opts: RelativeTimestampOptions): str
         console.warn(`Unexpected future date provided for timestamp: ${elapsed}ms in the future.`);
         ret = '[????]';
     } else {
-        const duration = getDuration(elapsed, localDateMode, ldDiff);
-        // By default, moment will show 'a few seconds' for durations of 0-45 seconds. At the higher
-        // end of that range that output is a bit too inaccurate, so we replace as per below.
-        ret = elapsed < 60 * SECONDS ? '<1 minute' : duration.humanize();
+        if (elapsed < 60 * SECONDS) {
+            // By default, moment will show 'a few seconds' for durations of 0-45 seconds. At the higher
+            // end of that range that output is a bit too inaccurate, so we replace as per below.
+            ret = '<1 minute';
+        } else {
+            // Main delegate to humanize. Use 24h threshold vs. default 22h to avoid corner case
+            // transition w/localDateMode = limited: e.g. 21 hours -> zero days.
+            ret = moment.duration(elapsed).humanize({h: 24});
 
-        // Moment outputs e.g. "a minute" instead of "1 minute". This creates some awkwardness
-        // when the leading number comes and goes - "<1 minute" -> "a minute" -> "2 minutes".
-        ret = ret.replace(/^(an|a) /, '1 ');
+            // Moment outputs e.g. "a minute" instead of "1 minute". This creates some awkwardness
+            // when the leading number comes and goes - "<1 minute" -> "a minute" -> "2 minutes".
+            ret = ret.replace(/^(an|a) /, '1 ');
+        }
 
         if (short) ret = ret.replace('minute', 'min').replace('second', 'sec');
 
@@ -211,23 +237,4 @@ function doFormat(timestamp: Date | number, opts: RelativeTimestampOptions): str
 
 function toTimestamp(v: Date | number): number {
     return v instanceof Date ? v.getTime() : v;
-}
-
-function getLocalDateDiff(relativeTo: Date | number, timestamp: Date | number): number {
-    return LocalDate.from(relativeTo).diff(LocalDate.from(timestamp)) * DAYS;
-}
-
-/**
- * Ensure that moment's "days" duration is always a localDate calculation.
- * This prevents presenting "2 days ago" for a timestamp representing "yesterday".
- */
-function getDuration(elapsed: number, localDateMode: boolean, ldDiff: number): moment.Duration {
-    const duration = moment.duration(elapsed);
-    if (localDateMode || !duration.days()) return duration;
-
-    const atLeastAMonth = ['months', 'years'].some(it => duration[it]());
-    if (atLeastAMonth) return duration;
-
-    // recalculate duration as if in localDate mode
-    return moment.duration(Math.abs(ldDiff));
 }
