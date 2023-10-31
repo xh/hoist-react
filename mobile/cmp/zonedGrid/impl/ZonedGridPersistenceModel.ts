@@ -27,18 +27,18 @@ export class ZonedGridPersistenceModel extends HoistModel {
     @managed
     provider: PersistenceProvider;
 
-    constructor(
-        zonedGridModel: ZonedGridModel,
-        {
+    constructor(zonedGridModel: ZonedGridModel, config: ZonedGridModelPersistOptions) {
+        super();
+        makeObservable(this);
+
+        this.zonedGridModel = zonedGridModel;
+
+        let {
             persistMapping = true,
             persistGrouping = true,
             persistSort = true,
             ...persistWith
-        }: ZonedGridModelPersistOptions
-    ) {
-        super();
-        makeObservable(this);
-        this.zonedGridModel = zonedGridModel;
+        } = config;
 
         persistWith = {path: 'zonedGrid', ...persistWith};
 

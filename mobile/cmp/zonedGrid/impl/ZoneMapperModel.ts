@@ -115,7 +115,7 @@ export class ZoneMapperModel extends HoistModel {
             },
             {
                 track: () => XH.routerState,
-                run: this.close
+                run: () => this.close()
             }
         );
     }

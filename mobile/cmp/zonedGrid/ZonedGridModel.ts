@@ -25,6 +25,7 @@ import {ReactNode} from 'react';
 import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
 import {ZonedGridPersistenceModel} from './impl/ZonedGridPersistenceModel';
 import {ZonedGridModelPersistOptions, Zone, ZoneLimit, ZoneMapping} from './Types';
+import {throwIf} from '@xh/hoist/utils/js';
 
 export interface ZonedGridConfig extends GridConfig {
     /**
@@ -48,10 +49,16 @@ export interface ZonedGridConfig extends GridConfig {
     /** Optional configurations for zone constraints. */
     limits?: Partial<Record<Zone, ZoneLimit>>;
 
-    /** Optional configs to apply to left column */
+    /**
+     * Optional configs to apply to left column. Intended for use as an `escape hatch`, and should be used with care.
+     * Settings made here may interfere with the implementation of this component.
+     */
     leftColumnSpec?: Partial<ColumnSpec>;
 
-    /** Optional configs to apply to right column */
+    /**
+     * Optional configs to apply to right column. Intended for use as an `escape hatch`, and should be used with care.
+     * Settings made here may interfere with the implementation of this component.
+     */
     rightColumnSpec?: Partial<ColumnSpec>;
 
     /** String rendered between consecutive SubFields. */
@@ -212,143 +219,6 @@ export class ZonedGridModel extends HoistModel {
     }
 
     //-----------------------
-    // Implementation
-    //-----------------------
-    private createGridModel(config: GridConfig): GridModel {
-        return new GridModel({
-            ...config,
-            sizingMode: 'standard',
-            cellBorders: true,
-            rowBorders: true,
-            stripeRows: false,
-            autosizeOptions: {mode: 'disabled'},
-            columns: this.getColumns()
-        });
-    }
-
-    private getColumns(): ColumnSpec[] {
-        return [
-            this.buildZonedColumn(true),
-            this.buildZonedColumn(false),
-            // Ensure all available columns are provided as hidden columns for lookup by multifield renderer
-            ...this.availableColumns
-        ];
-    }
-
-    private buildZonedColumn(isLeft: boolean): ColumnSpec {
-        const topMappings = this.mappings[isLeft ? 'tl' : 'tr'],
-            bottomMappings = this.mappings[isLeft ? 'bl' : 'br'];
-
-        if (isEmpty(topMappings)) {
-            throw XH.exception(
-                `${isLeft ? 'Left' : 'Right'} column requires at least one top mapping`
-            );
-        }
-
-        // Extract the primary column from the top mappings
-        const primaryCol = new Column(this.findColumnSpec(topMappings[0]), this.gridModel);
-
-        // Extract the sub-fields from the other mappings
-        const subFields = [];
-        topMappings.slice(1).forEach(it => {
-            subFields.push({colId: it.field, label: it.showLabel, position: 'top'});
-        });
-        bottomMappings.forEach(it => {
-            subFields.push({colId: it.field, label: it.showLabel, position: 'bottom'});
-        });
-
-        return {
-            // Controlled properties
-            colId: isLeft ? 'left_column' : 'right_column',
-            headerName: primaryCol.headerName,
-            field: primaryCol.field,
-            flex: isLeft ? 2 : 1,
-            align: isLeft ? 'left' : 'right',
-            renderer: multiFieldRenderer,
-            rowHeight: Grid['MULTIFIELD_ROW_HEIGHT'],
-            resizable: false,
-            movable: false,
-            hideable: false,
-            appData: {
-                multiFieldConfig: {
-                    mainRenderer: primaryCol.renderer,
-                    delimiter: this.delimiter,
-                    subFields
-                }
-            },
-
-            // Properties inherited from primary column
-            absSort: primaryCol.absSort,
-            sortingOrder: primaryCol.sortingOrder,
-            sortValue: primaryCol.sortValue,
-            sortToBottom: primaryCol.sortToBottom,
-            comparator: primaryCol.comparator,
-            sortable: primaryCol.sortable,
-            getValueFn: primaryCol.getValueFn,
-
-            // Optional overrides
-            ...(isLeft ? this.leftColumnSpec : this.rightColumnSpec)
-        };
-    }
-
-    private findColumnSpec(mapping: ZoneMapping): ColumnSpec {
-        return this.availableColumns.find(it => {
-            const {field} = it;
-            return isString(field) ? field === mapping.field : field.name === mapping.field;
-        });
-    }
-
-    private parseMappings(
-        mappings: Record<Zone, Some<string | ZoneMapping>>
-    ): Record<Zone, ZoneMapping[]> {
-        const ret = {} as Record<Zone, ZoneMapping[]>;
-        forOwn(mappings, (rawMapping, zone) => {
-            // 1) Standardize mapping into an array of ZoneMappings
-            const mapping = [];
-            castArray(rawMapping).forEach(it => {
-                if (!it) return;
-
-                const ret = isString(it) ? {field: it} : it,
-                    col = this.findColumnSpec(ret);
-
-                if (!col) throw XH.exception(`Column not found for field ${ret.field}`);
-                return mapping.push(ret);
-            });
-
-            // 2) Ensure mapping respects configured limits
-            const limit = this.limits?.[zone];
-            if (limit) {
-                if (isFinite(limit.min) && mapping.length < limit.min) {
-                    throw XH.exception(`Requires minimum ${limit.min} mappings in zone "${zone}"`);
-                }
-                if (isFinite(limit.max) && mapping.length > limit.max) {
-                    throw XH.exception(`Exceeds maximum ${limit.max} mappings in zone "${zone}"`);
-                }
-                if (!isEmpty(limit.only)) {
-                    mapping.forEach(it => {
-                        if (!limit.only.includes(it.field)) {
-                            throw XH.exception(`Field "${it.field}" not allowed in zone "${zone}"`);
-                        }
-                    });
-                }
-            }
-
-            ret[zone] = mapping;
-        });
-        return ret;
-    }
-
-    private parseMapperModel(mapperModel: ZoneMapperConfig | boolean): ZoneMapperModel {
-        if (isPlainObject(mapperModel)) {
-            return new ZoneMapperModel({
-                ...(mapperModel as ZoneMapperConfig),
-                zonedGridModel: this
-            });
-        }
-        return mapperModel ? new ZoneMapperModel({zonedGridModel: this}) : null;
-    }
-
-    //-----------------------
     // Getters and methods trampolined from GridModel.
     //-----------------------
     get store() {
@@ -449,5 +319,145 @@ export class ZonedGridModel extends HoistModel {
             return this.gridModel.setSortBy({...sorter, colId: 'right_column'});
         }
         return this.gridModel.setSortBy(sorter);
+    }
+
+    //-----------------------
+    // Implementation
+    //-----------------------
+    private createGridModel(config: GridConfig): GridModel {
+        return new GridModel({
+            ...config,
+            sizingMode: 'standard',
+            cellBorders: true,
+            rowBorders: true,
+            stripeRows: false,
+            autosizeOptions: {mode: 'disabled'},
+            columns: this.getColumns()
+        });
+    }
+
+    private getColumns(): ColumnSpec[] {
+        return [
+            this.buildZonedColumn(true),
+            this.buildZonedColumn(false),
+            // Ensure all available columns are provided as hidden columns for lookup by multifield renderer
+            ...this.availableColumns
+        ];
+    }
+
+    private buildZonedColumn(isLeft: boolean): ColumnSpec {
+        const topMappings = this.mappings[isLeft ? 'tl' : 'tr'],
+            bottomMappings = this.mappings[isLeft ? 'bl' : 'br'];
+
+        throwIf(
+            isEmpty(topMappings),
+            `${isLeft ? 'Left' : 'Right'} column requires at least one top mapping`
+        );
+
+        // Extract the primary column from the top mappings
+        const primaryCol = new Column(this.findColumnSpec(topMappings[0]), this.gridModel);
+
+        // Extract the sub-fields from the other mappings
+        const subFields = [];
+        topMappings.slice(1).forEach(it => {
+            subFields.push({colId: it.field, label: it.showLabel, position: 'top'});
+        });
+        bottomMappings.forEach(it => {
+            subFields.push({colId: it.field, label: it.showLabel, position: 'bottom'});
+        });
+
+        return {
+            // Controlled properties
+            colId: isLeft ? 'left_column' : 'right_column',
+            headerName: primaryCol.headerName,
+            field: primaryCol.field,
+            flex: isLeft ? 2 : 1,
+            align: isLeft ? 'left' : 'right',
+            renderer: multiFieldRenderer,
+            rowHeight: Grid['MULTIFIELD_ROW_HEIGHT'],
+            resizable: false,
+            movable: false,
+            hideable: false,
+            appData: {
+                multiFieldConfig: {
+                    mainRenderer: primaryCol.renderer,
+                    delimiter: this.delimiter,
+                    subFields
+                }
+            },
+
+            // Properties inherited from primary column
+            absSort: primaryCol.absSort,
+            sortingOrder: primaryCol.sortingOrder,
+            sortValue: primaryCol.sortValue,
+            sortToBottom: primaryCol.sortToBottom,
+            comparator: primaryCol.comparator,
+            sortable: primaryCol.sortable,
+            getValueFn: primaryCol.getValueFn,
+
+            // Optional overrides
+            ...(isLeft ? this.leftColumnSpec : this.rightColumnSpec)
+        };
+    }
+
+    private findColumnSpec(mapping: ZoneMapping): ColumnSpec {
+        return this.availableColumns.find(it => {
+            const {field} = it;
+            return isString(field) ? field === mapping.field : field.name === mapping.field;
+        });
+    }
+
+    private parseMappings(
+        mappings: Record<Zone, Some<string | ZoneMapping>>
+    ): Record<Zone, ZoneMapping[]> {
+        const ret = {} as Record<Zone, ZoneMapping[]>;
+        forOwn(mappings, (rawMapping, zone) => {
+            // 1) Standardize mapping into an array of ZoneMappings
+            const mapping = [];
+            castArray(rawMapping).forEach(it => {
+                if (!it) return;
+
+                const ret = isString(it) ? {field: it} : it,
+                    col = this.findColumnSpec(ret);
+
+                throwIf(!col, `Column not found for field ${ret.field}`);
+                return mapping.push(ret);
+            });
+
+            // 2) Ensure mapping respects configured limits
+            const limit = this.limits?.[zone];
+            if (limit) {
+                throwIf(
+                    isFinite(limit.min) && mapping.length < limit.min,
+                    `Requires minimum ${limit.min} mappings in zone "${zone}"`
+                );
+                throwIf(
+                    isFinite(limit.max) && mapping.length > limit.max,
+                    `Exceeds maximum ${limit.max} mappings in zone "${zone}"`
+                );
+
+                if (!isEmpty(limit.only)) {
+                    mapping.forEach(it => {
+                        throwIf(
+                            !limit.only.includes(it.field),
+                            `Field "${it.field}" not allowed in zone "${zone}"`
+                        );
+                    });
+                }
+            }
+
+            ret[zone] = mapping;
+        });
+        return ret;
+    }
+
+    private parseMapperModel(mapperModel: ZoneMapperConfig | boolean): ZoneMapperModel {
+        if (isPlainObject(mapperModel)) {
+            return new ZoneMapperModel({
+                ...(mapperModel as ZoneMapperConfig),
+                zonedGridModel: this
+            });
+        }
+        return mapperModel ? new ZoneMapperModel({zonedGridModel: this}) : null;
     }
 }
