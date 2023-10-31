@@ -19,8 +19,8 @@
 
 * Added `Column.sortToBottom` which supports always sorting specified values to the bottom,
   regardless of sort direction.
-* `RelativeTimestamp` component accepts new option `localDateMode` to calculate differences without time portions.
-
+* `RelativeTimestamp` component accepts new option `localDateMode` to display differences based
+   on calendar days.
 ### 💥 Breaking Changes
 
 * The `XH.getActiveModels` method has been renamed to `XH.getModels` for clarity and consistency.
