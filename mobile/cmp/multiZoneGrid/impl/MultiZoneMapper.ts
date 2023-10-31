@@ -6,10 +6,11 @@
  */
 import '@xh/hoist/mobile/register';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {div, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
-import {dialogPanel} from '@xh/hoist/mobile/cmp/panel';
-import {grid} from '@xh/hoist/cmp/grid';
+import {div, filler, hbox, hframe, span, vbox} from '@xh/hoist/cmp/layout';
+import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
+import {grid, GridSorter} from '@xh/hoist/cmp/grid';
 import {button} from '@xh/hoist/mobile/cmp/button';
+import {select} from '@xh/hoist/mobile/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {intersperse} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
@@ -37,7 +38,7 @@ export const [MultiZoneMapper, multiZoneMapper] = hoistCmp.withFactory<MultiZone
             title: 'Customize Grid Fields',
             icon: Icon.gridLarge(),
             className,
-            items: [zonePicker(), grid()],
+            items: [zonePicker(), grid(), sortPicker()],
             bbar: [
                 button({
                     omit: !showRestoreDefaults,
@@ -110,3 +111,41 @@ const zoneCell = hoistCmp.factory<MultiZoneMapperModel>({
         });
     }
 });
+
+const sortPicker = hoistCmp.factory<MultiZoneMapperModel>({
+    render({model}) {
+        const {sortBy} = model;
+        return panel({
+            title: 'Sorting',
+            icon: Icon.list(),
+            className: 'xh-multi-zone-mapper__sort-picker',
+            items: hframe(
+                select({
+                    bind: 'sortByColId',
+                    enableFilter: true,
+                    enableFullscreen: true,
+                    title: 'Sorting',
+                    fullScreenZIndex: 10002,
+                    flex: 1,
+                    options: model.sortByOptions
+                }),
+                button({
+                    icon: getSortIcon(sortBy),
+                    width: 45,
+                    height: '100%',
+                    onClick: () => model.setNextSortBy()
+                })
+            )
+        });
+    }
+});
+
+function getSortIcon(sortBy: GridSorter) {
+    if (!sortBy) return null;
+    const {abs, sort} = sortBy;
+    if (sort === 'asc') {
+        return abs ? Icon.sortAbsAsc() : Icon.sortAsc();
+    } else if (sort === 'desc') {
+        return abs ? Icon.sortAbsDesc() : Icon.sortDesc();
+    }
+}

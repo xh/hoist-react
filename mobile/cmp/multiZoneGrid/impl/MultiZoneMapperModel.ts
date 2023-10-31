@@ -9,13 +9,13 @@ import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {span} from '@xh/hoist/cmp/layout';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {StoreRecord} from '@xh/hoist/data';
-import {Column, ColumnRenderer, GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel, GridSorter} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/mobile/cmp/input';
 import {wait} from '@xh/hoist/promise';
-import {cloneDeep, isBoolean, isEmpty, isEqual, isString} from 'lodash';
+import {cloneDeep, findIndex, isBoolean, isEmpty, isEqual, isFinite, isString} from 'lodash';
 import {ReactNode} from 'react';
 import {MultiZoneGridModel} from '../MultiZoneGridModel';
-import {Zone, ZoneLimit, ZoneMapping} from '../Types';
+import {MapperField, Zone, ZoneLimit, ZoneMapping} from '../Types';
 
 export interface MultiZoneMapperConfig {
     /** The MultiZoneGridModel to be configured. */
@@ -51,12 +51,16 @@ export class MultiZoneMapperModel extends HoistModel {
     @observable.ref
     mappings: Record<Zone, ZoneMapping[]>;
 
+    @observable.ref
+    sortBy: GridSorter;
+
     fields: MapperField[] = [];
     sampleRecord: StoreRecord;
 
     @computed
     get isDirty(): boolean {
-        return !isEqual(this.mappings, this.multiZoneGridModel.mappings);
+        const {mappings, sortBy} = this.multiZoneGridModel;
+        return !isEqual(this.mappings, mappings) || !isEqual(this.sortBy, sortBy);
     }
 
     get leftFlex(): number {
@@ -75,6 +79,19 @@ export class MultiZoneMapperModel extends HoistModel {
 
     get delimiter(): string {
         return this.multiZoneGridModel.delimiter;
+    }
+
+    get sortByColId() {
+        return this.sortBy?.colId;
+    }
+
+    get sortByOptions() {
+        return this.fields
+            .filter(it => it.sortable)
+            .map(it => {
+                const {field, displayName} = it;
+                return {value: field, label: displayName};
+            });
     }
 
     constructor(config: MultiZoneMapperConfig) {
@@ -120,12 +137,34 @@ export class MultiZoneMapperModel extends HoistModel {
 
     commit() {
         this.multiZoneGridModel.setMappings(this.mappings);
+        this.multiZoneGridModel.setSortBy(this.sortBy);
     }
 
     getSamplesForZone(zone: Zone): ReactNode[] {
         return this.mappings[zone].map(mapping => {
             return this.getSampleForMapping(mapping);
         });
+    }
+
+    //------------------------
+    // Sorting
+    //------------------------
+    @action
+    setSortByColId(colId: string) {
+        const {sortingOrder} = this.fields.find(it => it.field === colId);
+
+        // Default direction|abs to first entry in sortingOrder
+        this.sortBy = GridSorter.parse({colId, ...sortingOrder[0]});
+    }
+
+    @action
+    setNextSortBy() {
+        const {colId, sort, abs} = this.sortBy,
+            {sortingOrder} = this.fields.find(it => it.field === colId),
+            currIdx = findIndex(sortingOrder, {sort, abs}),
+            nextIdx = isFinite(currIdx) ? (currIdx + 1) % sortingOrder.length : 0;
+
+        this.sortBy = GridSorter.parse({colId, ...sortingOrder[nextIdx]});
     }
 
     //------------------------
@@ -136,7 +175,7 @@ export class MultiZoneMapperModel extends HoistModel {
         return multiZoneGridModel.availableColumns.map(it => {
             const fieldName = isString(it.field) ? it.field : it.field.name,
                 column = multiZoneGridModel.gridModel.getColumn(fieldName),
-                displayName = multiZoneGridModel.getDisplayName(fieldName),
+                displayName = column.displayName,
                 label = isString(it.headerName) ? it.headerName : displayName;
 
             return {
@@ -145,7 +184,9 @@ export class MultiZoneMapperModel extends HoistModel {
                 label: label,
                 column: column,
                 renderer: column.renderer,
-                chooserGroup: column.chooserGroup
+                chooserGroup: column.chooserGroup,
+                sortable: column.sortable,
+                sortingOrder: column.sortingOrder
             };
         });
     }
@@ -188,8 +229,10 @@ export class MultiZoneMapperModel extends HoistModel {
 
     @action
     private syncMapperData() {
-        // Copy latest mappings from grid
-        this.mappings = cloneDeep(this.multiZoneGridModel.mappings);
+        // Copy latest mappings and sortBy from grid
+        const {mappings, sortBy} = this.multiZoneGridModel;
+        this.mappings = cloneDeep(mappings);
+        this.sortBy = sortBy ? cloneDeep(sortBy) : null;
 
         // Take sample record from grid
         this.sampleRecord = this.getSampleRecord();
@@ -351,13 +394,4 @@ export class MultiZoneMapperModel extends HoistModel {
         }
         return ret;
     }
-}
-
-interface MapperField {
-    field: string;
-    displayName: string;
-    label: string;
-    renderer: ColumnRenderer;
-    column: Column;
-    chooserGroup: string;
 }

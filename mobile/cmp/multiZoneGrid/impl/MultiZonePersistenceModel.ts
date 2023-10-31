@@ -101,7 +101,7 @@ export class MultiZonePersistenceModel extends HoistModel {
         return {
             track: () => this.multiZoneGridModel.sortBy,
             run: sortBy => {
-                this.patchState({sortBy: sortBy.map(it => it.toString())});
+                this.patchState({sortBy: sortBy?.toString()});
             }
         };
     }

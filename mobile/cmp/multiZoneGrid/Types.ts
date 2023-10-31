@@ -5,6 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
+import {Column, ColumnRenderer, ColumnSortSpec} from '@xh/hoist/cmp/grid';
 import {PersistOptions} from '@xh/hoist/core';
 
 export type Zone = 'tl' | 'tr' | 'bl' | 'br';
@@ -23,6 +24,17 @@ export interface ZoneLimit {
     max?: number;
     /** Array of allowed fields for the zone */
     only?: string[];
+}
+
+export interface MapperField {
+    field: string;
+    displayName: string;
+    label: string;
+    renderer: ColumnRenderer;
+    column: Column;
+    chooserGroup: string;
+    sortable: boolean;
+    sortingOrder: ColumnSortSpec[];
 }
 
 export interface MultiZoneGridModelPersistOptions extends PersistOptions {

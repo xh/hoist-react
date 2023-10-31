@@ -15,6 +15,7 @@ import {
     Grid,
     GridConfig,
     GridModel,
+    GridSorter,
     GridSorterLike,
     multiFieldRenderer
 } from '@xh/hoist/cmp/grid';
@@ -34,6 +35,15 @@ export interface MultiZoneGridConfig extends GridConfig {
 
     /** Mappings of columns to zones. */
     mappings: Record<Zone, Some<string | ZoneMapping>>;
+
+    /**
+     * Initial sort to apply to grid data.
+     * Note that unlike GridModel, multi-sort is not supported.
+     */
+    sortBy?: GridSorterLike;
+
+    /** Column ID(s) by which to do full-width grouping. */
+    groupBy?: Some<string>;
 
     /** Optional configurations for zone constraints. */
     limits?: Partial<Record<Zone, ZoneLimit>>;
@@ -113,6 +123,8 @@ export class MultiZoneGridModel extends HoistModel {
             columns,
             limits,
             mappings,
+            sortBy,
+            groupBy,
             leftColumnSpec,
             rightColumnSpec,
             delimiter,
@@ -135,11 +147,14 @@ export class MultiZoneGridModel extends HoistModel {
 
         this._defaultState = {
             mappings: this.mappings,
-            sortBy: rest.sortBy,
-            groupBy: rest.groupBy
+            sortBy: sortBy,
+            groupBy: groupBy
         };
 
         this.gridModel = this.createGridModel(rest);
+        this.setSortBy(sortBy);
+        this.setGroupBy(groupBy);
+
         this.mapperModel = this.parseMapperModel(multiZoneMapperModel);
         this.persistenceModel = persistWith
             ? new MultiZonePersistenceModel(this, persistWith)
@@ -196,11 +211,6 @@ export class MultiZoneGridModel extends HoistModel {
         this.gridModel.setColumns(this.getColumns());
     }
 
-    getDisplayName(field: string): string {
-        const ret = this.gridModel.findColumn(this.gridModel.columns, field);
-        return ret.displayName;
-    }
-
     //-----------------------
     // Implementation
     //-----------------------
@@ -253,6 +263,7 @@ export class MultiZoneGridModel extends HoistModel {
             headerName: primaryCol.headerName,
             field: primaryCol.field,
             flex: isLeft ? 2 : 1,
+            align: isLeft ? 'left' : 'right',
             renderer: multiFieldRenderer,
             rowHeight: Grid['MULTIFIELD_ROW_HEIGHT'],
             resizable: false,
@@ -372,8 +383,20 @@ export class MultiZoneGridModel extends HoistModel {
         return this.gridModel.groupBy;
     }
 
-    get sortBy() {
-        return this.gridModel.sortBy;
+    get sortBy(): GridSorter {
+        const ret = this.gridModel.sortBy?.[0];
+        if (!ret) return null;
+
+        // Normalize 'left_column' and 'right_column' to actual underlying fields
+        if (ret?.colId === 'left_column') {
+            const colId = this.mappings.tl[0]?.field;
+            return colId ? new GridSorter({...ret, colId}) : null;
+        } else if (ret?.colId === 'right_column') {
+            const colId = this.mappings.tr[0]?.field;
+            return colId ? new GridSorter({...ret, colId}) : null;
+        }
+
+        return ret;
     }
 
     selectAsync(
@@ -415,7 +438,16 @@ export class MultiZoneGridModel extends HoistModel {
         return this.gridModel.setGroupBy(colIds);
     }
 
-    setSortBy(sorters: Some<GridSorterLike>) {
-        return this.gridModel.setSortBy(sorters);
+    setSortBy(cfg: GridSorterLike) {
+        // If the field is mapping to the primary field in a left/right column, set
+        // 'left_column'/'right_column' colId instead to display the arrows in the header.
+        const sorter = GridSorter.parse(cfg);
+        if (sorter?.colId === this.mappings.tl[0]?.field) {
+            return this.gridModel.setSortBy({...sorter, colId: 'left_column'});
+        }
+        if (sorter?.colId === this.mappings.tr[0]?.field) {
+            return this.gridModel.setSortBy({...sorter, colId: 'right_column'});
+        }
+        return this.gridModel.setSortBy(sorter);
     }
 }
