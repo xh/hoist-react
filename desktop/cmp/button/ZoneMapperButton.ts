@@ -7,44 +7,45 @@
 import '@xh/hoist/desktop/register';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {div, vbox} from '@xh/hoist/cmp/layout';
-import {ZonedGridModel, ZoneMapperModel} from '@xh/hoist/cmp/zonedGrid';
-import {zoneMapper} from '@xh/hoist/desktop/cmp/zonedGrid/impl/ZoneMapper';
+import {ZoneGridModel} from '../../../cmp/zoneGrid';
+import {ZoneMapperModel} from '@xh/hoist/cmp/zoneGrid/impl/ZoneMapperModel';
+import {zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapper';
 import {Icon} from '@xh/hoist/icon';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
 import {stopPropagation, withDefault} from '@xh/hoist/utils/js';
 import {button, ButtonProps} from './Button';
 
 export interface ZoneMapperButtonProps extends ButtonProps {
-    /** ZonedGridModel of the grid for which this button should show a chooser. */
-    zonedGridModel?: ZonedGridModel;
+    /** ZoneGridModel of the grid for which this button should show a chooser. */
+    zoneGridModel?: ZoneGridModel;
 
     /** Position for chooser popover, as per Blueprint docs. */
     popoverPosition?: Position;
 }
 
 /**
- * A convenience button to trigger the display of a ZoneMapper UI for ZonedGrid configuration.
+ * A convenience button to trigger the display of a ZoneMapper UI for ZoneGrid configuration.
  *
- * Requires a `ZonedGridModel.zoneMapperModel` config option, set to true for default implementation.
+ * Requires a `ZoneGridModel.zoneMapperModel` config option, set to true for default implementation.
  */
 export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMapperButtonProps>({
     displayName: 'ZoneMapperButton',
     model: false,
-    render({icon, title, zonedGridModel, popoverPosition, disabled, ...rest}, ref) {
-        zonedGridModel = withDefault(zonedGridModel, useContextModel(ZonedGridModel));
+    render({icon, title, zoneGridModel, popoverPosition, disabled, ...rest}, ref) {
+        zoneGridModel = withDefault(zoneGridModel, useContextModel(ZoneGridModel));
 
-        const mapperModel = zonedGridModel?.mapperModel as ZoneMapperModel;
+        const mapperModel = zoneGridModel?.mapperModel as ZoneMapperModel;
 
-        if (!zonedGridModel) {
+        if (!zoneGridModel) {
             console.error(
-                "No ZonedGridModel available to ZoneMapperButton. Provide via a 'zonedGridModel' prop, or context."
+                "No ZoneGridModel available to ZoneMapperButton. Provide via a 'zoneGridModel' prop, or context."
             );
             disabled = true;
         }
 
         if (!mapperModel) {
             console.error(
-                'No ZoneMapperModel available on bound ZonedGridModel - enable via ZonedGridModel.zoneMapperModel config.'
+                'No ZoneMapperModel available on bound ZoneGridModel - enable via ZoneGridModel.zoneMapperModel config.'
             );
             disabled = true;
         }

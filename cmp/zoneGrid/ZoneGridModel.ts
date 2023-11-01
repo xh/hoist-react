@@ -22,14 +22,14 @@ import {Icon} from '@xh/hoist/icon';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {castArray, forOwn, isEmpty, isFinite, isPlainObject, isString} from 'lodash';
 import {ReactNode} from 'react';
-import {ZoneMapperConfig, ZoneMapperModel} from './ZoneMapperModel';
-import {ZonedGridPersistenceModel} from './impl/ZonedGridPersistenceModel';
-import {ZonedGridModelPersistOptions, Zone, ZoneLimit, ZoneMapping} from './Types';
+import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
+import {ZoneGridPersistenceModel} from './impl/ZoneGridPersistenceModel';
+import {ZoneGridModelPersistOptions, Zone, ZoneLimit, ZoneMapping} from './Types';
 
-export interface ZonedGridConfig extends GridConfig {
+export interface ZoneGridConfig extends GridConfig {
     /**
      * Available columns for this grid. Note that the actual display of
-     * the zoned columns is managed via `mappings` below.
+     * the zone columns is managed via `mappings` below.
      */
     columns: Array<ColumnSpec>;
 
@@ -67,7 +67,7 @@ export interface ZonedGridConfig extends GridConfig {
     zoneMapperModel?: ZoneMapperConfig | boolean;
 
     /**
-     * Function to be called when the user triggers ZonedGridModel.restoreDefaultsAsync().
+     * Function to be called when the user triggers ZoneGridModel.restoreDefaultsAsync().
      * This function will be called after the built-in defaults have been restored, and can be
      * used to restore application specific defaults.
      */
@@ -80,16 +80,16 @@ export interface ZonedGridConfig extends GridConfig {
     restoreDefaultsWarning?: ReactNode;
 
     /** Options governing persistence. */
-    persistWith?: ZonedGridModelPersistOptions;
+    persistWith?: ZoneGridModelPersistOptions;
 }
 
 /**
- * ZonedGridModel is a wrapper around GridModel, which shows date in a grid with multi-line
+ * ZoneGridModel is a wrapper around GridModel, which shows date in a grid with multi-line
  * full-width rows, each broken into four zones for top/bottom and left/right.
  *
- * This is the primary app entry-point for specifying ZonedGrid component options and behavior.
+ * This is the primary app entry-point for specifying ZoneGrid component options and behavior.
  */
-export class ZonedGridModel extends HoistModel {
+export class ZoneGridModel extends HoistModel {
     static DEFAULT_RESTORE_DEFAULTS_WARNING = fragment(
         'This action will clear any customizations you have made to this grid, including zone mappings and sorting.',
         br(),
@@ -119,9 +119,9 @@ export class ZonedGridModel extends HoistModel {
     restoreDefaultsWarning: ReactNode;
 
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
-    @managed persistenceModel: ZonedGridPersistenceModel;
+    @managed persistenceModel: ZoneGridPersistenceModel;
 
-    constructor(config: ZonedGridConfig) {
+    constructor(config: ZoneGridConfig) {
         super();
         makeObservable(this);
 
@@ -136,7 +136,7 @@ export class ZonedGridModel extends HoistModel {
             delimiter,
             zoneMapperModel,
             restoreDefaultsFn,
-            restoreDefaultsWarning = ZonedGridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
+            restoreDefaultsWarning = ZoneGridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
             persistWith,
             ...rest
         } = config;
@@ -164,7 +164,7 @@ export class ZonedGridModel extends HoistModel {
 
         this.mapperModel = this.parseMapperModel(zoneMapperModel);
         this.persistenceModel = persistWith
-            ? new ZonedGridPersistenceModel(this, persistWith)
+            ? new ZoneGridPersistenceModel(this, persistWith)
             : null;
 
         this.addReaction({
@@ -358,14 +358,14 @@ export class ZonedGridModel extends HoistModel {
 
     private getColumns(): ColumnSpec[] {
         return [
-            this.buildZonedColumn(true),
-            this.buildZonedColumn(false),
+            this.buildZoneColumn(true),
+            this.buildZoneColumn(false),
             // Ensure all available columns are provided as hidden columns for lookup by multifield renderer
             ...this.availableColumns
         ];
     }
 
-    private buildZonedColumn(isLeft: boolean): ColumnSpec {
+    private buildZoneColumn(isLeft: boolean): ColumnSpec {
         const topMappings = this.mappings[isLeft ? 'tl' : 'tr'],
             bottomMappings = this.mappings[isLeft ? 'bl' : 'br'];
 
@@ -474,9 +474,9 @@ export class ZonedGridModel extends HoistModel {
         if (isPlainObject(mapperModel)) {
             return new ZoneMapperModel({
                 ...(mapperModel as ZoneMapperConfig),
-                zonedGridModel: this
+                zoneGridModel: this
             });
         }
-        return mapperModel ? new ZoneMapperModel({zonedGridModel: this}) : null;
+        return mapperModel ? new ZoneMapperModel({zoneGridModel: this}) : null;
     }
 }

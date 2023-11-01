@@ -5,7 +5,6 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import '@xh/hoist/desktop/register';
-import {ZoneMapperModel} from '@xh/hoist/cmp/zonedGrid';
 import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses} from '@xh/hoist/core';
 import {div, filler, hbox, hframe, span, vbox} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -18,10 +17,11 @@ import {intersperse} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import classNames from 'classnames';
 import './ZoneMapper.scss';
+import {ZoneMapperModel} from '@xh/hoist/cmp/zoneGrid/impl/ZoneMapperModel';
 
 /**
- * Hoist UI for user selection and discovery of available ZonedGrid columns, enabled via the
- * `ZonedGridModel.zoneMapperModel` config option.
+ * Hoist UI for user selection and discovery of available ZoneGrid columns, enabled via the
+ * `ZoneGridModel.zoneMapperModel` config option.
  *
  * This component displays an example of each of the four zones, with the available columns for
  * the currently selected zone displayed in a list below. Users can toggle column visibility

@@ -7,19 +7,19 @@
 import {HoistModel, managed, PersistenceProvider, PlainObject} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
-import {ZonedGridModel} from '../ZonedGridModel';
-import {ZonedGridModelPersistOptions} from '../Types';
+import {ZoneGridModel} from '../ZoneGridModel';
+import {ZoneGridModelPersistOptions} from '../Types';
 
 /**
- * Model to manage persisting state from ZonedGridModel.
+ * Model to manage persisting state from ZoneGridModel.
  * @internal
  */
-export class ZonedGridPersistenceModel extends HoistModel {
+export class ZoneGridPersistenceModel extends HoistModel {
     override xhImpl = true;
 
     VERSION = 1; // Increment to abandon state.
 
-    zonedGridModel: ZonedGridModel;
+    zoneGridModel: ZoneGridModel;
 
     @observable.ref
     state: PlainObject;
@@ -27,11 +27,11 @@ export class ZonedGridPersistenceModel extends HoistModel {
     @managed
     provider: PersistenceProvider;
 
-    constructor(zonedGridModel: ZonedGridModel, config: ZonedGridModelPersistOptions) {
+    constructor(zoneGridModel: ZoneGridModel, config: ZoneGridModelPersistOptions) {
         super();
         makeObservable(this);
 
-        this.zonedGridModel = zonedGridModel;
+        this.zoneGridModel = zoneGridModel;
 
         let {
             persistMapping = true,
@@ -40,7 +40,7 @@ export class ZonedGridPersistenceModel extends HoistModel {
             ...persistWith
         } = config;
 
-        persistWith = {path: 'zonedGrid', ...persistWith};
+        persistWith = {path: 'zoneGrid', ...persistWith};
 
         // 1) Read state from and attach to provider -- fail gently
         try {
@@ -82,7 +82,7 @@ export class ZonedGridPersistenceModel extends HoistModel {
     //--------------------------
     mappingReaction() {
         return {
-            track: () => this.zonedGridModel.mappings,
+            track: () => this.zoneGridModel.mappings,
             run: mappings => {
                 this.patchState({mappings});
             }
@@ -91,7 +91,7 @@ export class ZonedGridPersistenceModel extends HoistModel {
 
     updateGridMapping() {
         const {mappings} = this.state;
-        if (!isUndefined(mappings)) this.zonedGridModel.setMappings(mappings);
+        if (!isUndefined(mappings)) this.zoneGridModel.setMappings(mappings);
     }
 
     //--------------------------
@@ -99,7 +99,7 @@ export class ZonedGridPersistenceModel extends HoistModel {
     //--------------------------
     sortReaction() {
         return {
-            track: () => this.zonedGridModel.sortBy,
+            track: () => this.zoneGridModel.sortBy,
             run: sortBy => {
                 this.patchState({sortBy: sortBy?.toString()});
             }
@@ -108,7 +108,7 @@ export class ZonedGridPersistenceModel extends HoistModel {
 
     updateGridSort() {
         const {sortBy} = this.state;
-        if (!isUndefined(sortBy)) this.zonedGridModel.setSortBy(sortBy);
+        if (!isUndefined(sortBy)) this.zoneGridModel.setSortBy(sortBy);
     }
 
     //--------------------------
@@ -116,7 +116,7 @@ export class ZonedGridPersistenceModel extends HoistModel {
     //--------------------------
     groupReaction() {
         return {
-            track: () => this.zonedGridModel.groupBy,
+            track: () => this.zoneGridModel.groupBy,
             run: groupBy => {
                 this.patchState({groupBy});
             }
@@ -125,7 +125,7 @@ export class ZonedGridPersistenceModel extends HoistModel {
 
     updateGridGroupBy() {
         const {groupBy} = this.state;
-        if (!isUndefined(groupBy)) this.zonedGridModel.setGroupBy(groupBy);
+        if (!isUndefined(groupBy)) this.zoneGridModel.setGroupBy(groupBy);
     }
 
     //--------------------------

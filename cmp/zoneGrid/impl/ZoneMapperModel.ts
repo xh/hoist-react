@@ -12,12 +12,12 @@ import {GridSorter} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {cloneDeep, findIndex, isBoolean, isEmpty, isEqual, isFinite, isString} from 'lodash';
 import {ReactNode} from 'react';
-import {ZonedGridModel} from './ZonedGridModel';
-import {MapperField, Zone, ZoneLimit, ZoneMapping} from './Types';
+import {ZoneGridModel} from '../ZoneGridModel';
+import {ZoneField, Zone, ZoneLimit, ZoneMapping} from '../Types';
 
 export interface ZoneMapperConfig {
-    /** The ZonedGridModel to be configured. */
-    zonedGridModel: ZonedGridModel;
+    /** The ZoneGridModel to be configured. */
+    zoneGridModel: ZoneGridModel;
 
     /** True (default) to show Reset button to restore default configuration. */
     showRestoreDefaults?: boolean;
@@ -34,7 +34,7 @@ export interface ZoneMapperConfig {
  * @internal
  */
 export class ZoneMapperModel extends HoistModel {
-    zonedGridModel: ZonedGridModel;
+    zoneGridModel: ZoneGridModel;
     showRestoreDefaults: boolean;
     groupColumns: boolean;
 
@@ -53,31 +53,31 @@ export class ZoneMapperModel extends HoistModel {
     @observable.ref
     sortBy: GridSorter;
 
-    fields: MapperField[] = [];
+    fields: ZoneField[] = [];
     sampleRecord: StoreRecord;
 
     @computed
     get isDirty(): boolean {
-        const {mappings, sortBy} = this.zonedGridModel;
+        const {mappings, sortBy} = this.zoneGridModel;
         return !isEqual(this.mappings, mappings) || !isEqual(this.sortBy, sortBy);
     }
 
     get leftFlex(): number {
-        const ret = this.zonedGridModel.leftColumnSpec?.flex;
+        const ret = this.zoneGridModel.leftColumnSpec?.flex;
         return isBoolean(ret) ? 1 : ret ?? 2;
     }
 
     get rightFlex(): number {
-        const ret = this.zonedGridModel.rightColumnSpec?.flex;
+        const ret = this.zoneGridModel.rightColumnSpec?.flex;
         return isBoolean(ret) ? 1 : ret ?? 1;
     }
 
     get limits(): Partial<Record<Zone, ZoneLimit>> {
-        return this.zonedGridModel.limits;
+        return this.zoneGridModel.limits;
     }
 
     get delimiter(): string {
-        return this.zonedGridModel.delimiter;
+        return this.zoneGridModel.delimiter;
     }
 
     get sortByColId() {
@@ -97,9 +97,9 @@ export class ZoneMapperModel extends HoistModel {
         super();
         makeObservable(this);
 
-        const {zonedGridModel, showRestoreDefaults = true, groupColumns = true} = config;
+        const {zoneGridModel, showRestoreDefaults = true, groupColumns = true} = config;
 
-        this.zonedGridModel = zonedGridModel;
+        this.zoneGridModel = zoneGridModel;
         this.showRestoreDefaults = showRestoreDefaults;
         this.groupColumns = groupColumns;
         this.fields = this.getFields();
@@ -111,7 +111,7 @@ export class ZoneMapperModel extends HoistModel {
     }
 
     async restoreDefaultsAsync() {
-        const restored = await this.zonedGridModel.restoreDefaultsAsync();
+        const restored = await this.zoneGridModel.restoreDefaultsAsync();
         if (restored) this.close();
     }
 
@@ -134,8 +134,8 @@ export class ZoneMapperModel extends HoistModel {
     }
 
     commit() {
-        this.zonedGridModel.setMappings(this.mappings);
-        this.zonedGridModel.setSortBy(this.sortBy);
+        this.zoneGridModel.setMappings(this.mappings);
+        this.zoneGridModel.setSortBy(this.sortBy);
     }
 
     getSamplesForZone(zone: Zone): ReactNode[] {
@@ -201,7 +201,7 @@ export class ZoneMapperModel extends HoistModel {
     @action
     private syncMapperData() {
         // Copy latest mappings and sortBy from grid
-        const {mappings, sortBy} = this.zonedGridModel;
+        const {mappings, sortBy} = this.zoneGridModel;
         this.mappings = cloneDeep(mappings);
         this.sortBy = sortBy ? cloneDeep(sortBy) : null;
 
@@ -209,11 +209,11 @@ export class ZoneMapperModel extends HoistModel {
         this.sampleRecord = this.getSampleRecord();
     }
 
-    private getFields(): MapperField[] {
-        const {zonedGridModel} = this;
-        return zonedGridModel.availableColumns.map(it => {
+    private getFields(): ZoneField[] {
+        const {zoneGridModel} = this;
+        return zoneGridModel.availableColumns.map(it => {
             const fieldName = isString(it.field) ? it.field : it.field.name,
-                column = zonedGridModel.gridModel.getColumn(fieldName),
+                column = zoneGridModel.gridModel.getColumn(fieldName),
                 displayName = column.displayName,
                 label = isString(it.headerName) ? it.headerName : displayName;
 
@@ -301,7 +301,7 @@ export class ZoneMapperModel extends HoistModel {
                 value = field.renderer(value, {
                     record: sampleRecord,
                     column: field.column,
-                    gridModel: this.zonedGridModel.gridModel
+                    gridModel: this.zoneGridModel.gridModel
                 });
             }
         }
@@ -318,7 +318,7 @@ export class ZoneMapperModel extends HoistModel {
 
     private getSampleRecord(): StoreRecord {
         // Iterate down to a (likely more fully populated) leaf record.
-        let ret = this.zonedGridModel.store.records[0];
+        let ret = this.zoneGridModel.store.records[0];
         while (ret && !isEmpty(ret.children)) {
             ret = ret.children[0];
         }

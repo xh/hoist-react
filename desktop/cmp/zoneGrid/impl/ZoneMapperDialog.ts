@@ -7,7 +7,7 @@
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {ZoneMapperModel} from '@xh/hoist/cmp/zonedGrid';
+import {ZoneMapperModel} from '@xh/hoist/cmp/zoneGrid/impl/ZoneMapperModel';
 import {zoneMapper} from './ZoneMapper';
 
 export const zoneMapperDialog = hoistCmp.factory({

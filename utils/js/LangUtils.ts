@@ -287,7 +287,7 @@ export function filterConsecutive<T>(
 /**
  * Intersperse a separator between each item in an array.
  */
-export function intersperse<T>(arr: T[], separator: any): T[] {
+export function intersperse<T>(arr: T[], separator: T): T[] {
     return flatMap(arr, (it, idx) => {
         return idx > 0 ? [separator, it] : [it];
     });

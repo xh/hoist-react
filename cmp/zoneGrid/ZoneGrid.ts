@@ -11,9 +11,9 @@ import {grid} from '@xh/hoist/cmp/grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {zoneMapper as desktopZoneMapper} from '@xh/hoist/dynamics/desktop';
 import {zoneMapper as mobileZoneMapper} from '@xh/hoist/dynamics/mobile';
-import {ZonedGridModel} from './ZonedGridModel';
+import {ZoneGridModel} from './ZoneGridModel';
 
-export interface ZonedGridProps extends HoistProps<ZonedGridModel>, LayoutProps, TestSupportProps {
+export interface ZoneGridProps extends HoistProps<ZoneGridModel>, LayoutProps, TestSupportProps {
     /**
      * Options for ag-Grid's API.
      *
@@ -27,16 +27,16 @@ export interface ZonedGridProps extends HoistProps<ZonedGridModel>, LayoutProps,
 }
 
 /**
- * A ZonedGrid is a specialized version of the Grid component.
+ * A ZoneGrid is a specialized version of the Grid component.
  *
  * It displays its data with multi-line full-width rows, each broken into four zones for
  * top/bottom and left/right - (tl, tr, bl, br). Zone mappings determine which of the
  * available fields should be extracted from the record and rendered into each zone.
  */
-export const [ZonedGrid, zonedGrid] = hoistCmp.withFactory<ZonedGridProps>({
-    displayName: 'ZonedGrid',
-    model: uses(ZonedGridModel),
-    className: 'xh-zoned-grid',
+export const [ZoneGrid, zoneGrid] = hoistCmp.withFactory<ZoneGridProps>({
+    displayName: 'ZoneGrid',
+    model: uses(ZoneGridModel),
+    className: 'xh-zone-grid',
 
     render({model, className, testId, ...props}, ref) {
         const {gridModel, mapperModel} = model,
