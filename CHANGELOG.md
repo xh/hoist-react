@@ -19,6 +19,9 @@
 
  * Added `Column.sortToBottom` which supports always sorting specified values to the bottom,
   regardless of sort direction.
+ * Clicking on the right hand clear button in a `textInput` (desktop and mobile)
+   now maintains focus on the `textInput`, allowing a user to quickly type something else into
+   the field.  This behaviour already existed on the `select` input.
 
 ### 💥 Breaking Changes
 
