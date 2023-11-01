@@ -157,10 +157,7 @@ export class ZonedGridModel extends HoistModel {
             groupBy: groupBy
         };
 
-        this.gridModel = this.createGridModel({
-            ...rest,
-            contextMenu: withDefault(rest.contextMenu, this.getDefaultContextMenu)
-        });
+        this.gridModel = this.createGridModel(rest);
 
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
@@ -243,6 +240,35 @@ export class ZonedGridModel extends HoistModel {
     //-----------------------
     // Getters and methods trampolined from GridModel.
     //-----------------------
+    get sortBy(): GridSorter {
+        const ret = this.gridModel.sortBy?.[0];
+        if (!ret) return null;
+
+        // Normalize 'left_column' and 'right_column' to actual underlying fields
+        if (ret?.colId === 'left_column') {
+            const colId = this.mappings.tl[0]?.field;
+            return colId ? new GridSorter({...ret, colId}) : null;
+        } else if (ret?.colId === 'right_column') {
+            const colId = this.mappings.tr[0]?.field;
+            return colId ? new GridSorter({...ret, colId}) : null;
+        }
+
+        return ret;
+    }
+
+    setSortBy(cfg: GridSorterLike) {
+        // If the field is mapping to the primary field in a left/right column, set
+        // 'left_column'/'right_column' colId instead to display the arrows in the header.
+        const sorter = GridSorter.parse(cfg);
+        if (sorter?.colId === this.mappings.tl[0]?.field) {
+            return this.gridModel.setSortBy({...sorter, colId: 'left_column'});
+        }
+        if (sorter?.colId === this.mappings.tr[0]?.field) {
+            return this.gridModel.setSortBy({...sorter, colId: 'right_column'});
+        }
+        return this.gridModel.setSortBy(sorter);
+    }
+
     get store() {
         return this.gridModel.store;
     }
@@ -273,22 +299,6 @@ export class ZonedGridModel extends HoistModel {
 
     get groupBy() {
         return this.gridModel.groupBy;
-    }
-
-    get sortBy(): GridSorter {
-        const ret = this.gridModel.sortBy?.[0];
-        if (!ret) return null;
-
-        // Normalize 'left_column' and 'right_column' to actual underlying fields
-        if (ret?.colId === 'left_column') {
-            const colId = this.mappings.tl[0]?.field;
-            return colId ? new GridSorter({...ret, colId}) : null;
-        } else if (ret?.colId === 'right_column') {
-            const colId = this.mappings.tr[0]?.field;
-            return colId ? new GridSorter({...ret, colId}) : null;
-        }
-
-        return ret;
     }
 
     selectAsync(
@@ -330,25 +340,13 @@ export class ZonedGridModel extends HoistModel {
         return this.gridModel.setGroupBy(colIds);
     }
 
-    setSortBy(cfg: GridSorterLike) {
-        // If the field is mapping to the primary field in a left/right column, set
-        // 'left_column'/'right_column' colId instead to display the arrows in the header.
-        const sorter = GridSorter.parse(cfg);
-        if (sorter?.colId === this.mappings.tl[0]?.field) {
-            return this.gridModel.setSortBy({...sorter, colId: 'left_column'});
-        }
-        if (sorter?.colId === this.mappings.tr[0]?.field) {
-            return this.gridModel.setSortBy({...sorter, colId: 'right_column'});
-        }
-        return this.gridModel.setSortBy(sorter);
-    }
-
     //-----------------------
     // Implementation
     //-----------------------
     private createGridModel(config: GridConfig): GridModel {
         return new GridModel({
             ...config,
+            contextMenu: withDefault(config.contextMenu, this.getDefaultContextMenu),
             sizingMode: 'standard',
             cellBorders: true,
             rowBorders: true,
@@ -390,9 +388,7 @@ export class ZonedGridModel extends HoistModel {
 
         return {
             // Controlled properties
-            colId: isLeft ? 'left_column' : 'right_column',
-            headerName: primaryCol.headerName,
-            field: primaryCol.field,
+            field: isLeft ? 'left_column' : 'right_column',
             flex: isLeft ? 2 : 1,
             align: isLeft ? 'left' : 'right',
             renderer: multiFieldRenderer,
@@ -409,6 +405,7 @@ export class ZonedGridModel extends HoistModel {
             },
 
             // Properties inherited from primary column
+            headerName: primaryCol.headerName,
             absSort: primaryCol.absSort,
             sortingOrder: primaryCol.sortingOrder,
             sortValue: primaryCol.sortValue,

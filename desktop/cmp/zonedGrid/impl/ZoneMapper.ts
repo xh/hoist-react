@@ -220,8 +220,6 @@ class ZoneMapperLocalModel extends HoistModel {
             data.push({...f, show, label});
         });
 
-        console.log(data);
-
         // 2) Load into display grid
         this.gridModel.loadData(data);
     }
