@@ -174,6 +174,7 @@ const clearButton = hoistCmp.factory<TextInputModel>(({model}) =>
         onClick: () => {
             model.noteValueChange(null);
             model.doCommit();
+            model.focus();
         }
     })
 );
