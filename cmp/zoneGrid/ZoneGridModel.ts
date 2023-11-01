@@ -4,20 +4,49 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSpec, PlainObject, Some, managed, XH, Awaitable} from '@xh/hoist/core';
-import {br, fragment} from '@xh/hoist/cmp/layout';
+import {
+    HoistModel,
+    LoadSpec,
+    PlainObject,
+    Some,
+    managed,
+    XH,
+    Awaitable,
+    VSide
+} from '@xh/hoist/core';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {RecordAction, StoreRecordOrId, StoreTransaction} from '@xh/hoist/data';
+import {
+    RecordAction,
+    Store,
+    StoreConfig,
+    StoreRecordOrId,
+    StoreSelectionConfig,
+    StoreSelectionModel,
+    StoreTransaction
+} from '@xh/hoist/data';
 import {
     Column,
     ColumnSpec,
     Grid,
     GridConfig,
+    GridContextMenuSpec,
+    GridGroupSortFn,
     GridModel,
     GridSorter,
     GridSorterLike,
+    GroupRowRenderer,
+    RowClassFn,
+    RowClassRuleFn,
+    TreeStyle,
     multiFieldRenderer
 } from '@xh/hoist/cmp/grid';
+import {
+    CellClickedEvent,
+    CellContextMenuEvent,
+    CellDoubleClickedEvent,
+    RowClickedEvent,
+    RowDoubleClickedEvent
+} from '@ag-grid-community/core';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {castArray, forOwn, isEmpty, isFinite, isPlainObject, isString} from 'lodash';
@@ -26,7 +55,7 @@ import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
 import {ZoneGridPersistenceModel} from './impl/ZoneGridPersistenceModel';
 import {ZoneGridModelPersistOptions, Zone, ZoneLimit, ZoneMapping} from './Types';
 
-export interface ZoneGridConfig extends GridConfig {
+export interface ZoneGridConfig {
     /**
      * Available columns for this grid. Note that the actual display of
      * the zone columns is managed via `mappings` below.
@@ -35,15 +64,6 @@ export interface ZoneGridConfig extends GridConfig {
 
     /** Mappings of columns to zones. */
     mappings: Record<Zone, Some<string | ZoneMapping>>;
-
-    /**
-     * Initial sort to apply to grid data.
-     * Note that unlike GridModel, multi-sort is not supported.
-     */
-    sortBy?: GridSorterLike;
-
-    /** Column ID(s) by which to do full-width grouping. */
-    groupBy?: Some<string>;
 
     /** Optional configurations for zone constraints. */
     limits?: Partial<Record<Zone, ZoneLimit>>;
@@ -67,6 +87,21 @@ export interface ZoneGridConfig extends GridConfig {
     zoneMapperModel?: ZoneMapperConfig | boolean;
 
     /**
+     * A Store instance, or a config with which to create a Store. If not supplied,
+     * store fields will be inferred from columns config.
+     */
+    store?: Store | StoreConfig;
+
+    /** True if grid is a tree grid (default false). */
+    treeMode?: boolean;
+
+    /** Location for a docked summary row. Requires `store.SummaryRecord` to be populated. */
+    showSummary?: boolean | VSide;
+
+    /** Specification of selection behavior. Defaults to 'single' (desktop) and 'disabled' (mobile) */
+    selModel?: StoreSelectionModel | StoreSelectionConfig | 'single' | 'multiple' | 'disabled';
+
+    /**
      * Function to be called when the user triggers ZoneGridModel.restoreDefaultsAsync().
      * This function will be called after the built-in defaults have been restored, and can be
      * used to restore application specific defaults.
@@ -81,6 +116,161 @@ export interface ZoneGridConfig extends GridConfig {
 
     /** Options governing persistence. */
     persistWith?: ZoneGridModelPersistOptions;
+
+    /**
+     * Text/element to display if grid has no records. Defaults to null, in which case no empty
+     * text will be shown.
+     */
+    emptyText?: ReactNode;
+
+    /** True (default) to hide empty text until after the Store has been loaded at least once. */
+    hideEmptyTextBeforeLoad?: boolean;
+
+    /**
+     * Initial sort to apply to grid data.
+     * Note that unlike GridModel, multi-sort is not supported.
+     */
+    sortBy?: GridSorterLike;
+
+    /** Column ID(s) by which to do full-width grouping. */
+    groupBy?: Some<string>;
+
+    /** True (default) to show a count of group member rows within each full-width group row. */
+    showGroupRowCounts?: boolean;
+
+    /** True to highlight the currently hovered row. */
+    showHover?: boolean;
+
+    /** True to render row borders. */
+    rowBorders?: boolean;
+
+    /** Specify treeMode-specific styling. */
+    treeStyle?: TreeStyle;
+
+    /** True to use alternating backgrounds for rows. */
+    stripeRows?: boolean;
+
+    /** True to render cell borders. */
+    cellBorders?: boolean;
+
+    /** True to highlight the focused cell with a border. */
+    showCellFocus?: boolean;
+
+    /** True to suppress display of the grid's header row. */
+    hideHeaders?: boolean;
+
+    /**
+     * Closure to generate CSS class names for a row.
+     * NOTE that, once added, classes will *not* be removed if the data changes.
+     * Use `rowClassRules` instead if StoreRecord data can change across refreshes.
+     */
+    rowClassFn?: RowClassFn;
+
+    /**
+     * Object keying CSS class names to functions determining if they should be added or
+     * removed from the row. See Ag-Grid docs on "row styles" for details.
+     */
+    rowClassRules?: Record<string, RowClassRuleFn>;
+
+    /** Height (in px) of a group row. Note that this will override `sizingMode` for group rows. */
+    groupRowHeight?: number;
+
+    /** Function used to render group rows. */
+    groupRowRenderer?: GroupRowRenderer;
+
+    /**
+     * Function to use to sort full-row groups.  Called with two group values to compare
+     * in the form of a standard JS comparator.  Default is an ascending string sort.
+     * Set to `null` to prevent sorting of groups.
+     */
+    groupSortFn?: GridGroupSortFn;
+
+    /**
+     * Callback when a key down event is detected on the grid. Note that the ag-Grid API provides
+     * limited ability to customize keyboard handling. This handler is designed to allow
+     * applications to work around this.
+     */
+    onKeyDown?: (e: KeyboardEvent) => void;
+
+    /**
+     * Callback when a row is clicked. (Note that the event received may be null - e.g. for
+     * clicks on full-width group rows.)
+     */
+    onRowClicked?: (e: RowClickedEvent) => void;
+
+    /**
+     * Callback when a row is double-clicked. (Note that the event received may be null - e.g.
+     * for clicks on full-width group rows.)
+     */
+    onRowDoubleClicked?: (e: RowDoubleClickedEvent) => void;
+
+    /**
+     * Callback when a cell is clicked.
+     */
+    onCellClicked?: (e: CellClickedEvent) => void;
+
+    /**
+     * Callback when a cell is double-clicked.
+     */
+    onCellDoubleClicked?: (e: CellDoubleClickedEvent) => void;
+
+    /**
+     * Callback when the context menu is opened. Note that the event received can also be
+     * triggered via a long press (aka tap and hold) on mobile devices.
+     */
+    onCellContextMenu?: (e: CellContextMenuEvent) => void;
+
+    /**
+     * Number of clicks required to expand / collapse a parent row in a tree grid. Defaults
+     * to 2 for desktop, 1 for mobile. Any other value prevents clicks on row body from
+     * expanding / collapsing (requires click on tree col affordance to expand/collapse).
+     */
+    clicksToExpand?: number;
+
+    /**
+     * Array of RecordActions, dividers, or token strings with which to create a context menu.
+     * May also be specified as a function returning same.
+     */
+    contextMenu?: GridContextMenuSpec;
+
+    /**
+     * Governs if the grid should reuse a limited set of DOM elements for columns visible in the
+     * scroll area (versus rendering all columns).  Consider this performance optimization for
+     * grids with a very large number of columns obscured by horizontal scrolling. Note that
+     * setting this value to true may limit the ability of the grid to autosize offscreen columns
+     * effectively. Default false.
+     */
+    useVirtualColumns?: boolean;
+
+    /**
+     * Set to true to if application will be reloading data when the sortBy property changes on
+     * this model (either programmatically, or via user-click.)  Useful for applications with large
+     * data sets that are performing external, or server-side sorting and filtering.  Setting this
+     * flag means that the grid should not immediately respond to user or programmatic changes to
+     * the sortBy property, but will instead wait for the next load of data, which is assumed to be
+     * pre-sorted. Default false.
+     */
+    externalSort?: boolean;
+
+    /**
+     * Set to true to highlight a row on click. Intended to provide feedback to users in grids
+     * without selection. Note this setting overrides the styling used by Column.highlightOnChange,
+     * and is not recommended for use alongside that feature. Default true for mobiles,
+     * otherwise false.
+     */
+    highlightRowOnClick?: boolean;
+
+    /**
+     * Flags for experimental features. These features are designed for early client-access and
+     * testing, but are not yet part of the Hoist API.
+     */
+    experimental?: PlainObject;
+
+    /** Extra app-specific data for the GridModel. */
+    appData?: PlainObject;
+
+    /** @internal */
+    xhImpl?: boolean;
 }
 
 /**
@@ -90,13 +280,6 @@ export interface ZoneGridConfig extends GridConfig {
  * This is the primary app entry-point for specifying ZoneGrid component options and behavior.
  */
 export class ZoneGridModel extends HoistModel {
-    static DEFAULT_RESTORE_DEFAULTS_WARNING = fragment(
-        'This action will clear any customizations you have made to this grid, including zone mappings and sorting.',
-        br(),
-        br(),
-        'OK to proceed?'
-    );
-
     @managed
     gridModel: GridModel;
 
@@ -136,7 +319,7 @@ export class ZoneGridModel extends HoistModel {
             delimiter,
             zoneMapperModel,
             restoreDefaultsFn,
-            restoreDefaultsWarning = ZoneGridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
+            restoreDefaultsWarning,
             persistWith,
             ...rest
         } = config;
@@ -346,6 +529,7 @@ export class ZoneGridModel extends HoistModel {
     private createGridModel(config: GridConfig): GridModel {
         return new GridModel({
             ...config,
+            xhImpl: true,
             contextMenu: withDefault(config.contextMenu, this.getDefaultContextMenu),
             sizingMode: 'standard',
             cellBorders: true,
