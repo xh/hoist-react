@@ -4,17 +4,16 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import '@xh/hoist/mobile/register';
+import '@xh/hoist/desktop/register';
 import {ZoneMapperModel} from '@xh/hoist/cmp/zonedGrid';
 import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses} from '@xh/hoist/core';
 import {div, filler, hbox, hframe, span, vbox} from '@xh/hoist/cmp/layout';
-import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid, GridModel} from '@xh/hoist/cmp/grid';
-import {checkbox} from '@xh/hoist/mobile/cmp/input';
-import {button} from '@xh/hoist/mobile/cmp/button';
-import {select} from '@xh/hoist/mobile/cmp/input';
+import {checkbox} from '@xh/hoist/desktop/cmp/input';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {select} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {wait} from '@xh/hoist/promise';
 import {intersperse} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import classNames from 'classnames';
@@ -37,31 +36,27 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
     model: uses(ZoneMapperModel),
     className: 'xh-zone-mapper',
     render({model, className}) {
-        const {isOpen, showRestoreDefaults, isDirty} = model,
+        const {showRestoreDefaults, isDirty} = model,
             impl = useLocalModel(ZoneMapperLocalModel);
 
-        return dialogPanel({
-            isOpen,
-            title: 'Customize Fields',
-            icon: Icon.gridLarge(),
+        return panel({
             className,
             items: [zonePicker(), grid({model: impl.gridModel}), sortPicker()],
             bbar: [
                 button({
                     omit: !showRestoreDefaults,
-                    text: 'Reset',
-                    minimal: true,
+                    text: 'Restore Grid Defaults',
+                    icon: Icon.undo({className: 'xh-red'}),
                     onClick: () => model.restoreDefaultsAsync()
                 }),
                 filler(),
                 button({
                     text: 'Cancel',
-                    minimal: true,
                     onClick: () => model.close()
                 }),
                 button({
                     text: 'Save',
-                    icon: Icon.check(),
+                    icon: Icon.check({className: 'xh-green'}),
                     disabled: !isDirty,
                     onClick: () => {
                         model.commit();
@@ -123,23 +118,20 @@ const sortPicker = hoistCmp.factory<ZoneMapperModel>({
     render({model}) {
         const {sortBy} = model;
         return panel({
+            className: 'xh-zone-mapper__sort-picker',
             title: 'Sorting',
             icon: Icon.list(),
-            className: 'xh-zone-mapper__sort-picker',
+            compactHeader: true,
             items: hframe(
                 select({
                     bind: 'sortByColId',
                     enableFilter: true,
-                    enableFullscreen: true,
-                    title: 'Sorting',
-                    fullScreenZIndex: 10002,
                     flex: 1,
                     options: model.sortByOptions
                 }),
                 button({
                     icon: model.getSortIcon(sortBy),
-                    width: 45,
-                    height: '100%',
+                    minimal: false,
                     onClick: () => model.setNextSortBy()
                 })
             )
@@ -160,8 +152,14 @@ class ZoneMapperLocalModel extends HoistModel {
         this.gridModel = this.createGridModel();
 
         this.addReaction({
-            track: () => [this.model.isOpen, this.model.mappings, this.model.selectedZone],
-            run: () => this.syncGridAsync()
+            track: () => [
+                this.model.isOpen,
+                this.model.isPopoverOpen,
+                this.model.mappings,
+                this.model.selectedZone
+            ],
+            run: () => this.syncGrid(),
+            fireImmediately: true
         });
     }
 
@@ -203,7 +201,7 @@ class ZoneMapperLocalModel extends HoistModel {
         });
     }
 
-    private async syncGridAsync() {
+    private syncGrid() {
         const {fields, mappings, limits, selectedZone} = this.model,
             mapping = mappings[selectedZone],
             limit = limits?.[selectedZone],
@@ -222,13 +220,9 @@ class ZoneMapperLocalModel extends HoistModel {
             data.push({...f, show, label});
         });
 
+        console.log(data);
+
         // 2) Load into display grid
         this.gridModel.loadData(data);
-
-        // 3) Blur checkboxes. This is a workaround for an Onsen issue on mobile, where the checkbox
-        // will not re-render as long as it has focus.
-        await wait(1);
-        const checkboxes = document.querySelectorAll<HTMLInputElement>('ons-checkbox');
-        checkboxes.forEach(it => it.blur());
     }
 }

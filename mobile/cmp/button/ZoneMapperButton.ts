@@ -5,13 +5,14 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {ZonedGridModel} from '../zonedGrid';
+import {ZonedGridModel} from '../../../cmp/zonedGrid';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
 import '@xh/hoist/mobile/register';
 
 export interface ZoneMapperButtonProps extends ButtonProps {
+    /** ZonedGridModel of the grid for which this button should show a chooser. */
     zonedGridModel?: ZonedGridModel;
 }
 

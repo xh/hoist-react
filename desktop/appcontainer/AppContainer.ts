@@ -13,6 +13,7 @@ import {suspendPanel} from '@xh/hoist/desktop/appcontainer/SuspendPanel';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
 import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
 import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserModel';
+import {zoneMapperDialog as zoneMapper} from '@xh/hoist/desktop/cmp/zonedGrid/impl/ZoneMapperDialog';
 import {columnHeaderFilter} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilter';
 import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
 import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilterDialog';
@@ -48,6 +49,7 @@ installDesktopImpls({
     storeFilterFieldImpl,
     pinPadImpl,
     colChooser,
+    zoneMapper,
     columnHeaderFilter,
     gridFilterDialog,
     ColChooserModel,

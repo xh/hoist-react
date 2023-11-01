@@ -4,11 +4,10 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import '@xh/hoist/mobile/register';
 import {HoistModel, LoadSpec, PlainObject, Some, managed, XH, Awaitable} from '@xh/hoist/core';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {StoreRecordOrId, StoreTransaction} from '@xh/hoist/data';
+import {RecordAction, StoreRecordOrId, StoreTransaction} from '@xh/hoist/data';
 import {
     Column,
     ColumnSpec,
@@ -20,12 +19,12 @@ import {
     multiFieldRenderer
 } from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {castArray, forOwn, isEmpty, isFinite, isPlainObject, isString} from 'lodash';
 import {ReactNode} from 'react';
-import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
+import {ZoneMapperConfig, ZoneMapperModel} from './ZoneMapperModel';
 import {ZonedGridPersistenceModel} from './impl/ZonedGridPersistenceModel';
 import {ZonedGridModelPersistOptions, Zone, ZoneLimit, ZoneMapping} from './Types';
-import {throwIf} from '@xh/hoist/utils/js';
 
 export interface ZonedGridConfig extends GridConfig {
     /**
@@ -158,7 +157,11 @@ export class ZonedGridModel extends HoistModel {
             groupBy: groupBy
         };
 
-        this.gridModel = this.createGridModel(rest);
+        this.gridModel = this.createGridModel({
+            ...rest,
+            contextMenu: withDefault(rest.contextMenu, this.getDefaultContextMenu)
+        });
+
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
 
@@ -217,6 +220,25 @@ export class ZonedGridModel extends HoistModel {
         this.mappings = this.parseMappings(mappings);
         this.gridModel.setColumns(this.getColumns());
     }
+
+    getDefaultContextMenu = () => [
+        'filter',
+        '-',
+        'copy',
+        'copyWithHeaders',
+        'copyCell',
+        '-',
+        'expandCollapseAll',
+        '-',
+        'restoreDefaults',
+        '-',
+        new RecordAction({
+            text: 'Customize Fields',
+            icon: Icon.gridLarge(),
+            hidden: !this?.mapperModel,
+            actionFn: () => (this?.mapperModel as any)?.open()
+        })
+    ];
 
     //-----------------------
     // Getters and methods trampolined from GridModel.

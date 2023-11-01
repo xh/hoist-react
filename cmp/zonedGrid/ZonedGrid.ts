@@ -4,14 +4,14 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import '@xh/hoist/mobile/register';
-import {hoistCmp, HoistProps, LayoutProps, TestSupportProps, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, TestSupportProps, uses, XH} from '@xh/hoist/core';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {GridOptions} from '@xh/hoist/kit/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {zoneMapper as desktopZoneMapper} from '@xh/hoist/dynamics/desktop';
+import {zoneMapper as mobileZoneMapper} from '@xh/hoist/dynamics/mobile';
 import {ZonedGridModel} from './ZonedGridModel';
-import {zoneMapper} from './impl/ZoneMapper';
 
 export interface ZonedGridProps extends HoistProps<ZonedGridModel>, LayoutProps, TestSupportProps {
     /**
@@ -39,17 +39,24 @@ export const [ZonedGrid, zonedGrid] = hoistCmp.withFactory<ZonedGridProps>({
     className: 'xh-zoned-grid',
 
     render({model, className, testId, ...props}, ref) {
-        const [layoutProps] = splitLayoutProps(props);
+        const {gridModel, mapperModel} = model,
+            [layoutProps] = splitLayoutProps(props),
+            platformZoneMapper = XH.isMobileApp ? mobileZoneMapper : desktopZoneMapper;
+
         return fragment(
             grid({
                 ...layoutProps,
                 className,
                 testId,
                 ref,
-                model: model.gridModel,
-                agOptions: props.agOptions
+                model: gridModel,
+                agOptions: {
+                    suppressRowGroupHidesColumns: true,
+                    suppressMakeColumnVisibleAfterUnGroup: true,
+                    ...props.agOptions
+                }
             }),
-            zoneMapper()
+            mapperModel ? platformZoneMapper() : null
         );
     }
 });
