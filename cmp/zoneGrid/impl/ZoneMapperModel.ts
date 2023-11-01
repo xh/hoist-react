@@ -144,7 +144,15 @@ export class ZoneMapperModel extends HoistModel {
         });
     }
 
-    getSortIcon(sortBy: GridSorter) {
+    getSortLabel() {
+        const {sortBy} = this;
+        if (!sortBy) return null;
+        if (sortBy.abs) return 'Abs';
+        return sortBy.sort === 'asc' ? 'Asc' : 'Desc';
+    }
+
+    getSortIcon() {
+        const {sortBy} = this;
         if (!sortBy) return null;
         const {abs, sort} = sortBy;
         if (sort === 'asc') {

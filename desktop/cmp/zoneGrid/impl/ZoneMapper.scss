@@ -25,6 +25,7 @@
 
       &--selected {
         box-shadow: var(--xh-form-field-focused-box-shadow);
+        background: var(--xh-grid-tree-group-bg);
       }
 
       &.tl {

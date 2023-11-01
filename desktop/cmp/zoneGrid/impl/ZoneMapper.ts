@@ -45,7 +45,7 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
             bbar: [
                 button({
                     omit: !showRestoreDefaults,
-                    text: 'Restore Grid Defaults',
+                    text: 'Restore Defaults',
                     icon: Icon.undo({className: 'xh-red'}),
                     onClick: () => model.restoreDefaultsAsync()
                 }),
@@ -56,7 +56,8 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
                 }),
                 button({
                     text: 'Save',
-                    icon: Icon.check({className: 'xh-green'}),
+                    icon: Icon.check(),
+                    intent: 'success',
                     disabled: !isDirty,
                     onClick: () => {
                         model.commit();
@@ -116,7 +117,6 @@ const zoneCell = hoistCmp.factory<ZoneMapperModel>({
 
 const sortPicker = hoistCmp.factory<ZoneMapperModel>({
     render({model}) {
-        const {sortBy} = model;
         return panel({
             className: 'xh-zone-mapper__sort-picker',
             title: 'Sorting',
@@ -130,7 +130,9 @@ const sortPicker = hoistCmp.factory<ZoneMapperModel>({
                     options: model.sortByOptions
                 }),
                 button({
-                    icon: model.getSortIcon(sortBy),
+                    text: model.getSortLabel(),
+                    icon: model.getSortIcon(),
+                    width: 80,
                     minimal: false,
                     onClick: () => model.setNextSortBy()
                 })
@@ -172,6 +174,7 @@ class ZoneMapperLocalModel extends HoistModel {
             store: {idSpec: 'field'},
             groupBy: hasGrouping ? 'chooserGroup' : null,
             colDefaults: {movable: false, resizable: false, sortable: false},
+            selModel: 'disabled',
             columns: [
                 {
                     field: 'displayName',

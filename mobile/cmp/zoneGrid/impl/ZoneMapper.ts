@@ -121,7 +121,6 @@ const zoneCell = hoistCmp.factory<ZoneMapperModel>({
 
 const sortPicker = hoistCmp.factory<ZoneMapperModel>({
     render({model}) {
-        const {sortBy} = model;
         return panel({
             title: 'Sorting',
             icon: Icon.list(),
@@ -137,9 +136,9 @@ const sortPicker = hoistCmp.factory<ZoneMapperModel>({
                     options: model.sortByOptions
                 }),
                 button({
-                    icon: model.getSortIcon(sortBy),
-                    width: 45,
-                    height: '100%',
+                    text: model.getSortLabel(),
+                    icon: model.getSortIcon(),
+                    width: 80,
                     onClick: () => model.setNextSortBy()
                 })
             )
