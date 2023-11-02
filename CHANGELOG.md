@@ -28,6 +28,9 @@
 * The `XH.getActiveModels` method has been renamed to `XH.getModels` for clarity and consistency.
   This is not expected to impact applications.
 
+### ⚙️ Technical
+* New flag `GridModel.experimental.enableFullWidthScroll` enables scrollbars to span pinned columns.
+
 ## 59.2.0 - 2023-10-16
 
 ### 🐞 Bug Fixes
