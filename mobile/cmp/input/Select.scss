@@ -107,6 +107,7 @@
 
     &__fullscreen-wrapper {
       position: absolute !important;
+      z-index: inherit;
       top: 0;
       left: 0;
       right: 0;

@@ -6,6 +6,7 @@
  */
 import {Exception} from '@xh/hoist/core/exception/Exception';
 import {
+    flatMap,
     forOwn,
     isArray,
     isEmpty,
@@ -281,6 +282,15 @@ export function filterConsecutive<T>(
 
         return true;
     };
+}
+
+/**
+ * Intersperse a separator between each item in an array.
+ */
+export function intersperse<T>(arr: T[], separator: T): T[] {
+    return flatMap(arr, (it, idx) => {
+        return idx > 0 ? [separator, it] : [it];
+    });
 }
 
 /**

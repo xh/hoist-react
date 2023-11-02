@@ -125,7 +125,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     }
 });
 
-(Grid as any).MULTIFIELD_ROW_HEIGHT = 38;
+(Grid as any).MULTIFIELD_ROW_HEIGHT = 42;
 
 //------------------------
 // Implementation

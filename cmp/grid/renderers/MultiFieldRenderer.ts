@@ -98,7 +98,7 @@ function renderMainField(value, renderer, context) {
 
 function renderSubField({colId, label}, context) {
     const {record, gridModel} = context,
-        column = gridModel.findColumn(gridModel.columns, colId);
+        column = gridModel.getColumn(colId);
 
     throwIf(!column, `Subfield ${colId} not found`);
 

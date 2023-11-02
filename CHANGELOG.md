@@ -22,6 +22,9 @@
  * Clicking on the right hand clear button in a `textInput` (desktop and mobile)
    now maintains focus on the `textInput`, allowing a user to quickly type something else into
    the field.  This behaviour already existed on the `select` input.
+* Added `ZoneGrid`, a specialized version of the Grid component that displays its data with
+  multi-line full-width rows. Each row is broken into four zones for top/bottom and left/right,
+  each of which can mapped to render one or more fields.
 
 ### 💥 Breaking Changes
 
