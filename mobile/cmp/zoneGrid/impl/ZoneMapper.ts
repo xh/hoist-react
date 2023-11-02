@@ -188,15 +188,18 @@ class ZoneMapperLocalModel extends HoistModel {
                     }
                 },
                 {
-                    field: 'label',
+                    field: 'showLabel',
+                    headerName: 'Label',
                     align: 'center',
                     renderer: (value, {record}) => {
-                        const {field} = record.data;
+                        const {label, field} = record.data;
+                        if (!label) return null;
                         return checkbox({value, onChange: () => model.toggleShowLabel(field)});
                     }
                 },
                 // Hidden
                 {field: 'field', hidden: true},
+                {field: 'label', hidden: true},
                 {field: 'chooserGroup', hidden: true}
             ]
         });
@@ -216,9 +219,9 @@ class ZoneMapperLocalModel extends HoistModel {
         allowedFields.forEach(f => {
             const fieldMapping = mapping.find(it => f.field === it.field),
                 show = !!fieldMapping,
-                label = fieldMapping?.showLabel ?? false;
+                showLabel = fieldMapping?.showLabel ?? false;
 
-            data.push({...f, show, label});
+            data.push({...f, show, showLabel});
         });
 
         // 2) Load into display grid
