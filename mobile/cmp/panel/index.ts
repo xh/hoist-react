@@ -7,4 +7,3 @@
 
 export * from './Panel';
 export * from './DialogPanel';
-export * from './FullscreenPanel';

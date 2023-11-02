@@ -7,7 +7,7 @@
 import '@xh/hoist/mobile/register';
 import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses} from '@xh/hoist/core';
 import {div, filler, hbox, hframe, span, vbox} from '@xh/hoist/cmp/layout';
-import {fullscreenPanel, panel} from '@xh/hoist/mobile/cmp/panel';
+import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
 import {grid, GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/mobile/cmp/input';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -40,7 +40,7 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
         const {isOpen, showRestoreDefaults, isDirty} = model,
             impl = useLocalModel(ZoneMapperLocalModel);
 
-        return fullscreenPanel({
+        return dialogPanel({
             isOpen,
             title: 'Customize Fields',
             icon: Icon.gridLarge(),
@@ -131,7 +131,7 @@ const sortPicker = hoistCmp.factory<ZoneMapperModel>({
                     enableFilter: true,
                     enableFullscreen: true,
                     title: 'Sorting',
-                    fullScreenZIndex: 23,
+                    fullScreenZIndex: 10002,
                     flex: 1,
                     options: model.sortByOptions
                 }),
