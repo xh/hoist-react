@@ -7,12 +7,13 @@
 import '@xh/hoist/desktop/register';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {div, vbox} from '@xh/hoist/cmp/layout';
-import {ZoneGridModel} from '../../../cmp/zoneGrid';
+import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {ZoneMapperModel} from '@xh/hoist/cmp/zoneGrid/impl/ZoneMapperModel';
 import {zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapper';
 import {Icon} from '@xh/hoist/icon';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
 import {stopPropagation, withDefault} from '@xh/hoist/utils/js';
+import {MENU_PORTAL_ID} from '@xh/hoist/desktop/cmp/input';
 import {button, ButtonProps} from './Button';
 
 export interface ZoneMapperButtonProps extends ButtonProps {
@@ -50,10 +51,11 @@ export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMap
             disabled = true;
         }
 
+        const isOpen = mapperModel?.isPopoverOpen;
         return popover({
+            isOpen,
             popoverClassName: 'xh-zone-mapper-popover xh-popup--framed',
             position: withDefault(popoverPosition, 'auto'),
-            isOpen: mapperModel.isPopoverOpen,
             target: button({
                 icon: withDefault(icon, Icon.gridLarge()),
                 title: withDefault(title, 'Customize fields...'),
@@ -69,11 +71,18 @@ export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMap
                     zoneMapper({model: mapperModel})
                 ]
             }),
-            onInteraction: willOpen => {
-                if (willOpen) {
+            onInteraction: (willOpen, e?) => {
+                if (isOpen && !willOpen) {
+                    // Prevent clicks with Select controls from closing popover
+                    const selectPortal = document.getElementById(MENU_PORTAL_ID),
+                        selectPortalClick = selectPortal?.contains(e?.target),
+                        selectValueClick = e?.target?.classList.contains('xh-select__single-value');
+
+                    if (!selectPortalClick && !selectValueClick) {
+                        mapperModel.close();
+                    }
+                } else if (!isOpen && willOpen) {
                     mapperModel.openPopover();
-                } else {
-                    mapperModel.close();
                 }
             }
         });
