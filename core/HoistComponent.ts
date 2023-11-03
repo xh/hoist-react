@@ -326,7 +326,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
                 delete props.modelRef;
                 delete props.modelConfig;
                 ctx.props = props;
-                ctx.modelLookup = insertLookup ?? modelLookup;
+                ctx.modelLookup = insertLookup?.current ?? modelLookup;
                 useOnMount(() => instanceManager.registerModelWithTestId(props.testId, model));
                 useOnUnmount(() => instanceManager.unregisterModelWithTestId(props.testId));
                 return render(props, ref);
@@ -341,7 +341,9 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             ? managedRender()
             : createElement(HostCmp, {managedRender, key: model?.xhId});
 
-        return insertLookup ? modelLookupContextProvider({value: insertLookup, item: ret}) : ret;
+        return insertLookup?.current
+            ? modelLookupContextProvider({value: insertLookup.current, item: ret})
+            : ret;
     };
 }
 
