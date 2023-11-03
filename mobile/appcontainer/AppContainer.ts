@@ -11,6 +11,7 @@ import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/c
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 import {colChooser} from '@xh/hoist/mobile/cmp/grid/impl/ColChooser';
 import {ColChooserModel} from '@xh/hoist/mobile/cmp/grid/impl/ColChooserModel';
+import {zoneMapper} from '@xh/hoist/mobile/cmp/zoneGrid/impl/ZoneMapper';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
@@ -38,6 +39,7 @@ installMobileImpls({
     pinPadImpl,
     colChooser,
     ColChooserModel,
+    zoneMapper,
     errorMessage
 });
 

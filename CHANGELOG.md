@@ -17,15 +17,27 @@
     end-to-end testing of Hoist applications.  Additional hoist-specific utilities for writing
     tests in libraries such as cypress and playwright are coming soon.
 
-* Added `Column.sortToBottom` which supports always sorting specified values to the bottom,
+ * Added `Column.sortToBottom` which supports always sorting specified values to the bottom,
   regardless of sort direction.
+ * Clicking on the right hand clear button in a `textInput` (desktop and mobile)
+   now maintains focus on the `textInput`, allowing a user to quickly type something else into
+   the field.  This behaviour already existed on the `select` input.
+* Added `ZoneGrid`, a specialized version of the Grid component that displays its data with
+  multi-line full-width rows. Each row is broken into four zones for top/bottom and left/right,
+  each of which can mapped to render one or more fields.
 * `RelativeTimestamp` component accepts new option `localDateMode` to display differences based
-   on calendar days.
-*
+  on calendar days.
+
+
 ### 💥 Breaking Changes
 
 * The `XH.getActiveModels` method has been renamed to `XH.getModels` for clarity and consistency.
   This is not expected to impact applications.
+
+### ⚙️ Technical
+
+* Performance improvement to `HoistComponent`:  Prevent unnecessary re-renderings resulting from
+spurious model lookup changes.
 
 ## 59.2.0 - 2023-10-16
 
