@@ -31,6 +31,11 @@
 * The `XH.getActiveModels` method has been renamed to `XH.getModels` for clarity and consistency.
   This is not expected to impact applications.
 
+### ⚙️ Technical
+
+* Performance improvement to `HoistComponent`:  Prevent unnecessary re-renderings resulting from
+spurious model lookup changes.
+
 ## 59.2.0 - 2023-10-16
 
 ### 🐞 Bug Fixes
