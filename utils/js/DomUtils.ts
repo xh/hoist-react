@@ -92,6 +92,16 @@ export function observeVisibleChange(fn: (visible: boolean) => any, node: Elemen
 }
 
 /**
+ * Determines whether an element has a parent with a specific class name
+ */
+export function elemWithin(target: HTMLElement, className: string): boolean {
+    for (let elem = target; elem; elem = elem.parentElement) {
+        if (elem.classList.contains(className)) return true;
+    }
+    return false;
+}
+
+/**
  * A convenience handler that will call 'stopPropagation'
  * and 'preventDefault' on an event.
  */

@@ -13,7 +13,6 @@ import {zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapper';
 import {Icon} from '@xh/hoist/icon';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
 import {stopPropagation, withDefault} from '@xh/hoist/utils/js';
-import {MENU_PORTAL_ID} from '@xh/hoist/desktop/cmp/input';
 import {button, ButtonProps} from './Button';
 
 export interface ZoneMapperButtonProps extends ButtonProps {
@@ -71,18 +70,11 @@ export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMap
                     zoneMapper({model: mapperModel})
                 ]
             }),
-            onInteraction: (willOpen, e?) => {
-                if (isOpen && !willOpen) {
-                    // Prevent clicks with Select controls from closing popover
-                    const selectPortal = document.getElementById(MENU_PORTAL_ID),
-                        selectPortalClick = selectPortal?.contains(e?.target),
-                        selectValueClick = e?.target?.classList.contains('xh-select__single-value');
-
-                    if (!selectPortalClick && !selectValueClick) {
-                        mapperModel.close();
-                    }
-                } else if (!isOpen && willOpen) {
+            onInteraction: (nextOpenState, e) => {
+                if (nextOpenState) {
                     mapperModel.openPopover();
+                } else {
+                    mapperModel.close();
                 }
             }
         });
