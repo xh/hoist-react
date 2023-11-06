@@ -132,7 +132,7 @@ export interface GridConfig {
     /** Config with which to create a GridFilterModel, or `true` to enable default. Desktop only.*/
     filterModel?: GridFilterModelConfig | boolean;
 
-    /** Config with which to create aColChooserModel, or boolean `true` to enable default.*/
+    /** Config with which to create a ColChooserModel, or boolean `true` to enable default.*/
     colChooserModel?: ColChooserConfig | boolean;
 
     /**
