@@ -92,7 +92,7 @@ export function observeVisibleChange(fn: (visible: boolean) => any, node: Elemen
 }
 
 /**
- * Determines whether an element has a parent with a specific class name
+ * Determines whether an element has an ancestor with a specific class name
  */
 export function elemWithin(target: HTMLElement, className: string): boolean {
     for (let elem = target; elem; elem = elem.parentElement) {
