@@ -25,6 +25,12 @@
   multi-line full-width rows. Each row is broken into four zones for top/bottom and left/right,
   each of which can mapped to render one or more fields.
 
+### 🐞 Bug Fixes
+
+* Fixed bug where interacting with a `Select` within a `Popover` can inadvertently cause the
+  popover to close. If your app already has special handling in place to prevent this, you should
+  be able to unwind it after upgrading.
+
 ### 💥 Breaking Changes
 
 * The `XH.getActiveModels` method has been renamed to `XH.getModels` for clarity and consistency.
