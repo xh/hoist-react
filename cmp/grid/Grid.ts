@@ -7,8 +7,9 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
+import {gridScrollbar} from '@xh/hoist/cmp/grid/impl/GridScrollbar';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
-import {div, fragment, vframe} from '@xh/hoist/cmp/layout';
+import {div, frame, vframe} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
     HoistModel,
@@ -38,14 +39,12 @@ import type {
     GridReadyEvent,
     ProcessCellForExportParams
 } from '@xh/hoist/kit/ag-grid';
-import {computed, makeObservable, observer} from '@xh/hoist/mobx';
+import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {consumeEvent, isDisplayed, logDebug, logWithDebug, observeResize} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {consumeEvent, isDisplayed, logDebug, logWithDebug} from '@xh/hoist/utils/js';
+import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {debounce, isEmpty, isEqual, isNil, max, maxBy, merge, sumBy} from 'lodash';
-import {action, observable} from 'mobx';
-import {createRef} from 'react';
+import {debounce, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
 import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
@@ -96,7 +95,6 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
         const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} =
                 model,
             impl = useLocalModel(GridLocalModel),
-            {scrollerRef, viewportWidth, visibleColumnWidth, SCROLLBAR_SIZE} = impl,
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
             maxDepth = impl.isHierarchical ? store.maxDepth : null;
 
@@ -109,8 +107,10 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
         );
 
-        return fragment(
-            vframe({
+        const container = model.experimental['enableFullWidthScroll'] ? vframe : frame;
+
+        return container(
+            frame({
                 className,
                 items: [
                     agGrid({
@@ -118,25 +118,9 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                         ...getLayoutProps(props),
                         ...impl.agOptions
                     }),
-                    div({
-                        className: 'xh-grid__scroll-viewport',
-                        omit: !impl.isFullWidthScrollEnabled || viewportWidth > visibleColumnWidth,
-                        item: div({
-                            className: 'xh-grid__scroll-viewport__container',
-                            style: {
-                                height: SCROLLBAR_SIZE,
-                                width: visibleColumnWidth
-                            }
-                        }),
-                        onScroll: e => {
-                            impl.scrollViewport((e.target as HTMLDivElement).scrollLeft);
-                        },
-                        ref: scrollerRef,
-                        style: {
-                            height: SCROLLBAR_SIZE,
-                            overflowX: 'auto',
-                            overflowY: 'hidden'
-                        }
+                    gridScrollbar({
+                        omit: !model.experimental['enableFullWidthScroll'],
+                        viewRef: impl.viewRef
                     })
                 ],
                 testId,
@@ -160,7 +144,7 @@ class GridLocalModel extends HoistModel {
     @lookup(GridModel)
     private model: GridModel;
     agOptions: GridOptions;
-    viewRef = createRef<HTMLElement>();
+    viewRef = createObservableRef<HTMLElement>();
     private rowKeyNavSupport: RowKeyNavSupport;
     private prevRs: RecordSet;
 
@@ -297,7 +281,7 @@ class GridLocalModel extends HoistModel {
         }
 
         // Support for FullWidthScroll
-        if (this.isFullWidthScrollEnabled) {
+        if (model.experimental['enableFullWidthScroll']) {
             ret.suppressHorizontalScroll = true;
         }
 
@@ -870,83 +854,4 @@ class GridLocalModel extends HoistModel {
             consumeEvent(event);
         }
     };
-
-    //-----------------------------
-    // Support for FullWidthScroll
-    //-----------------------------
-
-    readonly SCROLLBAR_SIZE = 10;
-    readonly scrollerRef = createRef<HTMLDivElement>();
-
-    @observable viewportWidth: number;
-    @observable private isVerticalScrollbarVisible = false;
-
-    private viewportResizeObserver: ResizeObserver;
-
-    @computed
-    get isFullWidthScrollEnabled(): boolean {
-        return this.model.experimental['enableFullWidthScroll'];
-    }
-
-    get visibleColumnWidth(): number {
-        const {model, SCROLLBAR_SIZE} = this;
-        return (
-            sumBy(model.columnState, it =>
-                it.hidden ? 0 : it.width ?? model.getColumn(it.colId).minWidth ?? 0
-            ) + (this.isVerticalScrollbarVisible ? SCROLLBAR_SIZE : 0)
-        );
-    }
-
-    private get agViewport(): HTMLDivElement {
-        return this.viewRef.current.querySelector('.ag-center-cols-viewport');
-    }
-
-    private get agVerticalScrollContainer(): HTMLDivElement {
-        return this.viewRef.current.querySelector('.ag-body-vertical-scroll-container');
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
-
-    scrollScroller(left: number) {
-        this.scrollerRef.current.scrollLeft = left;
-    }
-
-    scrollViewport(left: number) {
-        this.agViewport.scrollLeft = left;
-    }
-
-    override afterLinked() {
-        if (!this.isFullWidthScrollEnabled) return;
-        this.addReaction({
-            track: () => this.model.isReady,
-            run: isReady => {
-                if (!isReady) return;
-                const {agViewport, viewportResizeObserver} = this;
-                this.viewportWidth = agViewport.clientWidth;
-                agViewport.addEventListener('scroll', e =>
-                    this.scrollScroller((e.target as HTMLDivElement).scrollLeft)
-                );
-                viewportResizeObserver?.disconnect();
-                this.viewportResizeObserver = observeResize(
-                    rect => this.onViewResized(rect),
-                    agViewport,
-                    {debounce: 100}
-                );
-            }
-        });
-    }
-
-    override destroy() {
-        super.destroy();
-        this.viewportResizeObserver?.disconnect();
-    }
-
-    @action
-    private onViewResized({width}: DOMRect) {
-        this.viewportWidth = width;
-        this.isVerticalScrollbarVisible = !!this.agVerticalScrollContainer.clientHeight;
-    }
 }
