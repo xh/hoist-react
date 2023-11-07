@@ -40,6 +40,7 @@
 
 * Performance improvement to `HoistComponent`:  Prevent unnecessary re-renderings resulting from
 spurious model lookup changes.
+* New flag `GridModel.experimental.enableFullWidthScroll` enables scrollbars to span pinned columns.
 
 ## 59.2.0 - 2023-10-16
 
