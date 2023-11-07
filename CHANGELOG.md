@@ -24,6 +24,9 @@
 * Added `ZoneGrid`, a specialized version of the Grid component that displays its data with
   multi-line full-width rows. Each row is broken into four zones for top/bottom and left/right,
   each of which can mapped to render one or more fields.
+* `RelativeTimestamp` component accepts new option `localDateMode` to display differences based
+  on calendar days.
+
 
 ### 🐞 Bug Fixes
 
