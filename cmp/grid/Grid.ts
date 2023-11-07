@@ -7,9 +7,9 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
-import {gridScrollbar} from '@xh/hoist/cmp/grid/impl/GridScrollbar';
+import {gridHScrollbar} from '@xh/hoist/cmp/grid/impl/GridHScrollbar';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
-import {div, frame, vframe} from '@xh/hoist/cmp/layout';
+import {div, fragment, frame, vframe} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
     HoistModel,
@@ -107,10 +107,11 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
         );
 
-        const container = model.experimental['enableFullWidthScroll'] ? vframe : frame;
+        const {enableFullWidthScroll} = model.experimental,
+            container = enableFullWidthScroll ? vframe : frame;
 
-        return container(
-            frame({
+        return fragment(
+            container({
                 className,
                 items: [
                     agGrid({
@@ -118,9 +119,9 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                         ...getLayoutProps(props),
                         ...impl.agOptions
                     }),
-                    gridScrollbar({
-                        omit: !model.experimental['enableFullWidthScroll'],
-                        viewRef: impl.viewRef
+                    gridHScrollbar({
+                        omit: !enableFullWidthScroll,
+                        gridLocalModel: impl
                     })
                 ],
                 testId,
@@ -138,7 +139,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
 //------------------------
 // Implementation
 //------------------------
-class GridLocalModel extends HoistModel {
+export class GridLocalModel extends HoistModel {
     override xhImpl = true;
 
     @lookup(GridModel)
@@ -281,7 +282,7 @@ class GridLocalModel extends HoistModel {
         }
 
         // Support for FullWidthScroll
-        if (model.experimental['enableFullWidthScroll']) {
+        if (model.experimental.enableFullWidthScroll) {
             ret.suppressHorizontalScroll = true;
         }
 

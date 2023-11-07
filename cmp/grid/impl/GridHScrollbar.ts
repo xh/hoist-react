@@ -1,4 +1,4 @@
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridLocalModel, GridModel} from '@xh/hoist/cmp/grid';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, HoistProps, useLocalModel} from '@xh/hoist/core';
 import {makeObservable} from '@xh/hoist/mobx';
@@ -7,19 +7,25 @@ import {sumBy} from 'lodash';
 import {action, observable} from 'mobx';
 import {createRef, RefObject} from 'react';
 
-export interface GridScrollbarProps extends HoistProps<GridModel> {
-    viewRef: RefObject<HTMLElement>;
+/**
+ * Implementation for Grid's full-width horizontal scrollbar, to span pinned columns
+ * @internal
+ */
+
+export interface GridHScrollbarProps extends HoistProps<GridModel> {
+    gridLocalModel: GridLocalModel;
 }
 
-export const gridScrollbar = hoistCmp.factory<GridScrollbarProps>({
-    className: 'xh-grid__grid-scrollbar',
+export const gridHScrollbar = hoistCmp.factory<GridHScrollbarProps>({
+    className: 'xh-grid__grid-hscrollbar',
     render({className}) {
-        const impl = useLocalModel(GridScrollbarModel),
-            {scrollerRef, viewportWidth, visibleColumnWidth, SCROLLBAR_SIZE} = impl;
+        const impl = useLocalModel(GridHScrollbarModel),
+            {scrollerRef, viewWidth, visibleColumnWidth, SCROLLBAR_SIZE} = impl;
+
+        if (viewWidth > visibleColumnWidth) return null;
 
         return div({
             className,
-            omit: viewportWidth > visibleColumnWidth,
             item: div({
                 className: `${className}__filler`,
                 style: {
@@ -32,7 +38,7 @@ export const gridScrollbar = hoistCmp.factory<GridScrollbarProps>({
             },
             ref: scrollerRef,
             style: {
-                height: SCROLLBAR_SIZE,
+                height: SCROLLBAR_SIZE, // TODO: make this a property on GridModel to apply to both scrollbars
                 overflowX: 'auto',
                 overflowY: 'hidden'
             }
@@ -40,21 +46,27 @@ export const gridScrollbar = hoistCmp.factory<GridScrollbarProps>({
     }
 });
 
-class GridScrollbarModel extends HoistModel {
+class GridHScrollbarModel extends HoistModel {
     readonly SCROLLBAR_SIZE = 10;
     readonly scrollerRef = createRef<HTMLDivElement>();
 
-    @observable viewportWidth: number;
+    @observable viewWidth: number;
     @observable private isVerticalScrollbarVisible = false;
 
-    private viewportResizeObserver: ResizeObserver;
+    /** Observe AG's viewport to detect when vertical scrollbar visibility changes */
+    private agViewportResizeObserver: ResizeObserver;
+    /** Observe overall view to detect when horizontal scrollbar is needed */
+    private viewResizeObserver: ResizeObserver;
 
     get visibleColumnWidth(): number {
-        const {model, SCROLLBAR_SIZE} = this;
+        const {gridModel, SCROLLBAR_SIZE} = this;
         return (
-            sumBy(model.columnState, it =>
-                it.hidden ? 0 : it.width ?? model.getColumn(it.colId).minWidth ?? 0
-            ) + (this.isVerticalScrollbarVisible ? SCROLLBAR_SIZE : 0)
+            sumBy(gridModel.columnState, ({colId, hidden, width}) => {
+                if (hidden) return 0;
+                const minWidth = gridModel.getColumn(colId).minWidth ?? 0;
+                if (width) return Math.max(width, minWidth);
+                return minWidth;
+            }) + (this.isVerticalScrollbarVisible ? SCROLLBAR_SIZE : 0)
         );
     }
 
@@ -66,12 +78,12 @@ class GridScrollbarModel extends HoistModel {
         return this.viewRef.current.querySelector('.ag-body-vertical-scroll-container');
     }
 
-    private get model(): GridModel {
+    private get gridModel(): GridModel {
         return this.componentProps.model as GridModel;
     }
 
     private get viewRef(): RefObject<HTMLElement> {
-        return this.componentProps.viewRef;
+        return this.componentProps.gridLocalModel.viewRef;
     }
 
     constructor() {
@@ -89,17 +101,21 @@ class GridScrollbarModel extends HoistModel {
 
     override afterLinked() {
         this.addReaction({
-            when: () => !!this.viewRef.current && this.model.isReady,
+            when: () => this.viewRef.current && this.gridModel.isReady,
             run: () => {
-                const {agViewport, viewportResizeObserver} = this;
-                this.viewportWidth = agViewport.clientWidth;
+                const {agViewport, viewRef} = this;
+                this.viewWidth = viewRef.current.clientWidth;
                 agViewport.addEventListener('scroll', e =>
                     this.scrollScroller((e.target as HTMLDivElement).scrollLeft)
                 );
-                viewportResizeObserver?.disconnect();
-                this.viewportResizeObserver = observeResize(
-                    rect => this.onViewResized(rect),
+                this.agViewportResizeObserver = observeResize(
+                    () => this.onAgViewportResized(),
                     agViewport,
+                    {debounce: 100}
+                );
+                this.viewResizeObserver = observeResize(
+                    rect => this.onViewResized(rect),
+                    viewRef.current,
                     {debounce: 100}
                 );
             }
@@ -108,12 +124,17 @@ class GridScrollbarModel extends HoistModel {
 
     override destroy() {
         super.destroy();
-        this.viewportResizeObserver?.disconnect();
+        this.agViewportResizeObserver?.disconnect();
+        this.viewResizeObserver?.disconnect();
+    }
+
+    @action
+    private onAgViewportResized() {
+        this.isVerticalScrollbarVisible = !!this.agVerticalScrollContainer.clientHeight;
     }
 
     @action
     private onViewResized({width}: DOMRect) {
-        this.viewportWidth = width;
-        this.isVerticalScrollbarVisible = !!this.agVerticalScrollContainer.clientHeight;
+        this.viewWidth = width;
     }
 }
