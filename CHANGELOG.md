@@ -33,6 +33,7 @@
 * Fixed bug where interacting with a `Select` within a `Popover` can inadvertently cause the
   popover to close. If your app already has special handling in place to prevent this, you should
   be able to unwind it after upgrading.
+* Fixed bug where a user could be prompted to log in to an app with SSO enabled.
 
 ### 💥 Breaking Changes
 
