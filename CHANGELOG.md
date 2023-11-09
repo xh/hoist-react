@@ -1,6 +1,6 @@
 # Changelog
 
-## 60.0.0-SNAPSHOT - unreleased
+## 59.3.0 - 2023-11-09
 
 ### 🎁 New Features
 
@@ -33,24 +33,18 @@
   be able to unwind it after upgrading.
 * Improved the behavior of the clear button in `TextInput`. Clearing a field no longer drops focus,
   allowing the user to immediately begin typing in a new value.
-
-### 💥 Breaking Changes
-
-* The `XH.getActiveModels` method has been renamed to `XH.getModels` for clarity and consistency.
-  This is not expected to impact applications.
+* Fixed arguments passed to `ErrorMessageProps.actionFn` and `ErrorMessageProps.detailsFn`.
+* Improved default error text in `ErrorMessage`.
 
 ### ⚙️ Technical
 
-* A performance improvement to `HoistComponent` prevents unnecessary re-renderings resulting from
+* Improved core `HoistComponent` performance by preventing unnecessary re-renderings triggered by
   spurious model lookup changes.
 * New flag `GridModel.experimental.enableFullWidthScroll` enables scrollbars to span pinned columns.
-
-## 59.2.0 - 2023-10-16
-
-### 🐞 Bug Fixes
-
-* Fix to pass correct arguments to `ErrorMessageProps.actionFn` and `ErrorMessageProps.detailsFn`.
-* Improved default error text in `ErrorMessage`.
+  * Early test release behind the flag, expected to made the default behavior in next release.
+* Renamed `XH.getActiveModels()` to `XH.getModels()` for clarity / consistency.
+  * API change, but not expected to impact applications.
+* Added `XH.getModel()` convenience method to return the first matching model.
 
 ## 59.2.0 - 2023-10-16
 
