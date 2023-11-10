@@ -1,5 +1,13 @@
 # Changelog
 
+## 59.3.1 - unreleased
+
+### 🐞 Bug Fixes
+
+* Ensure an unauthorized response from a proxy service endpoint does not prompt the user to refresh
+  and log in again on an SSO-enabled application.
+* Revert change to `Panel` which affected where `className` was applied with `modalSupport` enabled
+
 ## 59.3.0 - 2023-11-09
 
 ### 🎁 New Features
