@@ -228,19 +228,21 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
 
         const useResizeContainer = resizable || collapsible || showSplitter;
 
-        // 5a) For modalSupport, className + testId need additional frame that will follow content
+        // For modalSupport, create additional frame that will follow content to portal and apply
+        // className and testId accordingly
         if (modalSupportModel) {
             item = modalSupport({
                 model: modalSupportModel,
-                item: frame({item, className, testId})
+                item: frame({
+                    item,
+                    className: model.isModal ? className : undefined,
+                    testId: model.isModal ? testId : undefined
+                })
             });
-
-            return useResizeContainer
-                ? resizeContainer({ref, item})
-                : box({ref, item, ...layoutProps});
         }
 
-        // 5b) No modalSupport, className + testId applied directly to parent
+        testId = model.isModal ? undefined : testId; // Only apply testId once
+
         return useResizeContainer
             ? resizeContainer({ref, item, className, testId})
             : box({ref, item, className, testId, ...layoutProps});
