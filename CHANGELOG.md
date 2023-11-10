@@ -1,6 +1,6 @@
 # Changelog
 
-## 59.3.1 - unreleased
+## 59.3.1 - 2023-11-10
 
 ### 🐞 Bug Fixes
 
