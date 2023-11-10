@@ -113,7 +113,7 @@ export interface GridFilterModelConfig {
     fieldSpecs?: Array<string | GridFilterFieldSpecConfig>;
 
     /** Default properties to be assigned to all fieldSpecs created by this model. */
-    fieldSpecDefaults?: GridFilterFieldSpecConfig;
+    fieldSpecDefaults?: Omit<GridFilterFieldSpecConfig, 'field'>;
 }
 
 /**
