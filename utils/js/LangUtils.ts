@@ -12,7 +12,7 @@ import {
     isEmpty,
     isFunction,
     isObject,
-    isObjectLike,
+    isPlainObject,
     isUndefined,
     mixin,
     uniq,
@@ -59,16 +59,17 @@ export function withDefault<T>(...args: T[]): T {
  * could be problematic - e.g. application or library classes (such as `moment`!) which rely on
  * their internal state remaining mutable to function.
  */
-const FREEZABLE_TYPES: Set<String> = new Set(['Object', 'Array', 'Map', 'Set']);
-export function deepFreeze(obj: object) {
-    if (!isObjectLike(obj) || !FREEZABLE_TYPES.has(obj.constructor.name)) return obj;
+type FREEZABLE_TYPES = Record<string, {}> | Array<any> | Map<any, any> | Set<any>;
+export function deepFreeze<T extends FREEZABLE_TYPES>(obj: T): T {
+    if (!isPlainObject(obj) || !isArray(obj) || !(obj instanceof Map) || !(obj instanceof Set))
+        return obj;
 
     const propNames = Object.getOwnPropertyNames(obj);
     for (const name of propNames) {
         deepFreeze(obj[name]);
     }
 
-    return Object.freeze(obj);
+    return Object.freeze<T>(obj);
 }
 
 /**
