@@ -20,7 +20,7 @@ import {RestGridModel} from '../RestGridModel';
 export const restGridToolbar = hoistCmp.factory({
     model: uses(RestGridModel, {publishMode: 'limited'}),
 
-    render({model, extraToolbarItems}) {
+    render({model, extraToolbarItems, testId}) {
         const {unit, toolbarActions: actions, gridModel, readonly} = model;
 
         let extraItems = extraToolbarItems;
@@ -31,7 +31,8 @@ export const restGridToolbar = hoistCmp.factory({
             recordActionBar({
                 actions,
                 gridModel,
-                selModel: gridModel.selModel
+                selModel: gridModel.selModel,
+                testId
             }),
             toolbarSep({
                 omit: isEmpty(extraItems) || readonly

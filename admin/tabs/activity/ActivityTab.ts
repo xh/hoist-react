@@ -16,7 +16,7 @@ export const activityTab = hoistCmp.factory(() =>
     tabContainer({
         modelConfig: {
             route: 'default.activity',
-            switcher: {orientation: 'left'},
+            switcher: {orientation: 'left', testId: 'activity-tab-switcher'},
             tabs: [
                 {id: 'tracking', icon: Icon.analytics(), content: activityTrackingPanel},
                 {id: 'clientErrors', icon: Icon.warning(), content: clientErrorsPanel},

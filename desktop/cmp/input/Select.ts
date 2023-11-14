@@ -7,14 +7,14 @@
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
 import {
+    Awaitable,
     createElement,
     hoistCmp,
     HoistProps,
     LayoutProps,
     PlainObject,
-    XH,
-    Awaitable,
-    SelectOption
+    SelectOption,
+    XH
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -28,7 +28,7 @@ import {
 } from '@xh/hoist/kit/react-select';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {elemWithin, getTestId, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import debouncePromise from 'debounce-promise';
@@ -591,6 +591,21 @@ class SelectInputModel extends HoistInputModel {
         return this._valueContainerCmp;
     }
 
+    _menuCmp = null;
+    getMenuCmp() {
+        if (!this._menuCmp) {
+            const testId = getTestId(this.componentProps, 'menu');
+            this._menuCmp = testId
+                ? props =>
+                      createElement(components.Menu, {
+                          ...props,
+                          innerProps: {[TEST_ID]: testId, ...props.innerProps}
+                      })
+                : components.Menu;
+        }
+        return this._menuCmp;
+    }
+
     getDropdownIndicatorCmp() {
         return this.hideDropdownIndicator
             ? () => null
@@ -604,6 +619,7 @@ class SelectInputModel extends HoistInputModel {
             return div({
                 ...restInnerProps,
                 ref,
+                [TEST_ID]: getTestId(this.componentProps, 'clear-btn'),
                 item: Icon.x({className: 'xh-select__indicator'})
             });
         };
@@ -701,6 +717,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             components: {
                 DropdownIndicator: model.getDropdownIndicatorCmp(),
                 ClearIndicator: model.getClearIndicatorCmp(),
+                Menu: model.getMenuCmp(),
                 IndicatorSeparator: () => null,
                 ValueContainer: model.getValueContainerCmp(),
                 MultiValueLabel: model.getMultiValueLabelCmp(),
@@ -772,6 +789,16 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
                 e.stopPropagation();
             }
         },
+        onMouseDown: e => {
+            // Some internal elements, like the dropdown indicator and the rendered single value,
+            // fire 'mousedown' events. These can bubble and inadvertently close Popovers that
+            // contain Selects.
+            const target = e?.target as HTMLElement;
+            if (target && elemWithin(target, 'bp4-popover')) {
+                e.stopPropagation();
+            }
+        },
+        testId: props.testId,
         ...layoutProps,
         width: withDefault(width, 200),
         height: height,

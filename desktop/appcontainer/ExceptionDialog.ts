@@ -90,5 +90,5 @@ export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(({model}) =>
 });
 
 function isSessionExpired(e) {
-    return e?.httpStatus === 401;
+    return !XH.appSpec.isSSO && e?.httpStatus === 401;
 }

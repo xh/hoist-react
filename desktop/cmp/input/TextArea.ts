@@ -6,10 +6,10 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, LayoutProps, HoistProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
-import {apiRemoved, withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {Ref} from 'react';
 import './TextArea.scss';
@@ -91,7 +91,7 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
         placeholder: props.placeholder,
         spellCheck: withDefault(props.spellCheck, false),
         tabIndex: props.tabIndex,
-
+        [TEST_ID]: props.testId,
         id: props.id,
         className,
         style: {

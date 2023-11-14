@@ -132,7 +132,7 @@ export interface GridConfig {
     /** Config with which to create a GridFilterModel, or `true` to enable default. Desktop only.*/
     filterModel?: GridFilterModelConfig | boolean;
 
-    /** Config with which to create aColChooserModel, or boolean `true` to enable default.*/
+    /** Config with which to create a ColChooserModel, or boolean `true` to enable default.*/
     colChooserModel?: ColChooserConfig | boolean;
 
     /**
@@ -1461,7 +1461,7 @@ export class GridModel extends HoistModel {
         if (omit) return null;
 
         if (this.isGroupSpec(config)) {
-            if (config.borders) borderedGroup = config;
+            if (config.borders !== false) borderedGroup = config;
             const children = compact(
                 config.children.map(c => this.buildColumn(c, borderedGroup))
             ) as Array<ColumnGroup | Column>;

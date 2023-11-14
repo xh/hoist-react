@@ -30,7 +30,7 @@ export const AppComponent = hoistCmp({
 const tbar = hoistCmp.factory<AppModel>(({model}) =>
     appBar({
         icon: Icon.gears({size: '2x', prefix: 'fal'}),
-        leftItems: [tabSwitcher({enableOverflow: true})],
+        leftItems: [tabSwitcher({testId: 'tab-switcher', enableOverflow: true})],
         rightItems: [
             button({
                 icon: Icon.openExternal(),

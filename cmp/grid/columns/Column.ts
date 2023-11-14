@@ -190,6 +190,13 @@ export interface ColumnSpec {
      */
     sortValue?: string | ColumnSortValueFn;
 
+    /**
+     * Values to match or functions to check to determine if a value should always be sorted
+     * to the bottom, regardless of sort order. If more than one entry is provided, values will be
+     * sorted according to the order they appear here.
+     */
+    sortToBottom?: Some<unknown | ((v: unknown) => boolean)>;
+
     /** Function to compare cell values for sorting.*/
     comparator?: ColumnComparator;
 
@@ -434,6 +441,7 @@ export class Column {
     sortingOrder: ColumnSortSpec[];
     absSort: boolean;
     sortValue: string | ColumnSortValueFn;
+    sortToBottom: Array<(v: unknown) => boolean>;
     comparator: ColumnComparator;
     resizable: boolean;
     sortable: boolean;
@@ -506,6 +514,7 @@ export class Column {
             absSort,
             sortingOrder,
             sortValue,
+            sortToBottom,
             comparator,
             resizable,
             movable,
@@ -600,6 +609,7 @@ export class Column {
         this.absSort = withDefault(absSort, false);
         this.sortingOrder = this.parseSortingOrder(sortingOrder);
         this.sortValue = sortValue;
+        this.sortToBottom = this.parseSortToBottom(sortToBottom);
         this.comparator = comparator;
 
         this.resizable = withDefault(resizable, true);
@@ -897,11 +907,19 @@ export class Column {
         if (this.comparator === undefined) {
             // Use default comparator with appropriate inputs
             ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
-                const recordA = agNodeA?.data,
+                const {gridModel, colId} = this,
+                    // Note: sortCfg and agNodes can be undefined if comparator called during show
+                    // of agGrid column header set filter menu.
+                    sortCfg = find(gridModel.sortBy, {colId}),
+                    sortDir = sortCfg?.sort || 'asc',
+                    recordA = agNodeA?.data,
                     recordB = agNodeB?.data;
 
                 valueA = this.getSortValue(valueA, recordA);
                 valueB = this.getSortValue(valueB, recordB);
+
+                const sortToBottom = this.sortToBottomComparator(valueA, valueB, sortDir);
+                if (sortToBottom !== 0) return sortToBottom;
 
                 return this.defaultComparator(valueA, valueB);
             };
@@ -921,13 +939,16 @@ export class Column {
                         recordB,
                         column: this,
                         gridModel,
-                        defaultComparator: (a, b) => this.defaultComparator(a, b),
+                        defaultComparator: this.defaultComparator,
                         agNodeA,
                         agNodeB
                     };
 
                 valueA = this.getSortValue(valueA, recordA);
                 valueB = this.getSortValue(valueB, recordB);
+
+                const sortToBottom = this.sortToBottomComparator(valueA, valueB, sortDir);
+                if (sortToBottom !== 0) return sortToBottom;
 
                 return this.comparator(valueA, valueB, sortDir, abs, params);
             };
@@ -979,6 +1000,23 @@ export class Column {
         return sortCfg ? sortCfg.comparator(v1, v2) : GridSorter.defaultComparator(v1, v2);
     };
 
+    private sortToBottomComparator = (v1, v2, sortDir: 'asc' | 'desc') => {
+        const {sortToBottom} = this;
+
+        if (isNil(sortToBottom)) return 0;
+
+        for (let fn of sortToBottom) {
+            const v1ToBottom = fn(v1),
+                v2ToBottom = fn(v2);
+            const isAsc = sortDir === 'asc';
+            if (v1ToBottom != v2ToBottom) {
+                return v1ToBottom ? (isAsc ? 1 : -1) : isAsc ? -1 : 1;
+            }
+        }
+
+        return 0;
+    };
+
     private defaultSetValueFn = ({value, record, store, field}) => {
         const data = {id: record.id};
         data[field] = value;
@@ -1009,6 +1047,11 @@ export class Column {
 
     private parseSortingOrder(sortingOrder): ColumnSortSpec[] {
         return sortingOrder?.map(spec => (isString(spec) || spec === null ? {sort: spec} : spec));
+    }
+
+    private parseSortToBottom(sortToBottom): Array<(v: unknown) => boolean> {
+        if (isNil(sortToBottom)) return null;
+        return castArray(sortToBottom).map(v => (isFunction(v) ? v : it => it === v));
     }
 
     private parseFilterable(filterable) {

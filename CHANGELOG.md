@@ -1,29 +1,85 @@
 # Changelog
 
-## 60.0.0-SNAPSHOT - unreleased
+## 59.3.1 - 2023-11-10
+
+### 🐞 Bug Fixes
+
+* Ensure an unauthorized response from a proxy service endpoint does not prompt the user to refresh
+  and log in again on an SSO-enabled application.
+* Revert change to `Panel` which affected where `className` was applied with `modalSupport` enabled
+
+## 59.3.0 - 2023-11-09
 
 ### 🎁 New Features
 
-* New `DockViewConfig.onClose` hook invoked when a user attempts to remove a `DockContainer` view
-* Add `GridModel` APIs to lookup and show / hide entire column groups
-* Left / right borders are now rendered along `Grid` `ColumnGroup` edges by default.  Control
- with new boolean property `ColumnGroupSpec.borders`
-* The Cube package has been enhanced to support `Query` specific post-processing functions.  See
-new properties `Query.omitFn`, `Query.bucketSpecFn` and `Query.lockFn`.  These properties default
-to their respective properties on `Cube`.
+* Improved Hoist support for automated testing via Playwright, Cypress, and similar tools:
+    * Core Hoist components now accept an optional `testId` prop, to be rendered at an appropriate
+      level of the DOM (within a `data-testid` HTML attribute). This can minimize the need to select
+      components using criteria such as CSS classes or labels that are more likely to change and
+      break tests.
+    * When given a `testId`, certain composite components will generate and set "sub-testIds" on
+      selected internal components. For example, a `TabContainer` will set a testId on each switcher
+      button (derived from its tabId), and a `Form` will set testIds on nested `FormField`
+      and `HoistInput` components (derived from their bound field names).
+    * This release represents a first step in ongoing work to facilitate automated end-to-end
+      testing of Hoist applications. Additional Hoist-specific utilities for writing tests in
+      libraries such as Cypress and Playwright are coming soon.
+* Added new `ZoneGrid` component, a highly specialized `Grid` that always displays its data with
+  multi-line, full-width rows. Each row is broken into four zones (top/bottom and left/right),
+  each of which can mapped by the user to render data from one or more fields.
+    * Primarily intended for mobile, where horizontal scrolling can present usability issues, but
+      also available on desktop, where it can serve as an easily user-configurable `DataView`.
+* Added `Column.sortToBottom` to force specified values to sort the bottom, regardless of sort
+  direction. Intended primarily to force null values to sort below all others.
+* Upgraded the `RelativeTimestamp` component with a new `localDateMode` option to customize how
+  near-term date/time differences are rendered with regards to calendar days.
+
+### 🐞 Bug Fixes
+
+* Fixed bug where interacting with a `Select` within a `Popover` can inadvertently cause the
+  popover to close. If your app already has special handling in place to prevent this, you should
+  be able to unwind it after upgrading.
+* Improved the behavior of the clear button in `TextInput`. Clearing a field no longer drops focus,
+  allowing the user to immediately begin typing in a new value.
+* Fixed arguments passed to `ErrorMessageProps.actionFn` and `ErrorMessageProps.detailsFn`.
+* Improved default error text in `ErrorMessage`.
+
+### ⚙️ Technical
+
+* Improved core `HoistComponent` performance by preventing unnecessary re-renderings triggered by
+  spurious model lookup changes.
+* New flag `GridModel.experimental.enableFullWidthScroll` enables scrollbars to span pinned columns.
+  * Early test release behind the flag, expected to made the default behavior in next release.
+* Renamed `XH.getActiveModels()` to `XH.getModels()` for clarity / consistency.
+  * API change, but not expected to impact applications.
+* Added `XH.getModel()` convenience method to return the first matching model.
+
+## 59.2.0 - 2023-10-16
+
+### 🎁 New Features
+
+* New `DockViewConfig.onClose` hook invoked when a user attempts to remove a `DockContainer` view.
+* Added `GridModel` APIs to lookup and show / hide entire column groups.
+* Left / right borders are now rendered along `Grid` `ColumnGroup` edges by default, controllable
+  with new `ColumnGroupSpec.borders` config.
+* Enhanced the `CubeQuery` to support per-query post-processing functions
+  with `Query.omitFn`, `Query.bucketSpecFn` and `Query.lockFn`. These properties default to their
+  respective properties on `Cube`.
 
 ### 🐞 Bug Fixes
 
 * `DashContainerModel` fixes:
-  * Fix bug where `addView` would throw when adding a view to a row or column
-  * Fix bug where `allowRemove` flag was dropped from state for containers
-  * Fix bug in `DockContainer` where adding / removing views would cause other views to be remounted
-* Fix erroneous `GridModel` warning when using a tree column within a column group
-* Fix regression to alert banners. Resume allowing elements as messages
+    * Fix bug where `addView` would throw when adding a view to a row or column
+    * Fix bug where `allowRemove` flag was dropped from state for containers
+    * Fix bug in `DockContainer` where adding / removing views would cause other views to be
+      remounted
+* Fixed erroneous `GridModel` warning when using a tree column within a column group
+* Fixed regression to alert banners. Resume allowing elements as messages.
+* Fix `Grid` cell border styling inconsistencies.
 
 ### ⚙️ Typescript API Adjustments
 
-* Add type for `ActionFnData.record`
+* Added type for `ActionFnData.record`.
 
 ## 59.1.0 - 2023-09-20
 
@@ -49,7 +105,8 @@ to their respective properties on `Cube`.
 * Improved styling for disabled `checkbox` inputs.
 
 ### ⚙️ Technical
-* `XH.showException` has been deprecated.  Use similar methods on `XH.exceptionHandler` instead.
+
+* `XH.showException` has been deprecated. Use similar methods on `XH.exceptionHandler` instead.
 
 ### 📚 Libraries
 
