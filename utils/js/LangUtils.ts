@@ -19,6 +19,7 @@ import {
     uniqBy
 } from 'lodash';
 import _inflection from 'lodash-inflection';
+import {PlainObject} from '@xh/hoist/core';
 
 mixin(_inflection);
 
@@ -59,9 +60,9 @@ export function withDefault<T>(...args: T[]): T {
  * could be problematic - e.g. application or library classes (such as `moment`!) which rely on
  * their internal state remaining mutable to function.
  */
-type FREEZABLE_TYPES = Record<string, {}> | Array<any> | Map<any, any> | Set<any>;
+type FREEZABLE_TYPES = PlainObject | Array<any> | Map<any, any> | Set<any>;
 export function deepFreeze<T extends FREEZABLE_TYPES>(obj: T): T {
-    if (!isPlainObject(obj) || !isArray(obj) || !(obj instanceof Map) || !(obj instanceof Set))
+    if (!(isPlainObject(obj) || isArray(obj) || obj instanceof Map || obj instanceof Set))
         return obj;
 
     const propNames = Object.getOwnPropertyNames(obj);
