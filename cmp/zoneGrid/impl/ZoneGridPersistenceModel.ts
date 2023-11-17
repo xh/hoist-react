@@ -4,11 +4,12 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, PersistenceProvider, PlainObject} from '@xh/hoist/core';
+import {ColumnState, GridSorterLike} from '@xh/hoist/cmp/grid';
+import {HoistModel, managed, PersistenceProvider, Some} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
 import {ZoneGridModel} from '../ZoneGridModel';
-import {ZoneGridModelPersistOptions} from '../Types';
+import {Zone, ZoneGridModelPersistOptions, ZoneMapping} from '../Types';
 
 /**
  * Model to manage persisting state from ZoneGridModel.
@@ -22,7 +23,14 @@ export class ZoneGridPersistenceModel extends HoistModel {
     zoneGridModel: ZoneGridModel;
 
     @observable.ref
-    state: PlainObject;
+    state: {
+        columns?: Partial<ColumnState>[];
+        sortBy?: GridSorterLike;
+        groupBy?: Some<string>;
+        version?: number;
+        autosize?: any;
+        mappings?: Record<Zone, Some<string | ZoneMapping>>;
+    };
 
     @managed
     provider: PersistenceProvider;

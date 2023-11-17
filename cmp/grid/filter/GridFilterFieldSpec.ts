@@ -6,7 +6,6 @@
  */
 import {ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {HoistInputProps} from '@xh/hoist/cmp/input';
-import {PlainObject} from '@xh/hoist/core';
 import {FieldFilterOperator, parseFilter, View} from '@xh/hoist/data';
 import {
     BaseFilterFieldSpec,
@@ -42,7 +41,7 @@ export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
 export class GridFilterFieldSpec extends BaseFilterFieldSpec {
     filterModel: GridFilterModel;
     renderer: ColumnRenderer;
-    inputProps: PlainObject;
+    inputProps: HoistInputProps;
     defaultOp: FieldFilterOperator;
     valueCount: number;
 

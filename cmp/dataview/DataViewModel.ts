@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {RowClickedEvent, RowDoubleClickedEvent} from '@ag-grid-community/core';
+import {RowClickedEvent, RowDoubleClickedEvent, RowHeightParams} from '@ag-grid-community/core';
 import {
     ColumnRenderer,
     ColumnSpec,
@@ -127,7 +127,7 @@ export interface DataViewConfig {
 export type ItemHeightFn = (params: {
     record: StoreRecord;
     dataViewModel: DataViewModel;
-    agParams: PlainObject;
+    agParams: RowHeightParams;
 }) => number;
 
 /**

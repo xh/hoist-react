@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH, Exception, PlainObject, Thunkable, FetchResponse} from '@xh/hoist/core';
+import {HoistService, XH, Exception, PlainObject, FetchResponse, LoadSpec} from '@xh/hoist/core';
 import {isLocalDate, SECONDS, ONE_MINUTE, olderThan} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
@@ -66,7 +66,7 @@ export class FetchService extends HoistService {
      * Set default headers to be sent with all subsequent requests.
      * @param headers - to be sent with all fetch requests, or a function to generate.
      */
-    setDefaultHeaders(headers: Thunkable<PlainObject>) {
+    setDefaultHeaders(headers: PlainObject | ((arg: FetchOptions) => PlainObject)) {
         this.defaultHeaders = headers;
     }
 
@@ -328,9 +328,9 @@ export interface FetchOptions {
 
     /**
      * Data to send in the request body (for POSTs/PUTs of JSON).
-     * When using `fetch`, provide a string. Otherwise, provide a PlainObject.
+     * When using `fetch`, provide a string. Otherwise, provide a JSON Serializable object
      */
-    body?: PlainObject | string;
+    body?: any;
 
     /**
      * Parameters to encode and append as a query string, or send with the request body
@@ -360,7 +360,7 @@ export interface FetchOptions {
      * Optional metadata about the underlying request. Passed through for downstream processing by
      * utils such as {@link ExceptionHandler}.
      */
-    loadSpec?: PlainObject;
+    loadSpec?: LoadSpec;
 
     /**
      * Options to pass to the underlying fetch request.
