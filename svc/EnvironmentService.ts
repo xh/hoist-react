@@ -130,7 +130,7 @@ export class EnvironmentService extends HoistService {
             } else if (mode === 'forceReload') {
                 XH.suspendApp({
                     reason: 'APP_UPDATE',
-                    message: `A new version of ${XH.clientAppName} is available!`
+                    message: `A new version of ${XH.clientAppName} is now available (${appVersion}) and requires an immediate update.`
                 });
             }
         }
