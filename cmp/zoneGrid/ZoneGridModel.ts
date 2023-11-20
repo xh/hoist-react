@@ -669,10 +669,7 @@ export class ZoneGridModel extends HoistModel {
                     });
 
                     if (!isEmpty(offenders)) {
-                        remove(mapping, it => {
-                            console.log(offenders.includes(it.field));
-                            return offenders.includes(it.field);
-                        });
+                        remove(mapping, it => offenders.includes(it.field));
                     }
 
                     if ((zone == 'tl' || zone == 'tr') && isEmpty(mapping)) {
