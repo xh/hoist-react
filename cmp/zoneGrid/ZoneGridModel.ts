@@ -49,7 +49,16 @@ import {
 } from '@ag-grid-community/core';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {castArray, forOwn, isEmpty, isFinite, isPlainObject, isString} from 'lodash';
+import {
+    castArray,
+    forOwn,
+    isEmpty,
+    isFinite,
+    isPlainObject,
+    isString,
+    dropRight,
+    remove
+} from 'lodash';
 import {ReactNode} from 'react';
 import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
 import {ZoneGridPersistenceModel} from './impl/ZoneGridPersistenceModel';
@@ -616,41 +625,68 @@ export class ZoneGridModel extends HoistModel {
         const ret = {} as Record<Zone, ZoneMapping[]>;
         forOwn(mappings, (rawMapping, zone) => {
             // 1) Standardize mapping into an array of ZoneMappings
-            const mapping = [];
+            let mapping = [];
             castArray(rawMapping).forEach(it => {
                 if (!it) return;
 
                 const ret = isString(it) ? {field: it} : it,
                     col = this.findColumnSpec(ret);
 
-                throwIf(!col, `Column not found for field ${ret.field}`);
-                return mapping.push(ret);
+                if (col) {
+                    mapping.push(ret);
+                } else {
+                    console.warn(`Column not found for field '${ret.field}'`);
+                }
             });
 
             // 2) Ensure mapping respects configured limits
             const limit = this.limits?.[zone];
             if (limit) {
-                throwIf(
-                    isFinite(limit.min) && mapping.length < limit.min,
-                    `Requires minimum ${limit.min} mappings in zone "${zone}"`
-                );
-                throwIf(
-                    isFinite(limit.max) && mapping.length > limit.max,
-                    `Exceeds maximum ${limit.max} mappings in zone "${zone}"`
-                );
+                if (isFinite(limit.min) && mapping.length < limit.min) {
+                    console.warn(
+                        `Requires minimum ${limit.min} mappings in zone "${zone}. Setting to default."`
+                    );
+                    mapping = this._defaultState.mappings[zone];
+                }
+
+                if (isFinite(limit.max) && mapping.length > limit.max) {
+                    const diff = mapping.length - limit.max;
+                    console.warn(
+                        `Exceeds maximum ${limit.max} mappings in zone "${zone}". Dropping last ${diff} fields`
+                    );
+                    mapping = dropRight(mapping, mapping.length - limit.max);
+                }
 
                 if (!isEmpty(limit.only)) {
+                    const offenders = [];
                     mapping.forEach(it => {
-                        throwIf(
-                            !limit.only.includes(it.field),
-                            `Field "${it.field}" not allowed in zone "${zone}"`
-                        );
+                        if (!limit.only.includes(it.field)) {
+                            console.warn(
+                                `Field "${it.field}" not allowed in zone "${zone}. Removing"`
+                            );
+                            offenders.push(it.field);
+                        }
                     });
+
+                    if (!isEmpty(offenders)) {
+                        remove(mapping, it => {
+                            console.log(offenders.includes(it.field));
+                            return offenders.includes(it.field);
+                        });
+                    }
+
+                    if ((zone == 'tl' || zone == 'tr') && isEmpty(mapping)) {
+                        console.warn(
+                            `Top mapping '${zone}' requires at least one field. Setting to default.`
+                        );
+                        mapping = this._defaultState.mappings[zone];
+                    }
                 }
             }
 
             ret[zone] = mapping;
         });
+
         return ret;
     }
 
