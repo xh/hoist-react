@@ -6,6 +6,7 @@
  */
 import {Exception} from '@xh/hoist/core/exception/Exception';
 import {
+    flatMap,
     forOwn,
     isArray,
     isEmpty,
@@ -115,7 +116,7 @@ export function isJSON(obj: any): boolean {
 /**
  * Throw an exception if a condition evaluates as truthy.
  */
-export function throwIf(condition: any, message: string) {
+export function throwIf(condition: any, message: unknown) {
     if (condition) {
         throw Exception.create(message);
     }
@@ -124,7 +125,7 @@ export function throwIf(condition: any, message: string) {
 /**
  * Log a warning to the console if a condition evaluates as truthy.
  */
-export function warnIf(condition: any, message: string) {
+export function warnIf(condition: any, message: any) {
     if (condition) {
         console.warn(message);
     }
@@ -133,7 +134,7 @@ export function warnIf(condition: any, message: string) {
 /**
  * Log an error to the console if a condition evaluates as truthy.
  */
-export function errorIf(condition: any, message: string) {
+export function errorIf(condition: any, message: any) {
     if (condition) {
         console.error(message);
     }
@@ -281,6 +282,15 @@ export function filterConsecutive<T>(
 
         return true;
     };
+}
+
+/**
+ * Intersperse a separator between each item in an array.
+ */
+export function intersperse<T>(arr: T[], separator: T): T[] {
+    return flatMap(arr, (it, idx) => {
+        return idx > 0 ? [separator, it] : [it];
+    });
 }
 
 /**

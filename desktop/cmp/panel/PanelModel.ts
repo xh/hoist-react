@@ -22,9 +22,10 @@ import '@xh/hoist/desktop/register';
 import {action, makeObservable, observable, comparer, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, isString} from 'lodash';
+import {isNil, isNumber, isString} from 'lodash';
 import {createRef} from 'react';
 import {ModalSupportConfig, ModalSupportModel} from '../modalsupport/';
+import {ErrorBoundaryConfig, ErrorBoundaryModel} from '@xh/hoist/cmp/error/ErrorBoundaryModel';
 
 export interface PanelConfig {
     /** Can panel be resized? */
@@ -62,9 +63,15 @@ export interface PanelConfig {
 
     /**
      * Set to true to enable built-in support for showing panel contents in a modal, or provide a
-     * config to further configure.
+     * config to further configure. Default false.
      */
     modalSupport?: boolean | ModalSupportConfig;
+
+    /**
+     * Set to true to place an ErrorBoundary around the panel, or provide a
+     * config to further configure.  Default false.
+     */
+    errorBoundary?: boolean | ErrorBoundaryConfig;
 
     /** How should collapsed content be rendered? Ignored if collapsible is false. */
     renderMode?: RenderMode;
@@ -126,6 +133,7 @@ export class PanelModel extends HoistModel {
 
     @managed modalSupportModel: ModalSupportModel;
     @managed refreshContextModel: RefreshContextModel;
+    @managed errorBoundaryModel: ErrorBoundaryModel;
     @managed provider: PersistenceProvider;
 
     //----------------
@@ -136,11 +144,14 @@ export class PanelModel extends HoistModel {
     //---------------------
     // Observable State
     //---------------------
-    /** Is the Panel rendering in a collapsed state? */
+    /**
+     * True when collapsed in its "home" location as per this model's state.
+     * See also {@link isRenderedCollapsed}, which takes modal state into account.
+     */
     @observable
     collapsed: boolean = false;
 
-    /** Size in pixels or percents along sizing dimension.  Used when object is *not* collapsed. */
+    /** Size in pixels or percents along sizing dimension. Used when object is *not* collapsed. */
     @bindable
     size: number | string = null;
 
@@ -157,8 +168,13 @@ export class PanelModel extends HoistModel {
         return !!this.modalSupportModel;
     }
 
+    /** True when both collapsed and not currently in a modal - i.e. *really* collapsed. */
+    get isRenderedCollapsed(): boolean {
+        return this.collapsed && !this.isModal;
+    }
+
     get isActive(): boolean {
-        return !this.collapsed;
+        return !this.isRenderedCollapsed;
     }
 
     //-----------------
@@ -177,6 +193,7 @@ export class PanelModel extends HoistModel {
         defaultCollapsed = false,
         side,
         modalSupport = false,
+        errorBoundary = false,
         renderMode = 'lazy',
         refreshMode = 'onShowLazy',
         persistWith = null,
@@ -227,9 +244,10 @@ export class PanelModel extends HoistModel {
         this.refreshMode = refreshMode;
         this.showSplitter = showSplitter;
         this.showSplitterCollapseButton = showSplitterCollapseButton;
-        this.showHeaderCollapseButton = showHeaderCollapseButton;
-        this.showModalToggleButton = showModalToggleButton;
+        this.showHeaderCollapseButton = collapsible && showHeaderCollapseButton;
+        this.showModalToggleButton = modalSupport && showModalToggleButton;
 
+        // Set up various optional functionality;
         if (modalSupport) {
             this.modalSupportModel =
                 modalSupport === true
@@ -237,7 +255,13 @@ export class PanelModel extends HoistModel {
                     : new ModalSupportModel(modalSupport);
         }
 
-        // Set up various optional functionality;
+        if (errorBoundary) {
+            this.errorBoundaryModel =
+                errorBoundary === true
+                    ? new ErrorBoundaryModel()
+                    : new ErrorBoundaryModel(errorBoundary);
+        }
+
         if (collapsible) {
             this.refreshContextModel = new ManagedRefreshContextModel(this);
         }
@@ -293,7 +317,7 @@ export class PanelModel extends HoistModel {
             const el = this._resizeRef?.current,
                 currSize = this.vertical ? el?.offsetHeight : el?.offsetWidth,
                 {size} = this;
-            if (isNil(currSize) || isNil(size) || size < currSize) {
+            if (isNil(currSize) || isNil(size) || (isNumber(size) && size < currSize)) {
                 this.size = this.defaultSize;
             }
         }
@@ -338,6 +362,10 @@ export class PanelModel extends HoistModel {
     // Does the Panel come before the resizing affordances?
     get contentFirst(): boolean {
         return this.side === 'top' || this.side === 'left';
+    }
+
+    get isCollapsedToLeftOrRight(): boolean {
+        return this.isRenderedCollapsed && !this.vertical;
     }
 
     enforceSizeLimits() {

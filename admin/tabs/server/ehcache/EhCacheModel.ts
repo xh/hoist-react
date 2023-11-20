@@ -4,10 +4,11 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import * as Col from '@xh/hoist/cmp/grid/columns';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {UrlStore} from '@xh/hoist/data';
-import * as Col from '@xh/hoist/cmp/grid/columns';
 import {trimEnd} from 'lodash';
 
 export class EhCacheModel extends HoistModel {
@@ -18,6 +19,7 @@ export class EhCacheModel extends HoistModel {
         persistWith: this.persistWith,
         colChooserModel: true,
         enableExport: true,
+        exportOptions: {filename: exportFilenameWithDate('eh-caches')},
         store: new UrlStore({
             url: 'ehCacheAdmin/listCaches',
             fields: [

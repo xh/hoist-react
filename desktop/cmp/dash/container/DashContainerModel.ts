@@ -6,6 +6,7 @@
  */
 import {
     managed,
+    modelLookupContextProvider,
     PersistenceProvider,
     PlainObject,
     RefreshMode,
@@ -13,17 +14,17 @@ import {
     TaskObserver,
     XH
 } from '@xh/hoist/core';
-import {modelLookupContextProvider} from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
 import {ContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
+import {isOmitted} from '@xh/hoist/utils/impl';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {isOmitted} from '@xh/hoist/utils/impl';
-import {cloneDeep, defaultsDeep, find, isFinite, isNil, reject, startCase} from 'lodash';
+import {cloneDeep, defaultsDeep, find, isFinite, isNil, last, reject, startCase} from 'lodash';
 import {createRoot} from 'react-dom/client';
+import {DashConfig, DashModel} from '../';
 import {DashViewModel, DashViewState} from '../DashViewModel';
 import {DashContainerViewSpec} from './DashContainerViewSpec';
 import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
@@ -31,11 +32,10 @@ import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
 import {
     convertGLToState,
     convertStateToGL,
-    goldenLayoutConfig,
-    getViewModelId
+    getViewModelId,
+    goldenLayoutConfig
 } from './impl/DashContainerUtils';
 import {dashContainerView} from './impl/DashContainerView';
-import {DashModel, DashConfig} from '../';
 
 export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, DashViewState> {
     /** Strategy for rendering DashContainerViews. Can also be set per-view in `viewSpecs`*/
@@ -237,7 +237,12 @@ export class DashContainerModel extends DashModel<
      */
     async loadStateAsync(state) {
         const containerEl = this.containerRef.current;
-        if (!containerEl) return;
+        if (!containerEl) {
+            console.warn(
+                'DashboardContainer not yet rendered - cannot update state - change will be discarded!'
+            );
+            return;
+        }
 
         // Show mask to provide user feedback
         return wait()
@@ -285,7 +290,8 @@ export class DashContainerModel extends DashModel<
 
         if (!isFinite(index)) index = container.contentItems.length;
         container.addChild(goldenLayoutConfig(viewSpec), index);
-        wait(1).then(() => this.onStackActiveItemChange(container));
+        const stack = container.isStack ? container : last(container.contentItems);
+        wait(1).then(() => this.onStackActiveItemChange(stack));
     }
 
     /**

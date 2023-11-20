@@ -45,6 +45,9 @@ export class LogDisplayModel extends HoistModel {
     @persist
     caseSensitive: boolean = false;
 
+    @bindable
+    logRootPath: string;
+
     get tailActive(): boolean {
         return this.tail && !this.gridModel.hasSelection;
     }

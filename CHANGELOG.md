@@ -1,16 +1,273 @@
 # Changelog
 
-## 57.0.0-SNAPSHOT - unreleased
+## 59.3.1 - 2023-11-10
+
+### 🐞 Bug Fixes
+
+* Ensure an unauthorized response from a proxy service endpoint does not prompt the user to refresh
+  and log in again on an SSO-enabled application.
+* Revert change to `Panel` which affected where `className` was applied with `modalSupport` enabled
+
+## 59.3.0 - 2023-11-09
 
 ### 🎁 New Features
 
-* Enhanced the Admin alert banner feature with a new ability to save messages as presets. Useful for
-* standardizing alert or downtime banners, where pre-approved language can be added as a preset and
-* then easily loaded into a banner by members of an application support team.
+* Improved Hoist support for automated testing via Playwright, Cypress, and similar tools:
+    * Core Hoist components now accept an optional `testId` prop, to be rendered at an appropriate
+      level of the DOM (within a `data-testid` HTML attribute). This can minimize the need to select
+      components using criteria such as CSS classes or labels that are more likely to change and
+      break tests.
+    * When given a `testId`, certain composite components will generate and set "sub-testIds" on
+      selected internal components. For example, a `TabContainer` will set a testId on each switcher
+      button (derived from its tabId), and a `Form` will set testIds on nested `FormField`
+      and `HoistInput` components (derived from their bound field names).
+    * This release represents a first step in ongoing work to facilitate automated end-to-end
+      testing of Hoist applications. Additional Hoist-specific utilities for writing tests in
+      libraries such as Cypress and Playwright are coming soon.
+* Added new `ZoneGrid` component, a highly specialized `Grid` that always displays its data with
+  multi-line, full-width rows. Each row is broken into four zones (top/bottom and left/right),
+  each of which can mapped by the user to render data from one or more fields.
+    * Primarily intended for mobile, where horizontal scrolling can present usability issues, but
+      also available on desktop, where it can serve as an easily user-configurable `DataView`.
+* Added `Column.sortToBottom` to force specified values to sort the bottom, regardless of sort
+  direction. Intended primarily to force null values to sort below all others.
+* Upgraded the `RelativeTimestamp` component with a new `localDateMode` option to customize how
+  near-term date/time differences are rendered with regards to calendar days.
+
+### 🐞 Bug Fixes
+
+* Fixed bug where interacting with a `Select` within a `Popover` can inadvertently cause the
+  popover to close. If your app already has special handling in place to prevent this, you should
+  be able to unwind it after upgrading.
+* Improved the behavior of the clear button in `TextInput`. Clearing a field no longer drops focus,
+  allowing the user to immediately begin typing in a new value.
+* Fixed arguments passed to `ErrorMessageProps.actionFn` and `ErrorMessageProps.detailsFn`.
+* Improved default error text in `ErrorMessage`.
+
+### ⚙️ Technical
+
+* Improved core `HoistComponent` performance by preventing unnecessary re-renderings triggered by
+  spurious model lookup changes.
+* New flag `GridModel.experimental.enableFullWidthScroll` enables scrollbars to span pinned columns.
+  * Early test release behind the flag, expected to made the default behavior in next release.
+* Renamed `XH.getActiveModels()` to `XH.getModels()` for clarity / consistency.
+  * API change, but not expected to impact applications.
+* Added `XH.getModel()` convenience method to return the first matching model.
+
+## 59.2.0 - 2023-10-16
+
+### 🎁 New Features
+
+* New `DockViewConfig.onClose` hook invoked when a user attempts to remove a `DockContainer` view.
+* Added `GridModel` APIs to lookup and show / hide entire column groups.
+* Left / right borders are now rendered along `Grid` `ColumnGroup` edges by default, controllable
+  with new `ColumnGroupSpec.borders` config.
+* Enhanced the `CubeQuery` to support per-query post-processing functions
+  with `Query.omitFn`, `Query.bucketSpecFn` and `Query.lockFn`. These properties default to their
+  respective properties on `Cube`.
+
+### 🐞 Bug Fixes
+
+* `DashContainerModel` fixes:
+    * Fix bug where `addView` would throw when adding a view to a row or column
+    * Fix bug where `allowRemove` flag was dropped from state for containers
+    * Fix bug in `DockContainer` where adding / removing views would cause other views to be
+      remounted
+* Fixed erroneous `GridModel` warning when using a tree column within a column group
+* Fixed regression to alert banners. Resume allowing elements as messages.
+* Fix `Grid` cell border styling inconsistencies.
+
+### ⚙️ Typescript API Adjustments
+
+* Added type for `ActionFnData.record`.
+
+## 59.1.0 - 2023-09-20
+
+### 🎁 New Features
+
+* Introduced new `ErrorBoundary` component for finer-grained application handling of React Errors.
+    * Hoist now wraps `Tab`, `DashCanvasView`, `DashContainerView`, `DockView`, and `Page` in an
+      `ErrorBoundary`. This provides better isolation of application content, minimizing the chance
+      that any individual component can crash the entire app.
+    * A new `PanelModel.errorBoundary` prop allows developers to opt-in to an `ErrorBoundary`
+      wrapper around the contents of any panel.
+    * `ErrorMessage` component now provides an ability to show additional exception details.
+* Added new `Markdown` component for rendering Markdown formatted strings as markup. This includes
+  bundling `react-markdown` in Hoist.
+    * If your app already uses `react-markdown` or similar, we recommend updating to use the
+      new `Markdown` component exported by Hoist to benefit from future upgrades.
+    * Admin-managed alert banners leverage the new markdown component to support bold, italics and
+      links within alert messages.
+* Improved and fixed up `Panel` headers, including:
+    * Added new `Panel.headerClassName` prop for easier CSS manipulation of panel's header.
+    * Improved `Panel.collapsedTitle` prop and added `Panel.collapsedIcon` prop. These two props now
+      fully govern header display when collapsed.
+* Improved styling for disabled `checkbox` inputs.
+
+### ⚙️ Technical
+
+* `XH.showException` has been deprecated. Use similar methods on `XH.exceptionHandler` instead.
+
+### 📚 Libraries
+
+* numbro `2.3 -> 2.4`
+* react-markdown `added @ 8.0`
+* remark-breaks `added @ 3.0`
+
+## 59.0.3 - 2023-08-25
+
+### ⚙️ Technical
+
+* New `XH.flags` property to govern experimental, hotfix, or otherwise provisional features.
+
+* Provide temporary workaround to chromium bug effecting BigNumber. Enabled via flag
+  `applyBigNumberWorkaround`. See https://github.com/MikeMcl/bignumber.js/issues/354.
+
+## 59.0.2 - 2023-08-24
+
+### 🐞 Bug Fixes
+
+* Restored support for `Select.selectOnFocus` (had broken with upgrade to `react-select` in v59.0).
+* Fixed `DateInput` bug caused by changes in Chrome v116 - clicking on inputs
+  with `enableTextInput: false` now open the date picker popup as expected.
+* Flex inner title element added to `Panel` headers in v59.0, and set `display:flex` on the new
+  element itself. Restores previous flexbox container behavior (when not L/R collapsed) for apps
+  that are providing custom components as titles.
+* `DashCanvas` now properly updates its layout when shown if the browser window had been resized
+  while the component was hidden (e.g. in an inactive tab).
+* Reverted upgrade to `react-select` in v59.0.0 due to issues found with `selectEditor` / inline
+  grid editing. We will revisit this upgrade in a future release.
+
+### 📚 Libraries
+
+* react-select `5.7 -> 4.3`
+* react-windowed-select `5.1 -> 3.1`
+
+## 59.0.1 - 2023-08-17
+
+### 🎁 New Features
+
+* Added new `Panel.collapsedTitle` prop to make it easier to display a different title when the
+  panel is collapsed.
+
+## 59.0.0 - 2023-08-17
+
+### 💥 Breaking Changes
+
+* Apps must update their `typescript` dependency to v5.1. This should be a drop-in for most
+  applications, or require only minor changes. Note that Hoist has not yet adopted the updated
+  approach to decorators added in TS v5, maintaining compatibility with the "legacy" syntax.
+* Apps that use and provide the `highcharts` library should be sure to update the version to v11.1.
+  This should be a drop-in for most applications.
+    * Visit https://www.highcharts.com/blog/changelog/ for specific changes.
+* Apps must also update their `@xh/hoist-dev-utils` dependency to v7.0.0 or higher.
+    * We recommend specifying this as `"@xh/hoist-dev-utils": "7.x"` in your `package.json` to
+      automatically pick up future minor releases.
+* `DataViewConfig` no longer directly supports `GridConfig` parameters - instead, nest `GridConfig`
+  options you wish to set via the new `gridOptions` parameter. Please note that, as before, not
+  all `GridConfig` options are supported by (or make sense for) the `DataView` component.
+
+### 🎁 New Features
+
+* New `GridAutosizeOptions.includeHiddenColumns` config controls whether hidden columns should
+  also be included during the autosize process. Default of `false`. Useful when applications
+  provide quick toggles between different column sets and would prefer to take the up-front cost of
+  autosizing rather than doing it after the user loads a column set.
+* New `NumberFormatOptions.strictZero` formatter config controls display of values that round to
+  zero at the specified precision. Set to `false` to format those values as if they were *exactly*
+  zero, triggering display of any `zeroDisplay` value and suppressing sign-based glyphs, '+/-'
+  characters, and styling.
+* New `DashModel.refreshContextModel` allows apps to programmatically refresh all widgets within
+  a `DashCanvas` or `DashContainer`.
+* New tab for monitoring JDBC connection pool stats added to the Admin Console. Apps
+  with `hoist-core >= v17.2` will collect and display metrics for their primary datasource on a
+  configurable frequency.
+* `ButtonGroupInput` now allows `null` values for buttons as long as both `enableClear` and
+  `enableMulti` are false.
+
+### 🐞 Bug Fixes
+
+* Fixed bug where a titled panel collapsed to either the left or right side of a layout could cause
+  severe layout performance degradation (and even browser hangs) when resizing the browser window in
+  the latest Chrome v115.
+    * Note this required some adjustments to the internal DOM structure of `PanelHeader` - highly
+      specific CSS selectors or visual tests may be affected.
+* Fixed bug where `manuallySized` was not being set properly on column state.
+* Fixed bug where mobile `Dialog` max height was not properly constrained to the viewport.
+* Fixed bug where mobile `NumberInput` would clear when trying to enter decimals on certain devices.
+* Suppressed extra top border on Grids with `hideHeaders: true`.
+
+### ⚙️ Technical
+
+* Suppressed dev-time console warnings thrown by Blueprint Toaster.
+
+### 📚 Libraries
+
+* mobx `6.8 -> 6.9`
+* semver `7.3 -> 7.5`
+* typescript `4.9 -> 5.1`
+* highcharts `10.3 -> 11.1`
+* react-select `4.3 -> 5.7`
+* react-windowed-select `3.1 -> 5.1`
+
+## 58.0.1 - 2023-07-13
+
+### 🐞 Bug Fixes
+
+* Fixed bug where `TabContainerModel` with routing enabled would drop route params when navigating
+  between tabs.
+
+## 58.0.0 - 2023-07-07
+
+### 🎁 New Features
+
+* Deprecated `xhAppVersionCheckEnabled` config in favor of object-based `xhAppVersionCheck`. Hoist
+  will auto-migrate the existing value to this new config's `mode` flag. While backwards
+  compatible with older versions of hoist-core, the new `forceReload` mode
+  requires `hoist-core >= v16.4`.
+* Enhanced `NumberFormatOptions.colorSpec` to accept CSS properties in addition to class names.
+* Enhanced `TabSwitcher` to allow navigation using arrow keys when focused.
+* Added new option `TrackOptions.logData` to provide support for logging application data in
+  `TrackService.`  Requires `hoist-core >= v16.4`.
+* New `XH.pageState` provides observable access to the current lifecycle state of the app, allowing
+  apps to react to changes in page visibility and focus, as well as detecting when the browser has
+  frozen a tab due to inactivity or navigation.
+
+### 💥 Breaking Changes
+
+* The `Column.getValueFn` and `Column.renderer` functions will no longer be passed the `agParams`
+  argument. This argument was not passed consistently by Hoist when calling these functions; and was
+  specifically omitted during operations such as column sizing, tooltip generation and Grid content
+  searching. We do not expect this argument was being used in practice by applications, but
+  applications should ensure this is the case, and adjust these callbacks if necessary.
+
+## 57.0.0 - 2023-06-20
+
+### 🎁 New Features
+
+* Enhanced Admin alert banners with the ability to save messages as presets. Useful for
+  standardizing alert or downtime banners, where pre-approved language can be saved as a preset for
+  later loaded into a banner by members of an application support team (
+  requires `hoist-core >= v16.3.0`).
+* Added bindable `readonly` property to `LeftRightChooserModel`.
+
+### ⚙️ Technical
+
+* Support the `HOIST_IMPERSONATOR` role introduced in hoist-core `v16.3.0`
+* Hoist now supports and requires ag-Grid v30 or higher. This version includes critical
+  performance improvements to scrolling without the problematic 'ResizeObserver' issues discussed
+  below.
+
+### 💥 Breaking Changes
+
+* The deprecated `@settable` decorator has now been removed. Use `@bindable` instead.
+* The deprecated class `@xh/hoist/admin/App` has been removed. Use `@xh/hoist/admin/AppComponent`
+  instead.
 
 ### 🐞 Bug Fixes
 
 * Fixed a bug where Onsen components wrappers could not forward refs.
+* Improved the exceptions thrown by fetchService when errors occur parsing response JSON.
 
 ## 56.6.0 - 2023-06-01
 
@@ -3404,7 +3661,7 @@ _"The one with the hooks."_
 **Hoist now fully supports React functional components and hooks.** The new `hoistComponent`
 function is now the recommended method for defining new components and their corresponding element
 factories. See that (within HoistComponentFunctional.js) and the new `useLocalModel()` and
-`useContextModel()` hooks (within [core/hooks](core/hooks)) for more information.
+`useContextModel()` hooks (within [core/model](core/model)) for more information.
 
 Along with the performance benefits and the ability to use React hooks, Hoist functional components
 are designed to read and write their models via context. This allows a much less verbose

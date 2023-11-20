@@ -157,7 +157,8 @@ export class GridExportService extends HoistService {
                 XH.track({
                     category: 'Export',
                     message: `Downloaded ${filename}${fileExt}`,
-                    data: {rows: rows.length, columns: exportColumns.length}
+                    data: {rows: rows.length, columns: exportColumns.length},
+                    logData: true
                 });
             }
         } catch (e) {
@@ -194,8 +195,7 @@ export class GridExportService extends HoistService {
             field,
             column,
             gridModel,
-            store: record.store,
-            agParams: null
+            store: record.store
         });
         // Modify value using exportValue
         if (isString(exportValue) && record.data[exportValue] !== null) {
@@ -253,7 +253,7 @@ export class GridExportService extends HoistService {
                     item: '(show details...)',
                     onClick: () => {
                         failToast?.dismiss();
-                        XH.exceptionHandler.showException(e);
+                        XH.exceptionHandler.showExceptionDetails(e);
                     }
                 })
             ),

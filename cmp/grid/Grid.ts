@@ -7,8 +7,9 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
+import {gridHScrollbar} from '@xh/hoist/cmp/grid/impl/GridHScrollbar';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
-import {div, fragment, frame} from '@xh/hoist/cmp/layout';
+import {div, fragment, frame, vframe} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
     HoistModel,
@@ -16,29 +17,18 @@ import {
     LayoutProps,
     lookup,
     PlainObject,
+    TestSupportProps,
     useLocalModel,
     uses,
     XH
 } from '@xh/hoist/core';
+import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
 import {
     colChooser as desktopColChooser,
     gridFilterDialog,
     ModalSupportModel
 } from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
-import {computed, observer} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
-import {consumeEvent, isDisplayed, logDebug, logWithDebug} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
-import classNames from 'classnames';
-import {debounce, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
-import {createRef} from 'react';
-import './Grid.scss';
-import {GridModel} from './GridModel';
-import {columnGroupHeader} from './impl/ColumnGroupHeader';
-import {columnHeader} from './impl/ColumnHeader';
-import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
-import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
 import {Icon} from '@xh/hoist/icon';
 
 import type {
@@ -49,8 +39,19 @@ import type {
     GridReadyEvent,
     ProcessCellForExportParams
 } from '@xh/hoist/kit/ag-grid';
+import {computed, observer} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
+import {consumeEvent, isDisplayed, logDebug, logWithDebug} from '@xh/hoist/utils/js';
+import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
+import {debounce, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
+import './Grid.scss';
+import {GridModel} from './GridModel';
+import {columnGroupHeader} from './impl/ColumnGroupHeader';
+import {columnHeader} from './impl/ColumnHeader';
+import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 
-export interface GridProps extends HoistProps<GridModel>, LayoutProps {
+export interface GridProps extends HoistProps<GridModel>, LayoutProps, TestSupportProps {
     /**
      * Options for ag-Grid's API.
      *
@@ -90,7 +91,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     model: uses(GridModel),
     className: 'xh-grid',
 
-    render({model, className, ...props}, ref) {
+    render({model, className, testId, ...props}, ref) {
         const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} =
                 model,
             impl = useLocalModel(GridLocalModel),
@@ -106,14 +107,24 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
         );
 
+        const {enableFullWidthScroll} = model.experimental,
+            container = enableFullWidthScroll ? vframe : frame;
+
         return fragment(
-            frame({
+            container({
                 className,
-                item: agGrid({
-                    model: model.agGridModel,
-                    ...getLayoutProps(props),
-                    ...impl.agOptions
-                }),
+                items: [
+                    agGrid({
+                        model: model.agGridModel,
+                        ...getLayoutProps(props),
+                        ...impl.agOptions
+                    }),
+                    gridHScrollbar({
+                        omit: !enableFullWidthScroll,
+                        gridLocalModel: impl
+                    })
+                ],
+                testId,
                 onKeyDown: impl.onKeyDown,
                 ref: composeRefs(impl.viewRef, ref)
             }),
@@ -123,18 +134,18 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     }
 });
 
-(Grid as any).MULTIFIELD_ROW_HEIGHT = 38;
+(Grid as any).MULTIFIELD_ROW_HEIGHT = 42;
 
 //------------------------
 // Implementation
 //------------------------
-class GridLocalModel extends HoistModel {
+export class GridLocalModel extends HoistModel {
     override xhImpl = true;
 
     @lookup(GridModel)
     private model: GridModel;
     agOptions: GridOptions;
-    viewRef = createRef<HTMLElement>();
+    viewRef = createObservableRef<HTMLElement>();
     private rowKeyNavSupport: RowKeyNavSupport;
     private prevRs: RecordSet;
 
@@ -270,6 +281,11 @@ class GridLocalModel extends HoistModel {
             };
         }
 
+        // Support for FullWidthScroll
+        if (model.experimental.enableFullWidthScroll) {
+            ret.suppressHorizontalScroll = true;
+        }
+
         return ret;
     }
 
@@ -313,9 +329,7 @@ class GridLocalModel extends HoistModel {
             track: () => [model.isReady, store._filtered, model.showSummary, store.summaryRecord],
             run: () => {
                 if (model.isReady) this.syncData();
-            },
-            // TODO:  Remove after we are sure we don't need debounce workaround
-            debounce: model.experimental.syncDataImmediately === false ? 0 : null
+            }
         };
     }
 
@@ -713,7 +727,7 @@ class GridLocalModel extends HoistModel {
     // Catches column resizing on call to autoSize API.
     onColumnResized = ev => {
         if (!isDisplayed(this.viewRef.current) || !ev.finished) return;
-        if (ev.source === 'uiColumnDragged') {
+        if (ev.source === 'uiColumnResized') {
             const colId = ev.columns[0].colId,
                 width = ev.columnApi.getColumnState().find(it => it.colId === colId)?.width;
             this.model.noteColumnManuallySized(colId, width);

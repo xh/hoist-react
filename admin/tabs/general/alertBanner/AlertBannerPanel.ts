@@ -7,7 +7,7 @@
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {form} from '@xh/hoist/cmp/form';
 import {code, div, filler, hframe, p, placeholder, span, vbox} from '@xh/hoist/cmp/layout';
-import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
+import {getRelativeTimestamp, relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {banner} from '@xh/hoist/desktop/appcontainer/Banner';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -15,7 +15,7 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {buttonGroupInput, dateInput, switchInput, textArea} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {fmtDateTime} from '@xh/hoist/format';
+import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
@@ -149,7 +149,8 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                         formField({
                             omit: !formModel.values.updated,
                             field: 'updated',
-                            className: 'xh-alert-banner-panel__form-panel__fields--ro'
+                            className: 'xh-alert-banner-panel__form-panel__fields--ro',
+                            readonlyRenderer: dateTimeRenderer({})
                         }),
                         formField({
                             omit: !formModel.values.updatedBy,
@@ -168,7 +169,8 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                         text: 'Presets',
                         outlined: true
                     }),
-                    content: presetMenu()
+                    content: presetMenu(),
+                    omit: !model.supportPresets
                 }),
                 filler(),
                 button({
@@ -248,7 +250,7 @@ const presetMenuItem = hoistCmp.factory<AlertBannerModel>({
                 items: [
                     truncate(message, {length: 50}),
                     span({
-                        item: `Saved by ${createdBy} (${fmtDateTime(dateCreated)})`,
+                        item: `Saved by ${createdBy} ${getRelativeTimestamp(dateCreated)}`,
                         className: 'xh-font-size-small xh-text-color-muted'
                     })
                 ]

@@ -11,7 +11,7 @@ import {HoistModel, LoadSpec, managed, XH, Intent, PlainObject} from '@xh/hoist/
 import {dateIs, required} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {AppModel} from '@xh/hoist/admin/AppModel';
-import _, {sortBy, without} from 'lodash';
+import {some, sortBy, without} from 'lodash';
 import {computed} from 'mobx';
 
 export class AlertBannerModel extends HoistModel {
@@ -65,6 +65,10 @@ export class AlertBannerModel extends HoistModel {
             'info-circle',
             'question-circle'
         ];
+    }
+
+    get supportPresets() {
+        return XH.environmentService.isMinHoistCoreVersion('16.3.0');
     }
 
     constructor() {
@@ -147,10 +151,11 @@ export class AlertBannerModel extends HoistModel {
     @computed
     get currentValuesSavedAsPreset() {
         const {message, intent, iconName, enableClose} = this.formModel.values;
-        return _(this.savedPresets).some({message, intent, iconName, enableClose});
+        return some(this.savedPresets, {message, intent, iconName, enableClose});
     }
 
     async loadPresetsAsync() {
+        if (!this.supportPresets) return;
         try {
             this.savedPresets = await XH.fetchJson({url: 'alertBannerAdmin/alertPresets'});
         } catch (e) {
@@ -180,7 +185,8 @@ export class AlertBannerModel extends HoistModel {
                 .track({
                     category: 'Audit',
                     message: 'Updated Alert Banner',
-                    data: {active, message, intent, iconName, enableClose}
+                    data: {active, message, intent, iconName, enableClose},
+                    logData: ['active']
                 });
         } catch (e) {
             XH.handleException(e);

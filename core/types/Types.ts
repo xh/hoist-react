@@ -58,3 +58,30 @@ export type Content =
     | (() => ReactElement);
 
 export type DateLike = Date | LocalDate | MomentInput;
+
+export type PageState =
+    /**
+     * Window/tab is visible and focused.
+     */
+    | 'active'
+    /**
+     * Window/tab is visible but not focused - i.e. the browser is visible on the screen and this
+     * tab is active, but another application in the OS is currently focused, or the user is
+     * interacting with controls in the browser outside of this page, like the URL bar.
+     */
+    | 'passive'
+    /**
+     * Window/tab is not visible - browser is either on another tab within the same window, or the
+     * entire browser is minimized or hidden behind another application in the OS.
+     */
+    | 'hidden'
+    /**
+     * Page has been frozen by the browser due to inactivity (as a perf/memory/power optimization)
+     * or because the user has navigated away and the page is in the back/forward cache (but not
+     * yet completely unloaded / terminated).
+     */
+    | 'frozen'
+    /**
+     * The page is in the process of being unloaded by the browser (this is a terminal state x_x).
+     */
+    | 'terminated';

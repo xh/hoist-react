@@ -41,6 +41,27 @@ export class FetchService extends HoistService {
     defaultHeaders = {};
     defaultTimeout = (30 * SECONDS) as any;
 
+    override async initAsync() {
+        // pre-flight to allows clean recognition when we have no server.
+        try {
+            await this.fetch({url: 'ping'});
+        } catch (e) {
+            const {baseUrl} = XH,
+                pingURL = baseUrl.startsWith('http')
+                    ? `${baseUrl}ping`
+                    : `${window.location.origin}${baseUrl}ping`;
+
+            throw XH.exception({
+                name: 'UI Server Unavailable',
+                detail: e.message,
+                message:
+                    'Client cannot reach UI server.  Please check UI server at the ' +
+                    `following location: ${pingURL}`,
+                logOnServer: false
+            });
+        }
+    }
+
     /**
      * Set default headers to be sent with all subsequent requests.
      * @param headers - to be sent with all fetch requests, or a function to generate.
@@ -67,7 +88,7 @@ export class FetchService extends HoistService {
 
     /**
      * Send an HTTP request and decode the response as JSON.
-     * @returns the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response has status in {@link NO_JSON_RESPONSES}.
      */
     fetchJson(opts: FetchOptions): Promise<any> {
         return this.managedFetchAsync(opts, async aborter => {
@@ -78,13 +99,17 @@ export class FetchService extends HoistService {
                 },
                 aborter
             );
-            return this.NO_JSON_RESPONSES.includes(r.status) ? null : r.json();
+            if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
+
+            return r.json().catchWhen('SyntaxError', e => {
+                throw Exception.fetchJsonParseError(opts, e);
+            });
         });
     }
 
     /**
      * Send a GET request and decode the response as JSON.
-     * @returns the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
     getJson(opts: FetchOptions): Promise<any> {
         return this.fetchJson({method: 'GET', ...opts});
@@ -92,7 +117,7 @@ export class FetchService extends HoistService {
 
     /**
      * Send a POST request with a JSON body and decode the response as JSON.
-     * @returns the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
     postJson(opts: FetchOptions): Promise<any> {
         return this.sendJsonInternalAsync({method: 'POST', ...opts});
@@ -100,7 +125,7 @@ export class FetchService extends HoistService {
 
     /**
      * Send a PUT request with a JSON body and decode the response as JSON.
-     * @returns the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
     putJson(opts: FetchOptions): Promise<any> {
         return this.sendJsonInternalAsync({method: 'PUT', ...opts});
@@ -108,7 +133,7 @@ export class FetchService extends HoistService {
 
     /**
      * Send a PATCH request with a JSON body and decode the response as JSON.
-     * @returns the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
     patchJson(opts: FetchOptions): Promise<any> {
         return this.sendJsonInternalAsync({method: 'PATCH', ...opts});
@@ -116,7 +141,7 @@ export class FetchService extends HoistService {
 
     /**
      * Send a DELETE request with optional JSON body and decode the optional response as JSON.
-     * @returns the decoded JSON object, or null if the response had no content.
+     * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
     deleteJson(opts: FetchOptions): Promise<any> {
         return this.sendJsonInternalAsync({method: 'DELETE', ...opts});
@@ -167,7 +192,7 @@ export class FetchService extends HoistService {
 
             if (e.isHoistException) throw e;
 
-            // Just two other cases where we expect this to throw -- Typically we get a failed response)
+            // Just two other cases where we expect this to *throw* -- Typically we get a fail status
             throw e.name === 'AbortError'
                 ? Exception.fetchAborted(opts, e)
                 : Exception.serverUnavailable(opts, e);

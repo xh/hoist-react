@@ -5,11 +5,22 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {ContextMenu} from '@blueprintjs/core';
+import composeRefs from '@seznam/compose-react-refs';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {elementFactory, hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
+import {
+    elementFactory,
+    hoistCmp,
+    HoistProps,
+    refreshContextView,
+    TestSupportProps,
+    uses,
+    XH
+} from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
+import {TEST_ID} from '@xh/hoist/utils/js';
+import {useOnVisibleChange} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
@@ -18,7 +29,7 @@ import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
 
-export type DashCanvasProps = HoistProps<DashCanvasModel>;
+export type DashCanvasProps = HoistProps<DashCanvasModel> & TestSupportProps;
 
 /**
  * Dashboard-style container that allows users to drag-and-drop child widgets into flexible layouts.
@@ -36,46 +47,56 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
     className: 'xh-dash-canvas',
     model: uses(DashCanvasModel),
 
-    render({className, model}) {
+    render({className, model, testId}, ref) {
         const isDraggable = !model.layoutLocked,
             isResizable = !model.layoutLocked;
 
-        return div({
-            className: classNames(
-                className,
-                isDraggable ? `${className}--draggable` : null,
-                isResizable ? `${className}--resizable` : null
-            ),
-            ref: model.ref,
-            onContextMenu: e => onContextMenu(e, model),
-            items: [
-                reactGridLayout({
-                    layout: model.rglLayout,
-                    cols: model.columns,
-                    rowHeight: model.rowHeight,
-                    isDraggable,
-                    isResizable,
-                    compactType: model.compact ? 'vertical' : null,
-                    margin: model.margin,
-                    maxRows: model.maxRows,
-                    containerPadding: model.containerPadding,
-                    autoSize: true,
-                    isBounded: true,
-                    draggableHandle:
-                        '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
-                    draggableCancel: '.xh-button',
-                    onLayoutChange: layout => model.onRglLayoutChange(layout),
-                    onResizeStart: () => (model.isResizing = true),
-                    onResizeStop: () => (model.isResizing = false),
-                    items: model.viewModels.map(vm =>
-                        div({
-                            key: vm.id,
-                            item: dashCanvasView({model: vm})
-                        })
-                    )
-                }),
-                emptyContainerOverlay()
-            ]
+        ref = composeRefs(
+            ref,
+            model.ref,
+            useOnVisibleChange(viz => model.onVisibleChange(viz))
+        );
+
+        return refreshContextView({
+            model: model.refreshContextModel,
+            item: div({
+                className: classNames(
+                    className,
+                    isDraggable ? `${className}--draggable` : null,
+                    isResizable ? `${className}--resizable` : null
+                ),
+                ref,
+                onContextMenu: e => onContextMenu(e, model),
+                items: [
+                    reactGridLayout({
+                        layout: model.rglLayout,
+                        cols: model.columns,
+                        rowHeight: model.rowHeight,
+                        isDraggable,
+                        isResizable,
+                        compactType: model.compact ? 'vertical' : null,
+                        margin: model.margin,
+                        maxRows: model.maxRows,
+                        containerPadding: model.containerPadding,
+                        autoSize: true,
+                        isBounded: true,
+                        draggableHandle:
+                            '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
+                        draggableCancel: '.xh-button',
+                        onLayoutChange: layout => model.onRglLayoutChange(layout),
+                        onResizeStart: () => (model.isResizing = true),
+                        onResizeStop: () => (model.isResizing = false),
+                        items: model.viewModels.map(vm =>
+                            div({
+                                key: vm.id,
+                                item: dashCanvasView({model: vm})
+                            })
+                        )
+                    }),
+                    emptyContainerOverlay()
+                ],
+                [TEST_ID]: testId
+            })
         });
     }
 });

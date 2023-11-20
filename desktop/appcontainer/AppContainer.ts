@@ -7,12 +7,13 @@
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
-import {errorBoundary} from '@xh/hoist/appcontainer/ErrorBoundary';
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
 import {suspendPanel} from '@xh/hoist/desktop/appcontainer/SuspendPanel';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
 import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
 import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserModel';
+import {zoneMapperDialog as zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapperDialog';
 import {columnHeaderFilter} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilter';
 import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
 import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilterDialog';
@@ -40,6 +41,7 @@ import {optionsDialog} from './OptionsDialog';
 import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
 import {ReactElement} from 'react';
+import {errorMessage} from '../cmp/error/ErrorMessage';
 
 installDesktopImpls({
     tabContainerImpl,
@@ -47,12 +49,14 @@ installDesktopImpls({
     storeFilterFieldImpl,
     pinPadImpl,
     colChooser,
+    zoneMapper,
     columnHeaderFilter,
     gridFilterDialog,
     ColChooserModel,
     ColumnHeaderFilterModel,
     useContextMenu,
-    ModalSupportModel
+    ModalSupportModel,
+    errorMessage
 });
 /**
  * Top-level wrapper for Desktop applications.
@@ -68,12 +72,24 @@ export const AppContainer = hoistCmp({
     displayName: 'AppContainer',
     model: uses(AppContainerModel),
 
-    render() {
-        useOnMount(() => XH.initAsync());
+    render({model}) {
+        useOnMount(() => model.initAsync());
 
         return fragment(
             hotkeysProvider(
-                errorBoundary(viewForState()),
+                errorBoundary({
+                    modelConfig: {
+                        errorHandler: {
+                            title: 'Critical Error',
+                            message:
+                                XH.clientAppName +
+                                ' encountered a critical error and cannot be displayed.',
+                            requireReload: true
+                        },
+                        errorRenderer: () => null
+                    },
+                    item: viewForState()
+                }),
                 // Modal component helpers rendered here at top-level to support display of messages
                 // and exceptions at any point during the app lifecycle.
                 exceptionDialog(),
@@ -106,10 +122,10 @@ function viewForState() {
     }
 }
 
-const lockoutView = hoistCmp.factory({
+const lockoutView = hoistCmp.factory<AppContainerModel>({
     displayName: 'LockoutView',
-    render() {
-        const content = XH.appSpec.lockoutPanel ?? lockoutPanel;
+    render({model}) {
+        const content = model.appSpec.lockoutPanel ?? lockoutPanel;
         return elementFromContent(content);
     }
 });
@@ -119,7 +135,7 @@ const appContainerView = hoistCmp.factory({
     model: uses(AppContainerModel),
 
     render({model}) {
-        const {appSpec, appModel} = XH;
+        const {appSpec, appModel} = model;
         let ret: ReactElement = viewport(
             vframe(
                 impersonationBar(),
@@ -152,10 +168,10 @@ const appLoadMask = hoistCmp.factory<AppContainerModel>(({model}) =>
     mask({bind: model.appLoadModel, spinner: true})
 );
 
-const suspendedView = hoistCmp.factory({
-    render() {
-        if (XH.suspendData?.reason === 'IDLE') {
-            const content = XH.appSpec.idlePanel ?? idlePanel;
+const suspendedView = hoistCmp.factory<AppContainerModel>({
+    render({model}) {
+        if (model.appStateModel.suspendData?.reason === 'IDLE') {
+            const content = model.appSpec.idlePanel ?? idlePanel;
             return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
         }
         return suspendPanel();

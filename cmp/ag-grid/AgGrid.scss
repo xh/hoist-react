@@ -5,6 +5,14 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
+@mixin group-border($side) {
+  border-#{$side}: var(--xh-border-solid);
+}
+
+@mixin pinned-border($side) {
+  border-#{$side}: 1px solid var(--xh-grid-pinned-column-border-color);
+}
+
 // Ag-grid installs an outer div around itself.
 .xh-ag-grid > div {
   width: 100%;
@@ -56,6 +64,10 @@
       font-weight: var(--xh-grid-header-font-weight);
       color: var(--xh-grid-header-text-color);
     }
+  }
+  &--hide-headers .ag-header {
+    border-bottom-width: 0;
+    min-height: 0 !important;
   }
 
   //------------------------
@@ -116,14 +128,17 @@
   }
 
   &--no-row-borders {
-    .ag-row {
-      border-color: transparent;
+    .ag-row,
+    .ag-cell {
+      border-bottom: none;
+      border-top: none;
+    }
 
-      // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
-      // Without this collapsed groups (which don't stripe) blend together in a solid block.
-      &.ag-row-group.ag-full-width-row {
-        border-color: var(--xh-grid-group-border-color);
-      }
+    // Deliberately keep border on full-width grouped rows even when we aren't adding row borders.
+    // Without this collapsed groups (which don't stripe) blend together in a solid block.
+    .ag-row.ag-row-group.ag-full-width-row {
+      border-bottom: 1px solid var(--xh-grid-group-border-color);
+      border-top: 1px solid var(--xh-grid-group-border-color);
     }
   }
 
@@ -183,8 +198,14 @@
     }
   }
 
-  .ag-cell.ag-cell-last-left-pinned:not(.ag-cell-focus) {
-    border-right: 1px solid var(--xh-grid-pinned-column-border-color);
+  .ag-cell {
+    &.ag-cell-last-left-pinned:not(.ag-cell-focus) {
+      @include pinned-border(right);
+    }
+
+    &.ag-cell-first-right-pinned:not(.ag-cell-focus) {
+      @include pinned-border(left);
+    }
   }
 
   // We use flexbox to consistently vertically center cell contents across
@@ -223,21 +244,52 @@
   &--no-cell-borders {
     .ag-cell,
     .ag-context-menu-open .ag-cell-focus:not(.ag-cell-range-selected) {
-      border-color: transparent;
+      // Preserve left and right borders to avoid jumpiness upon cell focus
+      border-top: none;
+      border-bottom: none;
+      border-left-color: transparent;
+      border-right-color: transparent;
     }
   }
 
   // Cell focus
   &--no-cell-focus {
+    // Preserve cell borders when enabled upon "invisible" cell focus
+    &.xh-ag-grid--cell-borders .ag-has-focus .ag-cell-focus:not(.ag-cell-range-selected) {
+      border-right-color: var(--xh-grid-border-color);
+    }
+
     .ag-has-focus {
       .ag-cell-focus:not(.ag-cell-range-selected) {
-        border-color: transparent;
+        // Preserve left and right borders to avoid jumpiness upon cell focus
+        border-top: none;
+        border-bottom: none;
+        border-left-color: transparent;
+        border-right-color: transparent;
+
+        &.ag-cell {
+          &.ag-cell-last-left-pinned {
+            @include pinned-border(right);
+          }
+
+          &.ag-cell-first-right-pinned {
+            @include pinned-border(left);
+          }
+
+          &.xh-cell--group-border-left {
+            @include group-border(left);
+          }
+
+          &.xh-cell--group-border-right {
+            @include group-border(right);
+          }
+        }
       }
     }
   }
 
   &--show-cell-focus {
-    .ag-cell-focus {
+    .ag-cell-focus:focus-within {
       border-color: var(--xh-grid-cell-focus-border-color) !important;
     }
   }
@@ -409,7 +461,9 @@ body.xh-app {
     border: var(--xh-menu-border);
 
     // Matching box-shadow of Blueprint context menu popover
-    box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.2), 0 2px 4px rgba(16, 22, 26, 0.4),
+    box-shadow:
+      0 0 0 1px rgba(16, 22, 26, 0.2),
+      0 2px 4px rgba(16, 22, 26, 0.4),
       0 8px 24px rgba(16, 22, 26, 0.4);
 
     .ag-menu-option.ag-menu-option-active {

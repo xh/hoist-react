@@ -1,0 +1,13 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2023 Extremely Heavy Industries Inc.
+ */
+
+.xh-check-box.xh-input-disabled input:checked ~ .bp4-control-indicator {
+  background-color: var(--xh-input-disabled-bg) !important;
+  &::before {
+    background-image: var(--xh-input-disabled-checkmark-svg) !important;
+  }
+}

@@ -4,13 +4,15 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {
     CreatesSpec,
     UsesSpec,
     HoistProps,
     DefaultHoistProps,
     elementFactory,
-    ElementFactory
+    ElementFactory,
+    TestSupportProps
 } from './';
 import {
     useModelLinker,
@@ -24,7 +26,7 @@ import {
     HoistModel
 } from './model';
 import {apiDeprecated, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
 import {observer} from '../mobx';
@@ -231,7 +233,7 @@ hoistCmp.withFactory = hoistCmpWithFactory;
 //----------------------------------
 // internal types and core wrappers
 //----------------------------------
-type RenderFn = (props: HoistProps, ref?: ForwardedRef<any>) => ReactNode;
+type RenderFn = (props: HoistProps & TestSupportProps, ref?: ForwardedRef<any>) => ReactNode;
 
 interface Config {
     displayName: string;
@@ -297,16 +299,23 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             ].join(' | ');
         });
 
-        // 3) Create any new lookup context that needs to be established
-        // Avoid adding extra context if this model already in default context.
-        const newLookup =
+        // 3) insert any new lookup context that needs to be established.  Avoid adding if default
+        // model not changing; cache object to avoid triggering re-renders in context children
+        const insertLookup = useRef<ModelLookup>(null);
+        if (
             !publishNone &&
             model &&
             (!modelLookup ||
                 !fromContext ||
                 (publishDefault && modelLookup.lookupModel('*') !== model))
-                ? new ModelLookup(model, modelLookup, publishMode)
-                : null;
+        ) {
+            const {current} = insertLookup;
+            if (current?.model != model || current?.parent != modelLookup) {
+                insertLookup.current = new ModelLookup(model, modelLookup, publishMode);
+            }
+        } else {
+            insertLookup.current = null;
+        }
 
         // 4) Get the rendering of the component with its model context
         // 4a) Create a generic render function, that can be called immediately, or in wrapped component.
@@ -317,7 +326,9 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
                 delete props.modelRef;
                 delete props.modelConfig;
                 ctx.props = props;
-                ctx.modelLookup = newLookup ?? modelLookup;
+                ctx.modelLookup = insertLookup.current ?? modelLookup;
+                useOnMount(() => instanceManager.registerModelWithTestId(props.testId, model));
+                useOnUnmount(() => instanceManager.unregisterModelWithTestId(props.testId));
                 return render(props, ref);
             } finally {
                 ctx.props = null;
@@ -330,7 +341,9 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             ? managedRender()
             : createElement(HostCmp, {managedRender, key: model?.xhId});
 
-        return newLookup ? modelLookupContextProvider({value: newLookup, item: ret}) : ret;
+        return insertLookup.current
+            ? modelLookupContextProvider({value: insertLookup.current, item: ret})
+            : ret;
     };
 }
 
@@ -386,7 +399,7 @@ function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): 
     if (spec.createFromConfig) {
         if (isPlainObject(model)) {
             // 1a) legacy, pre-typescript
-            apiDeprecated('model', {msg: "Use 'modelConfig' instead", v: 'v57'});
+            apiDeprecated('model', {msg: "Use 'modelConfig' instead", v: 'v58'});
             return {model: new selector(model), isLinked: true, fromContext: false};
         }
         if (isPlainObject(modelConfig)) {

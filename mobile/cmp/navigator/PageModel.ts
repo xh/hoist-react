@@ -73,6 +73,7 @@ export class PageModel extends HoistModel {
 
     navigatorModel;
     @managed refreshContextModel;
+    @managed errorBoundaryModel;
 
     private _renderMode: RenderMode;
     private _refreshMode: RefreshMode;

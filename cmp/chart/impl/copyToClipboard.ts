@@ -71,7 +71,7 @@ function memoryCleanup(svgUrl) {
  */
 async function loadBlob(dataUrl) {
     const fetched = await fetch(dataUrl);
-    return await fetched.blob();
+    return fetched.blob();
 }
 
 /**

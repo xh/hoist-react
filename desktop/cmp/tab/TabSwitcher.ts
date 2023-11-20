@@ -19,8 +19,8 @@ import {
     tabs as bpTabs,
     tooltip as bpTooltip
 } from '@xh/hoist/kit/blueprint';
-import {makeObservable, bindable} from '@xh/hoist/mobx';
-import {debounced, isDisplayed, throwIf} from '@xh/hoist/utils/js';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {consumeEvent, debounced, getTestId, isDisplayed, throwIf} from '@xh/hoist/utils/js';
 import {
     createObservableRef,
     getLayoutProps,
@@ -90,7 +90,9 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
         if (!vertical && isFinite(tabMaxWidth)) tabStyle.maxWidth = tabMaxWidth + 'px';
 
         const items = tabs.map(tab => {
-            const {id, title, icon, disabled, tooltip, showRemoveAction, excludeFromSwitcher} = tab;
+            const {id, title, icon, disabled, tooltip, showRemoveAction, excludeFromSwitcher} = tab,
+                testId = getTestId(props, id);
+
             if (excludeFromSwitcher) return null;
             return bpTab({
                 id,
@@ -105,10 +107,12 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                     item: hframe({
                         className: 'xh-tab-switcher__tab',
                         tabIndex: -1,
+                        testId,
                         items: [
                             icon,
                             span(title),
                             button({
+                                testId: getTestId(testId, 'remove-btn'),
                                 omit: !showRemoveAction,
                                 tabIndex: -1,
                                 icon: Icon.x(),
@@ -122,6 +126,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
 
         return box({
             ...layoutProps,
+            testId: props.testId,
             className: classNames(
                 className,
                 `xh-tab-switcher--${orientation}`,
@@ -138,7 +143,8 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                         items,
                         selectedTabId: activeTabId,
                         onChange: tabId => model.activateTab(tabId)
-                    })
+                    }),
+                    onKeyDown: e => impl.onKeyDown(e)
                 }),
                 overflowMenu({
                     tabs: impl.overflowTabs,
@@ -200,6 +206,18 @@ class TabSwitcherLocalModel extends HoistModel {
 
     get overflowTabs() {
         return compact(this.overflowIds.map(id => this.model.findTab(id)));
+    }
+
+    onKeyDown(e: KeyboardEvent) {
+        const {key} = e,
+            {model, vertical} = this;
+        if ((key === 'ArrowDown' && vertical) || (key === 'ArrowRight' && !vertical)) {
+            model.activateNextTab(true);
+            consumeEvent(e);
+        } else if ((key === 'ArrowUp' && vertical) || (key === 'ArrowLeft' && !vertical)) {
+            model.activatePrevTab(true);
+            consumeEvent(e);
+        }
     }
 
     constructor(model, enableOverflow, vertical) {

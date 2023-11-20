@@ -26,6 +26,8 @@ export interface ColumnGroupSpec {
     headerClass?: Some<string> | ColumnHeaderClassFn;
     /** Horizontal alignment of header contents. */
     headerAlign?: HAlign;
+    /** True to render borders on column group edges. */
+    borders?: boolean;
 
     /**
      * "Escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note
@@ -50,6 +52,7 @@ export class ColumnGroup {
     readonly headerName: ReactNode | ColumnHeaderNameFn;
     readonly headerClass: Some<string> | ColumnHeaderClassFn;
     readonly headerAlign: HAlign;
+    readonly borders: boolean;
 
     /**
      * "Escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note
@@ -79,6 +82,7 @@ export class ColumnGroup {
             headerClass,
             headerAlign,
             agOptions,
+            borders,
             ...rest
         } = config;
 
@@ -94,6 +98,7 @@ export class ColumnGroup {
         this.headerName = withDefault(headerName, genDisplayName(this.groupId));
         this.headerClass = headerClass;
         this.headerAlign = headerAlign;
+        this.borders = withDefault(borders, true);
         this.children = children;
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -103,15 +108,26 @@ export class ColumnGroup {
         const {headerName, gridModel} = this;
         return {
             groupId: this.groupId,
-            headerValueGetter: agParams =>
-                isFunction(headerName)
+            headerValueGetter: agParams => {
+                // headerValueGetter should always return a string
+                // for display in draggable shadow box, aGrid Tool panel.
+                // Hoist ColumnHeader will handle display of Element values in the header.
+                const ret = isFunction(headerName)
                     ? headerName({columnGroup: this, gridModel, agParams})
-                    : headerName,
+                    : headerName;
+                return isString(ret) ? ret : genDisplayName(this.groupId);
+            },
             headerClass: getAgHeaderClassFn(this),
             headerGroupComponentParams: {gridModel, xhColumnGroup: this},
             children: this.children.map(it => it.getAgSpec()),
             marryChildren: gridModel.lockColumnGroups,
             ...this.agOptions
         };
+    }
+
+    getLeafColumns(): Column[] {
+        return this.children.flatMap(child =>
+            child instanceof Column ? child : child.getLeafColumns()
+        );
     }
 }

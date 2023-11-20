@@ -5,12 +5,13 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
-import {errorBoundary} from '@xh/hoist/appcontainer/ErrorBoundary';
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 import {colChooser} from '@xh/hoist/mobile/cmp/grid/impl/ColChooser';
 import {ColChooserModel} from '@xh/hoist/mobile/cmp/grid/impl/ColChooserModel';
+import {zoneMapper} from '@xh/hoist/mobile/cmp/zoneGrid/impl/ZoneMapper';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
 import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
@@ -30,13 +31,16 @@ import {messageSource} from './MessageSource';
 import {optionsDialog} from './OptionsDialog';
 import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
+import {errorMessage} from '../cmp/error/ErrorMessage';
 
 installMobileImpls({
     tabContainerImpl,
     storeFilterFieldImpl,
     pinPadImpl,
     colChooser,
-    ColChooserModel
+    ColChooserModel,
+    zoneMapper,
+    errorMessage
 });
 
 /**
@@ -53,11 +57,23 @@ export const AppContainer = hoistCmp({
     displayName: 'AppContainer',
     model: uses(AppContainerModel),
 
-    render() {
-        useOnMount(() => XH.initAsync());
+    render({model}) {
+        useOnMount(() => model.initAsync());
 
         return fragment(
-            errorBoundary(viewForState()),
+            errorBoundary({
+                modelConfig: {
+                    errorHandler: {
+                        title: 'Critical Error',
+                        message:
+                            XH.clientAppName +
+                            ' encountered a critical error and cannot be displayed.',
+                        requireReload: true
+                    },
+                    errorRenderer: () => null
+                },
+                item: viewForState()
+            }),
             // Modal component helpers rendered here at top-level to support display of messages
             // and exceptions at any point during the app lifecycle.
             exceptionDialog(),
@@ -89,10 +105,10 @@ function viewForState() {
     }
 }
 
-const lockoutView = hoistCmp.factory({
+const lockoutView = hoistCmp.factory<AppContainerModel>({
     displayName: 'LockoutView',
-    render() {
-        const content = XH.appSpec.lockoutPanel ?? lockoutPanel;
+    render({model}) {
+        const content = model.appSpec.lockoutPanel ?? lockoutPanel;
         return elementFromContent(content);
     }
 });
@@ -107,7 +123,9 @@ const appContainerView = hoistCmp.factory<AppContainerModel>({
                 bannerList(),
                 refreshContextView({
                     model: model.refreshContextModel,
-                    item: frame(createElement(XH.appSpec.componentClass, {model: XH.appModel}))
+                    item: frame(
+                        createElement(model.appSpec.componentClass, {model: model.appModel})
+                    )
                 }),
                 versionBar()
             ),
@@ -133,10 +151,10 @@ const bannerList = hoistCmp.factory<AppContainerModel>({
     }
 });
 
-const suspendedView = hoistCmp.factory({
-    render() {
-        if (XH.suspendData?.reason === 'IDLE') {
-            const content = XH.appSpec.idlePanel ?? idlePanel;
+const suspendedView = hoistCmp.factory<AppContainerModel>({
+    render({model}) {
+        if (model.appStateModel.suspendData?.reason === 'IDLE') {
+            const content = model.appSpec.idlePanel ?? idlePanel;
             return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
         }
         return suspendPanel();

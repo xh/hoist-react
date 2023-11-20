@@ -74,6 +74,7 @@ export const [RecordActionButton, recordActionButton] =
                 intent,
                 title,
                 disabled,
+                testId: action.testId,
                 onClick: () => action.call({record, selectedRecords, gridModel, column}),
                 ...rest
             });

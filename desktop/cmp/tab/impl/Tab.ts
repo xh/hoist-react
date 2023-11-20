@@ -9,6 +9,7 @@ import {TabModel} from '@xh/hoist/cmp/tab';
 import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 
 /**
  * Wrapper for contents to be shown within a TabContainer. This Component is used by TabContainer's
@@ -25,7 +26,7 @@ export const tab = hoistCmp.factory({
     className: 'xh-tab',
     model: uses(TabModel, {publishMode: 'limited'}),
 
-    render({model, className}) {
+    render({model, className, testId}) {
         let {content, isActive, renderMode, refreshContextModel} = model,
             wasActivated = useRef(false);
 
@@ -41,9 +42,10 @@ export const tab = hoistCmp.factory({
         return frame({
             display: isActive ? 'flex' : 'none',
             className,
+            testId,
             item: refreshContextView({
                 model: refreshContextModel,
-                item: elementFromContent(content, {flex: 1})
+                item: errorBoundary(elementFromContent(content, {flex: 1}))
             })
         });
     }

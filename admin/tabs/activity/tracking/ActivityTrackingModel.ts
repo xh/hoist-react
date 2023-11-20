@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {exportFilename} from '@xh/hoist/admin/AdminUtils';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
@@ -159,7 +160,7 @@ export class ActivityTrackingModel extends HoistModel {
             },
             colChooserModel: true,
             enableExport: true,
-            exportOptions: {filename: `${XH.appCode}-activity-summary`},
+            exportOptions: {filename: exportFilename('activity-summary')},
             emptyText: 'No activity reported...',
             sortBy: ['cubeLabel'],
             columns: [
@@ -207,16 +208,10 @@ export class ActivityTrackingModel extends HoistModel {
         const {enabled, cube, formModel} = this;
         if (!enabled) return;
 
-        const params = formModel.getData();
-
-        // TODO - revert formatting when most apps have migrated to Hoist-Core 13
-        params.startDay = params.startDay.format('YYYYMMDD');
-        params.endDay = params.endDay.format('YYYYMMDD');
-
         try {
             const data = await XH.fetchJson({
                 url: 'trackLogAdmin',
-                params,
+                params: formModel.getData(),
                 loadSpec
             });
 
