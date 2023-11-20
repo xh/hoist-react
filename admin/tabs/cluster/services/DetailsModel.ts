@@ -31,20 +31,15 @@ export class DetailsModel extends HoistModel {
         });
     }
 
-    override async doLoadAsync(loadSpec: LoadSpec): Promise<void> {
+    override async doLoadAsync(loadSpec: LoadSpec) {
         const {selectedRecord, parent} = this,
             selected = selectedRecord?.data;
 
-        // Simple case -- no fetch needed.
-        if (!selected?.hasStats) {
-            this.svcName = selected?.displayName;
-            this.stats = {};
-            return;
-        }
-
         // Fetch needed, clear existing data if known obsolete
-        if (selected.displayName != this.svcName) this.stats = null;
-        this.svcName = selected.displayName;
+        if (selected?.displayName != this.svcName) this.stats = null;
+        this.svcName = selected?.displayName;
+
+        if (!selected) return;
 
         const resp = await XH.fetchJson({
             url: 'serviceManagerAdmin/getStats',
@@ -52,9 +47,15 @@ export class DetailsModel extends HoistModel {
             autoAbortKey: 'serviceDetails',
             loadSpec
         });
+        if (loadSpec.isStale) return;
+        this.preprocessRawData(resp);
+        this.stats = resp;
+    }
 
-        if (!loadSpec.isStale) {
-            this.stats = resp;
-        }
+    private preprocessRawData(resp) {
+        // Format distributed objects for readability
+        resp.distributedObjects?.forEach(obj => {
+            obj.name = obj.name.substring(obj.name.indexOf('_') + 1);
+        });
     }
 }

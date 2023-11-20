@@ -51,21 +51,13 @@ export class ServiceModel extends BaseInstanceModel {
                 {name: 'name', type: 'string'},
                 {name: 'displayName', type: 'string'},
                 {name: 'initializedDate', type: 'date', displayName: 'Initialized'},
-                {name: 'lastCachesCleared', type: 'date', displayName: 'Last Cleared'},
-                {name: 'stats', type: 'json'}
+                {name: 'lastCachesCleared', type: 'date', displayName: 'Last Cleared'}
             ]
         },
         sortBy: 'displayName',
         groupBy: 'provider',
         columns: [
             {field: 'provider', hidden: true},
-            {
-                field: 'hasStats',
-                headerName: '',
-                width: 34,
-                align: 'center',
-                renderer: v => (v ? Icon.info({title: 'Stats available'}) : '')
-            },
             {field: 'displayName', flex: 1},
             {...timestampNoYear, field: 'lastCachesCleared'},
             {...timestampNoYear, field: 'initializedDate'}

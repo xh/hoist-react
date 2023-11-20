@@ -8,7 +8,7 @@ import {ClusterTabModel} from '@xh/hoist/admin/tabs/cluster/ClusterTabModel';
 import {HoistModel, LoadSpec, lookup, PlainObject, XH} from '@xh/hoist/core';
 import {fmtDateTimeSec, fmtJson} from '@xh/hoist/format';
 import {DAYS} from '@xh/hoist/utils/datetime';
-import {cloneDeep, forOwn, isNumber, isPlainObject} from 'lodash';
+import {cloneDeep, forOwn, isArray, isNumber, isPlainObject} from 'lodash';
 
 export class BaseInstanceModel extends HoistModel {
     @lookup(() => ClusterTabModel) parent: ClusterTabModel;
@@ -48,7 +48,7 @@ export class BaseInstanceModel extends HoistModel {
             ) {
                 stats[k] = v ? fmtDateTimeSec(v) : null;
             }
-            if (isPlainObject(v)) {
+            if (isPlainObject(v) || isArray(v)) {
                 this.processTimestamps(v);
             }
         });

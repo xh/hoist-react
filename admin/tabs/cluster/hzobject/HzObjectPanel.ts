@@ -45,7 +45,7 @@ export const hzObjectPanel = hoistCmp.factory({
 const detailsPanel = hoistCmp.factory({
     model: uses(HzObjectModel),
     render({model}) {
-        const data = model.gridModel.selectedRecord?.data;
+        const data = model.gridModel.selectedRecord?.raw;
         return panel({
             title: data ? `Stats: ${data.name}` : 'Stats',
             icon: Icon.info(),
@@ -62,7 +62,7 @@ const detailsPanel = hoistCmp.factory({
                           height: '100%',
                           showFullscreenButton: false,
                           editorProps: {lineNumbers: false},
-                          value: model.fmtStats(data.stats)
+                          value: model.fmtStats(data)
                       })
                   })
                 : placeholder(Icon.grip(), 'Select an object.')

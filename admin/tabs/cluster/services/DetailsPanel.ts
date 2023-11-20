@@ -11,7 +11,6 @@ import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {isEmpty} from 'lodash';
 
 export const detailsPanel = hoistCmp.factory({
     model: creates(DetailsModel),
@@ -34,7 +33,7 @@ export const detailsPanel = hoistCmp.factory({
 
 const stats = hoistCmp.factory<DetailsModel>({
     render({model}) {
-        const {svcName, stats, lastLoadException, loadModel} = model;
+        const {stats, lastLoadException, loadModel} = model;
 
         if (!loadModel.isPending && lastLoadException) {
             return errorMessage({
@@ -45,18 +44,16 @@ const stats = hoistCmp.factory<DetailsModel>({
 
         if (stats == null) return null;
 
-        return isEmpty(stats)
-            ? placeholder(Icon.gears(), `${svcName} did not report any stats.`)
-            : panel(
-                  jsonInput({
-                      readonly: true,
-                      width: '100%',
-                      height: '100%',
-                      enableSearch: true,
-                      showFullscreenButton: false,
-                      editorProps: {lineNumbers: false},
-                      value: model.parent.fmtStats(stats)
-                  })
-              );
+        return panel(
+            jsonInput({
+                readonly: true,
+                width: '100%',
+                height: '100%',
+                enableSearch: true,
+                showFullscreenButton: false,
+                editorProps: {lineNumbers: false},
+                value: model.parent.fmtStats(stats)
+            })
+        );
     }
 });

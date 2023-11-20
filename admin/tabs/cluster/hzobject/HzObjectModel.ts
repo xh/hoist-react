@@ -35,20 +35,19 @@ export class HzObjectModel extends BaseInstanceModel {
         enableExport: true,
         exportOptions: {filename: exportFilenameWithDate('distributed-objects'), columns: 'ALL'},
         sortBy: 'name',
-        groupBy: 'objectType',
+        groupBy: 'type',
         store: {
             fields: [
                 {name: 'name', type: 'string'},
-                {name: 'objectType', type: 'string', displayName: 'Type'},
+                {name: 'type', type: 'string', displayName: 'Type'},
                 {name: 'size', type: 'int'},
                 {name: 'lastUpdateTime', type: 'date'},
-                {name: 'lastAccessTime', type: 'date'},
-                {name: 'stats', type: 'json'}
+                {name: 'lastAccessTime', type: 'date'}
             ],
             idSpec: 'name'
         },
         columns: [
-            {field: 'objectType', hidden: true},
+            {field: 'type', hidden: true},
             {field: 'name', flex: 1},
             {field: 'size', displayName: 'Entry Count', ...Col.number, width: 130},
             {
