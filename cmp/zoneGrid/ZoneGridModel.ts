@@ -49,21 +49,11 @@ import {
 } from '@ag-grid-community/core';
 import {Icon} from '@xh/hoist/icon';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {
-    castArray,
-    forOwn,
-    isEmpty,
-    isFinite,
-    isPlainObject,
-    isString,
-    dropRight,
-    remove
-} from 'lodash';
+import {castArray, forOwn, isEmpty, isFinite, isPlainObject, isString, find} from 'lodash';
 import {ReactNode} from 'react';
 import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
 import {ZoneGridPersistenceModel} from './impl/ZoneGridPersistenceModel';
 import {ZoneGridModelPersistOptions, Zone, ZoneLimit, ZoneMapping} from './Types';
-import {Exception} from '../../core';
 
 export interface ZoneGridConfig {
     /**
@@ -626,8 +616,14 @@ export class ZoneGridModel extends HoistModel {
     ): Record<Zone, ZoneMapping[]> {
         const ret = {} as Record<Zone, ZoneMapping[]>;
         forOwn(mappings, (rawMapping, zone) => {
+            let mapping = [],
+                enforceConstraint = message => {
+                    throwIf(strict, message);
+                    console.warn(`${message} Setting to default.`);
+                    mapping = this._defaultState.mappings[zone];
+                };
+
             // 1) Standardize mapping into an array of ZoneMappings
-            let mapping = [];
             castArray(rawMapping).forEach(it => {
                 if (!it) return;
 
@@ -637,8 +633,7 @@ export class ZoneGridModel extends HoistModel {
                 if (col) {
                     mapping.push(ret);
                 } else {
-                    const message = `Column not found for field '${ret.field}'`;
-                    this.throwOrWarn(message, strict);
+                    enforceConstraint(`Column not found for field '${ret.field}'`);
                 }
             });
 
@@ -646,47 +641,24 @@ export class ZoneGridModel extends HoistModel {
             const limit = this.limits?.[zone];
             if (limit) {
                 if (isFinite(limit.min) && mapping.length < limit.min) {
-                    const message = `Requires minimum ${limit.min} mappings in zone "${zone}. Setting to default."`;
-
-                    this.throwOrWarn(message, strict);
-
-                    mapping = this._defaultState.mappings[zone];
+                    enforceConstraint(`Requires minimum ${limit.min} mappings in zone "${zone}."`);
                 }
 
                 if (isFinite(limit.max) && mapping.length > limit.max) {
-                    const diff = mapping.length - limit.max,
-                        message = `Exceeds maximum ${limit.max} mappings in zone "${zone}". Dropping last ${diff} fields`;
-
-                    this.throwOrWarn(message, strict);
-
-                    mapping = dropRight(mapping, mapping.length - limit.max);
+                    enforceConstraint(`Exceeds maximum ${limit.max} mappings in zone "${zone}".`);
                 }
 
                 if (!isEmpty(limit.only)) {
-                    const offenders = [];
-                    mapping.forEach(it => {
-                        if (!limit.only.includes(it.field)) {
-                            const message = `Field "${it.field}" not allowed in zone "${zone}. Removing"`;
-
-                            this.throwOrWarn(message, strict);
-
-                            offenders.push(it.field);
-                        }
-                    });
-
-                    if (!isEmpty(offenders)) {
-                        remove(mapping, it => offenders.includes(it.field));
+                    const offender = find(mapping, it => !limit.only.includes(it.field));
+                    if (offender) {
+                        enforceConstraint(`Field "${offender}" not allowed in zone "${zone}".`);
                     }
                 }
             }
 
             // 3) Ensure top zones have at least the minimum required single field
             if ((zone == 'tl' || zone == 'tr') && isEmpty(mapping)) {
-                const message = `Top mapping '${zone}' requires at least one field. Setting to default.`;
-
-                this.throwOrWarn(message, strict);
-
-                mapping = this._defaultState.mappings[zone];
+                enforceConstraint(`Top mapping '${zone}' requires at least one field.`);
             }
 
             ret[zone] = mapping;
@@ -703,10 +675,5 @@ export class ZoneGridModel extends HoistModel {
             });
         }
         return mapperModel ? new ZoneMapperModel({zoneGridModel: this}) : null;
-    }
-
-    private throwOrWarn(message, strict) {
-        if (strict) throw Exception.create(message);
-        console.warn(message);
     }
 }
