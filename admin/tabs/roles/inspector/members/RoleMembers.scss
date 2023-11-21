@@ -1,0 +1,14 @@
+.role-members {
+  .group-row-renderer {
+    align-items: center;
+    gap: var(--xh-pad-half-px);
+  }
+
+  .roles-renderer {
+    align-items: center;
+
+    &__role:not(:last-child) {
+      margin-right: var(--xh-pad-half-px);
+    }
+  }
+}

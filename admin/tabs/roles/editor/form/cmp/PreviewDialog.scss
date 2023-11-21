@@ -1,0 +1,12 @@
+.role-preview-dialog {
+  width: 90vw;
+  height: 90vh;
+
+  &__current-header {
+    background-color: var(--xh-intent-warning);
+  }
+
+  &__unsaved-header {
+    background-color: var(--xh-intent-success);
+  }
+}

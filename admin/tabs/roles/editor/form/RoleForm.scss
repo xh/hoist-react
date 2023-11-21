@@ -1,0 +1,11 @@
+.role-form {
+  &__assignments {
+    &__panel {
+      flex: 1 0 !important;
+
+      &:not(:last-child) {
+        border-right: var(--xh-border-solid);
+      }
+    }
+  }
+}

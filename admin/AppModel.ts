@@ -14,7 +14,7 @@ import {generalTab} from './tabs/general/GeneralTab';
 import {monitorTab} from './tabs/monitor/MonitorTab';
 import {serverTab} from './tabs/server/ServerTab';
 import {userDataTab} from './tabs/userData/UserDataTab';
-import {rolesTab} from './tabs/roles/RolesTab';
+import {roles} from './tabs/roles/Roles';
 
 export class AppModel extends HoistAppModel {
     static instance: AppModel;
@@ -151,7 +151,7 @@ export class AppModel extends HoistAppModel {
             {
                 id: 'roles',
                 icon: Icon.roles(),
-                content: rolesTab,
+                content: roles,
                 omit: !showRoles
             }
         ];

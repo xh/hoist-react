@@ -27,6 +27,25 @@ export interface HoistUser {
     hasGate(s: string): boolean;
 }
 
+export interface HoistRole {
+    name: string;
+    groupName: string;
+    notes: string;
+    inherits: string[];
+    allInheritedRoles: Array<{inheritedBy: string; role: string}>;
+    inheritanceMap: Record<string, string>;
+    inheritedBy: string[];
+    indirectlyInheritedBy: string[];
+    directlyInheritedBy: string[];
+    allUsers: Array<{name: string; roles: string[]}>;
+    allDirectoryGroups: Array<{name: string; roles: string[]}>;
+    users: string[];
+    directoryGroups: string[];
+    lastUpdated: Date;
+    lastUpdatedBy: string;
+    undeletable: boolean;
+}
+
 /**
  * Enhanced Response returned by FetchService.
  */
