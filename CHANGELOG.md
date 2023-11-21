@@ -1,5 +1,11 @@
 # Changelog
 
+## 59.3.2 - 2023-11-21
+
+### 🐞 Bug Fixes
+
+* `ZoneGrid` will more gracefully handle state that has become out of sync with its mapper requirements.
+
 ## 59.3.1 - 2023-11-10
 
 ### 🐞 Bug Fixes
