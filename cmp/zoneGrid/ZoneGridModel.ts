@@ -627,7 +627,7 @@ export class ZoneGridModel extends HoistModel {
         return ret;
     }
 
-    parseZoneMapping(zone: Zone, rawMapping: Some<string | ZoneMapping>): ZoneMapping[] {
+    private parseZoneMapping(zone: Zone, rawMapping: Some<string | ZoneMapping>): ZoneMapping[] {
         const ret: ZoneMapping[] = [];
 
         // 1) Standardize raw mapping into an array of ZoneMappings
