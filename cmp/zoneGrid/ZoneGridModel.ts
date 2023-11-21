@@ -615,54 +615,57 @@ export class ZoneGridModel extends HoistModel {
         strict: boolean
     ): Record<Zone, ZoneMapping[]> {
         const ret = {} as Record<Zone, ZoneMapping[]>;
-        forOwn(mappings, (rawMapping, zone) => {
-            let mapping = [],
-                enforceConstraint = message => {
-                    throwIf(strict, message);
-                    console.warn(`${message} Setting to default.`);
-                    mapping = this._defaultState.mappings[zone];
-                };
-
-            // 1) Standardize mapping into an array of ZoneMappings
-            castArray(rawMapping).forEach(it => {
-                if (!it) return;
-
-                const ret = isString(it) ? {field: it} : it,
-                    col = this.findColumnSpec(ret);
-
-                if (col) {
-                    mapping.push(ret);
-                } else {
-                    enforceConstraint(`Column not found for field '${ret.field}'`);
-                }
-            });
-
-            // 2) Ensure mapping respects configured limits
-            const limit = this.limits?.[zone];
-            if (limit) {
-                if (isFinite(limit.min) && mapping.length < limit.min) {
-                    enforceConstraint(`Requires minimum ${limit.min} mappings in zone "${zone}."`);
-                }
-
-                if (isFinite(limit.max) && mapping.length > limit.max) {
-                    enforceConstraint(`Exceeds maximum ${limit.max} mappings in zone "${zone}".`);
-                }
-
-                if (!isEmpty(limit.only)) {
-                    const offender = find(mapping, it => !limit.only.includes(it.field));
-                    if (offender) {
-                        enforceConstraint(`Field "${offender}" not allowed in zone "${zone}".`);
-                    }
-                }
+        forOwn(mappings, (rawMapping, zone: Zone) => {
+            try {
+                ret[zone] = this.parseZoneMapping(zone, rawMapping);
+            } catch (e) {
+                if (strict) throw e;
+                console.warn(e.message);
+                ret[zone] = this._defaultState.mappings[zone];
             }
-
-            // 3) Ensure top zones have at least the minimum required single field
-            if ((zone == 'tl' || zone == 'tr') && isEmpty(mapping)) {
-                enforceConstraint(`Top mapping '${zone}' requires at least one field.`);
-            }
-
-            ret[zone] = mapping;
         });
+        return ret;
+    }
+
+    parseZoneMapping(zone: Zone, rawMapping: Some<string | ZoneMapping>): ZoneMapping[] {
+        const ret: ZoneMapping[] = [];
+
+        // 1) Standardize raw mapping into an array of ZoneMappings
+        castArray(rawMapping).forEach(it => {
+            if (!it) return;
+
+            const fieldSpec = isString(it) ? {field: it} : it,
+                col = this.findColumnSpec(fieldSpec);
+
+            throwIf(!col, `Column not found for field '${fieldSpec.field}'`);
+
+            ret.push(fieldSpec);
+        });
+
+        // 2) Ensure we respect configured limits
+        const limit = this.limits?.[zone];
+        if (limit) {
+            throwIf(
+                isFinite(limit.min) && ret.length < limit.min,
+                `Requires minimum ${limit.min} mappings in zone "${zone}."`
+            );
+
+            throwIf(
+                isFinite(limit.max) && ret.length > limit.max,
+                `Exceeds maximum ${limit.max} mappings in zone "${zone}".`
+            );
+
+            if (!isEmpty(limit.only)) {
+                const offender = find(ret, it => !limit.only.includes(it.field));
+                throwIf(offender, `Field "${offender}" not allowed in zone "${zone}".`);
+            }
+        }
+
+        // 3) Ensure top zones have at least the minimum required single field
+        throwIf(
+            (zone == 'tl' || zone == 'tr') && isEmpty(ret),
+            `Top mapping '${zone}' requires at least one field.`
+        );
 
         return ret;
     }
