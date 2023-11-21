@@ -40,7 +40,10 @@ export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps
     showFileGrid: boolean;
 
     /** Intro/help text to display within the dropzone target. */
-    targetText?: ReactNode;
+    targetText?: ReactNode | (({draggedFiles}: {draggedFiles: File[]}) => ReactNode);
+
+    /** Text to display within the dropzone target when files are rejected. */
+    rejectText?: ReactNode | (({rejectedFiles}: {rejectedFiles: File[]}) => ReactNode);
 }
 
 /**
@@ -68,7 +71,9 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
             accept,
             maxSize,
             minSize,
-            targetText = 'Drag and drop files here, or click to browse...',
+            targetText = () => 'Drag and drop files here, or click to browse...',
+            // DEBUG
+            rejectText = () => 'Unable to accept files for upload.',
             enableMulti = true,
             enableAddMulti = enableMulti,
             showFileGrid = true,
@@ -76,8 +81,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
         },
         ref
     ) {
-        const {lastRejectedCount} = model,
-            fileNoun = count => `${count} ${count === 1 ? 'file' : 'files'}`;
+        const {lastRejectedCount} = model;
 
         return hbox({
             ref,
@@ -88,23 +92,38 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                     maxSize,
                     minSize,
                     multiple: enableAddMulti,
-                    item: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
-                        const draggedCount = draggedFiles.length,
-                            targetTxt = isDragActive
-                                ? `Drop to add ${fileNoun(draggedCount)}.`
-                                : targetText,
-                            rejectTxt =
-                                lastRejectedCount && !isDragActive
-                                    ? `Unable to accept ${fileNoun(lastRejectedCount)} for upload.`
-                                    : '';
+                    item: ({
+                        getRootProps,
+                        getInputProps,
+                        isDragActive,
+                        draggedFiles,
+                        rejectedFiles
+                    }) => {
+                        // TODO: implement onDrop (handle onDropAccepted and onDropRejected within)
+
+                        // If there is at least one rejected file on drop, show the reject text.
+                        if (lastRejectedCount && !isDragActive) {
+                            if (typeof rejectText === 'function') {
+                                rejectText = rejectText({rejectedFiles});
+                            }
+                        } else {
+                            rejectText = '';
+                        }
+
+                        targetText =
+                            typeof targetText === 'function'
+                                ? targetText({draggedFiles})
+                                : targetText;
 
                         return div({
                             ...getRootProps(),
                             items: [
-                                targetTxt,
+                                // DEBUG
+                                // targetTxt,
+                                targetText,
                                 div({
                                     className: 'xh-file-chooser__reject-warning',
-                                    item: rejectTxt
+                                    item: rejectText
                                 }),
                                 input({...getInputProps()})
                             ],

@@ -10,7 +10,7 @@ import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {isEmpty} from 'codemirror/src/util/misc';
+import {isEmpty} from 'lodash';
 import filesize from 'filesize';
 import {find, uniqBy, without} from 'lodash';
 import {runInAction} from 'mobx';
