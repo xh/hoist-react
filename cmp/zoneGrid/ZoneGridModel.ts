@@ -63,6 +63,7 @@ import {ReactNode} from 'react';
 import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
 import {ZoneGridPersistenceModel} from './impl/ZoneGridPersistenceModel';
 import {ZoneGridModelPersistOptions, Zone, ZoneLimit, ZoneMapping} from './Types';
+import {Exception} from '../../core';
 
 export interface ZoneGridConfig {
     /**
@@ -335,7 +336,7 @@ export class ZoneGridModel extends HoistModel {
 
         this.availableColumns = columns.map(it => ({...it, hidden: true}));
         this.limits = limits;
-        this.mappings = this.parseMappings(mappings);
+        this.mappings = this.parseMappings(mappings, true);
 
         this.leftColumnSpec = leftColumnSpec;
         this.rightColumnSpec = rightColumnSpec;
@@ -406,7 +407,7 @@ export class ZoneGridModel extends HoistModel {
 
     @action
     setMappings(mappings: Record<Zone, Some<string | ZoneMapping>>) {
-        this.mappings = this.parseMappings(mappings);
+        this.mappings = this.parseMappings(mappings, false);
         this.gridModel.setColumns(this.getColumns());
     }
 
@@ -620,7 +621,8 @@ export class ZoneGridModel extends HoistModel {
     }
 
     private parseMappings(
-        mappings: Record<Zone, Some<string | ZoneMapping>>
+        mappings: Record<Zone, Some<string | ZoneMapping>>,
+        strict: boolean
     ): Record<Zone, ZoneMapping[]> {
         const ret = {} as Record<Zone, ZoneMapping[]>;
         forOwn(mappings, (rawMapping, zone) => {
@@ -635,7 +637,8 @@ export class ZoneGridModel extends HoistModel {
                 if (col) {
                     mapping.push(ret);
                 } else {
-                    console.warn(`Column not found for field '${ret.field}'`);
+                    const message = `Column not found for field '${ret.field}'`;
+                    this.throwOrWarn(message, strict);
                 }
             });
 
@@ -643,17 +646,19 @@ export class ZoneGridModel extends HoistModel {
             const limit = this.limits?.[zone];
             if (limit) {
                 if (isFinite(limit.min) && mapping.length < limit.min) {
-                    console.warn(
-                        `Requires minimum ${limit.min} mappings in zone "${zone}. Setting to default."`
-                    );
+                    const message = `Requires minimum ${limit.min} mappings in zone "${zone}. Setting to default."`;
+
+                    this.throwOrWarn(message, strict);
+
                     mapping = this._defaultState.mappings[zone];
                 }
 
                 if (isFinite(limit.max) && mapping.length > limit.max) {
-                    const diff = mapping.length - limit.max;
-                    console.warn(
-                        `Exceeds maximum ${limit.max} mappings in zone "${zone}". Dropping last ${diff} fields`
-                    );
+                    const diff = mapping.length - limit.max,
+                        message = `Exceeds maximum ${limit.max} mappings in zone "${zone}". Dropping last ${diff} fields`;
+
+                    this.throwOrWarn(message, strict);
+
                     mapping = dropRight(mapping, mapping.length - limit.max);
                 }
 
@@ -661,9 +666,10 @@ export class ZoneGridModel extends HoistModel {
                     const offenders = [];
                     mapping.forEach(it => {
                         if (!limit.only.includes(it.field)) {
-                            console.warn(
-                                `Field "${it.field}" not allowed in zone "${zone}. Removing"`
-                            );
+                            const message = `Field "${it.field}" not allowed in zone "${zone}. Removing"`;
+
+                            this.throwOrWarn(message, strict);
+
                             offenders.push(it.field);
                         }
                     });
@@ -671,14 +677,16 @@ export class ZoneGridModel extends HoistModel {
                     if (!isEmpty(offenders)) {
                         remove(mapping, it => offenders.includes(it.field));
                     }
-
-                    if ((zone == 'tl' || zone == 'tr') && isEmpty(mapping)) {
-                        console.warn(
-                            `Top mapping '${zone}' requires at least one field. Setting to default.`
-                        );
-                        mapping = this._defaultState.mappings[zone];
-                    }
                 }
+            }
+
+            // 3) Ensure top zones have at least the minimum required single field
+            if ((zone == 'tl' || zone == 'tr') && isEmpty(mapping)) {
+                const message = `Top mapping '${zone}' requires at least one field. Setting to default.`;
+
+                this.throwOrWarn(message, strict);
+
+                mapping = this._defaultState.mappings[zone];
             }
 
             ret[zone] = mapping;
@@ -695,5 +703,10 @@ export class ZoneGridModel extends HoistModel {
             });
         }
         return mapperModel ? new ZoneMapperModel({zoneGridModel: this}) : null;
+    }
+
+    private throwOrWarn(message, strict) {
+        if (strict) throw Exception.create(message);
+        console.warn(message);
     }
 }
