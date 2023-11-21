@@ -657,7 +657,7 @@ export class ZoneGridModel extends HoistModel {
 
             if (!isEmpty(limit.only)) {
                 const offender = find(ret, it => !limit.only.includes(it.field));
-                throwIf(offender, `Field "${offender}" not allowed in zone "${zone}".`);
+                throwIf(offender, `Field "${offender?.field}" not allowed in zone "${zone}".`);
             }
         }
 
