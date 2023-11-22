@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
 
 /**
@@ -15,7 +16,7 @@ import {wait} from '@xh/hoist/promise';
  * allowing ongoing rendering of UI updates (e.g. load masks) and generally keeping the browser
  * event loop running.
  *
- * Note that if the browser tab is hidden (i.e. document.visibilityState === 'hidden') this loop will be executed
+ * Note that if the content tab is hidden (i.e. `!XH.pageIsVisible`) this loop will be executed
  * without pauses.  In this case the pauses would be unduly large due to throttling of the event
  * loop by the browser, and there is no user benefit to avoiding blocking the main thread.
  *
@@ -55,7 +56,7 @@ export async function whileAsync(
     const {waitAfter = 50, waitFor = 0} = opts ?? {};
 
     // Fallback to basic loop when doc hidden: no user benefit, and throttling causes outsize waits
-    if (document.visibilityState === 'hidden') {
+    if (!XH.pageIsVisible) {
         while (conditionFn()) fn();
         return;
     }
