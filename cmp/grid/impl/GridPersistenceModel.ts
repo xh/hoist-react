@@ -4,11 +4,12 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, PersistenceProvider, PlainObject, XH} from '@xh/hoist/core';
+import {GridSorterLike} from '@xh/hoist/cmp/grid';
+import {HoistModel, managed, PersistenceProvider, Some, XH} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
 import {GridModel} from '../GridModel';
-import {GridModelPersistOptions} from '../Types';
+import {ColumnState, GridModelPersistOptions} from '../Types';
 
 /**
  * Model to manage persisting state from GridModel.
@@ -22,7 +23,13 @@ export class GridPersistenceModel extends HoistModel {
     gridModel: GridModel;
 
     @observable.ref
-    state: PlainObject;
+    state: {
+        columns?: Partial<ColumnState>[];
+        sortBy?: Some<GridSorterLike>;
+        groupBy?: Some<string>;
+        version?: number;
+        autosize?: any;
+    };
 
     @managed
     provider: PersistenceProvider;

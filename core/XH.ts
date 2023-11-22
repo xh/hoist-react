@@ -674,9 +674,9 @@ export class XHApi {
 
     /** Get the first active model that matches the given selector, or null if none found. */
     getModel<T extends HoistModel>(selector: ModelSelector = '*'): T {
-        instanceManager.models.forEach(m => {
-            if (m.matchesSelector(selector, true)) return m;
-        });
+        for (let m of instanceManager.models) {
+            if (m.matchesSelector(selector, true)) return m as T;
+        }
         return null;
     }
 
