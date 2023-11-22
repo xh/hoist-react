@@ -21,7 +21,7 @@ import {castArray, isString} from 'lodash';
  * @param fn - function to execute
  * @param source - class, function or string to label the source of the message
  */
-export function withInfo<T>(msgs: Some<any>, fn: () => T, source?: any): T {
+export function withInfo<T>(msgs: Some<unknown>, fn: () => T, source?: any): T {
     return loggedDo(msgs, fn, source, 'info');
 }
 
@@ -29,7 +29,7 @@ export function withInfo<T>(msgs: Some<any>, fn: () => T, source?: any): T {
  * Time and log execution of a function to `console.debug()`.
  * @see withInfo
  */
-export function withDebug<T>(msgs: Some<any>, fn: () => T, source?: any): T {
+export function withDebug<T>(msgs: Some<unknown>, fn: () => T, source?: any): T {
     return loggedDo(msgs, fn, source, 'debug');
 }
 
@@ -38,7 +38,7 @@ export function withDebug<T>(msgs: Some<any>, fn: () => T, source?: any): T {
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logInfo(msgs: Some<any>, source?: any) {
+export function logInfo(msgs: Some<unknown>, source?: any) {
     return loggedDo(msgs, null, source, 'info');
 }
 
@@ -47,7 +47,7 @@ export function logInfo(msgs: Some<any>, source?: any) {
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logDebug(msgs: Some<any>, source?: any) {
+export function logDebug(msgs: Some<unknown>, source?: any) {
     return loggedDo(msgs, null, source, 'debug');
 }
 
@@ -56,7 +56,7 @@ export function logDebug(msgs: Some<any>, source?: any) {
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logError(msgs: Some<any>, source?: any) {
+export function logError(msgs: Some<unknown>, source?: any) {
     return loggedDo(msgs, null, source, 'error');
 }
 
@@ -65,7 +65,7 @@ export function logError(msgs: Some<any>, source?: any) {
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logWarn(msgs: Some<any>, source?: any) {
+export function logWarn(msgs: Some<unknown>, source?: any) {
     return loggedDo(msgs, null, source, 'warn');
 }
 
@@ -121,8 +121,7 @@ function parseSource(source) {
     return '';
 }
 
-function writeLog(msgs: Some<any>, source, level: LogLevel) {
-    msgs = castArray(msgs);
+function writeLog(msgs: Array<any>, source, level: LogLevel) {
     if (source) msgs = [`[${source}]`, ...msgs];
 
     const logArgs = [];
