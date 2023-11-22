@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistBase, managed, RefreshContextModel, TaskObserver} from '../';
+import {HoistBase, managed, PlainObject, RefreshContextModel, TaskObserver} from '../';
 import {LoadSpec, Loadable} from './';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -55,11 +55,11 @@ export class LoadSupport extends HoistBase implements Loadable {
         return this.doLoadAsync(newSpec);
     }
 
-    async refreshAsync(meta?: object) {
+    async refreshAsync(meta?: PlainObject) {
         return this.loadAsync({meta, isRefresh: true});
     }
 
-    async autoRefreshAsync(meta?: object) {
+    async autoRefreshAsync(meta?: PlainObject) {
         return this.loadAsync({meta, isAutoRefresh: true});
     }
 
