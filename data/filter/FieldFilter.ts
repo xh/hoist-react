@@ -12,6 +12,7 @@ import {
     difference,
     escapeRegExp,
     isArray,
+    isEqual,
     isNil,
     isString,
     isUndefined,
@@ -122,13 +123,13 @@ export class FieldFilter extends Filter {
             case '=':
                 opFn = v => {
                     if (isNil(v) || v === '') v = null;
-                    return value.includes(v);
+                    return value.some(it => isEqual(v, it));
                 };
                 break;
             case '!=':
                 opFn = v => {
                     if (isNil(v) || v === '') v = null;
-                    return !value.includes(v);
+                    return !value.some(it => isEqual(v, it));
                 };
                 break;
             case '>':
