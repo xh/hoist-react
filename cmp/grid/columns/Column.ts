@@ -932,12 +932,12 @@ export class Column {
                     sortCfg = find(gridModel.sortBy, {colId}),
                     sortDir = sortCfg?.sort || 'asc',
                     abs = sortCfg?.abs || false,
-                    recordA = agNodeA?.data,
-                    recordB = agNodeB?.data,
+                    recordA = agNodeA?.data as StoreRecord,
+                    recordB = agNodeB?.data as StoreRecord,
                     params = {
                         recordA,
                         recordB,
-                        column: this,
+                        column: this as Column,
                         gridModel,
                         defaultComparator: this.defaultComparator,
                         agNodeA,
@@ -962,7 +962,7 @@ export class Column {
         if (editor) {
             ret.cellEditor = forwardRef((agParams: PlainObject, ref) => {
                 const props = {
-                    record: agParams.data,
+                    record: agParams.data as StoreRecord,
                     gridModel,
                     column: this,
                     agParams,

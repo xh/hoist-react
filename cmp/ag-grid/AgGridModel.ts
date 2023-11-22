@@ -22,8 +22,7 @@ import {
     startCase
 } from 'lodash';
 import {GridSorter, GridSorterLike} from '../grid/GridSorter';
-
-import type {ColumnApi, GridApi, SortDirection} from '@xh/hoist/kit/ag-grid';
+import type {ColumnApi, GridApi, SortDirection, IRowNode} from '@xh/hoist/kit/ag-grid';
 
 export interface AgGridModelConfig {
     sizingMode?: SizingMode;
@@ -554,7 +553,7 @@ export class AgGridModel extends HoistModel {
      * @returns the first row in the grid, after sorting and filtering, which
      *  has data associated with it (i.e. not a group or other synthetic row).
      */
-    getFirstSelectableRowNode(): PlainObject {
+    getFirstSelectableRowNode(): IRowNode {
         this.throwIfNotReady();
 
         let ret = null;
@@ -595,7 +594,7 @@ export class AgGridModel extends HoistModel {
     /**
      * @returns row data pinned to the bottom of the grid
      */
-    getPinnedBottomRowData() {
+    getPinnedBottomRowData(): PlainObject[] {
         this.throwIfNotReady();
         return this.getPinnedRowData('Bottom');
     }
@@ -622,7 +621,7 @@ export class AgGridModel extends HoistModel {
         this.agColumnApi = null;
     }
 
-    private getPinnedRowData(side) {
+    private getPinnedRowData(side: string): PlainObject[] {
         const {agApi} = this,
             count = agApi[`getPinned${side}RowCount`](),
             ret = [];
