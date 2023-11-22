@@ -9,10 +9,12 @@ import {div, hbox, input} from '@xh/hoist/cmp/layout';
 import {BoxProps, hoistCmp, HoistProps, Some, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
+import {FileRejection /* , FileError*/} from 'react-dropzone';
 import classNames from 'classnames';
 import {ReactNode} from 'react';
 import './FileChooser.scss';
 import {FileChooserModel} from './FileChooserModel';
+import {forEach} from 'lodash';
 
 export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps {
     /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
@@ -43,7 +45,9 @@ export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps
     targetText?: ReactNode | (({draggedFiles}: {draggedFiles: File[]}) => ReactNode);
 
     /** Text to display within the dropzone target when files are rejected. */
-    rejectText?: ReactNode | (({rejectedFiles}: {rejectedFiles: File[]}) => ReactNode);
+    rejectText?: ReactNode | (({rejectedFiles}: {rejectedFiles: FileRejection[]}) => ReactNode);
+    // DEBUG
+    // rejectText?: ReactNode | (({fileRejections}: {fileRejections: FileRejection[]}) => ReactNode);
 }
 
 /**
@@ -71,9 +75,12 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
             accept,
             maxSize,
             minSize,
-            targetText = () => 'Drag and drop files here, or click to browse...',
+            targetText = ({draggedFiles}) => 'Drag and drop files here, or click to browse...',
             // DEBUG
-            rejectText = () => 'Unable to accept files for upload.',
+            rejectText = ({rejectedFiles}) => {
+                console.log('rejex', model.lastFileRejections, rejectedFiles);
+                return `${rejectedFiles.length} files failed to upload.`;
+            },
             enableMulti = true,
             enableAddMulti = enableMulti,
             showFileGrid = true,
@@ -81,7 +88,15 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
         },
         ref
     ) {
-        const {lastRejectedCount} = model;
+        const {lastRejectedCount, lastFileRejections} = model;
+        // DEBUG
+        console.log(
+            'lastRejectedCount',
+            lastRejectedCount,
+            lastFileRejections,
+            rejectText,
+            typeof rejectText
+        );
 
         return hbox({
             ref,
@@ -99,9 +114,18 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                         draggedFiles,
                         rejectedFiles
                     }) => {
-                        // TODO: implement onDrop (handle onDropAccepted and onDropRejected within)
+                        // TODO: draggedFiles or acceptedFiles?
+                        // DEBUG
+                        console.log('rejectText', lastRejectedCount, rejectText, typeof rejectText);
+                        rejectedFiles = model.lastFileRejections;
 
-                        // If there is at least one rejected file on drop, show the reject text.
+                        // Call targetText and rejectText if they are functions
+                        // If there is at least one rejected file on drop, show the reject text
+                        targetText =
+                            typeof targetText === 'function'
+                                ? targetText({draggedFiles})
+                                : targetText;
+
                         if (lastRejectedCount && !isDragActive) {
                             if (typeof rejectText === 'function') {
                                 rejectText = rejectText({rejectedFiles});
@@ -110,16 +134,9 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                             rejectText = '';
                         }
 
-                        targetText =
-                            typeof targetText === 'function'
-                                ? targetText({draggedFiles})
-                                : targetText;
-
                         return div({
                             ...getRootProps(),
                             items: [
-                                // DEBUG
-                                // targetTxt,
                                 targetText,
                                 div({
                                     className: 'xh-file-chooser__reject-warning',
@@ -134,8 +151,24 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                             )
                         });
                     },
-                    onDrop: (accepted, rejected) =>
-                        model.onDrop(accepted, rejected, enableMulti, maxSize)
+                    onDrop: (accepted: File[], rejected: FileRejection[]) => {
+                        model.onDrop(accepted, rejected, enableMulti);
+                        // DEBUG
+                        console.log('onDrop', accepted, rejected);
+                        forEach(accepted, file =>
+                            console.log(`${file.name} successfully uploaded.`, accepted)
+                        );
+                        forEach(rejected, (fileRejection: FileRejection) => {
+                            model.lastFileRejections.push(fileRejection);
+                            console.log(
+                                `${
+                                    fileRejection.file.name
+                                } was rejected. Reasons: ${fileRejection.errors
+                                    .map(error => error.message)
+                                    .join(', and ')}`
+                            );
+                        });
+                    }
                 }),
                 grid({
                     flex: 1,

@@ -14,6 +14,7 @@ import {isEmpty} from 'lodash';
 import filesize from 'filesize';
 import {find, uniqBy, without} from 'lodash';
 import {runInAction} from 'mobx';
+import {FileRejection} from 'react-dropzone';
 
 export class FileChooserModel extends HoistModel {
     @observable.ref
@@ -22,14 +23,22 @@ export class FileChooserModel extends HoistModel {
     @observable
     lastRejectedCount: number;
 
+    @observable
+    lastFileRejections: FileRejection[] = [];
+
     @managed
     gridModel: GridModel;
+
+    maxSize: number;
 
     constructor() {
         super();
         makeObservable(this);
 
         this.gridModel = this.createGridModel();
+
+        // DEBUG
+        this.maxSize = 100000000;
 
         this.addReaction({
             track: () => this.files,
@@ -114,7 +123,7 @@ export class FileChooserModel extends HoistModel {
     }
 
     @action
-    onDrop(accepted, rejected, enableMulti, maxFileSize) {
+    onDrop(accepted: File[], rejected: FileRejection[], enableMulti: boolean /* , maxFileSize*/) {
         if (!isEmpty(accepted)) {
             if (!enableMulti) {
                 this.setSingleFile(accepted[0]);
@@ -127,14 +136,8 @@ export class FileChooserModel extends HoistModel {
                 `Unable to accept ${
                     rejected.length > 1
                         ? `${rejected.length} files for upload - each `
-                        : 'file for upload - it '
-                }
-                ${
-                    maxFileSize
-                        ? `may exceed the size limit of
-                ${Math.round(maxFileSize / 1000000)}MB or be`
-                        : 'is'
-                } of an unsupported type.`
+                        : 'file for upload.'
+                }`
             );
             runInAction(() => {
                 this.lastRejectedCount = 0;
