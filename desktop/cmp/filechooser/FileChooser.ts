@@ -6,49 +6,13 @@
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {div, hbox, input} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, Some, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
-import {FileRejection /* , FileError*/} from 'react-dropzone';
 import classNames from 'classnames';
-import {ReactNode} from 'react';
 import './FileChooser.scss';
 import {FileChooserModel} from './FileChooserModel';
-import {forEach} from 'lodash';
-
-export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps {
-    /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
-    accept?: Some<string>;
-
-    /** True (default) to allow multiple files in a single upload. */
-    enableMulti?: boolean;
-
-    /**
-     * True to allow user to drop multiple files into the dropzone at once.  True also allows
-     * for selection of multiple files within the OS pop-up window.  Defaults to enableMulti.
-     */
-    enableAddMulti?: boolean;
-
-    /** Maximum accepted file size in bytes. */
-    maxSize?: number;
-
-    /** Minimum accepted file size in bytes. */
-    minSize?: number;
-
-    /**
-     * True (default) to display the selected file(s) in a grid alongside the dropzone. Note
-     * that, if false, the component will not provide any built-in indication of its selection.
-     */
-    showFileGrid: boolean;
-
-    /** Intro/help text to display within the dropzone target. */
-    targetText?: ReactNode | (({draggedFiles}: {draggedFiles: File[]}) => ReactNode);
-
-    /** Text to display within the dropzone target when files are rejected. */
-    rejectText?: ReactNode | (({rejectedFiles}: {rejectedFiles: FileRejection[]}) => ReactNode);
-    // DEBUG
-    // rejectText?: ReactNode | (({fileRejections}: {fileRejections: FileRejection[]}) => ReactNode);
-}
+import {isFunction} from 'lodash';
 
 /**
  * A component to select one or more files from the local filesystem. Wraps the third-party
@@ -64,118 +28,53 @@ export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps
  *
  * @see FileChooserModel
  */
-export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>({
+export const [FileChooser, fileChooser] = hoistCmp.withFactory({
     displayName: 'FileChooser',
     model: uses(FileChooserModel),
     className: 'xh-file-chooser',
 
-    render(
-        {
-            model,
-            accept,
-            maxSize,
-            minSize,
-            targetText = ({draggedFiles}) => 'Drag and drop files here, or click to browse...',
-            // DEBUG
-            rejectText = ({rejectedFiles}) => {
-                console.log('rejex', model.lastFileRejections, rejectedFiles);
-                return `${rejectedFiles.length} files failed to upload.`;
-            },
-            enableMulti = true,
-            enableAddMulti = enableMulti,
-            showFileGrid = true,
-            ...props
-        },
-        ref
-    ) {
-        const {lastRejectedCount, lastFileRejections} = model;
-        // DEBUG
-        console.log(
-            'lastRejectedCount',
-            lastRejectedCount,
-            lastFileRejections,
-            rejectText,
-            typeof rejectText
-        );
-
+    render({model}, ref) {
         return hbox({
             ref,
-            ...props,
             items: [
-                dropzone({
-                    accept,
-                    maxSize,
-                    minSize,
-                    multiple: enableAddMulti,
-                    item: ({
-                        getRootProps,
-                        getInputProps,
-                        isDragActive,
-                        draggedFiles,
-                        rejectedFiles
-                    }) => {
-                        // TODO: draggedFiles or acceptedFiles?
-                        // DEBUG
-                        console.log('rejectText', lastRejectedCount, rejectText, typeof rejectText);
-                        rejectedFiles = model.lastFileRejections;
-
-                        // Call targetText and rejectText if they are functions
-                        // If there is at least one rejected file on drop, show the reject text
-                        targetText =
-                            typeof targetText === 'function'
-                                ? targetText({draggedFiles})
-                                : targetText;
-
-                        if (lastRejectedCount && !isDragActive) {
-                            if (typeof rejectText === 'function') {
-                                rejectText = rejectText({rejectedFiles});
-                            }
-                        } else {
-                            rejectText = '';
-                        }
-
-                        return div({
-                            ...getRootProps(),
-                            items: [
-                                targetText,
-                                div({
-                                    className: 'xh-file-chooser__reject-warning',
-                                    item: rejectText
-                                }),
-                                input({...getInputProps()})
-                            ],
-                            className: classNames(
-                                'xh-file-chooser__target',
-                                isDragActive ? 'xh-file-chooser__target--active' : null,
-                                showFileGrid ? 'xh-file-chooser__target--withGrid' : null
-                            )
-                        });
-                    },
-                    onDrop: (accepted: File[], rejected: FileRejection[]) => {
-                        model.onDrop(accepted, rejected, enableMulti);
-                        // DEBUG
-                        console.log('onDrop', accepted, rejected);
-                        forEach(accepted, file =>
-                            console.log(`${file.name} successfully uploaded.`, accepted)
-                        );
-                        forEach(rejected, (fileRejection: FileRejection) => {
-                            model.lastFileRejections.push(fileRejection);
-                            console.log(
-                                `${
-                                    fileRejection.file.name
-                                } was rejected. Reasons: ${fileRejection.errors
-                                    .map(error => error.message)
-                                    .join(', and ')}`
-                            );
-                        });
-                    }
-                }),
+                dropzoneCmp(),
                 grid({
                     flex: 1,
                     className: 'xh-file-chooser__grid',
-                    omit: !showFileGrid
+                    omit: !model.showFileGrid
                 })
             ]
+        });
+    }
+});
+
+const dropzoneCmp = hoistCmp.factory<FileChooserModel>({
+    render({model}) {
+        const {targetDisplay, rejectDisplay} = model;
+        return dropzone({
+            accept: model.accept,
+            maxSize: model.maxSize,
+            minSize: model.minSize,
+            multiple: model.enableAddMulti,
+            item: ({getRootProps, getInputProps, isDragActive}) => {
+                return div({
+                    ...getRootProps(),
+                    items: [
+                        isFunction(targetDisplay) ? targetDisplay(model) : targetDisplay,
+                        div({
+                            className: 'xh-file-chooser__reject-warning',
+                            item: isFunction(rejectDisplay) ? rejectDisplay(model) : rejectDisplay
+                        }),
+                        input(getInputProps())
+                    ],
+                    className: classNames(
+                        'xh-file-chooser__target',
+                        isDragActive ? 'xh-file-chooser__target--active' : null,
+                        model.showFileGrid ? 'xh-file-chooser__target--withGrid' : null
+                    )
+                });
+            },
+            onDrop: (accepted, rejected) => model.onDrop(accepted, rejected)
         });
     }
 });

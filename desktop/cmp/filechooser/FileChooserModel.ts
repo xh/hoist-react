@@ -5,40 +5,89 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, Some} from '@xh/hoist/core';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {isEmpty} from 'lodash';
+import {isEmpty, uniq} from 'lodash';
 import filesize from 'filesize';
 import {find, uniqBy, without} from 'lodash';
-import {runInAction} from 'mobx';
 import {FileRejection} from 'react-dropzone';
+import {ReactNode} from 'react';
+
+export interface FileChooserConfig {
+    /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
+    accept?: Some<string>;
+
+    /** True (default) to allow multiple files in a single upload. */
+    enableMulti?: boolean;
+
+    /**
+     * True to allow user to drop multiple files into the dropzone at once.  True also allows
+     * for selection of multiple files within the OS pop-up window.  Defaults to enableMulti.
+     */
+    enableAddMulti?: boolean;
+
+    /** Maximum accepted file size in bytes. */
+    maxSize?: number;
+
+    /** Minimum accepted file size in bytes. */
+    minSize?: number;
+
+    /**
+     * True (default) to display the selected file(s) in a grid alongside the dropzone. Note
+     * that, if false, the component will not provide any built-in indication of its selection.
+     */
+    showFileGrid: boolean;
+
+    /** Intro/help text to display within the dropzone target. */
+    targetDisplay?: ReactNode | ((model: FileChooserModel) => ReactNode);
+
+    /** Text to display within the dropzone target when files are rejected. */
+    rejectDisplay?: ReactNode | ((model: FileChooserModel) => ReactNode);
+}
 
 export class FileChooserModel extends HoistModel {
+    //-------------------------
+    // Immutable Configuration
+    //------------------------
+    accept: Some<string>;
+    maxSize: number;
+    minSize: number;
+    enableMulti: boolean;
+    enableAddMulti: boolean;
+    showFileGrid: boolean;
+    targetDisplay: ReactNode | ((model: FileChooserModel) => ReactNode);
+    rejectDisplay: ReactNode | ((model: FileChooserModel) => ReactNode);
+
+    //---------------
+    // Runtime state
+    //---------------
     @observable.ref
     files: File[] = [];
-
-    @observable
-    lastRejectedCount: number;
-
-    @observable
-    lastFileRejections: FileRejection[] = [];
+    @observable.ref
+    lastAccepted: File[] = [];
+    @observable.ref
+    lastRejected: FileRejection[] = [];
 
     @managed
     gridModel: GridModel;
 
-    maxSize: number;
-
-    constructor() {
+    constructor(config: FileChooserConfig) {
         super();
         makeObservable(this);
 
-        this.gridModel = this.createGridModel();
+        this.accept = config.accept;
+        this.maxSize = config.maxSize ?? 10000000;
+        this.minSize = config.minSize ?? 0;
+        this.enableMulti = config.enableMulti ?? true;
+        this.enableAddMulti = config.enableAddMulti ?? this.enableMulti;
+        this.showFileGrid = config.showFileGrid ?? true;
+        this.targetDisplay = config.targetDisplay ?? this.defaultTargetDisplay;
+        this.rejectDisplay = config.rejectDisplay ?? this.defaultRejectDisplay;
 
-        // DEBUG
-        this.maxSize = 100000000;
+        this.gridModel = this.createGridModel();
 
         this.addReaction({
             track: () => this.files,
@@ -123,31 +172,33 @@ export class FileChooserModel extends HoistModel {
     }
 
     @action
-    onDrop(accepted: File[], rejected: FileRejection[], enableMulti: boolean /* , maxFileSize*/) {
-        if (!isEmpty(accepted)) {
-            if (!enableMulti) {
-                this.setSingleFile(accepted[0]);
-            } else {
-                this.addFiles(accepted);
-            }
+    onDrop(accepted: File[], rejected: FileRejection[]) {
+        if (accepted?.length > 1 && !this.enableMulti) {
+            accepted = [accepted[0]];
         }
-        if (!isEmpty(rejected)) {
-            XH.dangerToast(
-                `Unable to accept ${
-                    rejected.length > 1
-                        ? `${rejected.length} files for upload - each `
-                        : 'file for upload.'
-                }`
-            );
-            runInAction(() => {
-                this.lastRejectedCount = 0;
-            });
-        }
-        this.lastRejectedCount = rejected.length;
+        this.lastAccepted = accepted;
+        this.lastRejected = rejected;
+        this.files.push(...accepted);
     }
 
-    onFilesChange(files) {
+    onFilesChange(files: File[]) {
         const fileData = files.map(file => ({name: file.name, size: file.size}));
         this.gridModel.loadData(fileData);
     }
+
+    //----------------
+    // Implementation
+    //----------------
+    private defaultTargetDisplay = () => {
+        if (isEmpty(this.lastAccepted)) return 'Drop your files here friend...';
+        return `Processed ${this.lastAccepted.length} files.`;
+    };
+
+    private defaultRejectDisplay = () => {
+        if (isEmpty(this.lastRejected)) return null;
+        const errorsList = uniq(
+            this.lastRejected.flatMap(rejection => rejection.errors.map(error => error.message))
+        ).join(', ');
+        return `${this.lastRejected.length} files failed to upload: ${errorsList}`;
+    };
 }
