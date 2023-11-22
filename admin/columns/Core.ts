@@ -41,9 +41,8 @@ export const note: ColumnSpec = {
     tooltip: true
 };
 
-
 export const timestampNoYear: ColumnSpec = {
     field: {name: 'timestamp', type: 'date'},
     ...dateTimeSec,
-    renderer: dateTimeRenderer({fmt: 'MM-DD h:mm:ssa'})
+    renderer: dateTimeRenderer({fmt: 'MMM DD HH:mm:ss'})
 };
