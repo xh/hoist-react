@@ -22,7 +22,6 @@ import {
     startCase
 } from 'lodash';
 import {GridSorter, GridSorterLike} from '../grid/GridSorter';
-
 import type {ColumnApi, GridApi, SortDirection, IRowNode} from '@xh/hoist/kit/ag-grid';
 
 export interface AgGridModelConfig {

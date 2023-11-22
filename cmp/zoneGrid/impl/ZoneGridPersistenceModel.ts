@@ -4,7 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {ColumnState, GridSorterLike} from '@xh/hoist/cmp/grid';
+import {GridSorterLike} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, PersistenceProvider, Some} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
@@ -24,11 +24,9 @@ export class ZoneGridPersistenceModel extends HoistModel {
 
     @observable.ref
     state: {
-        columns?: Partial<ColumnState>[];
         sortBy?: GridSorterLike;
         groupBy?: Some<string>;
         version?: number;
-        autosize?: any;
         mappings?: Record<Zone, Some<string | ZoneMapping>>;
     };
 
