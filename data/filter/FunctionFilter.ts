@@ -26,7 +26,8 @@ export class FunctionFilter extends Filter {
     readonly testFn: FilterTestFn;
 
     /**
-     * Constructor - not typically called by apps - create from config via `parseFilter()` instead.
+     * Constructor - not typically called by apps - create via {@link parseFilter} instead.
+     * @internal
      */
     constructor({key, testFn}: FunctionFilterSpec) {
         super();
