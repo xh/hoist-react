@@ -4,10 +4,11 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {Some} from '@xh/hoist/core';
 import {castArray, isString} from 'lodash';
 
 /**
- * Track a function execution with console.log.
+ * Time and log execution of a function to `console.info()`.
  *
  * This method will log the provided message(s) with timing information in a single message *after*
  * the tracked function returns.
@@ -20,47 +21,64 @@ import {castArray, isString} from 'lodash';
  * @param fn - function to execute
  * @param source - class, function or string to label the source of the message
  */
-export function withInfo<T>(msgs: string[] | string, fn: () => T, source?: any): T {
+export function withInfo<T>(msgs: Some<any>, fn: () => T, source?: any): T {
     return loggedDo(msgs, fn, source, 'info');
 }
 
 /**
- * Track a function execution with console.debug.
+ * Time and log execution of a function to `console.debug()`.
  * @see withInfo
  */
-export function withDebug<T>(msgs: string[] | string, fn: () => T, source?: any): T {
+export function withDebug<T>(msgs: Some<any>, fn: () => T, source?: any): T {
     return loggedDo(msgs, fn, source, 'debug');
 }
 
 /**
- * Log a message with console.log.
- *
+ * Write to `console.log()` with standardized formatting and source info.
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logInfo(msgs: string[] | string, source?: any) {
+export function logInfo(msgs: Some<any>, source?: any) {
     return loggedDo(msgs, null, source, 'info');
 }
 
 /**
- * Log a message with console.debug.
- * @see logInfo
+ * Write to `console.debug()` with standardized formatting and source info.
+ * @param msgs - message(s) to output
+ * @param source - class, function or string to label the source of the message
  */
-export function logDebug(msgs: string[] | string, source?: any) {
+export function logDebug(msgs: Some<any>, source?: any) {
     return loggedDo(msgs, null, source, 'debug');
+}
+
+/**
+ * Write to `console.error()` with standardized formatting and source info.
+ * @param msgs - message(s) to output
+ * @param source - class, function or string to label the source of the message
+ */
+export function logError(msgs: Some<any>, source?: any) {
+    return loggedDo(msgs, null, source, 'error');
+}
+
+/**
+ * Write to `console.warn()` with standardized formatting and source info.
+ * @param msgs - message(s) to output
+ * @param source - class, function or string to label the source of the message
+ */
+export function logWarn(msgs: Some<any>, source?: any) {
+    return loggedDo(msgs, null, source, 'warn');
 }
 
 //----------------------------------
 // Implementation
 //----------------------------------
-function loggedDo(msgs, fn, source, level) {
+function loggedDo(msgs: Some<any>, fn: () => any, source: any, level: LogLevel) {
     source = parseSource(source);
     msgs = castArray(msgs);
-    const msg = msgs.join(' | ');
 
     // Support simple message only.
     if (!fn) {
-        writeLog(msg, source, level);
+        writeLog(msgs, source, level);
         return;
     }
 
@@ -68,12 +86,12 @@ function loggedDo(msgs, fn, source, level) {
     let start, ret;
     const logCompletion = () => {
             const elapsed = Date.now() - start;
-            writeLog(`${msg} | ${elapsed}ms`, source, level);
+            writeLog([...msgs, `${elapsed}ms`], source, level);
         },
         logException = e => {
             const elapsed = Date.now() - start;
             writeLog(
-                `${msg} | failed - ${e.message ?? e.name ?? 'Unknown error'} | ${elapsed}ms`,
+                [...msgs, `failed - ${e.message ?? e.name ?? 'Unknown error'}`, `${elapsed}ms`, e],
                 source,
                 level
             );
@@ -103,7 +121,51 @@ function parseSource(source) {
     return '';
 }
 
-function writeLog(msg, source, level) {
-    if (source) msg = `[${source}] ${msg}`;
-    level === 'info' ? console.log(msg) : console.debug(msg);
+function writeLog(msgs: Some<any>, source, level: LogLevel) {
+    msgs = castArray(msgs);
+    if (source) msgs = [`[${source}]`, ...msgs];
+
+    const logArgs = [];
+    let strMsg;
+
+    msgs.forEach((msg, idx) => {
+        const isLast = idx === msgs.length - 1,
+            next = msgs[idx + 1];
+
+        if (!isString(msg)) {
+            // Log non-strings as they are.
+            logArgs.push(msg);
+        } else {
+            // Concat consecutive strings to a single string.
+            if (strMsg) {
+                strMsg += ' | ' + msg;
+            } else {
+                strMsg = msg;
+            }
+
+            // Flush to args if next is not a string.
+            // Insert trailing | if another arg will follow - more readable that way on console.
+            if (!isString(next)) {
+                if (!isLast) strMsg += ' |';
+                logArgs.push(strMsg);
+                strMsg = null;
+            }
+        }
+    });
+
+    switch (level) {
+        case 'error':
+            console.error(...logArgs);
+            break;
+        case 'warn':
+            console.warn(...logArgs);
+            break;
+        case 'debug':
+            console.debug(...logArgs);
+            break;
+        default:
+            console.log(...logArgs);
+    }
 }
+
+type LogLevel = 'error' | 'warn' | 'info' | 'debug';

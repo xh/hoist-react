@@ -6,6 +6,7 @@
  */
 
 import {HoistService} from '@xh/hoist/core';
+import {logDebug, logWarn} from '@xh/hoist/utils/js';
 import {isFinite, map, sum, compact, sortBy, isEmpty} from 'lodash';
 import {runInAction} from '@xh/hoist/mobx';
 import {GridModel, GridAutosizeOptions} from '@xh/hoist/cmp/grid';
@@ -60,24 +61,21 @@ export class GridAutosizeService extends HoistService {
             );
 
         if (!requiredWidths) {
-            console.debug('Autosize aborted, grid data is obsolete.');
+            logDebug('Autosize aborted, grid data is obsolete.', this);
             return;
         }
 
         runInAction(() => {
             // 4) Set columns to their required widths.
             gridModel.applyColumnStateChanges(requiredWidths);
-            console.debug(
-                `Column widths autosized via GridAutosizeService (${records.length} records)`,
-                requiredWidths
-            );
+            logDebug([`Auto-sized columns`, `${records.length} records`, requiredWidths], this);
 
             // 5) Grow columns to fill any remaining space, if enabled.
             const {fillMode} = options;
             if (fillMode && fillMode !== 'none') {
                 const fillWidths = this.calcFillWidths(gridModel, colIds, fillMode);
                 gridModel.applyColumnStateChanges(fillWidths);
-                console.debug('Column widths filled via GridAutosizeService', fillWidths);
+                logDebug(['Auto-sized columns using fillMode', fillWidths], this);
             }
         });
     }
@@ -170,7 +168,7 @@ export class GridAutosizeService extends HoistService {
             available = agApi?.gridPanel?.eBodyViewport?.clientWidth;
 
         if (!agApi || !isFinite(available)) {
-            console.warn('Grid not rendered - unable to fill columns.');
+            logWarn('Grid not rendered - unable to fill columns.', this);
             return [];
         }
 
