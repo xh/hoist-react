@@ -5,7 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {Some} from '@xh/hoist/core';
-import {castArray, isString} from 'lodash';
+import {castArray, isString, last} from 'lodash';
 
 /**
  * Time and log execution of a function to `console.info()`.
@@ -72,13 +72,13 @@ export function logWarn(msgs: Some<unknown>, source?: any) {
 //----------------------------------
 // Implementation
 //----------------------------------
-function loggedDo(msgs: Some<any>, fn: () => any, source: any, level: LogLevel) {
-    source = parseSource(source);
-    msgs = castArray(msgs);
+function loggedDo(messages: Some<unknown>, fn: () => any, source: any, level: LogLevel) {
+    let src = parseSource(source);
+    let msgs = castArray(messages);
 
     // Support simple message only.
     if (!fn) {
-        writeLog(msgs, source, level);
+        writeLog(msgs, src, level);
         return;
     }
 
@@ -86,13 +86,13 @@ function loggedDo(msgs: Some<any>, fn: () => any, source: any, level: LogLevel) 
     let start, ret;
     const logCompletion = () => {
             const elapsed = Date.now() - start;
-            writeLog([...msgs, `${elapsed}ms`], source, level);
+            writeLog([...msgs, `${elapsed}ms`], src, level);
         },
         logException = e => {
             const elapsed = Date.now() - start;
             writeLog(
                 [...msgs, `failed - ${e.message ?? e.name ?? 'Unknown error'}`, `${elapsed}ms`, e],
-                source,
+                src,
                 level
             );
         };
@@ -114,41 +114,29 @@ function loggedDo(msgs: Some<any>, fn: () => any, source: any, level: LogLevel) 
     return ret;
 }
 
-function parseSource(source) {
+function parseSource(source: any): string {
     if (isString(source)) return source;
     if (source?.displayName) return source.displayName;
     if (source?.constructor) return source.constructor.name;
     return '';
 }
 
-function writeLog(msgs: Array<any>, source, level: LogLevel) {
-    if (source) msgs = [`[${source}]`, ...msgs];
+function writeLog(msgs: unknown[], src: string, level: LogLevel) {
+    if (src) msgs = [`[${src}]`, ...msgs];
 
     const logArgs = [];
-    let strMsg;
+    msgs.forEach(curr => {
+        const prev = last(logArgs),
+            prevIsString = isString(prev),
+            currIsString = isString(curr);
 
-    msgs.forEach((msg, idx) => {
-        const isLast = idx === msgs.length - 1,
-            next = msgs[idx + 1];
-
-        if (!isString(msg)) {
-            // Log non-strings as they are.
-            logArgs.push(msg);
+        if (prevIsString && currIsString) {
+            // Concatenate adjacent strings
+            logArgs[logArgs.length - 1] = prev + ' | ' + curr;
         } else {
-            // Concat consecutive strings to a single string.
-            if (strMsg) {
-                strMsg += ' | ' + msg;
-            } else {
-                strMsg = msg;
-            }
-
-            // Flush to args if next is not a string.
-            // Insert trailing | if another arg will follow - more readable that way on console.
-            if (!isString(next)) {
-                if (!isLast) strMsg += ' |';
-                logArgs.push(strMsg);
-                strMsg = null;
-            }
+            // ...and insert delimiter after string and before object
+            if (prevIsString && !currIsString) logArgs.push(' |');
+            logArgs.push(curr);
         }
     });
 
@@ -162,8 +150,9 @@ function writeLog(msgs: Array<any>, source, level: LogLevel) {
         case 'debug':
             console.debug(...logArgs);
             break;
-        default:
+        case 'info':
             console.log(...logArgs);
+            break;
     }
 }
 
