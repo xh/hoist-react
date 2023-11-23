@@ -5,7 +5,10 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {Some} from '@xh/hoist/core';
-import {castArray, isString, last} from 'lodash';
+import {castArray, isString} from 'lodash';
+import {intersperse} from './LangUtils';
+
+export type LogSource = string | {displayName: string} | {constructor: {name: string}};
 
 /**
  * Time and log execution of a function to `console.info()`.
@@ -21,7 +24,7 @@ import {castArray, isString, last} from 'lodash';
  * @param fn - function to execute
  * @param source - class, function or string to label the source of the message
  */
-export function withInfo<T>(msgs: Some<unknown>, fn: () => T, source?: any): T {
+export function withInfo<T>(msgs: Some<unknown>, fn: () => T, source?: LogSource): T {
     return loggedDo(msgs, fn, source, 'info');
 }
 
@@ -29,7 +32,7 @@ export function withInfo<T>(msgs: Some<unknown>, fn: () => T, source?: any): T {
  * Time and log execution of a function to `console.debug()`.
  * @see withInfo
  */
-export function withDebug<T>(msgs: Some<unknown>, fn: () => T, source?: any): T {
+export function withDebug<T>(msgs: Some<unknown>, fn: () => T, source?: LogSource): T {
     return loggedDo(msgs, fn, source, 'debug');
 }
 
@@ -38,7 +41,7 @@ export function withDebug<T>(msgs: Some<unknown>, fn: () => T, source?: any): T 
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logInfo(msgs: Some<unknown>, source?: any) {
+export function logInfo(msgs: Some<unknown>, source?: LogSource) {
     return loggedDo(msgs, null, source, 'info');
 }
 
@@ -47,7 +50,7 @@ export function logInfo(msgs: Some<unknown>, source?: any) {
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logDebug(msgs: Some<unknown>, source?: any) {
+export function logDebug(msgs: Some<unknown>, source?: LogSource) {
     return loggedDo(msgs, null, source, 'debug');
 }
 
@@ -56,7 +59,7 @@ export function logDebug(msgs: Some<unknown>, source?: any) {
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logError(msgs: Some<unknown>, source?: any) {
+export function logError(msgs: Some<unknown>, source?: LogSource) {
     return loggedDo(msgs, null, source, 'error');
 }
 
@@ -65,14 +68,14 @@ export function logError(msgs: Some<unknown>, source?: any) {
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logWarn(msgs: Some<unknown>, source?: any) {
+export function logWarn(msgs: Some<unknown>, source?: LogSource) {
     return loggedDo(msgs, null, source, 'warn');
 }
 
 //----------------------------------
 // Implementation
 //----------------------------------
-function loggedDo(messages: Some<unknown>, fn: () => any, source: any, level: LogLevel) {
+function loggedDo<T>(messages: Some<unknown>, fn: () => T, source: LogSource, level: LogLevel) {
     let src = parseSource(source);
     let msgs = castArray(messages);
 
@@ -83,7 +86,7 @@ function loggedDo(messages: Some<unknown>, fn: () => any, source: any, level: Lo
     }
 
     // Otherwise, wrap the call to the provided fn.
-    let start, ret;
+    let start: number, ret: T;
     const logCompletion = () => {
             const elapsed = Date.now() - start;
             writeLog([...msgs, `${elapsed}ms`], src, level);
@@ -114,44 +117,30 @@ function loggedDo(messages: Some<unknown>, fn: () => any, source: any, level: Lo
     return ret;
 }
 
-function parseSource(source: any): string {
+function parseSource(source: LogSource): string {
     if (isString(source)) return source;
-    if (source?.displayName) return source.displayName;
+    if (source['displayName']) return source['displayName'];
     if (source?.constructor) return source.constructor.name;
-    return '';
+    return null;
 }
 
 function writeLog(msgs: unknown[], src: string, level: LogLevel) {
     if (src) msgs = [`[${src}]`, ...msgs];
 
-    const logArgs = [];
-    msgs.forEach(curr => {
-        const prev = last(logArgs),
-            prevIsString = isString(prev),
-            currIsString = isString(curr);
-
-        if (prevIsString && currIsString) {
-            // Concatenate adjacent strings
-            logArgs[logArgs.length - 1] = prev + ' | ' + curr;
-        } else {
-            // ...and insert delimiter after string and before object
-            if (prevIsString && !currIsString) logArgs.push(' |');
-            logArgs.push(curr);
-        }
-    });
+    msgs = intersperse(msgs, '|');
 
     switch (level) {
         case 'error':
-            console.error(...logArgs);
+            console.error(...msgs);
             break;
         case 'warn':
-            console.warn(...logArgs);
+            console.warn(...msgs);
             break;
         case 'debug':
-            console.debug(...logArgs);
+            console.debug(...msgs);
             break;
         case 'info':
-            console.log(...logArgs);
+            console.log(...msgs);
             break;
     }
 }

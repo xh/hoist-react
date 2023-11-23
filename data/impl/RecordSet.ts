@@ -6,7 +6,7 @@
  */
 
 import equal from 'fast-deep-equal';
-import {throwIf, logDebug} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import {maxBy, isNil} from 'lodash';
 import {StoreRecord, StoreRecordId} from '../StoreRecord';
 import {Store} from '../Store';
@@ -196,7 +196,7 @@ export class RecordSet {
             remove.forEach(id => {
                 if (!newRecords.has(id)) {
                     missingRemoves++;
-                    logDebug(`Attempted to remove non-existent record: ${id}`, this.store);
+                    this.store.logDebug(`Attempted to remove non-existent record: ${id}`);
                     return;
                 }
                 this.gatherDescendantIds(id, allRemoves);
@@ -211,7 +211,7 @@ export class RecordSet {
                     existing = newRecords.get(id);
                 if (!existing) {
                     missingUpdates++;
-                    logDebug(`Attempted to update non-existent record: ${id}`, this.store);
+                    this.store.logDebug(`Attempted to update non-existent record: ${id}`);
                     return;
                 }
                 newRecords.set(id, rec);

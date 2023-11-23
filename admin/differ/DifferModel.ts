@@ -12,7 +12,7 @@ import {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {logWarn, pluralize} from '@xh/hoist/utils/js';
+import {pluralize} from '@xh/hoist/utils/js';
 import {cloneDeep, isEqual, isNil, isString, omit, remove, trimEnd} from 'lodash';
 import {hspacer} from '../../cmp/layout';
 import {DifferDetailModel} from './DifferDetailModel';
@@ -376,7 +376,7 @@ export class DifferModel extends HoistModel {
             content = await window.navigator.clipboard.readText();
             content = JSON.parse(content);
         } catch (e) {
-            logWarn(['Error reading config from clipboard', e], this);
+            this.logWarn('Error reading config from clipboard', e);
         }
 
         this.clipboardContent = content;

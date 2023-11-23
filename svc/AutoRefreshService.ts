@@ -7,7 +7,7 @@
 import {HoistService, managed, XH} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
-import {logDebug, withDefault} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 
 /**
  * Service to triggers an app-wide auto-refresh (if enabled, on a configurable interval) via the
@@ -69,7 +69,7 @@ export class AutoRefreshService extends HoistService {
             pendingLoad = lastRequested && lastRequested > lastCompleted;
 
         if (!pendingLoad && olderThan(last, this.interval * SECONDS)) {
-            logDebug('Triggering application auto-refresh.', this);
+            this.logDebug('Triggering application auto-refresh.');
             await ctx.autoRefreshAsync();
         }
     }

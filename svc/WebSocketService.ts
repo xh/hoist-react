@@ -9,7 +9,7 @@ import {Icon} from '@xh/hoist/icon';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {logDebug, logError, logInfo, logWarn, throwIf} from '@xh/hoist/utils/js';
+import {logError, throwIf} from '@xh/hoist/utils/js';
 import {find, pull} from 'lodash';
 
 /**
@@ -72,9 +72,8 @@ export class WebSocketService extends HoistService {
     override async initAsync() {
         if (!this.enabled) return;
         if (XH.environmentService.get('webSocketsEnabled') === false) {
-            logError(
-                `WebSockets enabled on this client app but disabled on server. Adjust your server-side config.`,
-                this
+            this.logError(
+                `WebSockets enabled on this client app but disabled on server. Adjust your server-side config.`
             );
             this.enabled = false;
             return;
@@ -151,7 +150,7 @@ export class WebSocketService extends HoistService {
             };
             this._socket = s;
         } catch (e) {
-            logError(['Failure creating WebSocket', e], this);
+            this.logError('Failure creating WebSocket', e);
         }
 
         this.updateConnectedStatus();
@@ -170,7 +169,7 @@ export class WebSocketService extends HoistService {
         if (this.connected) {
             this.sendMessage({topic: this.HEARTBEAT_TOPIC, data: 'ping'});
         } else {
-            logWarn('Heartbeat found websocket not connected - attempting to reconnect...', this);
+            this.logWarn('Heartbeat found websocket not connected - attempting to reconnect...');
             this.disconnect();
             this.connect();
         }
@@ -185,17 +184,17 @@ export class WebSocketService extends HoistService {
     // Socket events impl
     //------------------------
     onOpen(ev) {
-        logDebug(['WebSocket connection opened', ev], this);
+        this.logDebug('WebSocket connection opened', ev);
         this.updateConnectedStatus();
     }
 
     onClose(ev) {
-        logDebug(['WebSocket connection closed', ev], this);
+        this.logDebug('WebSocket connection closed', ev);
         this.updateConnectedStatus();
     }
 
     onError(ev) {
-        logError(['WebSocket connection error', ev], this);
+        this.logError('WebSocket connection error', ev);
         this.updateConnectedStatus();
     }
 
@@ -221,7 +220,7 @@ export class WebSocketService extends HoistService {
 
             this.notifySubscribers(msg);
         } catch (e) {
-            logError(['Error decoding websocket message', rawMsg, e], this);
+            this.logError('Error decoding websocket message', rawMsg, e);
         }
         this.updateConnectedStatus();
     }
@@ -287,7 +286,7 @@ export class WebSocketService extends HoistService {
     }
 
     maybeLogMessage(...args) {
-        if (this.logMessages) logInfo(args, this);
+        if (this.logMessages) this.logDebug(args);
     }
 }
 

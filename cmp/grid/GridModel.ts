@@ -56,14 +56,7 @@ import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {
-    deepFreeze,
-    logWithDebug,
-    throwIf,
-    warnIf,
-    withDebug,
-    withDefault
-} from '@xh/hoist/utils/js';
+import {deepFreeze, logWithDebug, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -1438,7 +1431,7 @@ export class GridModel extends HoistModel {
         try {
             await when(() => this.isReady, {timeout});
         } catch (ignored) {
-            withDebug(`Grid failed to enter ready state after waiting ${timeout}ms`, null, this);
+            this.logDebug(`Grid failed to enter ready state after waiting ${timeout}ms`);
         }
         await wait();
 

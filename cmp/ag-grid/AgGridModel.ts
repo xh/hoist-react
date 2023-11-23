@@ -7,7 +7,7 @@
 import {HoistModel, PlainObject, SizingMode, Some} from '@xh/hoist/core';
 import type {ColumnApi, GridApi, IRowNode, SortDirection} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {logDebug, logWarn, throwIf} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import {
     castArray,
     cloneDeep,
@@ -176,7 +176,7 @@ export class AgGridModel extends HoistModel {
                 try {
                     return this[`get${startCase(type)}State`]();
                 } catch (err) {
-                    logWarn([`Encountered errors retrieving ${type} state`, err], this);
+                    this.logWarn(`Encountered errors retrieving ${type} state`, err);
                     errors[type] = err.toString();
                 }
             };
@@ -357,12 +357,9 @@ export class AgGridModel extends HoistModel {
                     col.setSort(state.sort);
                     col.setSortIndex(state.sortIndex);
                 } else {
-                    logWarn(
-                        [
-                            'Could not find a secondary column to associate with the pivot column path',
-                            state.colId
-                        ],
-                        this
+                    this.logWarn(
+                        'Could not find a secondary column to associate with the pivot column path',
+                        state.colId
                     );
                 }
             });
@@ -607,7 +604,7 @@ export class AgGridModel extends HoistModel {
     //------------------------
     @action
     handleGridReady({api, columnApi}) {
-        logDebug([`Initializing`, this.xhId], this);
+        this.logDebug(`Initializing`, this.xhId);
         throwIf(
             this.agApi && this.agApi != api,
             'Attempted to mount a grid on a GridModel that is already in use. ' +
@@ -619,7 +616,7 @@ export class AgGridModel extends HoistModel {
 
     @action
     handleGridUnmount() {
-        logDebug([`Un-initializing`, this.xhId], this);
+        this.logDebug(`Un-initializing`, this.xhId);
         this.agApi = null;
         this.agColumnApi = null;
     }
