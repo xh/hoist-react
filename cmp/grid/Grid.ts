@@ -41,7 +41,7 @@ import type {
 } from '@xh/hoist/kit/ag-grid';
 import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {consumeEvent, isDisplayed, logDebug, logWithDebug} from '@xh/hoist/utils/js';
+import {consumeEvent, isDisplayed, logWithDebug} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {debounce, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
@@ -634,7 +634,7 @@ export class GridLocalModel extends HoistModel {
         let transaction = null;
         if (prevCount !== 0) {
             transaction = this.genTransaction(newRs, prevRs);
-            logDebug(this.transactionLogStr(transaction), this);
+            this.logDebug(this.transactionLogStr(transaction));
 
             if (!this.transactionIsEmpty(transaction)) {
                 agApi.applyTransaction(transaction);

@@ -4,10 +4,14 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {Some} from '@xh/hoist/core';
 import {castArray, isString} from 'lodash';
+import {intersperse} from './LangUtils';
+
+export type LogSource = string | {displayName: string} | {constructor: {name: string}};
 
 /**
- * Track a function execution with console.log.
+ * Time and log execution of a function to `console.info()`.
  *
  * This method will log the provided message(s) with timing information in a single message *after*
  * the tracked function returns.
@@ -20,61 +24,78 @@ import {castArray, isString} from 'lodash';
  * @param fn - function to execute
  * @param source - class, function or string to label the source of the message
  */
-export function withInfo<T>(msgs: string[] | string, fn: () => T, source?: any): T {
+export function withInfo<T>(msgs: Some<unknown>, fn: () => T, source?: LogSource): T {
     return loggedDo(msgs, fn, source, 'info');
 }
 
 /**
- * Track a function execution with console.debug.
+ * Time and log execution of a function to `console.debug()`.
  * @see withInfo
  */
-export function withDebug<T>(msgs: string[] | string, fn: () => T, source?: any): T {
+export function withDebug<T>(msgs: Some<unknown>, fn: () => T, source?: LogSource): T {
     return loggedDo(msgs, fn, source, 'debug');
 }
 
 /**
- * Log a message with console.log.
- *
+ * Write to `console.log()` with standardized formatting and source info.
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logInfo(msgs: string[] | string, source?: any) {
+export function logInfo(msgs: Some<unknown>, source?: LogSource) {
     return loggedDo(msgs, null, source, 'info');
 }
 
 /**
- * Log a message with console.debug.
- * @see logInfo
+ * Write to `console.debug()` with standardized formatting and source info.
+ * @param msgs - message(s) to output
+ * @param source - class, function or string to label the source of the message
  */
-export function logDebug(msgs: string[] | string, source?: any) {
+export function logDebug(msgs: Some<unknown>, source?: LogSource) {
     return loggedDo(msgs, null, source, 'debug');
+}
+
+/**
+ * Write to `console.error()` with standardized formatting and source info.
+ * @param msgs - message(s) to output
+ * @param source - class, function or string to label the source of the message
+ */
+export function logError(msgs: Some<unknown>, source?: LogSource) {
+    return loggedDo(msgs, null, source, 'error');
+}
+
+/**
+ * Write to `console.warn()` with standardized formatting and source info.
+ * @param msgs - message(s) to output
+ * @param source - class, function or string to label the source of the message
+ */
+export function logWarn(msgs: Some<unknown>, source?: LogSource) {
+    return loggedDo(msgs, null, source, 'warn');
 }
 
 //----------------------------------
 // Implementation
 //----------------------------------
-function loggedDo(msgs, fn, source, level) {
-    source = parseSource(source);
-    msgs = castArray(msgs);
-    const msg = msgs.join(' | ');
+function loggedDo<T>(messages: Some<unknown>, fn: () => T, source: LogSource, level: LogLevel) {
+    let src = parseSource(source);
+    let msgs = castArray(messages);
 
     // Support simple message only.
     if (!fn) {
-        writeLog(msg, source, level);
+        writeLog(msgs, src, level);
         return;
     }
 
     // Otherwise, wrap the call to the provided fn.
-    let start, ret;
+    let start: number, ret: T;
     const logCompletion = () => {
             const elapsed = Date.now() - start;
-            writeLog(`${msg} | ${elapsed}ms`, source, level);
+            writeLog([...msgs, `${elapsed}ms`], src, level);
         },
         logException = e => {
             const elapsed = Date.now() - start;
             writeLog(
-                `${msg} | failed - ${e.message ?? e.name ?? 'Unknown error'} | ${elapsed}ms`,
-                source,
+                [...msgs, `failed - ${e.message ?? e.name ?? 'Unknown error'}`, `${elapsed}ms`, e],
+                src,
                 level
             );
         };
@@ -96,14 +117,32 @@ function loggedDo(msgs, fn, source, level) {
     return ret;
 }
 
-function parseSource(source) {
+function parseSource(source: LogSource): string {
     if (isString(source)) return source;
-    if (source?.displayName) return source.displayName;
+    if (source['displayName']) return source['displayName'];
     if (source?.constructor) return source.constructor.name;
-    return '';
+    return null;
 }
 
-function writeLog(msg, source, level) {
-    if (source) msg = `[${source}] ${msg}`;
-    level === 'info' ? console.log(msg) : console.debug(msg);
+function writeLog(msgs: unknown[], src: string, level: LogLevel) {
+    if (src) msgs = [`[${src}]`, ...msgs];
+
+    msgs = intersperse(msgs, '|');
+
+    switch (level) {
+        case 'error':
+            console.error(...msgs);
+            break;
+        case 'warn':
+            console.warn(...msgs);
+            break;
+        case 'debug':
+            console.debug(...msgs);
+            break;
+        case 'info':
+            console.log(...msgs);
+            break;
+    }
 }
+
+type LogLevel = 'error' | 'warn' | 'info' | 'debug';

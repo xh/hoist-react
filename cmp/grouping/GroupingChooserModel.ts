@@ -170,7 +170,7 @@ export class GroupingChooserModel extends HoistModel {
                     run: state => this.provider.write(state)
                 });
             } catch (e) {
-                console.error(e);
+                this.logError(e);
                 XH.safeDestroy(this.provider);
                 this.provider = null;
             }
@@ -190,7 +190,7 @@ export class GroupingChooserModel extends HoistModel {
     @action
     setValue(value: string[]) {
         if (!this.validateValue(value)) {
-            console.warn('Attempted to set GroupingChooser to invalid value: ', value);
+            this.logWarn('Attempted to set invalid value', value);
             return;
         }
         this.value = value;

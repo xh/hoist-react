@@ -18,6 +18,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {AgGridReact, GridOptions} from '@xh/hoist/kit/ag-grid';
+import {logError} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isNil} from 'lodash';
@@ -60,9 +61,9 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
 
     render({model, className, testId, ...props}, ref) {
         if (!AgGridReact) {
-            console.error(
-                'ag-Grid has not been imported in to this application. Please import and ' +
-                    'register modules in Bootstrap.js. See the XH Toolbox app for an example.'
+            logError(
+                'AG Grid not imported/licensed by this app - import and register modules in Bootstrap.ts. See the XH Toolbox app for an example.',
+                AgGrid
             );
             return placeholder('ag-Grid library not available.');
         }

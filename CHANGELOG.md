@@ -2,11 +2,18 @@
 
 ## 60.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+
+* Enhanced `LogUtils` to support logging objects (and any other non-string values). Also
+  added new exports for `logWarn()` and `logError()` with the same standardized formatting.
+* Added standardized `LogUtils` methods to `HoistBase`, for use within Hoist models and services.
+
 ## 59.3.2 - 2023-11-21
 
 ### 🐞 Bug Fixes
 
-* `ZoneGrid` will more gracefully handle state that has become out of sync with its mapper requirements.
+* `ZoneGrid` will more gracefully handle state that has become out of sync with its mapper
+  requirements.
 
 ## 59.3.1 - 2023-11-10
 
@@ -57,9 +64,9 @@
 * Improved core `HoistComponent` performance by preventing unnecessary re-renderings triggered by
   spurious model lookup changes.
 * New flag `GridModel.experimental.enableFullWidthScroll` enables scrollbars to span pinned columns.
-  * Early test release behind the flag, expected to made the default behavior in next release.
+    * Early test release behind the flag, expected to made the default behavior in next release.
 * Renamed `XH.getActiveModels()` to `XH.getModels()` for clarity / consistency.
-  * API change, but not expected to impact applications.
+    * API change, but not expected to impact applications.
 * Added `XH.getModel()` convenience method to return the first matching model.
 
 ## 59.2.0 - 2023-10-16
