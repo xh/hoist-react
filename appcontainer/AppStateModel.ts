@@ -87,6 +87,7 @@ export class AppStateModel extends HoistModel {
                                 appVersion: XH.appVersion,
                                 appBuild: XH.appBuild,
                                 locationHref: window.location.href,
+                                wasDiscarded: window.document['wasDiscarded'],
                                 ...getClientDeviceInfo()
                             },
                             logData: ['appVersion', 'appBuild'],
