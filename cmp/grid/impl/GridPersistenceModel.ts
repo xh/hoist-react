@@ -58,7 +58,7 @@ export class GridPersistenceModel extends HoistModel {
                 run: state => this.provider.write(state)
             });
         } catch (e) {
-            console.error(e);
+            this.logError(e);
             this.state = {version: this.VERSION};
         }
 

@@ -6,7 +6,7 @@
  */
 
 import equal from 'fast-deep-equal';
-import {throwIf} from '@xh/hoist/utils/js';
+import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {maxBy, isNil} from 'lodash';
 import {StoreRecord, StoreRecordId} from '../StoreRecord';
 import {Store} from '../Store';
@@ -230,9 +230,9 @@ export class RecordSet {
         }
 
         if (missingRemoves > 0)
-            console.warn(`Failed to remove ${missingRemoves} records not found by id`);
+            logWarn(`Failed to remove ${missingRemoves} records not found by id`, this);
         if (missingUpdates > 0)
-            console.warn(`Failed to update ${missingUpdates} records not found by id`);
+            logWarn(`Failed to update ${missingUpdates} records not found by id`, this);
 
         return new RecordSet(this.store, newRecords);
     }
