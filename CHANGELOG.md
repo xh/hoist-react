@@ -2,6 +2,11 @@
 
 ## 60.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* The constructors for `ColumnGroup` no long accept arbitrary rest (e.g `...rest`)
+arguments for applying app-specific data to the object. Instead, use the new `appData` property.
+
 ### ⚙️ Technical
 
 * Enhanced `LogUtils` to support logging objects (and any other non-string values). Also
