@@ -4,16 +4,16 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HAlign, PlainObject, Some, Thunkable} from '@xh/hoist/core';
+import {HAlign, PlainObject, Some, Thunkable, XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
+
+import type {ColGroupDef} from '@xh/hoist/kit/ag-grid';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {clone, isEmpty, isFunction, isString} from 'lodash';
+import {clone, isEmpty, isFunction, isString, keysIn} from 'lodash';
 import {ReactNode} from 'react';
 import {GridModel} from '../GridModel';
 import {ColumnHeaderClassFn, ColumnHeaderNameFn} from '../Types';
 import {Column, ColumnSpec, getAgHeaderClassFn} from './Column';
-
-import type {ColGroupDef} from '@xh/hoist/kit/ag-grid';
 
 export interface ColumnGroupSpec {
     /** Column or ColumnGroup configs for children of this group.*/
@@ -39,6 +39,8 @@ export interface ColumnGroupSpec {
 
     /** True to skip this column when adding to grid. */
     omit?: Thunkable<boolean>;
+
+    appData?: PlainObject;
 }
 
 /**
@@ -62,6 +64,8 @@ export class ColumnGroup {
      */
     agOptions?: PlainObject;
 
+    appData: PlainObject;
+
     /**
      * Not for application use. ColumnGroups are created internally by Hoist.
      *
@@ -83,6 +87,7 @@ export class ColumnGroup {
             headerAlign,
             agOptions,
             borders,
+            appData,
             ...rest
         } = config;
 
@@ -92,8 +97,6 @@ export class ColumnGroup {
             'Must specify groupId or a string headerName for a ColumnGroup'
         );
 
-        Object.assign(this, rest);
-
         this.groupId = withDefault(groupId, headerName) as string;
         this.headerName = withDefault(headerName, genDisplayName(this.groupId));
         this.headerClass = headerClass;
@@ -102,6 +105,14 @@ export class ColumnGroup {
         this.children = children;
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
+        this.appData = appData ? clone(appData) : {};
+
+        if (!isEmpty(rest)) {
+            const keys = keysIn(rest);
+            throw XH.exception(
+                `Column group '${this.groupId}' configured with unsupported key(s) '${keys}'. Custom config data must be nested within the 'appData' property.`
+            );
+        }
     }
 
     getAgSpec(): ColGroupDef {
