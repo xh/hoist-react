@@ -6,10 +6,10 @@
  */
 import {HoistService, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {logError, throwIf} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import {find, pull} from 'lodash';
 
 /**
@@ -235,7 +235,7 @@ export class WebSocketService extends HoistService {
             try {
                 sub.fn(message);
             } catch (e) {
-                logError([`Failure in subscription handler for topic ${message.topic}`, e], this);
+                this.logError(`Handler for topic ${message.topic} threw`, e);
             }
         });
     }
