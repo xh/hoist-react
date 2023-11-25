@@ -7,6 +7,7 @@
 * Enhanced `LogUtils` to support logging objects (and any other non-string values). Also
   added new exports for `logWarn()` and `logError()` with the same standardized formatting.
 * Added standardized `LogUtils` methods to `HoistBase`, for use within Hoist models and services.
+* Added `xh-bg-intent-` CSS classes, for intent-coloring the `background-color` of objects.
 
 ## 59.3.2 - 2023-11-21
 
