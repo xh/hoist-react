@@ -6,18 +6,16 @@
  */
 
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {div, hbox, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {actionCol} from '@xh/hoist/desktop/cmp/grid';
-import {div, p} from '@xh/hoist/cmp/layout';
-import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable, observable, action} from '@xh/hoist/mobx';
-import {pluralize} from '@xh/hoist/utils/js';
-import {hbox} from '@xh/hoist/cmp/layout';
-import {cloneDeep, isEqual, isString, isNil, omit, remove, trimEnd} from 'lodash';
-import {hspacer} from '../../cmp/layout';
-
-import {DifferDetailModel} from './DifferDetailModel';
 import {RecordActionSpec} from '@xh/hoist/data';
+import {actionCol} from '@xh/hoist/desktop/cmp/grid';
+import {Icon} from '@xh/hoist/icon';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {pluralize} from '@xh/hoist/utils/js';
+import {cloneDeep, isEqual, isNil, isString, omit, remove, trimEnd} from 'lodash';
+import {hspacer} from '../../cmp/layout';
+import {DifferDetailModel} from './DifferDetailModel';
 
 /**
  * @internal
@@ -378,7 +376,7 @@ export class DifferModel extends HoistModel {
             content = await window.navigator.clipboard.readText();
             content = JSON.parse(content);
         } catch (e) {
-            console.warn('Error reading config from clipboard', e);
+            this.logWarn('Error reading config from clipboard', e);
         }
 
         this.clipboardContent = content;

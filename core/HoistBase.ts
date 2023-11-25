@@ -4,8 +4,17 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {XH, PersistenceProvider, PersistOptions, DebounceSpec} from './';
-import {throwIf, getOrCreate} from '@xh/hoist/utils/js';
+import {XH, PersistenceProvider, PersistOptions, DebounceSpec, Some} from './';
+import {
+    throwIf,
+    getOrCreate,
+    logInfo,
+    logDebug,
+    logError,
+    logWarn,
+    withDebug,
+    withInfo
+} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
     debounce as lodashDebounce,
@@ -68,6 +77,33 @@ export abstract class HoistBase {
 
     /** Default persistence options for this object. */
     persistWith: PersistOptions = null;
+
+    //--------------------------------------------------
+    // Logging Delegates
+    //--------------------------------------------------
+    logInfo(...messages: unknown[]) {
+        logInfo(messages, this);
+    }
+
+    logWarn(...messages: unknown[]) {
+        logWarn(messages, this);
+    }
+
+    logError(...messages: unknown[]) {
+        logError(messages, this);
+    }
+
+    logDebug(...messages: unknown[]) {
+        logDebug(messages, this);
+    }
+
+    withInfo<T>(messages: Some<unknown>, fn: () => T): T {
+        return withInfo<T>(messages, fn, this);
+    }
+
+    withDebug<T>(messages: Some<unknown>, fn: () => T): T {
+        return withDebug<T>(messages, fn, this);
+    }
 
     /**
      * Add and start one or more managed reactions.

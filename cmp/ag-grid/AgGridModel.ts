@@ -5,6 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistModel, PlainObject, SizingMode, Some} from '@xh/hoist/core';
+import type {ColumnApi, GridApi, IRowNode, SortDirection} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
@@ -22,7 +23,6 @@ import {
     startCase
 } from 'lodash';
 import {GridSorter, GridSorterLike} from '../grid/GridSorter';
-import type {ColumnApi, GridApi, SortDirection, IRowNode} from '@xh/hoist/kit/ag-grid';
 
 export interface AgGridModelConfig {
     sizingMode?: SizingMode;
@@ -176,7 +176,7 @@ export class AgGridModel extends HoistModel {
                 try {
                     return this[`get${startCase(type)}State`]();
                 } catch (err) {
-                    console.warn(`Encountered errors retrieving ${type} state:`, err);
+                    this.logWarn(`Encountered errors retrieving ${type} state`, err);
                     errors[type] = err.toString();
                 }
             };
@@ -357,7 +357,7 @@ export class AgGridModel extends HoistModel {
                     col.setSort(state.sort);
                     col.setSortIndex(state.sortIndex);
                 } else {
-                    console.warn(
+                    this.logWarn(
                         'Could not find a secondary column to associate with the pivot column path',
                         state.colId
                     );
@@ -604,7 +604,7 @@ export class AgGridModel extends HoistModel {
     //------------------------
     @action
     handleGridReady({api, columnApi}) {
-        console.debug(`AgGridModel ${this.xhId} initializing`);
+        this.logDebug(`Initializing`, this.xhId);
         throwIf(
             this.agApi && this.agApi != api,
             'Attempted to mount a grid on a GridModel that is already in use. ' +
@@ -616,7 +616,7 @@ export class AgGridModel extends HoistModel {
 
     @action
     handleGridUnmount() {
-        console.debug(`AgGridModel ${this.xhId} un-initializing`);
+        this.logDebug(`Un-initializing`, this.xhId);
         this.agApi = null;
         this.agColumnApi = null;
     }

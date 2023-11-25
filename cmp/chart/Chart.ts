@@ -22,6 +22,7 @@ import {useContextMenu} from '@xh/hoist/dynamics/desktop';
 import {Icon} from '@xh/hoist/icon';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {runInAction} from '@xh/hoist/mobx';
+import {logError} from '@xh/hoist/utils/js';
 import {
     createObservableRef,
     getLayoutProps,
@@ -61,9 +62,9 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
 
     render({model, className, aspectRatio, testId, ...props}, ref) {
         if (!Highcharts) {
-            console.error(
-                'Highcharts has not been imported in to this application. Please import and ' +
-                    'register in Bootstrap.js. See the XH Toolbox app for an example.'
+            logError(
+                'Highcharts not imported by this app - import and register modules in Bootstrap.ts. See the XH Toolbox app for an example.',
+                Chart
             );
             return placeholder('Highcharts library not available.');
         }

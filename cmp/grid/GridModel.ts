@@ -56,14 +56,7 @@ import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {
-    deepFreeze,
-    logWithDebug,
-    throwIf,
-    warnIf,
-    withDebug,
-    withDefault
-} from '@xh/hoist/utils/js';
+import {deepFreeze, logWithDebug, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -818,7 +811,7 @@ export class GridModel extends HoistModel {
 
         const indexCount = indices.length;
         if (indexCount !== records.length) {
-            console.warn('Grid row nodes not found for all provided records.');
+            this.logWarn('Grid row nodes not found for all provided records.');
         }
 
         if (indexCount === 1) {
@@ -978,7 +971,7 @@ export class GridModel extends HoistModel {
 
         const invalidColIds = colIds.filter(it => !this.findColumn(this.columns, it));
         if (invalidColIds.length) {
-            console.warn(
+            this.logWarn(
                 'Unknown colId specified in groupBy - grid will not be grouped.',
                 invalidColIds
             );
@@ -1025,7 +1018,7 @@ export class GridModel extends HoistModel {
             it => !it.colId?.startsWith('ag-Grid') && !this.findColumn(this.columns, it.colId)
         );
         if (invalidSorters.length) {
-            console.warn('GridSorter colId not found in grid columns', invalidSorters);
+            this.logWarn('GridSorter colId not found in grid columns', invalidSorters);
             return;
         }
 
@@ -1360,10 +1353,9 @@ export class GridModel extends HoistModel {
 
         const rowIndex = agApi.getRowNode(recToEdit?.agId)?.rowIndex;
         if (isNil(rowIndex) || rowIndex < 0) {
-            console.warn(
-                'Unable to start editing - ' + record
-                    ? 'specified record not found'
-                    : 'no records found'
+            this.logWarn(
+                'Unable to start editing',
+                record ? 'specified record not found' : 'no records found'
             );
             return;
         }
@@ -1381,11 +1373,11 @@ export class GridModel extends HoistModel {
         }
 
         if (!colToEdit) {
-            console.warn(
-                'Unable to start editing - ' +
-                    (colId
-                        ? `column with colId ${colId} not found, or not editable`
-                        : 'no editable columns found')
+            this.logWarn(
+                'Unable to start editing',
+                colId
+                    ? `column with colId ${colId} not found, or not editable`
+                    : 'no editable columns found'
             );
             return;
         }
@@ -1438,7 +1430,7 @@ export class GridModel extends HoistModel {
         try {
             await when(() => this.isReady, {timeout});
         } catch (ignored) {
-            withDebug(`Grid failed to enter ready state after waiting ${timeout}ms`, null, this);
+            this.logDebug(`Grid failed to enter ready state after waiting ${timeout}ms`);
         }
         await wait();
 

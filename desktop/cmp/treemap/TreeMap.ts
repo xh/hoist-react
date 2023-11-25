@@ -22,7 +22,7 @@ import {mask} from '@xh/hoist/desktop/cmp/mask';
 import '@xh/hoist/desktop/register';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {wait} from '@xh/hoist/promise';
-import {logWithDebug, withDebug} from '@xh/hoist/utils/js';
+import {logWithDebug} from '@xh/hoist/utils/js';
 import {
     createObservableRef,
     getLayoutProps,
@@ -193,13 +193,9 @@ class TreeMapLocalModel extends HoistModel {
         if (parentDims.width === 0 || parentDims.height === 0) return;
 
         assign(config.chart, parentDims, {renderTo: chartElem});
-        withDebug(
-            `Creating new TreeMap | ${newData.length} records`,
-            () => {
-                this.chart = Highcharts.chart(config);
-            },
-            this
-        );
+        this.withDebug(['Creating new TreeMap', `${newData.length} records`], () => {
+            this.chart = Highcharts.chart(config);
+        });
     }
 
     @logWithDebug
