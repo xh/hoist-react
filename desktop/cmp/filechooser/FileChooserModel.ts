@@ -10,7 +10,7 @@ import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {isEmpty} from 'lodash';
+import {isArray, isEmpty} from 'lodash';
 import filesize from 'filesize';
 import {find, uniqBy, without} from 'lodash';
 import {FileRejection} from 'react-dropzone';
@@ -53,7 +53,8 @@ export class FileChooserModel extends HoistModel {
     //-------------------------
     // Immutable Configuration
     //------------------------
-    @bindable accept: Some<string>;
+    // DEBUG - bindable?
+    /* @bindable*/ accept: Some<string>;
     @bindable maxSize: number;
     @bindable minSize: number;
     @bindable enableMulti: boolean;
@@ -191,13 +192,19 @@ export class FileChooserModel extends HoistModel {
     // Implementation
     //----------------
     private defaultTargetDisplay = () => {
-        // const targetText = p('Drag and drop your files here, or click to browse.');
-        // if (isEmpty(this.lastAccepted)) return targetText;
-        const fileTypes = code('*txt and *.png');
-
         return fragment(
             p('Drag and drop your files here, or click to browse.'),
-            p(`Note that this example is configured to accept only ${fileTypes} file types.`)
+            p({
+                items: [
+                    'Note that this example is configured to accept only ',
+                    code(
+                        isArray(this.accept)
+                            ? this.accept.map(type => '*' + type).join(', ')
+                            : this.accept
+                    ),
+                    ' file types.'
+                ]
+            })
         );
     };
 
@@ -205,6 +212,9 @@ export class FileChooserModel extends HoistModel {
         if (isEmpty(this.lastRejected)) return null;
         console.log('File rejections:', this.lastRejected);
         const failedFiles = this.lastRejected.map(rejection => rejection.file.name).join(', ');
-        return `${this.lastRejected.length} files failed to upload: ${failedFiles}.`;
+        return p({
+            style: {overflow: 'hidden', textOverflow: 'ellipsis'},
+            item: `${this.lastRejected.length} files failed to upload: ${failedFiles}.`
+        });
     };
 }

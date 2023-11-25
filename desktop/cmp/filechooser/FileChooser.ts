@@ -37,7 +37,6 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory({
         return hbox({
             ref,
             ...props,
-            className: props.className,
             items: [
                 dropzoneCmp(),
                 grid({
