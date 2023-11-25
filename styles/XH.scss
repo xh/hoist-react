@@ -104,25 +104,22 @@ body.xh-app {
   .xh-intent-danger { color: var(--xh-intent-danger); }
   .xh-intent-success { color: var(--xh-intent-success); }
   .xh-intent-warning { color: var(--xh-intent-warning); }
-    .xh-bg-intent-primary {
-            background-color: var(--xh-intent-primary);
-            color: white;
-        }
-    .xh-bg-intent-danger {
-            background-color: var(--xh-intent-danger);
-            color: white;
-        }
-        .xh-bg-intent-success {
-            background-color: var(--xh-intent-success);
-            color: white;
-        }
-        .xh-bg-intent-warning {
-            background-color: var(--xh-intent-warning);
-            color: white;
-        }
-
-
-
+  .xh-bg-intent-primary {
+    background-color: var(--xh-intent-primary);
+    color: white;
+  }
+  .xh-bg-intent-danger {
+    background-color: var(--xh-intent-danger);
+    color: white;
+  }
+  .xh-bg-intent-success {
+    background-color: var(--xh-intent-success);
+    color: white;
+  }
+  .xh-bg-intent-warning {
+    background-color: var(--xh-intent-warning);
+    color: white;
+  }
 
   // Colors - pos/neg (red/green) vals
   .xh-pos-val { color: var(--xh-pos-val-color); }
