@@ -53,8 +53,7 @@ export class FileChooserModel extends HoistModel {
     //-------------------------
     // Immutable Configuration
     //------------------------
-    // DEBUG - bindable?
-    /* @bindable*/ accept: Some<string>;
+    @bindable accept: Some<string>;
     @bindable maxSize: number;
     @bindable minSize: number;
     @bindable enableMulti: boolean;
