@@ -8,6 +8,10 @@
   added new exports for `logWarn()` and `logError()` with the same standardized formatting.
 * Added standardized `LogUtils` methods to `HoistBase`, for use within Hoist models and services.
 
+### ⚙️ Typescript API Adjustments
+
+* Updated type for `ReactionSpec.equals` to include already-supported string shorthands.
+
 ## 59.3.2 - 2023-11-21
 
 ### 🐞 Bug Fixes
