@@ -9,12 +9,13 @@ import {HoistModel, managed, Some} from '@xh/hoist/core';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {isEmpty, uniq} from 'lodash';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {isEmpty} from 'lodash';
 import filesize from 'filesize';
 import {find, uniqBy, without} from 'lodash';
 import {FileRejection} from 'react-dropzone';
 import {ReactNode} from 'react';
+import {code, fragment, p} from '@xh/hoist/cmp/layout';
 
 export interface FileChooserConfig {
     /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
@@ -39,7 +40,7 @@ export interface FileChooserConfig {
      * True (default) to display the selected file(s) in a grid alongside the dropzone. Note
      * that, if false, the component will not provide any built-in indication of its selection.
      */
-    showFileGrid: boolean;
+    showFileGrid?: boolean;
 
     /** Intro/help text to display within the dropzone target. */
     targetDisplay?: ReactNode | ((model: FileChooserModel) => ReactNode);
@@ -52,14 +53,14 @@ export class FileChooserModel extends HoistModel {
     //-------------------------
     // Immutable Configuration
     //------------------------
-    accept: Some<string>;
-    maxSize: number;
-    minSize: number;
-    enableMulti: boolean;
-    enableAddMulti: boolean;
-    showFileGrid: boolean;
-    targetDisplay: ReactNode | ((model: FileChooserModel) => ReactNode);
-    rejectDisplay: ReactNode | ((model: FileChooserModel) => ReactNode);
+    @bindable accept: Some<string>;
+    @bindable maxSize: number;
+    @bindable minSize: number;
+    @bindable enableMulti: boolean;
+    @bindable enableAddMulti: boolean;
+    @bindable showFileGrid: boolean;
+    @bindable targetDisplay: ReactNode | ((model: FileChooserModel) => ReactNode);
+    @bindable rejectDisplay: ReactNode | ((model: FileChooserModel) => ReactNode);
 
     //---------------
     // Runtime state
@@ -178,7 +179,7 @@ export class FileChooserModel extends HoistModel {
         }
         this.lastAccepted = accepted;
         this.lastRejected = rejected;
-        this.files.push(...accepted);
+        this.addFiles(accepted);
     }
 
     onFilesChange(files: File[]) {
@@ -190,15 +191,20 @@ export class FileChooserModel extends HoistModel {
     // Implementation
     //----------------
     private defaultTargetDisplay = () => {
-        if (isEmpty(this.lastAccepted)) return 'Drop your files here friend...';
-        return `Processed ${this.lastAccepted.length} files.`;
+        // const targetText = p('Drag and drop your files here, or click to browse.');
+        // if (isEmpty(this.lastAccepted)) return targetText;
+        const fileTypes = code('*txt and *.png');
+
+        return fragment(
+            p('Drag and drop your files here, or click to browse.'),
+            p(`Note that this example is configured to accept only ${fileTypes} file types.`)
+        );
     };
 
     private defaultRejectDisplay = () => {
         if (isEmpty(this.lastRejected)) return null;
-        const errorsList = uniq(
-            this.lastRejected.flatMap(rejection => rejection.errors.map(error => error.message))
-        ).join(', ');
-        return `${this.lastRejected.length} files failed to upload: ${errorsList}`;
+        console.log('File rejections:', this.lastRejected);
+        const failedFiles = this.lastRejected.map(rejection => rejection.file.name).join(', ');
+        return `${this.lastRejected.length} files failed to upload: ${failedFiles}.`;
     };
 }
