@@ -7,7 +7,7 @@
 import {XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
 import {MILLISECONDS, MINUTES, olderThan} from '@xh/hoist/utils/datetime';
-import {throwIf} from '@xh/hoist/utils/js';
+import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {isBoolean, isFinite, isFunction, isNil, isString, pull} from 'lodash';
 
 /**
@@ -15,19 +15,20 @@ import {isBoolean, isFinite, isFunction, isNil, isString, pull} from 'lodash';
  * Promise-aware recurring task timer for use by framework and applications.
  *
  * This object is designed to be robust across failing tasks, and never to re-run the task
- * simultaneously, unless in the case of a timeout.  Callers can optionally specify
- * the duration of asynchronous tasks by returning a Promise from runFn.
+ * simultaneously, unless in the case of a timeout. Callers can optionally specify the duration
+ * of asynchronous tasks by returning a Promise from runFn.
  *
- * This object seeks to mirror the API and semantics of the server-side equivalent 'Timer'
- * as closely as possible. However, there are important differences due to the synchronous
- * nature of javascript. In particular, there is no support for 'runImmediatelyAndBlock', and the
- * 'timeout' argument will not be able to interrupt synchronous activity of the runFn.
+ * This object seeks to mirror the API and semantics of `Timer.groovy` from Hoist Core as closely
+ * as possible. However, there are important differences due to the synchronous nature of
+ * javascript. In particular, there is no support for `runImmediatelyAndBlock`, and the `timeout`
+ * argument will not be able to interrupt synchronous activity of the runFn.
  *
- * All public properties should be considered read-only. See `setInterval()` to change the interval
- * of this timer dynamically.
+ * All public properties should be considered read-only.
+ * See `setInterval()` to change the interval of this Timer dynamically.
  */
 export class Timer {
     static _timers: Timer[] = [];
+    static MIN_INTERVAL_MS = 500;
 
     runFn: () => any = null;
     interval: number | (() => number) = null;
@@ -40,6 +41,8 @@ export class Timer {
     cancelled: boolean = false;
     isRunning: boolean = false;
     lastRun: Date = null;
+
+    private warnedIntervals = new Set();
 
     /** Create a new Timer. */
     static create({
@@ -67,9 +70,7 @@ export class Timer {
         this._timers = [];
     }
 
-    /**
-     * Permanently cancel this timer.
-     */
+    /** Permanently cancel this timer. */
     cancel() {
         this.cancelInternal();
         pull(Timer._timers, this);
@@ -77,7 +78,6 @@ export class Timer {
 
     /**
      * Change the interval of this timer.
-     *
      * @param interval - ms to wait between runs or any value `<=0` to pause the timer.
      */
     setInterval(interval: number) {
@@ -94,7 +94,10 @@ export class Timer {
         this.intervalUnits = args.intervalUnits;
         this.timeoutUnits = args.timeoutUnits;
         this.delay = this.parseDelay(args.delay);
-        throwIf(this.interval == null || this.runFn == null, 'Missing req arguments for Timer');
+        throwIf(
+            this.interval == null || this.runFn == null,
+            'Missing required arguments for Timer - both interval and runFn must be specified.'
+        );
 
         wait(this.delay).then(() => this.heartbeatAsync());
     }
@@ -133,18 +136,28 @@ export class Timer {
         return isString(val) ? () => XH.configService.get(val) : val;
     }
 
-    private parseDelay(val): number {
+    private parseDelay(val: number | boolean): number {
         if (isBoolean(val)) return val ? this.intervalMs : 0;
         return isFinite(val) ? val : 0;
     }
 
     private get intervalMs() {
-        const {interval, intervalUnits} = this;
+        const {interval, intervalUnits, warnedIntervals} = this,
+            min = Timer.MIN_INTERVAL_MS;
+
         if (isNil(interval)) return null;
+
         let ret = (isFunction(interval) ? interval() : interval) * intervalUnits;
-        if (ret > 0 && ret < 500) {
-            console.warn('Timer cannot be set for values less than 500ms.');
-            ret = 500;
+
+        if (ret > 0 && ret < min) {
+            if (!warnedIntervals.has(ret)) {
+                warnedIntervals.add(ret);
+                logWarn(
+                    `Interval of ${ret}ms requested - forcing to min interval of ${min}ms.`,
+                    this
+                );
+            }
+            ret = min;
         }
         return ret;
     }

@@ -10,8 +10,7 @@ import {pick} from 'lodash';
  * Extract information (if available) about the client browser's window, screen, and network speed.
  */
 export function getClientDeviceInfo() {
-    const data: any = pick(
-        window,
+    const data: any = pick(window, [
         'screen',
         'devicePixelRatio',
         'screenX',
@@ -20,10 +19,10 @@ export function getClientDeviceInfo() {
         'innerHeight',
         'outerWidth',
         'outerHeight'
-    );
+    ]);
+
     if (data.screen) {
-        data.screen = pick(
-            data.screen,
+        data.screen = pick(data.screen, [
             'availWidth',
             'availHeight',
             'width',
@@ -33,14 +32,15 @@ export function getClientDeviceInfo() {
             'availLeft',
             'availTop',
             'orientation'
-        );
+        ]);
         if (data.screen.orientation) {
-            data.screen.orientation = pick(data.screen.orientation, 'angle', 'type');
+            data.screen.orientation = pick(data.screen.orientation, ['angle', 'type']);
         }
     }
+
     const nav = window.navigator as any;
     if (nav.connection) {
-        data.connection = pick(nav.connection, 'downlink', 'effectiveType', 'rtt');
+        data.connection = pick(nav.connection, ['downlink', 'effectiveType', 'rtt']);
     }
 
     return data;

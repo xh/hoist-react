@@ -345,6 +345,7 @@ export class ExceptionHandler {
     // Detect an expired server session for special messaging, but only for requests back to the
     // app's own server on a relative URL (to avoid triggering w/auth failures on remote CORS URLs).
     private sessionExpired(e: HoistException): boolean {
+        if (XH.appSpec.isSSO) return false;
         const {httpStatus, fetchOptions} = e,
             relativeRequest = !fetchOptions?.url?.startsWith('http');
 

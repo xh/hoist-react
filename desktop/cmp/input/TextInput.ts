@@ -12,10 +12,10 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
+import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
-import {ReactElement, ReactNode, Ref, FocusEvent} from 'react';
+import {FocusEvent, ReactElement, ReactNode, Ref} from 'react';
 
 export interface TextInputProps extends HoistProps, HoistInputProps, LayoutProps, StyleProps {
     value?: string;
@@ -114,63 +114,67 @@ export class TextInputModel extends HoistInputModel {
     };
 }
 
-const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref) => {
-    const {width, flex, ...layoutProps} = getLayoutProps(props);
+const cmp = hoistCmp.factory<TextInputProps & {model: TextInputModel}>(
+    ({model, className, ...props}, ref) => {
+        const {width, flex, ...layoutProps} = getLayoutProps(props);
 
-    const isClearable = !isEmpty(model.internalValue);
+        const isClearable = !isEmpty(model.internalValue);
 
-    return div({
-        item: inputGroup({
-            value: model.renderValue || '',
+        return div({
+            item: inputGroup({
+                value: model.renderValue || '',
 
-            autoComplete: withDefault(
-                props.autoComplete,
-                props.type === 'password' ? 'new-password' : 'off'
-            ),
-            autoFocus: props.autoFocus,
-            disabled: props.disabled,
-            inputRef: composeRefs(model.inputRef, props.inputRef),
-            leftIcon: props.leftIcon,
-            placeholder: props.placeholder,
-            rightElement:
-                props.rightElement ||
-                (props.enableClear && !props.disabled && isClearable ? clearButton() : null),
-            round: withDefault(props.round, false),
-            spellCheck: withDefault(props.spellCheck, false),
-            tabIndex: props.tabIndex,
-            type: props.type,
+                autoComplete: withDefault(
+                    props.autoComplete,
+                    props.type === 'password' ? 'new-password' : 'off'
+                ),
+                autoFocus: props.autoFocus,
+                disabled: props.disabled,
+                inputRef: composeRefs(model.inputRef, props.inputRef),
+                leftIcon: props.leftIcon,
+                placeholder: props.placeholder,
+                rightElement:
+                    props.rightElement ||
+                    (props.enableClear && !props.disabled && isClearable ? clearButton() : null),
+                round: withDefault(props.round, false),
+                spellCheck: withDefault(props.spellCheck, false),
+                tabIndex: props.tabIndex,
+                type: props.type,
 
-            id: props.id,
+                id: props.id,
+                style: {
+                    ...props.style,
+                    ...layoutProps,
+                    textAlign: withDefault(props.textAlign, 'left')
+                },
+                [TEST_ID]: props.testId,
+                onChange: model.onChange,
+                onKeyDown: model.onKeyDown
+            }),
+
+            className,
             style: {
-                ...props.style,
-                ...layoutProps,
-                textAlign: withDefault(props.textAlign, 'left')
+                width: withDefault(width, 200),
+                flex: withDefault(flex, null)
             },
 
-            onChange: model.onChange,
-            onKeyDown: model.onKeyDown
-        }),
-
-        className,
-        style: {
-            width: withDefault(width, 200),
-            flex: withDefault(flex, null)
-        },
-
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        ref
-    });
-});
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            ref
+        });
+    }
+);
 
 const clearButton = hoistCmp.factory<TextInputModel>(({model}) =>
     button({
         icon: Icon.cross(),
         tabIndex: -1,
         minimal: true,
+        testId: getTestId(model.componentProps, 'clear-btn'),
         onClick: () => {
             model.noteValueChange(null);
             model.doCommit();
+            model.focus();
         }
     })
 );

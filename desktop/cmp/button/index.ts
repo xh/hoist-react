@@ -14,3 +14,4 @@ export * from './OptionsButton';
 export * from './RefreshButton';
 export * from './RestoreDefaultsButton';
 export * from './ThemeToggleButton';
+export * from './ZoneMapperButton';

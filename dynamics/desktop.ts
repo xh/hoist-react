@@ -19,6 +19,7 @@ export let ColChooserModel = null;
 export let ColumnHeaderFilterModel = null;
 export let ModalSupportModel = null;
 export let colChooser = null;
+export let zoneMapper = null;
 export let columnHeaderFilter = null;
 export let dockContainerImpl = null;
 export let errorMessage = null;
@@ -38,6 +39,7 @@ export function installDesktopImpls(impls) {
     ColumnHeaderFilterModel = impls.ColumnHeaderFilterModel;
     ModalSupportModel = impls.ModalSupportModel;
     colChooser = impls.colChooser;
+    zoneMapper = impls.zoneMapper;
     columnHeaderFilter = impls.columnHeaderFilter;
     dockContainerImpl = impls.dockContainerImpl;
     errorMessage = impls.errorMessage;

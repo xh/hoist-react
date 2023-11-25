@@ -95,7 +95,7 @@ class ToastSourceLocalModel extends HoistModel {
      */
     async getToasterAsync(position: ToasterPosition, container: HTMLElement) {
         if (container && !isElement(container)) {
-            console.warn('container for Toast must be a DOM element. Argument will be ignored.');
+            this.logWarn('Ignoring invalid containerRef for Toast - must be a DOM element');
             container = null;
         }
         const className = `xh-toast-container ${container ? 'xh-toast-container--anchored' : ''}`;

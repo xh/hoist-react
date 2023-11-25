@@ -7,7 +7,7 @@
 import {AppState, AppSuspendData, HoistModel, XH} from '@xh/hoist/core';
 import {action, makeObservable, observable, reaction} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
-import {getClientDeviceInfo, logDebug} from '@xh/hoist/utils/js';
+import {getClientDeviceInfo} from '@xh/hoist/utils/js';
 import {isBoolean, isString} from 'lodash';
 
 /**
@@ -34,7 +34,7 @@ export class AppStateModel extends HoistModel {
     @action
     setAppState(nextState: AppState) {
         if (this.state !== nextState) {
-            logDebug(`AppState change: ${this.state} → ${nextState}`, this);
+            this.logDebug(`AppState change: ${this.state} → ${nextState}`);
         }
         this.state = nextState;
     }
@@ -87,6 +87,7 @@ export class AppStateModel extends HoistModel {
                                 appVersion: XH.appVersion,
                                 appBuild: XH.appBuild,
                                 locationHref: window.location.href,
+                                wasDiscarded: window.document['wasDiscarded'],
                                 ...getClientDeviceInfo()
                             },
                             logData: ['appVersion', 'appBuild'],

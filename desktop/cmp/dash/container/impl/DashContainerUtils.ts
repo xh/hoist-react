@@ -46,8 +46,8 @@ function convertGLToStateInner(configItems = [], contentItems = [], dashContaine
 
             ret.push(view);
         } else {
-            const {type, width, height, activeItemIndex, content} = configItem,
-                container = {type} as PlainObject;
+            const {type, width, height, activeItemIndex, content, isClosable} = configItem,
+                container = {type, allowRemove: isClosable} as PlainObject;
 
             if (isFinite(width)) container.width = round(width, 2);
             if (isFinite(height)) container.height = round(height, 2);
@@ -138,12 +138,12 @@ function convertStateToGLInner(items = [], viewSpecs = [], containerSize, contai
             const content = convertStateToGLInner(item.content, viewSpecs, itemSize, item).filter(
                 it => !isNil(it)
             );
-            if (!content.length) return null;
+            if (!content.length && item.allowRemove) return null;
 
             // Below is a workaround for issue https://github.com/golden-layout/golden-layout/issues/418
             // GoldenLayouts can sometimes export its state with an out-of-bounds `activeItemIndex`.
             // If we encounter this, we overwrite `activeItemIndex` to point to the last item.
-            const ret = {...item, content};
+            const ret = {...item, content, isClosable: item.allowRemove};
             if (
                 type === 'stack' &&
                 isFinite(ret.activeItemIndex) &&

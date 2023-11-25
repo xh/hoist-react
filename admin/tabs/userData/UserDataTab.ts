@@ -15,7 +15,7 @@ export const userDataTab = hoistCmp.factory(() =>
     tabContainer({
         modelConfig: {
             route: 'default.userData',
-            switcher: {orientation: 'left'},
+            switcher: {orientation: 'left', testId: 'user-data-tab-switcher'},
             tabs: [
                 {
                     id: 'prefs',

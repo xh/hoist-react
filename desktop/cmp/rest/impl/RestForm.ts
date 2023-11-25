@@ -25,7 +25,7 @@ export const restForm = hoistCmp.factory({
     model: uses(RestFormModel),
     className: 'xh-rest-form',
 
-    render({model, className}) {
+    render({model, className, testId}) {
         const {isAdd, readonly, isOpen, dialogRef} = model;
         if (!isOpen) return null;
 
@@ -36,7 +36,7 @@ export const restForm = hoistCmp.factory({
             isOpen: true,
             isCloseButtonShown: false,
             item: panel({
-                item: formDisplay(),
+                item: formDisplay({testId}),
                 bbar: tbar(),
                 ref: dialogRef,
                 mask: 'onLoad'
@@ -45,7 +45,7 @@ export const restForm = hoistCmp.factory({
     }
 });
 
-const formDisplay = hoistCmp.factory<RestFormModel>(({model}) => {
+const formDisplay = hoistCmp.factory<RestFormModel>(({model, testId}) => {
     const formFields = model.editors.map(editor => restFormField({editor}));
 
     return form({
@@ -59,7 +59,8 @@ const formDisplay = hoistCmp.factory<RestFormModel>(({model}) => {
         item: div({
             className: 'xh-rest-form__body',
             items: formFields
-        })
+        }),
+        testId
     });
 });
 

@@ -4,34 +4,34 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {box, frame, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {
     BoxProps,
+    hoistCmp,
+    HoistModel,
     HoistProps,
     refreshContextView,
     Some,
     TaskObserver,
     useContextModel,
-    uses,
-    hoistCmp,
-    HoistModel
+    uses
 } from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import '@xh/hoist/desktop/register';
+import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, omitBy} from 'lodash';
 import {Children, isValidElement, ReactElement, ReactNode, useLayoutEffect, useRef} from 'react';
+import {ContextMenuSpec} from '../contextmenu/ContextMenu';
 import {modalSupport} from '../modalsupport/ModalSupport';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import './Panel.scss';
 import {PanelModel} from './PanelModel';
-import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
-import {ContextMenuSpec} from '../contextmenu/ContextMenu';
-import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 
 export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'title'> {
     /** True to style panel header (if displayed) with reduced padding and font-size. */
@@ -113,7 +113,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
     }),
     className: 'xh-panel',
 
-    render({model, className, ...props}, ref) {
+    render({model, className, testId, ...props}, ref) {
         const contextModel = useContextModel('*');
 
         let wasDisplayed = useRef(false),
@@ -224,24 +224,28 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             item = refreshContextView({model: refreshContextModel, item});
         }
 
+        // 5) Return wrapped in resizable + modal affordances if needed, or equivalent layout box
+
+        const useResizeContainer = resizable || collapsible || showSplitter;
+
+        // For modalSupport, create additional frame that will follow content to portal and apply
+        // className and testId accordingly
         if (modalSupportModel) {
             item = modalSupport({
                 model: modalSupportModel,
                 item: frame({
-                    // Frame ensures className is still present when rendered in Dialog
                     item,
-                    className: model.isModal ? className : undefined
+                    className: model.isModal ? className : undefined,
+                    testId: model.isModal ? testId : undefined
                 })
             });
         }
 
-        // 5) Return wrapped in resizable affordances if needed, or equivalent layout box
-        item =
-            resizable || collapsible || showSplitter
-                ? resizeContainer({ref, item, className})
-                : box({ref, item, className, ...layoutProps});
+        testId = model.isModal ? undefined : testId; // Only apply testId once
 
-        return item;
+        return useResizeContainer
+            ? resizeContainer({ref, item, className, testId})
+            : box({ref, item, className, testId, ...layoutProps});
     }
 });
 

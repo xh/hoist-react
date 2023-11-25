@@ -5,16 +5,15 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {div, filler, frame, hbox, p} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistProps} from '@xh/hoist/core';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {isNil, isString} from 'lodash';
 import {isValidElement, ReactNode} from 'react';
-
 import './ErrorMessage.scss';
 import {Icon} from '@xh/hoist/icon';
 
-export interface ErrorMessageProps extends HoistProps {
+export interface ErrorMessageProps extends HoistProps, Omit<BoxProps, 'title'> {
     /**
      * If provided, will render a "Retry" button that calls this function.
      * Use `actionButtonProps` for further control over this button.
@@ -69,7 +68,8 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
             actionFn,
             actionButtonProps,
             detailsFn,
-            detailsButtonProps
+            detailsButtonProps,
+            ...rest
         } = props;
 
         if (isNil(error)) return null;
@@ -77,17 +77,17 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
         if (!message) {
             if (isString(error)) {
                 message = error;
-            } else if (error.message) {
-                message = error.message;
+            } else {
+                message = error.message || error.name || 'Unknown Error';
             }
         }
 
         if (actionFn) {
-            actionButtonProps = {...actionButtonProps, onClick: error => actionFn(error)};
+            actionButtonProps = {...actionButtonProps, onClick: () => actionFn(error)};
         }
 
         if (detailsFn) {
-            detailsButtonProps = {...detailsButtonProps, onClick: error => detailsFn(error)};
+            detailsButtonProps = {...detailsButtonProps, onClick: () => detailsFn(error)};
         }
 
         let buttons = [],
@@ -103,6 +103,7 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
         return frame({
             ref,
             className,
+            ...rest,
             item: div({
                 className: 'xh-error-message__inner',
                 items: [titleCmp({title}), messageCmp({message, error}), buttonBar]

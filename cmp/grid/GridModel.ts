@@ -8,6 +8,7 @@ import {
     CellClickedEvent,
     CellContextMenuEvent,
     CellDoubleClickedEvent,
+    ColumnEvent,
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@ag-grid-community/core';
@@ -20,7 +21,8 @@ import {
     GridAutosizeMode,
     GridFilterModelConfig,
     GridGroupSortFn,
-    TreeStyle
+    TreeStyle,
+    ColumnCellClassRuleFn
 } from '@xh/hoist/cmp/grid';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {br, fragment} from '@xh/hoist/cmp/layout';
@@ -54,16 +56,9 @@ import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {
-    deepFreeze,
-    logWithDebug,
-    throwIf,
-    warnIf,
-    withDebug,
-    withDefault
-} from '@xh/hoist/utils/js';
+import {deepFreeze, logWithDebug, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
-import _, {
+import {
     castArray,
     clone,
     cloneDeep,
@@ -72,6 +67,7 @@ import _, {
     defaultsDeep,
     every,
     find,
+    first,
     forEach,
     isArray,
     isEmpty,
@@ -81,6 +77,7 @@ import _, {
     isString,
     isUndefined,
     keysIn,
+    last,
     max,
     min,
     omit,
@@ -128,7 +125,7 @@ export interface GridConfig {
     /** Config with which to create a GridFilterModel, or `true` to enable default. Desktop only.*/
     filterModel?: GridFilterModelConfig | boolean;
 
-    /** Config with which to create aColChooserModel, or boolean `true` to enable default.*/
+    /** Config with which to create a ColChooserModel, or boolean `true` to enable default.*/
     colChooserModel?: ColChooserConfig | boolean;
 
     /**
@@ -814,7 +811,7 @@ export class GridModel extends HoistModel {
 
         const indexCount = indices.length;
         if (indexCount !== records.length) {
-            console.warn('Grid row nodes not found for all provided records.');
+            this.logWarn('Grid row nodes not found for all provided records.');
         }
 
         if (indexCount === 1) {
@@ -974,7 +971,7 @@ export class GridModel extends HoistModel {
 
         const invalidColIds = colIds.filter(it => !this.findColumn(this.columns, it));
         if (invalidColIds.length) {
-            console.warn(
+            this.logWarn(
                 'Unknown colId specified in groupBy - grid will not be grouped.',
                 invalidColIds
             );
@@ -1021,7 +1018,7 @@ export class GridModel extends HoistModel {
             it => !it.colId?.startsWith('ag-Grid') && !this.findColumn(this.columns, it.colId)
         );
         if (invalidSorters.length) {
-            console.warn('GridSorter colId not found in grid columns', invalidSorters);
+            this.logWarn('GridSorter colId not found in grid columns', invalidSorters);
             return;
         }
 
@@ -1179,6 +1176,10 @@ export class GridModel extends HoistModel {
         return this.findColumn(this.columns, colId);
     }
 
+    getColumnGroup(groupId: string): ColumnGroup {
+        return this.findColumnGroup(this.columns, groupId);
+    }
+
     /** Return all leaf-level columns - i.e. excluding column groups. */
     getLeafColumns(): Column[] {
         return this.gatherLeaves(this.columns);
@@ -1217,6 +1218,22 @@ export class GridModel extends HoistModel {
         this.setColumnVisible(colId, false);
     }
 
+    setColumnGroupVisible(groupId: string, visible: boolean) {
+        this.applyColumnStateChanges(
+            this.getColumnGroup(groupId)
+                .getLeafColumns()
+                .map(({colId}) => ({colId, hidden: !visible}))
+        );
+    }
+
+    showColumnGroup(groupId: string) {
+        this.setColumnGroupVisible(groupId, true);
+    }
+
+    hideColumnGroup(groupId: string) {
+        this.setColumnGroupVisible(groupId, false);
+    }
+
     /**
      * Determine if a leaf-level column is currently pinned.
      *
@@ -1228,7 +1245,7 @@ export class GridModel extends HoistModel {
         return state ? state.pinned : null;
     }
 
-    /** Return matching leaf-level Column object from the provided collection.*/
+    /** Return matching leaf-level Column object from the provided collection. */
     findColumn(cols: Array<Column | ColumnGroup>, colId: string): Column {
         for (let col of cols) {
             if (col instanceof ColumnGroup) {
@@ -1236,6 +1253,18 @@ export class GridModel extends HoistModel {
                 if (ret) return ret;
             } else {
                 if (col.colId === colId) return col;
+            }
+        }
+        return null;
+    }
+
+    /** Return matching ColumnGroup from the provided collection. */
+    findColumnGroup(cols: Array<Column | ColumnGroup>, groupId: string): ColumnGroup {
+        for (let col of cols) {
+            if (col instanceof ColumnGroup) {
+                if (col.groupId === groupId) return col;
+                const ret = this.findColumnGroup(col.children, groupId);
+                if (ret) return ret;
             }
         }
         return null;
@@ -1250,30 +1279,6 @@ export class GridModel extends HoistModel {
      */
     getStateForColumn(colId: string): ColumnState {
         return find(this.columnState, {colId});
-    }
-
-    buildColumn(config: ColumnGroupSpec | ColumnSpec) {
-        // Merge leaf config with defaults.
-        // Ensure *any* tooltip setting on column itself always wins.
-        if (this.colDefaults && !this.isGroupSpec(config)) {
-            let colDefaults = {...this.colDefaults};
-            if (config.tooltip) colDefaults.tooltip = null;
-            config = defaultsDeep({}, config, colDefaults);
-        }
-
-        const omit = isFunction(config.omit) ? config.omit() : config.omit;
-        if (omit) return null;
-
-        if (this.isGroupSpec(config)) {
-            const children = compact(config.children.map(c => this.buildColumn(c))) as Array<
-                ColumnGroup | Column
-            >;
-            return !isEmpty(children)
-                ? new ColumnGroup(config as ColumnGroupSpec, this, children)
-                : null;
-        }
-
-        return new Column(config, this);
     }
 
     /**
@@ -1348,10 +1353,9 @@ export class GridModel extends HoistModel {
 
         const rowIndex = agApi.getRowNode(recToEdit?.agId)?.rowIndex;
         if (isNil(rowIndex) || rowIndex < 0) {
-            console.warn(
-                'Unable to start editing - ' + record
-                    ? 'specified record not found'
-                    : 'no records found'
+            this.logWarn(
+                'Unable to start editing',
+                record ? 'specified record not found' : 'no records found'
             );
             return;
         }
@@ -1369,11 +1373,11 @@ export class GridModel extends HoistModel {
         }
 
         if (!colToEdit) {
-            console.warn(
-                'Unable to start editing - ' +
-                    (colId
-                        ? `column with colId ${colId} not found, or not editable`
-                        : 'no editable columns found')
+            this.logWarn(
+                'Unable to start editing',
+                colId
+                    ? `column with colId ${colId} not found, or not editable`
+                    : 'no editable columns found'
             );
             return;
         }
@@ -1426,7 +1430,7 @@ export class GridModel extends HoistModel {
         try {
             await when(() => this.isReady, {timeout});
         } catch (ignored) {
-            withDebug(`Grid failed to enter ready state after waiting ${timeout}ms`, null, this);
+            this.logDebug(`Grid failed to enter ready state after waiting ${timeout}ms`);
         }
         await wait();
 
@@ -1436,6 +1440,35 @@ export class GridModel extends HoistModel {
     //-----------------------
     // Implementation
     //-----------------------
+    private buildColumn(config: ColumnGroupSpec | ColumnSpec, borderedGroup?: ColumnGroupSpec) {
+        // Merge leaf config with defaults.
+        // Ensure *any* tooltip setting on column itself always wins.
+        if (this.colDefaults && !this.isGroupSpec(config)) {
+            let colDefaults = {...this.colDefaults};
+            if (config.tooltip) colDefaults.tooltip = null;
+            config = defaultsDeep({}, config, colDefaults);
+        }
+
+        const omit = isFunction(config.omit) ? config.omit() : config.omit;
+        if (omit) return null;
+
+        if (this.isGroupSpec(config)) {
+            if (config.borders !== false) borderedGroup = config;
+            const children = compact(
+                config.children.map(c => this.buildColumn(c, borderedGroup))
+            ) as Array<ColumnGroup | Column>;
+            return !isEmpty(children)
+                ? new ColumnGroup(config as ColumnGroupSpec, this, children)
+                : null;
+        }
+
+        if (borderedGroup) {
+            config = this.enhanceConfigWithGroupBorders(config, borderedGroup);
+        }
+
+        return new Column(config, this);
+    }
+
     private async autosizeColsInternalAsync(colIds, options) {
         await this.whenReadyAsync();
         if (!this.isReady) return;
@@ -1543,18 +1576,16 @@ export class GridModel extends HoistModel {
         if (isEmpty(cols)) return;
 
         const ids = this.collectIds(cols);
-        const nonUnique = _(ids)
-            .groupBy()
-            .pickBy(x => x.length > 1)
-            .keys();
-        if (!nonUnique.isEmpty()) {
+        const nonUnique = ids.filter((item, index) => ids.indexOf(item) !== index);
+
+        if (!isEmpty(nonUnique)) {
             const msg =
                 `Non-unique ids: [${nonUnique}] ` +
                 "Use 'ColumnSpec'/'ColumnGroupSpec' configs to resolve a unique ID for each column/group.";
             throw XH.exception(msg);
         }
 
-        const treeCols = cols.filter(it => it.isTreeColumn);
+        const treeCols = this.gatherLeaves(cols).filter(it => it.isTreeColumn);
         warnIf(
             this.treeMode && treeCols.length != 1,
             'Grids in treeMode should include exactly one column with isTreeColumn:true.'
@@ -1752,4 +1783,69 @@ export class GridModel extends HoistModel {
     defaultGroupSortFn = (a, b) => {
         return a < b ? -1 : a > b ? 1 : 0;
     };
+
+    private readonly LEFT_BORDER_CLASS = 'xh-cell--group-border-left';
+    private readonly RIGHT_BORDER_CLASS = 'xh-cell--group-border-right';
+
+    private enhanceConfigWithGroupBorders(config: ColumnSpec, group: ColumnGroupSpec): ColumnSpec {
+        return {
+            ...config,
+            cellClassRules: {
+                ...config.cellClassRules,
+                [this.LEFT_BORDER_CLASS]: this.createGroupBorderFn('left', group),
+                [this.RIGHT_BORDER_CLASS]: this.createGroupBorderFn('right', group)
+            }
+        };
+    }
+
+    private createGroupBorderFn(
+        side: 'left' | 'right',
+        group: ColumnGroupSpec
+    ): ColumnCellClassRuleFn {
+        return ({api, column, columnApi, ...ctx}) => {
+            if (!api || !column || !columnApi) return false;
+
+            // Re-evaluate cell class rules when column is re-ordered
+            // See https://www.ag-grid.com/javascript-data-grid/column-object/#reference-events
+            if (!column['xhAppliedGroupBorderListener']) {
+                column['xhAppliedGroupBorderListener'] = true;
+                column.addEventListener('leftChanged', ({api, columns, source}: ColumnEvent) => {
+                    if (source === 'uiColumnMoved') api.refreshCells({columns});
+                });
+            }
+
+            // Don't render a left-border if col is first or if prev col already has right-border
+            if (side === 'left') {
+                const prevCol = columnApi.getDisplayedColBefore(column);
+
+                if (!prevCol) return false;
+
+                const prevColDef = prevCol.getColDef(),
+                    prevRule = prevColDef.cellClassRules[this.RIGHT_BORDER_CLASS];
+                if (
+                    isFunction(prevRule) &&
+                    prevRule({
+                        ...ctx,
+                        api,
+                        colDef: prevColDef,
+                        column: prevCol,
+                        columnApi
+                    })
+                ) {
+                    return false;
+                }
+            }
+
+            // Walk up parent groups to find "bordered" group. Return true if on relevant edge.
+            const getter = side === 'left' ? first : last;
+            for (let parent = column?.getParent(); parent; parent = parent.getParent()) {
+                if (
+                    group.groupId === parent.getGroupId() &&
+                    getter(parent.getDisplayedLeafColumns()) === column
+                ) {
+                    return true;
+                }
+            }
+        };
+    }
 }

@@ -4,16 +4,17 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {TEST_ID} from '@xh/hoist/utils/js';
 import {castArray, isFunction, isNil, isPlainObject} from 'lodash';
 import {
     createElement as reactCreateElement,
-    isValidElement,
-    ReactNode,
-    ReactElement,
     ForwardedRef,
-    Key
+    isValidElement,
+    Key,
+    ReactElement,
+    ReactNode
 } from 'react';
-import {PlainObject, Some, Thunkable} from './types/Types';
+import {Some, Thunkable} from './types/Types';
 
 /**
  * Alternative format for specifying React Elements in render functions. This type is designed to
@@ -38,7 +39,7 @@ import {PlainObject, Some, Thunkable} from './types/Types';
  * with this API.  The '$' will be stripped from the prop name before passing it along to the
  * underlying component.
  */
-export type ElementSpec<P extends PlainObject> = P & {
+export type ElementSpec<P> = P & {
     //---------------------------------------------
     // Enhanced attributes to support element factory
     //---------------------------------------------
@@ -59,6 +60,13 @@ export type ElementSpec<P extends PlainObject> = P & {
 
     /** React key for this component. */
     key?: Key;
+
+    /**
+     * Supports passing a "data-testid" prop to built-in tags (e.g. `div`), to be rendered as an
+     * HTML attribute. See {@link TestSupportProps} for the higher-level `testId` prop that most
+     * Hoist components accept and should use.
+     */
+    [TEST_ID]?: string;
 
     //----------------------------
     // Technical -- Escape support

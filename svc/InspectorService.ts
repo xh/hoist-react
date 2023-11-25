@@ -171,7 +171,7 @@ export class InspectorService extends HoistService {
     private sync() {
         if (!this.active) return;
 
-        const instances = [...XH.getActiveModels(), ...XH.getServices(), ...XH.getStores()];
+        const instances = [...XH.getModels(), ...XH.getServices(), ...XH.getStores()];
 
         const {_idToSyncRun, _syncRun} = this,
             newSyncRun = _syncRun + 1;

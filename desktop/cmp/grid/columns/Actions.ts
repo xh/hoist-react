@@ -8,7 +8,7 @@ import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 import {RecordAction} from '@xh/hoist/data';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
-import {throwIf} from '@xh/hoist/utils/js';
+import {getTestId, throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty} from 'lodash';
 
@@ -64,6 +64,7 @@ export const actionCol: ColumnSpec = {
             if (hidden) return null;
 
             return button({
+                testId: getTestId(action.testId, `${record.id}`),
                 icon,
                 disabled,
                 tooltip,

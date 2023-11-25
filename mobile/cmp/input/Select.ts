@@ -58,6 +58,12 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     enableFullscreen?: boolean;
 
     /**
+     * Optional override for fullscreen z-index. Useful for enabling fullscreen from
+     * within components that have a higher z-index.
+     */
+    fullScreenZIndex?: number;
+
+    /**
      * Function called to filter available options for a given query string input.
      * Used for filtering of options provided by `options` prop when `enableFilter` is true.
      * Not to be confused with `queryFn` prop, used in asynchronous mode.
@@ -531,6 +537,7 @@ class SelectInputModel extends HoistInputModel {
             portal.id = FULLSCREEN_PORTAL_ID;
             document.body.appendChild(portal);
         }
+        portal.style.zIndex = withDefault(this.componentProps.fullScreenZIndex, null);
         return portal;
     }
 

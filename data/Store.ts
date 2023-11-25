@@ -219,7 +219,7 @@ export class Store extends HoistBase {
     _filtered: RecordSet;
 
     private _dataDefaults = null;
-    private _created = Date.now();
+    _created = Date.now();
     private _fieldMap: Map<string, Field>;
     experimental: any;
 

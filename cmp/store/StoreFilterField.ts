@@ -75,8 +75,8 @@ export interface StoreFilterFieldProps extends DefaultHoistProps {
      */
     store?: Store;
 
-    /** Width of the input in pixels. */
-    width?: number;
+    /** Width of the input in pixels or string with unit. */
+    width?: string | number;
 }
 
 /**

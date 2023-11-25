@@ -35,8 +35,8 @@ import 'codemirror/addon/selection/mark-selection.js';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/dracula.css';
 import {compact, defaultsDeep, isEqual, isFunction} from 'lodash';
-import {findDOMNode} from 'react-dom';
 import {ReactElement} from 'react';
+import {findDOMNode} from 'react-dom';
 import './CodeInput.scss';
 
 export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps {
@@ -455,6 +455,7 @@ const cmp = hoistCmp.factory<CodeInputModel>(({model, className, ...props}, ref)
         item: modalSupport({
             model: model.modalSupportModel,
             item: inputCmp({
+                testId: props.testId,
                 width: '100%',
                 height: '100%',
                 className,
