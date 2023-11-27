@@ -11,7 +11,7 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {isArray, isEmpty} from 'lodash';
-import filesize from 'filesize';
+import {filesize} from 'filesize';
 import {find, uniqBy, without} from 'lodash';
 import {FileRejection} from 'react-dropzone';
 import {ReactNode} from 'react';
