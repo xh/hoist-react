@@ -6,8 +6,8 @@
  */
 import {ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
-import {isNil, isString, partition, pull, flatMap} from 'lodash';
+import {throwIf, warnIf, intersperse} from '@xh/hoist/utils/js';
+import {isNil, isString, partition, pull} from 'lodash';
 import {ReactNode} from 'react';
 
 /**
@@ -54,11 +54,8 @@ export function multiFieldRenderer(value, context): ReactNode {
 
     // Insert delimiter if applicable
     if (delimiter) {
-        const insertDelimiterFn = (value, idx, array) => {
-            return array[idx + 1] ? [value, renderDelimiter(delimiter)] : value;
-        };
-        topRowItems = flatMap(topRowItems, insertDelimiterFn);
-        bottomRowItems = flatMap(bottomRowItems, insertDelimiterFn);
+        topRowItems = intersperse(topRowItems, renderDelimiter(delimiter));
+        bottomRowItems = intersperse(bottomRowItems, renderDelimiter(delimiter));
     }
 
     return div({
@@ -126,7 +123,7 @@ function renderSubField({colId, label}, context) {
         ? null
         : div({
               className: 'xh-multifield-renderer-field',
-              items: [label && !renderedValIsEmpty ? `${label}: ` : null, renderedVal]
+              items: [label ? `${label}: ` : null, renderedVal]
           });
 }
 
