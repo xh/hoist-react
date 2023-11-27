@@ -198,7 +198,7 @@ export class FileChooserModel extends HoistModel {
                     'Note that this example is configured to accept only ',
                     code(
                         isArray(this.accept)
-                            ? this.accept.map(type => '*' + type).join(', ')
+                            ? this.accept.map(type => '*' + type).join(' and ')
                             : this.accept
                     ),
                     ' file types.'

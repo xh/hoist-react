@@ -4,8 +4,12 @@
 
 ### 💥 Breaking Changes
 
-* The constructors for `ColumnGroup` no long accept arbitrary rest (e.g `...rest`)
-arguments for applying app-specific data to the object. Instead, use the new `appData` property.
+* The constructors for `ColumnGroup` no longer accept arbitrary rest (e.g `...rest`) arguments
+  for applying app-specific data to the object. Instead, use the new `appData` property.
+* `FileChooser` now handles its primary configuration in its model instead of component props.
+* `FileChooserConfig` now includes `targetDisplay` and `rejectDisplay`
+  (instead of  static `targetText` depending on `onDragActive`). These are either static nodes or
+  functions that return nodes for customization.
 
 ### ⚙️ Technical
 
