@@ -2,11 +2,20 @@
 
 ## 60.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* The constructors for `ColumnGroup` no long accept arbitrary rest (e.g `...rest`)
+arguments for applying app-specific data to the object. Instead, use the new `appData` property.
+
 ### ⚙️ Technical
 
 * Enhanced `LogUtils` to support logging objects (and any other non-string values). Also
   added new exports for `logWarn()` and `logError()` with the same standardized formatting.
 * Added standardized `LogUtils` methods to `HoistBase`, for use within Hoist models and services.
+
+### ⚙️ Typescript API Adjustments
+
+* Updated type for `ReactionSpec.equals` to include already-supported string shorthands.
 
 ## 59.3.2 - 2023-11-21
 

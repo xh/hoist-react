@@ -36,6 +36,7 @@ import {
 } from '@xh/hoist/mobx';
 import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
 import {IReactionDisposer} from 'mobx/dist/internal';
+import {IEqualsComparer} from 'mobx/src/internal';
 
 export interface HoistBaseClass {
     new (...args: any[]): HoistBase;
@@ -293,7 +294,7 @@ export abstract class HoistBase {
 /**
  * Object containing options accepted by MobX 'reaction' API as well as arguments below.
  */
-export interface ReactionSpec<T = any> extends IReactionOptions<T, any> {
+export type ReactionSpec<T = any> = IReactionOptions<T, any> & {
     /**
      * Function returning data to observe - first arg to the underlying reaction() call.
      * Specify this or `when`.
@@ -311,7 +312,10 @@ export interface ReactionSpec<T = any> extends IReactionOptions<T, any> {
 
     /** Specify to debounce run function */
     debounce?: DebounceSpec;
-}
+
+    /** Specify a default from {@link comparer} or a custom comparer function. */
+    equals?: keyof typeof comparer | IEqualsComparer<T>;
+};
 
 /**
  * Object containing options accepted by MobX 'autorun' API as well as arguments below.
