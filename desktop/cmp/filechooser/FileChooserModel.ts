@@ -10,12 +10,12 @@ import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {isArray, isEmpty} from 'lodash';
+import {isEmpty} from 'lodash';
 import {filesize} from 'filesize';
 import {find, uniqBy, without} from 'lodash';
 import {FileRejection} from 'react-dropzone';
 import {ReactNode} from 'react';
-import {code, fragment, p} from '@xh/hoist/cmp/layout';
+import {p} from '@xh/hoist/cmp/layout';
 
 export interface FileChooserConfig {
     /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
@@ -190,21 +190,8 @@ export class FileChooserModel extends HoistModel {
     //----------------
     // Implementation
     //----------------
-    private defaultTargetDisplay = () => {
-        return fragment(
-            p('Drag and drop your files here, or click to browse.'),
-            p({
-                items: [
-                    'Note that this example is configured to accept only ',
-                    code(
-                        isArray(this.accept)
-                            ? this.accept.map(type => '*' + type).join(' and ')
-                            : this.accept
-                    ),
-                    ' file types.'
-                ]
-            })
-        );
+    private defaultTargetDisplay = (): ReactNode => {
+        return 'Drag and drop files here, or click to browse...';
     };
 
     private defaultRejectDisplay = () => {
