@@ -119,7 +119,7 @@ function loggedDo<T>(messages: Some<unknown>, fn: () => T, source: LogSource, le
 
 function parseSource(source: LogSource): string {
     if (isString(source)) return source;
-    if (source['displayName']) return source['displayName'];
+    if (source?.['displayName']) return source['displayName'];
     if (source?.constructor) return source.constructor.name;
     return null;
 }
