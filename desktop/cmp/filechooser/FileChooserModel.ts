@@ -194,7 +194,7 @@ export class FileChooserModel extends HoistModel {
         return 'Drag and drop files here, or click to browse...';
     };
 
-    private defaultRejectDisplay = () => {
+    private defaultRejectDisplay = (): ReactNode => {
         if (isEmpty(this.lastRejected)) return null;
         console.log('File rejections:', this.lastRejected);
         const failedFiles = this.lastRejected.map(rejection => rejection.file.name).join(', ');
