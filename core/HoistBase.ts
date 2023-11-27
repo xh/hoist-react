@@ -35,8 +35,7 @@ import {
     when as mobxWhen
 } from '@xh/hoist/mobx';
 import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
-import {IReactionDisposer} from 'mobx/dist/internal';
-import {IEqualsComparer} from 'mobx/src/internal';
+import {IReactionDisposer, IEqualsComparer} from 'mobx/dist/internal';
 
 export interface HoistBaseClass {
     new (...args: any[]): HoistBase;
