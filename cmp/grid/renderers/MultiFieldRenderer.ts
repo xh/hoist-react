@@ -7,7 +7,7 @@
 import {ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
-import {isNil, isString, partition} from 'lodash';
+import {isNil, isString, partition, pull, flatMap} from 'lodash';
 import {ReactNode} from 'react';
 
 /**
@@ -30,8 +30,9 @@ export function multiFieldRenderer(value, context): ReactNode {
     );
 
     const {mainRenderer, delimiter, subFields = []} = multiFieldConfig,
-        [topFields, bottomFields] = partition(subFields, it => it.position === 'top'),
-        topRowItems = [],
+        [topFields, bottomFields] = partition(subFields, it => it.position === 'top');
+
+    let topRowItems = [],
         bottomRowItems = [];
 
     // Render main field to top row
@@ -39,20 +40,26 @@ export function multiFieldRenderer(value, context): ReactNode {
 
     // Render SubFields to top row
     topFields.forEach((it, idx) => {
-        const prevItem = topRowItems[idx - 1];
-        if (delimiter && prevItem?.props.children.every(c => c && c !== ''))
-            topRowItems.push(renderDelimiter(delimiter));
         topRowItems.push(renderSubField(it, context));
     });
 
+    pull(topRowItems, null);
+
     // Render SubFields to bottom row
     bottomFields.forEach((it, idx) => {
-        const prevItem = bottomRowItems[idx - 1];
-        if (delimiter && idx > 0 && prevItem?.props.children.every(c => c && c !== '')) {
-            bottomRowItems.push(renderDelimiter(delimiter));
-        }
         bottomRowItems.push(renderSubField(it, context));
     });
+
+    pull(bottomRowItems, null);
+
+    // Insert delimiter if applicable
+    if (delimiter) {
+        const insertDelimiterFn = (value, idx, array) => {
+            return array[idx + 1] ? [value, renderDelimiter(delimiter)] : value;
+        };
+        topRowItems = flatMap(topRowItems, insertDelimiterFn);
+        bottomRowItems = flatMap(bottomRowItems, insertDelimiterFn);
+    }
 
     return div({
         className: 'xh-multifield-renderer',
@@ -114,14 +121,17 @@ function renderSubField({colId, label}, context) {
 
     const renderedVal = renderValue(value, renderer, column, context),
         renderedValIsEmpty = renderedVal === '' || isNil(renderedVal);
-    return div({
-        className: 'xh-multifield-renderer-field',
-        items: [label && !renderedValIsEmpty ? `${label}: ` : null, renderedVal]
-    });
+
+    return renderedValIsEmpty
+        ? null
+        : div({
+              className: 'xh-multifield-renderer-field',
+              items: [label && !renderedValIsEmpty ? `${label}: ` : null, renderedVal]
+          });
 }
 
 function renderValue(value, renderer, column, context) {
-    if (!value) return null;
+    if (isNil(value)) return null;
     return renderer ? renderer(value, {...context, column}) : value;
 }
 
