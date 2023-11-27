@@ -7,7 +7,7 @@
 import {ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
-import {isString, partition} from 'lodash';
+import {isNil, isString, partition} from 'lodash';
 import {ReactNode} from 'react';
 
 /**
@@ -38,14 +38,19 @@ export function multiFieldRenderer(value, context): ReactNode {
     topRowItems.push(renderMainField(value, mainRenderer, context));
 
     // Render SubFields to top row
-    topFields.forEach(it => {
-        if (delimiter) topRowItems.push(renderDelimiter(delimiter));
+    topFields.forEach((it, idx) => {
+        const prevItem = topRowItems[idx - 1];
+        if (delimiter && prevItem?.props.children.every(c => c && c !== ''))
+            topRowItems.push(renderDelimiter(delimiter));
         topRowItems.push(renderSubField(it, context));
     });
 
     // Render SubFields to bottom row
     bottomFields.forEach((it, idx) => {
-        if (delimiter && idx > 0) bottomRowItems.push(renderDelimiter(delimiter));
+        const prevItem = bottomRowItems[idx - 1];
+        if (delimiter && idx > 0 && prevItem?.props.children.every(c => c && c !== '')) {
+            bottomRowItems.push(renderDelimiter(delimiter));
+        }
         bottomRowItems.push(renderSubField(it, context));
     });
 
@@ -107,13 +112,16 @@ function renderSubField({colId, label}, context) {
 
     if (label && !isString(label)) label = headerName;
 
+    const renderedVal = renderValue(value, renderer, column, context),
+        renderedValIsEmpty = renderedVal === '' || isNil(renderedVal);
     return div({
         className: 'xh-multifield-renderer-field',
-        items: [label ? `${label}: ` : null, renderValue(value, renderer, column, context)]
+        items: [label && !renderedValIsEmpty ? `${label}: ` : null, renderedVal]
     });
 }
 
 function renderValue(value, renderer, column, context) {
+    if (!value) return null;
     return renderer ? renderer(value, {...context, column}) : value;
 }
 
