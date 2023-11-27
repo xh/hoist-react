@@ -28,7 +28,7 @@ export class CustomRowModel extends HoistModel {
     /** FieldFilter config output of this row. */
     @computed.struct
     get value(): FieldFilterSpec {
-        const {field} = this.fieldSpec;
+        const {field, filterDateAsLocalDate} = this.fieldSpec;
 
         let op = this.op,
             value = this.inputVal;
@@ -39,6 +39,8 @@ export class CustomRowModel extends HoistModel {
         } else if (op === 'not blank') {
             op = '!=';
             value = null;
+        } else if (filterDateAsLocalDate) {
+            value = this.fieldSpec.parseLocalDateAsDate(value, op);
         } else if (isNil(value)) {
             return null;
         }

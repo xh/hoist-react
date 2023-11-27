@@ -61,7 +61,7 @@ export function minimalFieldOption({fieldSpec}): FilterChooserOption {
  * Create an option representing an existing or suggested FieldFilter.
  */
 export function fieldFilterOption({filter, fieldSpec, isExact = false}): FilterChooserOption {
-    let {fieldType, displayName} = fieldSpec as FilterChooserFieldSpec,
+    let {fieldType, displayName, filterDateAsLocalDate} = fieldSpec as FilterChooserFieldSpec,
         displayOp,
         displayValue;
 
@@ -70,7 +70,8 @@ export function fieldFilterOption({filter, fieldSpec, isExact = false}): FilterC
         displayValue = filter.op === '!=' ? 'not blank' : 'blank';
     } else {
         displayOp = filter.op;
-        fieldType = fieldType === 'tags' ? 'string' : fieldType;
+        if (fieldType === 'tags') fieldType = 'string';
+        if (filterDateAsLocalDate) fieldType = 'date';
         displayValue = fieldSpec.renderValue(
             parseFieldValue(filter.value, fieldType, null),
             filter.op

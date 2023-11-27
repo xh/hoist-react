@@ -80,9 +80,10 @@ const inputField = hoistCmp.factory<CustomRowModel>(({model}) => {
             enableShorthandUnits: true
         });
     } else if (fieldSpec.isDateBasedFieldType) {
+        const fieldType = fieldSpec.fieldType as 'localDate' | 'date';
         return dateInput({
             ...props,
-            valueType: fieldSpec.fieldType as 'localDate' | 'date'
+            valueType: fieldSpec.filterDateAsLocalDate ? 'date' : fieldType
         });
     } else if (fieldSpec.supportsSuggestions(op as FieldFilterOperator)) {
         return select({

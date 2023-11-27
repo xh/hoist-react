@@ -256,6 +256,9 @@ arguments for applying app-specific data to the object. Instead, use the new `ap
 * New `XH.pageState` provides observable access to the current lifecycle state of the app, allowing
   apps to react to changes in page visibility and focus, as well as detecting when the browser has
   frozen a tab due to inactivity or navigation.
+* Improved filtering of fields with `type: date` to use the end of day when evaluating `>` or `<=`
+  operators, resulting in more intuitive results when a user inputs or selects a `yyyy-mm-dd`
+  comparison value. Spec `fieldSpec.fieldType: 'localDate'` to opt-in to this behavior.
 
 ### 💥 Breaking Changes
 
