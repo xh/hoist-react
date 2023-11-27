@@ -80,7 +80,7 @@ export class FileChooserModel extends HoistModel {
         makeObservable(this);
 
         this.accept = config.accept;
-        this.maxSize = config.maxSize ?? 10000000;
+        this.maxSize = config.maxSize ?? 100000000;
         this.minSize = config.minSize ?? 0;
         this.enableMulti = config.enableMulti ?? true;
         this.enableAddMulti = config.enableAddMulti ?? this.enableMulti;
