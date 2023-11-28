@@ -4,7 +4,7 @@ import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, li, ul} from '@xh/hoist/cmp/layout';
 import {HoistModel, HoistRole, LoadSpec, managed, ReactionSpec, XH} from '@xh/hoist/core';
-import {RecordActionSpec} from '@xh/hoist/data';
+import {RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {compactDateRenderer, fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
@@ -48,16 +48,10 @@ export class RolesModel extends HoistModel {
     // Reactions
     // -------------------------------
 
-    private selectedRoleReaction(): ReactionSpec<string> {
-        const {gridModel} = this;
+    private selectedRoleReaction(): ReactionSpec<StoreRecord> {
         return {
-            track: () => {
-                const {selectedRecord} = gridModel;
-                if (!selectedRecord) return null;
-                // Only fire when record has been modified or selection has changed
-                return [selectedRecord.id, selectedRecord.get('lastUpdated')].join('::');
-            },
-            run: () => (this.roleInspectorModel.role = gridModel.selectedRecord?.data as HoistRole)
+            track: () => this.gridModel.selectedRecord,
+            run: record => (this.roleInspectorModel.role = record?.data as HoistRole)
         };
     }
 
@@ -66,10 +60,10 @@ export class RolesModel extends HoistModel {
     // -------------------------------
 
     private async deleteAsync(role: HoistRole) {
-        const {allUsers, allDirectoryGroups, inheritedBy} = role,
-            userCount = allUsers.length,
-            groupCount = allDirectoryGroups.length,
-            roleCount = inheritedBy.length;
+        const {effectiveUsers, effectiveDirectoryGroups, effectiveRoles} = role,
+            userCount = effectiveUsers.length,
+            groupCount = effectiveDirectoryGroups.length,
+            roleCount = effectiveRoles.length;
 
         if (userCount || groupCount || roleCount) {
             const confirm = await XH.confirm({
@@ -118,26 +112,28 @@ export class RolesModel extends HoistModel {
             store: {
                 idSpec: 'name',
                 fields: [
-                    {name: 'inherits', displayName: 'Directly Inherits', type: 'tags'},
-                    {name: 'allInheritedRoleNames', displayName: 'Inherits', type: 'tags'},
-                    {name: 'users', displayName: 'Direct Users', type: 'tags'},
-                    {name: 'directoryGroups', displayName: 'Direct Groups', type: 'tags'},
-                    {name: 'inheritedBy', type: 'tags'},
-                    {name: 'indirectlyInheritedBy', type: 'tags'},
-                    {name: 'directlyInheritedBy', type: 'tags'},
-                    {name: 'allUsers', type: 'json'},
-                    {name: 'allUserNames', displayName: 'Users', type: 'tags'},
-                    {name: 'allDirectoryGroupNames', displayName: 'Groups', type: 'tags'},
-                    {name: 'allDirectoryGroups', type: 'json'},
-                    {name: 'allInheritedRoles', type: 'json'},
-                    {name: 'inheritanceMap', type: 'json'},
-                    {name: 'undeletable', type: 'bool'}
+                    {name: 'users', type: 'tags'},
+                    {name: 'directoryGroups', type: 'tags'},
+                    {name: 'roles', type: 'tags'},
+                    {name: 'inheritedRoles', type: 'json'},
+                    {name: 'effectiveUsers', type: 'json'},
+                    {name: 'effectiveDirectoryGroups', type: 'json'},
+                    {name: 'effectiveRoles', type: 'json'},
+                    {name: 'inheritedRoleNames', displayName: 'Inherited Roles', type: 'json'},
+                    {name: 'effectiveUserNames', displayName: 'Effective Users', type: 'json'},
+                    {
+                        name: 'effectiveDirectoryGroupNames',
+                        displayName: 'Effective Directory Groups',
+                        type: 'json'
+                    },
+                    {name: 'effectiveRoleNames', displayName: 'Effective Roles', type: 'json'}
                 ],
                 processRawData: raw => ({
                     ...raw,
-                    allInheritedRoleNames: raw.allInheritedRoles.map(it => it.role),
-                    allUserNames: raw.allUsers.map(it => it.name),
-                    allDirectoryGroupNames: raw.allDirectoryGroups.map(it => it.name)
+                    effectiveUserNames: raw.effectiveUsers.map(it => it.name),
+                    effectiveDirectoryGroupNames: raw.effectiveDirectoryGroups.map(it => it.name),
+                    effectiveRoleNames: raw.effectiveRoles.map(it => it.name),
+                    inheritedRoleNames: raw.inheritedRoles.map(it => it.role)
                 })
             },
             colDefaults: {
@@ -197,15 +193,14 @@ export class RolesModel extends HoistModel {
         return new FilterChooserModel({
             bind: this.gridModel.store,
             fieldSpecs: [
-                'allInheritedRoleNames',
-                'inherits',
-                'inheritedBy',
-                'directlyInheritedBy',
-                'allUserNames',
-                'allDirectoryGroupNames',
+                'name',
                 'users',
                 'directoryGroups',
-                'name',
+                'roles',
+                'inheritedRoleNames',
+                'effectiveUserNames',
+                'effectiveDirectoryGroupNames',
+                'effectiveRoleNames',
                 'lastUpdatedBy',
                 {
                     field: 'lastUpdated',

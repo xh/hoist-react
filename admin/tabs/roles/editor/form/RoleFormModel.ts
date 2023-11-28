@@ -1,11 +1,5 @@
-import {
-    assignmentsPanel,
-    assignmentsTab
-} from '@xh/hoist/admin/tabs/roles/editor/form/cmp/Assignments';
-import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, HoistRole, managed, SelectOption, XH} from '@xh/hoist/core';
 import {RecordActionSpec, required} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth, selectEditor} from '@xh/hoist/desktop/cmp/grid';
@@ -22,48 +16,37 @@ export class RoleFormModel extends HoistModel {
     @managed readonly formModel: FormModel = this.createFormModel();
     @managed readonly usersGridModel: GridModel = this.createGridModel('users');
     @managed readonly directoryGroupsGridModel: GridModel = this.createGridModel('groups');
-    @managed readonly inheritsGridModel: GridModel = this.createGridModel('inherits');
-    @managed readonly tabContainerModel: TabContainerModel = this.createTabContainerModel();
+    @managed readonly rolesGridModel: GridModel = this.createGridModel('roles');
 
     @observable isEditingExistingRole = false;
 
-    @observable.ref directoryGroupOptions: string[] = [];
+    @observable.ref invalidNames: string[] = [];
     @observable.ref groupOptions: string[] = [];
     @observable.ref userOptions: string[] = [];
-    @observable.ref inheritsOptions: SelectOption[] = [];
-    @observable.ref invalidNames: string[] = [];
+    @observable.ref directoryGroupOptions: string[] = [];
+    @observable.ref roleOptions: SelectOption[] = [];
 
-    // Returns true if any of the form fields / grids are dirty
     @computed
     get isDirty(): boolean {
-        return this.formModel.isDirty || this.isSubstantiallyDirty;
-    }
-
-    // Ignores meta-data changes
-    @computed
-    get isSubstantiallyDirty(): boolean {
-        return this.hasDirtyAssignments || this.hasDirtyInherits;
+        return this.formModel.isDirty || this.hasDirtyMembers;
     }
 
     @computed
-    get hasDirtyAssignments(): boolean {
+    get hasDirtyMembers(): boolean {
         return (
-            this.directoryGroupsGridModel.store.isModified || this.usersGridModel.store.isModified
+            this.usersGridModel.store.isModified ||
+            this.directoryGroupsGridModel.store.isModified ||
+            this.rolesGridModel.store.isModified
         );
-    }
-
-    @computed
-    get hasDirtyInherits(): boolean {
-        return this.inheritsGridModel.store.isModified;
     }
 
     @computed
     get isValid(): boolean {
         return (
             this.formModel.isValid &&
-            this.directoryGroupsGridModel.store.isValid &&
             this.usersGridModel.store.isValid &&
-            this.inheritsGridModel.store.isValid
+            this.directoryGroupsGridModel.store.isValid &&
+            this.rolesGridModel.store.isValid
         );
     }
 
@@ -76,8 +59,8 @@ export class RoleFormModel extends HoistModel {
         this.directoryGroupsGridModel.loadData(role?.directoryGroups.map(name => ({name})) ?? []);
         this.directoryGroupOptions = uniq(allRoles.flatMap(role => role.directoryGroups)).sort();
         this.groupOptions = uniq(allRoles.map(it => it.groupName)).sort();
-        this.inheritsGridModel.loadData(role?.inherits.map(name => ({name})) ?? []);
-        this.inheritsOptions = map(groupBy(allRoles, 'groupName'), (roles, groupName) => ({
+        this.rolesGridModel.loadData(role?.roles.map(name => ({name})) ?? []);
+        this.roleOptions = map(groupBy(allRoles, 'groupName'), (roles, groupName) => ({
             label: groupName,
             options: roles.filter(it => it.name !== role?.name).map(it => it.name)
         }));
@@ -87,8 +70,9 @@ export class RoleFormModel extends HoistModel {
     async validateAsync(): Promise<boolean> {
         const results = await Promise.all([
             this.formModel.validateAsync(),
+            this.usersGridModel.store.validateAsync(),
             this.directoryGroupsGridModel.store.validateAsync(),
-            this.usersGridModel.store.validateAsync()
+            this.rolesGridModel.store.validateAsync()
         ]);
         return results.every(Boolean);
     }
@@ -100,7 +84,7 @@ export class RoleFormModel extends HoistModel {
             directoryGroups: this.directoryGroupsGridModel.store.allRecords.map(it =>
                 it.get('name')
             ),
-            inherits: this.inheritsGridModel.store.allRecords.map(it => it.get('name'))
+            roles: this.rolesGridModel.store.allRecords.map(it => it.get('name'))
         } as HoistRole;
     }
 
@@ -127,7 +111,7 @@ export class RoleFormModel extends HoistModel {
         });
     }
 
-    private createGridModel(entity: 'users' | 'groups' | 'inherits'): GridModel {
+    private createGridModel(entity: 'users' | 'groups' | 'roles'): GridModel {
         return new GridModel({
             selModel: 'multiple',
             store: {
@@ -150,11 +134,11 @@ export class RoleFormModel extends HoistModel {
                                     ? this.userOptions
                                     : entity === 'groups'
                                     ? this.directoryGroupOptions
-                                    : this.inheritsOptions;
+                                    : this.roleOptions;
                         return selectEditor({
                             ...props,
                             inputProps: {
-                                enableCreate: entity !== 'inherits',
+                                enableCreate: entity !== 'roles',
                                 options: this.filterSelected(options, selected)
                             }
                         });
@@ -202,23 +186,5 @@ export class RoleFormModel extends HoistModel {
                 gridModel.store.removeRecords(selectedRecords),
             recordsRequired: true
         };
-    }
-
-    private createTabContainerModel(): TabContainerModel {
-        return new TabContainerModel({
-            persistWith: {...RolesModel.PERSIST_WITH, path: 'editorTabContainer'},
-            tabs: [
-                {
-                    id: 'assignments',
-                    icon: Icon.userCheck(),
-                    content: assignmentsTab
-                },
-                {
-                    id: 'inheritedRoles',
-                    icon: Icon.treeList(),
-                    content: () => assignmentsPanel({entity: 'Roles'})
-                }
-            ]
-        });
     }
 }

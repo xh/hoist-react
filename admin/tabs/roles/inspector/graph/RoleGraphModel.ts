@@ -18,17 +18,17 @@ export class RoleGraphModel extends HoistModel {
                 // Otherwise HC attempts to match nodes by id, causing incorrect rendering.
                 await wait();
 
-                const {name, allInheritedRoles} = role;
                 this.chartModel.setSeries({
                     type: 'treegraph',
-                    data: [
-                        ...allInheritedRoles.map(({role, inheritedBy}) => ({
-                            id: role,
-                            name: role,
-                            parent: inheritedBy
-                        })),
-                        {id: name, name}
-                    ]
+                    data: []
+                    // data: [
+                    //     ...allInheritedRoles.map(({role, inheritedBy}) => ({
+                    //         id: role,
+                    //         name: role,
+                    //         parent: inheritedBy
+                    //     })),
+                    //     {id: name, name}
+                    // ]
                 });
             },
             fireImmediately: true,

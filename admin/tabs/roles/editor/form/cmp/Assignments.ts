@@ -8,10 +8,14 @@ import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 
-export const assignmentsTab = hoistCmp.factory(() =>
+export const assignments = hoistCmp.factory(() =>
     hframe({
         className: `role-form__assignments`,
-        items: [assignmentsPanel({entity: 'Users'}), assignmentsPanel({entity: 'Directory Groups'})]
+        items: [
+            assignmentsPanel({entity: 'Users'}),
+            assignmentsPanel({entity: 'Directory Groups'}),
+            assignmentsPanel({entity: 'Roles'})
+        ]
     })
 );
 
@@ -29,7 +33,7 @@ export const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
                 ? model.usersGridModel
                 : entity === 'Directory Groups'
                 ? model.directoryGroupsGridModel
-                : model.inheritsGridModel;
+                : model.rolesGridModel;
 
         return panel({
             className,

@@ -1,7 +1,7 @@
+import {assignments} from '@xh/hoist/admin/tabs/roles/editor/form/cmp/Assignments';
 import {RoleFormModel} from '@xh/hoist/admin/tabs/roles/editor/form/RoleFormModel';
 import {form} from '@xh/hoist/cmp/form';
 import {hbox, vbox, vframe} from '@xh/hoist/cmp/layout';
-import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
@@ -45,7 +45,7 @@ export const roleForm = hoistCmp.factory({
                         ]
                     })
                 }),
-                tabContainer()
+                assignments()
             ]
         });
     }

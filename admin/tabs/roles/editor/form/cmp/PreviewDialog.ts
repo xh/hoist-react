@@ -10,8 +10,7 @@ import './PreviewDialog.scss';
 export const previewDialog = hoistCmp.factory<RoleEditorModel>(({model}) => {
     if (!model.isPreviewDialogOpen) return null;
 
-    const {currentRoleInspectorModel, previewRoleInspectorModel, role, isRolePreviewVisible} =
-            model,
+    const {currentRoleInspectorModel, previewRoleInspectorModel, role} = model,
         name = role?.name ?? previewRoleInspectorModel.role.name;
 
     return dialog({
@@ -30,7 +29,6 @@ export const previewDialog = hoistCmp.factory<RoleEditorModel>(({model}) => {
                 modelConfig: {
                     collapsible: false,
                     defaultSize: '50%',
-                    resizable: isRolePreviewVisible,
                     side: 'left'
                 }
             }),
@@ -38,8 +36,7 @@ export const previewDialog = hoistCmp.factory<RoleEditorModel>(({model}) => {
                 compactHeader: true,
                 headerClassName: 'role-preview-dialog__unsaved-header',
                 title: 'Your Version (Unsaved)',
-                item: roleInspector({model: previewRoleInspectorModel}),
-                omit: !isRolePreviewVisible
+                item: roleInspector({model: previewRoleInspectorModel})
             })
         )
     });

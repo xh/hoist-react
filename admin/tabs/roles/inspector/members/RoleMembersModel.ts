@@ -81,7 +81,7 @@ export class RoleMembersModel extends HoistModel {
 
         this.gridModel.loadData([
             // 1 - Users
-            ...role.allUsers.map(it => ({
+            ...role.effectiveUsers.map(it => ({
                 name: it.name,
                 roles: this.sortThisRoleFirst(it.roles),
                 isInherited: !it.roles.includes(name),
@@ -89,36 +89,19 @@ export class RoleMembersModel extends HoistModel {
             })),
 
             // 2 - Directory Groups
-            ...role.allDirectoryGroups.map(it => ({
+            ...role.effectiveDirectoryGroups.map(it => ({
                 name: it.name,
                 roles: this.sortThisRoleFirst(it.roles),
                 isInherited: !it.roles.includes(name),
                 type: types.DIRECTORY_GROUP
             })),
 
-            // 3a - Roles Directly Inheriting This Role
-            ...role.directlyInheritedBy.map(it => ({
+            // 3 - Roles
+            ...role.effectiveRoles.map(it => ({
                 name: it,
                 roles: [name],
                 type: types.ROLE
-            })),
-
-            // 3b - Roles Indirectly Inheriting This Role
-            ...role.indirectlyInheritedBy.map(inheritedBy => {
-                const {inheritanceMap} = this.rolesModel.getRole(inheritedBy),
-                    inheritanceChain = [];
-
-                for (let next = name; next && next !== inheritedBy; next = inheritanceMap[next]) {
-                    inheritanceChain.unshift(next);
-                }
-
-                return {
-                    name: inheritedBy,
-                    roles: inheritanceChain,
-                    type: types.ROLE,
-                    isInherited: true
-                };
-            })
+            }))
         ]);
     }
 
