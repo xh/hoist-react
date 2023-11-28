@@ -107,9 +107,10 @@ function renderSubField({colId, label}, context) {
 
     if (label && !isString(label)) label = headerName;
 
-    const renderedVal = renderValue(value, renderer, column, context);
+    const renderedVal = renderValue(value, renderer, column, context),
+        renderedValIsEmpty = renderedVal === '' || isNil(renderedVal);
 
-    return isNil(renderedVal)
+    return renderedValIsEmpty
         ? null
         : div({
               className: 'xh-multifield-renderer-field',
@@ -118,8 +119,8 @@ function renderSubField({colId, label}, context) {
 }
 
 function renderValue(value, renderer, column, context) {
-    if (isNil(value)) return null;
-    return renderer ? renderer(value, {...context, column}) : value;
+    const ret = renderer ? renderer(value, {...context, column}) : value;
+    return isNil(ret) ? null : ret;
 }
 
 function renderDelimiter(delimiter) {
