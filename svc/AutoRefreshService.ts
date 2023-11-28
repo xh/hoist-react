@@ -69,7 +69,7 @@ export class AutoRefreshService extends HoistService {
             pendingLoad = lastRequested && lastRequested > lastCompleted;
 
         if (!pendingLoad && olderThan(last, this.interval * SECONDS)) {
-            this.logDebug('Triggering application auto-refresh.');
+            this.logDebug('Triggering application auto-refresh');
             await ctx.autoRefreshAsync();
         }
     }
