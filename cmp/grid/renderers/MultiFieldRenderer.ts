@@ -32,24 +32,15 @@ export function multiFieldRenderer(value, context): ReactNode {
     const {mainRenderer, delimiter, subFields = []} = multiFieldConfig,
         [topFields, bottomFields] = partition(subFields, it => it.position === 'top');
 
-    let topRowItems = [],
-        bottomRowItems = [];
-
-    // Render main field to top row
-    topRowItems.push(renderMainField(value, mainRenderer, context));
-
-    // Render SubFields to top row
-    topFields.forEach((it, idx) => {
-        topRowItems.push(renderSubField(it, context));
-    });
-
+    // Render main field and subfields to top row
+    let topRowItems: ReactNode[] = [
+        renderMainField(value, mainRenderer, context),
+        ...topFields.map(it => renderSubField(it, context))
+    ];
     pull(topRowItems, null);
 
-    // Render SubFields to bottom row
-    bottomFields.forEach((it, idx) => {
-        bottomRowItems.push(renderSubField(it, context));
-    });
-
+    // Render subfield to bottom row
+    let bottomRowItems: ReactNode[] = bottomFields.map(it => renderSubField(it, context));
     pull(bottomRowItems, null);
 
     // Insert delimiter if applicable
@@ -116,10 +107,9 @@ function renderSubField({colId, label}, context) {
 
     if (label && !isString(label)) label = headerName;
 
-    const renderedVal = renderValue(value, renderer, column, context),
-        renderedValIsEmpty = renderedVal === '' || isNil(renderedVal);
+    const renderedVal = renderValue(value, renderer, column, context);
 
-    return renderedValIsEmpty
+    return isNil(renderedVal)
         ? null
         : div({
               className: 'xh-multifield-renderer-field',
