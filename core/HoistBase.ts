@@ -140,12 +140,12 @@ export abstract class HoistBase {
     addReaction(...specs: ReactionSpec<any>[]): IReactionDisposer | IReactionDisposer[] {
         const disposers = specs.map(s => {
             if (!s) return null;
-            let {track, when, run, debounce, ...opts} = s;
+            let {track, when, run, debounce, ...rest} = s;
             throwIf(
                 (track && when) || (!track && !when),
                 "Must specify either 'track' or 'when' in addReaction."
             );
-            opts = parseReactionOptions(opts);
+            const opts = parseReactionOptions(rest);
             run = bindAndDebounce(this, run, debounce);
 
             const disposer = track ? mobxReaction(track, run, opts) : mobxWhen(when, run, opts);
@@ -293,7 +293,7 @@ export abstract class HoistBase {
 /**
  * Object containing options accepted by MobX 'reaction' API as well as arguments below.
  */
-export type ReactionSpec<T = any> = IReactionOptions<T, any> & {
+export type ReactionSpec<T = any> = Omit<IReactionOptions<T, any>, 'equals'> & {
     /**
      * Function returning data to observe - first arg to the underlying reaction() call.
      * Specify this or `when`.
