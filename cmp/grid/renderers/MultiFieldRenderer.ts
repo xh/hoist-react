@@ -6,8 +6,8 @@
  */
 import {ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
-import {isString, partition} from 'lodash';
+import {throwIf, warnIf, intersperse} from '@xh/hoist/utils/js';
+import {isNil, isString, partition, pull} from 'lodash';
 import {ReactNode} from 'react';
 
 /**
@@ -30,24 +30,33 @@ export function multiFieldRenderer(value, context): ReactNode {
     );
 
     const {mainRenderer, delimiter, subFields = []} = multiFieldConfig,
-        [topFields, bottomFields] = partition(subFields, it => it.position === 'top'),
-        topRowItems = [],
+        [topFields, bottomFields] = partition(subFields, it => it.position === 'top');
+
+    let topRowItems = [],
         bottomRowItems = [];
 
     // Render main field to top row
     topRowItems.push(renderMainField(value, mainRenderer, context));
 
     // Render SubFields to top row
-    topFields.forEach(it => {
-        if (delimiter) topRowItems.push(renderDelimiter(delimiter));
+    topFields.forEach((it, idx) => {
         topRowItems.push(renderSubField(it, context));
     });
 
+    pull(topRowItems, null);
+
     // Render SubFields to bottom row
     bottomFields.forEach((it, idx) => {
-        if (delimiter && idx > 0) bottomRowItems.push(renderDelimiter(delimiter));
         bottomRowItems.push(renderSubField(it, context));
     });
+
+    pull(bottomRowItems, null);
+
+    // Insert delimiter if applicable
+    if (delimiter) {
+        topRowItems = intersperse(topRowItems, renderDelimiter(delimiter));
+        bottomRowItems = intersperse(bottomRowItems, renderDelimiter(delimiter));
+    }
 
     return div({
         className: 'xh-multifield-renderer',
@@ -107,13 +116,19 @@ function renderSubField({colId, label}, context) {
 
     if (label && !isString(label)) label = headerName;
 
-    return div({
-        className: 'xh-multifield-renderer-field',
-        items: [label ? `${label}: ` : null, renderValue(value, renderer, column, context)]
-    });
+    const renderedVal = renderValue(value, renderer, column, context),
+        renderedValIsEmpty = renderedVal === '' || isNil(renderedVal);
+
+    return renderedValIsEmpty
+        ? null
+        : div({
+              className: 'xh-multifield-renderer-field',
+              items: [label ? `${label}: ` : null, renderedVal]
+          });
 }
 
 function renderValue(value, renderer, column, context) {
+    if (isNil(value)) return null;
     return renderer ? renderer(value, {...context, column}) : value;
 }
 
