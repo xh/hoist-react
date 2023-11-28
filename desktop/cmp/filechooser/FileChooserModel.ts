@@ -15,7 +15,8 @@ import {filesize} from 'filesize';
 import {find, uniqBy, without} from 'lodash';
 import {FileRejection} from 'react-dropzone';
 import {ReactNode} from 'react';
-import {p} from '@xh/hoist/cmp/layout';
+import {br, p} from '@xh/hoist/cmp/layout';
+import {pluralize} from '@xh/hoist/utils/js';
 
 export interface FileChooserConfig {
     /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
@@ -43,15 +44,15 @@ export interface FileChooserConfig {
     showFileGrid?: boolean;
 
     /** Intro/help text to display within the dropzone target. */
-    targetDisplay?: ReactNode | ((model: FileChooserModel) => ReactNode);
+    targetDisplay?: ReactNode | ((model?: FileChooserModel, draggedFiles?: File[]) => ReactNode);
 
     /** Text to display within the dropzone target when files are rejected. */
-    rejectDisplay?: ReactNode | ((model: FileChooserModel) => ReactNode);
+    rejectDisplay?: ReactNode | ((model?: FileChooserModel, draggedFiles?: File[]) => ReactNode);
 }
 
 export class FileChooserModel extends HoistModel {
     //-------------------------
-    // Immutable Configuration
+    // Configuration
     //------------------------
     @bindable accept: Some<string>;
     @bindable maxSize: number;
@@ -59,8 +60,12 @@ export class FileChooserModel extends HoistModel {
     @bindable enableMulti: boolean;
     @bindable enableAddMulti: boolean;
     @bindable showFileGrid: boolean;
-    @bindable targetDisplay: ReactNode | ((model: FileChooserModel) => ReactNode);
-    @bindable rejectDisplay: ReactNode | ((model: FileChooserModel) => ReactNode);
+    @bindable targetDisplay:
+        | ReactNode
+        | ((model?: FileChooserModel, draggedFiles?: File[]) => ReactNode);
+    @bindable rejectDisplay:
+        | ReactNode
+        | ((model: FileChooserModel, draggedFiles: File[]) => ReactNode);
 
     //---------------
     // Runtime state
@@ -177,6 +182,9 @@ export class FileChooserModel extends HoistModel {
         if (accepted?.length > 1 && !this.enableMulti) {
             accepted = [accepted[0]];
         }
+        // TODO: why doesn't logDebug work? Log levels?
+        if (!isEmpty(accepted)) this.logInfo('Files accepted:', accepted);
+        if (!isEmpty(rejected)) this.logWarn('File rejections:', rejected);
         this.lastAccepted = accepted;
         this.lastRejected = rejected;
         this.addFiles(accepted);
@@ -190,17 +198,20 @@ export class FileChooserModel extends HoistModel {
     //----------------
     // Implementation
     //----------------
-    private defaultTargetDisplay = (): ReactNode => {
-        return 'Drag and drop files here, or click to browse...';
+    private defaultTargetDisplay = (model: FileChooserModel, draggedFiles: File[]): ReactNode => {
+        return !isEmpty(draggedFiles)
+            ? p(`Drop to add ${draggedFiles.length} ${pluralize('file', draggedFiles.length)}.`)
+            : p('Drag and drop files here, or click to browse...');
     };
 
-    private defaultRejectDisplay = (): ReactNode => {
+    private defaultRejectDisplay = (model: FileChooserModel, draggedFiles: File[]): ReactNode => {
         if (isEmpty(this.lastRejected)) return null;
-        console.log('File rejections:', this.lastRejected);
-        const failedFiles = this.lastRejected.map(rejection => rejection.file.name).join(', ');
+        const failedFiles = this.lastRejected.map(rejection => rejection.file.name).join(', '),
+            message = `Unable to accept ${this.lastRejected.length}
+                      ${pluralize('file', this.lastRejected.length)} for upload:`;
         return p({
             style: {overflow: 'hidden', textOverflow: 'ellipsis'},
-            item: `${this.lastRejected.length} files failed to upload: ${failedFiles}.`
+            items: [message, br(), `${failedFiles}`]
         });
     };
 }

@@ -5,14 +5,14 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
-import {div, hbox, input} from '@xh/hoist/cmp/layout';
+import {div, filler, hbox, input} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
 import classNames from 'classnames';
 import './FileChooser.scss';
 import {FileChooserModel} from './FileChooserModel';
-import {isFunction} from 'lodash';
+import {isEmpty, isFunction} from 'lodash';
 
 /**
  * A component to select one or more files from the local filesystem. Wraps the third-party
@@ -57,17 +57,22 @@ const dropzoneCmp = hoistCmp.factory<FileChooserModel>({
             maxSize: model.maxSize,
             minSize: model.minSize,
             multiple: model.enableAddMulti,
-            item: ({getRootProps, getInputProps, isDragActive}) => {
+            item: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
+                const targetDisplayItem = isFunction(targetDisplay)
+                        ? targetDisplay(model, draggedFiles)
+                        : targetDisplay,
+                    rejectDisplayItem =
+                        !isEmpty(model.lastRejected) && !isDragActive
+                            ? div({
+                                  className: 'xh-file-chooser__reject-warning',
+                                  item: isFunction(rejectDisplay)
+                                      ? rejectDisplay(model, draggedFiles)
+                                      : rejectDisplay
+                              })
+                            : filler();
                 return div({
                     ...getRootProps(),
-                    items: [
-                        isFunction(targetDisplay) ? targetDisplay(model) : targetDisplay,
-                        div({
-                            className: 'xh-file-chooser__reject-warning',
-                            item: isFunction(rejectDisplay) ? rejectDisplay(model) : rejectDisplay
-                        }),
-                        input(getInputProps())
-                    ],
+                    items: [targetDisplayItem, rejectDisplayItem, input(getInputProps())],
                     className: classNames(
                         'xh-file-chooser__target',
                         isDragActive ? 'xh-file-chooser__target--active' : null,
