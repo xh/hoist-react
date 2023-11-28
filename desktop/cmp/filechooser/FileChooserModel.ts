@@ -44,10 +44,10 @@ export interface FileChooserConfig {
     showFileGrid?: boolean;
 
     /** Intro/help text to display within the dropzone target. */
-    targetDisplay?: ReactNode | ((model?: FileChooserModel, draggedFiles?: File[]) => ReactNode);
+    targetDisplay?: ReactNode | ((model: FileChooserModel, draggedFiles: File[]) => ReactNode);
 
     /** Text to display within the dropzone target when files are rejected. */
-    rejectDisplay?: ReactNode | ((model?: FileChooserModel, draggedFiles?: File[]) => ReactNode);
+    rejectDisplay?: ReactNode | ((model: FileChooserModel, draggedFiles: File[]) => ReactNode);
 }
 
 export class FileChooserModel extends HoistModel {
