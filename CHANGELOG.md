@@ -13,6 +13,10 @@ arguments for applying app-specific data to the object. Instead, use the new `ap
   added new exports for `logWarn()` and `logError()` with the same standardized formatting.
 * Added standardized `LogUtils` methods to `HoistBase`, for use within Hoist models and services.
 
+### 🐞 Bug Fixes
+
+* `ZoneGrid` will no longer render labels or delimiters for empty values.
+
 ### ⚙️ Typescript API Adjustments
 
 * Updated type for `ReactionSpec.equals` to include already-supported string shorthands.
