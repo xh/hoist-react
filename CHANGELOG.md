@@ -2,6 +2,8 @@
 
 ## 60.0.0-SNAPSHOT - unreleased
 
+## 59.4.0 - 2023-11-28
+
 ### 💥 Breaking Changes
 
 * The constructors for `ColumnGroup` no longer accept arbitrary rest (e.g `...rest`) arguments
@@ -16,6 +18,10 @@
 * Enhanced `LogUtils` to support logging objects (and any other non-string values). Also
   added new exports for `logWarn()` and `logError()` with the same standardized formatting.
 * Added standardized `LogUtils` methods to `HoistBase`, for use within Hoist models and services.
+
+### 🐞 Bug Fixes
+
+* `ZoneGrid` will no longer render labels or delimiters for empty values.
 
 ### ⚙️ Typescript API Adjustments
 
