@@ -6,7 +6,7 @@
  */
 import {HoistService, TrackOptions, XH} from '@xh/hoist/core';
 import {isOmitted} from '@xh/hoist/utils/impl';
-import {logDebug, logError, logInfo, logWarn, stripTags, withDefault} from '@xh/hoist/utils/js';
+import {stripTags, withDefault} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
 
 /**
@@ -45,16 +45,13 @@ export class TrackService extends HoistService {
 
         // Short-circuit if disabled...
         if (!this.enabled) {
-            logDebug(['Activity tracking disabled - activity will not be tracked.', options], this);
+            this.logDebug('Activity tracking disabled - activity will not be tracked.', options);
             return;
         }
 
         // ...or invalid request (with warning for developer)...
         if (!options.message) {
-            logWarn(
-                ['Required message not provided - activity will not be tracked.', options],
-                this
-            );
+            this.logWarn('Required message not provided - activity will not be tracked.', options);
             return;
         }
 
@@ -94,14 +91,11 @@ export class TrackService extends HoistService {
 
             const {maxDataLength} = this.conf;
             if (params.data?.length > maxDataLength) {
-                logWarn(
-                    [
-                        `Track log includes ${params.data.length} chars of JSON data`,
-                        `exceeds limit of ${maxDataLength}`,
-                        'data will not be persisted',
-                        options.data
-                    ],
-                    this
+                this.logWarn(
+                    `Track log includes ${params.data.length} chars of JSON data`,
+                    `exceeds limit of ${maxDataLength}`,
+                    'data will not be persisted',
+                    options.data
                 );
                 params.data = null;
             }
@@ -109,11 +103,11 @@ export class TrackService extends HoistService {
             const elapsedStr = params.elapsed != null ? `${params.elapsed}ms` : null,
                 consoleMsgs = [params.category, params.msg, elapsedStr].filter(it => it != null);
 
-            logInfo([...consoleMsgs], this);
+            this.logInfo(...consoleMsgs);
 
             await XH.fetchJson({url: 'xh/track', params});
         } catch (e) {
-            logError([`Failed to persist track log`, options, e], this);
+            this.logError(`Failed to persist track log`, options, e);
         }
     }
 }

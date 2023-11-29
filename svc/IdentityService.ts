@@ -5,7 +5,7 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistService, HoistUser, XH} from '@xh/hoist/core';
-import {deepFreeze, logError, throwIf} from '@xh/hoist/utils/js';
+import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Provides basic information related to the authenticated user, including application roles.
@@ -62,7 +62,7 @@ export class IdentityService extends HoistService {
         try {
             await XH.appModel?.logoutAsync();
         } catch (e) {
-            logError(['Error calling XH.appModel.logoutAsync()', e], this);
+            this.logError('Error calling XH.appModel.logoutAsync()', e);
         }
         return XH.fetchJson({url: 'xh/logout'})
             .then(() => XH.reloadApp())
