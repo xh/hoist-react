@@ -408,7 +408,7 @@ export class PanelModel extends HoistModel {
                     return data;
                 }
             } catch (e) {
-                this.logError('Failed reading legacy state');
+                this.logError(`Failed reading legacy state: ${e}`);
             }
         }
         return null;
