@@ -261,7 +261,7 @@ export class ExceptionHandler {
             return stripTags(JSON.stringify(ret, null, 4));
         } catch (e) {
             const message = 'Failed to serialize error';
-            console.error(message, exception, e);
+            logError([message, exception, e], this);
             return JSON.stringify({message}, null, 4);
         }
     }
