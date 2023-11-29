@@ -328,7 +328,7 @@ export class GridExportService extends HoistService {
 
             if (!isString(ret)) {
                 this.logWarn(
-                    `Tried to export column ${it.colId} with an invalid "exportName", probably caused by setting "headerName" to a React element. 'Please specify an appropriate "exportName". Defaulting to ${it.colId}`
+                    `Tried to export column '${it.colId}' with an invalid "exportName", probably caused by setting "headerName" to a React element. Please specify an appropriate "exportName". Defaulting to '${it.colId}'`
                 );
                 ret = it.colId;
             }
