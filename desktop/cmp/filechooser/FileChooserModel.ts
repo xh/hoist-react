@@ -182,8 +182,7 @@ export class FileChooserModel extends HoistModel {
         if (accepted?.length > 1 && !this.enableMulti) {
             accepted = [accepted[0]];
         }
-        // TODO: why doesn't logDebug work? Log levels?
-        if (!isEmpty(accepted)) this.logInfo('Files accepted:', accepted);
+        if (!isEmpty(accepted)) this.logDebug('Files accepted:', accepted);
         if (!isEmpty(rejected)) this.logWarn('File rejections:', rejected);
         this.lastAccepted = accepted;
         this.lastRejected = rejected;
@@ -199,9 +198,9 @@ export class FileChooserModel extends HoistModel {
     // Implementation
     //----------------
     private defaultTargetDisplay = (model: FileChooserModel, draggedFiles: File[]): ReactNode => {
-        return !isEmpty(draggedFiles)
-            ? p(`Drop to add ${draggedFiles.length} ${pluralize('file', draggedFiles.length)}.`)
-            : p('Drag and drop files here, or click to browse...');
+        return isEmpty(draggedFiles)
+            ? p('Drag and drop files here, or click to browse...')
+            : p(`Drop to add ${draggedFiles.length} ${pluralize('file', draggedFiles.length)}.`);
     };
 
     private defaultRejectDisplay = (model: FileChooserModel, draggedFiles: File[]): ReactNode => {
