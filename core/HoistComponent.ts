@@ -280,7 +280,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
 
         // 2) Validate
         if (!model && !spec.optional && spec instanceof UsesSpec) {
-            console.error(`
+            model.logError(`
                 Failed to find model with selector '${formatSelector(spec.selector)}' for
                 component '${
                     cfg.displayName
@@ -411,7 +411,7 @@ function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): 
     // 2) props - instance
     if (model) {
         if (!model.isHoistModel || !model.matchesSelector(selector, true)) {
-            console.error(
+            model.logError(
                 `Incorrect model passed to '${cfg.displayName}'.
                 Expected: ${formatSelector(selector)}
                 Received: ${model.constructor.name}`

@@ -34,8 +34,11 @@ export const [BooleanEditor, booleanEditor] = hoistCmp.withFactory<BooleanEditor
         const {fullRowEditing} = props.gridModel;
         quickToggle = quickToggle ?? !fullRowEditing;
 
+        // DEBUG
+        console.log('BooleanEditor', this.model);
+
         if (quickToggle && fullRowEditing) {
-            console.warn("'quickToggle' prop ignored for GridModel with full row editing.");
+            this.model.logWarn("'quickToggle' prop ignored for GridModel with full row editing.");
             quickToggle = false;
         }
 

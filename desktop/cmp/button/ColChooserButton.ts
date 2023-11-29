@@ -40,14 +40,14 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
         const colChooserModel = gridModel?.colChooserModel as ColChooserModel;
 
         if (!gridModel) {
-            console.error(
+            this.model.logError(
                 "No GridModel available to ColChooserButton.  Provide via a 'gridModel' prop, or context."
             );
             disabled = true;
         }
 
         if (!colChooserModel) {
-            console.error(
+            this.model.logError(
                 'No ColChooserModel available on bound GridModel - enable via GridModel.colChooserModel config.'
             );
             disabled = true;

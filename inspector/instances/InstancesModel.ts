@@ -130,9 +130,9 @@ export class InstancesModel extends HoistModel {
             instance = this.getInstance(xhId);
 
         if (!instance) {
-            console.warn(`Instance with xhId ${xhId} no longer alive - cannot be logged`);
+            this.logWarn(`Instance with xhId ${xhId} no longer alive - cannot be logged`);
         } else {
-            console.log(`[${xhId}]`, instance);
+            this.logDebug(`[${xhId}]`, instance);
             XH.toast({
                 icon: Icon.terminal(),
                 message: `Logged ${rec.data.className} ${xhId} to devtools console`
@@ -369,8 +369,8 @@ export class InstancesModel extends HoistModel {
                     const displayGroup = inst.isHoistService
                         ? 'Services'
                         : inst.isStore
-                        ? 'Stores'
-                        : 'Models';
+                          ? 'Stores'
+                          : 'Models';
                     data.push({...inst, displayGroup});
                 });
 
@@ -464,8 +464,8 @@ export class InstancesModel extends HoistModel {
             isGetter && !isLoadedGetter
                 ? 'get(?)'
                 : isProxy
-                ? 'Proxy'
-                : v?.constructor?.name ?? typeof v;
+                  ? 'Proxy'
+                  : v?.constructor?.name ?? typeof v;
 
         return {
             id: `${xhId}-${property}${fromWatchlistItem ? '-wl' : ''}`,
@@ -479,8 +479,8 @@ export class InstancesModel extends HoistModel {
                 isHoistModel || isHoistService || isStore
                     ? v.xhId
                     : isProxy
-                    ? '[cannot render]'
-                    : v,
+                      ? '[cannot render]'
+                      : v,
             valueType,
             isOwnProperty,
             isObservable,

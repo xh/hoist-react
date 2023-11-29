@@ -104,12 +104,12 @@ export class LoadSupport extends HoistBase implements Loadable {
 
                 if (exception) {
                     if (exception.isRoutine) {
-                        console.debug(msg, exception);
+                        this.logDebug(msg, exception);
                     } else {
-                        console.error(msg, exception);
+                        this.logError(msg, exception);
                     }
                 } else {
-                    console.debug(msg);
+                    this.logDebug(msg);
                 }
             });
     }

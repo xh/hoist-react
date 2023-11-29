@@ -107,7 +107,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         model = model ?? (formModel && field ? formModel.fields[field] : null);
 
         if (!model) {
-            console.warn(`Unable to bind FormField to field "${field}" on backing FormModel`);
+            model.logWarn(`Unable to bind FormField to field "${field}" on backing FormModel`);
         }
 
         // Model related props
