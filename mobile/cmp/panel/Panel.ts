@@ -24,6 +24,7 @@ import {omitBy} from 'lodash';
 import {isValidElement, ReactNode, ReactElement} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import './Panel.scss';
+import {logWarn} from '@xh/hoist/utils/js';
 
 export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
     /** A toolbar to be docked at the bottom of the panel. */
@@ -141,8 +142,9 @@ function parseLoadDecorator(prop, name, contextModel) {
     if (prop === 'onLoad') {
         const loadModel = contextModel?.loadModel;
         if (!loadModel) {
-            contextModel.logWarn(
-                `Cannot use 'onLoad' for '${name}'.  Context model does not implement loading.`
+            logWarn(
+                `Cannot use 'onLoad' for '${name}'.  Context model does not implement loading.`,
+                Panel
             );
             return null;
         }
