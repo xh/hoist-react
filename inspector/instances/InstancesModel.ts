@@ -147,9 +147,9 @@ export class InstancesModel extends HoistModel {
             instance = this.getInstance(instanceXhId);
 
         if (!instance) {
-            console.warn(`Instance ${instanceDisplayName} no longer alive - cannot be logged`);
+            this.logWarn(`Instance ${instanceDisplayName} no longer alive - cannot be logged`);
         } else {
-            console.log(`[${instanceDisplayName}].${property}`, instance[property]);
+            this.logInfo(`[${instanceDisplayName}].${property}`, instance[property]);
             XH.toast({
                 icon: Icon.terminal(),
                 message: `Logged [${instanceDisplayName}].${property} to devtools console`

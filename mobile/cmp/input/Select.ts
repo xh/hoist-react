@@ -19,7 +19,7 @@ import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {logError, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import debouncePromise from 'debounce-promise';
 import {escapeRegExp, isEqual, isNil, isPlainObject, keyBy, merge} from 'lodash';
@@ -272,8 +272,8 @@ class SelectInputModel extends HoistInputModel {
                 ? reactAsyncCreatableSelect
                 : reactAsyncSelect
             : creatableMode
-            ? reactCreatableSelect
-            : reactSelect;
+              ? reactCreatableSelect
+              : reactSelect;
     }
 
     @action
@@ -468,7 +468,7 @@ class SelectInputModel extends HoistInputModel {
                 return matchOpts;
             })
             .catch(e => {
-                console.error(e);
+                logError(e, Select);
                 throw e;
             });
     };

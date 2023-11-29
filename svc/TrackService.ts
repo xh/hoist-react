@@ -6,7 +6,7 @@
  */
 import {HoistService, TrackOptions, XH} from '@xh/hoist/core';
 import {isOmitted} from '@xh/hoist/utils/impl';
-import {stripTags, withDefault} from '@xh/hoist/utils/js';
+import {logDebug, logError, logInfo, logWarn, stripTags, withDefault} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
 
 /**
@@ -45,18 +45,15 @@ export class TrackService extends HoistService {
 
         // Short-circuit if disabled...
         if (!this.enabled) {
-            console.debug(
-                '[TrackService] | Activity tracking disabled - activity will not be tracked.',
-                options
-            );
+            logDebug(['Activity tracking disabled - activity will not be tracked.', options], this);
             return;
         }
 
         // ...or invalid request (with warning for developer)...
         if (!options.message) {
-            console.warn(
-                '[TrackService] | Required message not provided - activity will not be tracked.',
-                options
+            logWarn(
+                ['Required message not provided - activity will not be tracked.', options],
+                this
             );
             return;
         }
@@ -97,11 +94,14 @@ export class TrackService extends HoistService {
 
             const {maxDataLength} = this.conf;
             if (params.data?.length > maxDataLength) {
-                this.logWarn(
-                    `Track log includes ${params.data.length} chars of JSON data`,
-                    `exceeds limit of ${maxDataLength}`,
-                    'data will not be persisted',
-                    options.data
+                logWarn(
+                    [
+                        `Track log includes ${params.data.length} chars of JSON data`,
+                        `exceeds limit of ${maxDataLength}`,
+                        'data will not be persisted',
+                        options.data
+                    ],
+                    this
                 );
                 params.data = null;
             }
@@ -109,11 +109,11 @@ export class TrackService extends HoistService {
             const elapsedStr = params.elapsed != null ? `${params.elapsed}ms` : null,
                 consoleMsgs = [params.category, params.msg, elapsedStr].filter(it => it != null);
 
-            this.logInfo(...consoleMsgs);
+            logInfo([...consoleMsgs], this);
 
             await XH.fetchJson({url: 'xh/track', params});
         } catch (e) {
-            console.error(`[TrackService] | Failed to persist track log`, options, e);
+            logError([`Failed to persist track log`, options, e], this);
         }
     }
 }

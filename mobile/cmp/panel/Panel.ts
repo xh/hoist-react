@@ -141,7 +141,7 @@ function parseLoadDecorator(prop, name, contextModel) {
     if (prop === 'onLoad') {
         const loadModel = contextModel?.loadModel;
         if (!loadModel) {
-            console.warn(
+            contextModel.logWarn(
                 `Cannot use 'onLoad' for '${name}'.  Context model does not implement loading.`
             );
             return null;

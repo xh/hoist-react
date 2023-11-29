@@ -213,7 +213,7 @@ export class PanelModel extends HoistModel {
                 : defaultSize;
 
         if ((collapsible || resizable) && (isNil(defaultSize) || isNil(side))) {
-            console.error(
+            this.logError(
                 "Must specify 'defaultSize' and 'side' for a collapsible or resizable PanelModel. Panel sizing disabled."
             );
             collapsible = false;
@@ -221,12 +221,12 @@ export class PanelModel extends HoistModel {
         }
 
         if (!isNil(maxSize) && maxSize < minSize) {
-            console.error("'maxSize' must be greater than 'minSize'. No 'maxSize' will be set.");
+            this.logError("'maxSize' must be greater than 'minSize'. No 'maxSize' will be set.");
             maxSize = null;
         }
 
         if (resizable && !resizeWhileDragging && !showSplitter) {
-            console.error(
+            this.logError(
                 "Must not set 'showSplitter = false' for a resizable PanelModel unless 'resizeWhileDragging` is enabled. Panel sizing disabled."
             );
             resizable = false;
@@ -277,7 +277,7 @@ export class PanelModel extends HoistModel {
                 this.provider = PersistenceProvider.create({path: 'panel', ...persistWith});
                 state = this.provider.read() ?? this.legacyState();
             } catch (e) {
-                console.error(e);
+                this.logError(e);
                 XH.safeDestroy(this.provider);
                 this.provider = null;
             }
@@ -408,7 +408,7 @@ export class PanelModel extends HoistModel {
                     return data;
                 }
             } catch (e) {
-                console.error('Failed reading legacy state');
+                this.logError('Failed reading legacy state');
             }
         }
         return null;

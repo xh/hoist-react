@@ -327,7 +327,7 @@ export class GridExportService extends HoistService {
                 : it.exportName;
 
             if (!isString(ret)) {
-                console.warn(
+                this.logWarn(
                     'Tried to export column ' +
                         it.colId +
                         ' with an invalid "exportName", ' +
@@ -345,7 +345,7 @@ export class GridExportService extends HoistService {
         const headerCounts = countBy(headers.map(it => it.toLowerCase())),
             dupeHeaders = keys(pickBy(headerCounts, it => it > 1));
         if (type === 'excelTable' && !isEmpty(dupeHeaders)) {
-            console.warn(
+            this.logWarn(
                 'Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers. Duplicate headers: ',
                 dupeHeaders
             );

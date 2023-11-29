@@ -7,7 +7,7 @@
 import {XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
 import {MILLISECONDS, MINUTES, olderThan} from '@xh/hoist/utils/datetime';
-import {logWarn, throwIf} from '@xh/hoist/utils/js';
+import {logError, logWarn, throwIf} from '@xh/hoist/utils/js';
 import {isBoolean, isFinite, isFunction, isNil, isString, pull} from 'lodash';
 
 /**
@@ -122,7 +122,7 @@ export class Timer {
         try {
             await (this.internalRunFn() as any).timeout(this.timeoutMs);
         } catch (e) {
-            console.error('Error executing timer:', e);
+            logError(['Error executing timer:', e], this);
         }
         this.isRunning = false;
         this.lastRun = new Date();

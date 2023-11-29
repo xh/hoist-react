@@ -8,7 +8,7 @@ import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {ZoneGridModel} from '../../../cmp/zoneGrid';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {withDefault} from '@xh/hoist/utils/js';
+import {logError, withDefault} from '@xh/hoist/utils/js';
 import '@xh/hoist/mobile/register';
 
 export interface ZoneMapperButtonProps extends ButtonProps {
@@ -28,8 +28,9 @@ export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMap
         zoneGridModel = withDefault(zoneGridModel, useContextModel(ZoneGridModel));
 
         if (!zoneGridModel) {
-            console.error(
-                "No ZoneGridModel available to ZoneMapperButton. Provide via a 'zoneGridModel' prop, or context."
+            logError(
+                "No ZoneGridModel available to ZoneMapperButton. Provide via a 'zoneGridModel' prop, or context.",
+                ZoneMapperButton
             );
             return button({icon, disabled: true, ...props});
         }
