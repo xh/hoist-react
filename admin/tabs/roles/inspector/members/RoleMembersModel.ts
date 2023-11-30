@@ -150,12 +150,12 @@ export class RoleMembersModel extends HoistModel {
                     omit: !showEffective
                 },
                 {
-                    field: {name: 'dateCreated', type: 'date'},
+                    field: {name: 'dateCreated', displayName: 'Added On', type: 'date'},
                     ...Col.dateTime,
                     omit: showEffective
                 },
                 {
-                    field: {name: 'createdBy', type: 'string'},
+                    field: {name: 'createdBy', displayName: 'Added By', type: 'string'},
                     omit: showEffective
                 }
             ]
