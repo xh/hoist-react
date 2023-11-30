@@ -450,6 +450,9 @@ export const Icon = {
     inbox(p?: IconProps) {
         return Icon.icon({...p, iconName: 'inbox'});
     },
+    idBadge(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'id-badge'});
+    },
     infoCircle(p?: IconProps) {
         return Icon.icon({...p, iconName: 'info-circle'});
     },

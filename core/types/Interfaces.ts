@@ -40,7 +40,15 @@ export interface HoistRole {
     effectiveRoles: Array<{name: string; roles: string[]}>;
     lastUpdated: Date;
     lastUpdatedBy: string;
+    members: HoistRoleMember[];
     undeletable: boolean;
+}
+
+export interface HoistRoleMember {
+    type: 'USER' | 'DIRECTORY_GROUP' | 'ROLE';
+    name: string;
+    dateCreated: Date;
+    createdBy: string;
 }
 
 /**

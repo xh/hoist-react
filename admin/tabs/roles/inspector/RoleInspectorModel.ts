@@ -1,30 +1,24 @@
-import {roleGraph} from '@xh/hoist/admin/tabs/roles/inspector/graph/RoleGraph';
 import {roleMembers} from '@xh/hoist/admin/tabs/roles/inspector/members/RoleMembers';
+import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistModel, HoistRole, managed, PersistOptions} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
-import {bindable} from '@xh/hoist/mobx';
+import {HoistModel, HoistRole, lookup, managed} from '@xh/hoist/core';
 import {compact} from 'lodash';
 
 export class RoleInspectorModel extends HoistModel {
-    @managed readonly tabContainerModel: TabContainerModel;
-    readonly onRoleSelected?: (role: string) => void;
+    override persistWith = {...RolesModel.PERSIST_WITH, path: 'roleInspector'};
+    @lookup(RolesModel) readonly rolesModel: RolesModel;
+    @managed readonly tabContainerModel: TabContainerModel = this.createTabContainerModel();
 
-    @bindable.ref role: HoistRole;
-
-    constructor(cfg?: {onRoleSelected?: (role: string) => void; persistWith?: PersistOptions}) {
-        super();
-        this.persistWith = cfg?.persistWith;
-        this.onRoleSelected = cfg?.onRoleSelected;
-        this.tabContainerModel = this.createTabContainerModel();
+    get allRoles(): HoistRole[] {
+        return this.rolesModel.allRoles;
     }
 
-    selectRole(role: string) {
-        this.onRoleSelected?.(role);
+    get selectedRole(): HoistRole {
+        return this.rolesModel.selectedRole;
     }
 
-    setTabs(tabs: Record<'inheritanceGraph' | 'members', boolean>) {
-        this.tabContainerModel.setTabs(this.createTabs().filter(tab => tabs[tab.id]));
+    selectRole(name: string) {
+        this.rolesModel.selectRole(name);
     }
 
     // -------------------------------
@@ -44,14 +38,12 @@ export class RoleInspectorModel extends HoistModel {
     private createTabs(): TabConfig[] {
         return [
             {
-                id: 'inheritanceGraph',
-                icon: Icon.treeList(),
-                content: roleGraph
+                id: 'members',
+                content: () => roleMembers({showEffective: false})
             },
             {
-                id: 'members',
-                icon: Icon.userCheck(),
-                content: roleMembers
+                id: 'effectiveMembers',
+                content: () => roleMembers({showEffective: true})
             }
         ];
     }

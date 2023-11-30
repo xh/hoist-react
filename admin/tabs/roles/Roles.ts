@@ -1,13 +1,13 @@
 import {roleEditor} from '@xh/hoist/admin/tabs/roles/editor/RoleEditor';
 import {roleInspector} from '@xh/hoist/admin/tabs/roles/inspector/RoleInspector';
 import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
-import {grid} from '@xh/hoist/cmp/grid';
-import {fragment, hframe, placeholder} from '@xh/hoist/cmp/layout';
+import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
+import {filler, fragment, hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
+import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
-import {Icon} from '@xh/hoist/icon';
 
 export const roles = hoistCmp.factory({
     className: 'roles',
@@ -25,8 +25,11 @@ export const roles = hoistCmp.factory({
                         gridModel,
                         selModel: gridModel.selModel
                     }),
+                    filler(),
+                    gridCountLabel({unit: 'role'}),
                     '-',
-                    filterChooser({flex: 1})
+                    filterChooser({flex: 2}),
+                    exportButton()
                 ],
                 item: hframe(grid(), detailsPanel())
             }),
@@ -35,17 +38,14 @@ export const roles = hoistCmp.factory({
     }
 });
 
-const detailsPanel = hoistCmp.factory<RolesModel>(({model}) => {
-    const role = model.gridModel.selectedId;
-    return panel({
+const detailsPanel = hoistCmp.factory<RolesModel>(() =>
+    panel({
         modelConfig: {
+            collapsible: false,
             defaultSize: '50%',
-            modalSupport: true,
             persistWith: {...RolesModel.PERSIST_WITH, path: 'detailsPanel'},
             side: 'right'
         },
-        icon: Icon.info(),
-        item: role ? roleInspector() : placeholder('Select a role on the left to view details.'),
-        title: role ?? 'Role Details'
-    });
-});
+        item: roleInspector()
+    })
+);

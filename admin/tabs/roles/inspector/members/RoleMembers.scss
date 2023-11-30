@@ -1,4 +1,10 @@
 .role-members {
+  &__header {
+    align-items: center;
+    font-weight: bold;
+    gap: var(--xh-pad-half-px);
+  }
+
   .group-row-renderer {
     align-items: center;
     gap: var(--xh-pad-half-px);

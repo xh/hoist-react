@@ -1,37 +1,18 @@
 import {RoleFormModel} from '@xh/hoist/admin/tabs/roles/editor/form/RoleFormModel';
-import {RoleInspectorModel} from '@xh/hoist/admin/tabs/roles/inspector/RoleInspectorModel';
 import {HoistModel, HoistRole, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
-import {isEqual, pick} from 'lodash';
 import {action, computed, observable} from 'mobx';
 
 export class RoleEditorModel extends HoistModel {
-    readonly previewTask = TaskObserver.trackLast({message: 'Loading Preview'});
     readonly savingTask = TaskObserver.trackLast({message: 'Saving Role'});
     @managed readonly roleFormModel = new RoleFormModel();
-    @managed readonly currentRoleInspectorModel = new RoleInspectorModel();
-    @managed readonly previewRoleInspectorModel = new RoleInspectorModel();
 
     @observable isOpen = false;
-    @observable isPreviewDialogOpen = false;
     @observable role?: HoistRole;
-    @observable.ref rolePreviewData: Pick<
-        HoistRole,
-        'name' | 'users' | 'directoryGroups' | 'roles'
-    >;
 
     private allRoles: HoistRole[] = [];
-
     private resolve: (role?: HoistRole) => void;
-
-    @computed
-    get isRolePreviewDataStale(): boolean {
-        return !isEqual(
-            this.rolePreviewData,
-            pick(this.roleFormModel.getData(), ['name', 'users', 'directoryGroups', 'roles'])
-        );
-    }
 
     @computed
     get saveDisabled(): boolean {
@@ -56,7 +37,6 @@ export class RoleEditorModel extends HoistModel {
         this.isOpen = true;
         this.role = role;
         this.roleFormModel.init(this.allRoles, role);
-        this.currentRoleInspectorModel.role = role;
         return new Promise(resolve => (this.resolve = resolve));
     }
 
@@ -99,43 +79,6 @@ export class RoleEditorModel extends HoistModel {
                 onConfirm: () => this.close()
             });
         }
-    }
-
-    @action
-    async showPreviewAsync() {
-        if (!this.isRolePreviewDataStale) {
-            this.isPreviewDialogOpen = true;
-            return;
-        }
-
-        const {previewRoleInspectorModel, roleFormModel} = this,
-            isValid = await roleFormModel.validateAsync();
-        if (!isValid) return;
-
-        const rolePreviewData = pick(roleFormModel.getData(), [
-            'name',
-            'users',
-            'directoryGroups',
-            'roles'
-        ]);
-
-        return XH.fetchService
-            .postJson({
-                body: {data: rolePreviewData},
-                url: `rolesAdmin/audition${this.role ? 'Update' : 'Create'}`
-            })
-            .linkTo(this.previewTask)
-            .thenAction(({data}) => {
-                previewRoleInspectorModel.role = data;
-                this.rolePreviewData = rolePreviewData;
-                this.isPreviewDialogOpen = true;
-            })
-            .catchDefault();
-    }
-
-    @action
-    hidePreview() {
-        this.isPreviewDialogOpen = false;
     }
 
     // -------------------------------

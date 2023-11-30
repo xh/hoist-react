@@ -1,9 +1,9 @@
+import {RoleMembersProps} from '@xh/hoist/admin/tabs/roles/inspector/members/RoleMembers';
 import {RoleInspectorModel} from '@xh/hoist/admin/tabs/roles/inspector/RoleInspectorModel';
-import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import * as Col from '@xh/hoist/cmp/grid/columns';
 import {hbox, hframe} from '@xh/hoist/cmp/layout';
-import {HoistModel, HoistRole, lookup, managed, ReactionSpec} from '@xh/hoist/core';
-import {withFilterByField} from '@xh/hoist/data';
+import {HoistModel, HoistRole, lookup, managed} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {tag} from '@xh/hoist/kit/blueprint';
 import {bindable} from '@xh/hoist/mobx';
@@ -16,59 +16,31 @@ export class RoleMembersModel extends HoistModel {
     };
 
     @lookup(() => RoleInspectorModel) readonly roleInspectorModel: RoleInspectorModel;
-    @lookup(() => RolesModel) readonly rolesModel: RolesModel;
-    @managed readonly gridModel: GridModel = this.createGridModel();
+    @managed gridModel: GridModel;
 
     @bindable showInherited = true;
 
-    get role(): HoistRole {
-        return this.roleInspectorModel.role;
+    get props(): RoleMembersProps {
+        return super.componentProps as RoleMembersProps;
+    }
+
+    get selectedRole(): HoistRole {
+        return this.roleInspectorModel.selectedRole;
     }
 
     override onLinked() {
-        this.initPersist();
-        this.addReaction(this.roleReaction(), this.showInheritedReaction());
-    }
-
-    // -------------------------------
-    // Reactions
-    // -------------------------------
-
-    roleReaction(): ReactionSpec<HoistRole> {
-        return {
-            track: () => this.role,
+        this.gridModel = this.createGridModel();
+        this.addReaction({
+            track: () => this.selectedRole,
             run: role => this.loadGridData(role),
             fireImmediately: true,
             debounce: 100
-        };
-    }
-
-    showInheritedReaction(): ReactionSpec<boolean> {
-        const {filterModel} = this.gridModel;
-        return {
-            track: () => this.showInherited,
-            run: showInherited =>
-                filterModel.setFilter(
-                    withFilterByField(
-                        filterModel.filter,
-                        showInherited ? null : {field: 'isInherited', op: '!=', value: true},
-                        'isInherited'
-                    )
-                ),
-            fireImmediately: true
-        };
+        });
     }
 
     // -------------------------------
     // Implementation
     // -------------------------------
-
-    private initPersist() {
-        if (this.roleInspectorModel.persistWith) {
-            this.persistWith = {...this.roleInspectorModel.persistWith, path: 'RoleMembers'};
-            this.markPersist('showInherited');
-        }
-    }
 
     private loadGridData(role: HoistRole) {
         if (!role) {
@@ -76,37 +48,44 @@ export class RoleMembersModel extends HoistModel {
             return;
         }
 
-        const {name} = role,
-            {types} = RoleMembersModel;
+        if (this.props.showEffective) {
+            const {name} = role;
 
-        this.gridModel.loadData([
-            // 1 - Users
-            ...role.effectiveUsers.map(it => ({
-                name: it.name,
-                roles: this.sortThisRoleFirst(it.roles),
-                isInherited: !it.roles.includes(name),
-                type: types.USER
-            })),
+            this.gridModel.loadData([
+                // 1 - Users
+                ...role.effectiveUsers.map(it => ({
+                    name: it.name,
+                    roles: this.sortThisRoleFirst(it.roles),
+                    isInherited: !it.roles.includes(name),
+                    type: RoleMembersModel.types.USER
+                })),
 
-            // 2 - Directory Groups
-            ...role.effectiveDirectoryGroups.map(it => ({
-                name: it.name,
-                roles: this.sortThisRoleFirst(it.roles),
-                isInherited: !it.roles.includes(name),
-                type: types.DIRECTORY_GROUP
-            })),
+                // 2 - Directory Groups
+                ...role.effectiveDirectoryGroups.map(it => ({
+                    name: it.name,
+                    roles: this.sortThisRoleFirst(it.roles),
+                    isInherited: !it.roles.includes(name),
+                    type: RoleMembersModel.types.DIRECTORY_GROUP
+                })),
 
-            // 3 - Roles
-            ...role.effectiveRoles.map(it => ({
-                name: it,
-                roles: [name],
-                type: types.ROLE
-            }))
-        ]);
+                // 3 - Roles
+                ...role.effectiveRoles.map(it => ({
+                    name: it.name,
+                    roles: this.sortThisRoleFirst(it.roles),
+                    isInherited: !it.roles.includes(name),
+                    type: RoleMembersModel.types.ROLE
+                }))
+            ]);
+        } else {
+            this.gridModel.loadData(
+                role.members.map(it => ({...it, type: RoleMembersModel.types[it.type]}))
+            );
+        }
     }
 
     private createGridModel(): GridModel {
-        const {types} = RoleMembersModel;
+        const {types} = RoleMembersModel,
+            {showEffective} = this.props;
         return new GridModel({
             store: {
                 fields: [
@@ -115,7 +94,7 @@ export class RoleMembersModel extends HoistModel {
                     {name: 'roles', displayName: 'Assigned Via', type: 'tags'},
                     {name: 'isInherited', type: 'bool'}
                 ],
-                idSpec: data => `${this.role.name}:${data.type}:${data.name}`
+                idSpec: data => `${this.selectedRole.name}:${data.type}:${data.name}`
             },
             emptyText: 'No members inherit this role.',
             filterModel: true,
@@ -142,7 +121,7 @@ export class RoleMembersModel extends HoistModel {
                     case types.ROLE:
                         return hframe({
                             className: 'group-row-renderer',
-                            items: [Icon.roles(), 'Roles']
+                            items: [Icon.idBadge(), 'Roles']
                         });
                 }
             },
@@ -155,28 +134,41 @@ export class RoleMembersModel extends HoistModel {
                 {
                     field: 'roles',
                     flex: true,
-                    renderer: (roles, {record}) =>
+                    renderer: (roles: string[]) =>
                         hbox({
                             className: 'roles-renderer',
-                            items: roles.flatMap(role => [
-                                record.get('type') === types.ROLE ? Icon.arrowLeft() : null,
-                                tag({
+                            items: roles.map(role => {
+                                const isThisRole = role === this.selectedRole.name;
+                                return tag({
                                     className: 'roles-renderer__role',
-                                    intent: role === this.role.name ? null : 'primary',
-                                    item: role,
-                                    minimal: true,
-                                    title: role === this.role.name ? null : 'Inherited'
-                                })
-                            ])
-                        })
+                                    intent: isThisRole ? null : 'primary',
+                                    item: role + (isThisRole ? ' (this role)' : ''),
+                                    minimal: true
+                                });
+                            })
+                        }),
+                    omit: !showEffective
+                },
+                {
+                    field: {name: 'dateCreated', type: 'date'},
+                    ...Col.dateTime,
+                    omit: showEffective
+                },
+                {
+                    field: {name: 'createdBy', type: 'string'},
+                    omit: showEffective
                 }
             ]
         });
     }
 
     private sortThisRoleFirst(roles: string[]): string[] {
-        const thisRoleIdx = roles.indexOf(this.role.name);
+        const thisRoleIdx = roles.indexOf(this.selectedRole.name);
         if (thisRoleIdx === -1) return roles;
-        return [this.role.name, ...roles.slice(0, thisRoleIdx), ...roles.slice(thisRoleIdx + 1)];
+        return [
+            this.selectedRole.name,
+            ...roles.slice(0, thisRoleIdx),
+            ...roles.slice(thisRoleIdx + 1)
+        ];
     }
 }

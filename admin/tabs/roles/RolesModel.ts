@@ -1,14 +1,16 @@
 import {RoleEditorModel} from '@xh/hoist/admin/tabs/roles/editor/RoleEditorModel';
-import {RoleInspectorModel} from '@xh/hoist/admin/tabs/roles/inspector/RoleInspectorModel';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import * as Col from '@xh/hoist/cmp/grid/columns';
 import {div, li, ul} from '@xh/hoist/cmp/layout';
 import {HoistModel, HoistRole, LoadSpec, managed, ReactionSpec, XH} from '@xh/hoist/core';
-import {RecordActionSpec, StoreRecord} from '@xh/hoist/data';
-import {compactDateRenderer, fmtDate} from '@xh/hoist/format';
+import {RecordActionSpec} from '@xh/hoist/data';
+import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+import {makeObservable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {compact} from 'lodash';
+import {compact, maxBy} from 'lodash';
+import {action, observable} from 'mobx';
 import moment from 'moment/moment';
 
 export class RolesModel extends HoistModel {
@@ -19,10 +21,13 @@ export class RolesModel extends HoistModel {
     @managed readonly gridModel: GridModel = this.createGridModel();
     @managed readonly filterChooserModel: FilterChooserModel = this.createFilterChooserModel();
     @managed readonly roleEditorModel = new RoleEditorModel();
-    @managed readonly roleInspectorModel = this.createRoleInspectorModel();
+
+    @observable.ref allRoles: HoistRole[] = [];
+    @observable.ref selectedRole?: HoistRole;
 
     constructor() {
         super();
+        makeObservable(this);
         this.addReaction(this.selectedRoleReaction());
     }
 
@@ -30,6 +35,7 @@ export class RolesModel extends HoistModel {
         try {
             const {data} = await XH.fetchJson({url: 'rolesAdmin/read'});
             if (loadSpec.isStale) return;
+            this.setRoles(data);
             this.gridModel.loadData(data);
             this.roleEditorModel.loadRoles(data);
         } catch (e) {
@@ -40,18 +46,35 @@ export class RolesModel extends HoistModel {
         }
     }
 
-    getRole(name: string): HoistRole {
-        return this.gridModel.store.getById(name).data as HoistRole;
+    selectRole(name: string) {
+        this.gridModel.selectAsync(name);
+    }
+
+    @action
+    setRoles(roles: HoistRole[]) {
+        // Avoid unnecessary re-renders caused by mutating observable when data is unchanged.
+        if (
+            roles.length !== this.allRoles.length ||
+            maxBy(roles, 'lastUpdated') > maxBy(this.allRoles, 'lastUpdated')
+        ) {
+            this.allRoles = roles;
+        }
     }
 
     // -------------------------------
     // Reactions
     // -------------------------------
 
-    private selectedRoleReaction(): ReactionSpec<StoreRecord> {
+    private selectedRoleReaction(): ReactionSpec<string> {
+        const {gridModel} = this;
         return {
-            track: () => this.gridModel.selectedRecord,
-            run: record => (this.roleInspectorModel.role = record?.data as HoistRole)
+            track: () => {
+                const {selectedRecord} = gridModel;
+                if (!selectedRecord) return null;
+                // Only fire when record has been modified or selection has changed
+                return [selectedRecord.id, selectedRecord.get('lastUpdated')].join('::');
+            },
+            run: () => (this.selectedRole = gridModel.selectedRecord?.data as HoistRole)
         };
     }
 
@@ -119,14 +142,15 @@ export class RolesModel extends HoistModel {
                     {name: 'effectiveUsers', type: 'json'},
                     {name: 'effectiveDirectoryGroups', type: 'json'},
                     {name: 'effectiveRoles', type: 'json'},
-                    {name: 'inheritedRoleNames', displayName: 'Inherited Roles', type: 'json'},
-                    {name: 'effectiveUserNames', displayName: 'Effective Users', type: 'json'},
+                    {name: 'inheritedRoleNames', displayName: 'Inherited Roles', type: 'tags'},
+                    {name: 'effectiveUserNames', displayName: 'Effective Users', type: 'tags'},
                     {
                         name: 'effectiveDirectoryGroupNames',
                         displayName: 'Effective Directory Groups',
-                        type: 'json'
+                        type: 'tags'
                     },
-                    {name: 'effectiveRoleNames', displayName: 'Effective Roles', type: 'json'}
+                    {name: 'effectiveRoleNames', displayName: 'Effective Roles', type: 'tags'},
+                    {name: 'members', type: 'json'}
                 ],
                 processRawData: raw => ({
                     ...raw,
@@ -142,7 +166,7 @@ export class RolesModel extends HoistModel {
             columns: [
                 {field: {name: 'name', type: 'string'}},
                 {field: {name: 'groupName', type: 'string'}, hidden: true},
-                {field: {name: 'lastUpdated', type: 'date'}, renderer: compactDateRenderer()},
+                {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime},
                 {field: {name: 'lastUpdatedBy', type: 'string'}},
                 {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1}
             ],
@@ -221,13 +245,6 @@ export class RolesModel extends HoistModel {
                 }
             ],
             persistWith: {...RolesModel.PERSIST_WITH, path: 'mainFilterChooser'}
-        });
-    }
-
-    private createRoleInspectorModel(): RoleInspectorModel {
-        return new RoleInspectorModel({
-            onRoleSelected: role => this.gridModel.selectAsync(role),
-            persistWith: {...RolesModel.PERSIST_WITH, path: 'roleInspector'}
         });
     }
 }

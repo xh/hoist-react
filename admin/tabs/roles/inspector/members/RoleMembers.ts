@@ -1,31 +1,33 @@
 import {RoleMembersModel} from '@xh/hoist/admin/tabs/roles/inspector/members/RoleMembersModel';
-import {grid} from '@xh/hoist/cmp/grid';
-import {filler} from '@xh/hoist/cmp/layout';
+import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
+import {filler, hbox, placeholder} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {creates, hoistCmp} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {creates, hoistCmp, HoistProps} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import './RoleMembers.scss';
 
-export const roleMembers = hoistCmp.factory({
+export interface RoleMembersProps extends HoistProps<RoleMembersModel> {
+    showEffective: boolean;
+}
+
+export const roleMembers = hoistCmp.factory<RoleMembersProps>({
     className: 'role-members',
     displayName: 'RoleMembers',
     model: creates(RoleMembersModel),
     render({className, model}) {
-        const {showInherited} = model;
+        const {selectedRole} = model;
+        if (!selectedRole) return placeholder('Select a role to view its members.');
         return panel({
             className,
             tbar: [
-                button({
-                    active: showInherited,
-                    icon: showInherited ? Icon.eye() : Icon.eyeSlash(),
-                    intent: 'primary',
-                    onClick: () => (model.showInherited = !showInherited),
-                    outlined: true,
-                    text: 'Show Inherited'
+                hbox({
+                    className: `${className}__header`,
+                    items: [Icon.idBadge(), selectedRole.name]
                 }),
                 filler(),
+                gridCountLabel({unit: 'member'}),
+                '-',
                 storeFilterField()
             ],
             item: grid()
