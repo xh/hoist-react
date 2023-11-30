@@ -15,7 +15,7 @@ import {filesize} from 'filesize';
 import {find, uniqBy, without} from 'lodash';
 import {FileRejection} from 'react-dropzone';
 import {ReactNode} from 'react';
-import {br, p} from '@xh/hoist/cmp/layout';
+import {p} from '@xh/hoist/cmp/layout';
 import {pluralize} from '@xh/hoist/utils/js';
 
 export interface FileChooserConfig {
@@ -205,12 +205,6 @@ export class FileChooserModel extends HoistModel {
 
     private defaultRejectDisplay = (model: FileChooserModel, draggedFiles: File[]): ReactNode => {
         if (isEmpty(this.lastRejected)) return null;
-        const failedFiles = this.lastRejected.map(rejection => rejection.file.name).join(', '),
-            message = `Unable to accept ${this.lastRejected.length}
-                      ${pluralize('file', this.lastRejected.length)} for upload:`;
-        return p({
-            style: {overflow: 'hidden', textOverflow: 'ellipsis'},
-            items: [message, br(), `${failedFiles}`]
-        });
+        return p(`Unable to accept ${pluralize('file', this.lastRejected.length, true)}.`);
     };
 }
