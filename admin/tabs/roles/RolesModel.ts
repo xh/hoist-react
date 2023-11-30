@@ -150,7 +150,8 @@ export class RolesModel extends HoistModel {
                         type: 'tags'
                     },
                     {name: 'effectiveRoleNames', displayName: 'Effective Roles', type: 'tags'},
-                    {name: 'members', type: 'json'}
+                    {name: 'members', type: 'json'},
+                    {name: 'undeletable', type: 'bool'}
                 ],
                 processRawData: raw => ({
                     ...raw,
