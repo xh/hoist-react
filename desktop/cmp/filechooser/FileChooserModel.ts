@@ -200,7 +200,7 @@ export class FileChooserModel extends HoistModel {
     private defaultTargetDisplay = (model: FileChooserModel, draggedFiles: File[]): ReactNode => {
         return isEmpty(draggedFiles)
             ? p('Drag and drop files here, or click to browse...')
-            : p(`Drop to add ${draggedFiles.length} ${pluralize('file', draggedFiles.length)}.`);
+            : p(`Drop to add ${pluralize('file', draggedFiles.length, true)}.`);
     };
 
     private defaultRejectDisplay = (model: FileChooserModel, draggedFiles: File[]): ReactNode => {
