@@ -12,7 +12,7 @@ import {ZoneMapperModel} from '@xh/hoist/cmp/zoneGrid/impl/ZoneMapperModel';
 import {zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapper';
 import {Icon} from '@xh/hoist/icon';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
-import {stopPropagation, withDefault} from '@xh/hoist/utils/js';
+import {logError, stopPropagation, withDefault} from '@xh/hoist/utils/js';
 import {button, ButtonProps} from './Button';
 
 export interface ZoneMapperButtonProps extends ButtonProps {
@@ -37,15 +37,17 @@ export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMap
         const mapperModel = zoneGridModel?.mapperModel as ZoneMapperModel;
 
         if (!zoneGridModel) {
-            console.error(
-                "No ZoneGridModel available to ZoneMapperButton. Provide via a 'zoneGridModel' prop, or context."
+            logError(
+                "No ZoneGridModel available. Provide via a 'zoneGridModel' prop, or context.",
+                ZoneMapperButton
             );
             disabled = true;
         }
 
         if (!mapperModel) {
-            console.error(
-                'No ZoneMapperModel available on bound ZoneGridModel - enable via ZoneGridModel.zoneMapperModel config.'
+            logError(
+                'No ZoneMapperModel available on bound ZoneGridModel - enable via ZoneGridModel.zoneMapperModel config.',
+                ZoneMapperButton
             );
             disabled = true;
         }

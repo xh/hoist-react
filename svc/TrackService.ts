@@ -45,19 +45,13 @@ export class TrackService extends HoistService {
 
         // Short-circuit if disabled...
         if (!this.enabled) {
-            console.debug(
-                '[TrackService] | Activity tracking disabled - activity will not be tracked.',
-                options
-            );
+            this.logDebug('Activity tracking disabled - activity will not be tracked.', options);
             return;
         }
 
         // ...or invalid request (with warning for developer)...
         if (!options.message) {
-            console.warn(
-                '[TrackService] | Required message not provided - activity will not be tracked.',
-                options
-            );
+            this.logWarn('Required message not provided - activity will not be tracked.', options);
             return;
         }
 
@@ -113,7 +107,7 @@ export class TrackService extends HoistService {
 
             await XH.fetchJson({url: 'xh/track', params});
         } catch (e) {
-            console.error(`[TrackService] | Failed to persist track log`, options, e);
+            this.logError('Failed to persist track log', options, e);
         }
     }
 }

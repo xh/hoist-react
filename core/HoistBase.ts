@@ -267,9 +267,10 @@ export abstract class HoistBase {
                 run: data => provider.write(data)
             });
         } catch (e) {
-            console.error(
+            this.logError(
                 `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
-                    `'persistWith' on this object or in the method call.`
+                    `'persistWith' on this object or in the method call`,
+                e
             );
         }
     }

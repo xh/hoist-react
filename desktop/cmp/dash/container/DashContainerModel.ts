@@ -195,7 +195,7 @@ export class DashContainerModel extends DashModel<
                 this.provider = PersistenceProvider.create({path: 'dashContainer', ...persistWith});
                 persistState = this.provider.read();
             } catch (e) {
-                console.error(e);
+                this.logError(e);
                 XH.safeDestroy(this.provider);
                 this.provider = null;
             }
@@ -238,7 +238,7 @@ export class DashContainerModel extends DashModel<
     async loadStateAsync(state) {
         const containerEl = this.containerRef.current;
         if (!containerEl) {
-            console.warn(
+            this.logWarn(
                 'DashboardContainer not yet rendered - cannot update state - change will be discarded!'
             );
             return;

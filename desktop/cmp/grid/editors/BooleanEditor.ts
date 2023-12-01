@@ -12,6 +12,7 @@ import {useImperativeHandle} from 'react';
 import {EditorProps} from './EditorProps';
 import './Editors.scss';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
+import {logWarn} from '@xh/hoist/utils/js';
 
 export interface BooleanEditorProps extends EditorProps<CheckboxProps> {
     /**
@@ -35,7 +36,10 @@ export const [BooleanEditor, booleanEditor] = hoistCmp.withFactory<BooleanEditor
         quickToggle = quickToggle ?? !fullRowEditing;
 
         if (quickToggle && fullRowEditing) {
-            console.warn("'quickToggle' prop ignored for GridModel with full row editing.");
+            logWarn(
+                "'quickToggle' prop ignored for GridModel with full row editing.",
+                BooleanEditor
+            );
             quickToggle = false;
         }
 

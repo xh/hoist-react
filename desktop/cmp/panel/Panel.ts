@@ -23,6 +23,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import '@xh/hoist/desktop/register';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
+import {logWarn} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, omitBy} from 'lodash';
 import {Children, isValidElement, ReactElement, ReactNode, useLayoutEffect, useRef} from 'react';
@@ -256,8 +257,9 @@ function parseLoadDecorator(prop: any, name: string, contextModel: HoistModel) {
     if (prop === 'onLoad') {
         const loadModel = contextModel?.loadModel;
         if (!loadModel) {
-            console.warn(
-                `Cannot use 'onLoad' for '${name}' - the linked context model must enable LoadSupport to support this feature.`
+            logWarn(
+                `Cannot use 'onLoad' for '${name}' - the linked context model must enable LoadSupport to support this feature.`,
+                Panel
             );
             return null;
         }
