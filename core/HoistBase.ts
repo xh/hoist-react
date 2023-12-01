@@ -293,7 +293,7 @@ export abstract class HoistBase {
 /**
  * Object containing options accepted by MobX 'reaction' API as well as arguments below.
  */
-export type ReactionSpec<T = any> = Omit<IReactionOptions<T, any>, 'equals'> & {
+export interface ReactionSpec<T = any> extends Omit<IReactionOptions<T, any>, 'equals'> {
     /**
      * Function returning data to observe - first arg to the underlying reaction() call.
      * Specify this or `when`.
@@ -314,7 +314,7 @@ export type ReactionSpec<T = any> = Omit<IReactionOptions<T, any>, 'equals'> & {
 
     /** Specify a default from {@link comparer} or a custom comparer function. */
     equals?: keyof typeof comparer | IEqualsComparer<T>;
-};
+}
 
 /**
  * Object containing options accepted by MobX 'autorun' API as well as arguments below.
