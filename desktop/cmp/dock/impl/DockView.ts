@@ -36,6 +36,8 @@ export const dockView = hoistCmp.factory<DockViewProps>({
                 width,
                 height,
                 collapsedWidth,
+                dialogWidth,
+                dialogHeight,
                 collapsed,
                 docked,
                 isActive,
@@ -67,8 +69,8 @@ export const dockView = hoistCmp.factory<DockViewProps>({
         return modalSupport({
             model: model.modalSupportModel,
             item: vbox({
-                width: collapsed ? collapsedWidth : width,
-                height: !collapsed ? height : undefined,
+                width: collapsed ? collapsedWidth : docked ? width : dialogWidth,
+                height: collapsed ? undefined : docked ? height : dialogHeight,
                 className: classNames(className, `xh-dock-view--${suffix}`),
                 items: [header, body]
             })

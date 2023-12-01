@@ -33,12 +33,16 @@ export interface DockViewConfig {
     icon?: ReactElement;
     /** Content to be rendered by this DockView. */
     content: Content;
-    /** Width in pixels. If not set, width will be determined by the content. */
-    width?: number;
-    /** Height in pixels. If not set, height will be determined by the content. */
-    height?: number;
-    /** Width of collapsed header in pixels. If not set, width will be determined by the length of the title. */
-    collapsedWidth?: number;
+    /** Width: if not set, will be determined by content. */
+    width?: string | number;
+    /** Height: if not set, will be determined by content. */
+    height?: string | number;
+    /** Width of collapsed header. If not set, width will be determined by the length of the title. */
+    collapsedWidth?: string | number;
+    /** Width when displayed in a modal dialog.  If not set, will fall back on default `width`. */
+    dialogWidth?: string | number;
+    /** Height when displayed in a modal dialog.  If not set, will fall back on default `height`. */
+    dialogHeight?: string | number;
     /** Strategy for rendering this DockView. If null, will default to its container's mode. */
     renderMode?: RenderMode;
     /** Strategy for refreshing this DockView. If null, will default to its container's mode. */
@@ -72,9 +76,11 @@ export class DockViewModel extends HoistModel {
     @observable docked: boolean;
     @observable collapsed: boolean;
     content: Content;
-    width: number;
-    height: number;
-    collapsedWidth: number;
+    width: string | number;
+    height: string | number;
+    collapsedWidth: string | number;
+    dialogWidth: string | number;
+    dialogHeight: string | number;
     allowClose: boolean;
     allowDialog: boolean;
     onClose?: () => Awaitable<boolean | void>;
@@ -107,6 +113,8 @@ export class DockViewModel extends HoistModel {
         width,
         height,
         collapsedWidth,
+        dialogWidth,
+        dialogHeight,
         refreshMode,
         renderMode,
         docked = true,
@@ -127,6 +135,8 @@ export class DockViewModel extends HoistModel {
         this.width = width;
         this.height = height;
         this.collapsedWidth = collapsedWidth;
+        this.dialogWidth = dialogWidth ?? width;
+        this.dialogHeight = dialogHeight ?? height;
 
         this.docked = docked;
         this.collapsed = collapsed;
@@ -140,8 +150,8 @@ export class DockViewModel extends HoistModel {
         this.refreshContextModel = new ManagedRefreshContextModel(this);
 
         this.modalSupportModel = new ModalSupportModel({
-            width: width ?? null,
-            height: height ?? null,
+            width: dialogWidth ?? null,
+            height: dialogHeight ?? null,
             defaultModal: !docked,
             canOutsideClickClose: false
         });
