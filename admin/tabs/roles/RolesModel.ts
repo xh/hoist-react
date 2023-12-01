@@ -2,7 +2,7 @@ import {RoleEditorModel} from '@xh/hoist/admin/tabs/roles/editor/RoleEditorModel
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {div, li, ul} from '@xh/hoist/cmp/layout';
+import {div, fragment, hbox, hspacer, li, ul} from '@xh/hoist/cmp/layout';
 import {HoistModel, HoistRole, LoadSpec, managed, ReactionSpec, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
@@ -165,7 +165,20 @@ export class RolesModel extends HoistModel {
                 filterable: true
             },
             columns: [
-                {field: {name: 'name', type: 'string'}},
+                {
+                    field: {name: 'name', type: 'string'},
+                    renderer: (v, {record}) =>
+                        hbox({
+                            alignItems: 'center',
+                            items: [
+                                fragment({
+                                    items: [Icon.pin({title: 'Not Deletable'}), hspacer()],
+                                    omit: !record.get('undeletable')
+                                }),
+                                v
+                            ]
+                        })
+                },
                 {field: {name: 'groupName', type: 'string'}, hidden: true},
                 {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime},
                 {field: {name: 'lastUpdatedBy', type: 'string'}},
