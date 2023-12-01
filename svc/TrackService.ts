@@ -107,7 +107,7 @@ export class TrackService extends HoistService {
 
             await XH.fetchJson({url: 'xh/track', params});
         } catch (e) {
-            this.logError(`Failed to persist track log`, options, e);
+            this.logError('Failed to persist track log', options, e);
         }
     }
 }

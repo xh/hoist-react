@@ -13,7 +13,7 @@ import {singleDatePicker} from '@xh/hoist/kit/react-dates';
 import '@xh/hoist/mobile/register';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
-import {logDebug, withDefault} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import moment from 'moment';
 import './DateInput.scss';
@@ -161,10 +161,7 @@ class DateInputModel extends HoistInputModel {
         if (date && this.isOutsideRange(date)) {
             // Dates outside of min/max constraints are reset to null.
             date = null;
-            logDebug(
-                'DateInput value exceeded max/minDate bounds on change - reset to null.',
-                DateInput
-            );
+            this.logDebug('Value exceeded max/minDate bounds on change - reset to null.');
         }
         this.noteValueChange(date ? date.toDate() : null);
     };

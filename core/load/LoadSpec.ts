@@ -63,7 +63,7 @@ export class LoadSpec {
     /**
      * display type of refresh for troubleshooting and logging.
      */
-    get typeDisplay(): string {
+    get typeDisplay(): 'Auto-Refresh' | 'Refresh' | 'Load' {
         if (this.isAutoRefresh) return 'Auto-Refresh';
         if (this.isRefresh) return 'Refresh';
         return 'Load';

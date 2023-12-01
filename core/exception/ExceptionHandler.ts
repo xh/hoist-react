@@ -6,7 +6,7 @@
  */
 import {Exception} from './Exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
-import {logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
+import {logError, logWarn, stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
 import {forOwn, has, isArray, isNil, isObject, omitBy, pick, set} from 'lodash';
 import {HoistException, PlainObject, XH} from '../';
@@ -300,7 +300,7 @@ export class ExceptionHandler {
     }
 
     private logException(e: HoistException, opts: ExceptionHandlerOptions) {
-        return opts.showAsError ? logError([opts.message, e], this) : logDebug(opts.message, this);
+        return opts.showAsError ? console.error(opts.message, e) : console.debug(opts.message);
     }
 
     private parseOptions(

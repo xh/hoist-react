@@ -280,11 +280,11 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
 
         // 2) Validate
         if (!model && !spec.optional && spec instanceof UsesSpec) {
-            model.logError(
-                `Failed to find model with selector '${formatSelector(spec.selector)}' for
-                component '${cfg.displayName}'`,
-                "Ensure the proper model is available via context, or specify explicitly using the 'model' prop."
-            );
+            console.error(`
+                Failed to find model with selector '${formatSelector(spec.selector)}' for
+                component '${cfg.displayName}'. Ensure the proper model is available via context, or
+                specify explicitly using the 'model' prop.
+            `);
             return cmpErrDisplay({...getLayoutProps(props), item: 'No model found'});
         }
 
@@ -409,7 +409,7 @@ function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): 
     // 2) props - instance
     if (model) {
         if (!model.isHoistModel || !model.matchesSelector(selector, true)) {
-            model.logError(
+            console.error(
                 `Incorrect model passed to '${cfg.displayName}'.
                 Expected: ${formatSelector(selector)}
                 Received: ${model.constructor.name}`

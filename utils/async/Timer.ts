@@ -122,7 +122,7 @@ export class Timer {
         try {
             await (this.internalRunFn() as any).timeout(this.timeoutMs);
         } catch (e) {
-            logError(['Error executing timer:', e], this);
+            logError(['Error executing timer', e], this);
         }
         this.isRunning = false;
         this.lastRun = new Date();

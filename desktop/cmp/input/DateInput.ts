@@ -18,7 +18,7 @@ import {datePicker as bpDatePicker, popover, Position} from '@xh/hoist/kit/bluep
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
-import {consumeEvent, getTestId, logDebug, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {consumeEvent, getTestId, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {assign, castArray, clone, trim} from 'lodash';
@@ -319,10 +319,7 @@ class DateInputModel extends HoistInputModel {
             if (date) {
                 date = this.applyPrecision(date);
             } else {
-                logDebug(
-                    'DateInput value exceeded max/minDate bounds on change - reset to null.',
-                    DateInput
-                );
+                this.logDebug('Value exceeded max/minDate bounds on change - reset to null.');
             }
         }
         this.noteValueChange(date);

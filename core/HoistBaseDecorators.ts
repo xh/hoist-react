@@ -91,8 +91,11 @@ function createPersistDescriptor(
             });
         } catch (e) {
             logError(
-                `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
-                    `'persistWith' on this object or annotation.`,
+                [
+                    `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
+                        `'persistWith' on this object or annotation`,
+                    e
+                ],
                 target
             );
         }

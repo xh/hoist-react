@@ -7,8 +7,8 @@
 import {HoistBase, managed, PlainObject, RefreshContextModel, TaskObserver} from '../';
 import {LoadSpec, Loadable} from './';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
-import {isPlainObject} from 'lodash';
+import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
+import {isPlainObject, pull} from 'lodash';
 
 /**
  * Provides support for objects that participate in Hoist's loading/refresh lifecycle.
@@ -98,18 +98,17 @@ export class LoadSupport extends HoistBase implements Loadable {
                 if (target instanceof RefreshContextModel) return;
 
                 const elapsed = this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime(),
-                    msg = `[${target.constructor.name}] | ${loadSpec.typeDisplay} | ${
-                        exception ? 'failed | ' : ''
-                    }${elapsed}ms`;
+                    status = exception ? 'failed' : null,
+                    msg = pull([loadSpec.typeDisplay, status, `${elapsed}ms`, exception], null);
 
                 if (exception) {
                     if (exception.isRoutine) {
-                        this.logDebug(msg, exception);
+                        logDebug(msg, target);
                     } else {
-                        this.logError(msg, exception);
+                        logError(msg, target);
                     }
                 } else {
-                    this.logDebug(msg);
+                    logDebug(msg, target);
                 }
             });
     }

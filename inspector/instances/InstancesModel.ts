@@ -130,9 +130,9 @@ export class InstancesModel extends HoistModel {
             instance = this.getInstance(xhId);
 
         if (!instance) {
-            this.logWarn(`Instance with xhId ${xhId} no longer alive - cannot be logged`);
+            console.warn(`Instance with xhId ${xhId} no longer alive - cannot be logged`);
         } else {
-            this.logDebug(`[${xhId}]`, instance);
+            console.log(`[${xhId}]`, instance);
             XH.toast({
                 icon: Icon.terminal(),
                 message: `Logged ${rec.data.className} ${xhId} to devtools console`
@@ -147,9 +147,9 @@ export class InstancesModel extends HoistModel {
             instance = this.getInstance(instanceXhId);
 
         if (!instance) {
-            this.logWarn(`Instance ${instanceDisplayName} no longer alive - cannot be logged`);
+            console.warn(`Instance ${instanceDisplayName} no longer alive - cannot be logged`);
         } else {
-            this.logInfo(`[${instanceDisplayName}].${property}`, instance[property]);
+            console.log(`[${instanceDisplayName}].${property}`, instance[property]);
             XH.toast({
                 icon: Icon.terminal(),
                 message: `Logged [${instanceDisplayName}].${property} to devtools console`

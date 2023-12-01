@@ -29,7 +29,7 @@ export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMap
 
         if (!zoneGridModel) {
             logError(
-                "No ZoneGridModel available to ZoneMapperButton. Provide via a 'zoneGridModel' prop, or context.",
+                "No ZoneGridModel available. Provide via a 'zoneGridModel' prop, or context.",
                 ZoneMapperButton
             );
             return button({icon, disabled: true, ...props});

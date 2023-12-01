@@ -269,7 +269,8 @@ export abstract class HoistBase {
         } catch (e) {
             this.logError(
                 `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
-                    `'persistWith' on this object or in the method call: ${e}.`
+                    `'persistWith' on this object or in the method call`,
+                e
             );
         }
     }
