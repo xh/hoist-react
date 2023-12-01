@@ -30,7 +30,7 @@ export class RoleGraphModel extends HoistModel {
                             id: role.name,
                             name: role.name,
                             title: '(This Role)',
-                            color: 'var(--xh-intent-neutral'
+                            color: 'var(--xh-intent-neutral)'
                         }
                     ]
                 });
