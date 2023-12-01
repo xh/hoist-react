@@ -2,6 +2,10 @@
 
 ## 60.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added additional layout support for `DockViews`
+
 ## 59.4.0 - 2023-11-28
 
 ### 💥 Breaking Changes
