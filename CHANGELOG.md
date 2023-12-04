@@ -6,6 +6,10 @@
 
 * Added additional layout support for `DockViews`
 
+### 📚 Libraries
+
+* react-grid-layout `1.3 -> 1.4`
+
 ## 59.4.0 - 2023-11-28
 
 ### 💥 Breaking Changes

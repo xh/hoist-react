@@ -378,12 +378,6 @@ export class DashCanvasModel extends DashModel<
         return model;
     }
 
-    // Trigger window resize event when component becomes visible to ensure layout adjusted to
-    // current window size - fixes https://github.com/xh/hoist-react/issues/3215
-    onVisibleChange(visible: boolean) {
-        if (visible) this.fireWindowResizeEvent();
-    }
-
     onRglLayoutChange(rglLayout) {
         rglLayout = rglLayout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
         this.setLayout(rglLayout);
@@ -403,7 +397,7 @@ export class DashCanvasModel extends DashModel<
         if (!node) return;
         const scrollbarVisible = node.offsetWidth > node.clientWidth;
         if (scrollbarVisible !== this.scrollbarVisible) {
-            this.fireWindowResizeEvent();
+            window.dispatchEvent(new Event('resize'));
             this.scrollbarVisible = scrollbarVisible;
         }
     }
@@ -528,9 +522,5 @@ export class DashCanvasModel extends DashModel<
         }
 
         return {x: defaultX, y: endY ?? rows};
-    }
-
-    private fireWindowResizeEvent() {
-        window.dispatchEvent(new Event('resize'));
     }
 }
