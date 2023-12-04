@@ -96,16 +96,21 @@ function renderMainField(value, renderer, context) {
     });
 }
 
-function renderSubField({colId, label}, context) {
+function renderSubField({colId, label, labelRenderer}, context) {
     const {record, gridModel} = context,
         column = gridModel.getColumn(colId);
 
     throwIf(!column, `Subfield ${colId} not found`);
 
-    const {field, headerName, renderer} = column,
+    const {field, headerName, renderer, appData} = column,
+        {multiZoneLabelRenderer} = appData,
         value = record.data[field];
 
     if (label && !isString(label)) label = headerName;
+
+    if (multiZoneLabelRenderer) {
+        label = multiZoneLabelRenderer(record);
+    }
 
     const renderedVal = renderValue(value, renderer, column, context),
         renderedValIsEmpty = renderedVal === '' || isNil(renderedVal);
