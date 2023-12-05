@@ -61,7 +61,7 @@ export class RoleFormModel extends HoistModel {
         this.directoryGroupOptions = uniq(allRoles.flatMap(role => role.directoryGroups)).sort();
         this.groupOptions = uniq(allRoles.map(it => it.category)).sort();
         this.rolesGridModel.loadData(role?.roles?.map(name => ({name})) ?? []);
-        this.roleOptions = map(groupBy(allRoles, 'groupName'), (roles, category) => ({
+        this.roleOptions = map(groupBy(allRoles, 'category'), (roles, category) => ({
             label: category,
             options: roles.filter(it => it.name !== role?.name).map(it => it.name)
         }));
