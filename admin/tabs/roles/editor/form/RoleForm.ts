@@ -32,10 +32,10 @@ export const roleForm = hoistCmp.factory({
                                     disabled: model.isEditingExistingRole,
                                     field: 'name',
                                     flex: 1,
-                                    item: textInput()
+                                    item: textInput({autoFocus: true})
                                 }),
                                 formField({
-                                    field: 'groupName',
+                                    field: 'category',
                                     flex: 1,
                                     item: select({
                                         enableCreate: true,
@@ -97,7 +97,7 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
                 compact: true,
                 items: [
                     recordActionBar({
-                        actions: model.ACTIONS,
+                        actions: [model.ADD_ASSIGNMENT_ACTION],
                         gridModel,
                         selModel: gridModel.selModel
                     }),

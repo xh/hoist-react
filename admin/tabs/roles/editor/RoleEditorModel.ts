@@ -2,6 +2,7 @@ import {RoleFormModel} from '@xh/hoist/admin/tabs/roles/editor/form/RoleFormMode
 import {HoistModel, HoistRole, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
+import {omit} from 'lodash';
 import {action, computed, observable} from 'mobx';
 
 export class RoleEditorModel extends HoistModel {
@@ -28,16 +29,12 @@ export class RoleEditorModel extends HoistModel {
         this.allRoles = roles;
     }
 
-    createAsync(): Promise<HoistRole> {
-        return this.editAsync();
+    createAsync(roleSpec?: HoistRole): Promise<HoistRole> {
+        return this.openAsync(roleSpec);
     }
 
-    @action
-    editAsync(role?: HoistRole): Promise<HoistRole> {
-        this.isOpen = true;
-        this.role = role;
-        this.roleFormModel.init(this.allRoles, role);
-        return new Promise(resolve => (this.resolve = resolve));
+    editAsync(role: HoistRole): Promise<HoistRole> {
+        return this.openAsync(role, true);
     }
 
     @action
@@ -84,6 +81,14 @@ export class RoleEditorModel extends HoistModel {
     // -------------------------------
     // Implementation
     // -------------------------------
+
+    @action
+    openAsync(roleSpec?: HoistRole, editExisting = false): Promise<HoistRole> {
+        this.isOpen = true;
+        this.role = editExisting ? roleSpec : undefined;
+        this.roleFormModel.init(this.allRoles, editExisting ? roleSpec : omit(roleSpec, 'name'));
+        return new Promise(resolve => (this.resolve = resolve));
+    }
 
     @action
     private close() {

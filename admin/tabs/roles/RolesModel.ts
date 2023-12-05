@@ -3,18 +3,20 @@ import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {div, fragment, hbox, hspacer, li, ul} from '@xh/hoist/cmp/layout';
-import {HoistModel, HoistRole, LoadSpec, managed, ReactionSpec, XH} from '@xh/hoist/core';
+import {HoistModel, HoistRole, LoadSpec, managed, persist, ReactionSpec, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {compact, maxBy} from 'lodash';
+import {compact, max} from 'lodash';
 import {action, observable} from 'mobx';
 import moment from 'moment/moment';
 
 export class RolesModel extends HoistModel {
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
+
+    override persistWith = RolesModel.PERSIST_WITH;
 
     readonly ACTIONS: RecordActionSpec[] = this.createRecordActions();
 
@@ -25,10 +27,12 @@ export class RolesModel extends HoistModel {
     @observable.ref allRoles: HoistRole[] = [];
     @observable.ref selectedRole?: HoistRole;
 
+    @bindable @persist groupByCategory = true;
+
     constructor() {
         super();
         makeObservable(this);
-        this.addReaction(this.selectedRoleReaction());
+        this.addReaction(this.selectedRoleReaction(), this.groupByCategoryReaction());
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
@@ -55,7 +59,7 @@ export class RolesModel extends HoistModel {
         // Avoid unnecessary re-renders caused by mutating observable when data is unchanged.
         if (
             roles.length !== this.allRoles.length ||
-            maxBy(roles, 'lastUpdated') > maxBy(this.allRoles, 'lastUpdated')
+            max(roles.map(it => it.lastUpdated)) > max(this.allRoles.map(it => it.lastUpdated))
         ) {
             this.allRoles = roles;
         }
@@ -75,6 +79,19 @@ export class RolesModel extends HoistModel {
                 return [selectedRecord.id, selectedRecord.get('lastUpdated')].join('::');
             },
             run: () => (this.selectedRole = gridModel.selectedRecord?.data as HoistRole)
+        };
+    }
+
+    private groupByCategoryReaction(): ReactionSpec<boolean> {
+        const {gridModel} = this;
+        return {
+            track: () => this.groupByCategory,
+            run: groupByCategory => {
+                gridModel.setGroupBy(groupByCategory ? 'category' : null);
+                gridModel.setColumnVisible('category', !groupByCategory);
+                gridModel.autosizeAsync();
+            },
+            fireImmediately: true
         };
     }
 
@@ -118,6 +135,7 @@ export class RolesModel extends HoistModel {
 
     private createGridModel(): GridModel {
         return new GridModel({
+            autosizeOptions: {mode: 'managed'},
             emptyText: 'No roles found...',
             colChooserModel: true,
             sortBy: 'name|asc',
@@ -125,13 +143,12 @@ export class RolesModel extends HoistModel {
             exportOptions: {filename: 'roles'},
             filterModel: true,
             headerMenuDisplay: 'hover',
-            groupBy: 'groupName',
             onRowDoubleClicked: ({data: record}) =>
                 record &&
                 this.roleEditorModel
                     .editAsync(record.data)
                     .then(role => role && this.refreshAsync()),
-            persistWith: {...RolesModel.PERSIST_WITH, path: 'mainGrid'},
+            persistWith: {...this.persistWith, path: 'mainGrid'},
             store: {
                 idSpec: 'name',
                 fields: [
@@ -158,7 +175,7 @@ export class RolesModel extends HoistModel {
                     effectiveUserNames: raw.effectiveUsers.map(it => it.name),
                     effectiveDirectoryGroupNames: raw.effectiveDirectoryGroups.map(it => it.name),
                     effectiveRoleNames: raw.effectiveRoles.map(it => it.name),
-                    inheritedRoleNames: raw.inheritedRoles.map(it => it.role)
+                    inheritedRoleNames: raw.inheritedRoles.map(it => it.name)
                 })
             },
             colDefaults: {
@@ -179,7 +196,7 @@ export class RolesModel extends HoistModel {
                             ]
                         })
                 },
-                {field: {name: 'groupName', type: 'string'}, hidden: true},
+                {field: {name: 'category', type: 'string'}},
                 {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime},
                 {field: {name: 'lastUpdatedBy', type: 'string'}},
                 {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1}
@@ -204,6 +221,16 @@ export class RolesModel extends HoistModel {
                                     this.gridModel.selectAsync(role.name)
                                 )
                         )
+            },
+            {
+                text: 'Duplicate',
+                icon: Icon.copy(),
+                intent: 'success',
+                actionFn: ({record}) =>
+                    this.roleEditorModel
+                        .createAsync(record.data as HoistRole)
+                        .then(role => role && this.refreshAsync()),
+                recordsRequired: true
             },
             {
                 text: 'Edit',
@@ -232,6 +259,7 @@ export class RolesModel extends HoistModel {
             bind: this.gridModel.store,
             fieldSpecs: [
                 'name',
+                'category',
                 'users',
                 'directoryGroups',
                 'roles',

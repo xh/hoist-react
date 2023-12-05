@@ -29,15 +29,15 @@ export interface HoistUser {
 
 export interface HoistRole {
     name: string;
-    groupName: string;
+    category: string;
     notes: string;
     users: string[];
     directoryGroups: string[];
     roles: string[];
-    inheritedRoles: Array<{role: string; inheritedBy: string}>;
-    effectiveUsers: Array<{name: string; roles: string[]}>;
-    effectiveDirectoryGroups: Array<{name: string; roles: string[]}>;
-    effectiveRoles: Array<{name: string; roles: string[]}>;
+    inheritedRoles: EffectiveRoleMember[];
+    effectiveUsers: EffectiveRoleMember[];
+    effectiveDirectoryGroups: EffectiveRoleMember[];
+    effectiveRoles: EffectiveRoleMember[];
     lastUpdated: Date;
     lastUpdatedBy: string;
     members: HoistRoleMember[];
@@ -49,6 +49,11 @@ export interface HoistRoleMember {
     name: string;
     dateCreated: Date;
     createdBy: string;
+}
+
+export interface EffectiveRoleMember {
+    name: string;
+    sources: string[];
 }
 
 /**

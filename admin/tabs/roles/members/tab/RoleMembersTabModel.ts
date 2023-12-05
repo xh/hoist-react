@@ -1,5 +1,5 @@
-import {RoleMembersProps} from '@xh/hoist/admin/tabs/roles/inspector/members/RoleMembers';
-import {RoleInspectorModel} from '@xh/hoist/admin/tabs/roles/inspector/RoleInspectorModel';
+import {RoleMembersTabProps} from './RoleMembersTab';
+import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {hbox, hframe} from '@xh/hoist/cmp/layout';
@@ -8,24 +8,24 @@ import {Icon} from '@xh/hoist/icon';
 import {tag} from '@xh/hoist/kit/blueprint';
 import {bindable} from '@xh/hoist/mobx';
 
-export class RoleMembersModel extends HoistModel {
+export class RoleMembersTabModel extends HoistModel {
     static readonly types = {
         USER: '1-user',
         DIRECTORY_GROUP: '2-directory-group',
         ROLE: '3-role'
     };
 
-    @lookup(() => RoleInspectorModel) readonly roleInspectorModel: RoleInspectorModel;
+    @lookup(() => RolesModel) readonly rolesModel: RolesModel;
     @managed gridModel: GridModel;
 
     @bindable showInherited = true;
 
-    get props(): RoleMembersProps {
-        return super.componentProps as RoleMembersProps;
+    get props(): RoleMembersTabProps {
+        return super.componentProps as RoleMembersTabProps;
     }
 
     get selectedRole(): HoistRole {
-        return this.roleInspectorModel.selectedRole;
+        return this.rolesModel.selectedRole;
     }
 
     override onLinked() {
@@ -55,36 +55,36 @@ export class RoleMembersModel extends HoistModel {
                 // 1 - Users
                 ...role.effectiveUsers.map(it => ({
                     name: it.name,
-                    roles: this.sortThisRoleFirst(it.roles),
-                    isInherited: !it.roles.includes(name),
-                    type: RoleMembersModel.types.USER
+                    roles: this.sortThisRoleFirst(it.sources),
+                    isInherited: !it.sources.includes(name),
+                    type: RoleMembersTabModel.types.USER
                 })),
 
                 // 2 - Directory Groups
                 ...role.effectiveDirectoryGroups.map(it => ({
                     name: it.name,
-                    roles: this.sortThisRoleFirst(it.roles),
-                    isInherited: !it.roles.includes(name),
-                    type: RoleMembersModel.types.DIRECTORY_GROUP
+                    roles: this.sortThisRoleFirst(it.sources),
+                    isInherited: !it.sources.includes(name),
+                    type: RoleMembersTabModel.types.DIRECTORY_GROUP
                 })),
 
                 // 3 - Roles
                 ...role.effectiveRoles.map(it => ({
                     name: it.name,
-                    roles: this.sortThisRoleFirst(it.roles),
-                    isInherited: !it.roles.includes(name),
-                    type: RoleMembersModel.types.ROLE
+                    roles: this.sortThisRoleFirst(it.sources),
+                    isInherited: !it.sources.includes(name),
+                    type: RoleMembersTabModel.types.ROLE
                 }))
             ]);
         } else {
             this.gridModel.loadData(
-                role.members.map(it => ({...it, type: RoleMembersModel.types[it.type]}))
+                role.members.map(it => ({...it, type: RoleMembersTabModel.types[it.type]}))
             );
         }
     }
 
     private createGridModel(): GridModel {
-        const {types} = RoleMembersModel,
+        const {types} = RoleMembersTabModel,
             {showEffective} = this.props;
         return new GridModel({
             store: {
@@ -104,7 +104,7 @@ export class RoleMembersModel extends HoistModel {
             onRowDoubleClicked: ({data: record}) => {
                 if (!record) return;
                 const {type, name} = record.data;
-                if (type === types.ROLE) this.roleInspectorModel.selectRole(name);
+                if (type === types.ROLE) this.rolesModel.selectRole(name);
             },
             groupRowRenderer: ({value}) => {
                 switch (value) {
@@ -142,7 +142,7 @@ export class RoleMembersModel extends HoistModel {
                                 return tag({
                                     className: 'roles-renderer__role',
                                     intent: isThisRole ? null : 'primary',
-                                    item: role + (isThisRole ? ' (this role)' : ''),
+                                    item: isThisRole ? '<Direct>' : role,
                                     minimal: true
                                 });
                             })
@@ -150,12 +150,12 @@ export class RoleMembersModel extends HoistModel {
                     omit: !showEffective
                 },
                 {
-                    field: {name: 'dateCreated', displayName: 'Added On', type: 'date'},
+                    field: {name: 'dateCreated', displayName: 'Assigned', type: 'date'},
                     ...Col.dateTime,
                     omit: showEffective
                 },
                 {
-                    field: {name: 'createdBy', displayName: 'Added By', type: 'string'},
+                    field: {name: 'createdBy', displayName: 'Assigned By', type: 'string'},
                     omit: showEffective
                 }
             ]
@@ -163,6 +163,7 @@ export class RoleMembersModel extends HoistModel {
     }
 
     private sortThisRoleFirst(roles: string[]): string[] {
+        roles = [...roles].sort();
         const thisRoleIdx = roles.indexOf(this.selectedRole.name);
         if (thisRoleIdx === -1) return roles;
         return [

@@ -1,13 +1,15 @@
 import {roleEditor} from '@xh/hoist/admin/tabs/roles/editor/RoleEditor';
-import {roleInspector} from '@xh/hoist/admin/tabs/roles/inspector/RoleInspector';
+import {roleGraph} from '@xh/hoist/admin/tabs/roles/graph/RoleGraph';
+import {roleMembers} from '@xh/hoist/admin/tabs/roles/members/RoleMembers';
 import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, fragment, hframe} from '@xh/hoist/cmp/layout';
+import {filler, fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
-import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
+import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+import {Icon} from '@xh/hoist/icon';
 
 export const roles = hoistCmp.factory({
     className: 'roles',
@@ -29,23 +31,41 @@ export const roles = hoistCmp.factory({
                     gridCountLabel({unit: 'role'}),
                     '-',
                     filterChooser({flex: 2}),
-                    exportButton()
+                    '-',
+                    switchInput({
+                        bind: 'groupByCategory',
+                        label: 'Group By Category',
+                        labelSide: 'left'
+                    })
                 ],
-                item: hframe(grid(), detailsPanel())
+                item: hframe(vframe(grid(), graphPanel()), detailsPanel())
             }),
             roleEditor()
         );
     }
 });
 
-const detailsPanel = hoistCmp.factory<RolesModel>(() =>
+const detailsPanel = hoistCmp.factory<RolesModel>(({model}) =>
     panel({
+        icon: Icon.idBadge(),
+        title: model.selectedRole?.name ?? 'Role Details',
+        item: roleMembers(),
+        compactHeader: true,
         modelConfig: {
-            collapsible: false,
             defaultSize: '50%',
             persistWith: {...RolesModel.PERSIST_WITH, path: 'detailsPanel'},
             side: 'right'
-        },
-        item: roleInspector()
+        }
+    })
+);
+
+const graphPanel = hoistCmp.factory<RolesModel>(() =>
+    panel({
+        item: roleGraph(),
+        modelConfig: {
+            defaultSize: '25%',
+            persistWith: {...RolesModel.PERSIST_WITH, path: 'graphPanel'},
+            side: 'bottom'
+        }
     })
 );

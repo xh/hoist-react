@@ -4,12 +4,13 @@ import {HoistModel, HoistRole, managed, SelectOption, XH} from '@xh/hoist/core';
 import {RecordActionSpec, required} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth, selectEditor} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {groupBy, isString, map, uniq} from 'lodash';
+import {groupBy, isNil, isString, map, uniq} from 'lodash';
 import {action, computed, observable} from 'mobx';
 
 export class RoleFormModel extends HoistModel {
+    readonly ADD_ASSIGNMENT_ACTION: RecordActionSpec = this.createAddAssigmentAction();
     readonly ACTIONS: RecordActionSpec[] = [
-        this.createAddAssigmentAction(),
+        this.ADD_ASSIGNMENT_ACTION,
         this.createRemoveAssignmentAction()
     ];
 
@@ -51,17 +52,17 @@ export class RoleFormModel extends HoistModel {
     }
 
     @action
-    init(allRoles: HoistRole[], role?: HoistRole) {
-        this.isEditingExistingRole = !!role;
+    init(allRoles: HoistRole[], role?: Partial<HoistRole>) {
+        this.isEditingExistingRole = !isNil(role?.name);
         this.formModel.init(role ?? {});
-        this.usersGridModel.loadData(role?.users.map(name => ({name})) ?? []);
+        this.usersGridModel.loadData(role?.users?.map(name => ({name})) ?? []);
         this.userOptions = uniq(allRoles.flatMap(role => role.users)).sort();
-        this.directoryGroupsGridModel.loadData(role?.directoryGroups.map(name => ({name})) ?? []);
+        this.directoryGroupsGridModel.loadData(role?.directoryGroups?.map(name => ({name})) ?? []);
         this.directoryGroupOptions = uniq(allRoles.flatMap(role => role.directoryGroups)).sort();
-        this.groupOptions = uniq(allRoles.map(it => it.groupName)).sort();
-        this.rolesGridModel.loadData(role?.roles.map(name => ({name})) ?? []);
-        this.roleOptions = map(groupBy(allRoles, 'groupName'), (roles, groupName) => ({
-            label: groupName,
+        this.groupOptions = uniq(allRoles.map(it => it.category)).sort();
+        this.rolesGridModel.loadData(role?.roles?.map(name => ({name})) ?? []);
+        this.roleOptions = map(groupBy(allRoles, 'groupName'), (roles, category) => ({
+            label: category,
             options: roles.filter(it => it.name !== role?.name).map(it => it.name)
         }));
         this.invalidNames = allRoles.map(it => it.name).filter(it => it !== role?.name);
@@ -105,7 +106,7 @@ export class RoleFormModel extends HoistModel {
                                 : null
                     ]
                 },
-                {name: 'groupName'},
+                {name: 'category'},
                 {name: 'notes'}
             ]
         });
@@ -164,7 +165,7 @@ export class RoleFormModel extends HoistModel {
         return ret;
     }
 
-    private createAddAssigmentAction(): RecordActionSpec {
+    createAddAssigmentAction(): RecordActionSpec {
         return {
             text: 'Add',
             icon: Icon.add(),
