@@ -28,7 +28,7 @@ import {
 } from '@xh/hoist/kit/react-select';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {getTestId, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {elemWithin, getTestId, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import debouncePromise from 'debounce-promise';
@@ -786,6 +786,15 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             // note: menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
             const menuIsOpen = model.reactSelect?.state?.menuIsOpen;
             if (menuIsOpen && (e.key === 'Escape' || e.key === 'Enter')) {
+                e.stopPropagation();
+            }
+        },
+        onMouseDown: e => {
+            // Some internal elements, like the dropdown indicator and the rendered single value,
+            // fire 'mousedown' events. These can bubble and inadvertently close Popovers that
+            // contain Selects.
+            const target = e?.target as HTMLElement;
+            if (target && elemWithin(target, 'bp4-popover')) {
                 e.stopPropagation();
             }
         },

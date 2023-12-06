@@ -282,9 +282,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
         if (!model && !spec.optional && spec instanceof UsesSpec) {
             console.error(`
                 Failed to find model with selector '${formatSelector(spec.selector)}' for
-                component '${
-                    cfg.displayName
-                }'.  Ensure the proper model is available via context, or
+                component '${cfg.displayName}'. Ensure the proper model is available via context, or
                 specify explicitly using the 'model' prop.
             `);
             return cmpErrDisplay({...getLayoutProps(props), item: 'No model found'});
@@ -299,16 +297,23 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             ].join(' | ');
         });
 
-        // 3) Create any new lookup context that needs to be established
-        // Avoid adding extra context if this model already in default context.
-        const newLookup =
+        // 3) insert any new lookup context that needs to be established.  Avoid adding if default
+        // model not changing; cache object to avoid triggering re-renders in context children
+        const insertLookup = useRef<ModelLookup>(null);
+        if (
             !publishNone &&
             model &&
             (!modelLookup ||
                 !fromContext ||
                 (publishDefault && modelLookup.lookupModel('*') !== model))
-                ? new ModelLookup(model, modelLookup, publishMode)
-                : null;
+        ) {
+            const {current} = insertLookup;
+            if (current?.model != model || current?.parent != modelLookup) {
+                insertLookup.current = new ModelLookup(model, modelLookup, publishMode);
+            }
+        } else {
+            insertLookup.current = null;
+        }
 
         // 4) Get the rendering of the component with its model context
         // 4a) Create a generic render function, that can be called immediately, or in wrapped component.
@@ -319,7 +324,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
                 delete props.modelRef;
                 delete props.modelConfig;
                 ctx.props = props;
-                ctx.modelLookup = newLookup ?? modelLookup;
+                ctx.modelLookup = insertLookup.current ?? modelLookup;
                 useOnMount(() => instanceManager.registerModelWithTestId(props.testId, model));
                 useOnUnmount(() => instanceManager.unregisterModelWithTestId(props.testId));
                 return render(props, ref);
@@ -334,7 +339,9 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             ? managedRender()
             : createElement(HostCmp, {managedRender, key: model?.xhId});
 
-        return newLookup ? modelLookupContextProvider({value: newLookup, item: ret}) : ret;
+        return insertLookup.current
+            ? modelLookupContextProvider({value: insertLookup.current, item: ret})
+            : ret;
     };
 }
 

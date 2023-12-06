@@ -7,8 +7,9 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
+import {gridHScrollbar} from '@xh/hoist/cmp/grid/impl/GridHScrollbar';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
-import {div, fragment, frame} from '@xh/hoist/cmp/layout';
+import {div, fragment, frame, vframe} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
     HoistModel,
@@ -40,11 +41,10 @@ import type {
 } from '@xh/hoist/kit/ag-grid';
 import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {consumeEvent, isDisplayed, logDebug, logWithDebug} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {consumeEvent, isDisplayed, logWithDebug} from '@xh/hoist/utils/js';
+import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {debounce, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
-import {createRef} from 'react';
 import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
@@ -107,14 +107,23 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
         );
 
+        const {enableFullWidthScroll} = model.experimental,
+            container = enableFullWidthScroll ? vframe : frame;
+
         return fragment(
-            frame({
+            container({
                 className,
-                item: agGrid({
-                    model: model.agGridModel,
-                    ...getLayoutProps(props),
-                    ...impl.agOptions
-                }),
+                items: [
+                    agGrid({
+                        model: model.agGridModel,
+                        ...getLayoutProps(props),
+                        ...impl.agOptions
+                    }),
+                    gridHScrollbar({
+                        omit: !enableFullWidthScroll,
+                        gridLocalModel: impl
+                    })
+                ],
                 testId,
                 onKeyDown: impl.onKeyDown,
                 ref: composeRefs(impl.viewRef, ref)
@@ -125,18 +134,18 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     }
 });
 
-(Grid as any).MULTIFIELD_ROW_HEIGHT = 38;
+(Grid as any).MULTIFIELD_ROW_HEIGHT = 42;
 
 //------------------------
 // Implementation
 //------------------------
-class GridLocalModel extends HoistModel {
+export class GridLocalModel extends HoistModel {
     override xhImpl = true;
 
     @lookup(GridModel)
     private model: GridModel;
     agOptions: GridOptions;
-    viewRef = createRef<HTMLElement>();
+    viewRef = createObservableRef<HTMLElement>();
     private rowKeyNavSupport: RowKeyNavSupport;
     private prevRs: RecordSet;
 
@@ -270,6 +279,11 @@ class GridLocalModel extends HoistModel {
                 treeData: true,
                 getDataPath: this.getDataPath
             };
+        }
+
+        // Support for FullWidthScroll
+        if (model.experimental.enableFullWidthScroll) {
+            ret.suppressHorizontalScroll = true;
         }
 
         return ret;
@@ -620,9 +634,8 @@ class GridLocalModel extends HoistModel {
         let transaction = null;
         if (prevCount !== 0) {
             transaction = this.genTransaction(newRs, prevRs);
-            logDebug(this.transactionLogStr(transaction), this);
-
             if (!this.transactionIsEmpty(transaction)) {
+                this.logDebug(...this.genTxnLogMsgs(transaction));
                 agApi.applyTransaction(transaction);
             }
         } else {
@@ -684,10 +697,13 @@ class GridLocalModel extends HoistModel {
         return isEmpty(t.update) && isEmpty(t.add) && isEmpty(t.remove);
     }
 
-    transactionLogStr(t) {
-        return `[update: ${t.update ? t.update.length : 0} | add: ${
-            t.add ? t.add.length : 0
-        } | remove: ${t.remove ? t.remove.length : 0}]`;
+    private genTxnLogMsgs(t): string[] {
+        const {add, update, remove} = t;
+        return [
+            `update: ${update ? update.length : 0}`,
+            `add: ${add ? add.length : 0}`,
+            `remove: ${remove ? remove.length : 0}`
+        ];
     }
 
     //------------------------

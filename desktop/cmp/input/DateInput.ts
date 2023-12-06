@@ -319,9 +319,7 @@ class DateInputModel extends HoistInputModel {
             if (date) {
                 date = this.applyPrecision(date);
             } else {
-                console.debug(
-                    'DateInput value exceeded max/minDate bounds on change - reset to null.'
-                );
+                this.logDebug('Value exceeded max/minDate bounds on change - reset to null.');
             }
         }
         this.noteValueChange(date);

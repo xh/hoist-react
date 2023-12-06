@@ -5,8 +5,9 @@
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
+import {IRowNode} from '@xh/hoist/kit/ag-grid';
 import {GridFilterFieldSpecConfig} from '@xh/hoist/cmp/grid/filter/GridFilterFieldSpec';
-import {HSide, PersistOptions, PlainObject, SizingMode, Some} from '@xh/hoist/core';
+import {HSide, PersistOptions, SizingMode, Some} from '@xh/hoist/core';
 import {Store, StoreRecord, View} from '@xh/hoist/data';
 import {ReactElement, ReactNode} from 'react';
 import {Column} from './columns/Column';
@@ -54,8 +55,8 @@ export type GridGroupSortFn = (
     groupField: string,
     metadata: {
         gridModel: GridModel;
-        nodeA: PlainObject;
-        nodeB: PlainObject;
+        nodeA: IRowNode;
+        nodeB: IRowNode;
     }
 ) => number;
 
@@ -113,7 +114,7 @@ export interface GridFilterModelConfig {
     fieldSpecs?: Array<string | GridFilterFieldSpecConfig>;
 
     /** Default properties to be assigned to all fieldSpecs created by this model. */
-    fieldSpecDefaults?: GridFilterFieldSpecConfig;
+    fieldSpecDefaults?: Omit<GridFilterFieldSpecConfig, 'field'>;
 }
 
 /**
@@ -167,8 +168,8 @@ export type ColumnComparator<T = any> = (
     params: {
         recordA: StoreRecord;
         recordB: StoreRecord;
-        agNodeA: PlainObject;
-        agNodeB: PlainObject;
+        agNodeA: IRowNode;
+        agNodeB: IRowNode;
         column: Column;
         gridModel: GridModel;
         defaultComparator: (a: T, b: T) => number;

@@ -144,7 +144,7 @@ export class TabContainerModel extends HoistModel {
 
         if (route) {
             if (XH.isMobileApp) {
-                console.warn('Tab container routing is not supported for mobile applications.');
+                this.logWarn('TabContainer routing is not supported for mobile applications.');
                 return;
             }
 
@@ -384,7 +384,7 @@ export class TabContainerModel extends HoistModel {
             this.provider = PersistenceProvider.create({path: 'tabContainer', ...persistWith});
             state = this.provider.read() || null;
         } catch (e) {
-            console.error(e);
+            this.logError(e);
             XH.safeDestroy(this.provider);
             this.provider = null;
         }

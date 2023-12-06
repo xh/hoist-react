@@ -114,8 +114,8 @@ export class AppContainerModel extends HoistModel {
     }
 
     /**
-     * Called when application container first mounted in order to trigger initial
-     * authentication and initialization of framework and application.
+     * Called when {@link AppContainer} first mounted.
+     * Triggers initial authentication and initialization of Hoist and application.
      */
     async initAsync() {
         // Avoid multiple calls, which can occur if AppContainer remounted.
@@ -196,14 +196,12 @@ export class AppContainerModel extends HoistModel {
                 numbro['BigNumber'].clone();
             }
 
-            // Confirm hoist-core version after environment service loaded
-            const hcVersion = XH.environmentService.get('hoistCoreVersion');
-            if (!checkMinVersion(hcVersion, MIN_HOIST_CORE_VERSION)) {
-                throw XH.exception(`
-                    This version of Hoist React requires the server to run Hoist Core
-                    v${MIN_HOIST_CORE_VERSION} or greater. Version ${hcVersion} detected.
-                `);
-            }
+            // Confirm hoist-core version after environment service loaded.
+            const hcVersion = XH.getEnv('hoistCoreVersion');
+            throwIf(
+                !checkMinVersion(hcVersion, MIN_HOIST_CORE_VERSION),
+                `This version of Hoist React requires the server to run Hoist Core ≥ v${MIN_HOIST_CORE_VERSION}. Version ${hcVersion} detected.`
+            );
 
             await installServicesAsync([
                 AlertBannerService,

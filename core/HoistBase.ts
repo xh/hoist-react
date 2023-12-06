@@ -4,8 +4,17 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {XH, PersistenceProvider, PersistOptions, DebounceSpec} from './';
-import {throwIf, getOrCreate} from '@xh/hoist/utils/js';
+import {XH, PersistenceProvider, PersistOptions, DebounceSpec, Some} from './';
+import {
+    throwIf,
+    getOrCreate,
+    logInfo,
+    logDebug,
+    logError,
+    logWarn,
+    withDebug,
+    withInfo
+} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
     debounce as lodashDebounce,
@@ -26,7 +35,7 @@ import {
     when as mobxWhen
 } from '@xh/hoist/mobx';
 import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
-import {IReactionDisposer} from 'mobx/dist/internal';
+import {IReactionDisposer, IEqualsComparer} from 'mobx/dist/internal';
 
 export interface HoistBaseClass {
     new (...args: any[]): HoistBase;
@@ -69,6 +78,33 @@ export abstract class HoistBase {
     /** Default persistence options for this object. */
     persistWith: PersistOptions = null;
 
+    //--------------------------------------------------
+    // Logging Delegates
+    //--------------------------------------------------
+    logInfo(...messages: unknown[]) {
+        logInfo(messages, this);
+    }
+
+    logWarn(...messages: unknown[]) {
+        logWarn(messages, this);
+    }
+
+    logError(...messages: unknown[]) {
+        logError(messages, this);
+    }
+
+    logDebug(...messages: unknown[]) {
+        logDebug(messages, this);
+    }
+
+    withInfo<T>(messages: Some<unknown>, fn: () => T): T {
+        return withInfo<T>(messages, fn, this);
+    }
+
+    withDebug<T>(messages: Some<unknown>, fn: () => T): T {
+        return withDebug<T>(messages, fn, this);
+    }
+
     /**
      * Add and start one or more managed reactions.
      *
@@ -104,12 +140,12 @@ export abstract class HoistBase {
     addReaction(...specs: ReactionSpec<any>[]): IReactionDisposer | IReactionDisposer[] {
         const disposers = specs.map(s => {
             if (!s) return null;
-            let {track, when, run, debounce, ...opts} = s;
+            let {track, when, run, debounce, ...rest} = s;
             throwIf(
                 (track && when) || (!track && !when),
                 "Must specify either 'track' or 'when' in addReaction."
             );
-            opts = parseReactionOptions(opts);
+            const opts = parseReactionOptions(rest);
             run = bindAndDebounce(this, run, debounce);
 
             const disposer = track ? mobxReaction(track, run, opts) : mobxWhen(when, run, opts);
@@ -231,9 +267,10 @@ export abstract class HoistBase {
                 run: data => provider.write(data)
             });
         } catch (e) {
-            console.error(
+            this.logError(
                 `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
-                    `'persistWith' on this object or in the method call.`
+                    `'persistWith' on this object or in the method call`,
+                e
             );
         }
     }
@@ -257,7 +294,7 @@ export abstract class HoistBase {
 /**
  * Object containing options accepted by MobX 'reaction' API as well as arguments below.
  */
-export interface ReactionSpec<T = any> extends IReactionOptions<T, any> {
+export interface ReactionSpec<T = any> extends Omit<IReactionOptions<T, any>, 'equals'> {
     /**
      * Function returning data to observe - first arg to the underlying reaction() call.
      * Specify this or `when`.
@@ -275,6 +312,9 @@ export interface ReactionSpec<T = any> extends IReactionOptions<T, any> {
 
     /** Specify to debounce run function */
     debounce?: DebounceSpec;
+
+    /** Specify a default from {@link comparer} or a custom comparer function. */
+    equals?: keyof typeof comparer | IEqualsComparer<T>;
 }
 
 /**

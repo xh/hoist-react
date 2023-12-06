@@ -189,7 +189,7 @@ export class DashCanvasModel extends DashModel<
                 this.provider = PersistenceProvider.create({path: 'dashCanvas', ...persistWith});
                 persistState = this.provider.read();
             } catch (e) {
-                console.error(e);
+                this.logError(e);
                 XH.safeDestroy(this.provider);
                 this.provider = null;
             }
@@ -419,7 +419,7 @@ export class DashCanvasModel extends DashModel<
                 if (this.hasSpec(viewSpecId)) {
                     this.addViewInternal(viewSpecId, state);
                 } else {
-                    console.warn(`Unknown viewSpecId [${viewSpecId}] found in state - skipping.`);
+                    this.logWarn(`Unknown viewSpecId [${viewSpecId}] found in state - skipping.`);
                 }
             });
         } finally {

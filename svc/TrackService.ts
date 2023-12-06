@@ -45,19 +45,13 @@ export class TrackService extends HoistService {
 
         // Short-circuit if disabled...
         if (!this.enabled) {
-            console.debug(
-                '[TrackService] | Activity tracking disabled - activity will not be tracked.',
-                options
-            );
+            this.logDebug('Activity tracking disabled - activity will not be tracked.', options);
             return;
         }
 
         // ...or invalid request (with warning for developer)...
         if (!options.message) {
-            console.warn(
-                '[TrackService] | Required message not provided - activity will not be tracked.',
-                options
-            );
+            this.logWarn('Required message not provided - activity will not be tracked.', options);
             return;
         }
 
@@ -97,23 +91,23 @@ export class TrackService extends HoistService {
 
             const {maxDataLength} = this.conf;
             if (params.data?.length > maxDataLength) {
-                console.warn(
-                    `[TrackService] | Track log includes ${params.data.length} chars of JSON data | exceeds limit of ${maxDataLength} | data will not be persisted`,
+                this.logWarn(
+                    `Track log includes ${params.data.length} chars of JSON data`,
+                    `exceeds limit of ${maxDataLength}`,
+                    'data will not be persisted',
                     options.data
                 );
                 params.data = null;
             }
 
             const elapsedStr = params.elapsed != null ? `${params.elapsed}ms` : null,
-                consoleMsg = ['[Track]', params.category, params.msg, elapsedStr]
-                    .filter(it => it != null)
-                    .join(' | ');
+                consoleMsgs = [params.category, params.msg, elapsedStr].filter(it => it != null);
 
-            console.log(consoleMsg);
+            this.logInfo(...consoleMsgs);
 
             await XH.fetchJson({url: 'xh/track', params});
         } catch (e) {
-            console.error(`[TrackService] | Failed to persist track log`, options, e);
+            this.logError('Failed to persist track log', options, e);
         }
     }
 }

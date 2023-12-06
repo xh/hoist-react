@@ -19,7 +19,7 @@ export function managedRenderer<T extends ColumnRenderer | GroupRowRenderer>(
         try {
             return fn.apply(null, arguments);
         } catch (e) {
-            console.warn(`Renderer for '${identifier}' has thrown an error.`, e);
+            console.warn(`Renderer for '${identifier}' has thrown an error`, e);
             return '#ERROR';
         }
     } as unknown as T;

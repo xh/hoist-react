@@ -13,7 +13,7 @@ import {Store} from '../Store';
 import {CompoundFilterSpec, CompoundFilterOperator, FilterTestFn} from './Types';
 
 /**
- * Combines multiple filters (including other nested CompoundFilters) via an AND or OR operator.
+ * Combines multiple filters (including other nested CompoundFilters) via an `AND` or `OR` operator.
  * Immutable.
  */
 export class CompoundFilter extends Filter {
@@ -24,7 +24,8 @@ export class CompoundFilter extends Filter {
     readonly filters: Filter[];
     readonly op: CompoundFilterOperator;
 
-    get field() {
+    /** @returns the singular field this filter operates on, if consistent across all clauses. */
+    get field(): string {
         if (isEmpty(this.filters)) return null;
         const {field} = this.filters[0] as any;
         if (field && every(this.filters, {field})) return field;
@@ -32,7 +33,8 @@ export class CompoundFilter extends Filter {
     }
 
     /**
-     * Constructor - not typically called by apps - create from config via `parseFilter()` instead.
+     * Constructor - not typically called by apps - create via {@link parseFilter} instead.
+     * @internal
      */
     constructor({filters, op = 'AND'}: CompoundFilterSpec) {
         super();

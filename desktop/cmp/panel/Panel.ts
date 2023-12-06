@@ -23,6 +23,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import '@xh/hoist/desktop/register';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
+import {logWarn} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, omitBy} from 'lodash';
 import {Children, isValidElement, ReactElement, ReactNode, useLayoutEffect, useRef} from 'react';
@@ -228,19 +229,21 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
 
         const useResizeContainer = resizable || collapsible || showSplitter;
 
-        // 5a) For modalSupport, className + testId need additional frame that will follow content
+        // For modalSupport, create additional frame that will follow content to portal and apply
+        // className and testId accordingly
         if (modalSupportModel) {
             item = modalSupport({
                 model: modalSupportModel,
-                item: frame({item, className, testId})
+                item: frame({
+                    item,
+                    className: model.isModal ? className : undefined,
+                    testId: model.isModal ? testId : undefined
+                })
             });
-
-            return useResizeContainer
-                ? resizeContainer({ref, item})
-                : box({ref, item, ...layoutProps});
         }
 
-        // 5b) No modalSupport, className + testId applied directly to parent
+        testId = model.isModal ? undefined : testId; // Only apply testId once
+
         return useResizeContainer
             ? resizeContainer({ref, item, className, testId})
             : box({ref, item, className, testId, ...layoutProps});
@@ -254,8 +257,9 @@ function parseLoadDecorator(prop: any, name: string, contextModel: HoistModel) {
     if (prop === 'onLoad') {
         const loadModel = contextModel?.loadModel;
         if (!loadModel) {
-            console.warn(
-                `Cannot use 'onLoad' for '${name}' - the linked context model must enable LoadSupport to support this feature.`
+            logWarn(
+                `Cannot use 'onLoad' for '${name}' - the linked context model must enable LoadSupport to support this feature.`,
+                Panel
             );
             return null;
         }
