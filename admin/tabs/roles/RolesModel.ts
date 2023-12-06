@@ -2,7 +2,7 @@ import {RoleEditorModel} from '@xh/hoist/admin/tabs/roles/editor/RoleEditorModel
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {div, fragment, hbox, hspacer, li, ul} from '@xh/hoist/cmp/layout';
+import {div, li, ul} from '@xh/hoist/cmp/layout';
 import {HoistModel, HoistRole, LoadSpec, managed, persist, ReactionSpec, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
@@ -180,8 +180,7 @@ export class RolesModel extends HoistModel {
                         type: 'tags'
                     },
                     {name: 'effectiveRoleNames', displayName: 'Effective Roles', type: 'tags'},
-                    {name: 'members', type: 'json'},
-                    {name: 'undeletable', type: 'bool'}
+                    {name: 'members', type: 'json'}
                 ],
                 processRawData: raw => ({
                     ...raw,
@@ -195,20 +194,7 @@ export class RolesModel extends HoistModel {
                 filterable: true
             },
             columns: [
-                {
-                    field: {name: 'name', type: 'string'},
-                    renderer: (v, {record}) =>
-                        hbox({
-                            alignItems: 'center',
-                            items: [
-                                fragment({
-                                    items: [Icon.pin({title: 'Not Deletable'}), hspacer()],
-                                    omit: !record.get('undeletable')
-                                }),
-                                v
-                            ]
-                        })
-                },
+                {field: {name: 'name', type: 'string'}},
                 {field: {name: 'category', type: 'string'}},
                 {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime},
                 {field: {name: 'lastUpdatedBy', type: 'string'}},
@@ -245,9 +231,7 @@ export class RolesModel extends HoistModel {
                 icon: Icon.delete(),
                 intent: 'danger',
                 actionFn: ({record}) => this.deleteAsync(record.data as HoistRole),
-                displayFn: ({record}) => ({
-                    disabled: !record || record.data.undeletable
-                })
+                recordsRequired: true
             }
         ];
     }

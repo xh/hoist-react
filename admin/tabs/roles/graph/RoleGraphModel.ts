@@ -73,14 +73,14 @@ export class RoleGraphModel extends HoistModel {
         return isEmpty(inheritedRoles) && isEmpty(effectiveRoles)
             ? [{from: name, to: null}]
             : [
-                  ...inheritedRoles.flatMap(({name, sources}) =>
-                      sources.map(source => ({
+                  ...inheritedRoles.flatMap(({name, sourceRoles}) =>
+                      sourceRoles.map(source => ({
                           from: source,
                           to: name
                       }))
                   ),
-                  ...effectiveRoles.flatMap(({name, sources}) =>
-                      sources.map(source => ({
+                  ...effectiveRoles.flatMap(({name, sourceRoles}) =>
+                      sourceRoles.map(source => ({
                           from: name,
                           to: source
                       }))

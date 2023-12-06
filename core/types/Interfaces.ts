@@ -41,7 +41,6 @@ export interface HoistRole {
     lastUpdated: Date;
     lastUpdatedBy: string;
     members: HoistRoleMember[];
-    undeletable: boolean;
 }
 
 export interface HoistRoleMember {
@@ -53,7 +52,7 @@ export interface HoistRoleMember {
 
 export interface EffectiveRoleMember {
     name: string;
-    sources: string[];
+    sourceRoles: string[];
 }
 
 /**

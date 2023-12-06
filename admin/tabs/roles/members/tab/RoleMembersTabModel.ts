@@ -55,24 +55,24 @@ export class RoleMembersTabModel extends HoistModel {
                 // 1 - Users
                 ...role.effectiveUsers.map(it => ({
                     name: it.name,
-                    roles: this.sortThisRoleFirst(it.sources),
-                    isInherited: !it.sources.includes(name),
+                    roles: this.sortThisRoleFirst(it.sourceRoles),
+                    isInherited: !it.sourceRoles.includes(name),
                     type: RoleMembersTabModel.types.USER
                 })),
 
                 // 2 - Directory Groups
                 ...role.effectiveDirectoryGroups.map(it => ({
                     name: it.name,
-                    roles: this.sortThisRoleFirst(it.sources),
-                    isInherited: !it.sources.includes(name),
+                    roles: this.sortThisRoleFirst(it.sourceRoles),
+                    isInherited: !it.sourceRoles.includes(name),
                     type: RoleMembersTabModel.types.DIRECTORY_GROUP
                 })),
 
                 // 3 - Roles
                 ...role.effectiveRoles.map(it => ({
                     name: it.name,
-                    roles: this.sortThisRoleFirst(it.sources),
-                    isInherited: !it.sources.includes(name),
+                    roles: this.sortThisRoleFirst(it.sourceRoles),
+                    isInherited: !it.sourceRoles.includes(name),
                     type: RoleMembersTabModel.types.ROLE
                 }))
             ]);
@@ -96,7 +96,7 @@ export class RoleMembersTabModel extends HoistModel {
                 ],
                 idSpec: data => `${this.selectedRole.name}:${data.type}:${data.name}`
             },
-            emptyText: 'No members inherit this role.',
+            emptyText: 'This role has no members.',
             filterModel: true,
             groupBy: 'type',
             headerMenuDisplay: 'hover',
