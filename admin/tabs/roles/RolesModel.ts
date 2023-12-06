@@ -99,7 +99,20 @@ export class RolesModel extends HoistModel {
     // Implementation
     // -------------------------------
 
-    private async deleteAsync(role: HoistRole) {
+    private async createAsync(roleSpec?: HoistRole): Promise<void> {
+        const addedRole = await this.roleEditorModel.createAsync(roleSpec);
+        if (!addedRole) return;
+        await this.refreshAsync();
+        await this.gridModel.selectAsync(addedRole.name);
+    }
+
+    private async editAsync(role: HoistRole): Promise<void> {
+        const updatedRole = await this.roleEditorModel.editAsync(role);
+        if (!updatedRole) return;
+        await this.refreshAsync();
+    }
+
+    private async deleteAsync(role: HoistRole): Promise<void> {
         const {effectiveUsers, effectiveDirectoryGroups, effectiveRoles} = role,
             userCount = effectiveUsers.length,
             groupCount = effectiveDirectoryGroups.length,
@@ -211,35 +224,20 @@ export class RolesModel extends HoistModel {
                 text: 'Add',
                 icon: Icon.add(),
                 intent: 'success',
-                actionFn: () =>
-                    this.roleEditorModel
-                        .createAsync()
-                        .then(
-                            role =>
-                                role &&
-                                this.refreshAsync().then(() =>
-                                    this.gridModel.selectAsync(role.name)
-                                )
-                        )
+                actionFn: () => this.createAsync()
             },
             {
                 text: 'Duplicate',
                 icon: Icon.copy(),
                 intent: 'success',
-                actionFn: ({record}) =>
-                    this.roleEditorModel
-                        .createAsync(record.data as HoistRole)
-                        .then(role => role && this.refreshAsync()),
+                actionFn: ({record}) => this.createAsync(record.data as HoistRole),
                 recordsRequired: true
             },
             {
                 text: 'Edit',
                 icon: Icon.edit(),
                 intent: 'primary',
-                actionFn: ({record}) =>
-                    this.roleEditorModel
-                        .editAsync(record.data as HoistRole)
-                        .then(role => role && this.refreshAsync()),
+                actionFn: ({record}) => this.editAsync(record.data as HoistRole),
                 recordsRequired: true
             },
             {
