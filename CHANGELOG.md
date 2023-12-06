@@ -10,6 +10,7 @@
 
 * Specify `react-grid-layout` v1.4.3 to avoid breaking change to `DashCanvas` in v1.4.4
   (see https://github.com/react-grid-layout/react-grid-layout/issues/1990)
+* Fixed `UniqueAggregator` to properly check equality for `Date` fields.
 
 ## 59.4.0 - 2023-11-28
 
