@@ -1,6 +1,7 @@
 import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {HoistModel, HoistRole, lookup, managed} from '@xh/hoist/core';
+import classNames from 'classnames';
 import {isEmpty} from 'lodash';
 
 export class RoleGraphModel extends HoistModel {
@@ -23,10 +24,21 @@ export class RoleGraphModel extends HoistModel {
                     type: 'organization',
                     data: allRoles.flatMap(role => this.getSeriesData(role)),
                     nodes: allRoles.map(role => {
+                        const {name} = role;
                         return {
-                            id: role.name,
-                            name: role.name,
-                            color: this.getNodeColor(role, relatedRoles, selectedRole?.name)
+                            id: name,
+                            name,
+                            color: this.getNodeColor(role, relatedRoles, selectedRole?.name),
+                            dataLabels: {
+                                borderColor: 'red',
+                                className: classNames(
+                                    'role-node',
+                                    selectedRole &&
+                                        selectedRole.name !== name &&
+                                        !relatedRoles.has(name) &&
+                                        'role-node--muted'
+                                )
+                            }
                         };
                     })
                 });
@@ -85,8 +97,13 @@ export class RoleGraphModel extends HoistModel {
                 },
                 plotOptions: {
                     organization: {
+                        animation: false,
+                        borderColor: 'var(--xh-border-color)',
                         colorByPoint: false,
                         inactiveOtherPoints: false,
+                        link: {
+                            color: 'var(--xh-border-color)'
+                        },
                         nodeWidth: 30,
                         point: {
                             events: {

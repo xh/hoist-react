@@ -2,4 +2,16 @@
   --xh-selected-role-color: var(--xh-bg-highlight);
   --xh-related-role-color: var(--xh-bg-alt);
   --xh-unrelated-role-color: var(--xh-bg);
+
+  .highcharts-node {
+    cursor: pointer;
+  }
+
+  .role-node {
+    cursor: pointer;
+
+    &--muted {
+      opacity: 0.4 !important;
+    }
+  }
 }
