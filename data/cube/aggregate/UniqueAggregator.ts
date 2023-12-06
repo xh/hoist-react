@@ -4,20 +4,18 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-
 import {Aggregator} from './Aggregator';
-import {isEmpty} from 'lodash';
+import {isEmpty, isEqual} from 'lodash';
 
 export class UniqueAggregator extends Aggregator {
     override aggregate(rows, fieldName) {
         if (isEmpty(rows)) return null;
-
         const val = rows[0].data[fieldName];
-        return rows.every(it => it.data[fieldName] === val) ? val : null;
+        return rows.every(it => isEqual(it.data[fieldName], val)) ? val : null;
     }
 
     override replace(rows, currAgg, update, context) {
         const {newValue} = update;
-        return rows.length === 1 || newValue === currAgg ? newValue : null;
+        return rows.length === 1 || isEqual(newValue, currAgg) ? newValue : null;
     }
 }
