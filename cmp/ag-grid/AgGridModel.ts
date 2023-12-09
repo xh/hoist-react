@@ -19,7 +19,7 @@ import {
     isEqual,
     isNil,
     partition,
-    set,
+    setWith,
     startCase
 } from 'lodash';
 import {GridSorter, GridSorterLike} from '../grid/GridSorter';
@@ -487,7 +487,7 @@ export class AgGridModel extends HoistModel {
                 }
 
                 const path = this.getGroupNodePath(node);
-                set(expandState, path, true);
+                setWith(expandState, path, true, () => ({}));
             }
         });
 
