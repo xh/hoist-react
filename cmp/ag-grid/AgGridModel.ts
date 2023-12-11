@@ -466,8 +466,12 @@ export class AgGridModel extends HoistModel {
         this._prevSortBy = sortBy;
     }
 
-    /** @returns the current row expansion state of the grid in a serializable form. */
-    getExpandState(): any {
+    /**
+     * @returns the current row expansion state of the grid in a serializable form.
+     *      Returned object has keys for StoreRecordIds of top-level, expanded records and values
+     *      of either `true` or an object with keys of StoreRecordIds of expanded child records.
+     */
+    getExpandState(): PlainObject {
         this.throwIfNotReady();
 
         const expandState = {};
@@ -486,6 +490,8 @@ export class AgGridModel extends HoistModel {
                     return;
                 }
 
+                // Note use of setWith + customizer - required to ensure that nested nodes are
+                // serialized as objects - see https://github.com/xh/hoist-react/issues/3550.
                 const path = this.getGroupNodePath(node);
                 setWith(expandState, path, true, () => ({}));
             }
@@ -498,7 +504,7 @@ export class AgGridModel extends HoistModel {
      * Sets the grid row expansion state
      * @param expandState - grid expand state retrieved via getExpandState()
      */
-    setExpandState(expandState: any) {
+    setExpandState(expandState: PlainObject) {
         this.throwIfNotReady();
 
         const {agApi} = this;

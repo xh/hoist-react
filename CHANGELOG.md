@@ -8,16 +8,18 @@
 
 ### 🐞 Bug Fixes
 
-* Specify `react-grid-layout` v1.4.3 to avoid breaking change to `DashCanvas` in v1.4.4
-  (see https://github.com/react-grid-layout/react-grid-layout/issues/1990)
+* Fixed serialization and comparison of grid expand/collapse state, which was badly broken and could
+  trigger long browser waits for grids with > 2 levels of nesting and numeric record IDs.
 * Fixed `UniqueAggregator` to properly check equality for `Date` fields.
+* Pinned to `react-grid-layout@1.4.3` to avoid v1.4.4 bugs affecting `DashCanvas` interactions
+  (see https://github.com/react-grid-layout/react-grid-layout/issues/1990).
 
 ## 59.4.0 - 2023-11-28
 
 ### 💥 Breaking Changes
 
 * The constructors for `ColumnGroup` no long accept arbitrary rest (e.g `...rest`)
-arguments for applying app-specific data to the object. Instead, use the new `appData` property.
+  arguments for applying app-specific data to the object. Instead, use the new `appData` property.
 
 ### ⚙️ Technical
 
