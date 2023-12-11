@@ -1,17 +1,17 @@
 # Changelog
 
-## 60.0.0-SNAPSHOT - unreleased
+## 59.5.0 - 2023-12-11
 
 ### 🎁 New Features
 
-* Added additional layout support for `DockViews`
+* Added new `dialogWidth` and `dialogHeight` configs to `DockViewModel`.
 
 ### 🐞 Bug Fixes
 
-* Fixed serialization and comparison of grid expand/collapse state, which was badly broken and could
-  trigger long browser waits for grids with > 2 levels of nesting and numeric record IDs.
+* Fixed serialization of expand/collapse state within `AgGridModel`, which was badly broken and
+  could trigger long browser hangs for grids with > 2 levels of nesting and numeric record IDs.
 * Fixed `UniqueAggregator` to properly check equality for `Date` fields.
-* Pinned to `react-grid-layout@1.4.3` to avoid v1.4.4 bugs affecting `DashCanvas` interactions
+* Pinned `react-grid-layout@1.4.3` to avoid v1.4.4 bugs affecting `DashCanvas` interactions
   (see https://github.com/react-grid-layout/react-grid-layout/issues/1990).
 
 ## 59.4.0 - 2023-11-28
