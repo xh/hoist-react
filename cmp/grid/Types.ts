@@ -295,9 +295,11 @@ export type ColumnEditableFn = (params: {
 /**
  * Function to return one Grid cell editor. This function will be used to create a new
  * Component, whenever editing is initiated on a cell.
+ * The never parameter is never provided - it is included to satisfy typescript. See
+ * discussion in https://github.com/xh/hoist-react/pull/3351.
  * @returns the react element to use as the cell editor.
  */
-export type ColumnEditorFn = (props: ColumnEditorProps, nil?: any) => ReactElement;
+export type ColumnEditorFn = (props: ColumnEditorProps, never?: any) => ReactElement;
 
 /**
  * The object passed into the first argument of {@link ColumnSpec.editor}.
