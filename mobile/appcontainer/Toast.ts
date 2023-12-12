@@ -21,7 +21,7 @@ export const toast = hoistCmp.factory({
 
     render({model}) {
         const {icon, message, intent, actionButtonProps} = model,
-            cls = `xh-toast xh-intent-${intent}`;
+            cls = `xh-toast xh-bg-intent-${intent}`;
 
         return onsenToast({
             visible: true,

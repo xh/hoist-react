@@ -1,5 +1,11 @@
 # Changelog
 
+## 60.0.0-SNAPSHOT
+
+### ✨ Styles
+
+* Added `xh-bg-intent-xxx` CSS classes, for intent-coloring the `background-color` of elements.
+
 ## 59.5.0 - 2023-12-11
 
 ### 🎁 New Features

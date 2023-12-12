@@ -35,7 +35,7 @@ export const [Badge, badge] = hoistCmp.withFactory<BadgeProps>({
                 splitLayoutProps(props);
 
         if (intent) {
-            classes.push(`xh-badge--intent-${intent}`);
+            classes.push(`xh-bg-intent-${intent}`);
         }
 
         if (compact) {
