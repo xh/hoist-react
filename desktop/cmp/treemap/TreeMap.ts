@@ -22,7 +22,7 @@ import {mask} from '@xh/hoist/desktop/cmp/mask';
 import '@xh/hoist/desktop/register';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {wait} from '@xh/hoist/promise';
-import {logWithDebug} from '@xh/hoist/utils/js';
+import {logError, logWithDebug} from '@xh/hoist/utils/js';
 import {
     createObservableRef,
     getLayoutProps,
@@ -53,9 +53,10 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
 
     render({model, className, testId, ...props}, ref) {
         if (!Highcharts) {
-            console.error(
+            logError(
                 'Highcharts has not been imported in to this application. Please import and ' +
-                    'register in Bootstrap.js.  See Toolbox for an example.'
+                    'register in Bootstrap.js.  See Toolbox for an example.',
+                TreeMap
             );
             return 'Highcharts not available';
         }

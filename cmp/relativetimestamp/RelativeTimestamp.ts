@@ -20,7 +20,7 @@ import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {DAYS, HOURS, LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {withDefault} from '@xh/hoist/utils/js';
+import {logWarn, withDefault} from '@xh/hoist/utils/js';
 
 interface RelativeTimestampProps extends HoistProps, BoxProps {
     /**
@@ -231,7 +231,10 @@ function doFormat(timestamp: Date | number, opts: RelativeTimestampOptions): str
 
     // 1) Degenerate cases
     if (isFuture && !allowFuture) {
-        console.warn(`Unexpected future date provided for timestamp: ${elapsed}ms in the future.`);
+        logWarn(
+            `Unexpected future date provided for timestamp: ${elapsed}ms in the future.`,
+            RelativeTimestamp
+        );
         return '[????]';
     }
 

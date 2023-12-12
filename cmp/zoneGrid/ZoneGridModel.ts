@@ -620,7 +620,7 @@ export class ZoneGridModel extends HoistModel {
                 ret[zone] = this.parseZoneMapping(zone, rawMapping);
             } catch (e) {
                 if (strict) throw e;
-                console.warn(e.message);
+                this.logWarn(e.message);
                 ret[zone] = this._defaultState.mappings[zone];
             }
         });

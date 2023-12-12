@@ -272,8 +272,8 @@ class SelectInputModel extends HoistInputModel {
                 ? reactAsyncCreatableSelect
                 : reactAsyncSelect
             : creatableMode
-            ? reactCreatableSelect
-            : reactSelect;
+              ? reactCreatableSelect
+              : reactSelect;
     }
 
     @action
@@ -468,7 +468,7 @@ class SelectInputModel extends HoistInputModel {
                 return matchOpts;
             })
             .catch(e => {
-                console.error(e);
+                this.logError(e);
                 throw e;
             });
     };

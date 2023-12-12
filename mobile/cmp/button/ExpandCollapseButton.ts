@@ -9,7 +9,7 @@ import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
-import {withDefault} from '@xh/hoist/utils/js';
+import {logError, withDefault} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 
 export interface ExpandCollapseButtonProps extends ButtonProps {
@@ -28,8 +28,9 @@ export const [ExpandCollapseButton, expandCollapseButton] =
             gridModel = withDefault(gridModel, useContextModel(GridModel));
 
             if (!gridModel) {
-                console.error(
-                    "No GridModel available. Provide via a 'gridModel' prop, or context."
+                logError(
+                    "No GridModel available. Provide via a 'gridModel' prop, or context.",
+                    ExpandCollapseButton
                 );
                 return button({icon: Icon.expand(), disabled: true, ...props});
             }

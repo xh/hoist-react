@@ -1,6 +1,25 @@
 # Changelog
 
-## 60.0.0-SNAPSHOT - unreleased
+## 59.5.0 - 2023-12-11
+
+### 🎁 New Features
+
+* Added new `dialogWidth` and `dialogHeight` configs to `DockViewModel`.
+
+### 🐞 Bug Fixes
+
+* Fixed serialization of expand/collapse state within `AgGridModel`, which was badly broken and
+  could trigger long browser hangs for grids with > 2 levels of nesting and numeric record IDs.
+* Fixed `UniqueAggregator` to properly check equality for `Date` fields.
+* Pinned `react-grid-layout@1.4.3` to avoid v1.4.4 bugs affecting `DashCanvas` interactions
+  (see https://github.com/react-grid-layout/react-grid-layout/issues/1990).
+
+## 59.4.0 - 2023-11-28
+
+### 💥 Breaking Changes
+
+* The constructors for `ColumnGroup` no long accept arbitrary rest (e.g `...rest`)
+  arguments for applying app-specific data to the object. Instead, use the new `appData` property.
 
 ### ⚙️ Technical
 
@@ -8,6 +27,14 @@
   added new exports for `logWarn()` and `logError()` with the same standardized formatting.
 * Added standardized `LogUtils` methods to `HoistBase`, for use within Hoist models and services.
 * Added `xh-bg-intent-` CSS classes, for intent-coloring the `background-color` of objects.
+
+### 🐞 Bug Fixes
+
+* `ZoneGrid` will no longer render labels or delimiters for empty values.
+
+### ⚙️ Typescript API Adjustments
+
+* Updated type for `ReactionSpec.equals` to include already-supported string shorthands.
 
 ## 59.3.2 - 2023-11-21
 
