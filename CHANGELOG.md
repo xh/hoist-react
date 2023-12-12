@@ -1,5 +1,11 @@
 # Changelog
 
+## 60.0.0-SNAPSHOT
+
+### ✨ Styles
+
+* Added `xh-bg-intent-xxx` CSS classes, for intent-coloring the `background-color` of elements.
+
 ## 59.5.0 - 2023-12-11
 
 ### 🎁 New Features
@@ -26,7 +32,6 @@
 * Enhanced `LogUtils` to support logging objects (and any other non-string values). Also
   added new exports for `logWarn()` and `logError()` with the same standardized formatting.
 * Added standardized `LogUtils` methods to `HoistBase`, for use within Hoist models and services.
-* Added `xh-bg-intent-` CSS classes, for intent-coloring the `background-color` of objects.
 
 ### 🐞 Bug Fixes
 
