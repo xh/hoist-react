@@ -6,6 +6,10 @@
 
 * Added `xh-bg-intent-xxx` CSS classes, for intent-coloring the `background-color` of elements.
 
+### ⚙️ Typescript API Adjustments
+
+* Corrected the type of `ColumnSpec.editor`.
+
 ## 59.5.0 - 2023-12-11
 
 ### 🎁 New Features
@@ -369,10 +373,6 @@
 * Fixed layout bug where popovers triggered from a parent `Panel` with `modalSupport` active could
   render beneath that parent's own modal dialog.
 * Fixed broken `CodeInput` copy-to-clipboard feature.
-
-### ⚙️ Typescript API Adjustments
-
-* Corrected the type of `ColumnSpec.editor`.
 
 ## v56.4.0 - 2023-05-10
 
