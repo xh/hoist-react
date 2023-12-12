@@ -34,7 +34,6 @@ import {
     toString
 } from 'lodash';
 import {
-    Attributes,
     createElement,
     forwardRef,
     FunctionComponent,
@@ -971,8 +970,7 @@ export class Column {
                     ref
                 };
                 // Can be a component or elem factory/ ad-hoc render function.
-                if ((editor as any).isHoistComponent)
-                    return createElement(editor, props as Attributes);
+                if ((editor as any).isHoistComponent) return createElement(editor, props);
                 if (isFunction(editor)) return editor(props);
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
