@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {fragment} from '@xh/hoist/cmp/layout';
-import {hoistCmp, creates} from '@xh/hoist/core';
+import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {Icon} from '@xh/hoist/icon';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {differ} from '../../differ/Differ';
-import {regroupDialog} from '../../regroup/RegroupDialog';
+import {Icon} from '@xh/hoist/icon';
+import {differ} from '../../../differ/Differ';
+import {regroupDialog} from '../../../regroup/RegroupDialog';
 import {PreferenceModel} from './PreferenceModel';
 
 export const preferencePanel = hoistCmp.factory({

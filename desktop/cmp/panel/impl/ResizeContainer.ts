@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {Children} from 'react';
 import {isString} from 'lodash';
+import {Children} from 'react';
 import {PanelModel} from '../PanelModel';
 import {dragger} from './dragger/Dragger';
 import {splitter} from './Splitter';
@@ -18,7 +18,7 @@ export const resizeContainer = hoistCmp.factory({
     model: false,
     className: 'xh-resizable',
 
-    render({className, children}, ref) {
+    render({className, children, testId}, ref) {
         const panelModel = useContextModel(PanelModel),
             {size, resizable, collapsed, vertical, contentFirst, showSplitter} = panelModel,
             dim = vertical ? 'height' : 'width',
@@ -54,6 +54,7 @@ export const resizeContainer = hoistCmp.factory({
             [dim]: cmpSize,
             [maxDim]: '100%',
             [minDim]: dragBarWidth,
+            testId,
             items
         });
     }

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
@@ -35,8 +35,8 @@ import 'codemirror/addon/selection/mark-selection.js';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/dracula.css';
 import {compact, defaultsDeep, isEqual, isFunction} from 'lodash';
-import {findDOMNode} from 'react-dom';
 import {ReactElement} from 'react';
+import {findDOMNode} from 'react-dom';
 import './CodeInput.scss';
 
 export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps {
@@ -83,7 +83,7 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
      */
     readonly?: boolean;
 
-    /** True to display a copy button at bottom-right of input. */
+    /** True (default) to display a copy button at bottom-right of input. */
     showCopyButton?: boolean;
 
     /**
@@ -148,7 +148,7 @@ class CodeInputModel extends HoistInputModel {
     }
 
     get showCopyButton(): boolean {
-        return withDefault(this.componentProps.showCopyButton, false);
+        return withDefault(this.componentProps.showCopyButton, true);
     }
 
     get showFullscreenButton(): boolean {
@@ -182,14 +182,14 @@ class CodeInputModel extends HoistInputModel {
     }
 
     get actionButtons(): ReactElement[] {
-        const {showCopyButton, showFormatButton, showFullscreenButton, editor} = this;
+        const {showCopyButton, showFormatButton, showFullscreenButton} = this;
         return compact([
             showCopyButton
                 ? clipboardButton({
                       text: null,
                       title: 'Copy to clipboard',
                       successMessage: 'Contents copied to clipboard',
-                      getCopyText: () => editor.getValue()
+                      getCopyText: () => this.internalValue
                   })
                 : null,
             showFormatButton
@@ -455,6 +455,7 @@ const cmp = hoistCmp.factory<CodeInputModel>(({model, className, ...props}, ref)
         item: modalSupport({
             model: model.modalSupportModel,
             item: inputCmp({
+                testId: props.testId,
                 width: '100%',
                 height: '100%',
                 className,

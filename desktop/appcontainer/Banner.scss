@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 body.xh-app .xh-banner {
   &__click_target {
@@ -21,6 +21,31 @@ body.xh-app .xh-banner {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+
+    // Disallow most markdown styling except **bold**, *italics* and (links)
+    h1,
+    h2,
+    h3,
+    h4,
+    p,
+    ul,
+    li,
+    a,
+    code {
+      display: inline;
+      margin: unset;
+      padding: unset;
+      color: unset;
+      font-weight: unset;
+      font-size: unset;
+      font-family: unset;
+      list-style: none;
+    }
+
+    // Render links with an underline
+    a {
+      text-decoration: underline;
+    }
   }
 
   &__action-button,
@@ -32,27 +57,7 @@ body.xh-app .xh-banner {
     }
   }
 
-  &.xh-intent-primary {
-    color: white;
-    background-color: var(--xh-intent-primary);
-  }
-
-  &.xh-intent-danger {
-    color: white;
-    background-color: var(--xh-intent-danger);
-  }
-
-  &.xh-intent-success {
-    color: white;
-    background-color: var(--xh-intent-success);
-  }
-
-  &.xh-intent-warning {
-    color: white;
-    background-color: var(--xh-intent-warning);
-  }
-
-  &.xh-intent-none {
+  &.xh-bg-intent-none {
     .xh-banner__action-button,
     .xh-banner__dismiss-button {
       border-color: unset !important;

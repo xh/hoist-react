@@ -2,13 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
 import {DashViewModel} from '../../DashViewModel';
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 
 /**
  * Implementation component to show an item within a DashContainer.  This component
@@ -44,7 +45,7 @@ export const dashContainerView = hoistCmp.factory({
             className,
             item: refreshContextView({
                 model: refreshContextModel,
-                item: elementFromContent(viewSpec.content, {flex: 1})
+                item: errorBoundary(elementFromContent(viewSpec.content, {flex: 1}))
             })
         });
     }

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {TabModel} from '@xh/hoist/cmp/tab';
 import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
@@ -11,6 +11,7 @@ import '@xh/hoist/mobile/register';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
 import './Tabs.scss';
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 
 /**
  * @internal
@@ -43,7 +44,7 @@ export const tab = hoistCmp.factory({
             model: refreshContextModel,
             item: page({
                 className: 'xh-tab-page',
-                item: elementFromContent(content)
+                item: errorBoundary(elementFromContent(content))
             })
         });
     }

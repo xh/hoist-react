@@ -2,9 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, BoxProps, HoistProps} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistProps} from '@xh/hoist/core';
+import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {merge} from 'lodash';
 import {div} from './Tags';
@@ -31,11 +32,12 @@ export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
         // Note `model` destructured off of non-layout props to avoid setting
         // model as a bogus DOM attribute. This low-level component may easily be passed one from
         // a parent that has not properly managed its own props.
-        let [layoutProps, {children, model, ...restProps}] = splitLayoutProps(props);
+        let [layoutProps, {children, model, testId, ...restProps}] = splitLayoutProps(props);
 
         restProps = merge(
             {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
             {style: layoutProps},
+            {[TEST_ID]: testId},
             restProps
         );
 

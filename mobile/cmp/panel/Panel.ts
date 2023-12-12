@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {
@@ -24,10 +24,14 @@ import {omitBy} from 'lodash';
 import {isValidElement, ReactNode, ReactElement} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import './Panel.scss';
+import {logWarn} from '@xh/hoist/utils/js';
 
 export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
     /** A toolbar to be docked at the bottom of the panel. */
     bbar?: Some<ReactNode>;
+
+    /** CSS class name specific to the panel's header. */
+    headerClassName?: string;
 
     /** Items to be added to the right-side of the panel's header. */
     headerItems?: ReactNode[];
@@ -83,6 +87,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             bbar,
             title,
             icon,
+            headerClassName,
             headerItems,
             mask: maskProp,
             loadingIndicator: loadingIndicatorProp,
@@ -112,7 +117,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         return vbox({
             className: classNames(className, scrollable ? 'xh-panel--scrollable' : null),
             items: [
-                panelHeader({title, icon, headerItems}),
+                panelHeader({title, icon, className: headerClassName, headerItems}),
                 parseToolbar(tbar),
                 coreContents,
                 parseToolbar(bbar),
@@ -137,8 +142,9 @@ function parseLoadDecorator(prop, name, contextModel) {
     if (prop === 'onLoad') {
         const loadModel = contextModel?.loadModel;
         if (!loadModel) {
-            console.warn(
-                `Cannot use 'onLoad' for '${name}'.  Context model does not implement loading.`
+            logWarn(
+                `Cannot use 'onLoad' for '${name}'.  Context model does not implement loading.`,
+                Panel
             );
             return null;
         }

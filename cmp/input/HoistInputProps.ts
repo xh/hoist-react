@@ -2,10 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
-export interface HoistInputProps {
+import {TestSupportProps} from '@xh/hoist/core';
+
+export interface HoistInputProps extends TestSupportProps {
     /**
      * Field or model property name from which this component should read and write its value
      * in controlled mode. Can be set by parent FormField.

@@ -2,20 +2,20 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {box, span} from '@xh/hoist/cmp/layout';
 import {
+    BoxProps,
     hoistCmp,
     HoistModel,
+    HoistProps,
     managed,
-    BoxProps,
     useLocalModel,
-    XH,
-    HoistProps
+    XH
 } from '@xh/hoist/core';
 import {fmtDate, TIME_FMT} from '@xh/hoist/format';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, ONE_SECOND} from '@xh/hoist/utils/datetime';
 import {isNumber} from 'lodash';
@@ -54,11 +54,12 @@ export const [Clock, clock] = hoistCmp.withFactory<ClockProps>({
     displayName: 'Clock',
     className: 'xh-clock',
 
-    render({className, ...props}, ref) {
+    render({className, testId, ...props}, ref) {
         const impl = useLocalModel(ClockLocalModel);
         return box({
             className,
             ...getLayoutProps(props),
+            testId,
             ref,
             item: span(impl.display)
         });

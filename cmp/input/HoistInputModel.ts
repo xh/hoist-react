@@ -2,16 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {DefaultHoistProps, HoistModel, HoistModelClass, useLocalModel} from '@xh/hoist/core';
 import {FieldModel} from '@xh/hoist/cmp/form';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {DefaultHoistProps, HoistModel, HoistModelClass, useLocalModel} from '@xh/hoist/core';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
-import {ForwardedRef, ReactElement, ReactInstance, useImperativeHandle, FocusEvent} from 'react';
+import {FocusEvent, ForwardedRef, ReactElement, ReactInstance, useImperativeHandle} from 'react';
 import {findDOMNode} from 'react-dom';
-import {createObservableRef} from '@xh/hoist/utils/react';
 import './HoistInput.scss';
 
 /**

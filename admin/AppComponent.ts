@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp, uses} from '@xh/hoist/core';
@@ -30,7 +30,7 @@ export const AppComponent = hoistCmp({
 const tbar = hoistCmp.factory<AppModel>(({model}) =>
     appBar({
         icon: Icon.gears({size: '2x', prefix: 'fal'}),
-        leftItems: [tabSwitcher({enableOverflow: true})],
+        leftItems: [tabSwitcher({testId: 'tab-switcher', enableOverflow: true})],
         rightItems: [
             button({
                 icon: Icon.openExternal(),

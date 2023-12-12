@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH, managed} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
@@ -15,7 +15,7 @@ import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
  * system from unattended clients and/or as a "belt-and-suspenders" defence against memory
  * leaks or other performance issues that can arise with long-running sessions.
  *
- * This service consults the `xhIdleConfig` soft-config and the `xh.disableIdleDetection`
+ * This service consults the `xhIdleConfig` soft-config and the `xhIdleDetectionDisabled`
  * user preference to determine if and when it should suspend the app.
  */
 export class IdleService extends HoistService {

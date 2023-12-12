@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
@@ -43,7 +43,7 @@ export const colChooser = hoistCmp.factory<ColChooserProps>({
                     filler(),
                     button({
                         omit: !showRestoreDefaults,
-                        text: 'Restore Grid Defaults',
+                        text: 'Restore Defaults',
                         icon: Icon.undo({className: 'xh-red'}),
                         onClick: () => model.restoreDefaultsAsync()
                     }),
@@ -57,7 +57,8 @@ export const colChooser = hoistCmp.factory<ColChooserProps>({
                     button({
                         omit: commitOnChange,
                         text: 'Save',
-                        icon: Icon.check({className: 'xh-green'}),
+                        icon: Icon.check(),
+                        intent: 'success',
                         onClick: () => {
                             model.commit();
                             model.close();

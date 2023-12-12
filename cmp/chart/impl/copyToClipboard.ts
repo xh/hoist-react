@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
 import {merge} from 'lodash';
@@ -71,7 +71,7 @@ function memoryCleanup(svgUrl) {
  */
 async function loadBlob(dataUrl) {
     const fetched = await fetch(dataUrl);
-    return await fetched.blob();
+    return fetched.blob();
 }
 
 /**

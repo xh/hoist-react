@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {ExceptionHandlerOptions, HoistException, HoistModel, XH} from '@xh/hoist/core';
 import {action, observable, makeObservable, bindable} from '@xh/hoist/mobx';
@@ -47,6 +47,12 @@ export class ExceptionDialogModel extends HoistModel {
     show(exception: HoistException, options: ExceptionHandlerOptions) {
         if (this.displayData?.options.requireReload) return;
         this.displayData = {exception, options};
+    }
+
+    @action
+    showDetails(exception: HoistException, options: ExceptionHandlerOptions) {
+        this.show(exception, options);
+        this.openDetails();
     }
 
     @action

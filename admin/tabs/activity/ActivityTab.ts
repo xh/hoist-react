@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp} from '@xh/hoist/core';
@@ -16,7 +16,7 @@ export const activityTab = hoistCmp.factory(() =>
     tabContainer({
         modelConfig: {
             route: 'default.activity',
-            switcher: {orientation: 'left'},
+            switcher: {orientation: 'left', testId: 'activity-tab-switcher'},
             tabs: [
                 {id: 'tracking', icon: Icon.analytics(), content: activityTrackingPanel},
                 {id: 'clientErrors', icon: Icon.warning(), content: clientErrorsPanel},

@@ -2,14 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {XH, uses, hoistCmp} from '@xh/hoist/core';
 import {hframe, div} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {isEmpty, isFunction} from 'lodash';
+import {markdown} from '@xh/hoist/cmp/markdown';
+import {isEmpty, isFunction, isString} from 'lodash';
 import classNames from 'classnames';
 
 import './Banner.scss';
@@ -29,7 +30,7 @@ export const banner = hoistCmp.factory({
             className: classNames(
                 'xh-banner',
                 className,
-                intent ? `xh-intent-${intent}` : `xh-intent-none`
+                intent ? `xh-bg-intent-${intent}` : `xh-bg-intent-none`
             ),
             items: [
                 hframe({
@@ -41,7 +42,7 @@ export const banner = hoistCmp.factory({
                         icon,
                         div({
                             className: 'xh-banner__message',
-                            item: message,
+                            item: isString(message) ? markdown({content: message}) : message,
                             onClick
                         })
                     ]

@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2023 Extremely Heavy Industries Inc.
+ */
 import {boolCheckCol, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {a} from '@xh/hoist/cmp/layout';
 import {HoistBase, hoistCmp, HoistModel, persist, XH} from '@xh/hoist/core';
@@ -26,7 +32,7 @@ export class InstancesModel extends HoistModel {
     instancesPanelModel: PanelModel;
 
     get statsModel(): StatsModel {
-        return XH.getActiveModels(StatsModel)[0] as StatsModel;
+        return XH.getModels(StatsModel)[0] as StatsModel;
     }
 
     get selectedSyncRun() {
@@ -164,7 +170,7 @@ export class InstancesModel extends HoistModel {
     getInstance(xhId: string): HoistBase {
         if (!xhId) return null;
         return (
-            head(XH.getActiveModels(it => it.xhId === xhId)) ??
+            head(XH.getModels(it => it.xhId === xhId)) ??
             XH.getServices().find(it => it.xhId === xhId) ??
             XH.getStores().find(it => it.xhId === xhId)
         );
@@ -212,7 +218,7 @@ export class InstancesModel extends HoistModel {
                             icon: Icon.refresh({intent: 'success'}),
                             tooltip: 'Call loadAsync()',
                             actionFn: ({record}) =>
-                                (this.getInstance(record.id) as any)?.loadAsync(),
+                                (this.getInstance(record.id as string) as any)?.loadAsync(),
                             displayFn: ({record}) => ({hidden: !record.data.hasLoadSupport})
                         }
                     ]

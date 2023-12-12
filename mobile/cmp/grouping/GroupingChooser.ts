@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {box, div, filler, hbox, placeholder, span, vbox, vframe} from '@xh/hoist/cmp/layout';
@@ -65,7 +65,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                     className: 'xh-grouping-chooser-button',
                     item: span(label),
                     ...buttonProps,
-                    onClick: () => model.showEditor()
+                    onClick: () => model.toggleEditor()
                 }),
                 favoritesButton()
             ]
@@ -254,7 +254,7 @@ const favoritesButton = hoistCmp.factory<GroupingChooserModel>({
             icon: Icon.favorite(),
             minimal: true,
             className: 'xh-grouping-chooser__favorite-button',
-            onClick: () => model.openFavoritesMenu()
+            onClick: () => model.toggleFavoritesMenu()
         });
     }
 });

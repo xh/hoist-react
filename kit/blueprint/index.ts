@@ -2,26 +2,26 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {elementFactory} from '@xh/hoist/core';
 import {
     Classes,
     ContextMenu,
     Dialog,
     FocusStyleManager,
-    HotkeysProvider,
     type HotkeyConfig,
+    HotkeysProvider,
     Overlay,
+    OverlayToaster,
     Popover,
     PopoverInteractionKind,
     Position,
-    Toaster,
     type ToasterPosition,
     useHotkeys
 } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
+import {elementFactory} from '@xh/hoist/core';
 import './styles.scss';
 
 // Only show focus indicators when tabbing through components - avoids drawing focus outlines
@@ -46,7 +46,7 @@ export {
     Classes,
     PopoverInteractionKind,
     Position,
-    Toaster,
+    OverlayToaster,
     ToasterPosition
 };
 export * from './Wrappers';

@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
-import {RecordActionSpec, RecordAction, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
+import {RecordAction, RecordActionSpec, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
 import {buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -52,8 +52,17 @@ export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordAct
     className: 'xh-record-action-bar',
 
     render(props) {
-        const {actions, record, selModel, gridModel, column, buttonProps, vertical, ...rest} =
-            props;
+        const {
+            actions,
+            record,
+            selModel,
+            gridModel,
+            column,
+            buttonProps,
+            vertical,
+            testId,
+            ...rest
+        } = props;
 
         throwIf(
             !record && !selModel,

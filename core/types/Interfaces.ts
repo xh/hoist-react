@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {RuleLike} from '@xh/hoist/data';
 import {ReactElement, ReactNode} from 'react';
 import {LoadSpec} from '../load';
-import {Intent, Thunkable} from './Types';
+import {Intent, PlainObject, Thunkable} from './Types';
 
 /**
  * User of the application, as loaded from the server.
@@ -213,7 +213,16 @@ export interface TrackOptions {
     category?: string;
 
     /** App-supplied data to save along with track log.*/
-    data?: object | object[];
+    data?: PlainObject | PlainObject[];
+
+    /**
+     * Set true to log on the server all primitive values in the 'data' property.
+     * May also be specified as list of specific property keys that should be logged.
+     *
+     * Default value for this property may be set in xhActivityTrackingConfig.
+     * If no default set, value will be `false` and nothing in data will be logged.
+     */
+    logData?: boolean | string[];
 
     /**
      * Flag to indicate relative importance of activity.

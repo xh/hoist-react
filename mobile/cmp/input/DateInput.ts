@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
@@ -161,7 +161,7 @@ class DateInputModel extends HoistInputModel {
         if (date && this.isOutsideRange(date)) {
             // Dates outside of min/max constraints are reset to null.
             date = null;
-            console.debug('DateInput value exceeded max/minDate bounds on change - reset to null.');
+            this.logDebug('Value exceeded max/minDate bounds on change - reset to null.');
         }
         this.noteValueChange(date ? date.toDate() : null);
     };

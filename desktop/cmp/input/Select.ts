@@ -2,22 +2,23 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
 import {
+    Awaitable,
     createElement,
     hoistCmp,
     HoistProps,
     LayoutProps,
     PlainObject,
-    XH,
-    Awaitable,
-    SelectOption
+    SelectOption,
+    XH
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
+import {tooltip} from '@xh/hoist/kit/blueprint';
 import {
     reactAsyncCreatableSelect,
     reactAsyncSelect,
@@ -27,7 +28,7 @@ import {
 } from '@xh/hoist/kit/react-select';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {elemWithin, getTestId, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import debouncePromise from 'debounce-promise';
@@ -76,6 +77,12 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     enableMulti?: boolean;
 
     /**
+     * True to enable tooltips on selected values. Enable when the space
+     * available to the select component might not support showing the value's full text.
+     */
+    enableTooltips?: boolean;
+
+    /**
      * True to use react-windowed-select for improved performance on large option lists.
      * See https://github.com/jacobworrel/react-windowed-select/.
      *
@@ -107,7 +114,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     hideSelectedOptionCheck?: boolean;
 
     /**
-     * True to hide options in the drop down menu if they have been selected.
+     * True to hide options in the drop-down menu if they have been selected.
      * Defaults to same as enableMulti.
      */
     hideSelectedOptions?: boolean;
@@ -362,13 +369,16 @@ class SelectInputModel extends HoistInputModel {
         super.noteFocused();
     }
 
-    selectText() {
+    private selectText() {
         const {reactSelect} = this;
         if (!reactSelect) return;
 
-        // Use of windowedMode, creatable and async variants will create levels of nesting we must
-        // traverse to get to the underlying Select comp and its inputRef.
-        let selectComp = reactSelect.select;
+        // TODO - after update to react-select v5 in HR v59, could not identify any cases that
+        //  still required the while loop below. Had been required due to nested layers of
+        //  components when using enableWindowed, enableCreate, and/or queryFn. Leaving in place to
+        //  avoid breaking some edge-case we're not finding, but could review/simplify once update
+        //  is baked in a bit more.
+        let selectComp = reactSelect;
         while (selectComp && !selectComp.inputRef) {
             selectComp = selectComp.select;
         }
@@ -430,7 +440,7 @@ class SelectInputModel extends HoistInputModel {
         return this.findOption(external, !isNil(external));
     }
 
-    findOption(value, createIfNotFound, options = this.internalOptions) {
+    private findOption(value, createIfNotFound, options = this.internalOptions) {
         // Do a depth-first search of options
         for (const option of options) {
             if (option.options) {
@@ -455,7 +465,7 @@ class SelectInputModel extends HoistInputModel {
         return internal.value;
     }
 
-    normalizeOptions(options, depth = 0) {
+    private normalizeOptions(options, depth = 0) {
         throwIf(depth > 1, 'Grouped select options support only one-deep nesting.');
 
         options = options || [];
@@ -465,11 +475,11 @@ class SelectInputModel extends HoistInputModel {
     // Normalize / clone a single source value into a normalized option object. Supports Strings
     // and Objects. Objects are validated/defaulted to ensure a label+value or label+options sublist,
     // with other fields brought along to support Selects emitting value objects with ad hoc properties.
-    toOption(src, depth) {
+    private toOption(src, depth) {
         return isPlainObject(src) ? this.objectToOption(src, depth) : this.valueToOption(src);
     }
 
-    objectToOption(src, depth) {
+    private objectToOption(src, depth) {
         const {componentProps} = this,
             labelField = withDefault(componentProps.labelField, 'label'),
             valueField = withDefault(componentProps.valueField, 'value');
@@ -492,7 +502,7 @@ class SelectInputModel extends HoistInputModel {
               };
     }
 
-    valueToOption(src) {
+    private valueToOption(src) {
         return {label: src != null ? src.toString() : '-null-', value: src};
     }
 
@@ -542,7 +552,7 @@ class SelectInputModel extends HoistInputModel {
         return optionRenderer(opt);
     };
 
-    optionRenderer = opt => {
+    private optionRenderer = opt => {
         if (this.hideSelectedOptionCheck) {
             return div(opt.label);
         }
@@ -581,6 +591,21 @@ class SelectInputModel extends HoistInputModel {
         return this._valueContainerCmp;
     }
 
+    _menuCmp = null;
+    getMenuCmp() {
+        if (!this._menuCmp) {
+            const testId = getTestId(this.componentProps, 'menu');
+            this._menuCmp = testId
+                ? props =>
+                      createElement(components.Menu, {
+                          ...props,
+                          innerProps: {[TEST_ID]: testId, ...props.innerProps}
+                      })
+                : components.Menu;
+        }
+        return this._menuCmp;
+    }
+
     getDropdownIndicatorCmp() {
         return this.hideDropdownIndicator
             ? () => null
@@ -594,6 +619,7 @@ class SelectInputModel extends HoistInputModel {
             return div({
                 ...restInnerProps,
                 ref,
+                [TEST_ID]: getTestId(this.componentProps, 'clear-btn'),
                 item: Icon.x({className: 'xh-select__indicator'})
             });
         };
@@ -607,6 +633,24 @@ class SelectInputModel extends HoistInputModel {
                 borderRadius: 3
             };
         };
+    }
+
+    getMultiValueLabelCmp() {
+        return this.componentProps.enableTooltips
+            ? props => {
+                  props = this.withTooltip(props, 'xh-select__tooltip__target');
+                  return createElement(components.MultiValueLabel, props);
+              }
+            : components.MultiValueLabel;
+    }
+
+    getSingleValueCmp() {
+        return this.componentProps.enableTooltips
+            ? props => {
+                  props = this.withTooltip(props, 'xh-select__tooltip__target');
+                  return createElement(components.SingleValue, props);
+              }
+            : components.SingleValue;
     }
 
     noOptionsMessageFn = params => {
@@ -635,6 +679,17 @@ class SelectInputModel extends HoistInputModel {
         }
         return portal;
     }
+
+    private withTooltip(props: PlainObject, targetClassName: string): PlainObject {
+        return {
+            ...props,
+            children: tooltip({
+                targetClassName,
+                content: props.children,
+                target: props.children
+            })
+        };
+    }
 }
 
 const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, ref) => {
@@ -662,8 +717,11 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             components: {
                 DropdownIndicator: model.getDropdownIndicatorCmp(),
                 ClearIndicator: model.getClearIndicatorCmp(),
+                Menu: model.getMenuCmp(),
                 IndicatorSeparator: () => null,
-                ValueContainer: model.getValueContainerCmp()
+                ValueContainer: model.getValueContainerCmp(),
+                MultiValueLabel: model.getMultiValueLabelCmp(),
+                SingleValue: model.getSingleValueCmp()
             },
 
             // A shared div is created lazily here as needed, appended to the body, and assigned
@@ -731,6 +789,16 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
                 e.stopPropagation();
             }
         },
+        onMouseDown: e => {
+            // Some internal elements, like the dropdown indicator and the rendered single value,
+            // fire 'mousedown' events. These can bubble and inadvertently close Popovers that
+            // contain Selects.
+            const target = e?.target as HTMLElement;
+            if (target && elemWithin(target, 'bp4-popover')) {
+                e.stopPropagation();
+            }
+        },
+        testId: props.testId,
         ...layoutProps,
         width: withDefault(width, 200),
         height: height,

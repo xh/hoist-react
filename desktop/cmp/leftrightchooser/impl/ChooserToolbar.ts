@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
@@ -25,12 +25,18 @@ export const chooserToolbar = hoistCmp.factory<LeftRightChooserModel>(({model}) 
             button({
                 icon: Icon.chevronRight(),
                 onClick: () => model.moveRows(leftSel.selectedRecords),
-                disabled: leftSel.isEmpty
+                disabled:
+                    model.readonly ||
+                    leftSel.isEmpty ||
+                    leftSel.selectedRecords.every(it => it.data.locked)
             }),
             button({
                 icon: Icon.chevronLeft(),
                 onClick: () => model.moveRows(rightSel.selectedRecords),
-                disabled: rightSel.isEmpty
+                disabled:
+                    model.readonly ||
+                    rightSel.isEmpty ||
+                    rightSel.selectedRecords.every(it => it.data.locked)
             })
         ]
     });

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
@@ -20,7 +20,7 @@ import {RestGridModel} from '../RestGridModel';
 export const restGridToolbar = hoistCmp.factory({
     model: uses(RestGridModel, {publishMode: 'limited'}),
 
-    render({model, extraToolbarItems}) {
+    render({model, extraToolbarItems, testId}) {
         const {unit, toolbarActions: actions, gridModel, readonly} = model;
 
         let extraItems = extraToolbarItems;
@@ -31,7 +31,8 @@ export const restGridToolbar = hoistCmp.factory({
             recordActionBar({
                 actions,
                 gridModel,
-                selModel: gridModel.selModel
+                selModel: gridModel.selModel,
+                testId
             }),
             toolbarSep({
                 omit: isEmpty(extraItems) || readonly

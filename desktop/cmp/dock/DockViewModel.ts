@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {
     Content,
@@ -13,7 +13,7 @@ import {
     RefreshContextModel,
     RefreshMode,
     RenderMode,
-    XH
+    Awaitable
 } from '@xh/hoist/core';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import '@xh/hoist/desktop/register';
@@ -33,12 +33,16 @@ export interface DockViewConfig {
     icon?: ReactElement;
     /** Content to be rendered by this DockView. */
     content: Content;
-    /** Width in pixels. If not set, width will be determined by the content. */
-    width?: number;
-    /** Height in pixels. If not set, height will be determined by the content. */
-    height?: number;
-    /** Width of collapsed header in pixels. If not set, width will be determined by the length of the title. */
-    collapsedWidth?: number;
+    /** Width: if not set, will be determined by content. */
+    width?: string | number;
+    /** Height: if not set, will be determined by content. */
+    height?: string | number;
+    /** Width of collapsed header. If not set, width will be determined by the length of the title. */
+    collapsedWidth?: string | number;
+    /** Width when displayed in a modal dialog.  If not set, will fall back on default `width`. */
+    dialogWidth?: string | number;
+    /** Height when displayed in a modal dialog.  If not set, will fall back on default `height`. */
+    dialogHeight?: string | number;
     /** Strategy for rendering this DockView. If null, will default to its container's mode. */
     renderMode?: RenderMode;
     /** Strategy for refreshing this DockView. If null, will default to its container's mode. */
@@ -53,6 +57,8 @@ export interface DockViewConfig {
     allowClose?: boolean;
     /** true (default) to allow popping out of the dock and displaying in a modal Dialog. */
     allowDialog?: boolean;
+    /** Awaitable callback invoked on close. Return false to prevent close. */
+    onClose?: () => Awaitable<boolean | void>;
 }
 
 /**
@@ -70,11 +76,14 @@ export class DockViewModel extends HoistModel {
     @observable docked: boolean;
     @observable collapsed: boolean;
     content: Content;
-    width: number;
-    height: number;
-    collapsedWidth: number;
+    width: string | number;
+    height: string | number;
+    collapsedWidth: string | number;
+    dialogWidth: string | number;
+    dialogHeight: string | number;
     allowClose: boolean;
     allowDialog: boolean;
+    onClose?: () => Awaitable<boolean | void>;
 
     containerModel: DockContainerModel;
     @managed refreshContextModel: RefreshContextModel;
@@ -104,12 +113,15 @@ export class DockViewModel extends HoistModel {
         width,
         height,
         collapsedWidth,
+        dialogWidth,
+        dialogHeight,
         refreshMode,
         renderMode,
         docked = true,
         collapsed = false,
         allowClose = true,
-        allowDialog = true
+        allowDialog = true,
+        onClose
     }: DockViewConfig) {
         super();
         makeObservable(this);
@@ -123,11 +135,14 @@ export class DockViewModel extends HoistModel {
         this.width = width;
         this.height = height;
         this.collapsedWidth = collapsedWidth;
+        this.dialogWidth = dialogWidth ?? width;
+        this.dialogHeight = dialogHeight ?? height;
 
         this.docked = docked;
         this.collapsed = collapsed;
         this.allowClose = allowClose;
         this.allowDialog = allowDialog;
+        this.onClose = onClose;
 
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
@@ -135,8 +150,8 @@ export class DockViewModel extends HoistModel {
         this.refreshContextModel = new ManagedRefreshContextModel(this);
 
         this.modalSupportModel = new ModalSupportModel({
-            width: width ?? null,
-            height: height ?? null,
+            width: dialogWidth ?? null,
+            height: dialogHeight ?? null,
             defaultModal: !docked,
             canOutsideClickClose: false
         });
@@ -195,11 +210,8 @@ export class DockViewModel extends HoistModel {
     // Actions
     //-----------------------
     close() {
-        this.containerModel.removeView(this.id);
-    }
-
-    override destroy() {
-        XH.safeDestroy(this.content);
-        super.destroy();
+        Promise.resolve(this.onClose?.()).then(v => {
+            if (v !== false) this.containerModel.removeView(this.id);
+        });
     }
 }

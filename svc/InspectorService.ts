@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2023 Extremely Heavy Industries Inc.
+ */
 import {HoistService, managed, persist, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -165,7 +171,7 @@ export class InspectorService extends HoistService {
     private sync() {
         if (!this.active) return;
 
-        const instances = [...XH.getActiveModels(), ...XH.getServices(), ...XH.getStores()];
+        const instances = [...XH.getModels(), ...XH.getServices(), ...XH.getStores()];
 
         const {_idToSyncRun, _syncRun} = this,
             newSyncRun = _syncRun + 1;

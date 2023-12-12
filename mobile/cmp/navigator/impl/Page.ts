@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {page as onsenPage} from '@xh/hoist/kit/onsen';
@@ -10,6 +10,7 @@ import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
 import {PageModel} from '../PageModel';
 import './Page.scss';
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 
 /**
  * Wrapper for contents to be shown within a Navigator. This Component is used by Navigator's
@@ -42,7 +43,7 @@ export const page = hoistCmp.factory({
             model: refreshContextModel,
             item: onsenPage({
                 className: 'xh-page',
-                item: elementFromContent(content, props)
+                item: errorBoundary(elementFromContent(content, props))
             })
         });
     }

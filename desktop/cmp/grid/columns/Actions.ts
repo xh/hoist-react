@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 import {RecordAction} from '@xh/hoist/data';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
-import {throwIf} from '@xh/hoist/utils/js';
+import {getTestId, throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty} from 'lodash';
 
@@ -41,8 +41,8 @@ export const actionCol: ColumnSpec = {
     filterable: false,
     excludeFromExport: true,
     rendererIsComplex: true,
-    renderer: (value, {record, column, agParams}) => {
-        if (agParams.node.group || (record && record.isSummary)) return null;
+    renderer: (value, {record, column}) => {
+        if (!record || record?.isSummary) return null;
 
         const {actions, actionsShowOnHoverOnly, gridModel} = column;
         if (isEmpty(actions)) return null;
@@ -64,6 +64,7 @@ export const actionCol: ColumnSpec = {
             if (hidden) return null;
 
             return button({
+                testId: getTestId(action.testId, `${record.id}`),
                 icon,
                 disabled,
                 tooltip,

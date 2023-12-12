@@ -2,14 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
+import {AppModel} from '@xh/hoist/admin/AppModel';
+import * as Col from '@xh/hoist/admin/columns';
 import {hoistCmp} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
 import {restGrid, RestGridConfig} from '@xh/hoist/desktop/cmp/rest';
-import * as Col from '@xh/hoist/admin/columns';
 import * as LogLevelCol from './LogLevelColumns';
-import {AppModel} from '@xh/hoist/admin/AppModel';
 
 export const logLevelPanel = hoistCmp.factory(() =>
     restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}})
@@ -19,6 +20,7 @@ const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminLogLevelState'},
     colChooserModel: true,
     enableExport: true,
+    exportOptions: {filename: exportFilenameWithDate('log-levels')},
     store: {
         url: 'rest/logLevelAdmin',
         fieldDefaults: {disableXssProtection: true},

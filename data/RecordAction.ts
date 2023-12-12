@@ -2,16 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {isBoolean, isEmpty, isNil, isNumber, isString} from 'lodash';
 import {ReactElement} from 'react';
-import {Intent, PlainObject} from '../core';
+import {Intent, PlainObject, TestSupportProps} from '../core';
 import {StoreRecord} from './StoreRecord';
-import {GridModel, Column} from '../cmp/grid';
+import {Column, GridModel} from '../cmp/grid';
 
-export interface RecordActionSpec {
+export interface RecordActionSpec extends TestSupportProps {
     /** Label to be displayed. */
     text?: string;
 
@@ -66,7 +66,7 @@ export interface ActionFnData {
     action?: RecordAction;
 
     /** Row data object (entire row, if any).*/
-    record?: any;
+    record?: StoreRecord;
 
     /** All currently selected records (if any).*/
     selectedRecords?: StoreRecord[];
@@ -112,6 +112,7 @@ export class RecordAction {
     disabled: boolean;
     hidden: boolean;
     recordsRequired: boolean | number;
+    testId: string;
 
     constructor({
         text,
@@ -125,7 +126,8 @@ export class RecordAction {
         disabled = false,
         hidden = false,
         displayFn = null,
-        recordsRequired = false
+        recordsRequired = false,
+        testId = null
     }: RecordActionSpec) {
         this.text = text;
         this.secondaryText = secondaryText;
@@ -138,6 +140,7 @@ export class RecordAction {
         this.hidden = hidden;
         this.displayFn = displayFn;
         this.recordsRequired = recordsRequired;
+        this.testId = testId;
 
         this.items = items?.map(it => {
             if (isString(it)) return it;

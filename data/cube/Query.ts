@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
-import {Filter, parseFilter, StoreRecord} from '@xh/hoist/data';
+import {BucketSpecFn, Filter, LockFn, OmitFn, parseFilter, StoreRecord} from '@xh/hoist/data';
 import {isEqual, find} from 'lodash';
 import {FilterLike, FilterTestFn} from '../filter/Types';
 import {CubeField} from './CubeField';
@@ -51,6 +51,25 @@ export interface QueryConfig {
 
     /** True to include leaf nodes in return.*/
     includeLeaves?: boolean;
+
+    /**
+     * Optional function to be called for each aggregate node to determine if it should be "locked",
+     * preventing drill-down into its children.  Defaults to Cube.lockFn.
+     */
+    lockFn?: LockFn;
+
+    /**
+     * Optional function to be called for each dimension during row generation to determine if the
+     * children of that dimension should be bucketed into additional dynamic dimensions.
+     * Defaults to Cube.bucketSpecFn.
+     */
+    bucketSpecFn?: BucketSpecFn;
+
+    /**
+     * Optional function to be called on all single child rows during view processing.
+     * Return true to omit the row. Defaults to Cube.omitFn.
+     */
+    omitFn?: OmitFn;
 }
 
 /** {@inheritDoc QueryConfig} */
@@ -61,6 +80,9 @@ export class Query {
     readonly includeRoot: boolean;
     readonly includeLeaves: boolean;
     readonly cube: Cube;
+    readonly lockFn: LockFn;
+    readonly bucketSpecFn: BucketSpecFn;
+    readonly omitFn: OmitFn;
 
     private readonly _testFn: FilterTestFn;
 
@@ -70,7 +92,10 @@ export class Query {
         dimensions,
         filter = null,
         includeRoot = false,
-        includeLeaves = false
+        includeLeaves = false,
+        lockFn = cube.lockFn,
+        bucketSpecFn = cube.bucketSpecFn,
+        omitFn = cube.omitFn
     }: QueryConfig) {
         this.cube = cube;
         this.fields = this.parseFields(fields);
@@ -78,6 +103,9 @@ export class Query {
         this.includeRoot = includeRoot;
         this.includeLeaves = includeLeaves;
         this.filter = parseFilter(filter);
+        this.lockFn = lockFn;
+        this.bucketSpecFn = bucketSpecFn;
+        this.omitFn = omitFn;
 
         this._testFn = this.filter?.getTestFn(this.cube.store) ?? null;
     }
@@ -89,6 +117,9 @@ export class Query {
             filter: this.filter,
             includeRoot: this.includeRoot,
             includeLeaves: this.includeLeaves,
+            lockFn: this.lockFn,
+            bucketSpecFn: this.bucketSpecFn,
+            omitFn: this.omitFn,
             cube: this.cube,
             ...overrides
         };
@@ -121,7 +152,10 @@ export class Query {
             isEqual(this.dimensions, other.dimensions) &&
             this.cube === other.cube &&
             this.includeRoot === other.includeRoot &&
-            this.includeLeaves === other.includeLeaves
+            this.includeLeaves === other.includeLeaves &&
+            this.bucketSpecFn == other.bucketSpecFn &&
+            this.omitFn == other.omitFn &&
+            this.lockFn == other.lockFn
         );
     }
 

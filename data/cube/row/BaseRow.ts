@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {PlainObject, Some} from '@xh/hoist/core';
@@ -59,7 +59,7 @@ export abstract class BaseRow {
         let dataChildren = this.getVisibleChildrenDatas();
 
         // 2) If omitting ourselves, we are done, return visible children.
-        if (!isLeaf && view.cube.omitFn?.(this as any)) return dataChildren;
+        if (!isLeaf && view.query.omitFn?.(this as any)) return dataChildren;
 
         // 3) Otherwise, we can attach this data to the children data and return.
 
@@ -89,7 +89,7 @@ export abstract class BaseRow {
         }
 
         // Skip all children in a locked node
-        if (view.cube.lockFn?.(this as any)) {
+        if (view.query.lockFn?.(this as any)) {
             this.locked = true;
             return null;
         }

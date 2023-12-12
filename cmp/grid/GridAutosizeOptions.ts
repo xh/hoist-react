@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {Some} from '@xh/hoist/core';
@@ -38,6 +38,12 @@ export interface GridAutosizeOptions {
      *  Note that setting this to true can have performance impacts for large tree grids with many cells.
      */
     includeCollapsedChildren?: boolean;
+
+    /**
+     * True to also autosize hidden columns.
+     * Note that setting this to true can have performance impacts for grids with many columns hidden by default.
+     */
+    includeHiddenColumns?: boolean;
 
     /**
      * Columns ids to autosize, or a function for testing if the given column should be

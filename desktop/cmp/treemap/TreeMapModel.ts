@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistModel, PlainObject, Theme} from '@xh/hoist/core';
 import {Store, StoreRecord, StoreRecordId} from '@xh/hoist/data';
@@ -98,7 +98,7 @@ export interface TreeMapConfig {
     onClick?: (StoreRecord, MouseEvent) => void;
 
     /**
-     * Callback to call when a node is double clicked.
+     * Callback to call when a node is double-clicked.
      * If not provided, by default will expand / collapse a record when using a GridModel.
      */
     onDoubleClick?: (StoreRecord, MouseEvent) => void;

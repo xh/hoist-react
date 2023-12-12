@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {throwIf, computeOnce} from '@xh/hoist/utils/js';
-import {isString, isNil} from 'lodash';
+import {computeOnce, throwIf} from '@xh/hoist/utils/js';
+import {isNil, isString} from 'lodash';
 import moment, {Moment, MomentInput} from 'moment';
 
 /**
@@ -25,9 +25,9 @@ export class LocalDate {
     private static _instances = new Map();
     static VALID_UNITS = ['year', 'quarter', 'month', 'week', 'day', 'date'];
 
-    private _isoString;
-    private _moment;
-    private _date;
+    private _isoString: string;
+    private _moment: Moment;
+    private _date: Date;
 
     //------------------------
     // Factories
@@ -99,8 +99,8 @@ export class LocalDate {
     }
 
     /** Is the input value a local Date? */
-    static isLocalDate(v: any): boolean {
-        return v?.isLocalDate;
+    static isLocalDate(val: any): boolean {
+        return !!val?.isLocalDate;
     }
 
     //--------------------
@@ -168,15 +168,15 @@ export class LocalDate {
     //----------------
     // Core overrides.
     //----------------
-    toString() {
+    toString(): string {
         return this._isoString;
     }
 
-    toJSON() {
+    toJSON(): string {
         return this._isoString;
     }
 
-    valueOf() {
+    valueOf(): string {
         return this._isoString;
     }
 
@@ -281,7 +281,7 @@ export class LocalDate {
         return this.isWeekday ? this : this.previousWeekday();
     }
 
-    diff(other, unit = 'days'): number {
+    diff(other: LocalDate, unit: moment.unitOfTime.Diff = 'days'): number {
         this.ensureUnitValid(unit);
         return this._moment.diff(other._moment, unit);
     }
@@ -290,7 +290,7 @@ export class LocalDate {
     // Implementation
     //-------------------
     /** @internal - use one of the static factory methods instead. */
-    private constructor(s) {
+    private constructor(s: string) {
         const m = moment(s, 'YYYY-MM-DD', true);
         throwIf(
             !m.isValid(),
@@ -315,6 +315,6 @@ export class LocalDate {
  * Is the input value a local Date?
  * Convenience alias for LocalDate.isLocalDate()
  */
-export function isLocalDate(val): val is LocalDate {
+export function isLocalDate(val: any): val is LocalDate {
     return !!val?.isLocalDate;
 }

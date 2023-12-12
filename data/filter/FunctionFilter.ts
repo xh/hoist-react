@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {throwIf} from '@xh/hoist/utils/js';
@@ -26,7 +26,8 @@ export class FunctionFilter extends Filter {
     readonly testFn: FilterTestFn;
 
     /**
-     * Constructor - not typically called by apps - create from config via `parseFilter()` instead.
+     * Constructor - not typically called by apps - create via {@link parseFilter} instead.
+     * @internal
      */
     constructor({key, testFn}: FunctionFilterSpec) {
         super();

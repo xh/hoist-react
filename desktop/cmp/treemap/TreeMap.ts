@@ -2,16 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, placeholder} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
     HoistModel,
-    LayoutProps,
     HoistProps,
+    LayoutProps,
     lookup,
+    TestSupportProps,
     useLocalModel,
     uses,
     XH
@@ -21,7 +22,7 @@ import {mask} from '@xh/hoist/desktop/cmp/mask';
 import '@xh/hoist/desktop/register';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {wait} from '@xh/hoist/promise';
-import {logWithDebug, withDebug} from '@xh/hoist/utils/js';
+import {logError, logWithDebug} from '@xh/hoist/utils/js';
 import {
     createObservableRef,
     getLayoutProps,
@@ -35,7 +36,7 @@ import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import './TreeMap.scss';
 import {TreeMapModel} from './TreeMapModel';
 
-export interface TreeMapProps extends HoistProps<TreeMapModel>, LayoutProps {}
+export interface TreeMapProps extends HoistProps<TreeMapModel>, LayoutProps, TestSupportProps {}
 
 /**
  * Component for rendering a TreeMap.
@@ -50,11 +51,12 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
     model: uses(TreeMapModel),
     className: 'xh-treemap',
 
-    render({model, className, ...props}, ref) {
+    render({model, className, testId, ...props}, ref) {
         if (!Highcharts) {
-            console.error(
+            logError(
                 'Highcharts has not been imported in to this application. Please import and ' +
-                    'register in Bootstrap.js.  See Toolbox for an example.'
+                    'register in Bootstrap.js.  See Toolbox for an example.',
+                TreeMap
             );
             return 'Highcharts not available';
         }
@@ -99,6 +101,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
             ...layoutProps,
             className: classNames(className, `xh-treemap--${impl.theme}`),
             ref,
+            testId,
             items
         });
     }
@@ -191,13 +194,9 @@ class TreeMapLocalModel extends HoistModel {
         if (parentDims.width === 0 || parentDims.height === 0) return;
 
         assign(config.chart, parentDims, {renderTo: chartElem});
-        withDebug(
-            `Creating new TreeMap | ${newData.length} records`,
-            () => {
-                this.chart = Highcharts.chart(config);
-            },
-            this
-        );
+        this.withDebug(['Creating new TreeMap', `${newData.length} records`], () => {
+            this.chart = Highcharts.chart(config);
+        });
     }
 
     @logWithDebug

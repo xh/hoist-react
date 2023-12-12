@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistService, HoistUser, XH} from '@xh/hoist/core';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
@@ -62,7 +62,7 @@ export class IdentityService extends HoistService {
         try {
             await XH.appModel?.logoutAsync();
         } catch (e) {
-            console.error('Error calling XH.appModel.logoutAsync()', e);
+            this.logError('Error calling XH.appModel.logoutAsync()', e);
         }
         return XH.fetchJson({url: 'xh/logout'})
             .then(() => XH.reloadApp())
@@ -84,7 +84,7 @@ export class IdentityService extends HoistService {
      * triggering any impersonation attempts.
      */
     get canImpersonate(): boolean {
-        return this.user.isHoistAdmin && XH.getConf('xhEnableImpersonation', false);
+        return this.canUserImpersonate(this.user);
     }
 
     /**
@@ -94,12 +94,12 @@ export class IdentityService extends HoistService {
      * affordances and to trigger impersonation actions.
      */
     get canAuthUserImpersonate(): boolean {
-        return this._authUser.isHoistAdmin && XH.getConf('xhEnableImpersonation', false);
+        return this.canUserImpersonate(this._authUser);
     }
 
     /**
      * Begin an impersonation session to act as another user. The UI server will allow this only
-     * if the actual authenticated user has the HOIST_ADMIN role, and is attempting to impersonate
+     * if the actual authenticated user has the rights to do, and is attempting to impersonate
      * a known user who has permission to and has accessed the app themselves. If successful,
      * the application will reload and the admin will now be acting as the other user.
      *
@@ -158,5 +158,12 @@ export class IdentityService extends HoistService {
             if (match && this.hasGate(match[1], user)) return true;
         }
         return false;
+    }
+
+    private canUserImpersonate(user: HoistUser): boolean {
+        const hasPerm = XH.environmentService.isMinHoistCoreVersion('16.3.0')
+            ? user.hasRole(`HOIST_IMPERSONATOR`)
+            : user.isHoistAdmin;
+        return hasPerm && XH.getConf('xhEnableImpersonation');
     }
 }

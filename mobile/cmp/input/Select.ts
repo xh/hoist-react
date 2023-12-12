@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
@@ -56,6 +56,12 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * will be rendered in the top half of the viewport, above the mobile keyboard.
      */
     enableFullscreen?: boolean;
+
+    /**
+     * Optional override for fullscreen z-index. Useful for enabling fullscreen from
+     * within components that have a higher z-index.
+     */
+    fullScreenZIndex?: number;
 
     /**
      * Function called to filter available options for a given query string input.
@@ -462,7 +468,7 @@ class SelectInputModel extends HoistInputModel {
                 return matchOpts;
             })
             .catch(e => {
-                console.error(e);
+                this.logError(e);
                 throw e;
             });
     };
@@ -531,6 +537,7 @@ class SelectInputModel extends HoistInputModel {
             portal.id = FULLSCREEN_PORTAL_ID;
             document.body.appendChild(portal);
         }
+        portal.style.zIndex = withDefault(this.componentProps.fullScreenZIndex, null);
         return portal;
     }
 

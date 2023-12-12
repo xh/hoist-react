@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
 import {XH} from '@xh/hoist/core';
 import {CompoundFilter, FieldFilter, Filter, StoreRecord} from '@xh/hoist/data';
 import {forEachAsync} from '@xh/hoist/utils/async';
-import {stripTags} from '@xh/hoist/utils/js';
+import {logWarn, stripTags} from '@xh/hoist/utils/js';
 import {
     forOwn,
     groupBy,
@@ -25,7 +25,7 @@ import {
     takeRight
 } from 'lodash';
 import {isValidElement} from 'react';
-import {renderToStaticMarkup} from 'react-dom/server';
+import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 import {Column} from '../columns';
 import {GridModel} from '../GridModel';
 
@@ -74,7 +74,7 @@ export class ColumnWidthCalculator {
         try {
             return this.getHeaderWidth(gridModel, column, autosizeIncludeHeaderIcons, bufferPx);
         } catch (e) {
-            console.warn(`Error calculating max header width for column "${column.colId}".`, e);
+            logWarn([`Error calculating max header width for colId '${column.colId}'.`, e], this);
         } finally {
             this.resetHeaderClassNames();
         }
@@ -104,7 +104,7 @@ export class ColumnWidthCalculator {
                 return await this.calcLevelWidthAsync(gridModel, records, column, options);
             }
         } catch (e) {
-            console.warn(`Error calculating max data width for column "${column.colId}".`, e);
+            logWarn([`Error calculating max data width for colId '${column.colId}'.`, e], this);
         } finally {
             this.resetClassNames();
         }

@@ -2,8 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {exportFilename} from '@xh/hoist/admin/AdminUtils';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
@@ -43,7 +44,7 @@ export class ClientErrorsModel extends HoistModel {
             colChooserModel: true,
             enableExport: true,
             exportOptions: {
-                filename: `${XH.appCode}-client-errors`,
+                filename: exportFilename('client-errors'),
                 columns: 'ALL'
             },
             emptyText: 'No errors reported...',
@@ -201,15 +202,14 @@ export class ClientErrorsModel extends HoistModel {
     }
 
     getParams() {
-        // TODO - revert formatting when most apps have migrated to Hoist-Core 13
         return {
-            startDay: this.startDay.format('YYYYMMDD'),
-            endDay: this.endDay.format('YYYYMMDD')
+            startDay: this.startDay,
+            endDay: this.endDay
         };
     }
 
     getDefaultStartDay() {
-        return LocalDate.currentAppDay().subtract(6);
+        return LocalDate.currentAppDay();
     }
     getDefaultEndDay() {
         return LocalDate.currentAppDay();

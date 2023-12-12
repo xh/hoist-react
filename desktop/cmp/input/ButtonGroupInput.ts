@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistModel, Intent, XH} from '@xh/hoist/core';
@@ -10,7 +10,7 @@ import {Button, buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/butto
 import '@xh/hoist/desktop/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
-import {isEmpty, filter, without, castArray} from 'lodash';
+import {castArray, filter, isEmpty, without} from 'lodash';
 import {Children, cloneElement, isValidElement} from 'react';
 
 export interface ButtonGroupInputProps
@@ -133,7 +133,10 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props
         const {value, intent: btnIntent} = button.props,
             btnDisabled = disabled || button.props.disabled;
 
-        throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
+        throwIf(
+            (enableClear || enableMulti) && value == null,
+            'ButtonGroupInput child must declare a non-null value when enableClear or enableMulti are true'
+        );
 
         const isActive = model.isActive(value);
 

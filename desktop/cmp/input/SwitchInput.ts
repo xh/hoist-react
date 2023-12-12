@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistProps, HSide, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {switchControl} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
+import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {ReactNode} from 'react';
 import './SwitchInput.scss';
 
@@ -62,6 +62,7 @@ const cmp = hoistCmp.factory<SwitchInputModel>(({model, className, ...props}, re
         id: props.id,
         className,
 
+        [TEST_ID]: props.testId,
         onBlur: model.onBlur,
         onFocus: model.onFocus,
         onChange: e => model.noteValueChange(e.target.checked),

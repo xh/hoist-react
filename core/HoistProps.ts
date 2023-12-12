@@ -2,9 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core/model';
+import {HoistModel} from '@xh/hoist/core';
+import {Property} from 'csstype';
 import {CSSProperties, HTMLAttributes, ReactNode, Ref} from 'react';
 
 /**
@@ -64,10 +65,28 @@ export interface DefaultHoistProps<M extends HoistModel = HoistModel> extends Ho
  */
 export interface BoxProps
     extends LayoutProps,
+        TestSupportProps,
         Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'contextMenu'> {}
 
+/**
+ * Props for Components that accept standard HTML `style` attributes.
+ */
 export interface StyleProps {
     style?: CSSProperties;
+}
+
+/**
+ * Props to support reliable selection of components for automated testing.
+ */
+export interface TestSupportProps {
+    /**
+     * Unique identifier for this component for the purposes of locating and interacting with
+     * its primary/outer DOM element using automated testing tools. Hoist components that support
+     * this interface will add a "data-testid" attribute to an appropriate DOM element - typically
+     * (but not always) the outermost tag in their rendered markup. Some components may generate
+     * and apply additional child testIds to support testing of nested elements.
+     */
+    testId?: string;
 }
 
 export interface LayoutProps {
@@ -92,10 +111,10 @@ export interface LayoutProps {
 
     flex?: string | number;
     flexBasis?: string | number;
-    flexDirection?: string | number;
+    flexDirection?: Property.FlexDirection;
     flexGrow?: string | number;
     flexShrink?: string | number;
-    flexWrap?: string | number;
+    flexWrap?: Property.FlexWrap;
 
     alignItems?: string;
     alignSelf?: string;
@@ -103,11 +122,12 @@ export interface LayoutProps {
     justifyContent?: string;
 
     overflow?: string;
-    overflowX?: string;
-    overflowY?: string;
+    overflowX?: Property.OverflowX;
+    overflowY?: Property.OverflowY;
+    textOverflow?: string;
 
     top?: string | number;
     left?: string | number;
-    position?: string;
+    position?: Property.Position;
     display?: string;
 }

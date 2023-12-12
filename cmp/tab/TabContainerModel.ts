@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {
     HoistModel,
@@ -15,9 +15,10 @@ import {
     PersistOptions
 } from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
-import {find, isString, isUndefined, without, difference} from 'lodash';
+import {find, isString, isUndefined, without, difference, findLast} from 'lodash';
 import {ReactNode} from 'react';
 import {TabConfig, TabModel} from './TabModel';
 import {TabSwitcherProps} from './TabSwitcherProps';
@@ -143,7 +144,7 @@ export class TabContainerModel extends HoistModel {
 
         if (route) {
             if (XH.isMobileApp) {
-                console.warn('Tab container routing is not supported for mobile applications.');
+                this.logWarn('TabContainer routing is not supported for mobile applications.');
                 return;
             }
 
@@ -151,6 +152,7 @@ export class TabContainerModel extends HoistModel {
                 track: () => XH.routerState,
                 run: this.syncWithRouter
             });
+            wait().then(() => this.syncWithRouter());
 
             this.forwardRouterToTab(this.activeTabId);
         } else if (persistWith) {
@@ -288,22 +290,35 @@ export class TabContainerModel extends HoistModel {
 
         const {route} = this;
         if (route) {
-            XH.navigate(route + '.' + tab.id);
+            const {params} = XH.router.getState();
+            XH.navigate(route + '.' + tab.id, params);
         } else {
             this.setActiveTabIdInternal(tab.id);
         }
     }
 
-    /** Navigate to the tab immediately before the currently active tab, if any. */
-    activatePrevTab() {
-        const {prevTab} = this;
-        if (prevTab) this.activateTab(prevTab.id);
+    /**
+     * Navigate to the first enabled tab before the currently active tab, if any.
+     * @param cycle - true to loop back to last tab if necessary.
+     */
+    activatePrevTab(cycle: boolean = false) {
+        const {tabs} = this,
+            idx = tabs.indexOf(this.activeTab);
+        let target = findLast(tabs, f => !f.disabled, idx - 1);
+        if (cycle && !target) target = findLast(tabs, f => !f.disabled);
+        if (target) this.activateTab(target);
     }
 
-    /** Navigate to the tab immediately after the currently active tab, if any. */
-    activateNextTab() {
-        const {nextTab} = this;
-        if (nextTab) this.activateTab(nextTab.id);
+    /**
+     * Navigate to the next enabled tab after the currently active tab, if any.
+     * @param cycle - true to loop back to first tab if necessary.
+     */
+    activateNextTab(cycle: boolean = false) {
+        const {tabs} = this,
+            idx = tabs.indexOf(this.activeTab);
+        let target = find(tabs, f => !f.disabled, idx + 1);
+        if (cycle && !target) target = find(tabs, f => !f.disabled);
+        if (target) this.activateTab(target);
     }
 
     //-------------------------
@@ -321,10 +336,11 @@ export class TabContainerModel extends HoistModel {
 
     private syncWithRouter() {
         const {tabs, route} = this,
-            {router} = XH;
+            {router} = XH,
+            state = router.getState();
 
-        if (router.isActive(route)) {
-            const tab = tabs.find(t => router.isActive(route + '.' + t.id));
+        if (state && router.isActive(route)) {
+            const tab = tabs.find(t => router.isActive(route + '.' + t.id, state.params));
             if (tab && !tab.isActive && !tab.disabled) {
                 this.setActiveTabIdInternal(tab.id);
             }
@@ -368,7 +384,7 @@ export class TabContainerModel extends HoistModel {
             this.provider = PersistenceProvider.create({path: 'tabContainer', ...persistWith});
             state = this.provider.read() || null;
         } catch (e) {
-            console.error(e);
+            this.logError(e);
             XH.safeDestroy(this.provider);
             this.provider = null;
         }

@@ -2,16 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {Exception} from '@xh/hoist/core/exception/Exception';
 import {
+    flatMap,
     forOwn,
     isArray,
     isEmpty,
     isFunction,
     isObject,
-    isObjectLike,
+    isPlainObject,
     isUndefined,
     mixin,
     uniq,
@@ -52,22 +53,23 @@ export function withDefault<T>(...args: T[]): T {
 }
 
 /**
- * Recursively freeze an object, preventing future modifications. Not all objects are supported -
- * FREEZABLE_TYPES limits what we will attempt to freeze to a whitelist of types known to be safely
- * freezable without side effects. This avoids freezing other types of objects where this routine
+ * Recursively freeze an object, preventing future modifications. Only the specific declared
+ * input types will be frozen.  This avoids freezing other types of objects where this routine
  * could be problematic - e.g. application or library classes (such as `moment`!) which rely on
  * their internal state remaining mutable to function.
  */
-const FREEZABLE_TYPES: Set<String> = new Set(['Object', 'Array', 'Map', 'Set']);
-export function deepFreeze(obj: object) {
-    if (!isObjectLike(obj) || !FREEZABLE_TYPES.has(obj.constructor.name)) return obj;
+export function deepFreeze<
+    T extends Record<string, unknown> | Array<unknown> | Map<unknown, unknown> | Set<unknown>
+>(obj: T): Readonly<T> {
+    if (!(isPlainObject(obj) || isArray(obj) || obj instanceof Map || obj instanceof Set)) {
+        return obj;
+    }
 
     const propNames = Object.getOwnPropertyNames(obj);
     for (const name of propNames) {
         deepFreeze(obj[name]);
     }
-
-    return Object.freeze(obj);
+    return Object.freeze<T>(obj);
 }
 
 /**
@@ -115,7 +117,7 @@ export function isJSON(obj: any): boolean {
 /**
  * Throw an exception if a condition evaluates as truthy.
  */
-export function throwIf(condition: any, message: string) {
+export function throwIf(condition: any, message: unknown) {
     if (condition) {
         throw Exception.create(message);
     }
@@ -124,7 +126,7 @@ export function throwIf(condition: any, message: string) {
 /**
  * Log a warning to the console if a condition evaluates as truthy.
  */
-export function warnIf(condition: any, message: string) {
+export function warnIf(condition: any, message: any) {
     if (condition) {
         console.warn(message);
     }
@@ -133,7 +135,7 @@ export function warnIf(condition: any, message: string) {
 /**
  * Log an error to the console if a condition evaluates as truthy.
  */
-export function errorIf(condition: any, message: string) {
+export function errorIf(condition: any, message: any) {
     if (condition) {
         console.error(message);
     }
@@ -281,6 +283,15 @@ export function filterConsecutive<T>(
 
         return true;
     };
+}
+
+/**
+ * Intersperse a separator between each item in an array.
+ */
+export function intersperse<T>(arr: T[], separator: T): T[] {
+    return flatMap(arr, (it, idx) => {
+        return idx > 0 ? [separator, it] : [it];
+    });
 }
 
 /**

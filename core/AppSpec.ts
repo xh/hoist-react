@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {XH, HoistAppModel, ElementFactory, HoistProps} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -159,7 +159,5 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         this.lockoutMessage = lockoutMessage;
         this.showBrowserContextMenu = showBrowserContextMenu;
         this.disableXssProtection = disableXssProtection;
-
-        Object.freeze(this);
     }
 }

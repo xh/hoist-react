@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, TaskObserver} from '@xh/hoist/core';
 import {genDisplayName, required, Rule, RuleLike, ValidationState} from '@xh/hoist/data';
@@ -351,7 +351,7 @@ export abstract class BaseFieldModel extends HoistModel {
                 const {value, name, displayName} = this,
                     fieldState = {value, name, displayName, fieldModel: this};
 
-                return await constraint(fieldState, this.formModel.values);
+                return constraint(fieldState, this.formModel.values);
             });
 
             const ret = await Promise.all(promises);

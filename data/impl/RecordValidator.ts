@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {Field, Rule, StoreRecord, StoreRecordId, ValidationState} from '@xh/hoist/data';
 import {computed, observable, makeObservable, runInAction} from '@xh/hoist/mobx';
@@ -110,7 +110,7 @@ export class RecordValidator {
         if (this.ruleIsActive(record, field, rule)) {
             const promises = rule.check.map(async constraint => {
                 const fieldState = {value, name, displayName, record};
-                return await constraint(fieldState, values);
+                return constraint(fieldState, values);
             });
 
             const ret = await Promise.all(promises);

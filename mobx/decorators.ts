@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {upperFirst} from 'lodash';
 import {observable, runInAction} from 'mobx';
-import {apiDeprecated, getOrCreate} from '../utils/js';
+import {getOrCreate} from '../utils/js';
 
 /**
  * Decorator to mark a property as observable and also provide a simple MobX action of the
@@ -77,33 +77,3 @@ function createBindable(target, name, descriptor, isRef) {
     // late, the non-enumerable property will still be available.)
     return descriptor;
 }
-
-/**
- * Decorator to add a simple MobX action of the form `setPropName()` to a class.
- *
- * Applications that wish to add custom logic to their setter should define one manually instead.
- * If the setter is already defined, this call will be a no-op.
- *
- * Modelled after approach in https://github.com/farwayer/mobx-decorators.
- *
- * @deprecated Use bindable decorator instead.
- */
-export const settable: any = (target, property, descriptor) => {
-    const name = 'set' + upperFirst(property);
-
-    apiDeprecated('settable', {
-        v: 'v56',
-        msg: `Consider using @bindable or implement a simple '${name}' method instead.`
-    });
-
-    if (!target.hasOwnProperty(name)) {
-        const value = function (v) {
-            runInAction(() => {
-                this[property] = v;
-            });
-        };
-        Object.defineProperty(target, name, {value});
-    }
-
-    return descriptor && {...descriptor, configurable: true};
-};

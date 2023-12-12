@@ -2,22 +2,22 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, HSide, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide, TestSupportProps, XH} from '@xh/hoist/core';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
 import {appMenuButton, AppMenuButtonProps, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {whatsNewButton} from '@xh/hoist/desktop/cmp/button/WhatsNewButton';
 import '@xh/hoist/desktop/register';
 import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
+import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import {ReactNode, ReactElement} from 'react';
+import {ReactElement, ReactNode} from 'react';
 import './AppBar.scss';
 
-export interface AppBarProps extends HoistProps {
+export interface AppBarProps extends HoistProps, TestSupportProps {
     /** Position of the AppMenuButton. */
     appMenuButtonPosition?: HSide;
 
@@ -69,7 +69,8 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
             hideAppMenuButton,
             className,
             appMenuButtonProps = {},
-            appMenuButtonPosition = 'right'
+            appMenuButtonPosition = 'right',
+            testId
         } = props;
 
         const title = withDefault(props.title, XH.clientAppName);
@@ -102,7 +103,8 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
                         })
                     ]
                 })
-            ]
+            ],
+            [TEST_ID]: testId
         });
     }
 });

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {DockViewModel} from '@xh/hoist/desktop/cmp/dock';
 import {div, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
@@ -15,6 +15,7 @@ import {elementFromContent} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {useRef} from 'react';
 import './Dock.scss';
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 
 interface DockViewProps extends HoistProps<DockViewModel> {
     /** True to style docked headers with reduced padding and font-size. */
@@ -35,6 +36,8 @@ export const dockView = hoistCmp.factory<DockViewProps>({
                 width,
                 height,
                 collapsedWidth,
+                dialogWidth,
+                dialogHeight,
                 collapsed,
                 docked,
                 isActive,
@@ -57,7 +60,7 @@ export const dockView = hoistCmp.factory<DockViewProps>({
                           model: refreshContextModel,
                           item: div({
                               className: 'xh-dock-view__body',
-                              item: elementFromContent(model.content)
+                              item: errorBoundary(elementFromContent(model.content))
                           })
                       });
 
@@ -66,8 +69,8 @@ export const dockView = hoistCmp.factory<DockViewProps>({
         return modalSupport({
             model: model.modalSupportModel,
             item: vbox({
-                width: collapsed ? collapsedWidth : width,
-                height: !collapsed ? height : undefined,
+                width: collapsed ? collapsedWidth : docked ? width : dialogWidth,
+                height: collapsed ? undefined : docked ? height : dialogHeight,
                 className: classNames(className, `xh-dock-view--${suffix}`),
                 items: [header, body]
             })

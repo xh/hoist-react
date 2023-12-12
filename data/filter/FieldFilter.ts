@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
@@ -12,6 +12,7 @@ import {
     difference,
     escapeRegExp,
     isArray,
+    isEqual,
     isNil,
     isString,
     isUndefined,
@@ -27,7 +28,7 @@ import {FieldFilterOperator, FieldFilterSpec, FilterTestFn} from './Types';
  * Filters by comparing the value of a given field to one or more given candidate values using one
  * of several supported operators.
  *
- * Note that the comparison operators `[<,<=,>,>=]` always return false for null and undefined values,
+ * Note that the comparison operators `[<,<=,>,>=]` always return false for null/undefined values,
  * favoring the behavior of Excel over Javascript's implicit conversion of nullish values to 0.
  *
  * Immutable.
@@ -122,13 +123,13 @@ export class FieldFilter extends Filter {
             case '=':
                 opFn = v => {
                     if (isNil(v) || v === '') v = null;
-                    return value.includes(v);
+                    return value.some(it => isEqual(v, it));
                 };
                 break;
             case '!=':
                 opFn = v => {
                     if (isNil(v) || v === '') v = null;
-                    return !value.includes(v);
+                    return !value.some(it => isEqual(v, it));
                 };
                 break;
             case '>':

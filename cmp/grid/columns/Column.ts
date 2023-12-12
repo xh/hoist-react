@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {ICellEditorParams} from '@ag-grid-community/core';
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
@@ -15,7 +15,7 @@ import {
     RecordActionSpec,
     StoreRecord
 } from '@xh/hoist/data';
-import {apiRemoved, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved, logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {
     castArray,
@@ -34,6 +34,7 @@ import {
     toString
 } from 'lodash';
 import {
+    Attributes,
     createElement,
     forwardRef,
     FunctionComponent,
@@ -191,6 +192,13 @@ export interface ColumnSpec {
      */
     sortValue?: string | ColumnSortValueFn;
 
+    /**
+     * Values to match or functions to check to determine if a value should always be sorted
+     * to the bottom, regardless of sort order. If more than one entry is provided, values will be
+     * sorted according to the order they appear here.
+     */
+    sortToBottom?: Some<unknown | ((v: unknown) => boolean)>;
+
     /** Function to compare cell values for sorting.*/
     comparator?: ColumnComparator;
 
@@ -271,7 +279,7 @@ export interface ColumnSpec {
      * `headerName` contains markup or other characters not suitable for use within an Excel or
      * CSV file header.
      */
-    exportName?: string;
+    exportName?: string | ColumnHeaderNameFn;
 
     /**
      * Alternate field name to reference or function to call when producing a value for a file
@@ -435,6 +443,7 @@ export class Column {
     sortingOrder: ColumnSortSpec[];
     absSort: boolean;
     sortValue: string | ColumnSortValueFn;
+    sortToBottom: Array<(v: unknown) => boolean>;
     comparator: ColumnComparator;
     resizable: boolean;
     sortable: boolean;
@@ -507,6 +516,7 @@ export class Column {
             absSort,
             sortingOrder,
             sortValue,
+            sortToBottom,
             comparator,
             resizable,
             movable,
@@ -601,6 +611,7 @@ export class Column {
         this.absSort = withDefault(absSort, false);
         this.sortingOrder = this.parseSortingOrder(sortingOrder);
         this.sortValue = sortValue;
+        this.sortToBottom = this.parseSortToBottom(sortToBottom);
         this.comparator = comparator;
 
         this.resizable = withDefault(resizable, true);
@@ -737,8 +748,7 @@ export class Column {
                         field,
                         store: record?.store,
                         column: this,
-                        gridModel,
-                        agParams
+                        gridModel
                     });
                 },
                 suppressKeyboardEvent: ({editing, event}) => {
@@ -784,12 +794,7 @@ export class Column {
         if (!agOptions.cellRenderer) {
             setRenderer(agParams => {
                 let ret = renderer
-                    ? renderer(agParams.value, {
-                          record: agParams.data,
-                          column: this,
-                          gridModel,
-                          agParams
-                      })
+                    ? renderer(agParams.value, {record: agParams.data, column: this, gridModel})
                     : agParams.value;
 
                 ret = isNil(ret) || isValidElement(ret) ? ret : toString(ret);
@@ -816,7 +821,6 @@ export class Column {
                             field,
                             column: this,
                             gridModel,
-                            agParams,
                             store
                         });
 
@@ -905,11 +909,19 @@ export class Column {
         if (this.comparator === undefined) {
             // Use default comparator with appropriate inputs
             ret.comparator = (valueA, valueB, agNodeA, agNodeB) => {
-                const recordA = agNodeA?.data,
+                const {gridModel, colId} = this,
+                    // Note: sortCfg and agNodes can be undefined if comparator called during show
+                    // of agGrid column header set filter menu.
+                    sortCfg = find(gridModel.sortBy, {colId}),
+                    sortDir = sortCfg?.sort || 'asc',
+                    recordA = agNodeA?.data,
                     recordB = agNodeB?.data;
 
                 valueA = this.getSortValue(valueA, recordA);
                 valueB = this.getSortValue(valueB, recordB);
+
+                const sortToBottom = this.sortToBottomComparator(valueA, valueB, sortDir);
+                if (sortToBottom !== 0) return sortToBottom;
 
                 return this.defaultComparator(valueA, valueB);
             };
@@ -922,20 +934,23 @@ export class Column {
                     sortCfg = find(gridModel.sortBy, {colId}),
                     sortDir = sortCfg?.sort || 'asc',
                     abs = sortCfg?.abs || false,
-                    recordA = agNodeA?.data,
-                    recordB = agNodeB?.data,
+                    recordA = agNodeA?.data as StoreRecord,
+                    recordB = agNodeB?.data as StoreRecord,
                     params = {
                         recordA,
                         recordB,
-                        column: this,
+                        column: this as Column,
                         gridModel,
-                        defaultComparator: (a, b) => this.defaultComparator(a, b),
+                        defaultComparator: this.defaultComparator,
                         agNodeA,
                         agNodeB
                     };
 
                 valueA = this.getSortValue(valueA, recordA);
                 valueB = this.getSortValue(valueB, recordB);
+
+                const sortToBottom = this.sortToBottomComparator(valueA, valueB, sortDir);
+                if (sortToBottom !== 0) return sortToBottom;
 
                 return this.comparator(valueA, valueB, sortDir, abs, params);
             };
@@ -949,14 +964,15 @@ export class Column {
         if (editor) {
             ret.cellEditor = forwardRef((agParams: ICellEditorParams, ref) => {
                 const props = {
-                    record: agParams.data,
+                    record: agParams.data as StoreRecord,
                     gridModel,
                     column: this,
                     agParams,
                     ref
                 };
                 // Can be a component or elem factory/ ad-hoc render function.
-                if ((editor as any).isHoistComponent) return createElement(editor, props);
+                if ((editor as any).isHoistComponent)
+                    return createElement(editor, props as Attributes);
                 if (isFunction(editor)) return editor(props);
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
@@ -984,6 +1000,23 @@ export class Column {
     private defaultComparator = (v1, v2) => {
         const sortCfg = find(this.gridModel.sortBy, {colId: this.colId});
         return sortCfg ? sortCfg.comparator(v1, v2) : GridSorter.defaultComparator(v1, v2);
+    };
+
+    private sortToBottomComparator = (v1, v2, sortDir: 'asc' | 'desc') => {
+        const {sortToBottom} = this;
+
+        if (isNil(sortToBottom)) return 0;
+
+        for (let fn of sortToBottom) {
+            const v1ToBottom = fn(v1),
+                v2ToBottom = fn(v2);
+            const isAsc = sortDir === 'asc';
+            if (v1ToBottom != v2ToBottom) {
+                return v1ToBottom ? (isAsc ? 1 : -1) : isAsc ? -1 : 1;
+            }
+        }
+
+        return 0;
     };
 
     private defaultSetValueFn = ({value, record, store, field}) => {
@@ -1018,25 +1051,30 @@ export class Column {
         return sortingOrder?.map(spec => (isString(spec) || spec === null ? {sort: spec} : spec));
     }
 
+    private parseSortToBottom(sortToBottom): Array<(v: unknown) => boolean> {
+        if (isNil(sortToBottom)) return null;
+        return castArray(sortToBottom).map(v => (isFunction(v) ? v : it => it === v));
+    }
+
     private parseFilterable(filterable) {
         if (!filterable) return false;
+        const {colId} = this;
 
         if (XH.isMobileApp) {
-            console.warn(`'filterable' is not supported on mobile and will be ignored.`);
+            logDebug(
+                `Column ${colId} specs 'filterable' but not supported on mobile - will be ignored.`,
+                this
+            );
             return false;
         }
 
         if (!this.field) {
-            console.warn(
-                `Column '${this.colId}' is not a Store field. 'filterable' will be ignored.`
-            );
+            logWarn(`Column ${colId} is not a Store field. 'filterable' will be ignored.`, this);
             return false;
         }
 
         if (this.field === 'cubeLabel') {
-            console.warn(
-                `Column '${this.colId}' is a cube label column. 'filterable' will be ignored.`
-            );
+            logWarn(`Column ${colId} is a cube label column. 'filterable' will be ignored.`, this);
             return false;
         }
 

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {ExcelFormat} from '@xh/hoist/cmp/grid';
 import {HoistService, XH} from '@xh/hoist/core';
@@ -157,7 +157,8 @@ export class GridExportService extends HoistService {
                 XH.track({
                     category: 'Export',
                     message: `Downloaded ${filename}${fileExt}`,
-                    data: {rows: rows.length, columns: exportColumns.length}
+                    data: {rows: rows.length, columns: exportColumns.length},
+                    logData: true
                 });
             }
         } catch (e) {
@@ -194,8 +195,7 @@ export class GridExportService extends HoistService {
             field,
             column,
             gridModel,
-            store: record.store,
-            agParams: null
+            store: record.store
         });
         // Modify value using exportValue
         if (isString(exportValue) && record.data[exportValue] !== null) {
@@ -253,7 +253,7 @@ export class GridExportService extends HoistService {
                     item: '(show details...)',
                     onClick: () => {
                         failToast?.dismiss();
-                        XH.exceptionHandler.showException(e);
+                        XH.exceptionHandler.showExceptionDetails(e);
                     }
                 })
             ),
@@ -327,13 +327,8 @@ export class GridExportService extends HoistService {
                 : it.exportName;
 
             if (!isString(ret)) {
-                console.warn(
-                    'Tried to export column ' +
-                        it.colId +
-                        ' with an invalid "exportName", ' +
-                        'probably caused by setting "headerName" to a React element. Please specify an ' +
-                        'appropriate "exportName". Defaulting to ' +
-                        it.colId
+                this.logWarn(
+                    `Tried to export column '${it.colId}' with an invalid "exportName", probably caused by setting "headerName" to a React element. Please specify an appropriate "exportName". Defaulting to '${it.colId}'`
                 );
                 ret = it.colId;
             }
@@ -345,7 +340,7 @@ export class GridExportService extends HoistService {
         const headerCounts = countBy(headers.map(it => it.toLowerCase())),
             dupeHeaders = keys(pickBy(headerCounts, it => it > 1));
         if (type === 'excelTable' && !isEmpty(dupeHeaders)) {
-            console.warn(
+            this.logWarn(
                 'Excel tables require unique headers on each column. Consider using the "exportName" property to ensure unique headers. Duplicate headers: ',
                 dupeHeaders
             );

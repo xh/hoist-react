@@ -2,23 +2,32 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {ButtonProps as BpButtonProps} from '@blueprintjs/core';
 import composeRefs from '@seznam/compose-react-refs';
-import {hoistCmp, HoistModel, HoistProps, LayoutProps, StyleProps, Intent} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistModel,
+    HoistProps,
+    Intent,
+    LayoutProps,
+    StyleProps,
+    TestSupportProps
+} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {button as bpButton} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
+import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ReactNode, ReactElement} from 'react';
+import {ReactElement, ReactNode} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = null>
     extends HoistProps<M>,
         StyleProps,
         LayoutProps,
+        TestSupportProps,
         BpButtonProps {
     active?: boolean;
     autoFocus?: boolean;
@@ -69,6 +78,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             tooltip,
             active,
             elementRef,
+            testId,
             ...rest
         } = nonLayoutProps;
 
@@ -96,6 +106,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             autoFocus,
             className: classNames(className, classes),
             elementRef: composeRefs(ref, elementRef),
+            [TEST_ID]: testId,
             disabled,
             icon,
             intent,

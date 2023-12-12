@@ -2,11 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {BoxProps, hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
-import classNames from 'classnames';
 import {div} from '@xh/hoist/cmp/layout';
+import {BoxProps, hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
+import {TEST_ID} from '@xh/hoist/utils/js';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
+import {merge} from 'lodash';
 import './Badge.scss';
 
 export interface BadgeProps extends HoistProps, BoxProps {
@@ -26,20 +29,30 @@ export const [Badge, badge] = hoistCmp.withFactory<BadgeProps>({
 
     className: 'xh-badge',
 
-    render({className, intent, compact = false, ...props}) {
-        const classes = [];
+    render(props, ref) {
+        const classes = [],
+            [layoutProps, {className, intent, compact, children, testId, ...restProps}] =
+                splitLayoutProps(props);
 
         if (intent) {
-            classes.push(`xh-badge--intent-${intent}`);
+            classes.push(`xh-bg-intent-${intent}`);
         }
 
         if (compact) {
             classes.push('xh-badge--compact');
         }
 
+        const divProps = merge(
+            {className: classNames(className, classes)},
+            {style: layoutProps},
+            {[TEST_ID]: testId},
+            restProps
+        );
+
         return div({
-            className: classNames(className, classes),
-            ...props
+            ref,
+            ...divProps,
+            items: children
         });
     }
 });

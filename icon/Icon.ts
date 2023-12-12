@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 import {div} from '@xh/hoist/cmp/layout';
@@ -503,6 +503,9 @@ export const Icon = {
     },
     mask(p?: IconProps) {
         return Icon.icon({...p, iconName: 'mask'});
+    },
+    memory(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'memory'});
     },
     minusCircle(p?: IconProps) {
         return Icon.icon({...p, iconName: 'minus-circle'});

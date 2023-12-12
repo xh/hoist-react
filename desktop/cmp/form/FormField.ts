@@ -2,24 +2,25 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
-import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
+import {BaseFormFieldProps, FieldModel, FormContext, FormContextType} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
 import {DefaultHoistProps, hoistCmp, HSide, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
+import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {errorIf, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps, getReactElementName} from '@xh/hoist/utils/react';
+import {errorIf, getTestId, logWarn, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps, getReactElementName, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
 import {Children, cloneElement, ReactElement, ReactNode, useContext, useState} from 'react';
 import './FormField.scss';
-import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
 
 export interface FormFieldProps extends BaseFormFieldProps {
     /**
@@ -106,7 +107,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         model = model ?? (formModel && field ? formModel.fields[field] : null);
 
         if (!model) {
-            console.warn(`Unable to bind FormField to field "${field}" on backing FormModel`);
+            logWarn(`Unable to bind FormField to field "${field}" on backing FormModel`, FormField);
         }
 
         // Model related props
@@ -162,10 +163,18 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
+        const testId = getFormFieldTestId(props, formContext, model.name);
+        useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
+        useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
+
         // generate actual element child to render
         let childEl: ReactElement =
             !child || readonly
-                ? readonlyChild({model, readonlyRenderer})
+                ? readonlyChild({
+                      model,
+                      readonlyRenderer,
+                      testId: getTestId(testId, 'readonly-display')
+                  })
                 : editableChild({
                       model,
                       child,
@@ -174,7 +183,8 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                       disabled,
                       displayNotValid,
                       leftErrorIcon,
-                      commitOnChange
+                      commitOnChange,
+                      testId: getTestId(testId, 'input')
                   });
 
         if (minimal) {
@@ -195,6 +205,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             key: model?.xhId,
             className: classNames(className, classes),
             ...getLayoutProps(props),
+            testId,
             items: [
                 labelEl({
                     omit: !label,
@@ -236,9 +247,13 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 const readonlyChild = hoistCmp.factory({
     model: false,
 
-    render({model, readonlyRenderer}) {
+    render({model, readonlyRenderer, testId}) {
         const value = model ? model['value'] : null;
-        return div({className: 'xh-form-field-readonly-display', item: readonlyRenderer(value)});
+        return div({
+            className: 'xh-form-field-readonly-display',
+            [TEST_ID]: testId,
+            item: readonlyRenderer(value)
+        });
     }
 });
 
@@ -253,7 +268,8 @@ const editableChild = hoistCmp.factory<FieldModel>({
         disabled,
         displayNotValid,
         leftErrorIcon,
-        commitOnChange
+        commitOnChange,
+        testId
     }) {
         const {props} = child;
 
@@ -263,7 +279,8 @@ const editableChild = hoistCmp.factory<FieldModel>({
             bind: 'value',
             id: childId,
             disabled: props.disabled || disabled,
-            ref: composeRefs(model?.boundInputRef, child.ref)
+            ref: composeRefs(model?.boundInputRef, child.ref),
+            testId: props.testId ?? testId
         };
 
         // If a sizeable child input doesn't specify its own dimensions,
@@ -346,4 +363,11 @@ function defaultProp(
 ): any {
     const fieldDefault = formContext.fieldDefaults ? formContext.fieldDefaults[name] : null;
     return withDefault(props[name], fieldDefault, defaultVal);
+}
+function getFormFieldTestId(
+    props: Partial<FormFieldProps>,
+    formContext: FormContextType,
+    fieldName: string
+): string {
+    return props.testId ?? (formContext.testId ? `${formContext.testId}-${fieldName}` : undefined);
 }

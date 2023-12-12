@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {PlainObject} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, flatMap} from 'lodash';
+import {isNil, flatMap, isMatch} from 'lodash';
 import {Store} from './Store';
 import {ValidationState} from './validation/ValidationState';
 import {RecordValidator} from './impl/RecordValidator';
@@ -241,6 +241,13 @@ export class StoreRecord {
      */
     forEachAncestor(fn: (r: StoreRecord) => void, fromFiltered: boolean = false) {
         this.store.getAncestorsById(this.id, fromFiltered).forEach(fn);
+    }
+
+    /**
+     * Tests to see if this Record's data matches the given partial data object.
+     */
+    matchesData(partialData: PlainObject): boolean {
+        return isMatch(this.data, partialData);
     }
 
     // --------------------------

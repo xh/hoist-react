@@ -2,11 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {Content} from '@xh/hoist/core';
 import {ReactElement, cloneElement, createElement, isValidElement} from 'react';
 import {isFunction, isNil} from 'lodash';
+import {renderToStaticMarkup as reactRenderToStaticMarkup} from 'react-dom/server';
 import {throwIf} from '../js';
 
 /**
@@ -48,4 +49,11 @@ export function elementFromContent(content: Content, addProps?: object): ReactEl
         'Must specify either a React Element, HoistComponent or a function that returns a React Element.'
     );
     return addProps ? cloneElement(ret, addProps) : ret;
+}
+
+/**
+ * TypeScript friendly wrapper for React renderToStaticMarkup.
+ */
+export function renderToStaticMarkup(element: ReactElement): string {
+    return reactRenderToStaticMarkup(element as any);
 }

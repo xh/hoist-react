@@ -2,28 +2,34 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {placeholder, frame} from '@xh/hoist/cmp/layout';
+import {frame, placeholder} from '@xh/hoist/cmp/layout';
 import {
+    createElement,
+    hoistCmp,
     HoistModel,
+    HoistProps,
     LayoutProps,
+    lookup,
+    TestSupportProps,
     useLocalModel,
     uses,
-    hoistCmp,
-    createElement,
-    XH,
-    lookup,
-    HoistProps
+    XH
 } from '@xh/hoist/core';
+import {AgGridReact, GridOptions} from '@xh/hoist/kit/ag-grid';
+import {logError} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isNil} from 'lodash';
 import './AgGrid.scss';
 import {AgGridModel} from './AgGridModel';
-import {AgGridReact, GridOptions} from '@xh/hoist/kit/ag-grid';
 
-export interface AgGridProps extends HoistProps<AgGridModel>, GridOptions, LayoutProps {}
+export interface AgGridProps
+    extends HoistProps<AgGridModel>,
+        GridOptions,
+        LayoutProps,
+        TestSupportProps {}
 
 /**
  * Minimal wrapper for AgGridReact, supporting direct use of the ag-Grid component with limited
@@ -53,17 +59,25 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
     className: 'xh-ag-grid',
     model: uses(AgGridModel),
 
-    render({model, className, ...props}, ref) {
+    render({model, className, testId, ...props}, ref) {
         if (!AgGridReact) {
-            console.error(
-                'ag-Grid has not been imported in to this application. Please import and ' +
-                    'register modules in Bootstrap.js. See the XH Toolbox app for an example.'
+            logError(
+                'AG Grid not imported/licensed by this app - import and register modules in Bootstrap.ts. See the XH Toolbox app for an example.',
+                AgGrid
             );
             return placeholder('ag-Grid library not available.');
         }
 
         const [layoutProps, agGridProps] = splitLayoutProps(props),
-            {sizingMode, showHover, rowBorders, stripeRows, cellBorders, showCellFocus} = model,
+            {
+                sizingMode,
+                showHover,
+                rowBorders,
+                stripeRows,
+                cellBorders,
+                showCellFocus,
+                hideHeaders
+            } = model,
             {darkTheme, isDesktop} = XH;
 
         const impl = useLocalModel(AgGridLocalModel);
@@ -78,13 +92,15 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
                 stripeRows ? 'xh-ag-grid--stripe-rows' : 'xh-ag-grid--no-stripe-rows',
                 cellBorders ? 'xh-ag-grid--cell-borders' : 'xh-ag-grid--no-cell-borders',
                 showCellFocus ? 'xh-ag-grid--show-cell-focus' : 'xh-ag-grid--no-cell-focus',
-                isDesktop && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover'
+                isDesktop && showHover ? 'xh-ag-grid--show-hover' : 'xh-ag-grid--no-hover',
+                hideHeaders ? 'xh-ag-grid--hide-headers' : null
             ),
             ...layoutProps,
+            testId,
             item: createElement(AgGridReact, {
+                ...AgGrid['DEFAULT_PROPS'],
                 // Default some ag-grid props, but allow overriding.
                 getRowHeight: impl.getRowHeight,
-                suppressBrowserResizeObserver: true,
                 // Pass others on directly.
                 ...agGridProps,
 
@@ -123,6 +139,14 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
     AgGrid.HEADER_HEIGHTS_MOBILE = {large: 42, standard: 38, compact: 34, tiny: 30};
     AgGrid.getHeaderHeightForSizingMode = mode =>
         (XH.isMobileApp ? AgGrid.HEADER_HEIGHTS_MOBILE : AgGrid.HEADER_HEIGHTS)[mode];
+
+    /**
+     * Default props to apply to all instances of the AgGrid Component in this application.
+     *
+     * Note that these settings will be overridden by any values provided by the application
+     * to any particular grid instance.
+     */
+    AgGrid.DEFAULT_PROPS = {};
 })(AgGrid);
 
 class AgGridLocalModel extends HoistModel {

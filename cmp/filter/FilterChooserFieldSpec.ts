@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {
     BaseFilterFieldSpec,
@@ -14,7 +14,7 @@ import {fmtDate, parseNumber} from '@xh/hoist/format';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
 import {isValidElement, ReactNode} from 'react';
-import {renderToStaticMarkup} from 'react-dom/server';
+import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 
 export interface FilterChooserFieldSpecConfig extends BaseFilterFieldSpecConfig {
     /**

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
 import {span} from '@xh/hoist/cmp/layout';
@@ -21,7 +21,7 @@ export const toast = hoistCmp.factory({
 
     render({model}) {
         const {icon, message, intent, actionButtonProps} = model,
-            cls = `xh-toast xh-intent-${intent}`;
+            cls = `xh-toast xh-bg-intent-${intent}`;
 
         return onsenToast({
             visible: true,

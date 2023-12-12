@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
@@ -219,7 +219,7 @@ export class Store extends HoistBase {
     _filtered: RecordSet;
 
     private _dataDefaults = null;
-    private _created = Date.now();
+    _created = Date.now();
     private _fieldMap: Map<string, Field>;
     experimental: any;
 

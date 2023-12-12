@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2023 Extremely Heavy Industries Inc.
+ */
 import {hframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -20,11 +26,13 @@ export const inspectorPanel = hoistCmp.factory({
             title: `Inspector - Hoist v${XH.environmentService.get('hoistReactVersion')}`,
             icon: Icon.search(),
             className: 'xh-inspector',
+            headerClassName: 'xh-inspector-panel-header',
             modelConfig: {
                 defaultSize: 400,
                 side: 'bottom',
                 persistWith: XH.inspectorService.persistWith,
                 modalSupport: true,
+                errorBoundary: true,
                 showModalToggleButton: true,
                 showHeaderCollapseButton: false,
                 xhImpl: true

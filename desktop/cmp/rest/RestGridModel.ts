@@ -2,9 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
+import {RowDoubleClickedEvent} from '@ag-grid-community/core';
 import {BaseFieldConfig} from '@xh/hoist/cmp/form';
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, PlainObject, ElementSpec, XH} from '@xh/hoist/core';
@@ -53,8 +54,8 @@ export interface RestGridConfig extends GridConfig {
     /** Specifications for fields to be displayed in editor form. */
     editors?: RestGridEditor[];
 
-    /** Callback to call when a row is double clicked. */
-    onRowDoubleClicked?: (e: any) => void;
+    /** Callback to call when a row is double-clicked. */
+    onRowDoubleClicked?: (e: RowDoubleClickedEvent) => void;
 }
 
 export interface RestGridEditor {

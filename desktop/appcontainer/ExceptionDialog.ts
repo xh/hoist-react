@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
@@ -90,5 +90,5 @@ export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(({model}) =>
 });
 
 function isSessionExpired(e) {
-    return e?.httpStatus === 401;
+    return !XH.appSpec.isSSO && e?.httpStatus === 401;
 }

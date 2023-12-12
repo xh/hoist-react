@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistBase, managed, RefreshContextModel, TaskObserver} from '../';
+import {HoistBase, managed, PlainObject, RefreshContextModel, TaskObserver} from '../';
 import {LoadSpec, Loadable} from './';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
-import {isPlainObject} from 'lodash';
+import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
+import {isPlainObject, pull} from 'lodash';
 
 /**
  * Provides support for objects that participate in Hoist's loading/refresh lifecycle.
@@ -55,11 +55,11 @@ export class LoadSupport extends HoistBase implements Loadable {
         return this.doLoadAsync(newSpec);
     }
 
-    async refreshAsync(meta?: object) {
+    async refreshAsync(meta?: PlainObject) {
         return this.loadAsync({meta, isRefresh: true});
     }
 
-    async autoRefreshAsync(meta?: object) {
+    async autoRefreshAsync(meta?: PlainObject) {
         return this.loadAsync({meta, isAutoRefresh: true});
     }
 
@@ -98,18 +98,17 @@ export class LoadSupport extends HoistBase implements Loadable {
                 if (target instanceof RefreshContextModel) return;
 
                 const elapsed = this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime(),
-                    msg = `[${target.constructor.name}] | ${loadSpec.typeDisplay} | ${
-                        exception ? 'failed | ' : ''
-                    }${elapsed}ms`;
+                    status = exception ? 'failed' : null,
+                    msg = pull([loadSpec.typeDisplay, status, `${elapsed}ms`, exception], null);
 
                 if (exception) {
                     if (exception.isRoutine) {
-                        console.debug(msg, exception);
+                        logDebug(msg, target);
                     } else {
-                        console.error(msg, exception);
+                        logError(msg, target);
                     }
                 } else {
-                    console.debug(msg);
+                    logDebug(msg, target);
                 }
             });
     }

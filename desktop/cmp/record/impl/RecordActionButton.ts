@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
@@ -74,6 +74,7 @@ export const [RecordActionButton, recordActionButton] =
                 intent,
                 title,
                 disabled,
+                testId: action.testId,
                 onClick: () => action.call({record, selectedRecords, gridModel, column}),
                 ...rest
             });

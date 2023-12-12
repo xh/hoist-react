@@ -2,9 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {HoistProps, LayoutProps, PlainObject} from '@xh/hoist/core';
+import {HoistProps, LayoutProps} from '@xh/hoist/core';
 import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
 
 /**
@@ -23,7 +23,7 @@ import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
  *     height, minHeight, maxHeight, width, minWidth, maxWidth,
  *     flex, flexBasis, flexDirection, flexGrow, flexShrink, flexWrap,
  *     alignItems, alignSelf, alignContent, justifyContent,
- *     overflow, overflowX, overflowY,
+ *     overflow, overflowX, overflowY, textOverflow,
  *     top, left, position, display
  *
  * NOTE - this system relies on Components respecting and responding to these properties.
@@ -40,9 +40,9 @@ import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
  * that afforded by the underlying flexbox styles. In particular, it accepts flex and sizing props
  * as raw numbers rather than strings.
  */
-export function getLayoutProps(props: PlainObject): LayoutProps {
+export function getLayoutProps(props: HoistProps): LayoutProps {
     // Harvest all keys of interest
-    const ret: LayoutProps = pick(props, allKeys);
+    const ret: LayoutProps = pick(props, allKeys) as LayoutProps;
 
     // flexXXX: convert raw number to string
     const flexConfig = pick(ret, flexKeys);
@@ -101,7 +101,7 @@ const dimKeys = [
 ];
 const flexKeys = ['flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap'];
 const alignKeys = ['alignItems', 'alignSelf', 'alignContent', 'justifyContent'];
-const overflowKeys = ['overflow', 'overflowX', 'overflowY'];
+const overflowKeys = ['overflow', 'overflowX', 'overflowY', 'textOverflow'];
 const otherKeys = ['top', 'left', 'position', 'display'];
 const allKeys = [...dimKeys, ...flexKeys, ...alignKeys, ...overflowKeys, ...otherKeys];
 

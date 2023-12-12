@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {forOwn, has, isFunction} from 'lodash';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
+import {forOwn, has, isFunction} from 'lodash';
 import {DefaultHoistProps, HoistBase, managed, PlainObject} from '../';
-import {ModelSelector} from './';
-import {LoadSupport, LoadSpec, Loadable} from '../load';
-import {observable, action, makeObservable} from '@xh/hoist/mobx';
 import {instanceManager} from '../impl/InstanceManager';
+import {Loadable, LoadSpec, LoadSupport} from '../load';
+import {ModelSelector} from './';
 
 /**
  * Core superclass for stateful Models in Hoist. Models are used throughout the toolkit and
@@ -69,7 +69,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     @observable
     _componentProps = {};
     _modelLookup = null;
-    _created = Date.now;
+    _created = Date.now();
 
     constructor() {
         super();

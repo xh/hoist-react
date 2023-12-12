@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {hoistCmp} from '@xh/hoist/core';
@@ -32,13 +32,19 @@ export const dashCanvasContextMenu = hoistCmp.factory({
 //---------------------------
 function createMenuItems({dashCanvasModel, position}) {
     const addMenuItems = createViewMenuItems({dashCanvasModel, position}),
-        {extraMenuItems, contentLocked} = dashCanvasModel;
+        {extraMenuItems, contentLocked, refreshContextModel} = dashCanvasModel;
     return [
         {
             text: 'Add',
             icon: Icon.add(),
             hidden: contentLocked || isEmpty(addMenuItems),
             items: addMenuItems
+        },
+        {
+            text: 'Refresh',
+            icon: Icon.refresh(),
+            hidden: !refreshContextModel.refreshTargets.length,
+            actionFn: () => refreshContextModel.refreshAsync()
         },
         '-',
         ...(extraMenuItems ?? [])

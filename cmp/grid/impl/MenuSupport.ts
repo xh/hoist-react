@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
@@ -12,7 +12,7 @@ import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import copy from 'clipboard-copy';
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
 import {isValidElement} from 'react';
-import {renderToStaticMarkup} from 'react-dom/server';
+import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 import {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
 
 import type {GetContextMenuItemsParams, MenuItemDef} from '@xh/hoist/kit/ag-grid';

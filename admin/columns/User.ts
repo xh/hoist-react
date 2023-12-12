@@ -2,8 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {tagsRenderer} from '@xh/hoist/cmp/grid';
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 import {Icon} from '@xh/hoist/icon';
 import * as Col from '@xh/hoist/cmp/grid/columns';
@@ -35,10 +36,11 @@ export const displayName: ColumnSpec = {
 };
 
 export const roles: ColumnSpec = {
-    field: {name: 'roles', type: 'string'},
+    field: {name: 'roles', type: 'tags'},
     minWidth: 130,
     flex: true,
-    tooltip: true
+    tooltip: true,
+    renderer: tagsRenderer
 };
 
 export const impersonating: ColumnSpec = {

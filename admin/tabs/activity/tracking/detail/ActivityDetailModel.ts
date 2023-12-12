@@ -2,11 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {exportFilename} from '@xh/hoist/admin/AdminUtils';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {managed, HoistModel, XH, lookup} from '@xh/hoist/core';
+import {managed, HoistModel, lookup} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {fmtJson} from '@xh/hoist/format';
 import * as Col from '@xh/hoist/admin/columns';
@@ -34,7 +35,7 @@ export class ActivityDetailModel extends HoistModel {
             filterModel: true,
             exportOptions: {
                 columns: 'ALL',
-                filename: `${XH.appCode}-activity-detail`
+                filename: exportFilename('activity-detail')
             },
             emptyText: 'Select a group on the left to see detailed tracking logs.',
             columns: [

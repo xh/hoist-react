@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 /**
@@ -20,3 +20,8 @@ export const AppState = Object.freeze({
 
 // eslint-disable-next-line
 export type AppState = (typeof AppState)[keyof typeof AppState];
+
+export interface AppSuspendData {
+    message?: string;
+    reason: 'IDLE' | 'SERVER_FORCE' | 'APP_UPDATE';
+}

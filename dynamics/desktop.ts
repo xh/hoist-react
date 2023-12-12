@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 /**
@@ -15,19 +15,19 @@
  *
  * See the platform specific AppContainer where these implementations are actually provided.
  */
-export let tabContainerImpl = null;
-export let dockContainerImpl = null;
-export let colChooser = null;
-export let columnHeaderFilter = null;
-export let gridFilterDialog = null;
-export let storeFilterFieldImpl = null;
-export let pinPadImpl = null;
-
 export let ColChooserModel = null;
 export let ColumnHeaderFilterModel = null;
-export let useContextMenu = null;
-
 export let ModalSupportModel = null;
+export let colChooser = null;
+export let zoneMapper = null;
+export let columnHeaderFilter = null;
+export let dockContainerImpl = null;
+export let errorMessage = null;
+export let gridFilterDialog = null;
+export let pinPadImpl = null;
+export let storeFilterFieldImpl = null;
+export let tabContainerImpl = null;
+export let useContextMenu = null;
 
 /**
  * Provide implementations of functions and classes exported in this file.
@@ -35,17 +35,17 @@ export let ModalSupportModel = null;
  * Not for Application use.
  */
 export function installDesktopImpls(impls) {
-    tabContainerImpl = impls.tabContainerImpl;
-    dockContainerImpl = impls.dockContainerImpl;
-    storeFilterFieldImpl = impls.storeFilterFieldImpl;
-    pinPadImpl = impls.pinPadImpl;
-    colChooser = impls.colChooser;
-    columnHeaderFilter = impls.columnHeaderFilter;
-    gridFilterDialog = impls.gridFilterDialog;
-
     ColChooserModel = impls.ColChooserModel;
     ColumnHeaderFilterModel = impls.ColumnHeaderFilterModel;
-    useContextMenu = impls.useContextMenu;
-
     ModalSupportModel = impls.ModalSupportModel;
+    colChooser = impls.colChooser;
+    zoneMapper = impls.zoneMapper;
+    columnHeaderFilter = impls.columnHeaderFilter;
+    dockContainerImpl = impls.dockContainerImpl;
+    errorMessage = impls.errorMessage;
+    gridFilterDialog = impls.gridFilterDialog;
+    pinPadImpl = impls.pinPadImpl;
+    storeFilterFieldImpl = impls.storeFilterFieldImpl;
+    tabContainerImpl = impls.tabContainerImpl;
+    useContextMenu = impls.useContextMenu;
 }

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {checkbox, CheckboxProps} from '@xh/hoist/desktop/cmp/input';
@@ -12,6 +12,7 @@ import {useImperativeHandle} from 'react';
 import {EditorProps} from './EditorProps';
 import './Editors.scss';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
+import {logWarn} from '@xh/hoist/utils/js';
 
 export interface BooleanEditorProps extends EditorProps<CheckboxProps> {
     /**
@@ -35,7 +36,10 @@ export const [BooleanEditor, booleanEditor] = hoistCmp.withFactory<BooleanEditor
         quickToggle = quickToggle ?? !fullRowEditing;
 
         if (quickToggle && fullRowEditing) {
-            console.warn("'quickToggle' prop ignored for GridModel with full row editing.");
+            logWarn(
+                "'quickToggle' prop ignored for GridModel with full row editing.",
+                BooleanEditor
+            );
             quickToggle = false;
         }
 

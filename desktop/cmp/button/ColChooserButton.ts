@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, vbox} from '@xh/hoist/cmp/layout';
@@ -12,7 +12,7 @@ import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColCho
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
-import {stopPropagation, withDefault} from '@xh/hoist/utils/js';
+import {logError, stopPropagation, withDefault} from '@xh/hoist/utils/js';
 import {button, ButtonProps} from './Button';
 
 export interface ColChooserButtonProps extends ButtonProps {
@@ -40,15 +40,17 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
         const colChooserModel = gridModel?.colChooserModel as ColChooserModel;
 
         if (!gridModel) {
-            console.error(
-                "No GridModel available to ColChooserButton.  Provide via a 'gridModel' prop, or context."
+            logError(
+                "No GridModel available.  Provide via a 'gridModel' prop, or context.",
+                ColChooserButton
             );
             disabled = true;
         }
 
         if (!colChooserModel) {
-            console.error(
-                'No ColChooserModel available on bound GridModel - enable via GridModel.colChooserModel config.'
+            logError(
+                'No ColChooserModel available on bound GridModel - enable via GridModel.colChooserModel config.',
+                ColChooserButton
             );
             disabled = true;
         }

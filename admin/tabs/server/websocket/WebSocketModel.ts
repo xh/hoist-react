@@ -2,18 +2,19 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
+import * as Col from '@xh/hoist/admin/columns';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {GridModel} from '@xh/hoist/cmp/grid';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {observable, makeObservable, runInAction} from '@xh/hoist/mobx';
+import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isDisplayed} from '@xh/hoist/utils/js';
-import * as Col from '@xh/hoist/admin/columns';
 import {isEmpty} from 'lodash';
 import {createRef} from 'react';
 import * as WSCol from './WebSocketColumns';
@@ -37,6 +38,7 @@ export class WebSocketModel extends HoistModel {
         this.gridModel = new GridModel({
             emptyText: 'No clients connected.',
             enableExport: true,
+            exportOptions: {filename: exportFilenameWithDate('ws-connections')},
             selModel: 'multiple',
             store: {
                 idSpec: 'key',

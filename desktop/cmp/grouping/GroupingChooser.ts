@@ -2,18 +2,19 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {box, div, filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
-import {select, MENU_PORTAL_ID} from '@xh/hoist/desktop/cmp/input';
+import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
+import {elemWithin, getTestId, TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, isEmpty, sortBy} from 'lodash';
@@ -58,6 +59,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             popoverTitle = 'Group By',
             popoverPosition = 'bottom',
             styleButtonAsInput = true,
+            testId,
             ...rest
         },
         ref
@@ -65,7 +67,10 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
         const {editorIsOpen, favoritesIsOpen, persistFavorites, value, allowEmpty} = model,
             isOpen = editorIsOpen || favoritesIsOpen,
             label = isEmpty(value) && allowEmpty ? emptyText : model.getValueLabel(value),
-            [layoutProps, buttonProps] = splitLayoutProps(rest);
+            [layoutProps, buttonProps] = splitLayoutProps(rest),
+            favoritesMenuTestId = getTestId(testId, 'favorites-menu'),
+            favoritesIconTestId = getTestId(testId, 'favorites-icon'),
+            editorTestId = getTestId(testId, 'editor');
 
         return box({
             ref,
@@ -91,23 +96,30 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                         ),
                         minimal: styleButtonAsInput,
                         ...buttonProps,
-                        onClick: () => model.showEditor()
+                        onClick: () => model.toggleEditor(),
+                        testId
                     }),
-                    favoritesIcon()
+                    favoritesIcon({testId: favoritesIconTestId})
                 ),
                 content: favoritesIsOpen
-                    ? favoritesMenu()
-                    : editor({popoverWidth, popoverMinHeight, popoverTitle, emptyText}),
+                    ? favoritesMenu({testId: favoritesMenuTestId})
+                    : editorIsOpen
+                    ? editor({
+                          popoverWidth,
+                          popoverMinHeight,
+                          popoverTitle,
+                          emptyText,
+                          testId: editorTestId
+                      })
+                    : null,
                 onInteraction: (nextOpenState, e) => {
-                    if (isOpen && nextOpenState === false) {
-                        // Prevent clicks with Select controls from closing popover
-                        const id = MENU_PORTAL_ID,
-                            selectPortal = document.getElementById(id)?.contains(e?.target),
-                            selectClick = e?.target?.classList.contains('xh-select__single-value');
-
-                        if (!selectPortal && !selectClick) {
-                            model.commitPendingValueAndClose();
-                        }
+                    if (
+                        isOpen &&
+                        nextOpenState === false &&
+                        e?.target &&
+                        !elemWithin(e.target, 'xh-grouping-chooser-button--with-favorites')
+                    ) {
+                        model.commitPendingValueAndClose();
                     }
                 }
             })
@@ -119,7 +131,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
 // Editor
 //------------------
 const editor = hoistCmp.factory<GroupingChooserModel>({
-    render({popoverWidth, popoverMinHeight, popoverTitle, emptyText}) {
+    render({popoverWidth, popoverMinHeight, popoverTitle, emptyText, testId}) {
         return panel({
             width: popoverWidth,
             minHeight: popoverMinHeight,
@@ -128,7 +140,8 @@ const editor = hoistCmp.factory<GroupingChooserModel>({
                 dimensionList({emptyText}),
                 addDimensionControl(),
                 filler()
-            ]
+            ],
+            testId
         });
     }
 });
@@ -296,13 +309,14 @@ function getDimOptions(dims, model) {
 // Favorites
 //------------------
 const favoritesIcon = hoistCmp.factory<GroupingChooserModel>({
-    render({model}) {
+    render({model, testId}) {
         if (!model.persistFavorites) return null;
         return div({
             item: Icon.favorite(),
             className: 'xh-grouping-chooser__favorite-icon',
+            [TEST_ID]: testId,
             onClick: e => {
-                model.openFavoritesMenu();
+                model.toggleFavoritesMenu();
                 e.stopPropagation();
             }
         });
@@ -310,7 +324,7 @@ const favoritesIcon = hoistCmp.factory<GroupingChooserModel>({
 });
 
 const favoritesMenu = hoistCmp.factory<GroupingChooserModel>({
-    render({model}) {
+    render({model, testId}) {
         const options = model.favoritesOptions,
             isFavorite = model.isFavorite(model.value),
             omitAdd = isEmpty(model.value) || isFavorite,
@@ -332,7 +346,10 @@ const favoritesMenu = hoistCmp.factory<GroupingChooserModel>({
             })
         );
 
-        return vbox(div({className: 'xh-popup__title', item: 'Favorites'}), menu({items}));
+        return vbox({
+            testId,
+            items: [div({className: 'xh-popup__title', item: 'Favorites'}), menu({items})]
+        });
     }
 });
 

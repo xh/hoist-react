@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
-import {XH, managed, LoadSupport, LoadSpec, Loadable} from '@xh/hoist/core';
+import {XH, managed, LoadSupport, LoadSpec, Loadable, PlainObject} from '@xh/hoist/core';
 
 import {Store, StoreConfig} from './Store';
 
@@ -45,10 +45,10 @@ export class UrlStore extends Store implements Loadable {
     get lastLoadException() {
         return this.loadSupport.lastLoadException;
     }
-    async refreshAsync(meta?: object) {
+    async refreshAsync(meta?: PlainObject) {
         return this.loadSupport.refreshAsync(meta);
     }
-    async autoRefreshAsync(meta?: object) {
+    async autoRefreshAsync(meta?: PlainObject) {
         return this.loadSupport.autoRefreshAsync(meta);
     }
     async loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>) {

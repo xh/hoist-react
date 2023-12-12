@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {Exception} from './Exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
-import {stripTags} from '@xh/hoist/utils/js';
+import {logError, logWarn, stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
 import {forOwn, has, isArray, isNil, isObject, omitBy, pick, set} from 'lodash';
 import {HoistException, PlainObject, XH} from '../';
@@ -89,12 +89,6 @@ export class ExceptionHandler {
         timeout: 10000
     };
 
-    #isUnloading = false;
-
-    constructor() {
-        window.addEventListener('unload', () => (this.#isUnloading = true));
-    }
-
     /**
      * Called by Hoist internally to handle exceptions, with built-in support for parsing certain
      * Hoist-specific exception options, displaying an appropriate error dialog to users, and
@@ -116,7 +110,7 @@ export class ExceptionHandler {
      * @param options - provides further control over how the exception is shown and/or logged.
      */
     handleException(exception: unknown, options?: ExceptionHandlerOptions) {
-        if (this.#isUnloading) return;
+        if (XH.pageState == 'terminated' || XH.pageState == 'frozen') return;
 
         const {e, opts} = this.parseArgs(exception, options);
 
@@ -156,9 +150,25 @@ export class ExceptionHandler {
      * @param options - provides further control over how the exception is shown and/or logged.
      */
     showException(exception: unknown, options?: ExceptionHandlerOptions) {
-        if (this.#isUnloading) return;
+        if (XH.pageState == 'terminated' || XH.pageState == 'frozen') return;
+
         const {e, opts} = this.parseArgs(exception, options);
         XH.appContainerModel.exceptionDialogModel.show(e, opts);
+    }
+
+    /**
+     * Show an exception in full detail, with ability to report and copy to clipboard.
+     * Intended to be used for the deferred / user-initiated showing of exceptions that have
+     * already been appropriately logged. Apps should typically prefer {@link handleException}.
+     *
+     * @param exception - thrown object, will be coerced into a {@link HoistException}.
+     * @param options - provides further control over how the exception is shown.
+     */
+    showExceptionDetails(exception: unknown, options?: ExceptionHandlerOptions) {
+        if (XH.pageState == 'terminated' || XH.pageState == 'frozen') return;
+
+        const {e, opts} = this.parseArgs(exception, options);
+        XH.appContainerModel.exceptionDialogModel.showDetails(e, opts);
     }
 
     /**
@@ -179,7 +189,7 @@ export class ExceptionHandler {
                 username = XH.getUsername();
 
             if (!username) {
-                console.warn('Error report cannot be submitted to UI server - user unknown');
+                logWarn('Error report cannot be submitted to UI server - user unknown', this);
                 return false;
             }
 
@@ -196,7 +206,7 @@ export class ExceptionHandler {
             });
             return true;
         } catch (e) {
-            console.error('Exception while submitting error report to UI server', e);
+            logError(['Exception while submitting error report to UI server', e], this);
             return false;
         }
     }
@@ -251,7 +261,7 @@ export class ExceptionHandler {
             return stripTags(JSON.stringify(ret, null, 4));
         } catch (e) {
             const message = 'Failed to serialize error';
-            console.error(message, exception, e);
+            logError([message, exception, e], this);
             return JSON.stringify({message}, null, 4);
         }
     }
@@ -335,6 +345,7 @@ export class ExceptionHandler {
     // Detect an expired server session for special messaging, but only for requests back to the
     // app's own server on a relative URL (to avoid triggering w/auth failures on remote CORS URLs).
     private sessionExpired(e: HoistException): boolean {
+        if (XH.appSpec.isSSO) return false;
         const {httpStatus, fetchOptions} = e,
             relativeRequest = !fetchOptions?.url?.startsWith('http');
 

@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {checkVersion} from '@xh/hoist/utils/js/VersionUtils';
 
 export let Highcharts = null;
 
-const MIN_VERSION = '10.3.0';
-const MAX_VERSION = '10.*.*';
+const MIN_VERSION = '11.1.0';
+const MAX_VERSION = '11.*.*';
 
 /**
  * Expose application versions of Highcharts to Hoist.

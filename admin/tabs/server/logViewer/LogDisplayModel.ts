@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
@@ -11,7 +11,7 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, isDisplayed} from '@xh/hoist/utils/js';
-import {maxBy} from 'lodash';
+import {escapeRegExp, maxBy} from 'lodash';
 import {LogViewerModel} from './LogViewerModel';
 
 /**
@@ -36,6 +36,17 @@ export class LogDisplayModel extends HoistModel {
 
     @managed
     gridModel: GridModel;
+
+    @bindable
+    @persist
+    regexOption: boolean = false;
+
+    @bindable
+    @persist
+    caseSensitive: boolean = false;
+
+    @bindable
+    logRootPath: string;
 
     get tailActive(): boolean {
         return this.tail && !this.gridModel.hasSelection;
@@ -85,7 +96,8 @@ export class LogDisplayModel extends HoistModel {
                     filename: parent.file,
                     startLine: this.startLine,
                     maxLines: this.maxLines,
-                    pattern: this.pattern
+                    pattern: this.regexOption ? this.pattern : escapeRegExp(this.pattern),
+                    caseSensitive: this.caseSensitive
                 },
                 loadSpec
             });

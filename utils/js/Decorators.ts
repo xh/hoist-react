@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
 import {debounce, isFunction} from 'lodash';
-import {throwIf, getOrCreate, warnIf} from './LangUtils';
-import {withDebug} from './LogUtils';
+import {getOrCreate, throwIf, warnIf} from './LangUtils';
+import {withDebug, withInfo} from './LogUtils';
 
 /**
  * Decorates a class method so that it is debounced by the specified duration.
@@ -53,7 +53,22 @@ export function computeOnce(target, key, descriptor) {
 }
 
 /**
- * Modify a method so that its execution is tracked and timed with a debug message.
+ * Modify a method so that its execution is tracked and timed with a log message on the console.
+ * @see withInfo
+ */
+export function logWithInfo(target, key, descriptor) {
+    const {value} = descriptor;
+    throwIf(!isFunction(value), '@logWithInfo must be applied to a class method.');
+    return {
+        ...descriptor,
+        value: function (...args) {
+            return withInfo(key, () => value.apply(this, args), this);
+        }
+    };
+}
+
+/**
+ * Modify a method so that its execution is tracked and timed with a debug message on the console.
  * @see withDebug
  */
 export function logWithDebug(target, key, descriptor) {

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
@@ -14,6 +14,7 @@ import {popover, Position} from '@xh/hoist/kit/blueprint';
 import {button} from '../../../button';
 import {panel} from '../../../panel';
 import {DashCanvasViewModel} from '../DashCanvasViewModel';
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 
 /**
  * Implementation component to show an item within a DashCanvas.  This component
@@ -46,7 +47,9 @@ export const dashCanvasView = hoistCmp.factory({
             ...headerProps,
             item: box({
                 ref: useOnResize(dims => model.onContentsResized(dims), {debounce: 100}),
-                item: elementFromContent(viewSpec.content, {flex: 1, viewModel: model}),
+                item: errorBoundary(
+                    elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
+                ),
                 flex: autoHeight ? 'none' : 'auto'
             })
         });

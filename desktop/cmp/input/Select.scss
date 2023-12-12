@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 // Host div for Select option menu portal.
@@ -67,6 +67,10 @@
       line-height: 15px;
     }
 
+    &__input-container {
+      color: var(--xh-input-text-color);
+    }
+
     &__indicators > div {
       display: flex;
       align-items: flex-end;
@@ -103,6 +107,14 @@
         .xh-select__multi-value__label {
           color: var(--xh-input-disabled-text-color);
         }
+      }
+    }
+
+    &__tooltip {
+      &__target {
+        // Required to override tooltip styling applied by Blueprint, which was breaking the
+        // react-select styles that elide overly-long values.
+        display: inherit;
       }
     }
   }

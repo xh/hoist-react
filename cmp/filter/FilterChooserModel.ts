@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {
     HoistModel,
@@ -199,7 +199,7 @@ export class FilterChooserModel extends HoistModel {
                     run: state => this.provider.write(state)
                 });
             } catch (e) {
-                console.error(e);
+                this.logError(e);
                 XH.safeDestroy(this.provider);
                 this.provider = null;
             }
@@ -251,7 +251,7 @@ export class FilterChooserModel extends HoistModel {
             }
 
             // 2) Main path - set internal value.
-            console.debug('Setting FilterChooser value:', value);
+            this.logDebug('Setting value', value);
             this.value = value;
 
             // 3) Set props on select input needed to display
@@ -292,7 +292,7 @@ export class FilterChooserModel extends HoistModel {
                 })
                 .linkTo(this.filterTask);
         } catch (e) {
-            console.error('Failed to set value on FilterChooserModel', e);
+            this.logError('Failed to set value', e);
             this.value = null;
             this.selectOptions = null;
             this.selectValue = null;
@@ -490,7 +490,7 @@ export class FilterChooserModel extends HoistModel {
         if (f === null) return true;
         if (f instanceof FieldFilter) {
             if (!this.getFieldSpec(f.field)) {
-                console.error(`Invalid Filter for FilterChooser: ${f.field}`);
+                this.logError(`Invalid FieldFilter - no fieldSpec configured for ${f.field}.`);
                 return false;
             }
             return true;
@@ -500,7 +500,7 @@ export class FilterChooserModel extends HoistModel {
             return f.filters.every(it => this.validateFilter(it));
         }
 
-        console.error('Invalid filter for FilterChooser', f);
+        this.logError('Invalid Filter - unhandled type', f);
         return false;
     }
 

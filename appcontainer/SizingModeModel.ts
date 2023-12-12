@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH, SizingMode} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
@@ -40,7 +40,7 @@ export class SizingModeModel extends HoistModel {
                 platform = this.getPlatform();
 
             if (!isPlainObject(pref)) {
-                console.warn(
+                this.logWarn(
                     `Required pref 'xhSizingMode' must be type JSON - update via Admin Console.`
                 );
                 return;
@@ -48,7 +48,7 @@ export class SizingModeModel extends HoistModel {
 
             XH.setPref('xhSizingMode', {...pref, [platform]: sizingMode});
         } else {
-            console.warn(`Missing required JSON pref 'xhSizingMode' - add via Admin Console.`);
+            this.logWarn(`Missing required JSON pref 'xhSizingMode' - add via Admin Console.`);
         }
     }
 

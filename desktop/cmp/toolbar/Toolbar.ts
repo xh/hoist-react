@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, BoxProps, HoistProps} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -65,6 +65,7 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps>({
             enableOverflowMenu = false,
             collapseFrom = 'end',
             minVisibleItems,
+            testId,
             ...rest
         },
         ref
@@ -83,6 +84,7 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps>({
 
         return container({
             ref,
+            testId,
             ...rest,
             className: classNames(
                 className,

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 
 import {HoistService} from '@xh/hoist/core';
@@ -60,24 +60,21 @@ export class GridAutosizeService extends HoistService {
             );
 
         if (!requiredWidths) {
-            console.debug('Autosize aborted, grid data is obsolete.');
+            this.logDebug('Autosize aborted, grid data is obsolete.');
             return;
         }
 
         runInAction(() => {
             // 4) Set columns to their required widths.
             gridModel.applyColumnStateChanges(requiredWidths);
-            console.debug(
-                `Column widths autosized via GridAutosizeService (${records.length} records)`,
-                requiredWidths
-            );
+            this.logDebug(`Auto-sized columns`, `${records.length} records`, requiredWidths);
 
             // 5) Grow columns to fill any remaining space, if enabled.
             const {fillMode} = options;
             if (fillMode && fillMode !== 'none') {
                 const fillWidths = this.calcFillWidths(gridModel, colIds, fillMode);
                 gridModel.applyColumnStateChanges(fillWidths);
-                console.debug('Column widths filled via GridAutosizeService', fillWidths);
+                this.logDebug('Auto-sized columns using fillMode', fillWidths);
             }
         });
     }
@@ -170,7 +167,7 @@ export class GridAutosizeService extends HoistService {
             available = agApi?.gridPanel?.eBodyViewport?.clientWidth;
 
         if (!agApi || !isFinite(available)) {
-            console.warn('Grid not rendered - unable to fill columns.');
+            this.logWarn('Grid not rendered - unable to fill columns.');
             return [];
         }
 

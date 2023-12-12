@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {HoistService, TrackOptions, XH} from '@xh/hoist/core';
 import {isOmitted} from '@xh/hoist/utils/impl';
@@ -26,7 +26,8 @@ export class TrackService extends HoistService {
             maxRows: {
                 default: 10000,
                 options: [1000, 5000, 10000, 25000]
-            }
+            },
+            logData: false
         });
     }
 
@@ -44,19 +45,13 @@ export class TrackService extends HoistService {
 
         // Short-circuit if disabled...
         if (!this.enabled) {
-            console.debug(
-                '[TrackService] | Activity tracking disabled - activity will not be tracked.',
-                options
-            );
+            this.logDebug('Activity tracking disabled - activity will not be tracked.', options);
             return;
         }
 
         // ...or invalid request (with warning for developer)...
         if (!options.message) {
-            console.warn(
-                '[TrackService] | Required message not provided - activity will not be tracked.',
-                options
-            );
+            this.logWarn('Required message not provided - activity will not be tracked.', options);
             return;
         }
 
@@ -90,29 +85,29 @@ export class TrackService extends HoistService {
 
             if (options.category) params.category = options.category;
             if (options.data) params.data = JSON.stringify(options.data);
+            if (options.severity) params.severity = options.severity;
+            if (options.logData !== undefined) params.logData = options.logData.toString();
+            if (options.elapsed !== undefined) params.elapsed = options.elapsed;
 
             const {maxDataLength} = this.conf;
             if (params.data?.length > maxDataLength) {
-                console.warn(
-                    `[TrackService] | Track log includes ${params.data.length} chars of JSON data | exceeds limit of ${maxDataLength} | data will not be persisted`,
+                this.logWarn(
+                    `Track log includes ${params.data.length} chars of JSON data`,
+                    `exceeds limit of ${maxDataLength}`,
+                    'data will not be persisted',
                     options.data
                 );
                 params.data = null;
             }
 
-            if (options.elapsed !== undefined) params.elapsed = options.elapsed;
-            if (options.severity) params.severity = options.severity;
-
             const elapsedStr = params.elapsed != null ? `${params.elapsed}ms` : null,
-                consoleMsg = ['[Track]', params.category, params.msg, elapsedStr]
-                    .filter(it => it != null)
-                    .join(' | ');
+                consoleMsgs = [params.category, params.msg, elapsedStr].filter(it => it != null);
 
-            console.log(consoleMsg);
+            this.logInfo(...consoleMsgs);
 
             await XH.fetchJson({url: 'xh/track', params});
         } catch (e) {
-            console.error(`[TrackService] | Failed to persist track log`, options, e);
+            this.logError('Failed to persist track log', options, e);
         }
     }
 }

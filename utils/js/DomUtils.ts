@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2022 Extremely Heavy Industries Inc.
+ * Copyright © 2023 Extremely Heavy Industries Inc.
  */
 import {debounce as lodashDebounce, isFinite} from 'lodash';
 import ResizeObserver from 'resize-observer-polyfill';
@@ -89,6 +89,16 @@ export function observeVisibleChange(fn: (visible: boolean) => any, node: Elemen
     });
     ret.observe(node);
     return ret;
+}
+
+/**
+ * Determines whether an element has an ancestor with a specific class name
+ */
+export function elemWithin(target: HTMLElement, className: string): boolean {
+    for (let elem = target; elem; elem = elem.parentElement) {
+        if (elem.classList.contains(className)) return true;
+    }
+    return false;
 }
 
 /**
