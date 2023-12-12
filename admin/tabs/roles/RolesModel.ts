@@ -37,7 +37,7 @@ export class RolesModel extends HoistModel {
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         try {
-            const {data} = await XH.fetchJson({url: 'rolesAdmin/read'});
+            const {data} = await XH.fetchJson({url: 'roleAdmin/read'});
             if (loadSpec.isStale) return;
             this.setRoles(data);
             this.gridModel.loadData(data);
@@ -138,7 +138,7 @@ export class RolesModel extends HoistModel {
             if (!confirm) return;
         }
         return XH.fetchJson({
-            url: `rolesAdmin/delete/${role.name}`,
+            url: `roleAdmin/delete/${role.name}`,
             method: 'DELETE'
         })
             .then(() => this.refreshAsync())

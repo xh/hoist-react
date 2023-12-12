@@ -46,8 +46,8 @@ export class RoleEditorModel extends HoistModel {
             const method = this.role ? 'update' : 'create',
                 {data} = await XH.fetchService
                     .postJson({
-                        body: {data: this.roleFormModel.getData()},
-                        url: `rolesAdmin/${method}`
+                        body: this.roleFormModel.getData(),
+                        url: `roleAdmin/${method}`
                     })
                     .linkTo(this.savingTask);
 

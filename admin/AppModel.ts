@@ -120,8 +120,6 @@ export class AppModel extends HoistAppModel {
     }
 
     createTabs(): TabConfig[] {
-        const showRoles = XH.getConf('xhRoleManagerConfig').enabled;
-
         return [
             {
                 id: 'general',
@@ -152,7 +150,7 @@ export class AppModel extends HoistAppModel {
                 id: 'roles',
                 icon: Icon.roles(),
                 content: roles,
-                omit: !showRoles
+                omit: !XH.getConf('xhRoleServiceConfig').enabled
             }
         ];
     }
