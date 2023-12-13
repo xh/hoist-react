@@ -1,4 +1,5 @@
 import {RoleFormModel} from '@xh/hoist/admin/tabs/roles/editor/form/RoleFormModel';
+import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
 import {HoistModel, HoistRole, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
@@ -6,7 +7,10 @@ import {omit} from 'lodash';
 import {action, computed, observable} from 'mobx';
 
 export class RoleEditorModel extends HoistModel {
+    readonly rolesModel: RolesModel;
     readonly savingTask = TaskObserver.trackLast({message: 'Saving Role'});
+    readonly deletingTask = TaskObserver.trackLast({message: 'Deleting Role'});
+
     @managed readonly roleFormModel = new RoleFormModel();
 
     @observable isOpen = false;
@@ -20,9 +24,10 @@ export class RoleEditorModel extends HoistModel {
         return !this.roleFormModel.isDirty || !this.roleFormModel.isValid;
     }
 
-    constructor() {
+    constructor(rolesModel: RolesModel) {
         super();
         makeObservable(this);
+        this.rolesModel = rolesModel;
     }
 
     loadRoles(roles: HoistRole[]) {
@@ -56,6 +61,14 @@ export class RoleEditorModel extends HoistModel {
         } catch (e) {
             XH.handleException(e);
         }
+    }
+
+    async deleteAsync(): Promise<void> {
+        return this.rolesModel
+            .deleteAsync(this.role)
+            .linkTo(this.deletingTask)
+            .thenAction(successful => successful && this.close())
+            .catchDefault();
     }
 
     cancel() {

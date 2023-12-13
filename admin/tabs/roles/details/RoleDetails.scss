@@ -1,0 +1,23 @@
+.xh-admin-role-details {
+  &__form {
+    overflow-y: auto;
+
+    .xh-form-field {
+      margin: 0;
+      padding: 2px var(--xh-pad-px);
+
+      &.xh-form-field-readonly .xh-form-field-readonly-display {
+        padding: var(--xh-pad-half-px);
+      }
+
+      &:nth-child(odd) {
+        background-color: var(--xh-grid-bg-odd);
+      }
+    }
+
+    .xh-form-field-label {
+      font-size: var(--xh-font-size-small-px);
+      padding: 0;
+    }
+  }
+}

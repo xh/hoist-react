@@ -1,4 +1,8 @@
-.role-form {
+.xh-admin-role-form {
+  &__fields {
+    padding: var(--xh-pad-px);
+  }
+
   &__assignments {
     &__panel {
       flex: 1 0 !important;

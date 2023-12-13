@@ -22,7 +22,7 @@ export class RolesModel extends HoistModel {
 
     @managed readonly gridModel: GridModel = this.createGridModel();
     @managed readonly filterChooserModel: FilterChooserModel = this.createFilterChooserModel();
-    @managed readonly roleEditorModel = new RoleEditorModel();
+    @managed readonly roleEditorModel = new RoleEditorModel(this);
 
     @observable.ref allRoles: HoistRole[] = [];
     @observable.ref selectedRole?: HoistRole;
@@ -95,24 +95,7 @@ export class RolesModel extends HoistModel {
         };
     }
 
-    // -------------------------------
-    // Implementation
-    // -------------------------------
-
-    private async createAsync(roleSpec?: HoistRole): Promise<void> {
-        const addedRole = await this.roleEditorModel.createAsync(roleSpec);
-        if (!addedRole) return;
-        await this.refreshAsync();
-        await this.gridModel.selectAsync(addedRole.name);
-    }
-
-    private async editAsync(role: HoistRole): Promise<void> {
-        const updatedRole = await this.roleEditorModel.editAsync(role);
-        if (!updatedRole) return;
-        await this.refreshAsync();
-    }
-
-    private async deleteAsync(role: HoistRole): Promise<void> {
+    async deleteAsync(role: HoistRole): Promise<boolean> {
         const {effectiveUsers, effectiveDirectoryGroups, effectiveRoles} = role,
             userCount = effectiveUsers.length,
             groupCount = effectiveDirectoryGroups.length,
@@ -135,15 +118,31 @@ export class RolesModel extends HoistModel {
                 ),
                 confirmProps: {intent: 'danger', text: 'Confirm Delete'}
             });
-            if (!confirm) return;
+            if (!confirm) return false;
         }
-        return XH.fetchJson({
+        await XH.fetchJson({
             url: `roleAdmin/delete/${role.name}`,
             method: 'DELETE'
-        })
-            .then(() => this.refreshAsync())
-            .catchDefault()
-            .linkTo(this.loadModel);
+        });
+        this.refreshAsync();
+        return true;
+    }
+
+    // -------------------------------
+    // Implementation
+    // -------------------------------
+
+    private async createAsync(roleSpec?: HoistRole): Promise<void> {
+        const addedRole = await this.roleEditorModel.createAsync(roleSpec);
+        if (!addedRole) return;
+        await this.refreshAsync();
+        await this.gridModel.selectAsync(addedRole.name);
+    }
+
+    private async editAsync(role: HoistRole): Promise<void> {
+        const updatedRole = await this.roleEditorModel.editAsync(role);
+        if (!updatedRole) return;
+        await this.refreshAsync();
     }
 
     private createGridModel(): GridModel {
@@ -213,13 +212,6 @@ export class RolesModel extends HoistModel {
                 actionFn: () => this.createAsync()
             },
             {
-                text: 'Duplicate',
-                icon: Icon.copy(),
-                intent: 'success',
-                actionFn: ({record}) => this.createAsync(record.data as HoistRole),
-                recordsRequired: true
-            },
-            {
                 text: 'Edit',
                 icon: Icon.edit(),
                 intent: 'primary',
@@ -227,10 +219,19 @@ export class RolesModel extends HoistModel {
                 recordsRequired: true
             },
             {
+                text: 'Clone',
+                icon: Icon.copy(),
+                actionFn: ({record}) => this.createAsync(record.data as HoistRole),
+                recordsRequired: true
+            },
+            {
                 text: 'Delete',
                 icon: Icon.delete(),
                 intent: 'danger',
-                actionFn: ({record}) => this.deleteAsync(record.data as HoistRole),
+                actionFn: ({record}) =>
+                    this.deleteAsync(record.data as HoistRole)
+                        .catchDefault()
+                        .linkTo(this.loadModel),
                 recordsRequired: true
             }
         ];

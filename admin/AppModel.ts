@@ -149,8 +149,7 @@ export class AppModel extends HoistAppModel {
             {
                 id: 'roles',
                 icon: Icon.roles(),
-                content: roles,
-                omit: !XH.getConf('xhRoleServiceConfig').enabled
+                content: roles
             }
         ];
     }

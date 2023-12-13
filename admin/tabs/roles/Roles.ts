@@ -1,10 +1,11 @@
 import {roleEditor} from '@xh/hoist/admin/tabs/roles/editor/RoleEditor';
 import {roleGraph} from '@xh/hoist/admin/tabs/roles/graph/RoleGraph';
-import {roleMembers} from '@xh/hoist/admin/tabs/roles/members/RoleMembers';
+import {roleDetails} from '@xh/hoist/admin/tabs/roles/details/RoleDetails';
 import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
-import {creates, hoistCmp} from '@xh/hoist/core';
+import {creates, hoistCmp, XH} from '@xh/hoist/core';
+import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -16,6 +17,12 @@ export const roles = hoistCmp.factory({
     displayName: 'Roles',
     model: creates(RolesModel),
     render({className, model}) {
+        if (!XH.getConf('xhRoleServiceConfig').enabled) {
+            return errorMessage({
+                error: 'Role Service disabled via xhRoleServiceConfig.'
+            });
+        }
+
         const {gridModel} = model;
         return fragment(
             panel({
@@ -49,10 +56,11 @@ const detailsPanel = hoistCmp.factory<RolesModel>(({model}) =>
     panel({
         icon: Icon.idBadge(),
         title: model.selectedRole?.name ?? 'Role Details',
-        item: roleMembers(),
+        item: roleDetails(),
         compactHeader: true,
         modelConfig: {
             defaultSize: '50%',
+            modalSupport: true,
             persistWith: {...RolesModel.PERSIST_WITH, path: 'detailsPanel'},
             side: 'right'
         }

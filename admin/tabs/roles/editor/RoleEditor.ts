@@ -9,7 +9,7 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 import './RoleEditor.scss';
 
 export const roleEditor = hoistCmp.factory({
-    className: 'role-editor',
+    className: 'xh-admin-role-editor',
     displayName: 'RoleEditor',
     model: uses(RoleEditorModel),
     render({className, model}) {
@@ -26,14 +26,21 @@ export const roleEditor = hoistCmp.factory({
                 item: roleForm(),
                 mask: savingTask,
                 bbar: [
+                    button({
+                        onClick: () => model.deleteAsync(),
+                        icon: Icon.delete(),
+                        intent: 'danger',
+                        text: 'Delete',
+                        disabled: !role
+                    }),
                     filler(),
                     button({
                         onClick: () => model.cancel(),
-                        intent: 'danger',
                         text: 'Cancel'
                     }),
                     button({
                         onClick: () => model.saveAsync(),
+                        icon: Icon.check(),
                         intent: 'success',
                         text: 'Save',
                         disabled: saveDisabled

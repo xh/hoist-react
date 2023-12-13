@@ -1,8 +1,9 @@
 import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {HoistModel, HoistRole, lookup, managed} from '@xh/hoist/core';
+import {wait} from '@xh/hoist/promise';
 import classNames from 'classnames';
-import {isEmpty} from 'lodash';
+import {compact, isEmpty} from 'lodash';
 
 export class RoleGraphModel extends HoistModel {
     @lookup(RolesModel) readonly rolesModel: RolesModel;
@@ -12,25 +13,27 @@ export class RoleGraphModel extends HoistModel {
         const {chartModel, rolesModel} = this;
         this.addReaction({
             track: () => [rolesModel.selectedRole, rolesModel.allRoles],
-            run: ([selectedRole, allRoles]: [HoistRole, HoistRole[]]) => {
-                if (!selectedRole && isEmpty(allRoles)) {
-                    chartModel.clear();
-                    return;
-                }
+            run: async ([selectedRole, allRoles]: [HoistRole, HoistRole[]]) => {
+                // We need to clear the chart first to avoid stuck stale tooltips
+                chartModel.clear();
+                await wait();
+                if (!selectedRole && isEmpty(allRoles)) return;
 
                 const relatedRoles = this.getRelatedRoles(selectedRole);
 
                 chartModel.setSeries({
                     type: 'organization',
-                    data: allRoles.flatMap(role => this.getSeriesData(role)),
+                    data: selectedRole
+                        ? this.getSeriesData(selectedRole)
+                        : allRoles.flatMap(role => this.getSeriesData(role)),
                     nodes: allRoles.map(role => {
-                        const {name} = role;
+                        const {category, name} = role;
                         return {
                             id: name,
                             name,
+                            category,
                             color: this.getNodeColor(role, relatedRoles, selectedRole?.name),
                             dataLabels: {
-                                borderColor: 'red',
                                 className: classNames(
                                     'role-node',
                                     selectedRole &&
@@ -115,7 +118,11 @@ export class RoleGraphModel extends HoistModel {
                     }
                 },
                 tooltip: {
-                    enabled: false
+                    formatter: function () {
+                        const {category, isNode, name} = this.point;
+                        return !!isNode && compact([`<b>${name}</b>`, category]).join('<br/>');
+                    },
+                    outside: true
                 }
             }
         });

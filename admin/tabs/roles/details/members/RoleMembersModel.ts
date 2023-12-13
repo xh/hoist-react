@@ -1,4 +1,5 @@
-import {RoleMembersTabProps} from './RoleMembersTab';
+import {RoleDetailsModel} from '@xh/hoist/admin/tabs/roles/details/RoleDetailsModel';
+import {RoleMembersTabProps} from './RoleMembers';
 import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
@@ -8,7 +9,7 @@ import {Icon} from '@xh/hoist/icon';
 import {tag} from '@xh/hoist/kit/blueprint';
 import {bindable} from '@xh/hoist/mobx';
 
-export class RoleMembersTabModel extends HoistModel {
+export class RoleMembersModel extends HoistModel {
     static readonly types = {
         USER: '1-user',
         DIRECTORY_GROUP: '2-directory-group',
@@ -16,16 +17,36 @@ export class RoleMembersTabModel extends HoistModel {
     };
 
     @lookup(() => RolesModel) readonly rolesModel: RolesModel;
+    @lookup(() => RoleDetailsModel) readonly roleDetailsModel: RoleDetailsModel;
+
     @managed gridModel: GridModel;
 
     @bindable showInherited = true;
 
     get props(): RoleMembersTabProps {
-        return super.componentProps as RoleMembersTabProps;
+        return this.componentProps as RoleMembersTabProps;
     }
 
     get selectedRole(): HoistRole {
         return this.rolesModel.selectedRole;
+    }
+
+    get directMemberCount(): number {
+        return this.selectedRole?.members.length;
+    }
+
+    get effectiveMemberCount(): number {
+        if (!this.selectedRole) return null;
+        const {effectiveUsers, effectiveDirectoryGroups, effectiveRoles} = this.selectedRole;
+        return effectiveUsers.length + effectiveDirectoryGroups.length + effectiveRoles.length;
+    }
+
+    get activeTabId(): string {
+        return this.roleDetailsModel.tabContainerModel.activeTabId;
+    }
+
+    setActiveTabId(id: string) {
+        this.roleDetailsModel.tabContainerModel.activateTab(id);
     }
 
     override onLinked() {
@@ -49,50 +70,44 @@ export class RoleMembersTabModel extends HoistModel {
         }
 
         if (this.props.showEffective) {
-            const {name} = role;
-
             this.gridModel.loadData([
                 // 1 - Users
                 ...role.effectiveUsers.map(it => ({
                     name: it.name,
                     roles: this.sortThisRoleFirst(it.sourceRoles),
-                    isInherited: !it.sourceRoles.includes(name),
-                    type: RoleMembersTabModel.types.USER
+                    type: RoleMembersModel.types.USER
                 })),
 
                 // 2 - Directory Groups
                 ...role.effectiveDirectoryGroups.map(it => ({
                     name: it.name,
                     roles: this.sortThisRoleFirst(it.sourceRoles),
-                    isInherited: !it.sourceRoles.includes(name),
-                    type: RoleMembersTabModel.types.DIRECTORY_GROUP
+                    type: RoleMembersModel.types.DIRECTORY_GROUP
                 })),
 
                 // 3 - Roles
                 ...role.effectiveRoles.map(it => ({
                     name: it.name,
                     roles: this.sortThisRoleFirst(it.sourceRoles),
-                    isInherited: !it.sourceRoles.includes(name),
-                    type: RoleMembersTabModel.types.ROLE
+                    type: RoleMembersModel.types.ROLE
                 }))
             ]);
         } else {
             this.gridModel.loadData(
-                role.members.map(it => ({...it, type: RoleMembersTabModel.types[it.type]}))
+                role.members.map(it => ({...it, type: RoleMembersModel.types[it.type]}))
             );
         }
     }
 
     private createGridModel(): GridModel {
-        const {types} = RoleMembersTabModel,
+        const {types} = RoleMembersModel,
             {showEffective} = this.props;
         return new GridModel({
             store: {
                 fields: [
                     {name: 'name', type: 'string'},
                     {name: 'type', type: 'string'},
-                    {name: 'roles', displayName: 'Assigned Via', type: 'tags'},
-                    {name: 'isInherited', type: 'bool'}
+                    {name: 'roles', displayName: 'Assigned Via', type: 'tags'}
                 ],
                 idSpec: data => `${this.selectedRole.name}:${data.type}:${data.name}`
             },

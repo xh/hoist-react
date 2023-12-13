@@ -114,16 +114,13 @@ export class RoleFormModel extends HoistModel {
 
     private createGridModel(entity: 'users' | 'groups' | 'roles'): GridModel {
         return new GridModel({
+            hideHeaders: true,
             selModel: 'multiple',
+            sortBy: 'name',
             store: {
                 idSpec: XH.genId
             },
             columns: [
-                {
-                    ...actionCol,
-                    width: calcActionColWidth(1),
-                    actions: [this.createRemoveAssignmentAction()]
-                },
                 {
                     field: {name: 'name', rules: [required]},
                     flex: 1,
@@ -144,6 +141,11 @@ export class RoleFormModel extends HoistModel {
                             }
                         });
                     }
+                },
+                {
+                    ...actionCol,
+                    width: calcActionColWidth(1),
+                    actions: [this.createRemoveAssignmentAction()]
                 }
             ],
             contextMenu: [...this.ACTIONS, '-', ...GridModel.defaultContextMenu]

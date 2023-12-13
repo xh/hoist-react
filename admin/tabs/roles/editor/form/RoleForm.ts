@@ -13,7 +13,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 
 export const roleForm = hoistCmp.factory({
-    className: 'role-form',
+    className: 'xh-admin-role-form',
     displayName: 'RoleForm',
     model: uses(RoleFormModel),
     render({className, model}) {
@@ -21,6 +21,7 @@ export const roleForm = hoistCmp.factory({
             className,
             items: [
                 vbox({
+                    className: `${className}__fields`,
                     item: form({
                         fieldDefaults: {
                             commitOnChange: true,
@@ -45,7 +46,7 @@ export const roleForm = hoistCmp.factory({
                             ),
                             formField({
                                 field: 'notes',
-                                item: textArea()
+                                item: textArea({height: 100})
                             })
                         ]
                     })
@@ -58,7 +59,7 @@ export const roleForm = hoistCmp.factory({
 
 const assignments = hoistCmp.factory(() =>
     hframe({
-        className: `role-form__assignments`,
+        className: `xh-admin-role-form__assignments`,
         items: [
             assignmentsPanel({entity: 'Users'}),
             assignmentsPanel({entity: 'Directory Groups'}),
@@ -72,7 +73,7 @@ interface AssignmentsPanelProps extends HoistProps<RoleFormModel> {
 }
 
 const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
-    className: 'role-form__assignments__panel',
+    className: 'xh-admin-role-form__assignments__panel',
     displayName: 'AssignmentsPanel',
     model: uses(() => RoleFormModel),
     render({className, entity, model}) {

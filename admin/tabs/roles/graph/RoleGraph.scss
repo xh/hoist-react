@@ -1,4 +1,4 @@
-.role-graph {
+.xh-admin-role-graph {
   --xh-selected-role-color: var(--xh-bg-highlight);
   --xh-related-role-color: var(--xh-bg-alt);
   --xh-unrelated-role-color: var(--xh-bg);
@@ -12,6 +12,13 @@
 
     &--muted {
       opacity: 0.4 !important;
+    }
+
+    h4 {
+      font-weight: normal;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 }
