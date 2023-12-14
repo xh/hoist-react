@@ -1,15 +1,16 @@
 import {RoleEditorModel} from '@xh/hoist/admin/tabs/roles/editor/RoleEditorModel';
+import {HoistRole} from '@xh/hoist/admin/tabs/roles/HoistRole';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {div, li, ul} from '@xh/hoist/cmp/layout';
-import {HoistModel, HoistRole, LoadSpec, managed, persist, ReactionSpec, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, persist, ReactionSpec, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {compact, max} from 'lodash';
+import {compact, groupBy, mapValues} from 'lodash';
 import {action, observable} from 'mobx';
 import moment from 'moment/moment';
 
@@ -25,28 +26,28 @@ export class RolesModel extends HoistModel {
     @managed readonly roleEditorModel = new RoleEditorModel(this);
 
     @observable.ref allRoles: HoistRole[] = [];
-    @observable.ref selectedRole?: HoistRole;
 
     @bindable @persist groupByCategory = true;
+
+    get selectedRole(): HoistRole {
+        return this.gridModel.selectedRecord?.data as HoistRole;
+    }
 
     constructor() {
         super();
         makeObservable(this);
-        this.addReaction(this.selectedRoleReaction(), this.groupByCategoryReaction());
+        this.addReaction(this.groupByCategoryReaction());
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         try {
-            const {data} = await XH.fetchJson({url: 'roleAdmin/read'});
+            const {data} = await XH.fetchJson({loadSpec, url: 'roleAdmin/list'});
             if (loadSpec.isStale) return;
-            this.setRoles(data);
-            this.gridModel.loadData(data);
-            this.roleEditorModel.loadRoles(data);
+            this.setRoles(this.processRolesFromServer(data));
         } catch (e) {
             if (loadSpec.isStale) return;
             XH.handleException(e);
-            this.gridModel.clear();
-            this.roleEditorModel.loadRoles([]);
+            this.clear();
         }
     }
 
@@ -56,31 +57,19 @@ export class RolesModel extends HoistModel {
 
     @action
     setRoles(roles: HoistRole[]) {
-        // Avoid unnecessary re-renders caused by mutating observable when data is unchanged.
-        if (
-            roles.length !== this.allRoles.length ||
-            max(roles.map(it => it.lastUpdated)) > max(this.allRoles.map(it => it.lastUpdated))
-        ) {
-            this.allRoles = roles;
-        }
+        this.allRoles = roles;
+        this.gridModel.loadData(roles);
+    }
+
+    @action
+    clear() {
+        this.allRoles = [];
+        this.gridModel.clear();
     }
 
     // -------------------------------
     // Reactions
     // -------------------------------
-
-    private selectedRoleReaction(): ReactionSpec<string> {
-        const {gridModel} = this;
-        return {
-            track: () => {
-                const {selectedRecord} = gridModel;
-                if (!selectedRecord) return null;
-                // Only fire when record has been modified or selection has changed
-                return [selectedRecord.id, selectedRecord.get('lastUpdated')].join('::');
-            },
-            run: () => (this.selectedRole = gridModel.selectedRecord?.data as HoistRole)
-        };
-    }
 
     private groupByCategoryReaction(): ReactionSpec<boolean> {
         const {gridModel} = this;
@@ -132,6 +121,22 @@ export class RolesModel extends HoistModel {
     // Implementation
     // -------------------------------
 
+    private processRolesFromServer(
+        roles: Omit<HoistRole, 'users' | 'directoryGroups' | 'roles'>[]
+    ): HoistRole[] {
+        return roles.map(role => {
+            const membersByType = mapValues(groupBy(role.members, 'type'), members =>
+                members.map(member => member.name)
+            );
+            return {
+                ...role,
+                users: membersByType['USER'] ?? [],
+                directoryGroups: membersByType['DIRECTORY_GROUP'] ?? [],
+                roles: membersByType['ROLE'] ?? []
+            };
+        });
+    }
+
     private async createAsync(roleSpec?: HoistRole): Promise<void> {
         const addedRole = await this.roleEditorModel.createAsync(roleSpec);
         if (!addedRole) return;
@@ -148,7 +153,7 @@ export class RolesModel extends HoistModel {
     private createGridModel(): GridModel {
         return new GridModel({
             autosizeOptions: {mode: 'managed'},
-            emptyText: 'No roles found...',
+            emptyText: 'No roles found.',
             colChooserModel: true,
             sortBy: 'name|asc',
             enableExport: true,

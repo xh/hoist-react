@@ -27,34 +27,6 @@ export interface HoistUser {
     hasGate(s: string): boolean;
 }
 
-export interface HoistRole {
-    name: string;
-    category: string;
-    notes: string;
-    users: string[];
-    directoryGroups: string[];
-    roles: string[];
-    inheritedRoles: EffectiveRoleMember[];
-    effectiveUsers: EffectiveRoleMember[];
-    effectiveDirectoryGroups: EffectiveRoleMember[];
-    effectiveRoles: EffectiveRoleMember[];
-    lastUpdated: Date;
-    lastUpdatedBy: string;
-    members: HoistRoleMember[];
-}
-
-export interface HoistRoleMember {
-    type: 'USER' | 'DIRECTORY_GROUP' | 'ROLE';
-    name: string;
-    dateCreated: Date;
-    createdBy: string;
-}
-
-export interface EffectiveRoleMember {
-    name: string;
-    sourceRoles: string[];
-}
-
 /**
  * Enhanced Response returned by FetchService.
  */

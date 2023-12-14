@@ -1,16 +1,19 @@
 import {RoleDetailsModel} from '@xh/hoist/admin/tabs/roles/details/RoleDetailsModel';
+import {HoistRole, RoleMemberType} from '@xh/hoist/admin/tabs/roles/HoistRole';
+import {sortBy, uniqBy} from 'lodash';
+import {computed} from 'mobx';
 import {RoleMembersTabProps} from './RoleMembers';
 import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {hbox, hframe} from '@xh/hoist/cmp/layout';
-import {HoistModel, HoistRole, lookup, managed} from '@xh/hoist/core';
+import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {tag} from '@xh/hoist/kit/blueprint';
 import {bindable} from '@xh/hoist/mobx';
 
 export class RoleMembersModel extends HoistModel {
-    static readonly types = {
+    static readonly types: Record<RoleMemberType, string> = {
         USER: '1-user',
         DIRECTORY_GROUP: '2-directory-group',
         ROLE: '3-role'
@@ -31,14 +34,26 @@ export class RoleMembersModel extends HoistModel {
         return this.rolesModel.selectedRole;
     }
 
-    get directMemberCount(): number {
-        return this.selectedRole?.members.length;
+    @computed
+    get directCounts(): Record<RoleMemberType, number> {
+        if (!this.selectedRole) return null;
+        const {users, directoryGroups, roles} = this.selectedRole;
+        return {
+            USER: users.length,
+            DIRECTORY_GROUP: directoryGroups.length,
+            ROLE: roles.length
+        };
     }
 
-    get effectiveMemberCount(): number {
+    @computed
+    get effectiveCounts(): Record<RoleMemberType, number> {
         if (!this.selectedRole) return null;
         const {effectiveUsers, effectiveDirectoryGroups, effectiveRoles} = this.selectedRole;
-        return effectiveUsers.length + effectiveDirectoryGroups.length + effectiveRoles.length;
+        return {
+            USER: effectiveUsers.length,
+            DIRECTORY_GROUP: effectiveDirectoryGroups.length,
+            ROLE: effectiveRoles.length
+        };
     }
 
     get activeTabId(): string {
@@ -74,21 +89,21 @@ export class RoleMembersModel extends HoistModel {
                 // 1 - Users
                 ...role.effectiveUsers.map(it => ({
                     name: it.name,
-                    roles: this.sortThisRoleFirst(it.sourceRoles),
+                    sources: this.sortThisRoleFirst(it.sources),
                     type: RoleMembersModel.types.USER
                 })),
 
                 // 2 - Directory Groups
                 ...role.effectiveDirectoryGroups.map(it => ({
                     name: it.name,
-                    roles: this.sortThisRoleFirst(it.sourceRoles),
+                    sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
                     type: RoleMembersModel.types.DIRECTORY_GROUP
                 })),
 
                 // 3 - Roles
                 ...role.effectiveRoles.map(it => ({
                     name: it.name,
-                    roles: this.sortThisRoleFirst(it.sourceRoles),
+                    sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
                     type: RoleMembersModel.types.ROLE
                 }))
             ]);
@@ -107,7 +122,7 @@ export class RoleMembersModel extends HoistModel {
                 fields: [
                     {name: 'name', type: 'string'},
                     {name: 'type', type: 'string'},
-                    {name: 'roles', displayName: 'Assigned Via', type: 'tags'}
+                    {name: 'sources', displayName: 'Assigned Via', type: 'json'}
                 ],
                 idSpec: data => `${this.selectedRole.name}:${data.type}:${data.name}`
             },
@@ -147,20 +162,23 @@ export class RoleMembersModel extends HoistModel {
                 {field: 'name'},
                 {field: 'type', hidden: true},
                 {
-                    field: 'roles',
+                    field: 'sources',
                     flex: true,
-                    renderer: (roles: string[]) =>
+                    renderer: (sources: Array<{role: string; directoryGroup?: string}>) =>
                         hbox({
                             className: 'roles-renderer',
-                            items: roles.map(role => {
-                                const isThisRole = role === this.selectedRole.name;
-                                return tag({
-                                    className: 'roles-renderer__role',
-                                    intent: isThisRole ? null : 'primary',
-                                    item: isThisRole ? '<Direct>' : role,
-                                    minimal: true
-                                });
-                            })
+                            items: uniqBy(
+                                sources.map(({role, directoryGroup}) => {
+                                    const isThisRole = role === this.selectedRole.name;
+                                    return {
+                                        className: 'roles-renderer__role',
+                                        intent: isThisRole ? null : 'primary',
+                                        item: isThisRole ? directoryGroup ?? '<Direct>' : role,
+                                        minimal: true
+                                    };
+                                }),
+                                'item'
+                            ).map(props => tag(props))
                         }),
                     omit: !showEffective
                 },
@@ -177,14 +195,11 @@ export class RoleMembersModel extends HoistModel {
         });
     }
 
-    private sortThisRoleFirst(roles: string[]): string[] {
-        roles = [...roles].sort();
-        const thisRoleIdx = roles.indexOf(this.selectedRole.name);
-        if (thisRoleIdx === -1) return roles;
-        return [
-            this.selectedRole.name,
-            ...roles.slice(0, thisRoleIdx),
-            ...roles.slice(thisRoleIdx + 1)
-        ];
+    private sortThisRoleFirst<T extends {role: string; directoryGroup?: string}>(
+        sources: T[]
+    ): T[] {
+        sources = sortBy(sources, source => `${source.role}:${source.directoryGroup ?? ''}`);
+        const thisRole = sources.filter(it => it.role === this.selectedRole.name) ?? [];
+        return [...thisRole, ...sources.filter(it => it.role !== this.selectedRole.name)];
     }
 }

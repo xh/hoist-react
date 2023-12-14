@@ -2,7 +2,8 @@ import {roleMembers} from '@xh/hoist/admin/tabs/roles/details/members/RoleMember
 import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistModel, HoistRole, lookup, managed} from '@xh/hoist/core';
+import {HoistModel, lookup, managed} from '@xh/hoist/core';
+import {HoistRole} from '../HoistRole';
 
 export class RoleDetailsModel extends HoistModel {
     @lookup(() => RolesModel) readonly rolesModel: RolesModel;

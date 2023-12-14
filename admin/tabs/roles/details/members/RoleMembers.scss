@@ -1,4 +1,10 @@
 .xh-admin-role-members {
+  border-top: var(--xh-border-solid);
+
+  &__counts {
+    padding-left: var(--xh-pad-px);
+  }
+
   &__header {
     align-items: center;
     font-weight: bold;

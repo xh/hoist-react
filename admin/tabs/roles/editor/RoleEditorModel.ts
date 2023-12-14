@@ -1,6 +1,7 @@
 import {RoleFormModel} from '@xh/hoist/admin/tabs/roles/editor/form/RoleFormModel';
+import {HoistRole} from '@xh/hoist/admin/tabs/roles/HoistRole';
 import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
-import {HoistModel, HoistRole, managed, TaskObserver, XH} from '@xh/hoist/core';
+import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
 import {omit} from 'lodash';
@@ -16,7 +17,6 @@ export class RoleEditorModel extends HoistModel {
     @observable isOpen = false;
     @observable role?: HoistRole;
 
-    private allRoles: HoistRole[] = [];
     private resolve: (role?: HoistRole) => void;
 
     @computed
@@ -28,10 +28,6 @@ export class RoleEditorModel extends HoistModel {
         super();
         makeObservable(this);
         this.rolesModel = rolesModel;
-    }
-
-    loadRoles(roles: HoistRole[]) {
-        this.allRoles = roles;
     }
 
     createAsync(roleSpec?: HoistRole): Promise<HoistRole> {
@@ -99,7 +95,10 @@ export class RoleEditorModel extends HoistModel {
     openAsync(roleSpec?: HoistRole, editExisting = false): Promise<HoistRole> {
         this.isOpen = true;
         this.role = editExisting ? roleSpec : undefined;
-        this.roleFormModel.init(this.allRoles, editExisting ? roleSpec : omit(roleSpec, 'name'));
+        this.roleFormModel.init(
+            this.rolesModel.allRoles,
+            editExisting ? roleSpec : omit(roleSpec, 'name')
+        );
         return new Promise(resolve => (this.resolve = resolve));
     }
 

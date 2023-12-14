@@ -3,7 +3,7 @@ import {form} from '@xh/hoist/cmp/form';
 import {grid} from '@xh/hoist/cmp/grid';
 import {hbox, hframe, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import './RoleForm.scss';
@@ -62,7 +62,10 @@ const assignments = hoistCmp.factory(() =>
         className: `xh-admin-role-form__assignments`,
         items: [
             assignmentsPanel({entity: 'Users'}),
-            assignmentsPanel({entity: 'Directory Groups'}),
+            assignmentsPanel({
+                entity: 'Directory Groups',
+                omit: !XH.getConf('xhRoleServiceConfig').enableDirectoryGroups
+            }),
             assignmentsPanel({entity: 'Roles'})
         ]
     })

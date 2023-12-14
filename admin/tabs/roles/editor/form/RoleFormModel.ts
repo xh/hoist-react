@@ -1,6 +1,7 @@
+import {HoistRole, RoleMemberType} from '@xh/hoist/admin/tabs/roles/HoistRole';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, HoistRole, managed, SelectOption, XH} from '@xh/hoist/core';
+import {HoistModel, managed, SelectOption, XH} from '@xh/hoist/core';
 import {RecordActionSpec, required} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth, selectEditor} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
@@ -15,9 +16,9 @@ export class RoleFormModel extends HoistModel {
     ];
 
     @managed readonly formModel: FormModel = this.createFormModel();
-    @managed readonly usersGridModel: GridModel = this.createGridModel('users');
-    @managed readonly directoryGroupsGridModel: GridModel = this.createGridModel('groups');
-    @managed readonly rolesGridModel: GridModel = this.createGridModel('roles');
+    @managed readonly usersGridModel: GridModel = this.createGridModel('USER');
+    @managed readonly directoryGroupsGridModel: GridModel = this.createGridModel('DIRECTORY_GROUP');
+    @managed readonly rolesGridModel: GridModel = this.createGridModel('ROLE');
 
     @observable isEditingExistingRole = false;
 
@@ -112,8 +113,9 @@ export class RoleFormModel extends HoistModel {
         });
     }
 
-    private createGridModel(entity: 'users' | 'groups' | 'roles'): GridModel {
+    private createGridModel(entity: RoleMemberType): GridModel {
         return new GridModel({
+            emptyText: 'None added.',
             hideHeaders: true,
             selModel: 'multiple',
             sortBy: 'name',
@@ -128,15 +130,15 @@ export class RoleFormModel extends HoistModel {
                     editor: props => {
                         const selected = props.gridModel.store.allRecords.map(it => it.get('name')),
                             options =
-                                entity === 'users'
+                                entity === 'USER'
                                     ? this.userOptions
-                                    : entity === 'groups'
+                                    : entity === 'DIRECTORY_GROUP'
                                     ? this.directoryGroupOptions
                                     : this.roleOptions;
                         return selectEditor({
                             ...props,
                             inputProps: {
-                                enableCreate: entity !== 'roles',
+                                enableCreate: entity !== 'ROLE',
                                 options: this.filterSelected(options, selected)
                             }
                         });
