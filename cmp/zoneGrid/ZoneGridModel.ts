@@ -106,7 +106,7 @@ export interface ZoneGridConfig {
      * This function will be called after the built-in defaults have been restored, and can be
      * used to restore application specific defaults.
      */
-    restoreDefaultsFn?: () => Awaitable<boolean>;
+    restoreDefaultsFn?: () => Awaitable<void>;
 
     /**
      * Confirmation warning to be presented to user before restoring default state. Set to
@@ -298,7 +298,7 @@ export class ZoneGridModel extends HoistModel {
     availableColumns: ColumnSpec[];
     limits: Partial<Record<Zone, ZoneLimit>>;
     delimiter: string;
-    restoreDefaultsFn: () => Awaitable<boolean>;
+    restoreDefaultsFn: () => Awaitable<void>;
     restoreDefaultsWarning: ReactNode;
 
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().

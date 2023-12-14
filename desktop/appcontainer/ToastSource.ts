@@ -70,7 +70,7 @@ class ToastSourceLocalModel extends HoistModel {
             let toaster = await this.getToasterAsync(position as ToasterPosition, containerRef);
             if (!bpId) {
                 model['bpId'] = toaster.show({
-                    className: classNames('xh-toast', `xh-toast--${intent}`),
+                    className: classNames('xh-toast', `xh-bg-intent-${intent}`),
                     icon: div({className: 'xh-toast__icon', item: icon}),
                     action: actionButtonProps,
                     onDismiss: () => wait(0).then(() => model.dismiss()),

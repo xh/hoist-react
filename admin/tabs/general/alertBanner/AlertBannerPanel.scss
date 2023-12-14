@@ -56,4 +56,20 @@
       background-color: var(--xh-bg-alt);
     }
   }
+
+  .xh-button--intent-primary.xh-button--active:not(:hover) {
+    background-color: var(--xh-intent-primary) !important;
+  }
+
+  .xh-button--intent-success.xh-button--active:not(:hover) {
+    background-color: var(--xh-intent-success) !important;
+  }
+
+  .xh-button--intent-warning.xh-button--active:not(:hover) {
+    background-color: var(--xh-intent-warning) !important;
+  }
+
+  .xh-button--intent-danger.xh-button--active:not(:hover) {
+    background-color: var(--xh-intent-danger) !important;
+  }
 }

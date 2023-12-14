@@ -133,7 +133,7 @@ export interface GridConfig {
      * function will be called after the built-in defaults have been restored, and can be
      * used to restore application specific defaults.
      */
-    restoreDefaultsFn?: () => Awaitable<boolean>;
+    restoreDefaultsFn?: () => Awaitable<void>;
 
     /**
      * Confirmation warning to be presented to user before restoring default grid state. Set to
@@ -370,7 +370,7 @@ export class GridModel extends HoistModel {
     exportOptions: ExportOptions;
     useVirtualColumns: boolean;
     autosizeOptions: GridAutosizeOptions;
-    restoreDefaultsFn: () => Awaitable<boolean>;
+    restoreDefaultsFn: () => Awaitable<void>;
     restoreDefaultsWarning: ReactNode;
     fullRowEditing: boolean;
     hideEmptyTextBeforeLoad: boolean;
