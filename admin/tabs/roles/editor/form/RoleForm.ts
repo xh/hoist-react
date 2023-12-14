@@ -1,4 +1,6 @@
 import {RoleFormModel} from '@xh/hoist/admin/tabs/roles/editor/form/RoleFormModel';
+import {RoleMemberType} from '@xh/hoist/admin/tabs/roles/HoistRole';
+import {warningBanner} from '@xh/hoist/admin/tabs/roles/warning/WarningBanner';
 import {form} from '@xh/hoist/cmp/form';
 import {grid} from '@xh/hoist/cmp/grid';
 import {hbox, hframe, vbox, vframe} from '@xh/hoist/cmp/layout';
@@ -10,6 +12,7 @@ import './RoleForm.scss';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {capitalizeWords} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 
 export const roleForm = hoistCmp.factory({
@@ -57,22 +60,24 @@ export const roleForm = hoistCmp.factory({
     }
 });
 
-const assignments = hoistCmp.factory(() =>
+const assignments = hoistCmp.factory<RoleFormModel>(({model}) =>
     hframe({
         className: `xh-admin-role-form__assignments`,
         items: [
-            assignmentsPanel({entity: 'Users'}),
+            assignmentsPanel({entity: 'USER'}),
             assignmentsPanel({
-                entity: 'Directory Groups',
-                omit: !XH.getConf('xhRoleServiceConfig').enableDirectoryGroups
+                entity: 'DIRECTORY_GROUP',
+                omit:
+                    !XH.getConf('xhRoleServiceConfig').enableDirectoryGroups &&
+                    model.directoryGroupsGridModel.empty
             }),
-            assignmentsPanel({entity: 'Roles'})
+            assignmentsPanel({entity: 'ROLE'})
         ]
     })
 );
 
 interface AssignmentsPanelProps extends HoistProps<RoleFormModel> {
-    entity: 'Users' | 'Directory Groups' | 'Roles';
+    entity: RoleMemberType;
 }
 
 const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
@@ -81,9 +86,9 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
     model: uses(() => RoleFormModel),
     render({className, entity, model}) {
         const gridModel =
-            entity === 'Users'
+            entity === 'USER'
                 ? model.usersGridModel
-                : entity === 'Directory Groups'
+                : entity === 'DIRECTORY_GROUP'
                 ? model.directoryGroupsGridModel
                 : model.rolesGridModel;
 
@@ -91,12 +96,12 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
             className,
             compactHeader: true,
             icon:
-                entity === 'Users'
+                entity === 'USER'
                     ? Icon.user()
-                    : entity === 'Directory Groups'
+                    : entity === 'DIRECTORY_GROUP'
                     ? Icon.users()
                     : Icon.idBadge(),
-            title: entity,
+            title: `${capitalizeWords(entity.replace('_', ' '))}s`,
             tbar: toolbar({
                 compact: true,
                 items: [
@@ -114,7 +119,14 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
                     })
                 ]
             }),
-            item: grid({model: gridModel})
+            item: grid({model: gridModel}),
+            bbar: warningBanner({
+                compact: true,
+                message: 'Directory Groups are not enabled.',
+                omit:
+                    XH.getConf('xhRoleServiceConfig').enableDirectoryGroups ||
+                    entity !== 'DIRECTORY_GROUP'
+            })
         });
     }
 });

@@ -13,7 +13,6 @@ import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {Icon} from '@xh/hoist/icon';
 
 export const roles = hoistCmp.factory({
-    className: 'roles',
     displayName: 'Roles',
     model: creates(RolesModel),
     render({className, model}) {

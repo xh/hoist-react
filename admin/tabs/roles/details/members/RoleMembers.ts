@@ -1,9 +1,10 @@
 import {RoleMembersModel} from '@xh/hoist/admin/tabs/roles/details/members/RoleMembersModel';
 import {RoleMemberType} from '@xh/hoist/admin/tabs/roles/HoistRole';
+import {warningBanner} from '@xh/hoist/admin/tabs/roles/warning/WarningBanner';
 import {grid} from '@xh/hoist/cmp/grid';
 import {div, filler, hbox} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {creates, hoistCmp, HoistProps} from '@xh/hoist/core';
+import {creates, hoistCmp, HoistProps, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -21,6 +22,7 @@ export const roleMembers = hoistCmp.factory<RoleMembersTabProps>({
     displayName: 'RoleMembers',
     model: creates(RoleMembersModel),
     render({className, model}) {
+        const {directCounts, effectiveCounts} = model;
         return panel({
             className,
             tbar: [
@@ -30,10 +32,7 @@ export const roleMembers = hoistCmp.factory<RoleMembersTabProps>({
                         button({
                             text: hbox({
                                 alignItems: 'center',
-                                items: [
-                                    'Direct Members',
-                                    counts({countsByType: model.directCounts})
-                                ]
+                                items: ['Direct Members', counts({countsByType: directCounts})]
                             }),
                             value: 'directMembers'
                         }),
@@ -42,7 +41,7 @@ export const roleMembers = hoistCmp.factory<RoleMembersTabProps>({
                                 alignItems: 'center',
                                 items: [
                                     'Effective Members',
-                                    counts({countsByType: model.effectiveCounts})
+                                    counts({countsByType: effectiveCounts})
                                 ]
                             }),
                             value: 'effectiveMembers'
@@ -53,7 +52,13 @@ export const roleMembers = hoistCmp.factory<RoleMembersTabProps>({
                 '-',
                 storeFilterField()
             ],
-            item: grid()
+            item: grid(),
+            bbar: warningBanner({
+                message: 'Directory Groups are disabled and will not resolve to users.',
+                omit:
+                    XH.getConf('xhRoleServiceConfig').enableDirectoryGroups ||
+                    (!directCounts.DIRECTORY_GROUP && !effectiveCounts.DIRECTORY_GROUP)
+            })
         });
     }
 });
