@@ -6,6 +6,10 @@
 
 * Added `xh-bg-intent-xxx` CSS classes, for intent-coloring the `background-color` of elements.
 
+### ⚙️ Typescript API Adjustments
+
+* Corrected the type of `ColumnSpec.editor`.
+
 ## 59.5.0 - 2023-12-11
 
 ### 🎁 New Features
