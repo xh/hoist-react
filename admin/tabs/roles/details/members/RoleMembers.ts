@@ -1,8 +1,9 @@
 import {RoleMembersModel} from '@xh/hoist/admin/tabs/roles/details/members/RoleMembersModel';
 import {RoleMemberType} from '@xh/hoist/admin/tabs/roles/HoistRole';
 import {warningBanner} from '@xh/hoist/admin/tabs/roles/warning/WarningBanner';
+import {badge} from '@xh/hoist/cmp/badge';
 import {grid} from '@xh/hoist/cmp/grid';
-import {div, filler, hbox} from '@xh/hoist/cmp/layout';
+import {filler, hbox} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, HoistProps, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -10,7 +11,6 @@ import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import './RoleMembers.scss';
 import {Icon} from '@xh/hoist/icon';
-import {tag} from '@xh/hoist/kit/blueprint';
 import {ReactNode} from 'react';
 
 export interface RoleMembersTabProps extends HoistProps<RoleMembersModel> {
@@ -68,27 +68,25 @@ interface CountsProps extends HoistProps {
 }
 
 const counts = hoistCmp.factory<CountsProps>(({countsByType}) =>
-    div({
+    badge({
         className: 'xh-admin-role-members__counts',
         item: [
-            badge({icon: Icon.user(), count: countsByType['USER']}),
-            badge({icon: Icon.users(), count: countsByType['DIRECTORY_GROUP']}),
-            badge({icon: Icon.idBadge(), count: countsByType['ROLE']})
+            count({icon: Icon.user(), count: countsByType['USER']}),
+            count({icon: Icon.users(), count: countsByType['DIRECTORY_GROUP']}),
+            count({icon: Icon.idBadge(), count: countsByType['ROLE']})
         ]
     })
 );
 
-interface BadgeProps extends HoistProps {
+interface CountProps extends HoistProps {
     count: number;
     icon: ReactNode;
 }
 
-const badge = hoistCmp.factory<BadgeProps>(({count, icon}) =>
-    tag({
-        icon,
-        item: count,
-        minimal: true,
-        omit: !count,
-        round: true
+const count = hoistCmp.factory<CountProps>(({count, icon}) =>
+    hbox({
+        className: 'xh-admin-role-members__counts__count',
+        items: [icon, count],
+        omit: !count
     })
 );

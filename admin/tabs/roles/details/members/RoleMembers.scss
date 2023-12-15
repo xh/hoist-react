@@ -2,7 +2,19 @@
   border-top: var(--xh-border-solid);
 
   &__counts {
-    padding-left: var(--xh-pad-px);
+    margin-left: var(--xh-pad-px);
+
+    &__count {
+      align-items: center;
+
+      &:not(:last-child) {
+        margin-right: 0.6em;
+      }
+
+      .xh-icon {
+        margin-right: 0.2em;
+      }
+    }
   }
 
   &__header {
