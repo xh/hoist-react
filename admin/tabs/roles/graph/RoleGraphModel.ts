@@ -61,6 +61,17 @@ export class RoleGraphModel extends HoistModel {
                 plotOptions: {
                     treegraph: {
                         animation: false,
+                        collapseButton: {
+                            enabled: false
+                        },
+                        dataLabels: {
+                            style: {
+                                fontFamily: 'var(--xh-font-family)',
+                                fontSize: 'var(--xh-font-size-small-px)',
+                                fontWeight: 'normal',
+                                textOutline: 'none'
+                            }
+                        },
                         link: {
                             color: 'var(--xh-border-color)'
                         },
