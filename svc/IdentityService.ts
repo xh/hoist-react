@@ -142,6 +142,7 @@ export class IdentityService extends HoistService {
         user.hasRole = role => user.roles.includes(role);
         user.isHoistAdmin = user.hasRole('HOIST_ADMIN');
         user.isHoistAdminReader = user.hasRole('HOIST_ADMIN_READER');
+        user.isHoistRoleManager = user.hasRole('HOIST_ROLE_MANAGER');
         user.hasGate = gate => this.hasGate(gate, user);
         return deepFreeze(user) as HoistUser;
     }

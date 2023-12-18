@@ -14,7 +14,6 @@ import {generalTab} from './tabs/general/GeneralTab';
 import {monitorTab} from './tabs/monitor/MonitorTab';
 import {serverTab} from './tabs/server/ServerTab';
 import {userDataTab} from './tabs/userData/UserDataTab';
-import {roles} from './tabs/roles/Roles';
 
 export class AppModel extends HoistAppModel {
     static instance: AppModel;
@@ -65,6 +64,7 @@ export class AppModel extends HoistAppModel {
                     {name: 'about', path: '/about'},
                     {name: 'config', path: '/config'},
                     {name: 'users', path: '/users'},
+                    {name: 'roles', path: '/roles'},
                     {name: 'alertBanner', path: '/alertBanner'}
                 ]
             },
@@ -107,14 +107,6 @@ export class AppModel extends HoistAppModel {
                     {name: 'userPrefs', path: '/userPrefs'},
                     {name: 'jsonBlobs', path: '/jsonBlobs'}
                 ]
-            },
-            {
-                name: 'roles',
-                path: '/roles',
-                children: [
-                    {name: 'inspector', path: '/inspector'},
-                    {name: 'visualizer', path: '/visualizer'}
-                ]
             }
         ];
     }
@@ -145,11 +137,6 @@ export class AppModel extends HoistAppModel {
                 id: 'userData',
                 icon: Icon.users(),
                 content: userDataTab
-            },
-            {
-                id: 'roles',
-                icon: Icon.roles(),
-                content: roles
             }
         ];
     }

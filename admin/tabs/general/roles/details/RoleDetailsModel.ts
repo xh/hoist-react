@@ -1,18 +1,18 @@
-import {roleMembers} from '@xh/hoist/admin/tabs/roles/details/members/RoleMembers';
-import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
+import {roleMembers} from '@xh/hoist/admin/tabs/general/roles/details/members/RoleMembers';
+import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
-import {HoistRole} from '../HoistRole';
+import {HoistRole} from '../Types';
 
 export class RoleDetailsModel extends HoistModel {
-    @lookup(() => RolesModel) readonly rolesModel: RolesModel;
+    @lookup(() => RoleModel) readonly roleModel: RoleModel;
 
     @managed readonly formModel: FormModel = this.createFormModel();
     @managed readonly tabContainerModel = this.createTabContainerModel();
 
     get selectedRole(): HoistRole {
-        return this.rolesModel.selectedRole;
+        return this.roleModel.selectedRole;
     }
 
     override onLinked() {
@@ -48,7 +48,7 @@ export class RoleDetailsModel extends HoistModel {
 
     private createTabContainerModel(): TabContainerModel {
         return new TabContainerModel({
-            persistWith: {...RolesModel.PERSIST_WITH, path: 'roleMembersTabContainer'},
+            persistWith: {...RoleModel.PERSIST_WITH, path: 'roleMembersTabContainer'},
             switcher: false,
             tabs: [
                 {

@@ -1,25 +1,22 @@
-import {RoleEditorModel} from '@xh/hoist/admin/tabs/roles/editor/RoleEditorModel';
-import {HoistRole} from '@xh/hoist/admin/tabs/roles/HoistRole';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {div, li, ul} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, persist, ReactionSpec, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {pluralize} from '@xh/hoist/utils/js';
-import {compact, groupBy, mapValues} from 'lodash';
+import {wait} from '@xh/hoist/promise';
+import {groupBy, mapValues} from 'lodash';
 import {action, observable} from 'mobx';
 import moment from 'moment/moment';
+import {RoleEditorModel} from './editor/RoleEditorModel';
+import {HoistRole, RoleMemberType, RoleServiceConfig} from './Types';
 
-export class RolesModel extends HoistModel {
+export class RoleModel extends HoistModel {
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
 
-    override persistWith = RolesModel.PERSIST_WITH;
-
-    readonly ACTIONS: RecordActionSpec[] = this.createRecordActions();
+    override persistWith = RoleModel.PERSIST_WITH;
 
     @managed readonly gridModel: GridModel = this.createGridModel();
     @managed readonly filterChooserModel: FilterChooserModel = this.createFilterChooserModel();
@@ -29,8 +26,16 @@ export class RolesModel extends HoistModel {
 
     @bindable @persist groupByCategory = true;
 
+    get readonly() {
+        return !XH.getUser().isHoistRoleManager;
+    }
+
     get selectedRole(): HoistRole {
         return this.gridModel.selectedRecord?.data as HoistRole;
+    }
+
+    get softConfig(): RoleServiceConfig {
+        return XH.getConf('xhRoleServiceConfig');
     }
 
     constructor() {
@@ -40,6 +45,7 @@ export class RolesModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
+        if (!this.softConfig?.enabled) return;
         try {
             const {data} = await XH.fetchJson({loadSpec, url: 'roleAdmin/list'});
             if (loadSpec.isStale) return;
@@ -51,8 +57,13 @@ export class RolesModel extends HoistModel {
         }
     }
 
-    selectRole(name: string) {
-        this.gridModel.selectAsync(name);
+    async selectRoleAsync(name: string) {
+        const {gridModel} = this;
+        if (!gridModel.store.getById(name, true)) {
+            gridModel.filterModel.clear();
+            await wait();
+        }
+        return gridModel.selectAsync(name);
     }
 
     @action
@@ -65,6 +76,57 @@ export class RolesModel extends HoistModel {
     clear() {
         this.allRoles = [];
         this.gridModel.clear();
+    }
+
+    applyMemberFilter(name: string, type: RoleMemberType, includeEffective: boolean) {
+        const {gridModel} = this,
+            field = this.getFieldForMemberType(type, includeEffective);
+        gridModel.filterModel.setFilter({field, op: 'includes', value: name});
+    }
+
+    // -------------------------------
+    // Actions
+    // -------------------------------
+
+    addAction(): RecordActionSpec {
+        return {
+            text: 'Add',
+            icon: Icon.add(),
+            intent: 'success',
+            actionFn: () => this.createAsync()
+        };
+    }
+
+    editAction(): RecordActionSpec {
+        return {
+            text: 'Edit',
+            icon: Icon.edit(),
+            intent: 'primary',
+            actionFn: ({record}) => this.editAsync(record.data as HoistRole),
+            recordsRequired: true
+        };
+    }
+
+    cloneAction(): RecordActionSpec {
+        return {
+            text: 'Clone',
+            icon: Icon.copy(),
+            actionFn: ({record}) => this.createAsync(record.data as HoistRole),
+            recordsRequired: true
+        };
+    }
+
+    deleteAction(): RecordActionSpec {
+        return {
+            text: 'Delete',
+            icon: Icon.delete(),
+            intent: 'danger',
+            actionFn: ({record}) =>
+                this.deleteAsync(record.data as HoistRole)
+                    .catchDefault()
+                    .linkTo(this.loadModel),
+            recordsRequired: true
+        };
     }
 
     // -------------------------------
@@ -94,17 +156,7 @@ export class RolesModel extends HoistModel {
             const confirm = await XH.confirm({
                 icon: Icon.warning(),
                 title: 'Confirm delete?',
-                message: div(
-                    'Deleting this role will affect:',
-                    ul(
-                        compact([
-                            userCount && pluralize('user', userCount, true),
-                            groupCount && pluralize('group', groupCount, true),
-                            roleCount && pluralize('role', roleCount, true)
-                        ]).map(it => li(it))
-                    ),
-                    'Are you sure you wish to continue?'
-                ),
+                message: `${role.name} has assigned members. Are you sure you want to delete it?`,
                 confirmProps: {intent: 'danger', text: 'Confirm Delete'}
             });
             if (!confirm) return false;
@@ -161,6 +213,7 @@ export class RolesModel extends HoistModel {
             filterModel: true,
             headerMenuDisplay: 'hover',
             onRowDoubleClicked: ({data: record}) =>
+                !this.readonly &&
                 record &&
                 this.roleEditorModel
                     .editAsync(record.data)
@@ -204,42 +257,17 @@ export class RolesModel extends HoistModel {
                 {field: {name: 'lastUpdatedBy', type: 'string'}},
                 {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1}
             ],
-            contextMenu: [...this.ACTIONS, '-', ...GridModel.defaultContextMenu]
+            contextMenu: this.readonly
+                ? GridModel.defaultContextMenu
+                : [
+                      this.addAction(),
+                      this.editAction(),
+                      this.cloneAction(),
+                      this.deleteAction(),
+                      '-',
+                      ...GridModel.defaultContextMenu
+                  ]
         });
-    }
-
-    private createRecordActions(): RecordActionSpec[] {
-        return [
-            {
-                text: 'Add',
-                icon: Icon.add(),
-                intent: 'success',
-                actionFn: () => this.createAsync()
-            },
-            {
-                text: 'Edit',
-                icon: Icon.edit(),
-                intent: 'primary',
-                actionFn: ({record}) => this.editAsync(record.data as HoistRole),
-                recordsRequired: true
-            },
-            {
-                text: 'Clone',
-                icon: Icon.copy(),
-                actionFn: ({record}) => this.createAsync(record.data as HoistRole),
-                recordsRequired: true
-            },
-            {
-                text: 'Delete',
-                icon: Icon.delete(),
-                intent: 'danger',
-                actionFn: ({record}) =>
-                    this.deleteAsync(record.data as HoistRole)
-                        .catchDefault()
-                        .linkTo(this.loadModel),
-                recordsRequired: true
-            }
-        ];
     }
 
     private createFilterChooserModel(): FilterChooserModel {
@@ -274,7 +302,18 @@ export class RolesModel extends HoistModel {
                     ops: ['>', '>=', '<', '<=']
                 }
             ],
-            persistWith: {...RolesModel.PERSIST_WITH, path: 'mainFilterChooser'}
+            persistWith: {...RoleModel.PERSIST_WITH, path: 'mainFilterChooser'}
         });
+    }
+
+    private getFieldForMemberType(type: RoleMemberType, effective: boolean): string {
+        switch (type) {
+            case 'USER':
+                return effective ? 'effectiveUserNames' : 'users';
+            case 'DIRECTORY_GROUP':
+                return effective ? 'effectiveDirectoryGroupNames' : 'directoryGroups';
+            case 'ROLE':
+                return effective ? 'effectiveRoleNames' : 'roles';
+        }
     }
 }

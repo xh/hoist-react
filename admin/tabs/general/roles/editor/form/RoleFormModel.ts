@@ -1,4 +1,8 @@
-import {HoistRole, RoleMemberType} from '@xh/hoist/admin/tabs/roles/HoistRole';
+import {
+    HoistRole,
+    RoleMemberType,
+    RoleServiceConfig
+} from '@xh/hoist/admin/tabs/general/roles/Types';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, SelectOption, XH} from '@xh/hoist/core';
@@ -50,6 +54,10 @@ export class RoleFormModel extends HoistModel {
             this.directoryGroupsGridModel.store.isValid &&
             this.rolesGridModel.store.isValid
         );
+    }
+
+    get softConfig(): RoleServiceConfig {
+        return XH.getConf('xhRoleServiceConfig');
     }
 
     @action

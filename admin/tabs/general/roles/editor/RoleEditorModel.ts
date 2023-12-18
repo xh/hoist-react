@@ -1,14 +1,14 @@
-import {RoleFormModel} from '@xh/hoist/admin/tabs/roles/editor/form/RoleFormModel';
-import {HoistRole} from '@xh/hoist/admin/tabs/roles/HoistRole';
-import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
+import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
 import {omit} from 'lodash';
 import {action, computed, observable} from 'mobx';
+import {HoistRole} from '../Types';
+import {RoleFormModel} from './form/RoleFormModel';
 
 export class RoleEditorModel extends HoistModel {
-    readonly rolesModel: RolesModel;
+    readonly roleModel: RoleModel;
     readonly savingTask = TaskObserver.trackLast({message: 'Saving Role'});
     readonly deletingTask = TaskObserver.trackLast({message: 'Deleting Role'});
 
@@ -24,10 +24,10 @@ export class RoleEditorModel extends HoistModel {
         return !this.roleFormModel.isDirty || !this.roleFormModel.isValid;
     }
 
-    constructor(rolesModel: RolesModel) {
+    constructor(roleModel: RoleModel) {
         super();
         makeObservable(this);
-        this.rolesModel = rolesModel;
+        this.roleModel = roleModel;
     }
 
     createAsync(roleSpec?: HoistRole): Promise<HoistRole> {
@@ -60,7 +60,7 @@ export class RoleEditorModel extends HoistModel {
     }
 
     async deleteAsync(): Promise<void> {
-        return this.rolesModel
+        return this.roleModel
             .deleteAsync(this.role)
             .linkTo(this.deletingTask)
             .thenAction(successful => successful && this.close())
@@ -69,7 +69,7 @@ export class RoleEditorModel extends HoistModel {
 
     cancel() {
         if (!this.roleFormModel.isDirty) {
-            this.close();
+            this.doCancel();
         } else {
             XH.confirm({
                 icon: Icon.warning(),
@@ -82,7 +82,7 @@ export class RoleEditorModel extends HoistModel {
                     intent: 'danger',
                     text: 'Discard changes'
                 },
-                onConfirm: () => this.close()
+                onConfirm: () => this.doCancel()
             });
         }
     }
@@ -96,10 +96,15 @@ export class RoleEditorModel extends HoistModel {
         this.isOpen = true;
         this.role = editExisting ? roleSpec : undefined;
         this.roleFormModel.init(
-            this.rolesModel.allRoles,
+            this.roleModel.allRoles,
             editExisting ? roleSpec : omit(roleSpec, 'name')
         );
         return new Promise(resolve => (this.resolve = resolve));
+    }
+
+    private doCancel() {
+        this.resolve();
+        this.close();
     }
 
     @action

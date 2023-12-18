@@ -1,16 +1,22 @@
-import {RoleDetailsModel} from '@xh/hoist/admin/tabs/roles/details/RoleDetailsModel';
-import {HoistRole, RoleMemberType} from '@xh/hoist/admin/tabs/roles/HoistRole';
-import {sortBy, uniqBy} from 'lodash';
-import {computed} from 'mobx';
-import {RoleMembersTabProps} from './RoleMembers';
-import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
+import {RoleMembersProps} from '@xh/hoist/admin/tabs/general/roles/details/members/RoleMembers';
+import {RoleDetailsModel} from '@xh/hoist/admin/tabs/general/roles/details/RoleDetailsModel';
+import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
+import {
+    HoistRole,
+    RoleMemberType,
+    RoleServiceConfig
+} from '@xh/hoist/admin/tabs/general/roles/Types';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {hbox, hframe} from '@xh/hoist/cmp/layout';
-import {HoistModel, lookup, managed} from '@xh/hoist/core';
+import {HoistModel, lookup, managed, XH} from '@xh/hoist/core';
+import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {tag} from '@xh/hoist/kit/blueprint';
 import {bindable} from '@xh/hoist/mobx';
+import classNames from 'classnames';
+import {invert, sortBy, uniqBy} from 'lodash';
+import {computed} from 'mobx';
 
 export class RoleMembersModel extends HoistModel {
     static readonly types: Record<RoleMemberType, string> = {
@@ -19,19 +25,19 @@ export class RoleMembersModel extends HoistModel {
         ROLE: '3-role'
     };
 
-    @lookup(() => RolesModel) readonly rolesModel: RolesModel;
+    @lookup(() => RoleModel) readonly roleModel: RoleModel;
     @lookup(() => RoleDetailsModel) readonly roleDetailsModel: RoleDetailsModel;
 
     @managed gridModel: GridModel;
 
     @bindable showInherited = true;
 
-    get props(): RoleMembersTabProps {
-        return this.componentProps as RoleMembersTabProps;
+    get props(): RoleMembersProps {
+        return this.componentProps as RoleMembersProps;
     }
 
     get selectedRole(): HoistRole {
-        return this.rolesModel.selectedRole;
+        return this.roleModel.selectedRole;
     }
 
     @computed
@@ -51,13 +57,19 @@ export class RoleMembersModel extends HoistModel {
         const {effectiveUsers, effectiveDirectoryGroups, effectiveRoles} = this.selectedRole;
         return {
             USER: effectiveUsers.length,
-            DIRECTORY_GROUP: effectiveDirectoryGroups.length,
+            DIRECTORY_GROUP: this.softConfig?.enableDirectoryGroups
+                ? effectiveDirectoryGroups.length
+                : 0,
             ROLE: effectiveRoles.length
         };
     }
 
     get activeTabId(): string {
         return this.roleDetailsModel.tabContainerModel.activeTabId;
+    }
+
+    get softConfig(): RoleServiceConfig {
+        return XH.getConf('xhRoleServiceConfig');
     }
 
     setActiveTabId(id: string) {
@@ -94,11 +106,13 @@ export class RoleMembersModel extends HoistModel {
                 })),
 
                 // 2 - Directory Groups
-                ...role.effectiveDirectoryGroups.map(it => ({
-                    name: it.name,
-                    sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
-                    type: RoleMembersModel.types.DIRECTORY_GROUP
-                })),
+                ...(this.softConfig?.enableDirectoryGroups
+                    ? role.effectiveDirectoryGroups.map(it => ({
+                          name: it.name,
+                          sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
+                          type: RoleMembersModel.types.DIRECTORY_GROUP
+                      }))
+                    : []),
 
                 // 3 - Roles
                 ...role.effectiveRoles.map(it => ({
@@ -126,15 +140,14 @@ export class RoleMembersModel extends HoistModel {
                 ],
                 idSpec: data => `${this.selectedRole.name}:${data.type}:${data.name}`
             },
+            contextMenu: [...this.createFilterActions(), '-', ...GridModel.defaultContextMenu],
             emptyText: 'This role has no members.',
-            filterModel: true,
             groupBy: 'type',
-            headerMenuDisplay: 'hover',
             sortBy: 'name',
             onRowDoubleClicked: ({data: record}) => {
                 if (!record) return;
                 const {type, name} = record.data;
-                if (type === types.ROLE) this.rolesModel.selectRole(name);
+                if (type === types.ROLE) this.roleModel.selectRoleAsync(name);
             },
             groupRowRenderer: ({value}) => {
                 switch (value) {
@@ -171,10 +184,15 @@ export class RoleMembersModel extends HoistModel {
                                 sources.map(({role, directoryGroup}) => {
                                     const isThisRole = role === this.selectedRole.name;
                                     return {
-                                        className: 'roles-renderer__role',
+                                        className: classNames(
+                                            'roles-renderer__role',
+                                            !isThisRole && 'roles-renderer__role--effective'
+                                        ),
                                         intent: isThisRole ? null : 'primary',
                                         item: isThisRole ? directoryGroup ?? '<Direct>' : role,
-                                        minimal: true
+                                        minimal: true,
+                                        onClick: () =>
+                                            !isThisRole && this.roleModel.selectRoleAsync(role)
                                     };
                                 }),
                                 'item'
@@ -193,6 +211,29 @@ export class RoleMembersModel extends HoistModel {
                 }
             ]
         });
+    }
+
+    private createFilterActions(): RecordActionSpec[] {
+        const {roleModel} = this,
+            types = invert(RoleMembersModel.types) as Record<string, RoleMemberType>;
+        return [false, true].map(includeEffective => ({
+            icon: Icon.filter(),
+            actionFn: ({record}) =>
+                roleModel &&
+                roleModel.applyMemberFilter(
+                    record.get('name'),
+                    types[record.get('type')],
+                    includeEffective
+                ),
+            displayFn: ({record}) =>
+                record
+                    ? {
+                          text: `Roles that ${
+                              includeEffective ? 'effectively' : 'directly'
+                          } include ${record.get('name')}`
+                      }
+                    : {hidden: true}
+        }));
     }
 
     private sortThisRoleFirst<T extends {role: string; directoryGroup?: string}>(

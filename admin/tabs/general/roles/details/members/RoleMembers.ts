@@ -1,23 +1,24 @@
-import {RoleMembersModel} from '@xh/hoist/admin/tabs/roles/details/members/RoleMembersModel';
-import {RoleMemberType} from '@xh/hoist/admin/tabs/roles/HoistRole';
-import {warningBanner} from '@xh/hoist/admin/tabs/roles/warning/WarningBanner';
+import {RoleMembersModel} from '@xh/hoist/admin/tabs/general/roles/details/members/RoleMembersModel';
+import {RoleMemberType} from '@xh/hoist/admin/tabs/general/roles/Types';
+import {warningBanner} from '@xh/hoist/admin/tabs/general/roles/warning/WarningBanner';
 import {badge} from '@xh/hoist/cmp/badge';
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler, hbox} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {creates, hoistCmp, HoistProps, XH} from '@xh/hoist/core';
+import {creates, hoistCmp, HoistProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import './RoleMembers.scss';
 import {Icon} from '@xh/hoist/icon';
+import {sum, values} from 'lodash';
 import {ReactNode} from 'react';
 
-export interface RoleMembersTabProps extends HoistProps<RoleMembersModel> {
+export interface RoleMembersProps extends HoistProps<RoleMembersModel> {
     showEffective: boolean;
 }
 
-export const roleMembers = hoistCmp.factory<RoleMembersTabProps>({
+export const roleMembers = hoistCmp.factory<RoleMembersProps>({
     className: 'xh-admin-role-members',
     displayName: 'RoleMembers',
     model: creates(RoleMembersModel),
@@ -32,33 +33,24 @@ export const roleMembers = hoistCmp.factory<RoleMembersTabProps>({
                         button({
                             text: hbox({
                                 alignItems: 'center',
-                                items: ['Direct Members', counts({countsByType: directCounts})]
+                                items: ['Assigned', counts({countsByType: directCounts})]
                             }),
                             value: 'directMembers'
                         }),
                         button({
                             text: hbox({
                                 alignItems: 'center',
-                                items: [
-                                    'Effective Members',
-                                    counts({countsByType: effectiveCounts})
-                                ]
+                                items: ['Effective', counts({countsByType: effectiveCounts})]
                             }),
                             value: 'effectiveMembers'
                         })
                     ]
                 }),
                 filler(),
-                '-',
                 storeFilterField()
             ],
             item: grid(),
-            bbar: warningBanner({
-                message: 'Directory Groups are disabled and will not resolve to users.',
-                omit:
-                    XH.getConf('xhRoleServiceConfig').enableDirectoryGroups ||
-                    (!directCounts.DIRECTORY_GROUP && !effectiveCounts.DIRECTORY_GROUP)
-            })
+            bbar: bbar()
         });
     }
 });
@@ -74,7 +66,8 @@ const counts = hoistCmp.factory<CountsProps>(({countsByType}) =>
             count({icon: Icon.user(), count: countsByType['USER']}),
             count({icon: Icon.users(), count: countsByType['DIRECTORY_GROUP']}),
             count({icon: Icon.idBadge(), count: countsByType['ROLE']})
-        ]
+        ],
+        omit: !sum(values(countsByType))
     })
 );
 
@@ -90,3 +83,16 @@ const count = hoistCmp.factory<CountProps>(({count, icon}) =>
         omit: !count
     })
 );
+
+const bbar = hoistCmp.factory<RoleMembersModel>(({model}) => {
+    const {directCounts, softConfig} = model;
+    if (!softConfig?.enableDirectoryGroups && directCounts.DIRECTORY_GROUP) {
+        return warningBanner({
+            message: 'Directory Groups are disabled and will not resolve to users.'
+        });
+    } else if (!softConfig?.enableUsers && directCounts.USER) {
+        return warningBanner({
+            message: 'Direct assignment of users is disabled.'
+        });
+    }
+});

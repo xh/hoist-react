@@ -31,8 +31,14 @@
   .roles-renderer {
     align-items: center;
 
-    &__role:not(:last-child) {
-      margin-right: var(--xh-pad-half-px);
+    &__role {
+      &:not(:last-child) {
+        margin-right: var(--xh-pad-half-px);
+      }
+
+      &--effective {
+        cursor: pointer;
+      }
     }
   }
 }

@@ -1,22 +1,25 @@
-import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
+import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {ChartModel} from '@xh/hoist/cmp/chart';
-import {HoistModel, lookup, managed} from '@xh/hoist/core';
+import {HoistModel, lookup, managed, PlainObject} from '@xh/hoist/core';
+import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {sortBy} from 'lodash';
-import {HoistRole} from '../HoistRole';
+import {HoistRole} from '../Types';
 
 export class RoleGraphModel extends HoistModel {
-    @lookup(RolesModel) readonly rolesModel: RolesModel;
+    @lookup(RoleModel) readonly roleModel: RoleModel;
     @managed readonly chartModel: ChartModel = this.createChartModel();
 
+    @bindable relationship: 'effective' | 'inherited' = 'inherited';
+
     get selectedRole(): HoistRole {
-        return this.rolesModel.selectedRole;
+        return this.roleModel.selectedRole;
     }
 
     override onLinked() {
         this.addReaction({
-            track: () => this.selectedRole,
-            run: async (selectedRole: HoistRole) => {
+            track: () => [this.selectedRole, this.relationship],
+            run: async ([selectedRole]: [HoistRole]) => {
                 // We need to clear the chart first to avoid HC rendering glitches
                 this.chartModel.clear();
                 await wait();
@@ -35,14 +38,24 @@ export class RoleGraphModel extends HoistModel {
     // Implementation
     // -------------------------------
 
-    private getSeriesData(role: HoistRole): Array<{id: string; name: string; parent?: string}> {
-        const {effectiveRoles, name} = role;
+    private getSeriesData(role: HoistRole): PlainObject[] {
+        const {name} = role,
+            relatedRoles =
+                this.relationship === 'effective' ? role.effectiveRoles : role.inheritedRoles;
         return [
             {
                 id: name,
-                name
+                name,
+                dataLabels: {
+                    style: {
+                        fontWeight: 600
+                    }
+                },
+                marker: {
+                    fillColor: 'var(--xh-bg-alt)'
+                }
             },
-            ...sortBy(effectiveRoles, 'name').flatMap(({name, sourceRoles}) =>
+            ...sortBy(relatedRoles, 'name').flatMap(({name, sourceRoles}) =>
                 [...sourceRoles].sort().map(source => ({
                     id: name,
                     name,

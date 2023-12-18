@@ -1,36 +1,38 @@
-import {roleEditor} from '@xh/hoist/admin/tabs/roles/editor/RoleEditor';
-import {roleGraph} from '@xh/hoist/admin/tabs/roles/graph/RoleGraph';
-import {roleDetails} from '@xh/hoist/admin/tabs/roles/details/RoleDetails';
-import {RolesModel} from '@xh/hoist/admin/tabs/roles/RolesModel';
+import {roleGraph} from '@xh/hoist/admin/tabs/general/roles/graph/RoleGraph';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
-import {creates, hoistCmp, XH} from '@xh/hoist/core';
+import {creates, hoistCmp} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
+import {roleDetails} from './details/RoleDetails';
+import {roleEditor} from './editor/RoleEditor';
+import {RoleModel} from './RoleModel';
 
-export const roles = hoistCmp.factory({
+export const rolePanel = hoistCmp.factory({
     displayName: 'Roles',
-    model: creates(RolesModel),
+    model: creates(RoleModel),
     render({className, model}) {
-        if (!XH.getConf('xhRoleServiceConfig').enabled) {
+        if (!model.softConfig?.enabled) {
             return errorMessage({
                 error: 'Role Service disabled via xhRoleServiceConfig.'
             });
         }
 
-        const {gridModel} = model;
+        const {gridModel, readonly} = model;
         return fragment(
             panel({
                 className,
                 mask: 'onLoad',
                 tbar: [
                     recordActionBar({
-                        actions: model.ACTIONS,
+                        actions: [model.addAction()],
                         gridModel,
+                        omit: readonly,
                         selModel: gridModel.selModel
                     }),
                     filler(),
@@ -44,35 +46,37 @@ export const roles = hoistCmp.factory({
                         labelSide: 'left'
                     })
                 ],
-                item: hframe(vframe(grid(), graphPanel()), detailsPanel())
+                item: hframe(vframe(grid(), roleGraph()), detailsPanel())
             }),
             roleEditor()
         );
     }
 });
 
-const detailsPanel = hoistCmp.factory<RolesModel>(({model}) =>
+const detailsPanel = hoistCmp.factory<RoleModel>(({model}) =>
     panel({
-        icon: Icon.idBadge(),
-        title: model.selectedRole?.name ?? 'Role Details',
-        item: roleDetails(),
         compactHeader: true,
+        icon: Icon.idBadge(),
+        title: model.selectedRole?.name ?? 'Details',
+        item: roleDetails(),
+        bbar: toolbar({
+            items: [
+                filler(),
+                recordActionBar({
+                    actions: [model.editAction()],
+                    gridModel: model.gridModel,
+                    selModel: model.gridModel.selModel,
+                    omit: model.readonly
+                })
+            ],
+            omit: !model.selectedRole
+        }),
         modelConfig: {
-            defaultSize: '50%',
+            defaultSize: '30%',
+            minSize: 600,
             modalSupport: true,
-            persistWith: {...RolesModel.PERSIST_WITH, path: 'detailsPanel'},
+            persistWith: {...RoleModel.PERSIST_WITH, path: 'detailsPanel'},
             side: 'right'
-        }
-    })
-);
-
-const graphPanel = hoistCmp.factory<RolesModel>(() =>
-    panel({
-        item: roleGraph(),
-        modelConfig: {
-            defaultSize: '25%',
-            persistWith: {...RolesModel.PERSIST_WITH, path: 'graphPanel'},
-            side: 'bottom'
         }
     })
 );

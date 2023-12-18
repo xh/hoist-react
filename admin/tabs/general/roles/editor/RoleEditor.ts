@@ -1,5 +1,5 @@
-import {roleForm} from '@xh/hoist/admin/tabs/roles/editor/form/RoleForm';
-import {RoleEditorModel} from '@xh/hoist/admin/tabs/roles/editor/RoleEditorModel';
+import {roleForm} from '@xh/hoist/admin/tabs/general/roles/editor/form/RoleForm';
+import {RoleEditorModel} from '@xh/hoist/admin/tabs/general/roles/editor/RoleEditorModel';
 import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
