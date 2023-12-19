@@ -31,7 +31,7 @@ export const roleGraph = hoistCmp.factory({
                         },
                         {
                             value: 'inherited',
-                            label: `Roles available to "${model.selectedRole?.name}"`
+                            label: `Roles "${model.selectedRole?.name}" has access to`
                         }
                     ],
                     width: 400

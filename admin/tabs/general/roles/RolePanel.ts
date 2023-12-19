@@ -19,7 +19,7 @@ export const rolePanel = hoistCmp.factory({
     render({className, model}) {
         if (!model.softConfig?.enabled) {
             return errorMessage({
-                error: 'Role Service disabled via xhRoleServiceConfig.'
+                error: 'Role Service disabled via xhRoleModuleConfig.'
             });
         }
 

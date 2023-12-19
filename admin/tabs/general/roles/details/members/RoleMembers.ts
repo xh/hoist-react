@@ -22,7 +22,7 @@ export const roleMembers = hoistCmp.factory<RoleMembersProps>({
     className: 'xh-admin-role-members',
     displayName: 'RoleMembers',
     model: creates(RoleMembersModel),
-    render({className, model}) {
+    render({className, model, showEffective}) {
         const {directCounts, effectiveCounts} = model;
         return panel({
             className,
@@ -50,7 +50,7 @@ export const roleMembers = hoistCmp.factory<RoleMembersProps>({
                 storeFilterField()
             ],
             item: grid(),
-            bbar: bbar()
+            bbar: bbar({omit: showEffective})
         });
     }
 });
@@ -86,13 +86,13 @@ const count = hoistCmp.factory<CountProps>(({count, icon}) =>
 
 const bbar = hoistCmp.factory<RoleMembersModel>(({model}) => {
     const {directCounts, softConfig} = model;
-    if (!softConfig?.enableDirectoryGroups && directCounts.DIRECTORY_GROUP) {
+    if (!softConfig?.assignDirectoryGroups && directCounts.DIRECTORY_GROUP) {
         return warningBanner({
-            message: 'Directory Groups are disabled and will not resolve to users.'
+            message: 'Directory Groups disabled. Will ignore.'
         });
-    } else if (!softConfig?.enableUsers && directCounts.USER) {
+    } else if (!softConfig?.assignUsers && directCounts.USER) {
         return warningBanner({
-            message: 'Direct assignment of users is disabled.'
+            message: 'Users assignment disabled. Will ignore.'
         });
     }
 });

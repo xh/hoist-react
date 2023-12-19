@@ -67,12 +67,12 @@ const assignments = hoistCmp.factory<RoleFormModel>(({model}) =>
         items: [
             assignmentsPanel({
                 entity: 'USER',
-                omit: !model.softConfig?.enableUsers && model.usersGridModel.empty
+                omit: !model.softConfig?.assignUsers && model.usersGridModel.empty
             }),
             assignmentsPanel({
                 entity: 'DIRECTORY_GROUP',
                 omit:
-                    !model.softConfig?.enableDirectoryGroups && model.directoryGroupsGridModel.empty
+                    !model.softConfig?.assignDirectoryGroups && model.directoryGroupsGridModel.empty
             }),
             assignmentsPanel({entity: 'ROLE'})
         ]
@@ -133,14 +133,14 @@ const bbar = hoistCmp.factory<AssignmentsPanelProps>(({entity, model}) => {
         case 'USER':
             return warningBanner({
                 compact: true,
-                message: 'Direct User assignments are not enabled.',
-                omit: model.softConfig?.enableUsers
+                message: 'Users assignment disabled. Will ignore.',
+                omit: model.softConfig?.assignUsers
             });
         case 'DIRECTORY_GROUP':
             return warningBanner({
                 compact: true,
-                message: 'Directory Groups are not enabled.',
-                omit: model.softConfig?.enableDirectoryGroups
+                message: 'Directory Groups disabled. Will ignore.',
+                omit: model.softConfig?.assignDirectoryGroups
             });
         default:
             return null;

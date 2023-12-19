@@ -57,7 +57,7 @@ export class RoleMembersModel extends HoistModel {
         const {effectiveUsers, effectiveDirectoryGroups, effectiveRoles} = this.selectedRole;
         return {
             USER: effectiveUsers.length,
-            DIRECTORY_GROUP: this.softConfig?.enableDirectoryGroups
+            DIRECTORY_GROUP: this.softConfig?.assignDirectoryGroups
                 ? effectiveDirectoryGroups.length
                 : 0,
             ROLE: effectiveRoles.length
@@ -69,7 +69,7 @@ export class RoleMembersModel extends HoistModel {
     }
 
     get softConfig(): RoleServiceConfig {
-        return XH.getConf('xhRoleServiceConfig');
+        return XH.getConf('xhRoleModuleConfig');
     }
 
     setActiveTabId(id: string) {
@@ -106,7 +106,7 @@ export class RoleMembersModel extends HoistModel {
                 })),
 
                 // 2 - Directory Groups
-                ...(this.softConfig?.enableDirectoryGroups
+                ...(this.softConfig?.assignDirectoryGroups
                     ? role.effectiveDirectoryGroups.map(it => ({
                           name: it.name,
                           sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
@@ -215,24 +215,36 @@ export class RoleMembersModel extends HoistModel {
 
     private createFilterActions(): RecordActionSpec[] {
         const {roleModel} = this,
-            types = invert(RoleMembersModel.types) as Record<string, RoleMemberType>;
+            {types} = RoleMembersModel,
+            typesMap = invert(types) as Record<string, RoleMemberType>;
         return [false, true].map(includeEffective => ({
             icon: Icon.filter(),
             actionFn: ({record}) =>
                 roleModel &&
                 roleModel.applyMemberFilter(
                     record.get('name'),
-                    types[record.get('type')],
+                    typesMap[record.get('type')],
                     includeEffective
                 ),
-            displayFn: ({record}) =>
-                record
-                    ? {
-                          text: `Roles that ${
-                              includeEffective ? 'effectively' : 'directly'
-                          } include ${record.get('name')}`
-                      }
-                    : {hidden: true}
+            displayFn: ({record}) => {
+                if (!record) return {hidden: true};
+                const {name, type} = record.data,
+                    {softConfig} = this;
+
+                if (
+                    !includeEffective &&
+                    ((type === types.USER && !softConfig.assignUsers) ||
+                        (type === types.DIRECTORY_GROUP && !softConfig.assignDirectoryGroups))
+                ) {
+                    return {hidden: true};
+                }
+
+                return {
+                    text: `Roles that ${
+                        includeEffective ? 'effectively' : 'directly'
+                    } include ${name}`
+                };
+            }
         }));
     }
 

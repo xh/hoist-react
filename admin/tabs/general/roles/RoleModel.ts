@@ -7,7 +7,7 @@ import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {groupBy, mapValues} from 'lodash';
+import {compact, groupBy, mapValues} from 'lodash';
 import {action, observable} from 'mobx';
 import moment from 'moment/moment';
 import {RoleEditorModel} from './editor/RoleEditorModel';
@@ -35,7 +35,7 @@ export class RoleModel extends HoistModel {
     }
 
     get softConfig(): RoleServiceConfig {
-        return XH.getConf('xhRoleServiceConfig');
+        return XH.getConf('xhRoleModuleConfig');
     }
 
     constructor() {
@@ -147,20 +147,13 @@ export class RoleModel extends HoistModel {
     }
 
     async deleteAsync(role: HoistRole): Promise<boolean> {
-        const {effectiveUsers, effectiveDirectoryGroups, effectiveRoles} = role,
-            userCount = effectiveUsers.length,
-            groupCount = effectiveDirectoryGroups.length,
-            roleCount = effectiveRoles.length;
-
-        if (userCount || groupCount || roleCount) {
-            const confirm = await XH.confirm({
-                icon: Icon.warning(),
-                title: 'Confirm delete?',
-                message: `${role.name} has assigned members. Are you sure you want to delete it?`,
-                confirmProps: {intent: 'danger', text: 'Confirm Delete'}
-            });
-            if (!confirm) return false;
-        }
+        const confirm = await XH.confirm({
+            icon: Icon.warning(),
+            title: 'Confirm delete?',
+            message: `Are you sure you want to delete "${role.name}"? This may affect access to this applications.`,
+            confirmProps: {intent: 'danger', text: 'Confirm Delete'}
+        });
+        if (!confirm) return false;
         await XH.fetchJson({
             url: `roleAdmin/delete/${role.name}`,
             method: 'DELETE'
@@ -222,21 +215,21 @@ export class RoleModel extends HoistModel {
             store: {
                 idSpec: 'name',
                 fields: [
-                    {name: 'users', type: 'tags'},
-                    {name: 'directoryGroups', type: 'tags'},
-                    {name: 'roles', type: 'tags'},
+                    {name: 'users', displayName: 'Assigned Users', type: 'tags'},
+                    {name: 'directoryGroups', displayName: 'Assigned Groups', type: 'tags'},
+                    {name: 'roles', displayName: 'Assigned Roles', type: 'tags'},
                     {name: 'inheritedRoles', type: 'json'},
                     {name: 'effectiveUsers', type: 'json'},
                     {name: 'effectiveDirectoryGroups', type: 'json'},
                     {name: 'effectiveRoles', type: 'json'},
                     {name: 'inheritedRoleNames', displayName: 'Inherited Roles', type: 'tags'},
-                    {name: 'effectiveUserNames', displayName: 'Effective Users', type: 'tags'},
+                    {name: 'effectiveUserNames', displayName: 'Users', type: 'tags'},
                     {
                         name: 'effectiveDirectoryGroupNames',
-                        displayName: 'Effective Directory Groups',
+                        displayName: 'Groups',
                         type: 'tags'
                     },
-                    {name: 'effectiveRoleNames', displayName: 'Effective Roles', type: 'tags'},
+                    {name: 'effectiveRoleNames', displayName: 'Roles', type: 'tags'},
                     {name: 'members', type: 'json'}
                 ],
                 processRawData: raw => ({
@@ -271,13 +264,14 @@ export class RoleModel extends HoistModel {
     }
 
     private createFilterChooserModel(): FilterChooserModel {
+        const {softConfig} = this;
         return new FilterChooserModel({
             bind: this.gridModel.store,
-            fieldSpecs: [
+            fieldSpecs: compact([
                 'name',
                 'category',
-                'users',
-                'directoryGroups',
+                softConfig.assignUsers && 'users',
+                softConfig.assignDirectoryGroups && 'directoryGroups',
                 'roles',
                 'inheritedRoleNames',
                 'effectiveUserNames',
@@ -301,7 +295,7 @@ export class RoleModel extends HoistModel {
                     valueRenderer: v => fmtDate(v),
                     ops: ['>', '>=', '<', '<=']
                 }
-            ],
+            ]),
             persistWith: {...RoleModel.PERSIST_WITH, path: 'mainFilterChooser'}
         });
     }

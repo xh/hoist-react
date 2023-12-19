@@ -57,7 +57,7 @@ export class RoleFormModel extends HoistModel {
     }
 
     get softConfig(): RoleServiceConfig {
-        return XH.getConf('xhRoleServiceConfig');
+        return XH.getConf('xhRoleModuleConfig');
     }
 
     @action
