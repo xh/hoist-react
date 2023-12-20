@@ -177,6 +177,7 @@ export class RoleMembersModel extends HoistModel {
                 {
                     field: 'sources',
                     flex: true,
+                    minWidth: 105,
                     renderer: (sources: Array<{role: string; directoryGroup?: string}>) =>
                         hbox({
                             className: 'roles-renderer',
