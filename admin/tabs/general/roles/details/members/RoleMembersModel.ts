@@ -172,7 +172,11 @@ export class RoleMembersModel extends HoistModel {
                 filterable: true
             },
             columns: [
-                {field: 'name'},
+                {
+                    field: 'name',
+                    autosizeMaxWidth: 300,
+                    tooltip: true
+                },
                 {field: 'type', hidden: true},
                 {
                     field: 'sources',
