@@ -96,12 +96,12 @@ export class ChangelogService extends HoistService {
         const {latestAvailableVersion, LAST_READ_PREF_KEY} = this;
 
         if (includes(latestAvailableVersion, 'SNAPSHOT')) {
-            console.warn('Unable to mark changelog as read when latest version is SNAPSHOT.');
+            this.logWarn('Unable to mark changelog as read when latest version is SNAPSHOT.');
             return;
         }
 
         if (!latestAvailableVersion || !XH.prefService.hasKey(LAST_READ_PREF_KEY)) {
-            console.warn(
+            this.logWarn(
                 'Unable to mark changelog as read - latest version or required pref not found.'
             );
             return;
@@ -147,7 +147,7 @@ export class ChangelogService extends HoistService {
 
             return versions;
         } catch (e) {
-            console.error(
+            this.logError(
                 'Error parsing changelog JSON into versions - changelog will not be available',
                 e
             );

@@ -62,7 +62,7 @@ export class IdentityService extends HoistService {
         try {
             await XH.appModel?.logoutAsync();
         } catch (e) {
-            console.error('Error calling XH.appModel.logoutAsync()', e);
+            this.logError('Error calling XH.appModel.logoutAsync()', e);
         }
         return XH.fetchJson({url: 'xh/logout'})
             .then(() => XH.reloadApp())

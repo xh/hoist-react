@@ -369,8 +369,8 @@ export class InstancesModel extends HoistModel {
                     const displayGroup = inst.isHoistService
                         ? 'Services'
                         : inst.isStore
-                        ? 'Stores'
-                        : 'Models';
+                          ? 'Stores'
+                          : 'Models';
                     data.push({...inst, displayGroup});
                 });
 
@@ -464,8 +464,8 @@ export class InstancesModel extends HoistModel {
             isGetter && !isLoadedGetter
                 ? 'get(?)'
                 : isProxy
-                ? 'Proxy'
-                : v?.constructor?.name ?? typeof v;
+                  ? 'Proxy'
+                  : v?.constructor?.name ?? typeof v;
 
         return {
             id: `${xhId}-${property}${fromWatchlistItem ? '-wl' : ''}`,
@@ -479,8 +479,8 @@ export class InstancesModel extends HoistModel {
                 isHoistModel || isHoistService || isStore
                     ? v.xhId
                     : isProxy
-                    ? '[cannot render]'
-                    : v,
+                      ? '[cannot render]'
+                      : v,
             valueType,
             isOwnProperty,
             isObservable,
