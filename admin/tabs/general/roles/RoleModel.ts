@@ -204,6 +204,7 @@ export class RoleModel extends HoistModel {
             enableExport: true,
             exportOptions: {filename: 'roles'},
             filterModel: true,
+            groupRowRenderer: ({value}) => (!value ? 'Uncategorized' : value),
             headerMenuDisplay: 'hover',
             onRowDoubleClicked: ({data: record}) =>
                 !this.readonly &&
