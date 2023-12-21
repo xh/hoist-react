@@ -2,6 +2,11 @@
 
 ## 60.0.0-SNAPSHOT
 
+### 🎁 New Features
+
+* Add `zoneLabelRenderer` property to `Column`. This will allow "cell-by-cell" labeling of fields in
+`zoneGrid`.
+
 ### ✨ Styles
 
 * Added `xh-bg-intent-xxx` CSS classes, for intent-coloring the `background-color` of elements.
