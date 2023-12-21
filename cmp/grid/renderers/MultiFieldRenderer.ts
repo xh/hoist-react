@@ -102,8 +102,7 @@ function renderSubField({colId, label, labelRenderer}, context) {
 
     throwIf(!column, `Subfield ${colId} not found`);
 
-    const {field, headerName, renderer, zoneLabelRenderer, appData} = column,
-        {multiZoneLabelRenderer} = appData,
+    const {field, headerName, renderer, zoneLabelRenderer} = column,
         value = record.data[field];
 
     if (!label && zoneLabelRenderer) {
@@ -111,10 +110,6 @@ function renderSubField({colId, label, labelRenderer}, context) {
     }
 
     if (label && !isString(label)) label = headerName;
-
-    if (multiZoneLabelRenderer) {
-        label = multiZoneLabelRenderer(record);
-    }
 
     const renderedVal = renderValue(value, renderer, column, context),
         renderedValIsEmpty = renderedVal === '' || isNil(renderedVal);
