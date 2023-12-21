@@ -2,6 +2,10 @@
 
 ## 60.0.0-SNAPSHOT
 
+### 🐞 Bug Fixes
+
+* Fixed `DateEditor` calendar popover not showing for non-pinned columns.
+
 ### ✨ Styles
 
 * Added `xh-bg-intent-xxx` CSS classes, for intent-coloring the `background-color` of elements.
