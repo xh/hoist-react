@@ -96,7 +96,7 @@ function renderMainField(value, renderer, context) {
     });
 }
 
-function renderSubField({colId, label, labelRenderer}, context) {
+function renderSubField({colId, label}, context) {
     const {record, gridModel} = context,
         column = gridModel.getColumn(colId);
 
