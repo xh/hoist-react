@@ -238,7 +238,7 @@ export interface ColumnSpec {
      */
     rendererIsComplex?: boolean;
 
-    /** Function returning a label for each value in this Column.*/
+    /** Function returning a label for each value represented by this column in a zone grid.*/
     zoneLabelRenderer?: ColumnRenderer;
 
     /**
