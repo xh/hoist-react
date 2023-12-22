@@ -15,7 +15,7 @@ import {Icon} from '@xh/hoist/icon';
 import {tag} from '@xh/hoist/kit/blueprint';
 import {bindable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
-import {invert, sortBy, uniqBy} from 'lodash';
+import {first, invert, sortBy, uniqBy} from 'lodash';
 import {computed} from 'mobx';
 
 export class RoleMembersModel extends HoistModel {
@@ -175,6 +175,10 @@ export class RoleMembersModel extends HoistModel {
                 {
                     field: 'name',
                     autosizeMaxWidth: 300,
+                    renderer: (name, {record}) =>
+                        record.get('type') === types.DIRECTORY_GROUP
+                            ? this.fmtDirectoryGroup(name)
+                            : name,
                     tooltip: true
                 },
                 {field: 'type', hidden: true},
@@ -194,7 +198,10 @@ export class RoleMembersModel extends HoistModel {
                                             !isThisRole && 'roles-renderer__role--effective'
                                         ),
                                         intent: isThisRole ? null : 'primary',
-                                        item: isThisRole ? directoryGroup ?? '<Direct>' : role,
+                                        item: isThisRole
+                                            ? this.fmtDirectoryGroup(directoryGroup) ?? '<Direct>'
+                                            : role,
+                                        title: isThisRole ? directoryGroup ?? '<Direct>' : role,
                                         minimal: true,
                                         onClick: () =>
                                             !isThisRole && this.roleModel.selectRoleAsync(role)
@@ -259,5 +266,9 @@ export class RoleMembersModel extends HoistModel {
         sources = sortBy(sources, source => `${source.role}:${source.directoryGroup ?? ''}`);
         const thisRole = sources.filter(it => it.role === this.selectedRole.name) ?? [];
         return [...thisRole, ...sources.filter(it => it.role !== this.selectedRole.name)];
+    }
+
+    private fmtDirectoryGroup(name?: string): string {
+        return name?.startsWith('CN=') ? first(name.split(',')).substring(3) : name;
     }
 }
