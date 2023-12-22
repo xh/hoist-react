@@ -1,5 +1,11 @@
 # Changelog
 
+## 59.5.1 - 2024-01-05
+
+### 🐞 Bug Fixes
+
+* Fixed `DateEditor` calendar popover not showing for non-pinned columns.
+
 ## 59.5.0 - 2023-12-11
 
 ### 🎁 New Features
