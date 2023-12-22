@@ -73,7 +73,7 @@ const detailsPanel = hoistCmp.factory<RoleModel>(({model}) =>
         }),
         modelConfig: {
             defaultSize: '30%',
-            minSize: 600,
+            minSize: 550,
             modalSupport: true,
             persistWith: {...RoleModel.PERSIST_WITH, path: 'detailsPanel'},
             side: 'right'
