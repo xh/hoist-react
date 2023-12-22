@@ -7,7 +7,7 @@
 import {ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {throwIf, warnIf, intersperse} from '@xh/hoist/utils/js';
-import {isNil, isString, partition, pull} from 'lodash';
+import {isNil, partition, pull} from 'lodash';
 import {ReactNode} from 'react';
 
 /**
@@ -107,9 +107,9 @@ function renderSubField({colId, label}, context) {
 
     if (!label && zoneLabelRenderer) {
         label = zoneLabelRenderer(value, context);
+    } else if (label === true) {
+        label = headerName;
     }
-
-    if (label && !isString(label)) label = headerName;
 
     const renderedVal = renderValue(value, renderer, column, context),
         renderedValIsEmpty = renderedVal === '' || isNil(renderedVal);
