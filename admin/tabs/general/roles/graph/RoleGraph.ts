@@ -3,7 +3,8 @@ import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {chart} from '@xh/hoist/cmp/chart';
 import {placeholder} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
-import {select} from '@xh/hoist/desktop/cmp/input';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -14,29 +15,28 @@ export const roleGraph = hoistCmp.factory({
     displayName: 'RoleGraph',
     model: creates(RoleGraphModel),
     render({model}) {
+        const {role} = model;
         return panel({
             compactHeader: true,
             icon: Icon.idBadge(),
-            title: model.selectedRole?.name ?? 'Relationships',
+            title: role ? `Relationships - ${role.name} ` : 'Relationships',
             item: content(),
-            bbar: toolbar({
-                item: select({
+            tbar: toolbar({
+                item: buttonGroupInput({
                     bind: 'relationship',
-                    enableClear: false,
-                    enableFilter: false,
-                    options: [
-                        {
-                            value: 'effective',
-                            label: `Roles with access to "${model.selectedRole?.name}"`
-                        },
-                        {
+                    items: [
+                        button({
                             value: 'inherited',
-                            label: `Roles "${model.selectedRole?.name}" has access to`
-                        }
+                            text: `Inherited BY this Role (${role?.inheritedRoles.length})`
+                        }),
+                        button({
+                            value: 'effective',
+                            text: `Inheriting FROM this Role (${role?.effectiveRoles.length})`
+                        })
                     ],
                     width: 400
                 }),
-                omit: !model.selectedRole
+                omit: !role
             }),
             modelConfig: {
                 defaultSize: '25%',
@@ -50,12 +50,17 @@ export const roleGraph = hoistCmp.factory({
 });
 
 const content = hoistCmp.factory<RoleGraphModel>(({model}) => {
-    if (Highcharts && !Highcharts.seriesTypes.treegraph) {
+    const {role} = model;
+    if (!Highcharts?.seriesTypes.treegraph) {
         logError(
-            'Highcharts TreeGraph module not imported by this app - import and register module in Bootstrap.ts. See the XH Toolbox app for an example.'
+            [
+                'Highcharts TreeGraph module not imported by this app. ',
+                'Import and register module in Bootstrap.ts. See the XH Toolbox app for an example.'
+            ],
+            'RoleGraph'
         );
         return placeholder('Missing Highcharts TreeGraph module.');
     }
-    if (!model.selectedRole) return placeholder('No role selected.');
+    if (!role) return placeholder('No role selected.');
     return chart();
 });

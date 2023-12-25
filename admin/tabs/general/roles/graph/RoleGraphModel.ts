@@ -3,7 +3,7 @@ import {ChartModel} from '@xh/hoist/cmp/chart';
 import {HoistModel, lookup, managed, PlainObject} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {sortBy} from 'lodash';
+import {isEmpty, sortBy} from 'lodash';
 import {HoistRole} from '../Types';
 
 export class RoleGraphModel extends HoistModel {
@@ -12,22 +12,23 @@ export class RoleGraphModel extends HoistModel {
 
     @bindable relationship: 'effective' | 'inherited' = 'inherited';
 
-    get selectedRole(): HoistRole {
+    get role(): HoistRole {
         return this.roleModel.selectedRole;
     }
 
     override onLinked() {
+        const {chartModel} = this;
         this.addReaction({
-            track: () => [this.selectedRole, this.relationship],
-            run: async ([selectedRole]: [HoistRole]) => {
-                // We need to clear the chart first to avoid HC rendering glitches
-                this.chartModel.clear();
+            track: () => [this.role, this.relationship],
+            run: async ([role]) => {
+                chartModel.clear(); //  avoid HC rendering glitches
                 await wait();
-                if (!selectedRole) return;
-                this.chartModel.setSeries({
-                    type: 'treegraph',
-                    data: this.getSeriesData(selectedRole)
-                });
+                if (role) {
+                    chartModel.setSeries({
+                        type: 'treegraph',
+                        data: this.getSeriesData(role)
+                    });
+                }
             },
             fireImmediately: true,
             debounce: 100
@@ -37,11 +38,11 @@ export class RoleGraphModel extends HoistModel {
     // -------------------------------
     // Implementation
     // -------------------------------
-
     private getSeriesData(role: HoistRole): PlainObject[] {
         const {name} = role,
-            relatedRoles =
-                this.relationship === 'effective' ? role.effectiveRoles : role.inheritedRoles;
+            isEffective = this.relationship === 'effective',
+            relatedRoles = isEffective ? role.effectiveRoles : role.inheritedRoles;
+        if (isEmpty(relatedRoles)) return [];
         return [
             {
                 id: name,
@@ -76,6 +77,9 @@ export class RoleGraphModel extends HoistModel {
                         animation: false,
                         collapseButton: {
                             enabled: false
+                        },
+                        tooltip: {
+                            linkFormat: null
                         },
                         dataLabels: {
                             style: {

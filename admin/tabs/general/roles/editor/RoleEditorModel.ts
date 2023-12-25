@@ -30,11 +30,11 @@ export class RoleEditorModel extends HoistModel {
         this.roleModel = roleModel;
     }
 
-    createAsync(roleSpec?: HoistRole): Promise<HoistRole> {
+    async createAsync(roleSpec?: HoistRole): Promise<HoistRole> {
         return this.openAsync(roleSpec);
     }
 
-    editAsync(role: HoistRole): Promise<HoistRole> {
+    async editAsync(role: HoistRole): Promise<HoistRole> {
         return this.openAsync(role, true);
     }
 

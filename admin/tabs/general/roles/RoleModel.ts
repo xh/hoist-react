@@ -87,7 +87,6 @@ export class RoleModel extends HoistModel {
     // -------------------------------
     // Actions
     // -------------------------------
-
     addAction(): RecordActionSpec {
         return {
             text: 'Add',
@@ -129,23 +128,6 @@ export class RoleModel extends HoistModel {
         };
     }
 
-    // -------------------------------
-    // Reactions
-    // -------------------------------
-
-    private groupByCategoryReaction(): ReactionSpec<boolean> {
-        const {gridModel} = this;
-        return {
-            track: () => this.groupByCategory,
-            run: groupByCategory => {
-                gridModel.setGroupBy(groupByCategory ? 'category' : null);
-                gridModel.setColumnVisible('category', !groupByCategory);
-                gridModel.autosizeAsync();
-            },
-            fireImmediately: true
-        };
-    }
-
     async deleteAsync(role: HoistRole): Promise<boolean> {
         const confirm = await XH.confirm({
             icon: Icon.warning(),
@@ -165,6 +147,18 @@ export class RoleModel extends HoistModel {
     // -------------------------------
     // Implementation
     // -------------------------------
+    private groupByCategoryReaction(): ReactionSpec<boolean> {
+        const {gridModel} = this;
+        return {
+            track: () => this.groupByCategory,
+            run: groupByCategory => {
+                gridModel.setGroupBy(groupByCategory ? 'category' : null);
+                gridModel.setColumnVisible('category', !groupByCategory);
+                gridModel.autosizeAsync();
+            },
+            fireImmediately: true
+        };
+    }
 
     private processRolesFromServer(
         roles: Omit<HoistRole, 'users' | 'directoryGroups' | 'roles'>[]

@@ -5,11 +5,11 @@ import {
 } from '@xh/hoist/admin/tabs/general/roles/Types';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, SelectOption, XH} from '@xh/hoist/core';
+import {HoistModel, managed, ReactionSpec, SelectOption, XH} from '@xh/hoist/core';
 import {RecordActionSpec, required} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth, selectEditor} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {groupBy, isNil, isString, map, uniq} from 'lodash';
+import {groupBy, isNil, isString, map, sortBy, uniq, without} from 'lodash';
 import {action, computed, observable} from 'mobx';
 
 export class RoleFormModel extends HoistModel {
@@ -60,6 +60,15 @@ export class RoleFormModel extends HoistModel {
         return XH.getConf('xhRoleModuleConfig');
     }
 
+    constructor() {
+        super();
+        this.addReaction(
+            this.clearDegenerateRowReaction(this.usersGridModel),
+            this.clearDegenerateRowReaction(this.directoryGroupsGridModel),
+            this.clearDegenerateRowReaction(this.rolesGridModel)
+        );
+    }
+
     @action
     init(allRoles: HoistRole[], role?: Partial<HoistRole>) {
         this.isEditingExistingRole = !isNil(role?.name);
@@ -70,10 +79,13 @@ export class RoleFormModel extends HoistModel {
         this.directoryGroupOptions = uniq(allRoles.flatMap(role => role.directoryGroups)).sort();
         this.groupOptions = uniq(allRoles.map(it => it.category)).sort();
         this.rolesGridModel.loadData(role?.roles?.map(name => ({name})) ?? []);
-        this.roleOptions = map(groupBy(allRoles, 'category'), (roles, category) => ({
-            label: category,
-            options: roles.filter(it => it.name !== role?.name).map(it => it.name)
-        }));
+        this.roleOptions = sortBy(
+            map(groupBy(allRoles, 'category'), (roles, category) => ({
+                label: category == 'null' ? '*Uncategorized*' : category,
+                options: without(map(roles, 'name'), role?.name).sort()
+            })),
+            ['label']
+        );
         this.invalidNames = allRoles.map(it => it.name).filter(it => it !== role?.name);
     }
 
@@ -141,8 +153,8 @@ export class RoleFormModel extends HoistModel {
                                 entity === 'USER'
                                     ? this.userOptions
                                     : entity === 'DIRECTORY_GROUP'
-                                    ? this.directoryGroupOptions
-                                    : this.roleOptions;
+                                      ? this.directoryGroupOptions
+                                      : this.roleOptions;
                         return selectEditor({
                             ...props,
                             inputProps: {
@@ -198,6 +210,20 @@ export class RoleFormModel extends HoistModel {
             actionFn: ({selectedRecords, gridModel}) =>
                 gridModel.store.removeRecords(selectedRecords),
             recordsRequired: true
+        };
+    }
+
+    private clearDegenerateRowReaction(gridModel: GridModel): ReactionSpec {
+        const {store} = gridModel;
+        return {
+            track: () => gridModel.isEditing,
+            run: isEditing => {
+                if (!isEditing) {
+                    const degenerate = store.addedRecords.filter(r => r.data.name == null);
+                    store.removeRecords(degenerate);
+                }
+            },
+            debounce: 250
         };
     }
 }

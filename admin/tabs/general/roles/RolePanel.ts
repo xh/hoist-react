@@ -57,7 +57,7 @@ const detailsPanel = hoistCmp.factory<RoleModel>(({model}) =>
     panel({
         compactHeader: true,
         icon: Icon.idBadge(),
-        title: model.selectedRole?.name ?? 'Details',
+        title: model.selectedRole?.name ? `Details - ${model.selectedRole?.name}` : 'Details',
         item: roleDetails(),
         bbar: toolbar({
             items: [

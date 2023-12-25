@@ -2,7 +2,7 @@ import {RoleMemberType} from '@xh/hoist/admin/tabs/general/roles/Types';
 import {warningBanner} from '@xh/hoist/admin/tabs/general/roles/warning/WarningBanner';
 import {form} from '@xh/hoist/cmp/form';
 import {grid} from '@xh/hoist/cmp/grid';
-import {hbox, hframe, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {hbox, hframe, hspacer, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -92,8 +92,8 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
             entity === 'USER'
                 ? model.usersGridModel
                 : entity === 'DIRECTORY_GROUP'
-                ? model.directoryGroupsGridModel
-                : model.rolesGridModel;
+                  ? model.directoryGroupsGridModel
+                  : model.rolesGridModel;
 
         return panel({
             className,
@@ -102,9 +102,10 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
                 entity === 'USER'
                     ? Icon.user()
                     : entity === 'DIRECTORY_GROUP'
-                    ? Icon.users()
-                    : Icon.idBadge(),
+                      ? Icon.users()
+                      : Icon.idBadge(),
             title: `${capitalizeWords(entity.replace('_', ' '))}s`,
+            headerItems: [infoIcon({entity}), hspacer(2)],
             tbar: toolbar({
                 compact: true,
                 items: [
@@ -144,5 +145,17 @@ const bbar = hoistCmp.factory<AssignmentsPanelProps>(({entity, model}) => {
             });
         default:
             return null;
+    }
+});
+
+const infoIcon = hoistCmp.factory<AssignmentsPanelProps>({
+    render({entity}) {
+        return entity == 'ROLE'
+            ? Icon.info({
+                  title:
+                      'All users holding the roles below will also be granted this role.' +
+                      'These roles essentially "inherit" this role and are a functional superset of this role.'
+              })
+            : null;
     }
 });
