@@ -3,6 +3,7 @@
 !/.idea/scopes/
 !/.idea/copyright/
 *.iml
+.vscode
 
 # Build / Libs
 build/
@@ -16,4 +17,3 @@ node_modules/
 .DS_Store?
 ehthumbs.db
 Thumbs.db
-

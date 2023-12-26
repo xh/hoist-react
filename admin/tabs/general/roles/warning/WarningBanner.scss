@@ -1,0 +1,14 @@
+.xh-admin-warning-banner {
+  background-color: var(--xh-intent-warning-trans1);
+  justify-content: center;
+
+  &__icon {
+    padding-right: var(--xh-pad-half-px);
+  }
+
+  &__message {
+    flex-shrink: unset !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
