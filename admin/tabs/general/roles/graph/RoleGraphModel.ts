@@ -4,13 +4,19 @@ import {HoistModel, lookup, managed, PlainObject} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isEmpty, sortBy} from 'lodash';
-import {HoistRole} from '../Types';
+import {EffectiveRoleMember, HoistRole} from '../Types';
 
 export class RoleGraphModel extends HoistModel {
     @lookup(RoleModel) readonly roleModel: RoleModel;
     @managed readonly chartModel: ChartModel = this.createChartModel();
 
     @bindable relationship: 'effective' | 'inherited' = 'inherited';
+
+    get relatedRoles(): EffectiveRoleMember[] {
+        const {role, relationship} = this;
+        if (!role) return [];
+        return relationship === 'effective' ? role.effectiveRoles : role.inheritedRoles;
+    }
 
     get role(): HoistRole {
         return this.roleModel.selectedRole;
@@ -26,7 +32,7 @@ export class RoleGraphModel extends HoistModel {
                 if (role) {
                     chartModel.setSeries({
                         type: 'treegraph',
-                        data: this.getSeriesData(role)
+                        data: this.getSeriesData()
                     });
                 }
             },
@@ -38,10 +44,9 @@ export class RoleGraphModel extends HoistModel {
     // -------------------------------
     // Implementation
     // -------------------------------
-    private getSeriesData(role: HoistRole): PlainObject[] {
-        const {name} = role,
-            isEffective = this.relationship === 'effective',
-            relatedRoles = isEffective ? role.effectiveRoles : role.inheritedRoles;
+    private getSeriesData(): PlainObject[] {
+        const {role, relatedRoles} = this,
+            {name} = role;
         if (isEmpty(relatedRoles)) return [];
         return [
             {
@@ -78,9 +83,6 @@ export class RoleGraphModel extends HoistModel {
                         collapseButton: {
                             enabled: false
                         },
-                        tooltip: {
-                            linkFormat: null
-                        },
                         dataLabels: {
                             style: {
                                 fontFamily: 'var(--xh-font-family)',
@@ -94,6 +96,15 @@ export class RoleGraphModel extends HoistModel {
                         },
                         marker: {
                             fillColor: 'var(--xh-bg-highlight)'
+                        },
+                        point: {
+                            events: {
+                                mouseOver: function () {
+                                    if (isEmpty(this.node)) {
+                                        return false; // Disable tooltip for links
+                                    }
+                                }
+                            }
                         }
                     }
                 }

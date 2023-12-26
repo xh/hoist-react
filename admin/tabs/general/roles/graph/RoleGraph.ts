@@ -10,6 +10,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {logError} from '@xh/hoist/utils/js';
+import {isEmpty} from 'lodash';
 
 export const roleGraph = hoistCmp.factory({
     displayName: 'RoleGraph',
@@ -50,7 +51,7 @@ export const roleGraph = hoistCmp.factory({
 });
 
 const content = hoistCmp.factory<RoleGraphModel>(({model}) => {
-    const {role} = model;
+    const {relationship, relatedRoles, role} = model;
     if (!Highcharts?.seriesTypes.treegraph) {
         logError(
             [
@@ -61,6 +62,13 @@ const content = hoistCmp.factory<RoleGraphModel>(({model}) => {
         );
         return placeholder('Missing Highcharts TreeGraph module.');
     }
-    if (!role) return placeholder('No role selected.');
+    if (isEmpty(relatedRoles))
+        return placeholder(
+            !role
+                ? 'No role selected.'
+                : relationship === 'inherited'
+                  ? 'No roles inherited BY this role.'
+                  : 'No roles inheriting FROM this role.'
+        );
     return chart();
 });
