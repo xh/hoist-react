@@ -8,6 +8,9 @@
     * New system supports app and plug-in specific integrations to AD and other enterprise systems.
     * Administration of the new system provided by a new admin UI tab provided here.
 
+* Add `labelRenderers` property to `ZoneGridModel`. This allows dynamic "data-specific" labeling of
+ fields in `zoneGrid`.
+
 ### 🐞 Bug Fixes
 
 * Fixed `DateEditor` calendar popover not showing for non-pinned columns.
