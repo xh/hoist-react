@@ -238,9 +238,6 @@ export interface ColumnSpec {
      */
     rendererIsComplex?: boolean;
 
-    /** Function returning a label for each value represented by this column in a zone grid.*/
-    zoneLabelRenderer?: ColumnRenderer;
-
     /**
      * Set to true to call attention to cell changes by flashing the cell's background color.
      */
@@ -454,7 +451,6 @@ export class Column {
     pinned: HSide;
     renderer: ColumnRenderer;
     rendererIsComplex: boolean;
-    zoneLabelRenderer: ColumnRenderer;
     highlightOnChange: boolean;
     tooltip: boolean | ColumnTooltipFn;
     chooserName: string;
@@ -527,7 +523,6 @@ export class Column {
             pinned,
             renderer,
             rendererIsComplex,
-            zoneLabelRenderer,
             highlightOnChange,
             chooserName,
             chooserGroup,
@@ -626,7 +621,6 @@ export class Column {
 
         this.renderer = managedRenderer(renderer, this.displayName);
         this.rendererIsComplex = rendererIsComplex;
-        this.zoneLabelRenderer = zoneLabelRenderer;
         this.highlightOnChange = highlightOnChange;
 
         this.tooltip = tooltip;
