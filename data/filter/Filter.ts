@@ -25,13 +25,12 @@ export abstract class Filter {
     }
 
     /**
-     * Return a function that can be used to test a record or object.
-     *
+     * @returns a function that can be used to test a record or object.
      * @param store - if provided, return will be appropriate for testing records of this store.
      *      Otherwise, return will be appropriate for testing anonymous objects.
      */
     abstract getTestFn(store?: Store): FilterTestFn;
 
-    /** True if the provided other Filter is equivalent to this instance.*/
+    /** @returns true if the provided other Filter is equivalent to this instance.*/
     abstract equals(other: Filter): boolean;
 }

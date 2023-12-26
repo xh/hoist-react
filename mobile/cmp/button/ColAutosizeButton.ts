@@ -10,7 +10,7 @@ import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
-import {withDefault} from '@xh/hoist/utils/js';
+import {logError, withDefault} from '@xh/hoist/utils/js';
 
 export interface ColAutosizeButtonProps extends ButtonProps {
     /** GridModel of the grid for which this button should autosize columns. */
@@ -31,8 +31,9 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory<ColAu
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
         if (!gridModel?.autosizeEnabled) {
-            console.error(
-                "No GridModel available with autosize enabled. Provide via a 'gridModel' prop, or context."
+            logError(
+                "No GridModel available with autosize enabled. Provide via a 'gridModel' prop, or context.",
+                ColAutosizeButton
             );
             return button({icon, disabled: true, ...props});
         }

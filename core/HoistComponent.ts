@@ -282,9 +282,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
         if (!model && !spec.optional && spec instanceof UsesSpec) {
             console.error(`
                 Failed to find model with selector '${formatSelector(spec.selector)}' for
-                component '${
-                    cfg.displayName
-                }'.  Ensure the proper model is available via context, or
+                component '${cfg.displayName}'. Ensure the proper model is available via context, or
                 specify explicitly using the 'model' prop.
             `);
             return cmpErrDisplay({...getLayoutProps(props), item: 'No model found'});

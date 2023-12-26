@@ -15,7 +15,7 @@ import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {errorIf, getTestId, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {errorIf, getTestId, logWarn, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getReactElementName, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
@@ -107,7 +107,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         model = model ?? (formModel && field ? formModel.fields[field] : null);
 
         if (!model) {
-            console.warn(`Unable to bind FormField to field "${field}" on backing FormModel`);
+            logWarn(`Unable to bind FormField to field "${field}" on backing FormModel`, FormField);
         }
 
         // Model related props

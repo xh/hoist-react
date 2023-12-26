@@ -91,7 +91,7 @@ function computeStyleInAgGrid(
 
     const inputEl = data.instance.reference,
         leftContainer = inputEl.closest('.ag-pinned-left-cols-container'),
-        centerContainer = inputEl.closest('.ag-center-cols-clipper'),
+        centerContainer = inputEl.closest('.ag-center-cols-container'),
         rightContainer = inputEl.closest('.ag-pinned-right-cols-container'),
         rowContainer = centerContainer || leftContainer || rightContainer;
 
@@ -143,7 +143,7 @@ function computeStyleInAgGrid(
 
     // Solve y axis (top).  Default position is underneath cell
     // Flips to above if cell is near bottom of grid.
-    // If poppper height is greater than grid height, the popper stays in the default position.
+    // If popper height is greater than grid height, the popper stays in the default position.
     const flipToAbove =
             popperHeight < pcHeight && inputElBottom - scrollTop + popperHeight > pcHeight,
         trTop = flipToAbove ? inputElTop - popperHeight : inputElBottom;

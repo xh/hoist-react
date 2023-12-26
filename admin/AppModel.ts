@@ -65,6 +65,7 @@ export class AppModel extends HoistAppModel {
                     {name: 'config', path: '/config'},
                     {name: 'logLevels', path: '/logLevels'},
                     {name: 'users', path: '/users'},
+                    {name: 'roles', path: '/roles'},
                     {name: 'alertBanner', path: '/alertBanner'}
                 ]
             },

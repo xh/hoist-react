@@ -141,7 +141,7 @@ export class EnvironmentService extends HoistService {
         // prompted to refresh.
         const clientVersion = this.get('clientVersion');
         if (appVersion !== clientVersion) {
-            console.warn(
+            this.logWarn(
                 `Version mismatch detected between client and server - ${clientVersion} vs ${appVersion}`
             );
         }

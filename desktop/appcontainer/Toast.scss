@@ -29,22 +29,6 @@
       margin: 0 0 0 var(--xh-pad-half-px);
     }
 
-    &--primary {
-      background-color: var(--xh-intent-primary);
-    }
-
-    &--warning {
-      background-color: var(--xh-intent-warning);
-    }
-
-    &--danger {
-      background-color: var(--xh-intent-danger);
-    }
-
-    &--success {
-      background-color: var(--xh-intent-success);
-    }
-
     .bp4-toast-message {
       word-break: break-word;
     }

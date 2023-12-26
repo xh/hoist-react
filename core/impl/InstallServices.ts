@@ -6,7 +6,7 @@
  */
 import {HoistService, HoistServiceClass, Some, XH} from '@xh/hoist/core';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
-import {throwIf, withDebug} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import {camelCase, castArray} from 'lodash';
 
 /**
@@ -50,13 +50,7 @@ export async function installServicesAsync(serviceClasses: Some<HoistServiceClas
 
 async function initServicesInternalAsync(svcs: HoistService[]) {
     const promises = svcs.map(it => {
-        return withDebug(
-            `Initializing ${it.constructor.name}`,
-            () => {
-                return it.initAsync();
-            },
-            'XH'
-        );
+        return it.withDebug(`Initializing`, () => it.initAsync());
     });
 
     const results: any[] = await Promise.allSettled(promises),

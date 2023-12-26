@@ -69,7 +69,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     @observable
     _componentProps = {};
     _modelLookup = null;
-    _created = Date.now;
+    _created = Date.now();
 
     constructor() {
         super();

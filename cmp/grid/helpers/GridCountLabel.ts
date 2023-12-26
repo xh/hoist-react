@@ -4,11 +4,11 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '../GridModel';
 import {box} from '@xh/hoist/cmp/layout';
 import {BoxProps, hoistCmp, HoistProps, useContextModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
-import {pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
+import {logError, pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
+import {GridModel} from '../GridModel';
 
 export interface GridCountLabelProps extends HoistProps, BoxProps {
     /** GridModel to which this component should bind. */
@@ -49,8 +49,9 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLa
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
         if (!gridModel) {
-            console.error(
-                "No GridModel available to GridCountLabel.  Provide via a 'gridModel' prop, or context."
+            logError(
+                `GridModel not found - provide via 'gridModel' prop or context.`,
+                GridCountLabel
             );
             return '';
         }

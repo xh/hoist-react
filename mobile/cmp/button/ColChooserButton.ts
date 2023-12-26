@@ -9,7 +9,7 @@ import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
-import {withDefault} from '@xh/hoist/utils/js';
+import {logError, withDefault} from '@xh/hoist/utils/js';
 
 export interface ColChooserButtonProps extends ButtonProps {
     /** GridModel of the grid for which this button should show a chooser. */
@@ -30,8 +30,9 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
         if (!gridModel) {
-            console.error(
-                "No GridModel available to ColChooserButton. Provide via a 'gridModel' prop, or context."
+            logError(
+                "No GridModel available. Provide via a 'gridModel' prop, or context.",
+                ColChooserButton
             );
             return button({icon, disabled: true, ...props});
         }

@@ -41,7 +41,7 @@ import type {
 } from '@xh/hoist/kit/ag-grid';
 import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {consumeEvent, isDisplayed, logDebug, logWithDebug} from '@xh/hoist/utils/js';
+import {consumeEvent, isDisplayed, logWithDebug} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {debounce, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
@@ -634,9 +634,8 @@ export class GridLocalModel extends HoistModel {
         let transaction = null;
         if (prevCount !== 0) {
             transaction = this.genTransaction(newRs, prevRs);
-            logDebug(this.transactionLogStr(transaction), this);
-
             if (!this.transactionIsEmpty(transaction)) {
+                this.logDebug(...this.genTxnLogMsgs(transaction));
                 agApi.applyTransaction(transaction);
             }
         } else {
@@ -698,10 +697,13 @@ export class GridLocalModel extends HoistModel {
         return isEmpty(t.update) && isEmpty(t.add) && isEmpty(t.remove);
     }
 
-    transactionLogStr(t) {
-        return `[update: ${t.update ? t.update.length : 0} | add: ${
-            t.add ? t.add.length : 0
-        } | remove: ${t.remove ? t.remove.length : 0}]`;
+    private genTxnLogMsgs(t): string[] {
+        const {add, update, remove} = t;
+        return [
+            `update: ${update ? update.length : 0}`,
+            `add: ${add ? add.length : 0}`,
+            `remove: ${remove ? remove.length : 0}`
+        ];
     }
 
     //------------------------

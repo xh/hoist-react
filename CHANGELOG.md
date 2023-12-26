@@ -1,5 +1,63 @@
 # Changelog
 
+## 60.0.0-SNAPSHOT
+
+* New Admin support for built-in Role Management.
+    * Hoist-core v18 now supports an out-of-the-box, database-driven system for maintaining a
+      hierarchical set of Roles associating and associating them with individual users.
+    * New system supports app and plug-in specific integrations to AD and other enterprise systems.
+    * Administration of the new system provided by a new admin UI tab provided here.
+
+### 🐞 Bug Fixes
+
+* Fixed `DateEditor` calendar popover not showing for non-pinned columns.
+
+### ✨ Styles
+
+* Added `xh-bg-intent-xxx` CSS classes, for intent-coloring the `background-color` of elements.
+
+## 59.5.0 - 2023-12-11
+
+### 🎁 New Features
+
+* Added new `dialogWidth` and `dialogHeight` configs to `DockViewModel`.
+
+### 🐞 Bug Fixes
+
+* Fixed serialization of expand/collapse state within `AgGridModel`, which was badly broken and
+  could trigger long browser hangs for grids with > 2 levels of nesting and numeric record IDs.
+* Fixed `UniqueAggregator` to properly check equality for `Date` fields.
+* Pinned `react-grid-layout@1.4.3` to avoid v1.4.4 bugs affecting `DashCanvas` interactions
+  (see https://github.com/react-grid-layout/react-grid-layout/issues/1990).
+
+## 59.4.0 - 2023-11-28
+
+### 💥 Breaking Changes
+
+* The constructors for `ColumnGroup` no long accept arbitrary rest (e.g `...rest`)
+  arguments for applying app-specific data to the object. Instead, use the new `appData` property.
+
+### ⚙️ Technical
+
+* Enhanced `LogUtils` to support logging objects (and any other non-string values). Also
+  added new exports for `logWarn()` and `logError()` with the same standardized formatting.
+* Added standardized `LogUtils` methods to `HoistBase`, for use within Hoist models and services.
+
+### 🐞 Bug Fixes
+
+* `ZoneGrid` will no longer render labels or delimiters for empty values.
+
+### ⚙️ Typescript API Adjustments
+
+* Updated type for `ReactionSpec.equals` to include already-supported string shorthands.
+
+## 59.3.2 - 2023-11-21
+
+### 🐞 Bug Fixes
+
+* `ZoneGrid` will more gracefully handle state that has become out of sync with its mapper
+  requirements.
+
 ## 59.3.1 - 2023-11-10
 
 ### 🐞 Bug Fixes
@@ -49,9 +107,9 @@
 * Improved core `HoistComponent` performance by preventing unnecessary re-renderings triggered by
   spurious model lookup changes.
 * New flag `GridModel.experimental.enableFullWidthScroll` enables scrollbars to span pinned columns.
-  * Early test release behind the flag, expected to made the default behavior in next release.
+    * Early test release behind the flag, expected to made the default behavior in next release.
 * Renamed `XH.getActiveModels()` to `XH.getModels()` for clarity / consistency.
-  * API change, but not expected to impact applications.
+    * API change, but not expected to impact applications.
 * Added `XH.getModel()` convenience method to return the first matching model.
 
 ## 59.2.0 - 2023-10-16

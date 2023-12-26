@@ -70,7 +70,7 @@ class ToastSourceLocalModel extends HoistModel {
             let toaster = await this.getToasterAsync(position as ToasterPosition, containerRef);
             if (!bpId) {
                 model['bpId'] = toaster.show({
-                    className: classNames('xh-toast', `xh-toast--${intent}`),
+                    className: classNames('xh-toast', `xh-bg-intent-${intent}`),
                     icon: div({className: 'xh-toast__icon', item: icon}),
                     action: actionButtonProps,
                     onDismiss: () => wait(0).then(() => model.dismiss()),
@@ -95,7 +95,7 @@ class ToastSourceLocalModel extends HoistModel {
      */
     async getToasterAsync(position: ToasterPosition, container: HTMLElement) {
         if (container && !isElement(container)) {
-            console.warn('container for Toast must be a DOM element. Argument will be ignored.');
+            this.logWarn('Ignoring invalid containerRef for Toast - must be a DOM element');
             container = null;
         }
         const className = `xh-toast-container ${container ? 'xh-toast-container--anchored' : ''}`;

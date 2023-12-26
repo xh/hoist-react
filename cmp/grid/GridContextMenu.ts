@@ -4,9 +4,9 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {PlainObject} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {RecordActionLike} from '@xh/hoist/data';
+import {GetContextMenuItemsParams} from '@xh/hoist/kit/ag-grid';
 
 /**
  * If a String, value can be '-' for a separator, or a token supported by ag-Grid
@@ -46,4 +46,4 @@ export type GridContextMenuToken =
  */
 export type GridContextMenuSpec =
     | GridContextMenuItemLike[]
-    | ((agParams: PlainObject, gridModel: GridModel) => GridContextMenuItemLike[]);
+    | ((agParams: GetContextMenuItemsParams, gridModel: GridModel) => GridContextMenuItemLike[]);

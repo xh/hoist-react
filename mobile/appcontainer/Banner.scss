@@ -58,27 +58,7 @@ body.xh-app .xh-banner {
     color: white !important;
   }
 
-  &.xh-intent-primary {
-    color: white;
-    background-color: var(--xh-intent-primary);
-  }
-
-  &.xh-intent-danger {
-    color: white;
-    background-color: var(--xh-intent-danger);
-  }
-
-  &.xh-intent-success {
-    color: white;
-    background-color: var(--xh-intent-success);
-  }
-
-  &.xh-intent-warning {
-    color: white;
-    background-color: var(--xh-intent-warning);
-  }
-
-  &.xh-intent-none {
+  &.xh-bg-intent-none {
     .xh-banner__action-button,
     .xh-banner__dismiss-button {
       border-color: unset !important;

@@ -6,7 +6,7 @@
  */
 import {cloneDeep, isUndefined} from 'lodash';
 import {wait} from '../promise';
-import {throwIf} from '../utils/js';
+import {logError, throwIf} from '../utils/js';
 import {HoistBaseClass, PersistenceProvider, PersistOptions} from './';
 
 /**
@@ -66,9 +66,10 @@ function createPersistDescriptor(
         '@persist decorator should be applied to an instance of HoistBase'
     );
     if (descriptor.get || descriptor.set) {
-        console.error(
+        logError(
             `Error defining ${property} : @persist or @persistWith should be defined closest ` +
-                `to property, and after mobx annotation e.g. '@bindable @persist ${property}'`
+                `to property, and after mobx annotation e.g. '@bindable @persist ${property}'`,
+            target
         );
         return descriptor;
     }
@@ -89,9 +90,13 @@ function createPersistDescriptor(
                 });
             });
         } catch (e) {
-            console.error(
-                `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
-                    `'persistWith' on this object or annotation.`
+            logError(
+                [
+                    `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
+                        `'persistWith' on this object or annotation`,
+                    e
+                ],
+                target
             );
         }
 

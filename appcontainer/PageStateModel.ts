@@ -6,7 +6,6 @@
  */
 import {HoistModel, PageState} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {logDebug} from '@xh/hoist/utils/js';
 
 /**
  * Implementation of PageState maintenance.
@@ -35,7 +34,7 @@ export class PageStateModel extends HoistModel {
     private setState(nextState: PageState) {
         if (this.state == 'terminated' || this.state == nextState) return;
 
-        logDebug(`PageState change: ${this.state} → ${nextState}`, this);
+        this.logDebug(`PageState change: ${this.state} → ${nextState}`);
         this.state = nextState;
     }
 
@@ -43,8 +42,8 @@ export class PageStateModel extends HoistModel {
         return document.visibilityState === 'hidden'
             ? 'hidden'
             : document.hasFocus()
-            ? 'active'
-            : 'passive';
+              ? 'active'
+              : 'passive';
     }
 
     private addListeners() {

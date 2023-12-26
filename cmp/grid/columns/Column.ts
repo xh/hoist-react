@@ -14,7 +14,7 @@ import {
     RecordActionSpec,
     StoreRecord
 } from '@xh/hoist/data';
-import {apiRemoved, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {apiRemoved, logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {
     castArray,
@@ -932,12 +932,12 @@ export class Column {
                     sortCfg = find(gridModel.sortBy, {colId}),
                     sortDir = sortCfg?.sort || 'asc',
                     abs = sortCfg?.abs || false,
-                    recordA = agNodeA?.data,
-                    recordB = agNodeB?.data,
+                    recordA = agNodeA?.data as StoreRecord,
+                    recordB = agNodeB?.data as StoreRecord,
                     params = {
                         recordA,
                         recordB,
-                        column: this,
+                        column: this as Column,
                         gridModel,
                         defaultComparator: this.defaultComparator,
                         agNodeA,
@@ -962,7 +962,7 @@ export class Column {
         if (editor) {
             ret.cellEditor = forwardRef((agParams: PlainObject, ref) => {
                 const props = {
-                    record: agParams.data,
+                    record: agParams.data as StoreRecord,
                     gridModel,
                     column: this,
                     agParams,
@@ -1056,23 +1056,23 @@ export class Column {
 
     private parseFilterable(filterable) {
         if (!filterable) return false;
+        const {colId} = this;
 
         if (XH.isMobileApp) {
-            console.warn(`'filterable' is not supported on mobile and will be ignored.`);
+            logDebug(
+                `Column ${colId} specs 'filterable' but not supported on mobile - will be ignored.`,
+                this
+            );
             return false;
         }
 
         if (!this.field) {
-            console.warn(
-                `Column '${this.colId}' is not a Store field. 'filterable' will be ignored.`
-            );
+            logWarn(`Column ${colId} is not a Store field. 'filterable' will be ignored.`, this);
             return false;
         }
 
         if (this.field === 'cubeLabel') {
-            console.warn(
-                `Column '${this.colId}' is a cube label column. 'filterable' will be ignored.`
-            );
+            logWarn(`Column ${colId} is a cube label column. 'filterable' will be ignored.`, this);
             return false;
         }
 

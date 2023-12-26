@@ -12,7 +12,7 @@ import {
     isEmpty,
     isFunction,
     isObject,
-    isObjectLike,
+    isPlainObject,
     isUndefined,
     mixin,
     uniq,
@@ -53,22 +53,23 @@ export function withDefault<T>(...args: T[]): T {
 }
 
 /**
- * Recursively freeze an object, preventing future modifications. Not all objects are supported -
- * FREEZABLE_TYPES limits what we will attempt to freeze to a whitelist of types known to be safely
- * freezable without side effects. This avoids freezing other types of objects where this routine
+ * Recursively freeze an object, preventing future modifications. Only the specific declared
+ * input types will be frozen.  This avoids freezing other types of objects where this routine
  * could be problematic - e.g. application or library classes (such as `moment`!) which rely on
  * their internal state remaining mutable to function.
  */
-const FREEZABLE_TYPES: Set<String> = new Set(['Object', 'Array', 'Map', 'Set']);
-export function deepFreeze(obj: object) {
-    if (!isObjectLike(obj) || !FREEZABLE_TYPES.has(obj.constructor.name)) return obj;
+export function deepFreeze<
+    T extends Record<string, unknown> | Array<unknown> | Map<unknown, unknown> | Set<unknown>
+>(obj: T): Readonly<T> {
+    if (!(isPlainObject(obj) || isArray(obj) || obj instanceof Map || obj instanceof Set)) {
+        return obj;
+    }
 
     const propNames = Object.getOwnPropertyNames(obj);
     for (const name of propNames) {
         deepFreeze(obj[name]);
     }
-
-    return Object.freeze(obj);
+    return Object.freeze<T>(obj);
 }
 
 /**

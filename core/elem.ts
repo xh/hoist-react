@@ -14,7 +14,7 @@ import {
     ReactElement,
     ReactNode
 } from 'react';
-import {PlainObject, Some, Thunkable} from './types/Types';
+import {Some, Thunkable} from './types/Types';
 
 /**
  * Alternative format for specifying React Elements in render functions. This type is designed to
@@ -39,7 +39,7 @@ import {PlainObject, Some, Thunkable} from './types/Types';
  * with this API.  The '$' will be stripped from the prop name before passing it along to the
  * underlying component.
  */
-export type ElementSpec<P extends PlainObject> = P & {
+export type ElementSpec<P> = P & {
     //---------------------------------------------
     // Enhanced attributes to support element factory
     //---------------------------------------------
