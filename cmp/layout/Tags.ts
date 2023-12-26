@@ -29,6 +29,7 @@ export const br = elementFactory<JSX.IntrinsicElements['br']>('br');
 export const code = elementFactory<JSX.IntrinsicElements['code']>('code');
 export const div = elementFactory<JSX.IntrinsicElements['div']>('div');
 export const form = elementFactory<JSX.IntrinsicElements['form']>('form');
+export const hr = elementFactory<JSX.IntrinsicElements['hr']>('hr');
 export const h1 = elementFactory<JSX.IntrinsicElements['h1']>('h1');
 export const h2 = elementFactory<JSX.IntrinsicElements['h2']>('h2');
 export const h3 = elementFactory<JSX.IntrinsicElements['h3']>('h3');

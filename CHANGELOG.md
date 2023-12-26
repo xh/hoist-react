@@ -2,10 +2,18 @@
 
 ## 60.0.0-SNAPSHOT
 
-### 🎁 New Features
+* New Admin support for built-in Role Management.
+    * Hoist-core v18 now supports an out-of-the-box, database-driven system for maintaining a
+      hierarchical set of Roles associating and associating them with individual users.
+    * New system supports app and plug-in specific integrations to AD and other enterprise systems.
+    * Administration of the new system provided by a new admin UI tab provided here.
 
 * Add `zoneLabelRenderer` property to `Column`. This will allow "cell-by-cell" labeling of fields in
-`zoneGrid`.
+  `zoneGrid`.
+
+### 🐞 Bug Fixes
+
+* Fixed `DateEditor` calendar popover not showing for non-pinned columns.
 
 ### ✨ Styles
 
