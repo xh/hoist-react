@@ -22,7 +22,7 @@ export const roleGraph = hoistCmp.factory({
             icon: Icon.idBadge(),
             title: role ? `Relationships - ${role.name} ` : 'Relationships',
             item: content(),
-            tbar: toolbar({
+            bbar: toolbar({
                 item: buttonGroupInput({
                     bind: 'relationship',
                     items: [

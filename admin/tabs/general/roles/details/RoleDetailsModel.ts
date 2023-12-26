@@ -4,6 +4,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {HoistRole} from '../Types';
+import {fmtDateTimeSec} from '@xh/hoist/format';
 
 export class RoleDetailsModel extends HoistModel {
     @lookup(() => RoleModel) readonly roleModel: RoleModel;
@@ -11,14 +12,21 @@ export class RoleDetailsModel extends HoistModel {
     @managed readonly formModel: FormModel = this.createFormModel();
     @managed readonly tabContainerModel = this.createTabContainerModel();
 
-    get selectedRole(): HoistRole {
+    get role(): HoistRole {
         return this.roleModel.selectedRole;
     }
 
     override onLinked() {
         this.addReaction({
-            track: () => this.selectedRole,
-            run: role => this.formModel.init(role ?? {})
+            track: () => this.role,
+            run: role => {
+                if (!role) this.formModel.init({});
+                this.formModel.init({
+                    ...role,
+                    category: role.category ?? 'Uncategorized',
+                    lastUpdated: `${role.lastUpdatedBy} (${fmtDateTimeSec(role.lastUpdated)})`
+                });
+            }
         });
     }
 
@@ -28,20 +36,7 @@ export class RoleDetailsModel extends HoistModel {
 
     private createFormModel(): FormModel {
         return new FormModel({
-            fields: [
-                {
-                    name: 'category'
-                },
-                {
-                    name: 'notes'
-                },
-                {
-                    name: 'lastUpdated'
-                },
-                {
-                    name: 'lastUpdatedBy'
-                }
-            ],
+            fields: [{name: 'name'}, {name: 'category'}, {name: 'notes'}, {name: 'lastUpdated'}],
             readonly: true
         });
     }

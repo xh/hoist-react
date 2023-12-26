@@ -2,7 +2,7 @@ import {RoleMemberType} from '@xh/hoist/admin/tabs/general/roles/Types';
 import {warningBanner} from '@xh/hoist/admin/tabs/general/roles/warning/WarningBanner';
 import {form} from '@xh/hoist/cmp/form';
 import {grid} from '@xh/hoist/cmp/grid';
-import {hbox, hframe, hspacer, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {hbox, hframe, hspacer, strong, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -33,10 +33,10 @@ export const roleForm = hoistCmp.factory({
                         items: [
                             hbox(
                                 formField({
-                                    disabled: model.isEditingExistingRole,
                                     field: 'name',
                                     flex: 1,
-                                    item: textInput({autoFocus: true})
+                                    item: textInput({autoFocus: true}),
+                                    readonlyRenderer: v => strong(v)
                                 }),
                                 formField({
                                     field: 'category',
@@ -44,7 +44,7 @@ export const roleForm = hoistCmp.factory({
                                     item: select({
                                         enableClear: true,
                                         enableCreate: true,
-                                        options: model.groupOptions
+                                        options: model.categoryOptions
                                     })
                                 })
                             ),

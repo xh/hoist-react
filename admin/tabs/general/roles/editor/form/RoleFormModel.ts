@@ -27,7 +27,7 @@ export class RoleFormModel extends HoistModel {
     @observable isEditingExistingRole = false;
 
     @observable.ref invalidNames: string[] = [];
-    @observable.ref groupOptions: string[] = [];
+    @observable.ref categoryOptions: string[] = [];
     @observable.ref userOptions: string[] = [];
     @observable.ref directoryGroupOptions: string[] = [];
     @observable.ref roleOptions: SelectOption[] = [];
@@ -71,13 +71,12 @@ export class RoleFormModel extends HoistModel {
 
     @action
     init(allRoles: HoistRole[], role?: Partial<HoistRole>) {
-        this.isEditingExistingRole = !isNil(role?.name);
         this.formModel.init(role ?? {});
         this.usersGridModel.loadData(role?.users?.map(name => ({name})) ?? []);
         this.userOptions = uniq(allRoles.flatMap(role => role.users)).sort();
         this.directoryGroupsGridModel.loadData(role?.directoryGroups?.map(name => ({name})) ?? []);
         this.directoryGroupOptions = uniq(allRoles.flatMap(role => role.directoryGroups)).sort();
-        this.groupOptions = uniq(allRoles.map(it => it.category)).sort();
+        this.categoryOptions = uniq(allRoles.map(it => it.category)).sort();
         this.rolesGridModel.loadData(role?.roles?.map(name => ({name})) ?? []);
         this.roleOptions = sortBy(
             map(groupBy(allRoles, 'category'), (roles, category) => ({
@@ -87,6 +86,7 @@ export class RoleFormModel extends HoistModel {
             ['label']
         );
         this.invalidNames = allRoles.map(it => it.name).filter(it => it !== role?.name);
+        this.formModel.getField('name').setReadonly(!isNil(role?.name));
     }
 
     async validateAsync(): Promise<boolean> {

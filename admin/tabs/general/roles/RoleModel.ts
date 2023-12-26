@@ -241,8 +241,8 @@ export class RoleModel extends HoistModel {
             columns: [
                 {field: {name: 'name', type: 'string'}},
                 {field: {name: 'category', type: 'string'}},
-                {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime},
-                {field: {name: 'lastUpdatedBy', type: 'string'}},
+                {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime, hidden: true},
+                {field: {name: 'lastUpdatedBy', type: 'string'}, hidden: true},
                 {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1}
             ],
             contextMenu: this.readonly
