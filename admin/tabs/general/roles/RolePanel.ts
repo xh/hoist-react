@@ -35,10 +35,10 @@ export const rolePanel = hoistCmp.factory({
                         omit: readonly,
                         selModel: gridModel.selModel
                     }),
-                    filler(),
-                    gridCountLabel({unit: 'role'}),
                     '-',
-                    filterChooser({flex: 2}),
+                    filterChooser({flex: 1}),
+                    '-',
+                    gridCountLabel({unit: 'role'}),
                     '-',
                     switchInput({
                         bind: 'groupByCategory',
