@@ -15,7 +15,7 @@ import {Icon} from '@xh/hoist/icon';
 import {tag} from '@xh/hoist/kit/blueprint';
 import {bindable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
-import {first, invert, sortBy, uniqBy} from 'lodash';
+import {first, invert, sortBy, uniq, uniqBy} from 'lodash';
 import {computed} from 'mobx';
 
 export class RoleMembersModel extends HoistModel {
@@ -141,6 +141,11 @@ export class RoleMembersModel extends HoistModel {
                 idSpec: data => `${this.selectedRole.name}:${data.type}:${data.name}`
             },
             contextMenu: [...this.createFilterActions(), '-', ...GridModel.defaultContextMenu],
+            enableExport: true,
+            exportOptions: {
+                columns: ['type', 'VISIBLE'],
+                filename: `${this.selectedRole.name} Members`
+            },
             emptyText: 'This role has no members.',
             groupBy: 'type',
             sortBy: 'name',
@@ -181,7 +186,20 @@ export class RoleMembersModel extends HoistModel {
                             : name,
                     tooltip: true
                 },
-                {field: 'type', hidden: true},
+                {
+                    field: 'type',
+                    exportValue: type => {
+                        switch (type) {
+                            case types.USER:
+                                return 'User';
+                            case types.DIRECTORY_GROUP:
+                                return 'Directory Group';
+                            case types.ROLE:
+                                return 'Role';
+                        }
+                    },
+                    hidden: true
+                },
                 {
                     field: 'sources',
                     flex: true,
@@ -210,6 +228,14 @@ export class RoleMembersModel extends HoistModel {
                                 'item'
                             ).map(props => tag(props))
                         }),
+                    exportValue: (sources: Array<{role: string; directoryGroup?: string}>) =>
+                        uniq(
+                            sources.map(({role, directoryGroup}) =>
+                                role === this.selectedRole.name
+                                    ? directoryGroup ?? '<Direct>'
+                                    : role
+                            )
+                        ).join(', '),
                     omit: !showEffective
                 },
                 {
