@@ -267,20 +267,21 @@ export class RoleMembersModel extends HoistModel {
             displayFn: ({record}) => {
                 if (!record) return {hidden: true};
                 const {name, type} = record.data,
+                    isDirectoryGroup = type === types.DIRECTORY_GROUP,
                     {softConfig} = this;
 
                 if (
                     !includeEffective &&
                     ((type === types.USER && !softConfig.assignUsers) ||
-                        (type === types.DIRECTORY_GROUP && !softConfig.assignDirectoryGroups))
+                        (isDirectoryGroup && !softConfig.assignDirectoryGroups))
                 ) {
                     return {hidden: true};
                 }
 
                 return {
-                    text: `Roles that ${
-                        includeEffective ? 'effectively' : 'directly'
-                    } include ${name}`
+                    text: `Roles that ${includeEffective ? 'effectively' : 'directly'} include ${
+                        isDirectoryGroup ? this.fmtDirectoryGroup(name) : name
+                    }`
                 };
             }
         }));
