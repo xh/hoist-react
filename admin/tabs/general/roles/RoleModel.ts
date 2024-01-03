@@ -7,7 +7,7 @@ import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {compact, first, groupBy, mapValues} from 'lodash';
+import {compact, groupBy, mapValues} from 'lodash';
 import {action, observable} from 'mobx';
 import moment from 'moment/moment';
 import {RoleEditorModel} from './editor/RoleEditorModel';
@@ -17,7 +17,10 @@ export class RoleModel extends HoistModel {
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
 
     static fmtDirectoryGroup(name?: string): string {
-        return name?.startsWith('CN=') ? first(name.split(',')).substring(3) : name;
+        if (!name) return name;
+        const parts = name.toLowerCase().split(','),
+            cn = parts.find(it => it.startsWith('cn='));
+        return cn ? cn.substring(3) : name;
     }
 
     override persistWith = RoleModel.PERSIST_WITH;
