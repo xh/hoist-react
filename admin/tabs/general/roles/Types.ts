@@ -12,6 +12,9 @@ export interface HoistRole {
     lastUpdated: Date;
     lastUpdatedBy: string;
     members: HoistRoleMember[];
+    errors: {
+        directoryGroups: Record<string, string>;
+    };
 }
 
 export interface HoistRoleMember {

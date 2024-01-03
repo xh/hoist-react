@@ -7,7 +7,7 @@ import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {compact, groupBy, mapValues} from 'lodash';
+import {compact, first, groupBy, mapValues} from 'lodash';
 import {action, observable} from 'mobx';
 import moment from 'moment/moment';
 import {RoleEditorModel} from './editor/RoleEditorModel';
@@ -15,6 +15,10 @@ import {HoistRole, RoleMemberType, RoleServiceConfig} from './Types';
 
 export class RoleModel extends HoistModel {
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
+
+    static fmtDirectoryGroup(name?: string): string {
+        return name?.startsWith('CN=') ? first(name.split(',')).substring(3) : name;
+    }
 
     override persistWith = RoleModel.PERSIST_WITH;
 
@@ -217,6 +221,7 @@ export class RoleModel extends HoistModel {
                     {name: 'effectiveUsers', type: 'json'},
                     {name: 'effectiveDirectoryGroups', type: 'json'},
                     {name: 'effectiveRoles', type: 'json'},
+                    {name: 'errors', type: 'json'},
                     {name: 'inheritedRoleNames', displayName: 'Inherited Roles', type: 'tags'},
                     {name: 'effectiveUserNames', displayName: 'Users', type: 'tags'},
                     {
@@ -266,11 +271,17 @@ export class RoleModel extends HoistModel {
                 'name',
                 'category',
                 softConfig.assignUsers && 'users',
-                softConfig.assignDirectoryGroups && 'directoryGroups',
+                softConfig.assignDirectoryGroups && {
+                    field: 'directoryGroups',
+                    valueRenderer: v => RoleModel.fmtDirectoryGroup(v)
+                },
                 'roles',
                 'inheritedRoleNames',
                 'effectiveUserNames',
-                'effectiveDirectoryGroupNames',
+                softConfig.assignDirectoryGroups && {
+                    field: 'effectiveDirectoryGroupNames',
+                    valueRenderer: v => RoleModel.fmtDirectoryGroup(v)
+                },
                 'effectiveRoleNames',
                 'lastUpdatedBy',
                 {

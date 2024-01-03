@@ -1,3 +1,4 @@
+import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {
     HoistRole,
     RoleMemberType,
@@ -5,11 +6,12 @@ import {
 } from '@xh/hoist/admin/tabs/general/roles/Types';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {div} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, ReactionSpec, SelectOption, XH} from '@xh/hoist/core';
 import {RecordActionSpec, required} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth, selectEditor} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {groupBy, isNil, isString, map, sortBy, uniq, without} from 'lodash';
+import {groupBy, isNil, map, sortBy, uniq, without} from 'lodash';
 import {action, computed, observable} from 'mobx';
 
 export class RoleFormModel extends HoistModel {
@@ -28,8 +30,8 @@ export class RoleFormModel extends HoistModel {
 
     @observable.ref invalidNames: string[] = [];
     @observable.ref categoryOptions: string[] = [];
-    @observable.ref userOptions: string[] = [];
-    @observable.ref directoryGroupOptions: string[] = [];
+    @observable.ref userOptions: SelectOption[] = [];
+    @observable.ref directoryGroupOptions: SelectOption[] = [];
     @observable.ref roleOptions: SelectOption[] = [];
 
     @computed
@@ -72,12 +74,18 @@ export class RoleFormModel extends HoistModel {
     @action
     init(allRoles: HoistRole[], role?: Partial<HoistRole>) {
         this.formModel.init(role ?? {});
-        this.usersGridModel.loadData(role?.users?.map(name => ({name})) ?? []);
-        this.userOptions = uniq(allRoles.flatMap(role => role.users)).sort();
-        this.directoryGroupsGridModel.loadData(role?.directoryGroups?.map(name => ({name})) ?? []);
-        this.directoryGroupOptions = uniq(allRoles.flatMap(role => role.directoryGroups)).sort();
+        this.usersGridModel.loadData(sortBy(role?.users?.map(name => ({name})) ?? [], 'name'));
+        this.userOptions = uniq(allRoles.flatMap(role => role.users))
+            .sort()
+            .map(it => ({label: it, value: it}));
+        this.directoryGroupsGridModel.loadData(
+            sortBy(role?.directoryGroups?.map(name => ({name})) ?? [], 'name')
+        );
+        this.directoryGroupOptions = uniq(allRoles.flatMap(role => role.directoryGroups))
+            .sort()
+            .map(it => ({label: RoleModel.fmtDirectoryGroup(it), value: it}));
         this.categoryOptions = uniq(allRoles.map(it => it.category)).sort();
-        this.rolesGridModel.loadData(role?.roles?.map(name => ({name})) ?? []);
+        this.rolesGridModel.loadData(sortBy(role?.roles?.map(name => ({name})) ?? [], 'name'));
         this.roleOptions = sortBy(
             map(groupBy(allRoles, 'category'), (roles, category) => ({
                 label: category == 'null' ? '*Uncategorized*' : category,
@@ -138,7 +146,6 @@ export class RoleFormModel extends HoistModel {
             emptyText: 'None added.',
             hideHeaders: true,
             selModel: 'multiple',
-            sortBy: 'name',
             store: {
                 idSpec: XH.genId
             },
@@ -157,12 +164,34 @@ export class RoleFormModel extends HoistModel {
                                       : this.roleOptions;
                         return selectEditor({
                             ...props,
-                            inputProps: {
-                                enableCreate: entity !== 'ROLE',
-                                options: this.filterSelected(options, selected)
-                            }
+                            inputProps:
+                                entity === 'ROLE'
+                                    ? {options: this.filterSelected(options, selected)}
+                                    : {
+                                          enableCreate: true,
+                                          menuWidth: 350,
+                                          optionRenderer: ({label, value}) =>
+                                              div({item: label, title: value}),
+                                          rsOptions: {
+                                              defaultOptions: this.filterSelected(options, selected)
+                                          },
+                                          queryFn: async query => {
+                                              const endpoint =
+                                                      entity === 'USER'
+                                                          ? 'queryUsers'
+                                                          : 'queryDirectoryGroups',
+                                                  {data} = await XH.fetchJson({
+                                                      url: `roleAdmin/${endpoint}`,
+                                                      params: {query}
+                                                  });
+                                              return this.filterSelected(data, selected);
+                                          }
+                                      }
                         });
-                    }
+                    },
+                    renderer: v =>
+                        entity === 'DIRECTORY_GROUP' ? RoleModel.fmtDirectoryGroup(v) : v,
+                    tooltip: true
                 },
                 {
                     ...actionCol,
@@ -175,13 +204,13 @@ export class RoleFormModel extends HoistModel {
     }
 
     private filterSelected(
-        options: Array<string | SelectOption>,
+        options: SelectOption[],
         selected: string[]
     ): Array<string | SelectOption> {
         const ret: Array<string | SelectOption> = [];
         for (let option of options) {
-            if (isString(option)) {
-                if (!selected.includes(option)) ret.push(option);
+            if (!option.options) {
+                if (!selected.includes(option.value)) ret.push(option);
             } else {
                 ret.push({...option, options: this.filterSelected(option.options, selected)});
             }
