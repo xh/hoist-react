@@ -11,7 +11,7 @@ import {compact, groupBy, mapValues} from 'lodash';
 import {action, observable} from 'mobx';
 import moment from 'moment/moment';
 import {RoleEditorModel} from './editor/RoleEditorModel';
-import {HoistRole, RoleMemberType, RoleServiceConfig} from './Types';
+import {HoistRole, HoistRoleErrors, RoleMemberType, RoleServiceConfig} from './Types';
 
 export class RoleModel extends HoistModel {
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
@@ -23,6 +23,7 @@ export class RoleModel extends HoistModel {
     @managed readonly roleEditorModel = new RoleEditorModel(this);
 
     @observable.ref allRoles: HoistRole[] = [];
+    @observable.ref errors: HoistRoleErrors = {directoryGroups: {}};
 
     @bindable @persist groupByCategory = true;
 
@@ -49,7 +50,7 @@ export class RoleModel extends HoistModel {
         try {
             const {data} = await XH.fetchJson({loadSpec, url: 'roleAdmin/list'});
             if (loadSpec.isStale) return;
-            this.setRoles(this.processRolesFromServer(data));
+            this.setRoles(this.processRolesFromServer(data.roles), data.errors);
         } catch (e) {
             if (loadSpec.isStale) return;
             XH.handleException(e);
@@ -67,8 +68,9 @@ export class RoleModel extends HoistModel {
     }
 
     @action
-    setRoles(roles: HoistRole[]) {
+    setRoles(roles: HoistRole[], errors: HoistRoleErrors) {
         this.allRoles = roles;
+        this.errors = errors;
         this.gridModel.loadData(roles);
     }
 
