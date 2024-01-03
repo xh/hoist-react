@@ -16,13 +16,6 @@ import {HoistRole, RoleMemberType, RoleServiceConfig} from './Types';
 export class RoleModel extends HoistModel {
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
 
-    static fmtDirectoryGroup(name?: string): string {
-        if (!name) return name;
-        const parts = name.toLowerCase().split(','),
-            cn = parts.find(it => it.startsWith('cn='));
-        return cn ? cn.substring(3) : name;
-    }
-
     override persistWith = RoleModel.PERSIST_WITH;
 
     @managed readonly gridModel: GridModel = this.createGridModel();
@@ -274,17 +267,11 @@ export class RoleModel extends HoistModel {
                 'name',
                 'category',
                 softConfig.assignUsers && 'users',
-                softConfig.assignDirectoryGroups && {
-                    field: 'directoryGroups',
-                    valueRenderer: v => RoleModel.fmtDirectoryGroup(v)
-                },
+                softConfig.assignDirectoryGroups && 'directoryGroups',
                 'roles',
                 'inheritedRoleNames',
                 'effectiveUserNames',
-                softConfig.assignDirectoryGroups && {
-                    field: 'effectiveDirectoryGroupNames',
-                    valueRenderer: v => RoleModel.fmtDirectoryGroup(v)
-                },
+                softConfig.assignDirectoryGroups && 'effectiveDirectoryGroupNames',
                 'effectiveRoleNames',
                 'lastUpdatedBy',
                 {

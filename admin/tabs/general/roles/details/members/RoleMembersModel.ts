@@ -110,8 +110,7 @@ export class RoleMembersModel extends HoistModel {
                     ? role.effectiveDirectoryGroups.map(it => ({
                           name: it.name,
                           sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
-                          type: RoleMembersModel.types.DIRECTORY_GROUP,
-                          error: role.errors.directoryGroups[it.name]
+                          type: RoleMembersModel.types.DIRECTORY_GROUP
                       }))
                     : []),
 
@@ -188,16 +187,13 @@ export class RoleMembersModel extends HoistModel {
                     field: 'name',
                     autosizeMaxWidth: 300,
                     renderer: (name, {record}) => {
-                        const {type, error} = record.data;
+                        const {error} = record.data;
                         return hbox({
                             alignItems: 'center',
                             items: [
                                 Icon.warning({omit: !error, intent: 'warning', title: error}),
                                 box({
-                                    item:
-                                        type === types.DIRECTORY_GROUP
-                                            ? RoleModel.fmtDirectoryGroup(name)
-                                            : name,
+                                    item: name,
                                     paddingLeft: 'var(--xh-pad-half-px)',
                                     title: name
                                 })
@@ -236,10 +232,7 @@ export class RoleMembersModel extends HoistModel {
                                             !isThisRole && 'roles-renderer__role--effective'
                                         ),
                                         intent: isThisRole ? null : 'primary',
-                                        item: isThisRole
-                                            ? RoleModel.fmtDirectoryGroup(directoryGroup) ??
-                                              '<Direct>'
-                                            : role,
+                                        item: isThisRole ? directoryGroup ?? '<Direct>' : role,
                                         title: isThisRole ? directoryGroup ?? '<Direct>' : role,
                                         minimal: true,
                                         onClick: () =>
@@ -288,21 +281,20 @@ export class RoleMembersModel extends HoistModel {
             displayFn: ({record}) => {
                 if (!record) return {hidden: true};
                 const {name, type} = record.data,
-                    isDirectoryGroup = type === types.DIRECTORY_GROUP,
                     {softConfig} = this;
 
                 if (
                     !includeEffective &&
                     ((type === types.USER && !softConfig.assignUsers) ||
-                        (isDirectoryGroup && !softConfig.assignDirectoryGroups))
+                        (type === types.DIRECTORY_GROUP && !softConfig.assignDirectoryGroups))
                 ) {
                     return {hidden: true};
                 }
 
                 return {
-                    text: `Roles that ${includeEffective ? 'effectively' : 'directly'} include ${
-                        isDirectoryGroup ? RoleModel.fmtDirectoryGroup(name) : name
-                    }`
+                    text: `Roles that ${
+                        includeEffective ? 'effectively' : 'directly'
+                    } include ${name}`
                 };
             }
         }));
