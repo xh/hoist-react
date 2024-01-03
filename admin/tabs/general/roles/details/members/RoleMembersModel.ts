@@ -197,12 +197,12 @@ export class RoleMembersModel extends HoistModel {
                         return hbox({
                             alignItems: 'center',
                             items: [
-                                Icon.warning({omit: !error, intent: 'warning', title: error}),
                                 box({
                                     item: name,
-                                    paddingLeft: 'var(--xh-pad-half-px)',
+                                    paddingRight: 'var(--xh-pad-half-px)',
                                     title: name
-                                })
+                                }),
+                                Icon.warning({omit: !error, intent: 'warning', title: error})
                             ]
                         });
                     },
