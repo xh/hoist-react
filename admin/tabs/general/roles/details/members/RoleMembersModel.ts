@@ -110,7 +110,8 @@ export class RoleMembersModel extends HoistModel {
                     ? role.effectiveDirectoryGroups.map(it => ({
                           name: it.name,
                           sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
-                          type: RoleMembersModel.types.DIRECTORY_GROUP
+                          type: RoleMembersModel.types.DIRECTORY_GROUP,
+                          error: role.errors.directoryGroups[it.name]
                       }))
                     : []),
 
