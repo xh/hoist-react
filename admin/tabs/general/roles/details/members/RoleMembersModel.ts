@@ -3,7 +3,6 @@ import {RoleDetailsModel} from '@xh/hoist/admin/tabs/general/roles/details/RoleD
 import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {
     HoistRole,
-    HoistRoleErrors,
     RoleMemberType,
     RoleServiceConfig
 } from '@xh/hoist/admin/tabs/general/roles/Types';
@@ -32,10 +31,6 @@ export class RoleMembersModel extends HoistModel {
     @managed gridModel: GridModel;
 
     @bindable showInherited = true;
-
-    get errors(): HoistRoleErrors {
-        return this.roleModel.errors;
-    }
 
     get props(): RoleMembersProps {
         return this.componentProps as RoleMembersProps;
@@ -116,7 +111,7 @@ export class RoleMembersModel extends HoistModel {
                           name: it.name,
                           sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
                           type: RoleMembersModel.types.DIRECTORY_GROUP,
-                          error: this.errors.directoryGroups[it.name]
+                          error: role.errors.directoryGroups[it.name]
                       }))
                     : []),
 
@@ -133,7 +128,7 @@ export class RoleMembersModel extends HoistModel {
                     ...it,
                     type: RoleMembersModel.types[it.type],
                     error:
-                        it.type === 'DIRECTORY_GROUP' ? this.errors.directoryGroups[it.name] : null
+                        it.type === 'DIRECTORY_GROUP' ? role.errors.directoryGroups[it.name] : null
                 }))
             );
         }
