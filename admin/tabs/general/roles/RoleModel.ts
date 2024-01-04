@@ -48,7 +48,7 @@ export class RoleModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         if (!this.softConfig?.enabled) return;
         try {
-            const {data} = await XH.fetchJson({loadSpec, url: 'roleAdmin/list'});
+            const {data} = await XH.fetchJson({loadSpec, url: 'roleAdmin'});
             if (loadSpec.isStale) return;
             this.setRoles(this.processRolesFromServer(data.roles), data.errors);
         } catch (e) {
