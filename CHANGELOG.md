@@ -7,17 +7,18 @@
       hierarchical set of Roles associating and associating them with individual users.
     * New system supports app and plug-in specific integrations to AD and other enterprise systems.
     * Administration of the new system provided by a new admin UI tab provided here.
-
-* Add `labelRenderers` property to `ZoneGridModel`. This allows dynamic "data-specific" labeling of
- fields in `zoneGrid`.
-
-### 🐞 Bug Fixes
-
-* Fixed `DateEditor` calendar popover not showing for non-pinned columns.
+* Added `labelRenderers` property to `ZoneGridModel`. This allows dynamic "data-specific" labeling
+  of fields in `ZoneGrid`.
 
 ### ✨ Styles
 
 * Added `xh-bg-intent-xxx` CSS classes, for intent-coloring the `background-color` of elements.
+
+## 59.5.1 - 2024-01-05
+
+### 🐞 Bug Fixes
+
+* Fixed `DateEditor` calendar popover not showing for non-pinned columns.
 
 ## 59.5.0 - 2023-12-11
 
