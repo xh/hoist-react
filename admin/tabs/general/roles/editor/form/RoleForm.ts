@@ -155,10 +155,12 @@ const infoIcon = hoistCmp.factory<AssignmentsPanelProps>({
         const tooltips = model.softConfig?.infoTooltips,
             tooltipText =
                 entity === 'USER'
-                    ? tooltips?.users
+                    ? tooltips?.users ?? 'All users listed here will be directly granted this role.'
                     : entity === 'DIRECTORY_GROUP'
-                      ? tooltips?.directoryGroups
-                      : tooltips?.roles;
+                      ? tooltips?.directoryGroups ??
+                        'All members of these directory groups will be granted this role.'
+                      : tooltips?.roles ??
+                        'All users holding these roles will also be granted this role.';
         return tooltip({
             item: Icon.info(),
             content: tooltipText,
