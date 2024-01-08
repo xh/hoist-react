@@ -16,7 +16,7 @@ import {HoistRole, RoleMemberType, RoleServiceConfig} from './Types';
 export class RoleModel extends HoistModel {
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
 
-    static fmtDirectoryGroup(name?: string): string {
+    static fmtDirectoryGroup(name: string): string {
         if (!name) return name;
         const parts = name.split(','),
             cn = parts.find(it => it.toLowerCase().startsWith('cn='));
