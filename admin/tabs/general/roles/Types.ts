@@ -41,4 +41,9 @@ export interface RoleServiceConfig {
     assignDirectoryGroups: boolean;
     assignUsers: boolean;
     refreshIntervalSecs: number;
+    infoTooltips: {
+        users: string;
+        directoryGroups: string;
+        roles: string;
+    };
 }

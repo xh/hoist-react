@@ -16,6 +16,13 @@ import {HoistRole, RoleMemberType, RoleServiceConfig} from './Types';
 export class RoleModel extends HoistModel {
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
 
+    static fmtDirectoryGroup(name?: string): string {
+        if (!name) return name;
+        const parts = name.toLowerCase().split(','),
+            cn = parts.find(it => it.startsWith('cn='));
+        return cn ?? name;
+    }
+
     override persistWith = RoleModel.PERSIST_WITH;
 
     @managed readonly gridModel: GridModel = this.createGridModel();
@@ -23,6 +30,7 @@ export class RoleModel extends HoistModel {
     @managed readonly roleEditorModel = new RoleEditorModel(this);
 
     @observable.ref allRoles: HoistRole[] = [];
+    @observable showFilterChooser = !!this.filterChooserModel.value;
 
     @bindable @persist groupByCategory = true;
 
@@ -76,6 +84,16 @@ export class RoleModel extends HoistModel {
     clear() {
         this.allRoles = [];
         this.gridModel.clear();
+    }
+
+    @action
+    toggleFilterChooserVisibility() {
+        if (this.showFilterChooser) {
+            this.filterChooserModel.setValue(null);
+            this.showFilterChooser = false;
+        } else {
+            this.showFilterChooser = true;
+        }
     }
 
     applyMemberFilter(name: string, type: RoleMemberType, includeEffective: boolean) {

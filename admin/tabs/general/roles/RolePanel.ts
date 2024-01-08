@@ -2,6 +2,7 @@ import {roleGraph} from '@xh/hoist/admin/tabs/general/roles/graph/RoleGraph';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
@@ -23,7 +24,7 @@ export const rolePanel = hoistCmp.factory({
             });
         }
 
-        const {gridModel, readonly} = model;
+        const {gridModel, readonly, showFilterChooser} = model;
         return fragment(
             panel({
                 className,
@@ -38,7 +39,10 @@ export const rolePanel = hoistCmp.factory({
                     filler(),
                     gridCountLabel({unit: 'role'}),
                     '-',
-                    filterChooser({flex: 2}),
+                    button({
+                        icon: showFilterChooser ? Icon.filterSlash() : Icon.filter(),
+                        onClick: () => model.toggleFilterChooserVisibility()
+                    }),
                     '-',
                     switchInput({
                         bind: 'groupByCategory',
@@ -46,7 +50,13 @@ export const rolePanel = hoistCmp.factory({
                         labelSide: 'left'
                     })
                 ],
-                item: hframe(vframe(grid(), roleGraph()), detailsPanel())
+                items: [
+                    toolbar({
+                        omit: !showFilterChooser,
+                        item: filterChooser({flex: 1})
+                    }),
+                    hframe(vframe(grid(), roleGraph()), detailsPanel())
+                ]
             }),
             roleEditor()
         );

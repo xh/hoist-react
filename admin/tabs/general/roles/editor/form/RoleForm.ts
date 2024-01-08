@@ -13,6 +13,7 @@ import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {capitalizeWords} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+import {tooltip} from '@xh/hoist/kit/blueprint';
 import {RoleFormModel} from './RoleFormModel';
 
 export const roleForm = hoistCmp.factory({
@@ -124,7 +125,8 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
                 ]
             }),
             item: grid({model: gridModel}),
-            bbar: bbar({entity})
+            bbar: bbar({entity}),
+            loadingIndicator: entity === 'DIRECTORY_GROUP' && model.directoryGroupLookupTask
         });
     }
 });
@@ -149,13 +151,18 @@ const bbar = hoistCmp.factory<AssignmentsPanelProps>(({entity, model}) => {
 });
 
 const infoIcon = hoistCmp.factory<AssignmentsPanelProps>({
-    render({entity}) {
-        return entity == 'ROLE'
-            ? Icon.info({
-                  title:
-                      'All users holding the roles below will also be granted this role.' +
-                      'These roles essentially "inherit" this role and are a functional superset of this role.'
-              })
-            : null;
+    render({entity, model}) {
+        const tooltips = model.softConfig?.infoTooltips,
+            tooltipText =
+                entity === 'USER'
+                    ? tooltips?.users
+                    : entity === 'DIRECTORY_GROUP'
+                      ? tooltips?.directoryGroups
+                      : tooltips?.roles;
+        return tooltip({
+            item: Icon.info(),
+            content: tooltipText,
+            omit: !tooltipText
+        });
     }
 });

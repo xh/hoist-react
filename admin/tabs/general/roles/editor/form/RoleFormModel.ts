@@ -1,3 +1,4 @@
+import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {
     HoistRole,
     RoleMemberType,
@@ -5,7 +6,8 @@ import {
 } from '@xh/hoist/admin/tabs/general/roles/Types';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, ReactionSpec, SelectOption, XH} from '@xh/hoist/core';
+import {box, hbox} from '@xh/hoist/cmp/layout';
+import {HoistModel, managed, ReactionSpec, SelectOption, TaskObserver, XH} from '@xh/hoist/core';
 import {RecordActionSpec, required} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth, selectEditor} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
@@ -18,6 +20,7 @@ export class RoleFormModel extends HoistModel {
         this.ADD_ASSIGNMENT_ACTION,
         this.createRemoveAssignmentAction()
     ];
+    readonly directoryGroupLookupTask = TaskObserver.trackLast();
 
     @managed readonly formModel: FormModel = this.createFormModel();
     @managed readonly usersGridModel: GridModel = this.createGridModel('USER');
@@ -75,7 +78,13 @@ export class RoleFormModel extends HoistModel {
         this.usersGridModel.loadData(sortBy(role?.users?.map(name => ({name})) ?? [], 'name'));
         this.userOptions = uniq(allRoles.flatMap(role => role.users)).sort();
         this.directoryGroupsGridModel.loadData(
-            sortBy(role?.directoryGroups?.map(name => ({name})) ?? [], 'name')
+            sortBy(
+                role?.directoryGroups?.map(name => ({
+                    name,
+                    error: role.errors.directoryGroups[name]
+                })) ?? [],
+                'name'
+            )
         );
         this.directoryGroupOptions = uniq(allRoles.flatMap(role => role.directoryGroups)).sort();
         this.categoryOptions = uniq(allRoles.map(it => it.category)).sort();
@@ -141,6 +150,7 @@ export class RoleFormModel extends HoistModel {
             hideHeaders: true,
             selModel: 'multiple',
             store: {
+                fields: [{name: 'error', type: 'string'}],
                 idSpec: XH.genId
             },
             columns: [
@@ -163,6 +173,30 @@ export class RoleFormModel extends HoistModel {
                                 options: this.filterSelected(options, selected)
                             }
                         });
+                    },
+                    renderer: (v, {record}) => {
+                        const {error} = record.data;
+                        return hbox({
+                            alignItems: 'center',
+                            items: [
+                                box({
+                                    item:
+                                        entity === 'DIRECTORY_GROUP'
+                                            ? RoleModel.fmtDirectoryGroup(v)
+                                            : v,
+                                    paddingRight: 'var(--xh-pad-half-px)',
+                                    title: v
+                                }),
+                                Icon.warning({omit: !error, intent: 'warning', title: error})
+                            ]
+                        });
+                    },
+                    rendererIsComplex: true,
+                    setValueFn: ({record, store, value}) => {
+                        const {id} = record;
+                        store.modifyRecords({id, name: value, error: null});
+                        if (entity === 'DIRECTORY_GROUP')
+                            this.lookupDirectoryGroupAsync(value, id as string);
                     }
                 },
                 {
@@ -190,7 +224,7 @@ export class RoleFormModel extends HoistModel {
         return ret;
     }
 
-    createAddAssigmentAction(): RecordActionSpec {
+    private createAddAssigmentAction(): RecordActionSpec {
         return {
             text: 'Add',
             icon: Icon.add(),
@@ -226,5 +260,23 @@ export class RoleFormModel extends HoistModel {
             },
             debounce: 250
         };
+    }
+
+    private async lookupDirectoryGroupAsync(directoryGroup: string, recordId: string) {
+        try {
+            const {data} = await XH.fetchJson({
+                autoAbortKey: recordId,
+                url: 'roleAdmin/usersForDirectoryGroup',
+                params: {name: directoryGroup}
+            }).linkTo(this.directoryGroupLookupTask);
+            if (isString(data)) {
+                this.directoryGroupsGridModel.store.modifyRecords({
+                    id: recordId,
+                    error: data
+                });
+            }
+        } catch (e) {
+            XH.handleException(e, {alertType: 'toast', title: 'Error looking up directory group'});
+        }
     }
 }
