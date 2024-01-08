@@ -236,7 +236,10 @@ export class RoleMembersModel extends HoistModel {
                                             !isThisRole && 'roles-renderer__role--effective'
                                         ),
                                         intent: isThisRole ? null : 'primary',
-                                        item: isThisRole ? directoryGroup ?? '<Direct>' : role,
+                                        item: isThisRole
+                                            ? RoleModel.fmtDirectoryGroup(directoryGroup) ??
+                                              '<Direct>'
+                                            : role,
                                         title: isThisRole ? directoryGroup ?? '<Direct>' : role,
                                         minimal: true,
                                         onClick: () =>

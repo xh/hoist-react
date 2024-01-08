@@ -76,7 +76,9 @@ export class RoleFormModel extends HoistModel {
     init(allRoles: HoistRole[], role?: Partial<HoistRole>) {
         this.formModel.init(role ?? {});
         this.usersGridModel.loadData(sortBy(role?.users?.map(name => ({name})) ?? [], 'name'));
-        this.userOptions = uniq(allRoles.flatMap(role => role.users)).sort();
+        this.userOptions = uniq(
+            allRoles.flatMap(role => role.effectiveUsers.map(it => it.name))
+        ).sort();
         this.directoryGroupsGridModel.loadData(
             sortBy(
                 role?.directoryGroups?.map(name => ({

@@ -18,8 +18,8 @@ export class RoleModel extends HoistModel {
 
     static fmtDirectoryGroup(name?: string): string {
         if (!name) return name;
-        const parts = name.toLowerCase().split(','),
-            cn = parts.find(it => it.startsWith('cn='));
+        const parts = name.split(','),
+            cn = parts.find(it => it.toLowerCase().startsWith('cn='));
         return cn ?? name;
     }
 
