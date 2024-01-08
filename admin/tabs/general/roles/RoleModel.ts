@@ -30,9 +30,14 @@ export class RoleModel extends HoistModel {
     @managed readonly roleEditorModel = new RoleEditorModel(this);
 
     @observable.ref allRoles: HoistRole[] = [];
-    @observable showFilterChooser = !!this.filterChooserModel.value;
 
     @bindable @persist groupByCategory = true;
+
+    @observable private shouldShowFilterChooser = !!this.filterChooserModel.value;
+
+    get isFilterChooserVisible(): boolean {
+        return this.shouldShowFilterChooser || !!this.filterChooserModel.value;
+    }
 
     get readonly() {
         return !XH.getUser().isHoistRoleManager;
@@ -88,11 +93,11 @@ export class RoleModel extends HoistModel {
 
     @action
     toggleFilterChooserVisibility() {
-        if (this.showFilterChooser) {
+        if (this.isFilterChooserVisible) {
             this.filterChooserModel.setValue(null);
-            this.showFilterChooser = false;
+            this.shouldShowFilterChooser = false;
         } else {
-            this.showFilterChooser = true;
+            this.shouldShowFilterChooser = true;
         }
     }
 

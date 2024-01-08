@@ -24,7 +24,7 @@ export const rolePanel = hoistCmp.factory({
             });
         }
 
-        const {gridModel, readonly, showFilterChooser} = model;
+        const {gridModel, isFilterChooserVisible, readonly} = model;
         return fragment(
             panel({
                 className,
@@ -40,7 +40,9 @@ export const rolePanel = hoistCmp.factory({
                     gridCountLabel({unit: 'role'}),
                     '-',
                     button({
-                        icon: showFilterChooser ? Icon.filterSlash() : Icon.filter(),
+                        icon: isFilterChooserVisible
+                            ? Icon.filterSlash({prefix: 'fas'})
+                            : Icon.filter(),
                         onClick: () => model.toggleFilterChooserVisibility()
                     }),
                     '-',
@@ -52,8 +54,14 @@ export const rolePanel = hoistCmp.factory({
                 ],
                 items: [
                     toolbar({
-                        omit: !showFilterChooser,
-                        item: filterChooser({flex: 1})
+                        omit: !isFilterChooserVisible,
+                        items: [
+                            filterChooser({enableClear: false, flex: 1}),
+                            button({
+                                icon: Icon.close(),
+                                onClick: () => model.toggleFilterChooserVisibility()
+                            })
+                        ]
                     }),
                     hframe(vframe(grid(), roleGraph()), detailsPanel())
                 ]
