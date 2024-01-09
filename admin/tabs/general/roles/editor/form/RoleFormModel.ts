@@ -267,7 +267,7 @@ export class RoleFormModel extends HoistModel {
     private async lookupDirectoryGroupAsync(directoryGroup: string, recordId: string) {
         try {
             const {data} = await XH.fetchJson({
-                autoAbortKey: recordId,
+                autoAbortKey: `roleAdmin/usersForDirectoryGroup-${recordId}`,
                 url: 'roleAdmin/usersForDirectoryGroup',
                 params: {name: directoryGroup}
             }).linkTo(this.directoryGroupLookupTask);

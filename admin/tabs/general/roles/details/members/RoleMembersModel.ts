@@ -6,7 +6,7 @@ import {
     RoleMemberType,
     RoleServiceConfig
 } from '@xh/hoist/admin/tabs/general/roles/Types';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {ColumnRenderer, GridModel, GroupRowRenderer} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {box, hbox, hframe} from '@xh/hoist/cmp/layout';
 import {HoistModel, lookup, managed, XH} from '@xh/hoist/core';
@@ -161,25 +161,7 @@ export class RoleMembersModel extends HoistModel {
                 const {type, name} = record.data;
                 if (type === types.ROLE) this.roleModel.selectRoleAsync(name);
             },
-            groupRowRenderer: ({value}) => {
-                switch (value) {
-                    case types.USER:
-                        return hframe({
-                            className: 'group-row-renderer',
-                            items: [Icon.user(), 'Users']
-                        });
-                    case types.DIRECTORY_GROUP:
-                        return hframe({
-                            className: 'group-row-renderer',
-                            items: [Icon.users(), 'Directory Groups']
-                        });
-                    case types.ROLE:
-                        return hframe({
-                            className: 'group-row-renderer',
-                            items: [Icon.idBadge(), 'Roles']
-                        });
-                }
-            },
+            groupRowRenderer: this.groupRowRenderer,
             colDefaults: {
                 filterable: true
             },
@@ -187,23 +169,7 @@ export class RoleMembersModel extends HoistModel {
                 {
                     field: 'name',
                     autosizeMaxWidth: 300,
-                    renderer: (name, {record}) => {
-                        const {error, type} = record.data;
-                        return hbox({
-                            alignItems: 'center',
-                            items: [
-                                box({
-                                    item:
-                                        type === types.DIRECTORY_GROUP
-                                            ? RoleModel.fmtDirectoryGroup(name)
-                                            : name,
-                                    paddingRight: 'var(--xh-pad-half-px)',
-                                    title: name
-                                }),
-                                Icon.warning({omit: !error, intent: 'warning', title: error})
-                            ]
-                        });
-                    },
+                    renderer: this.nameRenderer,
                     rendererIsComplex: true
                 },
                 {
@@ -224,31 +190,7 @@ export class RoleMembersModel extends HoistModel {
                     field: 'sources',
                     flex: true,
                     minWidth: 105,
-                    renderer: (sources: Array<{role: string; directoryGroup?: string}>) =>
-                        hbox({
-                            className: 'roles-renderer',
-                            items: uniqBy(
-                                sources.map(({role, directoryGroup}) => {
-                                    const isThisRole = role === this.selectedRole.name;
-                                    return {
-                                        className: classNames(
-                                            'roles-renderer__role',
-                                            !isThisRole && 'roles-renderer__role--effective'
-                                        ),
-                                        intent: isThisRole ? null : 'primary',
-                                        item: isThisRole
-                                            ? RoleModel.fmtDirectoryGroup(directoryGroup) ??
-                                              '<Direct>'
-                                            : role,
-                                        title: isThisRole ? directoryGroup ?? '<Direct>' : role,
-                                        minimal: true,
-                                        onClick: () =>
-                                            !isThisRole && this.roleModel.selectRoleAsync(role)
-                                    };
-                                }),
-                                'item'
-                            ).map(props => tag(props))
-                        }),
+                    renderer: this.sourcesRenderer,
                     exportValue: (sources: Array<{role: string; directoryGroup?: string}>) =>
                         uniq(
                             sources.map(({role, directoryGroup}) =>
@@ -315,4 +257,71 @@ export class RoleMembersModel extends HoistModel {
         const thisRole = sources.filter(it => it.role === this.selectedRole.name) ?? [];
         return [...thisRole, ...sources.filter(it => it.role !== this.selectedRole.name)];
     }
+
+    // -------------------------------
+    // Grid Renderers
+    // -------------------------------
+
+    private groupRowRenderer: GroupRowRenderer = ({value}) => {
+        const {USER, DIRECTORY_GROUP, ROLE} = RoleMembersModel.types;
+        switch (value) {
+            case USER:
+                return hframe({
+                    className: 'group-row-renderer',
+                    items: [Icon.user(), 'Users']
+                });
+            case DIRECTORY_GROUP:
+                return hframe({
+                    className: 'group-row-renderer',
+                    items: [Icon.users(), 'Directory Groups']
+                });
+            case ROLE:
+                return hframe({
+                    className: 'group-row-renderer',
+                    items: [Icon.idBadge(), 'Roles']
+                });
+        }
+    };
+
+    private nameRenderer: ColumnRenderer = (name, {record}) => {
+        const {DIRECTORY_GROUP} = RoleMembersModel.types,
+            {error, type} = record.data;
+        return hbox({
+            alignItems: 'center',
+            items: [
+                box({
+                    item: type === DIRECTORY_GROUP ? RoleModel.fmtDirectoryGroup(name) : name,
+                    paddingRight: 'var(--xh-pad-half-px)',
+                    title: name
+                }),
+                Icon.warning({omit: !error, intent: 'warning', title: error})
+            ]
+        });
+    };
+
+    private sourcesRenderer: ColumnRenderer = (
+        sources: Array<{role: string; directoryGroup?: string}>
+    ) =>
+        hbox({
+            className: 'roles-renderer',
+            items: uniqBy(
+                sources.map(({role, directoryGroup}) => {
+                    const isThisRole = role === this.selectedRole.name;
+                    return {
+                        className: classNames(
+                            'roles-renderer__role',
+                            !isThisRole && 'roles-renderer__role--effective'
+                        ),
+                        intent: isThisRole ? null : 'primary',
+                        item: isThisRole
+                            ? RoleModel.fmtDirectoryGroup(directoryGroup) ?? '<Direct>'
+                            : role,
+                        title: isThisRole ? directoryGroup ?? '<Direct>' : role,
+                        minimal: true,
+                        onClick: () => !isThisRole && this.roleModel.selectRoleAsync(role)
+                    };
+                }),
+                'item'
+            ).map(props => tag(props))
+        });
 }
