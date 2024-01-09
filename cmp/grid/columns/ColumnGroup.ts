@@ -37,7 +37,7 @@ export interface ColumnGroupSpec {
      */
     agOptions?: PlainObject;
 
-    /** True to skip this column when adding to grid. */
+    /** True to skip this ColumnGroup when adding to grid. */
     omit?: Thunkable<boolean>;
 
     appData?: PlainObject;
