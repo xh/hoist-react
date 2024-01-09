@@ -14,6 +14,9 @@
 
 * Added `xh-bg-intent-xxx` CSS classes, for intent-coloring the `background-color` of elements.
 
+### 🐞 Bug Fixes
+* Fixed bug where `ColumnGroup` did not properly support the `omit` flag.
+
 ## 59.5.1 - 2024-01-05
 
 ### 🐞 Bug Fixes
