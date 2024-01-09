@@ -55,6 +55,7 @@ export class ColumnGroup {
     readonly headerClass: Some<string> | ColumnHeaderClassFn;
     readonly headerAlign: HAlign;
     readonly borders: boolean;
+    readonly omit: Thunkable<boolean>;
 
     /**
      * "Escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note
@@ -88,6 +89,7 @@ export class ColumnGroup {
             agOptions,
             borders,
             appData,
+            omit,
             ...rest
         } = config;
 
@@ -106,6 +108,7 @@ export class ColumnGroup {
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
         this.appData = appData ? clone(appData) : {};
+        this.omit = omit;
 
         if (!isEmpty(rest)) {
             const keys = keysIn(rest);
