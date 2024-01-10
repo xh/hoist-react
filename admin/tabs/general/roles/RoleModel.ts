@@ -185,15 +185,15 @@ export class RoleModel extends HoistModel {
     }
 
     private groupByCategoryReaction(): ReactionSpec<boolean> {
-        const {gridModel} = this;
         return {
             track: () => this.groupByCategory,
             run: groupByCategory => {
+                const {gridModel} = this;
+                if (!gridModel) return;
                 gridModel.setGroupBy(groupByCategory ? 'category' : null);
                 gridModel.setColumnVisible('category', !groupByCategory);
                 gridModel.autosizeAsync();
-            },
-            fireImmediately: true
+            }
         };
     }
 
@@ -235,6 +235,7 @@ export class RoleModel extends HoistModel {
             enableExport: true,
             exportOptions: {filename: 'roles'},
             filterModel: true,
+            groupBy: this.groupByCategory ? 'category' : null,
             groupRowRenderer: ({value}) => (!value ? 'Uncategorized' : value),
             headerMenuDisplay: 'hover',
             onRowDoubleClicked: ({data: record}) =>
@@ -278,7 +279,7 @@ export class RoleModel extends HoistModel {
             },
             columns: [
                 {field: {name: 'name', type: 'string'}},
-                {field: {name: 'category', type: 'string'}},
+                {field: {name: 'category', type: 'string'}, hidden: this.groupByCategory},
                 {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime, hidden: true},
                 {field: {name: 'lastUpdatedBy', type: 'string'}, hidden: true},
                 {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1}
