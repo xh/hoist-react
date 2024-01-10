@@ -21,7 +21,7 @@ export const rolePanel = hoistCmp.factory({
         const {moduleConfig} = model;
         if (!moduleConfig) return null;
         if (!moduleConfig.enabled) {
-            return errorMessage({error: 'Role Service disabled via xhRoleModuleConfig.'});
+            return errorMessage({error: 'Default Role Module not enabled.'});
         }
 
         const {gridModel, isFilterChooserVisible, readonly} = model;
