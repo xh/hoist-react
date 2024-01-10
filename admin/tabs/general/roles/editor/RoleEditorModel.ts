@@ -12,7 +12,7 @@ export class RoleEditorModel extends HoistModel {
     readonly savingTask = TaskObserver.trackLast({message: 'Saving Role'});
     readonly deletingTask = TaskObserver.trackLast({message: 'Deleting Role'});
 
-    @managed readonly roleFormModel = new RoleFormModel();
+    @managed roleFormModel;
 
     @observable isOpen = false;
     @observable role?: HoistRole;
@@ -28,6 +28,7 @@ export class RoleEditorModel extends HoistModel {
         super();
         makeObservable(this);
         this.roleModel = roleModel;
+        this.roleFormModel = new RoleFormModel(roleModel);
     }
 
     async createAsync(roleSpec?: HoistRole): Promise<HoistRole> {

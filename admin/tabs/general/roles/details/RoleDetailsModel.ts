@@ -20,12 +20,15 @@ export class RoleDetailsModel extends HoistModel {
         this.addReaction({
             track: () => this.role,
             run: role => {
-                if (!role) this.formModel.init({});
-                this.formModel.init({
-                    ...role,
-                    category: role.category ?? 'Uncategorized',
-                    lastUpdated: `${role.lastUpdatedBy} (${fmtDateTimeSec(role.lastUpdated)})`
-                });
+                if (!role) {
+                    this.formModel.init({});
+                } else {
+                    this.formModel.init({
+                        ...role,
+                        category: role.category ?? 'Uncategorized',
+                        lastUpdated: `${role.lastUpdatedBy} (${fmtDateTimeSec(role.lastUpdated)})`
+                    });
+                }
             }
         });
     }

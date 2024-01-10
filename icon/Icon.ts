@@ -390,6 +390,9 @@ export const Icon = {
     funnel(p?: IconProps) {
         return Icon.icon({...p, iconName: 'filter'});
     },
+    funnelSlash(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'filter-slash'});
+    },
     gauge(p?: IconProps) {
         return Icon.icon({...p, iconName: 'gauge-high'});
     },
@@ -786,6 +789,9 @@ export const Icon = {
     },
     filter(p?: IconProps) {
         return Icon.funnel(p);
+    },
+    filterSlash(p?: IconProps) {
+        return Icon.funnelSlash(p);
     },
     groupRowCollapsed(p?: IconProps) {
         return Icon.angleRight(p);

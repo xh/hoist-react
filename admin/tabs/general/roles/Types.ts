@@ -12,6 +12,9 @@ export interface HoistRole {
     lastUpdated: Date;
     lastUpdatedBy: string;
     members: HoistRoleMember[];
+    errors: {
+        directoryGroups: Record<string, string>;
+    };
 }
 
 export interface HoistRoleMember {
@@ -33,9 +36,14 @@ export interface EffectiveRoleUser {
 
 export type RoleMemberType = 'USER' | 'DIRECTORY_GROUP' | 'ROLE';
 
-export interface RoleServiceConfig {
+export interface RoleModuleConfig {
     enabled: boolean;
     assignDirectoryGroups: boolean;
     assignUsers: boolean;
     refreshIntervalSecs: number;
+    infoTooltips: {
+        users: string;
+        directoryGroups: string;
+        roles: string;
+    };
 }

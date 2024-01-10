@@ -11,7 +11,9 @@ import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import './RoleMembers.scss';
 import {Icon} from '@xh/hoist/icon';
-import {sum, values} from 'lodash';
+import {tooltip} from '@xh/hoist/kit/blueprint';
+import {pluralize} from '@xh/hoist/utils/js';
+import {isEmpty, sum, values} from 'lodash';
 import {ReactNode} from 'react';
 
 export interface RoleMembersProps extends HoistProps<RoleMembersModel> {
@@ -31,17 +33,11 @@ export const roleMembers = hoistCmp.factory<RoleMembersProps>({
                     bind: 'activeTabId',
                     items: [
                         button({
-                            text: hbox({
-                                alignItems: 'center',
-                                items: ['Assigned', counts({countsByType: directCounts})]
-                            }),
+                            text: buttonText({text: 'Assigned', countsByType: directCounts}),
                             value: 'directMembers'
                         }),
                         button({
-                            text: hbox({
-                                alignItems: 'center',
-                                items: ['Effective', counts({countsByType: effectiveCounts})]
-                            }),
+                            text: buttonText({text: 'Effective', countsByType: effectiveCounts}),
                             value: 'effectiveMembers'
                         })
                     ]
@@ -53,6 +49,28 @@ export const roleMembers = hoistCmp.factory<RoleMembersProps>({
             bbar: bbar({omit: showEffective})
         });
     }
+});
+
+interface ButtonTextProps extends HoistProps {
+    countsByType: Record<RoleMemberType, number>;
+    text: string;
+}
+
+const buttonText = hoistCmp.factory<ButtonTextProps>(({countsByType, text}) => {
+    const countLabels = [],
+        {USER: users, DIRECTORY_GROUP: groups, ROLE: roles} = countsByType;
+
+    if (users) countLabels.push(pluralize('User', users, true));
+    if (groups) countLabels.push(pluralize('Directory Group', groups, true));
+    if (roles) countLabels.push(pluralize('Role', roles, true));
+
+    return tooltip({
+        content: `${text} Members` + (isEmpty(countLabels) ? '' : ` (${countLabels.join(', ')})`),
+        item: hbox({
+            alignItems: 'center',
+            items: [text, counts({countsByType})]
+        })
+    });
 });
 
 interface CountsProps extends HoistProps {
@@ -85,12 +103,12 @@ const count = hoistCmp.factory<CountProps>(({count, icon}) =>
 );
 
 const bbar = hoistCmp.factory<RoleMembersModel>(({model}) => {
-    const {directCounts, softConfig} = model;
-    if (!softConfig?.assignDirectoryGroups && directCounts.DIRECTORY_GROUP) {
+    const {directCounts, moduleConfig} = model;
+    if (!moduleConfig?.assignDirectoryGroups && directCounts.DIRECTORY_GROUP) {
         return warningBanner({
             message: 'Directory Groups disabled. Will ignore.'
         });
-    } else if (!softConfig?.assignUsers && directCounts.USER) {
+    } else if (!moduleConfig?.assignUsers && directCounts.USER) {
         return warningBanner({
             message: 'Users assignment disabled. Will ignore.'
         });

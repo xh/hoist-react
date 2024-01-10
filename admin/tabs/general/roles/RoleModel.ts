@@ -8,23 +8,38 @@ import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {compact, groupBy, mapValues} from 'lodash';
-import {action, observable} from 'mobx';
+import {action, observable, runInAction} from 'mobx';
 import moment from 'moment/moment';
 import {RoleEditorModel} from './editor/RoleEditorModel';
-import {HoistRole, RoleMemberType, RoleServiceConfig} from './Types';
+import {HoistRole, RoleMemberType, RoleModuleConfig} from './Types';
 
 export class RoleModel extends HoistModel {
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
 
+    static fmtDirectoryGroup(name: string): string {
+        if (!name) return name;
+        const parts = name.split(','),
+            cn = parts.find(it => it.toLowerCase().startsWith('cn='));
+        return cn ?? name;
+    }
+
     override persistWith = RoleModel.PERSIST_WITH;
 
-    @managed readonly gridModel: GridModel = this.createGridModel();
-    @managed readonly filterChooserModel: FilterChooserModel = this.createFilterChooserModel();
+    @managed gridModel: GridModel;
+    @managed filterChooserModel: FilterChooserModel;
     @managed readonly roleEditorModel = new RoleEditorModel(this);
 
     @observable.ref allRoles: HoistRole[] = [];
 
     @bindable @persist groupByCategory = true;
+
+    @observable private shouldShowFilterChooser = false;
+
+    @observable.ref moduleConfig: RoleModuleConfig;
+
+    get isFilterChooserVisible(): boolean {
+        return this.shouldShowFilterChooser || !!this.filterChooserModel.value;
+    }
 
     get readonly() {
         return !XH.getUser().isHoistRoleManager;
@@ -34,10 +49,6 @@ export class RoleModel extends HoistModel {
         return this.gridModel.selectedRecord?.data as HoistRole;
     }
 
-    get softConfig(): RoleServiceConfig {
-        return XH.getConf('xhRoleModuleConfig');
-    }
-
     constructor() {
         super();
         makeObservable(this);
@@ -45,8 +56,11 @@ export class RoleModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        if (!this.softConfig?.enabled) return;
         try {
+            await this.ensureInitializedAsync();
+
+            if (!this.moduleConfig.enabled) return;
+
             const {data} = await XH.fetchJson({loadSpec, url: 'roleAdmin/list'});
             if (loadSpec.isStale) return;
             this.setRoles(this.processRolesFromServer(data));
@@ -76,6 +90,16 @@ export class RoleModel extends HoistModel {
     clear() {
         this.allRoles = [];
         this.gridModel.clear();
+    }
+
+    @action
+    toggleFilterChooserVisibility() {
+        if (this.isFilterChooserVisible) {
+            this.filterChooserModel.setValue(null);
+            this.shouldShowFilterChooser = false;
+        } else {
+            this.shouldShowFilterChooser = true;
+        }
     }
 
     applyMemberFilter(name: string, type: RoleMemberType, includeEffective: boolean) {
@@ -147,6 +171,19 @@ export class RoleModel extends HoistModel {
     // -------------------------------
     // Implementation
     // -------------------------------
+    private async ensureInitializedAsync() {
+        if (!this.moduleConfig) {
+            const config = await XH.fetchJson({url: 'roleAdmin/config'});
+            runInAction(() => {
+                this.moduleConfig = config;
+                if (config.enabled) {
+                    this.gridModel = this.createGridModel();
+                    this.filterChooserModel = this.createFilterChooserModel();
+                }
+            });
+        }
+    }
+
     private groupByCategoryReaction(): ReactionSpec<boolean> {
         const {gridModel} = this;
         return {
@@ -217,6 +254,7 @@ export class RoleModel extends HoistModel {
                     {name: 'effectiveUsers', type: 'json'},
                     {name: 'effectiveDirectoryGroups', type: 'json'},
                     {name: 'effectiveRoles', type: 'json'},
+                    {name: 'errors', type: 'json'},
                     {name: 'inheritedRoleNames', displayName: 'Inherited Roles', type: 'tags'},
                     {name: 'effectiveUserNames', displayName: 'Users', type: 'tags'},
                     {
@@ -259,18 +297,18 @@ export class RoleModel extends HoistModel {
     }
 
     private createFilterChooserModel(): FilterChooserModel {
-        const {softConfig} = this;
+        const config = this.moduleConfig;
         return new FilterChooserModel({
             bind: this.gridModel.store,
             fieldSpecs: compact([
                 'name',
                 'category',
-                softConfig.assignUsers && 'users',
-                softConfig.assignDirectoryGroups && 'directoryGroups',
+                config.assignUsers && 'users',
+                config.assignDirectoryGroups && 'directoryGroups',
                 'roles',
                 'inheritedRoleNames',
                 'effectiveUserNames',
-                'effectiveDirectoryGroupNames',
+                config.assignDirectoryGroups && 'effectiveDirectoryGroupNames',
                 'effectiveRoleNames',
                 'lastUpdatedBy',
                 {
