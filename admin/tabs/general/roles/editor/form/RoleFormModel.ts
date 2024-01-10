@@ -2,7 +2,7 @@ import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {
     HoistRole,
     RoleMemberType,
-    RoleServiceConfig
+    RoleModuleConfig
 } from '@xh/hoist/admin/tabs/general/roles/Types';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
@@ -21,6 +21,7 @@ export class RoleFormModel extends HoistModel {
         this.createRemoveAssignmentAction()
     ];
     readonly directoryGroupLookupTask = TaskObserver.trackLast();
+    readonly roleModel: RoleModel;
 
     @managed readonly formModel: FormModel = this.createFormModel();
     @managed readonly usersGridModel: GridModel = this.createGridModel('USER');
@@ -59,12 +60,13 @@ export class RoleFormModel extends HoistModel {
         );
     }
 
-    get softConfig(): RoleServiceConfig {
-        return XH.getConf('xhRoleModuleConfig');
+    get moduleConfig(): RoleModuleConfig {
+        return this.roleModel.moduleConfig;
     }
 
-    constructor() {
+    constructor(roleModel: RoleModel) {
         super();
+        this.roleModel = roleModel;
         this.addReaction(
             this.clearDegenerateRowReaction(this.usersGridModel),
             this.clearDegenerateRowReaction(this.directoryGroupsGridModel),

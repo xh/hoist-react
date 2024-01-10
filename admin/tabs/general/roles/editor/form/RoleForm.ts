@@ -68,12 +68,13 @@ const assignments = hoistCmp.factory<RoleFormModel>(({model}) =>
         items: [
             assignmentsPanel({
                 entity: 'USER',
-                omit: !model.softConfig?.assignUsers && model.usersGridModel.empty
+                omit: !model.moduleConfig?.assignUsers && model.usersGridModel.empty
             }),
             assignmentsPanel({
                 entity: 'DIRECTORY_GROUP',
                 omit:
-                    !model.softConfig?.assignDirectoryGroups && model.directoryGroupsGridModel.empty
+                    !model.moduleConfig?.assignDirectoryGroups &&
+                    model.directoryGroupsGridModel.empty
             }),
             assignmentsPanel({entity: 'ROLE'})
         ]
@@ -137,13 +138,13 @@ const bbar = hoistCmp.factory<AssignmentsPanelProps>(({entity, model}) => {
             return warningBanner({
                 compact: true,
                 message: 'Users assignment disabled. Will ignore.',
-                omit: model.softConfig?.assignUsers
+                omit: model.moduleConfig?.assignUsers
             });
         case 'DIRECTORY_GROUP':
             return warningBanner({
                 compact: true,
                 message: 'Directory Groups disabled. Will ignore.',
-                omit: model.softConfig?.assignDirectoryGroups
+                omit: model.moduleConfig?.assignDirectoryGroups
             });
         default:
             return null;
@@ -152,7 +153,7 @@ const bbar = hoistCmp.factory<AssignmentsPanelProps>(({entity, model}) => {
 
 const infoIcon = hoistCmp.factory<AssignmentsPanelProps>({
     render({entity, model}) {
-        const tooltips = model.softConfig?.infoTooltips,
+        const tooltips = model.moduleConfig?.infoTooltips,
             tooltipText =
                 entity === 'USER'
                     ? tooltips?.users ?? 'All users listed here will be directly granted this role.'

@@ -36,7 +36,7 @@ export interface EffectiveRoleUser {
 
 export type RoleMemberType = 'USER' | 'DIRECTORY_GROUP' | 'ROLE';
 
-export interface RoleServiceConfig {
+export interface RoleModuleConfig {
     enabled: boolean;
     assignDirectoryGroups: boolean;
     assignUsers: boolean;

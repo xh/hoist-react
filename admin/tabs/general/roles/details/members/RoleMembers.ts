@@ -103,12 +103,12 @@ const count = hoistCmp.factory<CountProps>(({count, icon}) =>
 );
 
 const bbar = hoistCmp.factory<RoleMembersModel>(({model}) => {
-    const {directCounts, softConfig} = model;
-    if (!softConfig?.assignDirectoryGroups && directCounts.DIRECTORY_GROUP) {
+    const {directCounts, moduleConfig} = model;
+    if (!moduleConfig?.assignDirectoryGroups && directCounts.DIRECTORY_GROUP) {
         return warningBanner({
             message: 'Directory Groups disabled. Will ignore.'
         });
-    } else if (!softConfig?.assignUsers && directCounts.USER) {
+    } else if (!moduleConfig?.assignUsers && directCounts.USER) {
         return warningBanner({
             message: 'Users assignment disabled. Will ignore.'
         });

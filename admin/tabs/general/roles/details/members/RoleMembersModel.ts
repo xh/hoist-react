@@ -4,12 +4,12 @@ import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {
     HoistRole,
     RoleMemberType,
-    RoleServiceConfig
+    RoleModuleConfig
 } from '@xh/hoist/admin/tabs/general/roles/Types';
 import {ColumnRenderer, GridModel, GroupRowRenderer} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {box, hbox, hframe} from '@xh/hoist/cmp/layout';
-import {HoistModel, lookup, managed, XH} from '@xh/hoist/core';
+import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {tag} from '@xh/hoist/kit/blueprint';
@@ -57,7 +57,7 @@ export class RoleMembersModel extends HoistModel {
         const {effectiveUsers, effectiveDirectoryGroups, effectiveRoles} = this.selectedRole;
         return {
             USER: effectiveUsers.length,
-            DIRECTORY_GROUP: this.softConfig?.assignDirectoryGroups
+            DIRECTORY_GROUP: this.moduleConfig?.assignDirectoryGroups
                 ? effectiveDirectoryGroups.length
                 : 0,
             ROLE: effectiveRoles.length
@@ -68,8 +68,8 @@ export class RoleMembersModel extends HoistModel {
         return this.roleDetailsModel.tabContainerModel.activeTabId;
     }
 
-    get softConfig(): RoleServiceConfig {
-        return XH.getConf('xhRoleModuleConfig');
+    get moduleConfig(): RoleModuleConfig {
+        return this.roleModel.moduleConfig;
     }
 
     setActiveTabId(id: string) {
@@ -89,7 +89,6 @@ export class RoleMembersModel extends HoistModel {
     // -------------------------------
     // Implementation
     // -------------------------------
-
     private loadGridData(role: HoistRole) {
         if (!role) {
             this.gridModel.clear();
@@ -106,7 +105,7 @@ export class RoleMembersModel extends HoistModel {
                 })),
 
                 // 2 - Directory Groups
-                ...(this.softConfig?.assignDirectoryGroups
+                ...(this.moduleConfig?.assignDirectoryGroups
                     ? role.effectiveDirectoryGroups.map(it => ({
                           name: it.name,
                           sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
@@ -231,12 +230,12 @@ export class RoleMembersModel extends HoistModel {
                 if (!record) return {hidden: true};
                 const {name, type} = record.data,
                     isDirectoryGroup = type === types.DIRECTORY_GROUP,
-                    {softConfig} = this;
+                    {moduleConfig} = this;
 
                 if (
                     !includeEffective &&
-                    ((type === types.USER && !softConfig.assignUsers) ||
-                        (isDirectoryGroup && !softConfig.assignDirectoryGroups))
+                    ((type === types.USER && !moduleConfig.assignUsers) ||
+                        (isDirectoryGroup && !moduleConfig.assignDirectoryGroups))
                 ) {
                     return {hidden: true};
                 }
