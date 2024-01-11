@@ -1,13 +1,13 @@
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {HoistModel, LoadSpec, managed, persist, ReactionSpec, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {compact, groupBy, mapValues} from 'lodash';
+import {compact, groupBy, isEmpty, mapValues} from 'lodash';
 import {action, observable, runInAction} from 'mobx';
 import moment from 'moment/moment';
 import {RoleEditorModel} from './editor/RoleEditorModel';
@@ -30,16 +30,7 @@ export class RoleModel extends HoistModel {
     @managed readonly roleEditorModel = new RoleEditorModel(this);
 
     @observable.ref allRoles: HoistRole[] = [];
-
-    @bindable @persist groupByCategory = true;
-
-    @observable private shouldShowFilterChooser = false;
-
     @observable.ref moduleConfig: RoleModuleConfig;
-
-    get isFilterChooserVisible(): boolean {
-        return this.shouldShowFilterChooser || !!this.filterChooserModel.value;
-    }
 
     get readonly() {
         return !XH.getUser().isHoistRoleManager;
@@ -52,7 +43,6 @@ export class RoleModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
-        this.addReaction(this.groupByCategoryReaction());
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
@@ -92,20 +82,26 @@ export class RoleModel extends HoistModel {
         this.gridModel.clear();
     }
 
-    @action
-    toggleFilterChooserVisibility() {
-        if (this.isFilterChooserVisible) {
-            this.filterChooserModel.setValue(null);
-            this.shouldShowFilterChooser = false;
-        } else {
-            this.shouldShowFilterChooser = true;
-        }
-    }
-
     applyMemberFilter(name: string, type: RoleMemberType, includeEffective: boolean) {
         const {gridModel} = this,
             field = this.getFieldForMemberType(type, includeEffective);
         gridModel.filterModel.setFilter({field, op: 'includes', value: name});
+    }
+
+    async deleteAsync(role: HoistRole): Promise<boolean> {
+        const confirm = await XH.confirm({
+            icon: Icon.warning(),
+            title: 'Confirm delete?',
+            message: `Are you sure you want to delete "${role.name}"? This may affect access to this applications.`,
+            confirmProps: {intent: 'danger', text: 'Confirm Delete'}
+        });
+        if (!confirm) return false;
+        await XH.fetchJson({
+            url: `roleAdmin/delete/${role.name}`,
+            method: 'DELETE'
+        });
+        this.refreshAsync();
+        return true;
     }
 
     // -------------------------------
@@ -152,20 +148,23 @@ export class RoleModel extends HoistModel {
         };
     }
 
-    async deleteAsync(role: HoistRole): Promise<boolean> {
-        const confirm = await XH.confirm({
-            icon: Icon.warning(),
-            title: 'Confirm delete?',
-            message: `Are you sure you want to delete "${role.name}"? This may affect access to this applications.`,
-            confirmProps: {intent: 'danger', text: 'Confirm Delete'}
-        });
-        if (!confirm) return false;
-        await XH.fetchJson({
-            url: `roleAdmin/delete/${role.name}`,
-            method: 'DELETE'
-        });
-        this.refreshAsync();
-        return true;
+    private groupByAction(): RecordActionSpec {
+        return {
+            text: 'Group By Category',
+            displayFn: ({gridModel}) => ({
+                icon: isEmpty(gridModel.groupBy) ? Icon.circle() : Icon.checkCircle()
+            }),
+            actionFn: ({gridModel}) => {
+                if (isEmpty(gridModel.groupBy)) {
+                    gridModel.setGroupBy('category');
+                    gridModel.hideColumn('category');
+                } else {
+                    gridModel.setGroupBy(null);
+                    gridModel.showColumn('category');
+                    gridModel.autosizeAsync();
+                }
+            }
+        };
     }
 
     // -------------------------------
@@ -182,19 +181,6 @@ export class RoleModel extends HoistModel {
                 }
             });
         }
-    }
-
-    private groupByCategoryReaction(): ReactionSpec<boolean> {
-        return {
-            track: () => this.groupByCategory,
-            run: groupByCategory => {
-                const {gridModel} = this;
-                if (!gridModel) return;
-                gridModel.setGroupBy(groupByCategory ? 'category' : null);
-                gridModel.setColumnVisible('category', !groupByCategory);
-                gridModel.autosizeAsync();
-            }
-        };
     }
 
     private processRolesFromServer(
@@ -235,7 +221,7 @@ export class RoleModel extends HoistModel {
             enableExport: true,
             exportOptions: {filename: 'roles'},
             filterModel: true,
-            groupBy: this.groupByCategory ? 'category' : null,
+            groupBy: 'category',
             groupRowRenderer: ({value}) => (!value ? 'Uncategorized' : value),
             headerMenuDisplay: 'hover',
             onRowDoubleClicked: ({data: record}) =>
@@ -279,7 +265,7 @@ export class RoleModel extends HoistModel {
             },
             columns: [
                 {field: {name: 'name', type: 'string'}},
-                {field: {name: 'category', type: 'string'}, hidden: this.groupByCategory},
+                {field: {name: 'category', type: 'string'}, hidden: true},
                 {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime, hidden: true},
                 {field: {name: 'lastUpdatedBy', type: 'string'}, hidden: true},
                 {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1}
@@ -292,6 +278,7 @@ export class RoleModel extends HoistModel {
                       this.cloneAction(),
                       this.deleteAction(),
                       '-',
+                      this.groupByAction(),
                       ...GridModel.defaultContextMenu
                   ]
         });
