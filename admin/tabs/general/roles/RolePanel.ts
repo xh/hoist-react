@@ -1,11 +1,9 @@
 import {roleGraph} from '@xh/hoist/admin/tabs/general/roles/graph/RoleGraph';
-import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
 import {filler, fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
-import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -24,7 +22,7 @@ export const rolePanel = hoistCmp.factory({
             return errorMessage({error: 'Default Role Module not enabled.'});
         }
 
-        const {gridModel, isFilterChooserVisible, readonly} = model;
+        const {gridModel, readonly} = model;
         return fragment(
             panel({
                 className,
@@ -36,35 +34,9 @@ export const rolePanel = hoistCmp.factory({
                         omit: readonly,
                         selModel: gridModel.selModel
                     }),
-                    filler(),
-                    gridCountLabel({unit: 'role'}),
-                    '-',
-                    button({
-                        icon: isFilterChooserVisible
-                            ? Icon.filterSlash({prefix: 'fas'})
-                            : Icon.filter(),
-                        onClick: () => model.toggleFilterChooserVisibility()
-                    }),
-                    '-',
-                    switchInput({
-                        bind: 'groupByCategory',
-                        label: 'Group By Category',
-                        labelSide: 'left'
-                    })
+                    filterChooser({flex: 1})
                 ],
-                items: [
-                    toolbar({
-                        omit: !isFilterChooserVisible,
-                        items: [
-                            filterChooser({enableClear: false, flex: 1}),
-                            button({
-                                icon: Icon.close(),
-                                onClick: () => model.toggleFilterChooserVisibility()
-                            })
-                        ]
-                    }),
-                    hframe(vframe(grid(), roleGraph()), detailsPanel())
-                ]
+                item: hframe(vframe(grid(), roleGraph()), detailsPanel())
             }),
             roleEditor()
         );
