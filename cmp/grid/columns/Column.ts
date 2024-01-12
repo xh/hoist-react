@@ -14,7 +14,7 @@ import {
     RecordActionSpec,
     StoreRecord
 } from '@xh/hoist/data';
-import {apiRemoved, logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {
     castArray,
@@ -674,11 +674,6 @@ export class Column {
 
         if (!isEmpty(rest)) {
             const keys = keysIn(rest);
-            apiRemoved('tooltipElement', {
-                test: rest['tooltipElement'],
-                msg: 'Use tooltip property instead.',
-                v: '58'
-            });
             throw XH.exception(
                 `Column '${this.colId}' configured with unsupported key(s) '${keys}'. Custom config data must be nested within the 'appData' property.`
             );
