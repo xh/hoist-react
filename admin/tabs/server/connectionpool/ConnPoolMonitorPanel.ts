@@ -20,12 +20,6 @@ export const connPoolMonitorPanel = hoistCmp.factory({
     model: creates(ConnPoolMonitorModel),
 
     render({model}) {
-        if (!model.supported) {
-            return errorMessage({
-                error: `Connection pool monitoring requires Hoist Core >= ${model.minHoistCoreVersion}.`
-            });
-        }
-
         if (!model.enabled) {
             return errorMessage({
                 error: 'Connection pool monitoring disabled via xhConnPoolMonitoringConfig, or no suitable DataSource detected.'

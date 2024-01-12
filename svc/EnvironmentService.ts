@@ -110,7 +110,7 @@ export class EnvironmentService extends HoistService {
 
     private checkServerVersionAsync = async () => {
         const data = await XH.fetchJson({url: 'xh/version'}),
-            {appVersion, appBuild, mode, shouldUpdate} = data;
+            {appVersion, appBuild, mode} = data;
 
         // Compare latest version/build info from server against the same info (also supplied by
         // server) when the app initialized. A change indicates an update to the app and will
@@ -118,9 +118,7 @@ export class EnvironmentService extends HoistService {
         // `mode` set in `xhAppVersionCheck`. Builds are checked here to trigger refresh prompts
         // across SNAPSHOT updates for projects with active dev/QA users.
         if (appVersion !== this.get('appVersion') || appBuild !== this.get('appBuild')) {
-            if (mode === 'promptReload' || shouldUpdate) {
-                // Todo: `shouldUpdate` checked for backwards compatibility with hoist-core v16.3.0
-                // and earlier - remove in future.
+            if (mode === 'promptReload') {
                 XH.appContainerModel.showUpdateBanner(appVersion, appBuild);
             } else if (mode === 'forceReload') {
                 XH.suspendApp({

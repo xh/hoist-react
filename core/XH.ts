@@ -63,7 +63,7 @@ import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 
-export const MIN_HOIST_CORE_VERSION = '16.0';
+export const MIN_HOIST_CORE_VERSION = '18.0';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;

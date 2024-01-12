@@ -169,8 +169,7 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                         text: 'Presets',
                         outlined: true
                     }),
-                    content: presetMenu(),
-                    omit: !model.supportPresets
+                    content: presetMenu()
                 }),
                 filler(),
                 button({

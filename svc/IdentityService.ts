@@ -162,9 +162,6 @@ export class IdentityService extends HoistService {
     }
 
     private canUserImpersonate(user: HoistUser): boolean {
-        const hasPerm = XH.environmentService.isMinHoistCoreVersion('16.3.0')
-            ? user.hasRole(`HOIST_IMPERSONATOR`)
-            : user.isHoistAdmin;
-        return hasPerm && XH.getConf('xhEnableImpersonation');
+        return user.hasRole(`HOIST_IMPERSONATOR`) && XH.getConf('xhEnableImpersonation');
     }
 }
