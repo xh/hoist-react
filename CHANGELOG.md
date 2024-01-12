@@ -16,6 +16,7 @@
 
 ### 🐞 Bug Fixes
 * Fixed bug where `ColumnGroup` did not properly support the `omit` flag.
+* Fixed bug where if we have a column with the `editorIsPopup` flag enabled the popover background would be transparent
 
 ## 59.5.1 - 2024-01-05
 
