@@ -42,7 +42,7 @@ import {
 } from 'react';
 import {GridModel} from '../GridModel';
 import {GridSorter} from '../GridSorter';
-import {managedRenderer} from '../impl/Utils';
+import {getAgHeaderClassFn, managedRenderer} from '../impl/Utils';
 import {
     ColumnCellClassFn,
     ColumnCellClassRuleFn,
@@ -62,10 +62,8 @@ import {
 } from '../Types';
 import {ExcelFormat} from '../enums/ExcelFormat';
 import {FunctionComponent} from 'react';
-import {ColumnGroup} from './ColumnGroup';
 import type {
     ColDef,
-    HeaderClassParams,
     ITooltipParams,
     ValueGetterParams,
     ValueSetterParams
@@ -817,9 +815,16 @@ export class Column {
                             store
                         });
 
-                    ret = isFunction(tooltip)
-                        ? tooltip(val, {record, column: this, gridModel, agParams})
-                        : val;
+                    if (isFunction(tooltip)) {
+                        try {
+                            ret = tooltip(val, {record, gridModel, agParams, column: this});
+                        } catch (e) {
+                            logWarn([`Failure in tooltip for '${this.displayName}'`, e], 'Column');
+                            ret = '#ERROR';
+                        }
+                    } else {
+                        ret = val;
+                    }
                 }
 
                 const isElement = isValidElement(ret);
@@ -1082,35 +1087,4 @@ export class Column {
             ? sortValue(v, {record, column: this, gridModel})
             : record?.data[sortValue] ?? v;
     }
-}
-
-export function getAgHeaderClassFn(
-    column: Column | ColumnGroup
-): (params: HeaderClassParams) => string[] {
-    // Generate CSS classes for headers.
-    // Default alignment classes are mixed in with any provided custom classes.
-    const {headerClass, headerAlign, gridModel} = column;
-
-    return agParams => {
-        let r = [];
-        if (headerClass) {
-            r = castArray(
-                isFunction(headerClass) ? headerClass({column, gridModel, agParams}) : headerClass
-            );
-        }
-
-        if (headerAlign === 'center' || headerAlign === 'right') {
-            r.push('xh-column-header-align-' + headerAlign);
-        }
-
-        if (column instanceof Column && column.isTreeColumn && column.headerHasExpandCollapse) {
-            r.push('xh-column-header--with-expand-collapse');
-        }
-
-        if (gridModel.headerMenuDisplay === 'hover') {
-            r.push('xh-column-header--hoverable');
-        }
-
-        return r;
-    };
 }
