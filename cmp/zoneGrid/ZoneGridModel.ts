@@ -343,7 +343,7 @@ export class ZoneGridModel extends HoistModel {
         this.delimiter = delimiter ?? ' • ';
         this.restoreDefaultsFn = restoreDefaultsFn;
         this.restoreDefaultsWarning = restoreDefaultsWarning;
-        this.labelRenderers = labelRenderers;
+        this.labelRenderers = labelRenderers ?? {};
 
         this._defaultState = {
             mappings: this.mappings,
