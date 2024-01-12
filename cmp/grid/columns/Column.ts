@@ -820,7 +820,6 @@ export class Column {
                             ret = tooltip(val, {record, gridModel, agParams, column: this});
                         } catch (e) {
                             logWarn([`Failure in tooltip for '${this.displayName}'`, e], 'Column');
-                            ret = '#ERROR';
                         }
                     } else {
                         ret = val;
