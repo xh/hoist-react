@@ -1,6 +1,6 @@
 # Changelog
 
-## 60.0.0 - 2024-01-11
+## 60.0.0 - 2024-01-12
 
 * New Admin support for built-in Role Management provided by Hoist Core `v18`.
     * Hoist-core now supports an out-of-the-box, database-driven system for maintaining a
