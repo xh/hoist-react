@@ -445,6 +445,9 @@ body.xh-app {
     .ag-popup-child {
       z-index: 30;
     }
+    .ag-popup-editor {
+      background: var(--xh-popup-bg);
+    }
   }
 
   //------------------------
