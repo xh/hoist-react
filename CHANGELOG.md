@@ -1,6 +1,9 @@
 # Changelog
 
-## 61.0.0-SNAPSHOT - unreleased
+## 60.0.1 - 2024-01-16
+
+### 🐞 Bug Fixes
+* Fixed regression to `ZoneGrid`
 
 ## 60.0.0 - 2024-01-12
 
