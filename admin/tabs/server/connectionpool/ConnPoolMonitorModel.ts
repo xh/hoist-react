@@ -14,24 +14,14 @@ import {forOwn, sortBy} from 'lodash';
 import * as MCol from '../../monitor/MonitorColumns';
 
 export class ConnPoolMonitorModel extends HoistModel {
-    readonly minHoistCoreVersion = '17.2.0';
-    get supported(): boolean {
-        return XH.environmentService.isMinHoistCoreVersion(this.minHoistCoreVersion);
-    }
-
     @bindable enabled: boolean = true;
-    @bindable poolConfiguration: PlainObject = {};
+    @bindable.ref poolConfiguration: PlainObject = {};
 
     @managed gridModel: GridModel;
     @managed chartModel: ChartModel;
 
     constructor() {
         super();
-
-        if (!this.supported) {
-            this.enabled = false;
-            return;
-        }
 
         this.gridModel = new GridModel({
             enableExport: true,
@@ -91,8 +81,7 @@ export class ConnPoolMonitorModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {supported, gridModel, chartModel} = this;
-        if (!supported) return;
+        const {gridModel, chartModel} = this;
 
         try {
             const resp = await XH.fetchJson({

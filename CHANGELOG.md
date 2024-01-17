@@ -1,12 +1,18 @@
 # Changelog
 
-## 60.0.0-SNAPSHOT
+## 60.0.1 - 2024-01-16
 
-* New Admin support for built-in Role Management.
-    * Hoist-core v18 now supports an out-of-the-box, database-driven system for maintaining a
+### 🐞 Bug Fixes
+* Fixed regression to `ZoneGrid`
+
+## 60.0.0 - 2024-01-12
+
+* New Admin support for built-in Role Management provided by Hoist Core `v18`.
+    * Hoist-core now supports an out-of-the-box, database-driven system for maintaining a
       hierarchical set of Roles associating and associating them with individual users.
     * New system supports app and plug-in specific integrations to AD and other enterprise systems.
     * Administration of the new system provided by a new admin UI tab provided here.
+
 * Added `labelRenderers` property to `ZoneGridModel`. This allows dynamic "data-specific" labeling
   of fields in `ZoneGrid`.
 

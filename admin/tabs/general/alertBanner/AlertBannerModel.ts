@@ -67,10 +67,6 @@ export class AlertBannerModel extends HoistModel {
         ];
     }
 
-    get supportPresets() {
-        return XH.environmentService.isMinHoistCoreVersion('16.3.0');
-    }
-
     constructor() {
         super();
         makeObservable(this);
@@ -155,7 +151,6 @@ export class AlertBannerModel extends HoistModel {
     }
 
     async loadPresetsAsync() {
-        if (!this.supportPresets) return;
         try {
             this.savedPresets = await XH.fetchJson({url: 'alertBannerAdmin/alertPresets'});
         } catch (e) {

@@ -66,8 +66,7 @@ const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
                     className: model.caseSensitive
                         ? 'xh-log-display__filter-button xh-log-display__filter-button--active'
                         : 'xh-log-display__filter-button xh-log-display__filter-button--inactive',
-                    tooltip: 'Case-sensitive filter option',
-                    omit: !XH.environmentService.isMinHoistCoreVersion('16.2.0')
+                    tooltip: 'Case-sensitive filter option'
                 }),
                 button({
                     text: '.*',
