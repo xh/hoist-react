@@ -1,5 +1,10 @@
 # Changelog
 
+## 61.0.0-SNAPSHOT - unreleased
+
+### 🐞 Bug Fixes
+* Fixed transparent background for popup inline editors.
+
 ## 60.0.1 - 2024-01-16
 
 ### 🐞 Bug Fixes
