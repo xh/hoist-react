@@ -1,5 +1,10 @@
 # Changelog
 
+## 61.0.0-SNAPSHOT - unreleased
+
+### 🐞 Bug Fixes
+* Fixed transparent background for popup inline editors.
+
 ## 60.0.1 - 2024-01-16
 
 ### 🐞 Bug Fixes
@@ -22,7 +27,6 @@
 
 ### 🐞 Bug Fixes
 * Fixed bug where `ColumnGroup` did not properly support the `omit` flag.
-* Fixed bug where if we have a column with the `editorIsPopup` flag enabled the popover background would be transparent
 
 ## 59.5.1 - 2024-01-05
 
