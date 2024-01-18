@@ -46,19 +46,22 @@ export class FetchService extends HoistService {
         try {
             await this.fetch({url: 'ping'});
         } catch (e) {
-            const {baseUrl} = XH,
-                pingURL = baseUrl.startsWith('http')
-                    ? `${baseUrl}ping`
-                    : `${window.location.origin}${baseUrl}ping`;
+            if (e.isServerUnavailable) {
+                const {baseUrl} = XH,
+                    pingURL = baseUrl.startsWith('http')
+                        ? `${baseUrl}ping`
+                        : `${window.location.origin}${baseUrl}ping`;
 
-            throw XH.exception({
-                name: 'UI Server Unavailable',
-                detail: e.message,
-                message:
-                    'Client cannot reach UI server.  Please check UI server at the ' +
-                    `following location: ${pingURL}`,
-                logOnServer: false
-            });
+                throw XH.exception({
+                    name: 'UI Server Unavailable',
+                    detail: e.message,
+                    message:
+                        'Client cannot reach UI server.  Please check UI server at the ' +
+                        `following location: ${pingURL}`
+                });
+            }
+
+            throw e;
         }
     }
 

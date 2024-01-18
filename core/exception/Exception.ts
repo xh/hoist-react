@@ -168,12 +168,13 @@ export class Exception {
             origin = match
                 ? match[0]
                 : protocolPattern.test(XH.baseUrl)
-                ? XH.baseUrl
-                : window.location.origin;
+                  ? XH.baseUrl
+                  : window.location.origin;
 
         return this.createFetchException({
             name: 'Server Unavailable',
             message: `Unable to contact the server at ${origin}`,
+            isServerUnavailable: true,
             fetchOptions,
             cause
         });
