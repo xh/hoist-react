@@ -68,12 +68,12 @@ const assignments = hoistCmp.factory<RoleFormModel>(({model}) =>
         items: [
             assignmentsPanel({
                 entity: 'USER',
-                omit: !model.moduleConfig?.assignUsers && model.usersGridModel.empty
+                omit: !model.moduleConfig?.userAssignmentSupported && model.usersGridModel.empty
             }),
             assignmentsPanel({
                 entity: 'DIRECTORY_GROUP',
                 omit:
-                    !model.moduleConfig?.assignDirectoryGroups &&
+                    !model.moduleConfig?.directoryGroupsSupported &&
                     model.directoryGroupsGridModel.empty
             }),
             assignmentsPanel({entity: 'ROLE'})
@@ -138,13 +138,13 @@ const bbar = hoistCmp.factory<AssignmentsPanelProps>(({entity, model}) => {
             return warningBanner({
                 compact: true,
                 message: 'Users assignment disabled. Will ignore.',
-                omit: model.moduleConfig?.assignUsers
+                omit: model.moduleConfig?.userAssignmentSupported
             });
         case 'DIRECTORY_GROUP':
             return warningBanner({
                 compact: true,
                 message: 'Directory Groups disabled. Will ignore.',
-                omit: model.moduleConfig?.assignDirectoryGroups
+                omit: model.moduleConfig?.directoryGroupsSupported
             });
         default:
             return null;
@@ -153,15 +153,20 @@ const bbar = hoistCmp.factory<AssignmentsPanelProps>(({entity, model}) => {
 
 const infoIcon = hoistCmp.factory<AssignmentsPanelProps>({
     render({entity, model}) {
-        const tooltips = model.moduleConfig?.infoTooltips,
-            tooltipText =
-                entity === 'USER'
-                    ? tooltips?.users ?? 'All users listed here will be directly granted this role.'
-                    : entity === 'DIRECTORY_GROUP'
-                      ? tooltips?.directoryGroups ??
-                        'All members of these directory groups will be granted this role.'
-                      : tooltips?.roles ??
-                        'All users holding these roles will also be granted this role.';
+        let tooltipText = null;
+        switch (entity) {
+            case 'USER':
+                tooltipText = 'All users listed here will be directly granted this role.';
+                break;
+            case 'DIRECTORY_GROUP':
+                tooltipText =
+                    model.moduleConfig?.directoryGroupsDescription ??
+                    'All members of these directory groups will be granted this role.';
+                break;
+            case 'ROLE':
+                tooltipText = 'All users holding these roles will also be granted this role.';
+                break;
+        }
         return tooltip({
             item: Icon.info(),
             content: tooltipText,

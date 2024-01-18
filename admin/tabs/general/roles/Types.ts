@@ -38,12 +38,7 @@ export type RoleMemberType = 'USER' | 'DIRECTORY_GROUP' | 'ROLE';
 
 export interface RoleModuleConfig {
     enabled: boolean;
-    assignDirectoryGroups: boolean;
-    assignUsers: boolean;
-    refreshIntervalSecs: number;
-    infoTooltips: {
-        users: string;
-        directoryGroups: string;
-        roles: string;
-    };
+    userAssignmentSupported: boolean;
+    directoryGroupsSupported: boolean;
+    directoryGroupsDescription: string;
 }

@@ -57,7 +57,7 @@ export class RoleMembersModel extends HoistModel {
         const {effectiveUsers, effectiveDirectoryGroups, effectiveRoles} = this.selectedRole;
         return {
             USER: effectiveUsers.length,
-            DIRECTORY_GROUP: this.moduleConfig?.assignDirectoryGroups
+            DIRECTORY_GROUP: this.moduleConfig?.directoryGroupsSupported
                 ? effectiveDirectoryGroups.length
                 : 0,
             ROLE: effectiveRoles.length
@@ -105,7 +105,7 @@ export class RoleMembersModel extends HoistModel {
                 })),
 
                 // 2 - Directory Groups
-                ...(this.moduleConfig?.assignDirectoryGroups
+                ...(this.moduleConfig?.directoryGroupsSupported
                     ? role.effectiveDirectoryGroups.map(it => ({
                           name: it.name,
                           sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
@@ -234,8 +234,8 @@ export class RoleMembersModel extends HoistModel {
 
                 if (
                     !includeEffective &&
-                    ((type === types.USER && !moduleConfig.assignUsers) ||
-                        (isDirectoryGroup && !moduleConfig.assignDirectoryGroups))
+                    ((type === types.USER && !moduleConfig.userAssignmentSupported) ||
+                        (isDirectoryGroup && !moduleConfig.directoryGroupsSupported))
                 ) {
                     return {hidden: true};
                 }
