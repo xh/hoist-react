@@ -291,12 +291,12 @@ export class RoleModel extends HoistModel {
             fieldSpecs: compact([
                 'name',
                 'category',
-                config.assignUsers && 'users',
-                config.assignDirectoryGroups && 'directoryGroups',
+                config.userAssignmentSupported && 'users',
+                config.directoryGroupsSupported && 'directoryGroups',
                 'roles',
                 'inheritedRoleNames',
                 'effectiveUserNames',
-                config.assignDirectoryGroups && 'effectiveDirectoryGroupNames',
+                config.directoryGroupsSupported && 'effectiveDirectoryGroupNames',
                 'effectiveRoleNames',
                 'lastUpdatedBy',
                 {
