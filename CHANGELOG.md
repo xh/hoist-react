@@ -4,6 +4,8 @@
 
 ### 🐞 Bug Fixes
 * Fixed transparent background for popup inline editors.
+
+### ⚙️ Technical
 * Improvements to exception handling during app initialization
 
 ## 60.0.1 - 2024-01-16
