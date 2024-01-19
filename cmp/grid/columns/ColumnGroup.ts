@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {getAgHeaderClassFn} from '@xh/hoist/cmp/grid/impl/Utils';
 import {HAlign, PlainObject, Some, Thunkable, XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 
@@ -13,7 +14,7 @@ import {clone, isEmpty, isFunction, isString, keysIn} from 'lodash';
 import {ReactNode} from 'react';
 import {GridModel} from '../GridModel';
 import {ColumnHeaderClassFn, ColumnHeaderNameFn} from '../Types';
-import {Column, ColumnSpec, getAgHeaderClassFn} from './Column';
+import {Column, ColumnSpec} from './Column';
 
 export interface ColumnGroupSpec {
     /** Column or ColumnGroup configs for children of this group.*/

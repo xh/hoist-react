@@ -4,6 +4,9 @@
 
 ### 🐞 Bug Fixes
 * Fixed transparent background for popup inline editors.
+* Exceptions that occur in custom application tooltips will now be caught and logged to console,
+ rather than crashing grid.
+
 
 ### ⚙️ Technical
 * Improvements to exception handling during app initialization
