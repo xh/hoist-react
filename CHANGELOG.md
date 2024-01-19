@@ -1,9 +1,10 @@
 # Changelog
 
-## 61.0.0-SNAPSHOT - unreleased
+## 60.1.0 - 2024-01-18
 
 ### 🐞 Bug Fixes
 * Fixed transparent background for popup inline editors.
+* Improvements to exception handling during app initialization
 
 ## 60.0.1 - 2024-01-16
 
