@@ -1,11 +1,17 @@
 # Changelog
 
-## 61.0.0-SNAPSHOT -  unreleased
+## 61.0.0-SNAPSHOT - unreleased
 
-### ⚙️ Technical
-
+### 🐞 Bug Fixes
+* Fixed transparent background for popup inline editors.
 * Exceptions that occur in custom application tooltips will now be caught and logged to console,
  rather than crashing grid.
+
+
+## 60.0.1 - 2024-01-16
+
+### 🐞 Bug Fixes
+* Fixed regression to `ZoneGrid`
 
 ## 60.0.0 - 2024-01-12
 

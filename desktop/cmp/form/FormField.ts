@@ -163,7 +163,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
-        const testId = getFormFieldTestId(props, formContext, model.name);
+        const testId = getFormFieldTestId(props, formContext, model?.name);
         useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
         useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
 
@@ -369,5 +369,8 @@ function getFormFieldTestId(
     formContext: FormContextType,
     fieldName: string
 ): string {
-    return props.testId ?? (formContext.testId ? `${formContext.testId}-${fieldName}` : undefined);
+    return (
+        props.testId ??
+        (formContext.testId && fieldName ? `${formContext.testId}-${fieldName}` : undefined)
+    );
 }
