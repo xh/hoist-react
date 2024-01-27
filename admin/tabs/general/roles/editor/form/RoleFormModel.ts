@@ -137,7 +137,7 @@ export class RoleFormModel extends HoistModel {
                     rules: [
                         required,
                         ({value}) =>
-                            this.invalidNames.includes(value)
+                            this.invalidNames.some(it => it.toLowerCase() === value?.toLowerCase())
                                 ? `Role "${value}" already exists.`
                                 : null
                     ]
@@ -159,7 +159,20 @@ export class RoleFormModel extends HoistModel {
             },
             columns: [
                 {
-                    field: {name: 'name', rules: [required]},
+                    field: {
+                        name: 'name',
+                        rules: [
+                            required,
+                            ({value, record}) =>
+                                record.store.allRecords.some(
+                                    it =>
+                                        it !== record &&
+                                        it.get('name')?.toLowerCase() === value?.toLowerCase()
+                                )
+                                    ? `${value} already added.`
+                                    : null
+                        ]
+                    },
                     flex: 1,
                     editable: true,
                     editor: props => {

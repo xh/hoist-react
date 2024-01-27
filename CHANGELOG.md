@@ -1,5 +1,7 @@
 # Changelog
 ## 61.0.0-SNAPSHOT - unreleased
+### ⚙️ Technical
+* Improve unique constraint validation of Roles and Role Members in Admin UI.
 
 ## 60.1.0 - 2024-01-18
 
