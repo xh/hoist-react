@@ -15,7 +15,8 @@ export class RoleGraphModel extends HoistModel {
     get relatedRoles(): EffectiveRoleMember[] {
         const {role, relationship} = this;
         if (!role) return [];
-        return relationship === 'effective' ? role.effectiveRoles : role.inheritedRoles;
+        const ret = relationship === 'effective' ? role.effectiveRoles : role.inheritedRoles;
+        return ret.filter(it => it.name !== role.name);
     }
 
     get role(): HoistRole {
