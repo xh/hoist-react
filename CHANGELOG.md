@@ -1,5 +1,7 @@
 # Changelog
 
+## 61.0.0-SNAPSHOT - unreleased
+
 ## 60.1.1 - 2024-01-29
 
 ### ⚙️ Technical
