@@ -12,7 +12,6 @@ import {Icon} from '@xh/hoist/icon';
 import {differ} from '../../../differ/Differ';
 import {regroupDialog} from '../../../regroup/RegroupDialog';
 import {ConfigPanelModel} from './ConfigPanelModel';
-import './ConfigPanel.scss';
 
 export const configPanel = hoistCmp.factory({
     model: creates(ConfigPanelModel),
@@ -20,7 +19,6 @@ export const configPanel = hoistCmp.factory({
     render({model}) {
         return fragment(
             restGrid({
-                className: 'xh-config-panel',
                 testId: 'config',
                 extraToolbarItems: () => {
                     return button({

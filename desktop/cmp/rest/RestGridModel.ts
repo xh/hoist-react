@@ -76,6 +76,12 @@ export interface RestGridEditor {
      * specify additional validation requirements.
      */
     fieldModel?: Partial<BaseFieldConfig>;
+
+    /**
+     * True to omit this field from the editor form.  Can also be a function that returns true to
+     * omit the field based on the current field value and the parent RestFormModel.
+     */
+    omit?: boolean | ((fieldValue: unknown, model: RestFormModel) => boolean);
 }
 
 /**

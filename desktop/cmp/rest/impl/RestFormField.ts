@@ -14,7 +14,7 @@ import {
     switchInput,
     textInput
 } from '@xh/hoist/desktop/cmp/input';
-import {assign, isNil} from 'lodash';
+import {assign, isFunction, isNil} from 'lodash';
 import {RestFormModel} from './RestFormModel';
 
 /**
@@ -25,14 +25,18 @@ export const restFormField = hoistCmp.factory({
     model: uses(RestFormModel),
 
     render({model, editor, ...props}) {
-        const {field} = editor,
+        const {field, omit} = editor,
             fieldModel = model.getFormFieldModel(field),
             fieldVal = fieldModel.value;
 
         // Skip fields that are a) empty and b) readonly when c) adding a record. No point in
         // showing these fields as they are not populated (nor are they expected to be), and they
         // can't be edited. Common examples are metadata such as `dateCreated` and `lastUpdated`.
-        if (isNil(fieldVal) && fieldModel.readonly && model.isAdd) {
+        if (
+            (isFunction(omit) && omit(fieldVal, model)) ||
+            omit === true ||
+            (isNil(fieldVal) && fieldModel.readonly && model.isAdd)
+        ) {
             return null;
         }
 
