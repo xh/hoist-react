@@ -7,6 +7,7 @@
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
+import {div, hbox, hspacer, label, pre} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
@@ -18,10 +19,12 @@ import {
     RestGridModel,
     RestStore
 } from '@xh/hoist/desktop/cmp/rest';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isNil, truncate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
 import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
+import {Icon} from '@xh/hoist/icon';
 
 export class ConfigPanelModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminConfigState'};
@@ -73,8 +76,16 @@ export class ConfigPanelModel extends HoistModel {
                     {...(Col.clientVisible.field as FieldSpec), defaultValue: false, required},
                     {...(Col.note.field as FieldSpec)},
                     {...(Col.lastUpdated.field as FieldSpec), editable: false},
-                    {...(Col.lastUpdatedBy.field as FieldSpec), editable: false}
-                ]
+                    {...(Col.lastUpdatedBy.field as FieldSpec), editable: false},
+                    {
+                        name: 'overrideValue',
+                        displayName: 'Override',
+                        typeField: 'valueType',
+                        editable: false
+                    },
+                    {name: 'isOverridden', type: 'bool', editable: false}
+                ],
+                processRawData: data => ({...data, isOverridden: !isNil(data.overrideValue)})
             }),
             actionWarning: {
                 del: records =>
@@ -97,17 +108,69 @@ export class ConfigPanelModel extends HoistModel {
                 {...Col.groupName, hidden},
                 {...Col.name},
                 {...Col.valueType},
-                {...Col.value, renderer: this.configRenderer, tooltip: this.configRenderer},
+                {
+                    ...Col.value,
+                    renderer: this.valueRenderer,
+                    tooltip: this.valueTooltip,
+                    rendererIsComplex: true
+                },
                 {...Col.clientVisible},
                 {...Col.note},
                 {...Col.lastUpdatedBy, hidden},
                 {...Col.lastUpdated, hidden}
             ],
             editors: [
+                {
+                    field: 'isOverridden',
+                    formField: {
+                        className: 'xh-config-panel-overridden-field',
+                        label: false,
+                        flex: 1,
+                        inline: false,
+                        minimal: false,
+                        readonlyRenderer: v =>
+                            v
+                                ? toolbar({
+                                      className: 'xh-config-panel-overridden-field__toolbar',
+                                      items: [
+                                          Icon.warning(),
+                                          hspacer(),
+                                          'Overridden by Instance Config'
+                                      ]
+                                  })
+                                : null
+                    }
+                },
                 {field: 'name'},
                 {field: 'groupName'},
                 {field: 'valueType'},
                 {field: 'value'},
+                {
+                    field: 'overrideValue',
+                    formField: {
+                        className: 'xh-config-panel-override-value-field',
+                        label: false,
+                        flex: 1,
+                        inline: false,
+                        minimal: false,
+                        readonlyRenderer: v =>
+                            !isNil(v)
+                                ? hbox({
+                                      className: 'xh-config-panel-override-value-field__contents',
+                                      items: [
+                                          label({
+                                              className: 'xh-form-field-label',
+                                              item: 'Override Value'
+                                          }),
+                                          div({
+                                              className: 'xh-form-field-inner',
+                                              item: pre(v)
+                                          })
+                                      ]
+                                  })
+                                : null
+                    }
+                },
                 {field: 'note', formField: {item: textArea({height: 100})}},
                 {field: 'clientVisible'},
                 {field: 'lastUpdated'},
@@ -118,17 +181,6 @@ export class ConfigPanelModel extends HoistModel {
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         return this.gridModel.loadAsync(loadSpec).catchDefault();
-    }
-
-    configRenderer(value, {record}) {
-        switch (record.data.valueType) {
-            case 'pwd':
-                return '*****';
-            case 'json':
-                return truncate(value, {length: 500});
-            default:
-                return value?.toString();
-        }
     }
 
     @action
@@ -150,5 +202,29 @@ export class ConfigPanelModel extends HoistModel {
         const {differModel} = this;
         this.differModel = null;
         XH.safeDestroy(differModel);
+    }
+
+    private valueRenderer = (value, {record}) => {
+        value = this.fmtValue(value, record);
+        if (!record.get('isOverridden')) return value;
+        return hbox({
+            alignItems: 'center',
+            className: 'xh-config-panel__overridden',
+            items: [Icon.warning({intent: 'warning'}), hspacer(), value]
+        });
+    };
+
+    private valueTooltip = (value, {record}) =>
+        record.get('isOverridden') ? 'Overridden by Instance Config' : this.fmtValue(value, record);
+
+    private fmtValue(value, record) {
+        switch (record.data.valueType) {
+            case 'pwd':
+                return '*****';
+            case 'json':
+                return truncate(value, {length: 500});
+            default:
+                return value?.toString();
+        }
     }
 }

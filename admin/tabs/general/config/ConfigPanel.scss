@@ -1,0 +1,44 @@
+.xh-config-panel {
+  &__overridden {
+    color: var(--xh-text-color-muted);
+    text-decoration: line-through;
+  }
+}
+
+.xh-config-panel-overridden-field {
+  margin: calc(-1 * var(--xh-pad-px)) calc(-1 * var(--xh-pad-px)) 0;
+  padding: 0;
+
+  &__toolbar {
+    background-color: var(--xh-intent-warning-trans1);
+    justify-content: center;
+  }
+}
+
+.xh-config-panel-override-value-field {
+  margin: 0 !important;
+  padding: 0 !important;
+
+  &__contents {
+    align-items: center;
+
+    .xh-form-field-label {
+      text-align: right;
+      width: 120px;
+    }
+
+    .xh-form-field-inner pre {
+      background-color: var(--xh-intent-warning-trans1);
+      margin-left: var(--xh-pad-half-px);
+    }
+  }
+}
+
+.xh-config-panel-overridden-field,
+.xh-config-panel-override-value-field {
+  .xh-form-field-readonly-display,
+  .xh-form-field-inner {
+    border: none !important;
+    padding: 0 !important;
+  }
+}

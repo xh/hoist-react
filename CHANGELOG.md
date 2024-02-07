@@ -2,6 +2,11 @@
 
 ## 61.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* The Config panel in the Admin UI now shows which database-backed configs are being overridden
+  by instance configs. Requires `hoist-core >= v19.0`.
+
 ## 60.1.1 - 2024-01-29
 
 ### ⚙️ Technical
