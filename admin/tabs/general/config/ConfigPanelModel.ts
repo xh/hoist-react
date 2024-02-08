@@ -78,7 +78,6 @@ export class ConfigPanelModel extends HoistModel {
                     {...(Col.lastUpdatedBy.field as FieldSpec), editable: false},
                     {
                         name: 'overrideValue',
-                        displayName: 'Effective Value',
                         typeField: 'valueType',
                         editable: false
                     }
@@ -126,7 +125,7 @@ export class ConfigPanelModel extends HoistModel {
                     omit: isNil,
                     formField: {
                         className: 'xh-bg-intent-warning',
-                        info: 'Overridden by Instance Config'
+                        info: 'Overridden by instance config / environment variable - above is the effective value.'
                     }
                 },
                 {field: 'note', formField: {item: textArea({height: 100})}},

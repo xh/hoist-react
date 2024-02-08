@@ -4,6 +4,7 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
+import {BaseFieldModel} from '@xh/hoist/cmp/form';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {
@@ -29,12 +30,12 @@ export const restFormField = hoistCmp.factory({
             fieldModel = model.getFormFieldModel(field),
             fieldVal = fieldModel.value;
 
-        // Skip fields that are a) empty and b) readonly when c) adding a record. No point in
-        // showing these fields as they are not populated (nor are they expected to be), and they
-        // can't be edited. Common examples are metadata such as `dateCreated` and `lastUpdated`.
+        // Skip fields if explicitly requested via `omit`, or if they are a) empty and b) readonly
+        // when c) adding a record. No point in showing as they are not populated (nor are they
+        // expected to be), and they can't be edited - e.g. `dateCreated` and `lastUpdated`.
         if (
-            (isFunction(omit) && omit(fieldVal, model)) ||
             omit === true ||
+            (isFunction(omit) && omit(fieldVal, model)) ||
             (isNil(fieldVal) && fieldModel.readonly && model.isAdd)
         ) {
             return null;
@@ -50,7 +51,7 @@ export const restFormField = hoistCmp.factory({
     }
 });
 
-function renderDefaultInput(name, model) {
+function renderDefaultInput(name: string, model: RestFormModel) {
     const type = model.types[name],
         storeField = model.store.getField(name),
         fieldModel = model.formModel.fields[name];
@@ -84,9 +85,9 @@ function renderDefaultInput(name, model) {
     }
 }
 
-// Favor switch, when we are not in a tri-state situation w/null
+// Favor switch, when we are not in a tri-state situation w/null.
 // Otherwise, use a clearly nullable select.
-function renderBoolean(fieldModel) {
+function renderBoolean(fieldModel: BaseFieldModel) {
     const {isRequired, value, initialValue} = fieldModel,
         useSwitch = isRequired && value != null && initialValue != null;
 
