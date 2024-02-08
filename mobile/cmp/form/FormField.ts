@@ -157,7 +157,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 });
 
 interface ReadonlyChildProps extends HoistProps<FieldModel>, TestSupportProps {
-    readonlyRenderer?: (v: any, model: FieldModel) => ReactNode;
+    readonlyRenderer: (v: any, model: FieldModel) => ReactNode;
 }
 
 const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
