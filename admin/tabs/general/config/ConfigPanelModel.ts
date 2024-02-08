@@ -178,7 +178,7 @@ export class ConfigPanelModel extends HoistModel {
 
     private valueTooltip = (value, {record}) =>
         !isNil(record.get('overrideValue'))
-            ? 'Overridden by Instance Config'
+            ? 'Overridden by instance config / env variable. Open to view effective value.'
             : this.fmtValue(value, record);
 
     private fmtValue(value, record) {
@@ -195,7 +195,7 @@ export class ConfigPanelModel extends HoistModel {
     private withOverrideWarning(value) {
         return hbox({
             alignItems: 'center',
-            items: [Icon.warning({intent: 'warning'}), hspacer(), value],
+            items: [Icon.warning({intent: 'warning', prefix: 'fas'}), hspacer(), value],
             style: {
                 color: 'var(--xh-text-color-muted)',
                 textDecoration: 'line-through'
