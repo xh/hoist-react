@@ -126,7 +126,7 @@ export class ConfigPanelModel extends HoistModel {
                     omit: isNil,
                     formField: {
                         className: 'xh-bg-intent-warning',
-                        info: 'Overridden by instance config / environment variable - above is the effective value.',
+                        info: 'Editable (database) value overridden by instance config / env variable.',
                         readonlyRenderer: (v, model) =>
                             model.formModel.values.valueType === 'pwd'
                                 ? '*****'
