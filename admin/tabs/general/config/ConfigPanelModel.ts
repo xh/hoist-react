@@ -10,6 +10,7 @@ import * as Col from '@xh/hoist/admin/columns';
 import {hbox, hspacer} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
+import {defaultReadonlyRenderer} from '@xh/hoist/desktop/cmp/form';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
     addAction,
@@ -125,7 +126,11 @@ export class ConfigPanelModel extends HoistModel {
                     omit: isNil,
                     formField: {
                         className: 'xh-bg-intent-warning',
-                        info: 'Overridden by instance config / environment variable - above is the effective value.'
+                        info: 'Overridden by instance config / environment variable - above is the effective value.',
+                        readonlyRenderer: (v, model) =>
+                            model.formModel.values.valueType === 'pwd'
+                                ? '*****'
+                                : defaultReadonlyRenderer(v)
                     }
                 },
                 {field: 'note', formField: {item: textArea({height: 100})}},

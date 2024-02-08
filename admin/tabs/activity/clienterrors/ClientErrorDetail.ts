@@ -38,7 +38,7 @@ export const clientErrorDetail = hoistCmp.factory<ClientErrorsModel>(({model}) =
                         formField({field: 'username'}),
                         formField({
                             field: 'dateCreated',
-                            readonlyRenderer: fmtDateTimeSec
+                            readonlyRenderer: v => fmtDateTimeSec(v)
                         }),
                         formField({field: 'appVersion'}),
                         formField({
