@@ -26,20 +26,16 @@ export const restFormField = hoistCmp.factory({
     model: uses(RestFormModel),
 
     render({model, editor, ...props}) {
-        const {field, omit} = editor,
+        const {field} = editor,
             fieldModel = model.getFormFieldModel(field),
             fieldVal = fieldModel.value;
 
-        // Skip fields if explicitly requested via `omit`, or if they are a) empty and b) readonly
-        // when c) adding a record. No point in showing as they are not populated (nor are they
-        // expected to be), and they can't be edited - e.g. `dateCreated` and `lastUpdated`.
-        if (
-            omit === true ||
-            (isFunction(omit) && omit(fieldVal, model)) ||
-            (isNil(fieldVal) && fieldModel.readonly && model.isAdd)
-        ) {
-            return null;
-        }
+        // Unless otherwise specified, omit fields if they are a) empty and b) readonly when c)
+        // adding a record. No point in showing as they are not populated (nor are they expected to
+        // be), and they can't be edited - e.g. `dateCreated` and `lastUpdated`.
+        const omit = editor.omit ?? (isNil(fieldVal) && fieldModel.readonly && model.isAdd);
+
+        if (omit === true || (isFunction(omit) && omit(fieldVal, model))) return null;
 
         let config = assign({field, flex: 1}, editor.formField);
 
