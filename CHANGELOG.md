@@ -3218,6 +3218,7 @@ possible breaking changes to any direct/custom use of AG Grid APIs and props wit
 
 ### 🎁 New Features
 
+* New `SplitButton` component added to button component collection.
 * GridModel `groupSortFn` now accepts `null` to turn off sorting of group rows.
 * `DockViewModel` now supports optional `width`, `height` and `collapsedWidth` configs.
 * The `appMenuButton.extraItems` prop now accepts `MenuItem` configs (as before) but also React
