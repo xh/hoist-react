@@ -119,8 +119,8 @@ export interface FilterChooserConfig {
 }
 
 export class FilterChooserModel extends HoistModel {
-    @observable.ref value: Filter = null;
-    @observable.ref favorites: Filter[] = [];
+    @observable.ref value: FilterChooserFilter = null;
+    @observable.ref favorites: FilterChooserFilter[] = [];
     bind: Store | View;
     valueSource: Store | View;
 
@@ -250,9 +250,9 @@ export class FilterChooserModel extends HoistModel {
                 return;
             }
 
-            // 2) Main path - set internal value.
+            // 2) Main path - filter has been validated as supported, set internal value.
             this.logDebug('Setting value', value);
-            this.value = value;
+            this.value = value as FilterChooserFilter;
 
             // 3) Set props on select input needed to display
             // Build list of options, used for displaying tags. We combine the needed
@@ -423,25 +423,25 @@ export class FilterChooserModel extends HoistModel {
 
     @action
     setFavorites(favorites: Filter[]) {
-        this.favorites = favorites.filter(f => this.validateFilter(f));
+        this.favorites = favorites.filter(f => this.validateFilter(f)) as FilterChooserFilter[];
     }
 
     @action
-    addFavorite(filter: Filter) {
+    addFavorite(filter: FilterChooserFilter) {
         if (isEmpty(filter) || this.isFavorite(filter)) return;
         this.favorites = [...this.favorites, filter];
     }
 
     @action
-    removeFavorite(filter: Filter) {
+    removeFavorite(filter: FilterChooserFilter) {
         this.favorites = this.favorites.filter(f => !f.equals(filter));
     }
 
-    findFavorite(filter: Filter): Filter {
+    findFavorite(filter: FilterChooserFilter): Filter {
         return this.favorites?.find(f => f.equals(filter));
     }
 
-    isFavorite(filter: Filter): boolean {
+    isFavorite(filter: FilterChooserFilter): boolean {
         return !!this.findFavorite(filter);
     }
 
@@ -486,7 +486,7 @@ export class FilterChooserModel extends HoistModel {
         return this.fieldSpecs.find(it => it.field === fieldName);
     }
 
-    validateFilter(f: Filter): boolean {
+    validateFilter(f: Filter): f is FilterChooserFilter {
         if (f === null) return true;
         if (f instanceof FieldFilter) {
             if (!this.getFieldSpec(f.field)) {
@@ -517,9 +517,10 @@ interface FilterChooserPersistOptions extends PersistOptions {
     persistFavorites?: boolean;
 }
 
-/**
- * A variant of FilterLike, that excludes FunctionFilters and FilterTestFn.
- */
+/** A variant of {@link Filter} that excludes FunctionFilter (unsupported by FilterChooser). */
+export type FilterChooserFilter = CompoundFilter | FieldFilter;
+
+/** A variant of {@link FilterLike} that excludes FunctionFilters and FilterTestFn. */
 export type FilterChooserFilterLike =
     | Filter
     | CompoundFilterSpec

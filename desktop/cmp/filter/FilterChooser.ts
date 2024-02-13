@@ -4,9 +4,9 @@
  *
  * Copyright © 2023 Extremely Heavy Industries Inc.
  */
-import {FilterChooserModel} from '@xh/hoist/cmp/filter';
+import {FilterChooserFilter, FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {box, div, hbox, hframe, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, uses, LayoutProps} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -225,7 +225,9 @@ const favoritesMenu = hoistCmp.factory<FilterChooserModel>({
     }
 });
 
-const favoriteMenuItem = hoistCmp.factory<FilterChooserModel>({
+const favoriteMenuItem = hoistCmp.factory<
+    HoistProps<FilterChooserModel> & {value: FilterChooserFilter; labels: string[]}
+>({
     render({model, value, labels}) {
         return menuItem({
             text: hbox(labels.map(label => favoriteTag({label}))),
@@ -251,7 +253,7 @@ const favoriteTag = hoistCmp.factory({
     }
 });
 
-function getFavoritesOptions(model) {
+function getFavoritesOptions(model: FilterChooserModel) {
     const ret = model.favoritesOptions.map(f => {
         const labels = f.filterOptions.map(option => option.label);
         return {value: f.value, labels};
