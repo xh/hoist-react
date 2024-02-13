@@ -6,7 +6,7 @@
 
 * The Admin Console now indicates if a Config value is being overridden by an instance config or
   environment variable with a corresponding name.
-    * Config overrides now available in `hoist-core >= v19.0`. See the Hoist Core release notes for
+    * Config overrides now available in `hoist-core >= v18.4`. See the Hoist Core release notes for
       additional details on this new feature.
 * `RestGridEditor` now supports an `omit` flag to hide a field from the editor dialog.
 * `FormField.readonlyRenderer` is now passed the backing `FieldModel` as a second argument.
