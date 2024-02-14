@@ -5643,7 +5643,7 @@ and AG Grid upgrade, and more. 🚀
 
 ------------------------------------------
 
-Copyright © 2023 Extremely Heavy Industries Inc. - all rights reserved
+Copyright © 2024 Extremely Heavy Industries Inc. - all rights reserved
 
 ------------------------------------------
 
