@@ -11,6 +11,10 @@
 * `RestGridEditor` now supports an `omit` flag to hide a field from the editor dialog.
 * `FormField.readonlyRenderer` is now passed the backing `FieldModel` as a second argument.
 
+### 📚 Libraries
+
+* classnames `2.3 -> 2.5`
+
 ## 60.1.1 - 2024-01-29
 
 ### ⚙️ Technical
