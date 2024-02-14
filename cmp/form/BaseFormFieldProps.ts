@@ -41,7 +41,7 @@ export interface BaseFormFieldProps extends HoistProps<FieldModel>, BoxProps {
      * Optional function for use in readonly mode. Called with the Field's current value and should
      * return an element suitable for presentation to the end-user. Defaulted from containing Form.
      */
-    readonlyRenderer?: (v: any) => ReactNode;
+    readonlyRenderer?: (v: any, model: FieldModel) => ReactNode;
 
     /** The indicator to display next to a required field. Defaults to `*`. */
     requiredIndicator?: string;

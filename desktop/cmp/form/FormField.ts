@@ -8,7 +8,15 @@ import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {BaseFormFieldProps, FieldModel, FormContext, FormContextType} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
-import {DefaultHoistProps, hoistCmp, HSide, uses, XH} from '@xh/hoist/core';
+import {
+    DefaultHoistProps,
+    hoistCmp,
+    HoistProps,
+    HSide,
+    TestSupportProps,
+    uses,
+    XH
+} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
@@ -244,7 +252,11 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
     }
 });
 
-const readonlyChild = hoistCmp.factory({
+interface ReadonlyChildProps extends HoistProps<FieldModel>, TestSupportProps {
+    readonlyRenderer: (v: any, model: FieldModel) => ReactNode;
+}
+
+const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
     model: false,
 
     render({model, readonlyRenderer, testId}) {
@@ -252,7 +264,7 @@ const readonlyChild = hoistCmp.factory({
         return div({
             className: 'xh-form-field-readonly-display',
             [TEST_ID]: testId,
-            item: readonlyRenderer(value)
+            item: readonlyRenderer(value, model)
         });
     }
 });
@@ -311,6 +323,21 @@ const editableChild = hoistCmp.factory<FieldModel>({
 //--------------------------------
 // Helper Functions
 //---------------------------------
+
+export function defaultReadonlyRenderer(value: any): ReactNode {
+    if (isLocalDate(value)) return fmtDate(value);
+    if (isDate(value)) return fmtDateTime(value);
+    if (isFinite(value)) return fmtNumber(value);
+    if (isBoolean(value)) return value.toString();
+
+    // format JSON, but fail and ignore on plain text
+    try {
+        value = fmtJson(value);
+    } catch (e) {}
+
+    return span(value != null ? value.toString() : null);
+}
+
 const blockChildren = ['CodeInput', 'JsonInput', 'Select', 'TextInput'];
 
 function getValidChild(children) {
@@ -332,20 +359,6 @@ function getValidChild(children) {
     return child;
 }
 
-function defaultReadonlyRenderer(value: any): ReactNode {
-    if (isLocalDate(value)) return fmtDate(value);
-    if (isDate(value)) return fmtDateTime(value);
-    if (isFinite(value)) return fmtNumber(value);
-    if (isBoolean(value)) return value.toString();
-
-    // format JSON, but fail and ignore on plain text
-    try {
-        value = fmtJson(value);
-    } catch (e) {}
-
-    return span(value != null ? value.toString() : null);
-}
-
 function getErrorTooltipContent(errors: string[]): ReactNode {
     if (isEmpty(errors)) return null;
     if (errors.length === 1) return errors[0];
@@ -355,12 +368,12 @@ function getErrorTooltipContent(errors: string[]): ReactNode {
     });
 }
 
-function defaultProp(
-    name: string,
+function defaultProp<N extends keyof Partial<FormFieldProps>>(
+    name: N,
     props: Partial<FormFieldProps>,
     formContext: FormContextType,
-    defaultVal: any
-): any {
+    defaultVal: FormFieldProps[N]
+): Partial<FormFieldProps>[N] {
     const fieldDefault = formContext.fieldDefaults ? formContext.fieldDefaults[name] : null;
     return withDefault(props[name], fieldDefault, defaultVal);
 }

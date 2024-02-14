@@ -2,26 +2,38 @@
 
 ## 61.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* The Admin Console now indicates if a Config value is being overridden by an instance config or
+  environment variable with a corresponding name.
+    * Config overrides now available in `hoist-core >= v18.4`. See the Hoist Core release notes for
+      additional details on this new feature.
+* `RestGridEditor` now supports an `omit` flag to hide a field from the editor dialog.
+* `FormField.readonlyRenderer` is now passed the backing `FieldModel` as a second argument.
+
 ## 60.1.1 - 2024-01-29
 
 ### ⚙️ Technical
-* Improve unique constraint validation of Roles and Role Members in Admin UI.
-* Minor UI tweaks to admin UI
+
+* Improved unique constraint validation of Roles and Role Members in the Admin Console.
 
 ## 60.1.0 - 2024-01-18
 
 ### 🐞 Bug Fixes
+
 * Fixed transparent background for popup inline editors.
-* Exceptions that occur in custom application tooltips will now be caught and logged to console,
- rather than crashing grid.
+* Exceptions that occur in custom `Grid` cell tooltips will now be caught and logged to console,
+  rather than throwing the render of the entire component.
 
 ### ⚙️ Technical
-* Improvements to exception handling during app initialization
+
+* Improvements to exception handling during app initialization.
 
 ## 60.0.1 - 2024-01-16
 
 ### 🐞 Bug Fixes
-* Fixed regression to `ZoneGrid`
+
+* Fixed regression to `ZoneGrid`.
 
 ## 60.0.0 - 2024-01-12
 
@@ -39,6 +51,7 @@
 * Added `xh-bg-intent-xxx` CSS classes, for intent-coloring the `background-color` of elements.
 
 ### 🐞 Bug Fixes
+
 * Fixed bug where `ColumnGroup` did not properly support the `omit` flag.
 
 ## 59.5.1 - 2024-01-05

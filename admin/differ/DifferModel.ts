@@ -219,8 +219,8 @@ export class DifferModel extends HoistModel {
                 status: this.rawRecordsAreEqual(local, remote)
                     ? 'Identical'
                     : remote
-                    ? 'Diff'
-                    : 'Local Only'
+                      ? 'Diff'
+                      : 'Local Only'
             });
 
             if (remote) {
@@ -278,8 +278,8 @@ export class DifferModel extends HoistModel {
     }
 
     confirmApplyRemote(records) {
-        const filteredRecords = records.filter(it => !this.isPwd(it)),
-            hadPwd = records.length !== filteredRecords.length,
+        const filteredRecords = records.filter(it => !this.isPwd(it) && !this.isOverridden(it)),
+            hadProtectedRecords = records.length !== filteredRecords.length,
             willDelete = filteredRecords.some(it => !it.data.remoteValue),
             confirmMsg = `Are you sure you want to apply remote values to ${pluralize(
                 this.displayName,
@@ -299,8 +299,8 @@ export class DifferModel extends HoistModel {
             p(confirmMsg),
             p(prodWarning),
             p({
-                omit: !hadPwd,
-                item: 'Warning: No changes will be applied to password records. These must be changed manually.'
+                omit: !hadProtectedRecords,
+                item: 'Warning: No changes will be applied to password and/or overridden records. These must be changed manually.'
             }),
             p({omit: !willDelete, item: 'Warning: Operation includes deletions.'})
         );
@@ -320,6 +320,11 @@ export class DifferModel extends HoistModel {
     isPwd(rec) {
         const {localValue, remoteValue} = rec.data;
         return localValue?.valueType === 'pwd' || remoteValue?.valueType === 'pwd';
+    }
+
+    isOverridden(rec) {
+        const {localValue, remoteValue} = rec.data;
+        return !isNil(localValue?.overrideValue) || !isNil(remoteValue?.overrideValue);
     }
 
     doApplyRemote(records) {

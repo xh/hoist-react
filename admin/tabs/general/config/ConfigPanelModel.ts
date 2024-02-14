@@ -7,8 +7,10 @@
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
+import {hbox, hspacer} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
+import {defaultReadonlyRenderer} from '@xh/hoist/desktop/cmp/form';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
     addAction,
@@ -22,6 +24,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isNil, truncate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
 import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
+import {Icon} from '@xh/hoist/icon';
 
 export class ConfigPanelModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminConfigState'};
@@ -73,7 +76,12 @@ export class ConfigPanelModel extends HoistModel {
                     {...(Col.clientVisible.field as FieldSpec), defaultValue: false, required},
                     {...(Col.note.field as FieldSpec)},
                     {...(Col.lastUpdated.field as FieldSpec), editable: false},
-                    {...(Col.lastUpdatedBy.field as FieldSpec), editable: false}
+                    {...(Col.lastUpdatedBy.field as FieldSpec), editable: false},
+                    {
+                        name: 'overrideValue',
+                        typeField: 'valueType',
+                        editable: false
+                    }
                 ]
             }),
             actionWarning: {
@@ -97,7 +105,12 @@ export class ConfigPanelModel extends HoistModel {
                 {...Col.groupName, hidden},
                 {...Col.name},
                 {...Col.valueType},
-                {...Col.value, renderer: this.configRenderer, tooltip: this.configRenderer},
+                {
+                    ...Col.value,
+                    renderer: this.valueRenderer,
+                    tooltip: this.valueTooltip,
+                    rendererIsComplex: true
+                },
                 {...Col.clientVisible},
                 {...Col.note},
                 {...Col.lastUpdatedBy, hidden},
@@ -108,6 +121,18 @@ export class ConfigPanelModel extends HoistModel {
                 {field: 'groupName'},
                 {field: 'valueType'},
                 {field: 'value'},
+                {
+                    field: 'overrideValue',
+                    omit: isNil,
+                    formField: {
+                        className: 'xh-bg-intent-warning',
+                        info: 'Editable (database) value overridden by instance config / env variable.',
+                        readonlyRenderer: (v, model) =>
+                            model.formModel.values.valueType === 'pwd'
+                                ? '*****'
+                                : defaultReadonlyRenderer(v)
+                    }
+                },
                 {field: 'note', formField: {item: textArea({height: 100})}},
                 {field: 'clientVisible'},
                 {field: 'lastUpdated'},
@@ -120,7 +145,43 @@ export class ConfigPanelModel extends HoistModel {
         return this.gridModel.loadAsync(loadSpec).catchDefault();
     }
 
-    configRenderer(value, {record}) {
+    @action
+    openDiffer() {
+        this.differModel = new DifferModel({
+            parentModel: this,
+            entityName: 'config',
+            columnFields: ['name', {field: 'valueType', headerName: 'Type'}],
+            matchFields: ['name'],
+            valueRenderer: v => {
+                if (isNil(v)) return '';
+                return v.valueType === 'pwd'
+                    ? '*****'
+                    : !isNil(v.overrideValue)
+                      ? this.withOverrideWarning(v.value)
+                      : v.value;
+            }
+        });
+    }
+
+    @action
+    closeDiffer() {
+        const {differModel} = this;
+        this.differModel = null;
+        XH.safeDestroy(differModel);
+    }
+
+    private valueRenderer = (value, {record}) => {
+        value = this.fmtValue(value, record);
+        if (isNil(record.get('overrideValue'))) return value;
+        return this.withOverrideWarning(value);
+    };
+
+    private valueTooltip = (value, {record}) =>
+        !isNil(record.get('overrideValue'))
+            ? 'Overridden by instance config / env variable. Open to view effective value.'
+            : this.fmtValue(value, record);
+
+    private fmtValue(value, record) {
         switch (record.data.valueType) {
             case 'pwd':
                 return '*****';
@@ -131,24 +192,14 @@ export class ConfigPanelModel extends HoistModel {
         }
     }
 
-    @action
-    openDiffer() {
-        this.differModel = new DifferModel({
-            parentModel: this,
-            entityName: 'config',
-            columnFields: ['name', {field: 'valueType', headerName: 'Type'}],
-            matchFields: ['name'],
-            valueRenderer: v => {
-                if (isNil(v)) return '';
-                return v.valueType === 'pwd' ? '*****' : v.value;
+    private withOverrideWarning(value) {
+        return hbox({
+            alignItems: 'center',
+            items: [Icon.warning({intent: 'warning', prefix: 'fas'}), hspacer(), value],
+            style: {
+                color: 'var(--xh-text-color-muted)',
+                textDecoration: 'line-through'
             }
         });
-    }
-
-    @action
-    closeDiffer() {
-        const {differModel} = this;
-        this.differModel = null;
-        XH.safeDestroy(differModel);
     }
 }
