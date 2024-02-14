@@ -325,8 +325,8 @@ class SelectInputModel extends HoistInputModel {
                 ? reactAsyncCreatableSelect
                 : reactAsyncSelect
             : creatableMode
-            ? reactCreatableSelect
-            : reactSelect;
+              ? reactCreatableSelect
+              : reactSelect;
     }
 
     @action

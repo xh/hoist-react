@@ -104,14 +104,14 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                 content: favoritesIsOpen
                     ? favoritesMenu({testId: favoritesMenuTestId})
                     : editorIsOpen
-                    ? editor({
-                          popoverWidth,
-                          popoverMinHeight,
-                          popoverTitle,
-                          emptyText,
-                          testId: editorTestId
-                      })
-                    : null,
+                      ? editor({
+                            popoverWidth,
+                            popoverMinHeight,
+                            popoverTitle,
+                            emptyText,
+                            testId: editorTestId
+                        })
+                      : null,
                 onInteraction: (nextOpenState, e) => {
                     if (
                         isOpen &&

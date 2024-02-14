@@ -1666,8 +1666,8 @@ export class GridModel extends HoistModel {
                 sortingOrder = col.absSort
                     ? Column.ABS_DESC_FIRST
                     : isNum || isDate
-                    ? Column.DESC_FIRST
-                    : Column.ASC_FIRST;
+                      ? Column.DESC_FIRST
+                      : Column.ASC_FIRST;
 
             // TODO: Set the editor based on field type
             return {

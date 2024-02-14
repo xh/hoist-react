@@ -102,8 +102,8 @@ export class FormModel extends HoistModel {
                     f instanceof BaseFieldModel
                         ? f
                         : f.subforms
-                        ? new SubformsFieldModel(f)
-                        : new FieldModel(f),
+                          ? new SubformsFieldModel(f)
+                          : new FieldModel(f),
                 {name} = model;
             throwIf(models[name], 'Form cannot contain multiple fields with same name: ' + name);
             models[name] = model;

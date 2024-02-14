@@ -42,8 +42,8 @@ export class PageStateModel extends HoistModel {
         return document.visibilityState === 'hidden'
             ? 'hidden'
             : document.hasFocus()
-            ? 'active'
-            : 'passive';
+              ? 'active'
+              : 'passive';
     }
 
     private addListeners() {
