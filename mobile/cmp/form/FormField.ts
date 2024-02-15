@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
-import {DefaultHoistProps, hoistCmp, uses, XH} from '@xh/hoist/core';
+import {DefaultHoistProps, hoistCmp, HoistProps, TestSupportProps, uses, XH} from '@xh/hoist/core';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
@@ -156,12 +156,19 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
     }
 });
 
-const readonlyChild = hoistCmp.factory({
+interface ReadonlyChildProps extends HoistProps<FieldModel>, TestSupportProps {
+    readonlyRenderer: (v: any, model: FieldModel) => ReactNode;
+}
+
+const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
     model: false,
 
     render({model, readonlyRenderer}) {
         const value = model ? model['value'] : null;
-        return div({className: 'xh-form-field-readonly-display', item: readonlyRenderer(value)});
+        return div({
+            className: 'xh-form-field-readonly-display',
+            item: readonlyRenderer(value, model)
+        });
     }
 });
 
@@ -204,6 +211,15 @@ const editableChild = hoistCmp.factory<FieldModel>({
 //--------------------------------
 // Helper Functions
 //---------------------------------
+
+export function defaultReadonlyRenderer(value: any): ReactNode {
+    if (isLocalDate(value)) return fmtDate(value);
+    if (isDate(value)) return fmtDateTime(value);
+    if (isFinite(value)) return fmtNumber(value);
+    if (isBoolean(value)) return value.toString();
+    return span(value != null ? value.toString() : null);
+}
+
 function getValidChild(children) {
     const count = Children.count(children);
     if (count === 0) return null;
@@ -223,20 +239,12 @@ function getValidChild(children) {
     return child;
 }
 
-function defaultReadonlyRenderer(value: any): ReactNode {
-    if (isLocalDate(value)) return fmtDate(value);
-    if (isDate(value)) return fmtDateTime(value);
-    if (isFinite(value)) return fmtNumber(value);
-    if (isBoolean(value)) return value.toString();
-    return span(value != null ? value.toString() : null);
-}
-
-function defaultProp(
-    name: string,
+function defaultProp<N extends keyof Partial<FormFieldProps>>(
+    name: N,
     props: Partial<FormFieldProps>,
     formContext: FormContextType,
-    defaultVal: any
-): any {
+    defaultVal: FormFieldProps[N]
+): Partial<FormFieldProps>[N] {
     const fieldDefault = formContext.fieldDefaults ? formContext.fieldDefaults[name] : null;
     return withDefault(props[name], fieldDefault, defaultVal);
 }

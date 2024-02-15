@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {
     CellClickedEvent,
@@ -1666,8 +1666,8 @@ export class GridModel extends HoistModel {
                 sortingOrder = col.absSort
                     ? Column.ABS_DESC_FIRST
                     : isNum || isDate
-                    ? Column.DESC_FIRST
-                    : Column.ASC_FIRST;
+                      ? Column.DESC_FIRST
+                      : Column.ASC_FIRST;
 
             // TODO: Set the editor based on field type
             return {

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {span} from '@xh/hoist/cmp/layout';
 import {defaults, isBoolean, isFinite, isFunction, isNil, isString} from 'lodash';
@@ -410,8 +410,8 @@ function signGlyph(v: number, asHtml: boolean = false) {
     return v === 0
         ? fmtSpan(UP_TICK, {className: 'xh-transparent', asHtml})
         : v > 0
-        ? UP_TICK
-        : DOWN_TICK;
+          ? UP_TICK
+          : DOWN_TICK;
 }
 
 function calcClassFromColorSpec(v: number, colorSpec: ColorSpec | boolean): string {

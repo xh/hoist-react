@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
 import {BoxProps, HoistProps} from '@xh/hoist/core';
@@ -41,7 +41,7 @@ export interface BaseFormFieldProps extends HoistProps<FieldModel>, BoxProps {
      * Optional function for use in readonly mode. Called with the Field's current value and should
      * return an element suitable for presentation to the end-user. Defaulted from containing Form.
      */
-    readonlyRenderer?: (v: any) => ReactNode;
+    readonlyRenderer?: (v: any, model: FieldModel) => ReactNode;
 
     /** The indicator to display next to a required field. Defaults to `*`. */
     requiredIndicator?: string;
