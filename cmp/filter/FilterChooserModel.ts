@@ -16,9 +16,11 @@ import {
 import {
     combineValueFilters,
     CompoundFilter,
+    deserializeFilter,
     FieldFilter,
     Filter,
     parseFilter,
+    serializeFilter,
     Store,
     View,
     withFilterByTypes
@@ -188,10 +190,10 @@ export class FilterChooserModel extends HoistModel {
 
                 const state = this.provider.read();
                 if (this.persistValue && state?.value) {
-                    value = state.value;
+                    value = deserializeFilter(state.value);
                 }
                 if (this.persistFavorites && state?.favorites) {
-                    favorites = state.favorites.map(f => parseFilter(f));
+                    favorites = state.favorites.map(f => parseFilter(deserializeFilter(f)));
                 }
 
                 this.addReaction({
@@ -274,7 +276,9 @@ export class FilterChooserModel extends HoistModel {
                     }
 
                     this.selectValue = sortBy(
-                        displayFilters.map(f => JSON.stringify(f)),
+                        displayFilters.map(f =>
+                            this.isFilterOption(f) ? serializeFilter(f) : JSON.stringify(f)
+                        ),
                         f => {
                             const idx = this.selectValue?.indexOf(f);
                             return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
@@ -305,7 +309,9 @@ export class FilterChooserModel extends HoistModel {
     //---------------------------
     setSelectValue(selectValue: string[]) {
         // Rehydrate stringified values
-        const parsedValues = compact(flatten(selectValue)).map(it => JSON.parse(it));
+        const parsedValues = compact(flatten(selectValue)).map(it =>
+            this.isFilterOption(it) ? deserializeFilter(it) : JSON.parse(it)
+        );
 
         // Separate actual selected filters from field suggestion.
         // (the former is just a transient value on the select control only)
@@ -450,8 +456,8 @@ export class FilterChooserModel extends HoistModel {
     //-------------------------
     get persistState() {
         const ret: PlainObject = {};
-        if (this.persistValue) ret.value = this.value;
-        if (this.persistFavorites) ret.favorites = this.favorites;
+        if (this.persistValue) ret.value = serializeFilter(this.value);
+        if (this.persistFavorites) ret.favorites = this.favorites.map(serializeFilter);
         return ret;
     }
 
@@ -506,6 +512,10 @@ export class FilterChooserModel extends HoistModel {
 
     getDefaultIntroHelpText(): string {
         return 'Select or enter a field name (below) or begin typing to match available field values.';
+    }
+
+    isFilterOption(option: string | Filter): boolean {
+        return !isString(option) || !('displayName' in JSON.parse(option));
     }
 }
 

@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {parseFieldValue} from '@xh/hoist/data';
+import {parseFieldValue, serializeFilter} from '@xh/hoist/data';
 import {isNil} from 'lodash';
 import {FilterChooserFieldSpec} from '../FilterChooserFieldSpec';
 
@@ -79,7 +79,7 @@ export function fieldFilterOption({filter, fieldSpec, isExact = false}): FilterC
 
     return {
         type: 'filter',
-        value: JSON.stringify(filter),
+        value: serializeFilter(filter),
         label: `${displayName} ${displayOp} ${displayValue}`,
         isExact,
 
@@ -96,7 +96,7 @@ export function fieldFilterOption({filter, fieldSpec, isExact = false}): FilterC
 export function compoundFilterOption({filter, fieldNames}): FilterChooserOption {
     return {
         type: 'filter',
-        value: JSON.stringify(filter),
+        value: serializeFilter(filter),
         label: `[${filter.op} Filter on ${fieldNames.join(', ')}]`,
         isExact: false
     };

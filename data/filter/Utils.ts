@@ -5,14 +5,16 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {castArray, flatMap, groupBy, isArray, isFunction} from 'lodash';
+import {FilterChooserFilterLike} from '@xh/hoist/cmp/filter';
+import {LocalDate} from '@xh/hoist/utils/datetime';
+import {castArray, flatMap, groupBy, isArray, isFunction, isNil, isString} from 'lodash';
 
 import {FilterLike} from './Types';
 import {Filter} from './Filter';
 import {FieldFilter} from './FieldFilter';
 import {FunctionFilter} from './FunctionFilter';
 import {CompoundFilter} from './CompoundFilter';
-import {Some} from '@xh/hoist/core';
+import {PlainObject, Some, XH} from '@xh/hoist/core';
 
 /**
  * Parse a filter from an object or array representation.
@@ -145,4 +147,52 @@ export function combineValueFilters(filters = []): Filter[] {
             ? {...filters[0], value: flatMap(filters, it => it.value)}
             : filters;
     });
+}
+
+/**
+ * Serializes a filter by storing additional type information needed for Date and LocalDate values.
+ */
+export function serializeFilter(filter: FilterLike): string {
+    if (isNil(filter)) return filter;
+    if (isArray(filter)) {
+        return JSON.stringify(filter.map(filter => JSON.parse(serializeFilter(filter))));
+    } else if ('filters' in filter) {
+        return JSON.stringify({
+            ...filter,
+            filters: filter.filters.map(filter => JSON.parse(serializeFilter(filter)))
+        });
+    } else if ('value' in filter) {
+        return JSON.stringify({...filter, type: filter.value?.constructor.name});
+    } else {
+        throw XH.exception(`Unable to serialize filter ${filter}`);
+    }
+}
+
+/**
+ * Deserializes a filter, respecting the value type information stored by `serializeFilter` for
+ * Date and LocalDate values. Note that this method will throw an exception if it encounters
+ * a filter it can in no way deserialize; however, the absence of an exception does not guarantee
+ * that the filter is valid.
+ */
+export function deserializeFilter(filter: string | PlainObject): FilterChooserFilterLike {
+    if (isNil(filter)) return filter;
+    const parsed = isString(filter) ? JSON.parse(filter) : {...filter};
+    if (isArray(parsed)) {
+        return parsed.map(deserializeFilter);
+    } else if ('filters' in parsed) {
+        return {
+            ...parsed,
+            filters: parsed.filters.map(deserializeFilter)
+        };
+    } else if ('value' in parsed) {
+        if (parsed.type === 'Date') {
+            parsed.value = new Date(parsed.value);
+        } else if (parsed.type === 'LocalDate') {
+            parsed.value = LocalDate.get(parsed.value);
+        }
+        delete parsed.type;
+        return parsed;
+    } else {
+        throw XH.exception(`Unable to deserialize filter ${filter}`);
+    }
 }
