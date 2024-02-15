@@ -423,7 +423,7 @@ export class FilterChooserModel extends HoistModel {
 
     @action
     setFavorites(favorites: Filter[]) {
-        this.favorites = favorites.filter(f => this.validateFilter(f)) as FilterChooserFilter[];
+        this.favorites = favorites.filter(this.validateFilter.bind(this));
     }
 
     @action
