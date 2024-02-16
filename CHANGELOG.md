@@ -1,13 +1,14 @@
 # Changelog
 
-## 61.0.0-SNAPSHOT - unreleased
+## 60.2.0 - 2024-02-16
 
 ### 🎁 New Features
 
 * The Admin Console now indicates if a Config value is being overridden by an instance config or
   environment variable with a corresponding name.
     * Config overrides now available in `hoist-core >= v18.4`. See the Hoist Core release notes for
-      additional details on this new feature.
+      additional details on this new feature. The Hoist Core update is required for this feature,
+      but is not a hard requirement for this Hoist React release in general.
 * `RestGridEditor` now supports an `omit` flag to hide a field from the editor dialog.
 * `FormField.readonlyRenderer` is now passed the backing `FieldModel` as a second argument.
 
