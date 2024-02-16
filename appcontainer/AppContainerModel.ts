@@ -119,6 +119,13 @@ export class AppContainerModel extends HoistModel {
      */
     async initAsync() {
         // Avoid multiple calls, which can occur if AppContainer remounted.
+        if (window.document['wasDiscarded']) {
+            const {href} = window.location,
+                separator = href.includes('?') ? '&' : '?';
+            // Add a unique query param to force a full reload without using the browser cache.
+            window.location.href = `${href}${separator}xhReloadTriggeredAt=${Date.now()}`;
+            return;
+        }
         if (this.initCalled) return;
         this.initCalled = true;
 

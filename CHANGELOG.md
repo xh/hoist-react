@@ -18,6 +18,10 @@
   type, a union of `CompoundFilter | FieldFilter` - the two concrete filter implementations
   supported by this control.
 
+### 🐞 Bug Fixes
+
+* Fixed bug where a discarded browser tab could re-init an app to an obsolete (cached) version.
+
 ### 📚 Libraries
 
 * classnames `2.3 → 2.5`
