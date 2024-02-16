@@ -11,6 +11,12 @@
 * `RestGridEditor` now supports an `omit` flag to hide a field from the editor dialog.
 * `FormField.readonlyRenderer` is now passed the backing `FieldModel` as a second argument.
 
+### ⚙️ Typescript API Adjustments
+
+* `FilterChooserModel.value` and related signatures are now typed with a new `FilterChooserFilter`
+  type, a union of `CompoundFilter | FieldFilter` - the two concrete filter implementations
+  supported by this control.
+
 ### 📚 Libraries
 
 * classnames `2.3 → 2.5`
