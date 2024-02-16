@@ -5,6 +5,10 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
+import {PlainObject, XH} from '@xh/hoist/core';
+import {FilterLike, parseFilter} from '@xh/hoist/data';
+import {LocalDate} from '@xh/hoist/utils/datetime';
+import {isArray, isNil, isString, omit} from 'lodash';
 import {Store} from '../Store';
 import {FilterTestFn} from './Types';
 
@@ -33,4 +37,33 @@ export abstract class Filter {
 
     /** @returns true if the provided other Filter is equivalent to this instance.*/
     abstract equals(other: Filter): boolean;
+
+    /**
+     * Deserializes a filter, respecting the value type for Date and LocalDate values. Note that
+     * this method will throw an exception if it encounters a filter it can not deserialize.
+     */
+    static deserialize(json: string | PlainObject): Filter {
+        if (isNil(json)) return null;
+        const spec = isString(json) ? JSON.parse(json) : json;
+        if (isArray(spec)) {
+            return parseFilter(spec.map(Filter.deserialize));
+        } else if ('filters' in spec) {
+            return parseFilter({
+                ...spec,
+                filters: spec.filters.map(Filter.deserialize)
+            });
+        } else if ('value' in spec) {
+            return parseFilter({
+                ...omit(spec, 'type'),
+                value:
+                    spec.type === 'Date'
+                        ? new Date(spec.value)
+                        : spec.type === 'LocalDate'
+                          ? LocalDate.get(spec.value)
+                          : spec.value
+            } as FilterLike);
+        } else {
+            throw XH.exception(`Unable to deserialize filter ${json}`);
+        }
+    }
 }

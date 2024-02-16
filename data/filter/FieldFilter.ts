@@ -14,8 +14,10 @@ import {
     isArray,
     isEqual,
     isNil,
+    isObject,
     isString,
     isUndefined,
+    pick,
     uniq
 } from 'lodash';
 import {parseFieldValue} from '../Field';
@@ -93,8 +95,10 @@ export class FieldFilter extends Filter {
     }
 
     toJSON() {
-        const {field, op, value} = this;
-        return {field, op, value};
+        const ret = pick(this, 'field', 'op', 'value');
+        return !ret.value || !isObject(ret.value)
+            ? ret
+            : {...ret, type: ret.value.constructor.name};
     }
 
     //-----------------
