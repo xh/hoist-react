@@ -16,6 +16,12 @@
 * `FilterChooser` now correctly handles `Date` and `LocalDate` values, where previously it would
   convert them to strings, leading to potentially incorrect filtering.
 
+### ⚙️ Typescript API Adjustments
+
+* `FilterChooserModel.value` and related signatures are now typed with a new `FilterChooserFilter`
+  type, a union of `CompoundFilter | FieldFilter` - the two concrete filter implementations
+  supported by this control.
+
 ### 📚 Libraries
 
 * classnames `2.3 → 2.5`
