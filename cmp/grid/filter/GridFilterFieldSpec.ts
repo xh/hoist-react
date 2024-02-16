@@ -5,7 +5,12 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {ColumnRenderer} from '@xh/hoist/cmp/grid';
-import {HoistInputProps} from '@xh/hoist/cmp/input';
+import {
+    DesktopDateInputProps,
+    DesktopNumberInputProps,
+    DesktopSelectProps,
+    DesktopTextInputProps
+} from '@xh/hoist/cmp/input';
 import {PlainObject} from '@xh/hoist/core';
 import {FieldFilterOperator, parseFilter, View} from '@xh/hoist/data';
 import {
@@ -13,6 +18,7 @@ import {
     BaseFilterFieldSpecConfig
 } from '@xh/hoist/data/filter/BaseFilterFieldSpec';
 import {castArray, compact, flatten, isDate, isEmpty, uniqBy} from 'lodash';
+import {MergeExclusive} from 'type-fest';
 import {GridFilterModel} from './GridFilterModel';
 
 export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
@@ -29,7 +35,13 @@ export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
      * Props to pass through to the HoistInput components used on the custom filter tab.
      * Note that the HoistInput component used is decided by fieldType.
      */
-    inputProps?: HoistInputProps;
+    inputProps?: MergeExclusive<
+        DesktopNumberInputProps,
+        MergeExclusive<
+            DesktopDateInputProps,
+            MergeExclusive<DesktopSelectProps, DesktopTextInputProps>
+        >
+    >;
 
     /** Default operator displayed in custom filter tab. */
     defaultOp?: FieldFilterOperator;
