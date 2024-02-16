@@ -25,9 +25,10 @@ import debouncePromise from 'debounce-promise';
 import {escapeRegExp, isEqual, isNil, isPlainObject, keyBy, merge} from 'lodash';
 import {Children, ReactPortal} from 'react';
 import ReactDom from 'react-dom';
-import {MobileSelectProps as SelectProps} from '@xh/hoist/cmp/input';
-export {SelectProps};
+import {MobileSelectProps} from '@xh/hoist/cmp/input';
 import './Select.scss';
+
+export type SelectProps = MobileSelectProps;
 
 /**
  * A managed wrapper around the React-Select combobox/dropdown component.

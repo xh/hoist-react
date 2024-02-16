@@ -6,7 +6,7 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {DesktopNumberInputProps as NumberInputProps} from '@xh/hoist/cmp/input';
+import {DesktopNumberInputProps} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {fmtNumber, parseNumber} from '@xh/hoist/format';
@@ -16,7 +16,8 @@ import {apiRemoved, debounced, TEST_ID, throwIf, withDefault} from '@xh/hoist/ut
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber, round} from 'lodash';
 import {useLayoutEffect} from 'react';
-export {NumberInputProps};
+
+export type NumberInputProps = DesktopNumberInputProps;
 
 /**
  * Number input, with optional support for formatting of display value, shorthand units, and more.

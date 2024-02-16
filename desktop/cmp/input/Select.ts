@@ -34,9 +34,10 @@ import {
     merge
 } from 'lodash';
 import {components} from 'react-select';
-import {DesktopSelectProps as SelectProps} from '@xh/hoist/cmp/input';
+import {DesktopSelectProps} from '@xh/hoist/cmp/input';
 import './Select.scss';
-export {SelectProps};
+
+export type SelectProps = DesktopSelectProps;
 
 export const MENU_PORTAL_ID = 'xh-select-input-portal';
 

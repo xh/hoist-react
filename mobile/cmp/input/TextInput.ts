@@ -14,9 +14,10 @@ import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
-import {MobileTextInputProps as TextInputProps} from '@xh/hoist/cmp/input';
+import {MobileTextInputProps} from '@xh/hoist/cmp/input';
 import './TextInput.scss';
-export {TextInputProps};
+
+export type TextInputProps = MobileTextInputProps;
 
 /**
  * A Text Input

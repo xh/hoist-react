@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {MobileDateInputProps as DateInputProps} from '@xh/hoist/cmp/input';
+import {MobileDateInputProps} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
@@ -18,7 +18,8 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import moment from 'moment';
 import './DateInput.scss';
-export {DateInputProps};
+
+export type DateInputProps = MobileDateInputProps;
 
 /**
  * A Calendar Control for choosing a Date.

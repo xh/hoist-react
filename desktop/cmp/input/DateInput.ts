@@ -23,8 +23,9 @@ import {assign, castArray, clone, trim} from 'lodash';
 import moment from 'moment';
 import {createRef} from 'react';
 import './DateInput.scss';
-import {DesktopDateInputProps as DateInputProps} from '@xh/hoist/cmp/input';
-export {DateInputProps};
+import {DesktopDateInputProps} from '@xh/hoist/cmp/input';
+
+export type DateInputProps = DesktopDateInputProps;
 
 /**
  * A Calendar Control for choosing a Date.

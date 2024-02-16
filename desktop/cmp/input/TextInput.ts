@@ -16,8 +16,9 @@ import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import {FocusEvent} from 'react';
-import {DesktopTextInputProps as TextInputProps} from '@xh/hoist/cmp/input';
-export {TextInputProps};
+import {DesktopTextInputProps} from '@xh/hoist/cmp/input';
+
+export type TextInputProps = DesktopTextInputProps;
 
 /**
  * A single-line text input with additional support for embedded icons/elements.

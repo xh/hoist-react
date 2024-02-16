@@ -13,10 +13,10 @@ import {wait} from '@xh/hoist/promise';
 import {debounced, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber, round} from 'lodash';
-import {MobileNumberInputProps as NumberInputProps} from '@xh/hoist/cmp/input';
+import {MobileNumberInputProps} from '@xh/hoist/cmp/input';
 import './NumberInput.scss';
 
-export {NumberInputProps};
+export type NumberInputProps = MobileNumberInputProps;
 
 /**
  * Number input, with optional support for formatting of display value, shorthand units, and more.
