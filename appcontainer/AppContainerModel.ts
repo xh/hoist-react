@@ -17,7 +17,7 @@ import {
 } from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, when as mobxWhen} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
+import {never, wait} from '@xh/hoist/promise';
 import numbro from 'numbro';
 import {createRoot} from 'react-dom/client';
 import {
@@ -118,14 +118,17 @@ export class AppContainerModel extends HoistModel {
      * Triggers initial authentication and initialization of Hoist and application.
      */
     async initAsync() {
-        // Avoid multiple calls, which can occur if AppContainer remounted.
+        // Avoid bug where "Discarded" browser tabs can re-init an app on an old version
+        // (see https://github.com/xh/hoist-react/issues/3574)
         if (window.document['wasDiscarded']) {
             const {href} = window.location,
                 separator = href.includes('?') ? '&' : '?';
             // Add a unique query param to force a full reload without using the browser cache.
             window.location.href = `${href}${separator}xhReloadTriggeredAt=${Date.now()}`;
-            return;
+            return never();
         }
+
+        // Avoid multiple calls, which can occur if AppContainer remounted.
         if (this.initCalled) return;
         this.initCalled = true;
 
