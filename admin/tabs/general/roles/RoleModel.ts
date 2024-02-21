@@ -7,6 +7,7 @@
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
+import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
@@ -18,7 +19,6 @@ import {action, observable, runInAction} from 'mobx';
 import moment from 'moment/moment';
 import {RoleEditorModel} from './editor/RoleEditorModel';
 import {HoistRole, RoleMemberType, RoleModuleConfig} from './Types';
-import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 
 export class RoleModel extends HoistModel {
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
