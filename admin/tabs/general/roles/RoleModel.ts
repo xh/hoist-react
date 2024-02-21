@@ -18,6 +18,7 @@ import {action, observable, runInAction} from 'mobx';
 import moment from 'moment/moment';
 import {RoleEditorModel} from './editor/RoleEditorModel';
 import {HoistRole, RoleMemberType, RoleModuleConfig} from './Types';
+import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 
 export class RoleModel extends HoistModel {
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
@@ -270,6 +271,12 @@ export class RoleModel extends HoistModel {
                 filterable: true
             },
             columns: [
+                {
+                    ...actionCol,
+                    actionsShowOnHoverOnly: true,
+                    width: calcActionColWidth(3),
+                    actions: [this.editAction(), this.cloneAction(), this.deleteAction()]
+                },
                 {field: {name: 'name', type: 'string'}},
                 {field: {name: 'category', type: 'string'}, hidden: true},
                 {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime, hidden: true},
