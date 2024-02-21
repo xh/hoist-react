@@ -7,7 +7,7 @@
 
 import {PlainObject} from '@xh/hoist/core';
 import {Filter} from './Filter';
-import {StoreRecord, Field} from '../';
+import {StoreRecord, Field, FieldType} from '../';
 
 export type CompoundFilterOperator = 'AND' | 'OR' | 'and' | 'or';
 export interface CompoundFilterSpec {
@@ -39,6 +39,9 @@ export interface FieldFilterSpec {
     op: FieldFilterOperator;
 
     value: any;
+
+    /** For internal serialization only. */
+    valueType?: FieldType;
 }
 
 export interface FunctionFilterSpec {

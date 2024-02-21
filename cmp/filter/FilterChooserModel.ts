@@ -188,10 +188,10 @@ export class FilterChooserModel extends HoistModel {
 
                 const state = this.provider.read();
                 if (this.persistValue && state?.value) {
-                    value = Filter.deserialize(state.value);
+                    value = state.value;
                 }
                 if (this.persistFavorites && state?.favorites) {
-                    favorites = state.favorites.map(Filter.deserialize);
+                    favorites = state.favorites.map(f => parseFilter(f));
                 }
 
                 this.addReaction({
@@ -305,9 +305,7 @@ export class FilterChooserModel extends HoistModel {
     //---------------------------
     setSelectValue(selectValue: string[]) {
         // Rehydrate stringified values
-        const parsedValues = compact(flatten(selectValue)).map(it =>
-            this.isFilterOption(it) ? Filter.deserialize(it) : JSON.parse(it)
-        );
+        const parsedValues = compact(flatten(selectValue)).map(it => JSON.parse(it));
 
         // Separate actual selected filters from field suggestion.
         // (the former is just a transient value on the select control only)
@@ -508,10 +506,6 @@ export class FilterChooserModel extends HoistModel {
 
     getDefaultIntroHelpText(): string {
         return 'Select or enter a field name (below) or begin typing to match available field values.';
-    }
-
-    isFilterOption(option: string | Filter): boolean {
-        return !isString(option) || !('displayName' in JSON.parse(option));
     }
 }
 
