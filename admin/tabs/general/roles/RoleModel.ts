@@ -116,7 +116,7 @@ export class RoleModel extends HoistModel {
     // -------------------------------
     addAction(): RecordActionSpec {
         return {
-            text: 'Add',
+            text: 'Add Role',
             icon: Icon.add(),
             intent: 'success',
             actionFn: () => this.createAsync()
@@ -126,6 +126,7 @@ export class RoleModel extends HoistModel {
     editAction(): RecordActionSpec {
         return {
             text: 'Edit',
+            tooltip: 'Add or remove users from this role.',
             icon: Icon.edit(),
             intent: 'primary',
             actionFn: ({record}) => this.editAsync(record.data as HoistRole),
@@ -271,12 +272,16 @@ export class RoleModel extends HoistModel {
                 filterable: true
             },
             columns: [
-                {
-                    ...actionCol,
-                    actionsShowOnHoverOnly: true,
-                    width: calcActionColWidth(3),
-                    actions: [this.editAction(), this.cloneAction(), this.deleteAction()]
-                },
+                ...(this.readonly
+                    ? []
+                    : [
+                          {
+                              ...actionCol,
+                              actionsShowOnHoverOnly: true,
+                              width: calcActionColWidth(3),
+                              actions: [this.editAction(), this.cloneAction(), this.deleteAction()]
+                          }
+                      ]),
                 {field: {name: 'name', type: 'string'}},
                 {field: {name: 'category', type: 'string'}, hidden: true},
                 {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime, hidden: true},
