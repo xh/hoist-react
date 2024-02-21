@@ -1,5 +1,11 @@
 # Changelog
 
+## 61.0-SNAPSHOT
+
+### 🎁 New Features
+
+* Added action column to Roles grid in Admin, for easier discovery of role operations.
+
 ## 60.2.0 - 2024-02-16
 
 ### 🎁 New Features
