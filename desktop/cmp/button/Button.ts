@@ -5,7 +5,6 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {ButtonProps as BpButtonProps} from '@blueprintjs/core';
-import composeRefs from '@seznam/compose-react-refs';
 import {
     hoistCmp,
     HoistModel,
@@ -77,7 +76,6 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             title,
             tooltip,
             active,
-            elementRef,
             testId,
             ...rest
         } = nonLayoutProps;
@@ -105,7 +103,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             active,
             autoFocus,
             className: classNames(className, classes),
-            elementRef: composeRefs(ref, elementRef),
+            ref,
             [TEST_ID]: testId,
             disabled,
             icon,

@@ -686,7 +686,7 @@ class SelectInputModel extends HoistInputModel {
             children: tooltip({
                 targetClassName,
                 content: props.children,
-                target: props.children
+                item: props.children
             })
         };
     }
@@ -794,7 +794,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             // fire 'mousedown' events. These can bubble and inadvertently close Popovers that
             // contain Selects.
             const target = e?.target as HTMLElement;
-            if (target && elemWithin(target, 'bp4-popover')) {
+            if (target && elemWithin(target, 'bp5-popover')) {
                 e.stopPropagation();
             }
         },

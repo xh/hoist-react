@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {ContextMenu} from '@blueprintjs/core';
+import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import composeRefs from '@seznam/compose-react-refs';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {
@@ -13,8 +13,7 @@ import {
     HoistProps,
     refreshContextView,
     TestSupportProps,
-    uses,
-    XH
+    uses
 } from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
@@ -129,15 +128,14 @@ const onContextMenu = (e, model) => {
         const {clientX, clientY} = e,
             x = clientX + model.ref.current.scrollLeft,
             y = clientY + model.ref.current.scrollTop;
-        ContextMenu.show(
-            dashCanvasContextMenu({
+
+        showContextMenu({
+            content: dashCanvasContextMenu({
                 dashCanvasModel: model,
                 position: {x, y}
             }),
-            {left: clientX, top: clientY},
-            null,
-            XH.darkTheme
-        );
+            targetOffset: {left: clientX, top: clientY}
+        });
     }
 };
 

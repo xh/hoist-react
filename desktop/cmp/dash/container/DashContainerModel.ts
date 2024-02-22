@@ -15,7 +15,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
-import {ContextMenu} from '@xh/hoist/kit/blueprint';
+import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -449,7 +449,7 @@ export class DashContainerModel extends DashModel<
             dashContainerModel: this
         });
 
-        ContextMenu.show(menu, offset, null, XH.darkTheme);
+        showContextMenu({content: menu, targetOffset: offset});
     }
 
     //-----------------

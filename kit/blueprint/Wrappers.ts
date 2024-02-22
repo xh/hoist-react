@@ -49,7 +49,7 @@ import {
     Tooltip,
     Tree
 } from '@blueprintjs/core';
-import {DatePicker} from '@blueprintjs/datetime';
+import {DatePicker3 as DatePicker} from '@blueprintjs/datetime2';
 import {elementFactory} from '@xh/hoist/core';
 
 //---------------------

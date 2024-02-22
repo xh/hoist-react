@@ -164,7 +164,7 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
         bbar: toolbar({
             items: [
                 popover({
-                    target: button({
+                    item: button({
                         icon: Icon.bookmark(),
                         text: 'Presets',
                         outlined: true

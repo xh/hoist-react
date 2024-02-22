@@ -4,9 +4,8 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
 import {contextMenu, ContextMenuSpec} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
-import {ContextMenu} from '@xh/hoist/kit/blueprint';
+import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import {isArray, isFunction, isUndefined, isEmpty} from 'lodash';
 import {ReactElement} from 'react';
 import {cloneElement, isValidElement} from 'react';
@@ -45,12 +44,10 @@ export function useContextMenu(child?: ReactElement, spec?: ContextMenuSpec): Re
 
         // 2) Render via blueprint!
         if (contextMenuOutput) {
-            ContextMenu.show(
-                contextMenuOutput,
-                {left: e.clientX, top: e.clientY},
-                null,
-                XH.darkTheme
-            );
+            showContextMenu({
+                content: contextMenuOutput,
+                targetOffset: {left: e.clientX, top: e.clientY}
+            });
         }
     };
 
