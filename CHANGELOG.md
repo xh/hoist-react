@@ -12,6 +12,11 @@
 * `RestGridEditor` now supports an `omit` flag to hide a field from the editor dialog.
 * `FormField.readonlyRenderer` is now passed the backing `FieldModel` as a second argument.
 
+### 🐞 Bug Fixes
+
+* `FilterChooser` now correctly handles `Date` and `LocalDate` values, where previously it would
+  convert them to strings, leading to potentially incorrect filtering.
+
 ### ⚙️ Typescript API Adjustments
 
 * `FilterChooserModel.value` and related signatures are now typed with a new `FilterChooserFilter`
