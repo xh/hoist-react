@@ -33,7 +33,7 @@ import {
     NavbarHeading,
     NumericInput,
     OverflowList,
-    Overlay,
+    Overlay2 as Overlay,
     Popover,
     Radio,
     RadioGroup,
