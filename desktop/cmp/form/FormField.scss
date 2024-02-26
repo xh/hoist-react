@@ -35,19 +35,14 @@
 
         &.bp5-popover-target,
         .bp5-popover-target {
-          display: block;
-        }
-      }
-
-      .bp5-popover-wrapper:not(.xh-form-field-error-msg) {
-        display: flex;
-        flex: 1;
-
-        & > .bp5-popover-target,
-        & > .bp5-popover-target > .bp5-control-group {
           display: flex;
           flex: 1;
         }
+      }
+
+      .bp5-popover-target > .bp5-control-group {
+        display: flex;
+        flex: 1;
       }
     }
   }

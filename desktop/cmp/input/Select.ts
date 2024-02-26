@@ -680,11 +680,11 @@ class SelectInputModel extends HoistInputModel {
         return portal;
     }
 
-    private withTooltip(props: PlainObject, targetClassName: string): PlainObject {
+    private withTooltip(props: PlainObject, className: string): PlainObject {
         return {
             ...props,
             children: tooltip({
-                targetClassName,
+                className,
                 content: props.children,
                 item: props.children
             })

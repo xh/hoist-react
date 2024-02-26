@@ -198,7 +198,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (minimal) {
             childEl = tooltip({
                 item: childEl,
-                targetClassName: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
+                className: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
                 targetTagName:
                     !blockChildren.includes(childElementName) || childWidth ? 'span' : 'div',
                 position: tooltipPosition,

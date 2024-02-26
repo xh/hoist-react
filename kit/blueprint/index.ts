@@ -11,7 +11,7 @@ import {
     FocusStyleManager,
     type HotkeyConfig,
     HotkeysProvider,
-    Overlay,
+    Overlay2 as Overlay,
     OverlayToaster,
     Popover,
     PopoverInteractionKind,
