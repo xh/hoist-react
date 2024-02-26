@@ -22,11 +22,12 @@ import {TEST_ID} from '@xh/hoist/utils/js';
 import {useOnVisibleChange} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
-import 'react-grid-layout/css/styles.css';
-import './DashCanvas.scss';
 import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
+
+import 'react-grid-layout/css/styles.css';
+import './DashCanvas.scss';
 
 export type DashCanvasProps = HoistProps<DashCanvasModel> & TestSupportProps;
 
@@ -129,13 +130,13 @@ const onContextMenu = (e, model) => {
             x = clientX + model.ref.current.scrollLeft,
             y = clientY + model.ref.current.scrollTop;
 
-        showContextMenu({
-            content: dashCanvasContextMenu({
+        showContextMenu(
+            dashCanvasContextMenu({
                 dashCanvasModel: model,
                 position: {x, y}
             }),
-            targetOffset: {left: clientX, top: clientY}
-        });
+            {left: clientX, top: clientY}
+        );
     }
 };
 

@@ -6,7 +6,6 @@
  */
 import {
     Classes,
-    showContextMenu,
     Dialog,
     FocusStyleManager,
     type HotkeyConfig,
@@ -42,7 +41,6 @@ Popover.defaultProps.transitionDuration = 0;
 export {
     useHotkeys,
     HotkeyConfig,
-    showContextMenu,
     Classes,
     PopoverInteractionKind,
     Position,
@@ -51,5 +49,6 @@ export {
 };
 export * from './Wrappers';
 export * from './Dialog';
+export * from './ContextMenu';
 
 export const hotkeysProvider = elementFactory(HotkeysProvider);

@@ -449,7 +449,7 @@ export class DashContainerModel extends DashModel<
             dashContainerModel: this
         });
 
-        showContextMenu({content: menu, targetOffset: offset});
+        showContextMenu(menu, offset);
     }
 
     //-----------------

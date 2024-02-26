@@ -6,6 +6,19 @@
 
 * Added action column to Roles grid in Admin, for quicker discovery of role editing.
 
+### 💥 Breaking Changes
+
+#### Blueprint 4 to 5 Migration
+* Blueprint 5 is a major version update and includes breaking changes.
+  The following changes are required to migrate from Blueprint 4 to 5:
+  * Popovers and tooltips: replace `target` with `item` if using elementFactory.  If using JSX, replace `target` prop with a child element. This also applies to the mobile popover.
+  * Popovers no longer have a popover-wrapper element.  You may need to remove any CSS that targets this element.
+  * Button's `elementRef` prop becomes just `ref`
+  * CSS rules with the `bp4-` prefix should be updated to use the `bp5-` prefix
+  * `ContextMenu.show` is replaced with `showContextMenu` from '@xh/hoist/kit/blueprint';
+  * `overlay` now refers to blueprintJs' `overlay2` component
+  * `datePicker` now refers to blueprintJs' `datePicker3` component
+
 ## 60.2.0 - 2024-02-16
 
 ### 🎁 New Features

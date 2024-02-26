@@ -44,10 +44,7 @@ export function useContextMenu(child?: ReactElement, spec?: ContextMenuSpec): Re
 
         // 2) Render via blueprint!
         if (contextMenuOutput) {
-            showContextMenu({
-                content: contextMenuOutput,
-                targetOffset: {left: e.clientX, top: e.clientY}
-            });
+            showContextMenu(contextMenuOutput, {left: e.clientX, top: e.clientY});
         }
     };
 
