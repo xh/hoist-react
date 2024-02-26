@@ -272,16 +272,13 @@ export class RoleModel extends HoistModel {
                 filterable: true
             },
             columns: [
-                ...(this.readonly
-                    ? []
-                    : [
-                          {
-                              ...actionCol,
-                              actionsShowOnHoverOnly: true,
-                              width: calcActionColWidth(3),
-                              actions: [this.editAction(), this.cloneAction(), this.deleteAction()]
-                          }
-                      ]),
+                {
+                    ...actionCol,
+                    actionsShowOnHoverOnly: true,
+                    width: calcActionColWidth(1),
+                    actions: [this.editAction()],
+                    omit: this.readonly
+                },
                 {field: {name: 'name', type: 'string'}},
                 {field: {name: 'category', type: 'string'}, hidden: true},
                 {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime, hidden: true},
