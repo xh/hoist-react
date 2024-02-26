@@ -7,6 +7,7 @@
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
+import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
@@ -115,7 +116,7 @@ export class RoleModel extends HoistModel {
     // -------------------------------
     addAction(): RecordActionSpec {
         return {
-            text: 'Add',
+            text: 'Add Role',
             icon: Icon.add(),
             intent: 'success',
             actionFn: () => this.createAsync()
@@ -125,6 +126,7 @@ export class RoleModel extends HoistModel {
     editAction(): RecordActionSpec {
         return {
             text: 'Edit',
+            tooltip: 'Add or remove users from this role.',
             icon: Icon.edit(),
             intent: 'primary',
             actionFn: ({record}) => this.editAsync(record.data as HoistRole),
@@ -270,6 +272,13 @@ export class RoleModel extends HoistModel {
                 filterable: true
             },
             columns: [
+                {
+                    ...actionCol,
+                    actionsShowOnHoverOnly: true,
+                    width: calcActionColWidth(1),
+                    actions: [this.editAction()],
+                    omit: this.readonly
+                },
                 {field: {name: 'name', type: 'string'}},
                 {field: {name: 'category', type: 'string'}, hidden: true},
                 {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime, hidden: true},
