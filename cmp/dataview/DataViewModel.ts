@@ -244,7 +244,7 @@ export class DataViewModel extends HoistModel {
 
     selectAsync(
         records: Some<StoreRecordOrId>,
-        opts: {ensureVisible?: boolean; clearSelection?: boolean}
+        opts?: {ensureVisible?: boolean; clearSelection?: boolean}
     ) {
         return this.gridModel.selectAsync(records, opts);
     }
