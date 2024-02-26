@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {Thunkable} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/core/exception/Exception';
 import {
     flatMap,
@@ -297,6 +298,6 @@ export function intersperse<T>(arr: T[], separator: T): T[] {
 /**
  * Return value passed or the result of executing it, if it is a function.
  */
-export function executeIfFunction(v: any) {
+export function executeIfFunction<T>(v: Thunkable<T>): T {
     return isFunction(v) ? v() : v;
 }
