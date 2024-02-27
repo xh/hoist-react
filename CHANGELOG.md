@@ -10,14 +10,19 @@
 
 #### Blueprint 4 to 5 Migration
 * Blueprint 5 is a major version update and includes breaking changes.
-  The following changes are required to migrate from Blueprint 4 to 5:
-  * Popovers and tooltips: replace `target` with `item` if using elementFactory.  If using JSX, replace `target` prop with a child element. This also applies to the mobile popover.
-  * Popovers no longer have a popover-wrapper element.  You may need to remove any CSS that targets this element.
-  * Button's `elementRef` prop becomes just `ref`
-  * CSS rules with the `bp4-` prefix should be updated to use the `bp5-` prefix
-  * `ContextMenu.show` is replaced with `showContextMenu` from '@xh/hoist/kit/blueprint';
-  * `overlay` now refers to blueprintJs' `overlay2` component
-  * `datePicker` now refers to blueprintJs' `datePicker3` component
+  Developers importing Blueprint components directly should definitely review the [Blueprint 5 migration guide](https://github.com/palantir/blueprint/wiki/Blueprint-5.0) for details.
+  Below are breaking changes that most apps will need to work through:
+  * `popover` and `tooltip` components: replace `target` with `item` if using elementFactory.
+    If using JSX, replace `target` prop with a child element. This also applies to the mobile `popover`.
+  * Popovers no longer have a popover-wrapper element.  You may want to remove or rework any CSS rules that target `bp4-popover-wrapper`.
+  * All components which render popovers now depend on [`popper.js v2.x`](https://popper.js.org/docs/v2/).
+    Any complex customizations to popovers may need to be reworked.
+  * Across all Blueprint components that had an `elementRef` prop, the `elementRef` prop is replaced by the simpler, more straightforward `ref` prop using `React.forwardRef()`.
+    Consequently, in Hoist-React, `button`'s `elementRef` prop becomes just `ref`.  Check your app for any other components that may be affected.
+  * CSS rules with the `bp4-` prefix should be updated to use the `bp5-` prefix.
+  * Method `ContextMenu.show` is replaced with `showContextMenu` from '@xh/hoist/kit/blueprint'.  The method signature has changed slightly.
+  * `overlay` now refers to blueprintJs' `overlay2` component.
+  * `datePicker` now refers to blueprintJs' `datePicker3` component.
 
 ## 60.2.0 - 2024-02-16
 
