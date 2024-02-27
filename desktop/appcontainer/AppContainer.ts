@@ -25,7 +25,7 @@ import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {inspectorPanel} from '@xh/hoist/inspector/InspectorPanel';
-import {hotkeysProvider} from '@xh/hoist/kit/blueprint';
+import {hotkeysProvider, overlaysProvider} from '@xh/hoist/kit/blueprint';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import {aboutDialog} from './AboutDialog';
@@ -75,7 +75,7 @@ export const AppContainer = hoistCmp({
     render({model}) {
         useOnMount(() => model.initAsync());
 
-        return fragment(
+        return overlaysProvider(
             hotkeysProvider(
                 errorBoundary({
                     modelConfig: {

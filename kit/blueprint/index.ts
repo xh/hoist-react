@@ -11,6 +11,7 @@ import {
     type HotkeyConfig,
     HotkeysProvider,
     Overlay2 as Overlay,
+    OverlaysProvider,
     OverlayToaster,
     Popover,
     PopoverInteractionKind,
@@ -52,3 +53,4 @@ export * from './Dialog';
 export * from './ContextMenu';
 
 export const hotkeysProvider = elementFactory(HotkeysProvider);
+export const overlaysProvider = elementFactory(OverlaysProvider);
