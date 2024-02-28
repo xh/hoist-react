@@ -4,7 +4,7 @@
 
 ### 🎁 New Features
 
-* Added action column to Roles grid in Admin, for quicker discovery of role editing.
+* Enhanced Roles Admin UI for more streamlined role editing.
 
 ## 60.2.0 - 2024-02-16
 

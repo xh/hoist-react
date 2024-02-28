@@ -35,7 +35,7 @@ export const rolePanel = hoistCmp.factory({
                 mask: 'onLoad',
                 tbar: [
                     recordActionBar({
-                        actions: [model.addAction()],
+                        actions: [model.addAction(), model.editAction()],
                         gridModel,
                         omit: readonly,
                         selModel: gridModel.selModel
