@@ -6,6 +6,10 @@
 
 * Added action column to Roles grid in Admin, for quicker discovery of role editing.
 
+### 🐞 Bug Fixes
+
+* Fixed bug where a discarded browser tab could re-init an app to an obsolete (cached) version.
+
 ## 60.2.0 - 2024-02-16
 
 ### 🎁 New Features
@@ -28,10 +32,6 @@
 * `FilterChooserModel.value` and related signatures are now typed with a new `FilterChooserFilter`
   type, a union of `CompoundFilter | FieldFilter` - the two concrete filter implementations
   supported by this control.
-
-### 🐞 Bug Fixes
-
-* Fixed bug where a discarded browser tab could re-init an app to an obsolete (cached) version.
 
 ### 📚 Libraries
 
