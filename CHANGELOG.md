@@ -5,6 +5,13 @@
 ### 🎁 New Features
 
 * Added action column to Roles grid in Admin, for quicker discovery of role editing.
+* Enhanced `markdown` component to support GitHub Flavored Markdown (GFM) syntax.
+
+### 📚 Libraries
+
+* react-markdown `8.0 → 9.0`
+* remark-breaks `3.0 → 4.0`
+* remark-gfm `4.0`
 
 ## 60.2.0 - 2024-02-16
 
