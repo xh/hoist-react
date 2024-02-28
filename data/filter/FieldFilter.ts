@@ -6,19 +6,22 @@
  */
 
 import {XH} from '@xh/hoist/core';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
     castArray,
     difference,
     escapeRegExp,
+    first,
     isArray,
     isEqual,
     isNil,
     isString,
     isUndefined,
+    pick,
     uniq
 } from 'lodash';
-import {parseFieldValue} from '../Field';
+import {FieldType, parseFieldValue} from '../Field';
 import {Store} from '../Store';
 import {StoreRecord} from '../StoreRecord';
 import {Filter} from './Filter';
@@ -71,7 +74,7 @@ export class FieldFilter extends Filter {
      * Constructor - not typically called by apps - create via {@link parseFilter} instead.
      * @internal
      */
-    constructor({field, op, value}: FieldFilterSpec) {
+    constructor({field, op, value, valueType}: FieldFilterSpec) {
         super();
 
         throwIf(!field, 'FieldFilter requires a field');
@@ -87,14 +90,19 @@ export class FieldFilter extends Filter {
 
         this.field = isString(field) ? field : field.name;
         this.op = op;
-        this.value = isArray(value) ? uniq(value) : value;
+        this.value = isArray(value)
+            ? uniq(value).map(it => (valueType ? parseFieldValue(it, valueType) : it))
+            : valueType
+              ? parseFieldValue(value, valueType)
+              : value;
 
         Object.freeze(this);
     }
 
     toJSON() {
-        const {field, op, value} = this;
-        return {field, op, value};
+        const ret = pick(this, 'field', 'op', 'value'),
+            {serializedValueType} = this;
+        return serializedValueType ? {...ret, valueType: serializedValueType} : ret;
     }
 
     //-----------------
@@ -196,5 +204,15 @@ export class FieldFilter extends Filter {
                   difference(other.value, this.value).length === 0
                 : other.value === this.value)
         );
+    }
+
+    //-----------------
+    // Implementation
+    //-----------------
+    private get serializedValueType(): FieldType {
+        const value = isArray(this.value) ? first(this.value) : this.value;
+        if (value instanceof Date) return 'date';
+        if (value instanceof LocalDate) return 'localDate';
+        return undefined;
     }
 }

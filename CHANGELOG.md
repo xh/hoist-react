@@ -1,5 +1,11 @@
 # Changelog
 
+## 61.0-SNAPSHOT
+
+### 🎁 New Features
+
+* Added action column to Roles grid in Admin, for quicker discovery of role editing.
+
 ## 60.2.0 - 2024-02-16
 
 ### 🎁 New Features
@@ -11,6 +17,11 @@
       but is not a hard requirement for this Hoist React release in general.
 * `RestGridEditor` now supports an `omit` flag to hide a field from the editor dialog.
 * `FormField.readonlyRenderer` is now passed the backing `FieldModel` as a second argument.
+
+### 🐞 Bug Fixes
+
+* `FilterChooser` now correctly handles `Date` and `LocalDate` values, where previously it would
+  convert them to strings, leading to potentially incorrect filtering.
 
 ### ⚙️ Typescript API Adjustments
 
