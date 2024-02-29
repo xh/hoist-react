@@ -5,13 +5,12 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {
+    BlueprintProvider,
     Classes,
     Dialog,
     FocusStyleManager,
     type HotkeyConfig,
-    HotkeysProvider,
     Overlay2 as Overlay,
-    OverlaysProvider,
     OverlayToaster,
     Popover,
     PopoverInteractionKind,
@@ -51,6 +50,4 @@ export {
 export * from './Wrappers';
 export * from './Dialog';
 export * from './ContextMenu';
-
-export const hotkeysProvider = elementFactory(HotkeysProvider);
-export const overlaysProvider = elementFactory(OverlaysProvider);
+export const blueprintProvider = elementFactory(BlueprintProvider);

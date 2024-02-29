@@ -25,7 +25,7 @@ import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {inspectorPanel} from '@xh/hoist/inspector/InspectorPanel';
-import {hotkeysProvider, overlaysProvider} from '@xh/hoist/kit/blueprint';
+import {blueprintProvider} from '@xh/hoist/kit/blueprint';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import {aboutDialog} from './AboutDialog';
@@ -75,27 +75,25 @@ export const AppContainer = hoistCmp({
     render({model}) {
         useOnMount(() => model.initAsync());
 
-        return overlaysProvider(
-            hotkeysProvider(
-                errorBoundary({
-                    modelConfig: {
-                        errorHandler: {
-                            title: 'Critical Error',
-                            message:
-                                XH.clientAppName +
-                                ' encountered a critical error and cannot be displayed.',
-                            requireReload: true
-                        },
-                        errorRenderer: () => null
+        return blueprintProvider(
+            errorBoundary({
+                modelConfig: {
+                    errorHandler: {
+                        title: 'Critical Error',
+                        message:
+                            XH.clientAppName +
+                            ' encountered a critical error and cannot be displayed.',
+                        requireReload: true
                     },
-                    item: viewForState()
-                }),
-                // Modal component helpers rendered here at top-level to support display of messages
-                // and exceptions at any point during the app lifecycle.
-                exceptionDialog(),
-                messageSource(),
-                toastSource()
-            )
+                    errorRenderer: () => null
+                },
+                item: viewForState()
+            }),
+            // Modal component helpers rendered here at top-level to support display of messages
+            // and exceptions at any point during the app lifecycle.
+            exceptionDialog(),
+            messageSource(),
+            toastSource()
         );
     }
 });
