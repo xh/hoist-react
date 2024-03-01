@@ -11,6 +11,7 @@ import {HoistModel, LoadSpec, managed, XH, Intent, PlainObject} from '@xh/hoist/
 import {dateIs, required} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {AppModel} from '@xh/hoist/admin/AppModel';
+import {AlertBannerSpec} from '@xh/hoist/svc';
 import {some, sortBy, without} from 'lodash';
 import {computed} from 'mobx';
 
@@ -42,6 +43,11 @@ export class AlertBannerModel extends HoistModel {
                 name: 'enableClose',
                 initialValue: true
             },
+            {
+                name: 'clientApps',
+                displayName: 'Client Apps',
+                initialValue: []
+            },
             {name: 'created', readonly: true},
             {name: 'updated', readonly: true},
             {name: 'updatedBy', readonly: true}
@@ -67,6 +73,13 @@ export class AlertBannerModel extends HoistModel {
         ];
     }
 
+    get clientAppOptions() {
+        return XH.getConf('xhClientApps', []).map(app => ({
+            label: app.name,
+            value: app.code
+        }));
+    }
+
     constructor() {
         super();
         makeObservable(this);
@@ -77,7 +90,8 @@ export class AlertBannerModel extends HoistModel {
                 formModel.values.message,
                 formModel.values.intent,
                 formModel.values.iconName,
-                formModel.values.enableClose
+                formModel.values.enableClose,
+                formModel.values.clientApps
             ],
             run: () => this.syncPreview(),
             fireImmediately: true
@@ -114,13 +128,13 @@ export class AlertBannerModel extends HoistModel {
 
     @action
     addPreset() {
-        const {message, intent, iconName, enableClose} = this.formModel.values,
+        const {message, intent, iconName, enableClose, clientApps} = this.formModel.values,
             dateCreated = Date.now(),
             createdBy = XH.getUsername();
         this.savedPresets = sortBy(
             [
                 ...this.savedPresets,
-                {message, intent, iconName, enableClose, dateCreated, createdBy}
+                {message, intent, iconName, enableClose, clientApps, dateCreated, createdBy}
             ],
             ['intent', 'message']
         );
@@ -169,18 +183,18 @@ export class AlertBannerModel extends HoistModel {
         }
     }
 
-    async saveBannerSpecAsync(value) {
-        const {active, message, intent, iconName, enableClose} = value;
+    async saveBannerSpecAsync(spec: AlertBannerSpec) {
+        const {active, message, intent, iconName, enableClose, clientApps} = spec;
         try {
             await XH.fetchService
                 .postJson({
                     url: 'alertBannerAdmin/setAlertSpec',
-                    body: value
+                    body: spec
                 })
                 .track({
                     category: 'Audit',
                     message: 'Updated Alert Banner',
-                    data: {active, message, intent, iconName, enableClose},
+                    data: {active, message, intent, iconName, enableClose, clientApps},
                     logData: ['active']
                 });
         } catch (e) {
@@ -205,7 +219,7 @@ export class AlertBannerModel extends HoistModel {
 
     private async saveInternalAsync() {
         const {formModel, savedValue} = this,
-            {active, message, intent, iconName, enableClose, expires, created} =
+            {active, message, intent, iconName, enableClose, clientApps, expires, created} =
                 formModel.getData();
 
         await formModel.validateAsync();
@@ -252,7 +266,7 @@ export class AlertBannerModel extends HoistModel {
             // Question 2.  Are you sure?
             const finalConfirm = await XH.confirm({
                 message: fragment(
-                    p('This change will modify a LIVE banner for ALL users of this application.'),
+                    p('This change will modify a live banner for all users of this application.'),
                     p('Are you sure you wish to do this?')
                 ),
                 confirmProps: {
@@ -265,12 +279,13 @@ export class AlertBannerModel extends HoistModel {
         }
 
         const now = Date.now(),
-            value = {
+            value: AlertBannerSpec = {
                 active,
                 message,
                 intent,
                 iconName,
                 enableClose,
+                clientApps,
                 expires: expires?.getTime(),
                 publishDate: preservedPublishDate ?? now,
                 created: created ?? now,

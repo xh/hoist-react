@@ -6,13 +6,30 @@
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {form} from '@xh/hoist/cmp/form';
-import {code, div, filler, hframe, p, placeholder, span, vbox} from '@xh/hoist/cmp/layout';
+import {
+    br,
+    code,
+    div,
+    filler,
+    fragment,
+    hframe,
+    p,
+    placeholder,
+    span,
+    vbox
+} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp, relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {banner} from '@xh/hoist/desktop/appcontainer/Banner';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {buttonGroupInput, dateInput, switchInput, textArea} from '@xh/hoist/desktop/cmp/input';
+import {
+    buttonGroupInput,
+    dateInput,
+    select,
+    switchInput,
+    textArea
+} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dateTimeRenderer} from '@xh/hoist/format';
@@ -140,6 +157,21 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                                 minDate: LocalDate.today().date,
                                 timePrecision: 'minute'
                             })
+                        }),
+                        formField({
+                            field: 'clientApps',
+                            item: select({
+                                enableMulti: true,
+                                enableClear: true,
+                                closeMenuOnSelect: false,
+                                noOptionsMessageFn: () => 'Enter one or more app codes.',
+                                options: model.clientAppOptions
+                            }),
+                            info: fragment(
+                                span('Specify what apps should the banner be shown to.'),
+                                br(),
+                                span('If blank, show to all apps.')
+                            )
                         }),
                         formField({
                             field: 'active',
