@@ -18,7 +18,7 @@ export class RoleEditorModel extends HoistModel {
     readonly savingTask = TaskObserver.trackLast({message: 'Saving Role'});
     readonly deletingTask = TaskObserver.trackLast({message: 'Deleting Role'});
 
-    @managed roleFormModel;
+    @managed roleFormModel: RoleFormModel;
 
     @observable isOpen = false;
     @observable role?: HoistRole;
@@ -97,9 +97,8 @@ export class RoleEditorModel extends HoistModel {
     // -------------------------------
     // Implementation
     // -------------------------------
-
     @action
-    openAsync(roleSpec?: HoistRole, editExisting = false): Promise<HoistRole> {
+    private openAsync(roleSpec?: HoistRole, editExisting = false): Promise<HoistRole> {
         this.isOpen = true;
         this.role = editExisting ? roleSpec : undefined;
         this.roleFormModel.init(
