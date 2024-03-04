@@ -10,9 +10,6 @@
 
 * `FilterChooser` now correctly round-trips `Date` and `LocalDate` values. Previously it emitted
   these as strings, with incorrect results when using the generated filter's test function directly.
-
-### 🐞 Bug Fixes
-
 * Fixed bug where a discarded browser tab could re-init an app to an obsolete (cached) version.
 
 ## 60.2.0 - 2024-02-16
