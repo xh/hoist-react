@@ -173,9 +173,12 @@ export class DifferModel extends HoistModel {
     async diffFromClipboardAsync() {
         try {
             await this.readConfigFromClipboardAsync();
-            this.loadAsync();
+            await this.loadAsync();
         } catch (e) {
-            XH.handleException(e, {showAsError: false, logOnServer: false});
+            XH.handleException(e, {
+                message: `Unable to compare clipboard data: ${e.message}`,
+                logOnServer: false
+            });
         }
     }
 
@@ -373,22 +376,16 @@ export class DifferModel extends HoistModel {
         return JSON.stringify(resp);
     }
 
-    async readConfigFromClipboardAsync() {
-        // Try/catch locally to re-throw with consistent error message if clipboard cannot be read
-        // or parsed into JSON w/expected format for any reason.
-        let content = null;
-        try {
-            content = await window.navigator.clipboard.readText();
-            content = JSON.parse(content);
-        } catch (e) {
-            this.logWarn('Error reading config from clipboard', e);
-        }
+    private async readConfigFromClipboardAsync() {
+        const contentString = await window.navigator.clipboard.readText(),
+            content = JSON.parse(contentString);
 
-        this.clipboardContent = content;
-        if (!this.clipboardContent?.data) {
+        if (!content?.data) {
             throw XH.exception(
                 'Clipboard did not contain remote data in the expected JSON format.'
             );
         }
+
+        this.clipboardContent = content;
     }
 }
