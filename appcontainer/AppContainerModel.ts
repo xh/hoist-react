@@ -121,10 +121,7 @@ export class AppContainerModel extends HoistModel {
         // Avoid bug where "Discarded" browser tabs can re-init an app on an old version
         // (see https://github.com/xh/hoist-react/issues/3574)
         if (window.document['wasDiscarded']) {
-            const {href} = window.location,
-                separator = href.includes('?') ? '&' : '?';
-            // Add a unique query param to force a full reload without using the browser cache.
-            window.location.href = `${href}${separator}xhReloadTriggeredAt=${Date.now()}`;
+            XH.reloadApp();
             return never();
         }
 
