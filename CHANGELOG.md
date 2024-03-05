@@ -5,6 +5,8 @@
 ### 🎁 New Features
 
 * Enhanced Roles Admin UI for more streamlined role editing.
+* Improved logging and error logging of `method` and `headers` in `FetchService`:  Default
+  values will now be included.
 
 ### 🐞 Bug Fixes
 
