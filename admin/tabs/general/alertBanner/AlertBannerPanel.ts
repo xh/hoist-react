@@ -165,7 +165,10 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                                 enableClear: true,
                                 closeMenuOnSelect: false,
                                 noOptionsMessageFn: () => 'Enter one or more app codes.',
-                                options: model.clientAppOptions
+                                options: XH.clientApps.map(app => ({
+                                    label: app,
+                                    value: app
+                                }))
                             }),
                             info: fragment(
                                 span('Specify what apps should the banner be shown to.'),

@@ -73,13 +73,6 @@ export class AlertBannerModel extends HoistModel {
         ];
     }
 
-    get clientAppOptions() {
-        return XH.getConf('xhClientApps', []).map(app => ({
-            label: app.name,
-            value: app.code
-        }));
-    }
-
     constructor() {
         super();
         makeObservable(this);

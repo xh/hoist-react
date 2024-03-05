@@ -110,7 +110,7 @@ export class AlertBannerService extends HoistService {
     };
 
     private isTargetedApp(clientApps: string[]): boolean {
-        return isEmpty(clientApps) || clientApps.some(targetApp => targetApp === XH.clientAppCode);
+        return isEmpty(clientApps) || clientApps.includes(XH.clientAppCode);
     }
 }
 
