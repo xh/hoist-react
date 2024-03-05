@@ -292,7 +292,7 @@ export class FetchService extends HoistService {
         }
     }
 
-    private async sendJsonInternalAsync(opts) {
+    private async sendJsonInternalAsync(opts: FetchOptions) {
         return this.fetchJson({
             ...opts,
             body: JSON.stringify(opts.body),
