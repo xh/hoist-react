@@ -6,7 +6,6 @@
  */
 import {HoistService, XH, Exception, PlainObject, FetchResponse, LoadSpec} from '@xh/hoist/core';
 import {isLocalDate, SECONDS, ONE_MINUTE, olderThan} from '@xh/hoist/utils/datetime';
-import {throwIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, omitBy} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
@@ -206,47 +205,44 @@ export class FetchService extends HoistService {
         }
     }
 
-    private async fetchInternalAsync(opts, aborter): Promise<FetchResponse> {
+    private async fetchInternalAsync(
+        opts: FetchOptions,
+        aborter: AbortController
+    ): Promise<FetchResponse> {
         const {defaultHeaders} = this;
-        let {url, method, headers, body, params} = opts;
-        throwIf(!url, 'No url specified in call to fetchService.');
-        throwIf(
-            headers instanceof Headers,
-            'headers must be a plain object in calls to fetchService.'
-        );
 
-        // 1) Compute / install defaults
-        if (!method) {
-            method = params ? 'POST' : 'GET';
-        }
-        const isRelativeUrl = !url.startsWith('/') && !url.includes('//');
+        // 1) Compute / install defaults.  These will be logged/tracked in case of error
+        opts = {...opts};
+        opts.method = opts.method ?? opts.params ? 'POST' : 'GET';
+
+        const rawUrl = opts.url,
+            isRelativeUrl = !rawUrl.startsWith('/') && !rawUrl.includes('//');
         if (isRelativeUrl) {
-            url = XH.baseUrl + url;
+            opts.url = XH.baseUrl + rawUrl;
         }
 
-        // 2) Compute headers
-        const headerEntries = {
-            'Content-Type': method === 'POST' ? 'application/x-www-form-urlencoded' : 'text/plain',
+        opts.headers = {
+            'Content-Type':
+                opts.method === 'POST' ? 'application/x-www-form-urlencoded' : 'text/plain',
             ...(isFunction(defaultHeaders) ? defaultHeaders(opts) : defaultHeaders),
-            ...headers
+            ...opts.headers
         };
 
-        headers = new Headers(omitBy(headerEntries, isNil));
-
-        // 3) Prepare merged options
-        const fetchOpts = {
+        // 2) Prepare options for fetch API
+        let {url, method, headers, body, params} = opts;
+        const fetchOpts: RequestInit = {
             signal: aborter.signal,
             credentials: 'include',
             redirect: 'follow',
+            headers: new Headers(omitBy(headers, isNil)),
             method,
-            headers,
             body,
             ...opts.fetchOpts
         };
 
         // 3) Preprocess and apply params
         if (params) {
-            const qsOpts = {
+            const qsOpts: IStringifyOptions = {
                 arrayFormat: 'repeat',
                 allowDots: true,
                 filter: this.qsFilterFn,
@@ -256,7 +252,7 @@ export class FetchService extends HoistService {
 
             if (
                 ['POST', 'PUT'].includes(method) &&
-                headers.get('Content-Type') !== 'application/json'
+                headers['Content-Type'] !== 'application/json'
             ) {
                 // Fall back to an 'application/x-www-form-urlencoded' POST/PUT body if not sending json.
                 fetchOpts.body = paramsString;
@@ -265,6 +261,7 @@ export class FetchService extends HoistService {
             }
         }
 
+        // 4) Await underlying fetch and post-process response.
         const ret = (await fetch(url, fetchOpts)) as FetchResponse;
 
         if (!ret.ok) {
