@@ -7,11 +7,11 @@
 import {RoleMemberType} from '@xh/hoist/admin/tabs/general/roles/Types';
 import {warningBanner} from '@xh/hoist/admin/tabs/general/roles/warning/WarningBanner';
 import {form} from '@xh/hoist/cmp/form';
-import {grid} from '@xh/hoist/cmp/grid';
-import {hbox, hframe, hspacer, strong, vbox, vframe} from '@xh/hoist/cmp/layout';
-import {storeFilterField} from '@xh/hoist/cmp/store';
+import {grid, gridCountLabel, GridModel} from '@xh/hoist/cmp/grid';
+import {filler, hbox, hframe, hspacer, strong, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
+import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import './RoleForm.scss';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -122,41 +122,40 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
                         actions: [model.ADD_ASSIGNMENT_ACTION],
                         gridModel,
                         selModel: gridModel.selModel
-                    }),
-                    '-',
-                    storeFilterField({
-                        className: `${className}__filter`,
-                        gridModel,
-                        flex: 1,
-                        width: null
                     })
                 ]
             }),
             item: grid({model: gridModel}),
-            bbar: bbar({entity}),
+            bbar: bbar({entity, gridModel}),
             loadingIndicator: entity === 'DIRECTORY_GROUP' && model.directoryGroupLookupTask
         });
     }
 });
 
-const bbar = hoistCmp.factory<AssignmentsPanelProps>(({entity, model}) => {
-    switch (entity) {
-        case 'USER':
+const bbar = hoistCmp.factory<AssignmentsPanelProps & {gridModel: GridModel}>(
+    ({entity, gridModel, model}) => {
+        if (entity === 'USER' && !model.moduleConfig?.userAssignmentSupported) {
             return warningBanner({
                 compact: true,
-                message: 'Users assignment disabled. Will ignore.',
-                omit: model.moduleConfig?.userAssignmentSupported
+                message: 'Users assignment disabled. Will ignore.'
             });
-        case 'DIRECTORY_GROUP':
+        } else if (entity === 'DIRECTORY_GROUP' && !model.moduleConfig?.directoryGroupsSupported) {
             return warningBanner({
                 compact: true,
-                message: 'Directory Groups disabled. Will ignore.',
-                omit: model.moduleConfig?.directoryGroupsSupported
+                message: 'Directory Groups disabled. Will ignore.'
             });
-        default:
-            return null;
+        } else {
+            return toolbar({
+                compact: true,
+                items: [
+                    gridFindField({gridModel, flex: 1, width: null, omit: entity !== 'USER'}),
+                    entity === 'USER' ? '-' : filler(),
+                    gridCountLabel({gridModel, unit: entity.replace('_', ' ').toLowerCase()})
+                ]
+            });
+        }
     }
-});
+);
 
 const infoIcon = hoistCmp.factory<AssignmentsPanelProps>({
     render({entity, model}) {
