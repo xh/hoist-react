@@ -4,7 +4,15 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH, Exception, PlainObject, FetchResponse, LoadSpec} from '@xh/hoist/core';
+import {
+    HoistService,
+    XH,
+    Exception,
+    PlainObject,
+    FetchResponse,
+    LoadSpec,
+    Awaitable
+} from '@xh/hoist/core';
 import {isLocalDate, SECONDS, ONE_MINUTE, olderThan} from '@xh/hoist/utils/datetime';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, omitBy} from 'lodash';
@@ -85,7 +93,8 @@ export class FetchService extends HoistService {
      * @returns Promise which resolves to a Fetch Response.
      */
     fetch(opts: FetchOptions): Promise<FetchResponse> {
-        return this.managedFetchAsync(opts, aborter => this.fetchInternalAsync(opts, aborter));
+        opts = this.withDefaults(opts);
+        return this.managedFetchAsync(opts);
     }
 
     /**
@@ -93,14 +102,8 @@ export class FetchService extends HoistService {
      * @returns the decoded JSON object, or null if the response has status in {@link NO_JSON_RESPONSES}.
      */
     fetchJson(opts: FetchOptions): Promise<any> {
-        return this.managedFetchAsync(opts, async aborter => {
-            const r = await this.fetchInternalAsync(
-                {
-                    ...opts,
-                    headers: {Accept: 'application/json', ...opts.headers}
-                },
-                aborter
-            );
+        opts = this.withDefaults(opts, {Accept: 'application/json'});
+        return this.managedFetchAsync(opts, async r => {
             if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
 
             return r.json().catchWhen('SyntaxError', e => {
@@ -167,10 +170,28 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
+    private withDefaults(opts: FetchOptions, extraHeaders: PlainObject = null): FetchOptions {
+        const {defaultHeaders} = this,
+            method = opts.method ?? opts.params ? 'POST' : 'GET',
+            isPost = method === 'POST';
+
+        return {
+            ...opts,
+            method,
+            headers: {
+                'Content-Type': isPost ? 'application/x-www-form-urlencoded' : 'text/plain',
+                ...(isFunction(defaultHeaders) ? defaultHeaders(opts) : defaultHeaders),
+                ...extraHeaders,
+                ...opts.headers
+            }
+        };
+    }
+
     private async managedFetchAsync(
         opts: FetchOptions,
-        fn: (ctl: AbortController) => Promise<FetchResponse>
+        postProcess: (r: FetchResponse) => Awaitable<FetchResponse> = null
     ): Promise<FetchResponse> {
+        // Prepare auto-aborter
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
             aborter = new AbortController();
@@ -182,7 +203,7 @@ export class FetchService extends HoistService {
         }
 
         try {
-            return await fn(aborter).timeout(timeout);
+            return await this.fetchInternalAsync(opts, aborter).then(postProcess).timeout(timeout);
         } catch (e) {
             if (e.isTimeout) {
                 aborter.abort();
@@ -209,27 +230,14 @@ export class FetchService extends HoistService {
         opts: FetchOptions,
         aborter: AbortController
     ): Promise<FetchResponse> {
-        const {defaultHeaders} = this;
-
-        // 1) Compute / install defaults.  These will be logged/tracked in case of error
-        opts = {...opts};
-        opts.method = opts.method ?? opts.params ? 'POST' : 'GET';
-
-        const rawUrl = opts.url,
-            isRelativeUrl = !rawUrl.startsWith('/') && !rawUrl.includes('//');
+        // 1) Prepare URL
+        let {url, method, headers, body, params} = opts,
+            isRelativeUrl = !url.startsWith('/') && !url.includes('//');
         if (isRelativeUrl) {
-            opts.url = XH.baseUrl + rawUrl;
+            url = XH.baseUrl + url;
         }
 
-        opts.headers = {
-            'Content-Type':
-                opts.method === 'POST' ? 'application/x-www-form-urlencoded' : 'text/plain',
-            ...(isFunction(defaultHeaders) ? defaultHeaders(opts) : defaultHeaders),
-            ...opts.headers
-        };
-
         // 2) Prepare options for fetch API
-        let {url, method, headers, body, params} = opts;
         const fetchOpts: RequestInit = {
             signal: aborter.signal,
             credentials: 'include',
