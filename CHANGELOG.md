@@ -5,6 +5,15 @@
 ### 🎁 New Features
 
 * Enhanced Roles Admin UI for more streamlined role editing.
+* Improved logging and error logging of `method` and `headers` in `FetchService`:  Default
+  values will now be included.
+* Enhanced `XH.reloadApp` with cache-buster.
+
+### 🐞 Bug Fixes
+
+* `FilterChooser` now correctly round-trips `Date` and `LocalDate` values. Previously it emitted
+  these as strings, with incorrect results when using the generated filter's test function directly.
+* Fixed bug where a discarded browser tab could re-init an app to an obsolete (cached) version.
 
 ### 💥 Breaking Changes
 
@@ -35,11 +44,6 @@
       but is not a hard requirement for this Hoist React release in general.
 * `RestGridEditor` now supports an `omit` flag to hide a field from the editor dialog.
 * `FormField.readonlyRenderer` is now passed the backing `FieldModel` as a second argument.
-
-### 🐞 Bug Fixes
-
-* `FilterChooser` now correctly handles `Date` and `LocalDate` values, where previously it would
-  convert them to strings, leading to potentially incorrect filtering.
 
 ### ⚙️ Typescript API Adjustments
 

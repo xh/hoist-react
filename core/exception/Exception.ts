@@ -106,7 +106,7 @@ export class Exception {
      */
     static fetchJsonParseError(fetchOptions: FetchOptions, cause: any): FetchException {
         return this.createFetchException({
-            name: 'Json Parsing Error.',
+            name: 'JSON Parsing Error',
             message:
                 'Error parsing the response body as JSON. The server may have returned an invalid ' +
                 'or empty response. Use "XH.fetch()" to process the response manually.',

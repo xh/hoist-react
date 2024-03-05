@@ -351,7 +351,10 @@ export class XHApi {
     @action
     reloadApp() {
         never().linkTo(this.appLoadModel);
-        window.location.reload();
+        const url = new URL(window.location.href);
+        // Add a unique query param to force a full reload without using the browser cache.
+        url.searchParams.set('xhCacheBuster', Date.now().toString());
+        document.location.assign(url);
     }
 
     /**
