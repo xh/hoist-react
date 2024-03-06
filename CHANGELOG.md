@@ -30,8 +30,9 @@
     Consequently, in Hoist-React, `button`'s `elementRef` prop becomes just `ref`.  Check your app for any other components that may be affected.
   * CSS rules with the `bp4-` prefix should be updated to use the `bp5-` prefix.
   * Method `ContextMenu.show` is replaced with `showContextMenu` from '@xh/hoist/kit/blueprint'.  The method signature has changed slightly.
-  * `overlay` now refers to blueprintJs' `overlay2` component.
-  * `datePicker` now refers to blueprintJs' `datePicker3` component.
+  * `overlay` now refers to Blueprint's `overlay2` component.
+  * `datePicker` now refers to Blueprint's `datePicker3` component.  Blueprint's `datePicker3` has been upgraded to use `react-day-picker` v8.
+    If you are passing a `dayPickerProps` to Hoist's `dateInput`, you may need to update your code to use the new [v8 `DatePickerProps`](https://react-day-picker.js.org/api/interfaces/DayPickerSingleProps).
 
 ## 60.2.0 - 2024-02-16
 
