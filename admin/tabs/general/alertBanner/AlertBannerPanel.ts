@@ -12,7 +12,6 @@ import {
     div,
     filler,
     fragment,
-    hbox,
     hframe,
     li,
     p,
@@ -59,7 +58,9 @@ export const alertBannerPanel = hoistCmp.factory({
 
 const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
     const {formModel} = model,
-        {isDirty, isValid} = formModel;
+        {isDirty, isValid} = formModel,
+        isNonUniqueAndInvalidAlertBannerSettings: boolean =
+            !model.formModel.fields.message.value || model.isCurrentValuesFoundInPresets;
 
     return panel({
         title: 'Settings',
@@ -203,26 +204,23 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
         }),
         bbar: toolbar({
             items: [
-                hbox({
-                    items: [
-                        popover({
-                            target: button({
-                                icon: Icon.bookmark(),
-                                text: 'Presets',
-                                outlined: true
-                            }),
-                            content: presetMenu()
-                        }),
-                        button({
-                            icon: Icon.add(),
-                            text: 'Add Preset',
-                            disabled:
-                                !model.formModel.fields.message.value ||
-                                model.isCurrentValuesFoundInPresets,
-                            onClick: () => model.addPreset(),
-                            className: 'xh-margin-left'
-                        })
-                    ]
+                popover({
+                    target: button({
+                        icon: Icon.bookmark(),
+                        text: 'Presets',
+                        outlined: true
+                    }),
+                    content: presetMenu()
+                }),
+                button({
+                    icon: Icon.add(),
+                    text: 'Add Preset',
+                    disabled: isNonUniqueAndInvalidAlertBannerSettings,
+                    onClick: () => model.addPreset(),
+                    tooltip: isNonUniqueAndInvalidAlertBannerSettings
+                        ? 'Missing message or settings already saved as a preset.'
+                        : '',
+                    className: 'xh-margin-left'
                 }),
                 filler(),
                 button({

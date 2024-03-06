@@ -63,12 +63,6 @@ body.xh-app {
     cursor: pointer;
   }
 
-  .xh-text-overflow-ellipsis {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
   // Avoid default select / magnify behaviors on touch-screens
   &.xh-mobile,
   &.xh-tablet {
