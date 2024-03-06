@@ -57,6 +57,11 @@
     }
   }
 
+  &__menu-item {
+    width: 360px;
+    min-width: 0;
+  }
+
   &__client-app-cell-container {
     display: flex;
     list-style-type: none;

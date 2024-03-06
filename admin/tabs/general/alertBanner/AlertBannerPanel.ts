@@ -12,6 +12,7 @@ import {
     div,
     filler,
     fragment,
+    hbox,
     hframe,
     li,
     p,
@@ -36,9 +37,9 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
+import {menu, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {isEmpty, truncate} from 'lodash';
+import {isEmpty} from 'lodash';
 import {ReactNode} from 'react';
 import {AlertBannerModel} from './AlertBannerModel';
 import './AlertBannerPanel.scss';
@@ -202,13 +203,26 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
         }),
         bbar: toolbar({
             items: [
-                popover({
-                    target: button({
-                        icon: Icon.bookmark(),
-                        text: 'Presets',
-                        outlined: true
-                    }),
-                    content: presetMenu()
+                hbox({
+                    items: [
+                        popover({
+                            target: button({
+                                icon: Icon.bookmark(),
+                                text: 'Presets',
+                                outlined: true
+                            }),
+                            content: presetMenu()
+                        }),
+                        button({
+                            icon: Icon.add(),
+                            text: 'Add Preset',
+                            disabled:
+                                !model.formModel.fields.message.value ||
+                                model.isCurrentValuesFoundInPresets,
+                            onClick: () => model.addPreset(),
+                            className: 'xh-margin-left'
+                        })
+                    ]
                 }),
                 filler(),
                 button({
@@ -252,29 +266,15 @@ const previewPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
 const presetMenu = hoistCmp.factory<AlertBannerModel>({
     render({model}) {
         const {savedPresets} = model,
-            items = [];
+            items = isEmpty(savedPresets)
+                ? [menuItem({text: 'No presets saved...', disabled: true})]
+                : savedPresets.map(preset => presetMenuItem({preset}));
 
-        if (isEmpty(savedPresets)) {
-            items.push(menuItem({text: 'No presets saved...', disabled: true}));
-        } else {
-            items.push(...savedPresets.map(preset => presetMenuItem({preset})));
-        }
-
-        items.push(
-            menuDivider(),
-            menuItem({
-                icon: Icon.add({intent: 'success'}),
-                disabled:
-                    !model.formModel.fields.message.value || model.isCurrentValuesFoundInPresets,
-                text: 'Add current',
-                onClick: e => {
-                    model.addPreset();
-                    e.stopPropagation();
-                }
-            })
-        );
-
-        return menu({items, style: {maxHeight: '400px', overflowY: 'auto'}});
+        return menu({
+            items,
+            style: {maxHeight: '400px', overflowY: 'auto'},
+            className: `${baseClassName}__preset-menu`
+        });
     }
 });
 
@@ -288,13 +288,14 @@ const presetMenuItem = hoistCmp.factory<AlertBannerModel>({
                 : Icon.placeholder({size: 'lg'}),
             text: vbox({
                 items: [
-                    truncate(message, {length: 50}),
+                    span({item: message, className: 'xh-text-overflow-ellipsis'}),
                     clientAppCellContainer(clientApps),
                     span({
                         item: `Saved by ${createdBy} ${getRelativeTimestamp(dateCreated)}`,
                         className: 'xh-font-size-small xh-text-color-muted'
                     })
-                ]
+                ],
+                className: `${baseClassName}__menu-item`
             }),
             multiline: true,
             onClick: () => model.loadPreset(preset),
