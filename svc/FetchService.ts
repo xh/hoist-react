@@ -5,19 +5,19 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {
-    HoistService,
-    XH,
+    Awaitable,
     Exception,
-    PlainObject,
     FetchResponse,
+    HoistService,
     LoadSpec,
-    Awaitable
+    PlainObject,
+    XH
 } from '@xh/hoist/core';
-import {isLocalDate, SECONDS, ONE_MINUTE, olderThan} from '@xh/hoist/utils/datetime';
+import {never, PromiseTimeoutSpec} from '@xh/hoist/promise';
+import {isLocalDate, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, omitBy} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
-import {never, PromiseTimeoutSpec} from '@xh/hoist/promise';
 
 /**
  * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
@@ -172,7 +172,7 @@ export class FetchService extends HoistService {
     //-----------------------
     private withDefaults(opts: FetchOptions, extraHeaders: PlainObject = null): FetchOptions {
         const {defaultHeaders} = this,
-            method = opts.method ?? opts.params ? 'POST' : 'GET',
+            method = opts.method ?? (opts.params ? 'POST' : 'GET'),
             isPost = method === 'POST';
 
         return {
