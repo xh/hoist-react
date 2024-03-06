@@ -157,12 +157,10 @@ export class AlertBannerModel extends HoistModel {
         return this.savedPresets.some(
             preset =>
                 /*
-                    isMatch rather than isEqual to ignore dateCreated and createdBy on preset for non-array elements.
-
                     We also check equality of sets rather than just arrays for clientApps where targeted apps are the same,
                     but order is not guaranteed (['app', 'admin'] vs ['admin', 'app']).
                  */
-                isMatch(preset, {message, intent, iconName, enableClose, clientApps}) &&
+                isMatch(preset, {message, intent, iconName, enableClose}) &&
                 isEqual(new Set(preset.clientApps), new Set(clientApps))
         );
     }

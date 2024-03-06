@@ -13,9 +13,11 @@ import {
     filler,
     fragment,
     hframe,
+    li,
     p,
     placeholder,
     span,
+    ul,
     vbox
 } from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp, relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
@@ -37,15 +39,17 @@ import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {isEmpty, truncate} from 'lodash';
+import {ReactNode} from 'react';
 import {AlertBannerModel} from './AlertBannerModel';
 import './AlertBannerPanel.scss';
 
+const baseClassName = 'xh-alert-banner-panel';
 export const alertBannerPanel = hoistCmp.factory({
     model: creates(AlertBannerModel),
 
     render() {
         return panel({
-            className: 'xh-alert-banner-panel',
+            className: baseClassName,
             mask: 'onLoad',
             item: hframe(formPanel(), previewPanel())
         });
@@ -60,7 +64,7 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
         title: 'Settings',
         icon: Icon.gear(),
         compactHeader: true,
-        className: 'xh-alert-banner-panel__form-panel',
+        className: `${baseClassName}__form-panel`,
         item: form({
             fieldDefaults: {
                 inline: true,
@@ -70,7 +74,7 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
             items: [
                 XH.alertBannerService.enabled
                     ? div({
-                          className: 'xh-alert-banner-panel__intro',
+                          className: `${baseClassName}__intro`,
                           items: [
                               p(`Show an alert banner to all ${XH.appName} users.`),
                               p(
@@ -81,7 +85,7 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                           ]
                       })
                     : div({
-                          className: 'xh-alert-banner-panel__disabled-warning',
+                          className: `${baseClassName}__disabled-warning`,
                           items: [
                               p(
                                   'Feature currently disabled via ',
@@ -97,7 +101,7 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                           ]
                       }),
                 div({
-                    className: 'xh-alert-banner-panel__form-panel__fields',
+                    className: `${baseClassName}__form-panel__fields`,
                     items: [
                         formField({
                             field: 'message',
@@ -184,13 +188,13 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                         formField({
                             omit: !formModel.values.updated,
                             field: 'updated',
-                            className: 'xh-alert-banner-panel__form-panel__fields--ro',
+                            className: `${baseClassName}__form-panel__fields--ro`,
                             readonlyRenderer: dateTimeRenderer({})
                         }),
                         formField({
                             omit: !formModel.values.updatedBy,
                             field: 'updatedBy',
-                            className: 'xh-alert-banner-panel__form-panel__fields--ro'
+                            className: `${baseClassName}__form-panel__fields--ro`
                         })
                     ]
                 })
@@ -230,7 +234,7 @@ const previewPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
     return panel({
         title: 'Preview',
         compactHeader: true,
-        className: 'xh-alert-banner-panel__preview-panel xh-tiled-bg',
+        className: `${baseClassName}__preview-panel xh-tiled-bg`,
         items: [
             banner({
                 omit: !bannerModel,
@@ -276,7 +280,8 @@ const presetMenu = hoistCmp.factory<AlertBannerModel>({
 
 const presetMenuItem = hoistCmp.factory<AlertBannerModel>({
     render({model, preset}) {
-        const {iconName, intent, message, dateCreated, createdBy} = preset;
+        const {iconName, intent, message, dateCreated, createdBy, clientApps} = preset;
+
         return menuItem({
             icon: iconName
                 ? Icon.icon({iconName, intent, prefix: 'fas', size: 'lg'})
@@ -284,6 +289,7 @@ const presetMenuItem = hoistCmp.factory<AlertBannerModel>({
             text: vbox({
                 items: [
                     truncate(message, {length: 50}),
+                    clientAppCellContainer(clientApps),
                     span({
                         item: `Saved by ${createdBy} ${getRelativeTimestamp(dateCreated)}`,
                         className: 'xh-font-size-small xh-text-color-muted'
@@ -303,3 +309,13 @@ const presetMenuItem = hoistCmp.factory<AlertBannerModel>({
         });
     }
 });
+
+const clientAppCellContainer = (clientApps: string[]): ReactNode => {
+    const isClientAppsEmpty = isEmpty(clientApps);
+    return ul({
+        items: isClientAppsEmpty
+            ? li({item: 'all apps', className: 'xh-bg-intent-primary'})
+            : clientApps.map(app => li(app)),
+        className: `${baseClassName}__client-app-cell-container`
+    });
+};
