@@ -260,7 +260,8 @@ const presetMenu = hoistCmp.factory<AlertBannerModel>({
             menuDivider(),
             menuItem({
                 icon: Icon.add({intent: 'success'}),
-                disabled: !model.formModel.fields.message.value || model.currentValuesSavedAsPreset,
+                disabled:
+                    !model.formModel.fields.message.value || model.isCurrentValuesFoundInPresets,
                 text: 'Add current',
                 onClick: e => {
                     model.addPreset();

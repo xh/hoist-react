@@ -12,7 +12,7 @@ import {dateIs, required} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {AlertBannerSpec} from '@xh/hoist/svc';
-import {some, sortBy, without} from 'lodash';
+import {isEqual, isMatch, sortBy, without} from 'lodash';
 import {computed} from 'mobx';
 
 export class AlertBannerModel extends HoistModel {
@@ -152,9 +152,19 @@ export class AlertBannerModel extends HoistModel {
     }
 
     @computed
-    get currentValuesSavedAsPreset() {
-        const {message, intent, iconName, enableClose} = this.formModel.values;
-        return some(this.savedPresets, {message, intent, iconName, enableClose});
+    get isCurrentValuesFoundInPresets() {
+        const {message, intent, iconName, enableClose, clientApps} = this.formModel.values;
+        return this.savedPresets.some(
+            preset =>
+                /*
+                    isMatch rather than isEqual to ignore dateCreated and createdBy on preset for non-array elements.
+
+                    We also check equality of sets rather than just arrays for clientApps where targeted apps are the same,
+                    but order is not guaranteed (['app', 'admin'] vs ['admin', 'app']).
+                 */
+                isMatch(preset, {message, intent, iconName, enableClose, clientApps}) &&
+                isEqual(new Set(preset.clientApps), new Set(clientApps))
+        );
     }
 
     async loadPresetsAsync() {
