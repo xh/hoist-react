@@ -43,5 +43,10 @@ export function getClientDeviceInfo() {
         data.connection = pick(nav.connection, ['downlink', 'effectiveType', 'rtt']);
     }
 
+    const perf = window.performance as any;
+    if (perf?.memory) {
+        data.memory = pick(perf.memory, ['jsHeapSizeLimit', 'totalJSHeapSize', 'usedJSHeapSize']);
+    }
+
     return data;
 }
