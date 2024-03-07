@@ -70,6 +70,7 @@ declare const xhAppName: string;
 declare const xhAppVersion: string;
 declare const xhAppBuild: string;
 declare const xhBaseUrl: string;
+declare const xhClientApps: string[];
 declare const xhIsDevelopmentMode: boolean;
 
 /**
@@ -111,6 +112,9 @@ export class XHApi {
 
     /** Root URL context/path - prepended to all relative fetch requests. */
     readonly baseUrl: string = xhBaseUrl;
+
+    /** List of all client app codes available in the application. */
+    readonly clientApps: string[] = xhClientApps;
 
     /** True if the app is running in a local development environment. */
     readonly isDevelopmentMode: boolean = xhIsDevelopmentMode;
