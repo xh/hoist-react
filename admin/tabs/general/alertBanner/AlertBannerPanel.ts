@@ -58,9 +58,7 @@ export const alertBannerPanel = hoistCmp.factory({
 
 const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
     const {formModel} = model,
-        {isDirty, isValid} = formModel,
-        isNonUniqueAndInvalidAlertBannerSettings: boolean =
-            !model.formModel.fields.message.value || model.isCurrentValuesFoundInPresets;
+        {isDirty, isValid} = formModel;
 
     return panel({
         title: 'Settings',
@@ -215,9 +213,9 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                 button({
                     icon: Icon.add(),
                     text: 'Add Preset',
-                    disabled: isNonUniqueAndInvalidAlertBannerSettings,
+                    disabled: model.shouldDisableAddPreset,
                     onClick: () => model.addPreset(),
-                    tooltip: isNonUniqueAndInvalidAlertBannerSettings
+                    tooltip: model.shouldDisableAddPreset
                         ? 'Missing message or settings already saved as a preset.'
                         : '',
                     className: 'xh-margin-left'

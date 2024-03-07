@@ -165,6 +165,11 @@ export class AlertBannerModel extends HoistModel {
         );
     }
 
+    @computed
+    get shouldDisableAddPreset(): boolean {
+        return !this.formModel.fields.message.value || this.isCurrentValuesFoundInPresets;
+    }
+
     async loadPresetsAsync() {
         try {
             this.savedPresets = await XH.fetchJson({url: 'alertBannerAdmin/alertPresets'});
