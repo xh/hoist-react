@@ -13,12 +13,19 @@
 * Improved logging and error logging of `method` and `headers` in `FetchService`:  Default
   values will now be included.
 * Enhanced `XH.reloadApp` with cache-buster.
+* Enhanced `markdown` component to support GitHub Flavored Markdown (GFM) syntax.
 
 ### 🐞 Bug Fixes
 
 * `FilterChooser` now correctly round-trips `Date` and `LocalDate` values. Previously it emitted
   these as strings, with incorrect results when using the generated filter's test function directly.
 * Fixed bug where a discarded browser tab could re-init an app to an obsolete (cached) version.
+
+### 📚 Libraries
+
+* react-markdown `8.0 → 9.0`
+* remark-breaks `3.0 → 4.0`
+* remark-gfm `4.0`
 
 ## 60.2.0 - 2024-02-16
 
