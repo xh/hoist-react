@@ -7,9 +7,13 @@
 
 .xh-admin-diff-detail {
   width: 700px;
+  max-height: 80vh;
   table {
+    display: flex;
     width: 100%;
     border-collapse: collapse;
+    overflow-y: scroll;
+    overflow-x: hidden;
 
     tr {
       border-bottom: var(--xh-border-solid);
@@ -35,6 +39,7 @@
       padding: var(--xh-pad-px);
       vertical-align: top;
       width: 290px;
+      max-width: 290px;
       word-wrap: break-word;
 
       &.diff {
