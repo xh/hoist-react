@@ -1,5 +1,7 @@
 # Changelog
 
+## 62.0.0-SNAPSHOT - unreleased
+
 ## 61.0.0 - 2024-03-08
 
 ### 💥 Breaking Changes
