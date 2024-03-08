@@ -18,6 +18,8 @@ export class RoleGraphModel extends HoistModel {
 
     @bindable relationship: 'effective' | 'inherited' = 'inherited';
 
+    @bindable inverted: boolean = true;
+
     get relatedRoles(): EffectiveRoleMember[] {
         const {role, relationship} = this;
         if (!role) return [];
@@ -29,23 +31,83 @@ export class RoleGraphModel extends HoistModel {
         return this.roleModel.selectedRole;
     }
 
+    get leafCount(): number {
+        const {relatedRoles} = this;
+        return relatedRoles.reduce((acc, it) => {
+            const hasChildren = relatedRoles.some(other => other.sourceRoles.includes(it.name)),
+                parentCount = it.sourceRoles.length,
+                // If the role has children, it is not a leaf in one of its occurrences, so we subtract 1.
+                leafCount = hasChildren ? parentCount - 1 : parentCount;
+            return acc + leafCount;
+        }, 0);
+    }
+
+    get maxDepth(): number {
+        const {role: root, relatedRoles} = this;
+        if (isEmpty(relatedRoles)) return 1;
+
+        const maxDepthRecursive = (roleName: string) => {
+            if (roleName === root.name) return 1;
+            const role = relatedRoles.find(it => it.name === roleName);
+            if (role.sourceRoles.includes(root.name)) return 2;
+            const firstSourceName = role.sourceRoles.reduce((acc, it) => (acc < it ? acc : it));
+            return maxDepthRecursive(firstSourceName) + 1;
+        };
+
+        return relatedRoles.reduce((acc, role) => {
+            const depth = role.sourceRoles.reduce(
+                (acc, sourceName) => Math.max(acc, maxDepthRecursive(sourceName) + 1),
+                0
+            );
+            return Math.max(acc, depth);
+        }, 1);
+    }
+
+    get size() {
+        const {inverted, maxDepth, leafCount} = this;
+        console.log('maxDepth', maxDepth, 'leafCount', leafCount); // DEBUG
+        if (inverted) {
+            const AVG_WIDTH = 150,
+                AVG_HEIGHT = 26;
+            return {
+                width: AVG_WIDTH * leafCount,
+                height: AVG_HEIGHT * (maxDepth + 1)
+            };
+        } else {
+            const AVG_WIDTH = 100,
+                AVG_HEIGHT = 30;
+            return {
+                width: AVG_WIDTH * maxDepth,
+                height: AVG_HEIGHT * (leafCount + 1)
+            };
+        }
+    }
+
     override onLinked() {
         const {chartModel} = this;
-        this.addReaction({
-            track: () => [this.role, this.relationship],
-            run: async ([role]) => {
-                chartModel.clear(); //  avoid HC rendering glitches
-                await wait();
-                if (role) {
-                    chartModel.setSeries({
-                        type: 'treegraph',
-                        data: this.getSeriesData()
-                    });
-                }
+        this.addReaction(
+            {
+                track: () => [this.role, this.relationship],
+                run: async ([role]) => {
+                    chartModel.clear(); //  avoid HC rendering glitches
+                    await wait();
+                    if (role) {
+                        chartModel.setSeries({
+                            type: 'treegraph',
+                            data: this.getSeriesData()
+                        });
+                    }
+                },
+                fireImmediately: true,
+                debounce: 100
             },
-            fireImmediately: true,
-            debounce: 100
-        });
+            {
+                track: () => this.inverted,
+                run: inverted => {
+                    chartModel.updateHighchartsConfig({chart: {inverted}});
+                }
+            }
+        );
     }
 
     // -------------------------------
@@ -55,34 +117,49 @@ export class RoleGraphModel extends HoistModel {
         const {role, relatedRoles} = this,
             {name} = role;
         if (isEmpty(relatedRoles)) return [];
+        const alreadyAdded = new Set<string>();
         return [
             {
                 id: name,
-                name,
+                name: name.replaceAll(' ', '&nbsp'), // Replace spaces with non-breaking spaces to prevent wrapping.
                 dataLabels: {
                     style: {
                         fontWeight: 600
-                    }
+                    },
+                    backgroundColor: 'var(--xh-bg-alt)'
                 },
                 marker: {
                     fillColor: 'var(--xh-bg-alt)'
                 }
             },
             ...sortBy(relatedRoles, 'name').flatMap(({name, sourceRoles}) =>
-                [...sourceRoles].sort().map(source => ({
-                    id: name,
-                    name,
-                    parent: source
-                }))
+                [...sourceRoles]
+                    .sort((a, b) => {
+                        if (a === role.name) return -1;
+                        if (b === role.name) return 1;
+                        return a > b ? 1 : -1;
+                    })
+                    .map(source => {
+                        // Adds a space to the id to differentiate subsequent nodes from the expanded one.
+                        const id = alreadyAdded.has(name) ? `${name} ` : name;
+                        alreadyAdded.add(name);
+                        return {
+                            id,
+                            // Replace spaces with non-breaking spaces to prevent wrapping.
+                            name: name.replaceAll(' ', '&nbsp'),
+                            parent: source
+                        };
+                    })
             )
         ];
     }
 
     private createChartModel(): ChartModel {
+        const {inverted} = this;
         return new ChartModel({
             highchartsConfig: {
                 chart: {
-                    inverted: true
+                    inverted
                 },
                 plotOptions: {
                     treegraph: {
@@ -91,18 +168,25 @@ export class RoleGraphModel extends HoistModel {
                             enabled: false
                         },
                         dataLabels: {
+                            crop: false,
+                            overflow: 'allow',
                             style: {
                                 fontFamily: 'var(--xh-font-family)',
                                 fontSize: 'var(--xh-font-size-small-px)',
                                 fontWeight: 'normal',
                                 textOutline: 'none'
-                            }
+                            },
+                            padding: 2,
+                            borderRadius: 5,
+                            backgroundColor: 'var(--xh-bg-highlight)'
                         },
                         link: {
-                            color: 'var(--xh-border-color)'
+                            color: 'var(--xh-border-color)',
+                            type: 'default'
                         },
                         marker: {
-                            fillColor: 'var(--xh-bg-highlight)'
+                            fillColor: 'var(--xh-bg-highlight)',
+                            radius: 8
                         },
                         point: {
                             events: {

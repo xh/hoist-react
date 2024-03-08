@@ -7,16 +7,17 @@
 import {RoleGraphModel} from '@xh/hoist/admin/tabs/general/roles/graph/RoleGraphModel';
 import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {chart} from '@xh/hoist/cmp/chart';
-import {placeholder} from '@xh/hoist/cmp/layout';
+import {placeholder, div} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
+import {buttonGroupInput, switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {logError} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
+import './RoleGraph.scss';
 
 export const roleGraph = hoistCmp.factory({
     displayName: 'RoleGraph',
@@ -27,22 +28,39 @@ export const roleGraph = hoistCmp.factory({
             compactHeader: true,
             icon: Icon.idBadge(),
             title: role ? `Relationships - ${role.name} ` : 'Relationships',
-            item: content(),
-            bbar: toolbar({
-                item: buttonGroupInput({
-                    bind: 'relationship',
-                    items: [
-                        button({
-                            value: 'inherited',
-                            text: `Inherited BY this Role (${role?.inheritedRoles.length})`
-                        }),
-                        button({
-                            value: 'effective',
-                            text: `Inheriting FROM this Role (${role?.effectiveRoles.length})`
-                        })
-                    ],
-                    width: 400
+            item: div({
+                item: div({
+                    style: {margin: 'auto'},
+                    item: content()
                 }),
+                style: {
+                    display: 'flex',
+                    flex: '1 0',
+                    overflow: 'auto'
+                }
+            }),
+            bbar: toolbar({
+                items: [
+                    buttonGroupInput({
+                        bind: 'relationship',
+                        items: [
+                            button({
+                                value: 'inherited',
+                                text: `Inherited BY this Role (${role?.inheritedRoles.length})`
+                            }),
+                            button({
+                                value: 'effective',
+                                text: `Inheriting FROM this Role (${role?.effectiveRoles.length})`
+                            })
+                        ],
+                        width: 400
+                    }),
+                    switchInput({
+                        bind: 'inverted',
+                        label: 'Inverted',
+                        labelSide: 'left'
+                    })
+                ],
                 omit: !role
             }),
             modelConfig: {
@@ -57,7 +75,7 @@ export const roleGraph = hoistCmp.factory({
 });
 
 const content = hoistCmp.factory<RoleGraphModel>(({model}) => {
-    const {relationship, relatedRoles, role} = model;
+    const {relationship, relatedRoles, role, size} = model;
     if (!Highcharts?.seriesTypes.treegraph) {
         logError(
             [
@@ -76,5 +94,10 @@ const content = hoistCmp.factory<RoleGraphModel>(({model}) => {
                   ? 'No roles inherited BY this role.'
                   : 'No roles inheriting FROM this role.'
         );
-    return chart();
+
+    return chart({
+        className: 'xh-role-graph',
+        ...size,
+        flex: '1 0'
+    });
 });
