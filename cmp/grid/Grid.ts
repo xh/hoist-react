@@ -383,9 +383,12 @@ export class GridLocalModel extends HoistModel {
         const {sizingMode, groupRowHeight} = this.model,
             {groupDisplayType} = this.agOptions,
             AgGridCmp = AgGrid as any;
-        return groupRowHeight ?? groupDisplayType === 'groupRows'
-            ? AgGridCmp.getGroupRowHeightForSizingMode(sizingMode)
-            : AgGridCmp.getRowHeightForSizingMode(sizingMode);
+        return (
+            groupRowHeight ??
+            (groupDisplayType === 'groupRows'
+                ? AgGridCmp.getGroupRowHeightForSizingMode(sizingMode)
+                : AgGridCmp.getRowHeightForSizingMode(sizingMode))
+        );
     }
 
     defaultGetRowHeight = ({node}) => {

@@ -1,10 +1,17 @@
 # Changelog
 
-## 61.0-SNAPSHOT
+## 62.0.0-SNAPSHOT - unreleased
+
+## 61.0.0 - 2024-03-08
+
+### 💥 Breaking Changes
+
+* Requires update to `hoist-dev-utils >= v7.2.0`.
 
 ### 🎁 New Features
 
 * Enhanced Roles Admin UI for more streamlined role editing.
+* Supports targeting alert banners to specific client apps.
 * Improved logging and error logging of `method` and `headers` in `FetchService`:  Default
   values will now be included.
 * Enhanced `XH.reloadApp` with cache-buster.

@@ -47,7 +47,8 @@ export class StatsModel extends HoistModel {
                     {name: 'modelCount', displayName: '# Models', type: 'number'},
                     {name: 'modelCountChange', displayName: '#Δ', type: 'number'},
                     {name: 'totalJSHeapSize', type: 'number'},
-                    {name: 'usedJSHeapSize', type: 'number'}
+                    {name: 'usedJSHeapSize', type: 'number'},
+                    {name: 'jsHeapSizeLimit', type: 'number'}
                 ]
             },
             sortBy: ['timestamp|desc'],
@@ -62,12 +63,23 @@ export class StatsModel extends HoistModel {
                 },
                 {
                     field: 'usedJSHeapSize',
-                    displayName: 'Heap used/total',
+                    displayName: 'Heap (used)',
+                    renderer: v => `${this.convertToMb(v)}mb`
+                },
+                {
+                    field: 'totalJSHeapSize',
+                    displayName: 'Heap (total)',
+                    hidden: true,
+                    renderer: v => `${this.convertToMb(v)}mb`
+                },
+                {
+                    field: 'jsHeapSizeLimit',
+                    displayName: '% Limit',
                     rendererIsComplex: true,
                     renderer: (v, {record}) => {
-                        const used = Math.round(v / 1000000),
-                            total = Math.round(record.data.totalJSHeapSize / 1000000);
-                        return `${used}/${total}mb`;
+                        const limit = this.convertToMb(v),
+                            used = this.convertToMb(record.data.usedJSHeapSize);
+                        return `${((used / limit) * 100).toFixed(2)}%`;
                     }
                 }
             ],
@@ -144,6 +156,10 @@ export class StatsModel extends HoistModel {
             },
             {type: 'column', name: '#Δ', data: modelCountChangeData, yAxis: 2, borderWidth: 0}
         ]);
+    }
+
+    private convertToMb(bytes: number): number {
+        return Math.round(bytes / 1000000);
     }
 }
 
