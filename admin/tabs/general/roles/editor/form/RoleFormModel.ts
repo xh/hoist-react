@@ -70,6 +70,10 @@ export class RoleFormModel extends HoistModel {
         return this.roleModel.moduleConfig;
     }
 
+    get roleName(): string {
+        return this.formModel.values.name ?? 'New Role';
+    }
+
     constructor(roleModel: RoleModel) {
         super();
         this.roleModel = roleModel;
