@@ -9,7 +9,7 @@ import {ChartModel} from '@xh/hoist/cmp/chart';
 import {HoistModel, lookup, managed, PlainObject} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {isEmpty, sortBy} from 'lodash';
+import {isEmpty, isMatch, sortBy} from 'lodash';
 import {EffectiveRoleMember, HoistRole} from '../Types';
 
 export class RoleGraphModel extends HoistModel {
@@ -98,6 +98,8 @@ export class RoleGraphModel extends HoistModel {
                         });
                     }
                 },
+                // Deep comparison that ignores array order
+                equals: (a, b) => isMatch(a, b) && isMatch(b, a),
                 fireImmediately: true,
                 debounce: 100
             },
