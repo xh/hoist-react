@@ -27,7 +27,7 @@ export interface ButtonProps<M extends HoistModel = null>
         StyleProps,
         LayoutProps,
         TestSupportProps,
-        BpButtonProps {
+        Omit<BpButtonProps, 'ref'> {
     active?: boolean;
     autoFocus?: boolean;
     disabled?: boolean;
