@@ -46,11 +46,11 @@ export const roleGraph = hoistCmp.factory({
                         items: [
                             button({
                                 value: 'inherited',
-                                text: `Inherited BY this Role (${role?.inheritedRoles.length})`
+                                text: `Inheriting from (${role?.inheritedRoles.length})`
                             }),
                             button({
                                 value: 'effective',
-                                text: `Inheriting FROM this Role (${role?.effectiveRoles.length})`
+                                text: `Granting to (${role?.effectiveRoles.length})`
                             })
                         ],
                         width: 400
@@ -91,8 +91,8 @@ const content = hoistCmp.factory<RoleGraphModel>(({model}) => {
             !role
                 ? 'No role selected.'
                 : relationship === 'inherited'
-                  ? 'No roles inherited BY this role.'
-                  : 'No roles inheriting FROM this role.'
+                  ? 'This role is inheriting from no other roles.'
+                  : 'This role is granting itself to no other roles.'
         );
 
     return chart({
