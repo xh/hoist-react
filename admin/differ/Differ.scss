@@ -12,6 +12,7 @@
     display: flex;
     border-collapse: collapse;
     overflow-y: auto;
+    overflow-x: hidden;
 
     tr {
       border-bottom: var(--xh-border-solid);
