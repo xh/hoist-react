@@ -8,6 +8,7 @@
     <link rel="apple-touch-icon" href="<%= webpackConfig.output.publicPath %>public/apple-touch-icon.png">
     <% } %>
     <title><%= htmlWebpackPlugin.options.title %></title>
+    <%= stylesTags %>
 </head>
 <body class="xh-app" style="margin: 0">
 
@@ -20,6 +21,6 @@
 </div>
 
 <div id="xh-root"></div>
-
+<%= scriptTags %>
 </body>
 </html>
