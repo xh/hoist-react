@@ -7,6 +7,11 @@
 * Fixed the config differ dialog issue where long field values would cause the toolbar to get hidden
   and/or table columns to be overly wide due to content overflow.
 
+### 💥 Breaking Changes
+
+* Requires update to `hoist-dev-utils >= v8.0.0`, which brings in new chunking and code-splitting
+  strategy that creates shorter bundle names and smaller downloads of more bundle files.
+
 ## 61.0.0 - 2024-03-08
 
 ### 💥 Breaking Changes
