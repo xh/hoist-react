@@ -10,7 +10,7 @@
 ### 💥 Breaking Changes
 
 * Requires update to `hoist-dev-utils >= v8.0.0`, which brings in new chunking and code-splitting
-  strategy that creates shorter bundle names and smaller downloads of more bundle files.
+  strategy that creates shorter bundle names.
 
 ## 61.0.0 - 2024-03-08
 
