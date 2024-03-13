@@ -7,9 +7,9 @@
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
+import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
@@ -196,10 +196,14 @@ export class RoleModel extends HoistModel {
     ): HoistRole[] {
         return roles.map(role => {
             const membersByType = mapValues(groupBy(role.members, 'type'), members =>
-                members.map(member => member.name)
-            );
+                    members.map(member => member.name)
+                ),
+                [category1, category2, category3] = role.category?.split('\\') ?? ['Uncategorized'];
             return {
                 ...role,
+                category1,
+                category2,
+                category3,
                 users: membersByType['USER'] ?? [],
                 directoryGroups: membersByType['DIRECTORY_GROUP'] ?? [],
                 roles: membersByType['ROLE'] ?? []
@@ -225,11 +229,11 @@ export class RoleModel extends HoistModel {
             autosizeOptions: {mode: 'managed'},
             emptyText: 'No roles found.',
             colChooserModel: true,
-            sortBy: 'name|asc',
+            sortBy: ['category1|desc', 'category2|desc', 'category3|desc', 'name'],
             enableExport: true,
             exportOptions: {filename: 'roles'},
             filterModel: true,
-            groupBy: 'category',
+            groupBy: ['category1', 'category2', 'category3'],
             groupRowRenderer: ({value}) => (!value ? 'Uncategorized' : value),
             headerMenuDisplay: 'hover',
             onRowDoubleClicked: ({data: record}) =>
@@ -238,7 +242,7 @@ export class RoleModel extends HoistModel {
                 this.roleEditorModel
                     .editAsync(record.data)
                     .then(role => role && this.refreshAsync()),
-            persistWith: {...this.persistWith, path: 'mainGrid'},
+            // persistWith: {...this.persistWith, path: 'mainGrid'},
             store: {
                 idSpec: 'name',
                 fields: [
@@ -281,6 +285,18 @@ export class RoleModel extends HoistModel {
                 },
                 {field: {name: 'name', type: 'string'}},
                 {field: {name: 'category', type: 'string'}, hidden: true},
+                {
+                    field: {name: 'category1', type: 'string'}
+                    // hidden: true
+                },
+                {
+                    field: {name: 'category2', type: 'string'}
+                    // hidden: true
+                },
+                {
+                    field: {name: 'category3', type: 'string'}
+                    // hidden: true
+                },
                 {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime, hidden: true},
                 {field: {name: 'lastUpdatedBy', type: 'string'}, hidden: true},
                 {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1}

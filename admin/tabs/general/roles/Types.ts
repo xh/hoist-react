@@ -7,6 +7,9 @@
 export interface HoistRole {
     name: string;
     category: string;
+    category1?: string;
+    category2?: string;
+    category3?: string;
     notes: string;
     users: string[];
     directoryGroups: string[];
