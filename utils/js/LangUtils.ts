@@ -19,6 +19,7 @@ import {
     uniq,
     uniqBy
 } from 'lodash';
+import {v4} from 'uuid';
 import _inflection from 'lodash-inflection';
 
 mixin(_inflection);
@@ -300,4 +301,11 @@ export function intersperse<T>(arr: T[], separator: T): T[] {
  */
 export function executeIfFunction<T>(v: Thunkable<T>): T {
     return isFunction(v) ? v() : v;
+}
+
+/**
+ * Generate a UUID.
+ */
+export function genUUID(): string {
+    return v4();
 }

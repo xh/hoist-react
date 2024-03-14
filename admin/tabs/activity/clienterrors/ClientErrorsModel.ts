@@ -63,13 +63,15 @@ export class ClientErrorsModel extends HoistModel {
                 {...Col.error, hidden},
                 {...Col.url},
                 {...Col.day},
-                {...Col.dateCreatedWithSec, displayName: 'Timestamp'}
+                {...Col.dateCreatedWithSec, displayName: 'Timestamp'},
+                {...Col.correlationId, hidden}
             ]
         });
 
         this.filterChooserModel = new FilterChooserModel({
             bind: this.gridModel.store,
             fieldSpecs: [
+                'correlationId',
                 'username',
                 'browser',
                 'device',

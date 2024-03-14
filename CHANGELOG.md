@@ -5,6 +5,16 @@
 ### 🎁 New Features
 
 * A "Reload App" item has been added to the default mobile app menu.
+* Added support for Correlation ID's across fetch requests and error / activity tracking:
+     * Requires `hoist-core >= v19.0.0`.
+     * Correlation ID's are exposed in `Admin` > `Activity` > `Tracking` and `Client Errors` tabs.
+     * `FetchService` now has `setCorrelationIdToken` and `setGenerateCorrelationIdsByDefault`
+        methods for specifying a Correlation ID header key and globally enabling Correlation ID
+        generation unless explicitly overridden via the following configs:
+     * `TrackOptions.correlationId` - specify a Correlation ID for a tracked activity
+     * `LoadSpec.correlationId` - specify a Correlation ID or set to `true` to auto-generate
+     * `FetchOptions.correlationId` - specify a Correlation ID. Set to `true` to source from
+        provided `LoadSpec` or auto-generate. Set to `false` to explicitly omit.
 
 ### 🐞 Bug Fixes
 

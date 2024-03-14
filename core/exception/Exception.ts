@@ -194,9 +194,15 @@ export class Exception {
     }
 
     private static createInternal(attributes: PlainObject, baseError: Error = new Error()) {
+        let correlationId: string;
+        const correlationIdToken = XH?.fetchService?.correlationIdToken;
+        if (correlationIdToken) {
+            correlationId = attributes.fetchOptions?.headers?.[correlationIdToken];
+        }
         return Object.assign(
             baseError,
             {
+                correlationId,
                 isRoutine: false,
                 isHoistException: true
             },

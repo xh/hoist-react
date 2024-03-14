@@ -213,6 +213,12 @@ export interface TrackOptions {
     /** App-supplied category.*/
     category?: string;
 
+    /**
+     * Correlation ID to save along with track log. If not provided, will attempt to source in
+     * priority order from 1) the underlying Fetch Request or 2) the provided loadSpec.
+     */
+    correlationId?: string;
+
     /** App-supplied data to save along with track log.*/
     data?: PlainObject | PlainObject[];
 

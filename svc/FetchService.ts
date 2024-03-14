@@ -8,15 +8,18 @@ import {
     Awaitable,
     Exception,
     FetchResponse,
+    HoistException,
     HoistService,
     LoadSpec,
     PlainObject,
+    TrackOptions,
     XH
 } from '@xh/hoist/core';
 import {never, PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
+import {genUUID} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
-import {isDate, isFunction, isNil, omitBy} from 'lodash';
+import {isDate, isFunction, isNil, isString, omitBy} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
 
 /**
@@ -45,6 +48,8 @@ export class FetchService extends HoistService {
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
     private autoAborters = {};
+    private autoGenerateCorrelationIds = false;
+    correlationIdToken: string | false = 'X-Correlation-ID';
     defaultHeaders = {};
     defaultTimeout = (30 * SECONDS) as any;
 
@@ -73,6 +78,22 @@ export class FetchService extends HoistService {
     }
 
     /**
+     * Set the token (header name) to be used for correlationId tracking.  Set false to disable
+     * sending / reading correlationId headers.
+     */
+    setCorrelationIdToken(token: string) {
+        this.correlationIdToken = token;
+    }
+
+    /**
+     * Set to true to automatically generate a unique correlationId for all subsequent requests
+     * unless explicitly provided via FetchOptions or LoadSpec.
+     */
+    setGenerateCorrelationIdsByDefault(value: boolean) {
+        this.autoGenerateCorrelationIds = value;
+    }
+
+    /**
      * Set default headers to be sent with all subsequent requests.
      * @param headers - to be sent with all fetch requests, or a function to generate.
      */
@@ -92,7 +113,7 @@ export class FetchService extends HoistService {
      * Send a request via the underlying fetch API.
      * @returns Promise which resolves to a Fetch Response.
      */
-    fetch(opts: FetchOptions): Promise<FetchResponse> {
+    fetch(opts: FetchOptions): FetchPromise<FetchResponse> {
         opts = this.withDefaults(opts);
         return this.managedFetchAsync(opts);
     }
@@ -101,7 +122,7 @@ export class FetchService extends HoistService {
      * Send an HTTP request and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response has status in {@link NO_JSON_RESPONSES}.
      */
-    fetchJson(opts: FetchOptions): Promise<any> {
+    fetchJson(opts: FetchOptions): FetchPromise<any> {
         opts = this.withDefaults(opts, {Accept: 'application/json'});
         return this.managedFetchAsync(opts, async r => {
             if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
@@ -124,7 +145,7 @@ export class FetchService extends HoistService {
      * Send a POST request with a JSON body and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
-    postJson(opts: FetchOptions): Promise<any> {
+    postJson(opts: FetchOptions): FetchPromise<any> {
         return this.sendJsonInternalAsync({method: 'POST', ...opts});
     }
 
@@ -171,59 +192,74 @@ export class FetchService extends HoistService {
     // Implementation
     //-----------------------
     private withDefaults(opts: FetchOptions, extraHeaders: PlainObject = null): FetchOptions {
-        const {defaultHeaders} = this,
+        const {correlationIdToken, defaultHeaders} = this,
             method = opts.method ?? (opts.params ? 'POST' : 'GET'),
-            isPost = method === 'POST';
-
-        return {
-            ...opts,
-            method,
-            headers: {
+            isPost = method === 'POST',
+            correlationId =
+                (opts.correlationId ?? this.autoGenerateCorrelationIds) === true
+                    ? opts.loadSpec?.correlationId ?? genUUID()
+                    : opts.correlationId,
+            headers = {
                 'Content-Type': isPost ? 'application/x-www-form-urlencoded' : 'text/plain',
                 ...(isFunction(defaultHeaders) ? defaultHeaders(opts) : defaultHeaders),
                 ...extraHeaders,
                 ...opts.headers
-            }
-        };
+            };
+
+        if (correlationId && correlationIdToken) {
+            headers[correlationIdToken] = headers[correlationIdToken] ?? correlationId;
+        }
+
+        return {...opts, method, headers};
     }
 
-    private async managedFetchAsync(
+    private managedFetchAsync(
         opts: FetchOptions,
         postProcess: (r: FetchResponse) => Awaitable<FetchResponse> = null
-    ): Promise<FetchResponse> {
-        // Prepare auto-aborter
-        const {autoAborters, defaultTimeout} = this,
-            {autoAbortKey, timeout = defaultTimeout} = opts,
-            aborter = new AbortController();
+    ): FetchPromise<FetchResponse> {
+        return new FetchPromise(
+            async (resolve: (resp: FetchResponse) => void, reject: (e: HoistException) => void) => {
+                // Prepare auto-aborter
+                const {autoAborters, defaultTimeout} = this,
+                    {autoAbortKey, timeout = defaultTimeout} = opts,
+                    aborter = new AbortController();
 
-        // autoAbortKey handling.  Abort anything running under this key, and mark this run
-        if (autoAbortKey) {
-            autoAborters[autoAbortKey]?.abort();
-            autoAborters[autoAbortKey] = aborter;
-        }
+                // autoAbortKey handling.  Abort anything running under this key, and mark this run
+                if (autoAbortKey) {
+                    autoAborters[autoAbortKey]?.abort();
+                    autoAborters[autoAbortKey] = aborter;
+                }
 
-        try {
-            return await this.fetchInternalAsync(opts, aborter).then(postProcess).timeout(timeout);
-        } catch (e) {
-            if (e.isTimeout) {
-                aborter.abort();
-                const msg =
-                    timeout?.message ??
-                    `Timed out loading '${opts.url}' - no response after ${e.interval}ms.`;
-                throw Exception.fetchTimeout(opts, e, msg);
-            }
+                try {
+                    const resp = await this.fetchInternalAsync(opts, aborter)
+                        .then(postProcess)
+                        .timeout(timeout);
+                    resolve(resp);
+                } catch (e) {
+                    if (e.isTimeout) {
+                        aborter.abort();
+                        const msg =
+                            timeout?.message ??
+                            `Timed out loading '${opts.url}' - no response after ${e.interval}ms.`;
+                        reject(Exception.fetchTimeout(opts, e, msg));
+                    }
 
-            if (e.isHoistException) throw e;
+                    if (e.isHoistException) reject(e);
 
-            // Just two other cases where we expect this to *throw* -- Typically we get a fail status
-            throw e.name === 'AbortError'
-                ? Exception.fetchAborted(opts, e)
-                : Exception.serverUnavailable(opts, e);
-        } finally {
-            if (autoAborters[autoAbortKey] === aborter) {
-                delete autoAborters[autoAbortKey];
-            }
-        }
+                    // Just two other cases where we expect this to *throw* -- Typically we get a fail status
+                    reject(
+                        e.name === 'AbortError'
+                            ? Exception.fetchAborted(opts, e)
+                            : Exception.serverUnavailable(opts, e)
+                    );
+                } finally {
+                    if (autoAborters[autoAbortKey] === aborter) {
+                        delete autoAborters[autoAbortKey];
+                    }
+                }
+            },
+            this.correlationIdToken ? opts.headers[this.correlationIdToken] : null
+        );
     }
 
     private async fetchInternalAsync(
@@ -300,7 +336,7 @@ export class FetchService extends HoistService {
         }
     }
 
-    private async sendJsonInternalAsync(opts: FetchOptions) {
+    private sendJsonInternalAsync(opts: FetchOptions) {
         return this.fetchJson({
             ...opts,
             body: JSON.stringify(opts.body),
@@ -326,6 +362,20 @@ export class FetchService extends HoistService {
     };
 }
 
+class FetchPromise<T> extends Promise<T> {
+    constructor(
+        executor,
+        private correlationId?: string
+    ) {
+        super(executor);
+    }
+
+    override track(options: TrackOptions | string): Promise<T> {
+        if (!options || isString(options)) return super.track(options);
+        return super.track({correlationId: this.correlationId, ...options});
+    }
+}
+
 /**
  * Standard options to pass through to fetch, with some additions.
  * See MDN for available options - {@link https://developer.mozilla.org/en-US/docs/Web/API/Request}.
@@ -339,6 +389,12 @@ export interface FetchOptions {
      * When using `fetch`, provide a string. Otherwise, provide a JSON Serializable object
      */
     body?: any;
+
+    /**
+     * Unique identifier for this request, used for tracking and logging. If true, a UUID will be
+     * sourced from `LoadSpec.correlationId` or generated. If false, no correlationId will be set.
+     * */
+    correlationId?: string | boolean;
 
     /**
      * Parameters to encode and append as a query string, or send with the request body
