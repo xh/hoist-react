@@ -46,8 +46,10 @@ export const roleMembers = hoistCmp.factory<RoleMembersProps>({
                             value: 'effectiveMembers'
                         }),
                         button({
-                            text: `Inherited Roles (${inheritedRolesCount})`,
-                            tooltip: 'Inherited Roles',
+                            text: buttonText({
+                                text: 'Inherited Roles',
+                                countsByType: inheritedRolesCount
+                            }),
                             value: 'inheritedRoles'
                         })
                     ]
@@ -74,7 +76,7 @@ const buttonText = hoistCmp.factory<ButtonTextProps>(({countsByType, text}) => {
     if (roles) countLabels.push(pluralize('Role', roles, true));
 
     return tooltip({
-        content: `${text} Members` + (isEmpty(countLabels) ? '' : ` (${countLabels.join(', ')})`),
+        content: `${text}` + (isEmpty(countLabels) ? '' : ` (${countLabels.join(', ')})`),
         item: hbox({
             alignItems: 'center',
             items: [text, counts({countsByType})]

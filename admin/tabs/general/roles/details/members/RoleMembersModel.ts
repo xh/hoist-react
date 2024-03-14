@@ -47,9 +47,9 @@ export class RoleMembersModel extends HoistModel {
     }
 
     @computed
-    get inheritedRolesCount(): number {
+    get inheritedRolesCount(): Record<string, number> {
         if (!this.selectedRole) return null;
-        return this.selectedRole.inheritedRoles.length;
+        return {ROLE: this.selectedRole.inheritedRoles.length};
     }
 
     @computed
@@ -95,8 +95,6 @@ export class RoleMembersModel extends HoistModel {
             this.gridModel.clear();
             return;
         }
-
-        // TODO add map rolemembers keyed by name so we dont have to do finds for every iteration
 
         if (!this.props.showInherited) {
             const memberMap = keyBy(role.members, it => `${it.name}-${it.type}`);
