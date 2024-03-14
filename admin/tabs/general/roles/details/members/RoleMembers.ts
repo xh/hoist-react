@@ -6,7 +6,6 @@
  */
 import {RoleMembersModel} from '@xh/hoist/admin/tabs/general/roles/details/members/RoleMembersModel';
 import {RoleMemberType} from '@xh/hoist/admin/tabs/general/roles/Types';
-import {warningBanner} from '@xh/hoist/admin/tabs/general/roles/warning/WarningBanner';
 import {badge} from '@xh/hoist/cmp/badge';
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler, hbox} from '@xh/hoist/cmp/layout';
@@ -44,10 +43,8 @@ export const roleMembers = hoistCmp.factory<RoleMembersProps>({
                             value: 'effectiveMembers'
                         }),
                         button({
-                            text: buttonText({
-                                text: 'Inherited Roles',
-                                countsByType: inheritedRolesCount
-                            }),
+                            text: `Inherited Roles (${inheritedRolesCount})`,
+                            tooltip: 'Inherited Roles',
                             value: 'inheritedRoles'
                         })
                     ]
@@ -55,8 +52,7 @@ export const roleMembers = hoistCmp.factory<RoleMembersProps>({
                 filler(),
                 storeFilterField()
             ],
-            item: grid(),
-            bbar: bbar({omit: showInherited})
+            item: grid()
         });
     }
 });
@@ -111,16 +107,3 @@ const count = hoistCmp.factory<CountProps>(({count, icon}) =>
         omit: !count
     })
 );
-
-const bbar = hoistCmp.factory<RoleMembersModel>(({model}) => {
-    const {effectiveCounts, moduleConfig} = model;
-    if (!moduleConfig?.directoryGroupsSupported && effectiveCounts.DIRECTORY_GROUP) {
-        return warningBanner({
-            message: 'Directory Groups disabled. Will ignore.'
-        });
-    } else if (!moduleConfig?.userAssignmentSupported && effectiveCounts.USER) {
-        return warningBanner({
-            message: 'Users assignment disabled. Will ignore.'
-        });
-    }
-});

@@ -21,7 +21,7 @@ import {Icon} from '@xh/hoist/icon';
 import {tag} from '@xh/hoist/kit/blueprint';
 import {bindable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
-import {invert, sortBy, uniq, uniqBy} from 'lodash';
+import {invert, keyBy, sortBy, uniq, uniqBy} from 'lodash';
 import {computed} from 'mobx';
 
 export class RoleMembersModel extends HoistModel {
@@ -47,11 +47,9 @@ export class RoleMembersModel extends HoistModel {
     }
 
     @computed
-    get inheritedRolesCount(): Record<string, number> {
+    get inheritedRolesCount(): number {
         if (!this.selectedRole) return null;
-        return {
-            ROLE: this.selectedRole.inheritedRoles.length
-        };
+        return this.selectedRole.inheritedRoles.length;
     }
 
     @computed
@@ -98,15 +96,20 @@ export class RoleMembersModel extends HoistModel {
             return;
         }
 
+        // TODO add map rolemembers keyed by name so we dont have to do finds for every iteration
+
         if (!this.props.showInherited) {
+            const memberMap = keyBy(role.members, it => `${it.name}-${it.type}`);
+            // DEBUG
+            console.log(memberMap);
             this.gridModel.loadData([
                 // 1 - Users
                 ...role.effectiveUsers.map(it => ({
                     name: it.name,
                     sources: this.sortThisRoleFirst(it.sources),
                     type: RoleMembersModel.types.USER,
-                    dateCreated: role.members.find(member => member.name === it.name)?.dateCreated,
-                    createdBy: role.members.find(member => member.name === it.name)?.createdBy
+                    dateCreated: memberMap[`${it.name}-USER`]?.dateCreated,
+                    createdBy: memberMap[`${it.name}-USER`]?.createdBy
                 })),
 
                 // 2 - Directory Groups
@@ -116,9 +119,8 @@ export class RoleMembersModel extends HoistModel {
                           sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
                           type: RoleMembersModel.types.DIRECTORY_GROUP,
                           error: role.errors.directoryGroups[it.name],
-                          dateCreated: role.members.find(member => member.name === it.name)
-                              ?.dateCreated,
-                          createdBy: role.members.find(member => member.name === it.name)?.createdBy
+                          dateCreated: memberMap[`${it.name}-DIRECTORY_GROUP`]?.dateCreated,
+                          createdBy: memberMap[`${it.name}-DIRECTORY_GROUP`]?.createdBy
                       }))
                     : []),
 
@@ -127,8 +129,8 @@ export class RoleMembersModel extends HoistModel {
                     name: it.name,
                     sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
                     type: RoleMembersModel.types.ROLE,
-                    dateCreated: role.members.find(member => member.name === it.name)?.dateCreated,
-                    createdBy: role.members.find(member => member.name === it.name)?.createdBy
+                    dateCreated: memberMap[`${it.name}-ROLE`]?.dateCreated,
+                    createdBy: memberMap[`${it.name}-ROLE`]?.createdBy
                 }))
             ]);
         } else {
@@ -209,10 +211,12 @@ export class RoleMembersModel extends HoistModel {
                 },
                 {
                     field: {name: 'dateCreated', displayName: 'Assigned', type: 'date'},
-                    ...Col.dateTime
+                    ...Col.dateTime,
+                    omit: this.showInherited
                 },
                 {
-                    field: {name: 'createdBy', displayName: 'Assigned By', type: 'string'}
+                    field: {name: 'createdBy', displayName: 'Assigned By', type: 'string'},
+                    omit: this.showInherited
                 }
             ]
         });
