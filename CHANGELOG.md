@@ -2,6 +2,9 @@
 
 ## 62.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Removed direct members grid from the roles admin UI and replaced it with a new "Inherited Roles" grid.
+
 ### 🐞 Bug Fixes
 
 * Fixed the config differ dialog issue where long field values would cause the toolbar to get hidden
