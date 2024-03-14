@@ -121,7 +121,7 @@ export class XHApi {
 
     //----------------------------------------------------------------------------------------------
     // Hoist Core Services
-    // Singleton instances of each service are created and installed within initAsync() below.
+    // Singleton instances of each are created and installed within AppContainerModel.initAsync().
     //----------------------------------------------------------------------------------------------
     alertBannerService: AlertBannerService;
     autoRefreshService: AutoRefreshService;
