@@ -23,28 +23,32 @@ import {isEmpty, sum, values} from 'lodash';
 import {ReactNode} from 'react';
 
 export interface RoleMembersProps extends HoistProps<RoleMembersModel> {
-    showEffective: boolean;
+    showInherited: boolean;
 }
 
 export const roleMembers = hoistCmp.factory<RoleMembersProps>({
     className: 'xh-admin-role-members',
     displayName: 'RoleMembers',
     model: creates(RoleMembersModel),
-    render({className, model, showEffective}) {
-        const {directCounts, effectiveCounts} = model;
+    render({className, model, showInherited}) {
+        const {inheritedRolesCount, effectiveCounts} = model;
         return panel({
             className,
             tbar: [
                 buttonGroupInput({
                     bind: 'activeTabId',
+                    outlined: true,
                     items: [
                         button({
-                            text: buttonText({text: 'Assigned', countsByType: directCounts}),
-                            value: 'directMembers'
+                            text: buttonText({text: 'Members', countsByType: effectiveCounts}),
+                            value: 'effectiveMembers'
                         }),
                         button({
-                            text: buttonText({text: 'Effective', countsByType: effectiveCounts}),
-                            value: 'effectiveMembers'
+                            text: buttonText({
+                                text: 'Inherited Roles',
+                                countsByType: inheritedRolesCount
+                            }),
+                            value: 'inheritedRoles'
                         })
                     ]
                 }),
@@ -52,7 +56,7 @@ export const roleMembers = hoistCmp.factory<RoleMembersProps>({
                 storeFilterField()
             ],
             item: grid(),
-            bbar: bbar({omit: showEffective})
+            bbar: bbar({omit: showInherited})
         });
     }
 });
@@ -109,12 +113,12 @@ const count = hoistCmp.factory<CountProps>(({count, icon}) =>
 );
 
 const bbar = hoistCmp.factory<RoleMembersModel>(({model}) => {
-    const {directCounts, moduleConfig} = model;
-    if (!moduleConfig?.directoryGroupsSupported && directCounts.DIRECTORY_GROUP) {
+    const {effectiveCounts, moduleConfig} = model;
+    if (!moduleConfig?.directoryGroupsSupported && effectiveCounts.DIRECTORY_GROUP) {
         return warningBanner({
             message: 'Directory Groups disabled. Will ignore.'
         });
-    } else if (!moduleConfig?.userAssignmentSupported && directCounts.USER) {
+    } else if (!moduleConfig?.userAssignmentSupported && effectiveCounts.USER) {
         return warningBanner({
             message: 'Users assignment disabled. Will ignore.'
         });

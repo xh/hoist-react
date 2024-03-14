@@ -47,13 +47,10 @@ export class RoleMembersModel extends HoistModel {
     }
 
     @computed
-    get directCounts(): Record<RoleMemberType, number> {
+    get inheritedRolesCount(): Record<string, number> {
         if (!this.selectedRole) return null;
-        const {users, directoryGroups, roles} = this.selectedRole;
         return {
-            USER: users.length,
-            DIRECTORY_GROUP: directoryGroups.length,
-            ROLE: roles.length
+            ROLE: this.selectedRole.inheritedRoles.length
         };
     }
 
@@ -101,13 +98,18 @@ export class RoleMembersModel extends HoistModel {
             return;
         }
 
-        if (this.props.showEffective) {
+        // DEBUG
+        console.log(role);
+
+        if (!this.props.showInherited) {
             this.gridModel.loadData([
                 // 1 - Users
                 ...role.effectiveUsers.map(it => ({
                     name: it.name,
                     sources: this.sortThisRoleFirst(it.sources),
-                    type: RoleMembersModel.types.USER
+                    type: RoleMembersModel.types.USER,
+                    dateCreated: role.members.find(member => member.name === it.name)?.dateCreated,
+                    createdBy: role.members.find(member => member.name === it.name)?.createdBy
                 })),
 
                 // 2 - Directory Groups
@@ -116,7 +118,10 @@ export class RoleMembersModel extends HoistModel {
                           name: it.name,
                           sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
                           type: RoleMembersModel.types.DIRECTORY_GROUP,
-                          error: role.errors.directoryGroups[it.name]
+                          error: role.errors.directoryGroups[it.name],
+                          dateCreated: role.members.find(member => member.name === it.name)
+                              ?.dateCreated,
+                          createdBy: role.members.find(member => member.name === it.name)?.createdBy
                       }))
                     : []),
 
@@ -124,24 +129,24 @@ export class RoleMembersModel extends HoistModel {
                 ...role.effectiveRoles.map(it => ({
                     name: it.name,
                     sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
-                    type: RoleMembersModel.types.ROLE
+                    type: RoleMembersModel.types.ROLE,
+                    dateCreated: role.members.find(member => member.name === it.name)?.dateCreated,
+                    createdBy: role.members.find(member => member.name === it.name)?.createdBy
                 }))
             ]);
         } else {
             this.gridModel.loadData(
-                role.members.map(it => ({
+                role.inheritedRoles.map(it => ({
                     ...it,
-                    type: RoleMembersModel.types[it.type],
-                    error:
-                        it.type === 'DIRECTORY_GROUP' ? role.errors.directoryGroups[it.name] : null
+                    sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
+                    type: RoleMembersModel.types.ROLE
                 }))
             );
         }
     }
 
     private createGridModel(): GridModel {
-        const {types} = RoleMembersModel,
-            {showEffective} = this.props;
+        const {types} = RoleMembersModel;
         return new GridModel({
             store: {
                 fields: [
@@ -203,17 +208,14 @@ export class RoleMembersModel extends HoistModel {
                                     ? directoryGroup ?? '<Direct>'
                                     : role
                             )
-                        ).join(', '),
-                    omit: !showEffective
+                        ).join(', ')
                 },
                 {
                     field: {name: 'dateCreated', displayName: 'Assigned', type: 'date'},
-                    ...Col.dateTime,
-                    omit: showEffective
+                    ...Col.dateTime
                 },
                 {
-                    field: {name: 'createdBy', displayName: 'Assigned By', type: 'string'},
-                    omit: showEffective
+                    field: {name: 'createdBy', displayName: 'Assigned By', type: 'string'}
                 }
             ]
         });
