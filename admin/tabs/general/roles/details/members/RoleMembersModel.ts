@@ -98,9 +98,6 @@ export class RoleMembersModel extends HoistModel {
             return;
         }
 
-        // DEBUG
-        console.log(role);
-
         if (!this.props.showInherited) {
             this.gridModel.loadData([
                 // 1 - Users
