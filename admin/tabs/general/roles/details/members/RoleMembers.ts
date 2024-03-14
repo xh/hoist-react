@@ -39,7 +39,10 @@ export const roleMembers = hoistCmp.factory<RoleMembersProps>({
                     outlined: true,
                     items: [
                         button({
-                            text: buttonText({text: 'Members', countsByType: effectiveCounts}),
+                            text: buttonText({
+                                text: 'Effective Members',
+                                countsByType: effectiveCounts
+                            }),
                             value: 'effectiveMembers'
                         }),
                         button({
