@@ -212,11 +212,11 @@ export class RoleMembersModel extends HoistModel {
                 {
                     field: {name: 'dateCreated', displayName: 'Assigned', type: 'date'},
                     ...Col.dateTime,
-                    omit: this.showInherited
+                    omit: this.props.showInherited
                 },
                 {
                     field: {name: 'createdBy', displayName: 'Assigned By', type: 'string'},
-                    omit: this.showInherited
+                    omit: this.props.showInherited
                 }
             ]
         });

@@ -29,7 +29,7 @@ export const roleMembers = hoistCmp.factory<RoleMembersProps>({
     className: 'xh-admin-role-members',
     displayName: 'RoleMembers',
     model: creates(RoleMembersModel),
-    render({className, model, showInherited}) {
+    render({className, model}) {
         const {inheritedRolesCount, effectiveCounts} = model;
         return panel({
             className,
