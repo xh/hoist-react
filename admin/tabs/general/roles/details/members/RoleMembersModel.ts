@@ -98,8 +98,6 @@ export class RoleMembersModel extends HoistModel {
 
         if (!this.props.showInherited) {
             const memberMap = keyBy(role.members, it => `${it.name}-${it.type}`);
-            // DEBUG
-            console.log(memberMap);
             this.gridModel.loadData([
                 // 1 - Users
                 ...role.effectiveUsers.map(it => ({
