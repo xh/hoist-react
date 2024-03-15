@@ -24,7 +24,7 @@ export interface AppMenuButtonProps extends MenuButtonProps {
     hideFeedbackItem?: boolean;
 
     /** True to hide the Reload button. Defaulted to false. */
-    hideReloadItem: boolean;
+    hideReloadItem?: boolean;
 
     /** True to hide the Logout button. Defaulted to appSpec.isSSO. */
     hideLogoutItem?: boolean;
