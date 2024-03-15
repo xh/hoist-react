@@ -90,6 +90,7 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                             })
                         }),
                         formField({field: 'id'}),
+                        formField({field: 'correlationId'}),
                         h3(Icon.desktop(), 'Device / Browser'),
                         formField({field: 'device'}),
                         formField({field: 'browser'}),

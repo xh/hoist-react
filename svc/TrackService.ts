@@ -40,6 +40,7 @@ export class TrackService extends HoistService {
         // Normalize string form, msg -> message, default severity.
         if (isString(options)) options = {message: options};
         if (isOmitted(options)) return;
+        options.correlationId = withDefault(options.correlationId, options.loadSpec?.correlationId);
         options.message = withDefault(options.message, (options as any).msg);
         options.severity = withDefault(options.severity, 'INFO');
 
@@ -84,6 +85,7 @@ export class TrackService extends HoistService {
             };
 
             if (options.category) params.category = options.category;
+            if (options.correlationId) params.correlationId = options.correlationId;
             if (options.data) params.data = JSON.stringify(options.data);
             if (options.severity) params.severity = options.severity;
             if (options.logData !== undefined) params.logData = options.logData.toString();

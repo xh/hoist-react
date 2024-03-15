@@ -107,6 +107,15 @@ export const entryId: ColumnSpec = {
     align: 'right'
 };
 
+export const correlationId: ColumnSpec = {
+    field: {
+        name: 'correlationId',
+        type: 'string',
+        displayName: 'Correlation ID'
+    },
+    width: 100
+};
+
 export const error: ColumnSpec = {
     field: {
         name: 'error',

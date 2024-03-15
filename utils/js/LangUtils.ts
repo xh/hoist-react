@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {Thunkable} from '@xh/hoist/core';
+import {Thunkable, XH} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/core/exception/Exception';
 import {
     flatMap,
@@ -19,6 +19,7 @@ import {
     uniq,
     uniqBy
 } from 'lodash';
+import {v4} from 'uuid';
 import _inflection from 'lodash-inflection';
 
 mixin(_inflection);
@@ -300,4 +301,11 @@ export function intersperse<T>(arr: T[], separator: T): T[] {
  */
 export function executeIfFunction<T>(v: Thunkable<T>): T {
     return isFunction(v) ? v() : v;
+}
+
+/**
+ * Generate a UUID, prefixed with the application code.
+ */
+export function genUUID(): string {
+    return `${XH.appCode}-${v4()}`;
 }

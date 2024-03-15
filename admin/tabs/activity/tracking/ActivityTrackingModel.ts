@@ -87,6 +87,7 @@ export class ActivityTrackingModel extends HoistModel {
             fields: [
                 Col.browser.field,
                 Col.category.field,
+                Col.correlationId.field,
                 Col.data.field,
                 {...(Col.dateCreated.field as FieldSpec), displayName: 'Timestamp'},
                 Col.day.field,
@@ -113,6 +114,7 @@ export class ActivityTrackingModel extends HoistModel {
             bind: this.cube.store,
             fieldSpecs: [
                 'category',
+                'correlationId',
                 'month',
                 'username',
                 'device',

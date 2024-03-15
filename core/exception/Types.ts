@@ -11,6 +11,7 @@ import {FetchOptions} from '@xh/hoist/svc';
  * A Hoist optimized Javascript Error object.
  */
 export interface HoistException extends Error {
+    correlationId?: string;
     isHoistException: true;
 
     /**
