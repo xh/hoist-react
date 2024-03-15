@@ -4,7 +4,14 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {HoistBase, managed, PlainObject, RefreshContextModel, TaskObserver} from '../';
+import {
+    HoistBase,
+    LoadSpecConfig,
+    managed,
+    PlainObject,
+    RefreshContextModel,
+    TaskObserver
+} from '../';
 import {LoadSpec, Loadable} from './';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
@@ -44,13 +51,13 @@ export class LoadSupport extends HoistBase implements Loadable {
         this.target = target;
     }
 
-    async loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>) {
+    async loadAsync(loadSpec?: LoadSpecConfig) {
         throwIf(
-            loadSpec && !(loadSpec.isLoadSpec || isPlainObject(loadSpec)),
+            loadSpec && !(loadSpec instanceof LoadSpec || isPlainObject(loadSpec)),
             'Unexpected param passed to loadAsync().  If triggered via a reaction ' +
                 'ensure call is wrapped in a closure.'
         );
-        const newSpec = new LoadSpec({...loadSpec, owner: this});
+        const newSpec = new LoadSpec(loadSpec, this);
 
         return this.doLoadAsync(newSpec);
     }

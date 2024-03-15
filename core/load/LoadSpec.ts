@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {genUUID} from '@xh/hoist/utils/js';
+import {XH} from '@xh/hoist/core';
 import {LoadSupport} from './';
 import {PlainObject} from '../types/Types';
 
@@ -28,6 +28,18 @@ import {PlainObject} from '../types/Types';
  *
  * @see LoadSupport
  */
+
+export type LoadSpecConfig = {
+    /** Unique identifier for tracking and logging. If true, a new UUID will be generated. */
+    correlationId?: string | true;
+    /** True if triggered by a refresh request (automatic or user). */
+    isRefresh?: boolean;
+    /** true if triggered by an automatic refresh process. */
+    isAutoRefresh?: boolean;
+    /** Application specific information about the load request */
+    meta?: PlainObject;
+};
+
 export class LoadSpec {
     get isLoadSpec(): boolean {
         return true;
@@ -78,8 +90,12 @@ export class LoadSpec {
      *
      * Not for direct application use -- LoadSpecs are constructed by Hoist internally.
      */
-    constructor({correlationId, isRefresh, isAutoRefresh, meta, owner}: LoadSpecConfig) {
-        this.correlationId = correlationId === true ? genUUID() : correlationId;
+    constructor(
+        {correlationId, isRefresh, isAutoRefresh, meta}: LoadSpecConfig = {},
+        owner: LoadSupport
+    ) {
+        this.correlationId =
+            correlationId === true ? XH.fetchService.generateCorrelationId() : correlationId;
         this.isRefresh = !!(isRefresh || isAutoRefresh);
         this.isAutoRefresh = !!isAutoRefresh;
         this.meta = meta ?? {};
@@ -91,9 +107,4 @@ export class LoadSpec {
 
         Object.freeze(this);
     }
-}
-
-interface LoadSpecConfig extends Partial<Omit<LoadSpec, 'correlationId'>> {
-    /** Unique identifier for tracking and logging. If true, a new UUID will be generated. */
-    correlationId?: string | true;
 }

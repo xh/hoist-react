@@ -200,7 +200,7 @@ const enhancePromise = promisePrototype => {
             const startTime = Date.now();
             return this.finally(() => {
                 options.elapsed = Date.now() - startTime;
-                XH.track(options);
+                XH.track({...options, correlationId: this['correlationId']});
             });
         },
 

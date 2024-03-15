@@ -5,8 +5,8 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {FetchOptions} from '@xh/hoist/svc';
-import {FetchResponse, PlainObject, XH} from '../';
 import {isPlainObject} from 'lodash';
+import {FetchResponse, PlainObject, XH} from '../';
 
 import {FetchException, HoistException, TimeoutException, TimeoutExceptionConfig} from './Types';
 
@@ -195,7 +195,7 @@ export class Exception {
 
     private static createInternal(attributes: PlainObject, baseError: Error = new Error()) {
         let correlationId: string;
-        const correlationIdToken = XH?.fetchService?.correlationIdToken;
+        const correlationIdToken = XH?.fetchService?.correlationIdHeaderKey;
         if (correlationIdToken) {
             correlationId = attributes.fetchOptions?.headers?.[correlationIdToken];
         }
