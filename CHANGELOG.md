@@ -2,6 +2,10 @@
 
 ## 62.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* A "Reload App" item has been added to the default mobile app menu.
+
 ### 🐞 Bug Fixes
 
 * Fixed the config differ dialog issue where long field values would cause the toolbar to get hidden
