@@ -97,23 +97,21 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
     displayName: 'AssignmentsPanel',
     model: uses(() => RoleFormModel),
     render({className, entity, model}) {
-        const gridModel =
-            entity === 'USER'
+        const {roleName} = model,
+            forUser = entity === 'USER',
+            forDirGroup = entity === 'DIRECTORY_GROUP',
+            forRole = entity === 'ROLE',
+            gridModel = forUser
                 ? model.usersGridModel
-                : entity === 'DIRECTORY_GROUP'
+                : forDirGroup
                   ? model.directoryGroupsGridModel
                   : model.rolesGridModel;
 
         return panel({
             className,
             compactHeader: true,
-            icon:
-                entity === 'USER'
-                    ? Icon.user()
-                    : entity === 'DIRECTORY_GROUP'
-                      ? Icon.users()
-                      : Icon.idBadge(),
-            title: `${capitalizeWords(entity.replace('_', ' '))}s`,
+            icon: forUser ? Icon.user() : forDirGroup ? Icon.users() : Icon.idBadge(),
+            title: `${capitalizeWords(entity.replace('_', ' '))}s ${forRole ? 'inheriting from' : 'belonging to'} ${roleName}`,
             headerItems: [infoIcon({entity}), hspacer(2)],
             tbar: toolbar({
                 compact: true,
@@ -127,7 +125,7 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
             }),
             item: grid({model: gridModel}),
             bbar: bbar({entity, gridModel}),
-            loadingIndicator: entity === 'DIRECTORY_GROUP' && model.directoryGroupLookupTask
+            loadingIndicator: forDirGroup && model.directoryGroupLookupTask
         });
     }
 });
@@ -159,18 +157,20 @@ const bbar = hoistCmp.factory<AssignmentsPanelProps & {gridModel: GridModel}>(
 
 const infoIcon = hoistCmp.factory<AssignmentsPanelProps>({
     render({entity, model}) {
+        const {roleName} = model;
+
         let tooltipText = null;
         switch (entity) {
             case 'USER':
-                tooltipText = 'All users listed here will be directly granted this role.';
+                tooltipText = `All users listed here will be directly granted ${roleName}.`;
                 break;
             case 'DIRECTORY_GROUP':
                 tooltipText =
                     model.moduleConfig?.directoryGroupsDescription ??
-                    'All members of these directory groups will be granted this role.';
+                    `All members of these directory groups will be granted ${roleName}.`;
                 break;
             case 'ROLE':
-                tooltipText = 'All users holding these roles will also be granted this role.';
+                tooltipText = `All users holding these roles will also be granted ${roleName}.`;
                 break;
         }
         return tooltip({
