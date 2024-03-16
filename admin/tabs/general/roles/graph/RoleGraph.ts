@@ -7,10 +7,10 @@
 import {RoleGraphModel} from '@xh/hoist/admin/tabs/general/roles/graph/RoleGraphModel';
 import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {chart} from '@xh/hoist/cmp/chart';
-import {placeholder, div} from '@xh/hoist/cmp/layout';
+import {placeholder, div, hspacer} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {buttonGroupInput, switchInput} from '@xh/hoist/desktop/cmp/input';
+import {buttonGroupInput, slider} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -52,13 +52,32 @@ export const roleGraph = hoistCmp.factory({
                                 value: 'effective',
                                 text: `Granting to (${role?.effectiveRoles.length})`
                             })
-                        ],
-                        width: 400
+                        ]
                     }),
-                    switchInput({
+                    hspacer(10),
+                    buttonGroupInput({
                         bind: 'inverted',
-                        label: 'Inverted',
-                        labelSide: 'left'
+                        items: [
+                            button({
+                                value: true,
+                                icon: Icon.treeList({rotation: 90})
+                            }),
+                            button({
+                                value: false,
+                                icon: Icon.treeList()
+                            })
+                        ]
+                    }),
+                    hspacer(10),
+                    'Width',
+                    slider({
+                        paddingLeft: 2,
+                        overflow: 'visible',
+                        bind: 'widthScale',
+                        min: 0,
+                        max: 2,
+                        stepSize: 0.005,
+                        labelRenderer: false
                     })
                 ],
                 omit: !role

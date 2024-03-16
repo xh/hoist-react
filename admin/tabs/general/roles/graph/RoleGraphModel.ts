@@ -20,6 +20,8 @@ export class RoleGraphModel extends HoistModel {
 
     @bindable inverted: boolean = true;
 
+    @bindable widthScale: number = 1.0;
+
     get relatedRoles(): EffectiveRoleMember[] {
         const {role, relationship} = this;
         if (!role) return [];
@@ -64,20 +66,19 @@ export class RoleGraphModel extends HoistModel {
     }
 
     get size() {
-        const {inverted, maxDepth, leafCount} = this;
-        console.log('maxDepth', maxDepth, 'leafCount', leafCount); // DEBUG
+        const {inverted, maxDepth, leafCount, widthScale} = this;
         if (inverted) {
             const AVG_WIDTH = 150,
                 AVG_HEIGHT = 26;
             return {
-                width: AVG_WIDTH * leafCount,
+                width: AVG_WIDTH * leafCount * widthScale,
                 height: AVG_HEIGHT * (maxDepth + 1)
             };
         } else {
             const AVG_WIDTH = 100,
                 AVG_HEIGHT = 30;
             return {
-                width: AVG_WIDTH * maxDepth,
+                width: AVG_WIDTH * maxDepth * widthScale,
                 height: AVG_HEIGHT * (leafCount + 1)
             };
         }
