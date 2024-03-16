@@ -9,7 +9,8 @@ import {ChartModel} from '@xh/hoist/cmp/chart';
 import {HoistModel, lookup, managed, PlainObject} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {isEmpty, isMatch, sortBy} from 'lodash';
+import {isEmpty, isMatch, sortBy, sumBy} from 'lodash';
+import {computed} from 'mobx';
 import {EffectiveRoleMember, HoistRole} from '../Types';
 
 export class RoleGraphModel extends HoistModel {
@@ -33,38 +34,7 @@ export class RoleGraphModel extends HoistModel {
         return this.roleModel.selectedRole;
     }
 
-    get leafCount(): number {
-        const {relatedRoles} = this;
-        return relatedRoles.reduce((acc, it) => {
-            const hasChildren = relatedRoles.some(other => other.sourceRoles.includes(it.name)),
-                parentCount = it.sourceRoles.length,
-                // If the role has children, it is not a leaf in one of its occurrences, so we subtract 1.
-                leafCount = hasChildren ? parentCount - 1 : parentCount;
-            return acc + leafCount;
-        }, 0);
-    }
-
-    get maxDepth(): number {
-        const {role: root, relatedRoles} = this;
-        if (isEmpty(relatedRoles)) return 1;
-
-        const maxDepthRecursive = (roleName: string) => {
-            if (roleName === root.name) return 1;
-            const role = relatedRoles.find(it => it.name === roleName);
-            if (role.sourceRoles.includes(root.name)) return 2;
-            const firstSourceName = role.sourceRoles.reduce((acc, it) => (acc < it ? acc : it));
-            return maxDepthRecursive(firstSourceName) + 1;
-        };
-
-        return relatedRoles.reduce((acc, role) => {
-            const depth = role.sourceRoles.reduce(
-                (acc, sourceName) => Math.max(acc, maxDepthRecursive(sourceName) + 1),
-                0
-            );
-            return Math.max(acc, depth);
-        }, 1);
-    }
-
+    @computed
     get size() {
         const {inverted, maxDepth, leafCount, widthScale} = this;
         if (inverted) {
@@ -204,5 +174,38 @@ export class RoleGraphModel extends HoistModel {
                 }
             }
         });
+    }
+
+    @computed
+    private get leafCount(): number {
+        const {relatedRoles} = this;
+        return sumBy(relatedRoles, it => {
+            const hasChildren = relatedRoles.some(other => other.sourceRoles.includes(it.name)),
+                parentCount = it.sourceRoles.length;
+            // If the role has children, it is not a leaf in one of its occurrences, so we subtract 1.
+            return hasChildren ? parentCount - 1 : parentCount;
+        });
+    }
+
+    @computed
+    private get maxDepth(): number {
+        const {role: root, relatedRoles} = this;
+        if (isEmpty(relatedRoles)) return 1;
+
+        const maxDepthRecursive = (roleName: string) => {
+            if (roleName === root.name) return 1;
+            const role = relatedRoles.find(it => it.name === roleName);
+            if (role.sourceRoles.includes(root.name)) return 2;
+            const firstSourceName = role.sourceRoles.reduce((acc, it) => (acc < it ? acc : it));
+            return maxDepthRecursive(firstSourceName) + 1;
+        };
+
+        return relatedRoles.reduce((acc, role) => {
+            const depth = role.sourceRoles.reduce(
+                (acc, sourceName) => Math.max(acc, maxDepthRecursive(sourceName) + 1),
+                0
+            );
+            return Math.max(acc, depth);
+        }, 1);
     }
 }

@@ -15,7 +15,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
-import {logError} from '@xh/hoist/utils/js';
+import {logError, pluralize} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import './RoleGraph.scss';
 
@@ -46,11 +46,11 @@ export const roleGraph = hoistCmp.factory({
                         items: [
                             button({
                                 value: 'inherited',
-                                text: `Inheriting from (${role?.inheritedRoles.length})`
+                                text: `Inheriting from ${role?.inheritedRoles.length} ${pluralize('role', role?.inheritedRoles.length)}`
                             }),
                             button({
                                 value: 'effective',
-                                text: `Granting to (${role?.effectiveRoles.length})`
+                                text: `Granting to ${role?.effectiveRoles.length} ${pluralize('role', role?.effectiveRoles.length)}`
                             })
                         ]
                     }),
