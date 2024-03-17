@@ -1,11 +1,17 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2024 Extremely Heavy Industries Inc.
+ */
 import {RoleMemberType} from '@xh/hoist/admin/tabs/general/roles/Types';
 import {warningBanner} from '@xh/hoist/admin/tabs/general/roles/warning/WarningBanner';
 import {form} from '@xh/hoist/cmp/form';
-import {grid} from '@xh/hoist/cmp/grid';
-import {hbox, hframe, hspacer, strong, vbox, vframe} from '@xh/hoist/cmp/layout';
-import {storeFilterField} from '@xh/hoist/cmp/store';
+import {grid, gridCountLabel, GridModel} from '@xh/hoist/cmp/grid';
+import {filler, hbox, hframe, hspacer, strong, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
+import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import './RoleForm.scss';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -13,6 +19,7 @@ import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {capitalizeWords} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+import {tooltip} from '@xh/hoist/kit/blueprint';
 import {RoleFormModel} from './RoleFormModel';
 
 export const roleForm = hoistCmp.factory({
@@ -42,6 +49,7 @@ export const roleForm = hoistCmp.factory({
                                     field: 'category',
                                     flex: 1,
                                     item: select({
+                                        placeholder: null,
                                         enableClear: true,
                                         enableCreate: true,
                                         options: model.categoryOptions
@@ -67,12 +75,13 @@ const assignments = hoistCmp.factory<RoleFormModel>(({model}) =>
         items: [
             assignmentsPanel({
                 entity: 'USER',
-                omit: !model.softConfig?.assignUsers && model.usersGridModel.empty
+                omit: !model.moduleConfig?.userAssignmentSupported && model.usersGridModel.empty
             }),
             assignmentsPanel({
                 entity: 'DIRECTORY_GROUP',
                 omit:
-                    !model.softConfig?.assignDirectoryGroups && model.directoryGroupsGridModel.empty
+                    !model.moduleConfig?.directoryGroupsSupported &&
+                    model.directoryGroupsGridModel.empty
             }),
             assignmentsPanel({entity: 'ROLE'})
         ]
@@ -88,23 +97,21 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
     displayName: 'AssignmentsPanel',
     model: uses(() => RoleFormModel),
     render({className, entity, model}) {
-        const gridModel =
-            entity === 'USER'
+        const {roleName} = model,
+            forUser = entity === 'USER',
+            forDirGroup = entity === 'DIRECTORY_GROUP',
+            forRole = entity === 'ROLE',
+            gridModel = forUser
                 ? model.usersGridModel
-                : entity === 'DIRECTORY_GROUP'
+                : forDirGroup
                   ? model.directoryGroupsGridModel
                   : model.rolesGridModel;
 
         return panel({
             className,
             compactHeader: true,
-            icon:
-                entity === 'USER'
-                    ? Icon.user()
-                    : entity === 'DIRECTORY_GROUP'
-                      ? Icon.users()
-                      : Icon.idBadge(),
-            title: `${capitalizeWords(entity.replace('_', ' '))}s`,
+            icon: forUser ? Icon.user() : forDirGroup ? Icon.users() : Icon.idBadge(),
+            title: `${capitalizeWords(entity.replace('_', ' '))}s ${forRole ? 'inheriting from' : 'belonging to'} ${roleName}`,
             headerItems: [infoIcon({entity}), hspacer(2)],
             tbar: toolbar({
                 compact: true,
@@ -113,49 +120,63 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
                         actions: [model.ADD_ASSIGNMENT_ACTION],
                         gridModel,
                         selModel: gridModel.selModel
-                    }),
-                    '-',
-                    storeFilterField({
-                        className: `${className}__filter`,
-                        gridModel,
-                        flex: 1,
-                        width: null
                     })
                 ]
             }),
             item: grid({model: gridModel}),
-            bbar: bbar({entity})
+            bbar: bbar({entity, gridModel}),
+            loadingIndicator: forDirGroup && model.directoryGroupLookupTask
         });
     }
 });
 
-const bbar = hoistCmp.factory<AssignmentsPanelProps>(({entity, model}) => {
-    switch (entity) {
-        case 'USER':
+const bbar = hoistCmp.factory<AssignmentsPanelProps & {gridModel: GridModel}>(
+    ({entity, gridModel, model}) => {
+        if (entity === 'USER' && !model.moduleConfig?.userAssignmentSupported) {
             return warningBanner({
                 compact: true,
-                message: 'Users assignment disabled. Will ignore.',
-                omit: model.softConfig?.assignUsers
+                message: 'Users assignment disabled. Will ignore.'
             });
-        case 'DIRECTORY_GROUP':
+        } else if (entity === 'DIRECTORY_GROUP' && !model.moduleConfig?.directoryGroupsSupported) {
             return warningBanner({
                 compact: true,
-                message: 'Directory Groups disabled. Will ignore.',
-                omit: model.softConfig?.assignDirectoryGroups
+                message: 'Directory Groups disabled. Will ignore.'
             });
-        default:
-            return null;
+        } else {
+            return toolbar({
+                compact: true,
+                items: [
+                    gridFindField({gridModel, flex: 1, width: null, omit: entity !== 'USER'}),
+                    entity === 'USER' ? '-' : filler(),
+                    gridCountLabel({gridModel, unit: entity.replace('_', ' ').toLowerCase()})
+                ]
+            });
+        }
     }
-});
+);
 
 const infoIcon = hoistCmp.factory<AssignmentsPanelProps>({
-    render({entity}) {
-        return entity == 'ROLE'
-            ? Icon.info({
-                  title:
-                      'All users holding the roles below will also be granted this role.' +
-                      'These roles essentially "inherit" this role and are a functional superset of this role.'
-              })
-            : null;
+    render({entity, model}) {
+        const {roleName} = model;
+
+        let tooltipText = null;
+        switch (entity) {
+            case 'USER':
+                tooltipText = `All users listed here will be directly granted ${roleName}.`;
+                break;
+            case 'DIRECTORY_GROUP':
+                tooltipText =
+                    model.moduleConfig?.directoryGroupsDescription ??
+                    `All members of these directory groups will be granted ${roleName}.`;
+                break;
+            case 'ROLE':
+                tooltipText = `All users holding these roles will also be granted ${roleName}.`;
+                break;
+        }
+        return tooltip({
+            item: Icon.info(),
+            content: tooltipText,
+            omit: !tooltipText
+        });
     }
 });

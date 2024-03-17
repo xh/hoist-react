@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2024 Extremely Heavy Industries Inc.
+ */
 export interface HoistRole {
     name: string;
     category: string;
@@ -12,6 +18,9 @@ export interface HoistRole {
     lastUpdated: Date;
     lastUpdatedBy: string;
     members: HoistRoleMember[];
+    errors: {
+        directoryGroups: Record<string, string>;
+    };
 }
 
 export interface HoistRoleMember {
@@ -33,9 +42,9 @@ export interface EffectiveRoleUser {
 
 export type RoleMemberType = 'USER' | 'DIRECTORY_GROUP' | 'ROLE';
 
-export interface RoleServiceConfig {
+export interface RoleModuleConfig {
     enabled: boolean;
-    assignDirectoryGroups: boolean;
-    assignUsers: boolean;
-    refreshIntervalSecs: number;
+    userAssignmentSupported: boolean;
+    directoryGroupsSupported: boolean;
+    directoryGroupsDescription: string;
 }

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
 import {HAlign, HSide, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
@@ -14,7 +14,7 @@ import {
     RecordActionSpec,
     StoreRecord
 } from '@xh/hoist/data';
-import {apiRemoved, logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {
     castArray,
@@ -42,7 +42,7 @@ import {
 } from 'react';
 import {GridModel} from '../GridModel';
 import {GridSorter} from '../GridSorter';
-import {managedRenderer} from '../impl/Utils';
+import {getAgHeaderClassFn, managedRenderer} from '../impl/Utils';
 import {
     ColumnCellClassFn,
     ColumnCellClassRuleFn,
@@ -62,10 +62,8 @@ import {
 } from '../Types';
 import {ExcelFormat} from '../enums/ExcelFormat';
 import {FunctionComponent} from 'react';
-import {ColumnGroup} from './ColumnGroup';
 import type {
     ColDef,
-    HeaderClassParams,
     ITooltipParams,
     ValueGetterParams,
     ValueSetterParams
@@ -674,11 +672,6 @@ export class Column {
 
         if (!isEmpty(rest)) {
             const keys = keysIn(rest);
-            apiRemoved('tooltipElement', {
-                test: rest['tooltipElement'],
-                msg: 'Use tooltip property instead.',
-                v: '58'
-            });
             throw XH.exception(
                 `Column '${this.colId}' configured with unsupported key(s) '${keys}'. Custom config data must be nested within the 'appData' property.`
             );
@@ -822,9 +815,15 @@ export class Column {
                             store
                         });
 
-                    ret = isFunction(tooltip)
-                        ? tooltip(val, {record, column: this, gridModel, agParams})
-                        : val;
+                    if (isFunction(tooltip)) {
+                        try {
+                            ret = tooltip(val, {record, gridModel, agParams, column: this});
+                        } catch (e) {
+                            logWarn([`Failure in tooltip for '${this.displayName}'`, e], 'Column');
+                        }
+                    } else {
+                        ret = val;
+                    }
                 }
 
                 const isElement = isValidElement(ret);
@@ -1087,35 +1086,4 @@ export class Column {
             ? sortValue(v, {record, column: this, gridModel})
             : record?.data[sortValue] ?? v;
     }
-}
-
-export function getAgHeaderClassFn(
-    column: Column | ColumnGroup
-): (params: HeaderClassParams) => string[] {
-    // Generate CSS classes for headers.
-    // Default alignment classes are mixed in with any provided custom classes.
-    const {headerClass, headerAlign, gridModel} = column;
-
-    return agParams => {
-        let r = [];
-        if (headerClass) {
-            r = castArray(
-                isFunction(headerClass) ? headerClass({column, gridModel, agParams}) : headerClass
-            );
-        }
-
-        if (headerAlign === 'center' || headerAlign === 'right') {
-            r.push('xh-column-header-align-' + headerAlign);
-        }
-
-        if (column instanceof Column && column.isTreeColumn && column.headerHasExpandCollapse) {
-            r.push('xh-column-header--with-expand-collapse');
-        }
-
-        if (gridModel.headerMenuDisplay === 'hover') {
-            r.push('xh-column-header--hoverable');
-        }
-
-        return r;
-    };
 }

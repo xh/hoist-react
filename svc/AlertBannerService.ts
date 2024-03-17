@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {markdown} from '@xh/hoist/cmp/markdown';
@@ -10,7 +10,7 @@ import {BannerSpec, HoistService, Intent, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {compact, map, trim} from 'lodash';
+import {compact, isEmpty, map, trim} from 'lodash';
 
 /**
  * Service to display an app-wide alert banner, as configured via the Hoist Admin console.
@@ -49,15 +49,17 @@ export class AlertBannerService extends HoistService {
     async checkForBannerAsync() {
         if (!this.enabled) return;
 
-        const data = await XH.fetchJson({url: 'xh/alertBanner'}),
-            {active, expires, publishDate, message, intent, iconName, enableClose} = data,
+        const data: AlertBannerSpec = await XH.fetchJson({url: 'xh/alertBanner'}),
+            {active, expires, publishDate, message, intent, iconName, enableClose, clientApps} =
+                data,
             {lastDismissed, onClose} = this;
 
         if (
             !active ||
             !message ||
             (expires && expires < Date.now()) ||
-            (lastDismissed && lastDismissed > publishDate)
+            (lastDismissed && lastDismissed > publishDate) ||
+            !this.isTargetedApp(clientApps)
         ) {
             XH.hideBanner('xhAlertBanner');
         } else {
@@ -106,4 +108,25 @@ export class AlertBannerService extends HoistService {
     private onClose = () => {
         XH.localStorageService.set('xhAlertBanner.lastDismissed', Date.now());
     };
+
+    private isTargetedApp(clientApps: string[]): boolean {
+        return isEmpty(clientApps) || clientApps.includes(XH.clientAppCode);
+    }
+}
+
+/**
+ * @internal
+ */
+export interface AlertBannerSpec {
+    active: boolean;
+    expires: number;
+    publishDate: number;
+    message: string;
+    intent: Intent;
+    iconName: string;
+    enableClose: boolean;
+    clientApps: string[];
+    created: number;
+    updated: number;
+    updatedBy: string;
 }

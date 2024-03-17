@@ -2,15 +2,22 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH, Exception, PlainObject, FetchResponse, LoadSpec} from '@xh/hoist/core';
-import {isLocalDate, SECONDS, ONE_MINUTE, olderThan} from '@xh/hoist/utils/datetime';
-import {throwIf} from '@xh/hoist/utils/js';
+import {
+    Awaitable,
+    Exception,
+    FetchResponse,
+    HoistService,
+    LoadSpec,
+    PlainObject,
+    XH
+} from '@xh/hoist/core';
+import {never, PromiseTimeoutSpec} from '@xh/hoist/promise';
+import {isLocalDate, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, omitBy} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
-import {never, PromiseTimeoutSpec} from '@xh/hoist/promise';
 
 /**
  * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
@@ -46,19 +53,22 @@ export class FetchService extends HoistService {
         try {
             await this.fetch({url: 'ping'});
         } catch (e) {
-            const {baseUrl} = XH,
-                pingURL = baseUrl.startsWith('http')
-                    ? `${baseUrl}ping`
-                    : `${window.location.origin}${baseUrl}ping`;
+            if (e.isServerUnavailable) {
+                const {baseUrl} = XH,
+                    pingURL = baseUrl.startsWith('http')
+                        ? `${baseUrl}ping`
+                        : `${window.location.origin}${baseUrl}ping`;
 
-            throw XH.exception({
-                name: 'UI Server Unavailable',
-                detail: e.message,
-                message:
-                    'Client cannot reach UI server.  Please check UI server at the ' +
-                    `following location: ${pingURL}`,
-                logOnServer: false
-            });
+                throw XH.exception({
+                    name: 'UI Server Unavailable',
+                    detail: e.message,
+                    message:
+                        'Client cannot reach UI server.  Please check UI server at the ' +
+                        `following location: ${pingURL}`
+                });
+            }
+
+            throw e;
         }
     }
 
@@ -83,7 +93,8 @@ export class FetchService extends HoistService {
      * @returns Promise which resolves to a Fetch Response.
      */
     fetch(opts: FetchOptions): Promise<FetchResponse> {
-        return this.managedFetchAsync(opts, aborter => this.fetchInternalAsync(opts, aborter));
+        opts = this.withDefaults(opts);
+        return this.managedFetchAsync(opts);
     }
 
     /**
@@ -91,14 +102,8 @@ export class FetchService extends HoistService {
      * @returns the decoded JSON object, or null if the response has status in {@link NO_JSON_RESPONSES}.
      */
     fetchJson(opts: FetchOptions): Promise<any> {
-        return this.managedFetchAsync(opts, async aborter => {
-            const r = await this.fetchInternalAsync(
-                {
-                    ...opts,
-                    headers: {Accept: 'application/json', ...opts.headers}
-                },
-                aborter
-            );
+        opts = this.withDefaults(opts, {Accept: 'application/json'});
+        return this.managedFetchAsync(opts, async r => {
             if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
 
             return r.json().catchWhen('SyntaxError', e => {
@@ -165,10 +170,28 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
+    private withDefaults(opts: FetchOptions, extraHeaders: PlainObject = null): FetchOptions {
+        const {defaultHeaders} = this,
+            method = opts.method ?? (opts.params ? 'POST' : 'GET'),
+            isPost = method === 'POST';
+
+        return {
+            ...opts,
+            method,
+            headers: {
+                'Content-Type': isPost ? 'application/x-www-form-urlencoded' : 'text/plain',
+                ...(isFunction(defaultHeaders) ? defaultHeaders(opts) : defaultHeaders),
+                ...extraHeaders,
+                ...opts.headers
+            }
+        };
+    }
+
     private async managedFetchAsync(
         opts: FetchOptions,
-        fn: (ctl: AbortController) => Promise<FetchResponse>
+        postProcess: (r: FetchResponse) => Awaitable<FetchResponse> = null
     ): Promise<FetchResponse> {
+        // Prepare auto-aborter
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
             aborter = new AbortController();
@@ -180,7 +203,7 @@ export class FetchService extends HoistService {
         }
 
         try {
-            return await fn(aborter).timeout(timeout);
+            return await this.fetchInternalAsync(opts, aborter).then(postProcess).timeout(timeout);
         } catch (e) {
             if (e.isTimeout) {
                 aborter.abort();
@@ -203,47 +226,31 @@ export class FetchService extends HoistService {
         }
     }
 
-    private async fetchInternalAsync(opts, aborter): Promise<FetchResponse> {
-        const {defaultHeaders} = this;
-        let {url, method, headers, body, params} = opts;
-        throwIf(!url, 'No url specified in call to fetchService.');
-        throwIf(
-            headers instanceof Headers,
-            'headers must be a plain object in calls to fetchService.'
-        );
-
-        // 1) Compute / install defaults
-        if (!method) {
-            method = params ? 'POST' : 'GET';
-        }
-        const isRelativeUrl = !url.startsWith('/') && !url.includes('//');
+    private async fetchInternalAsync(
+        opts: FetchOptions,
+        aborter: AbortController
+    ): Promise<FetchResponse> {
+        // 1) Prepare URL
+        let {url, method, headers, body, params} = opts,
+            isRelativeUrl = !url.startsWith('/') && !url.includes('//');
         if (isRelativeUrl) {
             url = XH.baseUrl + url;
         }
 
-        // 2) Compute headers
-        const headerEntries = {
-            'Content-Type': method === 'POST' ? 'application/x-www-form-urlencoded' : 'text/plain',
-            ...(isFunction(defaultHeaders) ? defaultHeaders(opts) : defaultHeaders),
-            ...headers
-        };
-
-        headers = new Headers(omitBy(headerEntries, isNil));
-
-        // 3) Prepare merged options
-        const fetchOpts = {
+        // 2) Prepare options for fetch API
+        const fetchOpts: RequestInit = {
             signal: aborter.signal,
             credentials: 'include',
             redirect: 'follow',
+            headers: new Headers(omitBy(headers, isNil)),
             method,
-            headers,
             body,
             ...opts.fetchOpts
         };
 
         // 3) Preprocess and apply params
         if (params) {
-            const qsOpts = {
+            const qsOpts: IStringifyOptions = {
                 arrayFormat: 'repeat',
                 allowDots: true,
                 filter: this.qsFilterFn,
@@ -253,7 +260,7 @@ export class FetchService extends HoistService {
 
             if (
                 ['POST', 'PUT'].includes(method) &&
-                headers.get('Content-Type') !== 'application/json'
+                headers['Content-Type'] !== 'application/json'
             ) {
                 // Fall back to an 'application/x-www-form-urlencoded' POST/PUT body if not sending json.
                 fetchOpts.body = paramsString;
@@ -262,6 +269,7 @@ export class FetchService extends HoistService {
             }
         }
 
+        // 4) Await underlying fetch and post-process response.
         const ret = (await fetch(url, fetchOpts)) as FetchResponse;
 
         if (!ret.ok) {
@@ -292,7 +300,7 @@ export class FetchService extends HoistService {
         }
     }
 
-    private async sendJsonInternalAsync(opts) {
+    private async sendJsonInternalAsync(opts: FetchOptions) {
         return this.fetchJson({
             ...opts,
             body: JSON.stringify(opts.body),

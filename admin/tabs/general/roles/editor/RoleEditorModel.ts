@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2024 Extremely Heavy Industries Inc.
+ */
 import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -12,7 +18,7 @@ export class RoleEditorModel extends HoistModel {
     readonly savingTask = TaskObserver.trackLast({message: 'Saving Role'});
     readonly deletingTask = TaskObserver.trackLast({message: 'Deleting Role'});
 
-    @managed readonly roleFormModel = new RoleFormModel();
+    @managed roleFormModel: RoleFormModel;
 
     @observable isOpen = false;
     @observable role?: HoistRole;
@@ -28,6 +34,7 @@ export class RoleEditorModel extends HoistModel {
         super();
         makeObservable(this);
         this.roleModel = roleModel;
+        this.roleFormModel = new RoleFormModel(roleModel);
     }
 
     async createAsync(roleSpec?: HoistRole): Promise<HoistRole> {
@@ -90,9 +97,8 @@ export class RoleEditorModel extends HoistModel {
     // -------------------------------
     // Implementation
     // -------------------------------
-
     @action
-    openAsync(roleSpec?: HoistRole, editExisting = false): Promise<HoistRole> {
+    private openAsync(roleSpec?: HoistRole, editExisting = false): Promise<HoistRole> {
         this.isOpen = true;
         this.role = editExisting ? roleSpec : undefined;
         this.roleFormModel.init(

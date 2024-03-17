@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {form} from '@xh/hoist/cmp/form';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {div, filler, h3, hframe, span} from '@xh/hoist/cmp/layout';
+import {div, filler, h3, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, creates} from '@xh/hoist/core';
 import {colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
@@ -27,7 +27,7 @@ export const activityDetailView = hoistCmp.factory({
             icon: Icon.list(),
             className: 'xh-admin-activity-detail',
             compactHeader: true,
-            items: [grid({flex: 1}), detailRecForm()],
+            items: [grid({flex: 1}), detailRecPanel()],
             tbar: tbar(),
             ...props
         });
@@ -44,74 +44,80 @@ const tbar = hoistCmp.factory(({model}) => {
     );
 });
 
-const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
-    const {formattedData, gridModel, formModel} = model;
-    if (!gridModel.selectedRecord) return null;
-
+// Discrete outer panel to retain sizing across master/detail selection changes.
+const detailRecPanel = hoistCmp.factory<ActivityDetailModel>(({model}) => {
     return panel({
         modelConfig: {
             side: 'bottom',
             defaultSize: 370
         },
-        item: form({
-            fieldDefaults: {inline: true, readonlyRenderer: valOrNa},
-            item: hframe(
-                div({
-                    className: 'xh-admin-activity-detail__form',
-                    style: {flex: 1},
-                    items: [
-                        h3(Icon.info(), 'Activity'),
-                        formField({
-                            field: 'username',
-                            readonlyRenderer: username => {
-                                if (!username) return naSpan();
-                                const {impersonating} = formModel.values,
-                                    impSpan = impersonating
-                                        ? span({
-                                              className: 'xh-text-color-accent',
-                                              item: ` (impersonating ${impersonating})`
-                                          })
-                                        : null;
-                                return span(username, impSpan);
-                            }
-                        }),
-                        formField({field: 'category'}),
-                        formField({field: 'msg'}),
-                        formField({
-                            field: 'dateCreated',
-                            readonlyRenderer: dateTimeSecRenderer({})
-                        }),
-                        formField({
-                            field: 'elapsed',
-                            readonlyRenderer: numberRenderer({
-                                label: 'ms',
-                                nullDisplay: '-',
-                                formatConfig: {thousandSeparated: false, mantissa: 0}
-                            })
-                        }),
-                        formField({field: 'id'}),
-                        h3(Icon.desktop(), 'Device / Browser'),
-                        formField({field: 'device'}),
-                        formField({field: 'browser'}),
-                        formField({field: 'userAgent'})
-                    ]
-                }),
-                panel({
-                    flex: 1,
-                    className: 'xh-border-left',
-                    items: [
-                        h3(Icon.json(), 'Additional Data'),
-                        jsonInput({
-                            readonly: true,
-                            width: '100%',
-                            height: '100%',
-                            showCopyButton: true,
-                            value: formattedData ?? '{}'
-                        })
-                    ]
-                })
-            )
-        })
+        item: detailRecForm()
+    });
+});
+
+const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
+    const {hasSelection, formModel} = model;
+    return hasSelection
+        ? form({
+              fieldDefaults: {inline: true, readonlyRenderer: valOrNa},
+              item: hframe(
+                  div({
+                      className: 'xh-admin-activity-detail__form',
+                      style: {flex: 1},
+                      items: [
+                          h3(Icon.info(), 'Activity'),
+                          formField({
+                              field: 'username',
+                              readonlyRenderer: username => {
+                                  if (!username) return naSpan();
+                                  const {impersonating} = formModel.values,
+                                      impSpan = impersonating
+                                          ? span({
+                                                className: 'xh-text-color-accent',
+                                                item: ` (impersonating ${impersonating})`
+                                            })
+                                          : null;
+                                  return span(username, impSpan);
+                              }
+                          }),
+                          formField({field: 'category'}),
+                          formField({field: 'msg'}),
+                          formField({
+                              field: 'dateCreated',
+                              readonlyRenderer: dateTimeSecRenderer({})
+                          }),
+                          formField({
+                              field: 'elapsed',
+                              readonlyRenderer: numberRenderer({
+                                  label: 'ms',
+                                  nullDisplay: '-',
+                                  formatConfig: {thousandSeparated: false, mantissa: 0}
+                              })
+                          }),
+                          formField({field: 'id'}),
+                          h3(Icon.desktop(), 'Device / Browser'),
+                          formField({field: 'device'}),
+                          formField({field: 'browser'}),
+                          formField({field: 'userAgent'})
+                      ]
+                  }),
+                  panel({
+                      flex: 1,
+                      className: 'xh-border-left',
+                      items: [h3(Icon.json(), 'Additional Data'), additionalDataJsonInput()]
+                  })
+              )
+          })
+        : placeholder('Select an activity tracking record to view details.');
+});
+
+const additionalDataJsonInput = hoistCmp.factory<ActivityDetailModel>(({model}) => {
+    return jsonInput({
+        readonly: true,
+        width: '100%',
+        height: '100%',
+        showCopyButton: true,
+        value: model.formattedData
     });
 });
 

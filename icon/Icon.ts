@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 import {div} from '@xh/hoist/cmp/layout';
@@ -389,6 +389,9 @@ export const Icon = {
     },
     funnel(p?: IconProps) {
         return Icon.icon({...p, iconName: 'filter'});
+    },
+    funnelSlash(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'filter-slash'});
     },
     gauge(p?: IconProps) {
         return Icon.icon({...p, iconName: 'gauge-high'});
@@ -786,6 +789,9 @@ export const Icon = {
     },
     filter(p?: IconProps) {
         return Icon.funnel(p);
+    },
+    filterSlash(p?: IconProps) {
+        return Icon.funnelSlash(p);
     },
     groupRowCollapsed(p?: IconProps) {
         return Icon.angleRight(p);

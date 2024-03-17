@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "61.0.0-SNAPSHOT",
+  "version": "62.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:xh/hoist-react",
   "homepage": "https://xh.io",
@@ -14,7 +14,7 @@
     "lint:ts": "eslint --ext .ts,.tsx .",
     "tsc": "./node_modules/typescript/bin/tsc",
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "sideEffects": [
     "./static/polyfills.js"
@@ -42,7 +42,7 @@
     "@onsenui/fastclick": "~1.1.1",
     "@popperjs/core": "~2.11.0",
     "@seznam/compose-react-refs": "~1.0.5",
-    "classnames": "~2.3.2",
+    "classnames": "~2.5.1",
     "clipboard-copy": "~4.0.1",
     "codemirror": "~5.65.0",
     "core-js": "^3.0",
@@ -94,14 +94,14 @@
     "eslint": "8.x",
     "eslint-config-prettier": "9.x",
     "eslint-plugin-tsdoc": "0.x",
-    "husky": "8.x",
+    "husky": "9.x",
     "lint-staged": "15.x",
     "postcss": "8.x",
     "prettier": "3.x",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "stylelint": "15.x",
-    "stylelint-config-standard-scss": "11.x",
+    "stylelint": "16.x",
+    "stylelint-config-standard-scss": "13.x",
     "type-fest": "4.x",
     "typescript": "~5.1.6"
   },

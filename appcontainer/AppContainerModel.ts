@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {
     AppSpec,
@@ -17,7 +17,7 @@ import {
 } from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, when as mobxWhen} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
+import {never, wait} from '@xh/hoist/promise';
 import numbro from 'numbro';
 import {createRoot} from 'react-dom/client';
 import {
@@ -118,6 +118,12 @@ export class AppContainerModel extends HoistModel {
      * Triggers initial authentication and initialization of Hoist and application.
      */
     async initAsync() {
+        // Avoid bug where "Discarded" browser tabs can re-init an old version (see #3574)
+        if (window.document['wasDiscarded']) {
+            XH.reloadApp();
+            return never();
+        }
+
         // Avoid multiple calls, which can occur if AppContainer remounted.
         if (this.initCalled) return;
         this.initCalled = true;

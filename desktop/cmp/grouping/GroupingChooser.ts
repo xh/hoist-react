@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {box, div, filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
@@ -104,14 +104,14 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                 content: favoritesIsOpen
                     ? favoritesMenu({testId: favoritesMenuTestId})
                     : editorIsOpen
-                    ? editor({
-                          popoverWidth,
-                          popoverMinHeight,
-                          popoverTitle,
-                          emptyText,
-                          testId: editorTestId
-                      })
-                    : null,
+                      ? editor({
+                            popoverWidth,
+                            popoverMinHeight,
+                            popoverTitle,
+                            emptyText,
+                            testId: editorTestId
+                        })
+                      : null,
                 onInteraction: (nextOpenState, e) => {
                     if (
                         isOpen &&

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
 import {Store} from '@xh/hoist/data';
@@ -63,13 +63,14 @@ import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 
-export const MIN_HOIST_CORE_VERSION = '16.0';
+export const MIN_HOIST_CORE_VERSION = '18.0';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
 declare const xhAppVersion: string;
 declare const xhAppBuild: string;
 declare const xhBaseUrl: string;
+declare const xhClientApps: string[];
 declare const xhIsDevelopmentMode: boolean;
 
 /**
@@ -112,12 +113,15 @@ export class XHApi {
     /** Root URL context/path - prepended to all relative fetch requests. */
     readonly baseUrl: string = xhBaseUrl;
 
+    /** List of all client app codes available in the application. */
+    readonly clientApps: string[] = xhClientApps;
+
     /** True if the app is running in a local development environment. */
     readonly isDevelopmentMode: boolean = xhIsDevelopmentMode;
 
     //----------------------------------------------------------------------------------------------
     // Hoist Core Services
-    // Singleton instances of each service are created and installed within initAsync() below.
+    // Singleton instances of each are created and installed within AppContainerModel.initAsync().
     //----------------------------------------------------------------------------------------------
     alertBannerService: AlertBannerService;
     autoRefreshService: AutoRefreshService;
@@ -351,7 +355,10 @@ export class XHApi {
     @action
     reloadApp() {
         never().linkTo(this.appLoadModel);
-        window.location.reload();
+        const url = new URL(window.location.href);
+        // Add a unique query param to force a full reload without using the browser cache.
+        url.searchParams.set('xhCacheBuster', Date.now().toString());
+        document.location.assign(url);
     }
 
     /**

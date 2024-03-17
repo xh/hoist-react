@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistModel, PlainObject, SizingMode, Some} from '@xh/hoist/core';
 import type {ColumnApi, GridApi, IRowNode, SortDirection} from '@xh/hoist/kit/ag-grid';
@@ -429,14 +429,11 @@ export class AgGridModel extends HoistModel {
 
         // Pre-clear if only toggling abs for any sort. Ag-Grid doesn't handle abs and would skip
         if (
-            sortBy.some(
-                curr =>
-                    prevSortBy?.some(
-                        prev =>
-                            curr.sort === prev.sort &&
-                            curr.colId === prev.colId &&
-                            curr.abs != prev.abs
-                    )
+            sortBy.some(curr =>
+                prevSortBy?.some(
+                    prev =>
+                        curr.sort === prev.sort && curr.colId === prev.colId && curr.abs != prev.abs
+                )
             )
         ) {
             togglingAbsSort = true;

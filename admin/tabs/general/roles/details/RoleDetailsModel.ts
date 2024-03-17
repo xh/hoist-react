@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2024 Extremely Heavy Industries Inc.
+ */
 import {roleMembers} from '@xh/hoist/admin/tabs/general/roles/details/members/RoleMembers';
 import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {FormModel} from '@xh/hoist/cmp/form';
@@ -20,12 +26,15 @@ export class RoleDetailsModel extends HoistModel {
         this.addReaction({
             track: () => this.role,
             run: role => {
-                if (!role) this.formModel.init({});
-                this.formModel.init({
-                    ...role,
-                    category: role.category ?? 'Uncategorized',
-                    lastUpdated: `${role.lastUpdatedBy} (${fmtDateTimeSec(role.lastUpdated)})`
-                });
+                if (!role) {
+                    this.formModel.init({});
+                } else {
+                    this.formModel.init({
+                        ...role,
+                        category: role.category ?? 'Uncategorized',
+                        lastUpdated: `${role.lastUpdatedBy} (${fmtDateTimeSec(role.lastUpdated)})`
+                    });
+                }
             }
         });
     }

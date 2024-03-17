@@ -1,21 +1,27 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2024 Extremely Heavy Industries Inc.
+ */
 import {RoleMembersProps} from '@xh/hoist/admin/tabs/general/roles/details/members/RoleMembers';
 import {RoleDetailsModel} from '@xh/hoist/admin/tabs/general/roles/details/RoleDetailsModel';
 import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {
     HoistRole,
     RoleMemberType,
-    RoleServiceConfig
+    RoleModuleConfig
 } from '@xh/hoist/admin/tabs/general/roles/Types';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {ColumnRenderer, GridModel, GroupRowRenderer} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {hbox, hframe} from '@xh/hoist/cmp/layout';
-import {HoistModel, lookup, managed, XH} from '@xh/hoist/core';
+import {box, hbox, hframe} from '@xh/hoist/cmp/layout';
+import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {tag} from '@xh/hoist/kit/blueprint';
 import {bindable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
-import {first, invert, sortBy, uniqBy} from 'lodash';
+import {invert, sortBy, uniq, uniqBy} from 'lodash';
 import {computed} from 'mobx';
 
 export class RoleMembersModel extends HoistModel {
@@ -57,7 +63,7 @@ export class RoleMembersModel extends HoistModel {
         const {effectiveUsers, effectiveDirectoryGroups, effectiveRoles} = this.selectedRole;
         return {
             USER: effectiveUsers.length,
-            DIRECTORY_GROUP: this.softConfig?.assignDirectoryGroups
+            DIRECTORY_GROUP: this.moduleConfig?.directoryGroupsSupported
                 ? effectiveDirectoryGroups.length
                 : 0,
             ROLE: effectiveRoles.length
@@ -68,8 +74,8 @@ export class RoleMembersModel extends HoistModel {
         return this.roleDetailsModel.tabContainerModel.activeTabId;
     }
 
-    get softConfig(): RoleServiceConfig {
-        return XH.getConf('xhRoleModuleConfig');
+    get moduleConfig(): RoleModuleConfig {
+        return this.roleModel.moduleConfig;
     }
 
     setActiveTabId(id: string) {
@@ -89,7 +95,6 @@ export class RoleMembersModel extends HoistModel {
     // -------------------------------
     // Implementation
     // -------------------------------
-
     private loadGridData(role: HoistRole) {
         if (!role) {
             this.gridModel.clear();
@@ -106,11 +111,12 @@ export class RoleMembersModel extends HoistModel {
                 })),
 
                 // 2 - Directory Groups
-                ...(this.softConfig?.assignDirectoryGroups
+                ...(this.moduleConfig?.directoryGroupsSupported
                     ? role.effectiveDirectoryGroups.map(it => ({
                           name: it.name,
                           sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
-                          type: RoleMembersModel.types.DIRECTORY_GROUP
+                          type: RoleMembersModel.types.DIRECTORY_GROUP,
+                          error: role.errors.directoryGroups[it.name]
                       }))
                     : []),
 
@@ -123,7 +129,12 @@ export class RoleMembersModel extends HoistModel {
             ]);
         } else {
             this.gridModel.loadData(
-                role.members.map(it => ({...it, type: RoleMembersModel.types[it.type]}))
+                role.members.map(it => ({
+                    ...it,
+                    type: RoleMembersModel.types[it.type],
+                    error:
+                        it.type === 'DIRECTORY_GROUP' ? role.errors.directoryGroups[it.name] : null
+                }))
             );
         }
     }
@@ -135,12 +146,18 @@ export class RoleMembersModel extends HoistModel {
             store: {
                 fields: [
                     {name: 'name', type: 'string'},
+                    {name: 'error', type: 'string'},
                     {name: 'type', type: 'string'},
                     {name: 'sources', displayName: 'Assigned Via', type: 'json'}
                 ],
                 idSpec: data => `${this.selectedRole.name}:${data.type}:${data.name}`
             },
             contextMenu: [...this.createFilterActions(), '-', ...GridModel.defaultContextMenu],
+            enableExport: true,
+            exportOptions: {
+                columns: ['type', 'VISIBLE'],
+                filename: `${this.selectedRole.name} Members`
+            },
             emptyText: 'This role has no members.',
             groupBy: 'type',
             sortBy: 'name',
@@ -149,25 +166,7 @@ export class RoleMembersModel extends HoistModel {
                 const {type, name} = record.data;
                 if (type === types.ROLE) this.roleModel.selectRoleAsync(name);
             },
-            groupRowRenderer: ({value}) => {
-                switch (value) {
-                    case types.USER:
-                        return hframe({
-                            className: 'group-row-renderer',
-                            items: [Icon.user(), 'Users']
-                        });
-                    case types.DIRECTORY_GROUP:
-                        return hframe({
-                            className: 'group-row-renderer',
-                            items: [Icon.users(), 'Directory Groups']
-                        });
-                    case types.ROLE:
-                        return hframe({
-                            className: 'group-row-renderer',
-                            items: [Icon.idBadge(), 'Roles']
-                        });
-                }
-            },
+            groupRowRenderer: this.groupRowRenderer,
             colDefaults: {
                 filterable: true
             },
@@ -175,41 +174,36 @@ export class RoleMembersModel extends HoistModel {
                 {
                     field: 'name',
                     autosizeMaxWidth: 300,
-                    renderer: (name, {record}) =>
-                        record.get('type') === types.DIRECTORY_GROUP
-                            ? this.fmtDirectoryGroup(name)
-                            : name,
-                    tooltip: true
+                    renderer: this.nameRenderer,
+                    rendererIsComplex: true
                 },
-                {field: 'type', hidden: true},
+                {
+                    field: 'type',
+                    exportValue: type => {
+                        switch (type) {
+                            case types.USER:
+                                return 'User';
+                            case types.DIRECTORY_GROUP:
+                                return 'Directory Group';
+                            case types.ROLE:
+                                return 'Role';
+                        }
+                    },
+                    hidden: true
+                },
                 {
                     field: 'sources',
                     flex: true,
                     minWidth: 105,
-                    renderer: (sources: Array<{role: string; directoryGroup?: string}>) =>
-                        hbox({
-                            className: 'roles-renderer',
-                            items: uniqBy(
-                                sources.map(({role, directoryGroup}) => {
-                                    const isThisRole = role === this.selectedRole.name;
-                                    return {
-                                        className: classNames(
-                                            'roles-renderer__role',
-                                            !isThisRole && 'roles-renderer__role--effective'
-                                        ),
-                                        intent: isThisRole ? null : 'primary',
-                                        item: isThisRole
-                                            ? this.fmtDirectoryGroup(directoryGroup) ?? '<Direct>'
-                                            : role,
-                                        title: isThisRole ? directoryGroup ?? '<Direct>' : role,
-                                        minimal: true,
-                                        onClick: () =>
-                                            !isThisRole && this.roleModel.selectRoleAsync(role)
-                                    };
-                                }),
-                                'item'
-                            ).map(props => tag(props))
-                        }),
+                    renderer: this.sourcesRenderer,
+                    exportValue: (sources: Array<{role: string; directoryGroup?: string}>) =>
+                        uniq(
+                            sources.map(({role, directoryGroup}) =>
+                                role === this.selectedRole.name
+                                    ? directoryGroup ?? '<Direct>'
+                                    : role
+                            )
+                        ).join(', '),
                     omit: !showEffective
                 },
                 {
@@ -241,20 +235,21 @@ export class RoleMembersModel extends HoistModel {
             displayFn: ({record}) => {
                 if (!record) return {hidden: true};
                 const {name, type} = record.data,
-                    {softConfig} = this;
+                    isDirectoryGroup = type === types.DIRECTORY_GROUP,
+                    {moduleConfig} = this;
 
                 if (
                     !includeEffective &&
-                    ((type === types.USER && !softConfig.assignUsers) ||
-                        (type === types.DIRECTORY_GROUP && !softConfig.assignDirectoryGroups))
+                    ((type === types.USER && !moduleConfig.userAssignmentSupported) ||
+                        (isDirectoryGroup && !moduleConfig.directoryGroupsSupported))
                 ) {
                     return {hidden: true};
                 }
 
                 return {
-                    text: `Roles that ${
-                        includeEffective ? 'effectively' : 'directly'
-                    } include ${name}`
+                    text: `Roles that ${includeEffective ? 'effectively' : 'directly'} include ${
+                        isDirectoryGroup ? RoleModel.fmtDirectoryGroup(name) : name
+                    }`
                 };
             }
         }));
@@ -268,7 +263,70 @@ export class RoleMembersModel extends HoistModel {
         return [...thisRole, ...sources.filter(it => it.role !== this.selectedRole.name)];
     }
 
-    private fmtDirectoryGroup(name?: string): string {
-        return name?.startsWith('CN=') ? first(name.split(',')).substring(3) : name;
-    }
+    // -------------------------------
+    // Grid Renderers
+    // -------------------------------
+
+    private groupRowRenderer: GroupRowRenderer = ({value}) => {
+        const {USER, DIRECTORY_GROUP, ROLE} = RoleMembersModel.types;
+        switch (value) {
+            case USER:
+                return hframe({
+                    className: 'group-row-renderer',
+                    items: [Icon.user(), 'Users']
+                });
+            case DIRECTORY_GROUP:
+                return hframe({
+                    className: 'group-row-renderer',
+                    items: [Icon.users(), 'Directory Groups']
+                });
+            case ROLE:
+                return hframe({
+                    className: 'group-row-renderer',
+                    items: [Icon.idBadge(), 'Roles']
+                });
+        }
+    };
+
+    private nameRenderer: ColumnRenderer = (name, {record}) => {
+        const {DIRECTORY_GROUP} = RoleMembersModel.types,
+            {error, type} = record.data;
+        return hbox({
+            alignItems: 'center',
+            items: [
+                box({
+                    item: type === DIRECTORY_GROUP ? RoleModel.fmtDirectoryGroup(name) : name,
+                    paddingRight: 'var(--xh-pad-half-px)',
+                    title: name
+                }),
+                Icon.warning({omit: !error, intent: 'warning', title: error})
+            ]
+        });
+    };
+
+    private sourcesRenderer: ColumnRenderer = (
+        sources: Array<{role: string; directoryGroup?: string}>
+    ) =>
+        hbox({
+            className: 'roles-renderer',
+            items: uniqBy(
+                sources.map(({role, directoryGroup}) => {
+                    const isThisRole = role === this.selectedRole.name;
+                    return {
+                        className: classNames(
+                            'roles-renderer__role',
+                            !isThisRole && 'roles-renderer__role--effective'
+                        ),
+                        intent: isThisRole ? null : 'primary',
+                        item: isThisRole
+                            ? RoleModel.fmtDirectoryGroup(directoryGroup) ?? '<Direct>'
+                            : role,
+                        title: isThisRole ? directoryGroup ?? '<Direct>' : role,
+                        minimal: true,
+                        onClick: () => !isThisRole && this.roleModel.selectRoleAsync(role)
+                    };
+                }),
+                'item'
+            ).map(props => tag(props))
+        });
 }

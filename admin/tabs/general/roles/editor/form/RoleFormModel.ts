@@ -1,11 +1,19 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2024 Extremely Heavy Industries Inc.
+ */
+import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {
     HoistRole,
     RoleMemberType,
-    RoleServiceConfig
+    RoleModuleConfig
 } from '@xh/hoist/admin/tabs/general/roles/Types';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, ReactionSpec, SelectOption, XH} from '@xh/hoist/core';
+import {box, hbox} from '@xh/hoist/cmp/layout';
+import {HoistModel, managed, ReactionSpec, SelectOption, TaskObserver, XH} from '@xh/hoist/core';
 import {RecordActionSpec, required} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth, selectEditor} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
@@ -18,6 +26,8 @@ export class RoleFormModel extends HoistModel {
         this.ADD_ASSIGNMENT_ACTION,
         this.createRemoveAssignmentAction()
     ];
+    readonly directoryGroupLookupTask = TaskObserver.trackLast();
+    readonly roleModel: RoleModel;
 
     @managed readonly formModel: FormModel = this.createFormModel();
     @managed readonly usersGridModel: GridModel = this.createGridModel('USER');
@@ -56,12 +66,17 @@ export class RoleFormModel extends HoistModel {
         );
     }
 
-    get softConfig(): RoleServiceConfig {
-        return XH.getConf('xhRoleModuleConfig');
+    get moduleConfig(): RoleModuleConfig {
+        return this.roleModel.moduleConfig;
     }
 
-    constructor() {
+    get roleName(): string {
+        return this.formModel.values.name ?? 'New Role';
+    }
+
+    constructor(roleModel: RoleModel) {
         super();
+        this.roleModel = roleModel;
         this.addReaction(
             this.clearDegenerateRowReaction(this.usersGridModel),
             this.clearDegenerateRowReaction(this.directoryGroupsGridModel),
@@ -72,12 +87,24 @@ export class RoleFormModel extends HoistModel {
     @action
     init(allRoles: HoistRole[], role?: Partial<HoistRole>) {
         this.formModel.init(role ?? {});
-        this.usersGridModel.loadData(role?.users?.map(name => ({name})) ?? []);
-        this.userOptions = uniq(allRoles.flatMap(role => role.users)).sort();
-        this.directoryGroupsGridModel.loadData(role?.directoryGroups?.map(name => ({name})) ?? []);
+        this.usersGridModel.loadData(sortBy(role?.users?.map(name => ({name})) ?? [], 'name'));
+        this.userOptions = uniq(
+            allRoles.flatMap(role => role.effectiveUsers.map(it => it.name))
+        ).sort();
+        this.directoryGroupsGridModel.loadData(
+            sortBy(
+                role?.directoryGroups?.map(name => ({
+                    name,
+                    error: role.errors.directoryGroups[name]
+                })) ?? [],
+                'name'
+            )
+        );
         this.directoryGroupOptions = uniq(allRoles.flatMap(role => role.directoryGroups)).sort();
-        this.categoryOptions = uniq(allRoles.map(it => it.category)).sort();
-        this.rolesGridModel.loadData(role?.roles?.map(name => ({name})) ?? []);
+        this.categoryOptions = uniq(
+            allRoles.map(it => it.category).filter(it => it != null)
+        ).sort();
+        this.rolesGridModel.loadData(sortBy(role?.roles?.map(name => ({name})) ?? [], 'name'));
         this.roleOptions = sortBy(
             map(groupBy(allRoles, 'category'), (roles, category) => ({
                 label: category == 'null' ? '*Uncategorized*' : category,
@@ -122,7 +149,7 @@ export class RoleFormModel extends HoistModel {
                     rules: [
                         required,
                         ({value}) =>
-                            this.invalidNames.includes(value)
+                            this.invalidNames.some(it => it.toLowerCase() === value?.toLowerCase())
                                 ? `Role "${value}" already exists.`
                                 : null
                     ]
@@ -138,13 +165,26 @@ export class RoleFormModel extends HoistModel {
             emptyText: 'None added.',
             hideHeaders: true,
             selModel: 'multiple',
-            sortBy: 'name',
             store: {
+                fields: [{name: 'error', type: 'string'}],
                 idSpec: XH.genId
             },
             columns: [
                 {
-                    field: {name: 'name', rules: [required]},
+                    field: {
+                        name: 'name',
+                        rules: [
+                            required,
+                            ({value, record}) =>
+                                record.store.allRecords.some(
+                                    it =>
+                                        it !== record &&
+                                        it.get('name')?.toLowerCase() === value?.toLowerCase()
+                                )
+                                    ? `${value} already added.`
+                                    : null
+                        ]
+                    },
                     flex: 1,
                     editable: true,
                     editor: props => {
@@ -162,6 +202,30 @@ export class RoleFormModel extends HoistModel {
                                 options: this.filterSelected(options, selected)
                             }
                         });
+                    },
+                    renderer: (v, {record}) => {
+                        const {error} = record.data;
+                        return hbox({
+                            alignItems: 'center',
+                            items: [
+                                box({
+                                    item:
+                                        entity === 'DIRECTORY_GROUP'
+                                            ? RoleModel.fmtDirectoryGroup(v)
+                                            : v,
+                                    paddingRight: 'var(--xh-pad-half-px)',
+                                    title: v
+                                }),
+                                Icon.warning({omit: !error, intent: 'warning', title: error})
+                            ]
+                        });
+                    },
+                    rendererIsComplex: true,
+                    setValueFn: ({record, store, value}) => {
+                        const {id} = record;
+                        store.modifyRecords({id, name: value, error: null});
+                        if (entity === 'DIRECTORY_GROUP')
+                            this.lookupDirectoryGroupAsync(value, id as string);
                     }
                 },
                 {
@@ -189,7 +253,7 @@ export class RoleFormModel extends HoistModel {
         return ret;
     }
 
-    createAddAssigmentAction(): RecordActionSpec {
+    private createAddAssigmentAction(): RecordActionSpec {
         return {
             text: 'Add',
             icon: Icon.add(),
@@ -225,5 +289,23 @@ export class RoleFormModel extends HoistModel {
             },
             debounce: 250
         };
+    }
+
+    private async lookupDirectoryGroupAsync(directoryGroup: string, recordId: string) {
+        try {
+            const {data} = await XH.fetchJson({
+                autoAbortKey: `roleAdmin/usersForDirectoryGroup-${recordId}`,
+                url: 'roleAdmin/usersForDirectoryGroup',
+                params: {name: directoryGroup}
+            }).linkTo(this.directoryGroupLookupTask);
+            if (isString(data)) {
+                this.directoryGroupsGridModel.store.modifyRecords({
+                    id: recordId,
+                    error: data
+                });
+            }
+        } catch (e) {
+            XH.handleException(e, {alertType: 'toast', title: 'Error looking up directory group'});
+        }
     }
 }

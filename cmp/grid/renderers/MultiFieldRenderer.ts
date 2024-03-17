@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {ColumnRenderer} from '@xh/hoist/cmp/grid';
+import {CellContext, Column, ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {throwIf, warnIf, intersperse} from '@xh/hoist/utils/js';
-import {isNil, isString, partition, pull} from 'lodash';
+import {isFunction, isNil, partition, pull} from 'lodash';
 import {ReactNode} from 'react';
 
 /**
@@ -19,7 +19,7 @@ import {ReactNode} from 'react';
  * (often hidden). They will be rendered using the same rendererFn, headerName and value as the column
  * they refer to.
  */
-export function multiFieldRenderer(value, context): ReactNode {
+export function multiFieldRenderer(value: any, context: CellContext): ReactNode {
     const {column} = context,
         {multiFieldConfig} = column.appData;
 
@@ -78,17 +78,22 @@ export interface MultiFieldConfig {
 export interface MultiFieldSubField {
     colId: string;
 
-    /** True to include the Column's headerName as label, or string. */
-    label?: boolean | 'string';
+    /**
+     * Label to display next to data value.
+     *
+     * True to use the Column's header as label, or string.  For a dynamic, row-specific
+     * value, a ColumnRenderer may be provided.
+     */
+    label?: boolean | 'string' | ColumnRenderer;
 
-    /** Where to render the sub field. Default 'bottom'. */
+    /** Where to render the sub-field. Default 'bottom'. */
     position?: 'top' | 'bottom';
 }
 
 //------------------
 // Implementation
 //------------------
-function renderMainField(value, renderer, context) {
+function renderMainField(value: any, renderer: ColumnRenderer, context: CellContext) {
     const {column} = context;
     return div({
         className: 'xh-multifield-renderer-field',
@@ -96,7 +101,7 @@ function renderMainField(value, renderer, context) {
     });
 }
 
-function renderSubField({colId, label}, context) {
+function renderSubField({colId, label}: MultiFieldSubField, context: CellContext) {
     const {record, gridModel} = context,
         column = gridModel.getColumn(colId);
 
@@ -105,7 +110,14 @@ function renderSubField({colId, label}, context) {
     const {field, headerName, renderer} = column,
         value = record.data[field];
 
-    if (label && !isString(label)) label = headerName;
+    let labelStr;
+    if (isFunction(label)) {
+        labelStr = label(value, context);
+    } else if (label === true) {
+        labelStr = headerName;
+    } else {
+        labelStr = label;
+    }
 
     const renderedVal = renderValue(value, renderer, column, context),
         renderedValIsEmpty = renderedVal === '' || isNil(renderedVal);
@@ -114,16 +126,16 @@ function renderSubField({colId, label}, context) {
         ? null
         : div({
               className: 'xh-multifield-renderer-field',
-              items: [label ? `${label}: ` : null, renderedVal]
+              items: [labelStr ? `${labelStr}: ` : null, renderedVal]
           });
 }
 
-function renderValue(value, renderer, column, context) {
+function renderValue(value: any, renderer: ColumnRenderer, column: Column, context: CellContext) {
     const ret = renderer ? renderer(value, {...context, column}) : value;
     return isNil(ret) ? null : ret;
 }
 
-function renderDelimiter(delimiter) {
+function renderDelimiter(delimiter: string) {
     return span({
         className: 'xh-multifield-renderer-delimiter',
         item: delimiter

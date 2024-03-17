@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {form} from '@xh/hoist/cmp/form';
 import {a, div, h3, hframe, span, vbox} from '@xh/hoist/cmp/layout';
@@ -38,7 +38,7 @@ export const clientErrorDetail = hoistCmp.factory<ClientErrorsModel>(({model}) =
                         formField({field: 'username'}),
                         formField({
                             field: 'dateCreated',
-                            readonlyRenderer: fmtDateTimeSec
+                            readonlyRenderer: v => fmtDateTimeSec(v)
                         }),
                         formField({field: 'appVersion'}),
                         formField({

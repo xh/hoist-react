@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {RowClickedEvent, RowDoubleClickedEvent, RowHeightParams} from '@ag-grid-community/core';
 import {
@@ -244,7 +244,7 @@ export class DataViewModel extends HoistModel {
 
     selectAsync(
         records: Some<StoreRecordOrId>,
-        opts: {ensureVisible?: boolean; clearSelection?: boolean}
+        opts?: {ensureVisible?: boolean; clearSelection?: boolean}
     ) {
         return this.gridModel.selectAsync(records, opts);
     }

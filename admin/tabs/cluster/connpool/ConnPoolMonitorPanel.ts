@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {ConnPoolMonitorModel} from '@xh/hoist/admin/tabs/cluster/connpool/ConnPoolMonitorModel';
@@ -20,12 +20,6 @@ export const connPoolMonitorPanel = hoistCmp.factory({
     model: creates(ConnPoolMonitorModel),
 
     render({model}) {
-        if (!model.supported) {
-            return errorMessage({
-                error: `Connection pool monitoring requires Hoist Core >= ${model.minHoistCoreVersion}.`
-            });
-        }
-
         if (!model.enabled) {
             return errorMessage({
                 error: 'Connection pool monitoring disabled via xhConnPoolMonitoringConfig, or no suitable DataSource detected.'

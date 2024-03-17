@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistService, managed, persist, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
@@ -125,7 +125,8 @@ export class InspectorService extends HoistService {
     updateStats() {
         if (!this.active) return;
 
-        const {totalJSHeapSize, usedJSHeapSize} = (window.performance as any)?.memory ?? {},
+        const {totalJSHeapSize, usedJSHeapSize, jsHeapSizeLimit} =
+                (window.performance as NonStandardPerformance)?.memory ?? {},
             modelCount = instanceManager.models.size,
             prevModelCount = this._prevModelCount,
             now = Date.now();
@@ -139,6 +140,7 @@ export class InspectorService extends HoistService {
                 modelCountChange: modelCount - prevModelCount,
                 totalJSHeapSize,
                 usedJSHeapSize,
+                jsHeapSizeLimit,
                 syncRun: this._syncRun
             }
         ];
@@ -246,5 +248,15 @@ interface InspectorStat {
     modelCountChange: number;
     totalJSHeapSize: number;
     usedJSHeapSize: number;
+    jsHeapSizeLimit: number;
     syncRun: number;
+}
+
+// Augment the global window object with a non-standard performance.memory property that's specific to Chromium browsers.
+interface NonStandardPerformance extends Performance {
+    memory?: {
+        totalJSHeapSize: number;
+        usedJSHeapSize: number;
+        jsHeapSizeLimit: number;
+    };
 }

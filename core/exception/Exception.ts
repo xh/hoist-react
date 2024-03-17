@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {FetchOptions} from '@xh/hoist/svc';
 import {FetchResponse, PlainObject, XH} from '../';
@@ -106,7 +106,7 @@ export class Exception {
      */
     static fetchJsonParseError(fetchOptions: FetchOptions, cause: any): FetchException {
         return this.createFetchException({
-            name: 'Json Parsing Error.',
+            name: 'JSON Parsing Error',
             message:
                 'Error parsing the response body as JSON. The server may have returned an invalid ' +
                 'or empty response. Use "XH.fetch()" to process the response manually.',
@@ -168,12 +168,13 @@ export class Exception {
             origin = match
                 ? match[0]
                 : protocolPattern.test(XH.baseUrl)
-                ? XH.baseUrl
-                : window.location.origin;
+                  ? XH.baseUrl
+                  : window.location.origin;
 
         return this.createFetchException({
             name: 'Server Unavailable',
             message: `Unable to contact the server at ${origin}`,
+            isServerUnavailable: true,
             fetchOptions,
             cause
         });

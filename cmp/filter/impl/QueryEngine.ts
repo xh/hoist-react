@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
 import {Some} from '@xh/hoist/core';
@@ -325,10 +325,7 @@ export class QueryEngine {
 // Local Helper functions
 //------------------------
 function caselessStartsWith(target, queryStr) {
-    return target
-        ?.toString()
-        .toLowerCase()
-        .startsWith(queryStr?.toString().toLowerCase());
+    return target?.toString().toLowerCase().startsWith(queryStr?.toString().toLowerCase());
 }
 
 function caselessEquals(target, queryStr) {

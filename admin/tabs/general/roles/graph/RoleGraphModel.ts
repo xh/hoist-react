@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2024 Extremely Heavy Industries Inc.
+ */
 import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {HoistModel, lookup, managed, PlainObject} from '@xh/hoist/core';
@@ -15,7 +21,8 @@ export class RoleGraphModel extends HoistModel {
     get relatedRoles(): EffectiveRoleMember[] {
         const {role, relationship} = this;
         if (!role) return [];
-        return relationship === 'effective' ? role.effectiveRoles : role.inheritedRoles;
+        const ret = relationship === 'effective' ? role.effectiveRoles : role.inheritedRoles;
+        return ret.filter(it => it.name !== role.name);
     }
 
     get role(): HoistRole {

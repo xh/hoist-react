@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
@@ -15,24 +15,14 @@ import {bindable} from '@xh/hoist/mobx';
 import {forOwn, sortBy} from 'lodash';
 
 export class ConnPoolMonitorModel extends BaseInstanceModel {
-    readonly minHoistCoreVersion = '17.2.0';
-    get supported(): boolean {
-        return XH.environmentService.isMinHoistCoreVersion(this.minHoistCoreVersion);
-    }
-
     @bindable enabled: boolean = true;
-    @bindable poolConfiguration: PlainObject = {};
+    @bindable.ref poolConfiguration: PlainObject = {};
 
     @managed gridModel: GridModel;
     @managed chartModel: ChartModel;
 
     constructor() {
         super();
-
-        if (!this.supported) {
-            this.enabled = false;
-            return;
-        }
 
         this.gridModel = new GridModel({
             enableExport: true,
@@ -92,8 +82,7 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {supported, gridModel, chartModel} = this;
-        if (!supported) return;
+        const {gridModel, chartModel} = this;
 
         try {
             const resp = await XH.fetchJson({

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {
     HoistModel,
@@ -38,7 +38,8 @@ import {
     RowClassFn,
     RowClassRuleFn,
     TreeStyle,
-    multiFieldRenderer
+    multiFieldRenderer,
+    ColumnRenderer
 } from '@xh/hoist/cmp/grid';
 import {
     CellClickedEvent,
@@ -67,6 +68,12 @@ export interface ZoneGridConfig {
 
     /** Optional configurations for zone constraints. */
     limits?: Partial<Record<Zone, ZoneLimit>>;
+
+    /**
+     * Optional renderers to produce a row specific label for each column.
+     * If not specified, the label will default to the fixed  Header of the column.
+     */
+    labelRenderers?: Record<string, ColumnRenderer>;
 
     /**
      * Optional configs to apply to left column. Intended for use as an `escape hatch`, and should be used with care.
@@ -289,6 +296,8 @@ export class ZoneGridModel extends HoistModel {
     @observable.ref
     mappings: Record<Zone, ZoneMapping[]>;
 
+    labelRenderers: Record<string, ColumnRenderer>;
+
     @bindable.ref
     leftColumnSpec: Partial<ColumnSpec>;
 
@@ -318,6 +327,7 @@ export class ZoneGridModel extends HoistModel {
             rightColumnSpec,
             delimiter,
             zoneMapperModel,
+            labelRenderers,
             restoreDefaultsFn,
             restoreDefaultsWarning,
             persistWith,
@@ -333,6 +343,7 @@ export class ZoneGridModel extends HoistModel {
         this.delimiter = delimiter ?? ' • ';
         this.restoreDefaultsFn = restoreDefaultsFn;
         this.restoreDefaultsWarning = restoreDefaultsWarning;
+        this.labelRenderers = labelRenderers ?? {};
 
         this._defaultState = {
             mappings: this.mappings,
@@ -550,8 +561,9 @@ export class ZoneGridModel extends HoistModel {
     }
 
     private buildZoneColumn(isLeft: boolean): ColumnSpec {
-        const topMappings = this.mappings[isLeft ? 'tl' : 'tr'],
-            bottomMappings = this.mappings[isLeft ? 'bl' : 'br'];
+        const {labelRenderers, mappings} = this,
+            topMappings = mappings[isLeft ? 'tl' : 'tr'],
+            bottomMappings = mappings[isLeft ? 'bl' : 'br'];
 
         throwIf(
             isEmpty(topMappings),
@@ -564,10 +576,20 @@ export class ZoneGridModel extends HoistModel {
         // Extract the sub-fields from the other mappings
         const subFields = [];
         topMappings.slice(1).forEach(it => {
-            subFields.push({colId: it.field, label: it.showLabel, position: 'top'});
+            const colId = it.field;
+            subFields.push({
+                colId,
+                label: it.showLabel ? labelRenderers[colId] ?? true : false,
+                position: 'top'
+            });
         });
         bottomMappings.forEach(it => {
-            subFields.push({colId: it.field, label: it.showLabel, position: 'bottom'});
+            const colId = it.field;
+            subFields.push({
+                colId,
+                label: it.showLabel ? labelRenderers[colId] ?? true : false,
+                position: 'bottom'
+            });
         });
 
         return {

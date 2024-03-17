@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistService, HoistUser, XH} from '@xh/hoist/core';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
@@ -162,9 +162,6 @@ export class IdentityService extends HoistService {
     }
 
     private canUserImpersonate(user: HoistUser): boolean {
-        const hasPerm = XH.environmentService.isMinHoistCoreVersion('16.3.0')
-            ? user.hasRole(`HOIST_IMPERSONATOR`)
-            : user.isHoistAdmin;
-        return hasPerm && XH.getConf('xhEnableImpersonation');
+        return user.hasRole(`HOIST_IMPERSONATOR`) && XH.getConf('xhEnableImpersonation');
     }
 }

@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
 import {castArray, flatMap, groupBy, isArray, isFunction} from 'lodash';
 
-import {FilterLike} from './Types';
+import {FieldFilterSpec, FilterLike} from './Types';
 import {Filter} from './Filter';
 import {FieldFilter} from './FieldFilter';
 import {FunctionFilter} from './FunctionFilter';
@@ -138,11 +138,11 @@ export function flattenFilter(spec: FilterLike): Filter[] {
  * Recombine FieldFilters with array support on same field into single FieldFilter.
  * Filters other than array-based FieldFilters will be returned unmodified.
  */
-export function combineValueFilters(filters = []): Filter[] {
-    const groupMap = groupBy(filters, ({op, field}) => `${op}|${field}`);
+export function combineValueFilters<T extends FilterLike>(filters: T[] = []): T[] {
+    const groupMap = groupBy(filters as FieldFilterSpec[], ({op, field}) => `${op}|${field}`);
     return flatMap(groupMap, filters => {
         return filters.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(filters[0].op)
             ? {...filters[0], value: flatMap(filters, it => it.value)}
             : filters;
-    });
+    }) as T[];
 }

@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
 import {PlainObject} from '@xh/hoist/core';
 import {Filter} from './Filter';
-import {StoreRecord, Field} from '../';
+import {StoreRecord, Field, FieldType} from '../';
 
 export type CompoundFilterOperator = 'AND' | 'OR' | 'and' | 'or';
 export interface CompoundFilterSpec {
@@ -39,6 +39,9 @@ export interface FieldFilterSpec {
     op: FieldFilterOperator;
 
     value: any;
+
+    /** For internal serialization only. */
+    valueType?: FieldType;
 }
 
 export interface FunctionFilterSpec {

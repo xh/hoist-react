@@ -1,30 +1,43 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2024 Extremely Heavy Industries Inc.
+ */
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {HoistModel, LoadSpec, managed, persist, ReactionSpec, XH} from '@xh/hoist/core';
+import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
+import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {compact, groupBy, mapValues} from 'lodash';
-import {action, observable} from 'mobx';
+import {compact, groupBy, isEmpty, mapValues} from 'lodash';
+import {action, observable, runInAction} from 'mobx';
 import moment from 'moment/moment';
 import {RoleEditorModel} from './editor/RoleEditorModel';
-import {HoistRole, RoleMemberType, RoleServiceConfig} from './Types';
+import {HoistRole, RoleMemberType, RoleModuleConfig} from './Types';
 
 export class RoleModel extends HoistModel {
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
 
+    static fmtDirectoryGroup(name: string): string {
+        if (!name) return name;
+        const parts = name.split(','),
+            cn = parts.find(it => it.toLowerCase().startsWith('cn='));
+        return cn ?? name;
+    }
+
     override persistWith = RoleModel.PERSIST_WITH;
 
-    @managed readonly gridModel: GridModel = this.createGridModel();
-    @managed readonly filterChooserModel: FilterChooserModel = this.createFilterChooserModel();
+    @managed gridModel: GridModel;
+    @managed filterChooserModel: FilterChooserModel;
     @managed readonly roleEditorModel = new RoleEditorModel(this);
 
     @observable.ref allRoles: HoistRole[] = [];
-
-    @bindable @persist groupByCategory = true;
+    @observable.ref moduleConfig: RoleModuleConfig;
 
     get readonly() {
         return !XH.getUser().isHoistRoleManager;
@@ -34,19 +47,17 @@ export class RoleModel extends HoistModel {
         return this.gridModel.selectedRecord?.data as HoistRole;
     }
 
-    get softConfig(): RoleServiceConfig {
-        return XH.getConf('xhRoleModuleConfig');
-    }
-
     constructor() {
         super();
         makeObservable(this);
-        this.addReaction(this.groupByCategoryReaction());
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        if (!this.softConfig?.enabled) return;
         try {
+            await this.ensureInitializedAsync();
+
+            if (!this.moduleConfig.enabled) return;
+
             const {data} = await XH.fetchJson({loadSpec, url: 'roleAdmin/list'});
             if (loadSpec.isStale) return;
             this.setRoles(this.processRolesFromServer(data));
@@ -84,12 +95,28 @@ export class RoleModel extends HoistModel {
         gridModel.filterModel.setFilter({field, op: 'includes', value: name});
     }
 
+    async deleteAsync(role: HoistRole): Promise<boolean> {
+        const confirm = await XH.confirm({
+            icon: Icon.warning(),
+            title: 'Confirm delete?',
+            message: `Are you sure you want to delete "${role.name}"? This may affect access to this applications.`,
+            confirmProps: {intent: 'danger', text: 'Confirm Delete'}
+        });
+        if (!confirm) return false;
+        await XH.fetchJson({
+            url: `roleAdmin/delete/${role.name}`,
+            method: 'DELETE'
+        });
+        this.refreshAsync();
+        return true;
+    }
+
     // -------------------------------
     // Actions
     // -------------------------------
     addAction(): RecordActionSpec {
         return {
-            text: 'Add',
+            text: 'Add Role',
             icon: Icon.add(),
             intent: 'success',
             actionFn: () => this.createAsync()
@@ -99,6 +126,7 @@ export class RoleModel extends HoistModel {
     editAction(): RecordActionSpec {
         return {
             text: 'Edit',
+            tooltip: 'Add or remove users from this role.',
             icon: Icon.edit(),
             intent: 'primary',
             actionFn: ({record}) => this.editAsync(record.data as HoistRole),
@@ -128,36 +156,39 @@ export class RoleModel extends HoistModel {
         };
     }
 
-    async deleteAsync(role: HoistRole): Promise<boolean> {
-        const confirm = await XH.confirm({
-            icon: Icon.warning(),
-            title: 'Confirm delete?',
-            message: `Are you sure you want to delete "${role.name}"? This may affect access to this applications.`,
-            confirmProps: {intent: 'danger', text: 'Confirm Delete'}
-        });
-        if (!confirm) return false;
-        await XH.fetchJson({
-            url: `roleAdmin/delete/${role.name}`,
-            method: 'DELETE'
-        });
-        this.refreshAsync();
-        return true;
+    private groupByAction(): RecordActionSpec {
+        return {
+            text: 'Group By Category',
+            displayFn: ({gridModel}) => ({
+                icon: isEmpty(gridModel.groupBy) ? Icon.circle() : Icon.checkCircle()
+            }),
+            actionFn: ({gridModel}) => {
+                if (isEmpty(gridModel.groupBy)) {
+                    gridModel.setGroupBy('category');
+                    gridModel.hideColumn('category');
+                } else {
+                    gridModel.setGroupBy(null);
+                    gridModel.showColumn('category');
+                    gridModel.autosizeAsync();
+                }
+            }
+        };
     }
 
     // -------------------------------
     // Implementation
     // -------------------------------
-    private groupByCategoryReaction(): ReactionSpec<boolean> {
-        const {gridModel} = this;
-        return {
-            track: () => this.groupByCategory,
-            run: groupByCategory => {
-                gridModel.setGroupBy(groupByCategory ? 'category' : null);
-                gridModel.setColumnVisible('category', !groupByCategory);
-                gridModel.autosizeAsync();
-            },
-            fireImmediately: true
-        };
+    private async ensureInitializedAsync() {
+        if (!this.moduleConfig) {
+            const config = await XH.fetchJson({url: 'roleAdmin/config'});
+            runInAction(() => {
+                this.moduleConfig = config;
+                if (config.enabled) {
+                    this.gridModel = this.createGridModel();
+                    this.filterChooserModel = this.createFilterChooserModel();
+                }
+            });
+        }
     }
 
     private processRolesFromServer(
@@ -198,6 +229,7 @@ export class RoleModel extends HoistModel {
             enableExport: true,
             exportOptions: {filename: 'roles'},
             filterModel: true,
+            groupBy: 'category',
             groupRowRenderer: ({value}) => (!value ? 'Uncategorized' : value),
             headerMenuDisplay: 'hover',
             onRowDoubleClicked: ({data: record}) =>
@@ -217,6 +249,7 @@ export class RoleModel extends HoistModel {
                     {name: 'effectiveUsers', type: 'json'},
                     {name: 'effectiveDirectoryGroups', type: 'json'},
                     {name: 'effectiveRoles', type: 'json'},
+                    {name: 'errors', type: 'json'},
                     {name: 'inheritedRoleNames', displayName: 'Inherited Roles', type: 'tags'},
                     {name: 'effectiveUserNames', displayName: 'Users', type: 'tags'},
                     {
@@ -239,8 +272,15 @@ export class RoleModel extends HoistModel {
                 filterable: true
             },
             columns: [
+                {
+                    ...actionCol,
+                    actionsShowOnHoverOnly: true,
+                    width: calcActionColWidth(1),
+                    actions: [this.editAction()],
+                    omit: this.readonly
+                },
                 {field: {name: 'name', type: 'string'}},
-                {field: {name: 'category', type: 'string'}},
+                {field: {name: 'category', type: 'string'}, hidden: true},
                 {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime, hidden: true},
                 {field: {name: 'lastUpdatedBy', type: 'string'}, hidden: true},
                 {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1}
@@ -253,24 +293,25 @@ export class RoleModel extends HoistModel {
                       this.cloneAction(),
                       this.deleteAction(),
                       '-',
+                      this.groupByAction(),
                       ...GridModel.defaultContextMenu
                   ]
         });
     }
 
     private createFilterChooserModel(): FilterChooserModel {
-        const {softConfig} = this;
+        const config = this.moduleConfig;
         return new FilterChooserModel({
             bind: this.gridModel.store,
             fieldSpecs: compact([
                 'name',
                 'category',
-                softConfig.assignUsers && 'users',
-                softConfig.assignDirectoryGroups && 'directoryGroups',
+                config.userAssignmentSupported && 'users',
+                config.directoryGroupsSupported && 'directoryGroups',
                 'roles',
                 'inheritedRoleNames',
                 'effectiveUserNames',
-                'effectiveDirectoryGroupNames',
+                config.directoryGroupsSupported && 'effectiveDirectoryGroupNames',
                 'effectiveRoleNames',
                 'lastUpdatedBy',
                 {

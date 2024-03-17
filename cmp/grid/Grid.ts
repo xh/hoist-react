@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
@@ -383,9 +383,12 @@ export class GridLocalModel extends HoistModel {
         const {sizingMode, groupRowHeight} = this.model,
             {groupDisplayType} = this.agOptions,
             AgGridCmp = AgGrid as any;
-        return groupRowHeight ?? groupDisplayType === 'groupRows'
-            ? AgGridCmp.getGroupRowHeightForSizingMode(sizingMode)
-            : AgGridCmp.getRowHeightForSizingMode(sizingMode);
+        return (
+            groupRowHeight ??
+            (groupDisplayType === 'groupRows'
+                ? AgGridCmp.getGroupRowHeightForSizingMode(sizingMode)
+                : AgGridCmp.getRowHeightForSizingMode(sizingMode))
+        );
     }
 
     defaultGetRowHeight = ({node}) => {
