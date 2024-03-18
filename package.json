@@ -89,7 +89,7 @@
     "@ag-grid-community/client-side-row-model": "30.x",
     "@ag-grid-community/core": "30.x",
     "@ag-grid-community/react": "30.x",
-    "@xh/hoist-dev-utils": "7.x",
+    "@xh/hoist-dev-utils": "8.x",
     "csstype": "3.x",
     "eslint": "8.x",
     "eslint-config-prettier": "9.x",
