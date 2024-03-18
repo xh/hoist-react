@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
@@ -44,7 +44,9 @@ export class RoleModel extends HoistModel {
     }
 
     get selectedRole(): HoistRole {
-        return this.gridModel.selectedRecord?.data as HoistRole;
+        const selected = this.gridModel.selectedRecord?.data;
+        if (selected && !selected.isGroupRow) return selected as HoistRole;
+        return null;
     }
 
     constructor() {
@@ -60,7 +62,7 @@ export class RoleModel extends HoistModel {
 
             const {data} = await XH.fetchJson({loadSpec, url: 'roleAdmin/list'});
             if (loadSpec.isStale) return;
-            this.setRoles(this.processRolesFromServer(data));
+            this.setRoles(data);
         } catch (e) {
             if (loadSpec.isStale) return;
             XH.handleException(e);
@@ -78,9 +80,11 @@ export class RoleModel extends HoistModel {
     }
 
     @action
-    setRoles(roles: HoistRole[]) {
+    setRoles(data: HoistRole[]) {
+        const roles = this.processRolesFromServer(data),
+            proccessedTreeData = this.processRolesForTreeGrid(roles);
         this.allRoles = roles;
-        this.gridModel.loadData(roles);
+        this.gridModel.loadData(proccessedTreeData);
     }
 
     @action
@@ -129,6 +133,9 @@ export class RoleModel extends HoistModel {
             tooltip: 'Add or remove users from this role.',
             icon: Icon.edit(),
             intent: 'primary',
+            displayFn: ({record}) => ({
+                disabled: this.readonly || record?.data.isGroupRow
+            }),
             actionFn: ({record}) => this.editAsync(record.data as HoistRole),
             recordsRequired: true
         };
@@ -138,6 +145,9 @@ export class RoleModel extends HoistModel {
         return {
             text: 'Clone',
             icon: Icon.copy(),
+            displayFn: ({record}) => ({
+                disabled: this.readonly || record?.data.isGroupRow
+            }),
             actionFn: ({record}) => this.createAsync(record.data as HoistRole),
             recordsRequired: true
         };
@@ -148,6 +158,9 @@ export class RoleModel extends HoistModel {
             text: 'Delete',
             icon: Icon.delete(),
             intent: 'danger',
+            displayFn: ({record}) => ({
+                disabled: this.readonly || record?.data.isGroupRow
+            }),
             actionFn: ({record}) =>
                 this.deleteAsync(record.data as HoistRole)
                     .catchDefault()
@@ -159,8 +172,9 @@ export class RoleModel extends HoistModel {
     private groupByAction(): RecordActionSpec {
         return {
             text: 'Group By Category',
-            displayFn: ({gridModel}) => ({
-                icon: isEmpty(gridModel.groupBy) ? Icon.circle() : Icon.checkCircle()
+            displayFn: ({gridModel, record}) => ({
+                icon: isEmpty(gridModel.groupBy) ? Icon.circle() : Icon.checkCircle(),
+                disabled: this.readonly || record?.data.isGroupRow
             }),
             actionFn: ({gridModel}) => {
                 if (isEmpty(gridModel.groupBy)) {
@@ -196,19 +210,41 @@ export class RoleModel extends HoistModel {
     ): HoistRole[] {
         return roles.map(role => {
             const membersByType = mapValues(groupBy(role.members, 'type'), members =>
-                    members.map(member => member.name)
-                ),
-                [category1, category2, category3] = role.category?.split('\\') ?? ['Uncategorized'];
+                members.map(member => member.name)
+            );
             return {
                 ...role,
-                category1,
-                category2,
-                category3,
                 users: membersByType['USER'] ?? [],
                 directoryGroups: membersByType['DIRECTORY_GROUP'] ?? [],
                 roles: membersByType['ROLE'] ?? []
             };
         });
+    }
+
+    private processRolesForTreeGrid(
+        roles: Omit<HoistRole, 'users' | 'directoryGroups' | 'roles'>[]
+    ) {
+        const topList = [];
+        roles.forEach(role => {
+            const categories = role.category ? role.category.split('\\') : ['Uncategorized'];
+
+            let list = topList,
+                id = '';
+            categories.forEach(category => {
+                let currCat = list.find(it => it.name === category);
+                if (!currCat) {
+                    currCat = {name: category, children: [], isGroupRow: true};
+                    currCat.id = `${id}-${currCat.name}`;
+                    id = currCat.id;
+                    list.push(currCat);
+                }
+                list = currCat.children;
+            });
+            if (list) {
+                list.push(role);
+            }
+        });
+        return topList;
     }
 
     private async createAsync(roleSpec?: HoistRole): Promise<void> {
@@ -226,22 +262,27 @@ export class RoleModel extends HoistModel {
 
     private createGridModel(): GridModel {
         return new GridModel({
+            treeMode: true,
+            treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
             autosizeOptions: {mode: 'managed'},
             emptyText: 'No roles found.',
             colChooserModel: true,
-            sortBy: ['category1|desc', 'category2|desc', 'category3|desc', 'name'],
+            sortBy: ['isGroupRow', 'name'],
             enableExport: true,
             exportOptions: {filename: 'roles'},
             filterModel: true,
-            groupBy: ['category1', 'category2', 'category3'],
+            rowClassRules: {
+                'xh-grid-clear-background-color': ({data}) => !data.data.isGroupRow
+            },
             groupRowRenderer: ({value}) => (!value ? 'Uncategorized' : value),
             headerMenuDisplay: 'hover',
-            onRowDoubleClicked: ({data: record}) =>
-                !this.readonly &&
-                record &&
-                this.roleEditorModel
-                    .editAsync(record.data)
-                    .then(role => role && this.refreshAsync()),
+            onRowDoubleClicked: ({data: record}) => {
+                if (!this.readonly && record && !record.data.isGroupRow) {
+                    this.roleEditorModel
+                        .editAsync(record.data)
+                        .then(role => role && this.refreshAsync());
+                }
+            },
             // persistWith: {...this.persistWith, path: 'mainGrid'},
             store: {
                 idSpec: 'name',
@@ -266,10 +307,11 @@ export class RoleModel extends HoistModel {
                 ],
                 processRawData: raw => ({
                     ...raw,
-                    effectiveUserNames: raw.effectiveUsers.map(it => it.name),
-                    effectiveDirectoryGroupNames: raw.effectiveDirectoryGroups.map(it => it.name),
-                    effectiveRoleNames: raw.effectiveRoles.map(it => it.name),
-                    inheritedRoleNames: raw.inheritedRoles.map(it => it.name)
+                    effectiveUserNames: raw.effectiveUsers?.map(it => it.name),
+                    effectiveDirectoryGroupNames: raw.effectiveDirectoryGroups?.map(it => it.name),
+                    effectiveRoleNames: raw.effectiveRoles?.map(it => it.name),
+                    inheritedRoleNames: raw.inheritedRoles?.map(it => it.name),
+                    isGroupRow: !!raw.isGroupRow
                 })
             },
             colDefaults: {
@@ -283,23 +325,12 @@ export class RoleModel extends HoistModel {
                     actions: [this.editAction()],
                     omit: this.readonly
                 },
-                {field: {name: 'name', type: 'string'}},
+                {field: {name: 'name', type: 'string'}, isTreeColumn: true},
                 {field: {name: 'category', type: 'string'}, hidden: true},
-                {
-                    field: {name: 'category1', type: 'string'}
-                    // hidden: true
-                },
-                {
-                    field: {name: 'category2', type: 'string'}
-                    // hidden: true
-                },
-                {
-                    field: {name: 'category3', type: 'string'}
-                    // hidden: true
-                },
                 {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime, hidden: true},
                 {field: {name: 'lastUpdatedBy', type: 'string'}, hidden: true},
-                {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1}
+                {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1},
+                {field: {name: 'isGroupRow', type: 'bool'}, hidden: true, excludeFromChooser: true}
             ],
             contextMenu: this.readonly
                 ? GridModel.defaultContextMenu

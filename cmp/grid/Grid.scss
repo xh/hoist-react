@@ -262,6 +262,11 @@
   }
 }
 
+// TODO find better place to put this
+.xh-grid-clear-background-color:not(.ag-row-selected) {
+  background-color: unset !important;
+}
+
 // Suppress default indenting when grid is in tree mode but no root records have children.
 .xh-grid--flat:not(.xh-data-view) {
   .ag-ltr .ag-row-group-leaf-indent {
