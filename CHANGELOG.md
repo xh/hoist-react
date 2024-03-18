@@ -4,7 +4,9 @@
 
 ### 🎁 New Features
 
-* A "Reload App" item has been added to the default mobile app menu.
+* Added a "Reload App" option to the default mobile app menu.
+* Improved perceived responsiveness when constructing a new 'FilterChooserModel' when backing data
+  has many records and/or auto-suggest-enabled fields.
 
 ### 🐞 Bug Fixes
 
