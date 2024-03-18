@@ -4,7 +4,8 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {ColumnSpec} from '@xh/hoist/cmp/grid';
+import {ColumnSpec, dateTimeSec} from '@xh/hoist/cmp/grid';
+import {dateTimeRenderer} from '@xh/hoist/format';
 
 export const name: ColumnSpec = {
     field: {name: 'name', type: 'string'},
@@ -38,4 +39,10 @@ export const note: ColumnSpec = {
     minWidth: 60,
     flex: true,
     tooltip: true
+};
+
+export const timestampNoYear: ColumnSpec = {
+    field: {name: 'timestamp', type: 'date'},
+    ...dateTimeSec,
+    renderer: dateTimeRenderer({fmt: 'MMM DD HH:mm:ss'})
 };

@@ -6,12 +6,13 @@
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
+import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable, observable} from '@xh/hoist/mobx';
+import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import download from 'downloadjs';
 import {createRef} from 'react';
 import {LogDisplayModel} from './LogDisplayModel';
@@ -19,7 +20,7 @@ import {LogDisplayModel} from './LogDisplayModel';
 /**
  * @internal
  */
-export class LogViewerModel extends HoistModel {
+export class LogViewerModel extends BaseInstanceModel {
     @observable file: string = null;
 
     viewRef = createRef<HTMLElement>();
@@ -29,6 +30,9 @@ export class LogViewerModel extends HoistModel {
 
     @managed
     filesGridModel: GridModel;
+
+    @bindable
+    instanceOnly: boolean = true;
 
     get enabled(): boolean {
         return XH.getConf('xhEnableLogViewer', true);
@@ -66,10 +70,15 @@ export class LogViewerModel extends HoistModel {
                 this.file = rec?.data?.filename;
             }
         });
+
+        this.addReaction({
+            track: () => this.instanceOnly,
+            run: () => this.loadAsync()
+        });
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {enabled, filesGridModel} = this;
+        const {enabled, filesGridModel, instanceOnly, instanceName} = this;
         if (!enabled) return;
 
         const store = filesGridModel.store,
@@ -78,22 +87,27 @@ export class LogViewerModel extends HoistModel {
         try {
             const data = await XH.fetchJson({
                 url: 'logViewerAdmin/listFiles',
+                params: {instance: instanceName},
                 loadSpec
             });
 
+            const files = instanceOnly
+                ? data.files.filter(f => f.filename.includes(instanceName))
+                : data.files;
+
             this.logDisplayModel.logRootPath = data.logRootPath;
 
-            store.loadData(data.files);
+            store.loadData(files);
             if (selModel.isEmpty) {
                 const latestAppLog = store.records.find(
-                    rec => rec.data.filename === `${XH.appCode}.log`
+                    rec => rec.data.filename === `${XH.appCode}-${instanceName}.log`
                 );
                 if (latestAppLog) {
                     selModel.select(latestAppLog);
                 }
             }
         } catch (e) {
-            XH.handleException(e, {title: 'Error loading list of available log files'});
+            this.handleLoadException(e, loadSpec);
         }
     }
 
@@ -112,7 +126,10 @@ export class LogViewerModel extends HoistModel {
             const filenames = recs.map(r => r.data.filename);
             await XH.fetch({
                 url: 'logViewerAdmin/deleteFiles',
-                params: {filenames}
+                params: {
+                    filenames,
+                    instance: this.instanceName
+                }
             });
             await this.refreshAsync();
         } catch (e) {
@@ -128,7 +145,10 @@ export class LogViewerModel extends HoistModel {
             const {filename} = selectedRecord.data,
                 response = await XH.fetch({
                     url: 'logViewerAdmin/download',
-                    params: {filename}
+                    params: {
+                        filename,
+                        instance: this.instanceName
+                    }
                 });
 
             const blob = await response.blob();

@@ -1,5 +1,14 @@
 # Changelog
 
+## 63.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+* Provides admin support for Cluster-aware version of Hoist.
+
+### 💥 Breaking Changes
+* Requires update to `hoist-core >= 19.0.0`.
+
+
 ## 62.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features

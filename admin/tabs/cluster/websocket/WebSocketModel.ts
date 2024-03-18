@@ -6,9 +6,10 @@
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
+import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, p} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
@@ -18,8 +19,10 @@ import {isDisplayed} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import {createRef} from 'react';
 import * as WSCol from './WebSocketColumns';
+import {RecordActionSpec} from '@xh/hoist/data';
+import {AppModel} from '@xh/hoist/admin/AppModel';
 
-export class WebSocketModel extends HoistModel {
+export class WebSocketModel extends BaseInstanceModel {
     viewRef = createRef<HTMLElement>();
 
     @observable
@@ -31,6 +34,15 @@ export class WebSocketModel extends HoistModel {
     @managed
     private _timer: Timer;
 
+    forceSuspendAction: RecordActionSpec = {
+        text: 'Force suspend',
+        icon: Icon.stopCircle(),
+        intent: 'danger',
+        actionFn: () => this.forceSuspendAsync(),
+        displayFn: () => ({hidden: AppModel.readonly}),
+        recordsRequired: true
+    };
+
     constructor() {
         super();
         makeObservable(this);
@@ -40,6 +52,7 @@ export class WebSocketModel extends HoistModel {
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('ws-connections')},
             selModel: 'multiple',
+            contextMenu: [this.forceSuspendAction, '-', ...GridModel.defaultContextMenu],
             store: {
                 idSpec: 'key',
                 processRawData: row => {
@@ -84,27 +97,40 @@ export class WebSocketModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const data = await XH.fetchJson({url: 'webSocketAdmin/allChannels'});
-        this.gridModel.loadData(data);
-        runInAction(() => {
-            this.lastRefresh = Date.now();
-        });
+        try {
+            const data = await XH.fetchJson({
+                url: 'webSocketAdmin/allChannels',
+                params: {instance: this.instanceName},
+                loadSpec
+            });
+            this.gridModel.loadData(data);
+            runInAction(() => {
+                this.lastRefresh = Date.now();
+            });
+        } catch (e) {
+            this.handleLoadException(e, loadSpec);
+        }
     }
 
-    async forceSuspendOnSelectedAsync() {
+    async forceSuspendAsync() {
         const {selectedRecords} = this.gridModel;
         if (isEmpty(selectedRecords)) return;
 
         const message = await XH.prompt<string>({
             title: 'Force suspend',
             icon: Icon.stopCircle(),
-            confirmProps: {text: 'Force Suspend', icon: Icon.stopCircle(), intent: 'danger'},
+            confirmProps: {
+                text: 'Force Suspend',
+                icon: Icon.stopCircle(),
+                intent: 'danger',
+                outlined: true
+            },
             cancelProps: {autoFocus: true},
             message: div(
                 p(
                     `This action will force ${selectedRecords.length} connected client(s) into suspended mode, halting all background refreshes and other activity, masking the UI, and requiring users to reload the app to continue.`
                 ),
-                p('If desired, you can enter a message below to display within the suspended app.')
+                p('Enter an optional message below to display within the suspended app.')
             ),
             input: {
                 item: textInput({placeholder: 'User-facing message (optional)'}),
@@ -119,6 +145,7 @@ export class WebSocketModel extends HoistModel {
                     params: {
                         channelKey: rec.data.key,
                         topic: XH.webSocketService.FORCE_APP_SUSPEND_TOPIC,
+                        instance: this.instanceName,
                         message
                     }
                 })

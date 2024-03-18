@@ -5,7 +5,6 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {div, h2, hbox, span, table, tbody, td, th, tr, a, p} from '@xh/hoist/cmp/layout';
-import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {fmtDateTime} from '@xh/hoist/format';
 import {Icon, xhLogo} from '@xh/hoist/icon';
@@ -21,7 +20,6 @@ export const aboutPanel = hoistCmp.factory(() =>
 
 function renderTables() {
     const get = str => XH.environmentService.get(str),
-        startupTime = get('startupTime'),
         row = (label, data) => {
             data = data || span({item: 'Not available', className: 'xh-text-color-muted'});
             return tr(th(label), td(data));
@@ -40,6 +38,7 @@ function renderTables() {
             item: tbody(
                 row('App Name / Code', `${get('appName')} / ${get('appCode')}`),
                 row('Environment', get('appEnvironment')),
+                row('Instance Name', XH.environmentService.serverInstance),
                 row('Database', get('databaseConnectionString')),
                 row(
                     'DB User / Create Mode',
@@ -53,13 +52,7 @@ function renderTables() {
                 row(
                     'Client Time Zone',
                     fmtTimeZone(get('clientTimeZone'), get('clientTimeZoneOffset'))
-                ),
-                startupTime
-                    ? row(
-                          'Server Uptime',
-                          relativeTimestamp({timestamp: startupTime, options: {pastSuffix: ''}})
-                      )
-                    : null
+                )
             )
         }),
         h2(Icon.books(), 'Application and Library Versions'),

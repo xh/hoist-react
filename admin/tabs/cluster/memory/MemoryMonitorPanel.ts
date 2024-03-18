@@ -4,10 +4,10 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {MemoryMonitorModel} from '@xh/hoist/admin/tabs/server/memory/MemoryMonitorModel';
+import {MemoryMonitorModel} from '@xh/hoist/admin/tabs/cluster/memory/MemoryMonitorModel';
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler} from '@xh/hoist/cmp/layout';
+import {filler, span} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
@@ -30,24 +30,28 @@ export const memoryMonitorPanel = hoistCmp.factory({
             dumpDisabled = isNil(model.heapDumpDir);
         return panel({
             tbar: [
+                span({
+                    item: 'Memory Usage',
+                    className: 'xh-bold'
+                }),
+                filler(),
+                gridCountLabel({unit: 'snapshot'}),
+                '-',
                 button({
                     text: 'Take Snapshot',
                     icon: Icon.camera(),
                     omit: readonly,
                     onClick: () => model.takeSnapshotAsync()
                 }),
-                '-',
                 button({
                     text: 'Request GC',
                     icon: Icon.trash(),
-                    intent: 'danger',
                     omit: readonly,
                     onClick: () => model.requestGcAsync()
                 }),
                 button({
                     text: 'Dump Heap',
                     icon: Icon.fileArchive(),
-                    intent: 'danger',
                     omit: readonly,
                     disabled: dumpDisabled,
                     tooltip: dumpDisabled
@@ -55,8 +59,6 @@ export const memoryMonitorPanel = hoistCmp.factory({
                         : null,
                     onClick: () => model.dumpHeapAsync()
                 }),
-                filler(),
-                gridCountLabel({unit: 'snapshot'}),
                 '-',
                 exportButton()
             ],

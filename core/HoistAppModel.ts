@@ -87,6 +87,7 @@ export class HoistAppModel extends HoistModel {
             {label: 'App', value: `${svc.get('appName')} (${svc.get('appCode')})`},
             {label: 'Current User', value: XH.identityService.username},
             {label: 'Environment', value: svc.get('appEnvironment')},
+            {label: 'Instance', value: svc.serverInstance},
             {label: 'Server', value: `${svc.get('appVersion')} (build ${svc.get('appBuild')})`},
             {
                 label: 'Client',

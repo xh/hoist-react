@@ -63,7 +63,7 @@ export class MonitorResultsModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         if (!XH.pageIsVisible) return;
 
-        return XH.fetchJson({url: 'monitorAdmin/results', loadSpec})
+        return XH.fetchJson({url: 'monitorResultsAdmin/results', loadSpec})
             .then(rows => {
                 this.completeLoad(rows);
             })
@@ -75,7 +75,7 @@ export class MonitorResultsModel extends HoistModel {
 
     async forceRunAllMonitorsAsync() {
         try {
-            await XH.fetchJson({url: 'monitorAdmin/forceRunAllMonitors'});
+            await XH.fetchJson({url: 'monitorResultsAdmin/forceRunAllMonitors'});
             XH.toast('Request received - results will be generated shortly.');
         } catch (e) {
             XH.handleException(e);
