@@ -283,7 +283,7 @@ export class RoleModel extends HoistModel {
                         .then(role => role && this.refreshAsync());
                 }
             },
-            // persistWith: {...this.persistWith, path: 'mainGrid'},
+            persistWith: {...this.persistWith, path: 'mainGrid'},
             store: {
                 idSpec: 'name',
                 fields: [
