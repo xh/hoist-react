@@ -250,7 +250,7 @@ export class FetchService extends HoistService {
 
         // 3) Preprocess and apply params
         if (params) {
-            const qsOpts: IStringifyOptions = {
+            const qsOpts: IStringifyOptions<true> = {
                 arrayFormat: 'repeat',
                 allowDots: true,
                 filter: this.qsFilterFn,
