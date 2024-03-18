@@ -274,7 +274,6 @@ export class RoleModel extends HoistModel {
             rowClassRules: {
                 'xh-grid-clear-background-color': ({data}) => !data.data.isGroupRow
             },
-            groupRowRenderer: ({value}) => (!value ? 'Uncategorized' : value),
             headerMenuDisplay: 'hover',
             onRowDoubleClicked: ({data: record}) => {
                 if (!this.readonly && record && !record.data.isGroupRow) {
@@ -285,7 +284,7 @@ export class RoleModel extends HoistModel {
             },
             persistWith: {...this.persistWith, path: 'mainGrid'},
             store: {
-                idSpec: 'name',
+                idSpec: ({id, name}) => id ?? name,
                 fields: [
                     {name: 'users', displayName: 'Assigned Users', type: 'tags'},
                     {name: 'directoryGroups', displayName: 'Assigned Groups', type: 'tags'},
