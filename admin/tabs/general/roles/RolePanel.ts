@@ -48,7 +48,6 @@ export const rolePanel = hoistCmp.factory({
                             agOptions: {
                                 groupAllowUnbalanced: true,
                                 groupMaintainOrder: true
-                                // autoGroupColumnDef: {sort: 'desc'}
                             }
                         }),
                         roleGraph()
