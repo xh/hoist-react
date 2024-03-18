@@ -2048,10 +2048,10 @@
     eslint-plugin-react-hooks "^4.6"
     typescript "5.x"
 
-"@xh/hoist-dev-utils@8.0.0-SNAPSHOT.1710340454769":
-  version "8.0.0-SNAPSHOT.1710340454769"
-  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-8.0.0-SNAPSHOT.1710340454769.tgz#c345f7d1521adf396c0f418d34ded56d8f75e682"
-  integrity sha512-qKJNCWmN3AC087Ienep4DzLhW2QQp6mp9etQdePuKC2dKCTd0ptU6SAPnQVjIJUOM24h5N7/7f0AAW7mFhO1JA==
+"@xh/hoist-dev-utils@8.0.0-SNAPSHOT.1710791525092":
+  version "8.0.0-SNAPSHOT.1710791525092"
+  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-8.0.0-SNAPSHOT.1710791525092.tgz#3e9b9a9c02d1af822bcdb4bad45109cce8d311cf"
+  integrity sha512-A2szj1Jh8R4spFUCfJv7rX8sPeQQdru3eZsbahV1d8efKdsrVgeYwm6+UERrHl1+/2RdsV4YPeanrWJdPxNcfA==
   dependencies:
     "@babel/core" "^7.24.0"
     "@babel/plugin-proposal-decorators" "^7.24.0"
@@ -2078,7 +2078,7 @@
     postcss-flexbugs-fixes "~5.0.2"
     postcss-loader "~8.1.1"
     rimraf "~5.0.5"
-    sass "~1.71.1"
+    sass "~1.72.0"
     sass-loader "~14.1.1"
     sass-material-colors "~0.0.5"
     style-loader "~3.3.2"
@@ -6763,10 +6763,10 @@ sass-material-colors@~0.0.5:
   resolved "https://registry.yarnpkg.com/sass-material-colors/-/sass-material-colors-0.0.5.tgz#b944539236c94e2d4ece35d2ee3fa22f10b2ed43"
   integrity sha512-WqBonSUkR5U9xs9adPVIymIdcT2Ku7PN0Q57yFfcLHj/E63wDqZ/Y5i/m9RmkRyr/jmR85g6ZIS053fyAR8G2A==
 
-sass@~1.71.1:
-  version "1.71.1"
-  resolved "https://registry.yarnpkg.com/sass/-/sass-1.71.1.tgz#dfb09c63ce63f89353777bbd4a88c0a38386ee54"
-  integrity sha512-wovtnV2PxzteLlfNzbgm1tFXPLoZILYAMJtvoXXkD7/+1uP41eKkIt1ypWq5/q2uT94qHjXehEYfmjKOvjL9sg==
+sass@~1.72.0:
+  version "1.72.0"
+  resolved "https://registry.yarnpkg.com/sass/-/sass-1.72.0.tgz#5b9978943fcfb32b25a6a5acb102fc9dabbbf41c"
+  integrity sha512-Gpczt3WA56Ly0Mn8Sl21Vj94s1axi9hDIzDFn9Ph9x3C3p4nNyvsqJoQyVXKou6cBlfFWEgRW4rT8Tb4i3XnVA==
   dependencies:
     chokidar ">=3.0.0 <4.0.0"
     immutable "^4.0.0"
