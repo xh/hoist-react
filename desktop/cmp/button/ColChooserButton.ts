@@ -59,7 +59,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             popoverClassName: 'xh-col-chooser-popover xh-popup--framed',
             position: withDefault(popoverPosition, 'auto'),
             isOpen: colChooserModel.isPopoverOpen,
-            target: button({
+            item: button({
                 icon: withDefault(icon, Icon.gridPanel()),
                 title: withDefault(title, 'Choose grid columns...'),
                 disabled,

@@ -153,7 +153,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             label = defaultProp('label', props, formContext, model?.displayName),
             commitOnChange = defaultProp('commitOnChange', props, formContext, undefined),
             tooltipPosition = defaultProp('tooltipPosition', props, formContext, 'right'),
-            tooltipBoundary = defaultProp('tooltipBoundary', props, formContext, 'viewport'),
+            tooltipBoundary = defaultProp('tooltipBoundary', props, formContext, 'clippingParents'),
             readonlyRenderer = defaultProp(
                 'readonlyRenderer',
                 props,
@@ -197,8 +197,8 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         if (minimal) {
             childEl = tooltip({
-                target: childEl,
-                targetClassName: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
+                item: childEl,
+                className: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
                 targetTagName:
                     !blockChildren.includes(childElementName) || childWidth ? 'span' : 'div',
                 position: tooltipPosition,

@@ -57,7 +57,7 @@ export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMap
             isOpen,
             popoverClassName: 'xh-zone-mapper-popover xh-popup--framed',
             position: withDefault(popoverPosition, 'auto'),
-            target: button({
+            item: button({
                 icon: withDefault(icon, Icon.gridLarge()),
                 title: withDefault(title, 'Customize fields...'),
                 disabled,

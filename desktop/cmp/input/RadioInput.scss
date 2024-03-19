@@ -6,11 +6,11 @@
  */
 
 .xh-radio-input {
-  .xh-radio-input-option.bp4-control.bp4-inline {
+  .xh-radio-input-option.bp5-control.bp5-inline {
     margin-right: var(--xh-pad-double-px);
   }
 
-  &.xh-input-invalid .xh-radio-input-option .bp4-control-indicator {
+  &.xh-input-invalid .xh-radio-input-option .bp5-control-indicator {
     border: var(--xh-form-field-invalid-border);
 
     &::before {

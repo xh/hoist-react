@@ -5,13 +5,12 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {
+    BlueprintProvider,
     Classes,
-    ContextMenu,
     Dialog,
     FocusStyleManager,
     type HotkeyConfig,
-    HotkeysProvider,
-    Overlay,
+    Overlay2 as Overlay,
     OverlayToaster,
     Popover,
     PopoverInteractionKind,
@@ -20,7 +19,7 @@ import {
     useHotkeys
 } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
-import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
+import '@blueprintjs/datetime2/lib/css/blueprint-datetime2.css';
 import {elementFactory} from '@xh/hoist/core';
 import './styles.scss';
 
@@ -42,7 +41,6 @@ Popover.defaultProps.transitionDuration = 0;
 export {
     useHotkeys,
     HotkeyConfig,
-    ContextMenu,
     Classes,
     PopoverInteractionKind,
     Position,
@@ -51,5 +49,5 @@ export {
 };
 export * from './Wrappers';
 export * from './Dialog';
-
-export const hotkeysProvider = elementFactory(HotkeysProvider);
+export * from './ContextMenu';
+export const blueprintProvider = elementFactory(BlueprintProvider);
