@@ -62,6 +62,9 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
             this.addReaction({
                 track: () => this.source.lastUpdated,
                 run: () => this.loadValues(),
+                // Debounced primarily to minimize impact on UI responsiveness when using this model
+                // with a large number of records and/or auto-suggest enabled fields.
+                debounce: 100,
                 fireImmediately: true
             });
         }
