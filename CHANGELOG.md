@@ -1,5 +1,7 @@
 # Changelog
 
+## 63.0.0-SNAPSHOT - unreleased
+
 ## 62.0.0 - 2024-03-19
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
