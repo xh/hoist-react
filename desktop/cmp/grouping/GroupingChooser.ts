@@ -84,7 +84,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                 // left align editor to keep in place when button changing size when commitOnChange: true
                 position: favoritesIsOpen ? `${popoverPosition}-right` : `${popoverPosition}-left`,
                 minimal: styleButtonAsInput,
-                target: fragment(
+                item: fragment(
                     button({
                         text: label,
                         title: label,

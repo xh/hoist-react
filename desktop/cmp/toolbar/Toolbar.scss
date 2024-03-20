@@ -9,7 +9,7 @@
   flex-wrap: nowrap;
 
   // Overflow box
-  .bp4-overflow-list {
+  .bp5-overflow-list {
     flex: 1;
     align-items: center;
 
@@ -17,7 +17,7 @@
       white-space: nowrap;
 
       // The overflow space needs to be able to shrink - BP checks this to determine overflow
-      &:not(.bp4-overflow-list-spacer) {
+      &:not(.bp5-overflow-list-spacer) {
         flex-shrink: 0;
       }
 
@@ -108,11 +108,11 @@
     }
 
     // Compact toolbar buttons
-    .xh-app.xh-dark.bp4-dark &,
+    .xh-app.xh-dark.bp5-dark &,
     .xh-app & {
-      button.xh-button.bp4-button.xh-button--minimal,
-      button.xh-button.bp4-button.xh-button--standard,
-      button.xh-button.bp4-button.xh-button--outlined {
+      button.xh-button.bp5-button.xh-button--minimal,
+      button.xh-button.bp5-button.xh-button--standard,
+      button.xh-button.bp5-button.xh-button--outlined {
         padding: 3px var(--xh-pad-half-px);
         min-height: var(--xh-tbar-compact-item-height-px);
         max-height: var(--xh-tbar-compact-item-height-px);
@@ -129,9 +129,9 @@
       max-height: var(--xh-tbar-compact-item-height-px);
       min-height: var(--xh-tbar-compact-item-height-px);
 
-      .bp4-input-group {
+      .bp5-input-group {
         // This padding reserves space for a left-icon - default 30px overly wide in compact mode.
-        .bp4-input:not(:first-child) {
+        .bp5-input:not(:first-child) {
           padding-left: 20px;
         }
 
@@ -148,7 +148,7 @@
         }
 
         // Inline input icons made smaller, lighter, and alignment tweaked.
-        svg:not(.bp4-icon) {
+        svg:not(.bp5-icon) {
           font-size: var(--xh-tbar-compact-font-size-px);
           margin: 5px 2px 5px 4px;
           opacity: 0.6;
@@ -159,13 +159,13 @@
         display: flex;
         align-items: center;
 
-        .bp4-control-indicator {
+        .bp5-control-indicator {
           margin-top: 1px;
           margin-right: var(--xh-pad-half-px);
         }
       }
 
-      &.xh-switch-input.bp4-align-right {
+      &.xh-switch-input.bp5-align-right {
         flex-direction: row-reverse;
         padding-right: 0;
       }
@@ -212,10 +212,10 @@
   }
 
   // Form field margins (if set) are not desired within Toolbars.
-  .bp4-control {
+  .bp5-control {
     margin-bottom: 0;
 
-    &.bp4-inline {
+    &.bp5-inline {
       margin-right: 0;
     }
   }
@@ -224,12 +224,12 @@
 .xh-toolbar-overflow-popover {
   border: 1px solid var(--xh-tbar-border-color);
 
-  .bp4-popover-arrow-border,
-  .bp4-popover-arrow-fill {
+  .bp5-popover-arrow-border,
+  .bp5-popover-arrow-fill {
     fill: var(--xh-tbar-border-color) !important;
   }
 
-  .bp4-popover-content {
+  .bp5-popover-content {
     color: var(--xh-tbar-text-color);
     background-color: var(--xh-tbar-bg);
 

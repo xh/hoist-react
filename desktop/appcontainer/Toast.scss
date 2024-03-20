@@ -29,16 +29,16 @@
       margin: 0 0 0 var(--xh-pad-half-px);
     }
 
-    .bp4-toast-message {
+    .bp5-toast-message {
       word-break: break-word;
     }
 
     // High level of specificity here required to override built-in BP styles
-    &.bp4-toast .bp4-button {
+    &.bp5-toast .bp5-button {
       background: none !important;
       color: white !important;
 
-      .bp4-icon {
+      .bp5-icon {
         color: white !important;
       }
     }
