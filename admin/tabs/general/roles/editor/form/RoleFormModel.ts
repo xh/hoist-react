@@ -305,7 +305,12 @@ export class RoleFormModel extends HoistModel {
                 });
             }
         } catch (e) {
-            XH.handleException(e, {alertType: 'toast', title: 'Error looking up directory group'});
+            const errorMsg = 'Error looking up directory group';
+            XH.handleException(e, {alertType: 'toast', title: errorMsg});
+            this.directoryGroupsGridModel.store.modifyRecords({
+                id: recordId,
+                error: errorMsg
+            });
         }
     }
 }
