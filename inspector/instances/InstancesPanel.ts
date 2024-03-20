@@ -27,7 +27,7 @@ export const instancesPanel = hoistCmp.factory({
             headerItems.push(
                 popover({
                     interactionKind: 'hover',
-                    target: span(Icon.filter(), ` registered @ sync run ${selectedSyncRun}`),
+                    item: span(Icon.filter(), ` registered @ sync run ${selectedSyncRun}`),
                     content: div({
                         className: 'xh-pad',
                         style: {width: '300px'},

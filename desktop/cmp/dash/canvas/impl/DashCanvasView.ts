@@ -123,7 +123,7 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
     return popover({
         position: Position.BOTTOM,
         minimal: true,
-        target: button({
+        item: button({
             icon: Icon.ellipsisVertical()
         }),
         content

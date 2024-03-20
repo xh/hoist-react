@@ -5,12 +5,12 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {exportFilename} from '@xh/hoist/admin/AdminUtils';
+import * as Col from '@xh/hoist/admin/columns';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {managed, HoistModel, lookup} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {fmtJson} from '@xh/hoist/format';
-import * as Col from '@xh/hoist/admin/columns';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
 
 export class ActivityDetailModel extends HoistModel {
@@ -18,6 +18,11 @@ export class ActivityDetailModel extends HoistModel {
     @managed gridModel: GridModel;
     @managed formModel: FormModel;
     @observable formattedData;
+
+    @computed
+    get hasSelection() {
+        return this.gridModel.selectedRecord != null;
+    }
 
     constructor() {
         super();
@@ -61,15 +66,16 @@ export class ActivityDetailModel extends HoistModel {
                 .map(it => ({name: it.field, displayName: it.headerName as string}))
         });
 
-        this.addReaction({
-            track: () => this.activityTrackingModel.gridModel.selectedRecord,
-            run: aggRec => this.showActivityEntriesAsync(aggRec)
-        });
-
-        this.addReaction({
-            track: () => this.gridModel.selectedRecord,
-            run: detailRec => this.showEntryDetail(detailRec)
-        });
+        this.addReaction(
+            {
+                track: () => this.activityTrackingModel.gridModel.selectedRecord,
+                run: aggRec => this.showActivityEntriesAsync(aggRec)
+            },
+            {
+                track: () => this.gridModel.selectedRecord,
+                run: detailRec => this.showEntryDetail(detailRec)
+            }
+        );
     }
 
     private async showActivityEntriesAsync(aggRec) {

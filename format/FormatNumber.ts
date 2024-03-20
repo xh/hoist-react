@@ -119,7 +119,7 @@ export interface ColorSpec {
  * Hierarchy of params is by specificity: formatPattern, precision.
  * If no options are given, a heuristic based auto-rounding will occur.
  *
- * @returns a ReactNode, for an HTML string see {@link fmtDateAsHtml}
+ * @returns a ReactNode.  For an HTML string use `asHtml = true`.
  */
 export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
     let {

@@ -43,7 +43,7 @@
     max-width: 100%;
 
     // Flip the indicator to be on top of the tab label
-    .bp4-tab[aria-selected='true'] {
+    .bp5-tab[aria-selected='true'] {
       box-shadow: inset 0 3px 0 currentColor;
     }
   }
@@ -54,7 +54,7 @@
     max-height: 100%;
 
     // Make overflow button full width
-    .bp4-popover-wrapper .bp4-popover-target {
+    .bp5-popover-target {
       display: block;
 
       .xh-button {
@@ -100,7 +100,7 @@
     }
   }
 
-  .bp4-tab {
+  .bp5-tab {
     color: var(--xh-tab-text-color);
 
     &[aria-disabled='true'] {
@@ -108,21 +108,20 @@
     }
 
     // Tooltip
-    .bp4-popover-wrapper,
-    .bp4-popover-target {
+    .bp5-popover-target {
       width: 100%;
     }
   }
 
   // Active/hover color override
-  .bp4-tab[aria-selected='true'],
-  .bp4-tab:not([aria-disabled='true']):hover {
+  .bp5-tab[aria-selected='true'],
+  .bp5-tab:not([aria-disabled='true']):hover {
     .xh-tab-switcher__tab {
       color: var(--xh-tab-active-text-color);
     }
   }
 
-  .bp4-tab[aria-selected='true'] {
+  .bp5-tab[aria-selected='true'] {
     box-shadow: inset 0 -3px 0 var(--xh-tab-active-text-color);
   }
 }
