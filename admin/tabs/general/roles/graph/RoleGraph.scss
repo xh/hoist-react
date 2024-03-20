@@ -1,0 +1,14 @@
+.xh-role-graph {
+  overflow: visible !important;
+  margin-left: 50px;
+  margin-right: 50px;
+  > div {
+    overflow: visible !important;
+    > div {
+      overflow: visible !important;
+      > svg {
+        overflow: visible !important;
+      }
+    }
+  }
+}
