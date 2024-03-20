@@ -10,8 +10,7 @@ import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {Cube, CubeFieldSpec, FieldSpec} from '@xh/hoist/data';
-import {fmtDate, fmtNumber} from '@xh/hoist/format';
+import {CompoundFilter, Cube, CubeFieldSpec, FieldSpec} from '@xh/hoist/data';
 import {action, computed, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import * as Col from '@xh/hoist/admin/columns';
@@ -103,50 +102,35 @@ export class ActivityTrackingModel extends HoistModel {
             ] as CubeFieldSpec[]
         });
 
+        this.filterChooserModel = new FilterChooserModel({
+            fieldSpecs: [
+                {
+                    field: 'category',
+                    valueRenderer: v => v,
+                    enableValues: true
+                },
+                {
+                    field: 'username',
+                    valueRenderer: v => v,
+                    enableValues: true
+                },
+                {
+                    field: 'device',
+                    valueRenderer: v => v,
+                    enableValues: true
+                },
+                {
+                    field: 'browser',
+                    valueRenderer: v => v,
+                    enableValues: true
+                }
+            ]
+        });
+
         this.groupingChooserModel = new GroupingChooserModel({
             dimensions: this.cube.dimensions,
             persistWith: this.persistWith,
             initialValue: this._defaultDims
-        });
-
-        this.filterChooserModel = new FilterChooserModel({
-            bind: this.cube.store,
-            fieldSpecs: [
-                'category',
-                'month',
-                'username',
-                'device',
-                'browser',
-                'msg',
-                'userAgent',
-                {
-                    field: 'elapsed',
-                    valueRenderer: v => {
-                        return fmtNumber(v, {
-                            label: 'ms',
-                            formatConfig: {thousandSeparated: false, mantissa: 0}
-                        });
-                    }
-                },
-                {
-                    field: 'dateCreated',
-                    example: 'YYYY-MM-DD',
-                    valueParser: (v, op) => {
-                        let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
-                        if (!ret.isValid()) return null;
-
-                        // Note special handling for '>' & '<=' queries.
-                        if (['>', '<='].includes(op)) {
-                            ret = moment(ret).endOf('day');
-                        }
-
-                        return ret.toDate();
-                    },
-                    valueRenderer: v => fmtDate(v),
-                    ops: ['>', '>=', '<', '<=']
-                }
-            ],
-            persistWith: this.persistWith
         });
 
         const hidden = true;
@@ -191,28 +175,40 @@ export class ActivityTrackingModel extends HoistModel {
         this.addReaction({
             track: () => {
                 const vals = this.formModel.values;
-                return [vals.startDay, vals.endDay, vals.maxRows];
+                return [
+                    vals.startDay,
+                    vals.endDay,
+                    vals.maxRows,
+                    this.filterChooserModel.selectValue
+                ];
             },
             run: () => this.loadAsync(),
             debounce: 100
         });
 
         this.addReaction({
-            track: () => [this.cube.records, this.filterChooserModel.value, this.dimensions],
+            track: () => [this.cube.records, this.dimensions],
             run: () => this.loadGridAsync(),
             debounce: 100
         });
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {enabled, cube, formModel} = this;
+        const {enabled, cube} = this;
         if (!enabled) return;
 
         try {
             const data = await XH.fetchJson({
                 url: 'trackLogAdmin',
-                params: formModel.getData(),
+                params: this.getParams(),
                 loadSpec
+            });
+
+            const lookups = await XH.fetchJson({url: 'trackLogAdmin/lookups'});
+
+            this.filterChooserModel.fieldSpecs.forEach(spec => {
+                const {field} = spec;
+                spec.values = lookups[field];
             });
 
             data.forEach(it => {
@@ -232,7 +228,6 @@ export class ActivityTrackingModel extends HoistModel {
         const {cube, gridModel, dimensions} = this,
             data = cube.executeQuery({
                 dimensions,
-                filter: this.filterChooserModel.value,
                 includeRoot: true,
                 includeLeaves: true
             });
@@ -325,5 +320,20 @@ export class ActivityTrackingModel extends HoistModel {
 
     get defaultEndDay() {
         return LocalDate.currentAppDay();
+    }
+
+    private getParams() {
+        if (!this.filterChooserModel.selectValue) {
+            return this.formModel.getData();
+        }
+        console.log(this.filterChooserModel.value);
+
+        return {
+            ...this.formModel.getData(),
+            filters:
+                this.filterChooserModel.value instanceof CompoundFilter
+                    ? JSON.stringify(this.filterChooserModel.value.filters)
+                    : JSON.stringify([this.filterChooserModel.value])
+        };
     }
 }
