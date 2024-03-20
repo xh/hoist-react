@@ -42,18 +42,7 @@ export const rolePanel = hoistCmp.factory({
                     }),
                     filterChooser({flex: 1})
                 ],
-                item: hframe(
-                    vframe(
-                        grid({
-                            agOptions: {
-                                groupAllowUnbalanced: true,
-                                groupMaintainOrder: true
-                            }
-                        }),
-                        roleGraph()
-                    ),
-                    detailsPanel()
-                )
+                item: hframe(vframe(grid(), roleGraph()), detailsPanel())
             }),
             roleEditor()
         );
