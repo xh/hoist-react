@@ -237,10 +237,10 @@ export class RoleModel extends HoistModel {
                 if (!currCat) {
                     currCat = {name: category, children: [], isGroupRow: true};
                     currCat.id = `${id}-${currCat.name}`;
-                    id = currCat.id;
                     children.push(currCat);
                 }
                 children = currCat.children;
+                id = currCat.id;
             });
             children.push(role);
         });
@@ -284,7 +284,9 @@ export class RoleModel extends HoistModel {
             },
             persistWith: {...this.persistWith, path: 'mainGrid'},
             store: {
-                idSpec: ({id, name}) => id ?? name,
+                idSpec: ({id, name}) => {
+                    return id ?? name;
+                },
                 fields: [
                     {name: 'users', displayName: 'Assigned Users', type: 'tags'},
                     {name: 'directoryGroups', displayName: 'Assigned Groups', type: 'tags'},
