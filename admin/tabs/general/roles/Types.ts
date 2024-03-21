@@ -42,6 +42,8 @@ export interface EffectiveRoleUser {
 
 export type RoleMemberType = 'USER' | 'DIRECTORY_GROUP' | 'ROLE';
 
+export type RoleMemberSubType = RoleMemberType | 'OWN_ROLE';
+
 export interface RoleModuleConfig {
     enabled: boolean;
     userAssignmentSupported: boolean;

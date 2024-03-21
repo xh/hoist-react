@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {RoleMemberType} from '@xh/hoist/admin/tabs/general/roles/Types';
+import {RoleMemberSubType} from '@xh/hoist/admin/tabs/general/roles/Types';
 import {warningBanner} from '@xh/hoist/admin/tabs/general/roles/warning/WarningBanner';
 import {form} from '@xh/hoist/cmp/form';
 import {grid, gridCountLabel, GridModel} from '@xh/hoist/cmp/grid';
@@ -70,26 +70,29 @@ export const roleForm = hoistCmp.factory({
 });
 
 const assignments = hoistCmp.factory<RoleFormModel>(({model}) =>
-    hframe({
-        className: `xh-admin-role-form__assignments`,
-        items: [
-            assignmentsPanel({
-                entity: 'USER',
-                omit: !model.moduleConfig?.userAssignmentSupported && model.usersGridModel.empty
-            }),
-            assignmentsPanel({
-                entity: 'DIRECTORY_GROUP',
-                omit:
-                    !model.moduleConfig?.directoryGroupsSupported &&
-                    model.directoryGroupsGridModel.empty
-            }),
-            assignmentsPanel({entity: 'ROLE'})
-        ]
-    })
+    vframe(
+        hframe({
+            className: `xh-admin-role-form__assignments`,
+            items: [
+                assignmentsPanel({
+                    entity: 'USER',
+                    omit: !model.moduleConfig?.userAssignmentSupported && model.usersGridModel.empty
+                }),
+                assignmentsPanel({
+                    entity: 'DIRECTORY_GROUP',
+                    omit:
+                        !model.moduleConfig?.directoryGroupsSupported &&
+                        model.directoryGroupsGridModel.empty
+                }),
+                assignmentsPanel({entity: 'ROLE'})
+            ]
+        }),
+        assignmentsPanel({entity: 'OWN_ROLE'})
+    )
 );
 
 interface AssignmentsPanelProps extends HoistProps<RoleFormModel> {
-    entity: RoleMemberType;
+    entity: RoleMemberSubType;
 }
 
 const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
@@ -100,18 +103,22 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
         const {roleName} = model,
             forUser = entity === 'USER',
             forDirGroup = entity === 'DIRECTORY_GROUP',
-            forRole = entity === 'ROLE',
+            forOwnRole = entity === 'OWN_ROLE',
             gridModel = forUser
                 ? model.usersGridModel
                 : forDirGroup
                   ? model.directoryGroupsGridModel
-                  : model.rolesGridModel;
+                  : forOwnRole
+                    ? model.ownRolesGridModel
+                    : model.rolesGridModel;
 
         return panel({
             className,
             compactHeader: true,
             icon: forUser ? Icon.user() : forDirGroup ? Icon.users() : Icon.idBadge(),
-            title: `${capitalizeWords(entity.replace('_', ' '))}s ${forRole ? 'inheriting from' : 'belonging to'} ${roleName}`,
+            title: forOwnRole
+                ? `Roles ${roleName} inherits`
+                : `Grants ${roleName} to these ${capitalizeWords(entity.replace('_', ' '))}s `,
             headerItems: [infoIcon({entity}), hspacer(2)],
             tbar: toolbar({
                 compact: true,

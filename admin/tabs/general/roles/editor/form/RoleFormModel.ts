@@ -33,6 +33,7 @@ export class RoleFormModel extends HoistModel {
     @managed readonly usersGridModel: GridModel = this.createGridModel('USER');
     @managed readonly directoryGroupsGridModel: GridModel = this.createGridModel('DIRECTORY_GROUP');
     @managed readonly rolesGridModel: GridModel = this.createGridModel('ROLE');
+    @managed readonly ownRolesGridModel: GridModel = this.createGridModel('ROLE');
 
     @observable isEditingExistingRole = false;
 
@@ -52,7 +53,8 @@ export class RoleFormModel extends HoistModel {
         return (
             this.usersGridModel.store.isModified ||
             this.directoryGroupsGridModel.store.isModified ||
-            this.rolesGridModel.store.isModified
+            this.rolesGridModel.store.isModified ||
+            this.ownRolesGridModel.store.isModified
         );
     }
 
@@ -62,7 +64,8 @@ export class RoleFormModel extends HoistModel {
             this.formModel.isValid &&
             this.usersGridModel.store.isValid &&
             this.directoryGroupsGridModel.store.isValid &&
-            this.rolesGridModel.store.isValid
+            this.rolesGridModel.store.isValid &&
+            this.ownRolesGridModel.store.isValid
         );
     }
 
@@ -80,7 +83,8 @@ export class RoleFormModel extends HoistModel {
         this.addReaction(
             this.clearDegenerateRowReaction(this.usersGridModel),
             this.clearDegenerateRowReaction(this.directoryGroupsGridModel),
-            this.clearDegenerateRowReaction(this.rolesGridModel)
+            this.clearDegenerateRowReaction(this.rolesGridModel),
+            this.clearDegenerateRowReaction(this.ownRolesGridModel)
         );
     }
 
@@ -105,6 +109,14 @@ export class RoleFormModel extends HoistModel {
             allRoles.map(it => it.category).filter(it => it != null)
         ).sort();
         this.rolesGridModel.loadData(sortBy(role?.roles?.map(name => ({name})) ?? [], 'name'));
+        this.ownRolesGridModel.loadData(
+            sortBy(
+                role?.inheritedRoles
+                    ?.filter(it => it.sourceRoles.includes(role.name))
+                    .map(it => ({name: it.name})) ?? [],
+                'name'
+            )
+        );
         this.roleOptions = sortBy(
             map(groupBy(allRoles, 'category'), (roles, category) => ({
                 label: category == 'null' ? '*Uncategorized*' : category,
@@ -121,7 +133,8 @@ export class RoleFormModel extends HoistModel {
             this.formModel.validateAsync(),
             this.usersGridModel.store.validateAsync(),
             this.directoryGroupsGridModel.store.validateAsync(),
-            this.rolesGridModel.store.validateAsync()
+            this.rolesGridModel.store.validateAsync(),
+            this.ownRolesGridModel.store.validateAsync()
         ]);
         return results.every(Boolean);
     }
@@ -133,7 +146,8 @@ export class RoleFormModel extends HoistModel {
             directoryGroups: this.directoryGroupsGridModel.store.allRecords.map(it =>
                 it.get('name')
             ),
-            roles: this.rolesGridModel.store.allRecords.map(it => it.get('name'))
+            roles: this.rolesGridModel.store.allRecords.map(it => it.get('name')),
+            inheritedRoles: this.ownRolesGridModel.store.allRecords.map(it => it.get('name'))
         } as HoistRole;
     }
 
