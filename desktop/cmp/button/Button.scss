@@ -11,8 +11,8 @@
 //-----------------------------------------------
 .xh-app,
 .xh-app.xh-dark,
-.xh-app.xh-dark.bp4-dark {
-  .xh-button.bp4-button {
+.xh-app.xh-dark.bp5-dark {
+  .xh-button.bp5-button {
     border-radius: var(--xh-button-border-radius-px);
     font-family: var(--xh-button-font-family);
     font-size: var(--xh-button-font-size-px);
@@ -48,7 +48,7 @@
   // Button group (input)
   //------------------------
   .xh-button-group {
-    .xh-button.bp4-button {
+    .xh-button.bp5-button {
       &.xh-button--minimal,
       &.xh-button--outlined {
         // Ensures outlined buttons in button-groups appear seamlessly adjacent to each other in dark mode.
@@ -100,7 +100,7 @@
 // Default/light theme colors
 //---------------------------
 .xh-app {
-  .xh-button.bp4-button {
+  .xh-button.bp5-button {
     // Shaded/filled-in (non-minimal) mode.
     &.xh-button--standard {
       &.xh-button--active {
@@ -293,8 +293,8 @@
 // Dark theme colors
 //---------------------------
 .xh-app.xh-dark,
-.xh-app.xh-dark.bp4-dark {
-  .xh-button.bp4-button {
+.xh-app.xh-dark.bp5-dark {
+  .xh-button.bp5-button {
     // Dark - shaded/filled-in (non-minimal) mode.
     &.xh-button--standard {
       &.xh-button--intent-none {
@@ -480,7 +480,7 @@
   .xh-panel-header__items,
   .xh-panel-header--right,
   .xh-panel-header--left {
-    .xh-button.bp4-button.xh-button--minimal {
+    .xh-button.bp5-button.xh-button--minimal {
       &.xh-button--intent-none {
         &.xh-button--enabled {
           &:hover:not(:active):not(.xh-button--active) {

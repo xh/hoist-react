@@ -1,10 +1,52 @@
 # Changelog
 
-## 62.0.0-SNAPSHOT - unreleased
+## 63.0.0-SNAPSHOT - unreleased
+
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - for apps with styling overrides for or direct use of Blueprint components)
+
+#### Blueprint 4 to 5 Migration
+
+Blueprint 5 is a major version update and includes breaking changes. While most of these changes
+have been addressed by the Hoist integration layer, developers importing Blueprint
+components directly should review
+the [Blueprint 5 migration guide](https://github.com/palantir/blueprint/wiki/Blueprint-5.0) for
+details.
+
+Below are breaking changes that most apps will need to address:
+
+* CSS rules with the `bp4-` prefix should be updated to use the `bp5-` prefix.
+* `popover` and `tooltip` components: replace `target` with `item` if using elementFactory.
+  If using JSX, replace `target` prop with a child element. This also applies to the
+  mobile `popover`.
+* Popovers no longer have a popover-wrapper element. You may want to remove or rework any CSS
+  rules that target `bp4-popover-wrapper`.
+* All components which render popovers now depend
+  on [`popper.js v2.x`](https://popper.js.org/docs/v2/). Any complex customizations to popovers may
+  need to be reworked.
+* Across all Blueprint components that had an `elementRef` prop, the `elementRef` prop is
+  replaced by the simpler, more straightforward `ref` prop using `React.forwardRef()`.
+  Consequently, in Hoist-React, `button`'s `elementRef` prop becomes just `ref`. Check your app
+  for any other components that may be affected.
+* The static `ContextMenu.show()` method has been replaced with `showContextMenu()`, importable
+  from `@xh/hoist/kit/blueprint`. The method signature has changed slightly.
+* `overlay` now refers to Blueprint's `overlay2` component.
+* `datePicker` now refers to Blueprint's `datePicker3` component. Blueprint's `datePicker3` has
+  been upgraded to use `react-day-picker` v8. If you are passing a `dayPickerProps` to
+  Hoist's `dateInput`, you may need to update your code to use the
+  new [v8 `DatePickerProps`](https://react-day-picker.js.org/api/interfaces/DayPickerSingleProps).
+
+## 62.0.0 - 2024-03-19
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
+
+* Requires update to `hoist-dev-utils >= v8.0.0` with updated chunking and code-splitting strategy
+  to create shorter bundle names.
 
 ### 🎁 New Features
 
-* A "Reload App" item has been added to the default mobile app menu.
+* Added a "Reload App" option to the default mobile app menu.
+* Improved perceived responsiveness when constructing a new 'FilterChooserModel' when backing data
+  has many records and/or auto-suggest-enabled fields.
 
 ### 🐞 Bug Fixes
 
@@ -13,9 +55,9 @@
 
 ## 61.0.0 - 2024-03-08
 
-### 💥 Breaking Changes
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
 
-* Requires update to `hoist-dev-utils >= v7.2.0`.
+* Requires update to `hoist-dev-utils >= v7.2.0` to inject new `xhClientApps` constant.
 
 ### 🎁 New Features
 
@@ -79,12 +121,21 @@
 
 ## 60.0.0 - 2024-01-12
 
-* New Admin support for built-in Role Management provided by Hoist Core `v18`.
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - depends on server-side Roles implementation)
+
+* Requires `hoist-core >= v18`. Even if not using new Hoist provided Role Management, several Admin
+  Console features have had deprecation support for older versions of Hoist Core removed.
+
+### 🎁 New Features
+
+* Introduced new Admin Console tools for enhanced Role Management available in `hoist-core >= v18`.
     * Hoist-core now supports an out-of-the-box, database-driven system for maintaining a
       hierarchical set of Roles associating and associating them with individual users.
     * New system supports app and plug-in specific integrations to AD and other enterprise systems.
     * Administration of the new system provided by a new admin UI tab provided here.
-
+    * Consult XH and the
+      [Hoist Core CHANGELOG](https://github.com/xh/hoist-core/blob/develop/CHANGELOG.md#1800---2024-01-12)
+      for additional details and upgrade instructions.
 * Added `labelRenderers` property to `ZoneGridModel`. This allows dynamic "data-specific" labeling
   of fields in `ZoneGrid`.
 
@@ -118,7 +169,7 @@
 
 ## 59.4.0 - 2023-11-28
 
-### 💥 Breaking Changes
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
 * The constructors for `ColumnGroup` no long accept arbitrary rest (e.g `...rest`)
   arguments for applying app-specific data to the object. Instead, use the new `appData` property.
@@ -296,7 +347,7 @@
 
 ## 59.0.0 - 2023-08-17
 
-### 💥 Breaking Changes
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
 * Apps must update their `typescript` dependency to v5.1. This should be a drop-in for most
   applications, or require only minor changes. Note that Hoist has not yet adopted the updated
@@ -363,6 +414,14 @@
 
 ## 58.0.0 - 2023-07-07
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* The `Column.getValueFn` and `Column.renderer` functions will no longer be passed the `agParams`
+  argument. This argument was not passed consistently by Hoist when calling these functions; and was
+  specifically omitted during operations such as column sizing, tooltip generation and Grid content
+  searching. We do not expect this argument was being used in practice by applications, but
+  applications should ensure this is the case, and adjust these callbacks if necessary.
+
 ### 🎁 New Features
 
 * Deprecated `xhAppVersionCheckEnabled` config in favor of object-based `xhAppVersionCheck`. Hoist
@@ -377,15 +436,13 @@
   apps to react to changes in page visibility and focus, as well as detecting when the browser has
   frozen a tab due to inactivity or navigation.
 
-### 💥 Breaking Changes
-
-* The `Column.getValueFn` and `Column.renderer` functions will no longer be passed the `agParams`
-  argument. This argument was not passed consistently by Hoist when calling these functions; and was
-  specifically omitted during operations such as column sizing, tooltip generation and Grid content
-  searching. We do not expect this argument was being used in practice by applications, but
-  applications should ensure this is the case, and adjust these callbacks if necessary.
-
 ## 57.0.0 - 2023-06-20
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* The deprecated `@settable` decorator has now been removed. Use `@bindable` instead.
+* The deprecated class `@xh/hoist/admin/App` has been removed. Use `@xh/hoist/admin/AppComponent`
+  instead.
 
 ### 🎁 New Features
 
@@ -401,12 +458,6 @@
 * Hoist now supports and requires ag-Grid v30 or higher. This version includes critical
   performance improvements to scrolling without the problematic 'ResizeObserver' issues discussed
   below.
-
-### 💥 Breaking Changes
-
-* The deprecated `@settable` decorator has now been removed. Use `@bindable` instead.
-* The deprecated class `@xh/hoist/admin/App` has been removed. Use `@xh/hoist/admin/AppComponent`
-  instead.
 
 ### 🐞 Bug Fixes
 
@@ -545,19 +596,9 @@
 
 ## v56.0.0 - 2023-03-29
 
-### 🎁 New Features
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM)
 
-* `PanelModel` now supports a `defaultSize` property specified in percentage as well as pixels
-  (e.g. `defaultSize: '20%'` as well as `defaultSize: 200`).
-* `DashCanvas` views can now be programmatically added with specified width and height dimensions.
-* New `FetchService.abort()` API allows manually aborting a pending fetch request.
-* Hoist exceptions have been enhanced and standardized, including new TypeScript types. The
-  `Error.cause` property is now populated for wrapping exceptions.
-* New `GridModel.headerMenuDisplay` config for limiting column header menu visibility to on hover.
-
-### 💥 Breaking Changes
-
-* Requires Hoist Core v16 or higher.
+* Requires `hoist-core => v16`.
 * Requires AG Grid v29.0.0 or higher - update your AG Grid dependency in your app's `package.json`
   file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for details.
     * Add a dependency on `@ag-grid-community/styles` to import new dedicated styles package.
@@ -583,6 +624,16 @@ import '@ag-grid-community/styles/ag-theme-balham.css';
 * Removed `fill` prop on `TextArea` and `NumberInput` component. Use `flex` instead.
 * Removed previously deprecated `Button.modifier.outline` and `Button.modifier.quiet` (mobile only).
 * Removed previously deprecated `AppMenuButton.extraItems.onClick`. Use `actionFn` instead.
+
+### 🎁 New Features
+
+* `PanelModel` now supports a `defaultSize` property specified in percentage as well as pixels
+  (e.g. `defaultSize: '20%'` as well as `defaultSize: 200`).
+* `DashCanvas` views can now be programmatically added with specified width and height dimensions.
+* New `FetchService.abort()` API allows manually aborting a pending fetch request.
+* Hoist exceptions have been enhanced and standardized, including new TypeScript types. The
+  `Error.cause` property is now populated for wrapping exceptions.
+* New `GridModel.headerMenuDisplay` config for limiting column header menu visibility to on hover.
 
 ### ⚙️ Typescript API Adjustments
 

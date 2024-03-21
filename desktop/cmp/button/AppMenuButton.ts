@@ -81,7 +81,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             disabled,
             position: 'bottom-right',
             minimal: true,
-            target: button({
+            item: button({
                 icon: Icon.menu(),
                 disabled,
                 ...rest
