@@ -267,7 +267,7 @@ export class RoleModel extends HoistModel {
             autosizeOptions: {mode: 'managed'},
             emptyText: 'No roles found.',
             colChooserModel: true,
-            sortBy: ['name'],
+            sortBy: ['isGroupRow', 'name'],
             enableExport: true,
             exportOptions: {filename: 'roles'},
             filterModel: true,
