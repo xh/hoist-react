@@ -10,7 +10,7 @@ import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {CompoundFilter, Cube, CubeFieldSpec, FieldSpec} from '@xh/hoist/data';
+import {Cube, CubeFieldSpec, FieldSpec} from '@xh/hoist/data';
 import {action, computed, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import * as Col from '@xh/hoist/admin/columns';
@@ -175,12 +175,7 @@ export class ActivityTrackingModel extends HoistModel {
         this.addReaction({
             track: () => {
                 const vals = this.formModel.values;
-                return [
-                    vals.startDay,
-                    vals.endDay,
-                    vals.maxRows,
-                    this.filterChooserModel.selectValue
-                ];
+                return [vals.startDay, vals.endDay, vals.maxRows, this.filterChooserModel.value];
             },
             run: () => this.loadAsync(),
             debounce: 100
@@ -194,21 +189,24 @@ export class ActivityTrackingModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {enabled, cube} = this;
+        const {enabled, cube, filterChooserModel, formModel} = this;
         if (!enabled) return;
 
         try {
-            const data = await XH.fetchJson({
+            const data = await XH.fetchService.postJson({
                 url: 'trackLogAdmin',
-                params: this.getParams(),
+                body: {
+                    ...formModel.getData(),
+                    filters: filterChooserModel.value
+                },
                 loadSpec
             });
 
             const lookups = await XH.fetchJson({url: 'trackLogAdmin/lookups'});
 
-            this.filterChooserModel.fieldSpecs.forEach(spec => {
+            filterChooserModel.fieldSpecs.forEach(spec => {
                 const {field} = spec;
-                spec.values = lookups[field];
+                if (lookups[field]) spec.values = lookups[field];
             });
 
             data.forEach(it => {
@@ -320,20 +318,5 @@ export class ActivityTrackingModel extends HoistModel {
 
     get defaultEndDay() {
         return LocalDate.currentAppDay();
-    }
-
-    private getParams() {
-        if (!this.filterChooserModel.selectValue) {
-            return this.formModel.getData();
-        }
-        console.log(this.filterChooserModel.value);
-
-        return {
-            ...this.formModel.getData(),
-            filters:
-                this.filterChooserModel.value instanceof CompoundFilter
-                    ? JSON.stringify(this.filterChooserModel.value.filters)
-                    : JSON.stringify([this.filterChooserModel.value])
-        };
     }
 }
