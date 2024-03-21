@@ -4,7 +4,8 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {roleMembers} from '@xh/hoist/admin/tabs/general/roles/details/members/RoleMembers';
+import {roleMembers} from './members/RoleMembers';
+import {userMembers} from './members/UserMembers';
 import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
@@ -42,7 +43,6 @@ export class RoleDetailsModel extends HoistModel {
     // -------------------------------
     // Implementation
     // -------------------------------
-
     private createFormModel(): FormModel {
         return new FormModel({
             fields: [{name: 'name'}, {name: 'category'}, {name: 'notes'}, {name: 'lastUpdated'}],
@@ -53,15 +53,26 @@ export class RoleDetailsModel extends HoistModel {
     private createTabContainerModel(): TabContainerModel {
         return new TabContainerModel({
             persistWith: {...RoleModel.PERSIST_WITH, path: 'roleMembersTabContainer'},
-            switcher: false,
+            switcher: true,
             tabs: [
                 {
-                    id: 'effectiveMembers',
-                    content: () => roleMembers({showInherited: false})
+                    id: 'users',
+                    content: userMembers,
+                },
+                {
+                    id: 'directories',
+                    tooltip: "Directories feeding users to this Role",
+                    content: directoryMembers
                 },
                 {
                     id: 'inheritedRoles',
-                    content: () => roleMembers({showInherited: true})
+                    tooltip: "Roles that have been granted to this role (e.g. what this role can do)",
+                    content: () => roleMembers({type: 'inherited'})
+                },
+                {
+                    id: 'inheritingRoles',
+                    tooltip: "Roles that this Role has been granted to (e.g. what can do this role)",
+                    content: () => roleMembers({type: 'inheriting'})
                 }
             ]
         });

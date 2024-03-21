@@ -4,18 +4,18 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {RoleMembersModel} from '@xh/hoist/admin/tabs/general/roles/details/members/RoleMembersModel';
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler, hbox} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import './RoleMembers.scss';
 import {isEmpty, sum, values} from 'lodash';
+import {DirectoryMembersModel} from './DirectoryMembersModel';
 
-export const roleMembers = hoistCmp.factory({
+export const directoryMembers = hoistCmp({
     className: 'xh-admin-role-members',
-    displayName: 'RoleMembers',
-    model: creates(RoleMembersModel),
+    displayName: 'DirectoryMembers',
+    model: creates(DirectoryMembersModel),
     render({className}) {
         return panel({className, item: grid()});
     }
