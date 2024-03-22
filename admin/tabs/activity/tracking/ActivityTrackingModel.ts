@@ -11,6 +11,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {Cube, CubeFieldSpec, FieldSpec} from '@xh/hoist/data';
+import {fmtNumber} from '@xh/hoist/format';
 import {action, computed, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import * as Col from '@xh/hoist/admin/columns';
@@ -106,23 +107,38 @@ export class ActivityTrackingModel extends HoistModel {
             fieldSpecs: [
                 {
                     field: 'category',
-                    valueRenderer: v => v,
                     enableValues: true
                 },
                 {
                     field: 'username',
-                    valueRenderer: v => v,
                     enableValues: true
                 },
                 {
                     field: 'device',
-                    valueRenderer: v => v,
                     enableValues: true
                 },
                 {
                     field: 'browser',
-                    valueRenderer: v => v,
                     enableValues: true
+                },
+                {
+                    field: 'elapsed',
+                    valueRenderer: v => {
+                        return fmtNumber(v, {
+                            label: 'ms',
+                            formatConfig: {thousandSeparated: false, mantissa: 0}
+                        });
+                    },
+                    fieldType: 'number'
+                },
+                {
+                    field: 'msg'
+                },
+                {
+                    field: 'data'
+                },
+                {
+                    field: 'userAgent'
                 }
             ]
         });
@@ -173,10 +189,7 @@ export class ActivityTrackingModel extends HoistModel {
         });
 
         this.addReaction({
-            track: () => {
-                const vals = this.formModel.values;
-                return [vals.startDay, vals.endDay, vals.maxRows, this.filterChooserModel.value];
-            },
+            track: () => this.query,
             run: () => this.loadAsync(),
             debounce: 100
         });
@@ -189,16 +202,13 @@ export class ActivityTrackingModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {enabled, cube, filterChooserModel, formModel} = this;
+        const {enabled, cube, filterChooserModel} = this;
         if (!enabled) return;
 
         try {
             const data = await XH.fetchService.postJson({
                 url: 'trackLogAdmin',
-                body: {
-                    ...formModel.getData(),
-                    filters: filterChooserModel.value
-                },
+                body: this.query,
                 loadSpec
             });
 
@@ -312,11 +322,22 @@ export class ActivityTrackingModel extends HoistModel {
         }
     }
 
-    get defaultStartDay() {
+    private get defaultStartDay() {
         return LocalDate.currentAppDay().subtract(6);
     }
 
-    get defaultEndDay() {
+    private get defaultEndDay() {
         return LocalDate.currentAppDay();
+    }
+
+    @computed
+    private get query() {
+        const {values} = this.formModel;
+        return {
+            startDay: values.startDay,
+            endDay: values.endDay,
+            maxRows: values.maxRows,
+            filters: this.filterChooserModel.value
+        };
     }
 }
