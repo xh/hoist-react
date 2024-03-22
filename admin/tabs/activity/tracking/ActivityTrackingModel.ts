@@ -143,6 +143,8 @@ export class ActivityTrackingModel extends HoistModel {
             ]
         });
 
+        this.loadFieldSpecValues();
+
         this.groupingChooserModel = new GroupingChooserModel({
             dimensions: this.cube.dimensions,
             persistWith: this.persistWith,
@@ -202,7 +204,7 @@ export class ActivityTrackingModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {enabled, cube, filterChooserModel} = this;
+        const {enabled, cube} = this;
         if (!enabled) return;
 
         try {
@@ -210,13 +212,6 @@ export class ActivityTrackingModel extends HoistModel {
                 url: 'trackLogAdmin',
                 body: this.query,
                 loadSpec
-            });
-
-            const lookups = await XH.fetchJson({url: 'trackLogAdmin/lookups'});
-
-            filterChooserModel.fieldSpecs.forEach(spec => {
-                const {field} = spec;
-                if (lookups[field]) spec.values = lookups[field];
             });
 
             data.forEach(it => {
@@ -328,6 +323,15 @@ export class ActivityTrackingModel extends HoistModel {
 
     private get defaultEndDay() {
         return LocalDate.currentAppDay();
+    }
+
+    private async loadFieldSpecValues() {
+        const lookups = await XH.fetchJson({url: 'trackLogAdmin/lookups'});
+
+        this.filterChooserModel.fieldSpecs.forEach(spec => {
+            const {field} = spec;
+            if (lookups[field]) spec.values = lookups[field];
+        });
     }
 
     @computed
