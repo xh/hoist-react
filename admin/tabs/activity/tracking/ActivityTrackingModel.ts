@@ -143,7 +143,7 @@ export class ActivityTrackingModel extends HoistModel {
             ]
         });
 
-        this.loadFieldSpecValues();
+        this.loadLookupsAsync();
 
         this.groupingChooserModel = new GroupingChooserModel({
             dimensions: this.cube.dimensions,
@@ -325,7 +325,7 @@ export class ActivityTrackingModel extends HoistModel {
         return LocalDate.currentAppDay();
     }
 
-    private async loadFieldSpecValues() {
+    private async loadLookupsAsync() {
         const lookups = await XH.fetchJson({url: 'trackLogAdmin/lookups'});
 
         this.filterChooserModel.fieldSpecs.forEach(spec => {
