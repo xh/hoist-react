@@ -144,7 +144,7 @@ export class ActivityTrackingModel extends HoistModel {
         });
 
         this.loadLookupsAsync();
-
+      
         this.groupingChooserModel = new GroupingChooserModel({
             dimensions: this.cube.dimensions,
             persistWith: this.persistWith,
