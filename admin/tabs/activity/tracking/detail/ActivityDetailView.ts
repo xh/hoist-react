@@ -7,10 +7,10 @@
 import {form} from '@xh/hoist/cmp/form';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {div, filler, h3, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
-import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, creates} from '@xh/hoist/core';
 import {colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
+import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -38,7 +38,7 @@ const tbar = hoistCmp.factory(({model}) => {
     return toolbar(
         filler(),
         gridCountLabel({unit: 'entry'}),
-        storeFilterField(),
+        gridFindField(),
         colChooserButton(),
         exportButton()
     );

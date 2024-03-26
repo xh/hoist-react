@@ -37,7 +37,7 @@ export class ActivityDetailModel extends HoistModel {
             sortBy: 'dateCreated|desc',
             colChooserModel: true,
             enableExport: true,
-            filterModel: true,
+            filterModel: false,
             exportOptions: {
                 columns: 'ALL',
                 filename: exportFilename('activity-detail')

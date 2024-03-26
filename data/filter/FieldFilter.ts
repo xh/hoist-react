@@ -18,7 +18,6 @@ import {
     isNil,
     isString,
     isUndefined,
-    pick,
     uniq
 } from 'lodash';
 import {FieldType, parseFieldValue} from '../Field';
@@ -100,9 +99,8 @@ export class FieldFilter extends Filter {
     }
 
     toJSON() {
-        const ret = pick(this, 'field', 'op', 'value'),
-            {serializedValueType} = this;
-        return serializedValueType ? {...ret, valueType: serializedValueType} : ret;
+        const {field, op, value, serializedValueType} = this;
+        return {field, op, value, ...(serializedValueType ? {valueType: serializedValueType} : {})};
     }
 
     //-----------------
