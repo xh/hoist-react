@@ -80,7 +80,9 @@ export class TrackService extends HoistService {
         try {
             const params: any = {
                 msg: stripTags(options.message),
-                clientUsername: XH.getUsername()
+                clientUsername: XH.getUsername(),
+                appVersion: XH.getEnv('clientVersion'),
+                url: window.location.href
             };
 
             if (options.category) params.category = options.category;
