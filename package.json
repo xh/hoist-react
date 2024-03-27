@@ -30,8 +30,8 @@
     ]
   },
   "dependencies": {
-    "@blueprintjs/core": "^5.10.0",
-    "@blueprintjs/datetime2": "^2.3.1",
+    "@blueprintjs/core": "^5.10.1",
+    "@blueprintjs/datetime2": "^2.3.3",
     "@fortawesome/fontawesome-pro": "^6.2.1",
     "@fortawesome/fontawesome-svg-core": "^6.2.1",
     "@fortawesome/pro-light-svg-icons": "^6.2.1",
