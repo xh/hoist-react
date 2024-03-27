@@ -326,7 +326,11 @@ export class AppContainerModel extends HoistModel {
     }
 
     private startRouter() {
-        this.routerModel.addRoutes(this.appModel.getRoutes());
+        const routes = this.appModel.getRoutes(),
+            defaultRoute = routes.length ? routes[0].name : null;
+
+        this.routerModel.addRoutes(routes);
+        this.routerModel.router.setOption('defaultRoute', defaultRoute);
         this.routerModel.router.start();
     }
 
