@@ -92,11 +92,9 @@ export class RouterModel extends HoistModel {
     }
 
     private createRouter() {
-        const ret = createRouter([], {defaultRoute: 'default'});
-
+        const ret = createRouter();
         ret.usePlugin(browserPlugin());
         ret.subscribe(ev => this.setCurrentState(ev.route));
-
         return ret;
     }
 
