@@ -2,7 +2,7 @@
 
 ## 62.0.1 - 2024-03-28
 
-### 🐞 New Features
+### 🎁 New Features
 * New method `clear()` added to `TaskObserver` api.
 
 ### 🐞 Bug Fixes
