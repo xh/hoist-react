@@ -58,6 +58,9 @@ Below are breaking changes that most apps will need to address:
 * Improved perceived responsiveness when constructing a new 'FilterChooserModel' when backing data
   has many records and/or auto-suggest-enabled fields.
 
+### 🎁 New Features
+* Removed direct members grid from the roles admin UI and replaced it with a new "Inherited Roles" grid.
+
 ### 🐞 Bug Fixes
 
 * Fixed the config differ dialog issue where long field values would cause the toolbar to get hidden

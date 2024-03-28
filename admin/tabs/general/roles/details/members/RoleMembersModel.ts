@@ -21,7 +21,7 @@ import {Icon} from '@xh/hoist/icon';
 import {tag} from '@xh/hoist/kit/blueprint';
 import {bindable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
-import {invert, sortBy, uniq, uniqBy} from 'lodash';
+import {invert, keyBy, sortBy, uniq, uniqBy} from 'lodash';
 import {computed} from 'mobx';
 
 export class RoleMembersModel extends HoistModel {
@@ -47,14 +47,9 @@ export class RoleMembersModel extends HoistModel {
     }
 
     @computed
-    get directCounts(): Record<RoleMemberType, number> {
+    get inheritedRolesCount(): Record<string, number> {
         if (!this.selectedRole) return null;
-        const {users, directoryGroups, roles} = this.selectedRole;
-        return {
-            USER: users.length,
-            DIRECTORY_GROUP: directoryGroups.length,
-            ROLE: roles.length
-        };
+        return {ROLE: this.selectedRole.inheritedRoles.length};
     }
 
     @computed
@@ -101,13 +96,16 @@ export class RoleMembersModel extends HoistModel {
             return;
         }
 
-        if (this.props.showEffective) {
+        if (!this.props.showInherited) {
+            const memberMap = keyBy(role.members, it => `${it.name}-${it.type}`);
             this.gridModel.loadData([
                 // 1 - Users
                 ...role.effectiveUsers.map(it => ({
                     name: it.name,
                     sources: this.sortThisRoleFirst(it.sources),
-                    type: RoleMembersModel.types.USER
+                    type: RoleMembersModel.types.USER,
+                    dateCreated: memberMap[`${it.name}-USER`]?.dateCreated,
+                    createdBy: memberMap[`${it.name}-USER`]?.createdBy
                 })),
 
                 // 2 - Directory Groups
@@ -116,7 +114,9 @@ export class RoleMembersModel extends HoistModel {
                           name: it.name,
                           sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
                           type: RoleMembersModel.types.DIRECTORY_GROUP,
-                          error: role.errors.directoryGroups[it.name]
+                          error: role.errors.directoryGroups[it.name],
+                          dateCreated: memberMap[`${it.name}-DIRECTORY_GROUP`]?.dateCreated,
+                          createdBy: memberMap[`${it.name}-DIRECTORY_GROUP`]?.createdBy
                       }))
                     : []),
 
@@ -124,24 +124,24 @@ export class RoleMembersModel extends HoistModel {
                 ...role.effectiveRoles.map(it => ({
                     name: it.name,
                     sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
-                    type: RoleMembersModel.types.ROLE
+                    type: RoleMembersModel.types.ROLE,
+                    dateCreated: memberMap[`${it.name}-ROLE`]?.dateCreated,
+                    createdBy: memberMap[`${it.name}-ROLE`]?.createdBy
                 }))
             ]);
         } else {
             this.gridModel.loadData(
-                role.members.map(it => ({
+                role.inheritedRoles.map(it => ({
                     ...it,
-                    type: RoleMembersModel.types[it.type],
-                    error:
-                        it.type === 'DIRECTORY_GROUP' ? role.errors.directoryGroups[it.name] : null
+                    sources: this.sortThisRoleFirst(it.sourceRoles.map(role => ({role}))),
+                    type: RoleMembersModel.types.ROLE
                 }))
             );
         }
     }
 
     private createGridModel(): GridModel {
-        const {types} = RoleMembersModel,
-            {showEffective} = this.props;
+        const {types} = RoleMembersModel;
         return new GridModel({
             store: {
                 fields: [
@@ -203,17 +203,16 @@ export class RoleMembersModel extends HoistModel {
                                     ? directoryGroup ?? '<Direct>'
                                     : role
                             )
-                        ).join(', '),
-                    omit: !showEffective
+                        ).join(', ')
                 },
                 {
                     field: {name: 'dateCreated', displayName: 'Assigned', type: 'date'},
                     ...Col.dateTime,
-                    omit: showEffective
+                    omit: this.props.showInherited
                 },
                 {
                     field: {name: 'createdBy', displayName: 'Assigned By', type: 'string'},
-                    omit: showEffective
+                    omit: this.props.showInherited
                 }
             ]
         });

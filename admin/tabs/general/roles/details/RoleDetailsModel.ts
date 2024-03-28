@@ -9,8 +9,8 @@ import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
-import {HoistRole} from '../Types';
 import {fmtDateTimeSec} from '@xh/hoist/format';
+import {HoistRole} from '../Types';
 
 export class RoleDetailsModel extends HoistModel {
     @lookup(() => RoleModel) readonly roleModel: RoleModel;
@@ -56,12 +56,12 @@ export class RoleDetailsModel extends HoistModel {
             switcher: false,
             tabs: [
                 {
-                    id: 'directMembers',
-                    content: () => roleMembers({showEffective: false})
+                    id: 'effectiveMembers',
+                    content: () => roleMembers({showInherited: false})
                 },
                 {
-                    id: 'effectiveMembers',
-                    content: () => roleMembers({showEffective: true})
+                    id: 'inheritedRoles',
+                    content: () => roleMembers({showInherited: true})
                 }
             ]
         });

@@ -6,7 +6,6 @@
  */
 import {RoleMembersModel} from '@xh/hoist/admin/tabs/general/roles/details/members/RoleMembersModel';
 import {RoleMemberType} from '@xh/hoist/admin/tabs/general/roles/Types';
-import {warningBanner} from '@xh/hoist/admin/tabs/general/roles/warning/WarningBanner';
 import {badge} from '@xh/hoist/cmp/badge';
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler, hbox} from '@xh/hoist/cmp/layout';
@@ -23,36 +22,42 @@ import {isEmpty, sum, values} from 'lodash';
 import {ReactNode} from 'react';
 
 export interface RoleMembersProps extends HoistProps<RoleMembersModel> {
-    showEffective: boolean;
+    showInherited: boolean;
 }
 
 export const roleMembers = hoistCmp.factory<RoleMembersProps>({
     className: 'xh-admin-role-members',
     displayName: 'RoleMembers',
     model: creates(RoleMembersModel),
-    render({className, model, showEffective}) {
-        const {directCounts, effectiveCounts} = model;
+    render({className, model}) {
+        const {inheritedRolesCount, effectiveCounts} = model;
         return panel({
             className,
             tbar: [
                 buttonGroupInput({
                     bind: 'activeTabId',
+                    outlined: true,
                     items: [
                         button({
-                            text: buttonText({text: 'Assigned', countsByType: directCounts}),
-                            value: 'directMembers'
+                            text: buttonText({
+                                text: 'Effective Members',
+                                countsByType: effectiveCounts
+                            }),
+                            value: 'effectiveMembers'
                         }),
                         button({
-                            text: buttonText({text: 'Effective', countsByType: effectiveCounts}),
-                            value: 'effectiveMembers'
+                            text: buttonText({
+                                text: 'Inherited Roles',
+                                countsByType: inheritedRolesCount
+                            }),
+                            value: 'inheritedRoles'
                         })
                     ]
                 }),
                 filler(),
                 storeFilterField()
             ],
-            item: grid(),
-            bbar: bbar({omit: showEffective})
+            item: grid()
         });
     }
 });
@@ -71,7 +76,7 @@ const buttonText = hoistCmp.factory<ButtonTextProps>(({countsByType, text}) => {
     if (roles) countLabels.push(pluralize('Role', roles, true));
 
     return tooltip({
-        content: `${text} Members` + (isEmpty(countLabels) ? '' : ` (${countLabels.join(', ')})`),
+        content: `${text}` + (isEmpty(countLabels) ? '' : ` (${countLabels.join(', ')})`),
         item: hbox({
             alignItems: 'center',
             items: [text, counts({countsByType})]
@@ -107,16 +112,3 @@ const count = hoistCmp.factory<CountProps>(({count, icon}) =>
         omit: !count
     })
 );
-
-const bbar = hoistCmp.factory<RoleMembersModel>(({model}) => {
-    const {directCounts, moduleConfig} = model;
-    if (!moduleConfig?.directoryGroupsSupported && directCounts.DIRECTORY_GROUP) {
-        return warningBanner({
-            message: 'Directory Groups disabled. Will ignore.'
-        });
-    } else if (!moduleConfig?.userAssignmentSupported && directCounts.USER) {
-        return warningBanner({
-            message: 'Users assignment disabled. Will ignore.'
-        });
-    }
-});
