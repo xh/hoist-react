@@ -687,6 +687,9 @@ export const Icon = {
     treeList(p?: IconProps) {
         return Icon.icon({...p, iconName: 'list-tree'});
     },
+    treeMap(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'chart-tree-map'});
+    },
     undo(p?: IconProps) {
         return Icon.icon({...p, iconName: 'undo'});
     },
