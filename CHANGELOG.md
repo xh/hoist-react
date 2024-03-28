@@ -52,6 +52,7 @@ Below are breaking changes that most apps will need to address:
 
 * Fixed the config differ dialog issue where long field values would cause the toolbar to get hidden
   and/or table columns to be overly wide due to content overflow.
+* ZoneGrid columns' renders always need to be marked as complex
 
 ## 61.0.0 - 2024-03-08
 
