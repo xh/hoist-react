@@ -193,9 +193,9 @@ export class ExceptionHandler {
                 return false;
             }
 
-            await XH.fetchJson({
+            await XH.fetchService.postJson({
                 url: 'xh/submitError',
-                params: {
+                body: {
                     error,
                     msg: userMessage ? stripTags(userMessage) : '',
                     appVersion: XH.getEnv('clientVersion'),
