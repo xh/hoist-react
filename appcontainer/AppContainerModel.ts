@@ -118,6 +118,8 @@ export class AppContainerModel extends HoistModel {
      * Triggers initial authentication and initialization of Hoist and application.
      */
     async initAsync() {
+        this.setAppState('PRE_AUTH');
+
         // Avoid bug where "Discarded" browser tabs can re-init an old version (see #3574)
         if (window.document['wasDiscarded']) {
             XH.reloadApp();
@@ -151,7 +153,6 @@ export class AppContainerModel extends HoistModel {
 
         try {
             await installServicesAsync(FetchService);
-            this.setAppState('PRE_AUTH');
 
             // consult (optional) pre-auth init for app
             const modelClass: any = this.appSpec.modelClass;
