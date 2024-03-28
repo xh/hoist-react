@@ -35,12 +35,15 @@ Below are breaking changes that most apps will need to address:
   Hoist's `dateInput`, you may need to update your code to use the
   new [v8 `DatePickerProps`](https://react-day-picker.js.org/api/interfaces/DayPickerSingleProps).
 
+## 62.0.1 - 2024-03-28
+
+### 🎁 New Features
+
+* New method `clear()` added to `TaskObserver` api.
+
 ### 🐞 Bug Fixes
 
 * Ensure application viewport is masked throughout the entire app initialization process.
-
-### 🐞 New Features
-* New method `clear()` added to `TaskObserver` api.
 
 ## 62.0.0 - 2024-03-19
 
