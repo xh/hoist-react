@@ -1,5 +1,14 @@
 # Changelog
 
+## 62.0.1 - 2024-03-28
+
+### 🐞 New Features
+* New method `clear()` added to `TaskObserver` api.
+
+### 🐞 Bug Fixes
+
+* Ensure application viewport is masked throughout the entire app initialization process.
+
 ## 62.0.0 - 2024-03-19
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
