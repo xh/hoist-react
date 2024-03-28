@@ -45,6 +45,7 @@ export class AppStateModel extends HoistModel {
         this.setAppState('SUSPENDED');
         XH.webSocketService.shutdown();
         Timer.cancelAll();
+        XH.appContainerModel.appLoadModel.clear();
     }
 
     checkAccess(): boolean {

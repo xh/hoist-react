@@ -39,6 +39,9 @@ Below are breaking changes that most apps will need to address:
 
 * Ensure application viewport is masked throughout the entire app initialization process.
 
+### 🐞 New Features
+* New method `clear()` added to `TaskObserver` api.
+
 ## 62.0.0 - 2024-03-19
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
