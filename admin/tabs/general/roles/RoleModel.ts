@@ -5,16 +5,16 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
+import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {compact, groupBy, isEmpty, mapValues} from 'lodash';
+import {compact, groupBy, mapValues} from 'lodash';
 import {action, observable, runInAction} from 'mobx';
 import moment from 'moment/moment';
 import {RoleEditorModel} from './editor/RoleEditorModel';
@@ -39,12 +39,16 @@ export class RoleModel extends HoistModel {
     @observable.ref allRoles: HoistRole[] = [];
     @observable.ref moduleConfig: RoleModuleConfig;
 
+    @bindable groupingDisabled = false;
+
     get readonly() {
         return !XH.getUser().isHoistRoleManager;
     }
 
     get selectedRole(): HoistRole {
-        return this.gridModel.selectedRecord?.data as HoistRole;
+        const selected = this.gridModel.selectedRecord?.data;
+        if (selected && !selected.isGroupRow) return selected as HoistRole;
+        return null;
     }
 
     constructor() {
@@ -60,7 +64,8 @@ export class RoleModel extends HoistModel {
 
             const {data} = await XH.fetchJson({loadSpec, url: 'roleAdmin/list'});
             if (loadSpec.isStale) return;
-            this.setRoles(this.processRolesFromServer(data));
+            const roles = this.processRolesFromServer(data);
+            this.setRoles(roles);
         } catch (e) {
             if (loadSpec.isStale) return;
             XH.handleException(e);
@@ -79,8 +84,9 @@ export class RoleModel extends HoistModel {
 
     @action
     setRoles(roles: HoistRole[]) {
+        const gridData = this.groupingDisabled ? roles : this.processRolesForTreeGrid(roles);
         this.allRoles = roles;
-        this.gridModel.loadData(roles);
+        this.gridModel.loadData(gridData);
     }
 
     @action
@@ -129,6 +135,9 @@ export class RoleModel extends HoistModel {
             tooltip: 'Add or remove users from this role.',
             icon: Icon.edit(),
             intent: 'primary',
+            displayFn: ({record}) => ({
+                disabled: this.readonly || record?.data.isGroupRow
+            }),
             actionFn: ({record}) => this.editAsync(record.data as HoistRole),
             recordsRequired: true
         };
@@ -138,6 +147,9 @@ export class RoleModel extends HoistModel {
         return {
             text: 'Clone',
             icon: Icon.copy(),
+            displayFn: ({record}) => ({
+                disabled: this.readonly || record?.data.isGroupRow
+            }),
             actionFn: ({record}) => this.createAsync(record.data as HoistRole),
             recordsRequired: true
         };
@@ -148,6 +160,9 @@ export class RoleModel extends HoistModel {
             text: 'Delete',
             icon: Icon.delete(),
             intent: 'danger',
+            displayFn: ({record}) => ({
+                disabled: this.readonly || record?.data.isGroupRow
+            }),
             actionFn: ({record}) =>
                 this.deleteAsync(record.data as HoistRole)
                     .catchDefault()
@@ -159,17 +174,18 @@ export class RoleModel extends HoistModel {
     private groupByAction(): RecordActionSpec {
         return {
             text: 'Group By Category',
-            displayFn: ({gridModel}) => ({
-                icon: isEmpty(gridModel.groupBy) ? Icon.circle() : Icon.checkCircle()
+            displayFn: () => ({
+                icon: this.groupingDisabled ? Icon.circle() : Icon.checkCircle(),
+                disabled: this.readonly
             }),
             actionFn: ({gridModel}) => {
-                if (isEmpty(gridModel.groupBy)) {
-                    gridModel.setGroupBy('category');
-                    gridModel.hideColumn('category');
-                } else {
-                    gridModel.setGroupBy(null);
+                this.groupingDisabled = !this.groupingDisabled;
+                this.setRoles(this.allRoles);
+                if (this.groupingDisabled) {
                     gridModel.showColumn('category');
                     gridModel.autosizeAsync();
+                } else {
+                    gridModel.hideColumn('category');
                 }
             }
         };
@@ -207,6 +223,30 @@ export class RoleModel extends HoistModel {
         });
     }
 
+    private processRolesForTreeGrid(
+        roles: Omit<HoistRole, 'users' | 'directoryGroups' | 'roles'>[]
+    ) {
+        const root = [];
+        roles.forEach(role => {
+            const categories = role.category ? role.category.split('\\') : ['Uncategorized'];
+
+            let children = root,
+                id = '';
+            categories.forEach(category => {
+                let currCat = children.find(it => it.name === category && it.isGroupRow);
+                if (!currCat) {
+                    currCat = {name: category, children: [], isGroupRow: true};
+                    currCat.id = `${id}-${currCat.name}`;
+                    children.push(currCat);
+                }
+                children = currCat.children;
+                id = currCat.id;
+            });
+            children.push(role);
+        });
+        return root;
+    }
+
     private async createAsync(roleSpec?: HoistRole): Promise<void> {
         const addedRole = await this.roleEditorModel.createAsync(roleSpec);
         if (!addedRole) return;
@@ -222,25 +262,31 @@ export class RoleModel extends HoistModel {
 
     private createGridModel(): GridModel {
         return new GridModel({
+            treeMode: true,
+            treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
             autosizeOptions: {mode: 'managed'},
             emptyText: 'No roles found.',
             colChooserModel: true,
-            sortBy: 'name|asc',
+            sortBy: ['isGroupRow', 'name'],
             enableExport: true,
             exportOptions: {filename: 'roles'},
             filterModel: true,
-            groupBy: 'category',
-            groupRowRenderer: ({value}) => (!value ? 'Uncategorized' : value),
+            rowClassRules: {
+                'xh-grid-clear-background-color': ({data}) => !data.data.isGroupRow
+            },
             headerMenuDisplay: 'hover',
-            onRowDoubleClicked: ({data: record}) =>
-                !this.readonly &&
-                record &&
-                this.roleEditorModel
-                    .editAsync(record.data)
-                    .then(role => role && this.refreshAsync()),
+            onRowDoubleClicked: ({data: record}) => {
+                if (!this.readonly && record && !record.data.isGroupRow) {
+                    this.roleEditorModel
+                        .editAsync(record.data)
+                        .then(role => role && this.refreshAsync());
+                }
+            },
             persistWith: {...this.persistWith, path: 'mainGrid'},
             store: {
-                idSpec: 'name',
+                idSpec: ({id, name}) => {
+                    return id ?? name;
+                },
                 fields: [
                     {name: 'users', displayName: 'Assigned Users', type: 'tags'},
                     {name: 'directoryGroups', displayName: 'Assigned Groups', type: 'tags'},
@@ -262,10 +308,11 @@ export class RoleModel extends HoistModel {
                 ],
                 processRawData: raw => ({
                     ...raw,
-                    effectiveUserNames: raw.effectiveUsers.map(it => it.name),
-                    effectiveDirectoryGroupNames: raw.effectiveDirectoryGroups.map(it => it.name),
-                    effectiveRoleNames: raw.effectiveRoles.map(it => it.name),
-                    inheritedRoleNames: raw.inheritedRoles.map(it => it.name)
+                    effectiveUserNames: raw.effectiveUsers?.map(it => it.name),
+                    effectiveDirectoryGroupNames: raw.effectiveDirectoryGroups?.map(it => it.name),
+                    effectiveRoleNames: raw.effectiveRoles?.map(it => it.name),
+                    inheritedRoleNames: raw.inheritedRoles?.map(it => it.name),
+                    isGroupRow: !!raw.isGroupRow
                 })
             },
             colDefaults: {
@@ -279,11 +326,16 @@ export class RoleModel extends HoistModel {
                     actions: [this.editAction()],
                     omit: this.readonly
                 },
-                {field: {name: 'name', type: 'string'}},
-                {field: {name: 'category', type: 'string'}, hidden: true},
+                {field: {name: 'name', type: 'string'}, isTreeColumn: true},
+                {
+                    field: {name: 'category', type: 'string'},
+                    hidden: true,
+                    renderer: v => tagsRenderer(v?.split('\\'))
+                },
                 {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime, hidden: true},
                 {field: {name: 'lastUpdatedBy', type: 'string'}, hidden: true},
-                {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1}
+                {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1},
+                {field: {name: 'isGroupRow', type: 'bool'}, hidden: true, excludeFromChooser: true}
             ],
             contextMenu: this.readonly
                 ? GridModel.defaultContextMenu
