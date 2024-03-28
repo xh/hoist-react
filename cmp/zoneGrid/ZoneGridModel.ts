@@ -598,6 +598,7 @@ export class ZoneGridModel extends HoistModel {
             flex: isLeft ? 2 : 1,
             align: isLeft ? 'left' : 'right',
             renderer: multiFieldRenderer,
+            rendererIsComplex: true,
             rowHeight: Grid['MULTIFIELD_ROW_HEIGHT'],
             resizable: false,
             movable: false,
