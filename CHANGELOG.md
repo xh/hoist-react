@@ -39,6 +39,11 @@ Below are breaking changes that most apps will need to address:
   Hoist's `dateInput`, you may need to update your code to use the
   new [v8 `DatePickerProps`](https://react-day-picker.js.org/api/interfaces/DayPickerSingleProps).
 
+#### Other Breaking Changes
+
+* Requires `hoist-core >= v19.0.0` to support updates to activity tracking and client error endpoints.
+
+
 ### 🐞 Bug Fixes
 
 * ZoneGrid columns' renders always need to be marked as complex
