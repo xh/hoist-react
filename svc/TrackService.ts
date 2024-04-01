@@ -85,6 +85,14 @@ export class TrackService extends HoistService {
                 url: window.location.href
             };
 
+            console.log(
+                'TrackService.doTrackAsync',
+                query.msg,
+                query.clientUsername,
+                query.url,
+                query.appVersion
+            );
+
             if (options.category) query.category = options.category;
             if (options.data) query.data = JSON.stringify(options.data);
             if (options.severity) query.severity = options.severity;
@@ -107,7 +115,11 @@ export class TrackService extends HoistService {
 
             this.logInfo(...consoleMsgs);
 
-            await XH.fetchService.postJson({url: 'xh/track', body: query});
+            await XH.fetchService.postJson({
+                url: 'xh/track',
+                body: query,
+                params: {clientUsername: query.clientUsername}
+            });
         } catch (e) {
             this.logError('Failed to persist track log', options, e);
         }

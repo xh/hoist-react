@@ -202,6 +202,9 @@ export class ExceptionHandler {
                     url: window.location.href,
                     userAlerted,
                     clientUsername: username
+                },
+                params: {
+                    clientUsername: username
                 }
             });
             return true;
