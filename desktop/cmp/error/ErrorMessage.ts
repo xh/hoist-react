@@ -72,7 +72,7 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
             ...rest
         } = props;
 
-        if (isNil(error) && !message) return null;
+        if (isNil(error)) return null;
 
         if (!message) {
             if (isString(error)) {

@@ -38,7 +38,7 @@ Below are breaking changes that most apps will need to address:
 ### 🐞 Bug Fixes
 
 * ZoneGrid columns' renders always need to be marked as complex
-* Fixed bug where `ErrorMessage` would not render if only a `message` was provided.
+* Fixed bug where `SplitTreeMap` would not properly render errors as intended.
 
 
 ## 62.0.1 - 2024-03-28
