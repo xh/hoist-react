@@ -2,6 +2,10 @@
 
 ## 63.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `MenuItem` now supports a `className` prop.
+
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - for apps with styling overrides for or direct use of Blueprint components)
 
 #### Blueprint 4 to 5 Migration
@@ -34,6 +38,22 @@ Below are breaking changes that most apps will need to address:
   been upgraded to use `react-day-picker` v8. If you are passing a `dayPickerProps` to
   Hoist's `dateInput`, you may need to update your code to use the
   new [v8 `DatePickerProps`](https://react-day-picker.js.org/api/interfaces/DayPickerSingleProps).
+
+### 🐞 Bug Fixes
+
+* ZoneGrid columns' renders always need to be marked as complex
+* Fixed bug where `SplitTreeMap` would not properly render errors as intended.
+
+
+## 62.0.1 - 2024-03-28
+
+### 🎁 New Features
+
+* New method `clear()` added to `TaskObserver` api.
+
+### 🐞 Bug Fixes
+
+* Ensure application viewport is masked throughout the entire app initialization process.
 
 ## 62.0.0 - 2024-03-19
 
