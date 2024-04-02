@@ -56,7 +56,14 @@ import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {deepFreeze, logWithDebug, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {
+    deepFreeze,
+    executeIfFunction,
+    logWithDebug,
+    throwIf,
+    warnIf,
+    withDefault
+} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -1449,7 +1456,7 @@ export class GridModel extends HoistModel {
             config = defaultsDeep({}, config, colDefaults);
         }
 
-        const omit = isFunction(config.omit) ? config.omit() : config.omit;
+        const omit = executeIfFunction(config.omit);
         if (omit) return null;
 
         if (this.isGroupSpec(config)) {
