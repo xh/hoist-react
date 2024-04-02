@@ -6,10 +6,8 @@
 
 * `MenuItem` now supports a `className` prop.
 * `TrackService` now posts `url` and `appVersion` fields to the server when tracking an event.
-* `ActivityTrackingModel` now posts `filterChooserModel` filter specs to server for server-side
-  filtering of tracked events.
-* `ClientErrorsModel` now posts `filterChooserModel` filter specs to server for server-side
-  filtering of client errors.
+* Admin `ActivityTracking` and `ClientError` modules now use server-side filtering for better
+  support of large datasets.
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - for apps with styling overrides for or direct use of Blueprint components)
 

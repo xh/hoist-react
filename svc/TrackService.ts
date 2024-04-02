@@ -86,9 +86,9 @@ export class TrackService extends HoistService {
             };
 
             if (options.category) query.category = options.category;
-            if (options.data) query.data = JSON.stringify(options.data);
+            if (options.data) query.data = options.data;
             if (options.severity) query.severity = options.severity;
-            if (options.logData !== undefined) query.logData = options.logData.toString();
+            if (options.logData !== undefined) query.logData = options.logData;
             if (options.elapsed !== undefined) query.elapsed = options.elapsed;
 
             const {maxDataLength} = this.conf;
@@ -110,6 +110,7 @@ export class TrackService extends HoistService {
             await XH.fetchService.postJson({
                 url: 'xh/track',
                 body: query,
+                // Post clientUsername as a parameter to ensure client username matches session.
                 params: {clientUsername: query.clientUsername}
             });
         } catch (e) {

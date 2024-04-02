@@ -203,6 +203,7 @@ export class ExceptionHandler {
                     userAlerted,
                     clientUsername: username
                 },
+                // Post clientUsername as a parameter to ensure client username matches session.
                 params: {
                     clientUsername: username
                 }
