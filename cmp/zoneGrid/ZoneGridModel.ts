@@ -58,8 +58,8 @@ import {ZoneGridModelPersistOptions, Zone, ZoneLimit, ZoneMapping} from './Types
 
 export interface ZoneGridConfig {
     /**
-     * Available columns for this grid. Note that the actual display of
-     * the zone columns is managed via `mappings` below.
+     * Available columns for this grid. Columns with a truthy omit property will be excluded.
+     * Note that the actual display of the zone columns is managed via `mappings` below.
      */
     columns: Array<ColumnSpec>;
 
