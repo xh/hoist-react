@@ -94,7 +94,8 @@ export class RoleGraphModel extends HoistModel {
         return [
             {
                 id: name,
-                name: name.replaceAll(' ', '&nbsp'), // Replace spaces with non-breaking spaces to prevent wrapping.
+                // Replace spaces with non-breaking spaces to prevent wrapping.
+                name: name.replaceAll(' ', '&nbsp'),
                 dataLabels: {
                     style: {
                         fontWeight: 600
@@ -113,7 +114,7 @@ export class RoleGraphModel extends HoistModel {
                         return a > b ? 1 : -1;
                     })
                     .map(source => {
-                        // Adds a space to the id to differentiate subsequent nodes from the expanded one.
+                        // Adds a space to the id to differentiate subsequent nodes from the single expanded one.
                         const id = alreadyAdded.has(name) ? `${name} ` : name;
                         alreadyAdded.add(name);
                         return {
@@ -151,7 +152,13 @@ export class RoleGraphModel extends HoistModel {
                             },
                             padding: 2,
                             borderRadius: 5,
-                            backgroundColor: 'var(--xh-bg-highlight)'
+                            backgroundColor: 'var(--xh-bg-highlight)',
+                            // Hides the little dot artifacts in the top left of the chart, which are caused by mysterious empty data labels.
+                            filter: {
+                                property: 'value',
+                                operator: '!=',
+                                value: null
+                            }
                         },
                         link: {
                             color: 'var(--xh-border-color)',

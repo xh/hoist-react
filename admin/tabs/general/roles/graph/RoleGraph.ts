@@ -60,16 +60,16 @@ export const roleGraph = hoistCmp.factory({
                         items: [
                             button({
                                 value: true,
-                                icon: Icon.treeList({rotation: 90})
+                                icon: Icon.treeGraph()
                             }),
                             button({
                                 value: false,
-                                icon: Icon.treeList()
+                                icon: Icon.treeGraph({rotation: 270})
                             })
                         ]
                     }),
                     hspacer(10),
-                    'Width',
+                    'Zoom',
                     slider({
                         paddingLeft: 2,
                         overflow: 'visible',
