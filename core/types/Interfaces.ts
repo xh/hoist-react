@@ -260,8 +260,11 @@ export interface MenuItem {
     /** Icon to be displayed. */
     icon?: ReactElement;
 
-    /** Intent to be used for rendering the action. */
+    /** Intent to be used for rendering the menu item. */
     intent?: Intent;
+
+    /** Css class name to be added when rendering the menu item. */
+    className?: string;
 
     /** Executed when the user clicks the menu item. */
     actionFn?: () => void;
@@ -275,7 +278,7 @@ export interface MenuItem {
     /** True to disable this item. */
     disabled?: boolean;
 
-    /** True to hide this item. May be set dynamically via prepareFn.*/
+    /** True to hide this item. May be set dynamically via prepareFn. */
     hidden?: boolean;
 
     /** True to skip this item. May be set dynamically via prepareFn. Alias for hidden.  */

@@ -24,7 +24,7 @@ export interface ButtonGroupProps<M extends HoistModel = null>
         LayoutProps,
         StyleProps,
         TestSupportProps,
-        SetOptional<BpButtonGroupProps, 'children'> {
+        SetOptional<Omit<BpButtonGroupProps, 'ref'>, 'children'> {
     /** True to have all buttons fill available width equally. */
     fill?: boolean;
 

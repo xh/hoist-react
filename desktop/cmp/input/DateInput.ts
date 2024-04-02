@@ -4,8 +4,8 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {PopperBoundary, PopperModifiers} from '@blueprintjs/core';
-import {ITimePickerProps} from '@blueprintjs/datetime';
+import {PopperBoundary, PopperModifierOverrides} from '@blueprintjs/core';
+import {TimePickerProps} from '@blueprintjs/datetime';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, HSide, LayoutProps, Some} from '@xh/hoist/core';
@@ -105,7 +105,7 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
     popoverBoundary?: PopperBoundary;
 
     /** Modifiers for calendar popover, as per Blueprint docs. Defaults to null */
-    popoverModifiers?: PopperModifiers;
+    popoverModifiers?: PopperModifierOverrides;
 
     /** Container DOM element to render the calendar popover inside. Defaults to document body. */
     portalContainer?: HTMLElement;
@@ -134,7 +134,7 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
      * Props passed to the TimePicker, as per Blueprint docs.
      * @see https://blueprintjs.com/docs/#datetime/dateinput
      */
-    timePickerProps?: ITimePickerProps;
+    timePickerProps?: TimePickerProps;
 
     /**
      * The precision of time selection that accompanies the calendar.
@@ -405,7 +405,7 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
                     ),
                     icon: Icon.calendar(),
                     tabIndex: enableTextInput || disabled ? -1 : undefined,
-                    elementRef: model.buttonRef,
+                    ref: model.buttonRef,
                     onClick: enablePicker && !disabled ? model.onOpenPopoverClick : null,
                     testId: getTestId(props, 'picker')
                 })
