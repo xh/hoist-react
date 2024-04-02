@@ -58,8 +58,8 @@ import {ZoneGridModelPersistOptions, Zone, ZoneLimit, ZoneMapping} from './Types
 
 export interface ZoneGridConfig {
     /**
-     * Available columns for this grid. Note that the actual display of
-     * the zone columns is managed via `mappings` below.
+     * Available columns for this grid. Columns with a truthy omit property will be excluded.
+     * Note that the actual display of the zone columns is managed via `mappings` below.
      */
     columns: Array<ColumnSpec>;
 
@@ -334,7 +334,7 @@ export class ZoneGridModel extends HoistModel {
             ...rest
         } = config;
 
-        this.availableColumns = columns.map(it => ({...it, hidden: true}));
+        this.availableColumns = columns.filter(it => !it.omit).map(it => ({...it, hidden: true}));
         this.limits = limits;
         this.mappings = this.parseMappings(mappings, true);
 
