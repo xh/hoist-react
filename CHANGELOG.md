@@ -2,6 +2,10 @@
 
 ## 63.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `MenuItem` now supports a `className` prop.
+
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - for apps with styling overrides for or direct use of Blueprint components)
 
 #### Blueprint 4 to 5 Migration
