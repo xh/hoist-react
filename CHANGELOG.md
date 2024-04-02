@@ -41,7 +41,8 @@ Below are breaking changes that most apps will need to address:
 
 ### 🐞 Bug Fixes
 
-* ZoneGrid columns' renders always need to be marked as complex
+* `ZoneGrid` columns' renders always need to be marked as complex.
+* Filter omitted columns before setting setting available columns in `ZoneGrid`.
 * Fixed bug where `SplitTreeMap` would not properly render errors as intended.
 
 

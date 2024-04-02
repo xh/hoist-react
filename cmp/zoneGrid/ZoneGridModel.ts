@@ -334,7 +334,7 @@ export class ZoneGridModel extends HoistModel {
             ...rest
         } = config;
 
-        this.availableColumns = columns.map(it => ({...it, hidden: true}));
+        this.availableColumns = columns.filter(it => !it.omit).map(it => ({...it, hidden: true}));
         this.limits = limits;
         this.mappings = this.parseMappings(mappings, true);
 
