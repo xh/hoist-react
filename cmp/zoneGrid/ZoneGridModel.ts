@@ -49,7 +49,7 @@ import {
     RowDoubleClickedEvent
 } from '@ag-grid-community/core';
 import {Icon} from '@xh/hoist/icon';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {castArray, forOwn, isEmpty, isFinite, isPlainObject, isString, find} from 'lodash';
 import {ReactNode} from 'react';
 import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
@@ -58,8 +58,9 @@ import {ZoneGridModelPersistOptions, Zone, ZoneLimit, ZoneMapping} from './Types
 
 export interface ZoneGridConfig {
     /**
-     * Available columns for this grid. Columns with a truthy omit property will be excluded.
-     * Note that the actual display of the zone columns is managed via `mappings` below.
+     * Available columns for this grid. Columns with an omit property
+     * evaluating to true will be excluded. Note that the actual display
+     * of the zone columns is managed via `mappings` below.
      */
     columns: Array<ColumnSpec>;
 
@@ -334,7 +335,9 @@ export class ZoneGridModel extends HoistModel {
             ...rest
         } = config;
 
-        this.availableColumns = columns.filter(it => !it.omit).map(it => ({...it, hidden: true}));
+        this.availableColumns = columns
+            .filter(it => !executeIfFunction(it.omit))
+            .map(it => ({...it, hidden: true}));
         this.limits = limits;
         this.mappings = this.parseMappings(mappings, true);
 
