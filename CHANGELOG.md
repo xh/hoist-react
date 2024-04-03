@@ -5,6 +5,9 @@
 ### 🎁 New Features
 
 * `MenuItem` now supports a `className` prop.
+* `TrackService` now posts `url` and `appVersion` fields to the server when tracking an event.
+* Admin `ActivityTracking` and `ClientError` modules now use server-side filtering for better
+  support of large datasets.
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - for apps with styling overrides for or direct use of Blueprint components)
 
@@ -38,6 +41,11 @@ Below are breaking changes that most apps will need to address:
   been upgraded to use `react-day-picker` v8. If you are passing a `dayPickerProps` to
   Hoist's `dateInput`, you may need to update your code to use the
   new [v8 `DatePickerProps`](https://react-day-picker.js.org/api/interfaces/DayPickerSingleProps).
+
+#### Other Breaking Changes
+
+* Requires `hoist-core >= v19.0.0` to support updates to activity tracking and client error endpoints.
+
 
 ### 🐞 Bug Fixes
 
