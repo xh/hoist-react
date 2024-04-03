@@ -82,32 +82,26 @@ export class ClientErrorsModel extends HoistModel {
                     enableValues: true
                 },
                 {
-                    field: 'appVersion',
-                    enableValues: true
+                    field: 'appVersion'
                 },
                 {
                     field: 'appEnvironment',
                     enableValues: true
                 },
                 {
-                    field: 'userAlerted',
-                    enableValues: true
+                    field: 'userAlerted'
                 },
                 {
-                    field: 'userAgent',
-                    enableValues: false
+                    field: 'userAgent'
                 },
                 {
-                    field: 'msg',
-                    enableValues: false
+                    field: 'msg'
                 },
                 {
-                    field: 'error',
-                    enableValues: false
+                    field: 'error'
                 },
                 {
-                    field: 'url',
-                    enableValues: false
+                    field: 'url'
                 }
             ]
         });
