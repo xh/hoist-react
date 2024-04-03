@@ -50,6 +50,11 @@ There are some common breaking changes that most/many apps will need to address:
     * Omitted columns are now properly filtered out.
 * Fixed issue where `SplitTreeMap` would not properly render errors as intended.
 
+### 📚 Libraries
+
+* @blueprintjs/core `4.20 -> 5.10`
+* @blueprintjs/datetime `4.4` -> @blueprintjs/datetime2 `2.3`
+
 ## 62.0.1 - 2024-03-28
 
 ### 🎁 New Features
