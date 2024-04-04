@@ -30,8 +30,7 @@ export class ActivityDetailModel extends HoistModel {
     }
 
     override onLinked() {
-        const hidden = true,
-            filterable = true;
+        const hidden = true;
 
         this.gridModel = new GridModel({
             sortBy: 'dateCreated|desc',
@@ -46,19 +45,19 @@ export class ActivityDetailModel extends HoistModel {
             columns: [
                 {...Col.impersonatingFlag},
                 {...Col.entryId, hidden},
-                {...Col.username, filterable},
+                {...Col.username},
                 {...Col.impersonating, hidden},
-                {...Col.category, filterable},
-                {...Col.msg, filterable},
-                {...Col.url, filterable},
-                {...Col.appVersion, filterable},
-                {...Col.appEnvironment, filterable},
+                {...Col.category},
+                {...Col.msg},
+                {...Col.url},
+                {...Col.appVersion},
+                {...Col.appEnvironment, hidden},
                 {...Col.data, hidden},
-                {...Col.device, filterable},
-                {...Col.browser, filterable},
-                {...Col.userAgent, hidden, filterable},
-                {...Col.elapsed, filterable},
-                {...Col.dateCreatedWithSec, displayName: 'Timestamp', filterable}
+                {...Col.device},
+                {...Col.browser},
+                {...Col.userAgent, hidden},
+                {...Col.elapsed},
+                {...Col.dateCreatedWithSec, displayName: 'Timestamp'}
             ]
         });
 

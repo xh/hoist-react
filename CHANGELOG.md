@@ -1,8 +1,8 @@
 # Changelog
 
-## 64.0.0-SNAPSHOT - unreleased
+## 63.0.1 - 2024-04-04
 
-### 🎁 New Features
+### 🐞 Bug Fixes
 
 * New filterable fields exposed in the Admin Console for `ActivityTracking` and `ClientErrors` modules.
     * `url`, `appEnvironment`, `appVersion` in `ActivityTracking`
