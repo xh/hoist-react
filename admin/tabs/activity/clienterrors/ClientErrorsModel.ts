@@ -53,6 +53,7 @@ export class ClientErrorsModel extends HoistModel {
                 {...Col.userMessageFlag},
                 {...Col.userAlertedFlag},
                 {...Col.entryId, hidden},
+                {...Col.impersonatingFlag},
                 {...Col.username},
                 {...Col.browser},
                 {...Col.device},
@@ -63,7 +64,8 @@ export class ClientErrorsModel extends HoistModel {
                 {...Col.error, hidden},
                 {...Col.url},
                 {...Col.day},
-                {...Col.dateCreatedWithSec, displayName: 'Timestamp'}
+                {...Col.dateCreatedWithSec, displayName: 'Timestamp'},
+                {...Col.impersonating, hidden}
             ]
         });
 
@@ -102,6 +104,9 @@ export class ClientErrorsModel extends HoistModel {
                 },
                 {
                     field: 'url'
+                },
+                {
+                    field: 'impersonating'
                 }
             ]
         });
