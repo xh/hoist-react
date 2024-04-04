@@ -684,6 +684,9 @@ export const Icon = {
     trash(p?: IconProps) {
         return Icon.icon({...p, iconName: 'trash-alt'});
     },
+    treeGraph(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'sitemap'});
+    },
     treeList(p?: IconProps) {
         return Icon.icon({...p, iconName: 'list-tree'});
     },

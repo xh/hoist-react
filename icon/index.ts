@@ -176,6 +176,7 @@ import {
     faSigma as faSigmaLight,
     faSignIn as faSignInLight,
     faSignOut as faSignOutLight,
+    faSitemap as faSitemapLight,
     faSkull as faSkullLight,
     faSlidersHSquare as faSlidersHSquareLight,
     faSpinner as faSpinnerLight,
@@ -420,7 +421,8 @@ import {
     faUsers,
     faWandMagicSparkles,
     faWindow,
-    faWrench
+    faWrench,
+    faSitemap
 } from '@fortawesome/pro-regular-svg-icons';
 import {
     faAddressCard as faAddressCardSolid,
@@ -590,6 +592,7 @@ import {
     faSigma as faSigmaSolid,
     faSignIn as faSignInSolid,
     faSignOut as faSignOutSolid,
+    faSitemap as faSitemapSolid,
     faSkull as faSkullSolid,
     faSlidersHSquare as faSlidersHSquareSolid,
     faSpinner as faSpinnerSolid,
@@ -798,6 +801,7 @@ import {
     faSigma as faSigmaThin,
     faSignIn as faSignInThin,
     faSignOut as faSignOutThin,
+    faSitemap as faSitemapThin,
     faSkull as faSkullThin,
     faSlidersHSquare as faSlidersHSquareThin,
     faSpinner as faSpinnerThin,
@@ -1504,6 +1508,10 @@ library.add(
     faSignOutLight,
     faSignOutSolid,
     faSignOutThin,
+    faSitemap,
+    faSitemapLight,
+    faSitemapSolid,
+    faSitemapThin,
     faSkull,
     faSkullLight,
     faSkullSolid,

@@ -10,50 +10,60 @@
 * Requires update to `hoist-core >= 19.0.0`.
 
 
-## 63.0.0-SNAPSHOT - unreleased
+## 63.0.0 - 2024-04-03
 
-### 🎁 New Features
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - for apps with styling overrides or direct use of Blueprint components)
 
-* `MenuItem` now supports a `className` prop.
-
-### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - for apps with styling overrides for or direct use of Blueprint components)
+* Requires `hoist-core >= v19.0.0` to support improvements to activity / client error tracking.
 
 #### Blueprint 4 to 5 Migration
 
-Blueprint 5 is a major version update and includes breaking changes. While most of these changes
-have been addressed by the Hoist integration layer, developers importing Blueprint
-components directly should review
+This release includes Blueprint 5, a major version update of that library with breaking changes.
+While most of these have been addressed by the Hoist integration layer, developers importing
+Blueprint components directly should review
 the [Blueprint 5 migration guide](https://github.com/palantir/blueprint/wiki/Blueprint-5.0) for
 details.
 
-Below are breaking changes that most apps will need to address:
+There are some common breaking changes that most/many apps will need to address:
 
 * CSS rules with the `bp4-` prefix should be updated to use the `bp5-` prefix.
-* `popover` and `tooltip` components: replace `target` with `item` if using elementFactory.
-  If using JSX, replace `target` prop with a child element. This also applies to the
-  mobile `popover`.
-* Popovers no longer have a popover-wrapper element. You may want to remove or rework any CSS
-  rules that target `bp4-popover-wrapper`.
+* For `popover` and `tooltip` components, replace `target` with `item` if using elementFactory.
+  If using JSX, replace `target` prop with a child element. Also applies to the mobile `popover`.
+* Popovers no longer have a popover-wrapper element - remove/replace any CSS rules
+  targeting `bp4-popover-wrapper`.
 * All components which render popovers now depend
-  on [`popper.js v2.x`](https://popper.js.org/docs/v2/). Any complex customizations to popovers may
+  on [`popper.js v2.x`](https://popper.js.org/docs/v2/). Complex customizations to popovers may
   need to be reworked.
-* Across all Blueprint components that had an `elementRef` prop, the `elementRef` prop is
-  replaced by the simpler, more straightforward `ref` prop using `React.forwardRef()`.
-  Consequently, in Hoist-React, `button`'s `elementRef` prop becomes just `ref`. Check your app
-  for any other components that may be affected.
+* Where applicable, the former `elementRef` prop has been replaced by the simpler, more
+  straightforward `ref` prop using `React.forwardRef()` - e.g. Hoist's `button.elementRef` prop
+  becomes just `ref`. Review your app for uses of `elementRef`.
 * The static `ContextMenu.show()` method has been replaced with `showContextMenu()`, importable
   from `@xh/hoist/kit/blueprint`. The method signature has changed slightly.
-* `overlay` now refers to Blueprint's `overlay2` component.
-* `datePicker` now refers to Blueprint's `datePicker3` component. Blueprint's `datePicker3` has
-  been upgraded to use `react-day-picker` v8. If you are passing a `dayPickerProps` to
-  Hoist's `dateInput`, you may need to update your code to use the
+* The exported `overlay` component now refers to Blueprint's `overlay2` component.
+* The exported `datePicker` now refers to Blueprint's `datePicker3` component, which has been
+  upgraded to use `react-day-picker` v8. If you are passing `dayPickerProps` to Hoist's `dateInput`,
+  you may need to update your code to use the
   new [v8 `DatePickerProps`](https://react-day-picker.js.org/api/interfaces/DayPickerSingleProps).
+
+### 🎁 New Features
+
+* Upgraded Admin Console Activity and Client Error reporting modules to use server-side filtering
+  for better support of large datasets, allowing for longer-range queries on filtered categories,
+  messages, or users before bumping into configured row limits.
+* Added new `MenuItem.className` prop.
 
 ### 🐞 Bug Fixes
 
-* ZoneGrid columns' renders always need to be marked as complex
-* Fixed bug where `SplitTreeMap` would not properly render errors as intended.
+* Fixed two `ZoneGrid` issues:
+    * Internal column definitions were missing the essential `rendererIsComplex` flag and could fail
+      to render in-place updates to existing record data.
+    * Omitted columns are now properly filtered out.
+* Fixed issue where `SplitTreeMap` would not properly render errors as intended.
 
+### 📚 Libraries
+
+* @blueprintjs/core `4.20 -> 5.10`
+* @blueprintjs/datetime `4.4` -> @blueprintjs/datetime2 `2.3`
 
 ## 62.0.1 - 2024-03-28
 

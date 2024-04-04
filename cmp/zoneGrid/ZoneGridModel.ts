@@ -49,7 +49,7 @@ import {
     RowDoubleClickedEvent
 } from '@ag-grid-community/core';
 import {Icon} from '@xh/hoist/icon';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {castArray, forOwn, isEmpty, isFinite, isPlainObject, isString, find} from 'lodash';
 import {ReactNode} from 'react';
 import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
@@ -58,8 +58,8 @@ import {ZoneGridModelPersistOptions, Zone, ZoneLimit, ZoneMapping} from './Types
 
 export interface ZoneGridConfig {
     /**
-     * Available columns for this grid. Note that the actual display of
-     * the zone columns is managed via `mappings` below.
+     * Available columns for this grid. Columns with an omit property evaluating to true will be
+     * excluded. Note that the actual display of the zone columns is managed via `mappings` below.
      */
     columns: Array<ColumnSpec>;
 
@@ -76,14 +76,14 @@ export interface ZoneGridConfig {
     labelRenderers?: Record<string, ColumnRenderer>;
 
     /**
-     * Optional configs to apply to left column. Intended for use as an `escape hatch`, and should be used with care.
-     * Settings made here may interfere with the implementation of this component.
+     * Optional configs to apply to left column. Intended for use as an `escape hatch` - use with
+     * care. Settings made here may interfere with the implementation of this component.
      */
     leftColumnSpec?: Partial<ColumnSpec>;
 
     /**
-     * Optional configs to apply to right column. Intended for use as an `escape hatch`, and should be used with care.
-     * Settings made here may interfere with the implementation of this component.
+     * Optional configs to apply to right column. Intended for use as an `escape hatch` - use with
+     * care. Settings made here may interfere with the implementation of this component.
      */
     rightColumnSpec?: Partial<ColumnSpec>;
 
@@ -94,8 +94,8 @@ export interface ZoneGridConfig {
     zoneMapperModel?: ZoneMapperConfig | boolean;
 
     /**
-     * A Store instance, or a config with which to create a Store. If not supplied,
-     * store fields will be inferred from columns config.
+     * A Store instance, or a config with which to create a Store.
+     * If not supplied, store fields will be inferred from columns config.
      */
     store?: Store | StoreConfig;
 
@@ -334,7 +334,9 @@ export class ZoneGridModel extends HoistModel {
             ...rest
         } = config;
 
-        this.availableColumns = columns.map(it => ({...it, hidden: true}));
+        this.availableColumns = columns
+            .filter(it => !executeIfFunction(it.omit))
+            .map(it => ({...it, hidden: true}));
         this.limits = limits;
         this.mappings = this.parseMappings(mappings, true);
 

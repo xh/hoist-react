@@ -9,11 +9,11 @@ import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {fmtDate, fmtJson} from '@xh/hoist/format';
+import {fmtJson} from '@xh/hoist/format';
 import {action, bindable, observable, makeObservable, comparer} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import * as Col from '@xh/hoist/admin/columns';
-import moment from 'moment';
+import {computed} from 'mobx';
 
 export class ClientErrorsModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminClientErrorsState'};
@@ -68,50 +68,45 @@ export class ClientErrorsModel extends HoistModel {
         });
 
         this.filterChooserModel = new FilterChooserModel({
-            bind: this.gridModel.store,
             fieldSpecs: [
-                'username',
-                'browser',
-                'device',
-                'appVersion',
-                'appEnvironment',
-                'userAlerted',
                 {
-                    field: 'userAgent',
-                    enableValues: false
+                    field: 'username',
+                    enableValues: true
                 },
                 {
-                    field: 'msg',
-                    enableValues: false
+                    field: 'browser',
+                    enableValues: true
                 },
                 {
-                    field: 'error',
-                    enableValues: false
+                    field: 'device',
+                    enableValues: true
                 },
                 {
-                    field: 'url',
-                    enableValues: false
+                    field: 'appVersion'
                 },
                 {
-                    field: 'dateCreated',
-                    example: 'YYYY-MM-DD',
-                    valueParser: (v, op) => {
-                        let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
-                        if (!ret.isValid()) return null;
-
-                        // Note special handling for '>' & '<=' queries.
-                        if (['>', '<='].includes(op)) {
-                            ret = moment(ret).endOf('day');
-                        }
-
-                        return ret.toDate();
-                    },
-                    valueRenderer: v => fmtDate(v),
-                    ops: ['>', '>=', '<', '<=']
+                    field: 'appEnvironment',
+                    enableValues: true
+                },
+                {
+                    field: 'userAlerted'
+                },
+                {
+                    field: 'userAgent'
+                },
+                {
+                    field: 'msg'
+                },
+                {
+                    field: 'error'
+                },
+                {
+                    field: 'url'
                 }
-            ],
-            persistWith: this.persistWith
+            ]
         });
+
+        this.loadFieldSpecValues();
 
         this.formModel = new FormModel({
             readonly: true,
@@ -121,7 +116,7 @@ export class ClientErrorsModel extends HoistModel {
         });
 
         this.addReaction({
-            track: () => this.getParams(),
+            track: () => this.query,
             run: () => this.loadAsync(),
             equals: comparer.structural
         });
@@ -143,9 +138,9 @@ export class ClientErrorsModel extends HoistModel {
         const {gridModel} = this;
 
         try {
-            const data = await XH.fetchJson({
+            const data = await XH.fetchService.postJson({
                 url: 'clientErrorAdmin',
-                params: this.getParams(),
+                body: this.query,
                 loadSpec
             });
 
@@ -201,10 +196,12 @@ export class ClientErrorsModel extends HoistModel {
         this.startDay = this.endDay.subtract(value, unit).nextDay();
     }
 
-    getParams() {
+    @computed
+    private get query() {
         return {
             startDay: this.startDay,
-            endDay: this.endDay
+            endDay: this.endDay,
+            filters: this.filterChooserModel.value
         };
     }
 
@@ -213,5 +210,14 @@ export class ClientErrorsModel extends HoistModel {
     }
     getDefaultEndDay() {
         return LocalDate.currentAppDay();
+    }
+
+    private async loadFieldSpecValues() {
+        const lookups = await XH.fetchJson({url: 'clientErrorAdmin/lookups'});
+
+        this.filterChooserModel.fieldSpecs.forEach(spec => {
+            const {field} = spec;
+            if (lookups[field]) spec.values = lookups[field];
+        });
     }
 }
