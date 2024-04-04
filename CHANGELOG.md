@@ -7,7 +7,8 @@
 * Provides admin support for Cluster-aware version of Hoist.
 
 ### 💥 Breaking Changes
-* Requires update to `hoist-core >= 19.0.0`.
+
+* Requires update to `hoist-core >= 20.0.0`.
 
 
 ## 63.0.0 - 2024-04-03
