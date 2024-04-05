@@ -6,6 +6,7 @@
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
+import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -21,6 +22,13 @@ export class LogDisplayModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminLogViewerState'};
 
     parent: LogViewerModel;
+
+    @managed
+    panelModel = new PanelModel({
+        collapsible: false,
+        resizable: false,
+        modalSupport: {width: '100vw', height: '100vh'}
+    });
 
     // Form State/Display options
     @bindable
@@ -97,7 +105,8 @@ export class LogDisplayModel extends HoistModel {
                     startLine: this.startLine,
                     maxLines: this.maxLines,
                     pattern: this.regexOption ? this.pattern : escapeRegExp(this.pattern),
-                    caseSensitive: this.caseSensitive
+                    caseSensitive: this.caseSensitive,
+                    instance: parent.instanceName
                 },
                 loadSpec
             });

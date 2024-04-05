@@ -21,16 +21,24 @@ export class EnvironmentService extends HoistService {
 
     /**
      * Version of this application currently running on the Hoist UI server.
-     * Unlike all other EnvironmentService state, this is refreshed by default on a configured
-     * interval and is observable to allow apps to take actions (e.g. reload immediately) when
-     * they detect an update on the server.
+     * Unlike most other EnvironmentService state, this is refreshed on a timer and observable.
      */
     @observable
     serverVersion: string;
 
-    /** Build of this application currently running on the Hoist UI server. */
+    /**
+     * Build of this application currently running on the Hoist UI server.
+     * Unlike most other EnvironmentService state, this is refreshed on a timer and observable.
+     */
     @observable
     serverBuild: string;
+
+    /**
+     * Instance of Hoist UI server currently delivering content to this client.
+     * Unlike most other EnvironmentService state, this is refreshed on a timer and observable.
+     */
+    @observable
+    serverInstance: string;
 
     private _data = {};
 
@@ -58,9 +66,12 @@ export class EnvironmentService extends HoistService {
             serverEnv
         );
 
+        // This bit is considered transient.  Maintain in 'serverInstance' mutable property only
+        delete this._data['instanceName'];
+
         deepFreeze(this._data);
 
-        this.setServerVersion(serverEnv.appVersion, serverEnv.appBuild);
+        this.setServerInfo(serverEnv.instanceName, serverEnv.appVersion, serverEnv.appBuild);
 
         this.addReaction({
             when: () => XH.appIsRunning,
@@ -97,11 +108,7 @@ export class EnvironmentService extends HoistService {
     }
 
     private startVersionChecking() {
-        // Todo: `xhAppVersionCheckSecs` checked for backwards compatibility with hoist-core v16.3.0
-        // and earlier - remove in future.
-        const interval =
-            XH.getConf('xhAppVersionCheck', {})?.interval ??
-            XH.getConf('xhAppVersionCheckSecs', null);
+        const interval = XH.getConf('xhAppVersionCheck', {})?.interval ?? -1;
         Timer.create({
             runFn: this.checkServerVersionAsync,
             interval: interval * SECONDS
@@ -110,7 +117,7 @@ export class EnvironmentService extends HoistService {
 
     private checkServerVersionAsync = async () => {
         const data = await XH.fetchJson({url: 'xh/version'}),
-            {appVersion, appBuild, mode} = data;
+            {instanceName, appVersion, appBuild, mode} = data;
 
         // Compare latest version/build info from server against the same info (also supplied by
         // server) when the app initialized. A change indicates an update to the app and will
@@ -139,11 +146,12 @@ export class EnvironmentService extends HoistService {
             );
         }
 
-        this.setServerVersion(appVersion, appBuild);
+        this.setServerInfo(instanceName, appVersion, appBuild);
     };
 
     @action
-    private setServerVersion(serverVersion, serverBuild) {
+    private setServerInfo(serverInstance, serverVersion, serverBuild) {
+        this.serverInstance = serverInstance;
         this.serverVersion = serverVersion;
         this.serverBuild = serverBuild;
     }

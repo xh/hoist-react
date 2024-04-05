@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {ServerEnvModel} from '@xh/hoist/admin/tabs/server/environment/ServerEnvModel';
+import {ServerEnvModel} from '@xh/hoist/admin/tabs/cluster/environment/ServerEnvModel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
@@ -12,7 +12,6 @@ import {creates, hoistCmp} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {Icon} from '@xh/hoist/icon';
 
 export const serverEnvPanel = hoistCmp.factory({
     model: creates(ServerEnvModel),
@@ -22,9 +21,8 @@ export const serverEnvPanel = hoistCmp.factory({
 
         return panel({
             tbar: [
-                Icon.info(),
                 span({
-                    item: 'Server-side environment variables and JVM system properties',
+                    item: 'Environment variables + JVM system properties',
                     className: 'xh-bold'
                 }),
                 filler(),

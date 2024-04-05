@@ -5,16 +5,17 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
+import {timestampNoYear} from '@xh/hoist/admin/columns';
+import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
 import {ChartModel} from '@xh/hoist/cmp/chart';
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
+import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
-import {fmtTime} from '@xh/hoist/format';
+import {fmtTime, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {forOwn, sortBy} from 'lodash';
-import * as MCol from '../../monitor/MonitorColumns';
 
-export class MemoryMonitorModel extends HoistModel {
+export class MemoryMonitorModel extends BaseInstanceModel {
     @managed gridModel: GridModel;
     @managed chartModel: ChartModel;
 
@@ -38,22 +39,16 @@ export class MemoryMonitorModel extends HoistModel {
             colDefaults: {filterable: true},
             headerMenuDisplay: 'hover',
             columns: [
-                MCol.timestamp,
+                {...timestampNoYear},
                 {
                     groupId: 'heap',
                     headerAlign: 'center',
-                    children: [
-                        MCol.totalHeapMb,
-                        MCol.maxHeapMb,
-                        MCol.freeHeapMb,
-                        MCol.usedHeapMb,
-                        MCol.usedPctMax
-                    ]
+                    children: [totalHeapMb, maxHeapMb, freeHeapMb, usedHeapMb, usedPctMax]
                 },
                 {
                     groupId: 'GC',
                     headerAlign: 'center',
-                    children: [MCol.collectionCount, MCol.avgCollectionTime, MCol.pctCollectionTime]
+                    children: [collectionCount, avgCollectionTime, pctCollectionTime]
                 }
             ]
         });
@@ -104,6 +99,7 @@ export class MemoryMonitorModel extends HoistModel {
         try {
             const snapsByTimestamp = await XH.fetchJson({
                 url: 'memoryMonitorAdmin/snapshots',
+                params: {instance: this.instanceName},
                 loadSpec
             });
 
@@ -161,13 +157,16 @@ export class MemoryMonitorModel extends HoistModel {
                 }
             ]);
         } catch (e) {
-            XH.handleException(e);
+            this.handleLoadException(e, loadSpec);
         }
     }
 
     async takeSnapshotAsync() {
         try {
-            await XH.fetchJson({url: 'memoryMonitorAdmin/takeSnapshot'}).linkTo(this.loadModel);
+            await XH.fetchJson({
+                url: 'memoryMonitorAdmin/takeSnapshot',
+                params: {instance: this.instanceName}
+            }).linkTo(this.loadModel);
             await this.loadAsync();
             XH.successToast('Updated snapshot loaded');
         } catch (e) {
@@ -177,7 +176,10 @@ export class MemoryMonitorModel extends HoistModel {
 
     async requestGcAsync() {
         try {
-            await XH.fetchJson({url: 'memoryMonitorAdmin/requestGc'}).linkTo(this.loadModel);
+            await XH.fetchJson({
+                url: 'memoryMonitorAdmin/requestGc',
+                params: {instance: this.instanceName}
+            }).linkTo(this.loadModel);
             await this.loadAsync();
             XH.successToast('GC run complete');
         } catch (e) {
@@ -200,7 +202,10 @@ export class MemoryMonitorModel extends HoistModel {
             if (!filename) return;
             await XH.fetchJson({
                 url: 'memoryMonitorAdmin/dumpHeap',
-                params: {filename}
+                params: {
+                    instance: this.instanceName,
+                    filename
+                }
             }).linkTo(this.loadModel);
             await this.loadAsync();
             XH.successToast('Heap dumped successfully to ' + filename);
@@ -213,3 +218,79 @@ export class MemoryMonitorModel extends HoistModel {
         return XH.getConf('xhMemoryMonitoringConfig', {heapDumpDir: null, enabled: true});
     }
 }
+
+const mbCol = {width: 150, renderer: numberRenderer({precision: 2, withCommas: true})},
+    pctCol = {width: 150, renderer: numberRenderer({precision: 2, withCommas: true, label: '%'})},
+    msCol = {width: 150, renderer: numberRenderer({precision: 0, withCommas: false})};
+
+export const totalHeapMb: ColumnSpec = {
+    field: {
+        name: 'totalHeapMb',
+        type: 'number',
+        displayName: 'Total (mb)'
+    },
+    ...mbCol
+};
+
+export const maxHeapMb: ColumnSpec = {
+    field: {
+        name: 'maxHeapMb',
+        type: 'number',
+        displayName: 'Max (mb)'
+    },
+    ...mbCol
+};
+
+export const freeHeapMb: ColumnSpec = {
+    field: {
+        name: 'freeHeapMb',
+        type: 'number',
+        displayName: 'Free (mb)'
+    },
+    ...mbCol
+};
+
+export const usedHeapMb: ColumnSpec = {
+    field: {
+        name: 'usedHeapMb',
+        type: 'number',
+        displayName: 'Used (mb)'
+    },
+    ...mbCol
+};
+
+export const usedPctMax: ColumnSpec = {
+    field: {
+        name: 'usedPctMax',
+        type: 'number',
+        displayName: 'Used (pct Max)'
+    },
+    ...pctCol
+};
+
+export const avgCollectionTime: ColumnSpec = {
+    field: {
+        name: 'avgCollectionTime',
+        type: 'number',
+        displayName: 'Avg (ms)'
+    },
+    ...msCol
+};
+
+export const collectionCount: ColumnSpec = {
+    field: {
+        name: 'collectionCount',
+        type: 'number',
+        displayName: '# GCs'
+    },
+    ...msCol
+};
+
+export const pctCollectionTime: ColumnSpec = {
+    field: {
+        name: 'pctCollectionTime',
+        type: 'number',
+        displayName: '% Time in GC'
+    },
+    ...pctCol
+};

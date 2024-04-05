@@ -4,16 +4,17 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {forOwn} from 'lodash';
 
 /**
  * Model/tab to list server-side environment variables and JVM system properties, as loaded from
  * a dedicated admin-only endpoint.
  */
-export class ServerEnvModel extends HoistModel {
+export class ServerEnvModel extends BaseInstanceModel {
     @managed gridModel: GridModel;
 
     constructor() {
@@ -46,17 +47,24 @@ export class ServerEnvModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const resp = await XH.fetchJson({url: 'envAdmin'}),
-            data = [];
+        try {
+            const resp = await XH.fetchJson({
+                    url: 'envAdmin',
+                    params: {instance: this.instanceName}
+                }),
+                data = [];
 
-        forOwn(resp.environment, (value, name) => {
-            data.push({type: 'Environment Variables', value, name});
-        });
+            forOwn(resp.environment, (value, name) => {
+                data.push({type: 'Environment Variables', value, name});
+            });
 
-        forOwn(resp.properties, (value, name) => {
-            data.push({type: 'System Properties', value, name});
-        });
+            forOwn(resp.properties, (value, name) => {
+                data.push({type: 'System Properties', value, name});
+            });
 
-        this.gridModel.loadData(data);
+            this.gridModel.loadData(data);
+        } catch (e) {
+            this.handleLoadException(e, loadSpec);
+        }
     }
 }

@@ -9,8 +9,8 @@ import {hframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
+import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {Icon} from '@xh/hoist/icon';
 import {logDisplay} from './LogDisplay';
 import './LogViewer.scss';
@@ -24,15 +24,13 @@ export const logViewer = hoistCmp.factory({
             return errorMessage({error: 'Log viewer disabled via xhEnableLogViewer config.'});
         }
 
-        const {filesGridModel} = model;
         return hframe({
             className: 'xh-log-viewer',
             ref: model.viewRef,
             items: [
                 panel({
-                    title: 'Available Server Logs',
-                    icon: Icon.fileText(),
-                    compactHeader: true,
+                    collapsedTitle: 'Log Files',
+                    collapsedIcon: Icon.fileText(),
                     modelConfig: {
                         side: 'left',
                         defaultSize: 380
@@ -40,12 +38,15 @@ export const logViewer = hoistCmp.factory({
                     item: grid(),
                     bbar: [
                         storeFilterField({flex: 1}),
-                        recordActionBar({
-                            selModel: filesGridModel.selModel,
-                            gridModel: filesGridModel,
-                            actions: [
-                                {...model.downloadFileAction, text: null},
-                                {...model.deleteFileAction, text: null}
+                        select({
+                            bind: 'instanceOnly',
+                            width: 90,
+                            enableFilter: false,
+                            hideDropdownIndicator: true,
+                            hideSelectedOptionCheck: true,
+                            options: [
+                                {label: model.instanceName, value: true},
+                                {label: 'ALL', value: false}
                             ]
                         })
                     ]

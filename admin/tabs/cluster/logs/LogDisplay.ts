@@ -8,7 +8,7 @@ import {clock} from '@xh/hoist/cmp/clock';
 import {grid} from '@xh/hoist/cmp/grid';
 import {code, div, fragment, hspacer, label, filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, modalToggleButton} from '@xh/hoist/desktop/cmp/button';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -30,7 +30,8 @@ export const logDisplay = hoistCmp.factory({
             tbar: tbar(),
             item: grid(),
             loadingIndicator: 'onLoad',
-            bbar: bbar()
+            bbar: bbar(),
+            model: model.panelModel
         });
     }
 });
@@ -96,7 +97,9 @@ const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
                 model.scrollToTail();
             },
             omit: !model.tail || model.tailActive
-        })
+        }),
+        '-',
+        modalToggleButton()
     );
 });
 
@@ -107,16 +110,18 @@ const bbar = hoistCmp.factory<LogDisplayModel>({
             {logRootPath} = model;
 
         return toolbar(
-            div('Server time: '),
-            clock({
-                timezone: zone,
-                format: 'HH:mm',
-                suffix: fmtTimeZone(zone, offset)
-            }),
+            Icon.clock(),
+            code(
+                clock({
+                    timezone: zone,
+                    format: 'HH:mm',
+                    suffix: fmtTimeZone(zone, offset)
+                })
+            ),
             filler(),
             div({
                 omit: !logRootPath,
-                items: ['Log Location: ', code(logRootPath)]
+                items: [Icon.folder(), ' ', code(logRootPath)]
             })
         );
     }
