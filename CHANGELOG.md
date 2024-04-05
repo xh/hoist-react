@@ -1,5 +1,13 @@
 # Changelog
 
+## 63.0.1 - 2024-04-05
+
+### 🐞 Bug Fixes
+
+* New filterable fields exposed in the Admin Console for `ActivityTracking` and `ClientErrors` modules.
+    * `url`, `appEnvironment`, `appVersion` in `ActivityTracking`
+    * `impersonating` in `ClientErrors`
+
 ## 63.0.0 - 2024-04-04
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - for apps with styling overrides or direct use of Blueprint components)
