@@ -99,7 +99,10 @@ export class ActivityTrackingModel extends HoistModel {
                 Col.userAgent.field,
                 Col.username.field,
                 {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
-                {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'}
+                {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+                Col.url.field,
+                Col.appVersion.field,
+                Col.appEnvironment.field
             ] as CubeFieldSpec[]
         });
 
@@ -131,15 +134,12 @@ export class ActivityTrackingModel extends HoistModel {
                     },
                     fieldType: 'number'
                 },
-                {
-                    field: 'msg'
-                },
-                {
-                    field: 'data'
-                },
-                {
-                    field: 'userAgent'
-                }
+                {field: 'msg'},
+                {field: 'data'},
+                {field: 'userAgent'},
+                {field: 'url'},
+                {field: 'appVersion'},
+                {field: 'appEnvironment'}
             ]
         });
 
@@ -186,7 +186,10 @@ export class ActivityTrackingModel extends HoistModel {
                 {...Col.elapsed, headerName: 'Elapsed (avg)', hidden},
                 {...Col.dayRange, hidden},
                 {...Col.entryCount},
-                {field: 'count', hidden}
+                {field: 'count', hidden},
+                {...Col.appEnvironment, hidden},
+                {...Col.appVersion, hidden},
+                {...Col.url, hidden}
             ]
         });
 
