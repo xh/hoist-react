@@ -1,6 +1,5 @@
 # Changelog
 
-
 ## 64.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
@@ -10,8 +9,7 @@
 
 * Requires update to `hoist-core >= 20.0.0`.
 
-
-## 63.0.0 - 2024-04-03
+## 63.0.0 - 2024-04-04
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - for apps with styling overrides or direct use of Blueprint components)
 
