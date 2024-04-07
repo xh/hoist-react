@@ -63,6 +63,7 @@ export class ClientErrorsModel extends HoistModel {
                 {...Col.msg, displayName: 'User Message', hidden},
                 {...Col.error, hidden},
                 {...Col.url},
+                {...Col.instance, hidden},
                 {...Col.day},
                 {...Col.dateCreatedWithSec, displayName: 'Timestamp'},
                 {...Col.impersonating, hidden}
@@ -83,31 +84,18 @@ export class ClientErrorsModel extends HoistModel {
                     field: 'device',
                     enableValues: true
                 },
-                {
-                    field: 'appVersion'
-                },
+                {field: 'appVersion'},
                 {
                     field: 'appEnvironment',
                     enableValues: true
                 },
-                {
-                    field: 'userAlerted'
-                },
-                {
-                    field: 'userAgent'
-                },
-                {
-                    field: 'msg'
-                },
-                {
-                    field: 'error'
-                },
-                {
-                    field: 'url'
-                },
-                {
-                    field: 'impersonating'
-                }
+                {field: 'userAlerted'},
+                {field: 'userAgent'},
+                {field: 'msg'},
+                {field: 'error'},
+                {field: 'url'},
+                {field: 'instance'},
+                {field: 'impersonating'}
             ]
         });
 

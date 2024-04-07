@@ -50,6 +50,7 @@ export class ActivityDetailModel extends HoistModel {
                 {...Col.category},
                 {...Col.msg},
                 {...Col.url},
+                {...Col.instance, hidden},
                 {...Col.appVersion},
                 {...Col.appEnvironment, hidden},
                 {...Col.data, hidden},
