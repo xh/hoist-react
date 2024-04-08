@@ -346,9 +346,9 @@ export class GridLocalModel extends HoistModel {
     sortReaction() {
         const {model} = this;
         return {
-            track: () => [model.agColumnApi, model.sortBy],
-            run: ([colApi, sortBy]) => {
-                if (colApi && !model.externalSort) {
+            track: () => [model.agApi, model.sortBy],
+            run: ([agApi, sortBy]) => {
+                if (agApi && !model.externalSort) {
                     model.agGridModel.applySortBy(sortBy);
                 }
             }
@@ -358,9 +358,9 @@ export class GridLocalModel extends HoistModel {
     groupReaction() {
         const {model} = this;
         return {
-            track: () => [model.agColumnApi, model.groupBy],
-            run: ([colApi, groupBy]) => {
-                if (colApi) colApi.setRowGroupColumns(groupBy);
+            track: () => [model.agApi, model.groupBy],
+            run: ([agApi, groupBy]) => {
+                if (agApi) agApi.setRowGroupColumns(groupBy);
             }
         };
     }
@@ -428,9 +428,9 @@ export class GridLocalModel extends HoistModel {
 
     applyScrollOptimization() {
         if (!this.useScrollOptimization) return;
-        const {agApi, agColumnApi} = this.model,
+        const {agApi} = this.model,
             {getRowHeight} = this.agOptions,
-            params = {api: agApi, columnApi: agColumnApi, context: null} as any;
+            params = {api: agApi, context: null} as any;
 
         agApi.forEachNode(node => {
             params.node = node;
@@ -457,11 +457,11 @@ export class GridLocalModel extends HoistModel {
     columnStateReaction() {
         const {model} = this;
         return {
-            track: () => [model.agApi, model.agColumnApi, model.columnState],
-            run: ([api, colApi, colState]) => {
-                if (!api || !colApi) return;
+            track: () => [model.agApi, model.columnState],
+            run: ([api, colState]) => {
+                if (!api) return;
 
-                const agColState = colApi.getColumnState();
+                const agColState = api.getColumnState();
 
                 // 0) Insert the auto group col state if it exists, since we won't have it in our column state list
                 const autoColState = agColState.find(c => c.colId === 'ag-Grid-AutoColumn');
@@ -482,15 +482,15 @@ export class GridLocalModel extends HoistModel {
                             id = col.colId;
 
                         if (agCol.width !== col.width) {
-                            colApi.setColumnWidth(id, col.width);
+                            api.setColumnWidth(id, col.width);
                             hasChanges = true;
                         }
                         if (agCol.hide !== col.hidden) {
-                            colApi.setColumnVisible(id, !col.hidden);
+                            api.setColumnVisible(id, !col.hidden);
                             hasChanges = true;
                         }
                         if (agCol.pinned !== col.pinned) {
-                            colApi.setColumnPinned(id, col.pinned);
+                            api.setColumnPinned(id, col.pinned);
                             hasChanges = true;
                         }
                     });
@@ -498,7 +498,7 @@ export class GridLocalModel extends HoistModel {
                     // We need to tell agGrid to refresh its flexed column sizes due to
                     // a regression introduced in 25.1.0.  See #2341
                     if (hasChanges) {
-                        colApi.columnModel.refreshFlexedColumns({
+                        api.columnModel.refreshFlexedColumns({
                             updateBodyWidths: true,
                             fireResizedEvent: true
                         });
@@ -521,7 +521,7 @@ export class GridLocalModel extends HoistModel {
                 });
 
                 this.doWithPreservedState({expansion: false}, () => {
-                    colApi.applyColumnState({state: colState, applyOrder: true});
+                    api.applyColumnState({state: colState, applyOrder: true});
                 });
             }
         };
@@ -726,7 +726,7 @@ export class GridLocalModel extends HoistModel {
 
     // Catches column re-ordering, resizing AND pinning via user drag-and-drop interaction.
     onDragStopped = ev => {
-        this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+        this.model.noteAgColumnStateChanged(ev.api.getColumnState());
     };
 
     // Catches column resizing on call to autoSize API.
@@ -734,17 +734,17 @@ export class GridLocalModel extends HoistModel {
         if (!isDisplayed(this.viewRef.current) || !ev.finished) return;
         if (ev.source === 'uiColumnResized') {
             const colId = ev.columns[0].colId,
-                width = ev.columnApi.getColumnState().find(it => it.colId === colId)?.width;
+                width = ev.api.getColumnState().find(it => it.colId === colId)?.width;
             this.model.noteColumnManuallySized(colId, width);
         } else if (ev.source === 'autosizeColumns') {
-            this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+            this.model.noteAgColumnStateChanged(ev.api.getColumnState());
         }
     };
 
     // Catches row group changes triggered from ag-grid ui components
     onColumnRowGroupChanged = ev => {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
-            this.model.setGroupBy(ev.columnApi.getRowGroupColumns().map(it => it.colId));
+            this.model.setGroupBy(ev.api.getRowGroupColumns().map(it => it.colId));
         }
     };
 
@@ -755,14 +755,14 @@ export class GridLocalModel extends HoistModel {
     // Catches column pinning changes triggered from ag-grid ui components
     onColumnPinned = ev => {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
-            this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+            this.model.noteAgColumnStateChanged(ev.api.getColumnState());
         }
     };
 
     // Catches column visibility changes triggered from ag-grid ui components
     onColumnVisible = ev => {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
-            this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+            this.model.noteAgColumnStateChanged(ev.api.getColumnState());
         }
     };
 
