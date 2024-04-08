@@ -85,6 +85,8 @@ $pt-transition-duration: 100ms !default;
   background-color: var(--xh-menu-bg);
   border: var(--xh-menu-border);
   color: var(--xh-menu-item-text-color);
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
 
   .bp5-menu-item {
     // Default alignment of flex-start leaves Hoist icons shifted up - could target
