@@ -447,6 +447,8 @@ export class GridModel extends HoistModel {
     static defaultContextMenu = [
         'filter',
         '-',
+        'print',
+        '-',
         'copy',
         'copyWithHeaders',
         'copyCell',
@@ -459,8 +461,7 @@ export class GridModel extends HoistModel {
         'restoreDefaults',
         '-',
         'colChooser',
-        'autosizeColumns',
-        'print'
+        'autosizeColumns'
     ];
 
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().

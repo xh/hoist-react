@@ -14,6 +14,7 @@ import {
     Awaitable,
     VSide
 } from '@xh/hoist/core';
+import {PrintSupportConfig} from '@xh/hoist/desktop/cmp/printsupport';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {
     RecordAction,
@@ -241,6 +242,12 @@ export interface ZoneGridConfig {
     contextMenu?: GridContextMenuSpec;
 
     /**
+     * Set to true to enable printing support for this grid, or provide a
+     * config to further configure. Default false.
+     */
+    printSupport?: boolean | PrintSupportConfig;
+
+    /**
      * Governs if the grid should reuse a limited set of DOM elements for columns visible in the
      * scroll area (versus rendering all columns).  Consider this performance optimization for
      * grids with a very large number of columns obscured by horizontal scrolling. Note that
@@ -312,6 +319,16 @@ export class ZoneGridModel extends HoistModel {
 
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
     @managed persistenceModel: ZoneGridPersistenceModel;
+
+    print() {
+        if (!this.hasPrintSupport || this.gridModel.isPrinting) return;
+
+        this.gridModel.printSupportModel.toggleIsPrinting();
+    }
+
+    get hasPrintSupport(): boolean {
+        return !!this.gridModel.hasPrintSupport;
+    }
 
     constructor(config: ZoneGridConfig) {
         super();
@@ -416,6 +433,8 @@ export class ZoneGridModel extends HoistModel {
 
     getDefaultContextMenu = () => [
         'filter',
+        '-',
+        'print',
         '-',
         'copy',
         'copyWithHeaders',

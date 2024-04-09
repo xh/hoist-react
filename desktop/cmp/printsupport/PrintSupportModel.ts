@@ -14,6 +14,7 @@ import {makeObservable, bindable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
 export interface PrintSupportConfig {
+    showActions?: boolean;
     flexMaxWidth?: number;
     track?: boolean;
 }
@@ -30,6 +31,7 @@ export class PrintSupportModel extends HoistModel {
     @bindable
     isPrinting: boolean = false;
 
+    showActions: boolean;
     flexMaxWidth: number;
     track: boolean;
 
@@ -37,16 +39,19 @@ export class PrintSupportModel extends HoistModel {
     printRef = createObservableRef<HTMLElement>();
     hostNode: HTMLElement;
 
+    // store initial state
     gridDomLayout: DomLayoutType;
     gridColumnDefs: (ColDef | ColGroupDef)[] = [];
+    darkTheme: boolean;
 
     constructor(
         parentModel: HoistModel,
-        {flexMaxWidth = 250, track = false}: PrintSupportConfig = {}
+        {showActions = false, flexMaxWidth = 250, track = false}: PrintSupportConfig = {}
     ) {
         super();
         makeObservable(this);
         this.parentModel = parentModel;
+        this.showActions = showActions;
         this.flexMaxWidth = flexMaxWidth;
         this.track = track;
 
@@ -58,6 +63,10 @@ export class PrintSupportModel extends HoistModel {
             track: () => [inlineRef.current, printRef.current, this.isPrinting],
             run: () => {
                 if (this.isPrinting) {
+                    if (XH.darkTheme) {
+                        this.darkTheme = true;
+                        XH.toggleTheme();
+                    }
                     this.getPrintNode()?.appendChild(hostNode);
                     if (this.parentModel instanceof GridModel) {
                         this.gridDomLayout = this.parentModel.agApi.getGridOption('domLayout');
@@ -86,6 +95,9 @@ export class PrintSupportModel extends HoistModel {
                     return;
                 }
 
+                if (this.darkTheme) {
+                    XH.toggleTheme();
+                }
                 if (this.parentModel instanceof GridModel && this.gridDomLayout) {
                     this.parentModel.agApi.updateGridOptions({
                         domLayout: this.gridDomLayout,
@@ -147,7 +159,7 @@ export class PrintSupportModel extends HoistModel {
             if (ret.flex) {
                 ret.maxWidth = this.flexMaxWidth;
             }
-            if (ret.colId === 'actions') {
+            if (ret.colId === 'actions' && !this.showActions) {
                 ret.hide = true;
             }
 

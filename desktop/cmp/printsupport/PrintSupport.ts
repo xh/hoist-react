@@ -52,6 +52,7 @@ const inlineContainer = hoistCmp.factory<PrintSupportModel>({
             height: '100%',
             display: 'inherit',
             flexDirection: 'inherit',
+            flex: 'inherit',
 
             // If not rendering within a container with flexDirection: row, take up all available
             // width:

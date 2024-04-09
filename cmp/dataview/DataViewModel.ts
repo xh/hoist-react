@@ -15,7 +15,8 @@ import {
     RowClassRuleFn,
     GridSorterLike,
     GridContextMenuSpec,
-    GridGroupSortFn
+    GridGroupSortFn,
+    ColumnGetValueFn
 } from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, PlainObject, Some} from '@xh/hoist/core';
 import {
@@ -27,6 +28,7 @@ import {
     StoreSelectionModel,
     StoreTransaction
 } from '@xh/hoist/data';
+import {PrintSupportConfig} from '@xh/hoist/desktop/cmp/printsupport';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNumber} from 'lodash';
@@ -41,6 +43,12 @@ export interface DataViewConfig {
 
     /** Renderer to use for each data row. */
     renderer?: ColumnRenderer;
+
+    /**
+     * Function to get the value of a StoreRecord field.
+     * Used to get values for copying to clipboard, etc.
+     **/
+    getValueFn?: ColumnGetValueFn;
 
     /** Row height (in px) for each item displayed in the view, or a function which returns a number.*/
     itemHeight?: number | ItemHeightFn;
@@ -117,6 +125,12 @@ export interface DataViewConfig {
     onRowDoubleClicked?: (e: RowDoubleClickedEvent) => void;
 
     /**
+     * Set to true to enable printing support for this dataview, or provide a
+     * config to further configure. Default false.
+     */
+    printSupport?: boolean | PrintSupportConfig;
+
+    /**
      * "Escape hatch" object to pass directly to GridModel. Note these options may be used
      * / overwritten by the framework itself, and are not all guaranteed to be compatible
      * with its usages of GridModel.
@@ -165,6 +179,8 @@ export class DataViewModel extends HoistModel {
             rowClassRules,
             onRowClicked,
             onRowDoubleClicked,
+            printSupport,
+            getValueFn,
             gridOptions
         } = config;
 
@@ -187,7 +203,14 @@ export class DataViewModel extends HoistModel {
             colId: 'xhDataViewColumn',
             flex: true,
             renderer,
-            rendererIsComplex: true
+            rendererIsComplex: true,
+            getValueFn: getValueFn
+                ? getValueFn
+                : ({record}) => {
+                      return Object.entries(record.data)
+                          .map(([key, value]) => `${key}: ${value}`)
+                          .join('\n');
+                  }
         });
 
         this.gridModel = new GridModel({
@@ -209,6 +232,7 @@ export class DataViewModel extends HoistModel {
             onRowClicked,
             onRowDoubleClicked,
             columns,
+            printSupport,
             ...gridOptions
         });
     }
@@ -240,6 +264,16 @@ export class DataViewModel extends HoistModel {
     }
     get sortBy() {
         return this.gridModel.sortBy;
+    }
+
+    print() {
+        if (!this.hasPrintSupport || this.gridModel.isPrinting) return;
+
+        this.gridModel.printSupportModel.toggleIsPrinting();
+    }
+
+    get hasPrintSupport(): boolean {
+        return !!this.gridModel.hasPrintSupport;
     }
 
     selectAsync(

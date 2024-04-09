@@ -80,7 +80,6 @@ class DataViewLocalModel extends HoistModel {
     private createDefaultAgOptions(): GridOptions {
         const {model} = this;
         return {
-            headerHeight: 0,
             suppressMakeColumnVisibleAfterUnGroup: true,
             getRowHeight: agParams => {
                 const {groupRowHeight, itemHeight} = model;

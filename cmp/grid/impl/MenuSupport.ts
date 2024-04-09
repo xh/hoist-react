@@ -268,7 +268,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
             });
         case 'print':
             return new RecordAction({
-                text: 'Print Entire Grid',
+                text: 'Print Grid',
                 icon: Icon.print(),
                 hidden: !gridModel?.hasPrintSupport,
                 disabled: !gridModel?.store.count,

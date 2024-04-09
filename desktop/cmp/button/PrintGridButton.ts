@@ -4,7 +4,9 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {DataViewModel} from '@xh/hoist/cmp/dataview';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -34,7 +36,13 @@ export const [PrintGridButton, printGridButton] = hoistCmp.withFactory<PrintGrid
     model: false,
 
     render({icon, title, onClick, gridModel, track, disabled, ...rest}, ref) {
-        const contextGridModel = useContextModel(GridModel);
+        const contextGridModel = useContextModel(model => {
+            return (
+                model instanceof GridModel ||
+                model instanceof ZoneGridModel ||
+                model instanceof DataViewModel
+            );
+        });
 
         if (!onClick) {
             gridModel = withDefault(gridModel, contextGridModel);
