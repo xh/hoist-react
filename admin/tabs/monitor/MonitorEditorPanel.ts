@@ -71,5 +71,16 @@ const modelSpec: RestGridConfig = {
         {field: 'sortOrder'},
         {field: 'lastUpdated'},
         {field: 'lastUpdatedBy'}
-    ]
+    ],
+    actionWarning: {
+        del: monitors => {
+            const xhMonitors = monitors.filter(m => m.get('code').startsWith('xh'));
+            if (xhMonitors.length > 0) {
+                return (
+                    `The following monitor(s) is/are provided by Hoist: ${xhMonitors.map(m => m.get('name')).join(', ')}. ` +
+                    'These monitors will reappear on the next application restart. Consider deactivating them instead.'
+                );
+            }
+        }
+    }
 };
