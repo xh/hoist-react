@@ -67,6 +67,7 @@ $pt-transition-duration: 100ms !default;
 // This override is taken from the popover source SCSS - there it is scoped under the minimal class.
 // https://github.com/palantir/blueprint/blob/1bfd1e42303d2626bfc3923eec2195ab4dc696d2/packages/core/src/components/popover/_popover.scss#L54
 .bp5-popover {
+  margin: 0px 5px;
   @include react-transition(
     'bp5-popover',
     (
