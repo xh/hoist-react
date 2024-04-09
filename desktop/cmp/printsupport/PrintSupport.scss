@@ -1,0 +1,9 @@
+.xh-print-support {
+  // Unwind the (surprising) 500px default dialog width coming from Blueprint.
+  // If the user has configured their ModalSupportOptions with null width, this should be respected.
+  &__modal {
+    width: auto;
+    // Zero margin to allow for fullscreen modals @ 100vw/vh
+    margin: 0;
+  }
+}

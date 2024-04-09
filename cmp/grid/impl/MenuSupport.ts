@@ -266,6 +266,14 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                 icon: Icon.reset(),
                 actionFn: () => gridModel.restoreDefaultsAsync()
             });
+        case 'print':
+            return new RecordAction({
+                text: 'Print Entire Grid',
+                icon: Icon.print(),
+                hidden: !gridModel?.hasPrintSupport,
+                disabled: !gridModel?.store.count,
+                actionFn: () => gridModel.print()
+            });
         default:
             return token;
     }

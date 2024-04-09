@@ -23,6 +23,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
+import {printSupport} from '@xh/hoist/desktop/cmp/printsupport';
 import {
     colChooser as desktopColChooser,
     gridFilterDialog,
@@ -80,7 +81,7 @@ export interface GridProps extends HoistProps<GridModel>, LayoutProps, TestSuppo
  *
  * For advanced ag-Grid use-cases that are not well supported by this component, note that the
  * {@link AgGrid} Hoist component provides much thinner and less opinionated wrapper around ag-Grid
- * while still retaining consistent styling and some additional conveniences. However a number of
+ * while still retaining consistent styling and some additional conveniences. However, a number of
  * core Hoist integrations and features will *not* be available with that thinner wrapper.
  *
  * @see {@link https://www.ag-grid.com/javascript-grid-reference-overview/|ag-Grid Docs}
@@ -92,8 +93,15 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     className: 'xh-grid',
 
     render({model, className, testId, ...props}, ref) {
-        const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} =
-                model,
+        const {
+                store,
+                treeMode,
+                treeStyle,
+                highlightRowOnClick,
+                colChooserModel,
+                filterModel,
+                printSupportModel
+            } = model,
             impl = useLocalModel(GridLocalModel),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
             maxDepth = impl.isHierarchical ? store.maxDepth : null;
@@ -110,7 +118,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
         const {enableFullWidthScroll} = model.experimental,
             container = enableFullWidthScroll ? vframe : frame;
 
-        return fragment(
+        let item = fragment(
             container({
                 className,
                 items: [
@@ -131,6 +139,15 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             colChooserModel ? platformColChooser({model: colChooserModel}) : null,
             filterModel ? gridFilterDialog({model: filterModel}) : null
         );
+
+        if (printSupportModel) {
+            item = printSupport({
+                model: printSupportModel,
+                item
+            });
+        }
+
+        return item;
     }
 });
 

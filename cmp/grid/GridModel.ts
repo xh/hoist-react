@@ -49,6 +49,7 @@ import {
     StoreSelectionModel,
     StoreTransaction
 } from '@xh/hoist/data';
+import {PrintSupportConfig, PrintSupportModel} from '@xh/hoist/desktop/cmp/printsupport';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
@@ -270,6 +271,12 @@ export interface GridConfig {
     onCellContextMenu?: (e: CellContextMenuEvent) => void;
 
     /**
+     * Set to true to enable printing support for this grid, or provide a
+     * config to further configure. Default false.
+     */
+    printSupport?: boolean | PrintSupportConfig;
+
+    /**
      * Number of clicks required to expand / collapse a parent row in a tree grid. Defaults
      * to 2 for desktop, 1 for mobile. Any other value prevents clicks on row body from
      * expanding / collapsing (requires click on tree col affordance to expand/collapse).
@@ -398,6 +405,7 @@ export class GridModel extends HoistModel {
 
     @managed filterModel: GridFilterModel;
     @managed agGridModel: AgGridModel;
+    @managed printSupportModel: PrintSupportModel;
 
     //------------------------
     // Observable API
@@ -427,6 +435,15 @@ export class GridModel extends HoistModel {
      */
     @observable isInEditingMode: boolean = false;
 
+    /** Is the panel rendering in its modal view state? Observable property. */
+    get isPrinting(): boolean {
+        return !!this.printSupportModel?.isPrinting;
+    }
+
+    get hasPrintSupport(): boolean {
+        return !!this.printSupportModel;
+    }
+
     static defaultContextMenu = [
         'filter',
         '-',
@@ -442,7 +459,8 @@ export class GridModel extends HoistModel {
         'restoreDefaults',
         '-',
         'colChooser',
-        'autosizeColumns'
+        'autosizeColumns',
+        'print'
     ];
 
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
@@ -508,6 +526,7 @@ export class GridModel extends HoistModel {
             onCellClicked,
             onCellDoubleClicked,
             onCellContextMenu,
+            printSupport = false,
             clicksToExpand = XH.isMobileApp ? 1 : 2,
             contextMenu,
             useVirtualColumns = false,
@@ -606,6 +625,14 @@ export class GridModel extends HoistModel {
         this.onCellClicked = onCellClicked;
         this.onCellDoubleClicked = onCellDoubleClicked;
         this.onCellContextMenu = onCellContextMenu;
+
+        if (printSupport) {
+            this.printSupportModel =
+                printSupport === true
+                    ? new PrintSupportModel(this)
+                    : new PrintSupportModel(this, printSupport);
+        }
+
         this.appData = appData ? clone(appData) : {};
 
         this.addReaction({
@@ -695,6 +722,12 @@ export class GridModel extends HoistModel {
         } else if (type === 'csv') {
             agApi.exportDataAsCsv(params);
         }
+    }
+
+    print() {
+        if (!this.hasPrintSupport || this.isPrinting) return;
+
+        this.printSupportModel.toggleIsPrinting();
     }
 
     /**
@@ -1746,7 +1779,7 @@ export class GridModel extends HoistModel {
             return this.markManaged(new StoreSelectionModel({...selModel, store, xhImpl: true}));
         }
 
-        // Assume its just the mode...
+        // Assume it's just the mode...
         let mode: any = 'single';
         if (isString(selModel)) {
             mode = selModel;

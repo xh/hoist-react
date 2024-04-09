@@ -11,6 +11,7 @@ export * from './LaunchAdminButton';
 export * from './LogoutButton';
 export * from './ModalToggleButton';
 export * from './OptionsButton';
+export * from './PrintGridButton';
 export * from './RefreshButton';
 export * from './RestoreDefaultsButton';
 export * from './ThemeToggleButton';
