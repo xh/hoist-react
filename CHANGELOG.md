@@ -7,6 +7,15 @@
 
 ### 💥 Breaking Changes
 * Requires update to `hoist-core >= 20.0.0`.
+* Requires update to `@ag-grid >= 31.x`.
+* ag-grid removed `ColumnApi`.  Most methods that were on `ColumnApi` are now on `GridApi`.
+  As a result, Hoist-React has removed the `agColumnApi` from the `GridModel`
+  Apps that use `agColumnApi` will need to update to use `agApi` instead.
+  See [What's New in AG Grid 31](https://blog.ag-grid.com/whats-new-in-ag-grid-31/) and [Upgrading to AG Grid 31](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-31/?ref=blog.ag-grid.com) for more details.
+
+### 📚 Libraries
+
+* @ag-grid `30.x -> 31.x`
 
 ## 63.0.1 - 2024-04-05
 
@@ -15,7 +24,7 @@
 * New filterable fields exposed in the Admin Console for `ActivityTracking` and `ClientErrors` modules.
     * `url`, `appEnvironment`, `appVersion` in `ActivityTracking`
     * `impersonating` in `ClientErrors`
-    * 
+
 
 ## 63.0.0 - 2024-04-04
 
