@@ -11,6 +11,7 @@
 * ag-grid removed `ColumnApi`.  Most methods that were on `ColumnApi` are now on `GridApi`.
   As a result, Hoist-React has removed the `agColumnApi` from the `GridModel`
   Apps that use `agColumnApi` will need to update to use `agApi` instead.
+  Many methods on `agApi` are replaced with `agApi.setGridOption('property', value)`.
   All apps will need to update their ag-grid version fetch as per this [Toolbox example](https://github.com/xh/toolbox/pull/709/files/5626e21d778e1fc72f9735d2d8f011513e1ac9c6#diff-304055320a29f66ea1255446ba8f13e0f3f1b13643bcea0c0466aa60e9288a8f).
   See [What's New in AG Grid 31](https://blog.ag-grid.com/whats-new-in-ag-grid-31/) and [Upgrading to AG Grid 31](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-31/?ref=blog.ag-grid.com) for more details.
 

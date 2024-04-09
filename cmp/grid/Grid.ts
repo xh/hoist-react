@@ -203,12 +203,16 @@ export class GridLocalModel extends HoistModel {
             {clicksToEdit, selModel} = model;
 
         let ret: GridOptions = {
+            // reactiveCustomComponents is required until ag-grid v32.
+            // In v32, `reactiveCustomComponents: true` will be the default.
+            // See https://www.ag-grid.com/javascript-data-grid//grid-options/#reference-miscellaneous-reactiveCustomComponents
+            reactiveCustomComponents: true,
             suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowId: ({data}) => data.agId,
             defaultColDef: {
                 sortable: true,
                 resizable: true,
-                suppressMenu: true,
+                suppressHeaderMenuButton: true,
                 menuTabs: ['filterMenuTab']
             },
             popupParent: document.querySelector('body'),
@@ -465,7 +469,7 @@ export class GridLocalModel extends HoistModel {
                 if (!api) return;
 
                 this.doWithPreservedState({expansion: false, filters: true}, () => {
-                    api.setColumnDefs(this.getColumnDefs());
+                    api.setGridOption('columnDefs', this.getColumnDefs());
                 });
             }
         };
@@ -499,15 +503,15 @@ export class GridLocalModel extends HoistModel {
                             id = col.colId;
 
                         if (agCol.width !== col.width) {
-                            api.setColumnWidth(id, col.width);
+                            api.setColumnWidths([{key: id, newWidth: col.width}]);
                             hasChanges = true;
                         }
                         if (agCol.hide !== col.hidden) {
-                            api.setColumnVisible(id, !col.hidden);
+                            api.setColumnsVisible([id], !col.hidden);
                             hasChanges = true;
                         }
                         if (agCol.pinned !== col.pinned) {
-                            api.setColumnPinned(id, col.pinned);
+                            api.setColumnsPinned([id], col.pinned);
                             hasChanges = true;
                         }
                     });
@@ -608,8 +612,10 @@ export class GridLocalModel extends HoistModel {
             }
         }
 
-        agApi.setPinnedTopRowData(pinnedTopRowData);
-        agApi.setPinnedBottomRowData(pinnedBottomRowData);
+        agApi.updateGridOptions({
+            pinnedTopRowData,
+            pinnedBottomRowData
+        });
     }
 
     @logWithDebug
@@ -659,7 +665,7 @@ export class GridLocalModel extends HoistModel {
                 agApi.applyTransaction(transaction);
             }
         } else {
-            agApi.setRowData(newRs.list);
+            agApi.setGridOption('rowData', newRs.list);
         }
 
         if (model.externalSort) {

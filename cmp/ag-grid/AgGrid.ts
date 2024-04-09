@@ -168,7 +168,7 @@ class AgGridLocalModel extends HoistModel {
         if (isNil(this.componentProps.headerHeight)) {
             this.addReaction({
                 track: () => [model.agApi, this.headerHeight],
-                run: ([api, headerHeight]) => api?.setHeaderHeight(headerHeight)
+                run: ([api, headerHeight]) => api?.updateGridOptions({headerHeight})
             });
         }
     }
