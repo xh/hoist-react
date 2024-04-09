@@ -20,6 +20,8 @@
 ### 🎁 New Features
 
 * Provides admin support for Cluster-aware version of Hoist.
+* Displays warning message when trying to delete a monitor
+  provided by hoist.
 
 ### 📚 Libraries
 
