@@ -20,8 +20,7 @@
 
     "paths": {
       "@xh/hoist/*": ["./*"]
-    },
-
+    }
   },
   "include": ["./**/*", "package.json"],
   "exclude": ["node_modules", "build"]
