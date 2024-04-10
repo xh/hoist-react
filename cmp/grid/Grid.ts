@@ -23,7 +23,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
-import {printSupport} from '@xh/hoist/desktop/cmp/printsupport';
+import {printSupport} from '@xh/hoist/cmp/printsupport';
 import {
     colChooser as desktopColChooser,
     gridFilterDialog,

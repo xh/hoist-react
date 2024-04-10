@@ -7,7 +7,6 @@
 
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import '@xh/hoist/desktop/register';
 import {Children, ReactPortal} from 'react';
 import {createPortal} from 'react-dom';
 import {PrintSupportModel} from './PrintSupportModel';
