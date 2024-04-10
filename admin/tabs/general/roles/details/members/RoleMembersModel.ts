@@ -153,6 +153,7 @@ export class RoleMembersModel extends HoistModel {
                 idSpec: data => `${this.selectedRole.name}:${data.type}:${data.name}`
             },
             contextMenu: [...this.createFilterActions(), '-', ...GridModel.defaultContextMenu],
+            printSupport: true,
             enableExport: true,
             exportOptions: {
                 columns: ['type', 'VISIBLE'],

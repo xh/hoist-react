@@ -144,6 +144,7 @@ export class ActivityTrackingModel extends HoistModel {
 
         const hidden = true;
         this.gridModel = new GridModel({
+            printSupport: true,
             treeMode: true,
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
             persistWith: {

@@ -25,6 +25,7 @@ export class UserModel extends HoistModel {
         makeObservable(this);
 
         this.gridModel = new GridModel({
+            printSupport: true,
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,

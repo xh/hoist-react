@@ -33,6 +33,7 @@ export class ActivityDetailModel extends HoistModel {
         const hidden = true;
 
         this.gridModel = new GridModel({
+            printSupport: true,
             sortBy: 'dateCreated|desc',
             colChooserModel: true,
             enableExport: true,

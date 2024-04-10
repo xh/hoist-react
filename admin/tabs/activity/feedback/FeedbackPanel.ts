@@ -19,6 +19,7 @@ export const feedbackPanel = hoistCmp.factory(() =>
 const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminFeedbackState'},
     colChooserModel: true,
+    printSupport: {flexMaxWidth: 800},
     enableExport: true,
     exportOptions: {filename: exportFilenameWithDate('feedback')},
     emptyText: 'No feedback reported...',

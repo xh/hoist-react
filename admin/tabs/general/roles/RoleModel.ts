@@ -222,6 +222,7 @@ export class RoleModel extends HoistModel {
 
     private createGridModel(): GridModel {
         return new GridModel({
+            printSupport: {flexMaxWidth: 800},
             autosizeOptions: {mode: 'managed'},
             emptyText: 'No roles found.',
             colChooserModel: true,

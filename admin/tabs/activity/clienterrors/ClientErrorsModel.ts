@@ -40,6 +40,7 @@ export class ClientErrorsModel extends HoistModel {
 
         const hidden = true;
         this.gridModel = new GridModel({
+            printSupport: true,
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,

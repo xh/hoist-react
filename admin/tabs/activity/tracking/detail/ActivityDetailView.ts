@@ -8,7 +8,7 @@ import {form} from '@xh/hoist/cmp/form';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, div, filler, h3, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, creates} from '@xh/hoist/core';
-import {colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
+import {colChooserButton, exportButton, printGridButton} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
@@ -40,7 +40,8 @@ const tbar = hoistCmp.factory(({model}) => {
         gridCountLabel({unit: 'entry'}),
         gridFindField(),
         colChooserButton(),
-        exportButton()
+        exportButton(),
+        printGridButton()
     );
 });
 

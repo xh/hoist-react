@@ -8,7 +8,13 @@ import {form} from '@xh/hoist/cmp/form';
 import {grid} from '@xh/hoist/cmp/grid';
 import {div, hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
-import {button, buttonGroup, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
+import {
+    button,
+    buttonGroup,
+    colChooserButton,
+    exportButton,
+    printGridButton
+} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -127,7 +133,7 @@ const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
             side: 'left',
             defaultSize: 500
         },
-        tbar: [groupingChooser({flex: 1}), colChooserButton(), exportButton()],
+        tbar: [groupingChooser({flex: 1}), colChooserButton(), exportButton(), printGridButton()],
         items: [
             grid({
                 flex: 1,

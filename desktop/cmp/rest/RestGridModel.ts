@@ -8,6 +8,7 @@
 import {RowDoubleClickedEvent} from '@ag-grid-community/core';
 import {BaseFieldConfig} from '@xh/hoist/cmp/form';
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
+import {PrintSupportConfig} from '@xh/hoist/cmp/printsupport';
 import {HoistModel, managed, PlainObject, ElementSpec, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {RecordAction, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
@@ -56,6 +57,12 @@ export interface RestGridConfig extends GridConfig {
 
     /** Callback to call when a row is double-clicked. */
     onRowDoubleClicked?: (e: RowDoubleClickedEvent) => void;
+
+    /**
+     * Set to true to enable printing support for this restgrid, or provide a
+     * config to further configure. Default false.
+     */
+    printSupport?: boolean | PrintSupportConfig;
 }
 
 export interface RestGridEditor {
@@ -129,6 +136,16 @@ export class RestGridModel extends HoistModel {
         return this.gridModel.selectedRecord;
     }
 
+    print() {
+        if (!this.hasPrintSupport || this.gridModel.isPrinting) return;
+
+        this.gridModel.printSupportModel.toggleIsPrinting();
+    }
+
+    get hasPrintSupport(): boolean {
+        return !!this.gridModel.hasPrintSupport;
+    }
+
     constructor({
         readonly = false,
         toolbarActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
@@ -140,6 +157,7 @@ export class RestGridModel extends HoistModel {
         filterFields,
         editors = [],
         onRowDoubleClicked,
+        printSupport,
         store,
         appData,
         ...rest
@@ -172,6 +190,7 @@ export class RestGridModel extends HoistModel {
             onRowDoubleClicked,
             appData: {restGridModel: this, ...appData},
             xhImpl: true,
+            printSupport,
             ...rest
         });
 

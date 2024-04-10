@@ -8,7 +8,7 @@ import {gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {exportButton} from '@xh/hoist/desktop/cmp/button';
+import {exportButton, printGridButton} from '@xh/hoist/desktop/cmp/button';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {castArray, isEmpty, isFunction} from 'lodash';
@@ -52,6 +52,10 @@ export const restGridToolbar = hoistCmp.factory({
             exportButton({
                 gridModel,
                 omit: !model.gridModel.enableExport
+            }),
+            printGridButton({
+                gridModel,
+                omit: !model.hasPrintSupport
             })
         );
     }
