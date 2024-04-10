@@ -1,9 +1,13 @@
 .xh-print-support {
-  // Unwind the (surprising) 500px default dialog width coming from Blueprint.
-  // If the user has configured their ModalSupportOptions with null width, this should be respected.
-  &__modal {
-    width: auto;
-    // Zero margin to allow for fullscreen modals @ 100vw/vh
-    margin: 0;
+  &__printing {
+    // Centers the grid when printing,
+    // even though ag-grid styles it with inline-block.
+    // This prevents the rows from taking up the full width of the page when printing,
+    // which would happen if the centering with 'block' were used.
+    .ag-root-wrapper.ag-layout-print {
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+    }
   }
 }

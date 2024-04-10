@@ -25,6 +25,8 @@ export interface PrintSupportConfig {
 export class PrintSupportModel extends HoistModel {
     override xhImpl = true;
 
+    private PRINTING_CN = 'xh-print-support__printing';
+
     parentModel: HoistModel;
 
     @bindable
@@ -42,6 +44,10 @@ export class PrintSupportModel extends HoistModel {
     gridDomLayout: DomLayoutType;
     gridColumnDefs: (ColDef | ColGroupDef)[] = [];
     darkTheme: boolean;
+
+    toggleIsPrinting() {
+        this.isPrinting = !this.isPrinting;
+    }
 
     constructor(
         parentModel: HoistModel,
@@ -66,7 +72,7 @@ export class PrintSupportModel extends HoistModel {
                         this.darkTheme = true;
                         XH.toggleTheme();
                     }
-                    this.getPrintNode()?.appendChild(hostNode);
+                    this.printNode?.appendChild(hostNode);
                     if (this.parentModel instanceof GridModel) {
                         this.gridDomLayout = this.parentModel.agApi.getGridOption('domLayout');
                         this.gridColumnDefs = this.parentModel.agApi.getColumnDefs();
@@ -114,26 +120,23 @@ export class PrintSupportModel extends HoistModel {
     /**
      * @returns Empty div set to inherit all styling from its parent
      */
-    createHostNode(): HTMLElement {
+    private createHostNode(): HTMLElement {
         const hostNode = document.createElement('div');
         hostNode.style.all = 'inherit';
         hostNode.classList.add('xh-print-support__host');
         return hostNode;
     }
 
-    createPrintNode(): HTMLElement {
-        if (document.querySelector('.xh-print-support__print')) return;
+    private createPrintNode(): HTMLElement {
+        if (this.printNode) return;
 
         const printNode = document.createElement('div');
-        printNode.classList.add('xh-print-support__print');
+        printNode.classList.add(this.PRINTING_CN);
         document.body.appendChild(printNode);
     }
-    toggleIsPrinting() {
-        this.isPrinting = !this.isPrinting;
-    }
 
-    getPrintNode() {
-        return document.querySelector('.xh-print-support__print');
+    private get printNode() {
+        return document.querySelector('.' + this.PRINTING_CN);
     }
 
     private setStyles(selector: string, styles: Record<string, string>) {
@@ -188,7 +191,7 @@ export class PrintSupportModel extends HoistModel {
 
     override destroy() {
         this.hostNode.remove();
-        this.getPrintNode()?.remove();
+        this.printNode?.remove();
         super.destroy();
     }
 }
