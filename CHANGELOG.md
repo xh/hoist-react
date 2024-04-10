@@ -2,20 +2,26 @@
 
 ## 64.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* Requires update to `hoist-core >= 20.0.0`.
+
 ### 🎁 New Features
+
 * Provides admin support for Cluster-aware version of Hoist.
 
-### 💥 Breaking Changes
-* Requires update to `hoist-core >= 20.0.0`.
+### 🐞 Bug Fixes
+
+* Removed extraneous internal padding override to Blueprint menu styles. Fixes overhang of menu
+  divider borders and avoids possible triggering of horizontal scrollbars.
 
 ## 63.0.1 - 2024-04-05
 
 ### 🐞 Bug Fixes
 
-* New filterable fields exposed in the Admin Console for `ActivityTracking` and `ClientErrors` modules.
-    * `url`, `appEnvironment`, `appVersion` in `ActivityTracking`
-    * `impersonating` in `ClientErrors`
-    * 
+* New filterable fields exposed in Admin Console for Activity Tracking and Client Errors.
+    * Activity Tracking adds `url`, `appEnvironment`, `appVersion`.
+    * Client Errors adds `impersonating`.
 
 ## 63.0.0 - 2024-04-04
 
