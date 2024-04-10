@@ -40,10 +40,10 @@ export class PrintSupportModel extends HoistModel {
     printRef = createObservableRef<HTMLElement>();
     hostNode: HTMLElement;
 
-    // store initial state
+    // store grid and app state before printing
     gridDomLayout: DomLayoutType;
     gridColumnDefs: (ColDef | ColGroupDef)[] = [];
-    darkTheme: boolean;
+    toggledTheme: boolean;
 
     toggleIsPrinting() {
         this.isPrinting = !this.isPrinting;
@@ -63,58 +63,66 @@ export class PrintSupportModel extends HoistModel {
         this.createPrintNode();
         this.hostNode = this.createHostNode();
 
-        const {inlineRef, printRef, hostNode} = this;
         this.addReaction({
-            track: () => [inlineRef.current, printRef.current, this.isPrinting],
+            track: () => [this.inlineRef.current, this.printRef.current, this.isPrinting],
             run: () => {
                 if (this.isPrinting) {
-                    if (XH.darkTheme) {
-                        this.darkTheme = true;
-                        XH.toggleTheme();
-                    }
-                    this.printNode?.appendChild(hostNode);
-                    if (this.parentModel instanceof GridModel) {
-                        this.gridDomLayout = this.parentModel.agApi.getGridOption('domLayout');
-                        this.gridColumnDefs = this.parentModel.agApi.getColumnDefs();
-
-                        this.parentModel.agApi.updateGridOptions({
-                            domLayout: 'print',
-                            columnDefs: this.adjustColumnDefsForPrint(this.gridColumnDefs)
-                        });
-                        setTimeout(() => {
-                            window.print();
-                            this.toggleIsPrinting();
-                        }, 2000);
-                    }
-
-                    this.setStyles('.xh-app', {overflow: 'auto'});
-                    this.setStyles('#xh-root', {display: 'none'});
-                    window.dispatchEvent(new Event('resize'));
-
-                    if (track) {
-                        XH.track({
-                            category: 'Print',
-                            message: `Printed Grid`
-                        });
-                    }
-                    return;
+                    this.toPrintMode();
+                } else {
+                    this.toScreenMode();
                 }
-
-                if (this.darkTheme) {
-                    XH.toggleTheme();
-                }
-                if (this.parentModel instanceof GridModel && this.gridDomLayout) {
-                    this.parentModel.agApi.updateGridOptions({
-                        domLayout: this.gridDomLayout,
-                        columnDefs: this.adjustColumnDefsForScreen(this.gridColumnDefs)
-                    });
-                }
-                this.setStyles('.xh-app', {overflow: 'visible'});
-                this.setStyles('#xh-root', {display: 'block'});
-                inlineRef.current.appendChild(hostNode);
-                window.dispatchEvent(new Event('resize'));
             }
         });
+    }
+
+    private toPrintMode() {
+        // always print in light theme
+        if (XH.darkTheme) {
+            this.toggledTheme = true;
+            XH.toggleTheme();
+        }
+
+        this.printNode?.appendChild(this.hostNode);
+        if (this.parentModel instanceof GridModel) {
+            this.gridDomLayout = this.parentModel.agApi.getGridOption('domLayout');
+            this.gridColumnDefs = this.parentModel.agApi.getColumnDefs();
+
+            this.parentModel.agApi.updateGridOptions({
+                domLayout: 'print',
+                columnDefs: this.adjustColumnDefsForPrint(this.gridColumnDefs)
+            });
+            setTimeout(() => {
+                window.print();
+                this.toggleIsPrinting();
+            }, 2000);
+        }
+
+        this.setStyles('.xh-app', {overflow: 'auto'});
+        this.setStyles('#xh-root', {display: 'none'});
+        window.dispatchEvent(new Event('resize'));
+
+        if (this.track) {
+            XH.track({
+                category: 'Print',
+                message: `Printed Grid`
+            });
+        }
+    }
+
+    private toScreenMode() {
+        if (this.toggledTheme) {
+            XH.toggleTheme();
+        }
+        if (this.parentModel instanceof GridModel && this.gridDomLayout) {
+            this.parentModel.agApi.updateGridOptions({
+                domLayout: this.gridDomLayout,
+                columnDefs: this.adjustColumnDefsForScreen(this.gridColumnDefs)
+            });
+        }
+        this.setStyles('.xh-app', {overflow: 'visible'});
+        this.setStyles('#xh-root', {display: 'block'});
+        this.inlineRef.current.appendChild(this.hostNode);
+        window.dispatchEvent(new Event('resize'));
     }
 
     /**
