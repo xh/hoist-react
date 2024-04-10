@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "composite": true,
     "experimentalDecorators": true,
     "target": "ES2022",
     "module": "ES2022",
@@ -16,5 +17,6 @@
     },
     "lib": ["dom", "es2022"]
   },
+  "include": ["./**/*", "package.json"],
   "exclude": ["node_modules"]
 }
