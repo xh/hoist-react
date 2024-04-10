@@ -107,24 +107,13 @@ export class ActivityTrackingModel extends HoistModel {
             ] as CubeFieldSpec[]
         });
 
+        const enableValues = true;
         this.filterChooserModel = new FilterChooserModel({
             fieldSpecs: [
-                {
-                    field: 'category',
-                    enableValues: true
-                },
-                {
-                    field: 'username',
-                    enableValues: true
-                },
-                {
-                    field: 'device',
-                    enableValues: true
-                },
-                {
-                    field: 'browser',
-                    enableValues: true
-                },
+                {field: 'category', enableValues},
+                {field: 'username', displayName: 'User', enableValues},
+                {field: 'device', enableValues},
+                {field: 'browser', enableValues},
                 {
                     field: 'elapsed',
                     valueRenderer: v => {
@@ -135,13 +124,13 @@ export class ActivityTrackingModel extends HoistModel {
                     },
                     fieldType: 'number'
                 },
-                {field: 'msg'},
+                {field: 'msg', displayName: 'Message'},
                 {field: 'data'},
                 {field: 'userAgent'},
-                {field: 'url'},
+                {field: 'url', displayName: 'URL'},
                 {field: 'instance'},
                 {field: 'appVersion'},
-                {field: 'appEnvironment'}
+                {field: 'appEnvironment', displayName: 'Environment'}
             ]
         });
 

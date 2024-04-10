@@ -70,30 +70,19 @@ export class ClientErrorsModel extends HoistModel {
             ]
         });
 
+        const enableValues = true;
         this.filterChooserModel = new FilterChooserModel({
             fieldSpecs: [
-                {
-                    field: 'username',
-                    enableValues: true
-                },
-                {
-                    field: 'browser',
-                    enableValues: true
-                },
-                {
-                    field: 'device',
-                    enableValues: true
-                },
+                {field: 'username', displayName: 'User', enableValues},
+                {field: 'browser', enableValues},
+                {field: 'device', enableValues},
                 {field: 'appVersion'},
-                {
-                    field: 'appEnvironment',
-                    enableValues: true
-                },
+                {field: 'appEnvironment', displayName: 'Environment', enableValues},
                 {field: 'userAlerted'},
                 {field: 'userAgent'},
-                {field: 'msg'},
+                {field: 'msg', displayName: 'User Message'},
                 {field: 'error'},
-                {field: 'url'},
+                {field: 'url', displayName: 'URL'},
                 {field: 'instance'},
                 {field: 'impersonating'}
             ]
@@ -201,6 +190,7 @@ export class ClientErrorsModel extends HoistModel {
     getDefaultStartDay() {
         return LocalDate.currentAppDay();
     }
+
     getDefaultEndDay() {
         return LocalDate.currentAppDay();
     }

@@ -2,10 +2,8 @@
 
 ## 64.0.0-SNAPSHOT - unreleased
 
-### 🎁 New Features
-* Provides admin support for Cluster-aware version of Hoist.
-
 ### 💥 Breaking Changes
+
 * Requires update to `hoist-core >= 20.0.0`.
 * Requires update to `@ag-grid >= 31.x`.
 * ag-grid removed `ColumnApi`.  Most methods that were on `ColumnApi` are now on `GridApi`.
@@ -15,6 +13,15 @@
   All apps will need to update their ag-grid version fetch as per this [Toolbox example](https://github.com/xh/toolbox/pull/709/files/5626e21d778e1fc72f9735d2d8f011513e1ac9c6#diff-304055320a29f66ea1255446ba8f13e0f3f1b13643bcea0c0466aa60e9288a8f).
   See [What's New in AG Grid 31](https://blog.ag-grid.com/whats-new-in-ag-grid-31/) and [Upgrading to AG Grid 31](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-31/?ref=blog.ag-grid.com) for more details.
 
+### 🎁 New Features
+
+* Provides admin support for Cluster-aware version of Hoist.
+
+### 🐞 Bug Fixes
+
+* Removed extraneous internal padding override to Blueprint menu styles. Fixes overhang of menu
+  divider borders and avoids possible triggering of horizontal scrollbars.
+
 ### 📚 Libraries
 
 * @ag-grid `30.x -> 31.x`
@@ -23,10 +30,9 @@
 
 ### 🐞 Bug Fixes
 
-* New filterable fields exposed in the Admin Console for `ActivityTracking` and `ClientErrors` modules.
-    * `url`, `appEnvironment`, `appVersion` in `ActivityTracking`
-    * `impersonating` in `ClientErrors`
-
+* New filterable fields exposed in Admin Console for Activity Tracking and Client Errors.
+    * Activity Tracking adds `url`, `appEnvironment`, `appVersion`.
+    * Client Errors adds `impersonating`.
 
 ## 63.0.0 - 2024-04-04
 
