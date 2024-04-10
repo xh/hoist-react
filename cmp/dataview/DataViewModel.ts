@@ -28,7 +28,7 @@ import {
     StoreSelectionModel,
     StoreTransaction
 } from '@xh/hoist/data';
-import {PrintSupportConfig} from '@xh/hoist/desktop/cmp/printsupport';
+import {PrintSupportConfig} from '@xh/hoist/cmp/printsupport';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNumber} from 'lodash';

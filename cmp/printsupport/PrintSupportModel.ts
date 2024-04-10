@@ -9,7 +9,6 @@ import {ColDef, ColGroupDef} from '@ag-grid-community/core';
 import {DomLayoutType} from '@ag-grid-community/core/dist/types/src/entities/gridOptions';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH} from '@xh/hoist/core';
-import '@xh/hoist/desktop/register';
 import {makeObservable, bindable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 

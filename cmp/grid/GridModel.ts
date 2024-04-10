@@ -49,7 +49,7 @@ import {
     StoreSelectionModel,
     StoreTransaction
 } from '@xh/hoist/data';
-import {PrintSupportConfig, PrintSupportModel} from '@xh/hoist/desktop/cmp/printsupport';
+import {PrintSupportConfig, PrintSupportModel} from '@xh/hoist/cmp/printsupport';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
@@ -627,12 +627,14 @@ export class GridModel extends HoistModel {
         this.onCellDoubleClicked = onCellDoubleClicked;
         this.onCellContextMenu = onCellContextMenu;
 
-        if (printSupport) {
+        if (!XH.isMobileApp && printSupport) {
             this.printSupportModel =
                 printSupport === true
                     ? new PrintSupportModel(this)
                     : new PrintSupportModel(this, printSupport);
         }
+
+        warnIf(XH.isMobileApp && printSupport, 'Print support is not available on mobile devices.');
 
         this.appData = appData ? clone(appData) : {};
 

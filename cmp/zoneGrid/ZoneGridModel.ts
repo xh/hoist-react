@@ -14,7 +14,7 @@ import {
     Awaitable,
     VSide
 } from '@xh/hoist/core';
-import {PrintSupportConfig} from '@xh/hoist/desktop/cmp/printsupport';
+import {PrintSupportConfig} from '../printsupport';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {
     RecordAction,
