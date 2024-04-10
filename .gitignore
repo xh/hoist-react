@@ -3,10 +3,12 @@
 !/.idea/scopes/
 !/.idea/copyright/
 *.iml
+.vscode
 
 # Build / Libs
 build/
 node_modules/
+tsconfig.tsbuildinfo
 
 # Logs
 *.log
@@ -16,4 +18,3 @@ node_modules/
 .DS_Store?
 ehthumbs.db
 Thumbs.db
-

@@ -1,5 +1,11 @@
 # Changelog
 
+## 57.0.1 - 2024-04-10
+
+### ⚙️ Technical
+* Update tsconfig with `composite:true` to support app-level TS compiler options that differ from
+  those specified by hoist-react itself.
+
 ## 57.0.0 - 2023-06-20
 
 ### 🎁 New Features
