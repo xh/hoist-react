@@ -15,23 +15,28 @@
   }
 
   &-ok {
-    background-color: var(--xh-intent-success-darker);
+    --xh-panel-title-bg: var(--xh-intent-success-darker);
+    --xh-panel-bg: var(--xh-intent-success);
   }
 
   &-warn {
-    background-color: var(--xh-intent-warning-darker);
+    --xh-panel-title-bg: var(--xh-intent-warning-darker);
+    --xh-panel-bg: var(--xh-intent-warning);
   }
 
   &-fail {
-    background-color: var(--xh-intent-danger-darker);
+    --xh-panel-title-bg: var(--xh-intent-danger);
+    --xh-panel-bg: var(--xh-intent-danger-darker);
   }
 
   &-inactive {
-    background-color: var(--xh-gray-dark);
+    --xh-panel-title-bg: var(--xh-gray);
+    --xh-panel-bg: var(--xh-gray-dark);
   }
 
   &-unknown {
-    background-color: var(--xh-gray-dark);
+    --xh-panel-title-bg: var(--xh-gray);
+    --xh-panel-bg: var(--xh-gray-dark);
   }
 
   &__name {
