@@ -46,6 +46,8 @@ export function useInlineEditorModel(
         ref: impl.ref,
         ...inputProps,
         onChange: (newVal, oldValue) => {
+            // todo: specifically for numberInput, do not allow letters other than e.
+            // maybe onChange is not the write handler.  Maybe there is a hoist specific event that can be called instead.
             agParams.onValueChange(newVal);
             props.inputProps.onChange?.(newVal, oldValue);
         }
