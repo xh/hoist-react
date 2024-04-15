@@ -4,6 +4,9 @@
 
 ### 💥 Breaking Changes
 
+* `HoistComponent` prop `model` removed. Use the `modelConfig` prop instead.  Put another way,
+   use the `modelConfig` prop, not the `model` prop, when passing
+   a model constructor configuration object to a component as prop.
 * Requires update to `hoist-core >= 20.0.0`.
 * Requires update to `@ag-grid >= 31.x`.
 * ag-grid removed `ColumnApi`.  Most methods that were on `ColumnApi` are now on `GridApi`.
