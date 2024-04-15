@@ -205,7 +205,7 @@ export class AgGridModel extends HoistModel {
      * Some of the state may be data-dependent. Specifically the expandState and filterState. It is
      * recommended that applications wait until the data has been loaded in the grid before setting
      * the state if including those elements. This method can be called immediately after the data
-     * has been loaded via agApi.setGridOption('rowData', data).
+     * has been loaded via agApi.updateGridOptions({rowData: data}).
      */
     setState(state: AgGridState) {
         this.throwIfNotReady();
@@ -573,7 +573,7 @@ export class AgGridModel extends HoistModel {
      */
     setPinnedTopRowData(data: PlainObject[]) {
         this.throwIfNotReady();
-        this.agApi.setGridOption('pinnedTopRowData', data);
+        this.agApi.updateGridOptions({pinnedTopRowData: data});
     }
 
     /**
@@ -590,7 +590,7 @@ export class AgGridModel extends HoistModel {
      */
     setPinnedBottomRowData(data: PlainObject[]) {
         this.throwIfNotReady();
-        this.agApi.setPinnedBottomRowData(data);
+        this.agApi.updateGridOptions({pinnedBottomRowData: data});
     }
 
     /**

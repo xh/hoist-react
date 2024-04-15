@@ -470,7 +470,7 @@ export class GridLocalModel extends HoistModel {
                 if (!api) return;
 
                 this.doWithPreservedState({expansion: false, filters: true}, () => {
-                    api.setGridOption('columnDefs', this.getColumnDefs());
+                    api.updateGridOptions({columnDefs: this.getColumnDefs()});
                 });
             }
         };
@@ -666,7 +666,7 @@ export class GridLocalModel extends HoistModel {
                 agApi.applyTransaction(transaction);
             }
         } else {
-            agApi.setGridOption('rowData', newRs.list);
+            agApi.updateGridOptions({rowData: newRs.list});
         }
 
         if (model.externalSort) {
