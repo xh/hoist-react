@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {ICellEditorParams} from '@ag-grid-community/core';
+import {CustomCellEditorProps} from '@ag-grid-community/react';
 import {HoistInputModel} from '@xh/hoist/cmp/input';
 import {ElementFactory, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {EditorProps} from '@xh/hoist/desktop/cmp/grid/editors/EditorProps';
@@ -34,14 +34,6 @@ export function useInlineEditorModel(
         impl = useLocalModel(() => new InlineEditorModel(agParams));
 
     useImperativeHandle(ref, () => ({
-        getValue: () => {
-            impl.ref.current?.doCommit();
-            return impl.value;
-        },
-
-        // This is called in full-row editing when the user tabs into the cell
-        focusIn: () => impl.focus(),
-
         inputModel: () => impl.ref.current
     }));
 
@@ -52,7 +44,11 @@ export function useInlineEditorModel(
         bind: 'value',
         commitOnChange: true,
         ref: impl.ref,
-        ...inputProps
+        ...inputProps,
+        onChange: (newVal, oldValue) => {
+            agParams.onValueChange(newVal);
+            props.inputProps.onChange?.(newVal, oldValue);
+        }
     });
 }
 
@@ -69,13 +65,13 @@ class InlineEditorModel extends HoistModel {
 
     ref = createObservableRef<HoistInputModel>();
 
-    agParams: ICellEditorParams;
+    agParams: CustomCellEditorProps;
 
     get inputEl() {
         return this.ref.current?.inputEl;
     }
 
-    constructor(agParams: ICellEditorParams) {
+    constructor(agParams: CustomCellEditorProps) {
         super();
         makeObservable(this);
 

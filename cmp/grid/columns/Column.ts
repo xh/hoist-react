@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {CustomCellEditorProps} from '@ag-grid-community/react';
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
 import {HAlign, HSide, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
 import {
@@ -959,7 +960,7 @@ export class Column {
         }
 
         if (editor) {
-            ret.cellEditor = forwardRef((agParams: PlainObject, ref) => {
+            ret.cellEditor = forwardRef((agParams: CustomCellEditorProps, ref) => {
                 const props = {
                     record: agParams.data as StoreRecord,
                     gridModel,
