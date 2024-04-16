@@ -1,5 +1,11 @@
 # Changelog
 
+## 63.0.3 - 2024-04-16
+
+### 🐞 Bug Fixes
+
+* Import BPs default datetime package css in addition to datetime2 css to support BP datetime components.
+
 ## 63.0.2 - 2024-04-16
 
 ### 🐞 Bug Fixes
