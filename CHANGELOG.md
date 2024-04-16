@@ -1,5 +1,13 @@
 # Changelog
 
+## 63.0.2 - 2024-04-16
+
+### 🐞 Bug Fixes
+
+* Fixed issue with GroupingChooser: dragged items were not correctly positioned.
+* Removed extraneous internal padding override to Blueprint menu styles. Fixes overhang of menu
+divider borders and avoids possible triggering of horizontal scrollbars.
+
 ## 63.0.1 - 2024-04-05
 
 ### 🐞 Bug Fixes
