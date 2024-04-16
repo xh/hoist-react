@@ -195,7 +195,11 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
                 let transform = dndProps.draggableProps.style.transform;
                 if (dndState.isDragging || dndState.isDropAnimating) {
                     let rowValues = parseTransform(transform),
-                        popoverValues = parseTransform(model.popoverRef.current.style.transform);
+                        pStyle = model.popoverRef.current.style,
+                        popoverValues = {
+                            top: parsePixelStr(pStyle.top),
+                            left: parsePixelStr(pStyle.left)
+                        };
 
                     // Account for drop animation
                     if (dndState.isDropAnimating) {
@@ -204,9 +208,9 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
                     }
 
                     // Subtract the popover's X / Y translation from the row's
-                    if (!isEmpty(rowValues) && !isEmpty(popoverValues)) {
-                        const x = rowValues[0] - popoverValues[0],
-                            y = rowValues[1] - popoverValues[1];
+                    if (!isEmpty(rowValues)) {
+                        const x = rowValues[0] - popoverValues.left,
+                            y = rowValues[1] - popoverValues.top;
                         transform = `translate(${x}px, ${y}px)`;
                     }
                 }
@@ -293,6 +297,12 @@ function parseTransform(transformStr) {
         ?.replace('3d', '')
         .match(/[-]{0,1}[\d]*[.]{0,1}[\d]+/g)
         ?.map(it => parseInt(it));
+}
+
+function parsePixelStr(pixelStr) {
+    const raw = pixelStr?.replace(/px$/, '');
+
+    return raw ? parseFloat(raw) : 0;
 }
 
 /**
