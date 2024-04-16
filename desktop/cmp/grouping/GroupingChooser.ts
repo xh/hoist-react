@@ -300,9 +300,8 @@ function parseTransform(transformStr) {
 }
 
 function parsePixelStr(pixelStr) {
-    const raw = pixelStr?.replace(/px$/, '');
-
-    return raw ? parseFloat(raw) : 0;
+    const raw = parseFloat(pixelStr);
+    return isNaN(raw) ? 0 : raw;
 }
 
 /**
