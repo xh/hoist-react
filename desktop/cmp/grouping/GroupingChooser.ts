@@ -195,10 +195,10 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
                 let transform = dndProps.draggableProps.style.transform;
                 if (dndState.isDragging || dndState.isDropAnimating) {
                     let rowValues = parseTransform(transform),
-                        pStyle = model.popoverRef.current.style,
+                        pPos = model.popoverRef.current.getBoundingClientRect(),
                         popoverValues = {
-                            top: parsePixelStr(pStyle.top),
-                            left: parsePixelStr(pStyle.left)
+                            x: pPos.left,
+                            y: pPos.top
                         };
 
                     // Account for drop animation
@@ -209,8 +209,8 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
 
                     // Subtract the popover's X / Y translation from the row's
                     if (!isEmpty(rowValues)) {
-                        const x = rowValues[0] - popoverValues.left,
-                            y = rowValues[1] - popoverValues.top;
+                        const x = rowValues[0] - popoverValues.x,
+                            y = rowValues[1] - popoverValues.y;
                         transform = `translate(${x}px, ${y}px)`;
                     }
                 }
@@ -292,16 +292,11 @@ const addDimensionControl = hoistCmp.factory<GroupingChooserModel>({
  * Works for both `translate` and `translate3d`
  * e.g. `translate3d(250px, 150px, 0px)` is equivalent to [250, 150, 0]
  */
-function parseTransform(transformStr) {
+function parseTransform(transformStr: string): number[] {
     return transformStr
         ?.replace('3d', '')
         .match(/[-]{0,1}[\d]*[.]{0,1}[\d]+/g)
         ?.map(it => parseInt(it));
-}
-
-function parsePixelStr(pixelStr) {
-    const raw = parseFloat(pixelStr);
-    return isNaN(raw) ? 0 : raw;
 }
 
 /**
