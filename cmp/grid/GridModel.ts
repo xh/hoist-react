@@ -879,10 +879,6 @@ export class GridModel extends HoistModel {
         return this.agGridModel.agApi;
     }
 
-    get agColumnApi() {
-        return this.agGridModel.agColumnApi;
-    }
-
     get sizingMode(): SizingMode {
         return this.agGridModel.sizingMode;
     }
@@ -1809,8 +1805,8 @@ export class GridModel extends HoistModel {
         side: 'left' | 'right',
         group: ColumnGroupSpec
     ): ColumnCellClassRuleFn {
-        return ({api, column, columnApi, ...ctx}) => {
-            if (!api || !column || !columnApi) return false;
+        return ({api, column, ...ctx}) => {
+            if (!api || !column) return false;
 
             // Re-evaluate cell class rules when column is re-ordered
             // See https://www.ag-grid.com/javascript-data-grid/column-object/#reference-events
@@ -1823,7 +1819,7 @@ export class GridModel extends HoistModel {
 
             // Don't render a left-border if col is first or if prev col already has right-border
             if (side === 'left') {
-                const prevCol = columnApi.getDisplayedColBefore(column);
+                const prevCol = api.getDisplayedColBefore(column);
 
                 if (!prevCol) return false;
 
@@ -1835,8 +1831,7 @@ export class GridModel extends HoistModel {
                         ...ctx,
                         api,
                         colDef: prevColDef,
-                        column: prevCol,
-                        columnApi
+                        column: prevCol
                     })
                 ) {
                     return false;
