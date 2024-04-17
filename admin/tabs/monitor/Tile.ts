@@ -4,57 +4,21 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {div, vbox} from '@xh/hoist/cmp/layout';
+import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {hoistCmp} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon, IconProps} from '@xh/hoist/icon';
-import {pluralize} from '@xh/hoist/utils/js';
 import './Tile.scss';
 
 export const tile = hoistCmp.factory(props => {
-    const {name, status, masterOnly, lastStatusChanged, results} = props.monitorResult,
+    const {name, status, masterOnly, lastStatusChange, metricUnit, instanceResults} = props.info,
         {icon, statusText} = statusProperties(status),
         tileClass = 'xh-status-tile xh-status-tile-' + status.toLowerCase(),
-        relativeString = getRelativeTimestamp(lastStatusChanged, {pastSuffix: ''});
-    if (masterOnly) {
-        const masterResult = results[0].result;
-        const {checksInStatus, metric, metricUnit, message} = masterResult;
-        return panel({
-            title: name,
-            className: tileClass,
-            items: [
-                vbox({
-                    className: 'xh-status-tile__content',
-                    items: [
-                        icon,
-                        div({
-                            className: 'xh-status-tile__elapsed',
-                            item: `${statusText} for ${relativeString} (${pluralize(
-                                'check',
-                                checksInStatus,
-                                true
-                            )})`,
-                            hidden: !!status.match('UNKNOWN|INACTIVE')
-                        }),
-                        div({
-                            className: 'xh-status-tile__metric',
-                            item: `${metric} ${metricUnit || ''}`,
-                            hidden: metric == null
-                        }),
-                        div({
-                            className: 'xh-status-tile__message',
-                            item: `${message}`,
-                            hidden: !message
-                        })
-                    ]
-                })
-            ],
-            modelConfig: {modalSupport: true, collapsible: false, resizable: false}
-        });
-    }
+        relativeString = getRelativeTimestamp(lastStatusChange, {pastSuffix: ''});
+
     return panel({
-        title: name,
+        title: masterOnly ? `${name} (Master Only)` : name,
         className: tileClass,
         items: [
             vbox({
@@ -63,36 +27,38 @@ export const tile = hoistCmp.factory(props => {
                     icon,
                     div({
                         className: 'xh-status-tile__elapsed',
-                        item: `${statusText} for ${relativeString} (${pluralize(
-                            'check',
-                            results.map(it => it.result.checksInStatus).reduce((a, b) => a + b, 0),
-                            true
-                        )})`,
+                        item: `${statusText} for ${relativeString}`,
                         hidden: !!status.match('UNKNOWN|INACTIVE')
                     }),
-                    results.map(it => {
-                        const {server} = it;
-                        return div({
-                            className: 'xh-status-tile__server',
-                            item: server,
-                            hidden: server == null
-                        });
-                    }),
-                    results.map(it => {
-                        const {result} = it;
-                        return div({
-                            className: 'xh-status-tile__metric',
-                            item: `${result.metric} ${result.metricUnit || ''}`,
-                            hidden: result.metric == null
-                        });
-                    }),
-                    results.map(it => {
-                        const {result} = it;
-                        return div({
-                            className: 'xh-status-tile__message',
-                            item: `${result.message}`,
-                            hidden: !result.message
-                        });
+                    div({
+                        className: 'xh-status-tile__instance-result-block',
+                        items: instanceResults
+                            .filter(it => !['UNKNOWN', 'INACTIVE'].includes(it.status))
+                            .map(it => {
+                                const {icon, statusText} = statusProperties(it.status, 'lg');
+                                const {instance, metric} = it;
+                                return div({
+                                    className: 'xh-status-tile__instance-result',
+                                    items: [
+                                        div({
+                                            items: [
+                                                hbox({
+                                                    items: [
+                                                        icon,
+                                                        `Instance ${instance} ${statusText}`
+                                                    ]
+                                                }),
+                                                `Last run ${getRelativeTimestamp(it.date, {pastSuffix: 'ago'})}`
+                                            ]
+                                        }),
+                                        div({
+                                            className: 'xh-status-tile__metric',
+                                            item: `${+metric?.toFixed(2)} ${metricUnit || ''}`,
+                                            hidden: metric === null
+                                        })
+                                    ]
+                                });
+                            })
                     })
                 ]
             })
@@ -101,8 +67,8 @@ export const tile = hoistCmp.factory(props => {
     });
 });
 
-function statusProperties(status) {
-    const iCfg: IconProps = {size: '8x', prefix: 'fal'};
+function statusProperties(status, iconSize?) {
+    const iCfg: IconProps = {size: iconSize || '8x', prefix: 'fal'};
     switch (status) {
         case 'OK':
             return {statusText: 'OK', icon: Icon.checkCircle(iCfg)};

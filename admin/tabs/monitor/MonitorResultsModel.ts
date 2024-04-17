@@ -12,21 +12,19 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEqual, min, sortBy} from 'lodash';
 
-export interface MonitorResult {
+interface MonitorInfo {
     code: string;
     name: string;
-    sortBy: string;
-    status: string;
+    sortOrder: string;
     masterOnly: boolean;
-    lastStatusChanged: Date;
-    results: {
-        server: string;
-        result: any;
-    }[];
+    status: string;
+    lastStatusChange: Date;
+    metricUnit: string;
+    instanceResults: any[];
 }
 
 export class MonitorResultsModel extends HoistModel {
-    @observable.ref results: MonitorResult[] = [];
+    @observable.ref results: MonitorInfo[] = [];
     @observable lastRun = null;
     @managed timer = null;
 
@@ -102,14 +100,6 @@ export class MonitorResultsModel extends HoistModel {
     private completeLoad(vals) {
         const prevCounts = this.countsByStatus;
         this.results = sortBy(vals, 'sortOrder');
-        this.results.forEach(monitor => {
-            monitor.status = this.isInactive(monitor)
-                ? 'INACTIVE'
-                : this.getWorstServerStatus(monitor);
-            monitor.lastStatusChanged = new Date(
-                min(monitor.results.map(it => it.result.lastStatusChanged))
-            );
-        });
         const counts = this.countsByStatus,
             worst = this.worstStatus;
 
@@ -142,23 +132,9 @@ export class MonitorResultsModel extends HoistModel {
 
         const lastRun = min(
             this.results
-                .filter(monitor => this.getWorstServerStatus(monitor) !== 'UNKNOWN')
-                .map(it =>
-                    min(it.results.filter(it => it.result.date != null).map(it => it.result.date))
-                )
+                .filter(monitor => monitor.status !== 'UNKNOWN')
+                .map(it => min(it.instanceResults.filter(it => it.date != null).map(it => it.date)))
         );
         this.lastRun = lastRun ? new Date(lastRun) : null;
-    }
-
-    private getWorstServerStatus(monitor: MonitorResult) {
-        let worst = 'OK';
-        if (monitor.results.find(it => it.result.status === 'FAIL')) worst = 'FAIL';
-        else if (monitor.results.find(it => it.result.status === 'WARN')) worst = 'WARN';
-        else if (monitor.results.find(it => it.result.status === 'UNKNOWN')) worst = 'INACTIVE';
-        return worst;
-    }
-
-    private isInactive(monitor: MonitorResult) {
-        return monitor.results.every(it => it.result.status === 'INACTIVE');
     }
 }
