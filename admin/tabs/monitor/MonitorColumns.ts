@@ -38,3 +38,10 @@ export const code: ColumnSpec = {
     field: {name: 'code', type: 'string'},
     width: 150
 };
+
+export const masterOnly: ColumnSpec = {
+    field: {name: 'masterOnly', type: 'bool'},
+    headerName: 'M.Only',
+    ...Col.boolCheck,
+    width: 70
+};

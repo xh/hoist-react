@@ -18,7 +18,7 @@ export const tile = hoistCmp.factory(props => {
         relativeString = getRelativeTimestamp(lastStatusChange, {pastSuffix: ''});
 
     return panel({
-        title: masterOnly ? `${name} (Master Only)` : name,
+        title: masterOnly ? `${name} - Master Only` : name,
         className: tileClass,
         items: [
             vbox({
@@ -33,6 +33,7 @@ export const tile = hoistCmp.factory(props => {
                     div({
                         className: 'xh-status-tile__instance-result-block',
                         items: instanceResults
+                            .sort(it => instanceSortOrder(it))
                             .filter(it => !['UNKNOWN', 'INACTIVE'].includes(it.status))
                             .map(it => {
                                 const {icon, statusText} = statusProperties(it.status, 'lg');
@@ -53,7 +54,7 @@ export const tile = hoistCmp.factory(props => {
                                         }),
                                         div({
                                             className: 'xh-status-tile__metric',
-                                            item: `${+metric?.toFixed(2)} ${metricUnit || ''}`,
+                                            item: `${metric} ${metricUnit || ''}`,
                                             hidden: metric === null
                                         })
                                     ]
@@ -80,5 +81,20 @@ function statusProperties(status, iconSize?) {
             return {statusText: 'Inactive', icon: Icon.disabled(iCfg)};
         default:
             return {statusText: 'Unknown', icon: Icon.disabled(iCfg)};
+    }
+}
+
+function instanceSortOrder(instanceResult) {
+    const {instance, status} = instanceResult;
+    let value = instance.endsWith('M') ? -0.5 : 0;
+    switch (status) {
+        case 'OK':
+            return value + 1;
+        case 'WARN':
+            return value;
+        case 'FAIL':
+            return value - 1;
+        default:
+            return value - 2;
     }
 }

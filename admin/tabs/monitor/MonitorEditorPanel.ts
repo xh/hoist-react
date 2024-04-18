@@ -32,6 +32,7 @@ const modelSpec: RestGridConfig = {
             MCol.warnThreshold.field,
             MCol.failThreshold.field,
             MCol.sortOrder.field,
+            {...(MCol.masterOnly.field as FieldSpec), defaultValue: true, required},
 
             {...(Col.name.field as FieldSpec), required},
             Col.notes.field,
@@ -48,6 +49,7 @@ const modelSpec: RestGridConfig = {
     filterFields: ['code', 'name'],
     columns: [
         {...Col.active},
+        {...MCol.masterOnly},
         {...MCol.code},
         {...Col.name},
         {...MCol.warnThreshold},
@@ -61,6 +63,7 @@ const modelSpec: RestGridConfig = {
     editors: [
         {field: 'code'},
         {field: 'name'},
+        {field: 'masterOnly'},
         {field: 'metricType'},
         {field: 'warnThreshold'},
         {field: 'failThreshold'},
