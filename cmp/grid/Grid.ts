@@ -325,9 +325,16 @@ export class GridLocalModel extends HoistModel {
     //------------------------
     dataReaction() {
         const {model} = this,
-            {store} = model;
+            {store, topPinnedRowsStore, bottomPinnedRowsStore} = model;
         return {
-            track: () => [model.isReady, store._filtered, model.showSummary, store.summaryRecord],
+            track: () => [
+                model.isReady,
+                store._filtered,
+                model.showSummary,
+                store.summaryRecord,
+                topPinnedRowsStore._filtered,
+                bottomPinnedRowsStore._filtered
+            ],
             run: () => {
                 if (model.isReady) this.syncData();
             }
@@ -576,13 +583,12 @@ export class GridLocalModel extends HoistModel {
         };
     }
 
-    updatePinnedSummaryRowData() {
+    updatePinnedRowData() {
         const {model} = this,
-            {store, showSummary, agGridModel} = model,
+            {store, topPinnedRowsStore, bottomPinnedRowsStore, showSummary, agGridModel} = model,
             {agApi} = agGridModel,
-            filterSummaryFn = record => !record.isSummary,
-            pinnedTopRowData = agGridModel.getPinnedTopRowData().filter(filterSummaryFn),
-            pinnedBottomRowData = agGridModel.getPinnedBottomRowData().filter(filterSummaryFn);
+            pinnedBottomRowData = [...bottomPinnedRowsStore.records],
+            pinnedTopRowData = [...topPinnedRowsStore.records];
 
         if (showSummary && store.summaryRecord) {
             if (showSummary === 'bottom') {
@@ -652,7 +658,7 @@ export class GridLocalModel extends HoistModel {
             agGridModel.applySortBy(model.sortBy);
         }
 
-        this.updatePinnedSummaryRowData();
+        this.updatePinnedRowData();
 
         if (transaction?.update) {
             const visibleCols = model.getVisibleLeafColumns();

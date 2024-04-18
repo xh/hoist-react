@@ -361,6 +361,8 @@ export class GridModel extends HoistModel {
     // Immutable public properties
     //------------------------
     store: Store;
+    topPinnedRowsStore: Store;
+    bottomPinnedRowsStore: Store;
     selModel: StoreSelectionModel;
     treeMode: boolean;
     colChooserModel: HoistModel;
@@ -1048,6 +1050,14 @@ export class GridModel extends HoistModel {
         this.store.clear();
     }
 
+    loadTopPinnedData(rawData: any[]) {
+        return this.topPinnedRowsStore.loadData(rawData);
+    }
+
+    loadBottomPinnedData(rawData: any[]) {
+        return this.bottomPinnedRowsStore.loadData(rawData);
+    }
+
     /** @param colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
     setColumns(colConfigs: Array<ColumnSpec | ColumnGroupSpec>) {
@@ -1558,6 +1568,20 @@ export class GridModel extends HoistModel {
         }
 
         this.store = newStore;
+
+        // 5) Create stores for the top and bottom pinned rows
+
+        // TODO: Are there any other properties of the store we actually need in these?
+
+        this.topPinnedRowsStore = new Store({
+            fields: newStore.fields,
+            processRawData: newStore.processRawData
+        });
+
+        this.bottomPinnedRowsStore = new Store({
+            fields: newStore.fields,
+            processRawData: newStore.processRawData
+        });
     }
 
     private validateStoreConfig(store) {
