@@ -102,7 +102,7 @@ export interface ZoneGridConfig {
     /** True if grid is a tree grid (default false). */
     treeMode?: boolean;
 
-    /** Location for docked summary row(s). Requires `store.SummaryRecords` to be populated. */
+    /** Location for docked summary row(s). Requires `store.summaryRecords` to be populated. */
     showSummary?: boolean | VSide;
 
     /** Specification of selection behavior. Defaults to 'single' (desktop) and 'disabled' (mobile) */
