@@ -17,10 +17,16 @@ interface MonitorInfo {
     name: string;
     sortOrder: string;
     masterOnly: boolean;
+    metricUnit: string;
     status: string;
     lastStatusChange: Date;
-    metricUnit: string;
+    statusInfo: StatusInfo;
     instanceResults: any[];
+}
+
+interface StatusInfo {
+    status: string;
+    lastChange: Date;
 }
 
 export class MonitorResultsModel extends HoistModel {
@@ -100,6 +106,12 @@ export class MonitorResultsModel extends HoistModel {
     private completeLoad(vals) {
         const prevCounts = this.countsByStatus;
         this.results = sortBy(vals, 'sortOrder');
+        this.results.forEach(it => {
+            const {status, lastChange} = it.statusInfo;
+            it.status = status;
+            it.lastStatusChange = lastChange;
+        });
+
         const counts = this.countsByStatus,
             worst = this.worstStatus;
 
