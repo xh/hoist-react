@@ -981,7 +981,7 @@ export class Store extends HoistBase {
                 {id} = rec;
 
             throwIf(
-                recordMap.has(id) || this.summaryRecords.some(it => it.id === id),
+                recordMap.has(id) || this.summaryRecords?.some(it => it.id === id),
                 `ID ${id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
             );
 
