@@ -85,8 +85,8 @@ function statusProperties(status, iconSize?) {
 }
 
 function instanceSortOrder(instanceResult) {
-    const {instance, status} = instanceResult;
-    let value = instance.endsWith('M') ? -0.5 : 0;
+    const {status, master} = instanceResult;
+    let value = master ? -0.5 : 0;
     switch (status) {
         case 'OK':
             return value + 1;
@@ -95,6 +95,6 @@ function instanceSortOrder(instanceResult) {
         case 'FAIL':
             return value - 1;
         default:
-            return value - 2;
+            return value + 2;
     }
 }
