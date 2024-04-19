@@ -87,7 +87,7 @@ export class GridExportService extends HoistService {
         // If the grid includes summary rows, add them to the export payload as root-level nodes.
         const rows = [
             this.getHeaderRow(exportColumns, type, gridModel),
-            ...(gridModel.showSummary
+            ...(gridModel.showSummary && !isEmpty(summaryRecords)
                 ? summaryRecords.map(summaryRecord =>
                       this.getRecordRow(gridModel, summaryRecord, exportColumns, type, 0)
                   )

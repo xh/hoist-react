@@ -802,7 +802,7 @@ export class Store extends HoistBase {
      */
     getById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord {
         if (isNil(id)) return null;
-        const summaryRecord = this.summaryRecords.find(it => it.id === id);
+        const summaryRecord = this.summaryRecords?.find(it => it.id === id);
         if (summaryRecord) return summaryRecord;
 
         const rs = respectFilter ? this._filtered : this._current;
@@ -908,7 +908,7 @@ export class Store extends HoistBase {
     @action
     private resetRecords() {
         this._committed = this._current = this._filtered = new RecordSet(this);
-        this.summaryRecords = [];
+        this.summaryRecords = null;
     }
 
     private parseFields(fields: any[], defaults: any): Field[] {
