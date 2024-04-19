@@ -123,7 +123,7 @@ export interface GridConfig {
     /** True if grid is a tree grid (default false). */
     treeMode?: boolean;
 
-    /** Location for a docked summary row. Requires `store.SummaryRecord` to be populated. */
+    /** Location for docked summary row(s). Requires `store.SummaryRecords` to be populated. */
     showSummary?: boolean | VSide;
 
     /** Specification of selection behavior. Defaults to 'single' (desktop) and 'disabled' (mobile) */
@@ -361,8 +361,6 @@ export class GridModel extends HoistModel {
     // Immutable public properties
     //------------------------
     store: Store;
-    topPinnedRowsStore: Store;
-    bottomPinnedRowsStore: Store;
     selModel: StoreSelectionModel;
     treeMode: boolean;
     colChooserModel: HoistModel;
@@ -1036,7 +1034,7 @@ export class GridModel extends HoistModel {
     }
 
     /** Load the underlying store. */
-    loadData(rawData: any[], rawSummaryData?: PlainObject) {
+    loadData(rawData: any[], rawSummaryData?: Some<PlainObject>) {
         return this.store.loadData(rawData, rawSummaryData);
     }
 
@@ -1048,14 +1046,6 @@ export class GridModel extends HoistModel {
     /** Clear the underlying store, removing all rows. */
     clear() {
         this.store.clear();
-    }
-
-    loadTopPinnedData(rawData: any[]) {
-        return this.topPinnedRowsStore.loadData(rawData);
-    }
-
-    loadBottomPinnedData(rawData: any[]) {
-        return this.bottomPinnedRowsStore.loadData(rawData);
     }
 
     /** @param colConfigs - {@link Column} or {@link ColumnGroup} configs. */
@@ -1568,20 +1558,6 @@ export class GridModel extends HoistModel {
         }
 
         this.store = newStore;
-
-        // 5) Create stores for the top and bottom pinned rows
-
-        // TODO: Are there any other properties of the store we actually need in these?
-
-        this.topPinnedRowsStore = new Store({
-            fields: newStore.fields,
-            processRawData: newStore.processRawData
-        });
-
-        this.bottomPinnedRowsStore = new Store({
-            fields: newStore.fields,
-            processRawData: newStore.processRawData
-        });
     }
 
     private validateStoreConfig(store) {

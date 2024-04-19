@@ -325,16 +325,9 @@ export class GridLocalModel extends HoistModel {
     //------------------------
     dataReaction() {
         const {model} = this,
-            {store, topPinnedRowsStore, bottomPinnedRowsStore} = model;
+            {store} = model;
         return {
-            track: () => [
-                model.isReady,
-                store._filtered,
-                model.showSummary,
-                store.summaryRecord,
-                topPinnedRowsStore._filtered,
-                bottomPinnedRowsStore._filtered
-            ],
+            track: () => [model.isReady, store._filtered, model.showSummary, store.summaryRecords],
             run: () => {
                 if (model.isReady) this.syncData();
             }
@@ -583,18 +576,19 @@ export class GridLocalModel extends HoistModel {
         };
     }
 
-    updatePinnedRowData() {
+    updatePinnedSummaryRowData() {
         const {model} = this,
-            {store, topPinnedRowsStore, bottomPinnedRowsStore, showSummary, agGridModel} = model,
+            {store, showSummary, agGridModel} = model,
             {agApi} = agGridModel,
-            pinnedBottomRowData = [...bottomPinnedRowsStore.records],
-            pinnedTopRowData = [...topPinnedRowsStore.records];
+            filterSummaryFn = record => !record.isSummary,
+            pinnedTopRowData = agGridModel.getPinnedTopRowData().filter(filterSummaryFn),
+            pinnedBottomRowData = agGridModel.getPinnedBottomRowData().filter(filterSummaryFn);
 
-        if (showSummary && store.summaryRecord) {
+        if (showSummary && !isEmpty(store.summaryRecords)) {
             if (showSummary === 'bottom') {
-                pinnedBottomRowData.push(store.summaryRecord);
+                pinnedBottomRowData.push(...store.summaryRecords);
             } else {
-                pinnedTopRowData.unshift(store.summaryRecord);
+                pinnedTopRowData.unshift(...store.summaryRecords);
             }
         }
 
@@ -658,7 +652,7 @@ export class GridLocalModel extends HoistModel {
             agGridModel.applySortBy(model.sortBy);
         }
 
-        this.updatePinnedRowData();
+        this.updatePinnedSummaryRowData();
 
         if (transaction?.update) {
             const visibleCols = model.getVisibleLeafColumns();

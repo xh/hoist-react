@@ -75,7 +75,7 @@ export class GridExportService extends HoistService {
 
         const config = XH.configService.get('xhExportConfig', {}),
             exportColumns = this.getExportableColumns(gridModel, columns),
-            summaryRecord = gridModel.store.summaryRecord,
+            summaryRecords = gridModel.store.summaryRecords,
             records = gridModel.store.rootRecords,
             meta = this.getColumnMetadata(exportColumns);
 
@@ -84,18 +84,17 @@ export class GridExportService extends HoistService {
             return;
         }
 
-        // If the grid includes a summary row, add it to the export payload as a root-level node.
-        const rows =
-            gridModel.showSummary && summaryRecord
-                ? [
-                      this.getHeaderRow(exportColumns, type, gridModel),
-                      this.getRecordRow(gridModel, summaryRecord, exportColumns, type, 0),
-                      ...this.getRecordRowsRecursive(gridModel, records, exportColumns, type, 1)
-                  ]
-                : [
-                      this.getHeaderRow(exportColumns, type, gridModel),
-                      ...this.getRecordRowsRecursive(gridModel, records, exportColumns, type, 0)
-                  ];
+        // If the grid includes summary rows, add them to the export payload as root-level nodes.
+        const rows = [
+            this.getHeaderRow(exportColumns, type, gridModel),
+            ...(gridModel.showSummary
+                ? summaryRecords.map(summaryRecord =>
+                      this.getRecordRow(gridModel, summaryRecord, exportColumns, type, 0)
+                  )
+                : []),
+
+            ...this.getRecordRowsRecursive(gridModel, records, exportColumns, type, 1)
+        ];
 
         // Show separate 'started' toasts for larger (i.e. slower) exports.
         let startToast = null,

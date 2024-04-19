@@ -21,7 +21,8 @@ import {
     isString,
     values,
     remove as lodashRemove,
-    uniq
+    uniq,
+    first
 } from 'lodash';
 import {Field, FieldSpec} from './Field';
 import {parseFilter} from './filter/Utils';
@@ -147,7 +148,7 @@ export interface StoreTransaction {
      *  `loadRootAsSummary` flag set to true, the summary record should instead be provided via the
      *  `update` property.
      */
-    rawSummaryData?: PlainObject;
+    rawSummaryData?: Some<PlainObject>;
 }
 
 export interface ChildRawData {
@@ -197,9 +198,9 @@ export class Store extends HoistBase {
     @observable
     lastLoaded: number = null;
 
-    /** Record containing summary data. */
+    /** Records containing summary data. */
     @observable.ref
-    summaryRecord: StoreRecord = null;
+    summaryRecords: StoreRecord[] = [];
 
     /** @internal - used internally by any StoreFilterField bound to this store. */
     @observable
@@ -290,23 +291,25 @@ export class Store extends HoistBase {
      * created with its `loadRootAsSummary` flag set to true.
      *
      * @param rawData - source data to load
-     * @param rawSummaryData - source data for an optional summary record, representing
-     *      a custom aggregation to show as a "grand total" for the dataset, if desired.
+     * @param rawSummaryData - source data for optional summary record(s), representing
+     *      custom aggregations for the dataset, if desired.
      */
     @action
     @logWithDebug
-    loadData(rawData: PlainObject[], rawSummaryData?: PlainObject) {
+    loadData(rawData: PlainObject[], rawSummaryData: Some<PlainObject> = []) {
         // Extract rootSummary if loading non-empty data[] (i.e. not clearing) and loadRootAsSummary
         if (rawData.length !== 0 && this.loadRootAsSummary) {
             throwIf(
-                rawData.length !== 1 || rawSummaryData,
+                rawData.length !== 1 || !isEmpty(rawSummaryData),
                 'Incorrect call to loadData with loadRootAsSummary=true. Summary data should be in a single root node with top-level row data as its children.'
             );
             rawSummaryData = rawData[0];
             rawData = rawData[0].children ?? [];
         }
 
-        this.summaryRecord = rawSummaryData ? this.createRecord(rawSummaryData, null, true) : null;
+        this.summaryRecords = castArray(rawSummaryData).map(it =>
+            this.createRecord(it, null, true)
+        );
 
         const records = this.createRecords(rawData, null);
         this._committed = this._current = this._committed.withNewRecords(records);
@@ -381,7 +384,7 @@ export class Store extends HoistBase {
                         'In order to update grid data, records must have stable ids. Note: XH.genId() will not provide such ids.'
                     ),
                     parent = rec.parent,
-                    isSummary = recId === this.summaryRecord?.id;
+                    isSummary = this.summaryRecords.some(it => it.id === recId);
                 return this.createRecord(it, parent, isSummary);
             });
         }
@@ -398,19 +401,23 @@ export class Store extends HoistBase {
             });
         }
 
-        // 2) Pre-process summary record, peeling it out of updates if needed
-        const {summaryRecord} = this;
-        let summaryUpdateRec;
-        if (summaryRecord) {
-            [summaryUpdateRec] = lodashRemove(updateRecs, {id: summaryRecord.id});
+        // 2) Pre-process summary records, peeling them out of updates if needed
+        const {summaryRecords} = this;
+        let summaryUpdateRecs: StoreRecord[];
+        if (!isEmpty(summaryRecords)) {
+            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) =>
+                summaryRecords.some(it => it.id === id)
+            );
         }
 
-        if (!summaryUpdateRec && rawSummaryData) {
-            summaryUpdateRec = this.createRecord(rawSummaryData, null, true);
+        if (isEmpty(summaryUpdateRecs) && rawSummaryData) {
+            summaryUpdateRecs = castArray(rawSummaryData).map(it =>
+                this.createRecord(it, null, true)
+            );
         }
 
-        if (summaryUpdateRec) {
-            this.summaryRecord = summaryUpdateRec;
+        if (!isEmpty(summaryUpdateRecs)) {
+            this.summaryRecords = summaryUpdateRecs;
             changeLog.summaryRecord = this.summaryRecord;
         }
 
@@ -672,6 +679,15 @@ export class Store extends HoistBase {
         return this._current.rootList;
     }
 
+    /** Record containing summary data. */
+    get summaryRecord(): StoreRecord {
+        throwIf(
+            this.summaryRecords.length > 1,
+            'Store has multiple summary records. Use Store.summaryRecords.'
+        );
+        return first(this.summaryRecords);
+    }
+
     /** True if the store has changes which need to be committed. */
     @computed
     get isModified(): boolean {
@@ -787,7 +803,8 @@ export class Store extends HoistBase {
      */
     getById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord {
         if (isNil(id)) return null;
-        if (id === this.summaryRecord?.id) return this.summaryRecord;
+        const summaryRecord = this.summaryRecords.find(it => it.id === id);
+        if (summaryRecord) return summaryRecord;
 
         const rs = respectFilter ? this._filtered : this._current;
         return rs.getById(id);
@@ -892,7 +909,7 @@ export class Store extends HoistBase {
     @action
     private resetRecords() {
         this._committed = this._current = this._filtered = new RecordSet(this);
-        this.summaryRecord = null;
+        this.summaryRecords = [];
     }
 
     private parseFields(fields: any[], defaults: any): Field[] {
@@ -965,7 +982,7 @@ export class Store extends HoistBase {
                 {id} = rec;
 
             throwIf(
-                recordMap.has(id) || this.summaryRecord?.id === id,
+                recordMap.has(id) || this.summaryRecords.some(it => it.id === id),
                 `ID ${id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
             );
 
