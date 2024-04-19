@@ -39,6 +39,22 @@
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
 
+  // ensure ag-grid box-sizing rule is not overridden by
+  // body.xh-app box-sizing: inherit
+  [class^='ag-'],
+  [class^='ag-']:focus,
+  [class^='ag-']:after,
+  [class^='ag-']:before {
+    box-sizing: border-box;
+  }
+
+  // using content-box here rather than border-box increases the height of
+  // the floating top just enough to prevent bleeding through of underlying rows
+  // as user scrolls down.
+  .ag-floating-top {
+    box-sizing: content-box;
+  }
+
   .ag-root-wrapper {
     background-color: var(--xh-grid-bg);
     // Remove default outer border - we usually render grids in bordered components such as panels.

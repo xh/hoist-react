@@ -89,7 +89,6 @@
   .ag-floating-top {
     // Background on viewport itself covers area left blank by presence of a flex column.
     background-color: var(--xh-grid-total-row-bg);
-    box-sizing: content-box;
 
     .ag-row-pinned.ag-row-first {
       background-color: var(--xh-grid-total-row-bg);
