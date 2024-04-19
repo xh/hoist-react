@@ -418,7 +418,7 @@ export class Store extends HoistBase {
 
         if (!isEmpty(summaryUpdateRecs)) {
             this.summaryRecords = summaryUpdateRecs;
-            changeLog.summaryRecord = this.summaryRecord;
+            changeLog.summaryRecords = this.summaryRecords;
         }
 
         // 3) Apply changes
