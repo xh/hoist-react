@@ -77,10 +77,9 @@ export class Timer {
     }
 
     /**
-     * Change the interval of this timer.
-     * @param interval - ms to wait between runs or any value `<=0` to pause the timer.
+     * Change the interval of this timer (any value `<=0` will pause the timer).
      */
-    setInterval(interval: number) {
+    setInterval(interval: number | string) {
         this.interval = this.parseDynamicVal(interval);
     }
 
