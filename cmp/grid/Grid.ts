@@ -327,7 +327,7 @@ export class GridLocalModel extends HoistModel {
         const {model} = this,
             {store} = model;
         return {
-            track: () => [model.isReady, store._filtered, model.showSummary, store.summaryRecord],
+            track: () => [model.isReady, store._filtered, model.showSummary, store.summaryRecords],
             run: () => {
                 if (model.isReady) this.syncData();
             }
@@ -584,11 +584,11 @@ export class GridLocalModel extends HoistModel {
             pinnedTopRowData = agGridModel.getPinnedTopRowData().filter(filterSummaryFn),
             pinnedBottomRowData = agGridModel.getPinnedBottomRowData().filter(filterSummaryFn);
 
-        if (showSummary && store.summaryRecord) {
+        if (showSummary && !isEmpty(store.summaryRecords)) {
             if (showSummary === 'bottom') {
-                pinnedBottomRowData.push(store.summaryRecord);
+                pinnedBottomRowData.push(...store.summaryRecords);
             } else {
-                pinnedTopRowData.unshift(store.summaryRecord);
+                pinnedTopRowData.unshift(...store.summaryRecords);
             }
         }
 

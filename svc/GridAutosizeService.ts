@@ -139,8 +139,8 @@ export class GridAutosizeService extends HoistService {
         }
 
         // Ensure the summary record is always included, since it is likely to contain the largest values.
-        if (gridModel.showSummary && store.summaryRecord) {
-            ret.push(store.summaryRecord);
+        if (gridModel.showSummary && !isEmpty(store.summaryRecords)) {
+            ret.push(...store.summaryRecords);
         }
         return ret;
     }
