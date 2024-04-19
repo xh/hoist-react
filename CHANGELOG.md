@@ -20,6 +20,7 @@
 ### 🎁 New Features
 
 * Provides admin support for Cluster-aware version of Hoist.
+* `Store` now supports multiple `summaryRecords`.
 
 ### 📚 Libraries
 
