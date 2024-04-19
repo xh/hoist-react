@@ -1,5 +1,11 @@
 # Changelog
 
+## 63.1.0 - 2024-04-23
+
+### 🎁 New Features
+
+* `Store` now supports multiple `summaryRecords`.
+
 ## 63.0.3 - 2024-04-16
 
 ### 🐞 Bug Fixes
