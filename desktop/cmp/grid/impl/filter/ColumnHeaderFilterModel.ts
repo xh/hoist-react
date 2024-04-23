@@ -163,6 +163,12 @@ export class ColumnHeaderFilterModel extends HoistModel {
         this.isOpen = false;
     }
 
+    activateTab(tabId) {
+        const tabModel = tabId === 'valuesFilter' ? this.valuesTabModel : this.customTabModel;
+        tabModel.syncWithFilter();
+        this.tabContainerModel.activateTab(tabId);
+    }
+
     //-------------------
     // Implementation
     //-------------------
