@@ -179,15 +179,13 @@ export class AppContainerModel extends HoistModel {
             let ex = e;
             if (ex.isServerUnavailable) {
                 const {baseUrl} = XH,
-                    pingURL = baseUrl.startsWith('http')
-                        ? `${baseUrl}ping`
-                        : `${window.location.origin}${baseUrl}ping`;
+                    serverUrl = baseUrl.startsWith('http')
+                        ? baseUrl
+                        : `${window.location.origin}${baseUrl}`;
 
                 ex = XH.exception({
                     name: 'Unable to Contact UI Server',
-                    message:
-                        'Client is unable to contact the UI server.  Please check the UI server at the ' +
-                        `following location: ${pingURL}`,
+                    message: `The web browser is unable to contact the UI server at ${serverUrl}`,
                     details: ex
                 });
             }
