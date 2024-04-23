@@ -82,10 +82,12 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
         // Get values from current column filter
         const filterValues = [];
         columnFilters.forEach(filter => {
-            const newValues = castArray(filter.value).map(value => {
-                value = sourceField.parseVal(value);
-                return filterModel.toDisplayValue(value);
-            });
+            const newValues = flatten(
+                castArray(filter.value).map(value => {
+                    value = sourceField.parseVal(value);
+                    return filterModel.toDisplayValue(value);
+                })
+            );
             filterValues.push(...newValues);
         });
 

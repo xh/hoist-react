@@ -10,7 +10,7 @@ import {FieldFilterSpec} from '@xh/hoist/data';
 import {ColumnHeaderFilterModel} from '../ColumnHeaderFilterModel';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {castArray, difference, isEmpty, partition, uniq, without} from 'lodash';
+import {castArray, difference, flatten, isEmpty, partition, uniq, without} from 'lodash';
 
 export class ValuesTabModel extends HoistModel {
     override xhImpl = true;
@@ -162,10 +162,12 @@ export class ValuesTabModel extends HoistModel {
             filterValues = [];
 
         arr.forEach(filter => {
-            const newValues = castArray(filter.value).map(value => {
-                value = fieldSpec.sourceField.parseVal(value);
-                return gridFilterModel.toDisplayValue(value);
-            });
+            const newValues = flatten(
+                castArray(filter.value).map(value => {
+                    value = fieldSpec.sourceField.parseVal(value);
+                    return gridFilterModel.toDisplayValue(value);
+                })
+            );
             filterValues.push(...newValues); // Todo: Is this safe?
         });
 
