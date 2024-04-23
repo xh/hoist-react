@@ -84,7 +84,7 @@ export class ClusterTabModel extends HoistModel {
                 idSpec: 'name',
                 fields: [
                     {name: 'name', type: 'string'},
-                    {name: 'isMaster', type: 'bool'},
+                    {name: 'isPrimary', type: 'bool'},
                     {name: 'isLocal', type: 'bool'},
                     {name: 'isReady', type: 'bool'},
                     {name: 'wsConnections', type: 'int'},
@@ -170,7 +170,7 @@ export class ClusterTabModel extends HoistModel {
 
     formatInstance(instance: PlainObject): ReactNode {
         const content = [instance.name];
-        if (instance.isMaster) content.push(badge({item: 'master', intent: 'primary'}));
+        if (instance.isPrimary) content.push(badge({item: 'primary', intent: 'primary'}));
         if (instance.isLocal) content.push(badge('local'));
         return hbox(content);
     }
