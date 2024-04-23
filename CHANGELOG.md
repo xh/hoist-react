@@ -22,6 +22,11 @@
 * Provides admin support for Cluster-aware version of Hoist.
 * `Store` now supports multiple `summaryRecords`.
 
+### ⚙️ Technical
+
+* `ping` call removed from `FetchService.ts`.  `ping` check now suggested  in alert msg
+  if server unavailable error occurs during app initialization.
+
 ### 📚 Libraries
 
 * @ag-grid `30.x -> 31.x`
