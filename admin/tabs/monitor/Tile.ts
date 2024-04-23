@@ -12,13 +12,13 @@ import {Icon, IconProps} from '@xh/hoist/icon';
 import './Tile.scss';
 
 export const tile = hoistCmp.factory(props => {
-    const {name, status, masterOnly, lastStatusChange, metricUnit, instanceResults} = props.info,
+    const {name, status, primaryOnly, lastStatusChange, metricUnit, instanceResults} = props.info,
         {icon, statusText} = statusProperties(status),
         tileClass = 'xh-status-tile xh-status-tile-' + status.toLowerCase(),
         relativeString = getRelativeTimestamp(lastStatusChange, {pastSuffix: ''});
 
     return panel({
-        title: masterOnly ? `${name} - Master Only` : name,
+        title: primaryOnly ? `${name} - Primary Only` : name,
         className: tileClass,
         items: [
             vbox({
@@ -85,8 +85,8 @@ function statusProperties(status, iconSize?) {
 }
 
 function instanceSortOrder(instanceResult) {
-    const {status, master} = instanceResult;
-    let value = master ? -0.5 : 0;
+    const {status, primary} = instanceResult;
+    let value = primary ? -0.5 : 0;
     switch (status) {
         case 'OK':
             return value + 1;

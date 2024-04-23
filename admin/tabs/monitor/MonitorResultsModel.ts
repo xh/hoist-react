@@ -16,7 +16,7 @@ interface MonitorInfo {
     code: string;
     name: string;
     sortOrder: string;
-    masterOnly: boolean;
+    primaryOnly: boolean;
     metricUnit: string;
     status: string;
     lastStatusChange: Date;

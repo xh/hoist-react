@@ -39,9 +39,9 @@ export const code: ColumnSpec = {
     width: 150
 };
 
-export const masterOnly: ColumnSpec = {
-    field: {name: 'masterOnly', type: 'bool'},
-    headerName: 'M.Only',
+export const primaryOnly: ColumnSpec = {
+    field: {name: 'primaryOnly', type: 'bool'},
+    headerName: 'P.Only',
     ...Col.boolCheck,
     width: 70
 };
