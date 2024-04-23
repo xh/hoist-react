@@ -26,6 +26,10 @@
 
 * @ag-grid `30.x -> 31.x`
 
+### 🐞 Bug Fixes
+
+* Fixed several issues with the grid column filter when used on a "tags" field.
+
 ## 63.0.3 - 2024-04-16
 
 ### 🐞 Bug Fixes
