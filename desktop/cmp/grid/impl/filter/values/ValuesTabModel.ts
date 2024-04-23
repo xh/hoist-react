@@ -10,7 +10,7 @@ import {FieldFilterSpec} from '@xh/hoist/data';
 import {ColumnHeaderFilterModel} from '../ColumnHeaderFilterModel';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {castArray, difference, flatten, isEmpty, partition, uniq, without} from 'lodash';
+import {castArray, difference, flatten, isEmpty, isEqual, partition, uniq, without} from 'lodash';
 
 export class ValuesTabModel extends HoistModel {
     override xhImpl = true;
@@ -162,11 +162,16 @@ export class ValuesTabModel extends HoistModel {
             filterValues = [];
 
         arr.forEach(filter => {
+            // The parseVal of tag will castArray the value a second time, so make sure to flatten at the end.
             const newValues = flatten(
-                castArray(filter.value).map(value => {
-                    value = fieldSpec.sourceField.parseVal(value);
-                    return gridFilterModel.toDisplayValue(value);
-                })
+                castArray(filter.value)
+                    .map(value => {
+                        value = fieldSpec.sourceField.parseVal(value);
+                        return gridFilterModel.toDisplayValue(value);
+                    })
+                    // Filter out the null tag value as it isn't a valid value to display in value lists.
+                    // It is set by 'is blank'/'is not blank' filters.
+                    .filter(it => isEqual(it, [null]))
             );
             filterValues.push(...newValues); // Todo: Is this safe?
         });

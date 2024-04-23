@@ -12,7 +12,7 @@ import {
     BaseFilterFieldSpec,
     BaseFilterFieldSpecConfig
 } from '@xh/hoist/data/filter/BaseFilterFieldSpec';
-import {castArray, compact, flatten, isDate, isEmpty, uniqBy} from 'lodash';
+import {castArray, compact, flatten, isDate, isEmpty, isEqual, uniqBy} from 'lodash';
 import {GridFilterModel} from './GridFilterModel';
 
 export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
@@ -82,11 +82,16 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
         // Get values from current column filter
         const filterValues = [];
         columnFilters.forEach(filter => {
+            // The parseVal of tag will castArray the value a second time, so make sure to flatten at the end.
             const newValues = flatten(
-                castArray(filter.value).map(value => {
-                    value = sourceField.parseVal(value);
-                    return filterModel.toDisplayValue(value);
-                })
+                castArray(filter.value)
+                    .map(value => {
+                        value = sourceField.parseVal(value);
+                        return filterModel.toDisplayValue(value);
+                    })
+                    // Filter out the null tag value as it isn't a valid value to display in value lists.
+                    // It is set by 'is blank'/'is not blank' filters.
+                    .filter(it => isEqual(it, [null]))
             );
             filterValues.push(...newValues);
         });
