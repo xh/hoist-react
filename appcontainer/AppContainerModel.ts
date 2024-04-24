@@ -175,7 +175,22 @@ export class AppContainerModel extends HoistModel {
             await this.completeInitAsync();
         } catch (e) {
             this.setAppState('LOAD_FAILED');
-            XH.handleException(e, {requireReload: true});
+
+            let ex = e;
+            if (ex.isServerUnavailable) {
+                const {baseUrl} = XH,
+                    serverUrl = baseUrl.startsWith('http')
+                        ? baseUrl
+                        : `${window.location.origin}${baseUrl}`;
+
+                ex = XH.exception({
+                    name: 'Unable to Contact UI Server',
+                    message: `The web browser is unable to contact the UI server at ${serverUrl}`,
+                    details: ex
+                });
+            }
+
+            XH.handleException(ex, {requireReload: true});
         }
     }
 
