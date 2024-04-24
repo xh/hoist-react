@@ -21,7 +21,7 @@ import {tile} from './Tile';
 export const monitorResultsPanel = hoistCmp.factory({
     model: creates(MonitorResultsModel),
 
-    render({model}) {
+    render() {
         return panel({
             mask: 'onLoad',
             className: 'xh-monitor-results-panel',
@@ -55,7 +55,7 @@ const body = hoistCmp.factory<MonitorResultsModel>(({model}) => {
         desiredRatio: 3,
         minTileWidth: 150,
         minTileHeight: 150,
-        items: results.map(info => tile({info}))
+        items: results.map(results => tile({results}))
     });
 });
 

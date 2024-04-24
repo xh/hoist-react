@@ -4,54 +4,38 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {MonitorResults, Status} from '@xh/hoist/admin/tabs/monitor/Types';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {pluralize} from '@xh/hoist/utils/js';
-import {isEqual, min, sortBy} from 'lodash';
-
-interface MonitorInfo {
-    code: string;
-    name: string;
-    sortOrder: string;
-    primaryOnly: boolean;
-    metricUnit: string;
-    status: string;
-    lastStatusChange: Date;
-    statusInfo: StatusInfo;
-    instanceResults: any[];
-}
-
-interface StatusInfo {
-    status: string;
-    lastChange: Date;
-}
+import {filter, isEqual, minBy, sortBy} from 'lodash';
 
 export class MonitorResultsModel extends HoistModel {
-    @observable.ref results: MonitorInfo[] = [];
-    @observable lastRun = null;
-    @managed timer = null;
+    @observable.ref results: MonitorResults[] = [];
+    @observable lastRun: number = null;
+    @managed timer: Timer = null;
 
     @computed
     get passed(): number {
-        return this.results.filter(monitor => monitor.status === 'OK').length;
+        return filter(this.results, {status: 'OK'}).length;
     }
 
     @computed
     get warned(): number {
-        return this.results.filter(monitor => monitor.status === 'WARN').length;
+        return filter(this.results, {status: 'WARN'}).length;
     }
 
     @computed
     get failed(): number {
-        return this.results.filter(monitor => monitor.status === 'FAIL').length;
+        return filter(this.results, {status: 'FAIL'}).length;
     }
 
     @computed
     get inactive(): number {
-        return this.results.filter(monitor => monitor.status === 'INACTIVE').length;
+        return filter(this.results, {status: 'INACTIVE'}).length;
     }
 
     get countsByStatus() {
@@ -59,7 +43,7 @@ export class MonitorResultsModel extends HoistModel {
         return {OK: passed, WARN: warned, FAIL: failed, INACTIVE: inactive};
     }
 
-    get worstStatus() {
+    get worstStatus(): Status {
         if (this.failed) return 'FAIL';
         if (this.warned) return 'WARN';
         if (this.passed) return 'OK';
@@ -69,7 +53,6 @@ export class MonitorResultsModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
-
         this.timer = Timer.create({
             runFn: () => this.autoRefreshAsync(),
             interval: 5 * SECONDS,
@@ -80,14 +63,13 @@ export class MonitorResultsModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         if (!XH.pageIsVisible) return;
 
-        return XH.fetchJson({url: 'monitorResultsAdmin/results', loadSpec})
-            .then(rows => {
-                this.completeLoad(rows);
-            })
-            .catch(e => {
-                this.completeLoad({});
-                throw e;
-            });
+        try {
+            const results = await XH.fetchJson({url: 'monitorResultsAdmin/results', loadSpec});
+            this.installResults(results);
+        } catch (e) {
+            this.installResults([]);
+            throw e;
+        }
     }
 
     async forceRunAllMonitorsAsync() {
@@ -103,15 +85,12 @@ export class MonitorResultsModel extends HoistModel {
     // Implementation
     //-------------------
     @action
-    private completeLoad(vals) {
+    private installResults(results: MonitorResults[]) {
         const prevCounts = this.countsByStatus;
-        this.results = sortBy(vals, 'sortOrder');
-        this.results.forEach(it => {
-            const {status, lastChange} = it.statusInfo;
-            it.status = status;
-            it.lastStatusChange = lastChange;
-        });
+        this.results = sortBy(results, 'sortOrder');
+        this.lastRun = minBy(results, 'dateComputed')?.dateComputed ?? null;
 
+        // Generate toast with rough indication of change.
         const counts = this.countsByStatus,
             worst = this.worstStatus;
 
@@ -141,12 +120,5 @@ export class MonitorResultsModel extends HoistModel {
                 intent
             });
         }
-
-        const lastRun = min(
-            this.results
-                .filter(monitor => monitor.status !== 'UNKNOWN')
-                .map(it => min(it.instanceResults.filter(it => it.date != null).map(it => it.date)))
-        );
-        this.lastRun = lastRun ? new Date(lastRun) : null;
     }
 }
