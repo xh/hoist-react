@@ -170,28 +170,14 @@ export class AppContainerModel extends HoistModel {
                 this.setAppState('LOGIN_REQUIRED');
                 return;
             }
-
-            // ...if so, continue with initialization.
-            await this.completeInitAsync();
         } catch (e) {
             this.setAppState('LOAD_FAILED');
-
-            let ex = e;
-            if (ex.isServerUnavailable) {
-                const {baseUrl} = XH,
-                    serverUrl = baseUrl.startsWith('http')
-                        ? baseUrl
-                        : `${window.location.origin}${baseUrl}`;
-
-                ex = XH.exception({
-                    name: 'Unable to Contact UI Server',
-                    message: `The web browser is unable to contact the UI server at ${serverUrl}`,
-                    details: ex
-                });
-            }
-
-            XH.handleException(ex, {requireReload: true});
+            XH.handleException(e, {requireReload: true});
+            return;
         }
+
+        // ...if made it to here, continue with initialization.
+        await this.completeInitAsync();
     }
 
     /**

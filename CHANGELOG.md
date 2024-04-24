@@ -23,8 +23,7 @@
 
 ### ⚙️ Technical
 
-* `ping` call removed from `FetchService.ts`.  `ping` check now suggested  in alert msg
-  if server unavailable error occurs during app initialization.
+* `ping` call removed from `FetchService.ts`.
 
 ### 📚 Libraries
 
