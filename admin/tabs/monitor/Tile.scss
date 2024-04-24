@@ -61,23 +61,22 @@
 
   &__instance-result-block {
     overflow-y: auto;
-    //border-width: 1.5px;
-    //border-style: solid;
-    //border-color: var(--xh-gray-dark);
-    width: 50%;
-    margin-top: 5%;
-    margin-left: 5%;
+    width: 75%;
+    margin-top: 10px;
   }
 
   &__instance-result {
-    padding: var(--xh-pad-px);
-
     svg {
       position: relative;
       right: 0;
       bottom: 0;
       opacity: 1;
     }
+  }
+
+  &__instance-badge {
+    font-size: 1em;
+    font-weight: normal;
   }
 
   &__message {

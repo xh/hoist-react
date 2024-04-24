@@ -4,8 +4,9 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {badge} from '@xh/hoist/cmp/badge';
 import {MonitorResult, MonitorResults, Status} from './Types';
-import {div, hbox, vbox} from '@xh/hoist/cmp/layout';
+import {div, hbox, hspacer, vbox} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {hoistCmp, PlainObject} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -37,18 +38,23 @@ export const tile = hoistCmp.factory(props => {
                         items: results
                             .sort(it => instanceSortOrder(it))
                             .map(it => {
-                                const {icon, statusText} = statusProperties(it.status, 'lg');
-                                const {instance, metric} = it;
+                                const {statusText} = statusProperties(it.status, 'lg'),
+                                    {instance, metric} = it,
+                                    metricLabel =
+                                        metric != null ? `${metric} ${metricUnit ?? ''}` : '';
                                 return div({
                                     className: 'xh-status-tile__instance-result',
-                                    items: [
-                                        div(hbox(icon, `${instance} ${statusText}`)),
-                                        div({
-                                            className: 'xh-status-tile__metric',
-                                            item: `${metric} ${metricUnit || ''}`,
-                                            hidden: metric === null
-                                        })
-                                    ]
+                                    item: hbox({
+                                        alignItems: 'middle',
+                                        items: [
+                                            badge({
+                                                item: instance,
+                                                className: `xh-status-tile__instance-badge`
+                                            }),
+                                            hspacer(10),
+                                            `${statusText} ${metricLabel}`
+                                        ]
+                                    })
                                 });
                             })
                     })
