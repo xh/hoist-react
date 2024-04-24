@@ -20,11 +20,20 @@
 ### 🎁 New Features
 
 * Provides admin support for Cluster-aware version of Hoist.
-* `Store` now supports multiple `summaryRecords`.
+
+### ⚙️ Technical
+
+* `ping` call removed from `FetchService.ts`.
 
 ### 📚 Libraries
 
 * @ag-grid `30.x -> 31.x`
+
+## 63.1.0 - 2024-04-23
+
+### 🎁 New Features
+
+* `Store` now supports multiple `summaryRecords`.
 
 ## 63.0.3 - 2024-04-16
 
