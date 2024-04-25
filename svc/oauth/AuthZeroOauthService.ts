@@ -1,4 +1,4 @@
-import {Auth0Client} from '@auth0/auth0-spa-js';
+import {Auth0Client, AuthorizationParams} from '@auth0/auth0-spa-js';
 import {HoistService, PlainObject, XH} from '@xh/hoist/core';
 import {never, wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -32,6 +32,30 @@ interface OauthConfig {
 
     /** Domain of your app registered with Auth0 */
     domain: string;
+
+    /**
+     * The redirect URL where authentication responses can be received by your application.
+     * It must exactly match one of the redirect URIs registered in the Auth0 dashboard.
+     * Default is 'APP_BASE_URL' which will be replaced with the current app's base URL.
+     */
+    redirectUrl?: 'APP_BASE_URL' | string;
+
+    /**
+     * The redirect URL where the window navigates after a successful logout.
+     * Default is 'APP_BASE_URL' which will be replaced with the current app's base URL.
+     **/
+    postLogoutRedirectUrl?: 'APP_BASE_URL' | string;
+
+    /** The method used for logging in. Default is 'POPUP' on desktop and 'REDIRECT' on mobile. */
+    loginMethod?: 'REDIRECT' | 'POPUP';
+
+    /**
+     * Scopes for ID token.
+     * Can be left unset if Oauth is used only for Authentication, just to get username and email.
+     * These scopes are granted by default if left unset:
+     * 'openid profile email'
+     **/
+    idScopes?: string;
 }
 
 export class AuthZeroOauthService extends HoistService {
@@ -51,6 +75,26 @@ export class AuthZeroOauthService extends HoistService {
 
     /** Soft-config loaded from whitelisted endpoint on UI server. */
     config: OauthConfig;
+
+    get redirectUrl() {
+        const url = this.config.redirectUrl ?? 'APP_BASE_URL';
+        return url === 'APP_BASE_URL' ? this.baseUrl : url;
+    }
+
+    get postLogoutRedirectUrl() {
+        const url = this.config.postLogoutRedirectUrl ?? 'APP_BASE_URL';
+        return url === 'APP_BASE_URL' ? this.baseUrl: url;
+    }
+
+    // Default to redirect on mobile, popup on desktop.
+    get useRedirect() {
+        const {loginMethod} = this.config;
+        if (loginMethod) {
+            return loginMethod === 'REDIRECT';
+        }
+
+        return !XH.isDesktop;
+    }
 
     override async initAsync() {
         // This service is initialized prior to Hoist auth/init, so we do *not* have our standard
@@ -74,12 +118,17 @@ export class AuthZeroOauthService extends HoistService {
             `);
         }
 
+        const authorizationParams: AuthorizationParams = {
+            redirect_uri: this.redirectUrl
+        };
+        if (config.idScopes) {
+            authorizationParams.scope = config.idScopes;
+        }
+
         const auth0 = (this.auth0 = new Auth0Client({
             clientId: config.clientId,
             domain: config.domain,
-            authorizationParams: {
-                redirect_uri: this.baseUrl
-            }
+            authorizationParams
         }));
 
         // Initial check to see if we already have valid, cached credentials.
@@ -106,16 +155,21 @@ export class AuthZeroOauthService extends HoistService {
             // If still not authenticated, we are either coming in fresh or were unable to confirm a
             // successful auth via redirect handler. Trigger interactive login.
             this.logInfo(`Not authenticated - logging in....`);
-            await auth0.loginWithRedirect();
-            await never();
-        } else {
-            // Otherwise we should be able to ask Auth0 for user and token info.
-            this.user = await this.auth0.getUser();
-            this.idToken = await this.getIdTokenAsync();
-
-            this.logInfo(`Authenticated OK`, this.user?.email, this.user);
-            this.installDefaultFetchServiceHeaders();
+            if (this.useRedirect) {
+                await auth0.loginWithRedirect();
+                await never();
+            } else {
+                await auth0.loginWithPopup();
+            }
         }
+
+        // Otherwise we should be able to ask Auth0 for user and token info.
+        this.user = await this.auth0.getUser();
+        this.idToken = await this.getIdTokenAsync();
+
+        this.logInfo(`Authenticated OK`, this.user?.email, this.user);
+        this.installDefaultFetchServiceHeaders();
+
     }
 
     //------------------
@@ -145,7 +199,7 @@ export class AuthZeroOauthService extends HoistService {
                 await XH.fetchJson({url: 'xh/logout'});
                 await this.auth0.logout({
                     logoutParams: {
-                        returnTo: this.baseUrl
+                        returnTo: this.postLogoutRedirectUrl
                     }
                 });
                 // Wait enough time for Auth0 logout to redirect us away - if we return *too* soon

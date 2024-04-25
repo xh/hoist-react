@@ -41,10 +41,14 @@ interface OauthConfig {
     /**
      * The redirect URL where authentication responses can be received by your application.
      * It must exactly match one of the redirect URIs registered in the Azure portal, in the SPA section.
-     */
+     * Default is 'APP_BASE_URL' which will be replaced with the current app's base URL.
+     **/
     redirectUrl?: 'APP_BASE_URL' | string;
 
-    /** The redirect URL where the window navigates after a successful logout. */
+    /**
+     * The redirect URL where the window navigates after a successful logout.
+     * Default is 'APP_BASE_URL' which will be replaced with the current app's base URL.
+     **/
     postLogoutRedirectUrl?: 'APP_BASE_URL' | string;
 
     /** The method used for logging in. Default is 'POPUP' on desktop and 'REDIRECT' on mobile. */
@@ -116,12 +120,12 @@ export class AzureOauthService extends HoistService {
 
     get redirectUrl() {
         const url = this.config.redirectUrl ?? 'APP_BASE_URL';
-        return url === 'APP_BASE_URL' ? `${window.location.origin}${this.redirectPath}` : url;
+        return url === 'APP_BASE_URL' ? this.baseUrl : url;
     }
 
     get postLogoutRedirectUrl() {
         const url = this.config.postLogoutRedirectUrl ?? 'APP_BASE_URL';
-        return url === 'APP_BASE_URL' ? `${window.location.origin}${this.redirectPath}` : url;
+        return url === 'APP_BASE_URL' ? this.baseUrl: url;
     }
 
     // Default to redirect on mobile, popup on desktop.
@@ -132,10 +136,6 @@ export class AzureOauthService extends HoistService {
         }
 
         return !XH.isDesktop;
-    }
-
-    get redirectPath() {
-        return XH.isPhone ? '/mobile/' : '/app/';
     }
 
     redirectPending = false;
@@ -488,6 +488,10 @@ export class AzureOauthService extends HoistService {
 
         const routePath = state.replace(basePath, '');
         return 'default.' + routePath.split('/').join('.');
+    }
+
+    private get baseUrl() {
+        return `${window.location.origin}/${XH.clientAppCode}/`;
     }
 
     private logFromMsal(level, message) {
