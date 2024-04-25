@@ -19,6 +19,7 @@
 
 ### 🎁 New Features
 
+* New services added to support Oauth: `AzureOauthService`, `AuthZeroOauthService`
 * Provides admin support for Cluster-aware version of Hoist.
 
 ### ⚙️ Technical
