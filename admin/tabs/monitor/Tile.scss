@@ -14,31 +14,31 @@
   }
 
   &-ok {
-    background: var(--xh-intent-success-darker);
-    --xh-panel-title-bg: var(--xh-intent-success-darker);
-    --xh-panel-bg: var(--xh-intent-success);
+    background: var(--xh-intent-success);
+    --xh-panel-title-bg: var(--xh-intent-success);
+    --xh-panel-bg: var(--xh-intent-success-darker);
   }
 
   &-warn {
-    background: var(--xh-intent-warning-darker);
-    --xh-panel-title-bg: var(--xh-intent-warning-darker);
-    --xh-panel-bg: var(--xh-intent-warning);
+    background: var(--xh-intent-warning);
+    --xh-panel-title-bg: var(--xh-intent-warning);
+    --xh-panel-bg: var(--xh-intent-warning-darker);
   }
 
   &-fail {
-    background: var(--xh-intent-danger-darker);
-    --xh-panel-title-bg: var(--xh-intent-danger-darker);
-    --xh-panel-bg: var(--xh-intent-danger);
+    background: var(--xh-intent-danger);
+    --xh-panel-title-bg: var(--xh-intent-danger);
+    --xh-panel-bg: var(--xh-intent-danger-darker);
   }
 
   &-inactive {
-    background: var(--xh-gray-dark);
+    background: var(--xh-gray);
     --xh-panel-title-bg: var(--xh-gray);
     --xh-panel-bg: var(--xh-gray-dark);
   }
 
   &-unknown {
-    background: var(--xh-gray-dark);
+    background: var(--xh-gray);
     --xh-panel-title-bg: var(--xh-gray);
     --xh-panel-bg: var(--xh-gray-dark);
   }

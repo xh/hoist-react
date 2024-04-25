@@ -14,11 +14,15 @@ import './Tile.scss';
 import {sortBy} from 'lodash';
 
 export const tile = hoistCmp.factory(props => {
-    const {name, status, lastStatusChanged, metricUnit, results} = props.results as MonitorResults,
+    let {name, status, lastStatusChanged, dateComputed, metricUnit, results} =
+            props.results as MonitorResults,
         {statusText} = statusProperties(status),
         tileClass = 'xh-status-tile xh-status-tile-' + status.toLowerCase(),
-        relativeString = getRelativeTimestamp(lastStatusChanged, {pastSuffix: ''}),
         instanceResults = sortBy(results, instanceSortOrder);
+
+    if (dateComputed != lastStatusChanged) {
+        statusText += getRelativeTimestamp(lastStatusChanged, {pastSuffix: '', prefix: ' for'});
+    }
 
     return panel({
         title: name,
@@ -26,14 +30,7 @@ export const tile = hoistCmp.factory(props => {
         modelConfig: {modalSupport: true, collapsible: false, resizable: false},
         item: vbox({
             className: 'xh-status-tile__content',
-            items: [
-                div({
-                    className: 'xh-status-tile__elapsed',
-                    item: `${statusText} for ${relativeString}`,
-                    hidden: status === 'INACTIVE' || status === 'UNKNOWN'
-                }),
-                ...instanceResults.map(result => instanceRow({result, metricUnit}))
-            ]
+            items: [statusText, ...instanceResults.map(result => instanceRow({result, metricUnit}))]
         })
     });
 });
