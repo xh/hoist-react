@@ -54,7 +54,7 @@ const body = hoistCmp.factory<MonitorResultsModel>(({model}) => {
         spacing: 10,
         desiredRatio: 3,
         minTileWidth: 150,
-        minTileHeight: 150,
+        minTileHeight: 180,
         items: results.map(results => tile({results}))
     });
 });

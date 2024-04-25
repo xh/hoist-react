@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {MonitorResult, MonitorResults, MonitorStatus} from './Types';
-import {div, hbox, hspacer, span, vbox} from '@xh/hoist/cmp/layout';
+import {div, hbox, hspacer, span, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {hoistCmp, PlainObject} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -27,10 +27,18 @@ export const tile = hoistCmp.factory(props => {
     return panel({
         title: name,
         className: tileClass,
-        modelConfig: {modalSupport: true, collapsible: false, resizable: false},
-        item: vbox({
+        modelConfig: {
+            modalSupport: {width: 600, height: 400},
+            collapsible: false,
+            resizable: false
+        },
+        item: div({
             className: 'xh-status-tile__content',
-            items: [statusText, ...instanceResults.map(result => instanceRow({result, metricUnit}))]
+            item: vbox(
+                statusText,
+                vspacer(5),
+                ...instanceResults.map(result => instanceRow({result, metricUnit}))
+            )
         })
     });
 });

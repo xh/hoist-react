@@ -46,7 +46,8 @@
   &__content {
     padding: var(--xh-pad-px);
     flex: 1;
-    overflow-y: scroll;
+    height: 100%;
+    overflow-y: auto;
   }
 
   &__instance-row {
