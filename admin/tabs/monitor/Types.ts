@@ -5,15 +5,13 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-export type Status = 'OK' | 'WARN' | 'FAIL' | 'INACTIVE' | 'UNKNOWN';
-
 export interface MonitorResults {
     code: string;
     name: string;
     sortOrder: string;
     primaryOnly: boolean;
     metricUnit: string;
-    status: Status;
+    status: MonitorStatus;
     results: MonitorResult[];
     dateComputed: number;
 
@@ -23,10 +21,12 @@ export interface MonitorResults {
     lastStatusChanged: number;
 }
 
+export type MonitorStatus = 'OK' | 'WARN' | 'FAIL' | 'INACTIVE' | 'UNKNOWN';
+
 export interface MonitorResult {
     instance: string;
     primary: boolean;
-    status: Status;
+    status: MonitorStatus;
     metric: number;
     message: string;
     elapsed: number;

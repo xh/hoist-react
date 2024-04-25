@@ -32,7 +32,7 @@ const modelSpec: RestGridConfig = {
             MCol.warnThreshold.field,
             MCol.failThreshold.field,
             MCol.sortOrder.field,
-            {...(MCol.primaryOnly.field as FieldSpec), defaultValue: true, required},
+            {...(MCol.primaryOnly.field as FieldSpec), defaultValue: false, required},
 
             {...(Col.name.field as FieldSpec), required},
             Col.notes.field,

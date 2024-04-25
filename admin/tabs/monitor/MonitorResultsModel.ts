@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {MonitorResults, Status} from '@xh/hoist/admin/tabs/monitor/Types';
+import {MonitorResults, MonitorStatus} from '@xh/hoist/admin/tabs/monitor/Types';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
@@ -43,7 +43,7 @@ export class MonitorResultsModel extends HoistModel {
         return {OK: passed, WARN: warned, FAIL: failed, INACTIVE: inactive};
     }
 
-    get worstStatus(): Status {
+    get worstStatus(): MonitorStatus {
         if (this.failed) return 'FAIL';
         if (this.warned) return 'WARN';
         if (this.passed) return 'OK';

@@ -4,94 +4,87 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {badge} from '@xh/hoist/cmp/badge';
-import {MonitorResult, MonitorResults, Status} from './Types';
-import {div, hbox, hspacer, vbox} from '@xh/hoist/cmp/layout';
+import {MonitorResult, MonitorResults, MonitorStatus} from './Types';
+import {div, hbox, hspacer, span, vbox} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {hoistCmp, PlainObject} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon, IconProps} from '@xh/hoist/icon';
 import './Tile.scss';
+import {sortBy} from 'lodash';
 
 export const tile = hoistCmp.factory(props => {
-    const {name, status, primaryOnly, lastStatusChanged, metricUnit, results} =
-            props.results as MonitorResults,
-        {icon, statusText} = statusProperties(status),
+    const {name, status, lastStatusChanged, metricUnit, results} = props.results as MonitorResults,
+        {statusText} = statusProperties(status),
         tileClass = 'xh-status-tile xh-status-tile-' + status.toLowerCase(),
-        relativeString = getRelativeTimestamp(lastStatusChanged, {pastSuffix: ''});
+        relativeString = getRelativeTimestamp(lastStatusChanged, {pastSuffix: ''}),
+        instanceResults = sortBy(results, instanceSortOrder);
 
     return panel({
-        title: primaryOnly ? `${name} - Primary Only` : name,
+        title: name,
         className: tileClass,
-        items: [
-            vbox({
-                className: 'xh-status-tile__content',
-                items: [
-                    icon,
-                    div({
-                        className: 'xh-status-tile__elapsed',
-                        item: `${statusText} for ${relativeString}`,
-                        hidden: status === 'INACTIVE' || status === 'UNKNOWN'
-                    }),
-                    div({
-                        className: 'xh-status-tile__instance-result-block',
-                        items: results
-                            .sort(it => instanceSortOrder(it))
-                            .map(it => {
-                                const {statusText} = statusProperties(it.status, 'lg'),
-                                    {instance, metric} = it,
-                                    metricLabel =
-                                        metric != null ? `${metric} ${metricUnit ?? ''}` : '';
-                                return div({
-                                    className: 'xh-status-tile__instance-result',
-                                    item: hbox({
-                                        alignItems: 'middle',
-                                        items: [
-                                            badge({
-                                                item: instance,
-                                                className: `xh-status-tile__instance-badge`
-                                            }),
-                                            hspacer(10),
-                                            `${statusText} ${metricLabel}`
-                                        ]
-                                    })
-                                });
-                            })
-                    })
-                ]
-            })
-        ],
-        modelConfig: {modalSupport: true, collapsible: false, resizable: false}
+        modelConfig: {modalSupport: true, collapsible: false, resizable: false},
+        item: vbox({
+            className: 'xh-status-tile__content',
+            items: [
+                div({
+                    className: 'xh-status-tile__elapsed',
+                    item: `${statusText} for ${relativeString}`,
+                    hidden: status === 'INACTIVE' || status === 'UNKNOWN'
+                }),
+                ...instanceResults.map(result => instanceRow({result, metricUnit}))
+            ]
+        })
     });
 });
 
-function statusProperties(status: Status, iconSize?: any): PlainObject {
-    const iCfg: IconProps = {size: iconSize || '8x', prefix: 'fal'};
+const instanceRow = hoistCmp.factory(({result, metricUnit}) => {
+    const {instance, metric, message, status} = result as MonitorResult,
+        {icon} = statusProperties(status),
+        metricText = metric != null ? `${metric} ${metricUnit ?? ''}` : null;
+    return hbox({
+        className: 'xh-status-tile__instance-row xh-status-tile-' + status.toLowerCase(),
+        alignItems: 'start',
+        items: [
+            icon,
+            hspacer(5),
+            span({
+                className: 'xh-status-tile__instance-name',
+                item: instance
+            }),
+            hspacer(10),
+            div(div(metricText), div(message))
+        ]
+    });
+});
+
+function statusProperties(status: MonitorStatus): PlainObject {
+    const cfg: IconProps = {prefix: 'fal'};
     switch (status) {
         case 'OK':
-            return {statusText: 'OK', icon: Icon.checkCircle(iCfg)};
+            return {statusText: 'OK', icon: Icon.checkCircle(cfg)};
         case 'WARN':
-            return {statusText: 'Warning', icon: Icon.warning(iCfg)};
+            return {statusText: 'Warning', icon: Icon.warning(cfg)};
         case 'FAIL':
-            return {statusText: 'Failing', icon: Icon.error(iCfg)};
+            return {statusText: 'Failing', icon: Icon.error(cfg)};
         case 'INACTIVE':
-            return {statusText: 'Inactive', icon: Icon.disabled(iCfg)};
+            return {statusText: 'Inactive', icon: Icon.disabled(cfg)};
         default:
-            return {statusText: 'Unknown', icon: Icon.disabled(iCfg)};
+            return {statusText: 'Unknown', icon: Icon.disabled(cfg)};
     }
 }
 
 function instanceSortOrder(result: MonitorResult) {
-    const {status, primary} = result;
-    let value = primary ? -0.5 : 0;
+    const {status, primary} = result,
+        primaryBump = primary ? -0.5 : 0;
     switch (status) {
-        case 'OK':
-            return value + 1;
-        case 'WARN':
-            return value;
         case 'FAIL':
-            return value - 1;
+            return -3 + primaryBump;
+        case 'WARN':
+            return -2 + primaryBump;
+        case 'OK':
+            return -1 + primaryBump;
         default:
-            return value + 2;
+            return primaryBump;
     }
 }
