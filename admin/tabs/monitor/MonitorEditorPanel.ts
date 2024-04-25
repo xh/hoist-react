@@ -11,6 +11,7 @@ import {restGrid, RestGridConfig} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
 import * as MCol from './MonitorColumns';
 import {AppModel} from '@xh/hoist/admin/AppModel';
+import {isEmpty} from 'lodash';
 
 export const monitorEditorPanel = hoistCmp.factory(() =>
     restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}})
@@ -77,13 +78,15 @@ const modelSpec: RestGridConfig = {
     ],
     actionWarning: {
         del: monitors => {
+            let ret = 'Are you sure you want to delete the selected monitors?';
+
             const xhMonitors = monitors.filter(m => m.get('code').startsWith('xh'));
-            if (xhMonitors.length > 0) {
-                return (
-                    `The following monitor(s) is/are provided by Hoist: ${xhMonitors.map(m => m.get('name')).join(', ')}. ` +
-                    'These monitors will reappear on the next application restart. Consider deactivating them instead.'
-                );
+            if (!isEmpty(xhMonitors)) {
+                ret +=
+                    ` Note that the following monitor(s) is/are provided by Hoist: ${xhMonitors.map(m => m.get('name')).join(', ')}. ` +
+                    'These monitors will reappear on the next application restart. Consider deactivating them instead.';
             }
+            return ret;
         }
     }
 };

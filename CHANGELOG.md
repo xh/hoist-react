@@ -21,6 +21,10 @@
 
 * Provides admin support for Cluster-aware version of Hoist.
 
+### 🐞 Bug Fixes
+* `RestGridModel.actionWarning` behavior has been improved.  If the provided function returns a
+falsy value no warning will be displayed.
+
 ### ⚙️ Technical
 
 * `ping` call removed from `FetchService.ts`.
