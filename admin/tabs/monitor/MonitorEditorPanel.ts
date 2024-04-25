@@ -11,6 +11,7 @@ import {restGrid, RestGridConfig} from '@xh/hoist/desktop/cmp/rest';
 import * as Col from '@xh/hoist/admin/columns';
 import * as MCol from './MonitorColumns';
 import {AppModel} from '@xh/hoist/admin/AppModel';
+import {isEmpty} from 'lodash';
 
 export const monitorEditorPanel = hoistCmp.factory(() =>
     restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}})
@@ -32,6 +33,7 @@ const modelSpec: RestGridConfig = {
             MCol.warnThreshold.field,
             MCol.failThreshold.field,
             MCol.sortOrder.field,
+            {...(MCol.primaryOnly.field as FieldSpec), defaultValue: false, required},
 
             {...(Col.name.field as FieldSpec), required},
             Col.notes.field,
@@ -48,6 +50,7 @@ const modelSpec: RestGridConfig = {
     filterFields: ['code', 'name'],
     columns: [
         {...Col.active},
+        {...MCol.primaryOnly},
         {...MCol.code},
         {...Col.name},
         {...MCol.warnThreshold},
@@ -61,6 +64,7 @@ const modelSpec: RestGridConfig = {
     editors: [
         {field: 'code'},
         {field: 'name'},
+        {field: 'primaryOnly'},
         {field: 'metricType'},
         {field: 'warnThreshold'},
         {field: 'failThreshold'},
@@ -71,5 +75,18 @@ const modelSpec: RestGridConfig = {
         {field: 'sortOrder'},
         {field: 'lastUpdated'},
         {field: 'lastUpdatedBy'}
-    ]
+    ],
+    actionWarning: {
+        del: monitors => {
+            let ret = 'Are you sure you want to delete the selected monitors?';
+
+            const xhMonitors = monitors.filter(m => m.get('code').startsWith('xh'));
+            if (!isEmpty(xhMonitors)) {
+                ret +=
+                    ` Note that the following monitors are provided by Hoist: ${xhMonitors.map(m => m.get('name')).join(', ')}. ` +
+                    'These monitors will reappear on the next application restart. Consider deactivating them instead.';
+            }
+            return ret;
+        }
+    }
 };

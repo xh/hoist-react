@@ -13,16 +13,15 @@ import {monitorResultsPanel} from './MonitorResultsPanel';
 
 export const monitorTab = hoistCmp.factory(() => {
     const enabled = XH.getConf('xhEnableMonitoring', true);
-    return enabled
-        ? tabContainer({
-              modelConfig: {
-                  route: 'default.monitor',
-                  switcher: {orientation: 'left', testId: 'monitor-tab-switcher'},
-                  tabs: [
-                      {id: 'status', icon: Icon.shieldCheck(), content: monitorResultsPanel},
-                      {id: 'config', icon: Icon.settings(), content: monitorEditorPanel}
-                  ]
-              }
-          })
-        : errorMessage({error: 'Monitoring disabled via xhEnableMonitor config.'});
+    if (!enabled) return errorMessage({error: 'Monitoring disabled via xhEnableMonitor config.'});
+    return tabContainer({
+        modelConfig: {
+            route: 'default.monitor',
+            switcher: {orientation: 'left', testId: 'monitor-tab-switcher'},
+            tabs: [
+                {id: 'status', icon: Icon.shieldCheck(), content: monitorResultsPanel},
+                {id: 'config', icon: Icon.settings(), content: monitorEditorPanel}
+            ]
+        }
+    });
 });

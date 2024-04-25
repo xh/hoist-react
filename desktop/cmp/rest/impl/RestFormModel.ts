@@ -102,7 +102,6 @@ export class RestFormModel extends HoistModel {
 
     async validateAndSaveAsync() {
         throwIf(this.parent.readonly, 'StoreRecord not saved: this grid is read-only.');
-        const warning = this.actionWarning[this.isAdd ? 'add' : 'edit'];
 
         const valid = await this.formModel.validateAsync();
         if (!valid) {
@@ -114,15 +113,12 @@ export class RestFormModel extends HoistModel {
             return;
         }
 
-        if (warning) {
-            const message = isFunction(warning) ? warning([this.currentRecord]) : warning,
-                confirmed = await XH.confirm({
-                    message,
-                    title: 'Warning',
-                    icon: Icon.warning()
-                });
-
-            if (!confirmed) return;
+        const warning = this.actionWarning[this.isAdd ? 'add' : 'edit'],
+            message = isFunction(warning) ? warning([this.currentRecord]) : warning;
+        if (message) {
+            if (!(await XH.confirm({message, title: 'Warning', icon: Icon.warning()}))) {
+                return;
+            }
         }
 
         return this.saveRecordAsync();
