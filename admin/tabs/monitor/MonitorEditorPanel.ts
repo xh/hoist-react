@@ -83,7 +83,7 @@ const modelSpec: RestGridConfig = {
             const xhMonitors = monitors.filter(m => m.get('code').startsWith('xh'));
             if (!isEmpty(xhMonitors)) {
                 ret +=
-                    ` Note that the following monitor(s) is/are provided by Hoist: ${xhMonitors.map(m => m.get('name')).join(', ')}. ` +
+                    ` Note that the following monitors are provided by Hoist: ${xhMonitors.map(m => m.get('name')).join(', ')}. ` +
                     'These monitors will reappear on the next application restart. Consider deactivating them instead.';
             }
             return ret;
