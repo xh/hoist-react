@@ -1,5 +1,13 @@
 # Changelog
 
+## v56.4.1 - 2024-04-25
+
+### 🐞 Bug Fixes
+
+* Fixed over-eager error handler installed on window during preflight app initialization. This can
+  catch errors thrown by browser extensions unrelated to the app itself, which should not block
+  startup. Make opt-in via special query param `catchPreflightError=true`.
+
 ## v56.4.0 - 2023-05-10
 
 ### 🎁 New Features
