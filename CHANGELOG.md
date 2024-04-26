@@ -1,8 +1,17 @@
 # Changelog
 
+## 57.0.2 - 2024-04-25
+
+### 🐞 Bug Fixes
+
+* Fixed over-eager error handler installed on window during preflight app initialization. This can
+  catch errors thrown by browser extensions unrelated to the app itself, which should not block
+  startup. Make opt-in via special query param `catchPreflightError=true`.
+
 ## 57.0.1 - 2024-04-10
 
 ### ⚙️ Technical
+
 * Update tsconfig with `composite:true` to support app-level TS compiler options that differ from
   those specified by hoist-react itself.
 
@@ -17,16 +26,20 @@
 * Added bindable `readonly` property to `LeftRightChooserModel`.
 
 ### ⚙️ Technical
+
 * Support the `HOIST_IMPERSONATOR` role introduced in hoist-core `v16.3.0`
 * Hoist now supports and requires ag-Grid v30 or higher. This version includes critical
-performance improvements to scrolling without the problematic 'ResizeObserver' issues discussed
-below.
+  performance improvements to scrolling without the problematic 'ResizeObserver' issues discussed
+  below.
 
 ### 💥 Breaking Changes
+
 * The deprecated `@settable` decorator has now been removed. Use `@bindable` instead.
-* The deprecated class `@xh/hoist/admin/App` has been removed.  Use `@xh/hoist/admin/AppComponent` instead.
+* The deprecated class `@xh/hoist/admin/App` has been removed. Use `@xh/hoist/admin/AppComponent`
+  instead.
 
 ### 🐞 Bug Fixes
+
 * Fixed a bug where Onsen components wrappers could not forward refs.
 * Improved the exceptions thrown by fetchService when errors occur parsing response JSON.
 
