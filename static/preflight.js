@@ -21,18 +21,20 @@ window._xhLoadTimestamp = Date.now();
     }
 })(window);
 
-// Catch errors that occur before our in-app exception handling takes over.
-window.onerror = function(errorMsg, url, line, col, error) {
-    document.body.innerHTML = (
-        '<div style="margin: 60px auto; font-family: sans-serif; width: 450px; max-width: 80%; text-align: center; padding: 20px; border: 1px solid #ccc;">' +
-        '<strong>This application can not be loaded in your current browser</strong><br/><br/>' +
+// Use flag below to catch and stop on errors that occur before in-app exception handling active.
+if (window.location.search.toLowerCase().indexOf('catchpreflighterror=true') != -1) {
+    window.onerror = function (errorMsg, url, line, col, error) {
+        document.body.innerHTML = (
+            '<div style="margin: 60px auto; font-family: sans-serif; width: 450px; max-width: 80%; text-align: center; padding: 20px; border: 1px solid #ccc;">' +
+            '<strong>This application can not be loaded in your current browser</strong><br/><br/>' +
             '<div style="text-align: left">' +
-                    errorMsg + '<br/>' +
-                    '<div style="padding-left: 3em; overflow-wrap: anywhere;">' +
-                        'at ' + url + ':' + line + ':' + col +
-                    '</div>' + '<br/><br/>' +
-                    window.navigator.userAgent +
+            errorMsg + '<br/>' +
+            '<div style="padding-left: 3em; overflow-wrap: anywhere;">' +
+            'at ' + url + ':' + line + ':' + col +
+            '</div>' + '<br/><br/>' +
+            window.navigator.userAgent +
             '</div>' +
-        '</div>'
-    );
-};
+            '</div>'
+        );
+    };
+}
