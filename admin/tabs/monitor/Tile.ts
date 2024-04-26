@@ -14,14 +14,17 @@ import './Tile.scss';
 import {sortBy} from 'lodash';
 
 export const tile = hoistCmp.factory(props => {
-    let {name, status, lastStatusChanged, dateComputed, metricUnit, results} =
-            props.results as MonitorResults,
+    let {name, status, lastStatusChanged, metricUnit, results} = props.results as MonitorResults,
         {statusText} = statusProperties(status),
         tileClass = 'xh-status-tile xh-status-tile-' + status.toLowerCase(),
         instanceResults = sortBy(results, instanceSortOrder);
 
-    if (dateComputed != lastStatusChanged) {
-        statusText += getRelativeTimestamp(lastStatusChanged, {pastSuffix: '', prefix: ' for'});
+    if (status != 'INACTIVE' && status != 'UNKNOWN') {
+        statusText += getRelativeTimestamp(lastStatusChanged, {
+            pastSuffix: '',
+            prefix: ' for',
+            epsilon: null
+        });
     }
 
     return panel({
