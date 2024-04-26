@@ -8,7 +8,7 @@ import {AppModel} from '@xh/hoist/admin/AppModel';
 import {ConnPoolMonitorModel} from '@xh/hoist/admin/tabs/cluster/connpool/ConnPoolMonitorModel';
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, hframe, span, vframe} from '@xh/hoist/cmp/layout';
+import {filler, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
@@ -28,14 +28,7 @@ export const connPoolMonitorPanel = hoistCmp.factory({
 
         const {readonly} = AppModel;
         return panel({
-            tbar: [
-                span({
-                    item: 'JDBC Connection Pool',
-                    className: 'xh-bold'
-                }),
-                filler(),
-                gridCountLabel({unit: 'snapshot'}),
-                '-',
+            bbar: [
                 button({
                     text: 'Take Snapshot',
                     icon: Icon.camera(),
@@ -48,6 +41,8 @@ export const connPoolMonitorPanel = hoistCmp.factory({
                     omit: readonly,
                     onClick: () => model.resetStatsAsync()
                 }),
+                filler(),
+                gridCountLabel({unit: 'snapshot'}),
                 '-',
                 exportButton()
             ],

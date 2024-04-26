@@ -19,10 +19,9 @@ import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {tag} from '@xh/hoist/kit/blueprint';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, computed} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {invert, sortBy, uniq, uniqBy} from 'lodash';
-import {computed} from 'mobx';
 
 export class RoleMembersModel extends HoistModel {
     static readonly types: Record<RoleMemberType, string> = {

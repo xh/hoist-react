@@ -4,16 +4,16 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {AppModel} from '@xh/hoist/admin/AppModel';
 import {MemoryMonitorModel} from '@xh/hoist/admin/tabs/cluster/memory/MemoryMonitorModel';
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, span} from '@xh/hoist/cmp/layout';
+import {filler} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-import {AppModel} from '@xh/hoist/admin/AppModel';
 import {isNil} from 'lodash';
 
 export const memoryMonitorPanel = hoistCmp.factory({
@@ -29,14 +29,7 @@ export const memoryMonitorPanel = hoistCmp.factory({
         const {readonly} = AppModel,
             dumpDisabled = isNil(model.heapDumpDir);
         return panel({
-            tbar: [
-                span({
-                    item: 'Memory Usage',
-                    className: 'xh-bold'
-                }),
-                filler(),
-                gridCountLabel({unit: 'snapshot'}),
-                '-',
+            bbar: [
                 button({
                     text: 'Take Snapshot',
                     icon: Icon.camera(),
@@ -59,6 +52,8 @@ export const memoryMonitorPanel = hoistCmp.factory({
                         : null,
                     onClick: () => model.dumpHeapAsync()
                 }),
+                filler(),
+                gridCountLabel({unit: 'snapshot'}),
                 '-',
                 exportButton()
             ],
