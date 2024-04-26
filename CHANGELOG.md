@@ -33,6 +33,14 @@ falsy value no warning will be displayed.
 
 * @ag-grid `30.x -> 31.x`
 
+## 63.1.1 - 2024-04-26
+
+### 🐞 Bug Fixes
+
+* Fixed over-eager error handler installed on window during preflight app initialization. This can
+  catch errors thrown by browser extensions unrelated to the app itself, which should not block
+  startup. Make opt-in via special query param `catchPreflightError=true`.
+
 ## 63.1.0 - 2024-04-23
 
 ### 🎁 New Features
