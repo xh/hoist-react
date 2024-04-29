@@ -2,61 +2,92 @@
 
 ## 64.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - major Hoist Core = AG Grid updates)
 
-* `HoistComponent` prop `model` removed. Use the `modelConfig` prop instead.  Put another way,
-   use the `modelConfig` prop, not the `model` prop, when passing
-   a model constructor configuration object to a component as prop.
-* Requires update to `hoist-core >= 20.0.0`.
-* Requires update to `@ag-grid >= 31.x`.
-* ag-grid removed `ColumnApi`.  Most methods that were on `ColumnApi` are now on `GridApi`.
-  As a result, Hoist-React has removed the `agColumnApi` from the `GridModel`
-  Apps that use `agColumnApi` will need to update to use `agApi` instead.
-  Many methods on `agApi` are replaced with `agApi.updateGridOptions({property: value})`.
-  All apps will need to update their ag-grid version fetch as per this [Toolbox example](https://github.com/xh/toolbox/pull/709/files/5626e21d778e1fc72f9735d2d8f011513e1ac9c6#diff-304055320a29f66ea1255446ba8f13e0f3f1b13643bcea0c0466aa60e9288a8f).
-  See [What's New in AG Grid 31](https://blog.ag-grid.com/whats-new-in-ag-grid-31/) and [Upgrading to AG Grid 31](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-31/?ref=blog.ag-grid.com) for more details.
+#### Hoist Core v20 with Multi-Instance Support
 
+Requires update to `hoist-core >= 20.0.0` with multi-instance support.
+
+* See the Hoist Core changelog for details on this major upgrade to Hoist's back-end capabilities.
+* Client-side application changes should be minimal or non-existent, but the Hoist Admin Console has
+  been updated extensively to support management of multiple instances within a cluster.
+
+#### AG Grid v31
+
+Requires update to `@ag-grid >= 31.x`, a new major AG Grid release with its own breaking changes.
+See AG's [What's New](https://blog.ag-grid.com/whats-new-in-ag-grid-31/)
+and [Upgrade Guide](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-31/?ref=blog.ag-grid.com)
+for more details.
+
+* AG Grid removed `ColumnApi`, consolidating most of its methods to `GridApi`. Corresponding Hoist
+  update removes `GridModel.agColumnApi` - review and migrate usages to `GridModel.agApi` as
+  appropriate.
+* Many methods on `agApi` are replaced with `agApi.updateGridOptions({property: value})`. Review
+  your app for any direct usages of the underlying AG API that might need to change.
+* All apps will need to update their `@ag-grid` dependencies within `package.json` and make a minor
+  update to their `Bootstrap` registration as per
+  this [Toolbox example](https://github.com/xh/toolbox/pull/709/files/5626e21d778e1fc72f9735d2d8f011513e1ac9c6#diff-304055320a29f66ea1255446ba8f13e0f3f1b13643bcea0c0466aa60e9288a8f).
 
 ### 🎁 New Features
 
 * New services added to support Oauth: `AzureOauthService`, `AuthZeroOauthService`
-* Provides admin support for Cluster-aware version of Hoist.
+
+#### Other Changes
+
+* Removed support for passing a plain object to the `model` prop of Hoist Components (previously
+  deprecated back in v58). Use the `modelConfig` prop instead.
+
+### 🐞 Bug Fixes
+
+* Improved `RestGridModel.actionWarning` behavior to suppress any warning when the provided function
+  returns a falsy value.
 
 ### ⚙️ Technical
 
-* `ping` call removed from `FetchService.ts`.
+* Removed initial `ping` call `FetchService` init.
 
 ### 📚 Libraries
 
-* @ag-grid `30.x -> 31.x`
+* @ag-grid `30.x → 31.x`
+* dompurify `3.0 → 3.1`
+* moment `2.29 → 2.30`
+* numbro `2.4 → 2.5`
+* qs `6.11 → 6.12`
+* semver `7.5 → 7.6`
+
+## 63.1.1 - 2024-04-26
+
+### 🐞 Bug Fixes
+
+* Fixed over-eager error handler installed on window during preflight app initialization. This can
+  catch errors thrown by browser extensions unrelated to the app itself, which should not block
+  startup. Make opt-in via special query param `catchPreflightError=true`.
 
 ## 63.1.0 - 2024-04-23
 
 ### 🎁 New Features
 
-* `Store` now supports multiple `summaryRecords`.
+* `Store` now supports multiple `summaryRecords`, with corresponding
 
 ## 63.0.3 - 2024-04-16
 
 ### 🐞 Bug Fixes
 
-* Import BPs default datetime package css in addition to datetime2 css to support BP datetime components.
+* Ensure all required styles imported for Blueprint datetime components.
 
 ## 63.0.2 - 2024-04-16
 
 ### 🐞 Bug Fixes
 
-* Fixed issue with GroupingChooser: dragged items were not correctly positioned.
+* Fixed `GroupingChooser` items appearing in incorrect location while dragging to re-order.
 * Removed extraneous internal padding override to Blueprint menu styles. Fixes overhang of menu
-divider borders and avoids possible triggering of horizontal scrollbars.
+  divider borders and avoids possible triggering of horizontal scrollbars.
 
 ## 63.0.1 - 2024-04-05
 
 ### 🐞 Bug Fixes
 
-* New filterable fields exposed in Admin Console for Activity Tracking and Client Errors.
-    * Activity Tracking adds `url`, `appEnvironment`, `appVersion`.
-    * Client Errors adds `impersonating`.
+* Recently added fields now fully available in Admin Console Activity Tracking + Client Errors.
 
 ## 63.0.0 - 2024-04-04
 
@@ -110,8 +141,8 @@ There are some common breaking changes that most/many apps will need to address:
 
 ### 📚 Libraries
 
-* @blueprintjs/core `4.20 -> 5.10`
-* @blueprintjs/datetime `4.4` -> @blueprintjs/datetime2 `2.3`
+* @blueprintjs/core `4.20 → 5.10`
+* @blueprintjs/datetime `4.4` → @blueprintjs/datetime2 `2.3`
 
 ## 62.0.1 - 2024-03-28
 
