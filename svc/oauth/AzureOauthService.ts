@@ -87,13 +87,13 @@ export class AzureOauthService extends HoistService {
      */
     enabled: boolean;
 
+    msalApp: IPublicClientApplication;
+
     /** ID of the currently authenticated AD account. */
     accountId?: string;
+    /** ID Token in JWT format - for passing to Hoist server. */
     idToken?: string;
     accessToken: string;
-
-    /** Instance of the Microsoft Authentication Library. */
-    msalApp: IPublicClientApplication;
 
     /** True if autoTest mode both allowed and currently active. Set once on init. */
     isAutoTestMode: boolean = false;
@@ -115,7 +115,7 @@ export class AzureOauthService extends HoistService {
         return this.isAutoTestMode || !!(this.account && this.idToken && this.accessToken);
     }
 
-    /** OAuth config as provided by server. */
+    /** Soft-config loaded from whitelisted endpoint on UI server. */
     config: OauthConfig;
 
     get redirectUrl() {

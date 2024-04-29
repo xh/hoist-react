@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2024 Extremely Heavy Industries Inc.
+ */
 import {Auth0Client, AuthorizationParams} from '@auth0/auth0-spa-js';
 import {HoistService, PlainObject, XH} from '@xh/hoist/core';
 import {never, wait} from '@xh/hoist/promise';
@@ -68,6 +74,7 @@ export class AuthZeroOauthService extends HoistService {
     enabled: boolean;
 
     auth0: Auth0Client;
+
     /** Authenticated user info as provided by Auth0. */
     user: PlainObject;
     /** ID Token in JWT format - for passing to Hoist server. */
