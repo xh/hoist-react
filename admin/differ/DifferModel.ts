@@ -5,11 +5,12 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {ColumnRenderer, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {div, hbox, p} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
+import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
@@ -21,14 +22,15 @@ import {DifferDetailModel} from './DifferDetailModel';
  * @internal
  */
 export class DifferModel extends HoistModel {
-    parentModel;
-    entityName;
-    displayName;
-    columnFields;
-    matchFields;
-    valueRenderer;
-    url;
-    clipboardContent;
+    parentModel: HoistModel & {gridModel: RestGridModel; closeDiffer: () => void};
+    entityName: string;
+    displayName: string;
+    columnFields: Array<string | Partial<ColumnSpec>>;
+    matchFields: string[];
+    valueRenderer: ColumnRenderer;
+    url: string;
+
+    private clipboardContent: PlainObject;
 
     @managed
     detailModel = new DifferDetailModel({parent: this});
@@ -88,7 +90,7 @@ export class DifferModel extends HoistModel {
                     return this.matchFields.map(field => data[field]?.toString()).join('-');
                 },
                 filter: {field: 'status', op: '!=', value: 'Identical'},
-                fields: [...this.columnFields.map(it => it.field ?? it)]
+                fields: [...this.columnFields.map(it => (isString(it) ? it : it.field))]
             },
             emptyText: 'No records found.',
             selModel: 'multiple',

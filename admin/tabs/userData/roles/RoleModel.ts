@@ -54,12 +54,13 @@ export class RoleModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         try {
             await this.ensureInitializedAsync();
-
             if (!this.moduleConfig.enabled) return;
 
-            const {data} = await XH.fetchJson({loadSpec, url: 'roleAdmin/list'});
+            const {data} = await XH.fetchJson({url: 'roleAdmin/list', loadSpec});
             if (loadSpec.isStale) return;
+
             this.setRoles(this.processRolesFromServer(data));
+            await this.gridModel.preSelectFirstAsync();
         } catch (e) {
             if (loadSpec.isStale) return;
             XH.handleException(e);
@@ -115,7 +116,7 @@ export class RoleModel extends HoistModel {
     // -------------------------------
     addAction(): RecordActionSpec {
         return {
-            text: 'Add Role',
+            text: 'Add',
             icon: Icon.add(),
             intent: 'success',
             actionFn: () => this.createAsync()

@@ -4,12 +4,6 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
-import {
-    HoistRole,
-    RoleMemberType,
-    RoleModuleConfig
-} from '@xh/hoist/admin/tabs/general/roles/Types';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {box, hbox} from '@xh/hoist/cmp/layout';
@@ -19,6 +13,8 @@ import {actionCol, calcActionColWidth, selectEditor} from '@xh/hoist/desktop/cmp
 import {Icon} from '@xh/hoist/icon';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {groupBy, isNil, isString, map, sortBy, uniq, without} from 'lodash';
+import {RoleModel} from '../../RoleModel';
+import {HoistRole, RoleMemberType, RoleModuleConfig} from '../../Types';
 
 export class RoleFormModel extends HoistModel {
     readonly ADD_ASSIGNMENT_ACTION: RecordActionSpec = this.createAddAssigmentAction();
@@ -137,10 +133,9 @@ export class RoleFormModel extends HoistModel {
         } as HoistRole;
     }
 
-    // -------------------------------
+    //------------------
     // Implementation
-    // -------------------------------
-
+    //------------------
     private createFormModel(): FormModel {
         return new FormModel({
             fields: [

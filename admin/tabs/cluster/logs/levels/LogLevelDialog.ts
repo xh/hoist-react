@@ -20,14 +20,12 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 
 export const logLevelDialog = hoistCmp.factory<LogViewerModel>(({model}) =>
     dialog({
-        title: 'Adjust Log Levels',
+        title: 'Configure Log Levels',
         icon: Icon.gear(),
-        isOpen: true,
-        canClickOutsideClose: false,
-        style: {
-            width: '80vw',
-            height: '80vh'
-        },
+        className: 'xh-admin-app__editor-dialog',
+        isOpen: model.showLogLevelDialog,
+        canOutsideClickClose: false,
+        onClose: () => (model.showLogLevelDialog = false),
         item: panel({
             item: restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}}),
             bbar: [
