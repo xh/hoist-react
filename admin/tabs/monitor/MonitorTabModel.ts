@@ -7,16 +7,18 @@
 import {MonitorResults, MonitorStatus} from '@xh/hoist/admin/tabs/monitor/Types';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {pluralize} from '@xh/hoist/utils/js';
 import {filter, isEqual, minBy, sortBy} from 'lodash';
 
-export class MonitorResultsModel extends HoistModel {
+export class MonitorTabModel extends HoistModel {
     @observable.ref results: MonitorResults[] = [];
     @observable lastRun: number = null;
     @managed timer: Timer = null;
+
+    @bindable showEditorDialog = false;
 
     @computed
     get passed(): number {

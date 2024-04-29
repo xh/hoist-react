@@ -63,8 +63,6 @@ export class AppModel extends HoistAppModel {
                 children: [
                     {name: 'about', path: '/about'},
                     {name: 'config', path: '/config'},
-                    {name: 'users', path: '/users'},
-                    {name: 'roles', path: '/roles'},
                     {name: 'alertBanner', path: '/alertBanner'}
                 ]
             },
@@ -83,6 +81,10 @@ export class AppModel extends HoistAppModel {
                 ]
             },
             {
+                name: 'monitors',
+                path: '/monitors'
+            },
+            {
                 name: 'activity',
                 path: '/activity',
                 children: [
@@ -92,19 +94,12 @@ export class AppModel extends HoistAppModel {
                 ]
             },
             {
-                name: 'monitor',
-                path: '/monitor',
-                children: [
-                    {name: 'status', path: '/status'},
-                    {name: 'config', path: '/config'}
-                ]
-            },
-            {
                 name: 'userData',
                 path: '/userData',
                 children: [
+                    {name: 'users', path: '/users'},
+                    {name: 'roles', path: '/roles'},
                     {name: 'prefs', path: '/prefs'},
-                    {name: 'userPrefs', path: '/userPrefs'},
                     {name: 'jsonBlobs', path: '/jsonBlobs'}
                 ]
             }
@@ -124,12 +119,7 @@ export class AppModel extends HoistAppModel {
                 content: clusterTab
             },
             {
-                id: 'activity',
-                icon: Icon.analytics(),
-                content: activityTab
-            },
-            {
-                id: 'monitor',
+                id: 'monitors',
                 icon: Icon.shieldCheck(),
                 content: monitorTab
             },
@@ -137,6 +127,12 @@ export class AppModel extends HoistAppModel {
                 id: 'userData',
                 icon: Icon.users(),
                 content: userDataTab
+            },
+            {
+                id: 'activity',
+                title: 'User Activity',
+                icon: Icon.analytics(),
+                content: activityTab
             }
         ];
     }
