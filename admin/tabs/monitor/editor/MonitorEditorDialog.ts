@@ -4,17 +4,41 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {AppModel} from '@xh/hoist/admin/AppModel';
+import * as Col from '@xh/hoist/admin/columns';
+import {MonitorTabModel} from '@xh/hoist/admin/tabs/monitor/MonitorTabModel';
+import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {restGrid, RestGridConfig} from '@xh/hoist/desktop/cmp/rest';
-import * as Col from '@xh/hoist/admin/columns';
-import * as MCol from './MonitorColumns';
-import {AppModel} from '@xh/hoist/admin/AppModel';
+import {Icon} from '@xh/hoist/icon';
+import {dialog} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
+import * as MCol from '../MonitorColumns';
 
-export const monitorEditorPanel = hoistCmp.factory(() =>
-    restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}})
+export const monitorEditorDialog = hoistCmp.factory<MonitorTabModel>(({model}) =>
+    dialog({
+        title: 'Configure Status Monitors',
+        icon: Icon.gear(),
+        className: 'xh-admin-app__editor-dialog',
+        isOpen: model.showEditorDialog,
+        canOutsideClickClose: false,
+        onClose: () => (model.showEditorDialog = false),
+        item: panel({
+            item: restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}}),
+            bbar: [
+                filler(),
+                button({
+                    text: 'Close',
+                    icon: Icon.close(),
+                    onClick: () => (model.showEditorDialog = false)
+                })
+            ]
+        })
+    })
 );
 
 const required = true,
@@ -83,8 +107,8 @@ const modelSpec: RestGridConfig = {
             const xhMonitors = monitors.filter(m => m.get('code').startsWith('xh'));
             if (!isEmpty(xhMonitors)) {
                 ret +=
-                    ` Note that the following monitors are provided by Hoist: ${xhMonitors.map(m => m.get('name')).join(', ')}. ` +
-                    'These monitors will reappear on the next application restart. Consider deactivating them instead.';
+                    ` The following monitor(s) are provided by Hoist and will be recreated automatically on the next application restart: ${xhMonitors.map(m => m.get('name')).join(', ')}. ` +
+                    'Deactivate these monitors instead of deleting them to persistently disable.';
             }
             return ret;
         }

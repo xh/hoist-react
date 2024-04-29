@@ -7,18 +7,19 @@
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler, fragment, frame, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
+import {pluralize} from '@xh/hoist/utils/js';
 import {identity, startCase} from 'lodash';
+import {storeFilterField} from '../../cmp/store';
 import {differDetail} from './DifferDetail';
 import {DifferModel} from './DifferModel';
-import {storeFilterField} from '../../cmp/store';
 
 export const differ = hoistCmp.factory({
     model: uses(DifferModel),
@@ -26,11 +27,12 @@ export const differ = hoistCmp.factory({
     render({model}) {
         return fragment(
             dialog({
-                title: `${startCase(model.displayName)} Differ`,
+                title: `Compare ${startCase(pluralize(model.displayName))}`,
+                icon: Icon.diff(),
+                style: {height: 600, width: '70vw'},
                 isOpen: true,
                 canOutsideClickClose: false,
                 onClose: () => model.parentModel.closeDiffer(),
-                style: {height: 600, width: '80%'},
                 item: contents()
             }),
             differDetail()
@@ -79,7 +81,7 @@ const tbar = hoistCmp.factory<DifferModel>(({model}) => {
             intent: 'primary',
             onClick: () => model.diffFromClipboardAsync()
         }),
-        filler(),
+        '-',
         clipboardButton({
             text: `Copy ${startCase(model.displayName)}s`,
             icon: Icon.copy(),
