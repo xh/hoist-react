@@ -6,7 +6,7 @@
  */
 import {ServerEnvModel} from '@xh/hoist/admin/tabs/cluster/environment/ServerEnvModel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, span} from '@xh/hoist/cmp/layout';
+import {filler} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
@@ -20,11 +20,7 @@ export const serverEnvPanel = hoistCmp.factory({
         const {lastLoadException} = model;
 
         return panel({
-            tbar: [
-                span({
-                    item: 'Environment variables + JVM system properties',
-                    className: 'xh-bold'
-                }),
+            bbar: [
                 filler(),
                 gridCountLabel({unit: 'entries'}),
                 '-',

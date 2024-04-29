@@ -17,8 +17,8 @@ import {HoistModel, managed, ReactionSpec, SelectOption, TaskObserver, XH} from 
 import {RecordActionSpec, required} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth, selectEditor} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {groupBy, isNil, isString, map, sortBy, uniq, without} from 'lodash';
-import {action, computed, observable} from 'mobx';
 
 export class RoleFormModel extends HoistModel {
     readonly ADD_ASSIGNMENT_ACTION: RecordActionSpec = this.createAddAssigmentAction();

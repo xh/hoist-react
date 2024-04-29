@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, persist, XH} from '@xh/hoist/core';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
@@ -60,6 +60,10 @@ export class LogDisplayModel extends HoistModel {
         return this.tail && !this.gridModel.hasSelection;
     }
 
+    showLogLevelDialog() {
+        this.parent.showLogLevelDialog = true;
+    }
+
     constructor(parent: LogViewerModel) {
         super();
         makeObservable(this);
@@ -89,7 +93,7 @@ export class LogDisplayModel extends HoistModel {
         });
     }
 
-    override async doLoadAsync(loadSpec) {
+    override async doLoadAsync(loadSpec: LoadSpec) {
         const {parent} = this;
 
         if (!parent.file) {

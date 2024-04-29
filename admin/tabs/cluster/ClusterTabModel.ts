@@ -124,7 +124,8 @@ export class ClusterTabModel extends HoistModel {
                 },
                 {
                     field: 'wsConnections',
-                    headerName: 'WS Connections',
+                    headerName: Icon.bolt(),
+                    headerTooltip: 'Active Websocket Connections',
                     ...numberCol
                 },
                 {

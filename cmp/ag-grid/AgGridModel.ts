@@ -150,12 +150,6 @@ export class AgGridModel extends HoistModel {
     /**
      * Retrieves the current state of the grid via ag-Grid APIs. This state is returned in a
      * serializable form and can be later restored via setState.
-     *
-     * @param excludeColumn - true to exclude the column state
-     * @param excludeSort - true to exclude the sort state
-     * @param excludeExpand - true to exclude the expand state
-     * @param excludeFilter - true to exclude the filter state
-     * @param excludeMisc - true to exclude any additional miscellaneous state
      */
     getState(
         opts: {
