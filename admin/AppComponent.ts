@@ -21,7 +21,7 @@ export const AppComponent = hoistCmp({
     render() {
         return panel({
             tbar: tbar(),
-            className: 'xh-admin-app-frame',
+            className: 'xh-admin-app',
             item: tabContainer()
         });
     }

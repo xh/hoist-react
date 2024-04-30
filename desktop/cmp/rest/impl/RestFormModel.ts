@@ -35,6 +35,9 @@ export class RestFormModel extends HoistModel {
 
     dialogRef = createRef<HTMLElement>();
 
+    get unit() {
+        return this.parent.unit;
+    }
     get actionWarning() {
         return this.parent.actionWarning;
     }

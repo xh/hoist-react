@@ -4,8 +4,6 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {RoleMemberType} from '@xh/hoist/admin/tabs/general/roles/Types';
-import {warningBanner} from '@xh/hoist/admin/tabs/general/roles/warning/WarningBanner';
 import {form} from '@xh/hoist/cmp/form';
 import {grid, gridCountLabel, GridModel} from '@xh/hoist/cmp/grid';
 import {filler, hbox, hframe, hspacer, strong, vbox, vframe} from '@xh/hoist/cmp/layout';
@@ -20,6 +18,8 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {capitalizeWords} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
+import {RoleMemberType} from '../../Types';
+import {warningBanner} from '../../warning/WarningBanner';
 import {RoleFormModel} from './RoleFormModel';
 
 export const roleForm = hoistCmp.factory({

@@ -112,8 +112,7 @@ const bbar = hoistCmp.factory<LogDisplayModel>({
         return toolbar(
             button({
                 icon: Icon.gear(),
-                text: 'Adjust Log Levels',
-                outlined: true,
+                text: 'Configure Levels',
                 onClick: () => model.showLogLevelDialog()
             }),
             filler(),

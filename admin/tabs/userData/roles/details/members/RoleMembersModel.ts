@@ -4,14 +4,6 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {RoleMembersProps} from '@xh/hoist/admin/tabs/general/roles/details/members/RoleMembers';
-import {RoleDetailsModel} from '@xh/hoist/admin/tabs/general/roles/details/RoleDetailsModel';
-import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
-import {
-    HoistRole,
-    RoleMemberType,
-    RoleModuleConfig
-} from '@xh/hoist/admin/tabs/general/roles/Types';
 import {ColumnRenderer, GridModel, GroupRowRenderer} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {box, hbox, hframe} from '@xh/hoist/cmp/layout';
@@ -22,6 +14,10 @@ import {tag} from '@xh/hoist/kit/blueprint';
 import {bindable, computed} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {invert, sortBy, uniq, uniqBy} from 'lodash';
+import {RoleModel} from '../../RoleModel';
+import {HoistRole, RoleMemberType, RoleModuleConfig} from '../../Types';
+import {RoleDetailsModel} from '../RoleDetailsModel';
+import {RoleMembersProps} from './RoleMembers';
 
 export class RoleMembersModel extends HoistModel {
     static readonly types: Record<RoleMemberType, string> = {
