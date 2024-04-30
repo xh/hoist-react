@@ -125,7 +125,7 @@ export class AzureOauthService extends HoistService {
 
     get postLogoutRedirectUrl() {
         const url = this.config.postLogoutRedirectUrl ?? 'APP_BASE_URL';
-        return url === 'APP_BASE_URL' ? this.baseUrl: url;
+        return url === 'APP_BASE_URL' ? this.baseUrl : url;
     }
 
     // Default to redirect on mobile, popup on desktop.
@@ -140,8 +140,11 @@ export class AzureOauthService extends HoistService {
 
     redirectPending = false;
 
-    _popupBlockerErrorTitle = 'Login popup window blocked';
-    _defaultErrorMsg =
+    private popupBlockerErrorTitle = 'Login popup window blocked';
+    private popupBlockerErrorMessage =
+        'Please check your browser for a blocked popup notification (typically within the URL bar). Allow all popups from this site, then refresh this page in your browser to try again.';
+
+    private defaultErrorMsg =
         'We are unable to authenticate you using Microsoft Azure Active Directory (OAuth) and your corporate account. Please ensure any pop-up windows or alternate browser tabs with this app open are fully closed, then refresh this tab in your browser to reload the application and try again.';
 
     //--------------------------------------------
@@ -312,7 +315,7 @@ export class AzureOauthService extends HoistService {
             throw XH.exception({
                 name: e.name || 'Authentication Error',
                 message:
-                    e.message && e.message !== 'access_denied' ? e.message : this._defaultErrorMsg,
+                    e.message && e.message !== 'access_denied' ? e.message : this.defaultErrorMsg,
                 details: e
             });
         } finally {
@@ -467,11 +470,12 @@ export class AzureOauthService extends HoistService {
         } catch (e) {
             // Catch and rethrow exception indicating popup blocker with a more user-friendly error message.
             if (e.message.includes('popup window')) {
-                throw XH.exception({
-                    title: this._popupBlockerErrorTitle,
-                    message:
-                        'Unable to display the app login prompt in a popup window. Please check your browser for a blocked popup notification (typically within the URL bar). Allow all popups from this site, then refresh this page in your browser to try again.'
+                XH.handleException(e, {
+                    title: this.popupBlockerErrorTitle,
+                    message: this.popupBlockerErrorMessage,
+                    requireReload: true
                 });
+                throw e;
             } else {
                 this.logError('Unhandled loginAsync error | will return null', e);
             }

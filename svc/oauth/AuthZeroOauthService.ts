@@ -4,10 +4,11 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {Auth0Client, AuthorizationParams} from '@auth0/auth0-spa-js';
+import {Auth0Client, Auth0ClientOptions} from '@auth0/auth0-spa-js';
 import {HoistService, PlainObject, XH} from '@xh/hoist/core';
 import {never, wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
+import {logWithDebug} from '@xh/hoist/utils/js';
 
 /**
  * Coordinates OAuth-based login for the user-facing desktop and mobile apps.
@@ -90,7 +91,7 @@ export class AuthZeroOauthService extends HoistService {
 
     get postLogoutRedirectUrl() {
         const url = this.config.postLogoutRedirectUrl ?? 'APP_BASE_URL';
-        return url === 'APP_BASE_URL' ? this.baseUrl: url;
+        return url === 'APP_BASE_URL' ? this.baseUrl : url;
     }
 
     // Default to redirect on mobile, popup on desktop.
@@ -102,6 +103,10 @@ export class AuthZeroOauthService extends HoistService {
 
         return !XH.isDesktop;
     }
+
+    private popupBlockerErrorTitle = 'Login popup window blocked';
+    private popupBlockerErrorMessage =
+        'Please check your browser for a blocked popup notification (typically within the URL bar). Allow all popups from this site, then refresh this page in your browser to try again.';
 
     override async initAsync() {
         // This service is initialized prior to Hoist auth/init, so we do *not* have our standard
@@ -125,18 +130,18 @@ export class AuthZeroOauthService extends HoistService {
             `);
         }
 
-        const authorizationParams: AuthorizationParams = {
-            redirect_uri: this.redirectUrl
-        };
-        if (config.idScopes) {
-            authorizationParams.scope = config.idScopes;
-        }
-
-        const auth0 = (this.auth0 = new Auth0Client({
+        const auth0ClientOptions: Auth0ClientOptions = {
             clientId: config.clientId,
             domain: config.domain,
-            authorizationParams
-        }));
+            authorizationParams: {redirect_uri: this.redirectUrl},
+            cacheLocation: 'localstorage' // avoids re-login on page refresh
+        };
+
+        if (config.idScopes) {
+            auth0ClientOptions.authorizationParams.scope = config.idScopes;
+        }
+
+        const auth0 = (this.auth0 = new Auth0Client(auth0ClientOptions));
 
         // Initial check to see if we already have valid, cached credentials.
         let isAuthenticated = await this.checkAuthAsync();
@@ -161,13 +166,7 @@ export class AuthZeroOauthService extends HoistService {
         if (!isAuthenticated) {
             // If still not authenticated, we are either coming in fresh or were unable to confirm a
             // successful auth via redirect handler. Trigger interactive login.
-            this.logInfo(`Not authenticated - logging in....`);
-            if (this.useRedirect) {
-                await auth0.loginWithRedirect();
-                await never();
-            } else {
-                await auth0.loginWithPopup();
-            }
+            await this.loginAsync();
         }
 
         // Otherwise we should be able to ask Auth0 for user and token info.
@@ -176,7 +175,51 @@ export class AuthZeroOauthService extends HoistService {
 
         this.logInfo(`Authenticated OK`, this.user?.email, this.user);
         this.installDefaultFetchServiceHeaders();
+    }
 
+    @logWithDebug
+    async loginAsync(): Promise<void> {
+        this.logInfo(`Not authenticated - logging in....`);
+        if (this.useRedirect) {
+            await this.auth0.loginWithRedirect();
+            await never();
+        } else {
+            try {
+                await this.auth0.loginWithPopup();
+            } catch (e) {
+                if (e.message.toLowerCase() === 'timeout') {
+                    e.popup.close();
+                    XH.handleException(e, {
+                        title: 'Login popup window timed out',
+                        message: 'Please reload the browser to try again.',
+                        requireReload: true
+                    });
+                    throw e;
+                }
+
+                if (e.message.toLowerCase() === 'popup closed') {
+                    XH.handleException(e, {
+                        title: 'Login popup window closed',
+                        message:
+                            'Did you accidentally close the login popup? Please reload the browser to try again.',
+                        requireReload: true
+                    });
+                    throw e;
+                }
+
+                if (e.message.toLowerCase().includes('unable to open a popup')) {
+                    XH.handleException(e, {
+                        title: this.popupBlockerErrorTitle,
+                        message: this.popupBlockerErrorMessage,
+                        requireReload: true
+                    });
+                    throw e;
+                }
+
+                this.logError('Unhandled loginAsync error | will return null', e);
+                e.popup?.close();
+            }
+        }
     }
 
     //------------------
