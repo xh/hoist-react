@@ -366,12 +366,22 @@ export class ExceptionHandler {
         // Create a depth-constrained, deep copy of an object for safe-use in stringify
         //   - Skip private _XXXX properties.
         //   - Don't touch objects that implement toJSON()
+        //   - Don't go into objects that throw on access, like closed popup window objects
         if (depth < 1) return null;
 
         const ret = {};
         forOwn(obj, (val, key) => {
             if (key.startsWith('_')) return;
-            if (val && !val.toJSON) {
+
+            // safely check for toJSON, while also testing for access
+            let hasToJSON = false;
+            try {
+                if (val.toJSON) hasToJSON = true;
+            } catch (e) {
+                return;
+            }
+
+            if (val && !hasToJSON) {
                 if (isObject(val)) {
                     val = depth > 1 ? this.cloneAndTrim(val, depth - 1) : '{...}';
                 }
