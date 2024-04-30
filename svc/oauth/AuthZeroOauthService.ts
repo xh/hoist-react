@@ -5,10 +5,11 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {Auth0Client, Auth0ClientOptions} from '@auth0/auth0-spa-js';
-import {HoistService, PlainObject, XH} from '@xh/hoist/core';
+import {PlainObject, XH} from '@xh/hoist/core';
 import {never, wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {logWithDebug} from '@xh/hoist/utils/js';
+import {BaseOauthConfig, BaseOauthService} from '@xh/hoist/svc/oauth/BaseOauthService';
 
 /**
  * Coordinates OAuth-based login for the user-facing desktop and mobile apps.
@@ -30,31 +31,10 @@ import {logWithDebug} from '@xh/hoist/utils/js';
  *      key we can set and then read on our Auth0 login request / post-redirect response.
  */
 
-interface OauthConfig {
-    /** Hoist: Is OAuth enabled in this application? */
-    enabled: boolean;
-
-    /** Client ID of your app registered with Auth0 */
-    clientId: string;
+interface AuthZeroOauthConfig extends BaseOauthConfig {
 
     /** Domain of your app registered with Auth0 */
     domain: string;
-
-    /**
-     * The redirect URL where authentication responses can be received by your application.
-     * It must exactly match one of the redirect URIs registered in the Auth0 dashboard.
-     * Default is 'APP_BASE_URL' which will be replaced with the current app's base URL.
-     */
-    redirectUrl?: 'APP_BASE_URL' | string;
-
-    /**
-     * The redirect URL where the window navigates after a successful logout.
-     * Default is 'APP_BASE_URL' which will be replaced with the current app's base URL.
-     **/
-    postLogoutRedirectUrl?: 'APP_BASE_URL' | string;
-
-    /** The method used for logging in. Default is 'POPUP' on desktop and 'REDIRECT' on mobile. */
-    loginMethod?: 'REDIRECT' | 'POPUP';
 
     /**
      * Scopes for ID token.
@@ -65,48 +45,13 @@ interface OauthConfig {
     idScopes?: string;
 }
 
-export class AuthZeroOauthService extends HoistService {
+export class AuthZeroOauthService extends BaseOauthService {
     static instance: AuthZeroOauthService;
-
-    /**
-     * Is OAuth enabled in this application?  For bootstrapping, troubleshooting
-     * and mobile development, we allow running in a non-SSO mode.
-     */
-    enabled: boolean;
 
     auth0: Auth0Client;
 
     /** Authenticated user info as provided by Auth0. */
     user: PlainObject;
-    /** ID Token in JWT format - for passing to Hoist server. */
-    idToken: string;
-
-    /** Soft-config loaded from whitelisted endpoint on UI server. */
-    config: OauthConfig;
-
-    get redirectUrl() {
-        const url = this.config.redirectUrl ?? 'APP_BASE_URL';
-        return url === 'APP_BASE_URL' ? this.baseUrl : url;
-    }
-
-    get postLogoutRedirectUrl() {
-        const url = this.config.postLogoutRedirectUrl ?? 'APP_BASE_URL';
-        return url === 'APP_BASE_URL' ? this.baseUrl : url;
-    }
-
-    // Default to redirect on mobile, popup on desktop.
-    get useRedirect() {
-        const {loginMethod} = this.config;
-        if (loginMethod) {
-            return loginMethod === 'REDIRECT';
-        }
-
-        return !XH.isDesktop;
-    }
-
-    private popupBlockerErrorTitle = 'Login popup window blocked';
-    private popupBlockerErrorMessage =
-        'Please check your browser for a blocked popup notification (typically within the URL bar). Allow all popups from this site, then refresh this page in your browser to try again.';
 
     override async initAsync() {
         // This service is initialized prior to Hoist auth/init, so we do *not* have our standard
@@ -114,7 +59,7 @@ export class AuthZeroOauthService extends HoistService {
         // whitelisted in AuthenticationService.groovy to allow us to call it prior to auth.
         const config = (this.config = (await XH.fetchJson({
             url: 'oauthConfig'
-        }).catchDefault()) as OauthConfig);
+        }).catchDefault()) as AuthZeroOauthConfig);
 
         this.enabled = config?.enabled;
         if (!this.enabled) {
@@ -171,7 +116,7 @@ export class AuthZeroOauthService extends HoistService {
 
         // Otherwise we should be able to ask Auth0 for user and token info.
         this.user = await this.auth0.getUser();
-        this.idToken = await this.getIdTokenAsync();
+        this.idToken = await this.getTokenAsync();
 
         this.logInfo(`Authenticated OK`, this.user?.email, this.user);
         this.installDefaultFetchServiceHeaders();
@@ -222,16 +167,9 @@ export class AuthZeroOauthService extends HoistService {
         }
     }
 
-    //------------------
-    // Implementation
-    //-----------------
-    private async getIdTokenAsync() {
+    async getTokenAsync() {
         const claims = await this.auth0.getIdTokenClaims();
         return claims?.__raw;
-    }
-
-    private async checkAuthAsync(): Promise<boolean> {
-        return this.auth0.isAuthenticated();
     }
 
     /**
@@ -261,7 +199,14 @@ export class AuthZeroOauthService extends HoistService {
         }
     }
 
-    private installDefaultFetchServiceHeaders() {
+    //------------------
+    // Implementation
+    //-----------------
+    private async checkAuthAsync(): Promise<boolean> {
+        return this.auth0.isAuthenticated();
+    }
+
+    protected installDefaultFetchServiceHeaders() {
         XH.fetchService.setDefaultHeaders(opts => {
             const {idToken} = this,
                 relativeHoistUrl = !opts.url.startsWith('http');
@@ -270,9 +215,5 @@ export class AuthZeroOauthService extends HoistService {
             // our Hoist User via handling in server-side AuthenticationService.
             return relativeHoistUrl ? {'x-xh-idt': idToken} : {};
         });
-    }
-
-    private get baseUrl() {
-        return `${window.location.origin}/${XH.clientAppCode}/`;
     }
 }

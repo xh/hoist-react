@@ -7,10 +7,11 @@
 import * as msal from '@azure/msal-browser';
 import {AuthenticationResult, IPublicClientApplication} from '@azure/msal-browser';
 import {LogLevel} from '@azure/msal-common/src/logger/Logger';
-import {HoistService, XH} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {never} from '@xh/hoist/promise';
 import {logWithDebug} from '@xh/hoist/utils/js';
 import {isEmpty, isString} from 'lodash';
+import {BaseOauthConfig, BaseOauthService} from '@xh/hoist/svc/oauth/BaseOauthService';
 
 /**
  * Service to manage OAuth authentication via Azure Active Directory.
@@ -18,15 +19,9 @@ import {isEmpty, isString} from 'lodash';
  * with AuthenticationService.groovy and OauthService.groovy.
  */
 
-interface OauthConfig {
-    /** Hoist: Is OAuth enabled in this application? */
-    enabled: boolean;
-
+interface AzureOauthConfig extends BaseOauthConfig {
     /** Hoist: Is testing via test runner allowed */
     autoTestAllowed?: boolean;
-
-    /** Client ID (GUID) of your app registered with the Azure Application registration portal */
-    clientId: string;
 
     /** Tenant ID (GUID) of your organization */
     tenantId: string;
@@ -37,22 +32,6 @@ interface OauthConfig {
      * MSAL Browser Lib defaults authority to "https://login.microsoftonline.com/common"
      **/
     authority?: string;
-
-    /**
-     * The redirect URL where authentication responses can be received by your application.
-     * It must exactly match one of the redirect URIs registered in the Azure portal, in the SPA section.
-     * Default is 'APP_BASE_URL' which will be replaced with the current app's base URL.
-     **/
-    redirectUrl?: 'APP_BASE_URL' | string;
-
-    /**
-     * The redirect URL where the window navigates after a successful logout.
-     * Default is 'APP_BASE_URL' which will be replaced with the current app's base URL.
-     **/
-    postLogoutRedirectUrl?: 'APP_BASE_URL' | string;
-
-    /** The method used for logging in. Default is 'POPUP' on desktop and 'REDIRECT' on mobile. */
-    loginMethod?: 'REDIRECT' | 'POPUP';
 
     /** The log level of MSAL. Default is LogLevel.Info (2). */
     msalLogLevel?: LogLevel;
@@ -78,21 +57,14 @@ interface OauthConfig {
  * Supports an "autoTest" mode which uses an externally-provided accessToken for login in lieu of an interactive
  * MSAL-based flow. Designed for automated QA - see the README for additional details.
  */
-export class AzureOauthService extends HoistService {
+export class AzureOauthService extends BaseOauthService {
     static instance: AzureOauthService;
-
-    /**
-     * Is OAuth enabled in this application?  For bootstrapping, troubleshooting
-     * and mobile development, we allow running in a non-SSO mode.
-     */
-    enabled: boolean;
 
     msalApp: IPublicClientApplication;
 
     /** ID of the currently authenticated AD account. */
     accountId?: string;
-    /** ID Token in JWT format - for passing to Hoist server. */
-    idToken?: string;
+
     accessToken: string;
 
     /** True if autoTest mode both allowed and currently active. Set once on init. */
@@ -115,52 +87,11 @@ export class AzureOauthService extends HoistService {
         return this.isAutoTestMode || !!(this.account && this.idToken && this.accessToken);
     }
 
-    /** Soft-config loaded from whitelisted endpoint on UI server. */
-    config: OauthConfig;
-
-    get redirectUrl() {
-        const url = this.config.redirectUrl ?? 'APP_BASE_URL';
-        return url === 'APP_BASE_URL' ? this.baseUrl : url;
-    }
-
-    get postLogoutRedirectUrl() {
-        const url = this.config.postLogoutRedirectUrl ?? 'APP_BASE_URL';
-        return url === 'APP_BASE_URL' ? this.baseUrl : url;
-    }
-
-    // Default to redirect on mobile, popup on desktop.
-    get useRedirect() {
-        const {loginMethod} = this.config;
-        if (loginMethod) {
-            return loginMethod === 'REDIRECT';
-        }
-
-        return !XH.isDesktop;
-    }
-
     redirectPending = false;
 
-    private popupBlockerErrorTitle = 'Login popup window blocked';
-    private popupBlockerErrorMessage =
-        'Please check your browser for a blocked popup notification (typically within the URL bar). Allow all popups from this site, then refresh this page in your browser to try again.';
 
-    private defaultErrorMsg =
+    override defaultErrorMsg =
         'We are unable to authenticate you using Microsoft Azure Active Directory (OAuth) and your corporate account. Please ensure any pop-up windows or alternate browser tabs with this app open are fully closed, then refresh this tab in your browser to reload the application and try again.';
-
-    //--------------------------------------------
-    // State for tracking and navigation post-init
-    //--------------------------------------------
-    /** Duration in ms of login process. */
-    loginDuration: number;
-    /** True if there was an interactive async step during login. */
-    wasInteractiveLogin: boolean = false;
-    /**
-     * App route present in URL prior to redirect, if any.
-     * TODO - read this at an appropriate time in render/lifecycle after init - if non-null,
-     *      we should validate and navigate to this route to land the user at the requested URL.
-     *      Alternatively, see if built in MSAL navigateToLoginRequestUrl config works better.
-     */
-    pendingAppRoute: string;
 
     //------------------------
     // Public API
@@ -175,7 +106,7 @@ export class AzureOauthService extends HoistService {
             this.logDebug('Initializing OauthService', window.location);
             const config = (this.config = (await XH.fetchJson({
                 url: 'oauthConfig'
-            })) as OauthConfig);
+            })) as AzureOauthConfig);
             this.logDebug('OAuth config fetched OK from server', config);
 
             this.enabled = config.enabled;
@@ -375,7 +306,7 @@ export class AzureOauthService extends HoistService {
         let ret = null;
         try {
             ret = await msalApp.acquireTokenSilent({
-                scopes: config.accessScopes,
+                scopes: config.accessScopes as string[],
                 account
             });
             if (ret.accessToken) {
@@ -427,7 +358,7 @@ export class AzureOauthService extends HoistService {
     // Implementation
     //------------------------
 
-    installDefaultFetchServiceHeaders() {
+    protected installDefaultFetchServiceHeaders() {
         this.logDebug('Calling installDefaultFetchServiceHeaders');
         XH.fetchService.setDefaultHeaders(opts => {
             const {idToken, accessToken} = this,
@@ -492,10 +423,6 @@ export class AzureOauthService extends HoistService {
 
         const routePath = state.replace(basePath, '');
         return 'default.' + routePath.split('/').join('.');
-    }
-
-    private get baseUrl() {
-        return `${window.location.origin}/${XH.clientAppCode}/`;
     }
 
     private logFromMsal(level, message) {
