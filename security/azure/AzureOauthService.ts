@@ -7,20 +7,11 @@
 import * as msal from '@azure/msal-browser';
 import {AuthenticationResult, IPublicClientApplication} from '@azure/msal-browser';
 import {LogLevel} from '@azure/msal-common/src/logger/Logger';
-import {XH} from '@xh/hoist/core';
+import {PlainObject, XH} from '@xh/hoist/core';
 import {never} from '@xh/hoist/promise';
-import {logWithDebug} from '@xh/hoist/utils/js';
+import {FetchOptions} from '@xh/hoist/svc';
 import {isEmpty, isString} from 'lodash';
-import {BaseOauthConfig, BaseOauthService} from '@xh/hoist/svc/oauth/BaseOauthService';
-
-/**
- * Service to manage OAuth authentication via Azure Active Directory.
- * Use in conjunction with customizations in your app's AppModel.ts and in the app's server-side
- * with AuthenticationService.groovy and OauthService.groovy.
- *
- * Azure grants these scopes by default if idScopes are not set:
- * user.read, email, profile, openid
- */
+import {BaseOauthConfig, BaseOauthService} from '../BaseOauthService';
 
 interface AzureOauthConfig extends BaseOauthConfig {
     /** Is testing via test runner allowed */
@@ -29,37 +20,42 @@ interface AzureOauthConfig extends BaseOauthConfig {
     /** Tenant ID (GUID) of your organization */
     tenantId: string;
 
-    /** You can use a specific authority,
-     * like "https://login.microsoftonline.com/[tenantId]".
+    /**
+     * You can use a specific authority, like "https://login.microsoftonline.com/[tenantId]".
      * Enterprise apps will most likely use a specific authority.
      * MSAL Browser Lib defaults authority to "https://login.microsoftonline.com/common"
-     **/
+     */
     authority?: string;
 
     /** The log level of MSAL. Default is LogLevel.Info (2). */
     msalLogLevel?: LogLevel;
+
+    /**
+     * Scopes for Access token.
+     * Needed if Oauth is used for Authorization, to access other services.
+     */
+    accessScopes?: string[];
 }
 
 /**
- * Uses MSAL to handle both silent and interactive user login.
+ * Service to implement OAuth authentication via Azure Active Directory/MSAL.
  *
- * Supports an "autoTest" mode which uses an externally-provided accessToken for login in lieu of an interactive
- * MSAL-based flow. Designed for automated QA - see the README for additional details.
+ * Azure grants these scopes by default if idScopes are not set:
+ * user.read, email, profile, openid
+ *
+ * Supports an "autoTest" mode which uses an externally-provided accessToken for login in lieu of
+ * an interactive MSAL-based flow. Designed for automated QA .
  */
 export class AzureOauthService extends BaseOauthService {
     static instance: AzureOauthService;
 
     private msalApp: IPublicClientApplication;
 
-    /** ID of the currently authenticated AD account. */
-    private accountId?: string;
-
+    private accountId?: string; // ID of the currently authenticated AD account.
     private accessToken: string;
-
-    /** True if autoTest mode both allowed and currently active. Set once on init. */
     private isAutoTestMode: boolean = false;
-
     private redirectPending = false;
+    private accessScopes: string[];
 
     /**
      * App route present in URL prior to redirect, if any.
@@ -72,12 +68,12 @@ export class AzureOauthService extends BaseOauthService {
 
     /**
      * True if an account has been selected and tokens loaded at least once
-     *      during the lifetime of this service. Note that tokens might not be fresh - call
-     *      `getTokenAsync()` to get a fully updated and ready to use set of tokens - but if this
-     *      getter returns true we expect OAuth to generally be wired up and working.
+     * during the lifetime of this service. Note that tokens might not be fresh - call
+     * `getTokenAsync()` to get a fully updated and ready to use set of tokens - but if this
+     *  getter returns true we expect OAuth to generally be wired up and working.
      *
-     *      Always returns true in autoTest mode as we do not have an account or an idToken and
-     *      do not handle refreshing the accessToken.
+     * Always returns true in autoTest mode as we do not have an account or an idToken and
+     * do not handle refreshing the accessToken.
      */
     get authInfoComplete(): boolean {
         return this.isAutoTestMode || !!(this.account && this.idToken && this.accessToken);
@@ -86,60 +82,57 @@ export class AzureOauthService extends BaseOauthService {
     override defaultErrorMsg =
         'We are unable to authenticate you using Microsoft Azure Active Directory (OAuth) and your corporate account. Please ensure any pop-up windows or alternate browser tabs with this app open are fully closed, then refresh this tab in your browser to reload the application and try again.';
 
-    //------------------------
-    // Public API
-    //------------------------
-    override async initAsync(): Promise<void> {
+    override async doInitAsync(): Promise<void> {
+        const config = this.config as AzureOauthConfig,
+            {
+                autoTestAllowed,
+                clientId,
+                authority,
+                redirectUrl,
+                postLogoutRedirectUrl,
+                msalLogLevel,
+                accessScopes
+            } = config;
+
+        this.accessScopes = accessScopes;
+
         try {
             //--------------------------
-            // 1) Service + Config Setup
+            // 0) Autotest Mode
             //--------------------------
-            this.logDebug('Initializing OauthService', window.location);
-            const config = (this.config = (await XH.fetchJson({
-                url: 'oauthConfig'
-            })) as AzureOauthConfig);
-            this.logDebug('OAuth config fetched OK from server', config);
-
-            this.enabled = config.enabled;
-            if (!this.enabled) {
-                XH.appSpec.isSSO = false;
-                return;
-            }
-
-            //--------------------------
-            // 1.5) Autotest Mode
-            //--------------------------
-            if (config.autoTestAllowed && window.sessionStorage.getItem('accessToken')) {
+            if (autoTestAllowed && window.sessionStorage.getItem('accessToken')) {
                 this.logInfo('Autotest mode enabled');
                 this.isAutoTestMode = true;
                 await this.getTokenAsync();
-                this.installDefaultFetchServiceHeaders(this.idToken, this.accessToken);
                 return;
             }
 
-            this.msalApp = await msal.PublicClientApplication.createPublicClientApplication({
-                auth: {
-                    clientId: config.clientId,
-                    authority: config.authority,
-                    redirectUri: this.redirectUrl,
-                    postLogoutRedirectUri: this.postLogoutRedirectUrl
-                    // Possible alt. to capturing route via state - see pendingAppRoute above.
-                    // navigateToLoginRequestUrl: true
-                },
-                system: {
-                    loggerOptions: {
-                        loggerCallback: this.logFromMsal,
-                        logLevel: config.msalLogLevel ?? 1
+            //-------------------
+            // 1) Create msalApp
+            //-----------------
+            const msalApp = (this.msalApp =
+                await msal.PublicClientApplication.createPublicClientApplication({
+                    auth: {
+                        clientId,
+                        authority,
+                        redirectUri: redirectUrl,
+                        postLogoutRedirectUri: postLogoutRedirectUrl
+                        // navigateToLoginRequestUrl: true // alt. to pendingAppRoute above?
+                    },
+                    system: {
+                        loggerOptions: {
+                            loggerCallback: this.logFromMsal,
+                            logLevel: msalLogLevel ?? 1
+                        }
                     }
-                }
-            });
-            this.logDebug('MSAL instance created', 'setup complete', this.msalApp);
+                }));
+            this.logDebug('MSAL instance created', 'setup complete', msalApp);
 
             //-------------------------------------
             // 2) Process or Kick-off Auth Routines
             //-------------------------------------
-            const redirectResp = await this.msalApp.handleRedirectPromise(),
-                accounts = this.msalApp.getAllAccounts();
+            const redirectResp = await msalApp.handleRedirectPromise(),
+                accounts = msalApp.getAllAccounts();
 
             if (redirectResp) {
                 // Case (A) - handling callback after redirect. Expecting account and idToken on
@@ -219,7 +212,6 @@ export class AzureOauthService extends BaseOauthService {
             //      We would hit that case with MSALv1 and had some special handling to check.
             if (this.idToken && this.accessToken) {
                 this.logInfo('Tokens acquired | ready to go!');
-                this.installDefaultFetchServiceHeaders(this.idToken, this.accessToken);
             } else if (!this.redirectPending) {
                 this.logInfo(
                     `Incomplete tokens | no redirect pending - will fail | idToken: ${this.idToken} | accessToken: ${this.accessToken}`
@@ -248,15 +240,12 @@ export class AzureOauthService extends BaseOauthService {
         }
     }
 
-    /** Request a full logout from MSAL, which will redirect away from this app to a configured URL. */
-    async logoutAsync(): Promise<void> {
-        const {account, postLogoutRedirectUrl} = this;
-        this.logInfo(`Begin logoutAsync`, account);
+    override async doLogoutAsync(): Promise<void> {
+        const {postLogoutRedirectUrl, msalApp} = this;
 
-        await this.msalApp?.logoutRedirect({
-            // Ran into exception thrown when account specified - likely due to force clearing of
+        await msalApp?.logoutRedirect({
+            // Ran into exception thrown when 'account' specified - likely due to force clearing of
             // local storage in this.clearLocalMsalStorage(). Test again when removed.
-            // account,
             postLogoutRedirectUri: postLogoutRedirectUrl
         });
 
@@ -280,7 +269,7 @@ export class AzureOauthService extends BaseOauthService {
         isRetry: boolean = false,
         logTokens: boolean = false
     ): Promise<AuthenticationResult | {accessToken: string}> {
-        const {msalApp, account, config, isAutoTestMode} = this;
+        const {msalApp, account, isAutoTestMode} = this;
         if (logTokens) this.logDebug(`getTokenAsync begin`, `isRetry: ${isRetry}`, account);
 
         if (isAutoTestMode) {
@@ -295,10 +284,7 @@ export class AzureOauthService extends BaseOauthService {
 
         let ret = null;
         try {
-            ret = await msalApp.acquireTokenSilent({
-                scopes: config.accessScopes as string[],
-                account
-            });
+            ret = await msalApp.acquireTokenSilent({scopes: this.accessScopes, account});
             if (ret.accessToken) {
                 this.accessToken = ret.accessToken;
                 if (logTokens) {
@@ -344,24 +330,26 @@ export class AzureOauthService extends BaseOauthService {
         return ret;
     }
 
+    protected override getDefaultHeaders(opts: FetchOptions): PlainObject {
+        const sup = super.getDefaultHeaders(opts),
+            {accessToken} = this;
+        return accessToken ? {...sup, 'x-xh-act': accessToken} : sup;
+    }
+
     //------------------------
     // Implementation
     //------------------------
-    @logWithDebug
-    private async loginAsync(): Promise<AuthenticationResult | null> {
+    private async loginAsync(): Promise<AuthenticationResult> {
         const {msalApp, useRedirect, config} = this;
 
         let ret = null;
         try {
-            const scopes = [...(config.idScopes ?? []), ...(config.accessScopes ?? [])];
+            const scopes = [...(config.idScopes ?? []), ...(this.accessScopes ?? [])];
 
             if (useRedirect) {
                 this.logDebug('Redirect login requested | calling MSAL...');
                 this.redirectPending = true;
-                await msalApp.loginRedirect({
-                    scopes,
-                    state: window.location.pathname
-                });
+                await msalApp.loginRedirect({scopes, state: window.location.pathname});
             } else {
                 this.logDebug('Popup login requested | calling MSAL...');
                 ret = await msalApp.loginPopup({scopes});
@@ -393,7 +381,7 @@ export class AzureOauthService extends BaseOauthService {
         return 'default.' + routePath.split('/').join('.');
     }
 
-    private logFromMsal(level, message) {
+    private logFromMsal(level: LogLevel, message: string) {
         message = `[MSAL] ${message}`;
         switch (level) {
             case msal.LogLevel.Info:

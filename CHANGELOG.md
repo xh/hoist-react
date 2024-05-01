@@ -45,6 +45,10 @@ for more details.
 ### ⚙️ Technical
 
 * Removed initial `ping` call `FetchService` init.
+* New method `fetchService.addDefaultHeaders` replaces deprecated `fetchService.setDefaultHeaders()`
+  FetchService now supports independent additions of default headers from multiple sources in your
+  application.
+
 
 ### 📚 Libraries
 
