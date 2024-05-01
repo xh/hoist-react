@@ -4,12 +4,11 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable} from '@xh/hoist/mobx';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {omit} from 'lodash';
-import {action, computed, observable} from 'mobx';
+import {RoleModel} from '../RoleModel';
 import {HoistRole} from '../Types';
 import {RoleFormModel} from './form/RoleFormModel';
 

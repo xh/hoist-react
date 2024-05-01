@@ -4,7 +4,6 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {roleGraph} from '@xh/hoist/admin/tabs/general/roles/graph/RoleGraph';
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler, fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
@@ -16,11 +15,13 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {roleDetails} from './details/RoleDetails';
 import {roleEditor} from './editor/RoleEditor';
+import {roleGraph} from './graph/RoleGraph';
 import {RoleModel} from './RoleModel';
 
 export const rolePanel = hoistCmp.factory({
-    displayName: 'Roles',
+    displayName: 'RolePanel',
     model: creates(RoleModel),
+
     render({className, model}) {
         const {moduleConfig} = model;
         if (!moduleConfig) return null;
@@ -40,6 +41,7 @@ export const rolePanel = hoistCmp.factory({
                         omit: readonly,
                         selModel: gridModel.selModel
                     }),
+                    '-',
                     filterChooser({flex: 1})
                 ],
                 item: hframe(vframe(grid(), roleGraph()), detailsPanel())

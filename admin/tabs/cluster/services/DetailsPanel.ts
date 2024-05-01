@@ -26,7 +26,7 @@ export const detailsPanel = hoistCmp.factory({
                 side: 'right',
                 defaultSize: 450
             },
-            item: svcName ? stats() : placeholder(Icon.gears(), 'Select a service.')
+            item: svcName ? stats() : placeholder(Icon.gears(), 'Select a service')
         });
     }
 });

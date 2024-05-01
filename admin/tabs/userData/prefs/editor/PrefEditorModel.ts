@@ -12,10 +12,10 @@ import {FieldSpec} from '@xh/hoist/data';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {addAction, deleteAction, editAction, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {DifferModel} from '../../../differ/DifferModel';
-import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
+import {DifferModel} from '../../../../differ/DifferModel';
+import {RegroupDialogModel} from '../../../../regroup/RegroupDialogModel';
 
-export class PreferenceModel extends HoistModel {
+export class PrefEditorModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminPreferenceState'};
 
     @managed

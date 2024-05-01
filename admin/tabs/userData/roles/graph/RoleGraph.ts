@@ -4,10 +4,8 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {RoleGraphModel} from '@xh/hoist/admin/tabs/general/roles/graph/RoleGraphModel';
-import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {chart} from '@xh/hoist/cmp/chart';
-import {placeholder, div, hspacer} from '@xh/hoist/cmp/layout';
+import {div, hspacer, placeholder} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput, slider} from '@xh/hoist/desktop/cmp/input';
@@ -17,6 +15,8 @@ import {Icon} from '@xh/hoist/icon';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {logError, pluralize} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
+import {RoleModel} from '../RoleModel';
+import {RoleGraphModel} from './RoleGraphModel';
 import './RoleGraph.scss';
 
 export const roleGraph = hoistCmp.factory({

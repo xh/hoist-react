@@ -4,14 +4,14 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {roleForm} from '@xh/hoist/admin/tabs/general/roles/editor/form/RoleForm';
-import {RoleEditorModel} from '@xh/hoist/admin/tabs/general/roles/editor/RoleEditorModel';
 import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
+import {roleForm} from './form/RoleForm';
+import {RoleEditorModel} from './RoleEditorModel';
 import './RoleEditor.scss';
 
 export const roleEditor = hoistCmp.factory({
