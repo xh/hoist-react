@@ -4,10 +4,12 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {Auth0Client, AuthorizationParams} from '@auth0/auth0-spa-js';
-import {HoistService, PlainObject, XH} from '@xh/hoist/core';
+import {Auth0Client, Auth0ClientOptions} from '@auth0/auth0-spa-js';
+import {PlainObject, XH} from '@xh/hoist/core';
 import {never, wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
+import {logWithDebug} from '@xh/hoist/utils/js';
+import {BaseOauthConfig, BaseOauthService} from '@xh/hoist/svc/oauth/BaseOauthService';
 
 /**
  * Coordinates OAuth-based login for the user-facing desktop and mobile apps.
@@ -24,84 +26,26 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
  * server, which looks for the token, validates its signature to verify, and uses it to lookup or
  * create an application user within `AuthenticationService.groovy`.
  *
+ * Auth0 grants these scopes by default if idScopes are not set:
+ * openid, profile, email
+ *
  * TODO - preserve an incoming route for a non-authenticated user. Currently any route will be
  *      lost during the redirect flow. We should be able to note and restore via the `state`
  *      key we can set and then read on our Auth0 login request / post-redirect response.
  */
 
-interface OauthConfig {
-    /** Hoist: Is OAuth enabled in this application? */
-    enabled: boolean;
-
-    /** Client ID of your app registered with Auth0 */
-    clientId: string;
-
+interface AuthZeroOauthConfig extends BaseOauthConfig {
     /** Domain of your app registered with Auth0 */
     domain: string;
-
-    /**
-     * The redirect URL where authentication responses can be received by your application.
-     * It must exactly match one of the redirect URIs registered in the Auth0 dashboard.
-     * Default is 'APP_BASE_URL' which will be replaced with the current app's base URL.
-     */
-    redirectUrl?: 'APP_BASE_URL' | string;
-
-    /**
-     * The redirect URL where the window navigates after a successful logout.
-     * Default is 'APP_BASE_URL' which will be replaced with the current app's base URL.
-     **/
-    postLogoutRedirectUrl?: 'APP_BASE_URL' | string;
-
-    /** The method used for logging in. Default is 'POPUP' on desktop and 'REDIRECT' on mobile. */
-    loginMethod?: 'REDIRECT' | 'POPUP';
-
-    /**
-     * Scopes for ID token.
-     * Can be left unset if Oauth is used only for Authentication, just to get username and email.
-     * These scopes are granted by default if left unset:
-     * 'openid profile email'
-     **/
-    idScopes?: string;
 }
 
-export class AuthZeroOauthService extends HoistService {
+export class AuthZeroOauthService extends BaseOauthService {
     static instance: AuthZeroOauthService;
 
-    /**
-     * Is OAuth enabled in this application?  For bootstrapping, troubleshooting
-     * and mobile development, we allow running in a non-SSO mode.
-     */
-    enabled: boolean;
-
-    auth0: Auth0Client;
+    private auth0: Auth0Client;
 
     /** Authenticated user info as provided by Auth0. */
-    user: PlainObject;
-    /** ID Token in JWT format - for passing to Hoist server. */
-    idToken: string;
-
-    /** Soft-config loaded from whitelisted endpoint on UI server. */
-    config: OauthConfig;
-
-    get redirectUrl() {
-        const url = this.config.redirectUrl ?? 'APP_BASE_URL';
-        return url === 'APP_BASE_URL' ? this.baseUrl : url;
-    }
-
-    get postLogoutRedirectUrl() {
-        const url = this.config.postLogoutRedirectUrl ?? 'APP_BASE_URL';
-        return url === 'APP_BASE_URL' ? this.baseUrl: url;
-    }
-
-    // Default to redirect on mobile, popup on desktop.
-    get useRedirect() {
-        const {loginMethod} = this.config;
-        if (loginMethod) {
-            return loginMethod === 'REDIRECT';
-        }
-
-        return !XH.isDesktop;
-    }
+    private user: PlainObject;
 
     override async initAsync() {
         // This service is initialized prior to Hoist auth/init, so we do *not* have our standard
@@ -109,7 +53,7 @@ export class AuthZeroOauthService extends HoistService {
         // whitelisted in AuthenticationService.groovy to allow us to call it prior to auth.
         const config = (this.config = (await XH.fetchJson({
             url: 'oauthConfig'
-        }).catchDefault()) as OauthConfig);
+        }).catchDefault()) as AuthZeroOauthConfig);
 
         this.enabled = config?.enabled;
         if (!this.enabled) {
@@ -125,18 +69,19 @@ export class AuthZeroOauthService extends HoistService {
             `);
         }
 
-        const authorizationParams: AuthorizationParams = {
-            redirect_uri: this.redirectUrl
-        };
-        if (config.idScopes) {
-            authorizationParams.scope = config.idScopes;
-        }
-
-        const auth0 = (this.auth0 = new Auth0Client({
+        const auth0ClientOptions: Auth0ClientOptions = {
             clientId: config.clientId,
             domain: config.domain,
-            authorizationParams
-        }));
+            authorizationParams: {redirect_uri: this.redirectUrl},
+            cacheLocation: 'localstorage' // avoids re-login on page refresh
+        };
+
+        // scope must not be present if empty to get default scopes
+        if (config.idScopes) {
+            auth0ClientOptions.authorizationParams.scope = config.idScopes.join(' ');
+        }
+
+        const auth0 = (this.auth0 = new Auth0Client(auth0ClientOptions));
 
         // Initial check to see if we already have valid, cached credentials.
         let isAuthenticated = await this.checkAuthAsync();
@@ -161,13 +106,7 @@ export class AuthZeroOauthService extends HoistService {
         if (!isAuthenticated) {
             // If still not authenticated, we are either coming in fresh or were unable to confirm a
             // successful auth via redirect handler. Trigger interactive login.
-            this.logInfo(`Not authenticated - logging in....`);
-            if (this.useRedirect) {
-                await auth0.loginWithRedirect();
-                await never();
-            } else {
-                await auth0.loginWithPopup();
-            }
+            await this.loginAsync();
         }
 
         // Otherwise we should be able to ask Auth0 for user and token info.
@@ -176,24 +115,8 @@ export class AuthZeroOauthService extends HoistService {
 
         this.logInfo(`Authenticated OK`, this.user?.email, this.user);
         this.installDefaultFetchServiceHeaders();
-
     }
 
-    //------------------
-    // Implementation
-    //-----------------
-    private async getIdTokenAsync() {
-        const claims = await this.auth0.getIdTokenClaims();
-        return claims?.__raw;
-    }
-
-    private async checkAuthAsync(): Promise<boolean> {
-        return this.auth0.isAuthenticated();
-    }
-
-    /**
-     * Logout of both Hoist session and Auth0 Oauth session (if active).
-     */
     async logoutAsync() {
         if (!this.enabled) return;
         try {
@@ -218,7 +141,62 @@ export class AuthZeroOauthService extends HoistService {
         }
     }
 
-    private installDefaultFetchServiceHeaders() {
+    //------------------
+    // Implementation
+    //-----------------
+    @logWithDebug
+    private async loginAsync(): Promise<void> {
+        this.logInfo(`Not authenticated - logging in....`);
+        if (this.useRedirect) {
+            await this.auth0.loginWithRedirect();
+            await never();
+        } else {
+            try {
+                await this.auth0.loginWithPopup();
+            } catch (e) {
+                if (e.message.toLowerCase() === 'timeout') {
+                    e.popup.close();
+                    throw XH.exception({
+                        name: 'Auth0 Login Error',
+                        message:
+                            'Login popup window timed out. Please reload the browser to try again.',
+                        cause: e
+                    });
+                }
+
+                if (e.message.toLowerCase() === 'popup closed') {
+                    throw XH.exception({
+                        name: 'Auth0 Login Error',
+                        message:
+                            'Login popup window closed. Please reload the browser to try again.',
+                        cause: e
+                    });
+                }
+
+                if (e.message.toLowerCase().includes('unable to open a popup')) {
+                    throw XH.exception({
+                        name: 'Auth0 Login Error',
+                        message: this.popupBlockerErrorMessage,
+                        cause: e
+                    });
+                }
+
+                this.logError('Unhandled loginAsync error | will return null', e);
+                e.popup?.close();
+            }
+        }
+    }
+
+    private async getIdTokenAsync() {
+        const claims = await this.auth0.getIdTokenClaims();
+        return claims?.__raw;
+    }
+
+    private async checkAuthAsync(): Promise<boolean> {
+        return this.auth0.isAuthenticated();
+    }
+
+    protected installDefaultFetchServiceHeaders() {
         XH.fetchService.setDefaultHeaders(opts => {
             const {idToken} = this,
                 relativeHoistUrl = !opts.url.startsWith('http');
@@ -227,9 +205,5 @@ export class AuthZeroOauthService extends HoistService {
             // our Hoist User via handling in server-side AuthenticationService.
             return relativeHoistUrl ? {'x-xh-idt': idToken} : {};
         });
-    }
-
-    private get baseUrl() {
-        return `${window.location.origin}/${XH.clientAppCode}/`;
     }
 }

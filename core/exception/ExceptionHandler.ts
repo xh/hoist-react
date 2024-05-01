@@ -6,7 +6,7 @@
  */
 import {Exception} from './Exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
-import {logError, logWarn, stripTags} from '@xh/hoist/utils/js';
+import {logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
 import {forOwn, has, isArray, isNil, isObject, omitBy, pick, set} from 'lodash';
 import {HoistException, PlainObject, XH} from '../';
@@ -370,16 +370,22 @@ export class ExceptionHandler {
 
         const ret = {};
         forOwn(obj, (val, key) => {
-            if (key.startsWith('_')) return;
-            if (val && !val.toJSON) {
-                if (isObject(val)) {
-                    val = depth > 1 ? this.cloneAndTrim(val, depth - 1) : '{...}';
+            try {
+                if (key.startsWith('_')) return;
+                if (val && !val.toJSON) {
+                    if (isObject(val)) {
+                        val = depth > 1 ? this.cloneAndTrim(val, depth - 1) : '{...}';
+                    }
+                    if (isArray(val)) {
+                        val = depth > 1 ? val.map(it => this.cloneAndTrim(it, depth - 1)) : '[...]';
+                    }
                 }
-                if (isArray(val)) {
-                    val = depth > 1 ? val.map(it => this.cloneAndTrim(it, depth - 1)) : '[...]';
-                }
+                ret[key] = val;
+            } catch (e) {
+                // fail quietly
+                // some properties may be inaccessible - eg: security
+                logDebug(['Failed to serialize exception property', key], this);
             }
-            ret[key] = val;
         });
 
         return ret;
