@@ -176,7 +176,7 @@ export class AuthZeroOauthService extends BaseOauthService {
                 if (e.message.toLowerCase().includes('unable to open a popup')) {
                     throw XH.exception({
                         name: 'Auth0 Login Error',
-                        message: this.popupBlockerErrorTitle + ' ' + this.popupBlockerErrorMessage,
+                        message: this.popupBlockerErrorMessage,
                         cause: e
                     });
                 }

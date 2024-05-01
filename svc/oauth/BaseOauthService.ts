@@ -85,9 +85,8 @@ export abstract class BaseOauthService extends HoistService {
             : (this.config.loginMethodMobile ?? 'REDIRECT') === 'REDIRECT';
     }
 
-    protected popupBlockerErrorTitle = 'Login popup window blocked';
     protected popupBlockerErrorMessage =
-        'Please check your browser for a blocked popup notification (typically within the URL bar). Allow all popups from this site, then refresh this page in your browser to try again.';
+        'Login popup window blocked. Please check your browser for a blocked popup notification (typically within the URL bar). Allow all popups from this site, then refresh this page in your browser to try again.';
 
     protected defaultErrorMsg =
         'We are unable to authenticate you. Please ensure any pop-up windows or alternate browser tabs with this app open are fully closed, then refresh this tab in your browser to reload the application and try again.';

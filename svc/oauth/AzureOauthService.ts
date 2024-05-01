@@ -392,7 +392,7 @@ export class AzureOauthService extends BaseOauthService {
             if (e.message.includes('popup window')) {
                 throw XH.exception({
                     name: 'Azure Oauth Login Error',
-                    message: this.popupBlockerErrorTitle + ' ' + this.popupBlockerErrorMessage,
+                    message: this.popupBlockerErrorMessage,
                     cause: e
                 });
             } else {
