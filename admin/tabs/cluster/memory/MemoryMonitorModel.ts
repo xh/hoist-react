@@ -263,7 +263,7 @@ export const usedPctMax: ColumnSpec = {
     field: {
         name: 'usedPctMax',
         type: 'number',
-        displayName: 'Used (pct Max)'
+        displayName: 'Used (% Max)'
     },
     ...pctCol
 };

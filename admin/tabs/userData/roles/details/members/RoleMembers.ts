@@ -4,9 +4,6 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {RoleMembersModel} from '@xh/hoist/admin/tabs/general/roles/details/members/RoleMembersModel';
-import {RoleMemberType} from '@xh/hoist/admin/tabs/general/roles/Types';
-import {warningBanner} from '@xh/hoist/admin/tabs/general/roles/warning/WarningBanner';
 import {badge} from '@xh/hoist/cmp/badge';
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler, hbox} from '@xh/hoist/cmp/layout';
@@ -21,6 +18,9 @@ import {tooltip} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty, sum, values} from 'lodash';
 import {ReactNode} from 'react';
+import {RoleMemberType} from '../../Types';
+import {warningBanner} from '../../warning/WarningBanner';
+import {RoleMembersModel} from './RoleMembersModel';
 
 export interface RoleMembersProps extends HoistProps<RoleMembersModel> {
     showEffective: boolean;

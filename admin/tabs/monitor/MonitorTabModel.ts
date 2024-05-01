@@ -4,37 +4,40 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {MonitorResults, MonitorStatus} from '@xh/hoist/admin/tabs/monitor/Types';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {pluralize} from '@xh/hoist/utils/js';
-import {isEqual, min, sortBy} from 'lodash';
+import {filter, isEqual, minBy, sortBy} from 'lodash';
 
-export class MonitorResultsModel extends HoistModel {
-    @observable.ref results = [];
-    @observable lastRun = null;
-    @managed timer = null;
+export class MonitorTabModel extends HoistModel {
+    @observable.ref results: MonitorResults[] = [];
+    @observable lastRun: number = null;
+    @managed timer: Timer = null;
+
+    @bindable showEditorDialog = false;
 
     @computed
     get passed(): number {
-        return this.results.filter(monitor => monitor.status === 'OK').length;
+        return filter(this.results, {status: 'OK'}).length;
     }
 
     @computed
     get warned(): number {
-        return this.results.filter(monitor => monitor.status === 'WARN').length;
+        return filter(this.results, {status: 'WARN'}).length;
     }
 
     @computed
     get failed(): number {
-        return this.results.filter(monitor => monitor.status === 'FAIL').length;
+        return filter(this.results, {status: 'FAIL'}).length;
     }
 
     @computed
     get inactive(): number {
-        return this.results.filter(monitor => monitor.status === 'INACTIVE').length;
+        return filter(this.results, {status: 'INACTIVE'}).length;
     }
 
     get countsByStatus() {
@@ -42,7 +45,7 @@ export class MonitorResultsModel extends HoistModel {
         return {OK: passed, WARN: warned, FAIL: failed, INACTIVE: inactive};
     }
 
-    get worstStatus() {
+    get worstStatus(): MonitorStatus {
         if (this.failed) return 'FAIL';
         if (this.warned) return 'WARN';
         if (this.passed) return 'OK';
@@ -52,7 +55,6 @@ export class MonitorResultsModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
-
         this.timer = Timer.create({
             runFn: () => this.autoRefreshAsync(),
             interval: 5 * SECONDS,
@@ -63,14 +65,13 @@ export class MonitorResultsModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         if (!XH.pageIsVisible) return;
 
-        return XH.fetchJson({url: 'monitorResultsAdmin/results', loadSpec})
-            .then(rows => {
-                this.completeLoad(rows);
-            })
-            .catch(e => {
-                this.completeLoad({});
-                throw e;
-            });
+        try {
+            const results = await XH.fetchJson({url: 'monitorResultsAdmin/results', loadSpec});
+            this.installResults(results);
+        } catch (e) {
+            this.installResults([]);
+            throw e;
+        }
     }
 
     async forceRunAllMonitorsAsync() {
@@ -86,10 +87,12 @@ export class MonitorResultsModel extends HoistModel {
     // Implementation
     //-------------------
     @action
-    private completeLoad(vals) {
+    private installResults(results: MonitorResults[]) {
         const prevCounts = this.countsByStatus;
-        this.results = sortBy(Object.values(vals), 'sortOrder');
+        this.results = sortBy(results, 'sortOrder');
+        this.lastRun = minBy(results, 'dateComputed')?.dateComputed ?? null;
 
+        // Generate toast with rough indication of change.
         const counts = this.countsByStatus,
             worst = this.worstStatus;
 
@@ -119,10 +122,5 @@ export class MonitorResultsModel extends HoistModel {
                 intent
             });
         }
-
-        const lastRun = min(
-            this.results.filter(monitor => monitor.status !== 'UNKNOWN').map(it => it.date)
-        );
-        this.lastRun = lastRun ? new Date(lastRun) : null;
     }
 }

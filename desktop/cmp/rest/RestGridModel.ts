@@ -109,7 +109,7 @@ export class RestGridModel extends HoistModel {
     unit: string;
     filterFields: string[] = null;
 
-    actionWarning = {
+    actionWarning: RestGridConfig['actionWarning'] = {
         add: null,
         edit: null,
         del: recs =>
@@ -255,23 +255,16 @@ export class RestGridModel extends HoistModel {
 
     confirmDeleteRecords() {
         const records = this.selectedRecords,
-            warning = this.actionWarning.del,
             delFn = () =>
                 records.length > 1
                     ? this.bulkDeleteRecordsAsync(records)
-                    : this.deleteRecordAsync(records[0]);
+                    : this.deleteRecordAsync(records[0]),
+            warning = this.actionWarning.del,
+            message = isFunction(warning) ? warning(records) : warning;
 
-        if (!warning) {
-            delFn();
-        } else {
-            const message = isFunction(warning) ? warning(records) : warning;
-            XH.confirm({
-                message,
-                title: 'Warning',
-                icon: Icon.warning(),
-                onConfirm: delFn
-            });
-        }
+        message
+            ? XH.confirm({message, title: 'Warning', icon: Icon.warning(), onConfirm: delFn})
+            : delFn();
     }
 
     async exportAsync(options?: ExportOptions) {

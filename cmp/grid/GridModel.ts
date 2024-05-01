@@ -124,7 +124,7 @@ export interface GridConfig {
     /** True if grid is a tree grid (default false). */
     treeMode?: boolean;
 
-    /** Location for a docked summary row. Requires `store.SummaryRecord` to be populated. */
+    /** Location for docked summary row(s). Requires `store.summaryRecords` to be populated. */
     showSummary?: boolean | VSide;
 
     /** Specification of selection behavior. Defaults to 'single' (desktop) and 'disabled' (mobile) */
@@ -1070,7 +1070,7 @@ export class GridModel extends HoistModel {
     }
 
     /** Load the underlying store. */
-    loadData(rawData: any[], rawSummaryData?: PlainObject) {
+    loadData(rawData: any[], rawSummaryData?: Some<PlainObject>) {
         return this.store.loadData(rawData, rawSummaryData);
     }
 

@@ -170,13 +170,14 @@ export class AppContainerModel extends HoistModel {
                 this.setAppState('LOGIN_REQUIRED');
                 return;
             }
-
-            // ...if so, continue with initialization.
-            await this.completeInitAsync();
         } catch (e) {
             this.setAppState('LOAD_FAILED');
             XH.handleException(e, {requireReload: true});
+            return;
         }
+
+        // ...if made it to here, continue with initialization.
+        await this.completeInitAsync();
     }
 
     /**

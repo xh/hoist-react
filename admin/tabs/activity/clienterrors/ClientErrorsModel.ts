@@ -5,15 +5,15 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {exportFilename} from '@xh/hoist/admin/AdminUtils';
+import * as Col from '@xh/hoist/admin/columns';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {StoreRecord} from '@xh/hoist/data';
 import {fmtJson} from '@xh/hoist/format';
-import {action, bindable, observable, makeObservable, comparer} from '@xh/hoist/mobx';
+import {action, bindable, comparer, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import * as Col from '@xh/hoist/admin/columns';
-import {computed} from 'mobx';
 
 export class ClientErrorsModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminClientErrorsState'};
@@ -35,8 +35,8 @@ export class ClientErrorsModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
-        this.startDay = this.getDefaultStartDay();
-        this.endDay = this.getDefaultEndDay();
+        this.startDay = this.defaultStartDay;
+        this.endDay = this.defaultEndDay;
 
         const hidden = true;
         this.gridModel = new GridModel({
@@ -112,8 +112,8 @@ export class ClientErrorsModel extends HoistModel {
 
     @action
     resetQuery() {
-        this.startDay = this.getDefaultStartDay();
-        this.endDay = this.getDefaultEndDay();
+        this.startDay = this.defaultStartDay;
+        this.endDay = this.defaultEndDay;
         this.filterChooserModel.setValue(null);
     }
 
@@ -136,7 +136,7 @@ export class ClientErrorsModel extends HoistModel {
     }
 
     @action
-    showEntryDetail(detailRec) {
+    showEntryDetail(detailRec: StoreRecord) {
         const recData = detailRec?.data ?? {},
             errorData = recData.error;
 
@@ -153,7 +153,7 @@ export class ClientErrorsModel extends HoistModel {
     }
 
     @action
-    adjustDates(dir) {
+    adjustDates(dir: 'subtract' | 'add') {
         const appDay = LocalDate.currentAppDay(),
             start = this.startDay,
             end = this.endDay,
@@ -188,11 +188,11 @@ export class ClientErrorsModel extends HoistModel {
         };
     }
 
-    getDefaultStartDay() {
-        return LocalDate.currentAppDay();
+    private get defaultStartDay() {
+        return LocalDate.currentAppDay().subtract(6);
     }
 
-    getDefaultEndDay() {
+    private get defaultEndDay() {
         return LocalDate.currentAppDay();
     }
 

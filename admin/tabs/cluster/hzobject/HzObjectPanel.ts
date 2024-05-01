@@ -5,39 +5,41 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
+import {filler, hframe, placeholder} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, uses} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
+import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {Icon} from '@xh/hoist/icon';
 import {HzObjectModel} from './HzObjectModel';
-import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 
 export const hzObjectPanel = hoistCmp.factory({
     model: creates(HzObjectModel),
 
     render({model}) {
         return panel({
-            mask: 'onLoad',
-            tbar: [
-                span({
-                    item: 'Hazelcast Distributed Objects',
-                    className: 'xh-bold'
+            bbar: [
+                recordActionBar({
+                    selModel: model.gridModel.selModel,
+                    actions: [model.clearAction]
+                }),
+                button({
+                    text: 'Clear Hibernate Caches',
+                    icon: Icon.reset(),
+                    intent: 'danger',
+                    tooltip: 'Clear the Hibernate caches using the native Hibernate API',
+                    onClick: () => model.clearHibernateCachesAsync()
                 }),
                 filler(),
                 gridCountLabel({unit: 'objects'}),
                 '-',
-                button({
-                    icon: Icon.reset(),
-                    text: 'Clear All Hibernate Caches',
-                    tooltip: 'Clear the Hibernate caches using the native Hibernate API',
-                    onClick: () => model.clearHibernateCachesAsync()
-                }),
                 storeFilterField({matchMode: 'any'}),
                 exportButton()
             ],
-            item: hframe(grid(), detailsPanel())
+            item: hframe(grid(), detailsPanel()),
+            mask: 'onLoad'
         });
     }
 });
@@ -65,7 +67,7 @@ const detailsPanel = hoistCmp.factory({
                           value: model.fmtStats(data)
                       })
                   })
-                : placeholder(Icon.grip(), 'Select an object.')
+                : placeholder(Icon.grip(), 'Select an object')
         });
     }
 });

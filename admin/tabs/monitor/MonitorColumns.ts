@@ -38,3 +38,11 @@ export const code: ColumnSpec = {
     field: {name: 'code', type: 'string'},
     width: 150
 };
+
+export const primaryOnly: ColumnSpec = {
+    field: {name: 'primaryOnly', type: 'bool'},
+    headerName: 'P.Only',
+    headerTooltip: 'Primary Only',
+    ...Col.boolCheck,
+    width: 70
+};

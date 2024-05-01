@@ -34,6 +34,9 @@ export class LogViewerModel extends BaseInstanceModel {
     @bindable
     instanceOnly: boolean = true;
 
+    @bindable
+    showLogLevelDialog: boolean = false;
+
     get enabled(): boolean {
         return XH.getConf('xhEnableLogViewer', true);
     }

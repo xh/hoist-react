@@ -4,13 +4,13 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {roleMembers} from '@xh/hoist/admin/tabs/general/roles/details/members/RoleMembers';
-import {RoleModel} from '@xh/hoist/admin/tabs/general/roles/RoleModel';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
-import {HoistRole} from '../Types';
 import {fmtDateTimeSec} from '@xh/hoist/format';
+import {RoleModel} from '../RoleModel';
+import {HoistRole} from '../Types';
+import {roleMembers} from './members/RoleMembers';
 
 export class RoleDetailsModel extends HoistModel {
     @lookup(() => RoleModel) readonly roleModel: RoleModel;
@@ -39,10 +39,9 @@ export class RoleDetailsModel extends HoistModel {
         });
     }
 
-    // -------------------------------
+    //------------------
     // Implementation
-    // -------------------------------
-
+    //------------------
     private createFormModel(): FormModel {
         return new FormModel({
             fields: [{name: 'name'}, {name: 'category'}, {name: 'notes'}, {name: 'lastUpdated'}],

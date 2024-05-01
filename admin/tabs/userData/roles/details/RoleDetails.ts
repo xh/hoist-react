@@ -4,12 +4,12 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {RoleDetailsModel} from '@xh/hoist/admin/tabs/general/roles/details/RoleDetailsModel';
 import {form} from '@xh/hoist/cmp/form';
 import {div, frame, placeholder, span, vframe} from '@xh/hoist/cmp/layout';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
+import {RoleDetailsModel} from './RoleDetailsModel';
 import './RoleDetails.scss';
 
 export const roleDetails = hoistCmp.factory({

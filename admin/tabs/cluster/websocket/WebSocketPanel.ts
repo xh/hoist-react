@@ -6,14 +6,15 @@
  */
 import {WebSocketModel} from '@xh/hoist/admin/tabs/cluster/websocket/WebSocketModel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, box, fragment, p, span} from '@xh/hoist/cmp/layout';
+import {box, filler, fragment, p} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {XH, creates, hoistCmp} from '@xh/hoist/core';
+import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 
 export const webSocketPanel = hoistCmp.factory({
     model: creates(WebSocketModel),
@@ -22,10 +23,10 @@ export const webSocketPanel = hoistCmp.factory({
         if (!XH.webSocketService.enabled) return notPresentMessage();
 
         return panel({
-            tbar: [
-                span({
-                    item: 'WebSocket Connections',
-                    className: 'xh-bold'
+            bbar: [
+                recordActionBar({
+                    selModel: model.gridModel.selModel,
+                    actions: [model.forceSuspendAction]
                 }),
                 filler(),
                 relativeTimestamp({bind: 'lastRefresh', options: {prefix: 'Refreshed'}}),

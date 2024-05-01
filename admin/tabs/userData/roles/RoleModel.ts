@@ -7,15 +7,14 @@
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
+import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {compact, groupBy, isEmpty, mapValues} from 'lodash';
-import {action, observable, runInAction} from 'mobx';
 import moment from 'moment/moment';
 import {RoleEditorModel} from './editor/RoleEditorModel';
 import {HoistRole, RoleMemberType, RoleModuleConfig} from './Types';
@@ -55,12 +54,13 @@ export class RoleModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         try {
             await this.ensureInitializedAsync();
-
             if (!this.moduleConfig.enabled) return;
 
-            const {data} = await XH.fetchJson({loadSpec, url: 'roleAdmin/list'});
+            const {data} = await XH.fetchJson({url: 'roleAdmin/list', loadSpec});
             if (loadSpec.isStale) return;
+
             this.setRoles(this.processRolesFromServer(data));
+            await this.gridModel.preSelectFirstAsync();
         } catch (e) {
             if (loadSpec.isStale) return;
             XH.handleException(e);
@@ -116,7 +116,7 @@ export class RoleModel extends HoistModel {
     // -------------------------------
     addAction(): RecordActionSpec {
         return {
-            text: 'Add Role',
+            text: 'Add',
             icon: Icon.add(),
             intent: 'success',
             actionFn: () => this.createAsync()
