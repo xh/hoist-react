@@ -113,7 +113,7 @@ export class AzureOauthService extends BaseOauthService {
                 this.logInfo('Autotest mode enabled');
                 this.isAutoTestMode = true;
                 await this.getTokenAsync();
-                this.installDefaultFetchServiceHeaders();
+                this.installDefaultFetchServiceHeaders(this.idToken, this.accessToken);
                 return;
             }
 
@@ -219,7 +219,7 @@ export class AzureOauthService extends BaseOauthService {
             //      We would hit that case with MSALv1 and had some special handling to check.
             if (this.idToken && this.accessToken) {
                 this.logInfo('Tokens acquired | ready to go!');
-                this.installDefaultFetchServiceHeaders();
+                this.installDefaultFetchServiceHeaders(this.idToken, this.accessToken);
             } else if (!this.redirectPending) {
                 this.logInfo(
                     `Incomplete tokens | no redirect pending - will fail | idToken: ${this.idToken} | accessToken: ${this.accessToken}`
@@ -347,26 +347,6 @@ export class AzureOauthService extends BaseOauthService {
     //------------------------
     // Implementation
     //------------------------
-
-    protected installDefaultFetchServiceHeaders() {
-        this.logDebug('Calling installDefaultFetchServiceHeaders');
-        XH.fetchService.setDefaultHeaders(opts => {
-            const {idToken, accessToken} = this,
-                relativeHoistUrl = !opts.url.startsWith('http');
-
-            // Send XH ID token headers for requests to the Hoist server only - used to identify
-            // our Hoist User via handling in server-side AuthenticationService.
-            // This app's ApiService will handle installing a different Bearer token header
-            // when calling the service API for business data.
-            return relativeHoistUrl
-                ? {
-                      'x-xh-idt': idToken,
-                      'x-xh-act': accessToken
-                  }
-                : {};
-        });
-    }
-
     @logWithDebug
     private async loginAsync(): Promise<AuthenticationResult | null> {
         const {msalApp, useRedirect, config} = this;

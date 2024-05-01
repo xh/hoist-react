@@ -114,7 +114,7 @@ export class AuthZeroOauthService extends BaseOauthService {
         this.idToken = await this.getIdTokenAsync();
 
         this.logInfo(`Authenticated OK`, this.user?.email, this.user);
-        this.installDefaultFetchServiceHeaders();
+        this.installDefaultFetchServiceHeaders(this.idToken);
     }
 
     async logoutAsync() {
@@ -194,16 +194,5 @@ export class AuthZeroOauthService extends BaseOauthService {
 
     private async checkAuthAsync(): Promise<boolean> {
         return this.auth0.isAuthenticated();
-    }
-
-    protected installDefaultFetchServiceHeaders() {
-        XH.fetchService.setDefaultHeaders(opts => {
-            const {idToken} = this,
-                relativeHoistUrl = !opts.url.startsWith('http');
-
-            // Send XH ID token headers for requests to the Hoist server only - used to identify
-            // our Hoist User via handling in server-side AuthenticationService.
-            return relativeHoistUrl ? {'x-xh-idt': idToken} : {};
-        });
     }
 }

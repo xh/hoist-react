@@ -101,7 +101,22 @@ export abstract class BaseOauthService extends HoistService {
     //------------------------
     // Implementation
     //------------------------
-    protected abstract installDefaultFetchServiceHeaders();
+    protected installDefaultFetchServiceHeaders(idToken: string, accessToken?: string) {
+        this.logDebug('Calling installDefaultFetchServiceHeaders');
+        XH.fetchService.setDefaultHeaders(opts => {
+            const relativeHoistUrl = !opts.url.startsWith('http'),
+                relativeHeader = {'x-xh-idt': idToken};
+            if (accessToken) {
+                relativeHeader['x-xh-act'] = accessToken;
+            }
+
+            // Send XH ID token headers for requests to the Hoist server only - used to identify
+            // our Hoist User via handling in server-side AuthenticationService.
+            // This app's ApiService will handle installing a different Bearer token header
+            // when calling the service API for business data.
+            return relativeHoistUrl ? relativeHeader : {};
+        });
+    }
 
     protected get baseUrl() {
         return `${window.location.origin}/${XH.clientAppCode}/`;
