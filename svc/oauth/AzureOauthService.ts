@@ -17,10 +17,13 @@ import {BaseOauthConfig, BaseOauthService} from '@xh/hoist/svc/oauth/BaseOauthSe
  * Service to manage OAuth authentication via Azure Active Directory.
  * Use in conjunction with customizations in your app's AppModel.ts and in the app's server-side
  * with AuthenticationService.groovy and OauthService.groovy.
+ *
+ * Azure grants these scopes by default if idScopes are not set:
+ * user.read, email, profile, openid
  */
 
 interface AzureOauthConfig extends BaseOauthConfig {
-    /** Hoist: Is testing via test runner allowed */
+    /** Is testing via test runner allowed */
     autoTestAllowed?: boolean;
 
     /** Tenant ID (GUID) of your organization */
@@ -35,20 +38,6 @@ interface AzureOauthConfig extends BaseOauthConfig {
 
     /** The log level of MSAL. Default is LogLevel.Info (2). */
     msalLogLevel?: LogLevel;
-
-    /**
-     * Scopes for ID token.
-     * Can be left unset if Oauth is used only for Authentication, just to get username and email.
-     * These scopes appear to be granted by default:
-     * ["user.read", "email", "profile", "openid"]
-     **/
-    idScopes?: string[];
-
-    /**
-     * Scopes for Access token.
-     * Needed if Oauth is used for Authorization, to access other services.
-     **/
-    accessScopes?: string[];
 }
 
 /**
@@ -60,15 +49,22 @@ interface AzureOauthConfig extends BaseOauthConfig {
 export class AzureOauthService extends BaseOauthService {
     static instance: AzureOauthService;
 
-    msalApp: IPublicClientApplication;
+    private msalApp: IPublicClientApplication;
 
     /** ID of the currently authenticated AD account. */
-    accountId?: string;
+    private accountId?: string;
 
-    accessToken: string;
+    private accessToken: string;
 
     /** True if autoTest mode both allowed and currently active. Set once on init. */
-    isAutoTestMode: boolean = false;
+    private isAutoTestMode: boolean = false;
+
+    private redirectPending = false;
+
+    /**
+     * App route present in URL prior to redirect, if any.
+     */
+    private pendingAppRoute: string;
 
     get account() {
         return this.msalApp?.getAccountByHomeId(this.accountId);
@@ -87,9 +83,6 @@ export class AzureOauthService extends BaseOauthService {
         return this.isAutoTestMode || !!(this.account && this.idToken && this.accessToken);
     }
 
-    redirectPending = false;
-
-
     override defaultErrorMsg =
         'We are unable to authenticate you using Microsoft Azure Active Directory (OAuth) and your corporate account. Please ensure any pop-up windows or alternate browser tabs with this app open are fully closed, then refresh this tab in your browser to reload the application and try again.';
 
@@ -97,8 +90,6 @@ export class AzureOauthService extends BaseOauthService {
     // Public API
     //------------------------
     override async initAsync(): Promise<void> {
-        const startTime = Date.now();
-
         try {
             //--------------------------
             // 1) Service + Config Setup
@@ -250,7 +241,6 @@ export class AzureOauthService extends BaseOauthService {
                 details: e
             });
         } finally {
-            this.loginDuration = Date.now() - startTime;
             this.logDebug(
                 `OAuth service init complete`,
                 `authInfoComplete: ${this.authInfoComplete}`
@@ -378,7 +368,7 @@ export class AzureOauthService extends BaseOauthService {
     }
 
     @logWithDebug
-    async loginAsync(): Promise<AuthenticationResult | null> {
+    private async loginAsync(): Promise<AuthenticationResult | null> {
         const {msalApp, useRedirect, config} = this;
 
         let ret = null;
@@ -394,19 +384,17 @@ export class AzureOauthService extends BaseOauthService {
                 });
             } else {
                 this.logDebug('Popup login requested | calling MSAL...');
-                this.wasInteractiveLogin = true;
                 ret = await msalApp.loginPopup({scopes});
                 this.idToken = ret.idToken;
             }
         } catch (e) {
             // Catch and rethrow exception indicating popup blocker with a more user-friendly error message.
             if (e.message.includes('popup window')) {
-                XH.handleException(e, {
-                    title: this.popupBlockerErrorTitle,
-                    message: this.popupBlockerErrorMessage,
-                    requireReload: true
+                throw XH.exception({
+                    name: 'Azure Oauth Login Error',
+                    message: this.popupBlockerErrorTitle + ' ' + this.popupBlockerErrorMessage,
+                    cause: e
                 });
-                throw e;
             } else {
                 this.logError('Unhandled loginAsync error | will return null', e);
             }

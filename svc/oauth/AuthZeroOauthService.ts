@@ -26,32 +26,26 @@ import {BaseOauthConfig, BaseOauthService} from '@xh/hoist/svc/oauth/BaseOauthSe
  * server, which looks for the token, validates its signature to verify, and uses it to lookup or
  * create an application user within `AuthenticationService.groovy`.
  *
+ * Auth0 grants these scopes by default if idScopes are not set:
+ * openid, profile, email
+ *
  * TODO - preserve an incoming route for a non-authenticated user. Currently any route will be
  *      lost during the redirect flow. We should be able to note and restore via the `state`
  *      key we can set and then read on our Auth0 login request / post-redirect response.
  */
 
 interface AuthZeroOauthConfig extends BaseOauthConfig {
-
     /** Domain of your app registered with Auth0 */
     domain: string;
-
-    /**
-     * Scopes for ID token.
-     * Can be left unset if Oauth is used only for Authentication, just to get username and email.
-     * These scopes are granted by default if left unset:
-     * 'openid profile email'
-     **/
-    idScopes?: string;
 }
 
 export class AuthZeroOauthService extends BaseOauthService {
     static instance: AuthZeroOauthService;
 
-    auth0: Auth0Client;
+    private auth0: Auth0Client;
 
     /** Authenticated user info as provided by Auth0. */
-    user: PlainObject;
+    private user: PlainObject;
 
     override async initAsync() {
         // This service is initialized prior to Hoist auth/init, so we do *not* have our standard
@@ -82,8 +76,9 @@ export class AuthZeroOauthService extends BaseOauthService {
             cacheLocation: 'localstorage' // avoids re-login on page refresh
         };
 
+        // scope must not be present if empty to get default scopes
         if (config.idScopes) {
-            auth0ClientOptions.authorizationParams.scope = config.idScopes;
+            auth0ClientOptions.authorizationParams.scope = config.idScopes.join(' ');
         }
 
         const auth0 = (this.auth0 = new Auth0Client(auth0ClientOptions));
@@ -116,65 +111,12 @@ export class AuthZeroOauthService extends BaseOauthService {
 
         // Otherwise we should be able to ask Auth0 for user and token info.
         this.user = await this.auth0.getUser();
-        this.idToken = await this.getTokenAsync();
+        this.idToken = await this.getIdTokenAsync();
 
         this.logInfo(`Authenticated OK`, this.user?.email, this.user);
         this.installDefaultFetchServiceHeaders();
     }
 
-    @logWithDebug
-    async loginAsync(): Promise<void> {
-        this.logInfo(`Not authenticated - logging in....`);
-        if (this.useRedirect) {
-            await this.auth0.loginWithRedirect();
-            await never();
-        } else {
-            try {
-                await this.auth0.loginWithPopup();
-            } catch (e) {
-                if (e.message.toLowerCase() === 'timeout') {
-                    e.popup.close();
-                    XH.handleException(e, {
-                        title: 'Login popup window timed out',
-                        message: 'Please reload the browser to try again.',
-                        requireReload: true
-                    });
-                    throw e;
-                }
-
-                if (e.message.toLowerCase() === 'popup closed') {
-                    XH.handleException(e, {
-                        title: 'Login popup window closed',
-                        message:
-                            'Did you accidentally close the login popup? Please reload the browser to try again.',
-                        requireReload: true
-                    });
-                    throw e;
-                }
-
-                if (e.message.toLowerCase().includes('unable to open a popup')) {
-                    XH.handleException(e, {
-                        title: this.popupBlockerErrorTitle,
-                        message: this.popupBlockerErrorMessage,
-                        requireReload: true
-                    });
-                    throw e;
-                }
-
-                this.logError('Unhandled loginAsync error | will return null', e);
-                e.popup?.close();
-            }
-        }
-    }
-
-    async getTokenAsync() {
-        const claims = await this.auth0.getIdTokenClaims();
-        return claims?.__raw;
-    }
-
-    /**
-     * Logout of both Hoist session and Auth0 Oauth session (if active).
-     */
     async logoutAsync() {
         if (!this.enabled) return;
         try {
@@ -202,6 +144,54 @@ export class AuthZeroOauthService extends BaseOauthService {
     //------------------
     // Implementation
     //-----------------
+    @logWithDebug
+    private async loginAsync(): Promise<void> {
+        this.logInfo(`Not authenticated - logging in....`);
+        if (this.useRedirect) {
+            await this.auth0.loginWithRedirect();
+            await never();
+        } else {
+            try {
+                await this.auth0.loginWithPopup();
+            } catch (e) {
+                if (e.message.toLowerCase() === 'timeout') {
+                    e.popup.close();
+                    throw XH.exception({
+                        name: 'Auth0 Login Error',
+                        message:
+                            'Login popup window timed out. Please reload the browser to try again.',
+                        cause: e
+                    });
+                }
+
+                if (e.message.toLowerCase() === 'popup closed') {
+                    throw XH.exception({
+                        name: 'Auth0 Login Error',
+                        message:
+                            'Login popup window closed. Please reload the browser to try again.',
+                        cause: e
+                    });
+                }
+
+                if (e.message.toLowerCase().includes('unable to open a popup')) {
+                    throw XH.exception({
+                        name: 'Auth0 Login Error',
+                        message: this.popupBlockerErrorTitle + ' ' + this.popupBlockerErrorMessage,
+                        cause: e
+                    });
+                }
+
+                this.logError('Unhandled loginAsync error | will return null', e);
+                e.popup?.close();
+            }
+        }
+    }
+
+    private async getIdTokenAsync() {
+        const claims = await this.auth0.getIdTokenClaims();
+        return claims?.__raw;
+    }
+
     private async checkAuthAsync(): Promise<boolean> {
         return this.auth0.isAuthenticated();
     }

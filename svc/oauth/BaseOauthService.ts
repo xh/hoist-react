@@ -4,8 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {HoistService, Some, XH} from '@xh/hoist/core';
-
+import {HoistService, XH} from '@xh/hoist/core';
 
 /**
  * Abstract Base Service subclassed by services that manage OAuth authentication.
@@ -31,12 +30,23 @@ export interface BaseOauthConfig {
      **/
     postLogoutRedirectUrl?: 'APP_BASE_URL' | string;
 
-    /** The method used for logging in. Default is 'POPUP' on desktop and 'REDIRECT' on mobile. */
-    loginMethod?: 'REDIRECT' | 'POPUP';
+    /** The method used for logging in. Default is 'POPUP'. */
+    loginMethodDesktop?: 'REDIRECT' | 'POPUP';
 
-    idScopes?: Some<string>;
+    /** The method used for logging in. Default is 'REDIRECT'. */
+    loginMethodMobile?: 'REDIRECT' | 'POPUP';
 
-    accessScopes?: Some<string>;
+    /**
+     * Scopes for ID token.
+     * Can be left unset if Oauth is used only for Authentication, just to get username and email.
+     **/
+    idScopes?: string[];
+
+    /**
+     * Scopes for Access token.
+     * Needed if Oauth is used for Authorization, to access other services.
+     **/
+    accessScopes?: string[];
 }
 
 /**
@@ -46,7 +56,6 @@ export interface BaseOauthConfig {
  * MSAL-based flow. Designed for automated QA - see the README for additional details.
  */
 export abstract class BaseOauthService extends HoistService {
-
     /**
      * Is OAuth enabled in this application?  For bootstrapping, troubleshooting
      * and mobile development, we allow running in a non-SSO mode.
@@ -54,29 +63,26 @@ export abstract class BaseOauthService extends HoistService {
     enabled: boolean;
 
     /** ID Token in JWT format - for passing to Hoist server. */
-    idToken?: string;
+    protected idToken?: string;
 
     /** Soft-config loaded from whitelisted endpoint on UI server. */
-    config: BaseOauthConfig;
+    protected config: BaseOauthConfig;
 
-    get redirectUrl() {
+    protected get redirectUrl() {
         const url = this.config.redirectUrl ?? 'APP_BASE_URL';
         return url === 'APP_BASE_URL' ? this.baseUrl : url;
     }
 
-    get postLogoutRedirectUrl() {
+    protected get postLogoutRedirectUrl() {
         const url = this.config.postLogoutRedirectUrl ?? 'APP_BASE_URL';
         return url === 'APP_BASE_URL' ? this.baseUrl : url;
     }
 
-    // Default to redirect on mobile, popup on desktop.
-    get useRedirect() {
-        const {loginMethod} = this.config;
-        if (loginMethod) {
-            return loginMethod === 'REDIRECT';
-        }
-
-        return !XH.isDesktop;
+    // Default to true on mobile, false on desktop.
+    protected get useRedirect() {
+        return XH.isDesktop
+            ? (this.config.loginMethodDesktop ?? 'POPUP') === 'REDIRECT'
+            : (this.config.loginMethodMobile ?? 'REDIRECT') === 'REDIRECT';
     }
 
     protected popupBlockerErrorTitle = 'Login popup window blocked';
@@ -86,38 +92,17 @@ export abstract class BaseOauthService extends HoistService {
     protected defaultErrorMsg =
         'We are unable to authenticate you. Please ensure any pop-up windows or alternate browser tabs with this app open are fully closed, then refresh this tab in your browser to reload the application and try again.';
 
-    //--------------------------------------------
-    // State for tracking and navigation post-init
-    //--------------------------------------------
-    /** Duration in ms of login process. */
-    loginDuration: number;
-    /** True if there was an interactive async step during login. */
-    wasInteractiveLogin: boolean = false;
-    /**
-     * App route present in URL prior to redirect, if any.
-     * TODO - read this at an appropriate time in render/lifecycle after init - if non-null,
-     *      we should validate and navigate to this route to land the user at the requested URL.
-     *      Alternatively, see if built in MSAL navigateToLoginRequestUrl config works better.
-     */
-    pendingAppRoute: string;
-
     //------------------------
     // Public API
     //------------------------
 
-    /** Request a full logout from MSAL, which will redirect away from this app to a configured URL. */
-    abstract logoutAsync(): Promise<void>
-
-
-    abstract getTokenAsync()
+    /** Request a full logout from Oauth provider, which will redirect away from this app to a configured URL. */
+    abstract logoutAsync(): Promise<void>;
 
     //------------------------
     // Implementation
     //------------------------
-
-    protected abstract installDefaultFetchServiceHeaders()
-
-    abstract loginAsync()
+    protected abstract installDefaultFetchServiceHeaders();
 
     protected get baseUrl() {
         return `${window.location.origin}/${XH.clientAppCode}/`;
