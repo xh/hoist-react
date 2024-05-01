@@ -189,7 +189,7 @@ export class AzureOauthService extends BaseOauthService {
             // Case (A) - redirect pending - nothing else we want to do here in this service.
             // Await forever to keep mask on app and prevent init from proceeding.
             if (this.redirectPending) {
-                this.logInfo(`Redirect pending | will navigate away`);
+                this.logInfo(`Redirect pending', 'will navigate away`);
                 return await never();
             }
 
@@ -211,16 +211,18 @@ export class AzureOauthService extends BaseOauthService {
             // TODO - is there any chance we have a STALE idToken at this point?
             //      We would hit that case with MSALv1 and had some special handling to check.
             if (this.idToken && this.accessToken) {
-                this.logInfo('Tokens acquired | ready to go!');
+                this.logInfo('Tokens acquired, ready to go!');
             } else if (!this.redirectPending) {
-                this.logInfo(
-                    `Incomplete tokens | no redirect pending - will fail | idToken: ${this.idToken} | accessToken: ${this.accessToken}`
-                );
-                throw new Error('Incomplete Tokens');
+                this.logInfo('Incomplete tokens', 'no redirect pending - will fail', {
+                    idToken: this.idToken,
+                    accessToken: this.accessToken
+                });
+                throw XH.exception('Incomplete Tokens');
             } else {
-                this.logInfo(
-                    `Incomplete tokens | redirect pending - will navigate away | idToken: ${this.idToken} | accessToken: ${this.accessToken}`
-                );
+                this.logInfo('Incomplete tokens', 'redirect pending - will navigate away', {
+                    idToken: this.idToken,
+                    accessToken: this.accessToken
+                });
                 await never();
             }
         } catch (e) {
@@ -233,10 +235,7 @@ export class AzureOauthService extends BaseOauthService {
                 details: e
             });
         } finally {
-            this.logDebug(
-                `OAuth service init complete`,
-                `authInfoComplete: ${this.authInfoComplete}`
-            );
+            this.logDebug(`OAuth service init complete`, {authInfoComplete: this.authInfoComplete});
         }
     }
 
@@ -270,7 +269,7 @@ export class AzureOauthService extends BaseOauthService {
         logTokens: boolean = false
     ): Promise<AuthenticationResult | {accessToken: string}> {
         const {msalApp, account, isAutoTestMode} = this;
-        if (logTokens) this.logDebug(`getTokenAsync begin`, `isRetry: ${isRetry}`, account);
+        if (logTokens) this.logDebug(`getTokenAsync begin`, {isRetry, account});
 
         if (isAutoTestMode) {
             // The key 'accessToken' in sessionStorage is the location in which the autoTest team
@@ -318,11 +317,11 @@ export class AzureOauthService extends BaseOauthService {
                     this.logDebug(`Redirect pending | will navigate away`);
                     return never();
                 } else {
-                    this.logError('Login failed | no redirect pending | abort and throw');
+                    this.logError('Login failed', 'no redirect pending', 'abort and throw');
                     throw e;
                 }
             } else {
-                this.logError('Unhandled getTokenAsync error | abort and throw', e);
+                this.logError('Unhandled getTokenAsync error', 'abort and throw', e);
                 throw e;
             }
         }
@@ -351,7 +350,7 @@ export class AzureOauthService extends BaseOauthService {
                 this.redirectPending = true;
                 await msalApp.loginRedirect({scopes, state: window.location.pathname});
             } else {
-                this.logDebug('Popup login requested | calling MSAL...');
+                this.logDebug('Popup login requested', 'Calling MSAL...');
                 ret = await msalApp.loginPopup({scopes});
                 this.idToken = ret.idToken;
             }
@@ -364,7 +363,7 @@ export class AzureOauthService extends BaseOauthService {
                     cause: e
                 });
             } else {
-                this.logError('Unhandled loginAsync error | will return null', e);
+                this.logError('Unhandled loginAsync error', 'will return null', e);
             }
         }
 

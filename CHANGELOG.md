@@ -30,7 +30,7 @@ for more details.
 
 ### 🎁 New Features
 
-* New services added to support Oauth: `AzureOauthService`, `AuthZeroOauthService`
+* New services added to support out--of-the-box Oauth: `AzureOauthService`, `AuthZeroOauthService`
 
 #### Other Changes
 
