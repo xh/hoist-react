@@ -15,6 +15,12 @@
       background: var(--xh-bg);
       border: var(--xh-border-solid);
 
+      & > span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
       & > span:not(:last-child) {
         margin-right: 3px;
       }

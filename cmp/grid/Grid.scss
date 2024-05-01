@@ -338,7 +338,14 @@
       color: var(--xh-text-color-muted);
     }
 
-    .xh-multifield-renderer-field,
+    .xh-multifield-renderer-field {
+      margin: 0 2px 0 0;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     .xh-multifield-renderer-delimiter {
       margin: 0 2px 0 0;
     }
