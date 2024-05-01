@@ -67,7 +67,8 @@ for more details.
 
 ### 🎁 New Features
 
-* `Store` now supports multiple `summaryRecords`, with corresponding
+* `Store` now supports multiple `summaryRecords`, displayed if so configured as multiple pinned
+  rows within a bound grid.
 
 ## 63.0.3 - 2024-04-16
 
