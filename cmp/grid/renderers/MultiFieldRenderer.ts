@@ -96,7 +96,7 @@ export interface MultiFieldSubField {
 function renderMainField(value: any, renderer: ColumnRenderer, context: CellContext) {
     const {column} = context;
     return div({
-        className: 'xh-multifield-renderer-field',
+        className: getMultiFieldRendererClass(renderer),
         item: renderValue(value, renderer, column, context)
     });
 }
@@ -125,8 +125,13 @@ function renderSubField({colId, label}: MultiFieldSubField, context: CellContext
     return renderedValIsEmpty
         ? null
         : div({
-              className: 'xh-multifield-renderer-field',
-              items: [labelStr ? `${labelStr}: ` : null, renderedVal]
+              className: getMultiFieldRendererClass(renderer),
+              items: [
+                  labelStr
+                      ? span({item: `${labelStr}:`, className: 'xh-multifield-renderer-label'})
+                      : null,
+                  renderedVal
+              ]
           });
 }
 
@@ -140,4 +145,8 @@ function renderDelimiter(delimiter: string) {
         className: 'xh-multifield-renderer-delimiter',
         item: delimiter
     });
+}
+
+function getMultiFieldRendererClass(renderer: ColumnRenderer): string {
+    return renderer ? 'xh-multifield-renderer-field-with-renderer' : 'xh-multifield-renderer-field';
 }

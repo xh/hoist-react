@@ -53,5 +53,8 @@ ij_typescript_use_semicolon_after_statement = true
 [*.json]
 indent_size = 2
 
-[{*.css, *.scss}]
+[*.css]
+indent_size = 2
+
+[*.scss]
 indent_size = 2

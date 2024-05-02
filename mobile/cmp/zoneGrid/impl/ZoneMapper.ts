@@ -105,7 +105,7 @@ const zoneCell = hoistCmp.factory<ZoneMapperModel>({
         const {selectedZone, delimiter} = model,
             className = 'xh-zone-mapper__zone-picker__zone-cell',
             samples = model.getSamplesForZone(zone);
-
+        console.log(samples);
         return div({
             className: classNames(
                 className,

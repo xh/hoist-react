@@ -323,13 +323,16 @@
 // Multi-field (mobile)
 //------------------------
 .xh-multifield-renderer {
-  line-height: var(--xh-grid-multifield-line-height-px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  line-height: normal;
 
   .xh-multifield-renderer-row {
     display: flex;
+    align-items: center;
 
     &.xh-multifield-renderer-top {
-      padding: 4px 0 0;
       font-size: var(--xh-grid-multifield-top-font-size-px);
     }
 
@@ -339,15 +342,31 @@
     }
 
     .xh-multifield-renderer-field {
-      margin: 0 2px 0 0;
-      max-width: 100%;
+      display: inline-block;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
+    .xh-multifield-renderer-field-with-renderer {
+      display: flex;
+      max-width: 100%;
+
+      /* For renderer content that display ellipsis upon overflow */
+      & > * {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
     .xh-multifield-renderer-delimiter {
-      margin: 0 2px 0 0;
+      margin: 0 2px;
+    }
+
+    .xh-multifield-renderer-label {
+      overflow: visible;
+      margin-right: 3px;
     }
   }
 }
