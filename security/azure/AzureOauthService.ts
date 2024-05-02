@@ -84,15 +84,7 @@ export class AzureOauthService extends BaseOauthService {
 
     override async doInitAsync(): Promise<void> {
         const config = this.config as AzureOauthConfig,
-            {
-                autoTestAllowed,
-                clientId,
-                authority,
-                redirectUrl,
-                postLogoutRedirectUrl,
-                msalLogLevel,
-                accessScopes
-            } = config;
+            {autoTestAllowed, clientId, authority, msalLogLevel, accessScopes} = config;
 
         this.accessScopes = accessScopes;
 
@@ -115,8 +107,8 @@ export class AzureOauthService extends BaseOauthService {
                     auth: {
                         clientId,
                         authority,
-                        redirectUri: redirectUrl,
-                        postLogoutRedirectUri: postLogoutRedirectUrl
+                        redirectUri: this.redirectUrl,
+                        postLogoutRedirectUri: this.postLogoutRedirectUrl
                         // navigateToLoginRequestUrl: true // alt. to pendingAppRoute above?
                     },
                     system: {
