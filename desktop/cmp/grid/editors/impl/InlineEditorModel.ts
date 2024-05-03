@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {CustomCellEditorProps} from '@ag-grid-community/react';
+import {CustomCellEditorProps, useGridCellEditor} from '@ag-grid-community/react';
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel} from '@xh/hoist/cmp/input';
 import {ElementFactory, HoistModel, useLocalModel} from '@xh/hoist/core';
@@ -13,7 +13,7 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ForwardedRef, ReactElement} from 'react';
+import {ForwardedRef, ReactElement, useCallback, useImperativeHandle} from 'react';
 
 /**
  * Hook to render a component to be used for inline cell editing in ag-grid.
@@ -33,6 +33,15 @@ export function useInlineEditorModel(
 ): ReactElement {
     const {className, inputProps, agParams} = props,
         impl = useLocalModel(() => new InlineEditorModel(agParams));
+
+    useImperativeHandle(ref, () => ({
+        inputModel: () => impl.ref.current
+    }));
+
+    useGridCellEditor({
+        // This is called in full-row editing when the user tabs into the cell
+        focusIn: useCallback(() => impl.focus(), [impl])
+    });
 
     return component({
         className: classNames('xh-inline-editor', className),
