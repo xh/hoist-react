@@ -5,6 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {CustomCellEditorProps} from '@ag-grid-community/react';
+import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel} from '@xh/hoist/cmp/input';
 import {ElementFactory, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {EditorProps} from '@xh/hoist/desktop/cmp/grid/editors/EditorProps';
@@ -12,7 +13,7 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ForwardedRef, ReactElement, useImperativeHandle} from 'react';
+import {ForwardedRef, ReactElement} from 'react';
 
 /**
  * Hook to render a component to be used for inline cell editing in ag-grid.
@@ -33,27 +34,20 @@ export function useInlineEditorModel(
     const {className, inputProps, agParams} = props,
         impl = useLocalModel(() => new InlineEditorModel(agParams));
 
-    useImperativeHandle(ref, () => ({
-        inputModel: () => impl.ref.current
-    }));
-
     return component({
         className: classNames('xh-inline-editor', className),
         width: agParams.eGridCell.clientWidth,
         model: impl,
         bind: 'value',
         commitOnChange: true,
-        ref: impl.ref,
+        ref: composeRefs(impl.ref, ref),
         ...inputProps,
-        onChange: (newVal, oldValue) => {
-            // todo: specifically for numberInput, do not allow letters other than e.
-            // maybe onChange is not the right handler.  Maybe there is a hoist specific event that can be called instead.
-            agParams.onValueChange(newVal);
-            props.inputProps?.onChange?.(newVal, oldValue);
+        onCommit: (value: any, oldValue: any) => {
+            agParams.onValueChange(value);
+            props.inputProps?.onCommit?.(value, oldValue);
         }
     });
 }
-
 /**
  * Local Model supporting inline cell editor components. Provides base functionality required by
  * ag-grid plus extension points for editors needing more complex behaviors.

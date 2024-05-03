@@ -750,7 +750,8 @@ export class Column {
                     const {gridModel, colId} = this,
                         editor = gridModel.agApi.getCellEditorInstances({columns: [colId]})[0],
                         // @ts-ignore -- private
-                        reactSelect = editor?.componentInstance.inputModel?.().reactSelect;
+                        inputModel = editor?.componentInstance,
+                        reactSelect = inputModel?.reactSelect;
                     if (reactSelect?.state.menuIsOpen) return true;
 
                     // Allow shift+enter to add newlines in certain editors
