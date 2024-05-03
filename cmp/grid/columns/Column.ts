@@ -4,7 +4,6 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {CustomCellEditorProps} from '@ag-grid-community/react';
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
 import {HAlign, HSide, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
 import {
@@ -750,7 +749,7 @@ export class Column {
                     const {gridModel, colId} = this,
                         editor = gridModel.agApi.getCellEditorInstances({columns: [colId]})[0],
                         // @ts-ignore -- private
-                        reactSelect = editor?.componentInstance.inputModel?.().reactSelect;
+                        reactSelect = editor?.inputModel?.().reactSelect;
                     if (reactSelect?.state.menuIsOpen) return true;
 
                     // Allow shift+enter to add newlines in certain editors
@@ -960,7 +959,7 @@ export class Column {
         }
 
         if (editor) {
-            ret.cellEditor = forwardRef((agParams: CustomCellEditorProps, ref) => {
+            ret.cellEditor = forwardRef((agParams: PlainObject, ref) => {
                 const props = {
                     record: agParams.data as StoreRecord,
                     gridModel,

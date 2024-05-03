@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {CustomCellEditorProps} from '@ag-grid-community/react';
+import {ICellEditorParams} from '@ag-grid-community/core';
 import {HoistInputModel} from '@xh/hoist/cmp/input';
 import {ElementFactory, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {EditorProps} from '@xh/hoist/desktop/cmp/grid/editors/EditorProps';
@@ -34,6 +34,14 @@ export function useInlineEditorModel(
         impl = useLocalModel(() => new InlineEditorModel(agParams));
 
     useImperativeHandle(ref, () => ({
+        getValue: () => {
+            impl.ref.current?.doCommit();
+            return impl.value;
+        },
+
+        // This is called in full-row editing when the user tabs into the cell
+        focusIn: () => impl.focus(),
+
         inputModel: () => impl.ref.current
     }));
 
@@ -44,13 +52,7 @@ export function useInlineEditorModel(
         bind: 'value',
         commitOnChange: true,
         ref: impl.ref,
-        ...inputProps,
-        onChange: (newVal, oldValue) => {
-            // todo: specifically for numberInput, do not allow letters other than e.
-            // maybe onChange is not the right handler.  Maybe there is a hoist specific event that can be called instead.
-            agParams.onValueChange(newVal);
-            props.inputProps?.onChange?.(newVal, oldValue);
-        }
+        ...inputProps
     });
 }
 
@@ -67,13 +69,13 @@ class InlineEditorModel extends HoistModel {
 
     ref = createObservableRef<HoistInputModel>();
 
-    agParams: CustomCellEditorProps;
+    agParams: ICellEditorParams;
 
     get inputEl() {
         return this.ref.current?.inputEl;
     }
 
-    constructor(agParams: CustomCellEditorProps) {
+    constructor(agParams: ICellEditorParams) {
         super();
         makeObservable(this);
 
