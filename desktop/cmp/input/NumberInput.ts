@@ -10,6 +10,7 @@ import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/co
 import '@xh/hoist/desktop/register';
 import {fmtNumber, parseNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
+import {sanitizeNumericInput} from '@blueprintjs/core/lib/esnext/components/forms/numericInputUtils';
 import {wait} from '@xh/hoist/promise';
 import {debounced, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -129,6 +130,10 @@ class NumberInputModel extends HoistInputModel {
         throwIf(Math.log10(this.scaleFactor) % 1 !== 0, 'scaleFactor must be a factor of 10');
     }
 
+    get allowNumericCharactersOnly(): boolean {
+        return !this.componentProps.enableShorthandUnits && !this.componentProps.displayWithCommas;
+    }
+
     get precision(): number {
         return withDefault(this.componentProps.precision, 4);
     }
@@ -172,11 +177,17 @@ class NumberInputModel extends HoistInputModel {
         return val;
     }
 
-    override isValid(val: number): boolean {
+    override isValid(val: number | string): boolean {
         const {min, max} = this.componentProps;
 
         if (isNaN(val)) return false;
         if (val === null) return true;
+
+        if (
+            this.allowNumericCharactersOnly &&
+            sanitizeNumericInput(val.toString(), undefined) !== val.toString()
+        )
+            return false;
 
         // Enforce min/max here on commit. BP props only limit the incremental step change
         if (!isNil(min) && val < min) return false;
@@ -250,7 +261,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
     // Render BP input.
     return numericInput({
         value: renderValue,
-        allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
+        allowNumericCharactersOnly: model.allowNumericCharactersOnly,
         buttonPosition: 'none',
         disabled: props.disabled,
         inputRef: composeRefs(model.inputRef, props.inputRef),
