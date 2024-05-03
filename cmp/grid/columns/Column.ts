@@ -39,7 +39,9 @@ import {
     forwardRef,
     isValidElement,
     ReactNode,
-    useImperativeHandle
+    useImperativeHandle,
+    useLayoutEffect,
+    useRef
 } from 'react';
 import {GridModel} from '../GridModel';
 import {GridSorter} from '../GridSorter';
@@ -803,7 +805,8 @@ export class Column {
             ret.tooltipValueGetter = () => 'tooltip';
             ret.tooltipComponent = forwardRef((agParams: ITooltipParams, ref) => {
                 const {location, data: record} = agParams,
-                    hasRecord = record instanceof StoreRecord;
+                    hasRecord = record instanceof StoreRecord,
+                    wrapperRef = useRef<HTMLDivElement>(null);
 
                 let ret = null;
                 if (hasRecord) {
@@ -828,39 +831,49 @@ export class Column {
                 }
 
                 const isElement = isValidElement(ret);
-                useImperativeHandle(
-                    ref,
-                    () => ({
-                        getReactContainerClasses() {
-                            if (location === 'header') return ['ag-tooltip'];
-                            return [
-                                'xh-grid-tooltip',
-                                isElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'
-                            ];
-                        }
-                    }),
-                    [location, isElement]
-                );
 
-                if (location === 'header') return div(this.headerTooltip);
+                useLayoutEffect(() => {
+                    const xhToolTipClassNames: string[] =
+                        location === 'header'
+                            ? ['ag-tooltip']
+                            : [
+                                  'xh-grid-tooltip',
+                                  isElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'
+                              ];
+                    wrapperRef.current
+                        ?.closest('.ag-react-container')
+                        ?.classList?.add(...xhToolTipClassNames);
+                }, [isElement]);
+
+                useImperativeHandle(ref, () => ({}), []);
+
+                if (location === 'header') return div({ref: wrapperRef, item: this.headerTooltip});
                 if (!hasRecord) return null;
 
                 // Override with validation errors, if present
                 if (editor) {
                     const errors = record.errors[field];
                     if (!isEmpty(errors)) {
-                        return ul({
-                            className: classNames(
-                                'xh-grid-tooltip--validation',
-                                errors.length === 1 ? 'xh-grid-tooltip--validation--single' : null
-                            ),
-                            items: errors.map((it, idx) => li({key: idx, item: it}))
+                        return div({
+                            ref: wrapperRef,
+                            item: ul({
+                                className: classNames(
+                                    'xh-grid-tooltip--validation',
+                                    errors.length === 1
+                                        ? 'xh-grid-tooltip--validation--single'
+                                        : null
+                                ),
+                                items: errors.map((it, idx) => li({key: idx, item: it}))
+                            })
                         });
                     }
                     if (!tooltip) return null;
                 }
 
-                return (isElement ? ret : toString(ret)) as any;
+                return div({
+                    ref: wrapperRef,
+                    item: (isElement ? ret : toString(ret)) as any
+                });
             });
         }
 
