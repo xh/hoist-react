@@ -40,6 +40,7 @@ for more details.
 
 ### ⚙️ Technical
 
+* NumberInput now validates value changes as per BluePrint's `allowNumericCharactersOnly` logic.
 * Removed initial `ping` call `FetchService` init.
 
 ### 📚 Libraries

@@ -98,7 +98,8 @@ class InlineEditorModel extends HoistModel {
 
         const {eventKey} = this.agParams;
         // Enter initial keystroke in value (if single char and not special key e.g (F2 or Enter).
-        if (eventKey?.length == 1) {
+        if (eventKey?.length === 1) {
+            if (!ref.current.isValid(eventKey)) return;
             ref.current.noteValueChange(eventKey);
         } else {
             inputEl.select();
