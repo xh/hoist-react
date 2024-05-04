@@ -1,15 +1,13 @@
 .xh-dialog-panel {
-  border: var(--xh-border-solid);
-
   & > .dialog {
-    margin-top: var(--xh-pad-half-px);
-    width: 100%;
+    width: 100svw;
     height: calc(100% - var(--xh-pad-px));
     max-height: calc(100% - var(--xh-pad-px)) !important;
 
     .dialog-container {
-      max-width: 100% !important;
-      height: 100%;
+      margin: var(--xh-pad-safe-all);
+      max-width: 100svw !important;
+      height: 100svh;
       border-width: var(--xh-popup-border-width-px) 0 0 !important;
       border-radius: 0;
 

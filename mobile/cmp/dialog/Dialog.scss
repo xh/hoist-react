@@ -3,6 +3,10 @@
 
   & > .dialog-mask {
     background-color: var(--xh-backdrop-bg);
+    top: var(--xh-pad-safe-top);
+    bottom: var(--xh-pad-safe-bottom);
+    left: var(--xh-pad-safe-left);
+    right: var(--xh-pad-safe-right);
   }
 
   & > .dialog {
@@ -15,7 +19,7 @@
     .dialog-container {
       display: flex;
       flex-direction: column;
-      max-width: calc(100vw - var(--xh-pad-double-px));
+      max-width: calc(100% - var(--xh-pad-double-px));
       // Background on inner onsen container deliberately set to *border* color - this avoids small
       // but noticeable gaps around the edges. The dialog body gets a defined background below for
       // the actual contents of the component.

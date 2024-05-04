@@ -146,9 +146,14 @@ export class AppContainerModel extends HoistModel {
         );
 
         // Disable browser context menu on long-press, used to show (app) context menus and as an
-        // alternate gesture for tree grid drill-own.
+        // alternate gesture for tree grid drill-own. Also, add viewport-fit=cover to allow access
+        // to safe-area-inset envs for mobile styling.
         if (isMobileApp) {
             window.addEventListener('contextmenu', e => e.preventDefault(), {capture: true});
+            const vp = document.querySelector('meta[name=viewport]'),
+                content = vp.getAttribute('content');
+
+            vp.setAttribute('content', content + ', viewport-fit=cover');
         }
 
         try {

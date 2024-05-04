@@ -6,6 +6,7 @@
  */
 import {hoistCmp, BoxProps, HoistProps} from '@xh/hoist/core';
 import {box} from './Box';
+import './Viewport.scss';
 
 export interface ViewportProps extends HoistProps, BoxProps {}
 
@@ -27,8 +28,9 @@ export const [Viewport, viewport] = hoistCmp.withFactory<ViewportProps>({
             top: 0,
             left: 0,
             position: 'fixed',
-            width: '100%',
-            height: '100%'
+            width: '100svw',
+            height: '100svh',
+            className: 'viewport'
         });
     }
 });
