@@ -8,7 +8,7 @@ import {HoistService, PlainObject, XH} from '@xh/hoist/core';
 import {FetchOptions} from '@xh/hoist/svc';
 import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
-import {randomUUID} from 'crypto';
+import {v4 as uuid} from 'uuid';
 
 export interface BaseOauthConfig {
     /** Is OAuth enabled in this application? */
@@ -140,9 +140,9 @@ export abstract class BaseOauthService extends HoistService {
 
 
     protected setRedirectState(state: PlainObject): string {
-        let key = randomUUID(),
+        let key = uuid(),
             recs = XH.localStorageService
-            .get('xhOAuthState')
+            .get('xhOAuthState', [])
             .filter(r => !olderThan(r.timestamp, 5 * MINUTES));
 
         recs.push({key, state, timestamp: Date.now()});
@@ -153,7 +153,7 @@ export abstract class BaseOauthService extends HoistService {
 
     protected getRedirectState(key: string): PlainObject {
         return XH.localStorageService
-            .get('xhOAuthState')
+            .get('xhOAuthState', [])
             .find(r => r.key == key)?.state
     }
 }

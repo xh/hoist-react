@@ -37,15 +37,16 @@ export class AuthZeroOauthService extends BaseOauthService {
         if (!(await client.isAuthenticated())) {
             this.useRedirect ?
                 await this.completeRedirectAuthAsync() :
-                await this.completePopupAuthAsync()
+                await this.completePopupAuthAsync();
+
+            this.user = await client.getUser();
+            throwIf(!this.user, 'Failed Auth0 authentication. No user or token found.');
+            this.logInfo(`(Re)authenticated OK via Auth0`, this.user.email, this.user);
         }
 
-        // If we get here without exception, we should be set, but throw if not.
-        this.user = await client.getUser();
+        // If we get here without exception, we *should* be set
         this.idToken = (await client.getIdTokenClaims())?.__raw;
-        throwIf(!this.user || !this.idToken, 'Failed Auth0 authentication. No user or token found.');
-
-        this.logInfo(`Authenticated OK`, this.user.email, this.user);
+        throwIf(!this.idToken, 'Failed Auth0 authentication. No user or token found.');
     }
 
     override async doLogoutAsync(): Promise<void> {
@@ -96,7 +97,7 @@ export class AuthZeroOauthService extends BaseOauthService {
 
             throwIf(!redirectState, "Failure in oAuth, no redirect state located.")
             const {search} = redirectState,
-                url = isEmpty(search) ? '/' :  location.origin + location.pathname + '?' + search;
+                url = isEmpty(search) ? '/' :  location.origin + location.pathname + search;
             window.history.replaceState(null, '', url);
             return;
         }
