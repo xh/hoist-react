@@ -845,6 +845,9 @@ export class Column {
                         ?.classList?.add(...xhToolTipClassNames);
                 }, [isElement]);
 
+                // Required by agGrid, even though empty.
+                // If not present agGrid logs this warning:
+                // "If the component is using `forwardRef` but not `useImperativeHandle`, add the following: `useImperativeHandle(ref, () => ({}));"
                 useImperativeHandle(ref, () => ({}), []);
 
                 if (location === 'header') return div({ref: wrapperRef, item: this.headerTooltip});
