@@ -767,4 +767,10 @@ body {
       --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
     }
   }
+
+  //------------------------
+  // Viewport
+  //------------------------
+  --xh-viewport-bg: black;
+
 }

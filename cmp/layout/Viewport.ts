@@ -24,13 +24,7 @@ export const [Viewport, viewport] = hoistCmp.withFactory<ViewportProps>({
 
     render(props) {
         return box({
-            ...props,
-            top: 0,
-            left: 0,
-            position: 'fixed',
-            width: '100svw',
-            height: '100svh',
-            className: 'viewport'
+            ...props
         });
     }
 });

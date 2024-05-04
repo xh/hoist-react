@@ -1,4 +1,9 @@
-.viewport {
+.xh-viewport {
   padding: var(--xh-pad-safe-all);
-  background-color: black;
+  background-color: var(--xh-viewport-bg);
+  top: 0;
+  left: 0;
+  position: fixed;
+  width: 100svw;
+  height: 100svh;
 }
