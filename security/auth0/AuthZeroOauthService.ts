@@ -5,12 +5,11 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {Auth0Client, Auth0ClientOptions} from '@auth0/auth0-spa-js';
-import {PlainObject, XH} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {never, wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {BaseOauthConfig, BaseOauthService} from '../BaseOauthService';
-import {isEmpty} from 'lodash';
 
 interface AuthZeroOauthConfig extends BaseOauthConfig {
     /** Domain of your app registered with Auth0 */
@@ -21,32 +20,26 @@ interface AuthZeroOauthConfig extends BaseOauthConfig {
  * This class supports OAuth via an integration with Auth0, a cross-platform service
  * supporting login via Google, GitHub, or Microsoft identities *or* via a username/password combo
  * created by the user in the Auth0 registration flow (and stored on Auth0 servers).
- *
- * Auth0 grants these scopes by default if idScopes are not set:
- * openid, profile, email
  */
 export class AuthZeroOauthService extends BaseOauthService {
     static instance: AuthZeroOauthService;
 
     private client: Auth0Client;
-    private user: PlainObject; // Authenticated user info as provided by Auth0.
 
     protected async doInitAsync(): Promise<void> {
 
         const client = this.client = this.createClient();
         if (!(await client.isAuthenticated())) {
-            this.useRedirect ?
-                await this.completeRedirectAuthAsync() :
-                await this.completePopupAuthAsync();
+            this.loginMethod === 'REDIRECT' ?
+                await this.completeViaRedirectAsync() :
+                await this.completeViaPopupAsync();
 
-            this.user = await client.getUser();
-            throwIf(!this.user, 'Failed Auth0 authentication. No user or token found.');
-            this.logInfo(`(Re)authenticated OK via Auth0`, this.user.email, this.user);
+            const user = await client.getUser();
+            this.logDebug(`(Re)authenticated OK via Auth0`, user.email, user);
         }
 
         // If we get here without exception, we *should* be set
         this.idToken = (await client.getIdTokenClaims())?.__raw;
-        throwIf(!this.idToken, 'Failed Auth0 authentication. No user or token found.');
     }
 
     override async doLogoutAsync(): Promise<void> {
@@ -61,6 +54,18 @@ export class AuthZeroOauthService extends BaseOauthService {
         await wait(10 * SECONDS);
     }
 
+    override async getAccessTokenAsync(
+        scopes: string[],
+        allowPopup: boolean = false
+    ): Promise<string> {
+        const opts = {authorizationParams: {scope: scopes.join(' ')}};
+        let ret = await this.client.getTokenSilently(opts);
+        if (!ret && allowPopup) {
+            ret = await this.client.getTokenWithPopup(opts);
+        }
+        return ret;
+    }
+
     //------------------
     // Implementation
     //-----------------
@@ -70,53 +75,46 @@ export class AuthZeroOauthService extends BaseOauthService {
 
         throwIf(!domain, 'Missing Auth0 domain. Please review your configuration.');
 
-        const auth0ClientOptions: Auth0ClientOptions = {
+        const opts: Auth0ClientOptions = {
             clientId,
             domain,
-            authorizationParams: {redirect_uri: this.redirectUrl},
+            authorizationParams: {
+                scopes: idScopes.join(' '),
+                redirect_uri: this.redirectUrl
+            },
             cacheLocation: 'localstorage'
         };
 
-        if (idScopes) {
-            auth0ClientOptions.authorizationParams.scope = idScopes.join(' ');
-        }
-        return new Auth0Client(auth0ClientOptions);
+        return new Auth0Client(opts);
     }
 
-    private async completeRedirectAuthAsync(): Promise<void> {
+    private async completeViaRedirectAsync(): Promise<void> {
         const {client} = this;
 
         // Determine if we are on back end of redirect.  (recipe from Auth0 docs)
         const {search} = location,
             isReturning = (search.includes('state=') && search.includes('code=')) || search.includes('error=');
 
-        // 1) Returning: call 0Auth method to complete, and restore url/history state
-        if (isReturning) {
-            const {appState} = await client.handleRedirectCallback(),
-                redirectState = this.getRedirectState(appState);
-
-            throwIf(!redirectState, "Failure in oAuth, no redirect state located.")
-            const {search} = redirectState,
-                url = isEmpty(search) ? '/' :  location.origin + location.pathname + search;
-            window.history.replaceState(null, '', url);
-            return;
+        if (!isReturning) {
+            // 1) Initiating - grab state and initiate redirect
+            const appState = this.captureRedirectState();
+            await client.loginWithRedirect({appState});
+            await never();
+        } else {
+            // 2) Returning - call client to complete redirect, and restore state
+            const {appState} = await client.handleRedirectCallback();
+            this.restoreRedirectState(appState);
         }
-
-        // 2) Initiating:  grab url state and send initiate redirect.
-        const appState = this.setRedirectState({search})
-        await client.loginWithRedirect({appState});
-        await never();
     }
 
-    private async completePopupAuthAsync(): Promise<void> {
+    private async completeViaPopupAsync(): Promise<void> {
         const {client} = this;
-
         try {
             await client.loginWithPopup();
         } catch (e) {
             const msg = e.message?.toLowerCase();
+            e.popup?.close();
             if (msg === 'timeout') {
-                e.popup?.close();
                 throw XH.exception({
                     name: 'Auth0 Login Error',
                     message:
@@ -141,8 +139,7 @@ export class AuthZeroOauthService extends BaseOauthService {
                 });
             }
 
-            this.logError('Unhandled loginAsync error | will return null', e);
-            e.popup?.close();
+            throw e;
         }
     }
 }

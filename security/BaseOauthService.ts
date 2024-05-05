@@ -8,6 +8,7 @@ import {HoistService, PlainObject, XH} from '@xh/hoist/core';
 import {FetchOptions} from '@xh/hoist/svc';
 import {MINUTES, olderThan} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
+import {find, isEmpty} from 'lodash';
 import {v4 as uuid} from 'uuid';
 
 export interface BaseOauthConfig {
@@ -38,8 +39,8 @@ export interface BaseOauthConfig {
 
     /**
      * Scopes for ID token.
-     * Can be left unset if Oauth is used only for Authentication, just to get username and email.
-     **/
+     * Defaults to user.read, openid, profile, email
+     */
     idScopes?: string[];
 }
 
@@ -64,6 +65,10 @@ export abstract class BaseOauthService extends HoistService {
     /** Soft-config loaded from UI server. */
     protected config: BaseOauthConfig;
 
+    /** Configured idScopes*/
+    protected idScopes: string[];
+
+
     protected get redirectUrl() {
         const url = this.config.redirectUrl ?? 'APP_BASE_URL';
         return url === 'APP_BASE_URL' ? this.baseUrl : url;
@@ -74,10 +79,10 @@ export abstract class BaseOauthService extends HoistService {
         return url === 'APP_BASE_URL' ? this.baseUrl : url;
     }
 
-    protected get useRedirect() {
+    protected get loginMethod(): 'REDIRECT' | 'POPUP' {
         return XH.isDesktop
-            ? (this.config.loginMethodDesktop ?? 'POPUP') === 'REDIRECT'
-            : (this.config.loginMethodMobile ?? 'REDIRECT') === 'REDIRECT';
+            ? (this.config.loginMethodDesktop ?? 'POPUP')
+            : (this.config.loginMethodMobile ?? 'REDIRECT');
     }
 
     protected get baseUrl() {
@@ -101,11 +106,14 @@ export abstract class BaseOauthService extends HoistService {
      * do *not* have our standard XH.configService ready to go at the point we need these configs.
      */
     override async initAsync(): Promise<void> {
-        this.config = await XH.fetchJson({url: 'xh/oauthConfig'});
-        this.logDebug('OAuth config fetched OK from server', this.config);
-        throwIf(!this.config.clientId, 'Missing OAuth clientId. Please review your configuration.');
+        const config = this.config = await XH.fetchJson({url: 'xh/oauthConfig'});
+        this.logDebug('OAuth config fetched OK from server', config);
+        throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
+        this.idScopes = config.idScopes ?? ['user.read', 'openid', 'profile', 'email'];
+
 
         await this.doInitAsync();
+        throwIf(!this.idToken, 'Failed Oauth authentication. No user or token found.');
 
         // Add token to headers for any *local* urls going back to grails server.
         XH.fetchService.addDefaultHeaders(opts => {
@@ -127,6 +135,15 @@ export abstract class BaseOauthService extends HoistService {
         }
     }
 
+    /**
+     * Request a valid access token for the authenticated user.
+     *
+     * Depending on login method, this may trigger user prompts, or redirects if
+     * required due to timeouts, or other protocol requirements.
+     */
+    abstract getAccessTokenAsync(scopes: string[], loginWithPopup?:boolean): Promise<string>;
+
+
     //------------------------------------
     // Implementation/Template methods
     //-----------------------------------
@@ -138,22 +155,41 @@ export abstract class BaseOauthService extends HoistService {
         return idToken ? {'x-xh-idt': idToken} : {};
     }
 
+    /**
+     * Call before redirect flow, to snapshot needed state to
+     * be restored after redirect.
+     *
+     * @return key for re-accessing this state, to be round-tripped
+     * with redirect.
+     */
+    protected captureRedirectState(): string {
+        const state = {
+            key: uuid(),
+            timestamp: Date.now(),
+            search: location.search
+        };
 
-    protected setRedirectState(state: PlainObject): string {
-        let key = uuid(),
-            recs = XH.localStorageService
+        const recs = XH.localStorageService
             .get('xhOAuthState', [])
             .filter(r => !olderThan(r.timestamp, 5 * MINUTES));
 
-        recs.push({key, state, timestamp: Date.now()});
-
+        recs.push(state);
         XH.localStorageService.set('xhOAuthState', recs);
-        return key;
+        return state.key;
     }
 
-    protected getRedirectState(key: string): PlainObject {
-        return XH.localStorageService
-            .get('xhOAuthState', [])
-            .find(r => r.key == key)?.state
+    /**
+     * Call after redirect flow, to rehydrate state.
+     *
+     * @param key - key for re-accessing this state, as round-tripped
+     * with redirect.
+     */
+    protected restoreRedirectState(key: string) {
+        const state = find(XH.localStorageService.get('xhOAuthState', []), {key});
+        throwIf(!state, 'Failure in OAuth, no redirect state located.');
+
+        const {search} = state,
+            url = isEmpty(search) ? '/' : location.origin + location.pathname + search;
+        window.history.replaceState(null, '', url);
     }
 }
