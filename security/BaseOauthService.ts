@@ -166,7 +166,7 @@ export abstract class BaseOauthService extends HoistService {
         const state = {
             key: uuid(),
             timestamp: Date.now(),
-            search: location.search
+            search: window.location.search
         };
 
         const recs = XH.localStorageService
@@ -189,7 +189,8 @@ export abstract class BaseOauthService extends HoistService {
         throwIf(!state, 'Failure in OAuth, no redirect state located.');
 
         const {search} = state,
-            url = isEmpty(search) ? '/' : location.origin + location.pathname + search;
+            {origin, pathname} = window.location,
+            url = isEmpty(search) ? '/' : origin + pathname + search;
         window.history.replaceState(null, '', url);
     }
 }

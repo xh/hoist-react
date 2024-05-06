@@ -90,7 +90,7 @@ export class AuthZeroOauthService extends BaseOauthService {
         const {client} = this;
 
         // Determine if we are on back end of redirect.  (recipe from Auth0 docs)
-        const {search} = location,
+        const {search} = window.location,
             isReturning = (search.includes('state=') && search.includes('code=')) || search.includes('error=');
 
         if (!isReturning) {
