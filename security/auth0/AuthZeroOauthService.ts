@@ -71,21 +71,19 @@ export class AuthZeroOauthService extends BaseOauthService {
     //-----------------
     private createClient(): Auth0Client {
         const config = this.config as AuthZeroOauthConfig,
-            {clientId, domain, idScopes} = config;
+            {clientId, domain} = config;
 
         throwIf(!domain, 'Missing Auth0 domain. Please review your configuration.');
 
-        const opts: Auth0ClientOptions = {
+        return new Auth0Client({
             clientId,
             domain,
             authorizationParams: {
-                scopes: idScopes.join(' '),
+                scopes: this.idScopes.join(' '),
                 redirect_uri: this.redirectUrl
             },
             cacheLocation: 'localstorage'
-        };
-
-        return new Auth0Client(opts);
+        });
     }
 
     private async completeViaRedirectAsync(): Promise<void> {
