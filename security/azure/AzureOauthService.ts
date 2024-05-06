@@ -16,7 +16,6 @@ import {XH} from '@xh/hoist/core';
 import {never} from '@xh/hoist/promise';
 import {logDebug, logError, logInfo, logWarn, throwIf} from '@xh/hoist/utils/js';
 import {BaseOauthConfig, BaseOauthService} from '../BaseOauthService';
-import {isEmpty} from 'lodash';
 
 interface AzureOauthConfig extends BaseOauthConfig {
     /** Tenant ID (GUID) of your organization */
@@ -45,27 +44,20 @@ export class AzureOauthService extends BaseOauthService {
     account: AccountInfo;
 
     override async doInitAsync(): Promise<void> {
-        const client = (this.client = await this.createClientAsync());
+        const client = (this.client = await this.createClientAsync()),
+            account = client.getAllAccounts()[0];
 
         let result: AuthenticationResult;
         try {
-            const accounts = client.getAllAccounts();
-            if (isEmpty(accounts)) {
-                result = await client.ssoSilent({scopes: this.idScopes});
-            } else {
-                result = await client.acquireTokenSilent({
-                    scopes: this.idScopes,
-                    account: accounts[0]
-                });
-            }
+            result = await client.ssoSilent({scopes: this.idScopes, account});
         } catch (e) {
             if (!(e instanceof InteractionRequiredAuthError)) throw e;
 
             logDebug('SSO Failed, logging in interactively', e);
             result =
                 this.loginMethod === 'REDIRECT'
-                    ? await this.completeViaRedirectAsync()
-                    : await this.completeViaPopupAsync();
+                    ? await this.completeViaRedirectAsync(account)
+                    : await this.completeViaPopupAsync(account);
             this.logDebug(
                 `(Re)authenticated OK via Azure`,
                 result.account.username,
@@ -78,14 +70,14 @@ export class AzureOauthService extends BaseOauthService {
     }
 
     override async doLogoutAsync(): Promise<void> {
-        const {postLogoutRedirectUrl, client, account} = this;
-        await client.logoutRedirect({account, postLogoutRedirectUri: postLogoutRedirectUrl});
+        const {client} = this;
+        await client.clearCache();
+        this.loginMethod == 'REDIRECT' ?
+            await client.logoutRedirect():
+            await client.logoutPopup();
     }
 
-    override async getAccessTokenAsync(
-        scopes: string[],
-        allowPopup: boolean = false
-    ): Promise<string> {
+    override async getAccessTokenAsync(scopes: string[], allowPopup: boolean = false): Promise<string> {
         const {client, account} = this;
 
         let ret: AuthenticationResult;
@@ -125,17 +117,16 @@ export class AzureOauthService extends BaseOauthService {
         return ret;
     }
 
-    private async completeViaRedirectAsync(): Promise<AuthenticationResult> {
-        const {client, idScopes} = this,
+    private async completeViaRedirectAsync(account: AccountInfo): Promise<AuthenticationResult> {
+        const {client, idScopes: scopes} = this,
             redirectResp = await client.handleRedirectPromise();
 
         if (!redirectResp) {
             // 1) Initiating - grab state and initiate redirect
             const state = this.captureRedirectState();
-            const account = client.getAllAccounts()[0];
             account
-                ? await client.acquireTokenRedirect({state, scopes: idScopes, account: account})
-                : await client.loginRedirect({state, scopes: idScopes});
+                ? await client.acquireTokenRedirect({state, scopes, account})
+                : await client.loginRedirect({state, scopes});
             await never();
         } else {
             // 2) Returning - just restore state
@@ -145,13 +136,12 @@ export class AzureOauthService extends BaseOauthService {
         }
     }
 
-    private async completeViaPopupAsync(): Promise<AuthenticationResult> {
-        const {client, idScopes} = this;
-        const account = client.getAllAccounts()[0];
+    private async completeViaPopupAsync(account: AccountInfo): Promise<AuthenticationResult> {
+        const {client, idScopes: scopes} = this;
         try {
             return account
-                ? await client.acquireTokenPopup({scopes: idScopes, account: account})
-                : await client.loginPopup({scopes: idScopes});
+                ? await client.acquireTokenPopup({scopes, account})
+                : await client.loginPopup({scopes});
         } catch (e) {
             if (e.message?.toLowerCase().includes('popup window')) {
                 throw XH.exception({
