@@ -4,13 +4,12 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {CustomCellEditorProps} from '@ag-grid-community/react';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistInputProps} from '@xh/hoist/cmp/input';
 import {HoistProps} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import '@xh/hoist/desktop/register';
-
-import type {ICellEditorParams} from '@ag-grid-community/core';
 
 export interface EditorProps<InputPropsT extends HoistInputProps> extends HoistProps {
     /** Column in StoreRecord being edited. */
@@ -25,5 +24,5 @@ export interface EditorProps<InputPropsT extends HoistInputProps> extends HoistP
     /** Props to pass through to the underlying HoistInput component */
     inputProps: InputPropsT;
 
-    agParams: ICellEditorParams;
+    agParams: CustomCellEditorProps;
 }
