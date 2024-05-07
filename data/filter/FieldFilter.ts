@@ -130,13 +130,13 @@ export class FieldFilter extends Filter {
             case '=':
                 opFn = v => {
                     if (isNil(v) || v === '' || (isArray(v) && isEmpty(v))) v = null;
-                    return value.some(it => isEqual(v, it));
+                    return (v == null && isEmpty(value)) || value.some(it => isEqual(v, it));
                 };
                 break;
             case '!=':
                 opFn = v => {
                     if (isNil(v) || v === '' || (isArray(v) && isEmpty(v))) v = null;
-                    return !value.some(it => isEqual(v, it));
+                    return (v != null || !isEmpty(value)) && !value.some(it => isEqual(v, it));
                 };
                 break;
             case '>':
