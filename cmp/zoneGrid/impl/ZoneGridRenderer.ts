@@ -95,9 +95,10 @@ export interface ZoneGridSubField {
 //------------------
 function renderMainField(value: any, renderer: ColumnRenderer, context: CellContext) {
     const {column} = context;
+    const {content, rendererClass} = renderValue(value, renderer, column, context);
     return div({
-        className: getZoneGridRendererClass(renderer),
-        item: renderValue(value, renderer, column, context)
+        className: rendererClass,
+        item: content
     });
 }
 
@@ -119,25 +120,38 @@ function renderSubField({colId, label}: ZoneGridSubField, context: CellContext) 
         labelStr = label;
     }
 
-    const renderedVal = renderValue(value, renderer, column, context),
-        renderedValIsEmpty = renderedVal === '' || isNil(renderedVal);
+    const {content, rendererClass} = renderValue(value, renderer, column, context),
+        renderedValIsEmpty = content === '' || isNil(content);
 
     return renderedValIsEmpty
         ? null
         : div({
-              className: getZoneGridRendererClass(renderer),
+              className: rendererClass,
               items: [
                   labelStr
                       ? span({item: `${labelStr}:`, className: getStyleClassName('label')})
                       : null,
-                  renderedVal
+                  content
               ]
           });
 }
 
-function renderValue(value: any, renderer: ColumnRenderer, column: Column, context: CellContext) {
+function renderValue(
+    value: string | number,
+    renderer: ColumnRenderer,
+    column: Column,
+    context: CellContext
+): {
+    content: ReactNode | null;
+    rendererClass: string;
+} {
     const ret = renderer ? renderer(value, {...context, column}) : value;
-    return isNil(ret) ? null : ret;
+    return {
+        content: isNil(ret) ? null : ret,
+        rendererClass: ['string', 'number'].includes(typeof ret)
+            ? getStyleClassName('text-container')
+            : getStyleClassName('element-container')
+    };
 }
 
 function renderDelimiter(delimiter: string) {
@@ -145,10 +159,6 @@ function renderDelimiter(delimiter: string) {
         className: getStyleClassName('delimiter'),
         item: delimiter
     });
-}
-
-function getZoneGridRendererClass(renderer: ColumnRenderer): string {
-    return renderer ? getStyleClassName('field-renderer') : getStyleClassName('field');
 }
 
 function getStyleClassName(subClass?: string): string {
