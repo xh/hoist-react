@@ -40,7 +40,7 @@ for more details.
 
 ### ⚙️ Technical
 
-* NumberInput now validates value changes as per BluePrint's `allowNumericCharactersOnly` logic.
+* NumberEditor no longer activates on keypress of letter characters.
 * Removed initial `ping` call `FetchService` init.
 
 ### 📚 Libraries
