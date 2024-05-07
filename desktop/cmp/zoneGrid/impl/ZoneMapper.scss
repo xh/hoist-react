@@ -29,27 +29,27 @@
       }
 
       &.tl {
-        font-size: var(--xh-grid-multifield-top-font-size-px);
+        font-size: var(--xh-grid-zonegrid-top-font-size-px);
         border-radius: var(--xh-border-radius-px) 0 0 0;
       }
 
       &.tr {
         justify-content: flex-end;
         margin: 0 0 0 -1px;
-        font-size: var(--xh-grid-multifield-top-font-size-px);
+        font-size: var(--xh-grid-zonegrid-top-font-size-px);
         border-radius: 0 var(--xh-border-radius-px) 0 0;
       }
 
       &.bl {
         margin: -1px 0 0 0;
-        font-size: var(--xh-grid-multifield-bottom-font-size-px);
+        font-size: var(--xh-grid-zonegrid-bottom-font-size-px);
         border-radius: 0 0 0 var(--xh-border-radius-px);
       }
 
       &.br {
         justify-content: flex-end;
         margin: -1px 0 0 -1px;
-        font-size: var(--xh-grid-multifield-bottom-font-size-px);
+        font-size: var(--xh-grid-zonegrid-bottom-font-size-px);
         border-radius: 0 0 var(--xh-border-radius-px);
       }
     }

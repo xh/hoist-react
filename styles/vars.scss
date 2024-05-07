@@ -494,13 +494,11 @@ body {
   --xh-grid-tiny-header-lr-pad: var(--grid-tiny-header-lr-pad, 4);
   --xh-grid-tiny-header-lr-pad-px: calc(var(--xh-grid-tiny-header-lr-pad) * 1px);
 
-  // Multifield renderer
-  --xh-grid-multifield-top-font-size: var(--grid-multifield-top-font-size, 14);
-  --xh-grid-multifield-top-font-size-px: calc(var(--xh-grid-multifield-top-font-size) * 1px);
-  --xh-grid-multifield-bottom-font-size: var(--grid-multifield-bottom-font-size, 11);
-  --xh-grid-multifield-bottom-font-size-px: calc(var(--xh-grid-multifield-bottom-font-size) * 1px);
-  --xh-grid-multifield-line-height: var(--grid-multifield-line-height, 16);
-  --xh-grid-multifield-line-height-px: calc(var(--xh-grid-multifield-line-height) * 1px);
+  // Zone Grid renderer
+  --xh-grid-zonegrid-top-font-size: var(--grid-zonegrid-top-font-size, 14);
+  --xh-grid-zonegrid-top-font-size-px: calc(var(--xh-grid-zonegrid-top-font-size) * 1px);
+  --xh-grid-zonegrid-bottom-font-size: var(--grid-zonegrid-bottom-font-size, 11);
+  --xh-grid-zonegrid-bottom-font-size-px: calc(var(--xh-grid-zonegrid-bottom-font-size) * 1px);
 
   // Grid column-header-based filter popover (desktop only)
   --xh-grid-filter-popover-height-px: var(--grid-filter-popover-height-px, 350px);

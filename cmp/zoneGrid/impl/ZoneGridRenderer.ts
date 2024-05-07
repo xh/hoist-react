@@ -13,60 +13,60 @@ import {ReactNode} from 'react';
 /**
  * A grid rendererFn that renders a collection of additional SubFields in a row beneath the main column field.
  *
- * Requires the column to also specify a multiFieldConfig in its `appData`.
+ * Requires the column to also specify a zoneGridConfig in its `appData`.
  *
  * The configs `subFields` act as pointers to other columns that exist in the GridModel's columns collection
  * (often hidden). They will be rendered using the same rendererFn, headerName and value as the column
  * they refer to.
  */
-export function multiFieldRenderer(value: any, context: CellContext): ReactNode {
+export function zoneGridRenderer(value: any, context: CellContext): ReactNode {
     const {column} = context,
-        {multiFieldConfig} = column.appData;
+        {zoneGridConfig} = column.appData;
 
-    throwIf(!multiFieldConfig, 'Columns using multiFieldRenderer must specify a multiFieldConfig');
+    throwIf(!zoneGridConfig, 'Columns using zoneGridRenderer must specify a zoneGridConfig');
     warnIf(
         !column.rowHeight,
-        'MultiFieldRenderer works best with rowHeight: Grid.MULTIFIELD_ROW_HEIGHT'
+        'ZoneGridRenderer works best with rowHeight: Grid.ZONEGRID_ROW_HEIGHT'
     );
 
-    const {mainRenderer, delimiter, subFields = []} = multiFieldConfig,
+    const {mainRenderer, delimiter, subFields = []} = zoneGridConfig as ZoneGridConfig,
         [topFields, bottomFields] = partition(subFields, it => it.position === 'top');
 
     // Render main field and subfields to top row
-    let topRowItems: ReactNode[] = [
+    let topSectionItems: ReactNode[] = [
         renderMainField(value, mainRenderer, context),
         ...topFields.map(it => renderSubField(it, context))
     ];
-    pull(topRowItems, null);
+    pull(topSectionItems, null);
 
     // Render subfield to bottom row
-    let bottomRowItems: ReactNode[] = bottomFields.map(it => renderSubField(it, context));
-    pull(bottomRowItems, null);
+    let bottomSectionItems: ReactNode[] = bottomFields.map(it => renderSubField(it, context));
+    pull(bottomSectionItems, null);
 
     // Insert delimiter if applicable
     if (delimiter) {
-        topRowItems = intersperse(topRowItems, renderDelimiter(delimiter));
-        bottomRowItems = intersperse(bottomRowItems, renderDelimiter(delimiter));
+        topSectionItems = intersperse(topSectionItems, renderDelimiter(delimiter));
+        bottomSectionItems = intersperse(bottomSectionItems, renderDelimiter(delimiter));
     }
 
     return div({
-        className: 'xh-multifield-renderer',
+        className: getStyleClassName(),
         items: [
             div({
-                className: 'xh-multifield-renderer-row xh-multifield-renderer-top',
-                items: topRowItems
+                className: `${getStyleClassName('section')} ${getStyleClassName('top')}`,
+                items: topSectionItems
             }),
             div({
-                className: 'xh-multifield-renderer-row xh-multifield-renderer-bottom',
-                items: bottomRowItems
+                className: `${getStyleClassName('section')} ${getStyleClassName('bottom')}`,
+                items: bottomSectionItems
             })
         ]
     });
 }
 
-export interface MultiFieldConfig {
+export interface ZoneGridConfig {
     /** Array of SubField specifications to render. */
-    subFields: MultiFieldSubField[];
+    subFields: ZoneGridSubField[];
 
     /** Renderer for primary field. */
     mainRenderer?: ColumnRenderer;
@@ -75,7 +75,7 @@ export interface MultiFieldConfig {
     delimiter?: string;
 }
 
-export interface MultiFieldSubField {
+export interface ZoneGridSubField {
     colId: string;
 
     /**
@@ -96,12 +96,12 @@ export interface MultiFieldSubField {
 function renderMainField(value: any, renderer: ColumnRenderer, context: CellContext) {
     const {column} = context;
     return div({
-        className: getMultiFieldRendererClass(renderer),
+        className: getZoneGridRendererClass(renderer),
         item: renderValue(value, renderer, column, context)
     });
 }
 
-function renderSubField({colId, label}: MultiFieldSubField, context: CellContext) {
+function renderSubField({colId, label}: ZoneGridSubField, context: CellContext) {
     const {record, gridModel} = context,
         column = gridModel.getColumn(colId);
 
@@ -125,10 +125,10 @@ function renderSubField({colId, label}: MultiFieldSubField, context: CellContext
     return renderedValIsEmpty
         ? null
         : div({
-              className: getMultiFieldRendererClass(renderer),
+              className: getZoneGridRendererClass(renderer),
               items: [
                   labelStr
-                      ? span({item: `${labelStr}:`, className: 'xh-multifield-renderer-label'})
+                      ? span({item: `${labelStr}:`, className: getStyleClassName('label')})
                       : null,
                   renderedVal
               ]
@@ -142,11 +142,15 @@ function renderValue(value: any, renderer: ColumnRenderer, column: Column, conte
 
 function renderDelimiter(delimiter: string) {
     return span({
-        className: 'xh-multifield-renderer-delimiter',
+        className: getStyleClassName('delimiter'),
         item: delimiter
     });
 }
 
-function getMultiFieldRendererClass(renderer: ColumnRenderer): string {
-    return renderer ? 'xh-multifield-renderer-field-with-renderer' : 'xh-multifield-renderer-field';
+function getZoneGridRendererClass(renderer: ColumnRenderer): string {
+    return renderer ? getStyleClassName('field-renderer') : getStyleClassName('field');
+}
+
+function getStyleClassName(subClass?: string): string {
+    return `xh-zonegrid-cell${subClass ? `-${subClass}` : ''}`;
 }

@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {zoneGridRenderer} from '@xh/hoist/cmp/zoneGrid/impl/ZoneGridRenderer';
 import {
     HoistModel,
     LoadSpec,
@@ -38,7 +39,6 @@ import {
     RowClassFn,
     RowClassRuleFn,
     TreeStyle,
-    multiFieldRenderer,
     ColumnRenderer
 } from '@xh/hoist/cmp/grid';
 import {
@@ -599,14 +599,14 @@ export class ZoneGridModel extends HoistModel {
             field: isLeft ? 'left_column' : 'right_column',
             flex: isLeft ? 2 : 1,
             align: isLeft ? 'left' : 'right',
-            renderer: multiFieldRenderer,
+            renderer: zoneGridRenderer,
             rendererIsComplex: true,
-            rowHeight: Grid['MULTIFIELD_ROW_HEIGHT'],
+            rowHeight: Grid['ZONEGRID_ROW_HEIGHT'],
             resizable: false,
             movable: false,
             hideable: false,
             appData: {
-                multiFieldConfig: {
+                zoneGridConfig: {
                     mainRenderer: primaryCol.renderer,
                     delimiter: this.delimiter,
                     subFields
