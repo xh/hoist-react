@@ -32,6 +32,10 @@ for more details.
 
 * New services added to support out--of-the-box Oauth: `AzureOauthService`, `AuthZeroOauthService`
 
+* Support for beta version of new Hoist `security` package, providing built-in support for OAuth flows.
+See `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient` for more information.  Please note that
+package is being released as a *beta* and is subject to change before final release.
+
 #### Other Changes
 
 * Removed support for passing a plain object to the `model` prop of Hoist Components (previously
