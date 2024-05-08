@@ -67,11 +67,6 @@ export interface BaseOauthClientConfig {
      * Defaults to false.
      */
     expiryWarning: boolean | Partial<BannerSpec>;
-
-    /**
-     * Additional configuration to be supplied directly to the underlying auth library SDK.
-     */
-    clientConfig: PlainObject;
 }
 
 /**
@@ -152,7 +147,6 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
             runFn: () => this.onCheckExpiry(),
             interval: this.EXPIRY_CHECK_INTERVAL
         });
-
     }
 
     /**
@@ -256,8 +250,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
     protected async loadTokensSilentlyAsync(useCache: boolean = true): Promise<void> {
         const {idToken, accessToken} = await this.getTokensSilentlyAsync(useCache);
         this.idInfo = {token: idToken, expiry: jwtDecode(idToken).exp * SECONDS};
-        //TODO: restore to idToken
-        this.accessInfo = {token: accessToken, expiry: jwtDecode(idToken).exp * SECONDS};
+        this.accessInfo = {token: accessToken, expiry: jwtDecode(accessToken).exp * SECONDS};
 
         this.logDebug('Loaded tokens', new Date(this.idInfo.expiry), new Date(this.accessInfo.expiry));
     }
@@ -275,10 +268,10 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
     }
 
     private onCheckExpiry() {
-        if (olderThan(this.idInfo?.expiry, -this.EXPIRY_CHECK_INTERVAL)) {
+        if (this.idInfo && olderThan(this.idInfo.expiry, -this.EXPIRY_CHECK_INTERVAL)) {
             this.idInfo = null;
         }
-        if (olderThan(this.accessInfo?.expiry, -this.EXPIRY_CHECK_INTERVAL)) {
+        if (this.accessInfo && olderThan(this.accessInfo.expiry, -this.EXPIRY_CHECK_INTERVAL)) {
            this.accessInfo = null;
         }
         this.updateWarning()

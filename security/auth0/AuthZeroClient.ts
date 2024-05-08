@@ -9,15 +9,14 @@ import {XH} from '@xh/hoist/core';
 import {never, wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
-import {
-    BaseOauthClient,
-    TokenPair,
-    BaseOauthClientConfig
-} from '../BaseOauthClient';
+import {BaseOauthClient, TokenPair, BaseOauthClientConfig} from '../BaseOauthClient';
 
 interface AuthZeroClientConfig extends BaseOauthClientConfig {
     /** Domain of your app registered with Auth0 */
     domain: string;
+
+    /** Audience (i.e. API) identifier for AccessToken.  Must be registered with Auth0*/
+    audience: string;
 }
 
 /**
@@ -26,11 +25,10 @@ interface AuthZeroClientConfig extends BaseOauthClientConfig {
  * created by the user in the Auth0 registration flow (and stored on Auth0 servers).
  */
 export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
-
     private client: Auth0Client;
 
     override async doInitAsync(): Promise<void> {
-        const client = this.client = this.createClient();
+        const client = (this.client = this.createClient());
 
         if (await client.isAuthenticated()) {
             try {
@@ -77,9 +75,10 @@ export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
     //-----------------
     private createClient(): Auth0Client {
         const config = this.config,
-            {clientId, domain} = config;
+            {clientId, domain, audience} = config;
 
-        throwIf(!domain, 'Missing Auth0 domain. Please review your configuration.');
+        throwIf(!domain, 'Missing Auth0 "domain". Please review your config.');
+        throwIf(!audience, 'Missing Auth0 "audience" for Access Token. Please review your config.');
 
         const ret = new Auth0Client({
             clientId,
@@ -87,6 +86,7 @@ export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
             useRefreshTokens: true,
             useRefreshTokensFallback: true,
             authorizationParams: {
+                audience,
                 scope: this.scopes.join(' '),
                 redirect_uri: this.redirectUrl
             },
