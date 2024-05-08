@@ -13,13 +13,13 @@
     // Constrain max height on the outer container to safe area.
     display: flex;
     flex-direction: column;
-    max-height: 100svh;
+    max-height: calc(100svh - var(--xh-pad-double-px));
 
     .dialog-container {
       margin: var(--xh-pad-safe-all);
       display: flex;
       flex-direction: column;
-      max-width: 100svw;
+      max-width: calc(100svw - var(--xh-pad-double-px));
       // Background on inner onsen container deliberately set to *border* color - this avoids small
       // but noticeable gaps around the edges. The dialog body gets a defined background below for
       // the actual contents of the component.

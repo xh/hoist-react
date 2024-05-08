@@ -2,8 +2,10 @@
   // Styles here are to make the dialog fullscreen
   & > .dialog {
     width: 100svw;
+    max-height: 100svh !important;
 
     .dialog-container {
+      max-width: 100svh !important;
       height: 100svh;
       border: 0 !important;
 
