@@ -100,6 +100,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             item: createElement(AgGridReact, {
                 ...AgGrid['DEFAULT_PROPS'],
                 // Default some ag-grid props, but allow overriding.
+                reactiveCustomComponents: true,
                 getRowHeight: impl.getRowHeight,
                 // Pass others on directly.
                 ...agGridProps,

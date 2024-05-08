@@ -13,7 +13,7 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ForwardedRef, ReactElement, useCallback, useImperativeHandle} from 'react';
+import {ForwardedRef, ReactElement, useCallback} from 'react';
 
 /**
  * Hook to render a component to be used for inline cell editing in ag-grid.
@@ -33,10 +33,6 @@ export function useInlineEditorModel(
 ): ReactElement {
     const {className, inputProps, agParams} = props,
         impl = useLocalModel(() => new InlineEditorModel(agParams));
-
-    useImperativeHandle(ref, () => ({
-        inputModel: () => impl.ref.current
-    }));
 
     useGridCellEditor({
         // This is called in full-row editing when the user tabs into the cell
