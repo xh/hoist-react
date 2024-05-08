@@ -4,19 +4,17 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {BannerSpec, HoistBase, managed, PlainObject, XH} from '@xh/hoist/core';
+import {BannerSpec, HoistBase, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {defaultsDeep, find, isEmpty, isObject, union} from 'lodash';
-import {ReactElement, ReactNode} from 'react';
 import {v4 as uuid} from 'uuid';
 import {jwtDecode} from 'jwt-decode';
 import {observable} from 'mobx';
 
 export interface BaseOauthClientConfig {
-
     /** Client ID (GUID) of your app registered with your Oauth provider. */
     clientId: string;
 
@@ -25,19 +23,19 @@ export interface BaseOauthClientConfig {
      * It must exactly match one of the redirect URIs registered in the Azure portal, in the SPA section.
      * Default is 'APP_BASE_URL' which will be replaced with the current app's base URL.
      **/
-    redirectUrl?: 'APP_BASE_URL'|string;
+    redirectUrl?: 'APP_BASE_URL' | string;
 
     /**
      * The redirect URL where the window navigates after a successful logout.
      * Default is 'APP_BASE_URL' which will be replaced with the current app's base URL.
      **/
-    postLogoutRedirectUrl?: 'APP_BASE_URL'|string;
+    postLogoutRedirectUrl?: 'APP_BASE_URL' | string;
 
     /** The method used for logging in on desktop. Default is 'REDIRECT'. */
-    loginMethodDesktop?: 'REDIRECT'|'POPUP';
+    loginMethodDesktop?: 'REDIRECT' | 'POPUP';
 
     /** The method used for logging in on mobile. Default is 'REDIRECT'. */
-    loginMethodMobile?: 'REDIRECT'|'POPUP';
+    loginMethodMobile?: 'REDIRECT' | 'POPUP';
 
     /**
      * When the remaining token lifetime is below this threshold, try to refresh the token.
@@ -118,7 +116,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
      * Main entry point for this object.
      */
     async initAsync(): Promise<void> {
-        const config = this.config = defaultsDeep(
+        const config = (this.config = defaultsDeep(
             await XH.fetchJson({url: 'xh/oauthConfig'}),
             this.config,
             {
@@ -128,9 +126,9 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
                 postLogoutRedirectUrl: 'APP_BASE_URL',
                 expiryWarning: false,
                 tokenRefreshThresholdMins: 10,
-                tokenRefreshCheckSecs: 30,
+                tokenRefreshCheckSecs: 30
             } as T
-        )
+        ));
 
         this.logDebug('OAuth config merged from code and server', config);
         throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
@@ -215,7 +213,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
         const state = {
             key: uuid(),
             timestamp: Date.now(),
-            search: location.search
+            search: window.location.search
         };
 
         const recs = XH.localStorageService
@@ -238,13 +236,14 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
 
         this.logDebug('Restoring Redirect State', state);
         const {search} = state,
-            url = isEmpty(search) ? '/' : location.origin + location.pathname + search;
+            {origin, pathname} = window.location,
+            url = isEmpty(search) ? '/' : origin + pathname + search;
         window.history.replaceState(null, '', url);
     }
 
     /**
      * Load tokens from provider.
-     * @param useCache, use the local cache.  Set as false to ensure
+     * @param useCache - use the local cache.  Set as false to ensure
      * going to the network for a fresh token. Default true.
      */
     protected async loadTokensSilentlyAsync(useCache: boolean = true): Promise<void> {
@@ -252,7 +251,11 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
         this.idInfo = {token: idToken, expiry: jwtDecode(idToken).exp * SECONDS};
         this.accessInfo = {token: accessToken, expiry: jwtDecode(accessToken).exp * SECONDS};
 
-        this.logDebug('Loaded tokens', new Date(this.idInfo.expiry), new Date(this.accessInfo.expiry));
+        this.logDebug(
+            'Loaded tokens',
+            new Date(this.idInfo.expiry),
+            new Date(this.accessInfo.expiry)
+        );
     }
 
     private async onRefreshAsync(): Promise<void> {
@@ -260,7 +263,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
             threshold = config.tokenRefreshThresholdMins * -1 * MINUTES;
         if (olderThan(idInfo?.expiry, threshold) || olderThan(accessInfo?.expiry, threshold)) {
             try {
-               await this.loadTokensSilentlyAsync(false)
+                await this.loadTokensSilentlyAsync(false);
             } catch (e) {
                 XH.handleException(e, {showAlert: false, logOnServer: false});
             }
@@ -272,20 +275,20 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
             this.idInfo = null;
         }
         if (this.accessInfo && olderThan(this.accessInfo.expiry, -this.EXPIRY_CHECK_INTERVAL)) {
-           this.accessInfo = null;
+            this.accessInfo = null;
         }
-        this.updateWarning()
+        this.updateWarning();
     }
 
     private updateWarning() {
         const {expiryWarning} = this.config;
         if (!expiryWarning) return;
 
-        const expired = !this.idToken || !this.accessToken
+        const expired = !this.idToken || !this.accessToken;
         if (this.expiryWarningDisplayed != expired) {
             this.expiryWarningDisplayed = expired;
             if (expired) {
-                const onClick =  () => XH.reloadApp();
+                const onClick = () => XH.reloadApp();
                 let spec: BannerSpec = {
                     category: 'xhOAuth',
                     message: 'Authentication expired.  Reload required',
@@ -296,7 +299,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
                     onClick
                 };
                 if (isObject(expiryWarning)) {
-                    spec = {...spec, ...expiryWarning}
+                    spec = {...spec, ...expiryWarning};
                 }
                 XH.showBanner(spec);
             } else {
