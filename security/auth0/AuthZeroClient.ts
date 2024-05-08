@@ -4,14 +4,18 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {Auth0Client, Auth0ClientOptions} from '@auth0/auth0-spa-js';
+import {Auth0Client} from '@auth0/auth0-spa-js';
 import {XH} from '@xh/hoist/core';
 import {never, wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
-import {BaseOauthConfig, BaseOauthService} from '../BaseOauthService';
+import {
+    BaseOauthClient,
+    TokenPair,
+    BaseOauthClientConfig
+} from '../BaseOauthClient';
 
-interface AuthZeroOauthConfig extends BaseOauthConfig {
+interface AuthZeroClientConfig extends BaseOauthClientConfig {
     /** Domain of your app registered with Auth0 */
     domain: string;
 }
@@ -21,25 +25,33 @@ interface AuthZeroOauthConfig extends BaseOauthConfig {
  * supporting login via Google, GitHub, or Microsoft identities *or* via a username/password combo
  * created by the user in the Auth0 registration flow (and stored on Auth0 servers).
  */
-export class AuthZeroOauthService extends BaseOauthService {
-    static instance: AuthZeroOauthService;
+export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
 
     private client: Auth0Client;
 
-    protected async doInitAsync(): Promise<void> {
+    override async doInitAsync(): Promise<void> {
+        this.client = this.createClient();
+        try {
+            await this.loadTokensSilentlyAsync();
+         } catch (e) {
+            this.usesRedirect
+                ? await this.completeViaRedirectAsync()
+                : await this.completeViaPopupAsync();
 
-        const client = this.client = this.createClient();
-        if (!(await client.isAuthenticated())) {
-            this.loginMethod === 'REDIRECT' ?
-                await this.completeViaRedirectAsync() :
-                await this.completeViaPopupAsync();
-
-            const user = await client.getUser();
+            const user = await this.client.getUser();
             this.logDebug(`(Re)authenticated OK via Auth0`, user.email, user);
-        }
 
-        // If we get here without exception, we *should* be set
-        this.idToken = (await client.getIdTokenClaims())?.__raw;
+            // Second-time (after login) the charm!
+            await this.loadTokensSilentlyAsync();
+        }
+    }
+
+    override async getTokensSilentlyAsync(useCache: boolean = true): Promise<TokenPair> {
+        const response = await this.client.getTokenSilently({
+            detailedResponse: true,
+            cacheMode: useCache ? 'on' : 'off'
+        });
+        return {idToken: response.id_token, accessToken: response.access_token};
     }
 
     override async doLogoutAsync(): Promise<void> {
@@ -50,40 +62,33 @@ export class AuthZeroOauthService extends BaseOauthService {
                 returnTo: this.postLogoutRedirectUrl
             }
         });
+
         // Wait enough time for Auth0 logout to complete before any reload.
         await wait(10 * SECONDS);
-    }
-
-    override async getAccessTokenAsync(
-        scopes: string[],
-        allowPopup: boolean = false
-    ): Promise<string> {
-        const opts = {authorizationParams: {scope: scopes.join(' ')}};
-        let ret = await this.client.getTokenSilently(opts);
-        if (!ret && allowPopup) {
-            ret = await this.client.getTokenWithPopup(opts);
-        }
-        return ret;
     }
 
     //------------------
     // Implementation
     //-----------------
     private createClient(): Auth0Client {
-        const config = this.config as AuthZeroOauthConfig,
+        const config = this.config,
             {clientId, domain} = config;
 
         throwIf(!domain, 'Missing Auth0 domain. Please review your configuration.');
 
-        return new Auth0Client({
+        const ret = new Auth0Client({
             clientId,
             domain,
+            useRefreshTokens: true,
+            useRefreshTokensFallback: true,
             authorizationParams: {
-                scopes: this.idScopes.join(' '),
+                scope: this.scopes.join(' '),
                 redirect_uri: this.redirectUrl
             },
             cacheLocation: 'localstorage'
         });
+        this.logDebug('Auth0 client created', ret);
+        return ret;
     }
 
     private async completeViaRedirectAsync(): Promise<void> {
@@ -91,7 +96,9 @@ export class AuthZeroOauthService extends BaseOauthService {
 
         // Determine if we are on back end of redirect.  (recipe from Auth0 docs)
         const {search} = location,
-            isReturning = (search.includes('state=') && search.includes('code=')) || search.includes('error=');
+            isReturning =
+                (search.includes('state=') && search.includes('code=')) ||
+                search.includes('error=');
 
         if (!isReturning) {
             // 1) Initiating - grab state and initiate redirect

@@ -7,7 +7,6 @@
 import * as msal from '@azure/msal-browser';
 import {
     AccountInfo,
-    AuthenticationResult,
     InteractionRequiredAuthError,
     IPublicClientApplication
 } from '@azure/msal-browser';
@@ -15,10 +14,9 @@ import {LogLevel} from '@azure/msal-common/src/logger/Logger';
 import {XH} from '@xh/hoist/core';
 import {never} from '@xh/hoist/promise';
 import {logDebug, logError, logInfo, logWarn, throwIf} from '@xh/hoist/utils/js';
-import {BaseOauthConfig, BaseOauthService} from '../BaseOauthService';
+import {BaseOauthClientConfig, BaseOauthClient, TokenPair} from '../BaseOauthClient';
 
-interface AzureOauthConfig extends BaseOauthConfig {
-
+interface MsalClientConfig extends BaseOauthClientConfig {
     /** Tenant ID (GUID) of your organization */
     tenantId: string;
 
@@ -34,35 +32,35 @@ interface AzureOauthConfig extends BaseOauthConfig {
 }
 
 /**
- * Service to implement OAuth authentication via Azure Active Directory/MSAL.
+ * Service to implement OAuth authentication via MSAL.
  */
-export class AzureOauthService extends BaseOauthService {
-    static instance: AzureOauthService;
+export class MsalClient extends BaseOauthClient<MsalClientConfig> {
 
     private client: IPublicClientApplication;
-
-    /** Authenticated account, as most recent auth call with Azure */
-    account: AccountInfo
+    private account: AccountInfo; // Authenticated account, as most recent auth call with Azure.
 
     override async doInitAsync(): Promise<void> {
-        const client = this.client = await this.createClientAsync();
-
-        let result: AuthenticationResult;
+        this.client = await this.createClientAsync();
         try {
-            // TODO: use Hint here to avoid multiple accounts requiring interaction? Use Ls?
-            result = await client.ssoSilent({scopes: this.idScopes});
+            // TODO: use Hint here to avoid multiple accounts requiring interaction?
+            await this.getTokensSilentlyAsync();
         } catch (e) {
             if (!(e instanceof InteractionRequiredAuthError)) throw e;
 
-            logDebug('SSO Failed, logging in interactively', e);
-            result = this.loginMethod === 'REDIRECT' ?
-                (await this.completeViaRedirectAsync()) :
-                (await this.completeViaPopupAsync());
-            this.logDebug(`(Re)authenticated OK via Azure`, result.account.username, result.account);
-        }
+            this.usesRedirect
+                ? await this.completeViaRedirectAsync()
+                : await this.completeViaPopupAsync();
+            this.logDebug(`(Re)authenticated OK via Azure`, this.account.username, this.account);
 
-        this.account = result.account;
-        this.idToken = result.account.idToken;
+            // Second-time (after login) the charm!
+            await this.getTokensSilentlyAsync();
+        }
+    }
+
+    override async getTokensSilentlyAsync(useCache: boolean = true): Promise<TokenPair> {
+        const ret = await this.client.acquireTokenSilent({scopes: this.scopes, forceRefresh: true});
+        this.account = ret.account;
+        return ret;
     }
 
     override async doLogoutAsync(): Promise<void> {
@@ -70,27 +68,11 @@ export class AzureOauthService extends BaseOauthService {
         await client.logoutRedirect({account, postLogoutRedirectUri: postLogoutRedirectUrl});
     }
 
-    override async getAccessTokenAsync(
-        scopes: string[],
-        allowPopup: boolean = false
-    ): Promise<string> {
-        const {client, account} = this;
-
-        let ret: AuthenticationResult;
-        try {
-            ret = await client.acquireTokenSilent({scopes, account});
-        } catch (e) {
-            if (!allowPopup || !(e instanceof InteractionRequiredAuthError)) throw e;
-            ret = await client.acquireTokenPopup({scopes, account});
-        }
-        return ret.accessToken;
-    }
-
     //------------------------
     // Implementation
     //------------------------
     private async createClientAsync(): Promise<IPublicClientApplication> {
-        const config = this.config as AzureOauthConfig,
+        const config = this.config,
             {clientId, authority, msalLogLevel} = config;
 
         throwIf(!authority, 'Missing MSAL authority. Please review your configuration.');
@@ -107,34 +89,34 @@ export class AzureOauthService extends BaseOauthService {
                     loggerCallback: this.logFromMsal,
                     logLevel: msalLogLevel ?? 1
                 }
-
             }
         });
         this.logDebug('MSAL client created', ret);
         return ret;
     }
 
-    private async completeViaRedirectAsync(): Promise<AuthenticationResult> {
-        const {client, idScopes} = this,
+    private async completeViaRedirectAsync(): Promise<void> {
+        const {client, scopes} = this,
             redirectResp = await client.handleRedirectPromise();
 
         if (!redirectResp) {
             // 1) Initiating - grab state and initiate redirect
             const state = this.captureRedirectState();
-            await client.loginRedirect({state, scopes: idScopes});
+            await client.loginRedirect({state, scopes});
             await never();
         } else {
             // 2) Returning - just restore state
-            const redirectState = redirectResp.state
-            this.restoreRedirectState(redirectState)
-            return redirectResp;
+            this.account = redirectResp.account;
+            const redirectState = redirectResp.state;
+            this.restoreRedirectState(redirectState);
         }
     }
 
-    private async completeViaPopupAsync(): Promise<AuthenticationResult> {
-        const {client, idScopes} = this;
+    private async completeViaPopupAsync(): Promise<void> {
+        const {client, scopes} = this;
         try {
-            return await client.loginPopup({scopes: idScopes});
+            const ret = await client.loginPopup({scopes});
+            this.account = ret.account;
         } catch (e) {
             if (e.message?.toLowerCase().includes('popup window')) {
                 throw XH.exception({
