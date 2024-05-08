@@ -110,13 +110,16 @@ export class MsalClient extends BaseOauthClient<MsalClientConfig> {
     }
 
     private async completeViaRedirectAsync(): Promise<void> {
-        const {client, scopes} = this,
+        const {client, scopes, account} = this,
             redirectResp = await client.handleRedirectPromise();
 
         if (!redirectResp) {
             // 1) Initiating - grab state and initiate redirect
             const state = this.captureRedirectState();
-            await client.loginRedirect({state, scopes});
+            account
+                ? await client.acquireTokenRedirect({state, scopes, account})
+                : await client.loginRedirect({state, scopes});
+
             await never();
         } else {
             // 2) Returning - just restore state
@@ -127,9 +130,12 @@ export class MsalClient extends BaseOauthClient<MsalClientConfig> {
     }
 
     private async completeViaPopupAsync(): Promise<void> {
-        const {client, scopes} = this;
+        const {client, scopes, account} = this;
         try {
-            const ret = await client.loginPopup({scopes});
+            const ret = account
+                ? await client.acquireTokenPopup({scopes, account})
+                : await client.loginPopup({scopes});
+
             this.account = ret.account;
         } catch (e) {
             if (e.message?.toLowerCase().includes('popup window')) {
