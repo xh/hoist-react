@@ -9,7 +9,7 @@ import {Icon} from '@xh/hoist/icon';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
-import {defaultsDeep, find, isEmpty, isObject, union} from 'lodash';
+import {defaultsDeep, find, isObject, union} from 'lodash';
 import {v4 as uuid} from 'uuid';
 import {jwtDecode} from 'jwt-decode';
 import {observable} from 'mobx';
@@ -210,11 +210,13 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
      * @return key - key for re-accessing this state, to be round-tripped with redirect.
      */
     protected captureRedirectState(): string {
-        const state = {
-            key: uuid(),
-            timestamp: Date.now(),
-            search: window.location.search
-        };
+        const {pathname, search} = window.location,
+            state = {
+                key: uuid(),
+                timestamp: Date.now(),
+                pathname,
+                search
+            };
 
         const recs = XH.localStorageService
             .get('xhOAuthState', [])
@@ -235,10 +237,8 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
         throwIf(!state, 'Failure in OAuth, no redirect state located.');
 
         this.logDebug('Restoring Redirect State', state);
-        const {search} = state,
-            {origin, pathname} = window.location,
-            url = isEmpty(search) ? '/' : origin + pathname + search;
-        window.history.replaceState(null, '', url);
+        const {search, pathname} = state;
+        window.history.replaceState(null, '', pathname + search);
     }
 
     /**
