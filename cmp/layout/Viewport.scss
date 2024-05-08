@@ -1,5 +1,7 @@
 .xh-viewport {
+  /* On desktop, because the viewport-fit tag isn't applied, this padding doesn't do anything (though it'd be 0 regardless) */
   padding: var(--xh-pad-safe-all);
+
   background-color: var(--xh-viewport-bg);
   top: 0;
   left: 0;

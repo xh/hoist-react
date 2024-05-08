@@ -1,15 +1,11 @@
 .xh-dialog-panel {
+  // Styles here are to make the dialog fullscreen
   & > .dialog {
     width: 100svw;
-    height: calc(100% - var(--xh-pad-px));
-    max-height: calc(100% - var(--xh-pad-px)) !important;
 
     .dialog-container {
-      margin: var(--xh-pad-safe-all);
-      max-width: 100svw !important;
       height: 100svh;
-      border-width: var(--xh-popup-border-width-px) 0 0 !important;
-      border-radius: 0;
+      border: 0 !important;
 
       & > .xh-panel {
         width: 100%;

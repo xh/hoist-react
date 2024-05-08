@@ -771,6 +771,11 @@ body {
   //------------------------
   // Viewport
   //------------------------
-  --xh-viewport-bg: black;
-
+    &.xh-mobile {
+      /*
+         For now on mobile, we want to constrain app content within the safe area bounds. Areas outside
+         the bounds are black.
+      */
+      --xh-viewport-bg: black;
+    }
 }
