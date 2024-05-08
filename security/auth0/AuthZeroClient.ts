@@ -30,20 +30,25 @@ export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
     private client: Auth0Client;
 
     override async doInitAsync(): Promise<void> {
-        this.client = this.createClient();
-        try {
-            await this.loadTokensSilentlyAsync();
-         } catch (e) {
-            this.usesRedirect
-                ? await this.completeViaRedirectAsync()
-                : await this.completeViaPopupAsync();
+        const client = this.client = this.createClient();
 
-            const user = await this.client.getUser();
-            this.logDebug(`(Re)authenticated OK via Auth0`, user.email, user);
-
-            // Second-time (after login) the charm!
-            await this.loadTokensSilentlyAsync();
+        if (await client.isAuthenticated()) {
+            try {
+                return await this.loadTokensSilentlyAsync();
+            } catch (e) {
+                this.logDebug('Failed to load tokens on init, falling back on login', e);
+            }
         }
+
+        this.usesRedirect
+            ? await this.completeViaRedirectAsync()
+            : await this.completeViaPopupAsync();
+
+        const user = await client.getUser();
+        this.logDebug(`(Re)authenticated OK via Auth0`, user.email, user);
+
+        // Second-time (after login) the charm!
+        await this.loadTokensSilentlyAsync();
     }
 
     override async getTokensSilentlyAsync(useCache: boolean = true): Promise<TokenPair> {

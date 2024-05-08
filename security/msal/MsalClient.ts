@@ -46,10 +46,12 @@ export class MsalClient extends BaseOauthClient<MsalClientConfig> {
 
         if (this.account) {
             try {
-                await this.loadTokensSilentlyAsync();
-                return;
+                return await this.loadTokensSilentlyAsync();
             } catch (e) {
-                if (!(e instanceof InteractionRequiredAuthError)) throw e;
+                if (!(e instanceof InteractionRequiredAuthError)) {
+                    throw e;
+                }
+                this.logDebug('Failed to load tokens on init, falling back on login', e);
             }
         }
 

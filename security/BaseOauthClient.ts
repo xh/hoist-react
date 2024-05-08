@@ -242,6 +242,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
         const state = find(XH.localStorageService.get('xhOAuthState', []), {key});
         throwIf(!state, 'Failure in OAuth, no redirect state located.');
 
+        this.logDebug('Restoring Redirect State', state);
         const {search} = state,
             url = isEmpty(search) ? '/' : location.origin + location.pathname + search;
         window.history.replaceState(null, '', url);
@@ -255,7 +256,8 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
     protected async loadTokensSilentlyAsync(useCache: boolean = true): Promise<void> {
         const {idToken, accessToken} = await this.getTokensSilentlyAsync(useCache);
         this.idInfo = {token: idToken, expiry: jwtDecode(idToken).exp * SECONDS};
-        this.accessInfo = {token: accessToken, expiry: jwtDecode(accessToken).exp * SECONDS};
+        //TODO: restore to idToken
+        this.accessInfo = {token: accessToken, expiry: jwtDecode(idToken).exp * SECONDS};
 
         this.logDebug('Loaded tokens', new Date(this.idInfo.expiry), new Date(this.accessInfo.expiry));
     }
