@@ -343,8 +343,8 @@
   }
 
   /*
-    What's contained inside a ZoneGrid cell section can either be a text node or an element node container
-    depending on the contents inside the container.
+    What's contained inside a ZoneGrid cell section can either be text node or element node containers
+    depending on the type of output a renderer generates.
   */
   .xh-zonegrid-cell-text-container {
     display: inline-block;
@@ -357,7 +357,7 @@
     display: flex;
     max-width: 100%;
 
-    /* Ensures direct children of the elements in the container for a specific ZoneGrid cell handle
+    /* Provides support for direct children of the elements in the container for a specific ZoneGrid cell to handle
     overflowing content with ellipsis. */
     & > * {
       overflow: hidden;
