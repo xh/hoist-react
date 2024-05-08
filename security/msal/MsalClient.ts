@@ -40,32 +40,44 @@ export class MsalClient extends BaseOauthClient<MsalClientConfig> {
     private account: AccountInfo; // Authenticated account, as most recent auth call with Azure.
 
     override async doInitAsync(): Promise<void> {
-        this.client = await this.createClientAsync();
-        try {
-            // TODO: use Hint here to avoid multiple accounts requiring interaction?
-            await this.getTokensSilentlyAsync();
-        } catch (e) {
-            if (!(e instanceof InteractionRequiredAuthError)) throw e;
+        const client = this.client = await this.createClientAsync();
 
-            this.usesRedirect
-                ? await this.completeViaRedirectAsync()
-                : await this.completeViaPopupAsync();
-            this.logDebug(`(Re)authenticated OK via Azure`, this.account.username, this.account);
+        this.account = client.getAllAccounts()[0];
 
-            // Second-time (after login) the charm!
-            await this.getTokensSilentlyAsync();
+        if (this.account) {
+            try {
+                await this.loadTokensSilentlyAsync();
+                return;
+            } catch (e) {
+                if (!(e instanceof InteractionRequiredAuthError)) throw e;
+            }
         }
+
+        this.usesRedirect
+            ? await this.completeViaRedirectAsync()
+            : await this.completeViaPopupAsync();
+        this.logDebug(`(Re)authenticated OK via Azure`, this.account.username, this.account);
+
+        // Second-time (after login) the charm!
+        await this.loadTokensSilentlyAsync();
     }
 
     override async getTokensSilentlyAsync(useCache: boolean = true): Promise<TokenPair> {
-        const ret = await this.client.acquireTokenSilent({scopes: this.scopes, forceRefresh: true});
+        const ret = await this.client.acquireTokenSilent({
+            scopes: this.scopes,
+            account: this.account,
+            forceRefresh: !useCache
+        });
         this.account = ret.account;
         return ret;
     }
 
     override async doLogoutAsync(): Promise<void> {
-        const {postLogoutRedirectUrl, client, account} = this;
-        await client.logoutRedirect({account, postLogoutRedirectUri: postLogoutRedirectUrl});
+        const {postLogoutRedirectUrl, client, account, usesRedirect} = this;
+        await client.clearCache({account});
+        usesRedirect ?
+            await client.logoutRedirect({account, postLogoutRedirectUri: postLogoutRedirectUrl}) :
+            await client.logoutPopup({account})
     }
 
     //------------------------

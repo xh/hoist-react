@@ -33,7 +33,7 @@ export interface BaseOauthClientConfig {
      **/
     postLogoutRedirectUrl?: 'APP_BASE_URL'|string;
 
-    /** The method used for logging in on desktop. Default is 'POPUP'. */
+    /** The method used for logging in on desktop. Default is 'REDIRECT'. */
     loginMethodDesktop?: 'REDIRECT'|'POPUP';
 
     /** The method used for logging in on mobile. Default is 'REDIRECT'. */
@@ -47,11 +47,11 @@ export interface BaseOauthClientConfig {
     tokenRefreshThresholdMins?: number;
 
     /**
-     * How often should we attempt to refresh an expiring token.
+     * Governs how frequently we attempt to refresh aging tokens.
      * Should be short enough to allow multiple attempts during `tokenRefreshThesholdMins`
      * Defaults to 30 seconds.
      */
-    tokenRefreshFrequencySecs?: number;
+    tokenRefreshCheckSecs?: number;
 
     /**
      * Additional scopes to be loaded.
@@ -127,12 +127,13 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
             await XH.fetchJson({url: 'xh/oauthConfig'}),
             this.config,
             {
-                tokenRefreshFrequencySecs: 5,
-                loginMethodDesktop: 'POPUP',
+                loginMethodDesktop: 'REDIRECT',
                 loginMethodMobile: 'REDIRECT',
                 redirectUrl: 'APP_BASE_URL',
                 postLogoutRedirectUrl: 'APP_BASE_URL',
-                expiryWarning: false
+                expiryWarning: false,
+                tokenRefreshThresholdMins: 10,
+                tokenRefreshCheckSecs: 30,
             } as T
         )
 
@@ -144,7 +145,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
 
         this.refreshTimer = Timer.create({
             runFn: async () => this.onRefreshAsync(),
-            interval: this.config.tokenRefreshFrequencySecs * SECONDS
+            interval: this.config.tokenRefreshCheckSecs * SECONDS
         });
 
         this.expiryTimer = Timer.create({
@@ -253,10 +254,10 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
      */
     protected async loadTokensSilentlyAsync(useCache: boolean = true): Promise<void> {
         const {idToken, accessToken} = await this.getTokensSilentlyAsync(useCache);
-        console.log(jwtDecode(idToken));
-        //console.log(jwtDecode(accessToken));
-        this.idInfo = {token: idToken, expiry: jwtDecode(idToken).exp};
-        this.accessInfo = {token: accessToken, expiry: jwtDecode(idToken).exp};
+        this.idInfo = {token: idToken, expiry: jwtDecode(idToken).exp * SECONDS};
+        this.accessInfo = {token: accessToken, expiry: jwtDecode(accessToken).exp * SECONDS};
+
+        this.logDebug('Loaded tokens', new Date(this.idInfo.expiry), new Date(this.accessInfo.expiry));
     }
 
     private async onRefreshAsync(): Promise<void> {
@@ -264,9 +265,9 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
             threshold = config.tokenRefreshThresholdMins * -1 * MINUTES;
         if (olderThan(idInfo?.expiry, threshold) || olderThan(accessInfo?.expiry, threshold)) {
             try {
-               this.loadTokensSilentlyAsync(false)
+               await this.loadTokensSilentlyAsync(false)
             } catch (e) {
-                XH.handleException(e, {showAlert: false});
+                XH.handleException(e, {showAlert: false, logOnServer: false});
             }
         }
     }
@@ -275,11 +276,9 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
         if (olderThan(this.idInfo?.expiry, -this.EXPIRY_CHECK_INTERVAL)) {
             this.idInfo = null;
         }
-
         if (olderThan(this.accessInfo?.expiry, -this.EXPIRY_CHECK_INTERVAL)) {
            this.accessInfo = null;
         }
-
         this.updateWarning()
     }
 
@@ -291,13 +290,15 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
         if (this.expiryWarningDisplayed != expired) {
             this.expiryWarningDisplayed = expired;
             if (expired) {
+                const onClick =  () => XH.reloadApp();
                 let spec: BannerSpec = {
                     category: 'xhOAuth',
-                    message: 'Authentication expired.  Click to reload.',
+                    message: 'Authentication expired.  Reload required',
                     icon: Icon.warning(),
                     intent: 'warning',
                     enableClose: false,
-                    onClick: () => XH.reloadApp()
+                    actionButtonProps: {text: 'Reload Now', onClick},
+                    onClick
                 };
                 if (isObject(expiryWarning)) {
                     spec = {...spec, ...expiryWarning}
