@@ -25,6 +25,7 @@ export const [SelectEditor, selectEditor] = hoistCmp.withFactory<SelectEditorPro
                 hideDropdownIndicator: true,
                 hideSelectedOptionCheck: true,
                 selectOnFocus: false,
+                onCommit: () => props.agParams.stopEditing(),
                 rsOptions: {
                     styles: {
                         menu: styles => ({
