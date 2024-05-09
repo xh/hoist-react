@@ -320,71 +320,8 @@
 }
 
 //------------------------
-// ZoneGrid (mobile)
+// Tooltips
 //------------------------
-.xh-zonegrid-cell {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  line-height: normal;
-
-  .xh-zonegrid-cell-section {
-    display: flex;
-    align-items: center;
-  }
-
-  .xh-zonegrid-cell-top {
-    font-size: var(--xh-grid-zonegrid-top-font-size-px);
-  }
-
-  .xh-zonegrid-cell-bottom {
-    font-size: var(--xh-grid-zonegrid-bottom-font-size-px);
-    color: var(--xh-text-color-muted);
-  }
-
-  /*
-    What's contained inside a ZoneGrid cell section can either be text node or element node containers
-    depending on the type of output a renderer generates.
-  */
-  .xh-zonegrid-cell-text-container {
-    display: inline-block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .xh-zonegrid-cell-element-container {
-    display: flex;
-    max-width: 100%;
-
-    /* Provides support for direct children of the elements in the container for a specific ZoneGrid cell to handle
-    overflowing content with ellipsis. */
-    & > * {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-
-  .xh-zonegrid-cell-delimiter {
-    margin: 0 2px;
-  }
-
-  .xh-zonegrid-cell-label {
-    overflow: visible;
-    margin-right: 3px;
-  }
-}
-
-.xh-align-right .xh-zonegrid-cell .xh-zonegrid-cell-section {
-  justify-content: flex-end;
-
-  .xh-zonegrid-cell-field,
-  .xh-zonegrid-cell-delimiter {
-    margin: 0 0 0 2px;
-  }
-}
-
 .xh-grid-tooltip {
   position: absolute;
 

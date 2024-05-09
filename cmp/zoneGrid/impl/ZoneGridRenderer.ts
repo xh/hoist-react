@@ -6,42 +6,54 @@
  */
 import {CellContext, Column, ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
-import {throwIf, warnIf, intersperse} from '@xh/hoist/utils/js';
-import {isFunction, isNil, partition, pull} from 'lodash';
+import {intersperse, throwIf} from '@xh/hoist/utils/js';
+import {compact, isFunction, isNil, partition} from 'lodash';
 import {ReactNode} from 'react';
 
+export interface ZoneGridColConfig {
+    /** Array of SubField specifications to render. */
+    subFields: ZoneGridSubField[];
+
+    /** Renderer for primary field. */
+    mainRenderer?: ColumnRenderer;
+
+    /** Separator rendered between consecutive SubFields. */
+    delimiter?: string;
+}
+
+export interface ZoneGridSubField {
+    colId: string;
+
+    /**
+     * Label to display next to data value. True to use the Column's header as label.
+     * Alternatively provide a custom string, or a renderer for dynamic per-value labels.
+     */
+    label?: boolean | string | ColumnRenderer;
+
+    /** Where to render the sub-field. Default 'bottom'. */
+    position?: 'top' | 'bottom';
+}
+
 /**
- * A grid rendererFn that renders a collection of additional SubFields in a row beneath the main column field.
- *
- * Requires the column to also specify a zoneGridConfig in its `appData`.
- *
- * The configs `subFields` act as pointers to other columns that exist in the GridModel's columns collection
- * (often hidden). They will be rendered using the same rendererFn, headerName and value as the column
- * they refer to.
+ * Renderer to support ZoneGrid's highly specialized rendering.
+ * @internal
  */
-export function zoneGridRenderer(value: any, context: CellContext): ReactNode {
+export function zoneGridRenderer(value: any, context: CellContext, isLeft: boolean): ReactNode {
     const {column} = context,
-        {zoneGridConfig} = column.appData;
-
-    throwIf(!zoneGridConfig, 'Columns using zoneGridRenderer must specify a zoneGridConfig');
-    warnIf(
-        !column.rowHeight,
-        'ZoneGridRenderer works best with rowHeight: Grid.ZONEGRID_ROW_HEIGHT'
-    );
-
-    const {mainRenderer, delimiter, subFields = []} = zoneGridConfig as ZoneGridConfig,
+        zoneGridConfig: ZoneGridColConfig = column.appData.zoneGridConfig,
+        {mainRenderer, delimiter, subFields = []} = zoneGridConfig,
         [topFields, bottomFields] = partition(subFields, it => it.position === 'top');
 
     // Render main field and subfields to top row
-    let topSectionItems: ReactNode[] = [
+    let topSectionItems: ReactNode[] = compact([
         renderMainField(value, mainRenderer, context),
         ...topFields.map(it => renderSubField(it, context))
-    ];
-    pull(topSectionItems, null);
+    ]);
 
     // Render subfield to bottom row
-    let bottomSectionItems: ReactNode[] = bottomFields.map(it => renderSubField(it, context));
-    pull(bottomSectionItems, null);
+    let bottomSectionItems: ReactNode[] = compact(
+        bottomFields.map(it => renderSubField(it, context))
+    );
 
     // Insert delimiter if applicable
     if (delimiter) {
@@ -50,44 +62,18 @@ export function zoneGridRenderer(value: any, context: CellContext): ReactNode {
     }
 
     return div({
-        className: getStyleClassName(),
+        className: getStyleClassName(null, isLeft ? 'left' : 'right'),
         items: [
             div({
-                className: `${getStyleClassName('section')} ${getStyleClassName('top')}`,
+                className: getStyleClassName('section', 'top'),
                 items: topSectionItems
             }),
             div({
-                className: `${getStyleClassName('section')} ${getStyleClassName('bottom')}`,
+                className: getStyleClassName('section', 'bottom'),
                 items: bottomSectionItems
             })
         ]
     });
-}
-
-export interface ZoneGridConfig {
-    /** Array of SubField specifications to render. */
-    subFields: ZoneGridSubField[];
-
-    /** Renderer for primary field. */
-    mainRenderer?: ColumnRenderer;
-
-    /** string rendered between consecutive SubFields. */
-    delimiter?: string;
-}
-
-export interface ZoneGridSubField {
-    colId: string;
-
-    /**
-     * Label to display next to data value.
-     *
-     * True to use the Column's header as label, or string.  For a dynamic, row-specific
-     * value, a ColumnRenderer may be provided.
-     */
-    label?: boolean | 'string' | ColumnRenderer;
-
-    /** Where to render the sub-field. Default 'bottom'. */
-    position?: 'top' | 'bottom';
 }
 
 //------------------
@@ -161,6 +147,7 @@ function renderDelimiter(delimiter: string) {
     });
 }
 
-function getStyleClassName(subClass?: string): string {
-    return `xh-zonegrid-cell${subClass ? `-${subClass}` : ''}`;
+function getStyleClassName(element?: string, modifier?: string): string {
+    let ret = `xh-zone-grid-cell${element ? `__${element}` : ''}`;
+    return modifier ? `${ret} ${ret}--${modifier}` : ret;
 }

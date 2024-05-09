@@ -492,11 +492,16 @@ body {
   --xh-grid-tiny-header-lr-pad: var(--grid-tiny-header-lr-pad, 4);
   --xh-grid-tiny-header-lr-pad-px: calc(var(--xh-grid-tiny-header-lr-pad) * 1px);
 
-  // Zone Grid renderer
-  --xh-grid-zonegrid-top-font-size: var(--grid-zonegrid-top-font-size, 14);
-  --xh-grid-zonegrid-top-font-size-px: calc(var(--xh-grid-zonegrid-top-font-size) * 1px);
-  --xh-grid-zonegrid-bottom-font-size: var(--grid-zonegrid-bottom-font-size, 11);
-  --xh-grid-zonegrid-bottom-font-size-px: calc(var(--xh-grid-zonegrid-bottom-font-size) * 1px);
+  // ZoneGrid
+  --xh-zone-grid-top-text-color: var(--zone-grid-top-text-color, var(--xh-grid-text-color));
+  --xh-zone-grid-top-font-size: var(--zone-grid-top-font-size, 14);
+  --xh-zone-grid-top-font-size-px: calc(var(--xh-zone-grid-top-font-size) * 1px);
+  --xh-zone-grid-bottom-text-color: var(--zone-grid-bottom-text-color, var(--xh-text-color-muted));
+  --xh-zone-grid-bottom-font-size: var(--zone-grid-bottom-font-size, 11);
+  --xh-zone-grid-bottom-font-size-px: calc(var(--xh-zone-grid-bottom-font-size) * 1px);
+  --xh-zone-grid-cell-lr-pad-px: var(--zone-grid-cell-pad-px, var(--xh-grid-cell-lr-pad-px));
+  --xh-zone-grid-delimiter-color: var(--zone-grid-delimiter-color, inherit);
+  --xh-zone-grid-label-color: var(--zone-grid-label-color, inherit);
 
   // Grid column-header-based filter popover (desktop only)
   --xh-grid-filter-popover-height-px: var(--grid-filter-popover-height-px, 350px);
