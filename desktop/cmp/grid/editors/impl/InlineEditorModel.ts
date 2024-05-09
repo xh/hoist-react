@@ -48,8 +48,8 @@ export function useInlineEditorModel(
         ref: composeRefs(impl.ref, ref),
         ...inputProps,
         onCommit: (value: any, oldValue: any) => {
-            agParams.onValueChange(value);
             props.inputProps?.onCommit?.(value, oldValue);
+            agParams.onValueChange(value);
         }
     });
 }
