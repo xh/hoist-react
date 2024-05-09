@@ -561,7 +561,7 @@ export class ZoneGridModel extends HoistModel {
         return [
             this.buildZoneColumn(true),
             this.buildZoneColumn(false),
-            // Ensure all available columns are provided as hidden columns for lookup by multifield renderer
+            // Ensure all available columns are provided as hidden columns for lookup by zoneGridRenderer
             ...this.availableColumns
         ];
     }
