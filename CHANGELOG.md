@@ -44,6 +44,7 @@ for more details.
 
 ### ⚙️ Technical
 
+* NumberEditor no longer activates on keypress of letter characters.
 * Removed initial `ping` call `FetchService` init.
 
 ### 📚 Libraries
