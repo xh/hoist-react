@@ -18,12 +18,12 @@
 
 //noinspection CssInvalidFunction
 @function mc-muted($color-name, $color-variant, $amount:30%, $lighten-amount:10%) {
-  @return lighten(desaturate(material-color($color-name, $color-variant), $amount), $lighten-amount);
+  @return color.adjust(material-color($color-name, $color-variant), $saturation: $amount * -1, $lightness: $lighten-amount);
 }
 
 //noinspection CssInvalidFunction
 @function mc-trans($color-name, $color-variant, $amount:0.5) {
-  @return transparentize(material-color($color-name, $color-variant), $amount);
+  @return color.adjust(material-color($color-name, $color-variant), $alpha: $amount * -1);
 }
 
 body {
