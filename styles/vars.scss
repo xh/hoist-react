@@ -16,14 +16,12 @@
   @return material-color($color-name, $color-variant);
 }
 
-//noinspection CssInvalidFunction
-@function mc-muted($color-name, $color-variant, $amount:30%, $lighten-amount:10%) {
-  @return lighten(desaturate(material-color($color-name, $color-variant), $amount), $lighten-amount);
+@function mc-muted($color-name, $color-variant, $desat-amount:30%, $lighten-amount:10%) {
+  @return color.adjust(color.adjust(mc($color-name, $color-variant), $saturation: -1 * $desat-amount), $lightness: $lighten-amount);
 }
 
-//noinspection CssInvalidFunction
-@function mc-trans($color-name, $color-variant, $amount:0.5) {
-  @return transparentize(material-color($color-name, $color-variant), $amount);
+@function mc-trans($color-name, $color-variant, $amount: 0.5) {
+  @return color.adjust(mc($color-name, $color-variant), $alpha: -1 * $amount);
 }
 
 body {
