@@ -1,22 +1,9 @@
 .xh-col-chooser {
-  border: var(--xh-border-solid);
-
-  & > .xh-vframe {
-    height: 100%;
-    background-color: var(--xh-bg-alt);
-
-    .xh-dark & {
-      background-color: var(--xh-bg);
-    }
-  }
-
   &__internal {
     height: 100%;
   }
 
   &__section {
-    background: var(--xh-bg);
-
     &:first-child {
       height: 65% !important;
     }
@@ -31,13 +18,9 @@
     }
 
     .xh-panel-header {
-      padding: var(--xh-pad-half-px) var(--xh-pad-px);
       background-color: var(--xh-appbar-bg);
       color: var(--xh-appbar-title-color);
-
-      &__title {
-        font-size: var(--xh-font-size-small-px);
-      }
+      padding-left: var(--xh-pad-px);
     }
   }
 
