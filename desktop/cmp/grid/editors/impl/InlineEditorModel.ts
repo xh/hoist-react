@@ -4,7 +4,8 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {ICellEditorParams} from '@ag-grid-community/core';
+import {CustomCellEditorProps, useGridCellEditor} from '@ag-grid-community/react';
+import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel} from '@xh/hoist/cmp/input';
 import {ElementFactory, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {EditorProps} from '@xh/hoist/desktop/cmp/grid/editors/EditorProps';
@@ -12,7 +13,7 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ForwardedRef, ReactElement, useImperativeHandle} from 'react';
+import {ForwardedRef, ReactElement, useCallback} from 'react';
 
 /**
  * Hook to render a component to be used for inline cell editing in ag-grid.
@@ -33,17 +34,10 @@ export function useInlineEditorModel(
     const {className, inputProps, agParams} = props,
         impl = useLocalModel(() => new InlineEditorModel(agParams));
 
-    useImperativeHandle(ref, () => ({
-        getValue: () => {
-            impl.ref.current?.doCommit();
-            return impl.value;
-        },
-
+    useGridCellEditor({
         // This is called in full-row editing when the user tabs into the cell
-        focusIn: () => impl.focus(),
-
-        inputModel: () => impl.ref.current
-    }));
+        focusIn: useCallback(() => impl.focus(), [impl])
+    });
 
     return component({
         className: classNames('xh-inline-editor', className),
@@ -51,11 +45,14 @@ export function useInlineEditorModel(
         model: impl,
         bind: 'value',
         commitOnChange: true,
-        ref: impl.ref,
-        ...inputProps
+        ref: composeRefs(impl.ref, ref),
+        ...inputProps,
+        onCommit: (value: any, oldValue: any) => {
+            agParams.onValueChange(value);
+            props.inputProps?.onCommit?.(value, oldValue);
+        }
     });
 }
-
 /**
  * Local Model supporting inline cell editor components. Provides base functionality required by
  * ag-grid plus extension points for editors needing more complex behaviors.
@@ -69,13 +66,13 @@ class InlineEditorModel extends HoistModel {
 
     ref = createObservableRef<HoistInputModel>();
 
-    agParams: ICellEditorParams;
+    agParams: CustomCellEditorProps;
 
     get inputEl() {
         return this.ref.current?.inputEl;
     }
 
-    constructor(agParams: ICellEditorParams) {
+    constructor(agParams: CustomCellEditorProps) {
         super();
         makeObservable(this);
 
