@@ -48,11 +48,12 @@ export function useInlineEditorModel(
         ref: composeRefs(impl.ref, ref),
         ...inputProps,
         onCommit: (value: any, oldValue: any) => {
-            agParams.onValueChange(value);
             props.inputProps?.onCommit?.(value, oldValue);
+            agParams.onValueChange(value);
         }
     });
 }
+
 /**
  * Local Model supporting inline cell editor components. Provides base functionality required by
  * ag-grid plus extension points for editors needing more complex behaviors.
@@ -95,7 +96,7 @@ class InlineEditorModel extends HoistModel {
 
         const {eventKey} = this.agParams;
         // Enter initial keystroke in value (if single char and not special key e.g (F2 or Enter).
-        if (eventKey?.length == 1) {
+        if (eventKey?.length === 1) {
             ref.current.noteValueChange(eventKey);
         } else {
             inputEl.select();

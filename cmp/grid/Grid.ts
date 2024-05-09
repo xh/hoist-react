@@ -186,10 +186,7 @@ export class GridLocalModel extends HoistModel {
             {clicksToEdit, selModel} = model;
 
         let ret: GridOptions = {
-            // reactiveCustomComponents is required until ag-grid v32.
-            // In v32, `reactiveCustomComponents: true` will be the default.
-            // See https://www.ag-grid.com/javascript-data-grid//grid-options/#reference-miscellaneous-reactiveCustomComponents
-            reactiveCustomComponents: true,
+            reactiveCustomComponents: true, // will be default in ag-grid v32
             animateRows: false,
             suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowId: ({data}) => data.agId,
