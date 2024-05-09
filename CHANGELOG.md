@@ -46,6 +46,7 @@ for more details.
 
 * NumberEditor no longer activates on keypress of letter characters.
 * Removed initial `ping` call `FetchService` init.
+* Sass color functions now use `color.adjust` instead of globals
 
 ### 📚 Libraries
 
