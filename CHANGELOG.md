@@ -37,7 +37,8 @@ for more details.
 * Removed support for passing a plain object to the `model` prop of Hoist Components (previously
   deprecated back in v58). Use the `modelConfig` prop instead.
 * Improved `selectEditor` to stop editing when the value changes, rather than when the user clicks
-  away from the cell, making it more intuitive for users.
+  away from the cell, making it more intuitive for users. This only occurs in the absence of
+  `GridModel.fullRowEditing` and `Select.enableMulti`.
 
 ### 🐞 Bug Fixes
 
