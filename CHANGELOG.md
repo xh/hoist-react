@@ -27,6 +27,10 @@ for more details.
 * All apps will need to update their `@ag-grid` dependencies within `package.json` and make a minor
   update to their `Bootstrap` registration as per
   this [Toolbox example](https://github.com/xh/toolbox/pull/709/files/5626e21d778e1fc72f9735d2d8f011513e1ac9c6#diff-304055320a29f66ea1255446ba8f13e0f3f1b13643bcea0c0466aa60e9288a8f).
+* `Grid` and `AgGrid` components default to: `reactiveCustomComponents: true`.
+   If your app has custom renderers, tooltips, or editors,
+   you should confirm that they still work with this setting,
+   which will be the default in agGrid v32.
 
 #### Other Changes
 
@@ -40,6 +44,7 @@ for more details.
 
 ### ⚙️ Technical
 
+* NumberEditor no longer activates on keypress of letter characters.
 * Removed initial `ping` call `FetchService` init.
 
 ### 📚 Libraries

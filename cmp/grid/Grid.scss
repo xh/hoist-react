@@ -409,7 +409,7 @@
     }
   }
 
-  &--default > .xh-grid-tooltip--validation {
+  &--default > div > .xh-grid-tooltip--validation {
     padding: 0 var(--xh-pad-half-px) 0 2em;
 
     &--single {
@@ -417,7 +417,7 @@
     }
   }
 
-  &--custom > .xh-grid-tooltip--validation {
+  &--custom > div > .xh-grid-tooltip--validation {
     padding: var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-half-px) 2em;
     background: var(--xh-bg);
     border: var(--xh-border-solid);
