@@ -752,7 +752,7 @@ export class Column {
                     const {gridModel, colId} = this,
                         editor = gridModel.agApi.getCellEditorInstances({columns: [colId]})[0],
                         // @ts-ignore -- private
-                        reactSelect = editor?.componentInstance?.inputModel?.().reactSelect;
+                        reactSelect = editor?.componentInstance?.reactSelect;
                     if (reactSelect?.state.menuIsOpen) return true;
 
                     // Allow shift+enter to add newlines in certain editors
@@ -842,8 +842,8 @@ export class Column {
                               ];
                     wrapperRef.current
                         ?.closest('.ag-react-container')
-                        ?.classList?.add(...xhToolTipClassNames);
-                }, [isElement]);
+                        .classList.add(...xhToolTipClassNames);
+                }, [isElement, location]);
 
                 // Required by agGrid, even though empty.
                 // If not present agGrid logs this warning:
