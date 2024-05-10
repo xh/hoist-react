@@ -27,9 +27,15 @@ for more details.
 * All apps will need to update their `@ag-grid` dependencies within `package.json` and make a minor
   update to their `Bootstrap` registration as per
   this [Toolbox example](https://github.com/xh/toolbox/pull/709/files/5626e21d778e1fc72f9735d2d8f011513e1ac9c6#diff-304055320a29f66ea1255446ba8f13e0f3f1b13643bcea0c0466aa60e9288a8f).
-* `Grid` and `AgGrid` components default to `reactiveCustomComponents: true`. If your app has
-  custom renderers, tooltips, or editors, you should confirm that they still work with this setting,
-  which will be the default in agGrid v32.
+  * `Grid` and `AgGrid` components default to `reactiveCustomComponents: true`. If your app has
+    custom tooltips or editors, you should confirm that they still work with this setting,
+    which will be the default in agGrid v32.
+    * For custom editors, you will have to convert them from ["Imperative" to what AG-Grid calls "Reactive"](https://ag-grid.com/react-data-grid/cell-editors/#custom-components).
+      See the [AG-Grid migration guide](https://ag-grid.com/react-data-grid/upgrading-to-ag-grid-31-1/#custom-cell-editor-components) for more details.
+      If you cannot at this time convert your custom editors to "Reactive" mode, you can set `reactiveCustomComponents: false` in your `GridModel` to continue using the old "Imperative" mode.
+    * For custom tooltips, [note AG-Grid's deprecation of `getReactContainerClasses`](https://ag-grid.com/react-data-grid/upgrading-to-ag-grid-31-1/#react).
+
+
 
 #### Other Breaking Changes
 
