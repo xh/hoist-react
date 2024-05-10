@@ -16,14 +16,12 @@
   @return material-color($color-name, $color-variant);
 }
 
-//noinspection CssInvalidFunction
-@function mc-muted($color-name, $color-variant, $amount:30%, $lighten-amount:10%) {
-  @return lighten(desaturate(material-color($color-name, $color-variant), $amount), $lighten-amount);
+@function mc-muted($color-name, $color-variant, $desat-amount:30%, $lighten-amount:10%) {
+  @return color.adjust(color.adjust(mc($color-name, $color-variant), $saturation: -1 * $desat-amount), $lightness: $lighten-amount);
 }
 
-//noinspection CssInvalidFunction
-@function mc-trans($color-name, $color-variant, $amount:0.5) {
-  @return transparentize(material-color($color-name, $color-variant), $amount);
+@function mc-trans($color-name, $color-variant, $amount: 0.5) {
+  @return color.adjust(mc($color-name, $color-variant), $alpha: -1 * $amount);
 }
 
 body {
@@ -497,13 +495,16 @@ body {
   --xh-grid-tiny-header-lr-pad: var(--grid-tiny-header-lr-pad, 4);
   --xh-grid-tiny-header-lr-pad-px: calc(var(--xh-grid-tiny-header-lr-pad) * 1px);
 
-  // Multifield renderer
-  --xh-grid-multifield-top-font-size: var(--grid-multifield-top-font-size, 14);
-  --xh-grid-multifield-top-font-size-px: calc(var(--xh-grid-multifield-top-font-size) * 1px);
-  --xh-grid-multifield-bottom-font-size: var(--grid-multifield-bottom-font-size, 11);
-  --xh-grid-multifield-bottom-font-size-px: calc(var(--xh-grid-multifield-bottom-font-size) * 1px);
-  --xh-grid-multifield-line-height: var(--grid-multifield-line-height, 16);
-  --xh-grid-multifield-line-height-px: calc(var(--xh-grid-multifield-line-height) * 1px);
+  // ZoneGrid
+  --xh-zone-grid-top-text-color: var(--zone-grid-top-text-color, var(--xh-grid-text-color));
+  --xh-zone-grid-top-font-size: var(--zone-grid-top-font-size, 14);
+  --xh-zone-grid-top-font-size-px: calc(var(--xh-zone-grid-top-font-size) * 1px);
+  --xh-zone-grid-bottom-text-color: var(--zone-grid-bottom-text-color, var(--xh-grid-text-color));
+  --xh-zone-grid-bottom-font-size: var(--zone-grid-bottom-font-size, 11);
+  --xh-zone-grid-bottom-font-size-px: calc(var(--xh-zone-grid-bottom-font-size) * 1px);
+  --xh-zone-grid-cell-lr-pad-px: var(--zone-grid-cell-pad-px, var(--xh-grid-cell-lr-pad-px));
+  --xh-zone-grid-delimiter-color: var(--zone-grid-delimiter-color, inherit);
+  --xh-zone-grid-label-color: var(--zone-grid-label-color, inherit);
 
   // Grid column-header-based filter popover (desktop only)
   --xh-grid-filter-popover-height-px: var(--grid-filter-popover-height-px, 350px);
@@ -595,6 +596,13 @@ body {
   --xh-pad-half: calc(var(--xh-pad) * 0.5);
   --xh-pad-half-px: calc(var(--xh-pad-half) * 1px);
 
+  // Safe area values for mobile handling - used by Viewport component and mobile dialog masks /
+  // overlays (which render outside of the viewport).
+  --xh-pad-safe-top: env(safe-area-inset-top);
+  --xh-pad-safe-bottom: env(safe-area-inset-bottom);
+  --xh-pad-safe-left: env(safe-area-inset-left);
+  --xh-pad-safe-right: env(safe-area-inset-right);
+  --xh-pad-safe-all: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 
   //------------------------
   // Panels
@@ -764,4 +772,16 @@ body {
       --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
     }
   }
+
+  //------------------------
+  // Viewport
+  //------------------------
+    &.xh-mobile {
+      // Customize the background color of "unreachable" safe areas on the phone - i.e. the space
+      // we reserve (via padding on .xh-viewport) for the iOS task switcher. Will also show through
+      // on left/right letterboxing when in landscape mode. Default to black to have these areas
+      // appear as fully "off" on modern phone screens. This looks better than white, which appears
+      // to be blank/missing/glitched, even when light theme is active.
+      --xh-viewport-bg: black;
+    }
 }

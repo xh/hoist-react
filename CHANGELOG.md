@@ -27,19 +27,45 @@ for more details.
 * All apps will need to update their `@ag-grid` dependencies within `package.json` and make a minor
   update to their `Bootstrap` registration as per
   this [Toolbox example](https://github.com/xh/toolbox/pull/709/files/5626e21d778e1fc72f9735d2d8f011513e1ac9c6#diff-304055320a29f66ea1255446ba8f13e0f3f1b13643bcea0c0466aa60e9288a8f).
+  * `Grid` and `AgGrid` components default to `reactiveCustomComponents: true`. If your app has
+    custom tooltips or editors, you should confirm that they still work with this setting,
+    which will be the default in agGrid v32.
+    * For custom editors, you will have to convert them from ["Imperative" to what AG-Grid calls "Reactive"](https://ag-grid.com/react-data-grid/cell-editors/#custom-components).
+      See the [AG-Grid migration guide](https://ag-grid.com/react-data-grid/upgrading-to-ag-grid-31-1/#custom-cell-editor-components) for more details.
+      If you cannot at this time convert your custom editors to "Reactive" mode, you can set `reactiveCustomComponents: false` in your `GridModel` to continue using the old "Imperative" mode.
+    * For custom tooltips, [note AG-Grid's deprecation of `getReactContainerClasses`](https://ag-grid.com/react-data-grid/upgrading-to-ag-grid-31-1/#react).
 
-#### Other Changes
+
+
+#### Other Breaking Changes
 
 * Removed support for passing a plain object to the `model` prop of Hoist Components (previously
   deprecated back in v58). Use the `modelConfig` prop instead.
+* Removed the `multiFieldRenderer` utility function. This has been made internal and renamed
+  to `zoneGridRenderer` for exclusive use by the `ZoneGrid` component.
+* Updated CSS variables related to the `ZoneGrid` component - vars formerly prefixed
+  by `--xh-grid-multifield` are now prefixed by `--xh-zone-grid`, several vars have been added, and
+  some defaults have changed.
+
+### 🎁 New Features
+
+* Improved mobile viewport handling to ensure that both standard pages and full screen dialogs
+  respect "safe area" boundaries, avoiding overlap with system UI elements such as the iOS task
+  switcher at the bottom of the screen. Also set background letterboxing color (to black) when
+  in landscape mode for a more resolved-looking layout.
 
 ### 🐞 Bug Fixes
 
+* Fixed poor truncation / clipping behavior of the primary (right-side) metric in `ZoneGrid`. Values
+  that do not fit within the available width of the cell will now truncate their right edge and
+  display an ellipsis to indicate they have been clipped.
 * Improved `RestGridModel.actionWarning` behavior to suppress any warning when the provided function
   returns a falsy value.
+* Fixed mobile `Toast` intent styling.
 
 ### ⚙️ Technical
 
+* NumberEditor no longer activates on keypress of letter characters.
 * Removed initial `ping` call `FetchService` init.
 
 ### 📚 Libraries

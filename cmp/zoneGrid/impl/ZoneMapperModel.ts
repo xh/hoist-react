@@ -139,8 +139,8 @@ export class ZoneMapperModel extends HoistModel {
     }
 
     getSamplesForZone(zone: Zone): ReactNode[] {
-        return this.mappings[zone].map(mapping => {
-            return this.getSampleForMapping(mapping);
+        return this.mappings[zone].map((mapping, index) => {
+            return this.getSampleForMapping(mapping, this.isZoneTopRow(zone) && index === 0);
         });
     }
 
@@ -293,10 +293,14 @@ export class ZoneMapperModel extends HoistModel {
         return this.mappings[zone].find(it => it.field === field);
     }
 
+    private isZoneTopRow(zone: Zone) {
+        return new Array<Zone>('tl', 'tr').includes(zone);
+    }
+
     //------------------------
     // Sample Display
     //------------------------
-    getSampleForMapping(mapping: ZoneMapping): ReactNode {
+    getSampleForMapping(mapping: ZoneMapping, ignoreLabel: boolean): ReactNode {
         const {fields, sampleRecord} = this,
             field = fields.find(it => it.field === mapping.field);
 
@@ -320,7 +324,7 @@ export class ZoneMapperModel extends HoistModel {
         }
 
         // Render label if requested
-        const label = mapping.showLabel ? `${field.label}: ` : null;
+        const label = mapping.showLabel && !ignoreLabel ? `${field.label}: ` : null;
         return span(label, value);
     }
 
