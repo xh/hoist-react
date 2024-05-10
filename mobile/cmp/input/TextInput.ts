@@ -20,6 +20,14 @@ export interface TextInputProps extends HoistProps, HoistInputProps, StyleProps,
     value?: string;
 
     /**
+     *  HTML `autocapitalize` attribute to set on underlying <input> element.
+     *
+     *  Hoist does not specify a default value, deferring to the browser, but pass 'none' to disable
+     *  for inputs where auto-capitalization is not desired or does not generally make sense.
+     */
+    autoCapitalize?: string;
+
+    /**
      *  HTML `autocomplete` attribute to set on underlying <input> element.
      *
      *  Defaults to 'off' for fields of type text and 'new-password' for fields of type 'password'
@@ -117,6 +125,7 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
             input({
                 value: model.renderValue || '',
 
+                autoCapitalize: props.autoCapitalize,
                 autoComplete: withDefault(
                     props.autoComplete,
                     props.type === 'password' ? 'new-password' : 'off'
