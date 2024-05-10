@@ -32,7 +32,7 @@ export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
 
         if (await client.isAuthenticated()) {
             try {
-                return await this.loadTokensSilentlyAsync();
+                return await this.loadTokensAsync();
             } catch (e) {
                 this.logDebug('Failed to load tokens on init, falling back on login', e);
             }
@@ -46,10 +46,10 @@ export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
         this.logDebug(`(Re)authenticated OK via Auth0`, user.email, user);
 
         // Second-time (after login) the charm!
-        await this.loadTokensSilentlyAsync();
+        await this.loadTokensAsync();
     }
 
-    override async getTokensSilentlyAsync(useCache: boolean = true): Promise<TokenPair> {
+    override async getTokensAsync(useCache: boolean = true): Promise<TokenPair> {
         const response = await this.client.getTokenSilently({
             detailedResponse: true,
             cacheMode: useCache ? 'on' : 'off'

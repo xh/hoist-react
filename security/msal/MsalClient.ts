@@ -46,7 +46,7 @@ export class MsalClient extends BaseOauthClient<MsalClientConfig> {
 
         if (this.account) {
             try {
-                return await this.loadTokensSilentlyAsync();
+                return await this.loadTokensAsync();
             } catch (e) {
                 if (!(e instanceof InteractionRequiredAuthError)) {
                     throw e;
@@ -61,10 +61,10 @@ export class MsalClient extends BaseOauthClient<MsalClientConfig> {
         this.logDebug(`(Re)authenticated OK via Azure`, this.account.username, this.account);
 
         // Second-time (after login) the charm!
-        await this.loadTokensSilentlyAsync();
+        await this.loadTokensAsync();
     }
 
-    override async getTokensSilentlyAsync(useCache: boolean = true): Promise<TokenPair> {
+    override async getTokensAsync(useCache: boolean = true): Promise<TokenPair> {
         const ret = await this.client.acquireTokenSilent({
             scopes: this.scopes,
             account: this.account,

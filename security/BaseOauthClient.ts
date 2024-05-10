@@ -12,7 +12,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {defaultsDeep, find, isObject, union} from 'lodash';
 import {v4 as uuid} from 'uuid';
 import {jwtDecode} from 'jwt-decode';
-import {observable} from 'mobx';
+import {makeObservable, observable, runInAction} from 'mobx';
 
 export interface BaseOauthClientConfig {
     /** Client ID (GUID) of your app registered with your Oauth provider. */
@@ -89,10 +89,11 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
     @observable.ref private idInfo: TokenInfo;
     @observable.ref private accessInfo: TokenInfo;
 
-    @managed private refreshTimer: Timer;
-    @managed private expiryTimer: Timer;
+    @managed private timer: Timer;
     private expiryWarningDisplayed: boolean;
-    private EXPIRY_CHECK_INTERVAL: number = 5 * SECONDS;
+    private lastRefreshAttempt: number;
+
+    private TIMER_INTERVAL = 2 * SECONDS;
 
     //------------------------
     // Public API
@@ -109,6 +110,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
 
     constructor(config: Partial<T> = {}) {
         super();
+        makeObservable(this);
         this.config = config as T;
     }
 
@@ -116,7 +118,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
      * Main entry point for this object.
      */
     async initAsync(): Promise<void> {
-        const config = (this.config = defaultsDeep(
+        const config = this.config = defaultsDeep(
             await XH.fetchJson({url: 'xh/oauthConfig'}),
             this.config,
             {
@@ -128,7 +130,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
                 tokenRefreshThresholdMins: 10,
                 tokenRefreshCheckSecs: 30
             } as T
-        ));
+        )
 
         this.logDebug('OAuth config merged from code and server', config);
         throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
@@ -136,14 +138,9 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
 
         await this.doInitAsync();
 
-        this.refreshTimer = Timer.create({
-            runFn: async () => this.onRefreshAsync(),
-            interval: this.config.tokenRefreshCheckSecs * SECONDS
-        });
-
-        this.expiryTimer = Timer.create({
-            runFn: () => this.onCheckExpiry(),
-            interval: this.EXPIRY_CHECK_INTERVAL
+        this.timer = Timer.create({
+            runFn: async () => this.onTimerAsync(),
+            interval: this.TIMER_INTERVAL
         });
     }
 
@@ -166,7 +163,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
     //-----------------------------------
     protected abstract doInitAsync(): Promise<void>;
     protected abstract doLogoutAsync(): Promise<void>;
-    protected abstract getTokensSilentlyAsync(useCache: boolean): Promise<TokenPair>;
+    protected abstract getTokensAsync(useCache: boolean): Promise<TokenPair>;
 
     //---------------------------------------
     // Implementation
@@ -246,37 +243,47 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
      * @param useCache - use the local cache.  Set as false to ensure
      * going to the network for a fresh token. Default true.
      */
-    protected async loadTokensSilentlyAsync(useCache: boolean = true): Promise<void> {
-        const {idToken, accessToken} = await this.getTokensSilentlyAsync(useCache);
-        this.idInfo = {token: idToken, expiry: jwtDecode(idToken).exp * SECONDS};
-        this.accessInfo = {token: accessToken, expiry: jwtDecode(accessToken).exp * SECONDS};
+    protected async loadTokensAsync(useCache: boolean = true): Promise<void> {
+        const {idToken, accessToken} = await this.getTokensAsync(useCache);
 
-        this.logDebug(
-            'Loaded tokens',
-            new Date(this.idInfo.expiry),
-            new Date(this.accessInfo.expiry)
-        );
+        // Load the token and its expiry. (We store the expiry to avoid frequent decoding.)
+        runInAction((() => {
+            this.idInfo = {token: idToken, expiry: jwtDecode(idToken).exp * SECONDS};
+            this.accessInfo = {token: accessToken, expiry: jwtDecode(accessToken).exp * SECONDS};
+        }));
+
+        this.logDebug('Loaded tokens', new Date(this.idInfo.expiry), new Date(this.accessInfo.expiry));
     }
 
-    private async onRefreshAsync(): Promise<void> {
-        const {idInfo, accessInfo, config} = this,
-            threshold = config.tokenRefreshThresholdMins * -1 * MINUTES;
-        if (olderThan(idInfo?.expiry, threshold) || olderThan(accessInfo?.expiry, threshold)) {
+    private async onTimerAsync(): Promise<void> {
+        const {idInfo, accessInfo, config, lastRefreshAttempt, TIMER_INTERVAL} = this,
+            threshold = config.tokenRefreshThresholdMins * MINUTES,
+            checkInterval = config.tokenRefreshCheckSecs * SECONDS,
+            idExpiry = idInfo?.expiry,
+            accessExpiry = accessInfo?.expiry;
+
+        // 1) Periodically Refresh if we are missing a token, or a token is too close to expiry
+        if (olderThan(lastRefreshAttempt, checkInterval)  &&
+            (olderThan(idExpiry, -threshold) || olderThan(accessExpiry, -threshold))
+        ){
             try {
-                await this.loadTokensSilentlyAsync(false);
+                this.lastRefreshAttempt = Date.now();
+                await this.loadTokensAsync(false);
             } catch (e) {
                 XH.handleException(e, {showAlert: false, logOnServer: false});
             }
+        } else {
+            // 2) Otherwise, if a token will expire before next check, clear it out
+            const idExpires = idExpiry && olderThan(idExpiry, -TIMER_INTERVAL),
+                accessExpires = accessExpiry && olderThan(accessExpiry, -TIMER_INTERVAL)
+            if (idExpires || accessExpires) {
+                runInAction(() => {
+                    if (idExpires) this.idInfo = null;
+                    if (accessExpires) this.accessInfo = null;
+                });
+            }
         }
-    }
-
-    private onCheckExpiry() {
-        if (this.idInfo && olderThan(this.idInfo.expiry, -this.EXPIRY_CHECK_INTERVAL)) {
-            this.idInfo = null;
-        }
-        if (this.accessInfo && olderThan(this.accessInfo.expiry, -this.EXPIRY_CHECK_INTERVAL)) {
-            this.accessInfo = null;
-        }
+        // 3) Always update the warning state.
         this.updateWarning();
     }
 
@@ -284,7 +291,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
         const {expiryWarning} = this.config;
         if (!expiryWarning) return;
 
-        const expired = !this.idToken || !this.accessToken;
+        const expired = !this.idToken || !this.accessToken
         if (this.expiryWarningDisplayed != expired) {
             this.expiryWarningDisplayed = expired;
             if (expired) {
