@@ -41,6 +41,13 @@ for more details.
   by `--xh-grid-multifield` are now prefixed by `--xh-zone-grid`, several vars have been added, and
   some defaults have changed.
 
+### 🎁 New Features
+
+* Improved mobile viewport handling to ensure that both standard pages and full screen dialogs
+  respect "safe area" boundaries, avoiding overlap with system UI elements such as the iOS task
+  switcher at the bottom of the screen. Also set background letterboxing color (to black) when
+  in landscape mode for a more resolved-looking layout.
+
 ### 🐞 Bug Fixes
 
 * Fixed poor truncation / clipping behavior of the primary (right-side) metric in `ZoneGrid`. Values
