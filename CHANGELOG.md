@@ -53,6 +53,7 @@ for more details.
   respect "safe area" boundaries, avoiding overlap with system UI elements such as the iOS task
   switcher at the bottom of the screen. Also set background letterboxing color (to black) when
   in landscape mode for a more resolved-looking layout.
+* New grid checkBoxRenderer for rendering booleans with a checkbox input look and feel.
 
 ### 🐞 Bug Fixes
 
