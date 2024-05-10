@@ -24,6 +24,7 @@ export const [Viewport, viewport] = hoistCmp.withFactory<ViewportProps>({
 
     render(props) {
         return box({
+            position: 'fixed', // must be specified here to override Box's inline style spec of position: 'relative'
             ...props
         });
     }
