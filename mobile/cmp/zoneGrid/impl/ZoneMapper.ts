@@ -8,7 +8,7 @@ import '@xh/hoist/mobile/register';
 import {grid, GridModel} from '@xh/hoist/cmp/grid';
 import {div, filler, hbox, hframe, span, vbox} from '@xh/hoist/cmp/layout';
 import {ZoneMapperModel} from '@xh/hoist/cmp/zoneGrid/impl/ZoneMapperModel';
-import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {checkbox, select} from '@xh/hoist/mobile/cmp/input';
@@ -44,7 +44,12 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
             title: 'Customize Fields',
             icon: Icon.gridLarge(),
             className,
-            items: [introText(), zonePicker(), grid({model: impl.gridModel}), sortPicker()],
+            items: [
+                introText({omit: XH.isLandscape}),
+                zonePicker(),
+                grid({model: impl.gridModel}),
+                sortPicker()
+            ],
             bbar: [
                 button({
                     omit: !showRestoreDefaults,
