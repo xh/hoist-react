@@ -26,7 +26,6 @@ export const toast = hoistCmp.factory({
         return onsenToast({
             visible: true,
             className: cls,
-            style: {height: window.innerHeight + 'px'},
             items: [
                 icon,
                 span(message),
