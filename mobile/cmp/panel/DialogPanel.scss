@@ -1,12 +1,12 @@
+// Sizing below designed to ensure that DialogPanel occupies the entire (safe) area of the screen.
 .xh-dialog-panel {
-  // Styles here are to make the dialog fullscreen
   & > .dialog {
     width: 100svw;
     max-height: 100svh !important;
 
     .dialog-container {
-      max-width: 100svh !important;
       height: 100svh;
+      max-width: 100svw !important;
       border: 0 !important;
 
       & > .xh-panel {
