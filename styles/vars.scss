@@ -593,6 +593,13 @@ body {
   --xh-pad-half: calc(var(--xh-pad) * 0.5);
   --xh-pad-half-px: calc(var(--xh-pad-half) * 1px);
 
+  // Safe area values for mobile handling - used by Viewport component and mobile dialog masks /
+  // overlays (which render outside of the viewport).
+  --xh-pad-safe-top: env(safe-area-inset-top);
+  --xh-pad-safe-bottom: env(safe-area-inset-bottom);
+  --xh-pad-safe-left: env(safe-area-inset-left);
+  --xh-pad-safe-right: env(safe-area-inset-right);
+  --xh-pad-safe-all: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 
   //------------------------
   // Panels
@@ -762,4 +769,16 @@ body {
       --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
     }
   }
+
+  //------------------------
+  // Viewport
+  //------------------------
+    &.xh-mobile {
+      // Customize the background color of "unreachable" safe areas on the phone - i.e. the space
+      // we reserve (via padding on .xh-viewport) for the iOS task switcher. Will also show through
+      // on left/right letterboxing when in landscape mode. Default to black to have these areas
+      // appear as fully "off" on modern phone screens. This looks better than white, which appears
+      // to be blank/missing/glitched, even when light theme is active.
+      --xh-viewport-bg: black;
+    }
 }

@@ -1,17 +1,13 @@
+// Sizing below designed to ensure that DialogPanel occupies the entire (safe) area of the screen.
 .xh-dialog-panel {
-  border: var(--xh-border-solid);
-
   & > .dialog {
-    margin-top: var(--xh-pad-half-px);
-    width: 100%;
-    height: calc(100% - var(--xh-pad-px));
-    max-height: calc(100% - var(--xh-pad-px)) !important;
+    width: 100svw;
+    max-height: 100svh !important;
 
     .dialog-container {
-      max-width: 100% !important;
-      height: 100%;
-      border-width: var(--xh-popup-border-width-px) 0 0 !important;
-      border-radius: 0;
+      height: 100svh;
+      max-width: 100svw !important;
+      border: 0 !important;
 
       & > .xh-panel {
         width: 100%;
