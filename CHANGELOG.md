@@ -61,6 +61,7 @@ for more details.
   display an ellipsis to indicate they have been clipped.
 * Improved `RestGridModel.actionWarning` behavior to suppress any warning when the provided function
   returns a falsy value.
+* Fixed mobile `Toast` intent styling.
 
 ### ⚙️ Technical
 
