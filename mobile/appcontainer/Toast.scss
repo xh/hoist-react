@@ -13,6 +13,22 @@
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
   }
 
+  &.toast-bg-intent-primary .toast {
+    background-color: var(--xh-intent-primary);
+  }
+
+  &.toast-bg-intent-danger .toast {
+    background-color: var(--xh-intent-danger);
+  }
+
+  &.toast-bg-intent-success .toast {
+    background-color: var(--xh-intent-success);
+  }
+
+  &.toast-bg-intent-warning .toast {
+    background-color: var(--xh-intent-warning);
+  }
+
   .toast__message {
     margin: 0;
     display: flex;

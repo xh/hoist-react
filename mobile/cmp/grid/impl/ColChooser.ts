@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {div, filler} from '@xh/hoist/cmp/layout';
+import {div, filler, placeholder as placeholderCmp} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, HoistProps, lookup, useLocalModel, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
@@ -15,6 +15,7 @@ import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
 import classNames from 'classnames';
 import './ColChooser.scss';
+import {isEmpty} from 'lodash';
 import {ColChooserModel} from './ColChooserModel';
 
 export interface ColChooserProps extends HoistProps<ColChooserModel> {}
@@ -60,8 +61,19 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                     onDragEnd: impl.onDragEnd,
                     items: [
                         panel({
+                            title: 'Visible Columns',
                             className: 'xh-col-chooser__section',
                             scrollable: true,
+                            tbar: toolbar({
+                                omit: !gridModel.enableColumnPinning,
+                                items: [
+                                    label({
+                                        model,
+                                        item: 'Pin first column so it is always visible'
+                                    }),
+                                    switchInput({model, bind: 'pinFirst'})
+                                ]
+                            }),
                             items: [
                                 row({col: pinnedColumn, model: impl}),
                                 droppable({
@@ -75,15 +87,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                                             placeholder: dndProps.placeholder
                                         })
                                 })
-                            ],
-                            bbar: toolbar({
-                                omit: !gridModel.enableColumnPinning,
-                                items: [
-                                    label({model, item: 'Pin first column'}),
-                                    filler(),
-                                    switchInput({model, bind: 'pinFirst'})
-                                ]
-                            })
+                            ]
                         }),
 
                         panel({
@@ -138,7 +142,9 @@ const columnList = hoistCmp.factory({
     render({cols, placeholder, className, ...props}, ref) {
         return div({
             className: classNames('xh-col-chooser__list', className),
-            items: [...cols.map((col, idx) => draggableRow({col, idx})), placeholder],
+            items: isEmpty(cols)
+                ? placeholderCmp('All columns have been added to the grid.')
+                : [...cols.map((col, idx) => draggableRow({col, idx})), placeholder],
             ...props,
             ref
         });
