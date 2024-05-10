@@ -145,11 +145,15 @@ export class AppContainerModel extends HoistModel {
             ])
         );
 
-        // Disable browser context menu on long-press, used to show (app) context menus and as an
-        // alternate gesture for tree grid drill-own. Also, add viewport-fit=cover to allow access
-        // to safe-area-inset envs for mobile styling.
         if (isMobileApp) {
+            // Disable browser context menu on long-press, used to show (app) context menus and as an
+            // alternate gesture for tree grid drill-own.
             window.addEventListener('contextmenu', e => e.preventDefault(), {capture: true});
+
+            // Spec viewport-fit=cover to allow use of safe-area-inset envs for mobile styling
+            // (e.g. `env(safe-area-inset-top)`). This allows us to avoid overlap with OS-level
+            // controls like the iOS tab switcher, as well as to more easily set the background
+            // color of the (effectively) unusable portions of the screen via
             const vp = document.querySelector('meta[name=viewport]'),
                 content = vp.getAttribute('content');
 
