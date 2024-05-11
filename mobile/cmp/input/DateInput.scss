@@ -25,7 +25,7 @@
     }
 
     .DateInput_input {
-      height: 34px;
+      height: var(--xh-mobile-input-height-px);
       padding: 0 var(--xh-pad-px);
     }
 

@@ -24,7 +24,7 @@
     &__control {
       background: var(--xh-input-bg);
       border: none;
-      min-height: 34px;
+      min-height: var(--xh-mobile-input-height-px);
     }
 
     &__placeholder {

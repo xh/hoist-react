@@ -382,6 +382,7 @@ body {
     // Important: Do not override to be less than 16px as this will make Safari auto-zoom on focus
     --xh-mobile-input-font-size: var(--mobile-input-font-size, var(--xh-font-size));
     --xh-mobile-input-font-size-px: calc(var(--xh-mobile-input-font-size) * 1px);
+    --xh-mobile-input-height-px: var(--mobile-input-height-px, 34px);
     --xh-mobile-input-label-font-size: var(--mobile-input-label-font-size, var(--xh-font-size));
     --xh-mobile-input-label-font-size-px: calc(var(--xh-mobile-input-label-font-size) * 1px);
   }

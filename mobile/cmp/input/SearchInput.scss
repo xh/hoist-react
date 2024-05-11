@@ -1,6 +1,6 @@
 .xh-input.xh-search-input {
   background: var(--xh-input-bg);
   .search-input {
-    height: 34px;
+    height: var(--xh-mobile-input-height-px);
   }
 }
