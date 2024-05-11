@@ -54,6 +54,17 @@ for more details.
   switcher at the bottom of the screen. Also set background letterboxing color (to black) when
   in landscape mode for a more resolved-looking layout.
 
+### ✨ Styles
+
+* Default mobile font size has been increased to 16px, both for better overall legibility and also
+  specifically for input elements to avoid triggering Safari's auto-zoom behavior on focus.
+    * Grid font sizes have not changed, but other application layouts might need to be adjusted to
+      ensure labels and other text elements fit as intended.
+    * New `--xh-mobile-input-font-size` and `--xh-mobile-input-label-font-size` CSS vars have been
+      added to allow for more granular control over font sizes in mobile layouts.
+    * The default height of mobile toolbars has increased slightly to better accommodate larger
+      editable inputs nested within toolbars.
+
 ### 🐞 Bug Fixes
 
 * Fixed poor truncation / clipping behavior of the primary (right-side) metric in `ZoneGrid`. Values
