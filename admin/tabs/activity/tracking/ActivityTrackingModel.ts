@@ -99,28 +99,21 @@ export class ActivityTrackingModel extends HoistModel {
                 Col.userAgent.field,
                 Col.username.field,
                 {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
-                {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'}
+                {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+                Col.url.field,
+                Col.instance.field,
+                Col.appVersion.field,
+                Col.appEnvironment.field
             ] as CubeFieldSpec[]
         });
 
+        const enableValues = true;
         this.filterChooserModel = new FilterChooserModel({
             fieldSpecs: [
-                {
-                    field: 'category',
-                    enableValues: true
-                },
-                {
-                    field: 'username',
-                    enableValues: true
-                },
-                {
-                    field: 'device',
-                    enableValues: true
-                },
-                {
-                    field: 'browser',
-                    enableValues: true
-                },
+                {field: 'category', enableValues},
+                {field: 'username', displayName: 'User', enableValues},
+                {field: 'device', enableValues},
+                {field: 'browser', enableValues},
                 {
                     field: 'elapsed',
                     valueRenderer: v => {
@@ -131,20 +124,18 @@ export class ActivityTrackingModel extends HoistModel {
                     },
                     fieldType: 'number'
                 },
-                {
-                    field: 'msg'
-                },
-                {
-                    field: 'data'
-                },
-                {
-                    field: 'userAgent'
-                }
+                {field: 'msg', displayName: 'Message'},
+                {field: 'data'},
+                {field: 'userAgent'},
+                {field: 'url', displayName: 'URL'},
+                {field: 'instance'},
+                {field: 'appVersion'},
+                {field: 'appEnvironment', displayName: 'Environment'}
             ]
         });
 
         this.loadLookupsAsync();
-      
+
         this.groupingChooserModel = new GroupingChooserModel({
             dimensions: this.cube.dimensions,
             persistWith: this.persistWith,
@@ -186,7 +177,11 @@ export class ActivityTrackingModel extends HoistModel {
                 {...Col.elapsed, headerName: 'Elapsed (avg)', hidden},
                 {...Col.dayRange, hidden},
                 {...Col.entryCount},
-                {field: 'count', hidden}
+                {field: 'count', hidden},
+                {...Col.appEnvironment, hidden},
+                {...Col.appVersion, hidden},
+                {...Col.url, hidden},
+                {...Col.instance, hidden}
             ]
         });
 

@@ -126,5 +126,5 @@ const mapTitle = hoistCmp.factory<SplitTreeMapModel>(({model, isPrimary}) => {
 });
 
 const errorPanel = hoistCmp.factory(({errors}) =>
-    errorMessage({message: fragment(errors.map(e => p(e)))})
+    errorMessage({error: errors.join(' '), message: fragment(errors.map(e => p(e)))})
 );

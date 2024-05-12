@@ -4,64 +4,32 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
-import {AppModel} from '@xh/hoist/admin/AppModel';
-import * as Col from '@xh/hoist/admin/columns';
-import {hoistCmp} from '@xh/hoist/core';
-import {FieldSpec} from '@xh/hoist/data';
-import {restGrid, RestGridConfig} from '@xh/hoist/desktop/cmp/rest';
+import {prefEditorDialog} from '@xh/hoist/admin/tabs/userData/prefs/editor/PrefEditorDialog';
+import {UserPreferenceModel} from '@xh/hoist/admin/tabs/userData/prefs/UserPreferenceModel';
+import {creates, hoistCmp} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {restGrid} from '@xh/hoist/desktop/cmp/rest';
+import {Icon} from '@xh/hoist/icon';
 
-export const userPreferencePanel = hoistCmp.factory(() =>
-    restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}})
-);
+export const userPreferencePanel = hoistCmp.factory({
+    model: creates(UserPreferenceModel),
 
-const required = true,
-    hidden = true;
-
-const modelSpec: RestGridConfig = {
-    persistWith: {localStorageKey: 'xhAdminUserPreferenceState'},
-    colChooserModel: true,
-    enableExport: true,
-    exportOptions: {filename: exportFilenameWithDate('user-prefs')},
-    selModel: 'multiple',
-    store: {
-        url: 'rest/userPreferenceAdmin',
-        reloadLookupsOnLoad: true,
-        fieldDefaults: {disableXssProtection: true},
-        fields: [
-            {
-                ...(Col.name.field as FieldSpec),
-                displayName: 'Pref',
-                lookupName: 'names',
-                editable: 'onAdd',
-                required
-            },
-            {...(Col.groupName.field as FieldSpec), lookupName: 'groupNames', editable: false},
-            {...(Col.type.field as FieldSpec), editable: false},
-            {...(Col.username.field as FieldSpec), required},
-            {...(Col.userValue.field as FieldSpec), typeField: 'type', required},
-            {...(Col.lastUpdated.field as FieldSpec), editable: false},
-            {...(Col.lastUpdatedBy.field as FieldSpec), editable: false}
-        ]
-    },
-    sortBy: 'name',
-    groupBy: 'groupName',
-    unit: 'preference',
-    filterFields: ['name', 'username'],
-    columns: [
-        {...Col.name},
-        {...Col.type},
-        {...Col.username},
-        {...Col.groupName, hidden},
-        {...Col.userValue},
-        {...Col.lastUpdatedBy, hidden},
-        {...Col.lastUpdated, hidden}
-    ],
-    editors: [
-        {field: 'name'},
-        {field: 'username'},
-        {field: 'userValue'},
-        {field: 'lastUpdated'},
-        {field: 'lastUpdatedBy'}
-    ]
-};
+    render({model}) {
+        return panel({
+            items: [
+                restGrid({
+                    extraToolbarItems: () => {
+                        return button({
+                            icon: Icon.gear(),
+                            text: 'Configure',
+                            onClick: () => (model.showEditorDialog = true)
+                        });
+                    }
+                }),
+                prefEditorDialog()
+            ],
+            mask: 'onLoad'
+        });
+    }
+});

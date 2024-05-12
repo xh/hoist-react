@@ -70,6 +70,7 @@ function parseItems(items: MenuItemLike[]): ReactNode[] {
                 text: item.text,
                 icon: item.icon,
                 intent: item.intent,
+                className: item.className,
                 onClick: item.actionFn ? () => wait().then(item.actionFn) : null, // do async to allow menu to close
                 disabled: item.disabled,
                 items

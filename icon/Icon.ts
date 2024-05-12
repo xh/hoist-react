@@ -684,8 +684,14 @@ export const Icon = {
     trash(p?: IconProps) {
         return Icon.icon({...p, iconName: 'trash-alt'});
     },
+    treeGraph(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'sitemap'});
+    },
     treeList(p?: IconProps) {
         return Icon.icon({...p, iconName: 'list-tree'});
+    },
+    treeMap(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'chart-tree-map'});
     },
     undo(p?: IconProps) {
         return Icon.icon({...p, iconName: 'undo'});

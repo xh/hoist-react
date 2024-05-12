@@ -56,7 +56,14 @@ import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {deepFreeze, logWithDebug, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {
+    deepFreeze,
+    executeIfFunction,
+    logWithDebug,
+    throwIf,
+    warnIf,
+    withDefault
+} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -116,7 +123,7 @@ export interface GridConfig {
     /** True if grid is a tree grid (default false). */
     treeMode?: boolean;
 
-    /** Location for a docked summary row. Requires `store.SummaryRecord` to be populated. */
+    /** Location for docked summary row(s). Requires `store.summaryRecords` to be populated. */
     showSummary?: boolean | VSide;
 
     /** Specification of selection behavior. Defaults to 'single' (desktop) and 'disabled' (mobile) */
@@ -872,10 +879,6 @@ export class GridModel extends HoistModel {
         return this.agGridModel.agApi;
     }
 
-    get agColumnApi() {
-        return this.agGridModel.agColumnApi;
-    }
-
     get sizingMode(): SizingMode {
         return this.agGridModel.sizingMode;
     }
@@ -1031,7 +1034,7 @@ export class GridModel extends HoistModel {
     }
 
     /** Load the underlying store. */
-    loadData(rawData: any[], rawSummaryData?: PlainObject) {
+    loadData(rawData: any[], rawSummaryData?: Some<PlainObject>) {
         return this.store.loadData(rawData, rawSummaryData);
     }
 
@@ -1449,7 +1452,7 @@ export class GridModel extends HoistModel {
             config = defaultsDeep({}, config, colDefaults);
         }
 
-        const omit = isFunction(config.omit) ? config.omit() : config.omit;
+        const omit = executeIfFunction(config.omit);
         if (omit) return null;
 
         if (this.isGroupSpec(config)) {
@@ -1802,8 +1805,8 @@ export class GridModel extends HoistModel {
         side: 'left' | 'right',
         group: ColumnGroupSpec
     ): ColumnCellClassRuleFn {
-        return ({api, column, columnApi, ...ctx}) => {
-            if (!api || !column || !columnApi) return false;
+        return ({api, column, ...ctx}) => {
+            if (!api || !column) return false;
 
             // Re-evaluate cell class rules when column is re-ordered
             // See https://www.ag-grid.com/javascript-data-grid/column-object/#reference-events
@@ -1816,7 +1819,7 @@ export class GridModel extends HoistModel {
 
             // Don't render a left-border if col is first or if prev col already has right-border
             if (side === 'left') {
-                const prevCol = columnApi.getDisplayedColBefore(column);
+                const prevCol = api.getDisplayedColBefore(column);
 
                 if (!prevCol) return false;
 
@@ -1828,8 +1831,7 @@ export class GridModel extends HoistModel {
                         ...ctx,
                         api,
                         colDef: prevColDef,
-                        column: prevCol,
-                        columnApi
+                        column: prevCol
                     })
                 ) {
                     return false;

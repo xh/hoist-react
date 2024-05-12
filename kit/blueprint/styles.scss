@@ -64,9 +64,9 @@ $pt-transition-ease: cubic-bezier(0.4, 1, 0.75, 0.9) !default;
 $pt-transition-ease-bounce: cubic-bezier(0.54, 1.12, 0.38, 1.11) !default;
 $pt-transition-duration: 100ms !default;
 
-// This override is taken from the popover source SCSS - there it is scoped under the minimal class.
-// https://github.com/palantir/blueprint/blob/1bfd1e42303d2626bfc3923eec2195ab4dc696d2/packages/core/src/components/popover/_popover.scss#L54
 .bp5-popover {
+  // This override is taken from the popover source SCSS - there it is scoped under the minimal class.
+  // https://github.com/palantir/blueprint/blob/1bfd1e42303d2626bfc3923eec2195ab4dc696d2/packages/core/src/components/popover/_popover.scss#L54
   @include react-transition(
     'bp5-popover',
     (
@@ -85,7 +85,13 @@ $pt-transition-duration: 100ms !default;
   background-color: var(--xh-menu-bg);
   border: var(--xh-menu-border);
   color: var(--xh-menu-item-text-color);
-  padding: 5px 0;
+
+  // Constrain menu height to the viewport, for menus with more items than will fit vertically.
+  // Note that this is not perfect - menus are shown relative to their target, and if a menu is
+  // in the middle of the page and forced to render above/below the target, it can still clip.
+  // The 100px offset is designed to account for menus shown from app/tab-level top/bottom toolbars.
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
 
   .bp5-menu-item {
     // Default alignment of flex-start leaves Hoist icons shifted up - could target

@@ -105,7 +105,7 @@ function viewForState() {
     switch (XH.appState) {
         case 'PRE_AUTH':
         case 'INITIALIZING':
-            return viewport(appLoadMask());
+            return viewport(mask({spinner: true, isDisplayed: true}));
         case 'LOGIN_REQUIRED':
             return loginPanel();
         case 'ACCESS_DENIED':
@@ -168,11 +168,15 @@ const appLoadMask = hoistCmp.factory<AppContainerModel>(({model}) =>
 
 const suspendedView = hoistCmp.factory<AppContainerModel>({
     render({model}) {
+        let ret;
         if (model.appStateModel.suspendData?.reason === 'IDLE') {
             const content = model.appSpec.idlePanel ?? idlePanel;
-            return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
+            ret = elementFromContent(content, {onReactivate: () => XH.reloadApp()});
+        } else {
+            ret = suspendPanel();
         }
-        return suspendPanel();
+
+        return viewport(ret, appLoadMask());
     }
 });
 

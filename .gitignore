@@ -8,6 +8,7 @@
 # Build / Libs
 build/
 node_modules/
+tsconfig.tsbuildinfo
 
 # Logs
 *.log

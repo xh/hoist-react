@@ -15,6 +15,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import './RestForm.scss';
+import {startCase} from 'lodash';
 import {restFormField} from './RestFormField';
 
 /**
@@ -29,8 +30,9 @@ export const restForm = hoistCmp.factory({
         const {isAdd, readonly, isOpen, dialogRef} = model;
         if (!isOpen) return null;
 
+        const unit = startCase(model.unit);
         return dialog({
-            title: isAdd ? 'Add Record' : !readonly ? 'Edit Record' : 'View Record',
+            title: isAdd ? `Add ${unit}` : !readonly ? `Edit ${unit}` : `View ${unit}`,
             icon: isAdd ? Icon.add() : Icon.edit(),
             className,
             isOpen: true,

@@ -1,0 +1,90 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2024 Extremely Heavy Industries Inc.
+ */
+
+// Override standard grid default for cell padding to support distinct CSS var for ZoneGrid.
+// (High degree of specificity required here.)
+.xh-grid.xh-zone-grid {
+  .ag-theme-balham.xh-ag-grid {
+    .ag-cell {
+      padding-left: var(--xh-zone-grid-cell-lr-pad-px);
+      padding-right: var(--xh-zone-grid-cell-lr-pad-px);
+
+      // Allow right (primary metric) column to hit the left edge of the cell it it's filling the
+      // entire width, to maximize chance that the user can see all of this important data.
+      &.ag-column-last {
+        padding-left: 0;
+      }
+    }
+  }
+}
+
+// Define styling / layout for the internal of each ZoneGrid cell - the rendered content of left
+// and right managed ZoneGrid columns, as produced by ZoneGridRenderer.
+.xh-zone-grid-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  line-height: normal;
+
+  // Each cell is split into top and bottom sections, with top showing headline/primary data as
+  // configured by the user, and bottom showing secondary data.
+  &__section {
+    display: flex;
+    align-items: center;
+
+    &--top {
+      color: var(--xh-zone-grid-top-text-color);
+      font-size: var(--xh-zone-grid-top-font-size-px);
+    }
+
+    &--bottom {
+      color: var(--xh-zone-grid-bottom-text-color);
+      font-size: var(--xh-zone-grid-bottom-font-size-px);
+    }
+  }
+
+  &__delimiter {
+    margin: 0 2px;
+    color: var(--xh-zone-grid-delimiter-color);
+  }
+
+  &__label {
+    color: var(--xh-zone-grid-label-color);
+    margin-right: 0.25em;
+  }
+
+  // Right-hand sections have special handling to ensure right alignment as well as ellipsis to
+  // indicate overflow, ensuring that it is clear to a user when a primary metric that doesn't fit
+  // in the allotted width has been clipped.
+  &--right {
+    .xh-zone-grid-cell__section {
+      justify-content: flex-end;
+
+      // Cell sections can contain either text nodes or element nodes, depending on output of
+      // field renderers. We need to target them differently to get the overflow behavior we want.
+      .xh-zone-grid-cell__text-container {
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .xh-zone-grid-cell__element-container {
+        display: flex;
+        max-width: 100%;
+
+        // If a renderer emits an element, we target its outermost element and apply ellipsis to it.
+        // Note that this won't be compatible with all renderers, but it's a reasonable default.
+        & > *:not(.xh-zone-grid-cell__label) {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+    }
+  }
+}

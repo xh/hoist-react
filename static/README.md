@@ -3,8 +3,9 @@
 Hoist Dev Utils (`@xh/hoist-dev-utils`, aka HDU) references the files in this directory from
 within its `configureWebpack()` build script factory.
 
-* `index.html` - passed to `WebpackHTMLPlugin` by HDU >= v8.0.0, includes
-  the HDU generated manifest.json file.
+* `index.html` - passed to `WebpackHTMLPlugin` by HDU v8.0.0, includes the HDU generated
+  manifest.json file. NOTE that this was quickly replaced by move of this file to HDU as of the
+  v8.1 release of that library.  Maintained here for backwards compatibility with older HDU versions.
 * `polyfills.js` - passed to webpack in the `entry` config for each JS app entry point, ensuring
   that it imports the two global polyfills (`core-js` and `regenerator-runtime`) once per app. It is
   hosted here to ensure that the version of these libraries specified as a dependency by hoist-react
