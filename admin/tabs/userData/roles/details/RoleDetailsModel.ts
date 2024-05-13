@@ -4,39 +4,40 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {roleMembers} from './members/RoleMembers';
+import {userMembers} from './members/UserMembers';
+import {directoryMembers} from './members/DirectoryMembers';
+import {RoleModel} from '../RoleModel';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {fmtDateTimeSec} from '@xh/hoist/format';
-import {RoleModel} from '../RoleModel';
 import {HoistRole} from '../Types';
-import {directoryMembers} from './members/DirectoryMembers';
-import {userMembers} from './members/UserMembers';
-import {roleMembers} from './members/RoleMembers';
 
 export class RoleDetailsModel extends HoistModel {
     @lookup(() => RoleModel) readonly roleModel: RoleModel;
 
-    @managed readonly formModel: FormModel = this.createFormModel();
-    @managed readonly tabContainerModel = this.createTabContainerModel();
+    @managed formModel: FormModel;
+    @managed tabContainerModel: TabContainerModel;
 
     get role(): HoistRole {
         return this.roleModel.selectedRole;
     }
 
     override onLinked() {
+        this.formModel = this.createFormModel();
+        this.tabContainerModel = this.createTabContainerModel();
+
         this.addReaction({
             track: () => this.role,
             run: role => {
-                if (!role) {
-                    this.formModel.init({});
-                } else {
-                    this.formModel.init({
-                        ...role,
-                        category: role.category ?? 'Uncategorized',
-                        lastUpdated: `${role.lastUpdatedBy} (${fmtDateTimeSec(role.lastUpdated)})`
-                    });
-                }
+                !role
+                    ? this.formModel.init({})
+                    : this.formModel.init({
+                          ...role,
+                          category: role.category ?? 'Uncategorized',
+                          lastUpdated: `${role.lastUpdatedBy} (${fmtDateTimeSec(role.lastUpdated)})`
+                      });
             }
         });
     }
@@ -58,23 +59,25 @@ export class RoleDetailsModel extends HoistModel {
             tabs: [
                 {
                     id: 'users',
+                    tooltip: 'All resolved users with this role',
                     content: userMembers
                 },
                 {
                     id: 'directories',
-                    tooltip: 'Directories feeding users to this Role',
+                    tooltip: 'Directories contributing users to this role',
+                    omit: !this.roleModel.moduleConfig.directoryGroupsSupported,
                     content: directoryMembers
                 },
                 {
                     id: 'inheritedRoles',
-                    tooltip:
-                        'Roles that have been granted to this role (e.g. what this role can do)',
+                    title: 'Inheriting From',
+                    tooltip: 'Roles gained by this role transitively.',
                     content: () => roleMembers({type: 'inherited'})
                 },
                 {
                     id: 'inheritingRoles',
-                    tooltip:
-                        'Roles that this Role has been granted to (e.g. what can do this role)',
+                    title: 'Granting To',
+                    tooltip: 'Roles that effectively have this role as well',
                     content: () => roleMembers({type: 'inheriting'})
                 }
             ]

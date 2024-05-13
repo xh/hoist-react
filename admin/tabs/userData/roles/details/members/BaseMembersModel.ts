@@ -4,23 +4,18 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {RowClickedEvent} from '@ag-grid-community/core';
 import {RoleDetailsModel} from '../RoleDetailsModel';
 import {RoleModel} from '../../RoleModel';
 import {HoistRole, RoleModuleConfig} from '../../Types';
 import {ColumnRenderer, GridModel} from '@xh/hoist/cmp/grid';
 import {hbox} from '@xh/hoist/cmp/layout';
-import {HoistModel, lookup, managed} from '@xh/hoist/core';
+import {HoistModel, lookup, managed, PlainObject} from '@xh/hoist/core';
 import {tag} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
-import {sortBy, uniq, uniqBy} from 'lodash';
+import {partition, sortBy, uniq} from 'lodash';
 
 export abstract class BaseMembersModel extends HoistModel {
-    readonly types: Record<string, string> = {
-        USER: '1-user',
-        DIRECTORY_GROUP: '2-directory-group',
-        ROLE: '3-role'
-    };
-
     @lookup(() => RoleModel) readonly roleModel: RoleModel;
     @lookup(() => RoleDetailsModel) readonly roleDetailsModel: RoleDetailsModel;
 
@@ -44,53 +39,95 @@ export abstract class BaseMembersModel extends HoistModel {
         });
     }
 
-    abstract loadGridData(role: HoistRole);
+    //---------------------------------
+    // Overrideable properties/methods
+    //---------------------------------
+    protected entityName: string = 'members';
 
-    abstract createGridModel(): GridModel;
+    abstract getGridData(role: HoistRole): PlainObject[];
 
-    protected sortThisRoleFirst<T extends {role: string; directoryGroup?: string}>(
-        sources: T[]
-    ): T[] {
-        sources = sortBy(sources, source => `${source.role}:${source.directoryGroup ?? ''}`);
-        const thisRole = sources.filter(it => it.role === this.selectedRole.name) ?? [];
-        return [...thisRole, ...sources.filter(it => it.role !== this.selectedRole.name)];
+    protected get emptyText(): string {
+        return 'No members';
     }
 
-    // -------------------------------
-    // Grid Renderers
-    // -------------------------------
-    protected sourcesRenderer: ColumnRenderer = (
-        sources: Array<{role: string; directoryGroup?: string}>
-    ) =>
-        hbox({
-            className: 'roles-renderer',
-            items: uniqBy(
-                sources.map(({role, directoryGroup}) => {
-                    const isThisRole = role === this.selectedRole.name;
-                    return {
-                        className: classNames(
-                            'roles-renderer__role',
-                            !isThisRole && 'roles-renderer__role--effective'
-                        ),
-                        intent: isThisRole ? null : 'primary',
-                        item: isThisRole
-                            ? RoleModel.fmtDirectoryGroup(directoryGroup) ?? '<Direct>'
-                            : role,
-                        title: isThisRole ? directoryGroup ?? '<Direct>' : role,
-                        minimal: true,
-                        onClick: () => !isThisRole && this.roleModel.selectRoleAsync(role)
-                    };
-                }),
-                'item'
-            ).map(props => tag(props))
-        });
+    protected sourceList(sources: string[]): string[] {
+        const [thisRole, otherRoles] = partition(uniq(sources), it => it != this.selectedRole.name);
+        return [...thisRole, ...sortBy(otherRoles)];
+    }
 
-    protected sourcesExportRenderer: ColumnRenderer = (
-        sources: Array<{role: string; directoryGroup?: string}>
-    ) =>
-        uniq(
-            sources.map(({role, directoryGroup}) =>
-                role === this.selectedRole.name ? directoryGroup ?? '<Direct>' : role
-            )
-        ).join(', ');
+    protected nameRenderer: ColumnRenderer = name => {
+        return name;
+    };
+
+    protected sourcesRenderer: ColumnRenderer = (sources: string[]) => {
+        return hbox({
+            className: 'roles-renderer',
+            items: sources.map(role => {
+                const isThisRole = role === this.selectedRole.name;
+                return tag({
+                    className: classNames(
+                        'roles-renderer__role',
+                        !isThisRole && 'roles-renderer__role--effective'
+                    ),
+                    intent: isThisRole ? null : 'primary',
+                    minimal: true,
+                    item: isThisRole ? '<Direct>' : role,
+                    onClick: isThisRole ? null : () => this.roleModel.selectRoleAsync(role)
+                });
+            })
+        });
+    };
+
+    protected sourcesExportRenderer: ColumnRenderer = (sources: string[]) => {
+        return sources
+            .map(role => {
+                return role === this.selectedRole.name ? '<Direct>' : role;
+            })
+            .join(', ');
+    };
+
+    protected onRowDoubleClicked: (e: RowClickedEvent) => void = null;
+
+    //-----------------
+    // Implementation
+    //-----------------
+    private createGridModel(): GridModel {
+        const {entityName} = this;
+        return new GridModel({
+            store: {
+                fields: [
+                    {name: 'name', type: 'string'},
+                    {name: 'sources', type: 'json'},
+                    {name: 'error', type: 'string'}, // For directory groups
+                    {name: 'dateCreated', type: 'date'}, // For direct members
+                    {name: 'createdBy', type: 'string'} // For direct members
+                ],
+                idSpec: data => `${this.selectedRole.name}:${data.name}`
+            },
+            enableExport: true,
+            exportOptions: {filename: () => `${this.selectedRole.name}-${entityName}`},
+            emptyText: this.emptyText,
+            sortBy: 'name',
+            columns: [
+                {
+                    field: 'name',
+                    autosizeMaxWidth: 300
+                },
+                {
+                    field: 'sources',
+                    sortValue: this.sourcesExportRenderer,
+                    flex: true,
+                    minWidth: 105,
+                    renderer: this.sourcesRenderer,
+                    exportValue: this.sourcesExportRenderer
+                }
+            ],
+            onRowDoubleClicked: this.onRowDoubleClicked
+        });
+    }
+
+    private loadGridData(role: HoistRole) {
+        const data = role ? this.getGridData(role) : [];
+        this.gridModel.loadData(data);
+    }
 }
