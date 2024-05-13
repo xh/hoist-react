@@ -20,15 +20,15 @@ export interface BaseOauthClientConfig {
 
     /**
      * The redirect URL where authentication responses can be received by your application.
-     * It must exactly match one of the redirect URIs registered in the Azure portal, in the SPA section.
+     * It must exactly match one of the redirect URIs registered in the relevant OAuth authority.
      * Default is 'APP_BASE_URL' which will be replaced with the current app's base URL.
-     **/
+     */
     redirectUrl?: 'APP_BASE_URL' | string;
 
     /**
-     * The redirect URL where the window navigates after a successful logout.
+     * The redirect URL after a successful logout.
      * Default is 'APP_BASE_URL' which will be replaced with the current app's base URL.
-     **/
+     */
     postLogoutRedirectUrl?: 'APP_BASE_URL' | string;
 
     /** The method used for logging in on desktop. Default is 'REDIRECT'. */
@@ -40,44 +40,44 @@ export interface BaseOauthClientConfig {
     /**
      * When the remaining token lifetime is below this threshold, try to refresh the token.
      * Should be substantially shorter than the lifetime of the tokens, but long enough so that
-     * there is ample time to complete the refresh, including retries.  Defaults to 10 minutes.
+     * there is ample time to complete the refresh, including retries.  Default is 10 minutes.
      */
     tokenRefreshThresholdMins?: number;
 
     /**
-     * Governs how frequently we attempt to refresh aging tokens.
-     * Should be short enough to allow multiple attempts during `tokenRefreshThesholdMins`
-     * Defaults to 30 seconds.
+     * Governs how frequently we attempt to refresh aging tokens. Should be short enough to allow
+     * multiple attempts during `tokenRefreshThresholdMins`. Default is 30 seconds.
      */
     tokenRefreshCheckSecs?: number;
 
     /**
-     * Additional scopes to be loaded.
-     *
-     * openid, profile, email, will always be included.
+     * Scopes to request - if any - beyond the core `['openid', 'profile', 'email']` scopes, which
+     * this client will always request.
      */
     scopes?: string[];
 
     /**
-     * Display warning banner if tokens expire?
-     *
-     * May be specified as a boolean, or a partial banner spec.
-     * Defaults to false.
+     * True to display a warning banner to the user if tokens expire. May be specified as a boolean
+     * or a partial banner spec. Defaults to false.
      */
     expiryWarning: boolean | Partial<BannerSpec>;
 }
 
 /**
- * Implementations of this class coordinate OAuth-based login and token provision.
+ * Implementations of this class coordinate OAuth-based login and token provision. Apps can use a
+ * suitable concrete implementation to power a client-side OauthService - see Toolbox for an
+ * example using `Auth0Client`.
  *
- * It should be possible to initialize this object in the `preAuthInitAsync()` lifecycle methods of
- * the relevant AppModels, so that its tokens may be used for subsequent auth. If required the
- * implementation should initiate a pop-up or redirect flow to gain valid tokens with scope required.
+ * Initialize such a service and this client within the `preAuthInitAsync()` lifecycle method of
+ * `AppModel` to use the tokens it acquires to authenticate with the Hoist server. (Note this
+ * requires a suitable server-side `AuthenticationService` implementation to validate the token and
+ * actually resolve the user.) On init, the client implementation will initiate a pop-up or redirect
+ * flow as necessary.
  *
- * The configuration for this client will be a combination of local code-specified values
- * enhanced by values from the server `xhOAuthConfig` configuration.  Note that the server values
- * will be loaded directly by this object via a dedicated, white-listed endpoint, to allow for
- * access early in the app lifecycle.
+ * The configuration for this client will be a combination of local code-specified values enhanced
+ * by values from the server `xhOAuthConfig` configuration.  Note that the server values will be
+ * loaded directly by this object via a dedicated, white-listed endpoint to allow for  access early
+ * in the app lifecycle.
  */
 export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends HoistBase {
     /** Config loaded from UI server + init method. */
@@ -162,7 +162,9 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
     // Template methods
     //-----------------------------------
     protected abstract doInitAsync(): Promise<void>;
+
     protected abstract doLogoutAsync(): Promise<void>;
+
     protected abstract getTokensAsync(useCache: boolean): Promise<TokenPair>;
 
     //---------------------------------------
@@ -204,7 +206,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
      * Call before redirect flow, to snapshot needed state to
      * be restored after redirect.
      *
-     * @return key - key for re-accessing this state, to be round-tripped with redirect.
+     * @returns key - key for re-accessing this state, to be round-tripped with redirect.
      */
     protected captureRedirectState(): string {
         const {pathname, search} = window.location,
@@ -240,8 +242,8 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
 
     /**
      * Load tokens from provider.
-     * @param useCache - use the local cache.  Set as false to ensure
-     * going to the network for a fresh token. Default true.
+     * @param useCache - true (default) to use local cache if available, or false to force a
+     *      network request to fetch a fresh token.
      */
     protected async loadTokensAsync(useCache: boolean = true): Promise<void> {
         const {idToken, accessToken} = await this.getTokensAsync(useCache);
