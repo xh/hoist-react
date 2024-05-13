@@ -22,7 +22,7 @@ export const roleMembers = hoistCmp.factory({
 });
 
 class RoleMembersModel extends BaseMembersModel {
-    get type(): 'inherited' | 'inheriting' {
+    get type(): 'inherited' | 'effective' {
         return this.componentProps.type;
     }
 

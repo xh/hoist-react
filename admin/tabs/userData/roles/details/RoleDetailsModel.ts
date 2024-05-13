@@ -4,6 +4,8 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {badge} from '@xh/hoist/cmp/badge';
+import {hbox} from '@xh/hoist/cmp/layout';
 import {roleMembers} from './members/RoleMembers';
 import {userMembers} from './members/UserMembers';
 import {directoryMembers} from './members/DirectoryMembers';
@@ -25,26 +27,35 @@ export class RoleDetailsModel extends HoistModel {
     }
 
     override onLinked() {
-        this.formModel = this.createFormModel();
-        this.tabContainerModel = this.createTabContainerModel();
+        const fm = (this.formModel = this.createFormModel()),
+            tcm = (this.tabContainerModel = this.createTabContainerModel());
 
         this.addReaction({
             track: () => this.role,
             run: role => {
                 !role
-                    ? this.formModel.init({})
-                    : this.formModel.init({
+                    ? fm.init({})
+                    : fm.init({
                           ...role,
                           category: role.category ?? 'Uncategorized',
                           lastUpdated: `${role.lastUpdatedBy} (${fmtDateTimeSec(role.lastUpdated)})`
                       });
-            }
+                tcm.tabs[0].title = this.tabTitle('Users', role?.effectiveUsers);
+                tcm.tabs[1].title = this.tabTitle('Directories', role?.effectiveDirectoryGroups);
+                tcm.tabs[2].title = this.tabTitle('Granted To', role?.effectiveRoles);
+                tcm.tabs[3].title = this.tabTitle('Inheriting From', role?.inheritedRoles);
+            },
+            fireImmediately: true
         });
     }
 
     //------------------
     // Implementation
     //------------------
+    private tabTitle(name: string, col: []) {
+        return col != null ? hbox(name, badge(col.length)) : name;
+    }
+
     private createFormModel(): FormModel {
         return new FormModel({
             fields: [{name: 'name'}, {name: 'category'}, {name: 'notes'}, {name: 'lastUpdated'}],
@@ -69,16 +80,14 @@ export class RoleDetailsModel extends HoistModel {
                     content: directoryMembers
                 },
                 {
-                    id: 'inheritedRoles',
-                    title: 'Inheriting From',
-                    tooltip: 'Roles gained by this role transitively.',
-                    content: () => roleMembers({type: 'inherited'})
+                    id: 'effectiveRoles',
+                    tooltip: 'Roles that effectively have this role as well',
+                    content: () => roleMembers({type: 'effective'})
                 },
                 {
-                    id: 'inheritingRoles',
-                    title: 'Granting To',
-                    tooltip: 'Roles that effectively have this role as well',
-                    content: () => roleMembers({type: 'inheriting'})
+                    id: 'inheritedRoles',
+                    tooltip: 'Roles gained by this role transitively.',
+                    content: () => roleMembers({type: 'inherited'})
                 }
             ]
         });

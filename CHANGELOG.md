@@ -53,6 +53,7 @@ for more details.
   respect "safe area" boundaries, avoiding overlap with system UI elements such as the iOS task
   switcher at the bottom of the screen. Also set background letterboxing color (to black) when
   in landscape mode for a more resolved-looking layout.
+* Misc. improvements to Role Detail Display in Admin client.
 
 ### ✨ Styles
 
@@ -201,9 +202,6 @@ There are some common breaking changes that most/many apps will need to address:
 * Added a "Reload App" option to the default mobile app menu.
 * Improved perceived responsiveness when constructing a new 'FilterChooserModel' when backing data
   has many records and/or auto-suggest-enabled fields.
-
-### 🎁 New Features
-* Removed direct members grid from the roles admin UI and replaced it with a new "Inherited Roles" grid.
 
 ### 🐞 Bug Fixes
 

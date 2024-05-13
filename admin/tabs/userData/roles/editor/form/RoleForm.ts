@@ -97,8 +97,7 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
     displayName: 'AssignmentsPanel',
     model: uses(() => RoleFormModel),
     render({className, entity, model}) {
-        const {roleName} = model,
-            forUser = entity === 'USER',
+        const forUser = entity === 'USER',
             forDirGroup = entity === 'DIRECTORY_GROUP',
             forRole = entity === 'ROLE',
             gridModel = forUser
@@ -111,7 +110,7 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
             className,
             compactHeader: true,
             icon: forUser ? Icon.user() : forDirGroup ? Icon.users() : Icon.idBadge(),
-            title: `${capitalizeWords(entity.replace('_', ' '))}s ${forRole ? 'inheriting from' : 'belonging to'} ${roleName}`,
+            title: forRole ? 'Granted To' : `${capitalizeWords(entity.replace('_', ' '))}s`,
             headerItems: [infoIcon({entity}), hspacer(2)],
             tbar: toolbar({
                 compact: true,
