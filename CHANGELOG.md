@@ -68,6 +68,8 @@ for more details.
     * Increased height of mobile toolbars to better accommodate larger nested inputs.
     * Grid font sizes have not changed, but other application layouts might need to be adjusted to
       ensure labels and other text elements fit as intended.
+* Mobile App Options dialog has been updated to use a full-screen `DialogPanel` to provide a more
+  native feel and better accommodate longer lists of app options.
 
 ### 🐞 Bug Fixes
 

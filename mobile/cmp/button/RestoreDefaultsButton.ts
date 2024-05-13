@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {fragment, p} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
@@ -12,10 +13,10 @@ import {ReactNode} from 'react';
 
 export interface RestoreDefaultsButtonProps extends ButtonProps {
     /** Message for confirm dialog shown prior to clearing user customizations. */
-    warningMessage: ReactNode;
+    warningMessage?: ReactNode;
 
     /** Title for confirm dialog shown prior to clearing user customizations. */
-    warningTitle: string;
+    warningTitle?: string;
 }
 
 /**
@@ -31,7 +32,12 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] =
         render(
             {
                 warningTitle = 'Please confirm...',
-                warningMessage = 'All app options (including grid customizations) will be restored to their default settings, and the app will be reloaded.',
+                warningMessage = fragment(
+                    p(
+                        'All app options (including grid customizations) will immediately be restored to their default settings.'
+                    ),
+                    p('This app will then automatically reload. OK to proceed?')
+                ),
                 ...buttonProps
             },
             ref
@@ -40,16 +46,21 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] =
                 XH.confirm({
                     title: warningTitle,
                     message: warningMessage,
-                    icon: Icon.warning(),
-                    onConfirm: () => XH.restoreDefaultsAsync()
+                    onConfirm: () => XH.restoreDefaultsAsync(),
+                    confirmProps: {
+                        text: 'Yes, restore defaults',
+                        intent: 'primary'
+                    }
                 });
             };
 
             return button({
-                ref,
-                icon: Icon.reset(),
                 text: 'Restore Defaults',
+                icon: Icon.reset(),
+                minimal: true,
+                modifier: 'large',
                 onClick,
+                ref,
                 ...buttonProps
             });
         }
