@@ -15,14 +15,14 @@ import {
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {
     Column,
-    ColumnSpec,
+    ColumnCellClassRuleFn,
     ColumnGroup,
     ColumnGroupSpec,
+    ColumnSpec,
     GridAutosizeMode,
     GridFilterModelConfig,
     GridGroupSortFn,
-    TreeStyle,
-    ColumnCellClassRuleFn
+    TreeStyle
 } from '@xh/hoist/cmp/grid';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {br, fragment} from '@xh/hoist/cmp/layout';
@@ -51,7 +51,6 @@ import {
 } from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
-import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
@@ -91,11 +90,12 @@ import {
     pick,
     pull
 } from 'lodash';
-import {GridPersistenceModel} from './impl/GridPersistenceModel';
-import {GridSorter, GridSorterLike} from './GridSorter';
-import {GridAutosizeOptions} from './GridAutosizeOptions';
-import {managedRenderer} from './impl/Utils';
 import {ReactNode} from 'react';
+import {GridAutosizeOptions} from './GridAutosizeOptions';
+import {GridContextMenuSpec} from './GridContextMenu';
+import {GridSorter, GridSorterLike} from './GridSorter';
+import {GridPersistenceModel} from './impl/GridPersistenceModel';
+import {managedRenderer} from './impl/Utils';
 import {
     AutosizeState,
     ColChooserConfig,
@@ -105,7 +105,6 @@ import {
     RowClassFn,
     RowClassRuleFn
 } from './Types';
-import {GridContextMenuSpec} from './GridContextMenu';
 
 export interface GridConfig {
     /** Columns for this grid. */
@@ -632,8 +631,6 @@ export class GridModel extends HoistModel {
     async restoreDefaultsAsync(): Promise<boolean> {
         if (this.restoreDefaultsWarning) {
             const confirmed = await XH.confirm({
-                title: 'Please Confirm',
-                icon: Icon.warning(),
                 message: this.restoreDefaultsWarning,
                 confirmProps: {
                     text: 'Yes, restore defaults',

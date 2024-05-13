@@ -32,7 +32,7 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] =
 
         render(
             {
-                warningTitle = 'Please Confirm',
+                warningTitle = 'Please confirm...',
                 warningMessage = fragment(
                     'All app options (including grid customizations) will be restored to their default settings, and the app will be reloaded.',
                     br(),

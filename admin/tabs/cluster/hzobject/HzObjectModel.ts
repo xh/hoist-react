@@ -72,7 +72,6 @@ export class HzObjectModel extends BaseInstanceModel {
                 it => it.data.type != 'Cache' && !it.data.name.startsWith('cache')
             ) &&
             !(await XH.confirm({
-                title: 'Please confirm...',
                 message: fragment(
                     'Your selection contains objects that may not be caches and may not be designed to be cleared.',
                     br(),
@@ -108,7 +107,6 @@ export class HzObjectModel extends BaseInstanceModel {
 
     async clearHibernateCachesAsync() {
         const confirmed = await XH.confirm({
-            title: 'Please confirm...',
             message: fragment(
                 'This will clear the second-level Hibernate caches for all domain objects, requiring the server to re-query the database for their latest state.',
                 br(),

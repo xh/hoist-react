@@ -30,7 +30,7 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] =
         model: false,
         render(
             {
-                warningTitle = 'Please Confirm',
+                warningTitle = 'Please confirm...',
                 warningMessage = 'All app options (including grid customizations) will be restored to their default settings, and the app will be reloaded.',
                 ...buttonProps
             },

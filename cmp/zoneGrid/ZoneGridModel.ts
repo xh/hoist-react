@@ -383,8 +383,6 @@ export class ZoneGridModel extends HoistModel {
     async restoreDefaultsAsync(): Promise<boolean> {
         if (this.restoreDefaultsWarning) {
             const confirmed = await XH.confirm({
-                title: 'Please Confirm',
-                icon: Icon.warning(),
                 message: this.restoreDefaultsWarning,
                 confirmProps: {
                     text: 'Yes, restore defaults',
