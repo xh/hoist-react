@@ -25,7 +25,7 @@ import {
     TreeStyle
 } from '@xh/hoist/cmp/grid';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
-import {br, fragment} from '@xh/hoist/cmp/layout';
+import {fragment, p} from '@xh/hoist/cmp/layout';
 import {
     Awaitable,
     HoistModel,
@@ -348,10 +348,10 @@ export interface GridConfig {
  */
 export class GridModel extends HoistModel {
     static DEFAULT_RESTORE_DEFAULTS_WARNING = fragment(
-        'This action will clear any customizations you have made to this grid, including filters, column selection, ordering, and sizing.',
-        br(),
-        br(),
-        'OK to proceed?'
+        p(
+            'This action will clear any customizations you have made to this grid, including filters, column selection, ordering, and sizing.'
+        ),
+        p('OK to proceed?')
     );
 
     static DEFAULT_AUTOSIZE_MODE: GridAutosizeMode = 'onSizingModeChange';
