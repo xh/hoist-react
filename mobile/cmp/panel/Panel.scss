@@ -13,11 +13,12 @@
 
   .xh-panel-header {
     align-items: center;
-    padding: var(--xh-title-pad-px);
     color: var(--xh-panel-title-text-color);
     background-color: var(--xh-panel-title-bg);
     border-bottom: var(--xh-border-solid);
     flex: none;
+    font-family: var(--xh-panel-title-font-family);
+    padding: var(--xh-title-pad-px);
     user-select: none;
 
     &__title {
@@ -28,8 +29,7 @@
       font-size: var(--xh-panel-title-font-size-px);
     }
 
-    // Header glyph.
-    & > .svg-inline--fa {
+    & > .xh-icon {
       margin: 0 5px 0 0;
     }
 
