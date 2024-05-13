@@ -85,15 +85,16 @@ for more details.
 
 * NumberEditor no longer activates on keypress of letter characters.
 * Removed initial `ping` call `FetchService` init.
-* New method `fetchService.addDefaultHeaders` replaces deprecated `fetchService.setDefaultHeaders()`
-  FetchService now supports independent additions of default headers from multiple sources in your
-  application.
-
+* Deprecated `FetchService.setDefaultHeaders` and replaced with new `addDefaultHeaders` method to
+  support independent additions of default headers from multiple sources in an application.
 
 ### 📚 Libraries
 
 * @ag-grid `30.x → 31.x`
+* @auth0/auth0-spa-js `added @ 2.1`
+* @azure/msal-browser `added @ 3.14`
 * dompurify `3.0 → 3.1`
+* jwt-decode `added @ 4.0`
 * moment `2.29 → 2.30`
 * numbro `2.4 → 2.5`
 * qs `6.11 → 6.12`
