@@ -15,6 +15,10 @@
     flex-direction: column;
     max-height: calc(100svh - var(--xh-pad-double-px));
 
+    // Increase min-width from Onsen 270px default. This seems to drive actual width in most cases.
+    // and 270px looks a bit cramped.
+    min-width: 320px;
+
     .dialog-container {
       margin: var(--xh-pad-safe-all);
       display: flex;
