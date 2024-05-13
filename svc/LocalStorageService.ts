@@ -82,6 +82,6 @@ export class LocalStorageService extends HoistService {
     }
 
     private getNamespace() {
-        return `${XH.appCode}.${XH.getUsername()??'ANON'}`;
+        return `${XH.appCode}.${XH.getUsername() ?? 'ANON'}`;
     }
 }

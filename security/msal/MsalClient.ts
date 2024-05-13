@@ -35,12 +35,11 @@ interface MsalClientConfig extends BaseOauthClientConfig {
  * Service to implement OAuth authentication via MSAL.
  */
 export class MsalClient extends BaseOauthClient<MsalClientConfig> {
-
     private client: IPublicClientApplication;
     private account: AccountInfo; // Authenticated account, as most recent auth call with Azure.
 
     override async doInitAsync(): Promise<void> {
-        const client = this.client = await this.createClientAsync();
+        const client = (this.client = await this.createClientAsync());
 
         this.account = client.getAllAccounts()[0];
 
@@ -77,9 +76,9 @@ export class MsalClient extends BaseOauthClient<MsalClientConfig> {
     override async doLogoutAsync(): Promise<void> {
         const {postLogoutRedirectUrl, client, account, usesRedirect} = this;
         await client.clearCache({account});
-        usesRedirect ?
-            await client.logoutRedirect({account, postLogoutRedirectUri: postLogoutRedirectUrl}) :
-            await client.logoutPopup({account})
+        usesRedirect
+            ? await client.logoutRedirect({account, postLogoutRedirectUri: postLogoutRedirectUrl})
+            : await client.logoutPopup({account});
     }
 
     //------------------------

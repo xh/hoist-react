@@ -118,7 +118,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
      * Main entry point for this object.
      */
     async initAsync(): Promise<void> {
-        const config = this.config = defaultsDeep(
+        const config = (this.config = defaultsDeep(
             await XH.fetchJson({url: 'xh/oauthConfig'}),
             this.config,
             {
@@ -130,7 +130,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
                 tokenRefreshThresholdMins: 10,
                 tokenRefreshCheckSecs: 30
             } as T
-        )
+        ));
 
         this.logDebug('OAuth config merged from code and server', config);
         throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
@@ -247,12 +247,16 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
         const {idToken, accessToken} = await this.getTokensAsync(useCache);
 
         // Load the token and its expiry. (We store the expiry to avoid frequent decoding.)
-        runInAction((() => {
+        runInAction(() => {
             this.idInfo = {token: idToken, expiry: jwtDecode(idToken).exp * SECONDS};
             this.accessInfo = {token: accessToken, expiry: jwtDecode(accessToken).exp * SECONDS};
-        }));
+        });
 
-        this.logDebug('Loaded tokens', new Date(this.idInfo.expiry), new Date(this.accessInfo.expiry));
+        this.logDebug(
+            'Loaded tokens',
+            new Date(this.idInfo.expiry),
+            new Date(this.accessInfo.expiry)
+        );
     }
 
     private async onTimerAsync(): Promise<void> {
@@ -263,9 +267,10 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
             accessExpiry = accessInfo?.expiry;
 
         // 1) Periodically Refresh if we are missing a token, or a token is too close to expiry
-        if (olderThan(lastRefreshAttempt, checkInterval)  &&
+        if (
+            olderThan(lastRefreshAttempt, checkInterval) &&
             (olderThan(idExpiry, -threshold) || olderThan(accessExpiry, -threshold))
-        ){
+        ) {
             try {
                 this.lastRefreshAttempt = Date.now();
                 await this.loadTokensAsync(false);
@@ -275,7 +280,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
         } else {
             // 2) Otherwise, if a token will expire before next check, clear it out
             const idExpires = idExpiry && olderThan(idExpiry, -TIMER_INTERVAL),
-                accessExpires = accessExpiry && olderThan(accessExpiry, -TIMER_INTERVAL)
+                accessExpires = accessExpiry && olderThan(accessExpiry, -TIMER_INTERVAL);
             if (idExpires || accessExpires) {
                 runInAction(() => {
                     if (idExpires) this.idInfo = null;
@@ -291,7 +296,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
         const {expiryWarning} = this.config;
         if (!expiryWarning) return;
 
-        const expired = !this.idToken || !this.accessToken
+        const expired = !this.idToken || !this.accessToken;
         if (this.expiryWarningDisplayed != expired) {
             this.expiryWarningDisplayed = expired;
             if (expired) {
