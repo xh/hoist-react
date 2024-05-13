@@ -10,11 +10,11 @@ import {
     InteractionRequiredAuthError,
     IPublicClientApplication
 } from '@azure/msal-browser';
-import {LogLevel} from '@azure/msal-common/src/logger/Logger';
+import {LogLevel} from '@azure/msal-common';
 import {XH} from '@xh/hoist/core';
 import {never} from '@xh/hoist/promise';
 import {logDebug, logError, logInfo, logWarn, throwIf} from '@xh/hoist/utils/js';
-import {BaseOauthClientConfig, BaseOauthClient, TokenPair} from '../BaseOauthClient';
+import {BaseOauthClient, BaseOauthClientConfig, TokenPair} from '../BaseOauthClient';
 
 interface MsalClientConfig extends BaseOauthClientConfig {
     /** Tenant ID (GUID) of your organization */
