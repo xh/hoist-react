@@ -69,10 +69,9 @@ export abstract class BaseMembersModel extends HoistModel {
                         'roles-renderer__role',
                         !isThisRole && 'roles-renderer__role--effective'
                     ),
-                    intent: isThisRole ? null : 'primary',
                     minimal: true,
                     item: isThisRole ? '<Direct>' : role,
-                    onClick: isThisRole ? null : () => this.roleModel.selectRoleAsync(role)
+                    onDoubleClick: isThisRole ? null : () => this.roleModel.selectRoleAsync(role)
                 });
             })
         });

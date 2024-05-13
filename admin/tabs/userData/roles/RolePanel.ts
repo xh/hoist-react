@@ -5,13 +5,13 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
-import {filler, fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
+import {fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {roleDetails} from './details/RoleDetails';
 import {roleEditor} from './editor/RoleEditor';
@@ -51,24 +51,21 @@ export const rolePanel = hoistCmp.factory({
     }
 });
 
-const detailsPanel = hoistCmp.factory<RoleModel>(({model}) =>
-    panel({
+const detailsPanel = hoistCmp.factory<RoleModel>(({model}) => {
+    const {selectedRole} = model;
+    return panel({
         compactHeader: true,
         icon: Icon.idBadge(),
-        title: model.selectedRole?.name ? `Details - ${model.selectedRole?.name}` : 'Details',
+        title: selectedRole?.name ? `Details - ${selectedRole?.name}` : 'Details',
         item: roleDetails(),
-        bbar: toolbar({
-            items: [
-                filler(),
-                recordActionBar({
-                    actions: [model.editAction()],
-                    gridModel: model.gridModel,
-                    selModel: model.gridModel.selModel,
-                    omit: model.readonly
-                })
-            ],
-            omit: !model.selectedRole
-        }),
+        headerItems: [
+            button({
+                icon: Icon.edit(),
+                minimal: true,
+                onClick: () => model.editAsync(selectedRole),
+                omit: !selectedRole
+            })
+        ],
         modelConfig: {
             defaultSize: '30%',
             minSize: 550,
@@ -76,5 +73,5 @@ const detailsPanel = hoistCmp.factory<RoleModel>(({model}) =>
             persistWith: {...RoleModel.PERSIST_WITH, path: 'detailsPanel'},
             side: 'right'
         }
-    })
-);
+    });
+});

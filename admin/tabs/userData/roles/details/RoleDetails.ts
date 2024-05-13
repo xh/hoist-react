@@ -50,8 +50,10 @@ export const details = hoistCmp.factory(() =>
     })
 );
 
-export const members = hoistCmp.factory(() =>
-    panel({
-        item: tabContainer()
-    })
-);
+export const members = hoistCmp.factory<RoleDetailsModel>({
+    render() {
+        return panel({
+            item: tabContainer()
+        });
+    }
+});

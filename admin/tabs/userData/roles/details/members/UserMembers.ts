@@ -4,13 +4,15 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {RoleModel} from '../../RoleModel';
 import {tag} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
 import {BaseMembersModel} from './BaseMembersModel';
 import {HoistRole, UserSource} from '../../Types';
 import {ColumnRenderer, grid} from '@xh/hoist/cmp/grid';
-import {hbox} from '@xh/hoist/cmp/layout';
+import {filler, hbox} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, PlainObject} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import './BaseMembers.scss';
@@ -21,7 +23,11 @@ export const userMembers = hoistCmp.factory({
     displayName: 'UsersMembers',
     model: creates(() => UserMembersModel),
     render({className}) {
-        return panel({className, item: grid()});
+        return panel({
+            className,
+            item: grid(),
+            tbar: toolbar({compact: true, items: [filler(), gridFindField()]})
+        });
     }
 });
 
@@ -54,11 +60,10 @@ class UserMembersModel extends BaseMembersModel {
                     'roles-renderer__role',
                     !isThisRole && 'roles-renderer__role--effective'
                 ),
-                intent: isThisRole ? null : 'primary',
                 item: isThisRole ? RoleModel.fmtDirectoryGroup(directoryGroup) ?? '<Direct>' : role,
                 title: isThisRole ? directoryGroup ?? '<Direct>' : role,
                 minimal: true,
-                onClick: () => !isThisRole && this.roleModel.selectRoleAsync(role)
+                onDoubleClick: () => !isThisRole && this.roleModel.selectRoleAsync(role)
             };
         });
 

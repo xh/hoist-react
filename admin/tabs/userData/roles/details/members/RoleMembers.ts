@@ -4,6 +4,9 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {filler} from '@xh/hoist/cmp/layout';
+import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {BaseMembersModel} from './BaseMembersModel';
 import {HoistRole} from '../../Types';
 import {grid} from '@xh/hoist/cmp/grid';
@@ -17,7 +20,11 @@ export const roleMembers = hoistCmp.factory({
     displayName: 'RoleMembers',
     model: creates(() => RoleMembersModel),
     render({className}) {
-        return panel({className, item: grid()});
+        return panel({
+            className,
+            item: grid(),
+            tbar: toolbar({compact: true, items: [filler(), gridFindField()]})
+        });
     }
 });
 

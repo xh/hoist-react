@@ -50,7 +50,7 @@ export const roleGraph = hoistCmp.factory({
                             }),
                             button({
                                 value: 'effective',
-                                text: `Granting to ${role?.effectiveRoles.length} ${pluralize('role', role?.effectiveRoles.length)}`
+                                text: `Granted to ${role?.effectiveRoles.length} ${pluralize('role', role?.effectiveRoles.length)}`
                             })
                         ]
                     }),
