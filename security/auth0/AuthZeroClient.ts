@@ -20,9 +20,10 @@ interface AuthZeroClientConfig extends BaseOauthClientConfig {
 }
 
 /**
- * This class supports OAuth via an integration with Auth0, a cross-platform service
- * supporting login via Google, GitHub, or Microsoft identities *or* via a username/password combo
- * created by the user in the Auth0 registration flow (and stored on Auth0 servers).
+ * This class supports OAuth via an integration with Auth0, a commercial service supporting login
+ * via Google, GitHub, Microsoft, and various other OAuth providers *or* via a username/password
+ * combo stored and managed within Auth0's own database. Supported options will depend on the
+ * configuration of your Auth0 app.
  */
 export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
     private client: Auth0Client;
@@ -99,7 +100,7 @@ export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
     private async completeViaRedirectAsync(): Promise<void> {
         const {client} = this;
 
-        // Determine if we are on back end of redirect.  (recipe from Auth0 docs)
+        // Determine if we are on back end of redirect (recipe from Auth0 docs)
         const {search} = window.location,
             isReturning =
                 (search.includes('state=') && search.includes('code=')) ||
@@ -128,7 +129,7 @@ export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
                 throw XH.exception({
                     name: 'Auth0 Login Error',
                     message:
-                        'Login popup window timed out. Please reload the browser to try again.',
+                        'Login popup window timed out. Please reload this tab in your browser to try again.',
                     cause: e
                 });
             }
@@ -136,7 +137,8 @@ export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
             if (msg === 'popup closed') {
                 throw XH.exception({
                     name: 'Auth0 Login Error',
-                    message: 'Login popup window closed. Please reload the browser to try again.',
+                    message:
+                        'Login popup window closed. Please reload this tab in your browser to try again.',
                     cause: e
                 });
             }

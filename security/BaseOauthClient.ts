@@ -203,8 +203,8 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
         'to reload the application and try again.';
 
     /**
-     * Call before redirect flow, to snapshot needed state to
-     * be restored after redirect.
+     * Call before redirect flow to snapshot any URL-based routing state that should be restored
+     * after redirect
      *
      * @returns key - key for re-accessing this state, to be round-tripped with redirect.
      */
@@ -227,7 +227,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
     }
 
     /**
-     * Call after redirect flow, to rehydrate state.
+     * Call after redirect flow to rehydrate URL-based routing state.
      *
      * @param key - key for re-accessing this state, as round-tripped with redirect.
      */
@@ -242,6 +242,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
 
     /**
      * Load tokens from provider.
+     *
      * @param useCache - true (default) to use local cache if available, or false to force a
      *      network request to fetch a fresh token.
      */
