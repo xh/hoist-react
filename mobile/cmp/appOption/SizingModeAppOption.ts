@@ -4,12 +4,12 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {SizingMode, XH} from '@xh/hoist/core';
+import {AppOptionSpec, SizingMode, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {buttonGroupInput, ButtonGroupInputProps} from '@xh/hoist/mobile/cmp/input';
+import {startCase, values} from 'lodash';
 import {FormFieldProps} from '../form/FormField';
 import '@xh/hoist/mobile/register';
-import {startCase, values} from 'lodash';
 
 interface SizingModeAppOptionSpec {
     /** Supported SizingModes */
@@ -27,7 +27,7 @@ export const sizingModeAppOption = ({
     modes,
     formFieldProps,
     inputProps
-}: SizingModeAppOptionSpec = {}) => {
+}: SizingModeAppOptionSpec = {}): AppOptionSpec => {
     if (!modes) modes = values(SizingMode);
     return {
         name: 'sizingMode',

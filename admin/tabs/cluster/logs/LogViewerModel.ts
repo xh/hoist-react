@@ -121,7 +121,6 @@ export class LogViewerModel extends BaseInstanceModel {
             if (!count) return;
 
             const confirmed = await XH.confirm({
-                title: 'Please Confirm',
                 message: `Delete ${count} log files on the server? This cannot be undone.`
             });
             if (!confirmed) return;

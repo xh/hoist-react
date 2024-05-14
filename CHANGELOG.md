@@ -27,15 +27,18 @@ for more details.
 * All apps will need to update their `@ag-grid` dependencies within `package.json` and make a minor
   update to their `Bootstrap` registration as per
   this [Toolbox example](https://github.com/xh/toolbox/pull/709/files/5626e21d778e1fc72f9735d2d8f011513e1ac9c6#diff-304055320a29f66ea1255446ba8f13e0f3f1b13643bcea0c0466aa60e9288a8f).
-  * `Grid` and `AgGrid` components default to `reactiveCustomComponents: true`. If your app has
-    custom tooltips or editors, you should confirm that they still work with this setting,
-    which will be the default in agGrid v32.
-    * For custom editors, you will have to convert them from ["Imperative" to what AG-Grid calls "Reactive"](https://ag-grid.com/react-data-grid/cell-editors/#custom-components).
-      See the [AG-Grid migration guide](https://ag-grid.com/react-data-grid/upgrading-to-ag-grid-31-1/#custom-cell-editor-components) for more details.
-      If you cannot at this time convert your custom editors to "Reactive" mode, you can set `reactiveCustomComponents: false` in your `GridModel` to continue using the old "Imperative" mode.
-    * For custom tooltips, [note AG-Grid's deprecation of `getReactContainerClasses`](https://ag-grid.com/react-data-grid/upgrading-to-ag-grid-31-1/#react).
-
-
+    * `Grid` and `AgGrid` components default to `reactiveCustomComponents: true`. If your app has
+      custom tooltips or editors, you should confirm that they still work with this setting. (It
+      will be the default in agGrid v32.)
+    * For custom editors, you will have to convert them from "imperative" to "reactive". If this is
+      not possible, you can set `reactiveCustomComponents: false` in your `GridModel` to continue
+      using the old "imperative" mode, but note that this will preclude the use of upgraded Hoist
+      editors in that same grid instance. (See the links below for AG docs on this change.)
+    * For custom tooltips, note AG-Grid's deprecation of `getReactContainerClasses`.
+    * Consult the AG Grid docs for more information:
+        * [Updated docs on Custom Components](https://ag-grid.com/react-data-grid/cell-editors/#custom-components)
+        * [Migrating from Imperative to Reactive components](https://ag-grid.com/react-data-grid/upgrading-to-ag-grid-31-1/#migrating-custom-components-to-use-reactivecustomcomponents-option)
+        * [React-related deprecations](https://ag-grid.com/react-data-grid/upgrading-to-ag-grid-31-1/#react)
 
 #### Other Breaking Changes
 
@@ -53,7 +56,26 @@ for more details.
   respect "safe area" boundaries, avoiding overlap with system UI elements such as the iOS task
   switcher at the bottom of the screen. Also set background letterboxing color (to black) when
   in landscape mode for a more resolved-looking layout.
-* New grid checkBoxRenderer for rendering booleans with a checkbox input look and feel.
+* Improved the inline grid `selectEditor` to commit its value to the backing record as soon as an
+  option is selected, rather than waiting for the user to click away from the cell.
+* Improved the display of Role details in the Admin Console. The detail panel for the selected role
+  now includes a sub-tab listing all other roles inherited by the selected role, something that
+  was previously accessible only via the linked graph visualization.
+* Added new `checkBoxRenderer` for rendering booleans with a checkbox input look and feel.
+
+### ✨ Styles
+
+* Default mobile font size has been increased to 16px, both for better overall legibility and also
+  specifically for input elements to avoid triggering Safari's auto-zoom behavior on focus.
+    * Added new mobile-only CSS vars to allow for more granular control over font sizes:
+        * `--xh-mobile-input-font-size`
+        * `--xh-mobile-input-label-font-size`
+        * `--xh-mobile-input-height-px`
+    * Increased height of mobile toolbars to better accommodate larger nested inputs.
+    * Grid font sizes have not changed, but other application layouts might need to be adjusted to
+      ensure labels and other text elements fit as intended.
+* Mobile App Options dialog has been updated to use a full-screen `DialogPanel` to provide a more
+  native feel and better accommodate longer lists of app options.
 
 ### 🐞 Bug Fixes
 

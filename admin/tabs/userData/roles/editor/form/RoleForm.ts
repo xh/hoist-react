@@ -6,7 +6,7 @@
  */
 import {form} from '@xh/hoist/cmp/form';
 import {grid, gridCountLabel, GridModel} from '@xh/hoist/cmp/grid';
-import {filler, hbox, hframe, hspacer, strong, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {filler, hbox, hframe, hspacer, span, strong, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
@@ -83,22 +83,25 @@ const assignments = hoistCmp.factory<RoleFormModel>(({model}) =>
                     !model.moduleConfig?.directoryGroupsSupported &&
                     model.directoryGroupsGridModel.empty
             }),
-            assignmentsPanel({entity: 'ROLE'})
+            assignmentsPanel({
+                entity: 'ROLE',
+                helpText: 'Users with any roles below will also get this role.'
+            })
         ]
     })
 );
 
 interface AssignmentsPanelProps extends HoistProps<RoleFormModel> {
     entity: RoleMemberType;
+    helpText?: string;
 }
 
 const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
     className: 'xh-admin-role-form__assignments__panel',
     displayName: 'AssignmentsPanel',
     model: uses(() => RoleFormModel),
-    render({className, entity, model}) {
-        const {roleName} = model,
-            forUser = entity === 'USER',
+    render({className, entity, model, helpText}) {
+        const forUser = entity === 'USER',
             forDirGroup = entity === 'DIRECTORY_GROUP',
             forRole = entity === 'ROLE',
             gridModel = forUser
@@ -111,7 +114,7 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
             className,
             compactHeader: true,
             icon: forUser ? Icon.user() : forDirGroup ? Icon.users() : Icon.idBadge(),
-            title: `${capitalizeWords(entity.replace('_', ' '))}s ${forRole ? 'inheriting from' : 'belonging to'} ${roleName}`,
+            title: forRole ? 'Granted To' : `${capitalizeWords(entity.replace('_', ' '))}s`,
             headerItems: [infoIcon({entity}), hspacer(2)],
             tbar: toolbar({
                 compact: true,
@@ -120,7 +123,9 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
                         actions: [model.ADD_ASSIGNMENT_ACTION],
                         gridModel,
                         selModel: gridModel.selModel
-                    })
+                    }),
+                    filler(),
+                    helpText ? span(helpText) : null
                 ]
             }),
             item: grid({model: gridModel}),

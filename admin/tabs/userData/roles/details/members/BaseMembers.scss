@@ -1,0 +1,17 @@
+.xh-admin-members {
+  border-top: var(--xh-border-solid);
+
+  .roles-renderer {
+    align-items: center;
+
+    &__role {
+      &:not(:last-child) {
+        margin-right: var(--xh-pad-half-px);
+      }
+
+      &--effective {
+        cursor: pointer;
+      }
+    }
+  }
+}
