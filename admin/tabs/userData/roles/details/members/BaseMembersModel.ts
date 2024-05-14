@@ -5,15 +5,16 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {RowClickedEvent} from '@ag-grid-community/core';
-import {RoleDetailsModel} from '../RoleDetailsModel';
-import {RoleModel} from '../../RoleModel';
-import {HoistRole, RoleModuleConfig} from '../../Types';
 import {ColumnRenderer, GridModel} from '@xh/hoist/cmp/grid';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {HoistModel, lookup, managed, PlainObject} from '@xh/hoist/core';
 import {tag} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
 import {partition, sortBy, uniq} from 'lodash';
+import {ReactNode} from 'react';
+import {RoleModel} from '../../RoleModel';
+import {HoistRole, RoleModuleConfig} from '../../Types';
+import {RoleDetailsModel} from '../RoleDetailsModel';
 
 export abstract class BaseMembersModel extends HoistModel {
     @lookup(() => RoleModel) readonly roleModel: RoleModel;
@@ -31,12 +32,17 @@ export abstract class BaseMembersModel extends HoistModel {
 
     override onLinked() {
         this.gridModel = this.createGridModel();
-        this.addReaction({
-            track: () => this.selectedRole,
-            run: role => this.loadGridData(role),
-            fireImmediately: true,
-            debounce: 100
-        });
+        this.addReaction(
+            {
+                track: () => this.selectedRole,
+                run: role => this.loadGridData(role),
+                fireImmediately: true
+            },
+            {
+                track: () => this.emptyText,
+                run: emptyText => (this.gridModel.emptyText = emptyText)
+            }
+        );
     }
 
     //---------------------------------
@@ -46,8 +52,8 @@ export abstract class BaseMembersModel extends HoistModel {
 
     abstract getGridData(role: HoistRole): PlainObject[];
 
-    protected get emptyText(): string {
-        return 'No members';
+    protected get emptyText(): ReactNode {
+        return 'No members.';
     }
 
     protected sourceList(sources: string[]): string[] {

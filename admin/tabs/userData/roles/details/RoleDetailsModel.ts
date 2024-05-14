@@ -38,7 +38,7 @@ export class RoleDetailsModel extends HoistModel {
                         ? {
                               ...role,
                               category: role.category ?? 'Uncategorized',
-                              lastUpdated: `${role.lastUpdatedBy} (${fmtDateTimeSec(role.lastUpdated)})`
+                              lastUpdated: `${role.lastUpdatedBy} @ ${fmtDateTimeSec(role.lastUpdated)}`
                           }
                         : {}
                 );
@@ -69,28 +69,23 @@ export class RoleDetailsModel extends HoistModel {
 
     private createTabContainerModel(): TabContainerModel {
         return new TabContainerModel({
-            persistWith: {...RoleModel.PERSIST_WITH, path: 'roleMembersTabContainer'},
             switcher: true,
             tabs: [
                 {
                     id: 'users',
-                    tooltip: 'All resolved users with this role',
                     content: userMembers
                 },
                 {
                     id: 'directories',
-                    tooltip: 'Directories contributing users to this role',
                     omit: !this.roleModel.moduleConfig.directoryGroupsSupported,
                     content: directoryMembers
                 },
                 {
                     id: 'effectiveRoles',
-                    tooltip: 'Roles that effectively have this role as well',
                     content: () => roleMembers({type: 'effective'})
                 },
                 {
                     id: 'inheritedRoles',
-                    tooltip: 'Roles gained by this role transitively.',
                     content: () => roleMembers({type: 'inherited'})
                 }
             ]

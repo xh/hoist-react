@@ -4,26 +4,38 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {filler} from '@xh/hoist/cmp/layout';
-import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {BaseMembersModel} from './BaseMembersModel';
-import {HoistRole} from '../../Types';
 import {grid} from '@xh/hoist/cmp/grid';
+import {filler, span} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, PlainObject} from '@xh/hoist/core';
+import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import './BaseMembers.scss';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {filter, keyBy} from 'lodash';
+import {ReactNode} from 'react';
+import {HoistRole} from '../../Types';
+import {BaseMembersModel} from './BaseMembersModel';
 
 export const roleMembers = hoistCmp.factory({
     className: 'xh-admin-members',
     displayName: 'RoleMembers',
     model: creates(() => RoleMembersModel),
-    render({className}) {
+    render({model, className}) {
         return panel({
             className,
             item: grid(),
-            tbar: toolbar({compact: true, items: [filler(), gridFindField()]})
+            tbar: toolbar({
+                compact: true,
+                items: [
+                    span(
+                        model.type == 'inherited'
+                            ? 'Users with this role also have the roles below.'
+                            : 'Users with any of the roles below also have this role.'
+                    ),
+                    filler(),
+                    gridFindField()
+                ]
+            })
         });
     }
 });
@@ -35,10 +47,11 @@ class RoleMembersModel extends BaseMembersModel {
 
     override entityName = 'roles';
 
-    override get emptyText() {
+    override get emptyText(): ReactNode {
+        const roleName = this.selectedRole?.name;
         return this.type == 'inherited'
-            ? 'No roles inherited by this role.'
-            : 'This role not granted to any roles.';
+            ? `${roleName} does not inherit from any other roles.`
+            : `${roleName} has not been granted to any other roles.`;
     }
 
     override getGridData(role: HoistRole): PlainObject[] {
