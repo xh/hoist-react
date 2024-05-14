@@ -58,6 +58,9 @@ for more details.
   in landscape mode for a more resolved-looking layout.
 * Improved the inline grid `selectEditor` to commit its value to the backing record as soon as an
   option is selected, rather than waiting for the user to click away from the cell.
+* Improved the display of Role details in the Admin Console. The detail panel for the selected role
+  now includes a sub-tab listing all other roles inherited by the selected role, something that
+  was previously accessible only via the linked graph visualization.
 
 ### ✨ Styles
 
