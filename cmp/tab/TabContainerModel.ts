@@ -7,18 +7,18 @@
 import {
     HoistModel,
     managed,
-    RefreshContextModel,
     PersistenceProvider,
+    PersistOptions,
+    RefreshContextModel,
     RefreshMode,
     RenderMode,
-    XH,
-    PersistOptions
+    XH
 } from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
-import {find, isString, isUndefined, without, difference, findLast} from 'lodash';
+import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {difference, find, findLast, isString, isUndefined, without} from 'lodash';
 import {ReactNode} from 'react';
 import {TabConfig, TabModel} from './TabModel';
 import {TabSwitcherProps} from './TabSwitcherProps';
@@ -177,12 +177,7 @@ export class TabContainerModel extends HoistModel {
         }
     }
 
-    //-----------------------------
-    // Manage contents.
-    //-----------------------------
-    /**
-     * Set the Tabs displayed by this object.
-     */
+    /** Set/replace all tabs within the container. */
     @action
     setTabs(tabs: Array<TabModel | TabConfig>) {
         const oldTabs = this.tabs,
@@ -214,7 +209,7 @@ export class TabContainerModel extends HoistModel {
         }
     }
 
-    /** Add a Tab for display.*/
+    /** Add a single tab to the container. */
     @action
     addTab(tab: TabModel | TabConfig, opts?: AddTabOptions): TabModel {
         const {tabs} = this,
@@ -226,10 +221,7 @@ export class TabContainerModel extends HoistModel {
         return this.findTab(tab.id);
     }
 
-    /**
-     * Remove a Tab for display.
-     * @param tab - TabModel or id of TabModel to be removed.
-     */
+    /** Remove a single tab from the container. */
     @action
     removeTab(tab: TabModel | string) {
         const {tabs, activeTab} = this,
@@ -251,9 +243,16 @@ export class TabContainerModel extends HoistModel {
         this.setTabs(without(tabs, toRemove));
     }
 
-    //-------------------------------
-    // Access Tabs, active management
-    //-------------------------------
+    /** Update the title of an existing tab. Logs failures quietly on debug if not found.  */
+    setTabTitle(tabId: string, title: ReactNode) {
+        const tab = this.findTab(tabId);
+        if (tab) {
+            tab.title = title;
+        } else {
+            this.logDebug(`Failed to setTabTitle`, `Tab ${tabId} not found`);
+        }
+    }
+
     findTab(id: string): TabModel {
         return find(this.tabs, {id});
     }

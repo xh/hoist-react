@@ -27,23 +27,26 @@ export class RoleDetailsModel extends HoistModel {
     }
 
     override onLinked() {
-        const fm = (this.formModel = this.createFormModel()),
-            tcm = (this.tabContainerModel = this.createTabContainerModel());
+        this.formModel = this.createFormModel();
+        this.tabContainerModel = this.createTabContainerModel();
 
         this.addReaction({
             track: () => this.role,
             run: role => {
-                !role
-                    ? fm.init({})
-                    : fm.init({
-                          ...role,
-                          category: role.category ?? 'Uncategorized',
-                          lastUpdated: `${role.lastUpdatedBy} (${fmtDateTimeSec(role.lastUpdated)})`
-                      });
-                tcm.tabs[0].title = this.tabTitle('Users', role?.effectiveUsers);
-                tcm.tabs[1].title = this.tabTitle('Directories', role?.effectiveDirectoryGroups);
-                tcm.tabs[2].title = this.tabTitle('Granted To', role?.effectiveRoles);
-                tcm.tabs[3].title = this.tabTitle('Inheriting From', role?.inheritedRoles);
+                this.formModel.init(
+                    role
+                        ? {
+                              ...role,
+                              category: role.category ?? 'Uncategorized',
+                              lastUpdated: `${role.lastUpdatedBy} (${fmtDateTimeSec(role.lastUpdated)})`
+                          }
+                        : {}
+                );
+
+                this.setTabTitle('users', 'Users', role?.effectiveUsers);
+                this.setTabTitle('directories', 'Directories', role?.effectiveDirectoryGroups);
+                this.setTabTitle('effectiveRoles', 'Granted To', role?.effectiveRoles);
+                this.setTabTitle('inheritedRoles', 'Inheriting From', role?.inheritedRoles);
             },
             fireImmediately: true
         });
@@ -52,8 +55,9 @@ export class RoleDetailsModel extends HoistModel {
     //------------------
     // Implementation
     //------------------
-    private tabTitle(name: string, col: []) {
-        return col != null ? hbox(name, badge(col.length)) : name;
+    private setTabTitle(id: string, name: string, col: []) {
+        const title = col != null ? hbox(name, badge(col.length)) : name;
+        this.tabContainerModel.setTabTitle(id, title);
     }
 
     private createFormModel(): FormModel {
