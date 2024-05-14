@@ -275,6 +275,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
      *      network request to fetch a fresh token.
      */
     protected async loadTokensAsync(useCache: boolean = true): Promise<void> {
+        // Get the tokens from the underlying client library.
         const idToken = await this.getIdTokenAsync(useCache),
             accessTokens = {},
             accessTasks = mapValues(this.config.accessTokens, spec =>
