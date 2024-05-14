@@ -122,12 +122,16 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
     //------------------------
     // Public API
     //------------------------
-    /** ID Token in JWT format. */
+    /**
+     * ID token in JWT format. Observable.
+     */
     get idToken(): string {
         return this._idToken?.token;
     }
 
-    /** Access Token in JWT format. */
+    /**
+     * Get a configured Access token in JWT format. Observable.
+     */
     getAccessToken(key: string): string {
         return this._accessTokens[key]?.token;
     }
