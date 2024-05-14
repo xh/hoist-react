@@ -338,7 +338,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
         const {expiryWarning} = this.config;
         if (!expiryWarning) return;
 
-        const expired = !!this._idToken || some(this._accessTokens, isNil);
+        const expired = !this._idToken || some(this._accessTokens, isNil);
         if (this.expiryWarningDisplayed != expired) {
             this.expiryWarningDisplayed = expired;
             if (expired) {
