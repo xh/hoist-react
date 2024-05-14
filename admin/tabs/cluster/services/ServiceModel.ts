@@ -83,7 +83,6 @@ export class ServiceModel extends BaseInstanceModel {
                 : `${selectedRecords[0].data.displayName} cache`;
 
         const confirmed = await XH.confirm({
-            title: 'Please confirm...',
             message: fragment(
                 `This will clear the ${cacheStr} ${entireCluster ? 'for all instances in this cluster' : 'for instance ' + instanceName}.`,
                 br(),

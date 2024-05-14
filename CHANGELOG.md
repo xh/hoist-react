@@ -27,23 +27,60 @@ for more details.
 * All apps will need to update their `@ag-grid` dependencies within `package.json` and make a minor
   update to their `Bootstrap` registration as per
   this [Toolbox example](https://github.com/xh/toolbox/pull/709/files/5626e21d778e1fc72f9735d2d8f011513e1ac9c6#diff-304055320a29f66ea1255446ba8f13e0f3f1b13643bcea0c0466aa60e9288a8f).
-* `Grid` and `AgGrid` components default to: `reactiveCustomComponents: true`.
-   If your app has custom renderers, tooltips, or editors,
-   you should confirm that they still work with this setting,
-   which will be the default in agGrid v32.
+    * `Grid` and `AgGrid` components default to `reactiveCustomComponents: true`. If your app has
+      custom tooltips or editors, you should confirm that they still work with this setting. (It
+      will be the default in agGrid v32.)
+    * For custom editors, you will have to convert them from "imperative" to "reactive". If this is
+      not possible, you can set `reactiveCustomComponents: false` in your `GridModel` to continue
+      using the old "imperative" mode, but note that this will preclude the use of upgraded Hoist
+      editors in that same grid instance. (See the links below for AG docs on this change.)
+    * For custom tooltips, note AG-Grid's deprecation of `getReactContainerClasses`.
+    * Consult the AG Grid docs for more information:
+        * [Updated docs on Custom Components](https://ag-grid.com/react-data-grid/cell-editors/#custom-components)
+        * [Migrating from Imperative to Reactive components](https://ag-grid.com/react-data-grid/upgrading-to-ag-grid-31-1/#migrating-custom-components-to-use-reactivecustomcomponents-option)
+        * [React-related deprecations](https://ag-grid.com/react-data-grid/upgrading-to-ag-grid-31-1/#react)
 
-#### Other Changes
+#### Other Breaking Changes
 
 * Removed support for passing a plain object to the `model` prop of Hoist Components (previously
   deprecated back in v58). Use the `modelConfig` prop instead.
-* Improved `selectEditor` to stop editing when the value changes, rather than when the user clicks
-  away from the cell, making it more intuitive for users. This only occurs in the absence of
-  `GridModel.fullRowEditing` and `Select.enableMulti`.
+* Removed the `multiFieldRenderer` utility function. This has been made internal and renamed
+  to `zoneGridRenderer` for exclusive use by the `ZoneGrid` component.
+* Updated CSS variables related to the `ZoneGrid` component - vars formerly prefixed
+  by `--xh-grid-multifield` are now prefixed by `--xh-zone-grid`, several vars have been added, and
+  some defaults have changed.
+
+### 🎁 New Features
+
+* Improved mobile viewport handling to ensure that both standard pages and full screen dialogs
+  respect "safe area" boundaries, avoiding overlap with system UI elements such as the iOS task
+  switcher at the bottom of the screen. Also set background letterboxing color (to black) when
+  in landscape mode for a more resolved-looking layout.
+* Improved the inline grid `selectEditor` to commit its value to the backing record as soon as an
+  option is selected, rather than waiting for the user to click away from the cell.
+
+### ✨ Styles
+
+* Default mobile font size has been increased to 16px, both for better overall legibility and also
+  specifically for input elements to avoid triggering Safari's auto-zoom behavior on focus.
+    * Added new mobile-only CSS vars to allow for more granular control over font sizes:
+        * `--xh-mobile-input-font-size`
+        * `--xh-mobile-input-label-font-size`
+        * `--xh-mobile-input-height-px`
+    * Increased height of mobile toolbars to better accommodate larger nested inputs.
+    * Grid font sizes have not changed, but other application layouts might need to be adjusted to
+      ensure labels and other text elements fit as intended.
+* Mobile App Options dialog has been updated to use a full-screen `DialogPanel` to provide a more
+  native feel and better accommodate longer lists of app options.
 
 ### 🐞 Bug Fixes
 
+* Fixed poor truncation / clipping behavior of the primary (right-side) metric in `ZoneGrid`. Values
+  that do not fit within the available width of the cell will now truncate their right edge and
+  display an ellipsis to indicate they have been clipped.
 * Improved `RestGridModel.actionWarning` behavior to suppress any warning when the provided function
   returns a falsy value.
+* Fixed mobile `Toast` intent styling.
 
 ### ⚙️ Technical
 
