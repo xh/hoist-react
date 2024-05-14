@@ -56,6 +56,8 @@ for more details.
   respect "safe area" boundaries, avoiding overlap with system UI elements such as the iOS task
   switcher at the bottom of the screen. Also set background letterboxing color (to black) when
   in landscape mode for a more resolved-looking layout.
+* Improved the inline grid `selectEditor` to commit its value to the backing record as soon as an
+  option is selected, rather than waiting for the user to click away from the cell.
 
 ### ✨ Styles
 
