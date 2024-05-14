@@ -4,15 +4,15 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, XH, MessageSpec} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {isUndefined, partition, filter} from 'lodash';
+import {HoistModel, managed, MessageSpec, XH} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {filter, isUndefined, partition} from 'lodash';
 import {MessageModel} from './MessageModel';
 
 /**
  * Supports managed display of modal message dialogs via `XH.message()` and friends.
- * Not intended for direct application use.
- * @see XHClass.message()
+ * Not intended for direct application use - use helpers off of `XH` instead.
  * @internal
  */
 export class MessageSourceModel extends HoistModel {
@@ -45,22 +45,24 @@ export class MessageSourceModel extends HoistModel {
         return ret.result;
     }
 
-    alert(config) {
+    alert(config: MessageSpec) {
         return this.message({
             ...config,
             confirmProps: {text: 'OK', ...config.confirmProps}
         });
     }
 
-    confirm(config) {
+    confirm(config: MessageSpec) {
         return this.message({
+            title: 'Please confirm...',
+            icon: Icon.warning(),
             ...config,
             confirmProps: {text: 'OK', ...config.confirmProps},
             cancelProps: {text: 'Cancel', ...config.cancelProps}
         });
     }
 
-    prompt(config) {
+    prompt(config: MessageSpec) {
         return this.message({
             ...config,
             confirmProps: {text: 'OK', ...config.confirmProps},
@@ -69,11 +71,11 @@ export class MessageSourceModel extends HoistModel {
         });
     }
 
-    //-----------------------------------
+    //------------------
     // Implementation
-    //------------------------------------
+    //------------------
     @action
-    addModel(model) {
+    private addModel(model: MessageModel) {
         const {messageKey} = model,
             {msgModels} = this;
         if (messageKey) {

@@ -180,7 +180,6 @@ export class ClusterTabModel extends HoistModel {
         if (
             !(await XH.confirm({
                 message: `Are you SURE you want to shutdown instance ${instance.name}?`,
-                title: 'Please confirm...',
                 confirmProps: {
                     icon: Icon.skull(),
                     text: 'Shutdown Now',

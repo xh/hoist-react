@@ -55,7 +55,7 @@ export class AppOption {
         this.reloadRequired = reloadRequired;
     }
 
-    async getValueAsync(name) {
+    async getValueAsync() {
         const {valueGetter, prefName} = this;
         if (isFunction(valueGetter)) {
             return valueGetter();
@@ -64,7 +64,7 @@ export class AppOption {
         }
     }
 
-    async setValueAsync(name, value) {
+    async setValueAsync(value) {
         const {valueSetter, prefName} = this;
         if (isFunction(valueSetter)) {
             await valueSetter(value);

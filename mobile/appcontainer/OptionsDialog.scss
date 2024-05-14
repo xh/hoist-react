@@ -1,5 +1,15 @@
 .xh-options-dialog {
-  .xh-form-field:not(:last-child) {
-    margin-bottom: var(--xh-pad-double-px);
+  &__form {
+    padding: var(--xh-pad-px);
+    overflow-y: auto;
+
+    .xh-form-field:not(:last-child) {
+      margin-bottom: var(--xh-pad-double-px);
+    }
+  }
+
+  &__restore-defaults-btn {
+    align-self: center;
+    margin: 40px 0;
   }
 }
