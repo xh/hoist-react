@@ -8,13 +8,16 @@ import * as msal from '@azure/msal-browser';
 import {
     AccountInfo,
     InteractionRequiredAuthError,
-    IPublicClientApplication
+    IPublicClientApplication,
+    PopupRequest,
+    RedirectRequest
 } from '@azure/msal-browser';
 import {LogLevel} from '@azure/msal-common';
-import {XH} from '@xh/hoist/core';
+import {PlainObject, XH} from '@xh/hoist/core';
 import {never} from '@xh/hoist/promise';
 import {logDebug, logError, logInfo, logWarn, throwIf} from '@xh/hoist/utils/js';
-import {BaseOauthClient, BaseOauthClientConfig, TokenPair} from '../BaseOauthClient';
+import {flatMap, union, uniq} from 'lodash';
+import {BaseOauthClientConfig, BaseOauthClient} from '../BaseOauthClient';
 
 interface MsalClientConfig extends BaseOauthClientConfig {
     /** Tenant ID (GUID) of your organization */
@@ -63,22 +66,35 @@ export class MsalClient extends BaseOauthClient<MsalClientConfig> {
         await this.loadTokensAsync();
     }
 
-    override async getTokensAsync(useCache: boolean = true): Promise<TokenPair> {
+    override async getIdTokenAsync(useCache: boolean = true): Promise<string> {
         const ret = await this.client.acquireTokenSilent({
-            scopes: this.scopes,
+            scopes: this.idScopes,
             account: this.account,
             forceRefresh: !useCache
         });
         this.account = ret.account;
-        return ret;
+        return ret.idToken;
+    }
+
+    override async getAccessTokenAsync(
+        spec: PlainObject,
+        useCache: boolean = true
+    ): Promise<string> {
+        const ret = await this.client.acquireTokenSilent({
+            scopes: spec.scopes,
+            account: this.account,
+            forceRefresh: !useCache
+        });
+        this.account = ret.account;
+        return ret.accessToken;
     }
 
     override async doLogoutAsync(): Promise<void> {
         const {postLogoutRedirectUrl, client, account, usesRedirect} = this;
         await client.clearCache({account});
-        usesRedirect
-            ? await client.logoutRedirect({account, postLogoutRedirectUri: postLogoutRedirectUrl})
-            : await client.logoutPopup({account});
+        usesRedirect ?
+            await client.logoutRedirect({account, postLogoutRedirectUri: postLogoutRedirectUrl}) :
+            await client.logoutPopup({account})
     }
 
     //------------------------
@@ -109,15 +125,20 @@ export class MsalClient extends BaseOauthClient<MsalClientConfig> {
     }
 
     private async completeViaRedirectAsync(): Promise<void> {
-        const {client, scopes, account} = this,
+        const {client, account} = this,
             redirectResp = await client.handleRedirectPromise();
 
         if (!redirectResp) {
             // 1) Initiating - grab state and initiate redirect
-            const state = this.captureRedirectState();
+            const state = this.captureRedirectState(),
+                opts: RedirectRequest = {
+                    state,
+                    scopes: this.loginScopes,
+                    extraScopesToConsent: this.loginExtraScopes
+                };
             account
-                ? await client.acquireTokenRedirect({state, scopes, account})
-                : await client.loginRedirect({state, scopes});
+                ? await client.acquireTokenRedirect({...opts, account})
+                : await client.loginRedirect(opts);
 
             await never();
         } else {
@@ -129,11 +150,15 @@ export class MsalClient extends BaseOauthClient<MsalClientConfig> {
     }
 
     private async completeViaPopupAsync(): Promise<void> {
-        const {client, scopes, account} = this;
+        const {client, account} = this,
+            opts: PopupRequest = {
+                scopes: this.loginScopes,
+                extraScopesToConsent: this.loginExtraScopes
+            };
         try {
             const ret = account
-                ? await client.acquireTokenPopup({scopes, account})
-                : await client.loginPopup({scopes});
+                ? await client.acquireTokenPopup({...opts, account})
+                : await client.loginPopup(opts);
 
             this.account = ret.account;
         } catch (e) {
@@ -160,5 +185,20 @@ export class MsalClient extends BaseOauthClient<MsalClientConfig> {
             default:
                 return logDebug(message, client);
         }
+    }
+
+    private get loginScopes(): string[] {
+        return union(
+            this.idScopes,
+            flatMap(this.config.accessTokens, spec =>
+                spec.scopes.filter(s => !s.startsWith('api:'))
+            )
+        );
+    }
+
+    private get loginExtraScopes(): string[] {
+        return uniq(
+            flatMap(this.config.accessTokens, spec => spec.scopes.filter(s => s.startsWith('api:')))
+        );
     }
 }

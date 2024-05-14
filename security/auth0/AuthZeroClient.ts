@@ -5,11 +5,12 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {Auth0Client} from '@auth0/auth0-spa-js';
-import {XH} from '@xh/hoist/core';
+import {PlainObject, XH} from '@xh/hoist/core';
 import {never, wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
-import {BaseOauthClient, TokenPair, BaseOauthClientConfig} from '../BaseOauthClient';
+import {flatMap, union} from 'lodash';
+import {BaseOauthClient, BaseOauthClientConfig} from '../BaseOauthClient';
 
 interface AuthZeroClientConfig extends BaseOauthClientConfig {
     /** Domain of your app registered with Auth0 */
@@ -50,12 +51,23 @@ export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
         await this.loadTokensAsync();
     }
 
-    override async getTokensAsync(useCache: boolean = true): Promise<TokenPair> {
+    override async getIdTokenAsync(useCache: boolean = true): Promise<string> {
         const response = await this.client.getTokenSilently({
-            detailedResponse: true,
+            authorizationParams: {scope: this.idScopes.join(' ')},
+            cacheMode: useCache ? 'on' : 'off',
+            detailedResponse: true
+        });
+        return response.id_token;
+    }
+
+    override async getAccessTokenAsync(
+        spec: PlainObject,
+        useCache: boolean = true
+    ): Promise<string> {
+        return this.client.getTokenSilently({
+            authorizationParams: {scope: spec.scopes.join(' ')},
             cacheMode: useCache ? 'on' : 'off'
         });
-        return {idToken: response.id_token, accessToken: response.access_token};
     }
 
     override async doLogoutAsync(): Promise<void> {
@@ -88,7 +100,7 @@ export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
             useRefreshTokensFallback: true,
             authorizationParams: {
                 audience,
-                scope: this.scopes.join(' '),
+                scope: this.loginScope,
                 redirect_uri: this.redirectUrl
             },
             cacheLocation: 'localstorage'
@@ -109,7 +121,10 @@ export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
         if (!isReturning) {
             // 1) Initiating - grab state and initiate redirect
             const appState = this.captureRedirectState();
-            await client.loginWithRedirect({appState});
+            await client.loginWithRedirect({
+                appState,
+                authorizationParams: {scope: this.loginScope}
+            });
             await never();
         } else {
             // 2) Returning - call client to complete redirect, and restore state
@@ -121,7 +136,7 @@ export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
     private async completeViaPopupAsync(): Promise<void> {
         const {client} = this;
         try {
-            await client.loginWithPopup();
+            await client.loginWithPopup({authorizationParams: {scope: this.loginScope}});
         } catch (e) {
             const msg = e.message?.toLowerCase();
             e.popup?.close();
@@ -153,5 +168,9 @@ export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
 
             throw e;
         }
+    }
+
+    private get loginScope(): string {
+        return union(this.idScopes, flatMap(this.config.accessTokens, 'scopes')).join(' ');
     }
 }

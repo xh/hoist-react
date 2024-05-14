@@ -4,14 +4,26 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {BannerSpec, HoistBase, managed, XH} from '@xh/hoist/core';
+import {BannerSpec, HoistBase, managed, PlainObject, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {TokenInfo} from '@xh/hoist/security/TokenInfo';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
-import {defaultsDeep, find, isObject, union} from 'lodash';
+import {
+    defaultsDeep,
+    find,
+    forEach,
+    isEmpty,
+    isNil,
+    isObject,
+    keys,
+    mapKeys,
+    mapValues,
+    some,
+    union
+} from 'lodash';
 import {v4 as uuid} from 'uuid';
-import {jwtDecode} from 'jwt-decode';
 import {makeObservable, observable, runInAction} from 'mobx';
 
 export interface BaseOauthClientConfig {
@@ -51,10 +63,22 @@ export interface BaseOauthClientConfig {
     tokenRefreshCheckSecs?: number;
 
     /**
-     * Scopes to request - if any - beyond the core `['openid', 'profile', 'email']` scopes, which
+     * Scopes to request - if any - beyond the core `['openid', 'email']` scopes, which
      * this client will always request.
      */
-    scopes?: string[];
+    idScopes?: string[];
+
+    /**
+     * Optional map of access tokens to be loaded and maintained.
+     *
+     * Map of code to a spec for an access token.  The code is app-determined and
+     * will simply be used to get the loaded token via tha getAccessToken() method. The
+     * spec is implementation specific, but will typically include scopes to be loaded
+     * for the access token and potentially other meta-data required by the underlying provider.
+     *
+     * Use this map to gain targeted access tokens for different back-end resources.
+     */
+    accessTokens?: Record<string, PlainObject>;
 
     /**
      * True to display a warning banner to the user if tokens expire. May be specified as a boolean
@@ -84,10 +108,10 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
     protected config: T;
 
     /** Scopes */
-    protected scopes: string[];
+    protected idScopes: string[];
 
-    @observable.ref private idInfo: TokenInfo;
-    @observable.ref private accessInfo: TokenInfo;
+    @observable.ref protected _idToken: TokenInfo;
+    @observable protected _accessTokens: Record<string, TokenInfo>;
 
     @managed private timer: Timer;
     private expiryWarningDisplayed: boolean;
@@ -100,12 +124,12 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
     //------------------------
     /** ID Token in JWT format. */
     get idToken(): string {
-        return this.idInfo?.token;
+        return this._idToken?.token;
     }
 
     /** Access Token in JWT format. */
-    get accessToken(): string {
-        return this.accessInfo?.token;
+    getAccessToken(key: string): string {
+        return this._accessTokens[key]?.token;
     }
 
     constructor(config: Partial<T> = {}) {
@@ -134,7 +158,9 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
 
         this.logDebug('OAuth config merged from code and server', config);
         throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
-        this.scopes = union(['openid', 'profile', 'email'], config.scopes);
+        this.idScopes = union(['openid', 'email'], config.idScopes);
+        this._idToken = null;
+        this._accessTokens = mapKeys(config.accessTokens, () => null);
 
         await this.doInitAsync();
 
@@ -165,7 +191,9 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
 
     protected abstract doLogoutAsync(): Promise<void>;
 
-    protected abstract getTokensAsync(useCache: boolean): Promise<TokenPair>;
+    protected abstract getIdTokenAsync(useCache: boolean): Promise<string>;
+
+    protected abstract getAccessTokenAsync(spec: PlainObject, useCache: boolean): Promise<string>;
 
     //---------------------------------------
     // Implementation
@@ -247,32 +275,39 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
      *      network request to fetch a fresh token.
      */
     protected async loadTokensAsync(useCache: boolean = true): Promise<void> {
-        const {idToken, accessToken} = await this.getTokensAsync(useCache);
+        const idToken = await this.getIdTokenAsync(useCache),
+            accessTokens = {},
+            accessTasks = mapValues(this.config.accessTokens, spec =>
+                this.getAccessTokenAsync(spec, useCache)
+            );
+        for (const key of keys(accessTasks)) {
+            accessTokens[key] = await accessTasks[key];
+        }
 
-        // Load the token and its expiry. (We store the expiry to avoid frequent decoding.)
+        // Load the observable, processed tokens
         runInAction(() => {
-            this.idInfo = {token: idToken, expiry: jwtDecode(idToken).exp * SECONDS};
-            this.accessInfo = {token: accessToken, expiry: jwtDecode(accessToken).exp * SECONDS};
+            this._idToken = new TokenInfo(idToken);
+            this._accessTokens = mapValues(accessTokens, tkn => new TokenInfo(tkn));
         });
 
-        this.logDebug(
-            'Loaded tokens',
-            new Date(this.idInfo.expiry),
-            new Date(this.accessInfo.expiry)
-        );
+        this.logDebug('Installed Id Token', this._idToken.forLog());
+        forEach(this._accessTokens, (token, key) => {
+            this.logDebug(`Installed Access Token '${key}'`, token.forLog());
+        });
     }
 
     private async onTimerAsync(): Promise<void> {
-        const {idInfo, accessInfo, config, lastRefreshAttempt, TIMER_INTERVAL} = this,
+        const {_idToken, _accessTokens, config, lastRefreshAttempt, TIMER_INTERVAL} = this,
             threshold = config.tokenRefreshThresholdMins * MINUTES,
-            checkInterval = config.tokenRefreshCheckSecs * SECONDS,
-            idExpiry = idInfo?.expiry,
-            accessExpiry = accessInfo?.expiry;
+            checkInterval = config.tokenRefreshCheckSecs * SECONDS;
 
         // 1) Periodically Refresh if we are missing a token, or a token is too close to expiry
+        // NOTE -- we do this for all tokens at once, could be more selective.
         if (
             olderThan(lastRefreshAttempt, checkInterval) &&
-            (olderThan(idExpiry, -threshold) || olderThan(accessExpiry, -threshold))
+            (!_idToken ||
+                _idToken.expiresWithin(threshold) ||
+                some(_accessTokens, t => !t || t.expiresWithin(threshold)))
         ) {
             try {
                 this.lastRefreshAttempt = Date.now();
@@ -282,15 +317,19 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
             }
         } else {
             // 2) Otherwise, if a token will expire before next check, clear it out
-            const idExpires = idExpiry && olderThan(idExpiry, -TIMER_INTERVAL),
-                accessExpires = accessExpiry && olderThan(accessExpiry, -TIMER_INTERVAL);
-            if (idExpires || accessExpires) {
+            const idExpires = _idToken?.expiresWithin(TIMER_INTERVAL),
+                expireKeys = keys(_accessTokens).filter(k =>
+                    _accessTokens[k]?.expiresWithin(TIMER_INTERVAL)
+                );
+
+            if (idExpires || !isEmpty(expireKeys)) {
                 runInAction(() => {
-                    if (idExpires) this.idInfo = null;
-                    if (accessExpires) this.accessInfo = null;
+                    if (idExpires) this._idToken = null;
+                    expireKeys.forEach(k => (_accessTokens[k] = null));
                 });
             }
         }
+
         // 3) Always update the warning state.
         this.updateWarning();
     }
@@ -299,7 +338,7 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
         const {expiryWarning} = this.config;
         if (!expiryWarning) return;
 
-        const expired = !this.idToken || !this.accessToken;
+        const expired = !!this._idToken || some(this._accessTokens, isNil);
         if (this.expiryWarningDisplayed != expired) {
             this.expiryWarningDisplayed = expired;
             if (expired) {
@@ -322,14 +361,4 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
             }
         }
     }
-}
-
-export interface TokenPair {
-    idToken: string;
-    accessToken: string;
-}
-
-export interface TokenInfo {
-    token: string;
-    expiry: number;
 }
