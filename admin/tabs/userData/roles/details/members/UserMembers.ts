@@ -26,10 +26,7 @@ export const userMembers = hoistCmp.factory({
         return panel({
             className,
             item: grid(),
-            tbar: toolbar({
-                compact: true,
-                items: [span('Users below have this role.'), filler(), gridFindField()]
-            })
+            tbar: toolbar(span('Users below have this role.'), filler(), gridFindField())
         });
     }
 });

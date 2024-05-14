@@ -25,10 +25,11 @@ export const directoryMembers = hoistCmp.factory({
         return panel({
             className,
             item: grid(),
-            tbar: toolbar({
-                compact: true,
-                items: [span('Members of groups below have this role.'), filler(), gridFindField()]
-            })
+            tbar: toolbar(
+                span('Members of groups below have this role.'),
+                filler(),
+                gridFindField()
+            )
         });
     }
 });

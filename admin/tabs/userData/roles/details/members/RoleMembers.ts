@@ -24,18 +24,15 @@ export const roleMembers = hoistCmp.factory({
         return panel({
             className,
             item: grid(),
-            tbar: toolbar({
-                compact: true,
-                items: [
-                    span(
-                        model.type == 'inherited'
-                            ? 'Users with this role also have the roles below.'
-                            : 'Users with any of the roles below also have this role.'
-                    ),
-                    filler(),
-                    gridFindField()
-                ]
-            })
+            tbar: toolbar(
+                span(
+                    model.type == 'inherited'
+                        ? 'Users with this role also have the roles below.'
+                        : 'Users with any of the roles below also have this role.'
+                ),
+                filler(),
+                gridFindField()
+            )
         });
     }
 });
