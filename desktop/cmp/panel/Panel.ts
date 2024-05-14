@@ -250,20 +250,20 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
     }
 });
 
-function parseLoadDecorator(prop: any, name: string, contextModel: HoistModel) {
-    const cmp = (name === 'mask' ? mask : loadingIndicator) as any;
-    if (isValidElement(prop)) return prop;
-    if (prop === true) return cmp({isDisplayed: true});
-    if (prop === 'onLoad') {
-        const loadModel = contextModel?.loadModel;
+function parseLoadDecorator(propVal: any, propName: string, ctxModel: HoistModel) {
+    const cmp = (propName === 'mask' ? mask : loadingIndicator) as any;
+    if (isValidElement(propVal)) return propVal;
+    if (propVal === true) return cmp({isDisplayed: true});
+    if (propVal === 'onLoad') {
+        const loadModel = ctxModel?.loadModel;
         if (!loadModel) {
             logWarn(
-                `Cannot use 'onLoad' for '${name}' - the linked context model must enable LoadSupport to support this feature.`,
+                `Cannot use 'onLoad' for '${propName}'. The linked context model (${ctxModel?.constructor.name} ${ctxModel?.xhId}) must enable LoadSupport to support this feature.`,
                 Panel
             );
             return null;
         }
         return cmp({bind: loadModel, spinner: true});
     }
-    return cmp({bind: prop, spinner: true});
+    return cmp({bind: propVal, spinner: true});
 }

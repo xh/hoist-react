@@ -100,6 +100,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             item: createElement(AgGridReact, {
                 ...AgGrid['DEFAULT_PROPS'],
                 // Default some ag-grid props, but allow overriding.
+                reactiveCustomComponents: true, // will be default in ag-grid v32
                 getRowHeight: impl.getRowHeight,
                 // Pass others on directly.
                 ...agGridProps,
@@ -168,7 +169,7 @@ class AgGridLocalModel extends HoistModel {
         if (isNil(this.componentProps.headerHeight)) {
             this.addReaction({
                 track: () => [model.agApi, this.headerHeight],
-                run: ([api, headerHeight]) => api?.setHeaderHeight(headerHeight)
+                run: ([api, headerHeight]) => api?.updateGridOptions({headerHeight})
             });
         }
     }

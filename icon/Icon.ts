@@ -233,6 +233,9 @@ export const Icon = {
     checkCircle(p?: IconProps) {
         return Icon.icon({...p, iconName: 'check-circle'});
     },
+    checkSquare(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'check-square'});
+    },
     chess(p?: IconProps) {
         return Icon.icon({...p, iconName: 'chess'});
     },
@@ -633,6 +636,12 @@ export const Icon = {
     spinner(p?: IconProps) {
         return Icon.icon({...p, iconName: 'spinner'});
     },
+    square(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'square'});
+    },
+    squareMinus(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'square-minus'});
+    },
     star(p?: IconProps) {
         return Icon.icon({...p, iconName: 'star'});
     },
@@ -684,8 +693,14 @@ export const Icon = {
     trash(p?: IconProps) {
         return Icon.icon({...p, iconName: 'trash-alt'});
     },
+    treeGraph(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'sitemap'});
+    },
     treeList(p?: IconProps) {
         return Icon.icon({...p, iconName: 'list-tree'});
+    },
+    treeMap(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'chart-tree-map'});
     },
     undo(p?: IconProps) {
         return Icon.icon({...p, iconName: 'undo'});

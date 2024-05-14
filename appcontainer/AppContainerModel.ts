@@ -118,6 +118,8 @@ export class AppContainerModel extends HoistModel {
      * Triggers initial authentication and initialization of Hoist and application.
      */
     async initAsync() {
+        this.setAppState('PRE_AUTH');
+
         // Avoid bug where "Discarded" browser tabs can re-init an old version (see #3574)
         if (window.document['wasDiscarded']) {
             XH.reloadApp();
@@ -143,15 +145,23 @@ export class AppContainerModel extends HoistModel {
             ])
         );
 
-        // Disable browser context menu on long-press, used to show (app) context menus and as an
-        // alternate gesture for tree grid drill-own.
         if (isMobileApp) {
+            // Disable browser context menu on long-press, used to show (app) context menus and as an
+            // alternate gesture for tree grid drill-own.
             window.addEventListener('contextmenu', e => e.preventDefault(), {capture: true});
+
+            // Spec viewport-fit=cover to allow use of safe-area-inset envs for mobile styling
+            // (e.g. `env(safe-area-inset-top)`). This allows us to avoid overlap with OS-level
+            // controls like the iOS tab switcher, as well as to more easily set the background
+            // color of the (effectively) unusable portions of the screen via
+            const vp = document.querySelector('meta[name=viewport]'),
+                content = vp.getAttribute('content');
+
+            vp.setAttribute('content', content + ', viewport-fit=cover');
         }
 
         try {
             await installServicesAsync(FetchService);
-            this.setAppState('PRE_AUTH');
 
             // consult (optional) pre-auth init for app
             const modelClass: any = this.appSpec.modelClass;
@@ -169,13 +179,14 @@ export class AppContainerModel extends HoistModel {
                 this.setAppState('LOGIN_REQUIRED');
                 return;
             }
-
-            // ...if so, continue with initialization.
-            await this.completeInitAsync();
         } catch (e) {
             this.setAppState('LOAD_FAILED');
             XH.handleException(e, {requireReload: true});
+            return;
         }
+
+        // ...if made it to here, continue with initialization.
+        await this.completeInitAsync();
     }
 
     /**
@@ -326,7 +337,11 @@ export class AppContainerModel extends HoistModel {
     }
 
     private startRouter() {
-        this.routerModel.addRoutes(this.appModel.getRoutes());
+        const routes = this.appModel.getRoutes(),
+            defaultRoute = routes.length ? routes[0].name : null;
+
+        this.routerModel.addRoutes(routes);
+        this.routerModel.router.setOption('defaultRoute', defaultRoute);
         this.routerModel.router.start();
     }
 

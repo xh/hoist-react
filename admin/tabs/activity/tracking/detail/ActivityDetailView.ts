@@ -6,11 +6,11 @@
  */
 import {form} from '@xh/hoist/cmp/form';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {div, filler, h3, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
-import {storeFilterField} from '@xh/hoist/cmp/store';
+import {a, div, filler, h3, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, creates} from '@xh/hoist/core';
 import {colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
+import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -38,7 +38,7 @@ const tbar = hoistCmp.factory(({model}) => {
     return toolbar(
         filler(),
         gridCountLabel({unit: 'entry'}),
-        storeFilterField(),
+        gridFindField(),
         colChooserButton(),
         exportButton()
     );
@@ -81,6 +81,14 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                               }
                           }),
                           formField({field: 'category'}),
+                          formField({
+                              field: 'appVersion',
+                              readonlyRenderer: appVersion => {
+                                  if (!appVersion) return naSpan();
+                                  const {appEnvironment} = formModel.values;
+                                  return `${appVersion} (${appEnvironment})`;
+                              }
+                          }),
                           formField({field: 'msg'}),
                           formField({
                               field: 'dateCreated',
@@ -95,6 +103,10 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                               })
                           }),
                           formField({field: 'id'}),
+                          formField({
+                              field: 'url',
+                              readonlyRenderer: hyperlinkVal
+                          }),
                           h3(Icon.desktop(), 'Device / Browser'),
                           formField({field: 'device'}),
                           formField({field: 'browser'}),
@@ -123,3 +135,4 @@ const additionalDataJsonInput = hoistCmp.factory<ActivityDetailModel>(({model}) 
 
 const valOrNa = v => (v != null ? v : naSpan());
 const naSpan = () => span({item: 'N/A', className: 'xh-text-color-muted'});
+const hyperlinkVal = v => a({href: v, item: v, target: '_blank'});

@@ -78,34 +78,41 @@ export class TrackService extends HoistService {
     //------------------
     private async doTrackAsync(options: TrackOptions) {
         try {
-            const params: any = {
+            const query: any = {
                 msg: stripTags(options.message),
-                clientUsername: XH.getUsername()
+                clientUsername: XH.getUsername(),
+                appVersion: XH.getEnv('clientVersion'),
+                url: window.location.href
             };
 
-            if (options.category) params.category = options.category;
-            if (options.data) params.data = JSON.stringify(options.data);
-            if (options.severity) params.severity = options.severity;
-            if (options.logData !== undefined) params.logData = options.logData.toString();
-            if (options.elapsed !== undefined) params.elapsed = options.elapsed;
+            if (options.category) query.category = options.category;
+            if (options.data) query.data = options.data;
+            if (options.severity) query.severity = options.severity;
+            if (options.logData !== undefined) query.logData = options.logData;
+            if (options.elapsed !== undefined) query.elapsed = options.elapsed;
 
             const {maxDataLength} = this.conf;
-            if (params.data?.length > maxDataLength) {
+            if (query.data?.length > maxDataLength) {
                 this.logWarn(
-                    `Track log includes ${params.data.length} chars of JSON data`,
+                    `Track log includes ${query.data.length} chars of JSON data`,
                     `exceeds limit of ${maxDataLength}`,
                     'data will not be persisted',
                     options.data
                 );
-                params.data = null;
+                query.data = null;
             }
 
-            const elapsedStr = params.elapsed != null ? `${params.elapsed}ms` : null,
-                consoleMsgs = [params.category, params.msg, elapsedStr].filter(it => it != null);
+            const elapsedStr = query.elapsed != null ? `${query.elapsed}ms` : null,
+                consoleMsgs = [query.category, query.msg, elapsedStr].filter(it => it != null);
 
             this.logInfo(...consoleMsgs);
 
-            await XH.fetchJson({url: 'xh/track', params});
+            await XH.fetchService.postJson({
+                url: 'xh/track',
+                body: query,
+                // Post clientUsername as a parameter to ensure client username matches session.
+                params: {clientUsername: query.clientUsername}
+            });
         } catch (e) {
             this.logError('Failed to persist track log', options, e);
         }

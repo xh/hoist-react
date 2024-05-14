@@ -1,22 +1,9 @@
 .xh-col-chooser {
-  border: var(--xh-border-solid);
-
-  & > .xh-vframe {
-    height: 100%;
-    background-color: var(--xh-bg-alt);
-
-    .xh-dark & {
-      background-color: var(--xh-bg);
-    }
-  }
-
   &__internal {
     height: 100%;
   }
 
   &__section {
-    background: var(--xh-bg);
-
     &:first-child {
       height: 65% !important;
     }
@@ -31,13 +18,9 @@
     }
 
     .xh-panel-header {
-      padding: var(--xh-pad-half-px) var(--xh-pad-px);
       background-color: var(--xh-appbar-bg);
       color: var(--xh-appbar-title-color);
-
-      &__title {
-        font-size: var(--xh-font-size-small-px);
-      }
+      padding-left: var(--xh-pad-px);
     }
   }
 
@@ -53,14 +36,15 @@
     align-items: center;
     border-bottom: var(--xh-border-solid);
     background-color: var(--xh-bg);
-    height: 35px;
     flex-shrink: 0;
 
     &__grabber {
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 30px;
+      // Drives overall height of row - sync'd with AgGrid.ROW_HEIGHTS_MOBILE.large, less padding,
+      // to provide some consistent-ish sizing across this + ZoneMapper (which uses an actual grid)
+      height: 34px;
       width: 40px;
       text-align: center;
       color: var(--xh-text-color-muted);

@@ -26,6 +26,7 @@ export const differDetail = hoistCmp.factory({
 
         return dialog({
             title: 'Detail',
+            icon: Icon.diff(),
             isOpen: model.record,
             className: 'xh-admin-diff-detail',
             onClose: () => model.close(),
@@ -40,10 +41,10 @@ export const differDetail = hoistCmp.factory({
                               onClick: () => model.close()
                           }),
                           button({
-                              text: 'Accept Remote',
+                              text: 'Apply Remote',
                               icon: Icon.cloudDownload(),
                               intent: 'primary',
-                              minimal: false,
+                              outlined: true,
                               onClick: () => model.confirmApplyRemote()
                           })
                       ]
