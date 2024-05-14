@@ -61,6 +61,7 @@ for more details.
 * Improved the display of Role details in the Admin Console. The detail panel for the selected role
   now includes a sub-tab listing all other roles inherited by the selected role, something that
   was previously accessible only via the linked graph visualization.
+* Added new `checkBoxRenderer` for rendering booleans with a checkbox input look and feel.
 
 ### ✨ Styles
 
