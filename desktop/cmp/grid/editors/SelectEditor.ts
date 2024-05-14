@@ -19,19 +19,14 @@ export const [SelectEditor, selectEditor] = hoistCmp.withFactory<SelectEditorPro
     memo: false,
     observer: false,
     render(props, ref) {
-        const quickEdit = !props.gridModel.fullRowEditing && !props.inputProps.enableMulti;
-
+        const flushOnCommit = !props.gridModel.fullRowEditing && !props.inputProps?.enableMulti;
         props = {
             ...props,
             inputProps: {
                 hideDropdownIndicator: true,
                 hideSelectedOptionCheck: true,
                 selectOnFocus: false,
-                onCommit: () => {
-                    if (quickEdit) {
-                        props.agParams.stopEditing();
-                    }
-                },
+                onCommit: flushOnCommit ? () => props.agParams.stopEditing() : null,
                 rsOptions: {
                     styles: {
                         menu: styles => ({
