@@ -56,6 +56,12 @@ for more details.
   respect "safe area" boundaries, avoiding overlap with system UI elements such as the iOS task
   switcher at the bottom of the screen. Also set background letterboxing color (to black) when
   in landscape mode for a more resolved-looking layout.
+* Improved the inline grid `selectEditor` to commit its value to the backing record as soon as an
+  option is selected, rather than waiting for the user to click away from the cell.
+* Improved the display of Role details in the Admin Console. The detail panel for the selected role
+  now includes a sub-tab listing all other roles inherited by the selected role, something that
+  was previously accessible only via the linked graph visualization.
+* Added new `checkBoxRenderer` for rendering booleans with a checkbox input look and feel.
 * Added beta version of a new Hoist `security` package, providing built-in support for OAuth flows.
   See `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient` for more information.  Please note that
   package is being released as a *beta* and is subject to change before final release.
@@ -71,6 +77,8 @@ for more details.
     * Increased height of mobile toolbars to better accommodate larger nested inputs.
     * Grid font sizes have not changed, but other application layouts might need to be adjusted to
       ensure labels and other text elements fit as intended.
+* Mobile App Options dialog has been updated to use a full-screen `DialogPanel` to provide a more
+  native feel and better accommodate longer lists of app options.
 
 ### 🐞 Bug Fixes
 

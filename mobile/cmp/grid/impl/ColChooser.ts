@@ -111,9 +111,10 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
             }),
             bbar: [
                 button({
-                    omit: !showRestoreDefaults,
                     text: 'Reset',
+                    icon: Icon.reset(),
                     minimal: true,
+                    omit: !showRestoreDefaults,
                     onClick: () => model.restoreDefaultsAsync()
                 }),
                 filler(),

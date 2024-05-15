@@ -4,9 +4,9 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
-import {switchInput, SwitchInputProps} from '@xh/hoist/mobile/cmp/input';
+import {AppOptionSpec, XH} from '@xh/hoist/core';
 import {FormFieldProps} from '@xh/hoist/mobile/cmp/form';
+import {switchInput, SwitchInputProps} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
 
 interface AutoRefreshAppOptionSpec {
@@ -22,7 +22,7 @@ interface AutoRefreshAppOptionSpec {
 export const autoRefreshAppOption = ({
     formFieldProps,
     inputProps
-}: AutoRefreshAppOptionSpec = {}) => {
+}: AutoRefreshAppOptionSpec = {}): AppOptionSpec => {
     return {
         omit: XH.autoRefreshService.interval <= 0,
         name: 'autoRefresh',

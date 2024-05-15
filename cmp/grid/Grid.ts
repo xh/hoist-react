@@ -817,8 +817,8 @@ export class GridLocalModel extends HoistModel {
         if (model.highlightRowOnClick) {
             model.agApi.flashCells({
                 rowNodes: [evt.node],
-                flashDelay: 100,
-                fadeDelay: 100
+                flashDuration: 100,
+                fadeDuration: 100
             });
         }
     };

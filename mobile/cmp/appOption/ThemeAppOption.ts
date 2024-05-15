@@ -4,11 +4,11 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
+import {AppOptionSpec, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {buttonGroupInput, ButtonGroupInputProps} from '@xh/hoist/mobile/cmp/input';
 import {FormFieldProps} from '@xh/hoist/mobile/cmp/form';
+import {buttonGroupInput, ButtonGroupInputProps} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
 
 interface ThemeAppOptionSpec {
@@ -21,7 +21,10 @@ interface ThemeAppOptionSpec {
 /**
  * Convenience configuration for the `theme` AppOption.
  */
-export const themeAppOption = ({formFieldProps, inputProps}: ThemeAppOptionSpec = {}) => {
+export const themeAppOption = ({
+    formFieldProps,
+    inputProps
+}: ThemeAppOptionSpec = {}): AppOptionSpec => {
     return {
         name: 'theme',
         formField: {

@@ -52,9 +52,10 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
             ],
             bbar: [
                 button({
-                    omit: !showRestoreDefaults,
                     text: 'Reset',
+                    icon: Icon.reset(),
                     minimal: true,
+                    omit: !showRestoreDefaults,
                     onClick: () => model.restoreDefaultsAsync()
                 }),
                 filler(),
@@ -187,6 +188,8 @@ class ZoneMapperLocalModel extends HoistModel {
         return new GridModel({
             store: {idSpec: 'field'},
             groupBy: hasGrouping ? 'chooserGroup' : null,
+            sizingMode: 'large',
+            rowBorders: true,
             colDefaults: {movable: false, resizable: false, sortable: false},
             columns: [
                 {
@@ -196,6 +199,7 @@ class ZoneMapperLocalModel extends HoistModel {
                 },
                 {
                     field: 'show',
+                    width: 80,
                     align: 'center',
                     renderer: (value, {record}) => {
                         const {field} = record.data;
@@ -204,7 +208,8 @@ class ZoneMapperLocalModel extends HoistModel {
                 },
                 {
                     field: 'showLabel',
-                    headerName: 'Label',
+                    headerName: 'w/Label',
+                    width: 80,
                     align: 'center',
                     renderer: (value, {record}) => {
                         const {label, field} = record.data;

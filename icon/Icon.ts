@@ -233,6 +233,9 @@ export const Icon = {
     checkCircle(p?: IconProps) {
         return Icon.icon({...p, iconName: 'check-circle'});
     },
+    checkSquare(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'check-square'});
+    },
     chess(p?: IconProps) {
         return Icon.icon({...p, iconName: 'chess'});
     },
@@ -632,6 +635,12 @@ export const Icon = {
     },
     spinner(p?: IconProps) {
         return Icon.icon({...p, iconName: 'spinner'});
+    },
+    square(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'square'});
+    },
+    squareMinus(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'square-minus'});
     },
     star(p?: IconProps) {
         return Icon.icon({...p, iconName: 'star'});

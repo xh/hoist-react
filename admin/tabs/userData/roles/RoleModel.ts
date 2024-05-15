@@ -174,6 +174,11 @@ export class RoleModel extends HoistModel {
             }
         };
     }
+    async editAsync(role: HoistRole): Promise<void> {
+        const updatedRole = await this.roleEditorModel.editAsync(role);
+        if (!updatedRole) return;
+        await this.refreshAsync();
+    }
 
     // -------------------------------
     // Implementation
@@ -212,12 +217,6 @@ export class RoleModel extends HoistModel {
         if (!addedRole) return;
         await this.refreshAsync();
         await this.gridModel.selectAsync(addedRole.name);
-    }
-
-    private async editAsync(role: HoistRole): Promise<void> {
-        const updatedRole = await this.roleEditorModel.editAsync(role);
-        if (!updatedRole) return;
-        await this.refreshAsync();
     }
 
     private createGridModel(): GridModel {
