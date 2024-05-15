@@ -8,6 +8,7 @@
 import {PlainObject} from '@xh/hoist/core';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {jwtDecode} from 'jwt-decode';
+import {isUndefined} from 'lodash';
 
 export class TokenInfo {
     readonly token: string;
@@ -20,11 +21,19 @@ export class TokenInfo {
         this.expiry = this.decoded.exp * SECONDS;
     }
 
-    forLog() {
-        return {
+    forLog(): PlainObject {
+        const ret: PlainObject = {
             ...this.decoded,
             exp: new Date(this.expiry)
         };
+
+        ['iat', 'nbf'].forEach(k => {
+            const val = this.decoded[k];
+            if (isUndefined(val)) return;
+            ret[k] = new Date(val * SECONDS);
+        });
+
+        return ret;
     }
 
     expiresWithin(interval: number): boolean {
