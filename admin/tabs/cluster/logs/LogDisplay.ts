@@ -6,11 +6,12 @@
  */
 import {clock} from '@xh/hoist/cmp/clock';
 import {grid} from '@xh/hoist/cmp/grid';
-import {code, filler, fragment, hspacer, label} from '@xh/hoist/cmp/layout';
+import {code, filler, fragment, hspacer, label, placeholder} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button, modalToggleButton} from '@xh/hoist/desktop/cmp/button';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
+import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -23,15 +24,20 @@ import './LogViewer.scss';
  */
 export const logDisplay = hoistCmp.factory({
     model: uses(LogDisplayModel),
+    displayName: 'LogDisplay',
+    className: 'xh-log-display',
 
-    render({model}) {
+    render({model, className}) {
         return panel({
-            className: 'xh-log-display',
+            className,
             tbar: tbar(),
-            item: grid(),
-            loadingIndicator: 'onLoad',
+            item: model.file ? grid() : placeholder(Icon.fileText(), 'Select a log file.'),
             bbar: bbar(),
-            model: model.panelModel
+            model: model.panelModel,
+            loadingIndicator: loadingIndicator({
+                message: 'Loading log contents...',
+                bind: model.loadModel
+            })
         });
     }
 });

@@ -23,6 +23,10 @@ export class LogDisplayModel extends HoistModel {
 
     parent: LogViewerModel;
 
+    get file() {
+        return this.parent.file;
+    }
+
     @managed
     panelModel = new PanelModel({
         collapsible: false,
@@ -82,7 +86,7 @@ export class LogDisplayModel extends HoistModel {
         });
 
         this.addReaction({
-            track: () => [this.parent.file, this.pattern, this.maxLines, this.startLine],
+            track: () => [this.file, this.pattern, this.maxLines, this.startLine],
             run: () => this.loadLog()
         });
 
@@ -139,6 +143,7 @@ export class LogDisplayModel extends HoistModel {
             hideHeaders: true,
             rowBorders: false,
             sizingMode: 'tiny',
+            emptyText: 'No log entries found...',
             sortBy: 'rowNum|asc',
             store: {
                 idSpec: 'rowNum'
