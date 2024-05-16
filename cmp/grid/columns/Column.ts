@@ -873,6 +873,8 @@ export class Column {
                     if (!tooltip) return null;
                 }
 
+                if (isNil(ret) || ret === '') return null;
+
                 return div({
                     ref: wrapperRef,
                     item: (isElement ? ret : toString(ret)) as any
