@@ -61,7 +61,8 @@ for more details.
 * Improved the display of Role details in the Admin Console. The detail panel for the selected role
   now includes a sub-tab listing all other roles inherited by the selected role, something that
   was previously accessible only via the linked graph visualization.
-* Added new `checkBoxRenderer` for rendering booleans with a checkbox input look and feel.
+* Added new `checkboxRenderer` for rendering booleans with a checkbox input look and feel.
+* Added new mobile `checkboxButton`, an alternate input component for toggling boolean values.
 * Added beta version of a new Hoist `security` package, providing built-in support for OAuth flows.
   See `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient` for more information.  Please note that
   package is being released as a *beta* and is subject to change before final release.

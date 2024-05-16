@@ -9,9 +9,8 @@ import {hoistCmp, HoistModel, HoistProps, lookup, useLocalModel, uses} from '@xh
 import {Icon} from '@xh/hoist/icon';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {label, switchInput} from '@xh/hoist/mobile/cmp/input';
+import {checkboxButton} from '@xh/hoist/mobile/cmp/input';
 import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
-import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
 import classNames from 'classnames';
 import './ColChooser.scss';
@@ -64,16 +63,6 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                             title: 'Visible Columns',
                             className: 'xh-col-chooser__section',
                             scrollable: true,
-                            tbar: toolbar({
-                                omit: !gridModel.enableColumnPinning,
-                                items: [
-                                    label({
-                                        model,
-                                        item: 'Pin first column so it is always visible'
-                                    }),
-                                    switchInput({model, bind: 'pinFirst'})
-                                ]
-                            }),
                             items: [
                                 row({col: pinnedColumn, model: impl}),
                                 droppable({
@@ -89,7 +78,12 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                                 })
                             ]
                         }),
-
+                        checkboxButton({
+                            model,
+                            bind: 'pinFirst',
+                            omit: !gridModel.enableColumnPinning,
+                            text: 'Pin first column so it is always visible'
+                        }),
                         panel({
                             title: 'Available Columns',
                             className: 'xh-col-chooser__section',

@@ -7,6 +7,7 @@
 export * from './Label';
 export * from './ButtonGroupInput';
 export * from './Checkbox';
+export * from './CheckboxButton';
 export * from './DateInput';
 export * from './NumberInput';
 export * from './SearchInput';
