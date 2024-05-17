@@ -25,7 +25,7 @@ import {
 import {v4 as uuid} from 'uuid';
 import {makeObservable, observable, runInAction} from 'mobx';
 
-export interface BaseOAuthClientConfig {
+export interface BaseOAuthClientConfig<TOKEN_CONFIG> {
     /** Client ID (GUID) of your app registered with your Oauth provider. */
     clientId: string;
 
@@ -77,7 +77,7 @@ export interface BaseOAuthClientConfig {
      *
      * Use this map to gain targeted access tokens for different back-end resources.
      */
-    accessTokens?: Record<string, PlainObject>;
+    accessTokens?: Record<string, TOKEN_CONFIG>;
 
     /**
      * True to display a warning banner to the user if tokens expire. May be specified as a boolean
@@ -97,7 +97,7 @@ export interface BaseOAuthClientConfig {
  * actually resolve the user.) On init, the client implementation will initiate a pop-up or redirect
  * flow as necessary.
  */
-export abstract class BaseOAuthClient<T extends BaseOAuthClientConfig> extends HoistBase {
+export abstract class BaseOAuthClient<T extends BaseOAuthClientConfig<any>> extends HoistBase {
     /** Config loaded from UI server + init method. */
     protected config: T;
 

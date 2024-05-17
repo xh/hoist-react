@@ -12,11 +12,21 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 
-export interface AuthZeroClientConfig extends BaseOAuthClientConfig {
+export interface AuthZeroClientConfig extends BaseOAuthClientConfig<AuthZeroAccessTokenConfig> {
     /** Domain of your app registered with Auth0 */
     domain: string;
+}
 
-    /** Audience (i.e. API) identifier for AccessToken.  Must be registered with Auth0*/
+export interface AuthZeroAccessTokenConfig {
+    /** Scopes for the desired access token.*/
+    scopes: string[];
+
+    /**
+     * Audience (i.e. API) identifier for AccessToken.  Must be registered with Auth0.
+     *
+     * Note that this is required to ensure that issued token is a JWT and not
+     * an opaque string.
+     */
     audience: string;
 }
 
@@ -65,7 +75,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig> {
         useCache: boolean = true
     ): Promise<string> {
         return this.client.getTokenSilently({
-            authorizationParams: {scope: spec.scopes.join(' ')},
+            authorizationParams: {scope: spec.scopes.join(' '), audience: spec.audience},
             cacheMode: useCache ? 'on' : 'off'
         });
     }
@@ -88,10 +98,9 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig> {
     //-----------------
     private createClient(): Auth0Client {
         const config = this.config,
-            {clientId, domain, audience} = config;
+            {clientId, domain} = config;
 
         throwIf(!domain, 'Missing Auth0 "domain". Please review your config.');
-        throwIf(!audience, 'Missing Auth0 "audience" for Access Token. Please review your config.');
 
         const ret = new Auth0Client({
             clientId,
@@ -99,7 +108,6 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig> {
             useRefreshTokens: true,
             useRefreshTokensFallback: true,
             authorizationParams: {
-                audience,
                 scope: this.loginScope,
                 redirect_uri: this.redirectUrl
             },

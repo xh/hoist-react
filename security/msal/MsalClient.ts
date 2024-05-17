@@ -19,7 +19,7 @@ import {logDebug, logError, logInfo, logWarn, throwIf} from '@xh/hoist/utils/js'
 import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 
-export interface MsalClientConfig extends BaseOAuthClientConfig {
+export interface MsalClientConfig extends BaseOAuthClientConfig<MsalAccessTokenConfig> {
     /** Tenant ID (GUID) of your organization */
     tenantId: string;
 
@@ -32,6 +32,11 @@ export interface MsalClientConfig extends BaseOAuthClientConfig {
 
     /** The log level of MSAL. Default is LogLevel.Info (2). */
     msalLogLevel?: LogLevel;
+}
+
+export interface MsalAccessTokenConfig {
+    /** Scopes for the desired access token. */
+    scopes: string[];
 }
 
 /**
