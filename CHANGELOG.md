@@ -1,6 +1,6 @@
 # Changelog
 
-## 64.0.0-SNAPSHOT - unreleased
+## 64.0.0 - 2024-05-17
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - major Hoist Core = AG Grid updates)
 
@@ -51,7 +51,7 @@ for more taskDetails.
   some defaults have changed.
 * Removed obsolete `AppSpec.isSSO` property in favor of two new properties `AppSpec.enableLogout`
   and `AppSpec.enableLoginForm`.  This should have no effect on the vast majority of apps which had
-  `isSSO` set to `true`.  For apps where `isSSO` was set false, the new flags should be
+  `isSSO` set to `true`.  For apps where `isSSO` was set to `false`, the new flags should be
   used to more clearly indicate the desired auth behavior.
 
 
@@ -66,7 +66,8 @@ for more taskDetails.
 * Improved the display of Role details in the Admin Console. The detail panel for the selected role
   now includes a sub-tab listing all other roles inherited by the selected role, something that
   was previously accessible only via the linked graph visualization.
-* Added new `checkBoxRenderer` for rendering booleans with a checkbox input look and feel.
+* Added new `checkboxRenderer` for rendering booleans with a checkbox input look and feel.
+* Added new mobile `checkboxButton`, an alternate input component for toggling boolean values.
 * Added beta version of a new Hoist `security` package, providing built-in support for OAuth flows.
   See `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient` for more information.  Please note that
   package is being released as a *beta* and is subject to change before final release.
