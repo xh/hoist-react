@@ -170,11 +170,11 @@ export class AppContainerModel extends HoistModel {
             // Check if user has already been authenticated (prior login, OAuth, SSO)...
             const userIsAuthenticated = await this.getAuthStatusFromServerAsync();
 
-            // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
+            // ...if not, trigger a login prompt if possible, or throw.
             if (!userIsAuthenticated) {
                 throwIf(
-                    appSpec.isSSO,
-                    'Unable to complete required authentication (SSO/Oauth failure).'
+                    !appSpec.enableLoginForm,
+                    'Unable to complete required authentication (SSO/Auth failure).'
                 );
                 this.setAppState('LOGIN_REQUIRED');
                 return;

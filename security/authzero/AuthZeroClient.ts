@@ -10,9 +10,9 @@ import {never, wait} from '@xh/hoist/promise';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union} from 'lodash';
-import {BaseOauthClient, BaseOauthClientConfig} from '../BaseOauthClient';
+import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 
-interface AuthZeroClientConfig extends BaseOauthClientConfig {
+export interface AuthZeroClientConfig extends BaseOAuthClientConfig {
     /** Domain of your app registered with Auth0 */
     domain: string;
 
@@ -26,7 +26,7 @@ interface AuthZeroClientConfig extends BaseOauthClientConfig {
  * combo stored and managed within Auth0's own database. Supported options will depend on the
  * configuration of your Auth0 app.
  */
-export class AuthZeroClient extends BaseOauthClient<AuthZeroClientConfig> {
+export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig> {
     private client: Auth0Client;
 
     override async doInitAsync(): Promise<void> {

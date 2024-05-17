@@ -13,8 +13,8 @@ import {
     PlainObject,
     XH
 } from '@xh/hoist/core';
-import {never, PromiseTimeoutSpec} from '@xh/hoist/promise';
-import {isLocalDate, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
+import {PromiseTimeoutSpec} from '@xh/hoist/promise';
+import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, omitBy} from 'lodash';
@@ -52,7 +52,7 @@ export class FetchService extends HoistService {
     /**
      * Set default headers to be sent with all subsequent requests.
      * @param headers - to be sent with all fetch requests, or a function to generate.
-     * @deprecated
+     * @deprecated use addDefaultHeaders instead.
      */
     setDefaultHeaders(headers: PlainObject | ((arg: FetchOptions) => PlainObject)) {
         apiDeprecated('setDefaultHeaders', {v: '66', msg: 'Use addDefaultHeaders instead'});
@@ -265,30 +265,10 @@ export class FetchService extends HoistService {
 
         if (!ret.ok) {
             ret.responseText = await this.safeResponseTextAsync(ret);
-            const e = Exception.fetchError(opts, ret);
-            if (!XH.appSpec.isSSO && isRelativeUrl && e.httpStatus === 401) {
-                await this.maybeReloadForAuthAsync();
-            }
-            throw e;
+            throw Exception.fetchError(opts, ret);
         }
 
         return ret;
-    }
-
-    private async maybeReloadForAuthAsync() {
-        const {appState, configService, localStorageService} = XH;
-
-        // Don't interfere with initialization, avoid tight loops, and provide kill switch
-        if (
-            appState === 'RUNNING' &&
-            configService.get('xhReloadOnFailedAuth', true) &&
-            !localStorageService.isFake &&
-            olderThan(localStorageService.get('xhLastFailedAuthReload', null), ONE_MINUTE)
-        ) {
-            localStorageService.set('xhLastFailedAuthReload', Date.now());
-            XH.reloadApp();
-            await never();
-        }
     }
 
     private async sendJsonInternalAsync(opts: FetchOptions) {

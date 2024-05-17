@@ -17,9 +17,9 @@ import {PlainObject, XH} from '@xh/hoist/core';
 import {never} from '@xh/hoist/promise';
 import {logDebug, logError, logInfo, logWarn, throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union, uniq} from 'lodash';
-import {BaseOauthClientConfig, BaseOauthClient} from '../BaseOauthClient';
+import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 
-interface MsalClientConfig extends BaseOauthClientConfig {
+export interface MsalClientConfig extends BaseOAuthClientConfig {
     /** Tenant ID (GUID) of your organization */
     tenantId: string;
 
@@ -37,7 +37,7 @@ interface MsalClientConfig extends BaseOauthClientConfig {
 /**
  * Service to implement OAuth authentication via MSAL.
  */
-export class MsalClient extends BaseOauthClient<MsalClientConfig> {
+export class MsalClient extends BaseOAuthClient<MsalClientConfig> {
     private client: IPublicClientApplication;
     private account: AccountInfo; // Authenticated account, as most recent auth call with Azure.
 
@@ -92,9 +92,9 @@ export class MsalClient extends BaseOauthClient<MsalClientConfig> {
     override async doLogoutAsync(): Promise<void> {
         const {postLogoutRedirectUrl, client, account, usesRedirect} = this;
         await client.clearCache({account});
-        usesRedirect ?
-            await client.logoutRedirect({account, postLogoutRedirectUri: postLogoutRedirectUrl}) :
-            await client.logoutPopup({account})
+        usesRedirect
+            ? await client.logoutRedirect({account, postLogoutRedirectUri: postLogoutRedirectUrl})
+            : await client.logoutPopup({account});
     }
 
     //------------------------

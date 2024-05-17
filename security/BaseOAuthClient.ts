@@ -18,7 +18,6 @@ import {
     isNil,
     isObject,
     keys,
-    mapKeys,
     mapValues,
     some,
     union
@@ -26,7 +25,7 @@ import {
 import {v4 as uuid} from 'uuid';
 import {makeObservable, observable, runInAction} from 'mobx';
 
-export interface BaseOauthClientConfig {
+export interface BaseOAuthClientConfig {
     /** Client ID (GUID) of your app registered with your Oauth provider. */
     clientId: string;
 
@@ -84,7 +83,7 @@ export interface BaseOauthClientConfig {
      * True to display a warning banner to the user if tokens expire. May be specified as a boolean
      * or a partial banner spec. Defaults to false.
      */
-    expiryWarning: boolean | Partial<BannerSpec>;
+    expiryWarning?: boolean | Partial<BannerSpec>;
 }
 
 /**
@@ -97,13 +96,8 @@ export interface BaseOauthClientConfig {
  * requires a suitable server-side `AuthenticationService` implementation to validate the token and
  * actually resolve the user.) On init, the client implementation will initiate a pop-up or redirect
  * flow as necessary.
- *
- * The configuration for this client will be a combination of local code-specified values enhanced
- * by values from the server `xhOAuthConfig` configuration.  Note that the server values will be
- * loaded directly by this object via a dedicated, white-listed endpoint to allow for  access early
- * in the app lifecycle.
  */
-export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends HoistBase {
+export abstract class BaseOAuthClient<T extends BaseOAuthClientConfig> extends HoistBase {
     /** Config loaded from UI server + init method. */
     protected config: T;
 
@@ -136,38 +130,30 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
         return this._accessTokens[key]?.token;
     }
 
-    constructor(config: Partial<T> = {}) {
+    constructor(config: T) {
         super();
         makeObservable(this);
-        this.config = config as T;
+        this.config = defaultsDeep(config, {
+            loginMethodDesktop: 'REDIRECT',
+            loginMethodMobile: 'REDIRECT',
+            redirectUrl: 'APP_BASE_URL',
+            postLogoutRedirectUrl: 'APP_BASE_URL',
+            expiryWarning: false,
+            tokenRefreshThresholdMins: 10,
+            tokenRefreshCheckSecs: 30
+        } as T);
+        throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
+
+        this.idScopes = union(['openid', 'email'], config.idScopes);
+        this._idToken = null;
+        this._accessTokens = mapValues(config.accessTokens, () => null);
     }
 
     /**
      * Main entry point for this object.
      */
     async initAsync(): Promise<void> {
-        const config = (this.config = defaultsDeep(
-            await XH.fetchJson({url: 'xh/oauthConfig'}),
-            this.config,
-            {
-                loginMethodDesktop: 'REDIRECT',
-                loginMethodMobile: 'REDIRECT',
-                redirectUrl: 'APP_BASE_URL',
-                postLogoutRedirectUrl: 'APP_BASE_URL',
-                expiryWarning: false,
-                tokenRefreshThresholdMins: 10,
-                tokenRefreshCheckSecs: 30
-            } as T
-        ));
-
-        this.logDebug('OAuth config merged from code and server', config);
-        throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
-        this.idScopes = union(['openid', 'email'], config.idScopes);
-        this._idToken = null;
-        this._accessTokens = mapKeys(config.accessTokens, () => null);
-
         await this.doInitAsync();
-
         this.timer = Timer.create({
             runFn: async () => this.onTimerAsync(),
             interval: this.TIMER_INTERVAL
@@ -175,28 +161,18 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
     }
 
     /**
-     * Request a full logout from Oauth provider.
-     * Should redirect away from this app to the pre-configured URL.
+     * Request a full logout from the underlying OAuth provider.
      */
     async logoutAsync(): Promise<void> {
-        try {
-            // Logout of Hoist session here *before* oAuth implementations.
-            await XH.fetchJson({url: 'xh/logout'});
-            await this.doLogoutAsync();
-        } catch (e) {
-            this.logError('Error during logout', e);
-        }
+        await this.doLogoutAsync();
     }
 
     //------------------------------------
     // Template methods
     //-----------------------------------
     protected abstract doInitAsync(): Promise<void>;
-
     protected abstract doLogoutAsync(): Promise<void>;
-
     protected abstract getIdTokenAsync(useCache: boolean): Promise<string>;
-
     protected abstract getAccessTokenAsync(spec: PlainObject, useCache: boolean): Promise<string>;
 
     //---------------------------------------
@@ -321,7 +297,9 @@ export abstract class BaseOauthClient<T extends BaseOauthClientConfig> extends H
                 XH.handleException(e, {showAlert: false, logOnServer: false});
             }
         } else {
-            // 2) Otherwise, if a token will expire before next check, clear it out
+            // 2) Otherwise, if a token will expire before next check, clear it out.
+            // Note that we don't expect to have to do this, if refresh above working fine.
+            // This is the unhappy path, and will trigger warning, if configured.
             const idExpires = _idToken?.expiresWithin(TIMER_INTERVAL),
                 expireKeys = keys(_accessTokens).filter(k =>
                     _accessTokens[k]?.expiresWithin(TIMER_INTERVAL)

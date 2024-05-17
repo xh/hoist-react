@@ -66,7 +66,7 @@ export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(({model}) =>
     return model.options.requireReload
         ? button({
               icon: Icon.refresh(),
-              text: sessionExpired(model.exception) ? 'Login' : 'Reload App',
+              text: 'Reload App',
               onClick: () => XH.reloadApp()
           })
         : button({
@@ -74,7 +74,3 @@ export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(({model}) =>
               onClick: () => model.close()
           });
 });
-
-function sessionExpired(e) {
-    return e?.httpStatus === 401;
-}
