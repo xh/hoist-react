@@ -13,8 +13,9 @@ import {
     PlainObject,
     XH
 } from '@xh/hoist/core';
-import {never, PromiseTimeoutSpec} from '@xh/hoist/promise';
-import {isLocalDate, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
+import {PromiseTimeoutSpec} from '@xh/hoist/promise';
+import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
+import {apiDeprecated} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, omitBy} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
@@ -45,15 +46,25 @@ export class FetchService extends HoistService {
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
     private autoAborters = {};
-    defaultHeaders = {};
+    defaultHeaders: (PlainObject | ((arg: FetchOptions) => PlainObject))[] = [];
     defaultTimeout = (30 * SECONDS) as any;
 
     /**
      * Set default headers to be sent with all subsequent requests.
      * @param headers - to be sent with all fetch requests, or a function to generate.
+     * @deprecated use addDefaultHeaders instead.
      */
     setDefaultHeaders(headers: PlainObject | ((arg: FetchOptions) => PlainObject)) {
-        this.defaultHeaders = headers;
+        apiDeprecated('setDefaultHeaders', {v: '66', msg: 'Use addDefaultHeaders instead'});
+        this.addDefaultHeaders(headers);
+    }
+
+    /**
+     * Add default headers to be sent with all subsequent requests.
+     * @param headers - to be sent with all fetch requests, or a function to generate.
+     */
+    addDefaultHeaders(headers: PlainObject | ((arg: FetchOptions) => PlainObject)) {
+        this.defaultHeaders.push(headers);
     }
 
     /**
@@ -147,16 +158,20 @@ export class FetchService extends HoistService {
     // Implementation
     //-----------------------
     private withDefaults(opts: FetchOptions, extraHeaders: PlainObject = null): FetchOptions {
-        const {defaultHeaders} = this,
-            method = opts.method ?? (opts.params ? 'POST' : 'GET'),
+        const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
             isPost = method === 'POST';
+
+        const defaultHeaders = {};
+        this.defaultHeaders.forEach(h => {
+            Object.assign(defaultHeaders, isFunction(h) ? h(opts) : h);
+        });
 
         return {
             ...opts,
             method,
             headers: {
                 'Content-Type': isPost ? 'application/x-www-form-urlencoded' : 'text/plain',
-                ...(isFunction(defaultHeaders) ? defaultHeaders(opts) : defaultHeaders),
+                ...defaultHeaders,
                 ...extraHeaders,
                 ...opts.headers
             }
@@ -250,30 +265,10 @@ export class FetchService extends HoistService {
 
         if (!ret.ok) {
             ret.responseText = await this.safeResponseTextAsync(ret);
-            const e = Exception.fetchError(opts, ret);
-            if (!XH.appSpec.isSSO && isRelativeUrl && e.httpStatus === 401) {
-                await this.maybeReloadForAuthAsync();
-            }
-            throw e;
+            throw Exception.fetchError(opts, ret);
         }
 
         return ret;
-    }
-
-    private async maybeReloadForAuthAsync() {
-        const {appState, configService, localStorageService} = XH;
-
-        // Don't interfere with initialization, avoid tight loops, and provide kill switch
-        if (
-            appState === 'RUNNING' &&
-            configService.get('xhReloadOnFailedAuth', true) &&
-            !localStorageService.isFake &&
-            olderThan(localStorageService.get('xhLastFailedAuthReload', null), ONE_MINUTE)
-        ) {
-            localStorageService.set('xhLastFailedAuthReload', Date.now());
-            XH.reloadApp();
-            await never();
-        }
     }
 
     private async sendJsonInternalAsync(opts: FetchOptions) {

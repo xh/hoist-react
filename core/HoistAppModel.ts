@@ -44,9 +44,9 @@ export class HoistAppModel extends HoistModel {
     async initAsync() {}
 
     /**
-     * Called by {@link IdentityService.logoutAsync} to provide an app-specific hook prior
-     * to logging out an authenticated user. Applicable only to apps that generally support
-     * logout (i.e. not SSO) and require handling in addition to Hoist server logout.
+     * Called by {@link IdentityService.logoutAsync} to provide an app-specific hook after
+     * logging out an authenticated user. Applicable only to apps that generally support
+     * logout and require handling in addition to Hoist server logout.
      */
     async logoutAsync() {}
 
