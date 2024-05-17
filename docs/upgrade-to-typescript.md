@@ -114,7 +114,7 @@ declare module '@xh/hoist/core' {
         gitHubService: GitHubService;
         oauthService: OauthService;
         portfolioService: PortfolioService;
-        taskService: TaskService;
+        taskService: NewTaskService;
     }
     // @ts-ignore - Help IntelliJ recognize uses of injected service methods from the `XH` singleton.
     export const XH: XHApi;

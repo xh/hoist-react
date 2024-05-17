@@ -8,7 +8,7 @@
 
 Requires update to `hoist-core >= 20.0.0` with multi-instance support.
 
-* See the Hoist Core changelog for details on this major upgrade to Hoist's back-end capabilities.
+* See the Hoist Core changelog for taskDetails on this major upgrade to Hoist's back-end capabilities.
 * Client-side application changes should be minimal or non-existent, but the Hoist Admin Console has
   been updated extensively to support management of multiple instances within a cluster.
 
@@ -17,7 +17,7 @@ Requires update to `hoist-core >= 20.0.0` with multi-instance support.
 Requires update to `@ag-grid >= 31.x`, a new major AG Grid release with its own breaking changes.
 See AG's [What's New](https://blog.ag-grid.com/whats-new-in-ag-grid-31/)
 and [Upgrade Guide](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-31/?ref=blog.ag-grid.com)
-for more details.
+for more taskDetails.
 
 * AG Grid removed `ColumnApi`, consolidating most of its methods to `GridApi`. Corresponding Hoist
   update removes `GridModel.agColumnApi` - review and migrate usages to `GridModel.agApi` as
@@ -160,7 +160,7 @@ This release includes Blueprint 5, a major version update of that library with b
 While most of these have been addressed by the Hoist integration layer, developers importing
 Blueprint components directly should review
 the [Blueprint 5 migration guide](https://github.com/palantir/blueprint/wiki/Blueprint-5.0) for
-details.
+taskDetails.
 
 There are some common breaking changes that most/many apps will need to address:
 
@@ -258,7 +258,7 @@ There are some common breaking changes that most/many apps will need to address:
 * The Admin Console now indicates if a Config value is being overridden by an instance config or
   environment variable with a corresponding name.
     * Config overrides now available in `hoist-core >= v18.4`. See the Hoist Core release notes for
-      additional details on this new feature. The Hoist Core update is required for this feature,
+      additional taskDetails on this new feature. The Hoist Core update is required for this feature,
       but is not a hard requirement for this Hoist React release in general.
 * `RestGridEditor` now supports an `omit` flag to hide a field from the editor dialog.
 * `FormField.readonlyRenderer` is now passed the backing `FieldModel` as a second argument.
@@ -313,7 +313,7 @@ There are some common breaking changes that most/many apps will need to address:
     * Administration of the new system provided by a new admin UI tab provided here.
     * Consult XH and the
       [Hoist Core CHANGELOG](https://github.com/xh/hoist-core/blob/develop/CHANGELOG.md#1800---2024-01-12)
-      for additional details and upgrade instructions.
+      for additional taskDetails and upgrade instructions.
 * Added `labelRenderers` property to `ZoneGridModel`. This allows dynamic "data-specific" labeling
   of fields in `ZoneGrid`.
 
@@ -464,7 +464,7 @@ There are some common breaking changes that most/many apps will need to address:
       that any individual component can crash the entire app.
     * A new `PanelModel.errorBoundary` prop allows developers to opt-in to an `ErrorBoundary`
       wrapper around the contents of any panel.
-    * `ErrorMessage` component now provides an ability to show additional exception details.
+    * `ErrorMessage` component now provides an ability to show additional exception taskDetails.
 * Added new `Markdown` component for rendering Markdown formatted strings as markup. This includes
   bundling `react-markdown` in Hoist.
     * If your app already uses `react-markdown` or similar, we recommend updating to use the
@@ -552,7 +552,7 @@ There are some common breaking changes that most/many apps will need to address:
   characters, and styling.
 * New `DashModel.refreshContextModel` allows apps to programmatically refresh all widgets within
   a `DashCanvas` or `DashContainer`.
-* New tab for monitoring JDBC connection pool stats added to the Admin Console. Apps
+* New tab for monitoring JDBC connection pool taskStats added to the Admin Console. Apps
   with `hoist-core >= v17.2` will collect and display metrics for their primary datasource on a
   configurable frequency.
 * `ButtonGroupInput` now allows `null` values for buttons as long as both `enableClear` and
@@ -778,7 +778,7 @@ There are some common breaking changes that most/many apps will need to address:
 
 * Requires `hoist-core => v16`.
 * Requires AG Grid v29.0.0 or higher - update your AG Grid dependency in your app's `package.json`
-  file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for details.
+  file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for taskDetails.
     * Add a dependency on `@ag-grid-community/styles` to import new dedicated styles package.
     * Imports of AG Grid CSS files within your app's `Bootstrap.ts` file will also need to be
       updated to import styles from their new location. The recommended imports are now:
@@ -968,7 +968,7 @@ typescript has been widely adopted in production Hoist apps.
 * *Full regression testing recommended for _mobile_ apps.* While the upgrade from 2.11 to 2.12
   appears as a minor release, it was in fact a major update to the library.
   See [the Onsen release notes](https://github.com/OnsenUI/OnsenUI/releases/tag/2.12.0) for
-  additional details. Note that Hoist has handled all changes required to its Onsen API calls,
+  additional taskDetails. Note that Hoist has handled all changes required to its Onsen API calls,
   and there are no breaking changes to the Hoist mobile component APIs. As a result, mobile apps
   _might_ not need to change anything, but extra care in testing is still recommended.
 
@@ -1130,7 +1130,7 @@ to use TypeScript for its own app-level code.
       bottom version bar (look for the 🔍 icon), or by running `XH.inspectorService.activate()`.
     * Selecting a model/service/store instance provides a quick view of its properties, including
       reactively updated observables. Useful for realtime troubleshooting of application state.
-    * Includes auto-updated stats on total application model count and memory usage. Can aid in
+    * Includes auto-updated taskStats on total application model count and memory usage. Can aid in
       detecting and debugging memory leaks due to missing `@managed` annotations and other issues.
 * New `DashCanvasViewModel.autoHeight` option fits the view's height to its rendered contents.
 * New `DashCanvasAddViewButton` component supports adding views to `DashCanvas`.
@@ -1268,7 +1268,7 @@ to use TypeScript for its own app-level code.
 ### 💥 Breaking Changes
 
 * Hoist now requires AG Grid v28.0.0 or higher - update your AG Grid dependency in your app's
-  `package.json` file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for details.
+  `package.json` file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for taskDetails.
 * The data reactions between `GridModel` and the underlying Ag-Grid is now minimally debounced. This
   avoids multiple data updates during a single event loop tick, which can corrupt Ag-Grid's
   underlying state in the latest versions of that library.
@@ -1433,7 +1433,7 @@ to use TypeScript for its own app-level code.
 ### 💥 Breaking Changes
 
 * Hoist now requires AG Grid v27.2.0 or higher - update your AG Grid dependency in your app's
-  `package.json` file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for details.
+  `package.json` file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for taskDetails.
   NOTE that AG Grid 27 includes a big breaking change to render cell contents via native React
   elements rather than HTML, along with other major API changes. To accommodate these changes, the
   following changes are required in Hoist apps:
@@ -1616,7 +1616,7 @@ to use TypeScript for its own app-level code.
 ### 💥 Breaking Changes
 
 * Hoist now requires AG Grid v26.2.0 or higher - update your AG Grid dependency in your app's
-  `package.json` file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for details.
+  `package.json` file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for taskDetails.
 * ~~`StoreRecord.id` must now be a String. Integers IDs were previously supported, but will be cast
   Strings during record creation.~~
     * ~~Apps using numeric record IDs for internal or server-side APIs will need to be reviewed and
@@ -2313,10 +2313,10 @@ to use TypeScript for its own app-level code.
   `validEmail`, `numberIs`, etc.) have been moved from the `cmp\form` package to the `data` package.
 * Hoist grids now require AG Grid v25.3.0 or higher - update your AG Grid dependency in your app's
   `package.json` file. See the [AG Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
-  details.
+  taskDetails.
 * Hoist charts now require Highcharts v9.1.0 or higher - update your Highcharts dependency in your
   app's `package.json` file. See the
-  [Highcharts Changelog](https://www.highcharts.com/changelog/#highcharts-stock) for details.
+  [Highcharts Changelog](https://www.highcharts.com/changelog/#highcharts-stock) for taskDetails.
 
 ### 🐞 Bug Fixes
 
@@ -2349,7 +2349,7 @@ your dev-utils dependency for your project to build.
 ### 🎁 New Features
 
 * Added support for displaying an in-app changelog (release notes) to the user. See the new
-  `ChangelogService` for details and instructions on how to enable.
+  `ChangelogService` for taskDetails and instructions on how to enable.
 * Added `XH.showBanner()` to display a configurable banner across the top of viewport, as another
   non-modal alternative for attention-getting application alerts.
 * New method `XH.showException()` uses Hoist's built-in exception display to show exceptions that
@@ -2473,13 +2473,13 @@ your dev-utils dependency for your project to build.
       called in the Hoist lifecycle.
 * Hoist grids now require AG Grid v25.1.0 or higher - update your AG Grid dependency in your app's
   `package.json` file. See the [AG Grid Changelog](https://www.ag-grid.com/ag-grid-changelog/) for
-  details.
+  taskDetails.
 
 ### ⚙️ Technical
 
 * Improvements to behavior/performance of apps in hidden/inactive browser tabs. See the
   [page visibility API reference](https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API)
-  for details. Now, when the browser tab is hidden:
+  for taskDetails. Now, when the browser tab is hidden:
     * Auto-refresh is suspended.
     * The `forEachAsync()` and `whileAsync()` utils run synchronously, without inserting waits that
       would be overly throttled by the browser.
@@ -2814,7 +2814,7 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 * Includes technical updates to `JsonBlob` archiving. This change requires an update to `hoist-core`
   `v8.6.1` or later, and modifications to the `xh_json_blob` table. See the
   [hoist-core changelog](https://github.com/xh/hoist-core/blob/develop/CHANGELOG.md) for further
-  details.
+  taskDetails.
 
 ### 📚 Libraries
 
@@ -3275,7 +3275,7 @@ project, as per note in Breaking Changes above.
 ### 🎁 New Features
 
 * Hoist's enhanced autosizing is now enabled on all grids by default. See `GridModel` and
-  `GridAutosizeService` for more details.
+  `GridAutosizeService` for more taskDetails.
 * New flags `XH.isPhone`, `XH.isTablet`, and `XH.isDesktop` available for device-specific switching.
   Corresponding `.xh-phone`, `.xh-tablet`, and `.xh-desktop` CSS classes are added to the document
   `body`. These flags and classes are set based on the detected device, as per its user-agent.
@@ -3369,7 +3369,7 @@ project, as per note in Breaking Changes above.
 
 * Added smart auto-resizing of columns in `GridModel` Unlike AG Grid's native auto-resizing support,
   Hoist's auto-resizing will also take into account collapsed rows, off-screen cells that are not
-  currently rendered in the DOM, and summary rows. See the new `GridAutosizeService` for details.
+  currently rendered in the DOM, and summary rows. See the new `GridAutosizeService` for taskDetails.
     * This feature is currently marked as 'experimental' and must be enabled by passing a special
       config to the `GridModel` constructor of the form `experimental: {useHoistAutosize: true}`. In
       future versions of Hoist, we expect to make it the default behavior.
@@ -4240,7 +4240,7 @@ leverage the context for model support discussed above.
       console warning if they are used (although it will continue to respect them to aid
       transitioning to the new configs).
 * `GridModel` now supports a `copyCell` context menu action. See `StoreContextMenu` for more
-  details.
+  taskDetails.
 * New `GridCountLabel` component provides an alternative to existing `StoreCountLabel`, outputting
   both overall record count and current selection count in a configurable way.
 * The `Button` component accepts an `autoFocus` prop to attempt to focus on render.
@@ -5518,7 +5518,7 @@ elements, but was **simplified and streamlined**.
 **The `Panel` component now takes a `sizingModel` prop to control and encapsulate newly built-in
 resizing and collapsing behavior** (#534).
 
-* See the `PanelSizingModel` class for configurable details, including continued support for saving
+* See the `PanelSizingModel` class for configurable taskDetails, including continued support for saving
   sizing / collapsed state as a user preference.
 * **The standalone `Resizable` component was removed** in favor of the improved support built into
   Panel directly.
@@ -5568,7 +5568,7 @@ resizing and collapsing behavior** (#534).
   code, resulting in a significant reduction in bundle size. Apps wishing to use other FA icons not
   included by Hoist must import and register them - see the
   [FA React Readme](https://github.com/FortAwesome/react-fontawesome/blob/master/README.md) for
-  details.
+  taskDetails.
 * **The `mobx-decorators` dependency has been removed** due to lack of official support for the
   latest MobX update, as well as limited usage within the toolkit. This package was primarily
   providing the optional `@setter` decorator, which should now be replaced as needed by dedicated
@@ -5624,7 +5624,7 @@ resizing and collapsing behavior** (#534).
 * Export API has changed. The Built-in grid export now uses more powerful server-side support. To
   continue to use local AG based export, call method `GridModel.localExport()`. Built-in export
   needs to be enabled with the new property on `GridModel.enableExport`. See `GridModel` for more
-  details.
+  taskDetails.
 
 ### 🎁 Enhancements
 
@@ -5798,7 +5798,7 @@ and AG Grid upgrade, and more. 🚀
 * **Initial version of grid state** now available, supporting easy persistence of user grid column
   selections and sorting. The `GridModel` constructor now takes a `stateModel` argument, which in
   its simplest form is a string `xhStateId` used to persist grid state to local storage. See the
-  `GridStateModel` class for implementation details. #331
+  `GridStateModel` class for implementation taskDetails. #331
 * The **Message API** has been improved and simplified, with new `XH.confirm()` and `XH.alert()`
   methods providing an easy way to show pop-up alerts without needing to manually construct or
   maintain a `MessageModel`. #349
