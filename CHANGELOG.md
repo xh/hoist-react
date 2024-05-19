@@ -1,7 +1,5 @@
 # Changelog
 
-## 65.0.0-SNAPSHOT - unreleased
-
 ## 64.0.1 - 2024-05-19
 
 ### ⚙️ Technical
