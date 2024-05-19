@@ -13,13 +13,14 @@ import {
     RedirectRequest
 } from '@azure/msal-browser';
 import {LogLevel} from '@azure/msal-common';
-import {PlainObject, XH} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {never} from '@xh/hoist/promise';
+import {TokenInfo} from '@xh/hoist/security/TokenInfo';
 import {logDebug, logError, logInfo, logWarn, throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 
-export interface MsalClientConfig extends BaseOAuthClientConfig<MsalAccessTokenConfig> {
+export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
     /** Tenant ID (GUID) of your organization */
     tenantId: string;
 
@@ -34,7 +35,7 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalAccessTokenC
     msalLogLevel?: LogLevel;
 }
 
-export interface MsalAccessTokenConfig {
+export interface MsalTokenSpec {
     /** Scopes for the desired access token. */
     scopes: string[];
 }
@@ -42,7 +43,7 @@ export interface MsalAccessTokenConfig {
 /**
  * Service to implement OAuth authentication via MSAL.
  */
-export class MsalClient extends BaseOAuthClient<MsalClientConfig> {
+export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec> {
     private client: IPublicClientApplication;
     private account: AccountInfo; // Authenticated account, as most recent auth call with Azure.
 
@@ -71,27 +72,27 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig> {
         await this.loadTokensAsync();
     }
 
-    override async getIdTokenAsync(useCache: boolean = true): Promise<string> {
+    override async getIdTokenAsync(useCache: boolean = true): Promise<TokenInfo> {
         const ret = await this.client.acquireTokenSilent({
             scopes: this.idScopes,
             account: this.account,
             forceRefresh: !useCache
         });
         this.account = ret.account;
-        return ret.idToken;
+        return new TokenInfo(ret.idToken);
     }
 
     override async getAccessTokenAsync(
-        spec: PlainObject,
+        spec: MsalTokenSpec,
         useCache: boolean = true
-    ): Promise<string> {
+    ): Promise<TokenInfo> {
         const ret = await this.client.acquireTokenSilent({
             scopes: spec.scopes,
             account: this.account,
             forceRefresh: !useCache
         });
         this.account = ret.account;
-        return ret.accessToken;
+        return new TokenInfo(ret.accessToken);
     }
 
     override async doLogoutAsync(): Promise<void> {
@@ -125,7 +126,6 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig> {
                 }
             }
         });
-        this.logDebug('MSAL client created', ret);
         return ret;
     }
 
