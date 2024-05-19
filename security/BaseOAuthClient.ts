@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {BannerSpec, HoistBase, managed, PlainObject, XH} from '@xh/hoist/core';
+import {BannerSpec, HoistBase, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {TokenInfo} from '@xh/hoist/security/TokenInfo';
 import {Timer} from '@xh/hoist/utils/async';
@@ -12,9 +12,9 @@ import {MINUTES, olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
     defaultsDeep,
+    every,
     find,
     forEach,
-    isEmpty,
     isNil,
     isObject,
     keys,
@@ -23,9 +23,9 @@ import {
     union
 } from 'lodash';
 import {v4 as uuid} from 'uuid';
-import {makeObservable, observable, runInAction} from 'mobx';
+import {action, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 
-export interface BaseOAuthClientConfig {
+export interface BaseOAuthClientConfig<S> {
     /** Client ID (GUID) of your app registered with your Oauth provider. */
     clientId: string;
 
@@ -49,17 +49,23 @@ export interface BaseOAuthClientConfig {
     loginMethodMobile?: 'REDIRECT' | 'POPUP';
 
     /**
-     * When the remaining token lifetime is below this threshold, try to refresh the token.
-     * Should be substantially shorter than the lifetime of the tokens, but long enough so that
-     * there is ample time to complete the refresh, including retries.  Default is 10 minutes.
+     * Governs how frequently we attempt to refresh tokens with the API.
+     *
+     * A typical refresh will use the underlying provider cache, and should not result in network
+     * activity. However, if the token lifetime falls below`tokenSkipCacheSecs`, this client
+     * will force a call to the underlying provider to get the token.
+     *
+     * In order to allow aging tokens to be replaced in a timely manner, this value should be
+     * significantly shorter than both the minimum token lifetime that will be
+     * returned by the underlying API and `tokenSkipCacheSecs`. Default is 30 secs.
      */
-    tokenRefreshThresholdMins?: number;
+    tokenRefreshSecs?: number;
 
     /**
-     * Governs how frequently we attempt to refresh aging tokens. Should be short enough to allow
-     * multiple attempts during `tokenRefreshThresholdMins`. Default is 30 seconds.
+     * When the remaining token lifetime is below this threshold, force the provider to skip the
+     * local cache and go directly to the underlying provider for a new token. Default is 180 secs.
      */
-    tokenRefreshCheckSecs?: number;
+    tokenSkipCacheSecs?: number;
 
     /**
      * Scopes to request - if any - beyond the core `['openid', 'email']` scopes, which
@@ -77,7 +83,7 @@ export interface BaseOAuthClientConfig {
      *
      * Use this map to gain targeted access tokens for different back-end resources.
      */
-    accessTokens?: Record<string, PlainObject>;
+    accessTokens?: Record<string, S>;
 
     /**
      * True to display a warning banner to the user if tokens expire. May be specified as a boolean
@@ -97,9 +103,9 @@ export interface BaseOAuthClientConfig {
  * actually resolve the user.) On init, the client implementation will initiate a pop-up or redirect
  * flow as necessary.
  */
-export abstract class BaseOAuthClient<T extends BaseOAuthClientConfig> extends HoistBase {
+export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> extends HoistBase {
     /** Config loaded from UI server + init method. */
-    protected config: T;
+    protected config: C;
 
     /** Scopes */
     protected idScopes: string[];
@@ -130,7 +136,7 @@ export abstract class BaseOAuthClient<T extends BaseOAuthClientConfig> extends H
         return this._accessTokens[key]?.token;
     }
 
-    constructor(config: T) {
+    constructor(config: C) {
         super();
         makeObservable(this);
         this.config = defaultsDeep(config, {
@@ -139,9 +145,9 @@ export abstract class BaseOAuthClient<T extends BaseOAuthClientConfig> extends H
             redirectUrl: 'APP_BASE_URL',
             postLogoutRedirectUrl: 'APP_BASE_URL',
             expiryWarning: false,
-            tokenRefreshThresholdMins: 10,
-            tokenRefreshCheckSecs: 30
-        } as T);
+            tokenRefreshSecs: 30,
+            tokenSkipCacheSecs: 180
+        } as C);
         throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
 
         this.idScopes = union(['openid', 'email'], config.idScopes);
@@ -171,9 +177,12 @@ export abstract class BaseOAuthClient<T extends BaseOAuthClientConfig> extends H
     // Template methods
     //-----------------------------------
     protected abstract doInitAsync(): Promise<void>;
+
     protected abstract doLogoutAsync(): Promise<void>;
-    protected abstract getIdTokenAsync(useCache: boolean): Promise<string>;
-    protected abstract getAccessTokenAsync(spec: PlainObject, useCache: boolean): Promise<string>;
+
+    protected abstract getIdTokenAsync(useCache: boolean): Promise<TokenInfo>;
+
+    protected abstract getAccessTokenAsync(spec: S, useCache: boolean): Promise<TokenInfo>;
 
     //---------------------------------------
     // Implementation
@@ -255,44 +264,71 @@ export abstract class BaseOAuthClient<T extends BaseOAuthClientConfig> extends H
      *      network request to fetch a fresh token.
      */
     protected async loadTokensAsync(useCache: boolean = true): Promise<void> {
-        // Get the tokens from the underlying client library.
-        const idToken = await this.getIdTokenAsync(useCache),
-            accessTokens = {},
-            accessTasks = mapValues(this.config.accessTokens, spec =>
+        this.logDebug('Loading tokens from provider', `useCache=${useCache}`);
+
+        const {_idToken, _accessTokens, config} = this,
+            idToken = await this.getIdTokenSafeAsync(useCache),
+            accessTokens: Record<string, TokenInfo> = {},
+            accessTasks = mapValues(config.accessTokens, spec =>
                 this.getAccessTokenAsync(spec, useCache)
             );
         for (const key of keys(accessTasks)) {
             accessTokens[key] = await accessTasks[key];
         }
 
-        // Load the observable, processed tokens
         runInAction(() => {
-            this._idToken = new TokenInfo(idToken);
-            this._accessTokens = mapValues(accessTokens, tkn => new TokenInfo(tkn));
-        });
+            if (!_idToken?.equals(idToken)) {
+                this._idToken = idToken;
+                this.logDebug('Installed new Id Token', idToken.formattedExpiry, idToken.forLog);
+            }
 
-        this.logDebug('Installed Id Token', this._idToken.forLog());
-        forEach(this._accessTokens, (token, key) => {
-            this.logDebug(`Installed Access Token '${key}'`, token.forLog());
+            forEach(accessTokens, (token, k) => {
+                if (!_accessTokens[k]?.equals(token)) {
+                    _accessTokens[k] = token;
+                    this.logDebug(
+                        `Installed new Access Token '${k}'`,
+                        token.formattedExpiry,
+                        token.forLog
+                    );
+                }
+            });
         });
     }
 
+    //-------------------
+    // Implementation
+    //-------------------
+    private async getIdTokenSafeAsync(useCache: boolean): Promise<TokenInfo> {
+        // Client libraries can apparently return expired idIokens when using local cache.
+        // See: https://github.com/auth0/auth0-spa-js/issues/1089 and
+        // https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/4206
+        // Protect ourselves from this, without losing benefits of local cache.
+        let ret = await this.getIdTokenAsync(useCache);
+        if (useCache && ret.expiresWithin(this.config.tokenSkipCacheSecs)) {
+            ret = await this.getIdTokenAsync(false);
+        }
+
+        // Paranoia -- we don't expect this after workaround above to skip cache
+        throwIf(ret.expiresWithin(1 * MINUTES), 'Cannot get valid Id Token from provider.');
+        return ret;
+    }
+
+    @action
     private async onTimerAsync(): Promise<void> {
         const {_idToken, _accessTokens, config, lastRefreshAttempt, TIMER_INTERVAL} = this,
-            threshold = config.tokenRefreshThresholdMins * MINUTES,
-            checkInterval = config.tokenRefreshCheckSecs * SECONDS;
+            refreshSecs = config.tokenRefreshSecs * SECONDS,
+            skipCacheSecs = config.tokenSkipCacheSecs * SECONDS;
 
         // 1) Periodically Refresh if we are missing a token, or a token is too close to expiry
         // NOTE -- we do this for all tokens at once, could be more selective.
-        if (
-            olderThan(lastRefreshAttempt, checkInterval) &&
-            (!_idToken ||
-                _idToken.expiresWithin(threshold) ||
-                some(_accessTokens, t => !t || t.expiresWithin(threshold)))
-        ) {
+        if (olderThan(lastRefreshAttempt, refreshSecs)) {
+            this.lastRefreshAttempt = Date.now();
             try {
-                this.lastRefreshAttempt = Date.now();
-                await this.loadTokensAsync(false);
+                const useCache =
+                    _idToken &&
+                    !_idToken.expiresWithin(skipCacheSecs) &&
+                    every(_accessTokens, t => t && !t.expiresWithin(skipCacheSecs));
+                await this.loadTokensAsync(useCache);
             } catch (e) {
                 XH.handleException(e, {showAlert: false, logOnServer: false});
             }
@@ -300,17 +336,10 @@ export abstract class BaseOAuthClient<T extends BaseOAuthClientConfig> extends H
             // 2) Otherwise, if a token will expire before next check, clear it out.
             // Note that we don't expect to have to do this, if refresh above working fine.
             // This is the unhappy path, and will trigger warning, if configured.
-            const idExpires = _idToken?.expiresWithin(TIMER_INTERVAL),
-                expireKeys = keys(_accessTokens).filter(k =>
-                    _accessTokens[k]?.expiresWithin(TIMER_INTERVAL)
-                );
-
-            if (idExpires || !isEmpty(expireKeys)) {
-                runInAction(() => {
-                    if (idExpires) this._idToken = null;
-                    expireKeys.forEach(k => (_accessTokens[k] = null));
-                });
-            }
+            if (_idToken?.expiresWithin(TIMER_INTERVAL)) this._idToken = null;
+            forEach(_accessTokens, (tkn, k) => {
+                if (tkn?.expiresWithin(TIMER_INTERVAL)) _accessTokens[k] = null;
+            });
         }
 
         // 3) Always update the warning state.

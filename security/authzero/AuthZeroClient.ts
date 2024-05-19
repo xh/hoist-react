@@ -5,18 +5,29 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {Auth0Client} from '@auth0/auth0-spa-js';
-import {PlainObject, XH} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {never, wait} from '@xh/hoist/promise';
+import {TokenInfo} from '@xh/hoist/security/TokenInfo';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 
-export interface AuthZeroClientConfig extends BaseOAuthClientConfig {
+export interface AuthZeroClientConfig extends BaseOAuthClientConfig<AuthZeroTokenSpec> {
     /** Domain of your app registered with Auth0 */
     domain: string;
+}
 
-    /** Audience (i.e. API) identifier for AccessToken.  Must be registered with Auth0*/
+export interface AuthZeroTokenSpec {
+    /** Scopes for the desired access token.*/
+    scopes: string[];
+
+    /**
+     * Audience (i.e. API) identifier for AccessToken.  Must be registered with Auth0.
+     *
+     * Note that this is required to ensure that issued token is a JWT and not
+     * an opaque string.
+     */
     audience: string;
 }
 
@@ -26,7 +37,7 @@ export interface AuthZeroClientConfig extends BaseOAuthClientConfig {
  * combo stored and managed within Auth0's own database. Supported options will depend on the
  * configuration of your Auth0 app.
  */
-export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig> {
+export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZeroTokenSpec> {
     private client: Auth0Client;
 
     override async doInitAsync(): Promise<void> {
@@ -51,23 +62,24 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig> {
         await this.loadTokensAsync();
     }
 
-    override async getIdTokenAsync(useCache: boolean = true): Promise<string> {
+    override async getIdTokenAsync(useCache: boolean = true): Promise<TokenInfo> {
         const response = await this.client.getTokenSilently({
             authorizationParams: {scope: this.idScopes.join(' ')},
             cacheMode: useCache ? 'on' : 'off',
             detailedResponse: true
         });
-        return response.id_token;
+        return new TokenInfo(response.id_token);
     }
 
     override async getAccessTokenAsync(
-        spec: PlainObject,
+        spec: AuthZeroTokenSpec,
         useCache: boolean = true
-    ): Promise<string> {
-        return this.client.getTokenSilently({
-            authorizationParams: {scope: spec.scopes.join(' ')},
+    ): Promise<TokenInfo> {
+        const token = await this.client.getTokenSilently({
+            authorizationParams: {scope: spec.scopes.join(' '), audience: spec.audience},
             cacheMode: useCache ? 'on' : 'off'
         });
+        return new TokenInfo(token);
     }
 
     override async doLogoutAsync(): Promise<void> {
@@ -88,10 +100,9 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig> {
     //-----------------
     private createClient(): Auth0Client {
         const config = this.config,
-            {clientId, domain, audience} = config;
+            {clientId, domain} = config;
 
         throwIf(!domain, 'Missing Auth0 "domain". Please review your config.');
-        throwIf(!audience, 'Missing Auth0 "audience" for Access Token. Please review your config.');
 
         const ret = new Auth0Client({
             clientId,
@@ -99,13 +110,11 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig> {
             useRefreshTokens: true,
             useRefreshTokensFallback: true,
             authorizationParams: {
-                audience,
                 scope: this.loginScope,
                 redirect_uri: this.redirectUrl
             },
             cacheLocation: 'localstorage'
         });
-        this.logDebug('Auth0 client created', ret);
         return ret;
     }
 
