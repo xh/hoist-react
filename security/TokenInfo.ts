@@ -8,7 +8,8 @@
 import {PlainObject} from '@xh/hoist/core';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {jwtDecode} from 'jwt-decode';
-import {isUndefined} from 'lodash';
+import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
+import {isNil} from 'lodash';
 
 export class TokenInfo {
     readonly token: string;
@@ -21,22 +22,24 @@ export class TokenInfo {
         this.expiry = this.decoded.exp * SECONDS;
     }
 
-    forLog(): PlainObject {
-        const ret: PlainObject = {
-            ...this.decoded,
-            exp: new Date(this.expiry)
-        };
+    expiresWithin(interval: number): boolean {
+        return olderThan(this.expiry, -interval);
+    }
 
-        ['iat', 'nbf'].forEach(k => {
-            const val = this.decoded[k];
-            if (isUndefined(val)) return;
-            ret[k] = new Date(val * SECONDS);
+    get formattedExpiry() {
+        return getRelativeTimestamp(this.expiry, {allowFuture: true, prefix: 'expires'});
+    }
+
+    get forLog(): PlainObject {
+        const ret: PlainObject = {...this.decoded};
+        ['iat', 'nbf', 'exp'].forEach(k => {
+            const val = ret[k];
+            ret[k] = isNil(val) ? val : new Date(val * SECONDS);
         });
-
         return ret;
     }
 
-    expiresWithin(interval: number): boolean {
-        return olderThan(this.expiry, -interval);
+    equals(other: TokenInfo) {
+        return this.token == other?.token;
     }
 }
