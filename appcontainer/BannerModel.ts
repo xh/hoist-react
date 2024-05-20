@@ -29,6 +29,7 @@ export class BannerModel extends HoistModel {
      * Sort order for Hoist-provided banners.
      */
     static BANNER_SORTS = {
+        SERVER_CONNECTION: -3,
         APP_UPDATE: -2,
         ADMIN_ALERT: -1
     };

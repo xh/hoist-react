@@ -26,7 +26,8 @@ import {
     LocalStorageService,
     PrefService,
     TrackService,
-    WebSocketService
+    WebSocketService,
+    ServerConnectionService
 } from '@xh/hoist/svc';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
@@ -137,6 +138,7 @@ export class XHApi {
     jsonBlobService: JsonBlobService;
     localStorageService: LocalStorageService;
     prefService: PrefService;
+    serverConnectionService: ServerConnectionService;
     trackService: TrackService;
     webSocketService: WebSocketService;
 

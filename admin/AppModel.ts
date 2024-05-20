@@ -27,7 +27,6 @@ export class AppModel extends HoistAppModel {
 
     constructor() {
         super();
-
         this.tabModel = new TabContainerModel({
             route: 'default',
             switcher: false,

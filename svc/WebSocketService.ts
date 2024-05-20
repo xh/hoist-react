@@ -136,6 +136,7 @@ export class WebSocketService extends HoistService {
         try {
             // Create new socket and wire up events.  Be sure to ignore obsolete sockets
             const s = new WebSocket(this.buildWebSocketUrl());
+            this._socket = s;
             s.onopen = ev => {
                 if (s === this._socket) this.onOpen(ev);
             };
@@ -148,7 +149,6 @@ export class WebSocketService extends HoistService {
             s.onmessage = data => {
                 if (s === this._socket) this.onMessage(data);
             };
-            this._socket = s;
         } catch (e) {
             this.logError('Failure creating WebSocket', e);
         }
