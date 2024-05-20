@@ -44,14 +44,6 @@ export class RoleGraphModel extends HoistModel {
             if (inverted) {
                 const AVG_WIDTH = 150,
                     AVG_HEIGHT = 26;
-                console.log(
-                    'Inverted',
-                    leafCount,
-                    maxDepth,
-                    '->',
-                    AVG_WIDTH * leafCount * widthScale,
-                    AVG_HEIGHT * (maxDepth + 1)
-                );
                 return {
                     width: AVG_WIDTH * leafCount * widthScale,
                     height: AVG_HEIGHT * (maxDepth + 1)
@@ -59,14 +51,6 @@ export class RoleGraphModel extends HoistModel {
             } else {
                 const AVG_WIDTH = 100,
                     AVG_HEIGHT = 30;
-                console.log(
-                    'Not Inverted',
-                    maxDepth,
-                    leafCount,
-                    '->',
-                    AVG_WIDTH * maxDepth * widthScale,
-                    AVG_HEIGHT * (leafCount + 1)
-                );
                 return {
                     width: AVG_WIDTH * maxDepth * widthScale,
                     height: AVG_HEIGHT * (leafCount + 1)
@@ -231,7 +215,7 @@ export class RoleGraphModel extends HoistModel {
     @computed
     private get maxDepth(): number {
         const {role: root, relatedRoles, limitToTwoLevels} = this;
-        // Only the root node
+        // Only the root node.
         if (isEmpty(relatedRoles)) return 1;
         // Limit to two levels means that we only show two levels.
         if (limitToTwoLevels) return 2;
