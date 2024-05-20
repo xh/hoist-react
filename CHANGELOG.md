@@ -2,6 +2,9 @@
 
 ## 65.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Added new `ServerConnectionService` to monitor the server connection and display app banner
+indicating unreachable instance. (currently enabled for admin panel only)
 
 ## 64.0.1 - 2024-05-19
 

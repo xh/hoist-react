@@ -8,6 +8,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistAppModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {ServerConnectionService} from '@xh/hoist/svc';
 import {Route} from 'router5';
 import {activityTab} from './tabs/activity/ActivityTab';
 import {generalTab} from './tabs/general/GeneralTab';
@@ -35,6 +36,11 @@ export class AppModel extends HoistAppModel {
 
         // Enable managed autosize mode across Hoist Admin console grids.
         GridModel.DEFAULT_AUTOSIZE_MODE = 'managed';
+    }
+
+    override async initAsync() {
+        await super.initAsync();
+        await XH.installServicesAsync(ServerConnectionService);
     }
 
     override getRoutes(): Route[] {

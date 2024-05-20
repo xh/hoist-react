@@ -35,7 +35,6 @@ import {
     JsonBlobService,
     LocalStorageService,
     PrefService,
-    ServerConnectionService,
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
@@ -223,7 +222,6 @@ export class AppContainerModel extends HoistModel {
 
             await installServicesAsync([
                 AlertBannerService,
-                ServerConnectionService,
                 AutoRefreshService,
                 ChangelogService,
                 IdleService,
