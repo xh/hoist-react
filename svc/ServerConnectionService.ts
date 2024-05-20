@@ -52,7 +52,6 @@ export class ServerConnectionService extends HoistService {
     }
 
     private handlePing(requestOk: boolean) {
-        // recoveryThreshold
         if (requestOk) {
             this.recoveryCount += 1;
             this.errorCount = 0;
