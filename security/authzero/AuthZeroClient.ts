@@ -36,6 +36,7 @@ export interface AuthZeroTokenSpec {
  * via Google, GitHub, Microsoft, and various other OAuth providers *or* via a username/password
  * combo stored and managed within Auth0's own database. Supported options will depend on the
  * configuration of your Auth0 app.
+ * If developing on localhost, you will need to configure your browser to allow third-party cookies.
  */
 export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZeroTokenSpec> {
     private client: Auth0Client;
