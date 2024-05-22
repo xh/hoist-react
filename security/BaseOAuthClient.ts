@@ -10,18 +10,7 @@ import {TokenInfo} from '@xh/hoist/security/TokenInfo';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
-import {
-    defaultsDeep,
-    every,
-    find,
-    forEach,
-    isNil,
-    isObject,
-    keys,
-    mapValues,
-    some,
-    union
-} from 'lodash';
+import {every, find, forEach, isNil, isObject, keys, mapValues, some, union} from 'lodash';
 import {v4 as uuid} from 'uuid';
 import {action, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 
@@ -139,15 +128,16 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     constructor(config: C) {
         super();
         makeObservable(this);
-        this.config = defaultsDeep(config, {
+        this.config = {
             loginMethodDesktop: 'REDIRECT',
             loginMethodMobile: 'REDIRECT',
             redirectUrl: 'APP_BASE_URL',
             postLogoutRedirectUrl: 'APP_BASE_URL',
             expiryWarning: false,
             tokenRefreshSecs: 30,
-            tokenSkipCacheSecs: 180
-        } as C);
+            tokenSkipCacheSecs: 180,
+            ...config
+        };
         throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
 
         this.idScopes = union(['openid', 'email'], config.idScopes);
