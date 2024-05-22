@@ -20,3 +20,4 @@ export * from './LocalStorageService';
 export * from './PrefService';
 export * from './TrackService';
 export * from './WebSocketService';
+export * from './ServerConnectionService';

@@ -16,4 +16,4 @@ within its `configureWebpack()` build script factory.
   compatibility.
 * `spinner.png` - included by HDU >= 5.11.0.
 
-See [Hoist Dev Utils](https://github.com/xh/hoist-dev-utils) for additional details.
+See [Hoist Dev Utils](https://github.com/xh/hoist-dev-utils) for additional taskDetails.
