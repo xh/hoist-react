@@ -51,8 +51,9 @@ export interface BaseOAuthClientConfig<S> {
     tokenRefreshSecs?: number;
 
     /**
-     * When the remaining token lifetime is below this threshold, force the provider to skip the
-     * local cache and go directly to the underlying provider for a new token. Default is 180 secs.
+     * When the remaining lifetime for any token is below this threshold, force the provider
+     * to skip the local cache and go directly to the underlying provider for new tokens and
+     * refresh tokens.  Default is 180 secs.
      */
     tokenSkipCacheSecs?: number;
 
@@ -168,15 +169,23 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     //-----------------------------------
     protected abstract doInitAsync(): Promise<void>;
 
-    protected abstract doLogoutAsync(): Promise<void>;
+    protected abstract doLoginPopupAsync(): Promise<void>;
+
+    protected abstract doLoginRedirectAsync(): Promise<void>;
 
     protected abstract getIdTokenAsync(useCache: boolean): Promise<TokenInfo>;
 
     protected abstract getAccessTokenAsync(spec: S, useCache: boolean): Promise<TokenInfo>;
 
+    protected abstract doLogoutAsync(): Promise<void>;
+
     //---------------------------------------
     // Implementation
     //---------------------------------------
+    protected async loginAsync(): Promise<void> {
+        return this.usesRedirect ? this.doLoginRedirectAsync() : this.doLoginPopupAsync();
+    }
+
     protected get redirectUrl() {
         const url = this.config.redirectUrl;
         return url === 'APP_BASE_URL' ? this.baseUrl : url;
