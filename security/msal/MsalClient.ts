@@ -141,10 +141,8 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                     scopes: this.loginScopes,
                     extraScopesToConsent: this.loginExtraScopes
                 };
-            account
-                ? await client.acquireTokenRedirect({...opts, account})
-                : await client.loginRedirect(opts);
-
+            if (account) opts.account = account;
+            await client.acquireTokenRedirect({...opts, account});
             await never();
         } else {
             // 2) Returning - just restore state
@@ -160,11 +158,9 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 scopes: this.loginScopes,
                 extraScopesToConsent: this.loginExtraScopes
             };
+        if (account) opts.account = account;
         try {
-            const ret = account
-                ? await client.acquireTokenPopup({...opts, account})
-                : await client.loginPopup(opts);
-
+            const ret = await client.acquireTokenPopup(opts);
             this.account = ret.account;
         } catch (e) {
             if (e.message?.toLowerCase().includes('popup window')) {
