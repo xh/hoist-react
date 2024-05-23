@@ -1,7 +1,8 @@
 # Changelog
 
 ## 65.0.0-SNAPSHOT - unreleased
-
+### ⚙️ Technical
+* Restore disabling of Blueprint animations on popovers and tooltips (regression in v63.0.0)
 
 ## 64.0.1 - 2024-05-19
 
