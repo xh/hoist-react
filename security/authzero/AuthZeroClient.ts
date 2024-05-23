@@ -52,7 +52,8 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         // Try to optimistically load tokens silently
         if (await client.isAuthenticated()) {
             try {
-                return await this.loadTokensAsync();
+                await this.getAllTokensAsync();
+                return;
             } catch (e) {
                 this.logDebug('Failed to load tokens on init, falling back on login', e);
             }
@@ -62,7 +63,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         await this.loginAsync();
         const user = await client.getUser();
         this.logDebug(`(Re)authenticated OK via Auth0`, user.email, user);
-        await this.loadTokensAsync();
+        await this.getAllTokensAsync();
     }
 
     override async doLoginRedirectAsync(): Promise<void> {
@@ -126,7 +127,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         }
     }
 
-    override async getIdTokenAsync(useCache: boolean = true): Promise<TokenInfo> {
+    override async fetchIdTokenAsync(useCache: boolean = true): Promise<TokenInfo> {
         const response = await this.client.getTokenSilently({
             authorizationParams: {scope: this.idScopes.join(' ')},
             cacheMode: useCache ? 'on' : 'off',
@@ -135,7 +136,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         return new TokenInfo(response.id_token);
     }
 
-    override async getAccessTokenAsync(
+    override async fetchAccessTokenAsync(
         spec: AuthZeroTokenSpec,
         useCache: boolean = true
     ): Promise<TokenInfo> {

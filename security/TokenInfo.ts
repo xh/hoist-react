@@ -4,7 +4,6 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-
 import {PlainObject} from '@xh/hoist/core';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {jwtDecode} from 'jwt-decode';

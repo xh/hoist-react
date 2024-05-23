@@ -4,15 +4,16 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {BannerSpec, HoistBase, managed, XH} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
+import {HoistBase, managed, XH} from '@xh/hoist/core';
 import {TokenInfo} from '@xh/hoist/security/TokenInfo';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
-import {every, find, forEach, isNil, isObject, keys, mapValues, some, union} from 'lodash';
+import {find, forEach, keys, some, union} from 'lodash';
 import {v4 as uuid} from 'uuid';
-import {action, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {action, makeObservable} from '@xh/hoist/mobx';
+
+export type LoginMethod = 'REDIRECT' | 'POPUP';
 
 export interface BaseOAuthClientConfig<S> {
     /** Client ID (GUID) of your app registered with your Oauth provider. */
@@ -32,30 +33,34 @@ export interface BaseOAuthClientConfig<S> {
     postLogoutRedirectUrl?: 'APP_BASE_URL' | string;
 
     /** The method used for logging in on desktop. Default is 'REDIRECT'. */
-    loginMethodDesktop?: 'REDIRECT' | 'POPUP';
+    loginMethodDesktop?: LoginMethod;
 
     /** The method used for logging in on mobile. Default is 'REDIRECT'. */
-    loginMethodMobile?: 'REDIRECT' | 'POPUP';
+    loginMethodMobile?: LoginMethod;
 
     /**
-     * Governs how frequently we attempt to refresh tokens with the API.
+     * Governs an optional refresh timer that will work to keep the tokens fresh.
      *
-     * A typical refresh will use the underlying provider cache, and should not result in network
-     * activity. However, if the token lifetime falls below`tokenSkipCacheSecs`, this client
-     * will force a call to the underlying provider to get the token.
+     * A typical refresh will use the underlying provider cache, and should not result in
+     * network activity. However, if any token lifetime falls below`autoRefreshSkipCacheSecs`,
+     * this client will force a call to the underlying provider to get the token.
      *
      * In order to allow aging tokens to be replaced in a timely manner, this value should be
      * significantly shorter than both the minimum token lifetime that will be
-     * returned by the underlying API and `tokenSkipCacheSecs`. Default is 30 secs.
+     * returned by the underlying API and `autoRefreshSkipCacheSecs`.
+     *
+     * Default is -1, disabling this behavior.
      */
-    tokenRefreshSecs?: number;
+    autoRefreshSecs?: number;
 
     /**
-     * When the remaining lifetime for any token is below this threshold, force the provider
-     * to skip the local cache and go directly to the underlying provider for new tokens and
-     * refresh tokens.  Default is 180 secs.
+     * During auto-refresh, if the remaining lifetime for any token is below this threshold,
+     * force the provider to skip the local cache and go directly to the underlying provider for
+     * new tokens and refresh tokens.
+     *
+     * Default is -1, disabling this behavior.
      */
-    tokenSkipCacheSecs?: number;
+    autoRefreshSkipCacheSecs?: number;
 
     /**
      * Scopes to request - if any - beyond the core `['openid', 'email']` scopes, which
@@ -74,18 +79,12 @@ export interface BaseOAuthClientConfig<S> {
      * Use this map to gain targeted access tokens for different back-end resources.
      */
     accessTokens?: Record<string, S>;
-
-    /**
-     * True to display a warning banner to the user if tokens expire. May be specified as a boolean
-     * or a partial banner spec. Defaults to false.
-     */
-    expiryWarning?: boolean | Partial<BannerSpec>;
 }
 
 /**
  * Implementations of this class coordinate OAuth-based login and token provision. Apps can use a
- * suitable concrete implementation to power a client-side OauthService - see Toolbox for an
- * example using `Auth0Client`.
+ * suitable concrete implementation to power a client-side OauthService. See `MsalClient` and
+ * `AuthZeroClient`
  *
  * Initialize such a service and this client within the `preAuthInitAsync()` lifecycle method of
  * `AppModel` to use the tokens it acquires to authenticate with the Hoist server. (Note this
@@ -100,32 +99,16 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     /** Scopes */
     protected idScopes: string[];
 
-    @observable.ref protected _idToken: TokenInfo;
-    @observable protected _accessTokens: Record<string, TokenInfo>;
-
     @managed private timer: Timer;
-    private expiryWarningDisplayed: boolean;
     private lastRefreshAttempt: number;
 
     private TIMER_INTERVAL = 2 * SECONDS;
 
+    private accessSpecs: Record<string, S>;
+
     //------------------------
     // Public API
     //------------------------
-    /**
-     * ID token in JWT format. Observable.
-     */
-    get idToken(): string {
-        return this._idToken?.token;
-    }
-
-    /**
-     * Get a configured Access token in JWT format. Observable.
-     */
-    getAccessToken(key: string): string {
-        return this._accessTokens[key]?.token;
-    }
-
     constructor(config: C) {
         super();
         makeObservable(this);
@@ -135,15 +118,14 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
             redirectUrl: 'APP_BASE_URL',
             postLogoutRedirectUrl: 'APP_BASE_URL',
             expiryWarning: false,
-            tokenRefreshSecs: 30,
-            tokenSkipCacheSecs: 180,
+            autoRefreshSecs: -1,
+            autoRefreshSkipCacheSecs: -1,
             ...config
         };
         throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
 
         this.idScopes = union(['openid', 'email'], config.idScopes);
-        this._idToken = null;
-        this._accessTokens = mapValues(config.accessTokens, () => null);
+        this.accessSpecs = this.config.accessTokens;
     }
 
     /**
@@ -158,10 +140,53 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     }
 
     /**
+     * Request an interactive login with the underlying OAuth provider.
+     */
+    protected async loginAsync(method: LoginMethod = this.loginMethod): Promise<void> {
+        return method == 'REDIRECT' ? this.doLoginRedirectAsync() : this.doLoginPopupAsync();
+    }
+
+    /**
      * Request a full logout from the underlying OAuth provider.
      */
     async logoutAsync(): Promise<void> {
         await this.doLogoutAsync();
+    }
+
+    /**
+     * Get an ID token.
+     */
+    async getIdTokenAsync(): Promise<TokenInfo> {
+        return this.fetchIdTokenSafeAsync(true);
+    }
+
+    /**
+     * Get a configured Access token.
+     */
+    async getAccessTokenAsync(key: string): Promise<TokenInfo> {
+        return this.fetchAccessTokenAsync(this.accessSpecs[key], true);
+    }
+
+    /**
+     * Get all available tokens.
+     *
+     * @param useCache - true (default) to use local cache if available, or false to force a
+     *      network request to fetch fresher tokens.
+     */
+    async getAllTokensAsync(useCache: boolean = true): Promise<Record<string, TokenInfo>> {
+        this.logDebug('Loading tokens from provider', `useCache=${useCache}`);
+
+        const ret: Record<string, TokenInfo> = {},
+            {accessSpecs} = this;
+        ret.idToken = await this.fetchIdTokenSafeAsync(useCache);
+        for (const key of keys(accessSpecs)) {
+            ret[key] = await this.fetchAccessTokenAsync(accessSpecs[key], useCache);
+        }
+        forEach(ret, (token, k) => {
+            this.logDebug(`Token Loaded '${k}'`, token.formattedExpiry, token.forLog);
+        });
+
+        return ret;
     }
 
     //------------------------------------
@@ -173,19 +198,15 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
 
     protected abstract doLoginRedirectAsync(): Promise<void>;
 
-    protected abstract getIdTokenAsync(useCache: boolean): Promise<TokenInfo>;
+    protected abstract fetchIdTokenAsync(useCache: boolean): Promise<TokenInfo>;
 
-    protected abstract getAccessTokenAsync(spec: S, useCache: boolean): Promise<TokenInfo>;
+    protected abstract fetchAccessTokenAsync(spec: S, useCache: boolean): Promise<TokenInfo>;
 
     protected abstract doLogoutAsync(): Promise<void>;
 
     //---------------------------------------
     // Implementation
     //---------------------------------------
-    protected async loginAsync(): Promise<void> {
-        return this.usesRedirect ? this.doLoginRedirectAsync() : this.doLoginPopupAsync();
-    }
-
     protected get redirectUrl() {
         const url = this.config.redirectUrl;
         return url === 'APP_BASE_URL' ? this.baseUrl : url;
@@ -196,12 +217,8 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
         return url === 'APP_BASE_URL' ? this.baseUrl : url;
     }
 
-    protected get loginMethod(): 'REDIRECT' | 'POPUP' {
+    protected get loginMethod(): LoginMethod {
         return XH.isDesktop ? this.config.loginMethodDesktop : this.config.loginMethodMobile;
-    }
-
-    protected get usesRedirect(): boolean {
-        return this.loginMethod == 'REDIRECT';
     }
 
     protected get baseUrl() {
@@ -256,55 +273,17 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
         window.history.replaceState(null, '', pathname + search);
     }
 
-    /**
-     * Load tokens from provider.
-     *
-     * @param useCache - true (default) to use local cache if available, or false to force a
-     *      network request to fetch a fresh token.
-     */
-    protected async loadTokensAsync(useCache: boolean = true): Promise<void> {
-        this.logDebug('Loading tokens from provider', `useCache=${useCache}`);
-
-        const {_idToken, _accessTokens, config} = this,
-            idToken = await this.getIdTokenSafeAsync(useCache),
-            accessTokens: Record<string, TokenInfo> = {},
-            accessTasks = mapValues(config.accessTokens, spec =>
-                this.getAccessTokenAsync(spec, useCache)
-            );
-        for (const key of keys(accessTasks)) {
-            accessTokens[key] = await accessTasks[key];
-        }
-
-        runInAction(() => {
-            if (!_idToken?.equals(idToken)) {
-                this._idToken = idToken;
-                this.logDebug('Installed new Id Token', idToken.formattedExpiry, idToken.forLog);
-            }
-
-            forEach(accessTokens, (token, k) => {
-                if (!_accessTokens[k]?.equals(token)) {
-                    _accessTokens[k] = token;
-                    this.logDebug(
-                        `Installed new Access Token '${k}'`,
-                        token.formattedExpiry,
-                        token.forLog
-                    );
-                }
-            });
-        });
-    }
-
     //-------------------
     // Implementation
     //-------------------
-    private async getIdTokenSafeAsync(useCache: boolean): Promise<TokenInfo> {
+    private async fetchIdTokenSafeAsync(useCache: boolean): Promise<TokenInfo> {
         // Client libraries can apparently return expired idIokens when using local cache.
         // See: https://github.com/auth0/auth0-spa-js/issues/1089 and
         // https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/4206
         // Protect ourselves from this, without losing benefits of local cache.
-        let ret = await this.getIdTokenAsync(useCache);
-        if (useCache && ret.expiresWithin(this.config.tokenSkipCacheSecs)) {
-            ret = await this.getIdTokenAsync(false);
+        let ret = await this.fetchIdTokenAsync(useCache);
+        if (useCache && ret.expiresWithin(1 * MINUTES)) {
+            ret = await this.fetchIdTokenAsync(false);
         }
 
         // Paranoia -- we don't expect this after workaround above to skip cache
@@ -314,61 +293,20 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
 
     @action
     private async onTimerAsync(): Promise<void> {
-        const {_idToken, _accessTokens, config, lastRefreshAttempt, TIMER_INTERVAL} = this,
-            refreshSecs = config.tokenRefreshSecs * SECONDS,
-            skipCacheSecs = config.tokenSkipCacheSecs * SECONDS;
+        const {config, lastRefreshAttempt} = this,
+            refreshSecs = config.autoRefreshSecs * SECONDS,
+            skipCacheSecs = config.autoRefreshSkipCacheSecs * SECONDS;
 
-        // 1) Periodically Refresh if we are missing a token, or a token is too close to expiry
-        // NOTE -- we do this for all tokens at once, could be more selective.
-        if (olderThan(lastRefreshAttempt, refreshSecs)) {
+        if (refreshSecs > 0 && olderThan(lastRefreshAttempt, refreshSecs)) {
             this.lastRefreshAttempt = Date.now();
             try {
-                const useCache =
-                    _idToken &&
-                    !_idToken.expiresWithin(skipCacheSecs) &&
-                    every(_accessTokens, t => t && !t.expiresWithin(skipCacheSecs));
-                await this.loadTokensAsync(useCache);
+                const tokens = await this.getAllTokensAsync();
+                if (skipCacheSecs > 0 && some(tokens, v => v.expiresWithin(skipCacheSecs))) {
+                    this.logDebug('Critically aging tokens found, reloading tokens without cache.');
+                    await this.getAllTokensAsync(false);
+                }
             } catch (e) {
                 XH.handleException(e, {showAlert: false, logOnServer: false});
-            }
-        } else {
-            // 2) Otherwise, if a token will expire before next check, clear it out.
-            // Note that we don't expect to have to do this, if refresh above working fine.
-            // This is the unhappy path, and will trigger warning, if configured.
-            if (_idToken?.expiresWithin(TIMER_INTERVAL)) this._idToken = null;
-            forEach(_accessTokens, (tkn, k) => {
-                if (tkn?.expiresWithin(TIMER_INTERVAL)) _accessTokens[k] = null;
-            });
-        }
-
-        // 3) Always update the warning state.
-        this.updateWarning();
-    }
-
-    private updateWarning() {
-        const {expiryWarning} = this.config;
-        if (!expiryWarning) return;
-
-        const expired = !this._idToken || some(this._accessTokens, isNil);
-        if (this.expiryWarningDisplayed != expired) {
-            this.expiryWarningDisplayed = expired;
-            if (expired) {
-                const onClick = () => XH.reloadApp();
-                let spec: BannerSpec = {
-                    category: 'xhOAuth',
-                    message: 'Authentication expired.  Reload required',
-                    icon: Icon.warning(),
-                    intent: 'warning',
-                    enableClose: false,
-                    actionButtonProps: {text: 'Reload Now', onClick},
-                    onClick
-                };
-                if (isObject(expiryWarning)) {
-                    spec = {...spec, ...expiryWarning};
-                }
-                XH.showBanner(spec);
-            } else {
-                XH.hideBanner('xhOAuth');
             }
         }
     }

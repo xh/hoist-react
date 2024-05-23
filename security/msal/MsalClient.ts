@@ -57,7 +57,8 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         this.account = client.getAllAccounts()[0];
         if (this.account) {
             try {
-                return await this.loadTokensAsync();
+                await this.getAllTokensAsync();
+                return;
             } catch (e) {
                 if (!(e instanceof InteractionRequiredAuthError)) {
                     throw e;
@@ -69,7 +70,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         // ...otherwise login and *then* load tokens
         await this.loginAsync();
         this.logDebug(`(Re)authenticated OK via Azure`, this.account.username, this.account);
-        await this.loadTokensAsync();
+        await this.getAllTokensAsync();
     }
 
     override async doLoginPopupAsync(): Promise<void> {
@@ -117,7 +118,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         }
     }
 
-    override async getIdTokenAsync(useCache: boolean = true): Promise<TokenInfo> {
+    override async fetchIdTokenAsync(useCache: boolean = true): Promise<TokenInfo> {
         const ret = await this.client.acquireTokenSilent({
             scopes: this.idScopes,
             account: this.account,
@@ -128,7 +129,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         return new TokenInfo(ret.idToken);
     }
 
-    override async getAccessTokenAsync(
+    override async fetchAccessTokenAsync(
         spec: MsalTokenSpec,
         useCache: boolean = true
     ): Promise<TokenInfo> {
@@ -143,9 +144,9 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     override async doLogoutAsync(): Promise<void> {
-        const {postLogoutRedirectUrl, client, account, usesRedirect} = this;
+        const {postLogoutRedirectUrl, client, account, loginMethod} = this;
         await client.clearCache({account});
-        usesRedirect
+        loginMethod == 'REDIRECT'
             ? await client.logoutRedirect({account, postLogoutRedirectUri: postLogoutRedirectUrl})
             : await client.logoutPopup({account});
     }
