@@ -36,14 +36,20 @@ export interface AuthZeroTokenSpec {
  * via Google, GitHub, Microsoft, and various other OAuth providers *or* via a username/password
  * combo stored and managed within Auth0's own database. Supported options will depend on the
  * configuration of your Auth0 app.
- * If developing on localhost, you will need to configure your browser to allow third-party cookies.
+ *
+ * Note: If developing on localhost and using Access Tokens will need to configure your browser to
+ * allow third-party cookies.
  */
 export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZeroTokenSpec> {
     private client: Auth0Client;
 
+    //-------------------------------------------
+    // Implementations of core lifecycle methods
+    //-------------------------------------------
     override async doInitAsync(): Promise<void> {
         const client = (this.client = this.createClient());
 
+        // Try to optimistically load tokens silently
         if (await client.isAuthenticated()) {
             try {
                 return await this.loadTokensAsync();
@@ -52,15 +58,72 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
             }
         }
 
-        this.usesRedirect
-            ? await this.completeViaRedirectAsync()
-            : await this.completeViaPopupAsync();
-
+        // ...otherwise login and *then* load tokens
+        await this.loginAsync();
         const user = await client.getUser();
         this.logDebug(`(Re)authenticated OK via Auth0`, user.email, user);
-
-        // Second-time (after login) the charm!
         await this.loadTokensAsync();
+    }
+
+    override async doLoginRedirectAsync(): Promise<void> {
+        const {client} = this;
+
+        // Determine if we are on back end of redirect (recipe from Auth0 docs)
+        const {search} = window.location,
+            isReturning =
+                (search.includes('state=') && search.includes('code=')) ||
+                search.includes('error=');
+
+        if (!isReturning) {
+            // 1) Initiating - grab state and initiate redirect
+            const appState = this.captureRedirectState();
+            await client.loginWithRedirect({
+                appState,
+                authorizationParams: {scope: this.loginScope}
+            });
+            await never();
+        } else {
+            // 2) Returning - call client to complete redirect, and restore state
+            const {appState} = await client.handleRedirectCallback();
+            this.restoreRedirectState(appState);
+        }
+    }
+
+    override async doLoginPopupAsync(): Promise<void> {
+        const {client} = this;
+        try {
+            await client.loginWithPopup({authorizationParams: {scope: this.loginScope}});
+        } catch (e) {
+            const msg = e.message?.toLowerCase();
+            e.popup?.close();
+            if (msg === 'timeout') {
+                throw XH.exception({
+                    name: 'Auth0 Login Error',
+                    message:
+                        'Login popup window timed out. Please reload this tab in your browser to try again.',
+                    cause: e
+                });
+            }
+
+            if (msg === 'popup closed') {
+                throw XH.exception({
+                    name: 'Auth0 Login Error',
+                    message:
+                        'Login popup window closed. Please reload this tab in your browser to try again.',
+                    cause: e
+                });
+            }
+
+            if (msg.includes('unable to open a popup')) {
+                throw XH.exception({
+                    name: 'Auth0 Login Error',
+                    message: this.popupBlockerErrorMessage,
+                    cause: e
+                });
+            }
+
+            throw e;
+        }
     }
 
     override async getIdTokenAsync(useCache: boolean = true): Promise<TokenInfo> {
@@ -96,9 +159,9 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         await wait(10 * SECONDS);
     }
 
-    //------------------
-    // Implementation
-    //-----------------
+    //------------------------
+    // Private implementation
+    //------------------------
     private createClient(): Auth0Client {
         const config = this.config,
             {clientId, domain} = config;
@@ -117,67 +180,6 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
             cacheLocation: 'localstorage'
         });
         return ret;
-    }
-
-    private async completeViaRedirectAsync(): Promise<void> {
-        const {client} = this;
-
-        // Determine if we are on back end of redirect (recipe from Auth0 docs)
-        const {search} = window.location,
-            isReturning =
-                (search.includes('state=') && search.includes('code=')) ||
-                search.includes('error=');
-
-        if (!isReturning) {
-            // 1) Initiating - grab state and initiate redirect
-            const appState = this.captureRedirectState();
-            await client.loginWithRedirect({
-                appState,
-                authorizationParams: {scope: this.loginScope}
-            });
-            await never();
-        } else {
-            // 2) Returning - call client to complete redirect, and restore state
-            const {appState} = await client.handleRedirectCallback();
-            this.restoreRedirectState(appState);
-        }
-    }
-
-    private async completeViaPopupAsync(): Promise<void> {
-        const {client} = this;
-        try {
-            await client.loginWithPopup({authorizationParams: {scope: this.loginScope}});
-        } catch (e) {
-            const msg = e.message?.toLowerCase();
-            e.popup?.close();
-            if (msg === 'timeout') {
-                throw XH.exception({
-                    name: 'Auth0 Login Error',
-                    message:
-                        'Login popup window timed out. Please reload this tab in your browser to try again.',
-                    cause: e
-                });
-            }
-
-            if (msg === 'popup closed') {
-                throw XH.exception({
-                    name: 'Auth0 Login Error',
-                    message:
-                        'Login popup window closed. Please reload this tab in your browser to try again.',
-                    cause: e
-                });
-            }
-
-            if (msg.includes('unable to open a popup')) {
-                throw XH.exception({
-                    name: 'Auth0 Login Error',
-                    message: this.popupBlockerErrorMessage,
-                    cause: e
-                });
-            }
-
-            throw e;
-        }
     }
 
     private get loginScope(): string {

@@ -47,11 +47,14 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     private client: IPublicClientApplication;
     private account: AccountInfo; // Authenticated account, as most recent auth call with Azure.
 
+    //-------------------------------------------
+    // Implementations of core lifecycle methods
+    //-------------------------------------------
     override async doInitAsync(): Promise<void> {
         const client = (this.client = await this.createClientAsync());
 
+        // Try to optimistically load tokens silently
         this.account = client.getAllAccounts()[0];
-
         if (this.account) {
             try {
                 return await this.loadTokensAsync();
@@ -63,73 +66,35 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             }
         }
 
-        this.usesRedirect
-            ? await this.completeViaRedirectAsync()
-            : await this.completeViaPopupAsync();
+        // ...otherwise login and *then* load tokens
+        await this.loginAsync();
         this.logDebug(`(Re)authenticated OK via Azure`, this.account.username, this.account);
-
-        // Second-time (after login) the charm!
         await this.loadTokensAsync();
     }
 
-    override async getIdTokenAsync(useCache: boolean = true): Promise<TokenInfo> {
-        const ret = await this.client.acquireTokenSilent({
-            scopes: this.idScopes,
-            account: this.account,
-            forceRefresh: !useCache
-        });
-        this.account = ret.account;
-        return new TokenInfo(ret.idToken);
-    }
-
-    override async getAccessTokenAsync(
-        spec: MsalTokenSpec,
-        useCache: boolean = true
-    ): Promise<TokenInfo> {
-        const ret = await this.client.acquireTokenSilent({
-            scopes: spec.scopes,
-            account: this.account,
-            forceRefresh: !useCache
-        });
-        this.account = ret.account;
-        return new TokenInfo(ret.accessToken);
-    }
-
-    override async doLogoutAsync(): Promise<void> {
-        const {postLogoutRedirectUrl, client, account, usesRedirect} = this;
-        await client.clearCache({account});
-        usesRedirect
-            ? await client.logoutRedirect({account, postLogoutRedirectUri: postLogoutRedirectUrl})
-            : await client.logoutPopup({account});
-    }
-
-    //------------------------
-    // Implementation
-    //------------------------
-    private async createClientAsync(): Promise<IPublicClientApplication> {
-        const config = this.config,
-            {clientId, authority, msalLogLevel} = config;
-
-        throwIf(!authority, 'Missing MSAL authority. Please review your configuration.');
-
-        const ret = await msal.PublicClientApplication.createPublicClientApplication({
-            auth: {
-                clientId,
-                authority,
-                redirectUri: this.redirectUrl,
-                postLogoutRedirectUri: this.postLogoutRedirectUrl
-            },
-            system: {
-                loggerOptions: {
-                    loggerCallback: this.logFromMsal,
-                    logLevel: msalLogLevel ?? 1
-                }
+    override async doLoginPopupAsync(): Promise<void> {
+        const {client, account} = this,
+            opts: PopupRequest = {
+                scopes: this.loginScopes,
+                extraScopesToConsent: this.loginExtraScopes
+            };
+        if (account) opts.account = account;
+        try {
+            const ret = await client.acquireTokenPopup(opts);
+            this.account = ret.account;
+        } catch (e) {
+            if (e.message?.toLowerCase().includes('popup window')) {
+                throw XH.exception({
+                    name: 'Azure Login Error',
+                    message: this.popupBlockerErrorMessage,
+                    cause: e
+                });
             }
-        });
-        return ret;
+            throw e;
+        }
     }
 
-    private async completeViaRedirectAsync(): Promise<void> {
+    override async doLoginRedirectAsync(): Promise<void> {
         const {client, account} = this,
             redirectResp = await client.handleRedirectPromise();
 
@@ -152,26 +117,63 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         }
     }
 
-    private async completeViaPopupAsync(): Promise<void> {
-        const {client, account} = this,
-            opts: PopupRequest = {
-                scopes: this.loginScopes,
-                extraScopesToConsent: this.loginExtraScopes
-            };
-        if (account) opts.account = account;
-        try {
-            const ret = await client.acquireTokenPopup(opts);
-            this.account = ret.account;
-        } catch (e) {
-            if (e.message?.toLowerCase().includes('popup window')) {
-                throw XH.exception({
-                    name: 'Azure Login Error',
-                    message: this.popupBlockerErrorMessage,
-                    cause: e
-                });
+    override async getIdTokenAsync(useCache: boolean = true): Promise<TokenInfo> {
+        const ret = await this.client.acquireTokenSilent({
+            scopes: this.idScopes,
+            account: this.account,
+            forceRefresh: !useCache,
+            prompt: 'none'
+        });
+        this.account = ret.account;
+        return new TokenInfo(ret.idToken);
+    }
+
+    override async getAccessTokenAsync(
+        spec: MsalTokenSpec,
+        useCache: boolean = true
+    ): Promise<TokenInfo> {
+        const ret = await this.client.acquireTokenSilent({
+            scopes: spec.scopes,
+            account: this.account,
+            forceRefresh: !useCache,
+            prompt: 'none'
+        });
+        this.account = ret.account;
+        return new TokenInfo(ret.accessToken);
+    }
+
+    override async doLogoutAsync(): Promise<void> {
+        const {postLogoutRedirectUrl, client, account, usesRedirect} = this;
+        await client.clearCache({account});
+        usesRedirect
+            ? await client.logoutRedirect({account, postLogoutRedirectUri: postLogoutRedirectUrl})
+            : await client.logoutPopup({account});
+    }
+
+    //------------------------
+    // Private implementation
+    //------------------------
+    private async createClientAsync(): Promise<IPublicClientApplication> {
+        const config = this.config,
+            {clientId, authority, msalLogLevel} = config;
+
+        throwIf(!authority, 'Missing MSAL authority. Please review your configuration.');
+
+        const ret = await msal.PublicClientApplication.createPublicClientApplication({
+            auth: {
+                clientId,
+                authority,
+                redirectUri: this.redirectUrl,
+                postLogoutRedirectUri: this.postLogoutRedirectUrl
+            },
+            system: {
+                loggerOptions: {
+                    loggerCallback: this.logFromMsal,
+                    logLevel: msalLogLevel ?? 1
+                }
             }
-            throw e;
-        }
+        });
+        return ret;
     }
 
     private logFromMsal(level: LogLevel, message: string) {
