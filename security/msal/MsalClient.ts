@@ -235,7 +235,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     // for more details.
     private get reduceInterruptions(): boolean {
         // see https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/0db42395be44d5534861880d2c113dd639caf4c7/lib/msal-common/src/client/RefreshTokenClient.ts#L54
-        const MSAL_DEFAULT = 5 * MINUTES;
+        const MSAL_DEFAULT = (5 * MINUTES) / 1000;
         return this.config.refreshTokenExpirationOffsetSeconds > MSAL_DEFAULT;
     }
 }
