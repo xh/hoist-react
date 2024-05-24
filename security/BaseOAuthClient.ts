@@ -146,7 +146,7 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     /**
      * Request an interactive login with the underlying OAuth provider.
      */
-    protected async loginAsync(method: LoginMethod = this.loginMethod): Promise<void> {
+    async loginAsync(method: LoginMethod = this.loginMethod): Promise<void> {
         return method == 'REDIRECT' ? this.doLoginRedirectAsync() : this.doLoginPopupAsync();
     }
 

@@ -46,7 +46,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
     //-------------------------------------------
     // Implementations of core lifecycle methods
     //-------------------------------------------
-    override async doInitAsync(): Promise<TokenMap> {
+    protected override async doInitAsync(): Promise<TokenMap> {
         const client = (this.client = this.createClient());
 
         // Try to optimistically load tokens silently
@@ -65,7 +65,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         return this.fetchAllTokensAsync();
     }
 
-    override async doLoginRedirectAsync(): Promise<void> {
+    protected override async doLoginRedirectAsync(): Promise<void> {
         const {client} = this;
 
         // Determine if we are on back end of redirect (recipe from Auth0 docs)
@@ -89,7 +89,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         }
     }
 
-    override async doLoginPopupAsync(): Promise<void> {
+    protected override async doLoginPopupAsync(): Promise<void> {
         const {client} = this;
         try {
             await client.loginWithPopup({authorizationParams: {scope: this.loginScope}});
@@ -126,7 +126,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         }
     }
 
-    override async fetchIdTokenAsync(useCache: boolean = true): Promise<Token> {
+    protected override async fetchIdTokenAsync(useCache: boolean = true): Promise<Token> {
         const response = await this.client.getTokenSilently({
             authorizationParams: {scope: this.idScopes.join(' ')},
             cacheMode: useCache ? 'on' : 'off',
@@ -135,7 +135,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         return new Token(response.id_token);
     }
 
-    override async fetchAccessTokenAsync(
+    protected override async fetchAccessTokenAsync(
         spec: AuthZeroTokenSpec,
         useCache: boolean = true
     ): Promise<Token> {
@@ -146,7 +146,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         return new Token(value);
     }
 
-    override async doLogoutAsync(): Promise<void> {
+    protected override async doLogoutAsync(): Promise<void> {
         const {client} = this;
         if (!(await client.isAuthenticated())) return;
         await client.logout({

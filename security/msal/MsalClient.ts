@@ -50,7 +50,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     //-------------------------------------------
     // Implementations of core lifecycle methods
     //-------------------------------------------
-    override async doInitAsync(): Promise<TokenMap> {
+    protected override async doInitAsync(): Promise<TokenMap> {
         const client = (this.client = await this.createClientAsync());
 
         // Try to optimistically load tokens silently
@@ -72,7 +72,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         return this.fetchAllTokensAsync();
     }
 
-    override async doLoginPopupAsync(): Promise<void> {
+    protected override async doLoginPopupAsync(): Promise<void> {
         const {client, account} = this,
             opts: PopupRequest = {
                 scopes: this.loginScopes,
@@ -94,7 +94,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         }
     }
 
-    override async doLoginRedirectAsync(): Promise<void> {
+    protected override async doLoginRedirectAsync(): Promise<void> {
         const {client, account} = this,
             redirectResp = await client.handleRedirectPromise();
 
@@ -117,7 +117,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         }
     }
 
-    override async fetchIdTokenAsync(useCache: boolean = true): Promise<Token> {
+    protected override async fetchIdTokenAsync(useCache: boolean = true): Promise<Token> {
         const ret = await this.client.acquireTokenSilent({
             scopes: this.idScopes,
             account: this.account,
@@ -128,7 +128,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         return new Token(ret.idToken);
     }
 
-    override async fetchAccessTokenAsync(
+    protected override async fetchAccessTokenAsync(
         spec: MsalTokenSpec,
         useCache: boolean = true
     ): Promise<Token> {
@@ -142,7 +142,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         return new Token(ret.accessToken);
     }
 
-    override async doLogoutAsync(): Promise<void> {
+    protected override async doLogoutAsync(): Promise<void> {
         const {postLogoutRedirectUrl, client, account, loginMethod} = this;
         await client.clearCache({account});
         loginMethod == 'REDIRECT'
