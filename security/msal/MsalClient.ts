@@ -15,7 +15,7 @@ import {
 import {LogLevel} from '@azure/msal-common';
 import {XH} from '@xh/hoist/core';
 import {never} from '@xh/hoist/promise';
-import {TokenInfo} from '@xh/hoist/security/TokenInfo';
+import {Token, TokenMap} from '@xh/hoist/security/Token';
 import {logDebug, logError, logInfo, logWarn, throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
@@ -50,14 +50,14 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     //-------------------------------------------
     // Implementations of core lifecycle methods
     //-------------------------------------------
-    override async doInitAsync(): Promise<void> {
+    override async doInitAsync(): Promise<TokenMap> {
         const client = (this.client = await this.createClientAsync());
 
         // Try to optimistically load tokens silently
         this.account = client.getAllAccounts()[0];
         if (this.account) {
             try {
-                return await this.loadTokensAsync();
+                return await this.fetchAllTokensAsync();
             } catch (e) {
                 if (!(e instanceof InteractionRequiredAuthError)) {
                     throw e;
@@ -69,7 +69,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         // ...otherwise login and *then* load tokens
         await this.loginAsync();
         this.logDebug(`(Re)authenticated OK via Azure`, this.account.username, this.account);
-        await this.loadTokensAsync();
+        return this.fetchAllTokensAsync();
     }
 
     override async doLoginPopupAsync(): Promise<void> {
@@ -117,7 +117,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         }
     }
 
-    override async getIdTokenAsync(useCache: boolean = true): Promise<TokenInfo> {
+    override async fetchIdTokenAsync(useCache: boolean = true): Promise<Token> {
         const ret = await this.client.acquireTokenSilent({
             scopes: this.idScopes,
             account: this.account,
@@ -125,13 +125,13 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             prompt: 'none'
         });
         this.account = ret.account;
-        return new TokenInfo(ret.idToken);
+        return new Token(ret.idToken);
     }
 
-    override async getAccessTokenAsync(
+    override async fetchAccessTokenAsync(
         spec: MsalTokenSpec,
         useCache: boolean = true
-    ): Promise<TokenInfo> {
+    ): Promise<Token> {
         const ret = await this.client.acquireTokenSilent({
             scopes: spec.scopes,
             account: this.account,
@@ -139,13 +139,13 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             prompt: 'none'
         });
         this.account = ret.account;
-        return new TokenInfo(ret.accessToken);
+        return new Token(ret.accessToken);
     }
 
     override async doLogoutAsync(): Promise<void> {
-        const {postLogoutRedirectUrl, client, account, usesRedirect} = this;
+        const {postLogoutRedirectUrl, client, account, loginMethod} = this;
         await client.clearCache({account});
-        usesRedirect
+        loginMethod == 'REDIRECT'
             ? await client.logoutRedirect({account, postLogoutRedirectUri: postLogoutRedirectUrl})
             : await client.logoutPopup({account});
     }
