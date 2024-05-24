@@ -5,19 +5,22 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {PlainObject} from '@xh/hoist/core';
+import {fmtCompactDate} from '@xh/hoist/format';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {jwtDecode} from 'jwt-decode';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {isNil} from 'lodash';
 
-export class TokenInfo {
-    readonly token: string;
+export type TokenMap = Record<string, Token>;
+
+export class Token {
+    readonly value: string;
     readonly decoded: PlainObject;
     readonly expiry: number;
 
-    constructor(token: string) {
-        this.token = token;
-        this.decoded = jwtDecode(token);
+    constructor(value: string) {
+        this.value = value;
+        this.decoded = jwtDecode(value);
         this.expiry = this.decoded.exp * SECONDS;
     }
 
@@ -26,7 +29,8 @@ export class TokenInfo {
     }
 
     get formattedExpiry() {
-        return getRelativeTimestamp(this.expiry, {allowFuture: true, prefix: 'expires'});
+        const rel = getRelativeTimestamp(this.expiry, {allowFuture: true});
+        return `expires ${fmtCompactDate(this.expiry)} (${rel})`;
     }
 
     get forLog(): PlainObject {
@@ -38,7 +42,7 @@ export class TokenInfo {
         return ret;
     }
 
-    equals(other: TokenInfo) {
-        return this.token == other?.token;
+    equals(other: Token) {
+        return this.value == other?.value;
     }
 }

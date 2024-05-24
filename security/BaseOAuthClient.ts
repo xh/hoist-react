@@ -5,11 +5,11 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistBase, managed, XH} from '@xh/hoist/core';
-import {TokenInfo} from '@xh/hoist/security/TokenInfo';
+import {Token, TokenMap} from '@xh/hoist/security/Token';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
-import {find, forEach, keys, some, union} from 'lodash';
+import {find, forEach, isEmpty, keys, pickBy, union} from 'lodash';
 import {v4 as uuid} from 'uuid';
 import {action, makeObservable} from '@xh/hoist/mobx';
 
@@ -132,11 +132,15 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
      * Main entry point for this object.
      */
     async initAsync(): Promise<void> {
-        await this.doInitAsync();
-        this.timer = Timer.create({
-            runFn: async () => this.onTimerAsync(),
-            interval: this.TIMER_INTERVAL
-        });
+        const tokens = await this.doInitAsync();
+        this.logDebug('Successfully initialized with following tokens:');
+        this.logTokensDebug(tokens);
+        if (this.config.autoRefreshSecs > 0) {
+            this.timer = Timer.create({
+                runFn: async () => this.onTimerAsync(),
+                interval: this.TIMER_INTERVAL
+            });
+        }
     }
 
     /**
@@ -156,51 +160,36 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     /**
      * Get an ID token.
      */
-    async getIdTokenAsync(): Promise<TokenInfo> {
+    async getIdTokenAsync(): Promise<Token> {
         return this.fetchIdTokenSafeAsync(true);
     }
 
     /**
-     * Get a configured Access token.
+     * Get a Access token.
      */
-    async getAccessTokenAsync(key: string): Promise<TokenInfo> {
+    async getAccessTokenAsync(key: string): Promise<Token> {
         return this.fetchAccessTokenAsync(this.accessSpecs[key], true);
     }
 
     /**
      * Get all available tokens.
-     *
-     * @param useCache - true (default) to use local cache if available, or false to force a
-     *      network request to fetch fresher tokens.
      */
-    async getAllTokensAsync(useCache: boolean = true): Promise<Record<string, TokenInfo>> {
-        this.logDebug('Loading tokens from provider', `useCache=${useCache}`);
-
-        const ret: Record<string, TokenInfo> = {},
-            {accessSpecs} = this;
-        ret.idToken = await this.fetchIdTokenSafeAsync(useCache);
-        for (const key of keys(accessSpecs)) {
-            ret[key] = await this.fetchAccessTokenAsync(accessSpecs[key], useCache);
-        }
-        forEach(ret, (token, k) => {
-            this.logDebug(`Token Loaded '${k}'`, token.formattedExpiry, token.forLog);
-        });
-
-        return ret;
+    async getAllTokensAsync(): Promise<TokenMap> {
+        return this.fetchAllTokensAsync(true);
     }
 
     //------------------------------------
     // Template methods
     //-----------------------------------
-    protected abstract doInitAsync(): Promise<void>;
+    protected abstract doInitAsync(): Promise<TokenMap>;
 
     protected abstract doLoginPopupAsync(): Promise<void>;
 
     protected abstract doLoginRedirectAsync(): Promise<void>;
 
-    protected abstract fetchIdTokenAsync(useCache: boolean): Promise<TokenInfo>;
+    protected abstract fetchIdTokenAsync(useCache: boolean): Promise<Token>;
 
-    protected abstract fetchAccessTokenAsync(spec: S, useCache: boolean): Promise<TokenInfo>;
+    protected abstract fetchAccessTokenAsync(spec: S, useCache: boolean): Promise<Token>;
 
     protected abstract doLogoutAsync(): Promise<void>;
 
@@ -273,16 +262,27 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
         window.history.replaceState(null, '', pathname + search);
     }
 
+    protected async fetchAllTokensAsync(useCache = true): Promise<TokenMap> {
+        const ret: TokenMap = {},
+            {accessSpecs} = this;
+        ret.id = await this.fetchIdTokenSafeAsync(useCache);
+        for (const key of keys(accessSpecs)) {
+            ret[key] = await this.fetchAccessTokenAsync(accessSpecs[key], useCache);
+        }
+        return ret;
+    }
+
     //-------------------
     // Implementation
     //-------------------
-    private async fetchIdTokenSafeAsync(useCache: boolean): Promise<TokenInfo> {
+    private async fetchIdTokenSafeAsync(useCache: boolean): Promise<Token> {
         // Client libraries can apparently return expired idIokens when using local cache.
         // See: https://github.com/auth0/auth0-spa-js/issues/1089 and
         // https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/4206
         // Protect ourselves from this, without losing benefits of local cache.
         let ret = await this.fetchIdTokenAsync(useCache);
         if (useCache && ret.expiresWithin(1 * MINUTES)) {
+            this.logDebug('Stale Id Token loaded from the cache, reloading without cache.');
             ret = await this.fetchIdTokenAsync(false);
         }
 
@@ -297,17 +297,31 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
             refreshSecs = config.autoRefreshSecs * SECONDS,
             skipCacheSecs = config.autoRefreshSkipCacheSecs * SECONDS;
 
-        if (refreshSecs > 0 && olderThan(lastRefreshAttempt, refreshSecs)) {
+        if (olderThan(lastRefreshAttempt, refreshSecs)) {
             this.lastRefreshAttempt = Date.now();
             try {
-                const tokens = await this.getAllTokensAsync();
-                if (skipCacheSecs > 0 && some(tokens, v => v.expiresWithin(skipCacheSecs))) {
-                    this.logDebug('Critically aging tokens found, reloading tokens without cache.');
-                    await this.getAllTokensAsync(false);
+                this.logDebug('Refreshing all tokens:');
+                let tokens = await this.fetchAllTokensAsync(),
+                    aging = pickBy(
+                        tokens,
+                        v => skipCacheSecs > 0 && v.expiresWithin(skipCacheSecs)
+                    );
+                if (!isEmpty(aging)) {
+                    this.logDebug(
+                        `Tokens [${keys(aging).join(', ')}] have < ${skipCacheSecs}s remaining, reloading without cache.`
+                    );
+                    tokens = await this.fetchAllTokensAsync(false);
                 }
+                this.logTokensDebug(tokens);
             } catch (e) {
                 XH.handleException(e, {showAlert: false, logOnServer: false});
             }
         }
+    }
+
+    private logTokensDebug(tokens: TokenMap) {
+        forEach(tokens, (token, key) => {
+            this.logDebug(`Token '${key}'`, token.formattedExpiry);
+        });
     }
 }

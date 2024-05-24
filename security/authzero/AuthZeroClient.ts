@@ -7,7 +7,7 @@
 import {Auth0Client} from '@auth0/auth0-spa-js';
 import {XH} from '@xh/hoist/core';
 import {never, wait} from '@xh/hoist/promise';
-import {TokenInfo} from '@xh/hoist/security/TokenInfo';
+import {Token, TokenMap} from '@xh/hoist/security/Token';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union} from 'lodash';
@@ -46,14 +46,13 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
     //-------------------------------------------
     // Implementations of core lifecycle methods
     //-------------------------------------------
-    override async doInitAsync(): Promise<void> {
+    override async doInitAsync(): Promise<TokenMap> {
         const client = (this.client = this.createClient());
 
         // Try to optimistically load tokens silently
         if (await client.isAuthenticated()) {
             try {
-                await this.getAllTokensAsync();
-                return;
+                return await this.fetchAllTokensAsync();
             } catch (e) {
                 this.logDebug('Failed to load tokens on init, falling back on login', e);
             }
@@ -63,7 +62,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         await this.loginAsync();
         const user = await client.getUser();
         this.logDebug(`(Re)authenticated OK via Auth0`, user.email, user);
-        await this.getAllTokensAsync();
+        return this.fetchAllTokensAsync();
     }
 
     override async doLoginRedirectAsync(): Promise<void> {
@@ -127,24 +126,24 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         }
     }
 
-    override async fetchIdTokenAsync(useCache: boolean = true): Promise<TokenInfo> {
+    override async fetchIdTokenAsync(useCache: boolean = true): Promise<Token> {
         const response = await this.client.getTokenSilently({
             authorizationParams: {scope: this.idScopes.join(' ')},
             cacheMode: useCache ? 'on' : 'off',
             detailedResponse: true
         });
-        return new TokenInfo(response.id_token);
+        return new Token(response.id_token);
     }
 
     override async fetchAccessTokenAsync(
         spec: AuthZeroTokenSpec,
         useCache: boolean = true
-    ): Promise<TokenInfo> {
-        const token = await this.client.getTokenSilently({
+    ): Promise<Token> {
+        const value = await this.client.getTokenSilently({
             authorizationParams: {scope: spec.scopes.join(' '), audience: spec.audience},
             cacheMode: useCache ? 'on' : 'off'
         });
-        return new TokenInfo(token);
+        return new Token(value);
     }
 
     override async doLogoutAsync(): Promise<void> {
