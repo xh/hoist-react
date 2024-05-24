@@ -16,9 +16,10 @@ import {LogLevel} from '@azure/msal-common';
 import {XH} from '@xh/hoist/core';
 import {never} from '@xh/hoist/promise';
 import {Token, TokenMap} from '@xh/hoist/security/Token';
+import {MINUTES} from '@xh/hoist/utils/datetime';
 import {logDebug, logError, logInfo, logWarn, throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union, uniq} from 'lodash';
-import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
+import {FetchTokenConfig, BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 
 export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
     /** Tenant ID (GUID) of your organization */
@@ -33,6 +34,8 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
 
     /** The log level of MSAL. Default is LogLevel.Info (2). */
     msalLogLevel?: LogLevel;
+
+    refreshTokenExpirationOffsetSeconds?: number;
 }
 
 export interface MsalTokenSpec {
@@ -47,6 +50,9 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     private client: IPublicClientApplication;
     private account: AccountInfo; // Authenticated account, as most recent auth call with Azure.
 
+    // see https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/0db42395be44d5534861880d2c113dd639caf4c7/lib/msal-common/src/client/RefreshTokenClient.ts#L54
+    private MSAL_DEFAULT_REFRESH_TOKEN_EXPIRATION_OFFSET_SECONDS = 5 * MINUTES;
+
     //-------------------------------------------
     // Implementations of core lifecycle methods
     //-------------------------------------------
@@ -57,7 +63,13 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         this.account = client.getAllAccounts()[0];
         if (this.account) {
             try {
-                return await this.fetchAllTokensAsync();
+                const conf: FetchTokenConfig = {
+                    useCache:
+                        this.config.refreshTokenExpirationOffsetSeconds <=
+                        this.MSAL_DEFAULT_REFRESH_TOKEN_EXPIRATION_OFFSET_SECONDS,
+                    forInit: true
+                };
+                return await this.fetchAllTokensAsync(conf);
             } catch (e) {
                 if (!(e instanceof InteractionRequiredAuthError)) {
                     throw e;
@@ -117,27 +129,51 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         }
     }
 
-    protected override async fetchIdTokenAsync(useCache: boolean = true): Promise<Token> {
-        const ret = await this.client.acquireTokenSilent({
+    protected override async fetchIdTokenAsync(
+        conf: FetchTokenConfig = {useCache: true}
+    ): Promise<Token> {
+        const opt: msal.SilentRequest = {
             scopes: this.idScopes,
             account: this.account,
-            forceRefresh: !useCache,
+            forceRefresh: !conf.useCache,
             prompt: 'none'
-        });
+        };
+
+        if (
+            conf.forInit &&
+            this.config.refreshTokenExpirationOffsetSeconds >
+                this.MSAL_DEFAULT_REFRESH_TOKEN_EXPIRATION_OFFSET_SECONDS
+        ) {
+            opt.refreshTokenExpirationOffsetSeconds =
+                this.config.refreshTokenExpirationOffsetSeconds;
+        }
+
+        const ret = await this.client.acquireTokenSilent(opt);
         this.account = ret.account;
         return new Token(ret.idToken);
     }
 
     protected override async fetchAccessTokenAsync(
         spec: MsalTokenSpec,
-        useCache: boolean = true
+        conf: FetchTokenConfig = {useCache: true}
     ): Promise<Token> {
-        const ret = await this.client.acquireTokenSilent({
+        const opt: msal.SilentRequest = {
             scopes: spec.scopes,
             account: this.account,
-            forceRefresh: !useCache,
+            forceRefresh: !conf.useCache,
             prompt: 'none'
-        });
+        };
+
+        if (
+            conf.forInit &&
+            this.config.refreshTokenExpirationOffsetSeconds >
+                this.MSAL_DEFAULT_REFRESH_TOKEN_EXPIRATION_OFFSET_SECONDS
+        ) {
+            opt.refreshTokenExpirationOffsetSeconds =
+                this.config.refreshTokenExpirationOffsetSeconds;
+        }
+
+        const ret = await this.client.acquireTokenSilent(opt);
         this.account = ret.account;
         return new Token(ret.accessToken);
     }

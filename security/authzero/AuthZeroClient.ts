@@ -11,7 +11,7 @@ import {Token, TokenMap} from '@xh/hoist/security/Token';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union} from 'lodash';
-import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
+import {BaseOAuthClient, BaseOAuthClientConfig, FetchTokenConfig} from '../BaseOAuthClient';
 
 export interface AuthZeroClientConfig extends BaseOAuthClientConfig<AuthZeroTokenSpec> {
     /** Domain of your app registered with Auth0 */
@@ -126,10 +126,12 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         }
     }
 
-    protected override async fetchIdTokenAsync(useCache: boolean = true): Promise<Token> {
+    protected override async fetchIdTokenAsync(
+        conf: FetchTokenConfig = {useCache: true}
+    ): Promise<Token> {
         const response = await this.client.getTokenSilently({
             authorizationParams: {scope: this.idScopes.join(' ')},
-            cacheMode: useCache ? 'on' : 'off',
+            cacheMode: conf.useCache ? 'on' : 'off',
             detailedResponse: true
         });
         return new Token(response.id_token);
@@ -137,11 +139,11 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
 
     protected override async fetchAccessTokenAsync(
         spec: AuthZeroTokenSpec,
-        useCache: boolean = true
+        conf: FetchTokenConfig = {useCache: true}
     ): Promise<Token> {
         const value = await this.client.getTokenSilently({
             authorizationParams: {scope: spec.scopes.join(' '), audience: spec.audience},
-            cacheMode: useCache ? 'on' : 'off'
+            cacheMode: conf.useCache ? 'on' : 'off'
         });
         return new Token(value);
     }

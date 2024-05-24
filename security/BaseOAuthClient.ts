@@ -81,6 +81,11 @@ export interface BaseOAuthClientConfig<S> {
     accessTokens?: Record<string, S>;
 }
 
+export interface FetchTokenConfig {
+    useCache?: boolean;
+    forInit?: boolean;
+}
+
 /**
  * Implementations of this class coordinate OAuth-based login and token provision. Apps can use a
  * suitable concrete implementation to power a client-side OauthService. See `MsalClient` and
@@ -161,21 +166,21 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
      * Get an ID token.
      */
     async getIdTokenAsync(): Promise<Token> {
-        return this.fetchIdTokenSafeAsync(true);
+        return this.fetchIdTokenSafeAsync({useCache: true});
     }
 
     /**
      * Get a Access token.
      */
     async getAccessTokenAsync(key: string): Promise<Token> {
-        return this.fetchAccessTokenAsync(this.accessSpecs[key], true);
+        return this.fetchAccessTokenAsync(this.accessSpecs[key], {useCache: true});
     }
 
     /**
      * Get all available tokens.
      */
     async getAllTokensAsync(): Promise<TokenMap> {
-        return this.fetchAllTokensAsync(true);
+        return this.fetchAllTokensAsync({useCache: true});
     }
 
     //------------------------------------
@@ -187,9 +192,9 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
 
     protected abstract doLoginRedirectAsync(): Promise<void>;
 
-    protected abstract fetchIdTokenAsync(useCache: boolean): Promise<Token>;
+    protected abstract fetchIdTokenAsync(conf: FetchTokenConfig): Promise<Token>;
 
-    protected abstract fetchAccessTokenAsync(spec: S, useCache: boolean): Promise<Token>;
+    protected abstract fetchAccessTokenAsync(spec: S, conf: FetchTokenConfig): Promise<Token>;
 
     protected abstract doLogoutAsync(): Promise<void>;
 
@@ -262,12 +267,14 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
         window.history.replaceState(null, '', pathname + search);
     }
 
-    protected async fetchAllTokensAsync(useCache = true): Promise<TokenMap> {
+    protected async fetchAllTokensAsync(
+        conf: FetchTokenConfig = {useCache: true}
+    ): Promise<TokenMap> {
         const ret: TokenMap = {},
             {accessSpecs} = this;
-        ret.id = await this.fetchIdTokenSafeAsync(useCache);
+        ret.id = await this.fetchIdTokenSafeAsync(conf);
         for (const key of keys(accessSpecs)) {
-            ret[key] = await this.fetchAccessTokenAsync(accessSpecs[key], useCache);
+            ret[key] = await this.fetchAccessTokenAsync(accessSpecs[key], conf);
         }
         return ret;
     }
@@ -275,15 +282,15 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     //-------------------
     // Implementation
     //-------------------
-    private async fetchIdTokenSafeAsync(useCache: boolean): Promise<Token> {
+    private async fetchIdTokenSafeAsync(conf: FetchTokenConfig): Promise<Token> {
         // Client libraries can apparently return expired idIokens when using local cache.
         // See: https://github.com/auth0/auth0-spa-js/issues/1089 and
         // https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/4206
         // Protect ourselves from this, without losing benefits of local cache.
-        let ret = await this.fetchIdTokenAsync(useCache);
-        if (useCache && ret.expiresWithin(1 * MINUTES)) {
+        let ret = await this.fetchIdTokenAsync(conf);
+        if (conf.useCache && ret.expiresWithin(1 * MINUTES)) {
             this.logDebug('Stale Id Token loaded from the cache, reloading without cache.');
-            ret = await this.fetchIdTokenAsync(false);
+            ret = await this.fetchIdTokenAsync({useCache: false});
         }
 
         // Paranoia -- we don't expect this after workaround above to skip cache
@@ -310,7 +317,7 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
                     this.logDebug(
                         `Tokens [${keys(aging).join(', ')}] have < ${skipCacheSecs}s remaining, reloading without cache.`
                     );
-                    tokens = await this.fetchAllTokensAsync(false);
+                    tokens = await this.fetchAllTokensAsync({useCache: false});
                 }
                 this.logTokensDebug(tokens);
             } catch (e) {
