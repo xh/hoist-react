@@ -82,7 +82,7 @@ export interface BaseOAuthClientConfig<S> {
 }
 
 export interface FetchTokenConfig {
-    useCache?: boolean;
+    useCache: boolean;
     forInit?: boolean;
 }
 

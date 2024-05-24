@@ -50,9 +50,6 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     private client: IPublicClientApplication;
     private account: AccountInfo; // Authenticated account, as most recent auth call with Azure.
 
-    // see https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/0db42395be44d5534861880d2c113dd639caf4c7/lib/msal-common/src/client/RefreshTokenClient.ts#L54
-    private MSAL_DEFAULT_REFRESH_TOKEN_EXPIRATION_OFFSET_SECONDS = 5 * MINUTES;
-
     //-------------------------------------------
     // Implementations of core lifecycle methods
     //-------------------------------------------
@@ -64,9 +61,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         if (this.account) {
             try {
                 const conf: FetchTokenConfig = {
-                    useCache:
-                        this.config.refreshTokenExpirationOffsetSeconds <=
-                        this.MSAL_DEFAULT_REFRESH_TOKEN_EXPIRATION_OFFSET_SECONDS,
+                    useCache: !this.reduceInterruptions,
                     forInit: true
                 };
                 return await this.fetchAllTokensAsync(conf);
@@ -139,11 +134,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             prompt: 'none'
         };
 
-        if (
-            conf.forInit &&
-            this.config.refreshTokenExpirationOffsetSeconds >
-                this.MSAL_DEFAULT_REFRESH_TOKEN_EXPIRATION_OFFSET_SECONDS
-        ) {
+        if (conf.forInit && this.reduceInterruptions) {
             opt.refreshTokenExpirationOffsetSeconds =
                 this.config.refreshTokenExpirationOffsetSeconds;
         }
@@ -164,11 +155,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             prompt: 'none'
         };
 
-        if (
-            conf.forInit &&
-            this.config.refreshTokenExpirationOffsetSeconds >
-                this.MSAL_DEFAULT_REFRESH_TOKEN_EXPIRATION_OFFSET_SECONDS
-        ) {
+        if (conf.forInit && this.reduceInterruptions) {
             opt.refreshTokenExpirationOffsetSeconds =
                 this.config.refreshTokenExpirationOffsetSeconds;
         }
@@ -239,5 +226,16 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         return uniq(
             flatMap(this.config.accessTokens, spec => spec.scopes.filter(s => s.startsWith('api:')))
         );
+    }
+
+    // Interrupting users with a login prompt after they have already loaded the app is a bad user experience.
+    // This offset value can be used to reduce the frequency of login prompts by
+    // pre-emptively getting a new refresh token before the current one expires.
+    // See https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/token-lifetimes.md
+    // for more details.
+    private get reduceInterruptions(): boolean {
+        // see https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/0db42395be44d5534861880d2c113dd639caf4c7/lib/msal-common/src/client/RefreshTokenClient.ts#L54
+        const MSAL_DEFAULT = 5 * MINUTES;
+        return this.config.refreshTokenExpirationOffsetSeconds > MSAL_DEFAULT;
     }
 }
