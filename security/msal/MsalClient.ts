@@ -203,6 +203,9 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                     loggerCallback: this.logFromMsal,
                     logLevel: msalLogLevel
                 }
+            },
+            cache: {
+                cacheLocation: 'localStorage' // allows sharing auth info across tabs.
             }
         });
         return ret;
