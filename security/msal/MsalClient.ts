@@ -7,10 +7,10 @@
 import * as msal from '@azure/msal-browser';
 import {
     AccountInfo,
-    InteractionRequiredAuthError,
     IPublicClientApplication,
     PopupRequest,
-    RedirectRequest
+    RedirectRequest,
+    SilentRequest
 } from '@azure/msal-browser';
 import {LogLevel} from '@azure/msal-common';
 import {XH} from '@xh/hoist/core';
@@ -31,6 +31,27 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
      */
     authority?: string;
 
+    /**
+     * If specified, the client will use this value when initializing the app to enforce a minimum
+     * amount of time during which no further auth flow with the provider should be necessary.
+     *
+     * Use this argument to front-load any necessary auth flow to the apps initialization stage
+     * thereby minimizing disruption to user activity during application use.
+     *
+     * This value may be set to anything up to 86400 (24 hours), the maximum lifetime
+     * of an Azure refresh token.  Set to -1 to disable (default).
+     *
+     * Note that setting to *any* non-disabled amount will require the app to do *some* communication
+     * with the login provider at *every* app load. This may just involve loading new tokens via
+     * fetch, however, setting to higher values will increase the frequency with which
+     * a new refresh token will also need to be requested via a hidden iframe/redirect/popup. This
+     * can be time-consuming and potentially disruptive and applications should therefore use with
+     * care and typically set to some value significantly less than the max.
+     *
+     * See https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/token-lifetimes.md
+     */
+    initRefreshTokenExpirationOffsetSecs?: number;
+
     /** The log level of MSAL. Default is LogLevel.Info (2). */
     msalLogLevel?: LogLevel;
 }
@@ -46,6 +67,7 @@ export interface MsalTokenSpec {
 export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec> {
     private client: IPublicClientApplication;
     private account: AccountInfo; // Authenticated account, as most recent auth call with Azure.
+    private initialTokenLoad: boolean;
 
     //-------------------------------------------
     // Implementations of core lifecycle methods
@@ -54,16 +76,16 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         const client = (this.client = await this.createClientAsync());
 
         // Try to optimistically load tokens silently
-        this.account = client.getAllAccounts()[0];
-        if (this.account) {
-            try {
+        try {
+            this.initialTokenLoad = true;
+            this.account = client.getAllAccounts()[0];
+            if (this.account) {
                 return await this.fetchAllTokensAsync();
-            } catch (e) {
-                if (!(e instanceof InteractionRequiredAuthError)) {
-                    throw e;
-                }
-                this.logDebug('Failed to load tokens on init, falling back on login', e);
             }
+        } catch (e) {
+            this.logDebug('Failed to load tokens on init, falling back on login', e);
+        } finally {
+            this.initialTokenLoad = false;
         }
 
         // ...otherwise login and *then* load tokens
@@ -122,7 +144,8 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             scopes: this.idScopes,
             account: this.account,
             forceRefresh: !useCache,
-            prompt: 'none'
+            prompt: 'none',
+            ...this.getRefreshOffsetArgs()
         });
         this.account = ret.account;
         return new Token(ret.idToken);
@@ -136,7 +159,8 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             scopes: spec.scopes,
             account: this.account,
             forceRefresh: !useCache,
-            prompt: 'none'
+            prompt: 'none',
+            ...this.getRefreshOffsetArgs()
         });
         this.account = ret.account;
         return new Token(ret.accessToken);
@@ -203,5 +227,12 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         return uniq(
             flatMap(this.config.accessTokens, spec => spec.scopes.filter(s => s.startsWith('api:')))
         );
+    }
+
+    private getRefreshOffsetArgs(): Partial<SilentRequest> {
+        const offset = this.config.initRefreshTokenExpirationOffsetSecs;
+        return offset > 0 && this.initialTokenLoad
+            ? {forceRefresh: true, refreshTokenExpirationOffsetSeconds: offset}
+            : {};
     }
 }
