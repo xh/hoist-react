@@ -117,7 +117,6 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
             loginMethodMobile: 'REDIRECT',
             redirectUrl: 'APP_BASE_URL',
             postLogoutRedirectUrl: 'APP_BASE_URL',
-            expiryWarning: false,
             autoRefreshSecs: -1,
             autoRefreshSkipCacheSecs: -1,
             ...config

@@ -8,11 +8,11 @@ import * as msal from '@azure/msal-browser';
 import {
     AccountInfo,
     IPublicClientApplication,
+    LogLevel,
     PopupRequest,
     RedirectRequest,
     SilentRequest
 } from '@azure/msal-browser';
-import {LogLevel} from '@azure/msal-common';
 import {XH} from '@xh/hoist/core';
 import {never} from '@xh/hoist/promise';
 import {Token, TokenMap} from '@xh/hoist/security/Token';
@@ -52,7 +52,7 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
      */
     initRefreshTokenExpirationOffsetSecs?: number;
 
-    /** The log level of MSAL. Default is LogLevel.Info (2). */
+    /** The log level of MSAL. Default is LogLevel.Warning. */
     msalLogLevel?: LogLevel;
 }
 
@@ -68,6 +68,14 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     private client: IPublicClientApplication;
     private account: AccountInfo; // Authenticated account, as most recent auth call with Azure.
     private initialTokenLoad: boolean;
+
+    constructor(config: MsalClientConfig) {
+        super({
+            initRefreshTokenExpirationOffsetSecs: -1,
+            msalLogLevel: LogLevel.Warning,
+            ...config
+        });
+    }
 
     //-------------------------------------------
     // Implementations of core lifecycle methods
@@ -193,7 +201,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             system: {
                 loggerOptions: {
                     loggerCallback: this.logFromMsal,
-                    logLevel: msalLogLevel ?? 1
+                    logLevel: msalLogLevel
                 }
             }
         });
