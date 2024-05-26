@@ -265,10 +265,12 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     protected async fetchAllTokensAsync(useCache = true): Promise<TokenMap> {
         const ret: TokenMap = {},
             {accessSpecs} = this;
-        ret.id = await this.fetchIdTokenSafeAsync(useCache);
         for (const key of keys(accessSpecs)) {
             ret[key] = await this.fetchAccessTokenAsync(accessSpecs[key], useCache);
         }
+        // Do this after getting any access tokens --which can also populate the idToken cache!
+        ret.id = await this.fetchIdTokenSafeAsync(useCache);
+
         return ret;
     }
 
