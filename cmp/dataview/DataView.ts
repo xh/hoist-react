@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {ForwardedRef} from 'react';
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
 import {
@@ -34,6 +35,8 @@ export interface DataViewProps extends HoistProps<DataViewModel>, LayoutProps, T
      * Note that changes to these options after the component's initial render will be ignored.
      */
     agOptions?: GridOptions;
+
+    ref?: ForwardedRef<HTMLDivElement>;
 }
 
 /**

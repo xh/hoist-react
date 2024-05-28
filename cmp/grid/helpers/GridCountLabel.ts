@@ -39,13 +39,16 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLa
     displayName: 'GridCountLabel',
     className: 'xh-grid-count-label',
 
-    render({
-        gridModel,
-        includeChildren = false,
-        showSelectionCount = 'auto',
-        unit = 'record',
-        ...props
-    }) {
+    render(
+        {
+            gridModel,
+            includeChildren = false,
+            showSelectionCount = 'auto',
+            unit = 'record',
+            ...props
+        },
+        ref
+    ) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
         if (!gridModel) {
@@ -77,7 +80,8 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLa
 
         return box({
             ...props,
-            item: `${recCountString()} ${selCountString()}`
+            item: `${recCountString()} ${selCountString()}`,
+            ref
         });
     }
 });

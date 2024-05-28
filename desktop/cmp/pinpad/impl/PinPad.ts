@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {ForwardedRef} from 'react';
 import composeRefs from '@seznam/compose-react-refs';
 import {div, frame, h1, hbox, p, span, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {PinPadModel} from '@xh/hoist/cmp/pinpad';
@@ -22,7 +23,7 @@ import './PinPad.scss';
  */
 export function pinPadImpl({model, testId}, ref) {
     return frame({
-        ref: composeRefs(model.ref, ref),
+        ref: composeRefs(model.ref as ForwardedRef<HTMLDivElement>, ref),
         item: vframe({
             className: 'xh-pinpad__frame',
             items: [header(), display(), errorDisplay(), keypad()],

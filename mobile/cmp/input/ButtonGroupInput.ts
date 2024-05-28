@@ -14,7 +14,10 @@ import {castArray, isEmpty, without} from 'lodash';
 import {Children, cloneElement, isValidElement, ReactNode} from 'react';
 import './ButtonGroupInput.scss';
 
-export interface ButtonGroupInputProps extends HoistProps, HoistInputProps, ButtonGroupProps {
+export interface ButtonGroupInputProps
+    extends HoistProps,
+        HoistInputProps,
+        Omit<ButtonGroupProps, 'ref'> {
     /**
      * True to allow buttons to be unselected (aka inactivated). Used when enableMulti is false.
      * Defaults to false.

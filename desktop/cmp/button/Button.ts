@@ -19,7 +19,7 @@ import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ReactElement, ReactNode} from 'react';
+import {ForwardedRef, ReactElement, ReactNode} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = null>
@@ -44,6 +44,8 @@ export interface ButtonProps<M extends HoistModel = null>
 
     /** Alias for title. */
     tooltip?: string;
+
+    ref?: ForwardedRef<HTMLButtonElement>;
 }
 
 /**

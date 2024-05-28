@@ -41,9 +41,6 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
      */
     className?: string;
 
-    /** React Ref for this component. */
-    ref?: ForwardedRef<any>;
-
     /** React children. */
     children?: ReactNode;
 }
@@ -69,7 +66,9 @@ export interface DefaultHoistProps<M extends HoistModel = HoistModel> extends Ho
 export interface BoxProps
     extends LayoutProps,
         TestSupportProps,
-        Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'contextMenu'> {}
+        Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'contextMenu'> {
+    ref?: ForwardedRef<HTMLDivElement>;
+}
 
 /**
  * Props for Components that accept standard HTML `style` attributes.

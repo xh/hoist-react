@@ -8,6 +8,7 @@ import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cm
 import {hoistCmp, HoistModel, Intent, XH} from '@xh/hoist/core';
 import {Button, buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
+import {ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, filter, isEmpty, without} from 'lodash';
@@ -130,8 +131,9 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props
             throw XH.exception('ButtonGroupInput child must be a Button.');
         }
 
-        const {value, intent: btnIntent} = button.props,
-            btnDisabled = disabled || button.props.disabled;
+        const props = button.props as ButtonProps,
+            {value, intent: btnIntent} = props,
+            btnDisabled = disabled || props.disabled;
 
         throwIf(
             (enableClear || enableMulti) && value == null,

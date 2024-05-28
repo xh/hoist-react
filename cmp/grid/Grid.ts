@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {ForwardedRef} from 'react';
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
@@ -68,6 +69,8 @@ export interface GridProps extends HoistProps<GridModel>, LayoutProps, TestSuppo
      * event after running its internal handler to associate the ag-Grid APIs with its model.
      */
     onGridReady?: (e: GridReadyEvent) => void;
+
+    ref?: ForwardedRef<HTMLDivElement>;
 }
 
 /**

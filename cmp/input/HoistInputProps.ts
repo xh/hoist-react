@@ -6,6 +6,7 @@
  */
 
 import {TestSupportProps} from '@xh/hoist/core';
+import {ForwardedRef} from 'react';
 
 export interface HoistInputProps extends TestSupportProps {
     /**
@@ -31,4 +32,6 @@ export interface HoistInputProps extends TestSupportProps {
 
     /** Value of the control, if provided directly. */
     value?: any;
+
+    ref?: ForwardedRef<any>;
 }

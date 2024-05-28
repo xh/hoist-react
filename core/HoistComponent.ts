@@ -48,18 +48,11 @@ import {
  * Type representing props passed to a HoistComponent's render function.
  *
  * This type removes from its base type several props that are pulled out by the HoistComponent itself and
- * not provided to the render function.
+ * not provided to the render function.  Ref is passed as a forwarded ref as the second argument
+ * to the render function.
  */
-export type RenderPropsOf<P extends HoistProps> = P & {
-    /** Pre-processed by HoistComponent internals into a mounted model.  Never passed to render. */
-    modelConfig: never;
 
-    /** Pre-processed by HoistComponent internals and attached to model.  Never passed to render. */
-    modelRef: never;
-
-    /** Pre-processed by HoistComponent internals. Passed as second argument. */
-    ref: never;
-};
+export type RenderPropsOf<P extends HoistProps> = Omit<P, 'modelConfig' | 'modelRef' | 'ref'>;
 
 /**
  * Configuration for creating a Component.  May be specified either as a render function,
