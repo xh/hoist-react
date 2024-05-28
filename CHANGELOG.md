@@ -7,6 +7,12 @@
   allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
   persist tab state across sessions.
 
+## 64.0.2 - 2024-05-23
+
+### ⚙️ Technical
+* Adjustments to API of (beta) `BaseOAuthClient`.
+* `FetchService.addDefaultHeaders()` now supports async functions.
+
 ## 64.0.1 - 2024-05-19
 
 ### ⚙️ Technical
