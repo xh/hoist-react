@@ -2,6 +2,9 @@
 
 ## 65.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+* Restore support for `ref` prop in Hoist components written in JSX.
+
 ## 64.0.2 - 2024-05-23
 
 ### ⚙️ Technical
