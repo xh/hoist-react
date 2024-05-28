@@ -6,7 +6,7 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {Property} from 'csstype';
-import {CSSProperties, HTMLAttributes, ReactNode, Ref} from 'react';
+import {CSSProperties, HTMLAttributes, ReactNode, Ref, ForwardedRef} from 'react';
 
 /**
  * Props interface for Hoist Components.
@@ -40,6 +40,9 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
      * any base class name provided by the component definition itself.
      */
     className?: string;
+
+    /** React Ref for this component. */
+    ref?: ForwardedRef<any>;
 
     /** React children. */
     children?: ReactNode;

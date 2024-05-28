@@ -47,7 +47,7 @@ import {
 /**
  * Type representing props passed to a HoistComponent's render function.
  *
- * This type removes from its base type several props that are used by HoistComponent itself and
+ * This type removes from its base type several props that are pulled out by the HoistComponent itself and
  * not provided to the render function.
  */
 export type RenderPropsOf<P extends HoistProps> = P & {
@@ -56,6 +56,9 @@ export type RenderPropsOf<P extends HoistProps> = P & {
 
     /** Pre-processed by HoistComponent internals and attached to model.  Never passed to render. */
     modelRef: never;
+
+    /** Pre-processed by HoistComponent internals. Passed as second argument. */
+    ref: never;
 };
 
 /**
