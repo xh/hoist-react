@@ -4,6 +4,7 @@
 
 ### 🐞 Bug Fixes
 * Restore support for `ref` prop in Hoist components written in JSX.
+* Made Hoist Components limit `ref` prop only to those setup to handle it.
 
 ## 64.0.2 - 2024-05-23
 
