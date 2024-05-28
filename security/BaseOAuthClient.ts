@@ -8,8 +8,8 @@ import {HoistBase, managed, XH} from '@xh/hoist/core';
 import {Token, TokenMap} from '@xh/hoist/security/Token';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, SECONDS} from '@xh/hoist/utils/datetime';
-import {throwIf} from '@xh/hoist/utils/js';
-import {find, forEach, isEmpty, keys, pickBy, union} from 'lodash';
+import {isJSON, throwIf} from '@xh/hoist/utils/js';
+import {find, forEach, isEmpty, isObject, keys, pickBy, union} from 'lodash';
 import {v4 as uuid} from 'uuid';
 import {action, makeObservable} from '@xh/hoist/mobx';
 
@@ -96,15 +96,16 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     /** Config loaded from UI server + init method. */
     protected config: C;
 
-    /** Scopes */
+    /** Id Scopes */
     protected idScopes: string[];
+
+    /** Specification for Access Tokens **/
+    protected accessSpecs: Record<string, S>;
 
     @managed private timer: Timer;
     private lastRefreshAttempt: number;
 
     private TIMER_INTERVAL = 2 * SECONDS;
-
-    private accessSpecs: Record<string, S>;
 
     //------------------------
     // Public API
@@ -153,6 +154,7 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
      * Request a full logout from the underlying OAuth provider.
      */
     async logoutAsync(): Promise<void> {
+        this.setSelectedUsername(null);
         await this.doLogoutAsync();
     }
 
@@ -175,6 +177,25 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
      */
     async getAllTokensAsync(): Promise<TokenMap> {
         return this.fetchAllTokensAsync(true);
+    }
+
+    /**
+     * The last authenticated OAuth username.
+     *
+     * Provided to facilitate more efficient re-login via SSO or otherwise.  Will be cleared on
+     * logout.
+     * Note: not an indication of an authenticated user, and not to be confused with the hoist user.
+     */
+    getSelectedUsername(): string {
+        return this.getLocalStorage('xhOAuthSelectedUsername');
+    }
+
+    /**
+     *  Set the last authenticated OAuth username.
+     *  See `getSelectedUsername()`.
+     */
+    setSelectedUsername(username: string): void {
+        this.setLocalStorage('xhOAuthSelectedUsername', username);
     }
 
     //------------------------------------
@@ -238,12 +259,12 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
                 search
             };
 
-        const recs = XH.localStorageService
-            .get('xhOAuthState', [])
-            .filter(r => !olderThan(r.timestamp, 5 * MINUTES));
+        const recs = this.getLocalStorage('xhOAuthState', []).filter(
+            r => !olderThan(r.timestamp, 5 * MINUTES)
+        );
 
         recs.push(state);
-        XH.localStorageService.set('xhOAuthState', recs);
+        this.setLocalStorage('xhOAuthState', recs);
         return state.key;
     }
 
@@ -253,7 +274,7 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
      * @param key - key for re-accessing this state, as round-tripped with redirect.
      */
     protected restoreRedirectState(key: string) {
-        const state = find(XH.localStorageService.get('xhOAuthState', []), {key});
+        const state = find(this.getLocalStorage('xhOAuthState', []), {key});
         throwIf(!state, 'Failure in OAuth, no redirect state located.');
 
         this.logDebug('Restoring Redirect State', state);
@@ -271,6 +292,18 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
         ret.id = await this.fetchIdTokenSafeAsync(useCache);
 
         return ret;
+    }
+
+    protected getLocalStorage(key: string, defaultValue: any = null): any {
+        const val = window.localStorage.getItem(key);
+        if (!val) return defaultValue;
+        return isJSON(val) ? JSON.parse(val) : val;
+    }
+
+    protected setLocalStorage(key: string, value: any) {
+        if (value == null) window.localStorage.removeItem(value);
+        if (isObject(value)) value = JSON.stringify(value);
+        window.localStorage.setItem(key, value);
     }
 
     //-------------------

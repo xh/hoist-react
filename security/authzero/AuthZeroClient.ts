@@ -49,50 +49,47 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
     protected override async doInitAsync(): Promise<TokenMap> {
         const client = (this.client = this.createClient());
 
-        // Try to optimistically load tokens silently
+        // 0) Returning - call client to complete redirect, and restore state
+        if (this.returningFromRedirect()) {
+            this.logDebug('Completing Redirect login');
+            const {appState} = await client.handleRedirectCallback();
+            this.restoreRedirectState(appState);
+            await this.noteUserAuthenticatedAsync();
+            return this.fetchAllTokensAsync();
+        }
+
+        // 1) If we are logged in, try to just reload tokens silently.  This is the happy path on
+        // recent refresh.
         if (await client.isAuthenticated()) {
             try {
+                this.logDebug('Attempting silent token load.');
                 return await this.fetchAllTokensAsync();
             } catch (e) {
-                this.logDebug('Failed to load tokens on init, falling back on login', e);
+                this.logDebug('Failed to load tokens on init, falling back to login', e);
             }
         }
 
-        // ...otherwise login and *then* load tokens
+        // 2) otherwise full-login
+        this.logDebug('Logging in');
         await this.loginAsync();
-        const user = await client.getUser();
-        this.logDebug(`(Re)authenticated OK via Auth0`, user.email, user);
+
+        // 3) return tokens
         return this.fetchAllTokensAsync();
     }
 
     protected override async doLoginRedirectAsync(): Promise<void> {
-        const {client} = this;
-
-        // Determine if we are on back end of redirect (recipe from Auth0 docs)
-        const {search} = window.location,
-            isReturning =
-                (search.includes('state=') && search.includes('code=')) ||
-                search.includes('error=');
-
-        if (!isReturning) {
-            // 1) Initiating - grab state and initiate redirect
-            const appState = this.captureRedirectState();
-            await client.loginWithRedirect({
-                appState,
-                authorizationParams: {scope: this.loginScope}
-            });
-            await never();
-        } else {
-            // 2) Returning - call client to complete redirect, and restore state
-            const {appState} = await client.handleRedirectCallback();
-            this.restoreRedirectState(appState);
-        }
+        const appState = this.captureRedirectState();
+        await this.client.loginWithRedirect({
+            appState,
+            authorizationParams: {scope: this.loginScope}
+        });
+        await never();
     }
 
     protected override async doLoginPopupAsync(): Promise<void> {
-        const {client} = this;
         try {
-            await client.loginWithPopup({authorizationParams: {scope: this.loginScope}});
+            await this.client.loginWithPopup({authorizationParams: {scope: this.loginScope}});
+            await this.noteUserAuthenticatedAsync();
         } catch (e) {
             const msg = e.message?.toLowerCase();
             e.popup?.close();
@@ -184,5 +181,17 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
 
     private get loginScope(): string {
         return union(this.idScopes, flatMap(this.config.accessTokens, 'scopes')).join(' ');
+    }
+
+    private returningFromRedirect(): boolean {
+        // Determine if we are on back end of redirect (recipe from Auth0 docs)
+        const {search} = window.location;
+        return (search.includes('state=') && search.includes('code=')) || search.includes('error=');
+    }
+
+    private async noteUserAuthenticatedAsync() {
+        const user = await this.client.getUser();
+        this.setSelectedUsername(user.email);
+        this.logDebug('User Authenticated', user.email);
     }
 }
