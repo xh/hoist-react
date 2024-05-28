@@ -104,7 +104,6 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
 
     @managed private timer: Timer;
     private lastRefreshAttempt: number;
-
     private TIMER_INTERVAL = 2 * SECONDS;
 
     //------------------------
@@ -182,9 +181,8 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     /**
      * The last authenticated OAuth username.
      *
-     * Provided to facilitate more efficient re-login via SSO or otherwise.  Will be cleared on
-     * logout.
-     * Note: not an indication of an authenticated user, and not to be confused with the hoist user.
+     * Provided to facilitate more efficient re-login via SSO or otherwise.  Cleared on logout.
+     * Note: not necessarily a currently authenticated user, and not necessarily the Hoist username.
      */
     getSelectedUsername(): string {
         return this.getLocalStorage('xhOAuthSelectedUsername');

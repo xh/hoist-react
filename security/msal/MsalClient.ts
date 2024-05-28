@@ -122,18 +122,15 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 this.logDebug('Attempting silent token load.');
                 return await this.fetchAllTokensAsync();
             } catch (e) {
-                this.logDebug(
-                    'Failed to load tokens on init, falling back to login',
-                    e.message ?? e
-                );
+                this.logDebug('Failed to load tokens on init, fall back to login', e.message ?? e);
             } finally {
                 this.initialTokenLoad = false;
             }
         }
 
         // 2) Otherwise need to login.
-        // 2a) Try MSALs `ssoSilent` API, to potentially reuse logged-in user on other domain apps
-        // without interaction.  This should never trigger popup/redirect, but will use an iFrame
+        // 2a) Try MSALs `ssoSilent` API, to potentially reuse logged-in user on other apps in same
+        // domain without interaction.  This should never trigger popup/redirect, but will use an iFrame
         // if available (3rd party cookies required).  Will work if MSAL can resolve a single
         // logged-in user with access to app and meeting all hint criteria.
         try {

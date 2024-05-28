@@ -65,7 +65,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
                 this.logDebug('Attempting silent token load.');
                 return await this.fetchAllTokensAsync();
             } catch (e) {
-                this.logDebug('Failed to load tokens on init, falling back to login', e);
+                this.logDebug('Failed to load tokens on init, fall back to login', e.message ?? e);
             }
         }
 
