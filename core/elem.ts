@@ -8,7 +8,6 @@ import {TEST_ID} from '@xh/hoist/utils/js';
 import {castArray, isFunction, isNil, isPlainObject} from 'lodash';
 import {
     createElement as reactCreateElement,
-    ForwardedRef,
     isValidElement,
     Key,
     ReactElement,
@@ -55,9 +54,6 @@ export type ElementSpec<P> = P & {
     //-----------------------------------
     // Core React attributes
     //-----------------------------------
-    /** React Ref for this component. */
-    ref?: ForwardedRef<any>;
-
     /** React key for this component. */
     key?: Key;
 

@@ -10,7 +10,7 @@ import {button as onsenButton} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ReactNode, ReactElement, MouseEvent} from 'react';
+import {ReactNode, ReactElement, MouseEvent, ForwardedRef} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = HoistModel>
@@ -28,6 +28,7 @@ export interface ButtonProps<M extends HoistModel = HoistModel>
     value?: any;
     modifier?: string;
     tabIndex?: number;
+    ref?: ForwardedRef<any>;
 }
 
 /**

@@ -17,6 +17,7 @@ import '@xh/hoist/desktop/register';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {ForwardedRef} from 'react';
 import {SetOptional} from 'type-fest';
 
 export interface ButtonGroupProps<M extends HoistModel = null>
@@ -33,6 +34,8 @@ export interface ButtonGroupProps<M extends HoistModel = null>
 
     /** True to render in a vertical orientation. */
     vertical?: boolean;
+
+    ref?: ForwardedRef<any>;
 }
 
 /**
