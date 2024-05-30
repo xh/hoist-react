@@ -32,6 +32,12 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
     authority?: string;
 
     /**
+     * A hint about the tenant or domain that the user should use to sign in.
+     * The value of the domain hint is a registered domain for the tenant.
+     */
+    domainHint?: string;
+
+    /**
      * If specified, the client will use this value when initializing the app to enforce a minimum
      * amount of time during which no further auth flow with the provider should be necessary.
      *
@@ -63,16 +69,27 @@ export interface MsalTokenSpec {
 
 /**
  * Service to implement OAuth authentication via MSAL.
+ *
+ * See the following helpful information relevant to our use of this tricky API --
+ * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/
+ * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/token-lifetimes.md
+ * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/login-user.md
+ *
+ *  TODO: The handling of `ssoSilent` and `initRefreshTokenExpirationOffsetSecs` in this library
+ * require 3rd party cookies to be enabled in the browser so that MSAL can load contact in a
+ * hidden iFrame  If its *not* enabled, we may be doing extra work.  Consider checking 3rd party
+ * cookie support and adding conditional behavior?
  */
 export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec> {
     private client: IPublicClientApplication;
-    private account: AccountInfo; // Authenticated account, as most recent auth call with Azure.
+    private account: AccountInfo; // Authenticated account
     private initialTokenLoad: boolean;
 
     constructor(config: MsalClientConfig) {
         super({
             initRefreshTokenExpirationOffsetSecs: -1,
             msalLogLevel: LogLevel.Warning,
+            domainHint: null,
             ...config
         });
     }
@@ -83,35 +100,68 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     protected override async doInitAsync(): Promise<TokenMap> {
         const client = (this.client = await this.createClientAsync());
 
-        // Try to optimistically load tokens silently
-        try {
-            this.initialTokenLoad = true;
-            this.account = client.getAllAccounts()[0];
-            if (this.account) {
-                return await this.fetchAllTokensAsync();
-            }
-        } catch (e) {
-            this.logDebug('Failed to load tokens on init, falling back on login', e);
-        } finally {
-            this.initialTokenLoad = false;
+        // 0) Handle redirect return
+        const redirectResp = await client.handleRedirectPromise();
+        if (redirectResp) {
+            this.logDebug('Completing Redirect login');
+            this.noteUserAuthenticated(redirectResp.account);
+            this.restoreRedirectState(redirectResp.state);
+            return this.fetchAllTokensAsync();
         }
 
-        // ...otherwise login and *then* load tokens
-        await this.loginAsync();
-        this.logDebug(`(Re)authenticated OK via Azure`, this.account.username, this.account);
+        // 1) If we are logged in, try to just reload tokens silently.  This is the happy path on
+        // recent refresh. This should never trigger popup/redirect, but if
+        // 'initRefreshTokenExpirationOffsetSecs' is set, this may trigger a hidden iframe redirect
+        // to gain a new refreshToken (3rd party cookies required).
+        const accounts = client.getAllAccounts();
+        this.logDebug('Authenticated accounts available', accounts);
+        this.account = accounts.length == 1 ? accounts[0] : null;
+        if (this.account) {
+            try {
+                this.initialTokenLoad = true;
+                this.logDebug('Attempting silent token load.');
+                return await this.fetchAllTokensAsync();
+            } catch (e) {
+                this.logDebug('Failed to load tokens on init, fall back to login', e.message ?? e);
+            } finally {
+                this.initialTokenLoad = false;
+            }
+        }
+
+        // 2) Otherwise need to login.
+        // 2a) Try MSALs `ssoSilent` API, to potentially reuse logged-in user on other apps in same
+        // domain without interaction.  This should never trigger popup/redirect, but will use an iFrame
+        // if available (3rd party cookies required).  Will work if MSAL can resolve a single
+        // logged-in user with access to app and meeting all hint criteria.
+        try {
+            this.logDebug('Attempting SSO');
+            await this.loginSsoAsync();
+        } catch (e) {
+            this.logDebug('SSO failed', e.message ?? e);
+        }
+
+        // 2b) Otherwise do full interactive login.  This may or may not require user involvement
+        // but will require at the very least a redirect or cursory auto-closing popup.
+        if (!this.account) {
+            this.logDebug('Logging in');
+            await this.loginAsync();
+        }
+
+        // 3) Return tokens
         return this.fetchAllTokensAsync();
     }
 
     protected override async doLoginPopupAsync(): Promise<void> {
-        const {client, account} = this,
+        const {client} = this,
             opts: PopupRequest = {
+                loginHint: this.getSelectedUsername(),
+                domainHint: this.config.domainHint,
                 scopes: this.loginScopes,
                 extraScopesToConsent: this.loginExtraScopes
             };
-        if (account) opts.account = account;
         try {
             const ret = await client.acquireTokenPopup(opts);
-            this.account = ret.account;
+            this.noteUserAuthenticated(ret.account);
         } catch (e) {
             if (e.message?.toLowerCase().includes('popup window')) {
                 throw XH.exception({
@@ -125,37 +175,27 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     protected override async doLoginRedirectAsync(): Promise<void> {
-        const {client, account} = this,
-            redirectResp = await client.handleRedirectPromise();
-
-        if (!redirectResp) {
-            // 1) Initiating - grab state and initiate redirect
-            const state = this.captureRedirectState(),
-                opts: RedirectRequest = {
-                    state,
-                    scopes: this.loginScopes,
-                    extraScopesToConsent: this.loginExtraScopes
-                };
-            if (account) opts.account = account;
-            await client.acquireTokenRedirect({...opts, account});
-            await never();
-        } else {
-            // 2) Returning - just restore state
-            this.account = redirectResp.account;
-            const redirectState = redirectResp.state;
-            this.restoreRedirectState(redirectState);
-        }
+        const {client} = this,
+            state = this.captureRedirectState(),
+            opts: RedirectRequest = {
+                state,
+                loginHint: this.getSelectedUsername(),
+                domainHint: this.config.domainHint,
+                scopes: this.loginScopes,
+                extraScopesToConsent: this.loginExtraScopes
+            };
+        await client.acquireTokenRedirect(opts);
+        await never();
     }
 
     protected override async fetchIdTokenAsync(useCache: boolean = true): Promise<Token> {
         const ret = await this.client.acquireTokenSilent({
-            scopes: this.idScopes,
             account: this.account,
+            scopes: this.idScopes,
             forceRefresh: !useCache,
             prompt: 'none',
-            ...this.getRefreshOffsetArgs()
+            ...this.refreshOffsetArgs
         });
-        this.account = ret.account;
         return new Token(ret.idToken);
     }
 
@@ -164,13 +204,12 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         useCache: boolean = true
     ): Promise<Token> {
         const ret = await this.client.acquireTokenSilent({
-            scopes: spec.scopes,
             account: this.account,
+            scopes: spec.scopes,
             forceRefresh: !useCache,
             prompt: 'none',
-            ...this.getRefreshOffsetArgs()
+            ...this.refreshOffsetArgs
         });
-        this.account = ret.account;
         return new Token(ret.accessToken);
     }
 
@@ -191,7 +230,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
 
         throwIf(!authority, 'Missing MSAL authority. Please review your configuration.');
 
-        const ret = await msal.PublicClientApplication.createPublicClientApplication({
+        return msal.PublicClientApplication.createPublicClientApplication({
             auth: {
                 clientId,
                 authority,
@@ -208,7 +247,6 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 cacheLocation: 'localStorage' // allows sharing auth info across tabs.
             }
         });
-        return ret;
     }
 
     private logFromMsal(level: LogLevel, message: string) {
@@ -240,10 +278,28 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         );
     }
 
-    private getRefreshOffsetArgs(): Partial<SilentRequest> {
+    private get refreshOffsetArgs(): Partial<SilentRequest> {
         const offset = this.config.initRefreshTokenExpirationOffsetSecs;
         return offset > 0 && this.initialTokenLoad
             ? {forceRefresh: true, refreshTokenExpirationOffsetSeconds: offset}
             : {};
+    }
+
+    private async loginSsoAsync(): Promise<void> {
+        const result = await this.client.ssoSilent({
+            loginHint: this.getSelectedUsername(),
+            domainHint: this.config.domainHint,
+            redirectUri: this.redirectUrl, // Recommended by MS, not used?
+            scopes: this.loginScopes,
+            extraScopesToConsent: this.loginExtraScopes,
+            prompt: 'none'
+        });
+        this.noteUserAuthenticated(result.account);
+    }
+
+    private noteUserAuthenticated(account: AccountInfo) {
+        this.account = account;
+        this.setSelectedUsername(account.username);
+        this.logDebug('User Authenticated', account.username);
     }
 }
