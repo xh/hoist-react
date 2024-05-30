@@ -65,6 +65,21 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
 export interface MsalTokenSpec {
     /** Scopes for the desired access token. */
     scopes: string[];
+
+    /**
+     * Scopes to be added to the scopes requested during interactive and SSO logins.
+     * See the `scopes` property on  `PopupRequest`, `RedirectRequest`, and `SSORequest`
+     * for more info.
+     */
+    loginScopes?: string[];
+
+    /**
+     * Scopes to be added to the scopes requested during interactive and SSO login.
+     *
+     * See the `extraScopesToConsent` property on  `PopupRequest`, `RedirectRequest`, and
+     * `SSORequest` for more info.
+     */
+    extraScopesToConsent?: string[];
 }
 
 /**
@@ -122,6 +137,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 this.logDebug('Attempting silent token load.');
                 return await this.fetchAllTokensAsync();
             } catch (e) {
+                this.account = null;
                 this.logDebug('Failed to load tokens on init, fall back to login', e.message ?? e);
             } finally {
                 this.initialTokenLoad = false;
@@ -157,7 +173,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 loginHint: this.getSelectedUsername(),
                 domainHint: this.config.domainHint,
                 scopes: this.loginScopes,
-                extraScopesToConsent: this.loginExtraScopes
+                extraScopesToConsent: this.loginExtraScopesToConsent
             };
         try {
             const ret = await client.acquireTokenPopup(opts);
@@ -182,7 +198,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 loginHint: this.getSelectedUsername(),
                 domainHint: this.config.domainHint,
                 scopes: this.loginScopes,
-                extraScopesToConsent: this.loginExtraScopes
+                extraScopesToConsent: this.loginExtraScopesToConsent
             };
         await client.acquireTokenRedirect(opts);
         await never();
@@ -224,6 +240,18 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     //------------------------
     // Private implementation
     //------------------------
+    private async loginSsoAsync(): Promise<void> {
+        const result = await this.client.ssoSilent({
+            loginHint: this.getSelectedUsername(),
+            domainHint: this.config.domainHint,
+            redirectUri: this.redirectUrl, // Recommended by MS, not used?
+            scopes: this.loginScopes,
+            extraScopesToConsent: this.loginExtraScopesToConsent,
+            prompt: 'none'
+        });
+        this.noteUserAuthenticated(result.account);
+    }
+
     private async createClientAsync(): Promise<IPublicClientApplication> {
         const config = this.config,
             {clientId, authority, msalLogLevel} = config;
@@ -264,18 +292,16 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     private get loginScopes(): string[] {
-        return union(
-            this.idScopes,
-            flatMap(this.config.accessTokens, spec =>
-                spec.scopes.filter(s => !s.startsWith('api:'))
+        return uniq(
+            union(
+                this.idScopes,
+                flatMap(this.config.accessTokens, spec => spec.loginScopes ?? [])
             )
         );
     }
 
-    private get loginExtraScopes(): string[] {
-        return uniq(
-            flatMap(this.config.accessTokens, spec => spec.scopes.filter(s => s.startsWith('api:')))
-        );
+    private get loginExtraScopesToConsent(): string[] {
+        return uniq(flatMap(this.config.accessTokens, spec => spec.extraScopesToConsent ?? []));
     }
 
     private get refreshOffsetArgs(): Partial<SilentRequest> {
@@ -283,18 +309,6 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         return offset > 0 && this.initialTokenLoad
             ? {forceRefresh: true, refreshTokenExpirationOffsetSeconds: offset}
             : {};
-    }
-
-    private async loginSsoAsync(): Promise<void> {
-        const result = await this.client.ssoSilent({
-            loginHint: this.getSelectedUsername(),
-            domainHint: this.config.domainHint,
-            redirectUri: this.redirectUrl, // Recommended by MS, not used?
-            scopes: this.loginScopes,
-            extraScopesToConsent: this.loginExtraScopes,
-            prompt: 'none'
-        });
-        this.noteUserAuthenticated(result.account);
     }
 
     private noteUserAuthenticated(account: AccountInfo) {
