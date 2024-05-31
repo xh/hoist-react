@@ -57,24 +57,37 @@
   background-color: var(--xh-backdrop-bg);
 }
 
-// Squelch popover scale transition - unlike Dialog with its `transitionName` prop, Popover
-// does not appear to provide a way to turn off its transition without also losing the (often
-// desirable) arrow pointing to its target. Variables below required for the include to function.
-$pt-transition-ease: cubic-bezier(0.4, 1, 0.75, 0.9) !default;
-$pt-transition-ease-bounce: cubic-bezier(0.54, 1.12, 0.38, 1.11) !default;
-$pt-transition-duration: 100ms !default;
+// On Popover and Tooltip components, squelch scale & opacity transition - unlike Dialog with its `transitionName` prop,
+// Popover, and consequently Tooltip, do not appear to provide a way to turn off
+// their transitions without also losing the (often desirable) arrow pointing to their targets.
+// These rules override the scale and opacity starting values of enter and exit classes by setting them to
+// their final 'end of transition' values, which has the effect of preventing/short circuiting transitions.
+// BlueprintJs' own Popover.minimal uses this same approach to disable its transitions.
+// (it appears from testing that overriding these rules with any value will squelch the transition, but
+// we might as well use the final values to be explicit.)
+.bp5-popover-transition-container {
+  &.bp5-popover-enter,
+  &.bp5-popover-appear {
+    opacity: 1;
+  }
 
-.bp5-popover {
-  // This override is taken from the popover source SCSS - there it is scoped under the minimal class.
-  // https://github.com/palantir/blueprint/blob/1bfd1e42303d2626bfc3923eec2195ab4dc696d2/packages/core/src/components/popover/_popover.scss#L54
-  @include react-transition(
-    'bp5-popover',
-    (
-      transform: scale(1) scale(1)
-    ),
-    $duration: 0,
-    $after: '> &'
-  );
+  &.bp5-popover-exit {
+    opacity: 0;
+  }
+
+  &.bp5-popover-enter,
+  &.bp5-popover-appear {
+    > .bp5-popover {
+      transform: scale(1);
+    }
+  }
+
+  &.bp5-popover-exit-active,
+  &.bp5-popover-exit {
+    > .bp5-popover {
+      transform: scale(0);
+    }
+  }
 }
 
 //------------------------

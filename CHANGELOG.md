@@ -3,8 +3,10 @@
 ## 65.0.0-SNAPSHOT - unreleased
 
 ### 🐞 Bug Fixes
+
 * Restore support for `ref` prop in Hoist components written in JSX.
 * Made Hoist Components limit `ref` prop only to those setup to handle it.
+* Restore disabling of Blueprint animations on popovers and tooltips (regression in v63.0.0)
 
 ## 64.0.2 - 2024-05-23
 
