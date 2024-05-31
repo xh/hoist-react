@@ -161,7 +161,7 @@ export class AppContainerModel extends HoistModel {
         }
 
         try {
-            await installServicesAsync([FetchService, LocalStorageService]);
+            await installServicesAsync([FetchService]);
 
             // consult (optional) pre-auth init for app
             const modelClass: any = this.appSpec.modelClass;
@@ -205,7 +205,7 @@ export class AppContainerModel extends HoistModel {
 
             // Complete initialization process
             this.setAppState('INITIALIZING');
-            await installServicesAsync([ConfigService]);
+            await installServicesAsync([ConfigService, LocalStorageService]);
             await installServicesAsync(TrackService);
             await installServicesAsync([EnvironmentService, PrefService, JsonBlobService]);
 
