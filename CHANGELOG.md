@@ -1,22 +1,33 @@
 # Changelog
 
-## 65.0.0-SNAPSHOT - unreleased
+## 65.0-SNAPSHOT - Unreleased
 
 ### 🐞 Bug Fixes
 
 * Restore support for `ref` prop in Hoist components written in JSX.
 * Made Hoist Components limit `ref` prop only to those setup to handle it.
-* Restore disabling of Blueprint animations on popovers and tooltips (regression in v63.0.0)
+
+## 64.0.3 - 2024-05-31
+
+### 🐞 Bug Fixes
+
+* Restore disabling of Blueprint animations on popovers and tooltips (corrects regression in v63.0.0)
+
+### ⚙️ Technical
+
+* Adjustments to API of (beta) `BaseOAuthClient`, `MsaClient`, and `AuthZeroClient`.
 
 ## 64.0.2 - 2024-05-23
 
 ### ⚙️ Technical
+
 * Adjustments to API of (beta) `BaseOAuthClient`.
 * `FetchService.addDefaultHeaders()` now supports async functions.
 
 ## 64.0.1 - 2024-05-19
 
 ### ⚙️ Technical
+
 * Adjustments to loading of ID Tokens and API of `BaseOAuthClient`.  (Note that
   this package remains in Beta for v64 and is subject to change.)
 
