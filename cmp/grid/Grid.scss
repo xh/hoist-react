@@ -121,7 +121,7 @@
     &.ag-cell-inline-editing::before {
       z-index: 1;
       margin-top: 1px;
-      margin-right: 1px;
+      margin-right: 3px;
     }
   }
 
@@ -320,40 +320,8 @@
 }
 
 //------------------------
-// Multi-field (mobile)
+// Tooltips
 //------------------------
-.xh-multifield-renderer {
-  line-height: var(--xh-grid-multifield-line-height-px);
-
-  .xh-multifield-renderer-row {
-    display: flex;
-
-    &.xh-multifield-renderer-top {
-      padding: 4px 0 0;
-      font-size: var(--xh-grid-multifield-top-font-size-px);
-    }
-
-    &.xh-multifield-renderer-bottom {
-      font-size: var(--xh-grid-multifield-bottom-font-size-px);
-      color: var(--xh-text-color-muted);
-    }
-
-    .xh-multifield-renderer-field,
-    .xh-multifield-renderer-delimiter {
-      margin: 0 2px 0 0;
-    }
-  }
-}
-
-.xh-align-right .xh-multifield-renderer .xh-multifield-renderer-row {
-  justify-content: flex-end;
-
-  .xh-multifield-renderer-field,
-  .xh-multifield-renderer-delimiter {
-    margin: 0 0 0 2px;
-  }
-}
-
 .xh-grid-tooltip {
   position: absolute;
 
@@ -378,7 +346,7 @@
     }
   }
 
-  &--default > .xh-grid-tooltip--validation {
+  &--default > div > .xh-grid-tooltip--validation {
     padding: 0 var(--xh-pad-half-px) 0 2em;
 
     &--single {
@@ -386,7 +354,7 @@
     }
   }
 
-  &--custom > .xh-grid-tooltip--validation {
+  &--custom > div > .xh-grid-tooltip--validation {
     padding: var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-half-px) 2em;
     background: var(--xh-bg);
     border: var(--xh-border-solid);

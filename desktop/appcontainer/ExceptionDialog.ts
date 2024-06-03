@@ -72,13 +72,12 @@ const bbar = hoistCmp.factory<ExceptionDialogModel>(({model}) =>
  * @internal
  */
 export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(({model}) => {
-    const reloadRequired = model.options.requireReload,
-        loginRequired = isSessionExpired(model.exception);
+    const reloadRequired = model.options.requireReload;
 
     return reloadRequired
         ? button({
-              icon: loginRequired ? Icon.login() : Icon.refresh(),
-              text: loginRequired ? 'Login' : 'Reload App',
+              icon: Icon.refresh(),
+              text: 'Reload App',
               autoFocus: true,
               onClick: () => XH.reloadApp()
           })
@@ -88,7 +87,3 @@ export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(({model}) =>
               onClick: () => model.close()
           });
 });
-
-function isSessionExpired(e) {
-    return !XH.appSpec.isSSO && e?.httpStatus === 401;
-}

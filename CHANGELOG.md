@@ -1,6 +1,32 @@
 # Changelog
 
-## 64.0.0-SNAPSHOT - unreleased
+## 65.0-SNAPSHOT - Unreleased
+
+## 64.0.3 - 2024-05-31
+
+### 🐞 Bug Fixes
+
+* Restore disabling of Blueprint animations on popovers and tooltips (corrects regression in v63.0.0)
+
+### ⚙️ Technical
+
+* Adjustments to API of (beta) `BaseOAuthClient`, `MsaClient`, and `AuthZeroClient`.
+
+## 64.0.2 - 2024-05-23
+
+### ⚙️ Technical
+
+* Adjustments to API of (beta) `BaseOAuthClient`.
+* `FetchService.addDefaultHeaders()` now supports async functions.
+
+## 64.0.1 - 2024-05-19
+
+### ⚙️ Technical
+
+* Adjustments to loading of ID Tokens and API of `BaseOAuthClient`.  (Note that
+  this package remains in Beta for v64 and is subject to change.)
+
+## 64.0.0 - 2024-05-17
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - major Hoist Core = AG Grid updates)
 
@@ -27,25 +53,88 @@ for more details.
 * All apps will need to update their `@ag-grid` dependencies within `package.json` and make a minor
   update to their `Bootstrap` registration as per
   this [Toolbox example](https://github.com/xh/toolbox/pull/709/files/5626e21d778e1fc72f9735d2d8f011513e1ac9c6#diff-304055320a29f66ea1255446ba8f13e0f3f1b13643bcea0c0466aa60e9288a8f).
+    * `Grid` and `AgGrid` components default to `reactiveCustomComponents: true`. If your app has
+      custom tooltips or editors, you should confirm that they still work with this setting. (It
+      will be the default in agGrid v32.)
+    * For custom editors, you will have to convert them from "imperative" to "reactive". If this is
+      not possible, you can set `reactiveCustomComponents: false` in your `GridModel` to continue
+      using the old "imperative" mode, but note that this will preclude the use of upgraded Hoist
+      editors in that same grid instance. (See the links below for AG docs on this change.)
+    * For custom tooltips, note AG-Grid's deprecation of `getReactContainerClasses`.
+    * Consult the AG Grid docs for more information:
+        * [Updated docs on Custom Components](https://ag-grid.com/react-data-grid/cell-editors/#custom-components)
+        * [Migrating from Imperative to Reactive components](https://ag-grid.com/react-data-grid/upgrading-to-ag-grid-31-1/#migrating-custom-components-to-use-reactivecustomcomponents-option)
+        * [React-related deprecations](https://ag-grid.com/react-data-grid/upgrading-to-ag-grid-31-1/#react)
 
-#### Other Changes
+#### Other Breaking Changes
 
 * Removed support for passing a plain object to the `model` prop of Hoist Components (previously
   deprecated back in v58). Use the `modelConfig` prop instead.
+* Removed the `multiFieldRenderer` utility function. This has been made internal and renamed
+  to `zoneGridRenderer` for exclusive use by the `ZoneGrid` component.
+* Updated CSS variables related to the `ZoneGrid` component - vars formerly prefixed
+  by `--xh-grid-multifield` are now prefixed by `--xh-zone-grid`, several vars have been added, and
+  some defaults have changed.
+* Removed obsolete `AppSpec.isSSO` property in favor of two new properties `AppSpec.enableLogout`
+  and `AppSpec.enableLoginForm`.  This should have no effect on the vast majority of apps which had
+  `isSSO` set to `true`.  For apps where `isSSO` was set to `false`, the new flags should be
+  used to more clearly indicate the desired auth behavior.
+
+
+### 🎁 New Features
+
+* Improved mobile viewport handling to ensure that both standard pages and full screen dialogs
+  respect "safe area" boundaries, avoiding overlap with system UI elements such as the iOS task
+  switcher at the bottom of the screen. Also set background letterboxing color (to black) when
+  in landscape mode for a more resolved-looking layout.
+* Improved the inline grid `selectEditor` to commit its value to the backing record as soon as an
+  option is selected, rather than waiting for the user to click away from the cell.
+* Improved the display of Role details in the Admin Console. The detail panel for the selected role
+  now includes a sub-tab listing all other roles inherited by the selected role, something that
+  was previously accessible only via the linked graph visualization.
+* Added new `checkboxRenderer` for rendering booleans with a checkbox input look and feel.
+* Added new mobile `checkboxButton`, an alternate input component for toggling boolean values.
+* Added beta version of a new Hoist `security` package, providing built-in support for OAuth flows.
+  See `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient` for more information.  Please note that
+  package is being released as a *beta* and is subject to change before final release.
+
+### ✨ Styles
+
+* Default mobile font size has been increased to 16px, both for better overall legibility and also
+  specifically for input elements to avoid triggering Safari's auto-zoom behavior on focus.
+    * Added new mobile-only CSS vars to allow for more granular control over font sizes:
+        * `--xh-mobile-input-font-size`
+        * `--xh-mobile-input-label-font-size`
+        * `--xh-mobile-input-height-px`
+    * Increased height of mobile toolbars to better accommodate larger nested inputs.
+    * Grid font sizes have not changed, but other application layouts might need to be adjusted to
+      ensure labels and other text elements fit as intended.
+* Mobile App Options dialog has been updated to use a full-screen `DialogPanel` to provide a more
+  native feel and better accommodate longer lists of app options.
 
 ### 🐞 Bug Fixes
 
+* Fixed poor truncation / clipping behavior of the primary (right-side) metric in `ZoneGrid`. Values
+  that do not fit within the available width of the cell will now truncate their right edge and
+  display an ellipsis to indicate they have been clipped.
 * Improved `RestGridModel.actionWarning` behavior to suppress any warning when the provided function
   returns a falsy value.
+* Fixed mobile `Toast` intent styling.
 
 ### ⚙️ Technical
 
+* NumberEditor no longer activates on keypress of letter characters.
 * Removed initial `ping` call `FetchService` init.
+* Deprecated `FetchService.setDefaultHeaders` and replaced with new `addDefaultHeaders` method to
+  support independent additions of default headers from multiple sources in an application.
 
 ### 📚 Libraries
 
 * @ag-grid `30.x → 31.x`
+* @auth0/auth0-spa-js `added @ 2.1`
+* @azure/msal-browser `added @ 3.14`
 * dompurify `3.0 → 3.1`
+* jwt-decode `added @ 4.0`
 * moment `2.29 → 2.30`
 * numbro `2.4 → 2.5`
 * qs `6.11 → 6.12`

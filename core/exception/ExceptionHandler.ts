@@ -6,7 +6,7 @@
  */
 import {Exception} from './Exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
-import {logError, logWarn, stripTags} from '@xh/hoist/utils/js';
+import {logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
 import {forOwn, has, isArray, isNil, isObject, omitBy, pick, set} from 'lodash';
 import {HoistException, PlainObject, XH} from '../';
@@ -332,28 +332,11 @@ export class ExceptionHandler {
             ret.requireReload = true;
         }
 
-        if (this.sessionExpired(e)) {
-            ret.title = 'Authentication Error';
-            ret.message = 'Your session has expired. Please login.';
-            ret.showAsError = false;
-            ret.requireReload = true;
-        }
-
         return ret;
     }
 
     private sessionMismatch(e: HoistException): boolean {
         return e.name === 'SessionMismatchException';
-    }
-
-    // Detect an expired server session for special messaging, but only for requests back to the
-    // app's own server on a relative URL (to avoid triggering w/auth failures on remote CORS URLs).
-    private sessionExpired(e: HoistException): boolean {
-        if (XH.appSpec.isSSO) return false;
-        const {httpStatus, fetchOptions} = e,
-            relativeRequest = !fetchOptions?.url?.startsWith('http');
-
-        return relativeRequest && httpStatus === 401;
     }
 
     private cleanStack(e: HoistException) {
@@ -370,16 +353,22 @@ export class ExceptionHandler {
 
         const ret = {};
         forOwn(obj, (val, key) => {
-            if (key.startsWith('_')) return;
-            if (val && !val.toJSON) {
-                if (isObject(val)) {
-                    val = depth > 1 ? this.cloneAndTrim(val, depth - 1) : '{...}';
+            try {
+                if (key.startsWith('_')) return;
+                if (val && !val.toJSON) {
+                    if (isObject(val)) {
+                        val = depth > 1 ? this.cloneAndTrim(val, depth - 1) : '{...}';
+                    }
+                    if (isArray(val)) {
+                        val = depth > 1 ? val.map(it => this.cloneAndTrim(it, depth - 1)) : '[...]';
+                    }
                 }
-                if (isArray(val)) {
-                    val = depth > 1 ? val.map(it => this.cloneAndTrim(it, depth - 1)) : '[...]';
-                }
+                ret[key] = val;
+            } catch (e) {
+                // fail quietly.  Note that some properties may be inaccessible, e.g. security
+                // limitations accessing popup window references.
+                logDebug(['Failed to serialize exception property', key], this);
             }
-            ret[key] = val;
         });
 
         return ret;

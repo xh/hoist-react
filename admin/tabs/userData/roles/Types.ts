@@ -37,7 +37,12 @@ export interface EffectiveRoleMember {
 
 export interface EffectiveRoleUser {
     name: string;
-    sources: Array<{role: string; directoryGroup?: string}>;
+    sources: UserSource[];
+}
+
+export interface UserSource {
+    role: string;
+    directoryGroup?: string;
 }
 
 export type RoleMemberType = 'USER' | 'DIRECTORY_GROUP' | 'ROLE';

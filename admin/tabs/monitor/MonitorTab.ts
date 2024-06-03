@@ -13,6 +13,7 @@ import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
+import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -74,6 +75,11 @@ const tbar = hoistCmp.factory<MonitorTabModel>(({model}) => {
             text: 'Configure',
             icon: Icon.gear(),
             onClick: () => (model.showEditorDialog = true)
+        }),
+        '-',
+        switchInput({
+            label: 'Show inactive',
+            bind: 'showInactive'
         }),
         hbox({
             className: getClassName(!failed),

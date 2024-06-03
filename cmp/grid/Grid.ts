@@ -151,7 +151,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     }
 });
 
-(Grid as any).MULTIFIELD_ROW_HEIGHT = 42;
+(Grid as any).ZONEGRID_ROW_HEIGHT = 42;
 
 //------------------------
 // Implementation
@@ -203,6 +203,7 @@ export class GridLocalModel extends HoistModel {
             {clicksToEdit, selModel} = model;
 
         let ret: GridOptions = {
+            reactiveCustomComponents: true, // will be default in ag-grid v32
             animateRows: false,
             suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowId: ({data}) => data.agId,
@@ -833,8 +834,8 @@ export class GridLocalModel extends HoistModel {
         if (model.highlightRowOnClick) {
             model.agApi.flashCells({
                 rowNodes: [evt.node],
-                flashDelay: 100,
-                fadeDelay: 100
+                flashDuration: 100,
+                fadeDuration: 100
             });
         }
     };

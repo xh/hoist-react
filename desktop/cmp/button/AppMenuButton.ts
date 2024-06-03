@@ -45,7 +45,7 @@ export interface AppMenuButtonProps extends ButtonProps {
      */
     hideImpersonateItem?: boolean;
 
-    /** True to hide the Logout button. Defaulted to appSpec.isSSO. */
+    /** True to hide the Logout button. Defaulted to !appSpec.enableLogout. */
     hideLogoutItem?: boolean;
 
     /** True to hide the Options button. */
@@ -111,7 +111,7 @@ function buildMenuItems(props: AppMenuButtonProps) {
     hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdminReader;
     hideChangelogItem = hideChangelogItem || !XH.changelogService.enabled;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
-    hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
+    hideLogoutItem = withDefault(hideLogoutItem, !XH.appSpec.enableLogout);
     hideOptionsItem = hideOptionsItem || !XH.appContainerModel.optionsDialogModel.hasOptions;
 
     const defaultItems: MenuItemLike[] = [

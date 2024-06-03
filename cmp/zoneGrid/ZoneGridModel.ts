@@ -5,28 +5,16 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {
-    HoistModel,
-    LoadSpec,
-    PlainObject,
-    Some,
-    managed,
-    XH,
-    Awaitable,
-    VSide
-} from '@xh/hoist/core';
+    CellClickedEvent,
+    CellContextMenuEvent,
+    CellDoubleClickedEvent,
+    RowClickedEvent,
+    RowDoubleClickedEvent
+} from '@ag-grid-community/core';
 import {PrintSupportConfig} from '../printsupport';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {
-    RecordAction,
-    Store,
-    StoreConfig,
-    StoreRecordOrId,
-    StoreSelectionConfig,
-    StoreSelectionModel,
-    StoreTransaction
-} from '@xh/hoist/data';
 import {
     Column,
+    ColumnRenderer,
     ColumnSpec,
     Grid,
     GridConfig,
@@ -38,24 +26,40 @@ import {
     GroupRowRenderer,
     RowClassFn,
     RowClassRuleFn,
-    TreeStyle,
-    multiFieldRenderer,
-    ColumnRenderer
+    TreeStyle
 } from '@xh/hoist/cmp/grid';
 import {
-    CellClickedEvent,
-    CellContextMenuEvent,
-    CellDoubleClickedEvent,
-    RowClickedEvent,
-    RowDoubleClickedEvent
-} from '@ag-grid-community/core';
+    ZoneGridColConfig,
+    zoneGridRenderer,
+    ZoneGridSubField
+} from '@xh/hoist/cmp/zoneGrid/impl/ZoneGridRenderer';
+import {
+    Awaitable,
+    HoistModel,
+    LoadSpec,
+    managed,
+    PlainObject,
+    Some,
+    VSide,
+    XH
+} from '@xh/hoist/core';
+import {
+    RecordAction,
+    Store,
+    StoreConfig,
+    StoreRecordOrId,
+    StoreSelectionConfig,
+    StoreSelectionModel,
+    StoreTransaction
+} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {castArray, forOwn, isEmpty, isFinite, isPlainObject, isString, find} from 'lodash';
+import {castArray, find, forOwn, isEmpty, isFinite, isPlainObject, isString} from 'lodash';
 import {ReactNode} from 'react';
-import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
 import {ZoneGridPersistenceModel} from './impl/ZoneGridPersistenceModel';
-import {ZoneGridModelPersistOptions, Zone, ZoneLimit, ZoneMapping} from './Types';
+import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
+import {Zone, ZoneGridModelPersistOptions, ZoneLimit, ZoneMapping} from './Types';
 
 export interface ZoneGridConfig {
     /**
@@ -396,8 +400,6 @@ export class ZoneGridModel extends HoistModel {
     async restoreDefaultsAsync(): Promise<boolean> {
         if (this.restoreDefaultsWarning) {
             const confirmed = await XH.confirm({
-                title: 'Please Confirm',
-                icon: Icon.warning(),
                 message: this.restoreDefaultsWarning,
                 confirmProps: {
                     text: 'Yes, restore defaults',
@@ -576,13 +578,13 @@ export class ZoneGridModel extends HoistModel {
         return [
             this.buildZoneColumn(true),
             this.buildZoneColumn(false),
-            // Ensure all available columns are provided as hidden columns for lookup by multifield renderer
+            // Ensure all available columns are provided as hidden columns for lookup by zoneGridRenderer
             ...this.availableColumns
         ];
     }
 
     private buildZoneColumn(isLeft: boolean): ColumnSpec {
-        const {labelRenderers, mappings} = this,
+        const {gridModel, labelRenderers, mappings, delimiter} = this,
             topMappings = mappings[isLeft ? 'tl' : 'tr'],
             bottomMappings = mappings[isLeft ? 'bl' : 'br'];
 
@@ -592,10 +594,10 @@ export class ZoneGridModel extends HoistModel {
         );
 
         // Extract the primary column from the top mappings
-        const primaryCol = new Column(this.findColumnSpec(topMappings[0]), this.gridModel);
+        const primaryCol = new Column(this.findColumnSpec(topMappings[0]), gridModel);
 
         // Extract the sub-fields from the other mappings
-        const subFields = [];
+        const subFields: ZoneGridSubField[] = [];
         topMappings.slice(1).forEach(it => {
             const colId = it.field;
             subFields.push({
@@ -613,24 +615,26 @@ export class ZoneGridModel extends HoistModel {
             });
         });
 
+        const zoneGridConfig: ZoneGridColConfig = {
+            mainRenderer: primaryCol.renderer,
+            delimiter,
+            subFields
+        };
+
+        const overrideSpec = (isLeft ? this.leftColumnSpec : this.rightColumnSpec) ?? {};
+
         return {
             // Controlled properties
             field: isLeft ? 'left_column' : 'right_column',
-            flex: isLeft ? 2 : 1,
             align: isLeft ? 'left' : 'right',
-            renderer: multiFieldRenderer,
+            flex: overrideSpec.width ? null : isLeft ? 2 : 1,
+            renderer: (value, context) => zoneGridRenderer(value, context, isLeft),
             rendererIsComplex: true,
-            rowHeight: Grid['MULTIFIELD_ROW_HEIGHT'],
+            rowHeight: Grid['ZONEGRID_ROW_HEIGHT'],
             resizable: false,
             movable: false,
             hideable: false,
-            appData: {
-                multiFieldConfig: {
-                    mainRenderer: primaryCol.renderer,
-                    delimiter: this.delimiter,
-                    subFields
-                }
-            },
+            appData: {zoneGridConfig},
 
             // Properties inherited from primary column
             headerName: primaryCol.headerName,
@@ -643,7 +647,7 @@ export class ZoneGridModel extends HoistModel {
             getValueFn: primaryCol.getValueFn,
 
             // Optional overrides
-            ...(isLeft ? this.leftColumnSpec : this.rightColumnSpec)
+            ...overrideSpec
         };
     }
 

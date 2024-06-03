@@ -311,8 +311,6 @@ export class DifferModel extends HoistModel {
         );
 
         XH.confirm({
-            title: 'Please Confirm',
-            icon: Icon.warning(),
             message,
             confirmProps: {
                 text: 'Yes, update local config',

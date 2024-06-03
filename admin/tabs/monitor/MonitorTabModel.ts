@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {MonitorResults, MonitorStatus} from '@xh/hoist/admin/tabs/monitor/Types';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, persist, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -14,10 +14,13 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {filter, isEqual, minBy, sortBy} from 'lodash';
 
 export class MonitorTabModel extends HoistModel {
+    override persistWith = {localStorageKey: 'xhAdminClientMonitorState'};
+
     @observable.ref results: MonitorResults[] = [];
     @observable lastRun: number = null;
     @managed timer: Timer = null;
 
+    @bindable @persist showInactive = false;
     @bindable showEditorDialog = false;
 
     @computed
@@ -55,10 +58,16 @@ export class MonitorTabModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+
         this.timer = Timer.create({
             runFn: () => this.autoRefreshAsync(),
             interval: 5 * SECONDS,
             delay: true
+        });
+
+        this.addReaction({
+            track: () => this.showInactive,
+            run: () => this.refreshAsync()
         });
     }
 
@@ -88,6 +97,10 @@ export class MonitorTabModel extends HoistModel {
     //-------------------
     @action
     private installResults(results: MonitorResults[]) {
+        if (!this.showInactive) {
+            results = results.filter(it => it.status !== 'INACTIVE');
+        }
+
         const prevCounts = this.countsByStatus;
         this.results = sortBy(results, 'sortOrder');
         this.lastRun = minBy(results, 'dateComputed')?.dateComputed ?? null;

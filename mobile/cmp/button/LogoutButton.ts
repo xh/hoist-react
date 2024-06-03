@@ -22,7 +22,7 @@ export const [LogoutButton, logoutButton] = hoistCmp.withFactory<LogoutButtonPro
     model: false,
 
     render({icon = Icon.logout(), onClick = () => XH.identityService.logoutAsync(), ...props}) {
-        if (XH.appSpec.isSSO) return null;
+        if (!XH.appSpec.enableLogout) return null;
         return button({icon, onClick, ...props});
     }
 });

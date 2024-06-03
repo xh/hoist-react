@@ -70,10 +70,11 @@ export class ClusterTabModel extends HoistModel {
 
     constructor() {
         super();
+
         this.addReaction({
-            track: () => this.instance,
-            run: () => {
-                if (this.instance) this.tabModel.refreshContextModel.refreshAsync();
+            track: () => this.instanceName,
+            run: instName => {
+                if (instName) this.tabModel.refreshContextModel.refreshAsync();
             }
         });
     }
@@ -180,7 +181,6 @@ export class ClusterTabModel extends HoistModel {
         if (
             !(await XH.confirm({
                 message: `Are you SURE you want to shutdown instance ${instance.name}?`,
-                title: 'Please confirm...',
                 confirmProps: {
                     icon: Icon.skull(),
                     text: 'Shutdown Now',
