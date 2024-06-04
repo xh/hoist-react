@@ -8,8 +8,9 @@
 import {ColDef, ColGroupDef} from '@ag-grid-community/core';
 import {DomLayoutType} from '@ag-grid-community/core/dist/types/src/entities/gridOptions';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, TrackOptions, XH} from '@xh/hoist/core';
 import {makeObservable, bindable} from '@xh/hoist/mobx';
+import {warnIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
 export interface PrintSupportConfig {
@@ -46,6 +47,12 @@ export class PrintSupportModel extends HoistModel {
     toggledTheme: boolean;
 
     toggleIsPrinting() {
+        // can only print grids, as of now
+        if (!(this.parentModel instanceof GridModel)) {
+            warnIf(true, 'PrintSupportModel: Only GridModel is supported for printing.');
+            this.isPrinting = false;
+            return;
+        }
         this.isPrinting = !this.isPrinting;
     }
 
@@ -67,7 +74,17 @@ export class PrintSupportModel extends HoistModel {
             track: () => [this.inlineRef.current, this.printRef.current, this.isPrinting],
             run: () => {
                 if (this.isPrinting) {
-                    this.toPrintMode();
+                    try {
+                        this.toPrintMode();
+                    } catch (e) {
+                        XH.handleException(e, {
+                            title: 'Error Printing',
+                            message:
+                                'An error occurred while printing.  Please contact support for assistance if this issue persists.',
+                            alertType: 'toast'
+                        });
+                        this.isPrinting = false;
+                    }
                 } else {
                     this.toScreenMode();
                 }
@@ -82,31 +99,50 @@ export class PrintSupportModel extends HoistModel {
             XH.toggleTheme();
         }
 
+        // move the host node to the print node
         this.printNode?.appendChild(this.hostNode);
-        if (this.parentModel instanceof GridModel) {
-            this.gridDomLayout = this.parentModel.agApi.getGridOption('domLayout');
-            this.gridColumnDefs = this.parentModel.agApi.getColumnDefs();
 
-            this.parentModel.agApi.updateGridOptions({
-                domLayout: 'print',
-                columnDefs: this.adjustColumnDefsForPrint(this.gridColumnDefs)
-            });
-            setTimeout(() => {
-                window.print();
-                this.toggleIsPrinting();
-            }, 2000);
+        // special handling for grids
+        if (this.parentModel instanceof GridModel) {
+            this.doPrintGrid(this.parentModel);
         }
 
+        // for all component types, allow scrolling and hide the root app node
         this.setStyles('.xh-app', {overflow: 'auto'});
         this.setStyles('#xh-root', {display: 'none'});
         window.dispatchEvent(new Event('resize'));
+    }
 
-        if (this.track) {
-            XH.track({
-                category: 'Print',
-                message: `Printed Grid`
-            });
-        }
+    private doPrintGrid(gridModel: GridModel) {
+        this.gridDomLayout = gridModel.agApi.getGridOption('domLayout');
+        this.gridColumnDefs = gridModel.agApi.getColumnDefs();
+
+        const printableColumns = this.adjustColumnDefsForPrint(this.gridColumnDefs);
+
+        gridModel.agApi.updateGridOptions({
+            domLayout: 'print',
+            columnDefs: printableColumns
+        });
+
+        const trackOptions = (
+            this.track
+                ? {
+                      category: 'Print',
+                      message: `Printed Grid`,
+                      data: {
+                          rows: gridModel.agApi.getRenderedNodes().length,
+                          columns: printableColumns.length
+                      }
+                  }
+                : {omit: true}
+        ) as TrackOptions;
+
+        XH.track(trackOptions);
+
+        setTimeout(() => {
+            window.print();
+            this.isPrinting = false;
+        }, 2000);
     }
 
     private toScreenMode() {
@@ -119,6 +155,7 @@ export class PrintSupportModel extends HoistModel {
                 columnDefs: this.adjustColumnDefsForScreen(this.gridColumnDefs)
             });
         }
+        this.gridColumnDefs = [];
         this.setStyles('.xh-app', {overflow: 'visible'});
         this.setStyles('#xh-root', {display: 'block'});
         this.inlineRef.current.appendChild(this.hostNode);
