@@ -35,7 +35,7 @@ export interface ButtonGroupProps<M extends HoistModel = null>
     /** True to render in a vertical orientation. */
     vertical?: boolean;
 
-    ref?: ForwardedRef<any>;
+    ref?: ForwardedRef<HTMLDivElement>;
 }
 
 /**

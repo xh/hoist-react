@@ -12,10 +12,10 @@ import {ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, filter, isEmpty, without} from 'lodash';
-import {Children, cloneElement, ForwardedRef, isValidElement} from 'react';
+import {Children, cloneElement, isValidElement} from 'react';
 
 export interface ButtonGroupInputProps
-    extends Omit<ButtonGroupProps<HoistModel>, 'onChange'>,
+    extends Omit<ButtonGroupProps<HoistModel>, 'onChange' | 'ref'>,
         HoistInputProps {
     /**
      * True to allow buttons to be unselected (aka inactivated). Defaults to false.
@@ -31,8 +31,6 @@ export interface ButtonGroupInputProps
 
     /** True to create outlined-style buttons. */
     outlined?: boolean;
-
-    ref?: ForwardedRef<any>;
 }
 
 /**
