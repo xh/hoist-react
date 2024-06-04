@@ -4,11 +4,10 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {ForwardedRef} from 'react';
 import composeRefs from '@seznam/compose-react-refs';
 import {div, frame, h1, hbox, p, span, vbox, vframe} from '@xh/hoist/cmp/layout';
-import {PinPadModel} from '@xh/hoist/cmp/pinpad';
-import {hoistCmp} from '@xh/hoist/core';
+import {PinPadModel, PinPadProps} from '@xh/hoist/cmp/pinpad';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon/Icon';
@@ -21,16 +20,19 @@ import './PinPad.scss';
  *
  * @internal
  */
-export function pinPadImpl({model, testId}, ref) {
-    return frame({
-        ref: composeRefs(model.ref as ForwardedRef<HTMLDivElement>, ref),
-        item: vframe({
-            className: 'xh-pinpad__frame',
-            items: [header(), display(), errorDisplay(), keypad()],
-            testId
-        })
-    });
-}
+export const pinPadImpl = hoistCmp.factory<PinPadProps>({
+    model: uses(PinPadModel),
+    render({model, testId}, ref) {
+        return frame({
+            ref: composeRefs(model.ref, ref),
+            item: vframe({
+                className: 'xh-pinpad__frame',
+                items: [header(), display(), errorDisplay(), keypad()],
+                testId
+            })
+        });
+    }
+});
 
 const header = hoistCmp.factory<PinPadModel>(({model}) =>
     div({
