@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {ForwardedRef} from 'react';
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {
@@ -48,6 +49,8 @@ export interface ChartProps extends HoistProps<ChartModel>, LayoutProps, TestSup
      * dimensions to take up all available space.
      */
     aspectRatio?: number;
+
+    ref?: ForwardedRef<HTMLDivElement>;
 }
 
 /**

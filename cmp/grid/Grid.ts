@@ -148,7 +148,7 @@ export class GridLocalModel extends HoistModel {
     @lookup(GridModel)
     private model: GridModel;
     agOptions: GridOptions;
-    viewRef = createObservableRef<HTMLElement>();
+    viewRef = createObservableRef<HTMLDivElement>();
     private rowKeyNavSupport: RowKeyNavSupport;
     private prevRs: RecordSet;
 

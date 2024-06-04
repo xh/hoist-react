@@ -7,7 +7,7 @@
 import {hoistCmp, useLocalModel, HoistModel, BoxProps, HoistProps} from '@xh/hoist/core';
 import {frame, box} from '@xh/hoist/cmp/layout';
 import {useOnResize} from '@xh/hoist/utils/react';
-import {useState, useLayoutEffect} from 'react';
+import {useState, useLayoutEffect, ForwardedRef} from 'react';
 import {minBy, isEqual} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
 import {Children} from 'react';
@@ -44,6 +44,8 @@ export interface TileFrameProps extends HoistProps, BoxProps {
         tileWidth: number;
         tileHeight: number;
     }) => any;
+
+    ref?: ForwardedRef<HTMLDivElement>;
 }
 
 /**
@@ -55,7 +57,7 @@ export interface TileFrameProps extends HoistProps, BoxProps {
  * stable layouts. These should be used judiciously, however, as each constraint limits the ability
  * of the TileFrame to fill its available space.
  */
-export const [TileFrame, tileFrame] = hoistCmp.withFactory({
+export const [TileFrame, tileFrame] = hoistCmp.withFactory<TileFrameProps>({
     displayName: 'TileFrame',
     memo: false,
     observer: false,

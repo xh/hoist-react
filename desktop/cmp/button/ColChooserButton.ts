@@ -13,14 +13,17 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
 import {logError, stopPropagation, withDefault} from '@xh/hoist/utils/js';
+import {ForwardedRef} from 'react';
 import {button, ButtonProps} from './Button';
 
-export interface ColChooserButtonProps extends ButtonProps {
+export interface ColChooserButtonProps extends Omit<ButtonProps, 'ref'> {
     /** GridModel of the grid for which this button should show a chooser. */
     gridModel?: GridModel;
 
     /** Position for chooser popover, as per Blueprint docs. */
     popoverPosition?: Position;
+
+    ref?: ForwardedRef<HTMLDivElement>;
 }
 
 /**

@@ -19,8 +19,9 @@ import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, isEmpty, sortBy} from 'lodash';
 import './GroupingChooser.scss';
+import {ForwardedRef} from 'react';
 
-export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> {
+export interface GroupingChooserProps extends Omit<ButtonProps<GroupingChooserModel>, 'ref'> {
     /** Text to represent empty state (i.e. value = null or []) */
     emptyText?: string;
 
@@ -38,6 +39,8 @@ export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> 
 
     /** True (default) to style target button as an input field - blends better in toolbars. */
     styleButtonAsInput?: boolean;
+
+    ref?: ForwardedRef<HTMLDivElement>;
 }
 
 /**

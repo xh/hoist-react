@@ -58,11 +58,14 @@ export type RenderPropsOf<P extends HoistProps> = Omit<P, 'modelConfig' | 'model
  * Configuration for creating a Component.  May be specified either as a render function,
  * or an object containing a render function and associated metadata.
  */
-export type ComponentConfig<P extends HoistProps> =
-    | ((props: RenderPropsOf<P>, ref?: ForwardedRef<any>) => ReactNode)
+export type ComponentConfig<
+    P extends HoistProps,
+    R = P extends {ref?: ForwardedRef<infer R>} ? ForwardedRef<R> : never
+> =
+    | ((props: RenderPropsOf<P>, ref?: R) => ReactNode)
     | {
           /** Render function defining the component. */
-          render(props: RenderPropsOf<P>, ref?: ForwardedRef<any>): ReactNode;
+          render(props: RenderPropsOf<P>, ref?: R): ReactNode;
 
           /**
            * Spec defining the model to be rendered by this component.
