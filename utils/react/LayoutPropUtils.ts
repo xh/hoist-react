@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {HoistProps, LayoutProps, PlainObject} from '@xh/hoist/core';
+import {LayoutProps, PlainObject} from '@xh/hoist/core';
 import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
 
 /**
@@ -66,14 +66,14 @@ export function getLayoutProps(props: PlainObject): LayoutProps {
 /**
  * Return all non-layout related props found in props.
  */
-export function getNonLayoutProps<T extends HoistProps>(props: T): T {
+export function getNonLayoutProps<T extends PlainObject>(props: T): T {
     return omit(props, allKeys) as T;
 }
 
 /**
  * Split a set of props into layout and non-layout props.
  */
-export function splitLayoutProps<T extends HoistProps>(props: T): [LayoutProps, T] {
+export function splitLayoutProps<T extends PlainObject>(props: T): [LayoutProps, T] {
     const layoutProps = getLayoutProps(props);
     return [layoutProps, isEmpty(layoutProps) ? props : getNonLayoutProps(props)];
 }

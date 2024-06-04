@@ -33,5 +33,6 @@ export interface HoistInputProps extends TestSupportProps {
     /** Value of the control, if provided directly. */
     value?: any;
 
+    /** Ref to implementing control element */
     ref?: ForwardedRef<any>;
 }

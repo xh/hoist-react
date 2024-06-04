@@ -2,10 +2,9 @@
 
 ## 65.0-SNAPSHOT - Unreleased
 
-### 🐞 Bug Fixes
+### ⚙️ Technical
 
-* Restore support for `ref` prop in Hoist components written in JSX.
-* Made Hoist Components limit `ref` prop only to those setup to handle it.
+* Typescript: Narrow typing of `ref` prop, and improve `ref` typing in JSX.
 
 ## 64.0.3 - 2024-05-31
 
