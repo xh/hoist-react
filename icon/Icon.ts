@@ -19,11 +19,14 @@ export interface IconProps extends HoistProps, Partial<Omit<FontAwesomeIconProps
     iconName?: string;
 
     /**
-     * Prefix or weight of the icon. By default, 'far' for the standard
-     * variant of each icon. Pass a value of either 'fas' for a heavier-weight/solid variant
-     * or 'fal' for a lighter-weight variant.
+     * Prefix / weight of the icon (or "fab" if your app has imported the free-brand-icons pkg).
+     *   - far - Regular
+     *   - fas - Solid
+     *   - fal - Light
+     *   - fat - Thin (yes, unfortunate)
+     *   - fab - Brand (requires optional import, see Toolbox)
      */
-    prefix?: 'far' | 'fas' | 'fal' | 'fab';
+    prefix?: 'far' | 'fas' | 'fal' | 'fat' | 'fab';
 
     intent?: Intent;
 

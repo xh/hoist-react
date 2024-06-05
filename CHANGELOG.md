@@ -2,10 +2,33 @@
 
 ## 65.0.0-SNAPSHOT - unreleased
 
+## 64.0.4 - 2024-06-05
+
+### ⚙️ Technical
+
+* Typescript: Improve `ref` typing in JSX.
+
+## 64.0.3 - 2024-05-31
+
+### 🐞 Bug Fixes
+
+* Restore disabling of Blueprint animations on popovers and tooltips (corrects regression in v63.0.0)
+
+### ⚙️ Technical
+
+* Adjustments to API of (beta) `BaseOAuthClient`, `MsaClient`, and `AuthZeroClient`.
+
+## 64.0.2 - 2024-05-23
+
+### ⚙️ Technical
+
+* Adjustments to API of (beta) `BaseOAuthClient`.
+* `FetchService.addDefaultHeaders()` now supports async functions.
 
 ## 64.0.1 - 2024-05-19
 
 ### ⚙️ Technical
+
 * Adjustments to loading of ID Tokens and API of `BaseOAuthClient`.  (Note that
   this package remains in Beta for v64 and is subject to change.)
 

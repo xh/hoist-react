@@ -46,7 +46,7 @@ export class FetchService extends HoistService {
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
     private autoAborters = {};
-    defaultHeaders: (PlainObject | ((arg: FetchOptions) => PlainObject))[] = [];
+    defaultHeaders: (PlainObject | ((arg: FetchOptions) => Awaitable<PlainObject>))[] = [];
     defaultTimeout = (30 * SECONDS) as any;
 
     /**
@@ -54,7 +54,7 @@ export class FetchService extends HoistService {
      * @param headers - to be sent with all fetch requests, or a function to generate.
      * @deprecated use addDefaultHeaders instead.
      */
-    setDefaultHeaders(headers: PlainObject | ((arg: FetchOptions) => PlainObject)) {
+    setDefaultHeaders(headers: PlainObject | ((arg: FetchOptions) => Awaitable<PlainObject>)) {
         apiDeprecated('setDefaultHeaders', {v: '66', msg: 'Use addDefaultHeaders instead'});
         this.addDefaultHeaders(headers);
     }
@@ -63,7 +63,7 @@ export class FetchService extends HoistService {
      * Add default headers to be sent with all subsequent requests.
      * @param headers - to be sent with all fetch requests, or a function to generate.
      */
-    addDefaultHeaders(headers: PlainObject | ((arg: FetchOptions) => PlainObject)) {
+    addDefaultHeaders(headers: PlainObject | ((arg: FetchOptions) => Awaitable<PlainObject>)) {
         this.defaultHeaders.push(headers);
     }
 
@@ -79,8 +79,8 @@ export class FetchService extends HoistService {
      * Send a request via the underlying fetch API.
      * @returns Promise which resolves to a Fetch Response.
      */
-    fetch(opts: FetchOptions): Promise<FetchResponse> {
-        opts = this.withDefaults(opts);
+    async fetch(opts: FetchOptions): Promise<FetchResponse> {
+        opts = await this.withDefaultsAsync(opts);
         return this.managedFetchAsync(opts);
     }
 
@@ -88,8 +88,8 @@ export class FetchService extends HoistService {
      * Send an HTTP request and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response has status in {@link NO_JSON_RESPONSES}.
      */
-    fetchJson(opts: FetchOptions): Promise<any> {
-        opts = this.withDefaults(opts, {Accept: 'application/json'});
+    async fetchJson(opts: FetchOptions): Promise<any> {
+        opts = await this.withDefaultsAsync(opts, {Accept: 'application/json'});
         return this.managedFetchAsync(opts, async r => {
             if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
 
@@ -157,14 +157,17 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
-    private withDefaults(opts: FetchOptions, extraHeaders: PlainObject = null): FetchOptions {
+    private async withDefaultsAsync(
+        opts: FetchOptions,
+        extraHeaders: PlainObject = null
+    ): Promise<FetchOptions> {
         const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
             isPost = method === 'POST';
 
         const defaultHeaders = {};
-        this.defaultHeaders.forEach(h => {
-            Object.assign(defaultHeaders, isFunction(h) ? h(opts) : h);
-        });
+        for (const h of this.defaultHeaders) {
+            Object.assign(defaultHeaders, isFunction(h) ? await h(opts) : h);
+        }
 
         return {
             ...opts,

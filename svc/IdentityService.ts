@@ -59,7 +59,7 @@ export class IdentityService extends HoistService {
      */
     async logoutAsync() {
         await XH.fetchJson({url: 'xh/logout'});
-        await XH.appModel.logoutAsync();
+        await XH.appModel?.logoutAsync(); // can be called by LockoutPanel prior to appModel init
         XH.reloadApp();
     }
 
