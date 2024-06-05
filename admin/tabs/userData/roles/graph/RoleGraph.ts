@@ -5,6 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {chart} from '@xh/hoist/cmp/chart';
+import {errorBoundary} from '@xh/hoist/cmp/error';
 import {div, hspacer, placeholder} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -18,7 +19,6 @@ import {isEmpty} from 'lodash';
 import {RoleModel} from '../RoleModel';
 import {RoleGraphModel} from './RoleGraphModel';
 import './RoleGraph.scss';
-import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 
 export const roleGraph = hoistCmp.factory({
     displayName: 'RoleGraph',
@@ -32,7 +32,7 @@ export const roleGraph = hoistCmp.factory({
             item: div({
                 item: div({
                     style: {margin: 'auto'},
-                    item: content()
+                    item: errorBoundary(content())
                 }),
                 style: {
                     display: 'flex',
@@ -80,9 +80,9 @@ export const roleGraph = hoistCmp.factory({
                         stepSize: 0.005,
                         labelRenderer: false
                     }),
-                    'Limit to two levels',
+                    'Limit to one level',
                     switchInput({
-                        bind: 'limitToTwoLevels'
+                        bind: 'limitToOneLevel'
                     })
                 ],
                 omit: !role
@@ -99,7 +99,6 @@ export const roleGraph = hoistCmp.factory({
 });
 
 const content = hoistCmp.factory<RoleGraphModel>(({model}) => {
-    if (model.error) return errorMessage({error: model.error});
     const {relationship, relatedRoles, role, size} = model;
     if (!Highcharts?.seriesTypes.treegraph) {
         logError(

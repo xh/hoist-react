@@ -22,9 +22,7 @@ export class RoleGraphModel extends HoistModel {
 
     @bindable widthScale: number = 1.0;
 
-    @bindable limitToTwoLevels: boolean = true;
-
-    @bindable error = null;
+    @bindable limitToOneLevel: boolean = true;
 
     get relatedRoles(): EffectiveRoleMember[] {
         const {role, relationship} = this;
@@ -39,27 +37,21 @@ export class RoleGraphModel extends HoistModel {
 
     @computed
     get size() {
-        try {
-            const {inverted, leafCount, maxDepth, widthScale} = this;
-            if (inverted) {
-                const AVG_WIDTH = 150,
-                    AVG_HEIGHT = 26;
-                return {
-                    width: AVG_WIDTH * leafCount * widthScale,
-                    height: AVG_HEIGHT * (maxDepth + 1)
-                };
-            } else {
-                const AVG_WIDTH = 100,
-                    AVG_HEIGHT = 30;
-                return {
-                    width: AVG_WIDTH * maxDepth * widthScale,
-                    height: AVG_HEIGHT * (leafCount + 1)
-                };
-            }
-        } catch (e) {
-            // Error will be rendered by the component.
-            this.error = e;
-            return {};
+        const {inverted, leafCount, maxDepth, widthScale} = this;
+        if (inverted) {
+            const AVG_WIDTH = 150,
+                AVG_HEIGHT = 26;
+            return {
+                width: AVG_WIDTH * leafCount * widthScale,
+                height: AVG_HEIGHT * (maxDepth + 1)
+            };
+        } else {
+            const AVG_WIDTH = 100,
+                AVG_HEIGHT = 30;
+            return {
+                width: AVG_WIDTH * maxDepth * widthScale,
+                height: AVG_HEIGHT * (leafCount + 1)
+            };
         }
     }
 
@@ -67,7 +59,7 @@ export class RoleGraphModel extends HoistModel {
         const {chartModel} = this;
         this.addReaction(
             {
-                track: () => [this.role, this.relationship, this.limitToTwoLevels],
+                track: () => [this.role, this.relationship, this.limitToOneLevel],
                 run: async ([role]) => {
                     chartModel.clear(); //  avoid HC rendering glitches
                     await wait();
@@ -96,8 +88,7 @@ export class RoleGraphModel extends HoistModel {
     // Implementation
     // -------------------------------
     private getSeriesData(): PlainObject[] {
-        this.error = null;
-        const {role, relatedRoles, limitToTwoLevels} = this,
+        const {role, relatedRoles, limitToOneLevel} = this,
             {name: rootName} = role;
         if (isEmpty(relatedRoles)) return [];
         const alreadyAdded = new Set<string>();
@@ -125,8 +116,8 @@ export class RoleGraphModel extends HoistModel {
                             return a > b ? 1 : -1;
                         })
                         .map(source => {
-                            // Omit all non-root nodes if limitToTwoLevels is true
-                            if (limitToTwoLevels && source !== rootName) return null;
+                            // Omit all non-root nodes if limitToOneLevel is true
+                            if (limitToOneLevel && source !== rootName) return null;
                             // Adds a space to the id to differentiate subsequent nodes from the single expanded one.
                             const id = alreadyAdded.has(name) ? `${name} ` : name;
                             alreadyAdded.add(name);
@@ -199,9 +190,9 @@ export class RoleGraphModel extends HoistModel {
 
     @computed
     private get leafCount(): number {
-        const {relatedRoles, limitToTwoLevels, role} = this;
-        // Limit to two levels means that we only show the direct children of the root role.
-        if (limitToTwoLevels)
+        const {relatedRoles, limitToOneLevel, role} = this;
+        // Limit to one level means that we only show the direct children of the root role.
+        if (limitToOneLevel)
             return sumBy(relatedRoles, it => (it.sourceRoles.includes(role.name) ? 1 : 0));
 
         return sumBy(relatedRoles, it => {
@@ -214,11 +205,11 @@ export class RoleGraphModel extends HoistModel {
 
     @computed
     private get maxDepth(): number {
-        const {role: root, relatedRoles, limitToTwoLevels} = this;
+        const {role: root, relatedRoles, limitToOneLevel} = this;
         // Only the root node.
         if (isEmpty(relatedRoles)) return 1;
-        // Limit to two levels means that we only show two levels.
-        if (limitToTwoLevels) return 2;
+        // Limit to one level means that we only show two levels.
+        if (limitToOneLevel) return 2;
 
         const maxDepthRecursive = (roleName: string) => {
             if (roleName === root.name) return 1;
