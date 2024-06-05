@@ -9,6 +9,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import './Label.scss';
+import {ForwardedRef} from 'react';
 
 export interface LabelProps extends HoistProps, HoistInputProps, StyleProps {}
 
@@ -35,6 +36,6 @@ const cmp = hoistCmp.factory(({model, className, style, width, children}, ref) =
         className,
         style: {...style, whiteSpace: 'nowrap', width},
         items: children,
-        ref
+        ref: ref as ForwardedRef<any>
     });
 });

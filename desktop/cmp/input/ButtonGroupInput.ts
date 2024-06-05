@@ -12,7 +12,7 @@ import {ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, filter, isEmpty, without} from 'lodash';
-import {Children, cloneElement, isValidElement} from 'react';
+import {Children, cloneElement, ForwardedRef, isValidElement} from 'react';
 
 export interface ButtonGroupInputProps
     extends Omit<ButtonGroupProps<HoistModel>, 'onChange' | 'ref'>,
@@ -163,6 +163,6 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props
         onBlur: model.onBlur,
         onFocus: model.onFocus,
         className,
-        ref
+        ref: ref as ForwardedRef<any>
     });
 });

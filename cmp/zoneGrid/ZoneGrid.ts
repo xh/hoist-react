@@ -11,10 +11,15 @@ import {zoneMapper as desktopZoneMapper} from '@xh/hoist/dynamics/desktop';
 import {zoneMapper as mobileZoneMapper} from '@xh/hoist/dynamics/mobile';
 import {GridOptions} from '@xh/hoist/kit/ag-grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {RefAttributes} from 'react';
 import {ZoneGridModel} from './ZoneGridModel';
 import './ZoneGrid.scss';
 
-export interface ZoneGridProps extends HoistProps<ZoneGridModel>, LayoutProps, TestSupportProps {
+export interface ZoneGridProps
+    extends HoistProps<ZoneGridModel>,
+        LayoutProps,
+        TestSupportProps,
+        RefAttributes<HTMLDivElement> {
     /**
      * Options for ag-Grid's API.
      *

@@ -11,7 +11,7 @@ import '@xh/hoist/mobile/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, isEmpty, without} from 'lodash';
-import {Children, cloneElement, isValidElement, ReactNode} from 'react';
+import {Children, cloneElement, ForwardedRef, isValidElement, ReactNode} from 'react';
 import './ButtonGroupInput.scss';
 
 export interface ButtonGroupInputProps
@@ -126,6 +126,6 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props
         ...rest,
         ...getLayoutProps(props),
         className,
-        ref
+        ref: ref as ForwardedRef<any>
     });
 });

@@ -11,6 +11,7 @@ import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import './TextArea.scss';
+import {ForwardedRef} from 'react';
 
 export interface TextAreaProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
     value?: string;
@@ -98,6 +99,6 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
         },
 
         className,
-        ref
+        ref: ref as ForwardedRef<any>
     });
 });

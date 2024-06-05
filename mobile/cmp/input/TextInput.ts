@@ -15,6 +15,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import './TextInput.scss';
+import {ForwardedRef} from 'react';
 
 export interface TextInputProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
     value?: string;
@@ -114,7 +115,7 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
     const {width, ...layoutProps} = getLayoutProps(props);
 
     return hbox({
-        ref,
+        ref: ref as ForwardedRef<any>,
         className,
         style: {
             ...props.style,

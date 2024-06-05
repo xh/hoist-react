@@ -4,16 +4,17 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {ForwardedRef} from 'react';
 import {hoistCmp, uses, HoistProps, XH, TestSupportProps} from '@xh/hoist/core';
 import {pinPadImpl as desktopPinPadImpl} from '@xh/hoist/dynamics/desktop';
 import {pinPadImpl as mobilePinPadImpl} from '@xh/hoist/dynamics/mobile';
+import {RefAttributes} from 'react';
 
 import {PinPadModel} from './PinPadModel';
 
-export interface PinPadProps extends HoistProps<PinPadModel>, TestSupportProps {
-    ref?: ForwardedRef<HTMLDivElement>;
-}
+export interface PinPadProps
+    extends HoistProps<PinPadModel>,
+        TestSupportProps,
+        RefAttributes<HTMLDivElement> {}
 /**
  * Displays a prompt used to get obtain a PIN from the user.
  *

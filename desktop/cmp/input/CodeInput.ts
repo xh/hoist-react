@@ -35,7 +35,7 @@ import 'codemirror/addon/selection/mark-selection.js';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/dracula.css';
 import {compact, defaultsDeep, isEqual, isFunction} from 'lodash';
-import {ReactElement} from 'react';
+import {ForwardedRef, ReactElement} from 'react';
 import {findDOMNode} from 'react-dom';
 import './CodeInput.scss';
 
@@ -482,7 +482,7 @@ const inputCmp = hoistCmp.factory<CodeInputModel>(({model, ...props}, ref) =>
         onBlur: model.onBlur,
         onFocus: model.onFocus,
         ...props,
-        ref
+        ref: ref as ForwardedRef<any>
     })
 );
 

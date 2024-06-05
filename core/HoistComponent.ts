@@ -41,7 +41,8 @@ import {
     useRef,
     createElement,
     FunctionComponent,
-    useDebugValue
+    useDebugValue,
+    RefAttributes
 } from 'react';
 
 /**
@@ -60,12 +61,12 @@ export type RenderPropsOf<P extends HoistProps> = Omit<P, 'modelConfig' | 'model
  */
 export type ComponentConfig<
     P extends HoistProps,
-    R = P extends {ref?: ForwardedRef<infer R>} ? ForwardedRef<R> : never
+    R = P extends RefAttributes<infer R> ? R : unknown
 > =
-    | ((props: RenderPropsOf<P>, ref?: R) => ReactNode)
+    | ((props: RenderPropsOf<P>, ref?: ForwardedRef<R>) => ReactNode)
     | {
           /** Render function defining the component. */
-          render(props: RenderPropsOf<P>, ref?: R): ReactNode;
+          render(props: RenderPropsOf<P>, ref?: ForwardedRef<R>): ReactNode;
 
           /**
            * Spec defining the model to be rendered by this component.

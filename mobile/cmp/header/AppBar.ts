@@ -16,11 +16,11 @@ import {
 import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
-import {ReactElement, ReactNode} from 'react';
+import {ReactElement, ReactNode, RefAttributes} from 'react';
 import './AppBar.scss';
 import {appMenuButton, AppMenuButtonProps} from './AppMenuButton';
 
-export interface AppBarProps extends HoistProps {
+export interface AppBarProps extends HoistProps, RefAttributes<HTMLDivElement> {
     /** App icon to display to the left of the title. */
     icon?: ReactElement;
 

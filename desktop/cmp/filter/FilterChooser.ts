@@ -16,10 +16,13 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEmpty, sortBy} from 'lodash';
-import {ReactElement} from 'react';
+import {ReactElement, RefAttributes} from 'react';
 import './FilterChooser.scss';
 
-export interface FilterChooserProps extends HoistProps<FilterChooserModel>, LayoutProps {
+export interface FilterChooserProps
+    extends HoistProps<FilterChooserModel>,
+        LayoutProps,
+        RefAttributes<HTMLDivElement> {
     /** True to focus the control on render. */
     autoFocus?: boolean;
     /** True to disable user interaction. */

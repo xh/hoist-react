@@ -7,14 +7,14 @@
 import {hoistCmp, useLocalModel, HoistModel, BoxProps, HoistProps} from '@xh/hoist/core';
 import {frame, box} from '@xh/hoist/cmp/layout';
 import {useOnResize} from '@xh/hoist/utils/react';
-import {useState, useLayoutEffect, ForwardedRef} from 'react';
+import {useState, useLayoutEffect, RefAttributes} from 'react';
 import {minBy, isEqual} from 'lodash';
 import composeRefs from '@seznam/compose-react-refs';
 import {Children} from 'react';
 
 import './TileFrame.scss';
 
-export interface TileFrameProps extends HoistProps, BoxProps {
+export interface TileFrameProps extends HoistProps, BoxProps, RefAttributes<HTMLDivElement> {
     /**
      * Desired tile width / height ratio (i.e. desiredRatio: 2 == twice as wide as tall).
      * The container will strive to meet this ratio, but the final ratio may vary.
@@ -44,8 +44,6 @@ export interface TileFrameProps extends HoistProps, BoxProps {
         tileWidth: number;
         tileHeight: number;
     }) => any;
-
-    ref?: ForwardedRef<HTMLDivElement>;
 }
 
 /**

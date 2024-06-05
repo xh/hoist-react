@@ -9,12 +9,12 @@ import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {isNil, isString} from 'lodash';
-import {isValidElement, ReactNode, MouseEvent} from 'react';
+import {isValidElement, ReactNode, MouseEvent, RefAttributes} from 'react';
 
 import './ErrorMessage.scss';
 import {Icon} from '@xh/hoist/icon';
 
-export interface ErrorMessageProps extends HoistProps {
+export interface ErrorMessageProps extends HoistProps, RefAttributes<HTMLDivElement> {
     /**
      * If provided, will render a "Retry" button that calls this function.
      * Use `actionButtonProps` for further control over this button.

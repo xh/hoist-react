@@ -6,9 +6,9 @@
  */
 
 import {TestSupportProps} from '@xh/hoist/core';
-import {ForwardedRef} from 'react';
+import {RefAttributes} from 'react';
 
-export interface HoistInputProps extends TestSupportProps {
+export interface HoistInputProps extends TestSupportProps, RefAttributes<any> {
     /**
      * Field or model property name from which this component should read and write its value
      * in controlled mode. Can be set by parent FormField.
@@ -32,7 +32,4 @@ export interface HoistInputProps extends TestSupportProps {
 
     /** Value of the control, if provided directly. */
     value?: any;
-
-    /** Ref to implementing control element */
-    ref?: ForwardedRef<any>;
 }

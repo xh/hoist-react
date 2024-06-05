@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
+import {BoxComponentProps, div, hspacer, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, MenuItem, MenuItemLike} from '@xh/hoist/core';
 import {listItem} from '@xh/hoist/kit/onsen';
 import {makeObservable, bindable} from '@xh/hoist/mobx';
@@ -24,7 +24,14 @@ import './Menu.scss';
  *
  * @internal
  */
-export const menu = hoistCmp.factory({
+
+interface MenuProps extends Omit<BoxComponentProps, 'title'> {
+    menuItems: MenuItemLike[];
+    onDismiss: () => void;
+    title: ReactNode;
+}
+
+export const menu = hoistCmp.factory<MenuProps>({
     displayName: 'Menu',
     className: 'xh-menu',
 

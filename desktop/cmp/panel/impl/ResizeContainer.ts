@@ -8,16 +8,14 @@ import composeRefs from '@seznam/compose-react-refs';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, TestSupportProps, useContextModel} from '@xh/hoist/core';
 import {isString} from 'lodash';
-import {Children, ForwardedRef} from 'react';
+import {Children, RefAttributes} from 'react';
 import {PanelModel} from '../PanelModel';
 import {dragger} from './dragger/Dragger';
 import {splitter} from './Splitter';
 
-interface ResizeContainerProps extends HoistProps, TestSupportProps {
-    ref?: ForwardedRef<HTMLDivElement>;
-}
-
-export const resizeContainer = hoistCmp.factory<ResizeContainerProps>({
+export const resizeContainer = hoistCmp.factory<
+    HoistProps & TestSupportProps & RefAttributes<HTMLDivElement>
+>({
     displayName: 'ResizeContainer',
     model: false,
     className: 'xh-resizable',

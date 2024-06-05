@@ -23,7 +23,7 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import debouncePromise from 'debounce-promise';
 import {escapeRegExp, isEqual, isNil, isPlainObject, keyBy, merge} from 'lodash';
-import {Children, ReactNode, ReactPortal} from 'react';
+import {Children, ForwardedRef, ReactNode, ReactPortal} from 'react';
 import ReactDom from 'react-dom';
 import './Select.scss';
 
@@ -663,7 +663,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
                 item: box({
                     item: factory(rsProps),
                     className,
-                    ref
+                    ref: ref as ForwardedRef<any>
                 })
             }),
             model.getOrCreateFullscreenPortalDiv()
@@ -674,7 +674,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             className,
             ...layoutProps,
             width: withDefault(width, null),
-            ref
+            ref: ref as ForwardedRef<any>
         });
     }
 });

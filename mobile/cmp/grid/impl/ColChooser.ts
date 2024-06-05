@@ -15,6 +15,7 @@ import '@xh/hoist/mobile/register';
 import classNames from 'classnames';
 import './ColChooser.scss';
 import {isEmpty} from 'lodash';
+import {ForwardedRef} from 'react';
 import {ColChooserModel} from './ColChooserModel';
 
 export interface ColChooserProps extends HoistProps<ColChooserModel> {}
@@ -141,7 +142,7 @@ const columnList = hoistCmp.factory({
                 ? placeholderCmp('All columns have been added to the grid.')
                 : [...cols.map((col, idx) => draggableRow({col, idx})), placeholder],
             ...props,
-            ref
+            ref: ref as ForwardedRef<HTMLDivElement>
         });
     }
 });
@@ -208,7 +209,7 @@ const row = hoistCmp.factory<ColChooserLocalModel>({
                 })
             ],
             ...props,
-            ref
+            ref: ref as ForwardedRef<HTMLDivElement>
         });
     }
 });

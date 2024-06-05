@@ -17,7 +17,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import moment from 'moment';
 import './DateInput.scss';
-import {ReactElement} from 'react';
+import {ForwardedRef, ReactElement} from 'react';
 
 export interface DateInputProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
     value?: Date | LocalDate;
@@ -217,6 +217,6 @@ const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref)
             ...layoutProps,
             textAlign
         },
-        ref
+        ref: ref as ForwardedRef<any>
     });
 });

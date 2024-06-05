@@ -17,14 +17,14 @@ import {
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {useOnMount, useOnResize} from '@xh/hoist/utils/react';
-import {ForwardedRef, useContext} from 'react';
+import {RefAttributes, useContext} from 'react';
 import './DashContainer.scss';
 import {DashContainerModel} from './DashContainerModel';
 import {dashContainerAddViewButton} from './impl/DashContainerContextMenu';
 
-export interface DashContainerProps extends HoistProps<DashContainerModel>, TestSupportProps {
-    ref?: ForwardedRef<HTMLDivElement>;
-}
+export type DashContainerProps = HoistProps<DashContainerModel> &
+    TestSupportProps &
+    RefAttributes<HTMLDivElement>;
 
 /**
  * Display a set of child components in accordance with a DashContainerModel.

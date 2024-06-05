@@ -12,7 +12,7 @@ import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/bl
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isArray} from 'lodash';
-import {ReactNode} from 'react';
+import {ForwardedRef, ReactNode} from 'react';
 import './Slider.scss';
 
 export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
@@ -111,6 +111,6 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
 
         onBlur: model.onBlur,
         onFocus: model.onFocus,
-        ref
+        ref: ref as ForwardedRef<any>
     });
 });

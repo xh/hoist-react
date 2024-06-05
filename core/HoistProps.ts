@@ -6,7 +6,7 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {Property} from 'csstype';
-import {CSSProperties, HTMLAttributes, ReactNode, Ref, ForwardedRef} from 'react';
+import {CSSProperties, HTMLAttributes, ReactNode, Ref, RefAttributes} from 'react';
 
 /**
  * Props interface for Hoist Components.
@@ -66,9 +66,8 @@ export interface DefaultHoistProps<M extends HoistModel = HoistModel> extends Ho
 export interface BoxProps
     extends LayoutProps,
         TestSupportProps,
-        Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'contextMenu'> {
-    ref?: ForwardedRef<HTMLDivElement>;
-}
+        Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'contextMenu'>,
+        RefAttributes<HTMLDivElement> {}
 
 /**
  * Props for Components that accept standard HTML `style` attributes.

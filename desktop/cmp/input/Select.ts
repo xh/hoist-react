@@ -42,7 +42,7 @@ import {
     keyBy,
     merge
 } from 'lodash';
-import {ReactElement, ReactNode} from 'react';
+import {ForwardedRef, ReactElement, ReactNode} from 'react';
 import {components} from 'react-select';
 import './Select.scss';
 
@@ -802,6 +802,6 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         ...layoutProps,
         width: withDefault(width, 200),
         height: height,
-        ref
+        ref: ref as ForwardedRef<any>
     });
 });

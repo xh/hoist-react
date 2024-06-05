@@ -13,17 +13,17 @@ import {zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapper';
 import {Icon} from '@xh/hoist/icon';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
 import {logError, stopPropagation, withDefault} from '@xh/hoist/utils/js';
-import {ForwardedRef} from 'react';
+import {RefAttributes} from 'react';
 import {button, ButtonProps} from './Button';
 
-export interface ZoneMapperButtonProps extends Omit<ButtonProps, 'ref'> {
+export interface ZoneMapperButtonProps
+    extends Omit<ButtonProps, 'ref'>,
+        RefAttributes<HTMLDivElement> {
     /** ZoneGridModel of the grid for which this button should show a chooser. */
     zoneGridModel?: ZoneGridModel;
 
     /** Position for chooser popover, as per Blueprint docs. */
     popoverPosition?: Position;
-
-    ref?: ForwardedRef<HTMLDivElement>;
 }
 
 /**
