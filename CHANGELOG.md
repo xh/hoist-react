@@ -2,6 +2,10 @@
 
 ## 65.0-SNAPSHOT - Unreleased
 
+### ⚙️ Technical
+
+* Typescript: Improve `ref` typing in JSX.
+
 ## 64.0.3 - 2024-05-31
 
 ### 🐞 Bug Fixes
