@@ -5,12 +5,14 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {ColDef, ColGroupDef} from '@ag-grid-community/core';
+import {ColDef, ColGroupDef, ManagedGridOptions} from '@ag-grid-community/core';
 import {DomLayoutType} from '@ag-grid-community/core/dist/types/src/entities/gridOptions';
+import {isEmpty} from 'lodash';
+
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, TrackOptions, XH} from '@xh/hoist/core';
 import {makeObservable, bindable} from '@xh/hoist/mobx';
-import {warnIf} from '@xh/hoist/utils/js';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
 export interface PrintSupportConfig {
@@ -104,7 +106,7 @@ export class PrintSupportModel extends HoistModel {
 
         // special handling for grids
         if (this.parentModel instanceof GridModel) {
-            this.doPrintGrid(this.parentModel);
+            this.setupGridForPrinting(this.parentModel);
         }
 
         // for all component types, allow scrolling and hide the root app node
@@ -113,49 +115,16 @@ export class PrintSupportModel extends HoistModel {
         window.dispatchEvent(new Event('resize'));
     }
 
-    private doPrintGrid(gridModel: GridModel) {
-        this.gridDomLayout = gridModel.agApi.getGridOption('domLayout');
-        this.gridColumnDefs = gridModel.agApi.getColumnDefs();
-
-        const printableColumns = this.adjustColumnDefsForPrint(this.gridColumnDefs);
-
-        gridModel.agApi.updateGridOptions({
-            domLayout: 'print',
-            columnDefs: printableColumns
-        });
-
-        const trackOptions = (
-            this.track
-                ? {
-                      category: 'Print',
-                      message: `Printed Grid`,
-                      data: {
-                          rows: gridModel.agApi.getRenderedNodes().length,
-                          columns: printableColumns.length
-                      }
-                  }
-                : {omit: true}
-        ) as TrackOptions;
-
-        XH.track(trackOptions);
-
-        setTimeout(() => {
-            window.print();
-            this.isPrinting = false;
-        }, 2000);
-    }
-
     private toScreenMode() {
         if (this.toggledTheme) {
             XH.toggleTheme();
         }
-        if (this.parentModel instanceof GridModel && this.gridDomLayout) {
-            this.parentModel.agApi.updateGridOptions({
-                domLayout: this.gridDomLayout,
-                columnDefs: this.adjustColumnDefsForScreen(this.gridColumnDefs)
-            });
+
+        // special handling for grids
+        if (this.parentModel instanceof GridModel) {
+            this.setupGridForScreen(this.parentModel);
         }
-        this.gridColumnDefs = [];
+
         this.setStyles('.xh-app', {overflow: 'visible'});
         this.setStyles('#xh-root', {display: 'block'});
         this.inlineRef.current.appendChild(this.hostNode);
@@ -193,6 +162,72 @@ export class PrintSupportModel extends HoistModel {
         }
     }
 
+    // //////////////////////
+    // Grid-specific logic
+    // //////////////////////
+    private setupGridForPrinting(gridModel: GridModel) {
+        const {agApi} = gridModel;
+        throwIf(!agApi, 'ag-Grid API not available for printing.');
+
+        this.gridDomLayout = agApi.getGridOption('domLayout');
+        this.gridColumnDefs = agApi.getColumnDefs();
+        let printableColumns = this.gridColumnDefs;
+
+        // only change the grid if it is not already in print mode
+        if (this.gridDomLayout !== 'print') {
+            printableColumns = this.adjustColumnDefsForPrint(this.gridColumnDefs);
+            agApi.updateGridOptions({
+                domLayout: 'print',
+                columnDefs: printableColumns
+            });
+        }
+
+        const trackOptions = (
+            this.track
+                ? {
+                      category: 'Print',
+                      message: `Printed Grid`,
+                      data: {
+                          rows: agApi.getRenderedNodes().length,
+                          columns: printableColumns.length
+                      }
+                  }
+                : {omit: true}
+        ) as TrackOptions;
+
+        XH.track(trackOptions);
+
+        setTimeout(
+            () => {
+                window.print();
+                // Setting print mode to false right after print dialog opens
+                // does not affect print dialog, and does not change
+                // the underlying UI until the print dialog is closed.
+                this.isPrinting = false;
+            },
+            // Delay needed for ag-grid to render the print view before calling window.print()
+            2000
+        );
+    }
+
+    private setupGridForScreen(gridModel: GridModel) {
+        const {agApi} = gridModel;
+        if (!agApi) return;
+
+        const gridDomLayout = agApi.getGridOption('domLayout'),
+            gridOptions: ManagedGridOptions = {};
+
+        if (gridDomLayout === 'print') {
+            gridOptions['domLayout'] = this.gridDomLayout ?? 'normal'; // ag-grid default
+            gridOptions['columnDefs'] = this.adjustColumnDefsForScreen(this.gridColumnDefs);
+        }
+
+        if (!isEmpty(gridOptions)) gridModel.agApi.updateGridOptions(gridOptions);
+
+        this.gridDomLayout = undefined;
+        this.gridColumnDefs = [];
+    }
+
     private adjustColumnDefsForPrint(columnDefs: (ColDef | ColGroupDef)[]) {
         const ret = columnDefs.map(def => {
             if (isColGroupDef(def)) {
@@ -202,7 +237,7 @@ export class PrintSupportModel extends HoistModel {
                 };
             }
 
-            const ret: ColDef | ColGroupDef = {...def};
+            const ret: ColDef = {...def};
             if (ret.flex) {
                 ret.maxWidth = this.flexMaxWidth;
             }
@@ -224,7 +259,13 @@ export class PrintSupportModel extends HoistModel {
                 };
             }
 
-            const ret: ColDef | ColGroupDef = {...def};
+            // Reset any changes made for print (currently only actions column).
+            const ret: ColDef = {...def};
+
+            // If hide is not set, ag-grid will not render the column
+            // if hide was set to true for print mode,
+            // so we need to set it to false explicitly,
+            // to make it visible again.
             if (ret.colId === 'actions') {
                 ret.hide = ret.hide ?? false;
             }
