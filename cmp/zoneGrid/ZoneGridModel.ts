@@ -11,7 +11,7 @@ import {
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@ag-grid-community/core';
-import {PrintSupportConfig} from '../printsupport';
+import {PrintSupportGridConfig} from '../printsupport';
 import {
     Column,
     ColumnRenderer,
@@ -249,7 +249,7 @@ export interface ZoneGridConfig {
      * Set to true to enable printing support for this grid, or provide a
      * config to further configure. Default false.
      */
-    printSupport?: boolean | PrintSupportConfig;
+    printSupport?: boolean | PrintSupportGridConfig;
 
     /**
      * Governs if the grid should reuse a limited set of DOM elements for columns visible in the

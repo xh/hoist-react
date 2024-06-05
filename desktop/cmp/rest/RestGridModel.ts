@@ -8,7 +8,7 @@
 import {RowDoubleClickedEvent} from '@ag-grid-community/core';
 import {BaseFieldConfig} from '@xh/hoist/cmp/form';
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
-import {PrintSupportConfig} from '@xh/hoist/cmp/printsupport';
+import {PrintSupportGridConfig} from '@xh/hoist/cmp/printsupport';
 import {HoistModel, managed, PlainObject, ElementSpec, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {RecordAction, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
@@ -62,7 +62,7 @@ export interface RestGridConfig extends GridConfig {
      * Set to true to enable printing support for this restgrid, or provide a
      * config to further configure. Default false.
      */
-    printSupport?: boolean | PrintSupportConfig;
+    printSupport?: boolean | PrintSupportGridConfig;
 }
 
 export interface RestGridEditor {

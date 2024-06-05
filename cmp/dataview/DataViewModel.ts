@@ -28,7 +28,7 @@ import {
     StoreSelectionModel,
     StoreTransaction
 } from '@xh/hoist/data';
-import {PrintSupportConfig} from '@xh/hoist/cmp/printsupport';
+import {PrintSupportGridConfig} from '@xh/hoist/cmp/printsupport';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNumber} from 'lodash';
@@ -128,7 +128,7 @@ export interface DataViewConfig {
      * Set to true to enable printing support for this dataview, or provide a
      * config to further configure. Default false.
      */
-    printSupport?: boolean | PrintSupportConfig;
+    printSupport?: boolean | PrintSupportGridConfig;
 
     /**
      * "Escape hatch" object to pass directly to GridModel. Note these options may be used

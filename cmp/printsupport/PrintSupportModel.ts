@@ -16,9 +16,27 @@ import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
 export interface PrintSupportConfig {
-    showActions?: boolean;
-    flexMaxWidth?: number;
+    /* True to enable tracking of print activity (default false). */
     track?: boolean;
+
+    /**
+     * Delay in milliseconds before printing (default 2000).
+     * Ag-Grid needs time to render the print view before calling window.print().
+     * Very complex UIs or grids may need longer.
+     * No need to set to less than 2000. A 2000 delay is not noticeable to the user.
+     **/
+    delay?: number;
+}
+
+export interface PrintSupportGridConfig extends PrintSupportConfig {
+    /* True to show print action columns (default false). */
+    showActions?: boolean;
+
+    /**
+     *  Maximum width of flex columns in the grid when printing (default 250).
+     *  Without a max width, flex columns can expand to fill the page width.
+     **/
+    flexMaxWidth?: number;
 }
 
 /**
@@ -38,6 +56,7 @@ export class PrintSupportModel extends HoistModel {
     showActions: boolean;
     flexMaxWidth: number;
     track: boolean;
+    delay: number;
 
     inlineRef = createObservableRef<HTMLElement>();
     printRef = createObservableRef<HTMLElement>();
@@ -60,14 +79,21 @@ export class PrintSupportModel extends HoistModel {
 
     constructor(
         parentModel: HoistModel,
-        {showActions = false, flexMaxWidth = 250, track = false}: PrintSupportConfig = {}
+        {
+            showActions = false,
+            flexMaxWidth = 250,
+            track = false,
+            delay = 2000
+        }: PrintSupportGridConfig = {}
     ) {
         super();
         makeObservable(this);
+
         this.parentModel = parentModel;
         this.showActions = showActions;
         this.flexMaxWidth = flexMaxWidth;
         this.track = track;
+        this.delay = delay;
 
         this.createPrintNode();
         this.hostNode = this.createHostNode();

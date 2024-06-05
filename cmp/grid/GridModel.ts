@@ -49,7 +49,7 @@ import {
     StoreSelectionModel,
     StoreTransaction
 } from '@xh/hoist/data';
-import {PrintSupportConfig, PrintSupportModel} from '@xh/hoist/cmp/printsupport';
+import {PrintSupportGridConfig, PrintSupportModel} from '@xh/hoist/cmp/printsupport';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
@@ -273,7 +273,7 @@ export interface GridConfig {
      * Set to true to enable printing support for this grid, or provide a
      * config to further configure. Default false.
      */
-    printSupport?: boolean | PrintSupportConfig;
+    printSupport?: boolean | PrintSupportGridConfig;
 
     /**
      * Number of clicks required to expand / collapse a parent row in a tree grid. Defaults
