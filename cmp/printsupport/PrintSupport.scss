@@ -1,13 +1,43 @@
-.xh-print-support {
-  &__printing {
-    // Centers the grid when printing,
-    // even though ag-grid styles it with inline-block.
-    // This prevents the rows from taking up the full width of the page when printing,
-    // which would happen if the centering with 'block' were used.
-    .ag-root-wrapper.ag-layout-print {
-      position: relative;
-      left: 50%;
-      transform: translateX(-50%);
+@media print {
+  .xh-print-support {
+    &__printing {
+      .ag-root-wrapper.ag-layout-print,
+      .xh-treemap__chart-holder {
+        // override position: absolute which causes tree map to disappear in print preview
+        // also needed for ag-grid to render correctly in print preview
+        position: relative;
+
+        // Centers the grid and chart when printing.
+        // This prevents the grid rows from taking up the full width of the page when printing,
+        // which would happen if the centering with `display:block` and `margin:auto` were used.
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .xh-panel {
+        margin: auto;
+
+        .xh-panel__content {
+          border: none;
+          * {
+            overflow-y: visible !important;
+            // hide the scrollbars in Chrome & Edge print preview
+            scrollbar-width: none;
+
+            // hide the scrollbars in @print render mode
+            &::-webkit-scrollbar {
+              background: transparent;
+              width: 0;
+              height: 0;
+            }
+          }
+
+          .xh-panel-header__items,
+          .xh-toolbar {
+            display: none !important;
+          }
+        }
+      }
     }
   }
 }
