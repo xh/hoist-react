@@ -55,18 +55,12 @@ export class IdentityService extends HoistService {
     }
 
     /**
-     * For applications that support a logout operation (i.e. not SSO), logs the current user out
-     * and refreshes the application to present a login panel.
+     * Logs the current user out and reloads the application
      */
     async logoutAsync() {
-        try {
-            await XH.appModel?.logoutAsync();
-        } catch (e) {
-            this.logError('Error calling XH.appModel.logoutAsync()', e);
-        }
-        return XH.fetchJson({url: 'xh/logout'})
-            .then(() => XH.reloadApp())
-            .catchDefault();
+        await XH.fetchJson({url: 'xh/logout'});
+        await XH.appModel?.logoutAsync(); // can be called by LockoutPanel prior to appModel init
+        XH.reloadApp();
     }
 
     //------------------------

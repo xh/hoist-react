@@ -26,7 +26,7 @@ export interface AppMenuButtonProps extends MenuButtonProps {
     /** True to hide the Reload button. Defaulted to false. */
     hideReloadItem?: boolean;
 
-    /** True to hide the Logout button. Defaulted to appSpec.isSSO. */
+    /** True to hide the Logout button. Defaulted to !appSpec.enableLogout. */
     hideLogoutItem?: boolean;
 
     /** True to hide the Options button. */
@@ -91,7 +91,7 @@ function buildMenuItems({
     hideOptionsItem = hideOptionsItem || !XH.appContainerModel.optionsDialogModel.hasOptions;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
     hideReloadItem = withDefault(hideReloadItem, false);
-    hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
+    hideLogoutItem = withDefault(hideLogoutItem, !XH.appSpec.enableLogout);
 
     const defaultItems = [
         {

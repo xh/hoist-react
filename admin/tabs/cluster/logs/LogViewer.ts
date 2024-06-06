@@ -19,14 +19,16 @@ import {LogViewerModel} from './LogViewerModel';
 
 export const logViewer = hoistCmp.factory({
     model: creates(LogViewerModel),
+    displayName: 'LogViewer',
+    className: 'xh-log-viewer',
 
-    render({model}) {
+    render({model, className}) {
         if (!model.enabled) {
             return errorMessage({error: 'Log viewer disabled via xhEnableLogViewer config.'});
         }
 
         return hframe({
-            className: 'xh-log-viewer',
+            className,
             ref: model.viewRef,
             items: [
                 panel({
@@ -50,7 +52,8 @@ export const logViewer = hoistCmp.factory({
                                 {label: 'ALL', value: false}
                             ]
                         })
-                    ]
+                    ],
+                    mask: 'onLoad'
                 }),
                 logDisplay(),
                 model.showLogLevelDialog ? logLevelDialog() : null

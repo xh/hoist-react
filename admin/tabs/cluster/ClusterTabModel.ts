@@ -70,10 +70,11 @@ export class ClusterTabModel extends HoistModel {
 
     constructor() {
         super();
+
         this.addReaction({
-            track: () => this.instance,
-            run: () => {
-                if (this.instance) this.tabModel.refreshContextModel.refreshAsync();
+            track: () => this.instanceName,
+            run: instName => {
+                if (instName) this.tabModel.refreshContextModel.refreshAsync();
             }
         });
     }
