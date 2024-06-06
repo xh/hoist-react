@@ -30,6 +30,7 @@ export interface PrintGridButtonProps extends ButtonProps {
 export const [PrintGridButton, printGridButton] = hoistCmp.withFactory<PrintGridButtonProps>({
     displayName: 'PrintGridButton',
     model: false,
+    className: 'xh-print-grid-button',
 
     render({icon = Icon.print(), title = 'Print Grid', onClick, gridModel, ...rest}, ref) {
         if (!onClick) {
@@ -76,6 +77,7 @@ export interface PrintPanelButtonProps extends ButtonProps {
 export const [PrintPanelButton, printPanelButton] = hoistCmp.withFactory<PrintPanelButtonProps>({
     displayName: 'PrintPanelButton',
     model: false,
+    className: 'xh-print-panel-button',
 
     render(
         {icon = Icon.print(), title = 'Print Panel Content', onClick, panelModel, ...rest},
