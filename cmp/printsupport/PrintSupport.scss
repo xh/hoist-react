@@ -1,6 +1,10 @@
 @media print {
   .xh-print-support {
     &__printing {
+      .do-not-print {
+        display: none !important;
+      }
+
       .ag-root-wrapper.ag-layout-print,
       .xh-treemap__chart-holder {
         // override position: absolute which causes tree map to disappear in print preview
@@ -19,6 +23,7 @@
 
         .xh-panel__content {
           border: none;
+
           * {
             overflow-y: visible !important;
             // hide the scrollbars in Chrome & Edge print preview

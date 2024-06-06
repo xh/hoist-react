@@ -43,7 +43,6 @@ export interface PrintSupportGridConfig extends PrintSupportConfig {
 export interface PrintSupportPanelConfig extends PrintSupportConfig {
     hideHeaderItems?: boolean; // todo
     hideToolbars?: boolean; // todo
-    printTarget?: string; // todo - selector for print target or only print '.printTarget' class if present
 }
 
 /**
