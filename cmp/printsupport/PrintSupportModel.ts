@@ -7,12 +7,13 @@
 
 import {ColDef, ColGroupDef, ManagedGridOptions} from '@ag-grid-community/core';
 import {DomLayoutType} from '@ag-grid-community/core/dist/types/src/entities/gridOptions';
+import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {isEmpty} from 'lodash';
 
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, TrackOptions, XH} from '@xh/hoist/core';
 import {makeObservable, bindable} from '@xh/hoist/mobx';
-import {throwIf, warnIf} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
 export interface PrintSupportConfig {
@@ -37,6 +38,12 @@ export interface PrintSupportGridConfig extends PrintSupportConfig {
      *  Without a max width, flex columns can expand to fill the page width.
      **/
     flexMaxWidth?: number;
+}
+
+export interface PrintSupportPanelConfig extends PrintSupportConfig {
+    hideHeaderItems?: boolean; // todo
+    hideToolbars?: boolean; // todo
+    printTarget?: string; // todo - selector for print target or only print '.printTarget' class if present
 }
 
 /**
@@ -68,12 +75,6 @@ export class PrintSupportModel extends HoistModel {
     toggledTheme: boolean;
 
     toggleIsPrinting() {
-        // can only print grids, as of now
-        if (!(this.parentModel instanceof GridModel)) {
-            warnIf(true, 'PrintSupportModel: Only GridModel is supported for printing.');
-            this.isPrinting = false;
-            return;
-        }
         this.isPrinting = !this.isPrinting;
     }
 
@@ -130,9 +131,10 @@ export class PrintSupportModel extends HoistModel {
         // move the host node to the print node
         this.printNode?.appendChild(this.hostNode);
 
-        // special handling for grids
         if (this.parentModel instanceof GridModel) {
-            this.setupGridForPrinting(this.parentModel);
+            this.setupForPrintingGrid(this.parentModel);
+        } else if (this.parentModel instanceof PanelModel) {
+            this.setupForPrintingPanel();
         }
 
         // for all component types, allow scrolling and hide the root app node
@@ -189,9 +191,41 @@ export class PrintSupportModel extends HoistModel {
     }
 
     // //////////////////////
+    // Panel-specific logic
+    // //////////////////////
+    private setupForPrintingPanel() {
+        const trackOptions = (
+            this.track
+                ? {
+                      category: 'Print',
+                      message: `Printed Panel`,
+                      data: {
+                          uri: XH.routerState.path
+                      }
+                  }
+                : {omit: true}
+        ) as TrackOptions;
+
+        XH.track(trackOptions);
+
+        setTimeout(
+            () => {
+                window.print();
+                // Setting print mode to false right after print dialog opens
+                // does not affect print dialog, and does not change
+                // the underlying UI until the print dialog is closed.
+                this.isPrinting = false;
+            },
+            // No need for delay for printing panels
+            // But there is a need to wait for next tick for print styles to be applied
+            0
+        );
+    }
+
+    // //////////////////////
     // Grid-specific logic
     // //////////////////////
-    private setupGridForPrinting(gridModel: GridModel) {
+    private setupForPrintingGrid(gridModel: GridModel) {
         const {agApi} = gridModel;
         throwIf(!agApi, 'ag-Grid API not available for printing.');
 
@@ -215,7 +249,8 @@ export class PrintSupportModel extends HoistModel {
                       message: `Printed Grid`,
                       data: {
                           rows: agApi.getRenderedNodes().length,
-                          columns: printableColumns.length
+                          columns: printableColumns.length,
+                          uri: XH.routerState.path
                       }
                   }
                 : {omit: true}

@@ -6,7 +6,7 @@
  */
 import {box, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {button, modalToggleButton} from '@xh/hoist/desktop/cmp/button';
+import {button, modalToggleButton, printPanelButton} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
@@ -28,6 +28,7 @@ export const panelHeader = hoistCmp.factory({
                 isModal,
                 side,
                 showModalToggleButton,
+                showPrintButton,
                 showHeaderCollapseButton
             } = panelModel,
             {title, icon, compact} = props;
@@ -50,6 +51,9 @@ export const panelHeader = hoistCmp.factory({
 
         if (showModalToggleButton && !isRenderedCollapsed) {
             displayedHeaderItems.push(modalToggleButton());
+        }
+        if (showPrintButton && !isRenderedCollapsed) {
+            displayedHeaderItems.push(printPanelButton());
         }
         if (showHeaderCollapseButton && !isModal) {
             displayedHeaderItems.push(collapseToggleButton({panelModel}));

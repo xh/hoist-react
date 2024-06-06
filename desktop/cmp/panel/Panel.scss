@@ -3,3 +3,30 @@
   background-color: var(--xh-panel-bg);
   border: var(--xh-panel-border-width-px) solid var(--xh-panel-border-color);
 }
+
+@media print {
+  .xh-panel {
+    margin: auto;
+
+    .xh-panel__content {
+      border: none;
+      * {
+        overflow-y: visible !important;
+        // hide the scrollbars in Chrome & Edge print preview
+        scrollbar-width: none;
+
+        // hide the scrollbars in @print render mode
+        &::-webkit-scrollbar {
+          background: transparent;
+          width: 0;
+          height: 0;
+        }
+      }
+
+      .xh-panel-header__items,
+      .xh-toolbar {
+        display: none !important;
+      }
+    }
+  }
+}

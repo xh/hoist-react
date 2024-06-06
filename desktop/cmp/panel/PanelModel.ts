@@ -25,6 +25,7 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {isNil, isNumber, isString} from 'lodash';
 import {createRef} from 'react';
 import {ModalSupportConfig, ModalSupportModel} from '../modalsupport/';
+import {PrintSupportPanelConfig, PrintSupportModel} from '@xh/hoist/cmp/printsupport';
 import {ErrorBoundaryConfig, ErrorBoundaryModel} from '@xh/hoist/cmp/error/ErrorBoundaryModel';
 
 export interface PanelConfig {
@@ -68,6 +69,12 @@ export interface PanelConfig {
     modalSupport?: boolean | ModalSupportConfig;
 
     /**
+     * Set to true to enable built-in support for printing panel contents, or provide a
+     * config to further configure. Default false.
+     */
+    printSupport?: boolean | PrintSupportPanelConfig;
+
+    /**
      * Set to true to place an ErrorBoundary around the panel, or provide a
      * config to further configure.  Default false.
      */
@@ -103,6 +110,12 @@ export interface PanelConfig {
      */
     showModalToggleButton?: boolean;
 
+    /**
+     * Should a print button be added to the end of the panel header? Only applicable if
+     * the panel has print support.
+     */
+    showPrintButton?: boolean;
+
     /** @internal */
     xhImpl?;
 }
@@ -130,8 +143,10 @@ export class PanelModel extends HoistModel {
     readonly showSplitterCollapseButton: boolean;
     readonly showHeaderCollapseButton: boolean;
     readonly showModalToggleButton: boolean;
+    readonly showPrintButton: boolean;
 
     @managed modalSupportModel: ModalSupportModel;
+    @managed printSupportModel: PrintSupportModel;
     @managed refreshContextModel: RefreshContextModel;
     @managed errorBoundaryModel: ErrorBoundaryModel;
     @managed provider: PersistenceProvider;
@@ -168,6 +183,15 @@ export class PanelModel extends HoistModel {
         return !!this.modalSupportModel;
     }
 
+    /** Is the panel rendering in its modal view state? Observable property. */
+    get isPrinting(): boolean {
+        return !!this.printSupportModel?.isPrinting;
+    }
+
+    get hasPrintSupport(): boolean {
+        return !!this.printSupportModel;
+    }
+
     /** True when both collapsed and not currently in a modal - i.e. *really* collapsed. */
     get isRenderedCollapsed(): boolean {
         return this.collapsed && !this.isModal;
@@ -193,6 +217,7 @@ export class PanelModel extends HoistModel {
         defaultCollapsed = false,
         side,
         modalSupport = false,
+        printSupport = false,
         errorBoundary = false,
         renderMode = 'lazy',
         refreshMode = 'onShowLazy',
@@ -201,6 +226,7 @@ export class PanelModel extends HoistModel {
         showSplitterCollapseButton = showSplitter && collapsible,
         showHeaderCollapseButton = true,
         showModalToggleButton = true,
+        showPrintButton = true,
         xhImpl = false
     }: PanelConfig) {
         super();
@@ -246,6 +272,7 @@ export class PanelModel extends HoistModel {
         this.showSplitterCollapseButton = showSplitterCollapseButton;
         this.showHeaderCollapseButton = collapsible && showHeaderCollapseButton;
         this.showModalToggleButton = modalSupport && showModalToggleButton;
+        this.showPrintButton = printSupport && showPrintButton;
 
         // Set up various optional functionality;
         if (modalSupport) {
@@ -253,6 +280,13 @@ export class PanelModel extends HoistModel {
                 modalSupport === true
                     ? new ModalSupportModel()
                     : new ModalSupportModel(modalSupport);
+        }
+
+        if (printSupport) {
+            this.printSupportModel =
+                printSupport === true
+                    ? new PrintSupportModel(this)
+                    : new PrintSupportModel(this, printSupport);
         }
 
         if (errorBoundary) {
@@ -391,6 +425,12 @@ export class PanelModel extends HoistModel {
             this.size = size;
             this.dispatchResize();
         }
+    }
+
+    print() {
+        if (!this.hasPrintSupport || this.isPrinting) return;
+
+        this.printSupportModel.toggleIsPrinting();
     }
 
     //---------------------------------------------

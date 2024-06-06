@@ -29,10 +29,12 @@ import {castArray, omitBy} from 'lodash';
 import {Children, isValidElement, ReactElement, ReactNode, useLayoutEffect, useRef} from 'react';
 import {ContextMenuSpec} from '../contextmenu/ContextMenu';
 import {modalSupport} from '../modalsupport/ModalSupport';
+import {printSupport} from '@xh/hoist/cmp/printsupport';
+import {PanelModel} from './PanelModel';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
+
 import './Panel.scss';
-import {PanelModel} from './PanelModel';
 
 export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'title'> {
     /** True to style panel header (if displayed) with reduced padding and font-size. */
@@ -162,6 +164,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             showSplitter,
             refreshContextModel,
             modalSupportModel,
+            printSupportModel,
             errorBoundaryModel
         } = model;
 
@@ -238,6 +241,17 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                     item,
                     className: model.isModal ? className : undefined,
                     testId: model.isModal ? testId : undefined
+                })
+            });
+        }
+
+        if (printSupportModel) {
+            item = printSupport({
+                model: printSupportModel,
+                item: frame({
+                    item,
+                    className: model.isPrinting ? className : undefined,
+                    testId: model.isPrinting ? testId : undefined
                 })
             });
         }

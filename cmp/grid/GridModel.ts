@@ -434,7 +434,7 @@ export class GridModel extends HoistModel {
      */
     @observable isInEditingMode: boolean = false;
 
-    /** Is the panel rendering in its modal view state? Observable property. */
+    /** Is the grid rendering in its print view state? Observable property. */
     get isPrinting(): boolean {
         return !!this.printSupportModel?.isPrinting;
     }
