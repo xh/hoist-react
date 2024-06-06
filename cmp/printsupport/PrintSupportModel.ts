@@ -139,6 +139,7 @@ export class PrintSupportModel extends HoistModel {
         // for all component types, allow scrolling and hide the root app node
         this.setStyles('.xh-app', {overflow: 'auto'});
         this.setStyles('#xh-root', {display: 'none'});
+        this.setStyles('.bp5-portal', {display: 'none'});
         window.dispatchEvent(new Event('resize'));
     }
 
@@ -154,6 +155,7 @@ export class PrintSupportModel extends HoistModel {
 
         this.setStyles('.xh-app', {overflow: 'visible'});
         this.setStyles('#xh-root', {display: 'block'});
+        this.setStyles('.bp5-portal', {display: 'block'});
         this.inlineRef.current.appendChild(this.hostNode);
         window.dispatchEvent(new Event('resize'));
     }
@@ -181,12 +183,12 @@ export class PrintSupportModel extends HoistModel {
     }
 
     private setStyles(selector: string, styles: Record<string, string>) {
-        const el: HTMLElement = document.querySelector(selector);
-        if (el) {
+        const nodes: NodeList = document.querySelectorAll(selector);
+        nodes.forEach((node: HTMLElement) => {
             Object.entries(styles).forEach(([key, value]) => {
-                el.style[key] = value;
+                node.style[key] = value;
             });
-        }
+        });
     }
 
     // //////////////////////

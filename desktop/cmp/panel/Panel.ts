@@ -232,6 +232,20 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
 
         const useResizeContainer = resizable || collapsible || showSplitter;
 
+        // For printSupport, create additional frame that will follow content to portal and apply
+        // className and testId accordingly
+        // This is done before modalSupport to ensure that the modalSupport frame is not printed.
+        if (printSupportModel) {
+            item = printSupport({
+                model: printSupportModel,
+                item: frame({
+                    item,
+                    className: model.isPrinting ? className : undefined,
+                    testId: model.isPrinting ? testId : undefined
+                })
+            });
+        }
+
         // For modalSupport, create additional frame that will follow content to portal and apply
         // className and testId accordingly
         if (modalSupportModel) {
@@ -241,17 +255,6 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                     item,
                     className: model.isModal ? className : undefined,
                     testId: model.isModal ? testId : undefined
-                })
-            });
-        }
-
-        if (printSupportModel) {
-            item = printSupport({
-                model: printSupportModel,
-                item: frame({
-                    item,
-                    className: model.isPrinting ? className : undefined,
-                    testId: model.isPrinting ? testId : undefined
                 })
             });
         }
