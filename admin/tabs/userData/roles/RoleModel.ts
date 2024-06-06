@@ -295,6 +295,7 @@ export class RoleModel extends HoistModel {
                     {name: 'effectiveRoles', type: 'json'},
                     {name: 'errors', type: 'json'},
                     {name: 'inheritedRoleNames', displayName: 'Inherited Roles', type: 'tags'},
+                    {name: 'isGroupRow', type: 'bool'},
                     {name: 'effectiveUserNames', displayName: 'Users', type: 'tags'},
                     {
                         name: 'effectiveDirectoryGroupNames',
@@ -332,8 +333,7 @@ export class RoleModel extends HoistModel {
                 },
                 {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime, hidden: true},
                 {field: {name: 'lastUpdatedBy', type: 'string'}, hidden: true},
-                {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1},
-                {field: {name: 'isGroupRow', type: 'bool'}, hidden: true, excludeFromChooser: true}
+                {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1}
             ],
             contextMenu: this.readonly
                 ? GridModel.defaultContextMenu
