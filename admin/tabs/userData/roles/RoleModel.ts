@@ -38,7 +38,7 @@ export class RoleModel extends HoistModel {
     @observable.ref allRoles: HoistRole[] = [];
     @observable.ref moduleConfig: RoleModuleConfig;
 
-    @bindable groupingDisabled = false;
+    @bindable showInGroups = false;
 
     get readonly() {
         return !XH.getUser().isHoistRoleManager;
@@ -64,6 +64,7 @@ export class RoleModel extends HoistModel {
             if (loadSpec.isStale) return;
 
             this.setRoles(this.processRolesFromServer(data));
+            this.displayRoles();
             await this.gridModel.preSelectFirstAsync();
         } catch (e) {
             if (loadSpec.isStale) return;
@@ -83,9 +84,7 @@ export class RoleModel extends HoistModel {
 
     @action
     setRoles(roles: HoistRole[]) {
-        const gridData = this.groupingDisabled ? roles : this.processRolesForTreeGrid(roles);
         this.allRoles = roles;
-        this.gridModel.loadData(gridData);
     }
 
     @action
@@ -135,7 +134,7 @@ export class RoleModel extends HoistModel {
             icon: Icon.edit(),
             intent: 'primary',
             displayFn: ({record}) => ({
-                disabled: this.readonly || record?.data.isGroupRow
+                disabled: record?.data.isGroupRow
             }),
             actionFn: ({record}) => this.editAsync(record.data as HoistRole),
             recordsRequired: true
@@ -147,7 +146,7 @@ export class RoleModel extends HoistModel {
             text: 'Clone',
             icon: Icon.copy(),
             displayFn: ({record}) => ({
-                disabled: this.readonly || record?.data.isGroupRow
+                disabled: record?.data.isGroupRow
             }),
             actionFn: ({record}) => this.createAsync(record.data as HoistRole),
             recordsRequired: true
@@ -160,7 +159,7 @@ export class RoleModel extends HoistModel {
             icon: Icon.delete(),
             intent: 'danger',
             displayFn: ({record}) => ({
-                disabled: this.readonly || record?.data.isGroupRow
+                disabled: record?.data.isGroupRow
             }),
             actionFn: ({record}) =>
                 this.deleteAsync(record.data as HoistRole)
@@ -174,13 +173,12 @@ export class RoleModel extends HoistModel {
         return {
             text: 'Group By Category',
             displayFn: () => ({
-                icon: this.groupingDisabled ? Icon.circle() : Icon.checkCircle(),
-                disabled: this.readonly
+                icon: this.showInGroups ? Icon.circle() : Icon.checkCircle()
             }),
             actionFn: ({gridModel}) => {
-                this.groupingDisabled = !this.groupingDisabled;
-                this.setRoles(this.allRoles);
-                if (this.groupingDisabled) {
+                this.showInGroups = !this.showInGroups;
+                this.displayRoles();
+                if (this.showInGroups) {
                     gridModel.showColumn('category');
                     gridModel.autosizeAsync();
                 } else {
@@ -198,6 +196,14 @@ export class RoleModel extends HoistModel {
     // -------------------------------
     // Implementation
     // -------------------------------
+
+    private displayRoles() {
+        const gridData = this.showInGroups
+            ? this.allRoles
+            : this.processRolesForTreeGrid(this.allRoles);
+        this.gridModel.loadData(gridData);
+    }
+
     private async ensureInitializedAsync() {
         if (!this.moduleConfig) {
             const config = await XH.fetchJson({url: 'roleAdmin/config'});
@@ -336,7 +342,7 @@ export class RoleModel extends HoistModel {
                 {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1}
             ],
             contextMenu: this.readonly
-                ? GridModel.defaultContextMenu
+                ? [this.groupByAction(), ...GridModel.defaultContextMenu]
                 : [
                       this.addAction(),
                       this.editAction(),
