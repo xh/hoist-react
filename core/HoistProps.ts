@@ -11,7 +11,7 @@ import {CSSProperties, HTMLAttributes, LegacyRef, ReactNode, Ref} from 'react';
 /**
  * Props interfaces for Hoist Components.
  *
- * This interface brings in additional properties that are added to the props
+ * These interfaces bring in additional properties that are added to the props
  * collection by HoistComponent.
  */
 export type HoistPropsWithRef<R> = HoistProps<NoModel, R>;
