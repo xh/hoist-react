@@ -27,12 +27,12 @@ export interface RefreshButtonProps
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
  *
  * If an onClick handler is provided it will be used. Otherwise this button will
- * be linked to any model in props with LoadSupport enabled, or the contextual
+ * be linked to any target in props with LoadSupport enabled, or the contextual
  * See {@link RefreshContextModel}.
  */
 export const [RefreshButton, refreshButton] = hoistCmp.withFactory<RefreshButtonProps>({
     displayName: 'RefreshButton',
-    model: false, // For consistency with all other buttons -- the model prop here could be replaced by 'target'
+    model: false,
 
     render({target, onClick, ...props}, ref) {
         const refreshContextModel = useContextModel(RefreshContextModel);
