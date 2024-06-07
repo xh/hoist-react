@@ -46,17 +46,15 @@ import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {debounce, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
 import './Grid.scss';
-import {RefAttributes} from 'react';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 
 export interface GridProps
-    extends HoistProps<GridModel>,
+    extends HoistProps<GridModel, HTMLDivElement>,
         LayoutProps,
-        TestSupportProps,
-        RefAttributes<HTMLDivElement> {
+        TestSupportProps {
     /**
      * Options for ag-Grid's API.
      *

@@ -18,7 +18,7 @@ import {isValidElement, ReactElement, ReactNode} from 'react';
  */
 export type ContextMenuSpec = MenuItemLike[] | ((e: MouseEvent) => MenuItemLike[]) | ReactElement;
 
-export interface ContextMenuProps extends HoistProps {
+export interface ContextMenuProps extends HoistProps<null> {
     menuItems: MenuItemLike[];
 }
 

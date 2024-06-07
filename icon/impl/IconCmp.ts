@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {elementFactory, hoistCmp} from '@xh/hoist/core';
+import {elementFactory, hoistCmp, NoModel} from '@xh/hoist/core';
 import {enhanceFaClasses} from './IconHtml';
 
 /**
@@ -13,7 +13,7 @@ import {enhanceFaClasses} from './IconHtml';
  * Applications should use the factory methods on Icon instead.
  * @internal
  */
-export const iconCmp = hoistCmp.factory({
+export const iconCmp = hoistCmp.factory<NoModel>({
     displayName: 'Icon',
     observer: false,
     model: false,

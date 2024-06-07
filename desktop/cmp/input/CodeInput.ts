@@ -6,7 +6,15 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, managed, PlainObject, XH} from '@xh/hoist/core';
+import {
+    BoxProps,
+    hoistCmp,
+    HoistProps,
+    LayoutProps,
+    managed,
+    PlainObject,
+    XH
+} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
@@ -35,11 +43,11 @@ import 'codemirror/addon/selection/mark-selection.js';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/dracula.css';
 import {compact, defaultsDeep, isEqual, isFunction} from 'lodash';
-import {ForwardedRef, ReactElement} from 'react';
+import {ReactElement} from 'react';
 import {findDOMNode} from 'react-dom';
 import './CodeInput.scss';
 
-export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps {
+export interface CodeInputProps extends HoistInputProps, LayoutProps {
     /** True to focus the control on render. */
     autoFocus?: boolean;
 
@@ -446,44 +454,47 @@ class CodeInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<CodeInputModel>(({model, className, ...props}, ref) => {
-    return box({
-        className: 'xh-code-input__outer-wrapper',
-        width: 300,
-        height: 100,
-        ...getLayoutProps(props),
-        item: modalSupport({
-            model: model.modalSupportModel,
-            item: inputCmp({
-                testId: props.testId,
-                width: '100%',
-                height: '100%',
-                className,
-                ref,
-                model
-            })
-        })
-    });
-});
-
-const inputCmp = hoistCmp.factory<CodeInputModel>(({model, ...props}, ref) =>
-    vbox({
-        items: [
-            div({
-                className: 'xh-code-input__inner-wrapper',
-                item: textArea({
-                    value: model.renderValue || '',
-                    ref: model.manageCodeEditor,
-                    onChange: model.onChange
+const cmp = hoistCmp.factory<HoistProps<CodeInputModel, HTMLDivElement> & BoxProps>(
+    ({model, className, ...props}, ref) => {
+        return box({
+            className: 'xh-code-input__outer-wrapper',
+            width: 300,
+            height: 100,
+            ...getLayoutProps(props),
+            item: modalSupport({
+                model: model.modalSupportModel,
+                item: inputCmp({
+                    testId: props.testId,
+                    width: '100%',
+                    height: '100%',
+                    className,
+                    ref,
+                    model
                 })
-            }),
-            model.showToolbar ? toolbarCmp() : actionButtonsCmp()
-        ],
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        ...props,
-        ref: ref as ForwardedRef<any>
-    })
+            })
+        });
+    }
+);
+
+const inputCmp = hoistCmp.factory<HoistProps<CodeInputModel, HTMLDivElement> & BoxProps>(
+    ({model, ...props}, ref) =>
+        vbox({
+            items: [
+                div({
+                    className: 'xh-code-input__inner-wrapper',
+                    item: textArea({
+                        value: model.renderValue || '',
+                        ref: model.manageCodeEditor,
+                        onChange: model.onChange
+                    })
+                }),
+                model.showToolbar ? toolbarCmp() : actionButtonsCmp()
+            ],
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            ...props,
+            ref
+        })
 );
 
 const toolbarCmp = hoistCmp.factory<CodeInputModel>(({model}) => {

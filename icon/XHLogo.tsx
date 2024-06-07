@@ -4,14 +4,14 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, XH} from '@xh/hoist/core';
+import {hoistCmp, NoModel, XH} from '@xh/hoist/core';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import React from 'react';
 
 /**
  * The Extremely Heavy corporate XH logo and word mark, in SVG form.
  */
-export const xhLogo = hoistCmp.factory({
+export const xhLogo = hoistCmp.factory<NoModel>({
     model: false,
 
     render(props) {

@@ -11,7 +11,7 @@ import '@xh/hoist/mobile/register';
 import {ReactElement, ReactNode} from 'react';
 import './Dialog.scss';
 
-export interface DialogProps extends HoistProps {
+export interface DialogProps extends HoistProps<null> {
     isOpen?: boolean;
     isCancelable?: boolean;
     onCancel?: () => void;

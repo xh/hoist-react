@@ -4,13 +4,24 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, RefreshContextModel, useContextModel} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistModel,
+    HoistPropsWithRef,
+    RefreshContextModel,
+    useContextModel,
+    WithoutModelAndRef
+} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {errorIf} from '@xh/hoist/utils/js';
 
-export type RefreshButtonProps = ButtonProps<HoistModel>;
+export interface RefreshButtonProps
+    extends HoistPropsWithRef<HTMLButtonElement>,
+        WithoutModelAndRef<ButtonProps> {
+    target?: HoistModel;
+}
 
 /**
  * Convenience Button preconfigured for use as a trigger for a refresh operation.
@@ -22,16 +33,17 @@ export type RefreshButtonProps = ButtonProps<HoistModel>;
 export const [RefreshButton, refreshButton] = hoistCmp.withFactory<RefreshButtonProps>({
     displayName: 'RefreshButton',
     model: false, // For consistency with all other buttons -- the model prop here could be replaced by 'target'
+    // todo - document as breaking change
 
-    render({model, icon = Icon.sync(), onClick, ...props}) {
+    render({target, icon = Icon.sync(), onClick, ...props}) {
         const refreshContextModel = useContextModel(RefreshContextModel);
 
         if (!onClick) {
             errorIf(
-                model && !model.loadSupport,
+                target && !target.loadSupport,
                 'Models provided to RefreshButton must enable LoadSupport.'
             );
-            model = model ?? refreshContextModel;
+            const model = target ?? refreshContextModel;
             onClick = model ? () => model.refreshAsync() : null;
         }
 

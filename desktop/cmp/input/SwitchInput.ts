@@ -5,14 +5,14 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps, HSide, StyleProps} from '@xh/hoist/core';
+import {hoistCmp, HSide, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {switchControl} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {ReactNode} from 'react';
 import './SwitchInput.scss';
 
-export interface SwitchInputProps extends HoistProps, HoistInputProps, StyleProps {
+export interface SwitchInputProps extends HoistInputProps, StyleProps {
     value?: boolean;
 
     /** True if the control should appear as an inline element (defaults to true). */

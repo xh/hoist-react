@@ -4,10 +4,10 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, BoxProps, HoistPropsWithRef, HoistProps} from '@xh/hoist/core';
 import {box} from './Box';
 
-export interface SpacerProps extends HoistProps, BoxProps {}
+export interface SpacerProps extends HoistPropsWithRef<HTMLDivElement>, BoxProps {}
 
 /**
  * A component for inserting a fixed-sized spacer along the main axis of its parent container.
@@ -31,7 +31,7 @@ export const [Spacer, spacer] = hoistCmp.withFactory<SpacerProps>({
 /**
  * A component that stretches to soak up space along the main axis of its parent container.
  */
-export const [Filler, filler] = hoistCmp.withFactory<BoxProps>({
+export const [Filler, filler] = hoistCmp.withFactory<BoxProps & HoistProps<null>>({
     displayName: 'Filler',
     model: false,
     observer: false,

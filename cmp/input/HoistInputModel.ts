@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {FieldModel} from '@xh/hoist/cmp/form';
-import {DefaultHoistProps, HoistModel, HoistModelClass, useLocalModel} from '@xh/hoist/core';
+import {HoistModel, HoistModelClass, PlainObject, useLocalModel} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -328,8 +328,8 @@ export class HoistInputModel extends HoistModel {
  */
 export function useHoistInputModel(
     component: any,
-    props: DefaultHoistProps,
-    ref: ForwardedRef<any>,
+    props: PlainObject,
+    ref: ForwardedRef<HoistInputModel>,
     modelSpec?: HoistModelClass<HoistInputModel>
 ): ReactElement {
     const inputModel = useLocalModel<HoistInputModel>(modelSpec ?? HoistInputModel);

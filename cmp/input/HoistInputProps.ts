@@ -5,10 +5,10 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {TestSupportProps} from '@xh/hoist/core';
-import {RefAttributes} from 'react';
+import {HoistInputModel} from '@xh/hoist/cmp/input/HoistInputModel';
+import {HoistModel, HoistProps, TestSupportProps} from '@xh/hoist/core';
 
-export interface HoistInputProps extends TestSupportProps, RefAttributes<any> {
+export interface HoistInputProps extends TestSupportProps, HoistProps<HoistModel, HoistInputModel> {
     /**
      * Field or model property name from which this component should read and write its value
      * in controlled mode. Can be set by parent FormField.

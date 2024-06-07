@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistPropsWithRef} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {toolbarSeparator} from '@xh/hoist/mobile/cmp/toolbar';
 import {filterConsecutiveToolbarSeparators} from '@xh/hoist/utils/impl';
@@ -13,7 +13,7 @@ import classNames from 'classnames';
 import './Toolbar.scss';
 import {Children} from 'react';
 
-export interface ToolbarProps extends HoistProps, BoxProps {
+export interface ToolbarProps extends HoistPropsWithRef<HTMLDivElement>, BoxProps {
     /** Set to true to vertically align the items of this toolbar */
     vertical?: boolean;
 }

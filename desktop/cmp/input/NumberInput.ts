@@ -6,7 +6,7 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {fmtNumber, parseNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
@@ -16,7 +16,7 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber, round} from 'lodash';
 import {ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
 
-export interface NumberInputProps extends HoistProps, LayoutProps, StyleProps, HoistInputProps {
+export interface NumberInputProps extends LayoutProps, StyleProps, HoistInputProps {
     value?: number;
 
     /** True to focus the control on render. */

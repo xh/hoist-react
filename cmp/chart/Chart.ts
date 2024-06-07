@@ -30,7 +30,6 @@ import {
     useOnVisibleChange
 } from '@xh/hoist/utils/react';
 import {assign, castArray, cloneDeep, forOwn, isEqual, isPlainObject, merge, omit} from 'lodash';
-import {RefAttributes} from 'react';
 import {placeholder} from '../layout';
 import './Chart.scss';
 import {ChartModel} from './ChartModel';
@@ -43,10 +42,9 @@ installZoomoutGesture(Highcharts);
 installCopyToClipboard(Highcharts);
 
 export interface ChartProps
-    extends HoistProps<ChartModel>,
+    extends HoistProps<ChartModel, HTMLDivElement>,
         LayoutProps,
-        TestSupportProps,
-        RefAttributes<HTMLDivElement> {
+        TestSupportProps {
     /**
      * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will
      * respect this ratio within the available space.  Otherwise, the chart will stretch on both

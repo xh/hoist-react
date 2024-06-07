@@ -6,7 +6,7 @@
  */
 import {FilterChooserFilter, FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {box, div, hbox, hframe, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, NoModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -16,13 +16,12 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEmpty, sortBy} from 'lodash';
-import {ReactElement, RefAttributes} from 'react';
+import {ReactElement} from 'react';
 import './FilterChooser.scss';
 
 export interface FilterChooserProps
-    extends HoistProps<FilterChooserModel>,
-        LayoutProps,
-        RefAttributes<HTMLDivElement> {
+    extends HoistProps<FilterChooserModel, HTMLDivElement>,
+        LayoutProps {
     /** True to focus the control on render. */
     autoFocus?: boolean;
     /** True to disable user interaction. */
@@ -130,7 +129,7 @@ function optionRenderer(opt) {
     return null;
 }
 
-const fieldOption = hoistCmp.factory({
+const fieldOption = hoistCmp.factory<NoModel>({
     model: false,
     observer: false,
     memo: false,
@@ -148,7 +147,7 @@ const fieldOption = hoistCmp.factory({
     }
 });
 
-const minimalFieldOption = hoistCmp.factory({
+const minimalFieldOption = hoistCmp.factory<NoModel>({
     model: false,
     observer: false,
     memo: false,
@@ -161,7 +160,7 @@ const minimalFieldOption = hoistCmp.factory({
     }
 });
 
-const filterOption = hoistCmp.factory({
+const filterOption = hoistCmp.factory<NoModel>({
     model: false,
     observer: false,
     render({fieldSpec, displayOp, displayValue}) {
@@ -176,7 +175,7 @@ const filterOption = hoistCmp.factory({
     }
 });
 
-const messageOption = hoistCmp.factory({
+const messageOption = hoistCmp.factory<NoModel>({
     model: false,
     observer: false,
     render({label}) {

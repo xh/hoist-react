@@ -17,16 +17,14 @@ import '@xh/hoist/desktop/register';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {RefAttributes} from 'react';
 import {SetOptional} from 'type-fest';
 
 export interface ButtonGroupProps<M extends HoistModel = null>
-    extends HoistProps<M>,
+    extends HoistProps<M, HTMLDivElement>,
         LayoutProps,
         StyleProps,
         TestSupportProps,
-        SetOptional<Omit<BpButtonGroupProps, 'ref'>, 'children'>,
-        RefAttributes<HTMLDivElement> {
+        SetOptional<Omit<BpButtonGroupProps, 'ref'>, 'children'> {
     /** True to have all buttons fill available width equally. */
     fill?: boolean;
 

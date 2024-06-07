@@ -6,7 +6,7 @@
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {box, div, filler, hbox, placeholder, span, vbox, vframe} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, uses, WithoutModelAndRef} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
@@ -19,7 +19,9 @@ import {compact, isEmpty, sortBy} from 'lodash';
 
 import './GroupingChooser.scss';
 
-export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> {
+export interface GroupingChooserProps
+    extends WithoutModelAndRef<ButtonProps>,
+        HoistProps<GroupingChooserModel, HTMLDivElement> {
     /** Text to represent empty state (i.e. value = null or [])*/
     emptyText?: string;
     /** Title for popover (default "GROUP BY") or null to suppress. */

@@ -34,7 +34,9 @@ import {resizeContainer} from './impl/ResizeContainer';
 import './Panel.scss';
 import {PanelModel} from './PanelModel';
 
-export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'title'> {
+export interface PanelProps
+    extends HoistProps<PanelModel, HTMLDivElement>,
+        Omit<BoxProps, 'title'> {
     /** True to style panel header (if displayed) with reduced padding and font-size. */
     compactHeader?: boolean;
 
@@ -201,7 +203,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         }
 
         // 3) Prepare core layout with header above core.  This is what layout props are trampolined to
-        let item = vbox({
+        let item: ReactElement = vbox({
             className: 'xh-panel__content',
             items: [
                 panelHeader({

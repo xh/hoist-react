@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistModel, Intent, XH} from '@xh/hoist/core';
+import {hoistCmp, Intent, WithoutModelAndRef, XH} from '@xh/hoist/core';
 import {Button, buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {ButtonProps} from '@xh/hoist/desktop/cmp/button';
@@ -15,7 +15,7 @@ import {castArray, filter, isEmpty, without} from 'lodash';
 import {Children, cloneElement, ForwardedRef, isValidElement} from 'react';
 
 export interface ButtonGroupInputProps
-    extends Omit<ButtonGroupProps<HoistModel>, 'onChange' | 'ref'>,
+    extends Omit<WithoutModelAndRef<ButtonGroupProps>, 'onChange'>,
         HoistInputProps {
     /**
      * True to allow buttons to be unselected (aka inactivated). Defaults to false.
@@ -163,6 +163,6 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props
         onBlur: model.onBlur,
         onFocus: model.onFocus,
         className,
-        ref: ref as ForwardedRef<any>
+        ref: ref as ForwardedRef<HTMLDivElement>
     });
 });

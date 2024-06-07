@@ -7,15 +7,21 @@
 import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {hoistCmp, HoistModel, HoistProps, Some, TaskObserver, useLocalModel} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistModel,
+    HoistPropsWithRef,
+    Some,
+    TaskObserver,
+    useLocalModel
+} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {truncate} from 'lodash';
 import './LoadingIndicator.scss';
-import {RefAttributes} from 'react';
 
-export interface LoadingIndicatorProps extends HoistProps, RefAttributes<HTMLDivElement> {
+export interface LoadingIndicatorProps extends HoistPropsWithRef<HTMLDivElement> {
     /** TaskObserver(s) that should be monitored to determine if the Indicator should be displayed. */
     bind?: Some<TaskObserver>;
     /** Position of the indicator relative to its containing component. */

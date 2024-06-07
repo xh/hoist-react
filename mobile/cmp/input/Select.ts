@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, PlainObject, SelectOption} from '@xh/hoist/core';
+import {hoistCmp, LayoutProps, PlainObject, SelectOption} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {
     reactAsyncCreatableSelect,
@@ -27,7 +27,7 @@ import {Children, ForwardedRef, ReactNode, ReactPortal} from 'react';
 import ReactDom from 'react-dom';
 import './Select.scss';
 
-export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
+export interface SelectProps extends HoistInputProps, LayoutProps {
     /**
      * Function to return a "create a new option" string prompt. Requires `allowCreate` true.
      * Passed current query input.

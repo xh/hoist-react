@@ -1,10 +1,25 @@
 # Changelog
 
-## 65.0-SNAPSHOT - Unreleased
+## 65.0.0-SNAPSHOT - unreleased
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - component prop name change)
+* `RefreshButton` component `model` prop renamed to `target`.
+
+### 🐞 Bug Fixes
+
+* Fix bug where `model` passed to `RelativeTimestamp` was being ignored.
 
 ### ⚙️ Technical
 
-* Typescript: Narrow typing of `ref` prop, and improve `ref` typing in JSX.
+* Typescript: Overall type improvements and cleanup. Note: `AppConfigs` with `model: false` will
+  need to specify a `null` model type in the generic argument to `hoistCmp`, `hoistCmp.factory` or
+  `hoistCmp.withFacotry` to avoid a type error.
+
+## 64.0.4 - 2024-06-05
+
+### ⚙️ Technical
+
+* Typescript: Improve `ref` typing in JSX.
 
 ## 64.0.3 - 2024-05-31
 

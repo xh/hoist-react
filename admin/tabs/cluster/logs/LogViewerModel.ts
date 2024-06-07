@@ -23,7 +23,7 @@ import {LogDisplayModel} from './LogDisplayModel';
 export class LogViewerModel extends BaseInstanceModel {
     @observable file: string = null;
 
-    viewRef = createRef<HTMLElement>();
+    viewRef = createRef<HTMLDivElement>();
 
     @managed
     logDisplayModel = new LogDisplayModel(this);

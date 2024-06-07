@@ -7,7 +7,7 @@
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {forOwn, has, isFunction} from 'lodash';
-import {DefaultHoistProps, HoistBase, managed, PlainObject} from '../';
+import {HoistBase, managed, PlainObject} from '../';
 import {instanceManager} from '../impl/InstanceManager';
 import {Loadable, LoadSpec, LoadSupport} from '../load';
 import {ModelSelector} from './';
@@ -135,7 +135,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
      * Observability is based on a shallow computation for each prop (i.e. a reference
      * change in any particular prop will trigger observers to be notified).
      */
-    get componentProps(): DefaultHoistProps {
+    get componentProps(): PlainObject {
         return this._componentProps;
     }
 

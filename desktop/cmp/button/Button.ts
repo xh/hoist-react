@@ -7,8 +7,7 @@
 import {ButtonProps as BpButtonProps} from '@blueprintjs/core';
 import {
     hoistCmp,
-    HoistModel,
-    HoistProps,
+    HoistPropsWithRef,
     Intent,
     LayoutProps,
     StyleProps,
@@ -19,16 +18,15 @@ import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ReactElement, ReactNode, RefAttributes} from 'react';
+import {ReactElement, ReactNode} from 'react';
 import './Button.scss';
 
-export interface ButtonProps<M extends HoistModel = null>
-    extends HoistProps<M>,
+export interface ButtonProps
+    extends HoistPropsWithRef<HTMLButtonElement>,
         StyleProps,
         LayoutProps,
         TestSupportProps,
-        Omit<BpButtonProps, 'ref'>,
-        RefAttributes<HTMLButtonElement> {
+        Omit<BpButtonProps, 'ref'> {
     active?: boolean;
     autoFocus?: boolean;
     disabled?: boolean;

@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, HSide, useContextModel, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistPropsWithRef, HSide, useContextModel, XH} from '@xh/hoist/core';
 import {
     button,
     navigatorBackButton,
@@ -16,11 +16,11 @@ import {
 import {NavigatorModel} from '@xh/hoist/mobile/cmp/navigator';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
-import {ReactElement, ReactNode, RefAttributes} from 'react';
+import {ReactElement, ReactNode} from 'react';
 import './AppBar.scss';
 import {appMenuButton, AppMenuButtonProps} from './AppMenuButton';
 
-export interface AppBarProps extends HoistProps, RefAttributes<HTMLDivElement> {
+export interface AppBarProps extends HoistPropsWithRef<HTMLDivElement> {
     /** App icon to display to the left of the title. */
     icon?: ReactElement;
 

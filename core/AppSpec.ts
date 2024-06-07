@@ -40,7 +40,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
      * Root HoistComponent for the application. Despite the name,
      * functional components are fully supported and expected.
      */
-    componentClass: ComponentClass<HoistProps> | FunctionComponent<HoistProps>;
+    componentClass: ComponentClass<HoistProps<T>> | FunctionComponent<HoistProps<T>>;
 
     /**
      * Container component to be used to host this application.

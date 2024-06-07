@@ -5,12 +5,12 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {checkbox as onsenCheckbox} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import './Checkbox.scss';
 
-export interface CheckboxProps extends HoistProps, HoistInputProps {
+export interface CheckboxProps extends HoistInputProps {
     value?: boolean;
 
     /** Onsen modifier string */

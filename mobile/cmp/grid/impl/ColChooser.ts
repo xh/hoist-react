@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {Column} from '@xh/hoist/cmp/grid';
 import {div, filler, placeholder as placeholderCmp} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, HoistProps, lookup, useLocalModel, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -15,7 +16,7 @@ import '@xh/hoist/mobile/register';
 import classNames from 'classnames';
 import './ColChooser.scss';
 import {isEmpty} from 'lodash';
-import {ForwardedRef} from 'react';
+import {ForwardedRef, ReactNode} from 'react';
 import {ColChooserModel} from './ColChooserModel';
 
 export interface ColChooserProps extends HoistProps<ColChooserModel> {}
@@ -134,7 +135,12 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
 //------------------------
 // Implementation
 //------------------------
-const columnList = hoistCmp.factory({
+interface ColumnListProps extends HoistProps<ColChooserLocalModel, HTMLDivElement> {
+    cols: Column[];
+    placeholder: ReactNode;
+}
+
+const columnList = hoistCmp.factory<ColumnListProps>({
     render({cols, placeholder, className, ...props}, ref) {
         return div({
             className: classNames('xh-col-chooser__list', className),
@@ -142,7 +148,7 @@ const columnList = hoistCmp.factory({
                 ? placeholderCmp('All columns have been added to the grid.')
                 : [...cols.map((col, idx) => draggableRow({col, idx})), placeholder],
             ...props,
-            ref: ref as ForwardedRef<HTMLDivElement>
+            ref: ref
         });
     }
 });

@@ -23,15 +23,13 @@ import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isNil} from 'lodash';
 import './AgGrid.scss';
-import {RefAttributes} from 'react';
 import {AgGridModel} from './AgGridModel';
 
 export interface AgGridProps
-    extends HoistProps<AgGridModel>,
+    extends HoistProps<AgGridModel, HTMLDivElement>,
         GridOptions,
         LayoutProps,
-        TestSupportProps,
-        RefAttributes<HTMLDivElement> {}
+        TestSupportProps {}
 
 /**
  * Minimal wrapper for AgGridReact, supporting direct use of the ag-Grid component with limited

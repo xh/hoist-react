@@ -6,7 +6,7 @@
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {box, div, filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, uses, WithoutModelAndRef} from '@xh/hoist/core';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -22,7 +22,8 @@ import './GroupingChooser.scss';
 import {RefAttributes} from 'react';
 
 export interface GroupingChooserProps
-    extends Omit<ButtonProps<GroupingChooserModel>, 'ref'>,
+    extends WithoutModelAndRef<ButtonProps>,
+        HoistProps<GroupingChooserModel, HTMLDivElement>,
         RefAttributes<HTMLDivElement> {
     /** Text to represent empty state (i.e. value = null or []) */
     emptyText?: string;

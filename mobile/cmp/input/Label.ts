@@ -6,12 +6,12 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import './Label.scss';
 import {ForwardedRef} from 'react';
 
-export interface LabelProps extends HoistProps, HoistInputProps, StyleProps {}
+export interface LabelProps extends HoistInputProps, StyleProps {}
 
 /**
  * A simple label for a form.

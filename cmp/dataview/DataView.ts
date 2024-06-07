@@ -21,14 +21,12 @@ import type {GridOptions} from '@xh/hoist/kit/ag-grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {isFunction, merge} from 'lodash';
 import './DataView.scss';
-import {RefAttributes} from 'react';
 import {DataViewModel} from './DataViewModel';
 
 export interface DataViewProps
-    extends HoistProps<DataViewModel>,
+    extends HoistProps<DataViewModel, HTMLDivElement>,
         LayoutProps,
-        TestSupportProps,
-        RefAttributes<HTMLDivElement> {
+        TestSupportProps {
     /**
      * Options for ag-Grid's API.
      *

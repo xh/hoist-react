@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {HoistInputModel} from '@xh/hoist/cmp/input';
 import {
     HoistModel,
     managed,
@@ -145,7 +146,7 @@ export class FilterChooserModel extends HoistModel {
     @observable.ref selectValue: string[];
     @observable favoritesIsOpen = false;
     @observable unsupportedFilter = false;
-    inputRef = createObservableRef<HTMLElement>();
+    inputRef = createObservableRef<HoistInputModel>();
 
     constructor({
         fieldSpecs,

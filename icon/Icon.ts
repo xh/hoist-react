@@ -12,9 +12,11 @@ import {last, pickBy, split, toLower} from 'lodash';
 import {iconCmp} from './impl/IconCmp';
 import {enhanceFaClasses, iconHtml} from './impl/IconHtml';
 import {ReactElement} from 'react';
-import {HoistProps, Intent, Thunkable} from '@xh/hoist/core';
+import {HoistProps, Intent, Thunkable, WithoutModelAndRef} from '@xh/hoist/core';
 
-export interface IconProps extends HoistProps, Partial<Omit<FontAwesomeIconProps, 'ref'>> {
+export interface IconProps
+    extends WithoutModelAndRef<HoistProps>,
+        Partial<Omit<FontAwesomeIconProps, 'ref'>> {
     /** Name of the icon in FontAwesome. */
     iconName?: string;
 

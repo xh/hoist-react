@@ -10,7 +10,6 @@ import {
     Awaitable,
     createElement,
     hoistCmp,
-    HoistProps,
     LayoutProps,
     PlainObject,
     SelectOption,
@@ -48,7 +47,7 @@ import './Select.scss';
 
 export const MENU_PORTAL_ID = 'xh-select-input-portal';
 
-export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
+export interface SelectProps extends HoistInputProps, LayoutProps {
     /** True to focus the control on render. */
     autoFocus?: boolean;
 

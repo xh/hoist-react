@@ -34,14 +34,12 @@ import equal from 'fast-deep-equal';
 import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 
 import './TreeMap.scss';
-import {RefAttributes} from 'react';
 import {TreeMapModel} from './TreeMapModel';
 
 export interface TreeMapProps
-    extends HoistProps<TreeMapModel>,
+    extends HoistProps<TreeMapModel, HTMLDivElement>,
         LayoutProps,
-        TestSupportProps,
-        RefAttributes<HTMLDivElement> {}
+        TestSupportProps {}
 
 /**
  * Component for rendering a TreeMap.

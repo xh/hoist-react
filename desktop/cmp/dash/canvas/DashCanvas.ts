@@ -21,7 +21,6 @@ import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import {useOnVisibleChange} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {RefAttributes} from 'react';
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
 import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
@@ -30,9 +29,9 @@ import {dashCanvasView} from './impl/DashCanvasView';
 import 'react-grid-layout/css/styles.css';
 import './DashCanvas.scss';
 
-export type DashCanvasProps = HoistProps<DashCanvasModel> &
-    TestSupportProps &
-    RefAttributes<HTMLDivElement>;
+export interface DashCanvasProps
+    extends HoistProps<DashCanvasModel, HTMLDivElement>,
+        TestSupportProps {}
 
 /**
  * Dashboard-style container that allows users to drag-and-drop child widgets into flexible layouts.

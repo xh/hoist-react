@@ -5,12 +5,12 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {box} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, useContextModel} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistPropsWithRef, useContextModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {logError, pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
 import {GridModel} from '../GridModel';
 
-export interface GridCountLabelProps extends HoistProps, BoxProps {
+export interface GridCountLabelProps extends HoistPropsWithRef<HTMLDivElement>, BoxProps {
     /** GridModel to which this component should bind. */
     gridModel?: GridModel;
 

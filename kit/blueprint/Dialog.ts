@@ -5,12 +5,12 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp} from '@xh/hoist/core';
+import {NoModel, hoistCmp} from '@xh/hoist/core';
 
 /**
  * Dialog Body for Blueprint, wrapped as a Hoist Component.
  */
-export const [DialogBody, dialogBody] = hoistCmp.withFactory({
+export const [DialogBody, dialogBody] = hoistCmp.withFactory<NoModel>({
     displayName: 'DialogBody',
     className: 'bp5-dialog-body',
     observer: false,
@@ -25,7 +25,7 @@ export const [DialogBody, dialogBody] = hoistCmp.withFactory({
 /**
  * Dialog Footer for Blueprint, wrapped as Hoist Component.
  */
-export const [DialogFooter, dialogFooter] = hoistCmp.withFactory({
+export const [DialogFooter, dialogFooter] = hoistCmp.withFactory<NoModel>({
     displayName: 'DialogFooter',
     className: 'bp5-dialog-footer',
     observer: false,
@@ -40,7 +40,7 @@ export const [DialogFooter, dialogFooter] = hoistCmp.withFactory({
 /**
  * Dialog Footer Actions for Blueprint, wrapped as HoistComponent.
  */
-export const [DialogFooterActions, dialogFooterActions] = hoistCmp.withFactory({
+export const [DialogFooterActions, dialogFooterActions] = hoistCmp.withFactory<NoModel>({
     displayName: 'DialogFooterActions',
     className: 'bp5-dialog-footer-actions',
     observer: false,

@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistPropsWithRef, NoModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -18,7 +18,7 @@ import {Children} from 'react';
 import './Toolbar.scss';
 import {toolbarSeparator} from './ToolbarSep';
 
-export interface ToolbarProps extends HoistProps, BoxProps {
+export interface ToolbarProps extends HoistPropsWithRef<HTMLDivElement>, BoxProps {
     /** Set to true to style toolbar with reduced height and font-size. */
     compact?: boolean;
 
@@ -49,6 +49,7 @@ export interface ToolbarProps extends HoistProps, BoxProps {
  * A toolbar with built-in styling and padding.
  * In horizontal toolbars, items which overflow can be collapsed into a drop-down menu.
  */
+
 export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps>({
     displayName: 'Toolbar',
     model: false,
@@ -100,7 +101,7 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps>({
 //-----------------
 // Implementation
 //--------------
-const overflowBox = hoistCmp.factory({
+const overflowBox = hoistCmp.factory<NoModel>({
     model: false,
     observer: false,
     memo: false,
@@ -115,7 +116,7 @@ const overflowBox = hoistCmp.factory({
     }
 });
 
-const overflowButton = hoistCmp.factory({
+const overflowButton = hoistCmp.factory<NoModel>({
     model: false,
     observer: false,
     memo: false,

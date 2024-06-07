@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {img} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, NoModel} from '@xh/hoist/core';
 import {ImgHTMLAttributes} from 'react';
 
 // @ts-ignore
@@ -13,7 +13,7 @@ import compactSpinnerImg from './spinner-20px.png';
 // @ts-ignore
 import spinnerImg from './spinner-50px.png';
 
-export interface SpinnerProps extends HoistProps, ImgHTMLAttributes<HTMLImageElement> {
+export interface SpinnerProps extends HoistProps<NoModel>, ImgHTMLAttributes<HTMLImageElement> {
     /** True to return a smaller 20px image vs default 50px. */
     compact?: boolean;
 }

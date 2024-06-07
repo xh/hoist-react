@@ -5,11 +5,11 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {hbox, span} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, XH} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistProps, NoModel, XH} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 
-export interface WebSocketIndicatorProps extends HoistProps, BoxProps {
+export interface WebSocketIndicatorProps extends HoistProps<NoModel>, BoxProps {
     /** True to display status as an icon only, without text label. */
     iconOnly?: boolean;
 }

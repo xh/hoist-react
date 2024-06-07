@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps, HSide, StyleProps} from '@xh/hoist/core';
+import {hoistCmp, HSide, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
@@ -14,7 +14,7 @@ import {ReactNode} from 'react';
 
 import './Checkbox.scss';
 
-export interface CheckboxProps extends HoistProps, HoistInputProps, StyleProps {
+export interface CheckboxProps extends HoistInputProps, StyleProps {
     value?: boolean;
 
     /** True to focus the control on render. */

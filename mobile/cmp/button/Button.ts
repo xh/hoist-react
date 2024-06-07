@@ -5,19 +5,15 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {hspacer} from '@xh/hoist/cmp/layout';
-import {LayoutProps, StyleProps, hoistCmp, HoistModel, HoistProps, Intent} from '@xh/hoist/core';
+import {LayoutProps, StyleProps, hoistCmp, Intent, HoistPropsWithRef} from '@xh/hoist/core';
 import {button as onsenButton} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ReactNode, ReactElement, MouseEvent, RefAttributes} from 'react';
+import {ReactNode, ReactElement, MouseEvent} from 'react';
 import './Button.scss';
 
-export interface ButtonProps<M extends HoistModel = HoistModel>
-    extends HoistProps<M>,
-        LayoutProps,
-        StyleProps,
-        RefAttributes<any> {
+export interface ButtonProps extends HoistPropsWithRef<HTMLButtonElement>, LayoutProps, StyleProps {
     active?: boolean;
     disabled?: boolean;
     icon?: ReactElement;
