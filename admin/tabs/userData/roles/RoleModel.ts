@@ -38,7 +38,7 @@ export class RoleModel extends HoistModel {
     @observable.ref allRoles: HoistRole[] = [];
     @observable.ref moduleConfig: RoleModuleConfig;
 
-    @bindable showInGroups = false;
+    @bindable showInGroups = true;
 
     get readonly() {
         return !XH.getUser().isHoistRoleManager;
@@ -173,16 +173,16 @@ export class RoleModel extends HoistModel {
         return {
             text: 'Group By Category',
             displayFn: () => ({
-                icon: this.showInGroups ? Icon.circle() : Icon.checkCircle()
+                icon: this.showInGroups ? Icon.checkCircle() : Icon.circle()
             }),
             actionFn: ({gridModel}) => {
                 this.showInGroups = !this.showInGroups;
                 this.displayRoles();
                 if (this.showInGroups) {
+                    gridModel.hideColumn('category');
+                } else {
                     gridModel.showColumn('category');
                     gridModel.autosizeAsync();
-                } else {
-                    gridModel.hideColumn('category');
                 }
             }
         };
@@ -198,9 +198,10 @@ export class RoleModel extends HoistModel {
     // -------------------------------
 
     private displayRoles() {
+        this.gridModel.setSortBy(this.showInGroups ? 'category|desc' : 'name');
         const gridData = this.showInGroups
-            ? this.allRoles
-            : this.processRolesForTreeGrid(this.allRoles);
+            ? this.processRolesForTreeGrid(this.allRoles)
+            : this.allRoles;
         this.gridModel.loadData(gridData);
     }
 
@@ -271,7 +272,6 @@ export class RoleModel extends HoistModel {
             autosizeOptions: {mode: 'managed'},
             emptyText: 'No roles found.',
             colChooserModel: true,
-            sortBy: ['isGroupRow', 'name'],
             enableExport: true,
             exportOptions: {filename: 'roles'},
             filterModel: true,
