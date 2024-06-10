@@ -8,16 +8,7 @@ import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {BaseFormFieldProps, FieldModel, FormContext, FormContextType} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
-import {
-    hoistCmp,
-    HoistProps,
-    HSide,
-    NoModel,
-    PlainObject,
-    TestSupportProps,
-    uses,
-    XH
-} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide, PlainObject, TestSupportProps, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
@@ -253,7 +244,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
     }
 });
 
-interface ReadonlyChildProps extends HoistProps<null>, TestSupportProps {
+interface ReadonlyChildProps extends HoistProps, TestSupportProps {
     fieldModel: FieldModel;
     readonlyRenderer: (v: any, model: FieldModel) => ReactNode;
 }
@@ -271,7 +262,7 @@ const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
     }
 });
 
-const editableChild = hoistCmp.factory<NoModel>({
+const editableChild = hoistCmp.factory({
     model: false,
 
     render({

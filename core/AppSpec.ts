@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {XH, HoistAppModel, ElementFactory, HoistProps} from '@xh/hoist/core';
+import {XH, HoistAppModel, ElementFactory, HoistProps, HoistPropsWithModel} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil, isString} from 'lodash';
 import {Component, ComponentClass, FunctionComponent} from 'react';
@@ -47,7 +47,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
      * This class determines the platform used by Hoist. The value should be imported from
      * either `@xh/hoist/desktop/AppContainer` or `@xh/hoist/mobile/AppContainer`.
      */
-    containerClass: ComponentClass<HoistProps> | FunctionComponent<HoistProps>;
+    containerClass: ComponentClass<HoistPropsWithModel> | FunctionComponent<HoistPropsWithModel>;
 
     /** True if the app should use the Hoist mobile toolkit.*/
     isMobileApp: boolean;

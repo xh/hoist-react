@@ -6,7 +6,7 @@
  */
 import {FilterChooserFilter, FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {box, div, hbox, hframe, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, NoModel, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -129,7 +129,7 @@ function optionRenderer(opt) {
     return null;
 }
 
-const fieldOption = hoistCmp.factory<NoModel>({
+const fieldOption = hoistCmp.factory({
     model: false,
     observer: false,
     memo: false,
@@ -147,7 +147,7 @@ const fieldOption = hoistCmp.factory<NoModel>({
     }
 });
 
-const minimalFieldOption = hoistCmp.factory<NoModel>({
+const minimalFieldOption = hoistCmp.factory({
     model: false,
     observer: false,
     memo: false,
@@ -160,7 +160,7 @@ const minimalFieldOption = hoistCmp.factory<NoModel>({
     }
 });
 
-const filterOption = hoistCmp.factory<NoModel>({
+const filterOption = hoistCmp.factory({
     model: false,
     observer: false,
     render({fieldSpec, displayOp, displayValue}) {
@@ -175,7 +175,7 @@ const filterOption = hoistCmp.factory<NoModel>({
     }
 });
 
-const messageOption = hoistCmp.factory<NoModel>({
+const messageOption = hoistCmp.factory({
     model: false,
     observer: false,
     render({label}) {

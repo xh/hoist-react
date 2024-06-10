@@ -5,12 +5,12 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, NoModel} from '@xh/hoist/core';
+import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import './WarningBanner.scss';
 
-export interface WarningBannerProps extends HoistProps<NoModel> {
+export interface WarningBannerProps extends HoistProps {
     compact?: boolean;
     message: string;
 }

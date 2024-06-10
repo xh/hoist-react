@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistPropsWithRef, NoModel} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistPropsWithRef} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -101,7 +101,7 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps>({
 //-----------------
 // Implementation
 //--------------
-const overflowBox = hoistCmp.factory<NoModel>({
+const overflowBox = hoistCmp.factory({
     model: false,
     observer: false,
     memo: false,
@@ -116,7 +116,7 @@ const overflowBox = hoistCmp.factory<NoModel>({
     }
 });
 
-const overflowButton = hoistCmp.factory<NoModel>({
+const overflowButton = hoistCmp.factory({
     model: false,
     observer: false,
     memo: false,

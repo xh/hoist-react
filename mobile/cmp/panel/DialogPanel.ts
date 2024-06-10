@@ -10,7 +10,7 @@ import '@xh/hoist/mobile/register';
 import './DialogPanel.scss';
 import {panel, PanelProps} from './Panel';
 
-export interface DialogPanelProps extends HoistProps<null>, WithoutModelAndRef<PanelProps> {
+export interface DialogPanelProps extends HoistProps, WithoutModelAndRef<PanelProps> {
     /** Is the dialog panel shown.  */
     isOpen?: boolean;
 }

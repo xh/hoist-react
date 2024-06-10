@@ -19,7 +19,7 @@ import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {SetOptional} from 'type-fest';
 
-export interface ButtonGroupProps<M extends HoistModel = null>
+export interface ButtonGroupProps<M extends HoistModel = never>
     extends HoistProps<M, HTMLDivElement>,
         LayoutProps,
         StyleProps,

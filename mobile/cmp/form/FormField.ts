@@ -7,15 +7,7 @@
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
-import {
-    hoistCmp,
-    HoistProps,
-    NoModel,
-    PlainObject,
-    TestSupportProps,
-    uses,
-    XH
-} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, PlainObject, TestSupportProps, uses, XH} from '@xh/hoist/core';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
@@ -164,7 +156,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
     }
 });
 
-interface ReadonlyChildProps extends HoistProps<null>, TestSupportProps {
+interface ReadonlyChildProps extends HoistProps, TestSupportProps {
     fieldModel: FieldModel;
     readonlyRenderer: (v: any, model: FieldModel) => ReactNode;
 }
@@ -181,7 +173,7 @@ const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
     }
 });
 
-const editableChild = hoistCmp.factory<NoModel>({
+const editableChild = hoistCmp.factory({
     model: false,
 
     render({child, childIsSizeable, disabled, commitOnChange, fieldModel, width, height, flex}) {

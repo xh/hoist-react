@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {box, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, NoModel, useContextModel} from '@xh/hoist/core';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {button, modalToggleButton} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -14,7 +14,7 @@ import {isEmpty, isNil} from 'lodash';
 import {PanelModel} from '../PanelModel';
 import './PanelHeader.scss';
 
-export const panelHeader = hoistCmp.factory<NoModel>({
+export const panelHeader = hoistCmp.factory({
     displayName: 'PanelHeader',
     model: false,
     className: 'xh-panel-header',

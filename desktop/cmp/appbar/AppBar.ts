@@ -6,7 +6,7 @@
  */
 
 import {span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, HSide, NoModel, TestSupportProps, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide, TestSupportProps, XH} from '@xh/hoist/core';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
 import {appMenuButton, AppMenuButtonProps, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {whatsNewButton} from '@xh/hoist/desktop/cmp/button/WhatsNewButton';
@@ -17,7 +17,7 @@ import {isEmpty} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import './AppBar.scss';
 
-export interface AppBarProps extends HoistProps<NoModel>, TestSupportProps {
+export interface AppBarProps extends HoistProps, TestSupportProps {
     /** Position of the AppMenuButton. */
     appMenuButtonPosition?: HSide;
 

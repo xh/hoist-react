@@ -31,7 +31,7 @@ export const [Spacer, spacer] = hoistCmp.withFactory<SpacerProps>({
 /**
  * A component that stretches to soak up space along the main axis of its parent container.
  */
-export const [Filler, filler] = hoistCmp.withFactory<BoxProps & HoistProps<null>>({
+export const [Filler, filler] = hoistCmp.withFactory<BoxProps & HoistProps>({
     displayName: 'Filler',
     model: false,
     observer: false,

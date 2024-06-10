@@ -14,27 +14,28 @@ import {CSSProperties, HTMLAttributes, LegacyRef, ReactNode, Ref} from 'react';
  * These interfaces bring in additional properties that are added to the props
  * collection by HoistComponent.
  */
-export type HoistPropsWithRef<R> = HoistProps<NoModel, R>;
-export interface HoistProps<M extends HoistModel = HoistModel, R = never> {
+export type HoistPropsWithModel<M extends HoistModel = HoistModel> = HoistProps<M>;
+export type HoistPropsWithRef<R> = HoistProps<never, R>;
+export interface HoistProps<M extends HoistModel = never, R = never> {
     /**
      * Associated HoistModel for this Component.  Depending on the component, may be specified as
      * an instance of a HoistModel or left undefined.
      * HoistComponent will resolve (i.e. lookup in context or create if needed) a concrete Model
      * instance and provide it to the Render method of the component.
      */
-    model?: M extends null ? never : M;
+    model?: M;
 
     /**
      * Used for specifying the *configuration* of a model to be created by Hoist for this component
      * when first mounted.  Should be used only on a component that specifies the 'uses()' directive
      * with the `createFromConfig` set as true. See the `uses()` directive for more information.
      */
-    modelConfig?: M extends null ? never : M['config'];
+    modelConfig?: M extends never ? never : M['config'];
 
     /**
      * Used for gaining a reference to the model of a HoistComponent.
      */
-    modelRef?: M extends null ? never : Ref<M>;
+    modelRef?: M extends never ? never : Ref<M>;
 
     /**
      * ClassName for the component.  Includes the classname as provided in props, enhanced with
@@ -49,22 +50,16 @@ export interface HoistProps<M extends HoistModel = HoistModel, R = never> {
     ref?: R extends never ? never : LegacyRef<R>;
 }
 
-/** Alias to be used when a component does not require a model. */
-export type NoModel = null;
-
 /** Infer the Model type from a HoistProps type. */
-export type ModelTypeOf<T extends HoistProps<any, any>> = T extends null
-    ? null
+export type ModelTypeOf<T extends HoistProps<any, any>> = T extends never
+    ? never
     : T extends HoistProps<infer M, any>
       ? M
-      : null;
+      : never;
 
 /** Infer the Ref type from a HoistProps type. */
-export type RefTypeOf<T extends HoistProps<any, any>> = T extends null
-    ? never
-    : T extends HoistProps<any, infer R>
-      ? R
-      : never;
+export type RefTypeOf<T extends HoistProps<any, any>> =
+    T extends HoistProps<any, infer R> ? R : never;
 
 /** Extract all non-model and non-ref props from a HoistProps type. */
 export type WithoutModelAndRef<T extends HoistProps<any, any>> = Omit<

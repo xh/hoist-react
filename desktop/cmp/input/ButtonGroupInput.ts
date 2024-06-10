@@ -6,9 +6,8 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp, Intent, WithoutModelAndRef, XH} from '@xh/hoist/core';
-import {Button, buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
+import {Button, buttonGroup, ButtonGroupProps, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
-import {ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, filter, isEmpty, without} from 'lodash';
