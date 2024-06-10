@@ -52,7 +52,16 @@ import {
  * `ref` is passed as the second argument to the render function.
  */
 
-export type RenderPropsOf<P extends HoistProps> = Omit<P, 'modelConfig' | 'modelRef' | 'ref'>;
+export type RenderPropsOf<P extends HoistProps> = P & {
+    /** Pre-processed by HoistComponent internals into a mounted model.  Never passed to render. */
+    modelConfig: never;
+
+    /** Pre-processed by HoistComponent internals and attached to model.  Never passed to render. */
+    modelRef: never;
+
+    /** Pre-processed by HoistComponent internals and passed as second argument to render. */
+    ref: never;
+};
 
 /**
  * Configuration for creating a Component.  May be specified either as a render function,
