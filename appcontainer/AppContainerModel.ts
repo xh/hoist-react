@@ -155,9 +155,21 @@ export class AppContainerModel extends HoistModel {
             // controls like the iOS tab switcher, as well as to more easily set the background
             // color of the (effectively) unusable portions of the screen via
             const vp = document.querySelector('meta[name=viewport]'),
-                content = vp.getAttribute('content');
+                content = vp.getAttribute('content') + ', viewport-fit=cover';
 
-            vp.setAttribute('content', content + ', viewport-fit=cover');
+            vp.setAttribute('content', content);
+
+            // Temporarily set maximum-scale=1 on orientation change to force reset Safari iOS
+            // zoom level, and then remove to restore user zooming. This is a workaround for a bug
+            // where Safari auto-zooms on orientation change if the user has zoomed the page.
+            window.addEventListener(
+                'orientationchange',
+                () => {
+                    vp.setAttribute('content', content + ', maximum-scale=1');
+                    setTimeout(() => vp.setAttribute('content', content), 1);
+                },
+                false
+            );
         }
 
         try {
