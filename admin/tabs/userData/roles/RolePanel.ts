@@ -10,6 +10,7 @@ import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
+import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {Icon} from '@xh/hoist/icon';
@@ -42,7 +43,8 @@ export const rolePanel = hoistCmp.factory({
                         selModel: gridModel.selModel
                     }),
                     '-',
-                    filterChooser({flex: 1})
+                    filterChooser({flex: 1}),
+                    switchInput({bind: 'showInGroups', label: 'Show in Groups', labelSide: 'left'})
                 ],
                 item: hframe(vframe(grid(), roleGraph()), detailsPanel())
             }),

@@ -53,6 +53,18 @@ export class RoleModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+        this.addReaction({
+            track: () => this.showInGroups,
+            run: showInGroups => {
+                const {gridModel} = this;
+                if (showInGroups) {
+                    gridModel.hideColumn('category');
+                } else {
+                    gridModel.showColumn('category');
+                }
+                this.displayRoles();
+            }
+        });
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
@@ -63,7 +75,7 @@ export class RoleModel extends HoistModel {
             const {data} = await XH.fetchJson({url: 'roleAdmin/list', loadSpec});
             if (loadSpec.isStale) return;
 
-            this.setRoles(this.processRolesFromServer(data));
+            this.allRoles = this.processRolesFromServer(data);
             this.displayRoles();
             await this.gridModel.preSelectFirstAsync();
         } catch (e) {
@@ -80,11 +92,6 @@ export class RoleModel extends HoistModel {
             await wait();
         }
         return gridModel.selectAsync(name);
-    }
-
-    @action
-    setRoles(roles: HoistRole[]) {
-        this.allRoles = roles;
     }
 
     @action
@@ -134,7 +141,7 @@ export class RoleModel extends HoistModel {
             icon: Icon.edit(),
             intent: 'primary',
             displayFn: ({record}) => ({
-                disabled: record?.data.isGroupRow
+                disabled: !record || record.data.isGroupRow
             }),
             actionFn: ({record}) => this.editAsync(record.data as HoistRole),
             recordsRequired: true
@@ -146,7 +153,7 @@ export class RoleModel extends HoistModel {
             text: 'Clone',
             icon: Icon.copy(),
             displayFn: ({record}) => ({
-                disabled: record?.data.isGroupRow
+                disabled: !record || record.data.isGroupRow
             }),
             actionFn: ({record}) => this.createAsync(record.data as HoistRole),
             recordsRequired: true
@@ -159,7 +166,7 @@ export class RoleModel extends HoistModel {
             icon: Icon.delete(),
             intent: 'danger',
             displayFn: ({record}) => ({
-                disabled: record?.data.isGroupRow
+                disabled: !record || record.data.isGroupRow
             }),
             actionFn: ({record}) =>
                 this.deleteAsync(record.data as HoistRole)
@@ -175,15 +182,8 @@ export class RoleModel extends HoistModel {
             displayFn: () => ({
                 icon: this.showInGroups ? Icon.checkCircle() : Icon.circle()
             }),
-            actionFn: ({gridModel}) => {
+            actionFn: () => {
                 this.showInGroups = !this.showInGroups;
-                this.displayRoles();
-                if (this.showInGroups) {
-                    gridModel.hideColumn('category');
-                } else {
-                    gridModel.showColumn('category');
-                    gridModel.autosizeAsync();
-                }
             }
         };
     }
@@ -198,11 +198,12 @@ export class RoleModel extends HoistModel {
     // -------------------------------
 
     private displayRoles() {
-        this.gridModel.setSortBy(this.showInGroups ? 'category|desc' : 'name');
-        const gridData = this.showInGroups
-            ? this.processRolesForTreeGrid(this.allRoles)
-            : this.allRoles;
-        this.gridModel.loadData(gridData);
+        const {gridModel} = this,
+            gridData = this.showInGroups
+                ? this.processRolesForTreeGrid(this.allRoles)
+                : this.allRoles;
+        gridModel.loadData(gridData);
+        gridModel.autosizeAsync();
     }
 
     private async ensureInitializedAsync() {
@@ -218,9 +219,7 @@ export class RoleModel extends HoistModel {
         }
     }
 
-    private processRolesFromServer(
-        roles: Omit<HoistRole, 'users' | 'directoryGroups' | 'roles'>[]
-    ): HoistRole[] {
+    private processRolesFromServer(roles: Partial<HoistRole>[]): HoistRole[] {
         return roles.map(role => {
             const membersByType = mapValues(groupBy(role.members, 'type'), members =>
                 members.map(member => member.name)
@@ -230,13 +229,11 @@ export class RoleModel extends HoistModel {
                 users: membersByType['USER'] ?? [],
                 directoryGroups: membersByType['DIRECTORY_GROUP'] ?? [],
                 roles: membersByType['ROLE'] ?? []
-            };
+            } as HoistRole;
         });
     }
 
-    private processRolesForTreeGrid(
-        roles: Omit<HoistRole, 'users' | 'directoryGroups' | 'roles'>[]
-    ) {
+    private processRolesForTreeGrid(roles: HoistRole[]) {
         const root = [];
         roles.forEach(role => {
             const categories = role.category ? role.category.split('\\') : ['Uncategorized'];
@@ -272,6 +269,7 @@ export class RoleModel extends HoistModel {
             autosizeOptions: {mode: 'managed'},
             emptyText: 'No roles found.',
             colChooserModel: true,
+            sortBy: 'name',
             enableExport: true,
             exportOptions: {filename: 'roles'},
             filterModel: true,
@@ -280,7 +278,7 @@ export class RoleModel extends HoistModel {
             },
             headerMenuDisplay: 'hover',
             onRowDoubleClicked: ({data: record}) => {
-                if (!this.readonly && record && !record.data.isGroupRow) {
+                if (!this.readonly && record && record.data.isGroupRow) {
                     this.roleEditorModel
                         .editAsync(record.data)
                         .then(role => role && this.refreshAsync());
