@@ -203,7 +203,8 @@ export class RoleModel extends HoistModel {
                 ? this.processRolesForTreeGrid(this.allRoles)
                 : this.allRoles;
         gridModel.loadData(gridData);
-        gridModel.autosizeAsync();
+        gridModel.expandAll();
+        gridModel.autosizeAsync({includeCollapsedChildren: true});
     }
 
     private async ensureInitializedAsync() {
