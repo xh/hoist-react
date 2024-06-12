@@ -16,6 +16,10 @@
         // which would happen if the centering with `display:block` and `margin:auto` were used.
         left: 50%;
         transform: translateX(-50%);
+
+        // Do not highlight selected rows when printing
+        --xh-grid-selected-row-bg: #ffffff00;
+        --xh-grid-selected-row-text-color: var(var(--xh-grid-text-color));
       }
 
       .xh-panel {
