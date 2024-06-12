@@ -161,6 +161,10 @@ for more details.
 * `Store` now supports multiple `summaryRecords`, displayed if so configured as multiple pinned
   rows within a bound grid.
 
+### 🐞 Bug Fixes
+
+* Fixed several issues with the grid column filter when used on a "tags" field.
+
 ## 63.0.3 - 2024-04-16
 
 ### 🐞 Bug Fixes

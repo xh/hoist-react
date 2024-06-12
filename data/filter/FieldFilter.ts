@@ -14,6 +14,7 @@ import {
     escapeRegExp,
     first,
     isArray,
+    isEmpty,
     isEqual,
     isNil,
     isString,
@@ -128,14 +129,14 @@ export class FieldFilter extends Filter {
         switch (op) {
             case '=':
                 opFn = v => {
-                    if (isNil(v) || v === '') v = null;
-                    return value.some(it => isEqual(v, it));
+                    if (isNil(v) || v === '' || (isArray(v) && isEmpty(v))) v = null;
+                    return (v == null && isEmpty(value)) || value.some(it => isEqual(v, it));
                 };
                 break;
             case '!=':
                 opFn = v => {
-                    if (isNil(v) || v === '') v = null;
-                    return !value.some(it => isEqual(v, it));
+                    if (isNil(v) || v === '' || (isArray(v) && isEmpty(v))) v = null;
+                    return (v != null || !isEmpty(value)) && !value.some(it => isEqual(v, it));
                 };
                 break;
             case '>':

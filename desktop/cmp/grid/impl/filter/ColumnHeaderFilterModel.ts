@@ -67,10 +67,15 @@ export class ColumnHeaderFilterModel extends HoistModel {
 
     @computed
     get isCustomFilter() {
-        const {columnCompoundFilter, columnFilters} = this;
+        const {columnCompoundFilter, columnFilters, fieldType} = this;
         if (columnCompoundFilter) return true;
         if (isEmpty(columnFilters)) return false;
-        return columnFilters.some(it => !['=', '!=', 'includes'].includes(it.op));
+        return columnFilters.some(
+            it =>
+                !['=', '!=', 'includes'].includes(it.op) ||
+                // The is blank / is not blank filter on tags is only supported by custom filter.
+                (fieldType === 'tags' && ['=', '!='].includes(it.op) && it.value == null)
+        );
     }
 
     get commitOnChange() {
@@ -156,6 +161,12 @@ export class ColumnHeaderFilterModel extends HoistModel {
     @action
     closeMenu() {
         this.isOpen = false;
+    }
+
+    activateTab(tabId) {
+        const tabModel = tabId === 'valuesFilter' ? this.valuesTabModel : this.customTabModel;
+        tabModel.syncWithFilter();
+        this.tabContainerModel.activateTab(tabId);
     }
 
     //-------------------
