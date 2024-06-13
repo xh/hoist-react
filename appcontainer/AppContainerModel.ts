@@ -154,19 +154,17 @@ export class AppContainerModel extends HoistModel {
             // (e.g. `env(safe-area-inset-top)`). This allows us to avoid overlap with OS-level
             // controls like the iOS tab switcher, as well as to more easily set the background
             // color of the (effectively) unusable portions of the screen via
-            const vp = document.querySelector('meta[name=viewport]'),
-                content = vp.getAttribute('content') + ', viewport-fit=cover';
-
-            vp.setAttribute('content', content);
+            this.setViewportContent(this.getViewportContent() + ', viewport-fit=cover');
 
             // Temporarily set maximum-scale=1 on orientation change to force reset Safari iOS
             // zoom level, and then remove to restore user zooming. This is a workaround for a bug
-            // where Safari auto-zooms on orientation change if the user has zoomed the page.
+            // where Safari full-screen re-zooms on orientation change if user has *ever* zoomed.
             window.addEventListener(
                 'orientationchange',
                 () => {
-                    vp.setAttribute('content', content + ', maximum-scale=1');
-                    setTimeout(() => vp.setAttribute('content', content), 1);
+                    const content = this.getViewportContent();
+                    this.setViewportContent(content + ', maximum-scale=1');
+                    setTimeout(() => this.setViewportContent(content), 0);
                 },
                 false
             );
@@ -369,5 +367,15 @@ export class AppContainerModel extends HoistModel {
         const terminalStates: AppState[] = ['RUNNING', 'SUSPENDED', 'LOAD_FAILED', 'ACCESS_DENIED'],
             loadingPromise = mobxWhen(() => terminalStates.includes(this.appStateModel.state));
         loadingPromise.linkTo(this.appLoadModel);
+    }
+
+    private setViewportContent(content: string) {
+        const vp = document.querySelector('meta[name=viewport]');
+        vp?.setAttribute('content', content);
+    }
+
+    private getViewportContent(): string {
+        const vp = document.querySelector('meta[name=viewport]');
+        return vp ? vp.getAttribute('content') : '';
     }
 }
