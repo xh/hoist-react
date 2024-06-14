@@ -153,8 +153,8 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
      * Request a full logout from the underlying OAuth provider.
      */
     async logoutAsync(): Promise<void> {
-        this.setSelectedUsername(null);
         await this.doLogoutAsync();
+        this.setSelectedUsername(null);
     }
 
     /**
