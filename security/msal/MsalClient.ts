@@ -172,7 +172,6 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         const {client} = this,
             opts: PopupRequest = {
                 loginHint: this.getSelectedUsername(),
-                redirectUri: this.blankUrl,
                 domainHint: this.config.domainHint,
                 scopes: this.loginScopes,
                 extraScopesToConsent: this.loginExtraScopesToConsent
@@ -247,7 +246,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         const result = await this.client.ssoSilent({
             loginHint: this.getSelectedUsername(),
             domainHint: this.config.domainHint,
-            redirectUri: this.blankUrl,
+            redirectUri: this.redirectUrl, // Recommended by MS, not used?
             scopes: this.loginScopes,
             extraScopesToConsent: this.loginExtraScopesToConsent,
             prompt: 'none'
@@ -265,7 +264,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             auth: {
                 clientId,
                 authority,
-                redirectUri: this.loginMethod == 'POPUP' ? this.blankUrl : this.redirectUrl,
+                redirectUri: this.redirectUrl,
                 postLogoutRedirectUri: this.postLogoutRedirectUrl
             },
             system: {

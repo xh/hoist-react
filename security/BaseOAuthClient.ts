@@ -214,10 +214,6 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     //---------------------------------------
     // Implementation
     //---------------------------------------
-    protected get blankUrl() {
-        return `${window.location.origin}/blank.html`;
-    }
-
     protected get redirectUrl() {
         const url = this.config.redirectUrl;
         return url === 'APP_BASE_URL' ? this.baseUrl : url;
