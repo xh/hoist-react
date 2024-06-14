@@ -1116,7 +1116,7 @@
   dependencies:
     tslib "~2.6.2"
 
-"@blueprintjs/core@^5.10.2", "@blueprintjs/core@^5.10.3":
+"@blueprintjs/core@^5.10.3":
   version "5.10.3"
   resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-5.10.3.tgz#92daf209ceb1b4bc33c3fb8c53287e63430bf0b9"
   integrity sha512-QlfvAkZOimeyJKs9+EKd52nYfHd1yltSJQLAmv0+0wF/5m+eQ5jeWjF8Mr/vwq2EqiC3pS2+i3mivORvxXTgDg==
@@ -1132,7 +1132,7 @@
     tslib "~2.6.2"
     use-sync-external-store "^1.2.0"
 
-"@blueprintjs/datetime2@^2.3.3":
+"@blueprintjs/datetime2@^2.3.5":
   version "2.3.5"
   resolved "https://registry.yarnpkg.com/@blueprintjs/datetime2/-/datetime2-2.3.5.tgz#05ec3ed8bdc4a5b344f3baeb60785fa99d8d720e"
   integrity sha512-dEmLY52fVM4NrCsn9EedTsH8XVtMy+UW5g3u8RaJ5tfUQ4aeKjwiInHdmMp83co4PvR2EiL+n5czVRjJecLCNA==
