@@ -7,8 +7,12 @@
 * Added a workaround for a bug where mobile Safari auto-zooms on orientation change if the user has zoomed the page.
 
 ### ⚙️ Technical
+*
 * Misc. Improvements to logout behavior of `MsalClient`
 
+### 📚 Libraries
+
+* @azure/msal-browser `3.14.0 → 3.17.0
 
 ## 64.0.4 - 2024-06-05
 
@@ -25,11 +29,7 @@
 ### ⚙️ Technical
 
 * Adjustments to API of (beta) `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient`.
-
-### 📚 Libraries
-
-* @azure/msal-browser `3.14.0 → 3.17.0`
-
+`
 
 ## 64.0.2 - 2024-05-23
 
