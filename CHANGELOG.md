@@ -2,6 +2,10 @@
 
 ## 65.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Added a workaround for a bug where mobile Safari auto-zooms on orientation change if the user has zoomed the page.
+
 ## 64.0.4 - 2024-06-05
 
 ### ⚙️ Technical
