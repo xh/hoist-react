@@ -130,8 +130,9 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         // to gain a new refreshToken (3rd party cookies required).
         const accounts = client.getAllAccounts();
         this.logDebug('Authenticated accounts available', accounts);
-        this.account = accounts.length == 1 ? accounts[0] : null;
-        if (this.account) {
+        const account = accounts.length == 1 ? accounts[0] : null;
+        if (account) {
+            this.noteUserAuthenticated(account);
             try {
                 this.initialTokenLoad = true;
                 this.logDebug('Attempting silent token load.');
@@ -230,11 +231,12 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     protected override async doLogoutAsync(): Promise<void> {
-        const {postLogoutRedirectUrl, client, account, loginMethod} = this;
-        await client.clearCache({account});
+        const {postLogoutRedirectUrl, client, account, loginMethod} = this,
+            opts = {account, postLogoutRedirectUri: postLogoutRedirectUrl};
+
         loginMethod == 'REDIRECT'
-            ? await client.logoutRedirect({account, postLogoutRedirectUri: postLogoutRedirectUrl})
-            : await client.logoutPopup({account});
+            ? await client.logoutRedirect(opts)
+            : await client.logoutPopup(opts);
     }
 
     //------------------------
