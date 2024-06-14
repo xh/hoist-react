@@ -7,7 +7,7 @@
 * Added a workaround for a bug where mobile Safari auto-zooms on orientation change if the user has zoomed the page.
 
 ### ⚙️ Technical
-*
+
 * Misc. Improvements to logout behavior of `MsalClient`
 
 ### 📚 Libraries
