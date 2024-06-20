@@ -92,7 +92,7 @@ export interface ZoneGridConfig {
     rightColumnSpec?: Partial<ColumnSpec>;
 
     /** String rendered between consecutive SubFields. */
-    delimiter?: string;
+    delimiter?: string | false;
 
     /** Config with which to create a ZoneMapperModel, or boolean `true` to enable default. */
     zoneMapperModel?: ZoneMapperConfig | boolean;
@@ -310,7 +310,7 @@ export class ZoneGridModel extends HoistModel {
 
     availableColumns: ColumnSpec[];
     limits: Partial<Record<Zone, ZoneLimit>>;
-    delimiter: string;
+    delimiter: string | false;
     restoreDefaultsFn: () => Awaitable<void>;
     restoreDefaultsWarning: ReactNode;
 
