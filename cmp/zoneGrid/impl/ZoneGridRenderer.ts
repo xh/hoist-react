@@ -18,7 +18,7 @@ export interface ZoneGridColConfig {
     mainRenderer?: ColumnRenderer;
 
     /** Separator rendered between consecutive SubFields. */
-    delimiter?: string;
+    delimiter?: string | false;
 }
 
 export interface ZoneGridSubField {
