@@ -6,46 +6,46 @@
 
 ### 🐞 Bug Fixes
 
-* Added a workaround for a bug where mobile Safari auto-zooms on orientation change if the user has zoomed the page.
+* Added a workaround for a mobile-only bug where Safari auto-zooms on orientation change if the user
+  had previously zoomed the page themselves.
 
 ### ⚙️ Technical
 
-* Misc. Improvements to logout behavior of `MsalClient`
+* Improved logout behavior of (beta) `MsalClient`.
 
 ### 📚 Libraries
 
-* @azure/msal-browser `3.14.0 → 3.17.0
+* @azure/msal-browser `3.14 → 3.17`
 
 ## 64.0.4 - 2024-06-05
 
-### ⚙️ Technical
+### ⚙️ Typescript API Adjustments
 
-* Typescript: Improve `ref` typing in JSX.
+* Improved `ref` typing in JSX.
 
 ## 64.0.3 - 2024-05-31
 
 ### 🐞 Bug Fixes
 
-* Restore disabling of Blueprint animations on popovers and tooltips (corrects regression in v63.0.0)
+* Restored previous suppression of Blueprint animations on popovers and tooltips. These had been
+  unintentionally (re)enabled in v63 and are now turned off again.
 
 ### ⚙️ Technical
 
-* Adjustments to API of (beta) `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient`.
-`
+* Adjusted (beta) APIs of OAuth-related `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient`.
 
 ## 64.0.2 - 2024-05-23
 
 ### ⚙️ Technical
 
-* Adjustments to API of (beta) `BaseOAuthClient`.
-* `FetchService.addDefaultHeaders()` now supports async functions.
+* Adjusted (beta) API of `BaseOAuthClient`.
+* Improved `FetchService.addDefaultHeaders()` to support async functions.
 
 ## 64.0.1 - 2024-05-19
 
 ### ⚙️ Technical
 
-* Adjustments to loading of ID Tokens and API of `BaseOAuthClient`.  (Note that
-  this package remains in Beta for v64 and is subject to change.)
+* Adjusted (beta) API of `BaseOAuthClient` and its approach to loading ID tokens.
 
 ## 64.0.0 - 2024-05-17
 
@@ -97,10 +97,9 @@ for more details.
   by `--xh-grid-multifield` are now prefixed by `--xh-zone-grid`, several vars have been added, and
   some defaults have changed.
 * Removed obsolete `AppSpec.isSSO` property in favor of two new properties `AppSpec.enableLogout`
-  and `AppSpec.enableLoginForm`.  This should have no effect on the vast majority of apps which had
-  `isSSO` set to `true`.  For apps where `isSSO` was set to `false`, the new flags should be
+  and `AppSpec.enableLoginForm`. This should have no effect on the vast majority of apps which had
+  `isSSO` set to `true`. For apps where `isSSO` was set to `false`, the new flags should be
   used to more clearly indicate the desired auth behavior.
-
 
 ### 🎁 New Features
 
@@ -116,7 +115,7 @@ for more details.
 * Added new `checkboxRenderer` for rendering booleans with a checkbox input look and feel.
 * Added new mobile `checkboxButton`, an alternate input component for toggling boolean values.
 * Added beta version of a new Hoist `security` package, providing built-in support for OAuth flows.
-  See `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient` for more information.  Please note that
+  See `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient` for more information. Please note that
   package is being released as a *beta* and is subject to change before final release.
 
 ### ✨ Styles
