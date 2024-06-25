@@ -232,6 +232,10 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
         return `${window.location.origin}/${XH.clientAppCode}/`;
     }
 
+    protected get blankUrl() {
+        return `${window.location.origin}/blank.html`;
+    }
+
     protected popupBlockerErrorMessage: String =
         'Login popup window blocked. Please check your browser for a blocked popup notification ' +
         '(typically within the URL bar). Allow all popups from this site, then refresh this page ' +
