@@ -8,11 +8,11 @@
 
   &__content-overlay {
     position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
+    top: var(--xh-pad-safe-top);
+    bottom: var(--xh-pad-safe-bottom);
+    left: var(--xh-pad-safe-left);
+    right: var(--xh-pad-safe-right);
+    width: 100svw;
     display: flex;
     flex-direction: column;
     align-items: center;

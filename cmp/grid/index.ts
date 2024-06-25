@@ -16,8 +16,8 @@ export * from './columns';
 
 export * from './helpers/GridCountLabel';
 
-export * from './renderers/MultiFieldRenderer';
 export * from './renderers/TagsRenderer';
+export * from './renderers/CheckboxRenderer';
 export * from './filter/GridFilterModel';
 export * from './filter/GridFilterFieldSpec';
 

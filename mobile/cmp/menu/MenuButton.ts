@@ -65,7 +65,7 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
             isOpen: impl.isOpen,
             position: menuPosition,
             disabled: disabled,
-            target: button({icon, disabled, ...props}),
+            item: button({icon, disabled, ...props}),
             content: menu({menuItems, title, onDismiss: () => (impl.isOpen = false)}),
             onInteraction: nextOpenState => (impl.isOpen = nextOpenState),
             backdrop: true,

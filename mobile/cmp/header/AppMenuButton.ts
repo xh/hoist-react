@@ -23,7 +23,10 @@ export interface AppMenuButtonProps extends MenuButtonProps {
     /** True to hide the Feedback item. */
     hideFeedbackItem?: boolean;
 
-    /** True to hide the Logout button. Defaulted to appSpec.isSSO. */
+    /** True to hide the Reload button. Defaulted to false. */
+    hideReloadItem?: boolean;
+
+    /** True to hide the Logout button. Defaulted to !appSpec.enableLogout. */
     hideLogoutItem?: boolean;
 
     /** True to hide the Options button. */
@@ -54,6 +57,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             extraItems,
             hideImpersonateItem,
             hideFeedbackItem,
+            hideReloadItem,
             hideLogoutItem,
             hideOptionsItem,
             hideThemeItem,
@@ -78,6 +82,7 @@ function buildMenuItems({
     hideFeedbackItem,
     hideThemeItem,
     hideImpersonateItem,
+    hideReloadItem,
     hideLogoutItem,
     hideAboutItem,
     extraItems = []
@@ -85,7 +90,8 @@ function buildMenuItems({
     hideAboutItem = hideAboutItem || !XH.appContainerModel.hasAboutDialog();
     hideOptionsItem = hideOptionsItem || !XH.appContainerModel.optionsDialogModel.hasOptions;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
-    hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
+    hideReloadItem = withDefault(hideReloadItem, false);
+    hideLogoutItem = withDefault(hideLogoutItem, !XH.appSpec.enableLogout);
 
     const defaultItems = [
         {
@@ -120,6 +126,12 @@ function buildMenuItems({
             icon: Icon.info(),
             text: `About ${XH.clientAppName}`,
             actionFn: () => XH.showAboutDialog()
+        },
+        {
+            omit: hideReloadItem,
+            icon: Icon.refresh(),
+            text: 'Reload App',
+            actionFn: () => XH.reloadApp()
         },
         {
             omit: hideLogoutItem,

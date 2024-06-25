@@ -44,9 +44,9 @@ export class HoistAppModel extends HoistModel {
     async initAsync() {}
 
     /**
-     * Called by {@link IdentityService.logoutAsync} to provide an app-specific hook prior
-     * to logging out an authenticated user. Applicable only to apps that generally support
-     * logout (i.e. not SSO) and require handling in addition to Hoist server logout.
+     * Called by {@link IdentityService.logoutAsync} to provide an app-specific hook after
+     * logging out an authenticated user. Applicable only to apps that generally support
+     * logout and require handling in addition to Hoist server logout.
      */
     async logoutAsync() {}
 
@@ -87,6 +87,7 @@ export class HoistAppModel extends HoistModel {
             {label: 'App', value: `${svc.get('appName')} (${svc.get('appCode')})`},
             {label: 'Current User', value: XH.identityService.username},
             {label: 'Environment', value: svc.get('appEnvironment')},
+            {label: 'Instance', value: svc.serverInstance},
             {label: 'Server', value: `${svc.get('appVersion')} (build ${svc.get('appBuild')})`},
             {
                 label: 'Client',

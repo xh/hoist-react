@@ -125,7 +125,7 @@ const overflowButton = hoistCmp.factory({
             popover({
                 popoverClassName: 'xh-toolbar-overflow-popover',
                 position: 'bottom-right',
-                target: button({icon: Icon.ellipsisVertical()}),
+                item: button({icon: Icon.ellipsisVertical()}),
                 content: vbox(children)
             })
         );

@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {ContextMenu} from '@blueprintjs/core';
+import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import composeRefs from '@seznam/compose-react-refs';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {
@@ -13,8 +13,7 @@ import {
     HoistProps,
     refreshContextView,
     TestSupportProps,
-    uses,
-    XH
+    uses
 } from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
@@ -23,11 +22,12 @@ import {TEST_ID} from '@xh/hoist/utils/js';
 import {useOnVisibleChange} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
-import 'react-grid-layout/css/styles.css';
-import './DashCanvas.scss';
 import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
+
+import 'react-grid-layout/css/styles.css';
+import './DashCanvas.scss';
 
 export type DashCanvasProps = HoistProps<DashCanvasModel> & TestSupportProps;
 
@@ -129,14 +129,13 @@ const onContextMenu = (e, model) => {
         const {clientX, clientY} = e,
             x = clientX + model.ref.current.scrollLeft,
             y = clientY + model.ref.current.scrollTop;
-        ContextMenu.show(
+
+        showContextMenu(
             dashCanvasContextMenu({
                 dashCanvasModel: model,
                 position: {x, y}
             }),
-            {left: clientX, top: clientY},
-            null,
-            XH.darkTheme
+            {left: clientX, top: clientY}
         );
     }
 };

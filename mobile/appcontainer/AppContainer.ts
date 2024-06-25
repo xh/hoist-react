@@ -11,13 +11,14 @@ import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/c
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 import {colChooser} from '@xh/hoist/mobile/cmp/grid/impl/ColChooser';
 import {ColChooserModel} from '@xh/hoist/mobile/cmp/grid/impl/ColChooserModel';
-import {zoneMapper} from '@xh/hoist/mobile/cmp/zoneGrid/impl/ZoneMapper';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
+import {pinPadImpl} from '@xh/hoist/mobile/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
-import {pinPadImpl} from '@xh/hoist/mobile/cmp/pinpad/impl/PinPad';
-import {useOnMount, elementFromContent} from '@xh/hoist/utils/react';
+import {zoneMapper} from '@xh/hoist/mobile/cmp/zoneGrid/impl/ZoneMapper';
+import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
+import {errorMessage} from '../cmp/error/ErrorMessage';
 import {aboutDialog} from './AboutDialog';
 import {banner} from './Banner';
 import {exceptionDialog} from './ExceptionDialog';
@@ -26,12 +27,11 @@ import {idlePanel} from './IdlePanel';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
-import {suspendPanel} from './SuspendPanel';
 import {messageSource} from './MessageSource';
 import {optionsDialog} from './OptionsDialog';
+import {suspendPanel} from './SuspendPanel';
 import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
-import {errorMessage} from '../cmp/error/ErrorMessage';
 
 installMobileImpls({
     tabContainerImpl,
@@ -90,7 +90,7 @@ function viewForState() {
     switch (XH.appState) {
         case 'PRE_AUTH':
         case 'INITIALIZING':
-            return viewport(appLoadMask());
+            return viewport(mask({spinner: true, isDisplayed: true}));
         case 'LOGIN_REQUIRED':
             return loginPanel();
         case 'ACCESS_DENIED':
@@ -153,10 +153,14 @@ const bannerList = hoistCmp.factory<AppContainerModel>({
 
 const suspendedView = hoistCmp.factory<AppContainerModel>({
     render({model}) {
+        let ret;
         if (model.appStateModel.suspendData?.reason === 'IDLE') {
             const content = model.appSpec.idlePanel ?? idlePanel;
-            return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
+            ret = elementFromContent(content, {onReactivate: () => XH.reloadApp()});
+        } else {
+            ret = suspendPanel();
         }
-        return suspendPanel();
+
+        return viewport(ret, appLoadMask());
     }
 });

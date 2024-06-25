@@ -11,7 +11,7 @@ import '@xh/hoist/desktop/register';
 import {fmtNumber, parseNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
-import {apiRemoved, debounced, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {debounced, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber, round} from 'lodash';
 import {ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
@@ -113,7 +113,6 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>
     displayName: 'NumberInput',
     className: 'xh-number-input',
     render(props, ref) {
-        apiRemoved(`fill`, {test: props['fill'], msg: 'Use the `flex` prop instead.', v: '58'});
         return useHoistInputModel(cmp, props, ref, NumberInputModel);
     }
 });

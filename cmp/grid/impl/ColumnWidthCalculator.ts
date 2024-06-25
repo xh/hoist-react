@@ -199,7 +199,7 @@ export class ColumnWidthCalculator {
                 (includeHeaderIcons || gridModel.sortBy.find(sorter => sorter.colId === colId));
 
         let showMenu =
-            (agOptions?.suppressMenu === false || (filterable && filterModel)) &&
+            (agOptions?.suppressHeaderMenuButton === false || (filterable && filterModel)) &&
             includeHeaderIcons;
 
         // If only showing menu on hover, only need to allot room if the column is filtered

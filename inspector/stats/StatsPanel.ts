@@ -38,7 +38,7 @@ export const statsPanel = hoistCmp.factory({
             bbar: toolbar({
                 items: [
                     popover({
-                        target: span('JS Heap ', Icon.info()),
+                        item: span('JS Heap ', Icon.info()),
                         interactionKind: 'hover',
                         content: div({
                             className: 'xh-pad',

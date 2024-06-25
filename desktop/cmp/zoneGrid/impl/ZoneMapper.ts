@@ -41,7 +41,7 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
 
         return panel({
             className,
-            items: [zonePicker(), grid({model: impl.gridModel}), sortPicker()],
+            items: [introText(), zonePicker(), grid({model: impl.gridModel}), sortPicker()],
             bbar: [
                 button({
                     omit: !showRestoreDefaults,
@@ -54,6 +54,7 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
                     text: 'Cancel',
                     onClick: () => model.close()
                 }),
+                '-',
                 button({
                     text: 'Save',
                     icon: Icon.check(),
@@ -64,6 +65,17 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
                         model.close();
                     }
                 })
+            ]
+        });
+    }
+});
+
+const introText = hoistCmp.factory({
+    render() {
+        return div({
+            className: 'xh-zone-mapper__intro-text',
+            items: [
+                'Click any of the four quadrants in the sample row below to customize the fields displayed within. Fields will be shown in the order they are selected. The first field within the top zones will always be labelled by the column headers.'
             ]
         });
     }
@@ -110,7 +122,7 @@ const zoneCell = hoistCmp.factory<ZoneMapperModel>({
             ),
             style: {flex},
             onClick: () => (model.selectedZone = zone),
-            items: intersperse(samples, span(delimiter))
+            items: delimiter ? intersperse(samples, span(delimiter)) : samples
         });
     }
 });

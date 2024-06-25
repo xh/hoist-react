@@ -3,28 +3,28 @@
 //------------------------
 // Tabs
 //------------------------
-.bp4-tab-panel > div {
+.bp5-tab-panel > div {
   margin: 0 !important; // TODO - investigate this....
 }
 
-.bp4-tab > svg:first-child {
+.bp5-tab > svg:first-child {
   margin-right: var(--xh-pad-half-px);
 }
 
 // Vertical tab lists fill their width
-.bp4-tabs.bp4-vertical .bp4-tab-list {
+.bp5-tabs.bp5-vertical .bp5-tab-list {
   flex: 1;
 }
 
 //------------------------
 // Dialogs, Popovers, Masking
 //------------------------
-.bp4-dialog {
+.bp5-dialog {
   padding-bottom: 0;
   border-radius: var(--xh-border-radius-px);
   border: var(--xh-popup-border-width-px) solid var(--xh-popup-border-color);
 
-  .bp4-dialog-header {
+  .bp5-dialog-header {
     color: var(--xh-popup-title-text-color);
     background-color: var(--xh-popup-title-bg);
     font-family: var(--xh-popup-title-font-family);
@@ -33,8 +33,8 @@
     border-top-right-radius: var(--xh-border-radius-px);
     border-top-left-radius: var(--xh-border-radius-px);
 
-    .bp4-heading,
-    .bp4-icon {
+    .bp5-heading,
+    .bp5-icon {
       color: var(--xh-popup-title-text-color);
     }
 
@@ -43,7 +43,7 @@
     }
   }
 
-  .bp4-dialog-body {
+  .bp5-dialog-body {
     margin: 0;
     padding: var(--xh-pad-double-px);
     background: var(--xh-popup-bg);
@@ -53,48 +53,67 @@
 
 // Customized here for backdrops behind dialogs.
 // Note that masks use their own CSS var, set in Mask.scss.
-.bp4-overlay-backdrop:not(.bp4-popover-backdrop) {
+.bp5-overlay-backdrop:not(.bp5-popover-backdrop) {
   background-color: var(--xh-backdrop-bg);
 }
 
-// Squelch popover scale transition - unlike Dialog with its `transitionName` prop, Popover
-// does not appear to provide a way to turn off its transition without also losing the (often
-// desirable) arrow pointing to its target. Variables below required for the include to function.
-$pt-transition-ease: cubic-bezier(0.4, 1, 0.75, 0.9) !default;
-$pt-transition-ease-bounce: cubic-bezier(0.54, 1.12, 0.38, 1.11) !default;
-$pt-transition-duration: 100ms !default;
+// On Popover and Tooltip components, squelch scale & opacity transition - unlike Dialog with its `transitionName` prop,
+// Popover, and consequently Tooltip, do not appear to provide a way to turn off
+// their transitions without also losing the (often desirable) arrow pointing to their targets.
+// These rules override the scale and opacity starting values of enter and exit classes by setting them to
+// their final 'end of transition' values, which has the effect of preventing/short circuiting transitions.
+// BlueprintJs' own Popover.minimal uses this same approach to disable its transitions.
+// (it appears from testing that overriding these rules with any value will squelch the transition, but
+// we might as well use the final values to be explicit.)
+.bp5-popover-transition-container {
+  &.bp5-popover-enter,
+  &.bp5-popover-appear {
+    opacity: 1;
+  }
 
-// This override is taken from the popover source SCSS - there it is scoped under the minimal class.
-// https://github.com/palantir/blueprint/blob/1bfd1e42303d2626bfc3923eec2195ab4dc696d2/packages/core/src/components/popover/_popover.scss#L54
-.bp4-popover {
-  @include react-transition(
-    'bp4-popover',
-    (
-      transform: scale(1) scale(1)
-    ),
-    $duration: 0,
-    $after: '> &'
-  );
+  &.bp5-popover-exit {
+    opacity: 0;
+  }
+
+  &.bp5-popover-enter,
+  &.bp5-popover-appear {
+    > .bp5-popover {
+      transform: scale(1);
+    }
+  }
+
+  &.bp5-popover-exit-active,
+  &.bp5-popover-exit {
+    > .bp5-popover {
+      transform: scale(0);
+    }
+  }
 }
 
 //------------------------
 // Menus
 //------------------------
-.bp4-dark .bp4-menu,
-.bp4-menu {
+.bp5-dark .bp5-menu,
+.bp5-menu {
   background-color: var(--xh-menu-bg);
   border: var(--xh-menu-border);
   color: var(--xh-menu-item-text-color);
-  padding: 5px 0;
 
-  .bp4-menu-item {
+  // Constrain menu height to the viewport, for menus with more items than will fit vertically.
+  // Note that this is not perfect - menus are shown relative to their target, and if a menu is
+  // in the middle of the page and forced to render above/below the target, it can still clip.
+  // The 100px offset is designed to account for menus shown from app/tab-level top/bottom toolbars.
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+
+  .bp5-menu-item {
     // Default alignment of flex-start leaves Hoist icons shifted up - could target
     // more specifically if this is a problem in any other contexts.
     align-items: center;
     color: var(--xh-menu-item-text-color);
     padding: 5px 10px;
 
-    .bp4-menu-item-icon {
+    .bp5-menu-item-icon {
       color: inherit;
     }
 
@@ -103,47 +122,47 @@ $pt-transition-duration: 100ms !default;
       border-radius: 0;
     }
 
-    &.bp4-intent-primary {
+    &.bp5-intent-primary {
       color: var(--xh-intent-primary);
     }
 
-    &.bp4-intent-success {
+    &.bp5-intent-success {
       color: var(--xh-intent-success);
     }
 
-    &.bp4-intent-warning {
+    &.bp5-intent-warning {
       color: var(--xh-intent-warning);
     }
 
-    &.bp4-intent-danger {
+    &.bp5-intent-danger {
       color: var(--xh-intent-danger);
     }
 
     .xh-dark & {
-      &.bp4-intent-primary {
+      &.bp5-intent-primary {
         color: var(--xh-intent-primary-lighter);
       }
 
-      &.bp4-intent-success {
+      &.bp5-intent-success {
         color: var(--xh-intent-success-lighter);
       }
 
-      &.bp4-intent-warning {
+      &.bp5-intent-warning {
         color: var(--xh-intent-warning-lighter);
       }
 
-      &.bp4-intent-danger {
+      &.bp5-intent-danger {
         color: var(--xh-intent-danger-lighter);
       }
     }
   }
 
-  .bp4-submenu {
+  .bp5-submenu {
     padding: 0;
   }
 }
 
-.bp4-dark .bp4-menu-divider {
+.bp5-dark .bp5-menu-divider {
   border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
@@ -153,7 +172,7 @@ $pt-transition-duration: 100ms !default;
 // See desktop/cmp/button/Button.scss for button styles.
 // Rule below applies only to buttons within BP inputs to disable default hover background-color
 // (which looks weird) and instead tweak the icon color to indicate it's active.
-.xh-app .xh-input .bp4-input-group .xh-button {
+.xh-app .xh-input .bp5-input-group .xh-button {
   &.xh-button--minimal,
   &.xh-button--outlined {
     &.xh-button--enabled {
@@ -171,43 +190,43 @@ $pt-transition-duration: 100ms !default;
 //------------------------
 // Tooltips
 //------------------------
-.bp4-tooltip {
-  &.bp4-intent-primary {
-    .bp4-popover-content {
+.bp5-tooltip {
+  &.bp5-intent-primary {
+    .bp5-popover-content {
       background-color: var(--xh-intent-primary);
     }
 
-    .bp4-popover-arrow-fill {
+    .bp5-popover-arrow-fill {
       fill: var(--xh-intent-primary);
     }
   }
 
-  &.bp4-intent-danger {
-    .bp4-popover-content {
+  &.bp5-intent-danger {
+    .bp5-popover-content {
       background-color: var(--xh-intent-danger);
     }
 
-    .bp4-popover-arrow-fill {
+    .bp5-popover-arrow-fill {
       fill: var(--xh-intent-danger);
     }
   }
 
-  &.bp4-intent-success {
-    .bp4-popover-content {
+  &.bp5-intent-success {
+    .bp5-popover-content {
       background-color: var(--xh-intent-success);
     }
 
-    .bp4-popover-arrow-fill {
+    .bp5-popover-arrow-fill {
       fill: var(--xh-intent-success);
     }
   }
 
-  &.bp4-intent-warning {
-    .bp4-popover-content {
+  &.bp5-intent-warning {
+    .bp5-popover-content {
       background-color: var(--xh-intent-warning);
     }
 
-    .bp4-popover-arrow-fill {
+    .bp5-popover-arrow-fill {
       fill: var(--xh-intent-warning);
     }
   }
@@ -216,11 +235,11 @@ $pt-transition-duration: 100ms !default;
 //------------------------
 // Forms + Inputs
 //------------------------
-.bp4-input,
-.bp4-dark .bp4-input,
-textarea.bp4-input,
-.bp4-dark textarea.bp4-input,
-.bp4-input-ghost {
+.bp5-input,
+.bp5-dark .bp5-input,
+textarea.bp5-input,
+.bp5-dark textarea.bp5-input,
+.bp5-input-ghost {
   color: var(--xh-input-text-color);
   background: var(--xh-input-bg);
   font-size: var(--xh-font-size);
@@ -231,7 +250,7 @@ textarea.bp4-input,
   }
 
   // Use Hoist theme vars for disabled input styles.
-  &.bp4-disabled,
+  &.bp5-disabled,
   &:disabled {
     background-color: var(--xh-input-disabled-bg);
     color: var(--xh-input-disabled-text-color);
@@ -239,44 +258,44 @@ textarea.bp4-input,
 }
 
 // Expose CSS var for box-shadow tweaking
-.bp4-input:not(.bp4-active):not(:focus) {
+.bp5-input:not(.bp5-active):not(:focus) {
   box-shadow: var(--xh-form-field-box-shadow);
 }
 
-.bp4-control,
-.bp4-dark .bp4-control {
-  input:focus ~ .bp4-control-indicator {
+.bp5-control,
+.bp5-dark .bp5-control {
+  input:focus ~ .bp5-control-indicator {
     outline: var(--xh-form-field-focused-border-color) solid 1px !important;
     outline-offset: 1px;
   }
 }
 
-.bp4-slider-handle:focus {
+.bp5-slider-handle:focus {
   outline: unset; // override browser default styles
   box-shadow: var(--xh-slider-handle-focused-box-shadow);
 }
 
-.bp4-input:focus,
-.bp4-dark .bp4-input:focus,
-.bp4-dark textarea.bp4-input:focus {
+.bp5-input:focus,
+.bp5-dark .bp5-input:focus,
+.bp5-dark textarea.bp5-input:focus {
   box-shadow: var(--xh-form-field-focused-box-shadow);
 }
 
 // Override Blueprint textarea and switch input dark theme
-.bp4-dark textarea.bp4-input {
+.bp5-dark textarea.bp5-input {
   box-shadow: var(--xh-form-field-box-shadow);
 }
 
-.bp4-dark .bp4-control.bp4-switch input ~ .bp4-control-indicator {
+.bp5-dark .bp5-control.bp5-switch input ~ .bp5-control-indicator {
   box-shadow: var(--xh-form-field-box-shadow) !important;
 }
 
-.bp4-dark .bp4-control.bp4-switch:hover input ~ .bp4-control-indicator {
+.bp5-dark .bp5-control.bp5-switch:hover input ~ .bp5-control-indicator {
   background-color: #202b33;
 }
 
 /* Apply blueprint styling to non-blueprint icons within input groups */
-.bp4-input-group {
+.bp5-input-group {
   .xh-icon {
     position: absolute;
     top: 0;
@@ -293,15 +312,15 @@ textarea.bp4-input,
 
   // Support direct use of a Hoist Icon as input `rightElement` prop - w/o the below, the icon SVG
   // will not be measured (clientWidth == 0) and the input's internal layout won't account for it.
-  .bp4-input-action > .xh-icon {
+  .bp5-input-action > .xh-icon {
     position: relative;
     display: block;
   }
 
-  .bp4-button-group {
+  .bp5-button-group {
     margin-right: 3px;
 
-    .bp4-button {
+    .bp5-button {
       margin-right: 0;
       margin-left: 0;
     }
@@ -313,18 +332,18 @@ textarea.bp4-input,
 }
 
 /* Apply blueprint's z-index of 16 for icons within a control group */
-.bp4-control-group .bp4-input-group svg:not(.bp4-icon) {
+.bp5-control-group .bp5-input-group svg:not(.bp5-icon) {
   z-index: 16;
 }
 
 // Controls ship with default bottom and (inline) right margins. We expose variables
 // to customize and default those to 0 to avoid adding margins by default.
 // Hoist theme text-color applied to elements not styled with a more specific selector.
-.bp4-control {
+.bp5-control {
   color: var(--xh-text-color);
   margin-bottom: var(--xh-form-field-margin-bottom);
 
-  &.bp4-inline {
+  &.bp5-inline {
     margin-right: var(--xh-form-field-margin-right);
   }
 }
@@ -332,10 +351,10 @@ textarea.bp4-input,
 //------------------------
 // Misc
 //------------------------
-.bp4-hotkey-column {
+.bp5-hotkey-column {
   padding: var(--xh-pad-double-px);
 
-  .bp4-heading {
+  .bp5-heading {
     font-weight: normal;
     margin-top: 0;
   }

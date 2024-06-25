@@ -11,7 +11,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {Cube, CubeFieldSpec, FieldSpec} from '@xh/hoist/data';
-import {fmtDate, fmtNumber} from '@xh/hoist/format';
+import {fmtNumber} from '@xh/hoist/format';
 import {action, computed, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import * as Col from '@xh/hoist/admin/columns';
@@ -99,26 +99,21 @@ export class ActivityTrackingModel extends HoistModel {
                 Col.userAgent.field,
                 Col.username.field,
                 {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
-                {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'}
+                {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+                Col.url.field,
+                Col.instance.field,
+                Col.appVersion.field,
+                Col.appEnvironment.field
             ] as CubeFieldSpec[]
         });
 
-        this.groupingChooserModel = new GroupingChooserModel({
-            dimensions: this.cube.dimensions,
-            persistWith: this.persistWith,
-            initialValue: this._defaultDims
-        });
-
+        const enableValues = true;
         this.filterChooserModel = new FilterChooserModel({
-            bind: this.cube.store,
             fieldSpecs: [
-                'category',
-                'month',
-                'username',
-                'device',
-                'browser',
-                'msg',
-                'userAgent',
+                {field: 'category', enableValues},
+                {field: 'username', displayName: 'User', enableValues},
+                {field: 'device', enableValues},
+                {field: 'browser', enableValues},
                 {
                     field: 'elapsed',
                     valueRenderer: v => {
@@ -126,27 +121,25 @@ export class ActivityTrackingModel extends HoistModel {
                             label: 'ms',
                             formatConfig: {thousandSeparated: false, mantissa: 0}
                         });
-                    }
-                },
-                {
-                    field: 'dateCreated',
-                    example: 'YYYY-MM-DD',
-                    valueParser: (v, op) => {
-                        let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
-                        if (!ret.isValid()) return null;
-
-                        // Note special handling for '>' & '<=' queries.
-                        if (['>', '<='].includes(op)) {
-                            ret = moment(ret).endOf('day');
-                        }
-
-                        return ret.toDate();
                     },
-                    valueRenderer: v => fmtDate(v),
-                    ops: ['>', '>=', '<', '<=']
-                }
-            ],
-            persistWith: this.persistWith
+                    fieldType: 'number'
+                },
+                {field: 'msg', displayName: 'Message'},
+                {field: 'data'},
+                {field: 'userAgent'},
+                {field: 'url', displayName: 'URL'},
+                {field: 'instance'},
+                {field: 'appVersion'},
+                {field: 'appEnvironment', displayName: 'Environment'}
+            ]
+        });
+
+        this.loadLookupsAsync();
+
+        this.groupingChooserModel = new GroupingChooserModel({
+            dimensions: this.cube.dimensions,
+            persistWith: this.persistWith,
+            initialValue: this._defaultDims
         });
 
         const hidden = true;
@@ -184,34 +177,35 @@ export class ActivityTrackingModel extends HoistModel {
                 {...Col.elapsed, headerName: 'Elapsed (avg)', hidden},
                 {...Col.dayRange, hidden},
                 {...Col.entryCount},
-                {field: 'count', hidden}
+                {field: 'count', hidden},
+                {...Col.appEnvironment, hidden},
+                {...Col.appVersion, hidden},
+                {...Col.url, hidden},
+                {...Col.instance, hidden}
             ]
         });
 
         this.addReaction({
-            track: () => {
-                const vals = this.formModel.values;
-                return [vals.startDay, vals.endDay, vals.maxRows];
-            },
+            track: () => this.query,
             run: () => this.loadAsync(),
             debounce: 100
         });
 
         this.addReaction({
-            track: () => [this.cube.records, this.filterChooserModel.value, this.dimensions],
+            track: () => [this.cube.records, this.dimensions],
             run: () => this.loadGridAsync(),
             debounce: 100
         });
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {enabled, cube, formModel} = this;
+        const {enabled, cube} = this;
         if (!enabled) return;
 
         try {
-            const data = await XH.fetchJson({
+            const data = await XH.fetchService.postJson({
                 url: 'trackLogAdmin',
-                params: formModel.getData(),
+                body: this.query,
                 loadSpec
             });
 
@@ -232,7 +226,6 @@ export class ActivityTrackingModel extends HoistModel {
         const {cube, gridModel, dimensions} = this,
             data = cube.executeQuery({
                 dimensions,
-                filter: this.filterChooserModel.value,
                 includeRoot: true,
                 includeLeaves: true
             });
@@ -319,11 +312,31 @@ export class ActivityTrackingModel extends HoistModel {
         }
     }
 
-    get defaultStartDay() {
+    private get defaultStartDay() {
         return LocalDate.currentAppDay().subtract(6);
     }
 
-    get defaultEndDay() {
+    private get defaultEndDay() {
         return LocalDate.currentAppDay();
+    }
+
+    private async loadLookupsAsync() {
+        const lookups = await XH.fetchJson({url: 'trackLogAdmin/lookups'});
+
+        this.filterChooserModel.fieldSpecs.forEach(spec => {
+            const {field} = spec;
+            if (lookups[field]) spec.values = lookups[field];
+        });
+    }
+
+    @computed
+    private get query() {
+        const {values} = this.formModel;
+        return {
+            startDay: values.startDay,
+            endDay: values.endDay,
+            maxRows: values.maxRows,
+            filters: this.filterChooserModel.value
+        };
     }
 }

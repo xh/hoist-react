@@ -84,7 +84,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                 // left align editor to keep in place when button changing size when commitOnChange: true
                 position: favoritesIsOpen ? `${popoverPosition}-right` : `${popoverPosition}-left`,
                 minimal: styleButtonAsInput,
-                target: fragment(
+                item: fragment(
                     button({
                         text: label,
                         title: label,
@@ -195,7 +195,11 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
                 let transform = dndProps.draggableProps.style.transform;
                 if (dndState.isDragging || dndState.isDropAnimating) {
                     let rowValues = parseTransform(transform),
-                        popoverValues = parseTransform(model.popoverRef.current.style.transform);
+                        pPos = model.popoverRef.current.getBoundingClientRect(),
+                        popoverValues = {
+                            x: pPos.left,
+                            y: pPos.top
+                        };
 
                     // Account for drop animation
                     if (dndState.isDropAnimating) {
@@ -204,9 +208,9 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
                     }
 
                     // Subtract the popover's X / Y translation from the row's
-                    if (!isEmpty(rowValues) && !isEmpty(popoverValues)) {
-                        const x = rowValues[0] - popoverValues[0],
-                            y = rowValues[1] - popoverValues[1];
+                    if (!isEmpty(rowValues)) {
+                        const x = rowValues[0] - popoverValues.x,
+                            y = rowValues[1] - popoverValues.y;
                         transform = `translate(${x}px, ${y}px)`;
                     }
                 }
@@ -288,7 +292,7 @@ const addDimensionControl = hoistCmp.factory<GroupingChooserModel>({
  * Works for both `translate` and `translate3d`
  * e.g. `translate3d(250px, 150px, 0px)` is equivalent to [250, 150, 0]
  */
-function parseTransform(transformStr) {
+function parseTransform(transformStr: string): number[] {
     return transformStr
         ?.replace('3d', '')
         .match(/[-]{0,1}[\d]*[.]{0,1}[\d]+/g)

@@ -45,7 +45,7 @@ export interface AppMenuButtonProps extends ButtonProps {
      */
     hideImpersonateItem?: boolean;
 
-    /** True to hide the Logout button. Defaulted to appSpec.isSSO. */
+    /** True to hide the Logout button. Defaulted to !appSpec.enableLogout. */
     hideLogoutItem?: boolean;
 
     /** True to hide the Options button. */
@@ -81,7 +81,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             disabled,
             position: 'bottom-right',
             minimal: true,
-            target: button({
+            item: button({
                 icon: Icon.menu(),
                 disabled,
                 ...rest
@@ -111,7 +111,7 @@ function buildMenuItems(props: AppMenuButtonProps) {
     hideAdminItem = hideAdminItem || !XH.getUser().isHoistAdminReader;
     hideChangelogItem = hideChangelogItem || !XH.changelogService.enabled;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
-    hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
+    hideLogoutItem = withDefault(hideLogoutItem, !XH.appSpec.enableLogout);
     hideOptionsItem = hideOptionsItem || !XH.appContainerModel.optionsDialogModel.hasOptions;
 
     const defaultItems: MenuItemLike[] = [
@@ -196,6 +196,7 @@ function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
                 text: item.text,
                 icon: item.icon,
                 intent: item.intent,
+                className: item.className,
                 onClick: actionFn ? () => wait().then(actionFn) : null, // do async to allow menu to close
                 disabled: item.disabled
             } as PlainObject;
