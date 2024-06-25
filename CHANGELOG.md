@@ -13,7 +13,7 @@
 
 ### 📚 Libraries
 
-* @xh/hoist-dev-utils `8.2 → 9.0`
+* @xh/hoist-dev-utils `8.x → 9.x`
 
 ## 64.0.5 - 2024-06-14
 
