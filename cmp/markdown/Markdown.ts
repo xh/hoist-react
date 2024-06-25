@@ -11,9 +11,7 @@ import remarkGfm from 'remark-gfm';
 import {PluggableList} from 'unified/lib';
 
 interface MarkdownProps extends HoistProps {
-    /**
-     * Markdown formatted string to render.
-     */
+    /** Markdown formatted string to render. */
     content: string;
 
     /** True (default) to render new lines with <br/> tags. */
@@ -22,6 +20,9 @@ interface MarkdownProps extends HoistProps {
 
 /**
  * Render Markdown formatted strings as HTML (e.g. **foo** becomes <strong>foo</strong>).
+ *
+ * Note that the remark-gfm plugin is included by default to support GitHub Flavored Markdown,
+ * a superset of the CommonMark specification. See https://github.github.com/gfm/ for details.
  */
 export const [Markdown, markdown] = hoistCmp.withFactory<MarkdownProps>({
     displayName: 'Markdown',
