@@ -2,6 +2,12 @@
 
 ## 65.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+
+* Added new convenience method `XH.renderAdminApp()` - consider replacing the call within your
+  project's `src/apps/admin.ts` file with this new method and removing any duplicate config values
+  if the defaults introduced here are suitable for your application's Hoist Admin console.
+
 ## 64.0.5 - 2024-06-14
 
 ### 🐞 Bug Fixes
