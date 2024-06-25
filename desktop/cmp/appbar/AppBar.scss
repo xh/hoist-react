@@ -7,7 +7,7 @@
 
 .xh-appbar {
   // Menu button might be on left or right of appBar - add right margin when on left only.
-  .xh-app-menu:first-child {
+  .xh-app-menu-button:first-child {
     margin-right: var(--xh-pad-px);
   }
 

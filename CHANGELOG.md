@@ -11,6 +11,12 @@
 
 * Enhanced `markdown` component to support GitHub Flavored Markdown (GFM) syntax.
 
+### ✨ Styles
+
+* Refactored CSS classnames applied to the primary application (☰) menu on desktop and mobile.
+  On both platforms the button itself now has an `xh-app-menu-button` class, the popover has
+  `xh-app-menu-popover`, and the menu itself has `xh-app-menu`.
+
 ### ⚙️ Technical
 
 * Improved popup behavior of (beta) `MsalClient` - uses recommended `blank.html`.
