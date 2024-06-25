@@ -7,6 +7,10 @@
 * Requires update to `hoist-dev-utils >= v9.0.0` with updated handling of static/public assets.
   This should be a drop-in change for applications.
 
+### 🎁 New Features
+
+* Enhanced `markdown` component to support GitHub Flavored Markdown (GFM) syntax.
+
 ### ⚙️ Technical
 
 * Improved popup behavior of (beta) `MsalClient` - uses recommended `blank.html`.
@@ -17,6 +21,10 @@
 ### 📚 Libraries
 
 * @xh/hoist-dev-utils `8.x → 9.x`
+* react-markdown `8.0 → 9.0`
+* remark-breaks `3.0 → 4.0`
+* remark-gfm `4.0`
+
 
 ## 64.0.5 - 2024-06-14
 
@@ -307,19 +315,12 @@ There are some common breaking changes that most/many apps will need to address:
 * Improved logging and error logging of `method` and `headers` in `FetchService`:  Default
   values will now be included.
 * Enhanced `XH.reloadApp` with cache-buster.
-* Enhanced `markdown` component to support GitHub Flavored Markdown (GFM) syntax.
 
 ### 🐞 Bug Fixes
 
 * `FilterChooser` now correctly round-trips `Date` and `LocalDate` values. Previously it emitted
   these as strings, with incorrect results when using the generated filter's test function directly.
 * Fixed bug where a discarded browser tab could re-init an app to an obsolete (cached) version.
-
-### 📚 Libraries
-
-* react-markdown `8.0 → 9.0`
-* remark-breaks `3.0 → 4.0`
-* remark-gfm `4.0`
 
 ## 60.2.0 - 2024-02-16
 
