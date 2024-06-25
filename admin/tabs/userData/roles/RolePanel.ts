@@ -58,14 +58,14 @@ const detailsPanel = hoistCmp.factory<RoleModel>(({model}) => {
     return panel({
         compactHeader: true,
         icon: Icon.idBadge(),
-        title: selectedRole?.name ? `Details - ${selectedRole?.name}` : 'Details',
+        title: selectedRole?.name ? `Details - ${selectedRole.name}` : 'Details',
         item: roleDetails(),
         headerItems: [
             button({
                 icon: Icon.edit(),
                 minimal: true,
                 onClick: () => model.editAsync(selectedRole),
-                omit: !selectedRole
+                omit: !selectedRole || model.readonly
             })
         ],
         modelConfig: {
