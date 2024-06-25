@@ -1,7 +1,6 @@
 # Build-related files
 
-Hoist Dev Utils (`@xh/hoist-dev-utils`, aka HDU) references the files in this directory from
-within its `configureWebpack()` build script factory.
+Hoist Dev Utils references the files in this directory within its `configureWebpack()` build script.
 
 * `polyfills.js` - passed to webpack in the `entry` config for each JS app entry point, ensuring
   that it imports the two global polyfills (`core-js` and `regenerator-runtime`) once per app. It is
