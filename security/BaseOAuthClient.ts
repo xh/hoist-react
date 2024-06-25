@@ -233,7 +233,7 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     }
 
     protected get blankUrl() {
-        return `${window.location.origin}/blank.html`;
+        return `${window.location.origin}/public/blank.html`;
     }
 
     protected popupBlockerErrorMessage: String =
