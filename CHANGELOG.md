@@ -2,48 +2,88 @@
 
 ## 65.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - component prop name change)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies and renamed component prop)
+
+* Requires update to `hoist-dev-utils >= v9.0.0` with updated handling of static/public assets.
+  This should be a drop-in change for applications.
 * `RefreshButton` component `model` prop renamed to `target`.
+
+### 🎁 New Features
+
+* Enhanced `markdown` component to support GitHub Flavored Markdown (GFM) syntax.
 
 ### 🐞 Bug Fixes
 
 * Fix bug where `model` passed to `RelativeTimestamp` was being ignored.
 
+### ✨ Styles
+
+* Refactored CSS classnames applied to the primary application (☰) menu on desktop and mobile.
+  On both platforms the button itself now has an `xh-app-menu-button` class, the popover has
+  `xh-app-menu-popover`, and the menu itself has `xh-app-menu`.
+
 ### ⚙️ Technical
 
+* Improved popup behavior of (beta) `MsalClient` - uses recommended `blank.html`.
+* Added new convenience method `XH.renderAdminApp()` - consider replacing the call within your
+  project's `src/apps/admin.ts` file with this new method and removing any duplicate config values
+  if the defaults introduced here are suitable for your application's Hoist Admin console.
 * Typescript: Overall type improvements and cleanup. Note: `AppConfigs` with `model: false` will
   need to specify a `null` model type in the generic argument to `hoistCmp`, `hoistCmp.factory` or
   `hoistCmp.withFacotry` to avoid a type error.
 
-## 64.0.4 - 2024-06-05
+### 📚 Libraries
+
+* @xh/hoist-dev-utils `8.x → 9.x`
+* react-markdown `8.0 → 9.0`
+* remark-breaks `3.0 → 4.0`
+* remark-gfm `4.0`
+
+
+## 64.0.5 - 2024-06-14
+
+### 🐞 Bug Fixes
+
+* Added a workaround for a mobile-only bug where Safari auto-zooms on orientation change if the user
+  had previously zoomed the page themselves.
 
 ### ⚙️ Technical
 
-* Typescript: Improve `ref` typing in JSX.
+* Improved logout behavior of (beta) `MsalClient`.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.14 → 3.17`
+
+## 64.0.4 - 2024-06-05
+
+### ⚙️ Typescript API Adjustments
+
+* Improved `ref` typing in JSX.
 
 ## 64.0.3 - 2024-05-31
 
 ### 🐞 Bug Fixes
 
-* Restore disabling of Blueprint animations on popovers and tooltips (corrects regression in v63.0.0)
+* Restored previous suppression of Blueprint animations on popovers and tooltips. These had been
+  unintentionally (re)enabled in v63 and are now turned off again.
 
 ### ⚙️ Technical
 
-* Adjustments to API of (beta) `BaseOAuthClient`, `MsaClient`, and `AuthZeroClient`.
+* Adjusted (beta) APIs of OAuth-related `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient`.
 
 ## 64.0.2 - 2024-05-23
 
 ### ⚙️ Technical
 
-* Adjustments to API of (beta) `BaseOAuthClient`.
-* `FetchService.addDefaultHeaders()` now supports async functions.
+* Adjusted (beta) API of `BaseOAuthClient`.
+* Improved `FetchService.addDefaultHeaders()` to support async functions.
 
 ## 64.0.1 - 2024-05-19
 
 ### ⚙️ Technical
 
-* Adjustments to loading of ID Tokens and API of `BaseOAuthClient`.  (Note that
-  this package remains in Beta for v64 and is subject to change.)
+* Adjusted (beta) API of `BaseOAuthClient` and its approach to loading ID tokens.
 
 ## 64.0.0 - 2024-05-17
 
@@ -95,10 +135,9 @@ for more details.
   by `--xh-grid-multifield` are now prefixed by `--xh-zone-grid`, several vars have been added, and
   some defaults have changed.
 * Removed obsolete `AppSpec.isSSO` property in favor of two new properties `AppSpec.enableLogout`
-  and `AppSpec.enableLoginForm`.  This should have no effect on the vast majority of apps which had
-  `isSSO` set to `true`.  For apps where `isSSO` was set to `false`, the new flags should be
+  and `AppSpec.enableLoginForm`. This should have no effect on the vast majority of apps which had
+  `isSSO` set to `true`. For apps where `isSSO` was set to `false`, the new flags should be
   used to more clearly indicate the desired auth behavior.
-
 
 ### 🎁 New Features
 
@@ -114,7 +153,7 @@ for more details.
 * Added new `checkboxRenderer` for rendering booleans with a checkbox input look and feel.
 * Added new mobile `checkboxButton`, an alternate input component for toggling boolean values.
 * Added beta version of a new Hoist `security` package, providing built-in support for OAuth flows.
-  See `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient` for more information.  Please note that
+  See `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient` for more information. Please note that
   package is being released as a *beta* and is subject to change before final release.
 
 ### ✨ Styles

@@ -37,7 +37,7 @@ export interface FileChooserProps extends HoistProps<FileChooserModel, HTMLDivEl
      * True (default) to display the selected file(s) in a grid alongside the dropzone. Note
      * that, if false, the component will not provide any built-in indication of its selection.
      */
-    showFileGrid: boolean;
+    showFileGrid?: boolean;
 
     /** Intro/help text to display within the dropzone target. */
     targetText?: ReactNode;

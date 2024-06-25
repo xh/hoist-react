@@ -58,7 +58,7 @@ export interface AppMenuButtonProps extends ButtonProps {
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButtonProps>({
     displayName: 'AppMenuButton',
     model: false,
-    className: 'xh-app-menu',
+    className: 'xh-app-menu-button',
 
     render(props) {
         const {
@@ -86,7 +86,11 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
                 disabled,
                 ...rest
             }),
-            content: menu(buildMenuItems(props))
+            popoverClassName: 'xh-app-menu-popover',
+            content: menu({
+                className: 'xh-app-menu',
+                items: buildMenuItems(props)
+            })
         });
     }
 });

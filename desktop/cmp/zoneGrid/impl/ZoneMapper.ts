@@ -122,7 +122,7 @@ const zoneCell = hoistCmp.factory<ZoneMapperModel>({
             ),
             style: {flex},
             onClick: () => (model.selectedZone = zone),
-            items: intersperse(samples, span(delimiter))
+            items: delimiter ? intersperse(samples, span(delimiter)) : samples
         });
     }
 });

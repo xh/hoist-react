@@ -76,7 +76,7 @@ export class ZoneMapperModel extends HoistModel {
         return this.zoneGridModel.limits;
     }
 
-    get delimiter(): string {
+    get delimiter(): string | false {
         return this.zoneGridModel.delimiter;
     }
 
