@@ -246,7 +246,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         const result = await this.client.ssoSilent({
             loginHint: this.getSelectedUsername(),
             domainHint: this.config.domainHint,
-            redirectUri: this.redirectUrl, // Recommended by MS, not used?
+            redirectUri: this.blankUrl,
             scopes: this.loginScopes,
             extraScopesToConsent: this.loginExtraScopesToConsent,
             prompt: 'none'
@@ -255,7 +255,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     private async createClientAsync(): Promise<IPublicClientApplication> {
-        const config = this.config,
+        const {config, loginMethod} = this,
             {clientId, authority, msalLogLevel} = config;
 
         throwIf(!authority, 'Missing MSAL authority. Please review your configuration.');
@@ -264,7 +264,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             auth: {
                 clientId,
                 authority,
-                redirectUri: this.redirectUrl,
+                redirectUri: loginMethod == 'POPUP' ? this.blankUrl : this.redirectUrl,
                 postLogoutRedirectUri: this.postLogoutRedirectUrl
             },
             system: {

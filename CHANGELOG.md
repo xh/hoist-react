@@ -2,11 +2,21 @@
 
 ## 65.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
+
+* Requires update to `hoist-dev-utils >= v9.0.0` with updated handling of static/public assets.
+  This should be a drop-in change for applications.
+
 ### ⚙️ Technical
 
+* Improved popup behavior of (beta) `MsalClient` - uses recommended `blank.html`.
 * Added new convenience method `XH.renderAdminApp()` - consider replacing the call within your
   project's `src/apps/admin.ts` file with this new method and removing any duplicate config values
   if the defaults introduced here are suitable for your application's Hoist Admin console.
+
+### 📚 Libraries
+
+* @xh/hoist-dev-utils `8.x → 9.x`
 
 ## 64.0.5 - 2024-06-14
 
