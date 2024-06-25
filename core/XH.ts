@@ -93,7 +93,7 @@ export class XHApi {
     exceptionHandler: ExceptionHandler = new ExceptionHandler();
 
     //----------------------------------------------------------------------------------------------
-    // Metadata - the `xhFooBar` values on the right hand of these assignments are injected at build
+    // Metadata - the `xhXXX` values on the right hand of these assignments are injected at build
     // time via webpack.DefinePlugin. See @xh/hoist-dev-utils/configureWebpack.js.
     //----------------------------------------------------------------------------------------------
     /** Short internal code for the application. */
