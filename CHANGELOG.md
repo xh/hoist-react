@@ -2,6 +2,19 @@
 
 ## 65.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
+
+* Requires update to `hoist-dev-utils >= v9.0.0` with updated handling of static/public assets.
+  This should be a drop-in change for applications.
+
+### ⚙️ Technical
+
+* Improved popup behavior of (beta) `MsalClient` - uses recommended `blank.html`.
+
+### 📚 Libraries
+
+* @xh/hoist-dev-utils `8.x → 9.x`
+
 ## 64.0.5 - 2024-06-14
 
 ### 🐞 Bug Fixes
