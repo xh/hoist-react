@@ -13,7 +13,8 @@ import {
     numberInput,
     select,
     switchInput,
-    textInput
+    textInput,
+    textArea
 } from '@xh/hoist/desktop/cmp/input';
 import {assign, isFunction, isNil} from 'lodash';
 import {RestFormModel} from './RestFormModel';
@@ -76,6 +77,8 @@ function renderDefaultInput(name: string, model: RestFormModel) {
         case 'pwd':
             // Key to force re-creation of DOM elements so Chrome stops suggesting passwords
             return textInput({type: 'password', key: '_' + type});
+        case 'text':
+            return textArea();
         default:
             return textInput();
     }
