@@ -32,7 +32,7 @@ interface MarkdownProps extends HoistProps {
  */
 export const [Markdown, markdown] = hoistCmp.withFactory<MarkdownProps>({
     displayName: 'Markdown',
-    render({content, lineBreaks = true, components}) {
+    render({content, lineBreaks = true, components = {}}) {
         const remarkPlugins: PluggableList = [remarkGfm];
         if (lineBreaks) remarkPlugins.push(remarkBreaks);
         return reactMarkdown({
