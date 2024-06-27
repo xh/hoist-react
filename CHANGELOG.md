@@ -9,11 +9,7 @@
 ### 🐞 Bug Fixes
 
 * Fix timing issue with missing validation for records added immediately to new store.
-
-### 🐞 Bug Fixes
-
 * Mobile `TabContainer` now flexes properly within flexbox containers.
-
 
 ## 65.0.0 - 2024-06-26
 
@@ -45,7 +41,6 @@
 * react-markdown `8.0 → 9.0`
 * remark-breaks `3.0 → 4.0`
 * remark-gfm `4.0`
-
 
 ## 64.0.5 - 2024-06-14
 
