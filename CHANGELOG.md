@@ -4,7 +4,11 @@
 
 ### 🎁 New Features
 
-* New option for `XH.reloadApp` to reload specific app path.
+* New option for `XH.reloadApp` to reload specific app path
+
+### 🐞 Bug Fixes
+
+* Fix timing issue with missing validation for records added immediately to new store.
 
 ### 🐞 Bug Fixes
 
