@@ -2,6 +2,11 @@
 
 ## 66.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* New option for `XH.reloadApp` to reload specific app path.
+
+
 ## 65.0.0 - 2024-06-26
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
