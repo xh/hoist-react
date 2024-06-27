@@ -75,7 +75,7 @@ export class RoleModel extends HoistModel {
             const {data} = await XH.fetchJson({url: 'roleAdmin/list', loadSpec});
             if (loadSpec.isStale) return;
 
-            this.allRoles = this.processRolesFromServer(data);
+            runInAction(() => (this.allRoles = this.processRolesFromServer(data)));
             this.displayRoles();
             await this.gridModel.preSelectFirstAsync();
         } catch (e) {
@@ -98,12 +98,6 @@ export class RoleModel extends HoistModel {
     clear() {
         this.allRoles = [];
         this.gridModel.clear();
-    }
-
-    applyMemberFilter(name: string, type: RoleMemberType, includeEffective: boolean) {
-        const {gridModel} = this,
-            field = this.getFieldForMemberType(type, includeEffective);
-        gridModel.filterModel.setFilter({field, op: 'includes', value: name});
     }
 
     async deleteAsync(role: HoistRole): Promise<boolean> {

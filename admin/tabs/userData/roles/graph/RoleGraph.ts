@@ -23,11 +23,12 @@ import './RoleGraph.scss';
 export const roleGraph = hoistCmp.factory({
     displayName: 'RoleGraph',
     model: creates(RoleGraphModel),
+
     render({model}) {
         const {role} = model;
         return panel({
             compactHeader: true,
-            icon: Icon.idBadge(),
+            icon: Icon.treeGraph(),
             title: role ? `Relationships - ${role.name} ` : 'Relationships',
             item: div({
                 item: div({
@@ -112,8 +113,9 @@ const content = hoistCmp.factory<RoleGraphModel>(({model}) => {
     }
     if (isEmpty(relatedRoles))
         return placeholder(
+            Icon.treeGraph(),
             !role
-                ? 'No role selected.'
+                ? 'Select a role to view relationships...'
                 : relationship === 'inherited'
                   ? `${role.name} does not inherit from any other roles.`
                   : `${role.name} has not been granted to any other roles.`
