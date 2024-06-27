@@ -6,6 +6,10 @@
 
 * New option for `XH.reloadApp` to reload specific app path.
 
+### 🐞 Bug Fixes
+
+* Mobile `TabContainer` now flexes properly within flexbox containers.
+
 
 ## 65.0.0 - 2024-06-26
 

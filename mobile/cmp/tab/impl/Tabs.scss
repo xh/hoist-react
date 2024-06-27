@@ -26,6 +26,9 @@
 }
 
 .xh-tab-container {
+  position: relative;
+  flex: auto;
+
   &--top .tabbar {
     border-bottom: var(--xh-border-solid);
   }
