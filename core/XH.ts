@@ -381,7 +381,7 @@ export class XHApi {
     reloadApp(path?: string) {
         never().linkTo(this.appLoadModel);
         const {location} = window,
-            href = path ? `${location.origin}/${path}` : location.href,
+            href = path ? `${location.origin}/${path.replace(/^\/+/, '')}` : location.href,
             url = new URL(href);
         // Add a unique query param to force a full reload without using the browser cache.
         url.searchParams.set('xhCacheBuster', Date.now().toString());
