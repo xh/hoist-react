@@ -58,7 +58,7 @@ export interface StoreFilterFieldProps<M extends HoistModel = HoistModel>
     matchMode?: 'start' | 'startWord' | 'any';
 
     /** Optional model for raw value binding - see comments on the `bind` prop for details. */
-    model?: M extends null ? never : M;
+    model?: M;
 
     /**
      * Callback to receive an updated Filter. Typically used in conjunction with `autoApply: false`
