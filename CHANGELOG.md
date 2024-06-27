@@ -2,6 +2,10 @@
 
 ## 66.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Mobile `TabContainer` now flexes properly within flexbox containers.
+
 ## 65.0.0 - 2024-06-26
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
