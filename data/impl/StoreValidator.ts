@@ -70,7 +70,8 @@ export class StoreValidator extends HoistBase {
 
         this.addReaction({
             track: () => this.uncommittedRecords,
-            run: () => this.syncValidatorsAsync()
+            run: () => this.syncValidatorsAsync(),
+            fireImmediately: true
         });
     }
 
