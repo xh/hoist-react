@@ -27,7 +27,7 @@ import {Children, ForwardedRef, ReactNode, ReactPortal} from 'react';
 import ReactDom from 'react-dom';
 import './Select.scss';
 
-export interface SelectProps extends HoistInputProps, LayoutProps {
+export interface SelectProps extends HoistInputProps<null>, LayoutProps {
     /**
      * Function to return a "create a new option" string prompt. Requires `allowCreate` true.
      * Passed current query input.
@@ -186,7 +186,7 @@ export const [Select, select] = hoistCmp.withFactory<SelectProps>({
 //-----------------------
 // Implementation
 //-----------------------
-class SelectInputModel extends HoistInputModel {
+class SelectInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     // Normalized collection of selectable options. Passed directly to synchronous select.

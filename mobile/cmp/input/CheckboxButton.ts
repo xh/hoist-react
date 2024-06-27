@@ -12,7 +12,9 @@ import './CheckboxButton.scss';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {withDefault} from '@xh/hoist/utils/js';
 
-export interface CheckboxButtonProps extends WithoutModelAndRef<ButtonProps>, HoistInputProps {
+export interface CheckboxButtonProps
+    extends WithoutModelAndRef<ButtonProps>,
+        HoistInputProps<null> {
     value?: boolean;
 }
 
@@ -29,7 +31,7 @@ export const [CheckboxButton, checkboxButton] = hoistCmp.withFactory<CheckboxBut
     }
 });
 
-class CheckboxButtonInputModel extends HoistInputModel {
+class CheckboxButtonInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 }
 

@@ -47,7 +47,7 @@ import {ReactElement} from 'react';
 import {findDOMNode} from 'react-dom';
 import './CodeInput.scss';
 
-export interface CodeInputProps extends HoistInputProps, LayoutProps {
+export interface CodeInputProps extends HoistInputProps<null>, LayoutProps {
     /** True to focus the control on render. */
     autoFocus?: boolean;
 
@@ -133,7 +133,7 @@ export const [CodeInput, codeInput] = hoistCmp.withFactory<CodeInputProps>({
 //------------------------------
 // Implementation
 //------------------------------
-class CodeInputModel extends HoistInputModel {
+class CodeInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     @managed
@@ -484,7 +484,7 @@ const inputCmp = hoistCmp.factory<HoistProps<CodeInputModel, HTMLDivElement> & B
                     className: 'xh-code-input__inner-wrapper',
                     item: textArea({
                         value: model.renderValue || '',
-                        ref: model.manageCodeEditor,
+                        inputRef: model.manageCodeEditor, // TODO - confirm this is correct change
                         onChange: model.onChange
                     })
                 }),

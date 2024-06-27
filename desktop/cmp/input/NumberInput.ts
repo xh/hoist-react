@@ -14,9 +14,12 @@ import {wait} from '@xh/hoist/promise';
 import {debounced, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber, round} from 'lodash';
-import {ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
+import {KeyboardEventHandler, ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
 
-export interface NumberInputProps extends LayoutProps, StyleProps, HoistInputProps {
+export interface NumberInputProps
+    extends LayoutProps,
+        StyleProps,
+        HoistInputProps<HTMLInputElement> {
     value?: number;
 
     /** True to focus the control on render. */
@@ -56,7 +59,7 @@ export interface NumberInputProps extends LayoutProps, StyleProps, HoistInputPro
     majorStepSize?: number;
 
     /** Callback for normalized keydown event. */
-    onKeyDown?: (e: KeyboardEvent) => void;
+    onKeyDown?: KeyboardEventHandler<HTMLInputElement>;
 
     /** Text to display when control is empty. */
     placeholder?: string;
@@ -121,7 +124,7 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>
 //-----------------------
 // Implementation
 //-----------------------
-class NumberInputModel extends HoistInputModel {
+class NumberInputModel extends HoistInputModel<HTMLInputElement> {
     override xhImpl = true;
 
     constructor() {
@@ -185,7 +188,7 @@ class NumberInputModel extends HoistInputModel {
         return true;
     }
 
-    onKeyDown = (ev: KeyboardEvent) => {
+    onKeyDown: KeyboardEventHandler<HTMLInputElement> = ev => {
         if (ev.key === 'Enter') this.doCommit();
         this.componentProps.onKeyDown?.(ev);
     };
@@ -226,7 +229,7 @@ class NumberInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, ref) => {
+const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}) => {
     const {width, flex, ...layoutProps} = getLayoutProps(props),
         renderValue = model.formatRenderValue(model.renderValue);
 
@@ -278,7 +281,6 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
         onBlur: model.onBlur,
         onFocus: model.onFocus,
         onKeyDown: model.onKeyDown,
-        onValueChange: model.onValueChange,
-        ref
+        onValueChange: model.onValueChange
     });
 });

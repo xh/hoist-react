@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HSide, StyleProps} from '@xh/hoist/core';
+import {DefaultHoistProps, hoistCmp, HSide, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
@@ -14,7 +14,7 @@ import {ReactNode} from 'react';
 
 import './Checkbox.scss';
 
-export interface CheckboxProps extends HoistInputProps, StyleProps {
+export interface CheckboxProps extends HoistInputProps<HTMLInputElement>, StyleProps {
     value?: boolean;
 
     /** True to focus the control on render. */
@@ -54,34 +54,35 @@ export const [Checkbox, checkbox] = hoistCmp.withFactory<CheckboxProps>({
 //----------------------------------
 // Implementation
 //----------------------------------
-class CheckboxInputModel extends HoistInputModel {
+class CheckboxInputModel extends HoistInputModel<HTMLInputElement> {
     override xhImpl = true;
 }
 
-const cmp = hoistCmp.factory<CheckboxInputModel>(({model, className, ...props}, ref) => {
-    const {renderValue} = model,
-        labelSide = withDefault(props.labelSide, 'right'),
-        displayUnsetState = withDefault(props.displayUnsetState, false),
-        valueIsUnset = isNil(renderValue);
+const cmp = hoistCmp.factory<DefaultHoistProps<CheckboxInputModel, HTMLLabelElement>>(
+    ({model, className, ...props}, ref) => {
+        const {renderValue} = model,
+            labelSide = withDefault(props.labelSide, 'right'),
+            displayUnsetState = withDefault(props.displayUnsetState, false),
+            valueIsUnset = isNil(renderValue);
 
-    return bpCheckbox({
-        autoFocus: props.autoFocus,
-        checked: !!renderValue,
-        indeterminate: valueIsUnset && displayUnsetState,
-        alignIndicator: labelSide === 'left' ? 'right' : 'left',
-        disabled: props.disabled,
-        inline: withDefault(props.inline, true),
-        label: props.label,
-        tabIndex: props.tabIndex,
-        id: props.id,
-        [TEST_ID]: props.testId,
-        className,
-        style: props.style,
+        return bpCheckbox({
+            checked: !!renderValue,
+            indeterminate: valueIsUnset && displayUnsetState,
+            alignIndicator: labelSide === 'left' ? 'right' : 'left',
+            disabled: props.disabled,
+            inline: withDefault(props.inline, true),
+            label: props.label,
+            tabIndex: props.tabIndex,
+            id: props.id,
+            [TEST_ID]: props.testId,
+            className,
+            style: props.style,
 
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        onChange: e => model.noteValueChange(e.target.checked),
-        inputRef: model.inputRef,
-        ref
-    });
-});
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            onChange: e => model.noteValueChange(e.target.checked),
+            inputRef: model.inputRef,
+            ref
+        });
+    }
+);

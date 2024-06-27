@@ -121,7 +121,10 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                         isOpen &&
                         nextOpenState === false &&
                         e?.target &&
-                        !elemWithin(e.target, 'xh-grouping-chooser-button--with-favorites')
+                        !elemWithin(
+                            e.target as HTMLElement,
+                            'xh-grouping-chooser-button--with-favorites'
+                        )
                     ) {
                         model.commitPendingValueAndClose();
                     }

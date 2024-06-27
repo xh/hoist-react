@@ -68,7 +68,7 @@ class InlineEditorModel extends HoistModel {
 
     @bindable value;
 
-    ref = createObservableRef<HoistInputModel>();
+    ref = createObservableRef<HoistInputModel<unknown>>();
 
     agParams: CustomCellEditorProps;
 

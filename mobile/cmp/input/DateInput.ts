@@ -19,7 +19,7 @@ import moment from 'moment';
 import './DateInput.scss';
 import {ForwardedRef, ReactElement} from 'react';
 
-export interface DateInputProps extends HoistInputProps, StyleProps, LayoutProps {
+export interface DateInputProps extends HoistInputProps<null>, StyleProps, LayoutProps {
     value?: Date | LocalDate;
 
     /** True to show a "clear" button aligned to the right of the control. Default false. */
@@ -90,7 +90,7 @@ export const [DateInput, dateInput] = hoistCmp.withFactory<DateInputProps>({
 //---------------------------------
 // Implementation
 //---------------------------------
-class DateInputModel extends HoistInputModel {
+class DateInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     @observable popoverOpen = false;

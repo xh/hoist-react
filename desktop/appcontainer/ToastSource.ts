@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {OverlayToasterProps} from '@blueprintjs/core';
 import {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import {div} from '@xh/hoist/cmp/layout';
@@ -21,6 +22,7 @@ import {OverlayToaster, ToasterPosition} from '@xh/hoist/kit/blueprint';
 import {getOrCreate} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isElement, map} from 'lodash';
+import {RefAttributes} from 'react';
 import {createRoot} from 'react-dom/client';
 import {wait} from '../../promise';
 import './Toast.scss';
@@ -138,4 +140,7 @@ class ToastSourceLocalModel extends HoistModel {
     }
 }
 
-const overlayToaster = elementFactory(OverlayToaster);
+// `OverlayToasterProps` does not include `ref` prop, so we need to add it manually
+const overlayToaster = elementFactory<any, OverlayToasterProps & RefAttributes<OverlayToaster>>(
+    OverlayToaster
+);

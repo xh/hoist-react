@@ -7,8 +7,10 @@
 import {TEST_ID} from '@xh/hoist/utils/js';
 import {castArray, isFunction, isNil, isPlainObject} from 'lodash';
 import {
+    ComponentType,
     createElement as reactCreateElement,
     isValidElement,
+    JSX,
     Key,
     ReactElement,
     ReactNode
@@ -108,7 +110,10 @@ export function createElement<P = any>(type: any, spec: ElementSpec<P>): ReactEl
 /**
  *  Create a factory function that can create a ReactElement from an ElementSpec.
  */
-export function elementFactory<P = any>(type: any): ElementFactory<P> {
+export function elementFactory<
+    T extends ComponentType | keyof JSX.IntrinsicElements,
+    P = PropType<T>
+>(type: T): ElementFactory<P> {
     const ret = function (...args) {
         return createElement<P>(type, normalizeArgs(args, type));
     };
@@ -130,3 +135,10 @@ function normalizeArgs(args: any[], type: any) {
     // Assume > 1 args are children.
     return {items: args};
 }
+
+type PropType<T> =
+    T extends ComponentType<infer P>
+        ? P
+        : T extends keyof JSX.IntrinsicElements
+          ? JSX.IntrinsicElements[T]
+          : any;

@@ -51,10 +51,13 @@ import './HoistInput.scss';
  * element of the rendered input via its `domEl` property, as well as `focus()`, `blur()`, and
  * `select()`.
  *
+ * @typeparam R - the type of HoistInputModel.inputRef (if any) - used to specify the type of the
+ * ref passed to the component.
+ *
  * To create an instance of an Input component using this model use the hook
  * {@link useHoistInputModel}.
  */
-export class HoistInputModel extends HoistModel {
+export class HoistInputModel<R> extends HoistModel {
     /** Does this input have the focus? */
     @observable hasFocus: boolean = false;
 
@@ -102,7 +105,7 @@ export class HoistInputModel extends HoistModel {
     // Implementation State
     //------------------------
     @observable.ref internalValue: any = null; // Cached internal value
-    inputRef = createObservableRef<HTMLElement>(); // ref to internal <input> element, if any
+    inputRef = createObservableRef<R>(); // ref to internal <input> element, if any
     domRef = createObservableRef<HTMLElement>(); // ref to outermost element, or class Component.
     isDirty: boolean = false;
 
@@ -326,13 +329,13 @@ export class HoistInputModel extends HoistModel {
  * @param ref - forwardRef passed to containing component
  * @param modelSpec - specify to use particular subclass of HoistInputModel
  */
-export function useHoistInputModel(
+export function useHoistInputModel<R>(
     component: any,
     props: PlainObject,
-    ref: ForwardedRef<HoistInputModel>,
-    modelSpec?: HoistModelClass<HoistInputModel>
+    ref: ForwardedRef<HoistInputModel<R>>,
+    modelSpec?: HoistModelClass<HoistInputModel<R>>
 ): ReactElement {
-    const inputModel = useLocalModel<HoistInputModel>(modelSpec ?? HoistInputModel);
+    const inputModel = useLocalModel<HoistInputModel<R>>(modelSpec ?? HoistInputModel);
 
     useImperativeHandle(ref, () => inputModel);
 

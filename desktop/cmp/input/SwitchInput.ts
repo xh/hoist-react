@@ -5,14 +5,14 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HSide, StyleProps} from '@xh/hoist/core';
+import {DefaultHoistProps, hoistCmp, HSide, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {switchControl} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {ReactNode} from 'react';
 import './SwitchInput.scss';
 
-export interface SwitchInputProps extends HoistInputProps, StyleProps {
+export interface SwitchInputProps extends HoistInputProps<HTMLInputElement>, StyleProps {
     value?: boolean;
 
     /** True if the control should appear as an inline element (defaults to true). */
@@ -42,31 +42,33 @@ export const [SwitchInput, switchInput] = hoistCmp.withFactory<SwitchInputProps>
 //-----------------------
 // Implementation
 //-----------------------
-class SwitchInputModel extends HoistInputModel {
+class SwitchInputModel extends HoistInputModel<HTMLInputElement> {
     override xhImpl = true;
 }
 
-const cmp = hoistCmp.factory<SwitchInputModel>(({model, className, ...props}, ref) => {
-    const labelSide = withDefault(props.labelSide, 'right');
+const cmp = hoistCmp.factory<DefaultHoistProps<SwitchInputModel, HTMLLabelElement>>(
+    ({model, className, ...props}, ref) => {
+        const labelSide = withDefault(props.labelSide, 'right');
 
-    return switchControl({
-        checked: !!model.renderValue,
+        return switchControl({
+            checked: !!model.renderValue,
 
-        alignIndicator: labelSide === 'left' ? 'right' : 'left',
-        disabled: props.disabled,
-        inline: withDefault(props.inline, true),
-        label: props.label,
-        style: props.style,
-        tabIndex: props.tabIndex,
+            alignIndicator: labelSide === 'left' ? 'right' : 'left',
+            disabled: props.disabled,
+            inline: withDefault(props.inline, true),
+            label: props.label,
+            style: props.style,
+            tabIndex: props.tabIndex,
 
-        id: props.id,
-        className,
+            id: props.id,
+            className,
 
-        [TEST_ID]: props.testId,
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        onChange: e => model.noteValueChange(e.target.checked),
-        inputRef: model.inputRef,
-        ref
-    });
-});
+            [TEST_ID]: props.testId,
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            onChange: e => model.noteValueChange(e.target.checked),
+            inputRef: model.inputRef,
+            ref
+        });
+    }
+);

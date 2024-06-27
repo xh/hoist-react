@@ -15,7 +15,7 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber, round} from 'lodash';
 import './NumberInput.scss';
 
-export interface NumberInputProps extends HoistInputProps, StyleProps, LayoutProps {
+export interface NumberInputProps extends HoistInputProps<null>, StyleProps, LayoutProps {
     value?: number;
 
     /** True to commit on every change/keystroke, default false. */
@@ -87,7 +87,7 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>
 //-----------------------
 // Implementation
 //-----------------------
-class NumberInputModel extends HoistInputModel {
+class NumberInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;

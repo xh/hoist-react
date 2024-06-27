@@ -13,7 +13,7 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import './TextArea.scss';
 import {ForwardedRef} from 'react';
 
-export interface TextAreaProps extends HoistInputProps, StyleProps, LayoutProps {
+export interface TextAreaProps extends HoistInputProps<null>, StyleProps, LayoutProps {
     value?: string;
 
     /** True to commit on every change/keystroke, default false. */
@@ -47,7 +47,7 @@ export const [TextArea, textArea] = hoistCmp.withFactory<TextAreaProps>({
 //-----------------------
 // Implementation
 //-----------------------
-class TextAreaInputModel extends HoistInputModel {
+class TextAreaInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     override get commitOnChange() {

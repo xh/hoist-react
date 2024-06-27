@@ -5,17 +5,17 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, WithoutModelAndRef, XH} from '@xh/hoist/core';
+import {DefaultHoistProps, hoistCmp, WithoutModelAndRef, XH} from '@xh/hoist/core';
 import {Button, buttonGroup, ButtonGroupProps, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, isEmpty, without} from 'lodash';
-import {Children, cloneElement, ForwardedRef, isValidElement, ReactNode} from 'react';
+import {Children, cloneElement, isValidElement, ReactNode} from 'react';
 import './ButtonGroupInput.scss';
 
 export interface ButtonGroupInputProps
-    extends HoistInputProps,
+    extends HoistInputProps<null>,
         WithoutModelAndRef<ButtonGroupProps> {
     /**
      * True to allow buttons to be unselected (aka inactivated). Used when enableMulti is false.
@@ -50,7 +50,7 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory<ButtonG
 //----------------------------------
 // Implementation
 //----------------------------------
-class ButtonGroupInputModel extends HoistInputModel {
+class ButtonGroupInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     get enableMulti() {
@@ -86,45 +86,47 @@ class ButtonGroupInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props}, ref) => {
-    const {
-        children,
-        disabled,
-        enableClear,
-        enableMulti,
-        tabIndex = 0,
-        ...rest
-    } = getNonLayoutProps(props);
+const cmp = hoistCmp.factory<DefaultHoistProps<ButtonGroupInputModel, HTMLDivElement>>(
+    ({model, className, ...props}, ref) => {
+        const {
+            children,
+            disabled,
+            enableClear,
+            enableMulti,
+            tabIndex = 0,
+            ...rest
+        } = getNonLayoutProps(props);
 
-    const buttons = Children.map(children as ReactNode[], button => {
-        if (!button) return null;
+        const buttons = Children.map(children as ReactNode[], button => {
+            if (!button) return null;
 
-        if (!isValidElement(button) || button.type !== Button) {
-            throw XH.exception('ButtonGroupInput child must be a Button.');
-        }
+            if (!isValidElement(button) || button.type !== Button) {
+                throw XH.exception('ButtonGroupInput child must be a Button.');
+            }
 
-        const {value} = button.props,
-            btnDisabled = disabled || button.props.disabled;
+            const {value} = button.props,
+                btnDisabled = disabled || button.props.disabled;
 
-        throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
+            throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
 
-        const isActive = model.isActive(value);
+            const isActive = model.isActive(value);
 
-        return cloneElement(button, {
-            active: isActive,
-            disabled: withDefault(btnDisabled, false),
-            onClick: () => model.onButtonClick(value)
-        } as ButtonProps);
-    });
+            return cloneElement(button, {
+                active: isActive,
+                disabled: withDefault(btnDisabled, false),
+                onClick: () => model.onButtonClick(value)
+            } as ButtonProps);
+        });
 
-    return buttonGroup({
-        items: buttons,
-        tabIndex,
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        ...rest,
-        ...getLayoutProps(props),
-        className,
-        ref: ref as ForwardedRef<any>
-    });
-});
+        return buttonGroup({
+            items: buttons,
+            tabIndex,
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            ...rest,
+            ...getLayoutProps(props),
+            className,
+            ref
+        });
+    }
+);

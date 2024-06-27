@@ -17,7 +17,7 @@ import {isEmpty} from 'lodash';
 import './TextInput.scss';
 import {ForwardedRef} from 'react';
 
-export interface TextInputProps extends HoistInputProps, StyleProps, LayoutProps {
+export interface TextInputProps extends HoistInputProps<null>, StyleProps, LayoutProps {
     value?: string;
 
     /**
@@ -80,7 +80,7 @@ export const [TextInput, textInput] = hoistCmp.withFactory<TextInputProps>({
 //-----------------------
 // Implementation
 //-----------------------
-class TextInputModel extends HoistInputModel {
+class TextInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     override get commitOnChange() {

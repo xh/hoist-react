@@ -14,7 +14,10 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {Ref} from 'react';
 import './TextArea.scss';
 
-export interface TextAreaProps extends HoistInputProps, LayoutProps, StyleProps {
+export interface TextAreaProps
+    extends HoistInputProps<HTMLTextAreaElement>,
+        LayoutProps,
+        StyleProps {
     value?: string;
 
     /** True to focus the control on render. */
@@ -54,7 +57,7 @@ export const [TextArea, textArea] = hoistCmp.withFactory<TextAreaProps>({
 //-----------------------
 // Implementation
 //-----------------------
-class TextAreaInputModel extends HoistInputModel {
+class TextAreaInputModel extends HoistInputModel<HTMLTextAreaElement> {
     override xhImpl = true;
 
     override get commitOnChange() {
@@ -78,7 +81,7 @@ class TextAreaInputModel extends HoistInputModel {
     };
 }
 
-const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...rest}, ref) => {
+const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...rest}) => {
     const props = rest as PlainObject,
         {width, height, flex, ...layoutProps} = getLayoutProps(props);
 
@@ -104,7 +107,6 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...rest}, r
         onBlur: model.onBlur,
         onChange: model.onChange,
         onFocus: model.onFocus,
-        onKeyDown: model.onKeyDown,
-        ref
+        onKeyDown: model.onKeyDown
     });
 });

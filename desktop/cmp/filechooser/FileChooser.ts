@@ -88,7 +88,9 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                     maxSize,
                     minSize,
                     multiple: enableAddMulti,
-                    item: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
+                    // Passing children directly since it is not possible to pass a function via
+                    // elementFactory items prop.
+                    children: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
                         const draggedCount = draggedFiles.length,
                             targetTxt = isDragActive
                                 ? `Drop to add ${fileNoun(draggedCount)}.`

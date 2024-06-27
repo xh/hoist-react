@@ -15,7 +15,7 @@ import {Children, cloneElement, ForwardedRef, isValidElement} from 'react';
 
 export interface ButtonGroupInputProps
     extends Omit<WithoutModelAndRef<ButtonGroupProps>, 'onChange'>,
-        HoistInputProps {
+        HoistInputProps<null> {
     /**
      * True to allow buttons to be unselected (aka inactivated). Defaults to false.
      * Does not apply when enableMulti: true.
@@ -55,7 +55,7 @@ export const [ButtonGroupInput, buttonGroupInput] = hoistCmp.withFactory<ButtonG
 //----------------------------------
 // Implementation
 //----------------------------------
-class ButtonGroupInputModel extends HoistInputModel {
+class ButtonGroupInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     get enableMulti(): boolean {

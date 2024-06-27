@@ -47,7 +47,7 @@ import './Select.scss';
 
 export const MENU_PORTAL_ID = 'xh-select-input-portal';
 
-export interface SelectProps extends HoistInputProps, LayoutProps {
+export interface SelectProps extends HoistInputProps<null>, LayoutProps {
     /** True to focus the control on render. */
     autoFocus?: boolean;
 
@@ -220,7 +220,7 @@ export const [Select, select] = hoistCmp.withFactory<SelectProps>({
 //-----------------------
 // Implementation
 //-----------------------
-class SelectInputModel extends HoistInputModel {
+class SelectInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     // Normalized collection of selectable options. Passed directly to synchronous select.

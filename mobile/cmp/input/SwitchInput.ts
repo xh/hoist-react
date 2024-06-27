@@ -10,7 +10,7 @@ import {switchControl} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import './SwitchInput.scss';
 
-export interface SwitchInputProps extends HoistInputProps, StyleProps {
+export interface SwitchInputProps extends HoistInputProps<null>, StyleProps {
     value?: string;
 
     /** Onsen modifier string */
@@ -28,7 +28,7 @@ export const [SwitchInput, switchInput] = hoistCmp.withFactory<SwitchInputProps>
     }
 });
 
-class SwitchInputModel extends HoistInputModel {
+class SwitchInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 }
 

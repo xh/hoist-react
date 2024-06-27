@@ -146,7 +146,7 @@ export class FilterChooserModel extends HoistModel {
     @observable.ref selectValue: string[];
     @observable favoritesIsOpen = false;
     @observable unsupportedFilter = false;
-    inputRef = createObservableRef<HoistInputModel>();
+    inputRef = createObservableRef<HoistInputModel<null>>();
 
     constructor({
         fieldSpecs,

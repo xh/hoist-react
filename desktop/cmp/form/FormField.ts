@@ -352,7 +352,7 @@ function getValidChild(children) {
     return child;
 }
 
-function getErrorTooltipContent(errors: string[]): ReactNode {
+function getErrorTooltipContent(errors: string[]): ReactElement | string {
     // If no errors, something other than null must be returned.
     // If null is returned, as of Blueprint v5, the Blueprint Tooltip component causes deep re-renders of its target
     // when content changes from null <-> not null.

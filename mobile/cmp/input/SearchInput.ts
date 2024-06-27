@@ -12,7 +12,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import './SearchInput.scss';
 
-export interface SearchInputProps extends HoistInputProps {
+export interface SearchInputProps extends HoistInputProps<null> {
     value?: string;
 
     /** True to commit on every change/keystroke, default false. */
@@ -49,7 +49,7 @@ export const [SearchInput, searchInput] = hoistCmp.withFactory<SearchInputProps>
 //-----------------------
 // Implementation
 //-----------------------
-class SearchInputModel extends HoistInputModel {
+class SearchInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     override get commitOnChange() {

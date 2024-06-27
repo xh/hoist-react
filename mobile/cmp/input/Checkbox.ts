@@ -10,7 +10,7 @@ import {checkbox as onsenCheckbox} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import './Checkbox.scss';
 
-export interface CheckboxProps extends HoistInputProps {
+export interface CheckboxProps extends HoistInputProps<null> {
     value?: boolean;
 
     /** Onsen modifier string */
@@ -28,7 +28,7 @@ export const [Checkbox, checkbox] = hoistCmp.withFactory<CheckboxProps>({
     }
 });
 
-class CheckboxInputModel extends HoistInputModel {
+class CheckboxInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 }
 

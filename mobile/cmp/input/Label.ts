@@ -6,12 +6,11 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, StyleProps} from '@xh/hoist/core';
+import {DefaultHoistProps, hoistCmp, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import './Label.scss';
-import {ForwardedRef} from 'react';
 
-export interface LabelProps extends HoistInputProps, StyleProps {}
+export interface LabelProps extends HoistInputProps<null>, StyleProps {}
 
 /**
  * A simple label for a form.
@@ -24,18 +23,20 @@ export const [Label, label] = hoistCmp.withFactory<LabelProps>({
     }
 });
 
-class LabelInputModel extends HoistInputModel {
+class LabelInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 }
 
 //-----------------------
 // Implementation
 //-----------------------
-const cmp = hoistCmp.factory(({model, className, style, width, children}, ref) => {
-    return div({
-        className,
-        style: {...style, whiteSpace: 'nowrap', width},
-        items: children,
-        ref: ref as ForwardedRef<any>
-    });
-});
+const cmp = hoistCmp.factory<DefaultHoistProps<LabelInputModel, HTMLDivElement>>(
+    ({className, style, width, children}, ref) => {
+        return div({
+            className,
+            style: {...style, whiteSpace: 'nowrap', width},
+            items: children,
+            ref
+        });
+    }
+);

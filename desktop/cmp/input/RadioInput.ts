@@ -13,7 +13,7 @@ import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {filter, isObject} from 'lodash';
 import './RadioInput.scss';
 
-export interface RadioInputProps extends HoistInputProps {
+export interface RadioInputProps extends HoistInputProps<null> {
     /** True to display each radio button inline with each other. */
     inline?: boolean;
 
@@ -43,7 +43,7 @@ export const [RadioInput, radioInput] = hoistCmp.withFactory<RadioInputProps>({
 //-----------------------
 // Implementation
 //-----------------------
-class RadioInputModel extends HoistInputModel {
+class RadioInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     get enabledInputs(): HTMLInputElement[] {
@@ -112,7 +112,6 @@ const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref
         inline: props.inline,
         selectedValue: model.renderValue,
         onChange: model.onChange,
-        testId: props.testId,
-        ref
+        [TEST_ID]: props.testId
     });
 });
