@@ -13,7 +13,7 @@
     // Constrain max height on the outer container to safe area.
     display: flex;
     flex-direction: column;
-    max-height: calc(100svh - var(--xh-pad-double-px));
+    max-height: calc(100dvh - var(--xh-pad-double-px));
 
     // Increase min-width from Onsen 270px default. This seems to drive actual width in most cases.
     // and 270px looks a bit cramped.

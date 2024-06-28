@@ -2,10 +2,10 @@
 .xh-dialog-panel {
   & > .dialog {
     width: 100svw;
-    max-height: 100svh !important;
+    max-height: 100dvh !important;
 
     .dialog-container {
-      height: 100svh;
+      height: 100dvh;
       max-width: 100svw !important;
       border: 0 !important;
 

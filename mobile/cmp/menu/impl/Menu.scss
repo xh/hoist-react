@@ -3,12 +3,12 @@
   margin: 0 !important;
   z-index: 21;
   /**
-   * Use `svh` units target the *smallest* viewport height, which is preferred to using `vh` on mobile.
-   * Including `px` units as a fallback for older browsers that may not support `vh`/`svh` units.
+   * Use `dvh` units allows the viewport to dynamically adjust based on presence of browser UI elements, which is preferred to using `vh` on mobile.
+   * Including `px` units as a fallback for older browsers that may not support `vh`/`dvh` units.
    * https://css-tricks.com/the-large-small-and-dynamic-viewports/
    */
   max-height: 500px;
-  max-height: 80svh;
+  max-height: 80dvh;
 
   &__title {
     padding: var(--xh-pad-half-px);
