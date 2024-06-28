@@ -33,9 +33,6 @@ export interface FileChooserProps extends HoistProps<FileChooserModel, HTMLDivEl
     /** Minimum accepted file size in bytes. */
     minSize?: number;
 
-    /** Maximum number of files to accept. */
-    maxFiles?: number;
-
     /**
      * True (default) to display the selected file(s) in a grid alongside the dropzone. Note
      * that, if false, the component will not provide any built-in indication of its selection.
@@ -71,7 +68,6 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
             accept,
             maxSize,
             minSize,
-            maxFiles,
             targetText = 'Drag and drop files here, or click to browse...',
             enableMulti = true,
             enableAddMulti = enableMulti,
@@ -91,7 +87,6 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                     accept,
                     maxSize,
                     minSize,
-                    maxFiles,
                     multiple: enableAddMulti,
                     // Passing children directly since it is not possible to pass a function via
                     // elementFactory items prop.
