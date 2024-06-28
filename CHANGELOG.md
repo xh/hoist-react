@@ -8,9 +8,12 @@
 
 ### 🐞 Bug Fixes
 
-* Fix timing issue with missing validation for records added immediately to new store.
-* Mobile `TabContainer` now flexes properly within flexbox containers.
-* Fixed CSS bug in which datePicker dates wrapped when datepicker was used in a grid inside a dialogBody.
+* Updated `.xh-viewport` sizing styles and mobile `dialog` sizing to use `dvw/dvh` instead of prior
+  `svw/svh` - resolves edge case mobile issue where redirects back from an OAuth flow could leave
+  an unexpected gap across the bottom of the screen.
+* Updated mobile `TabContainer` to flex properly within flexbox containers.
+* Fixed timing issue with missing validation for records added immediately to new store.
+* Fixed CSS bug in which date picker dates wrapped when `dateEditor` used in a grid in a dialog.
 
 ## 65.0.0 - 2024-06-26
 
