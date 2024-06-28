@@ -50,8 +50,9 @@
     word-break: break-word;
 
     // ensure that date numbers in the datepicker do not wrap
-    // if the datepicker's portal is rendered inside a dialogBody
-    // which happens to the datepicker used grid dateEditor.
+    // if the datepicker's portal is rendered inside a dialogBody,
+    // which happens to the datepicker when it is used in a grid dateEditor
+    // in a grid used inside a dialogBody.
     .bp5-datepicker {
       word-break: normal;
     }
