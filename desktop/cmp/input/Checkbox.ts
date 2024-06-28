@@ -66,6 +66,7 @@ const cmp = hoistCmp.factory<DefaultHoistProps<CheckboxInputModel, HTMLLabelElem
             valueIsUnset = isNil(renderValue);
 
         return bpCheckbox({
+            autoFocus: props.autoFocus,
             checked: !!renderValue,
             indeterminate: valueIsUnset && displayUnsetState,
             alignIndicator: labelSide === 'left' ? 'right' : 'left',
