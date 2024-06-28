@@ -48,6 +48,13 @@
     padding: var(--xh-pad-double-px);
     background: var(--xh-popup-bg);
     word-break: break-word;
+
+    // ensure that date numbers in the datepicker do not wrap
+    // if the datepicker's portal is rendered inside a dialogBody
+    // which happens to the datepicker used grid dateEditor.
+    .bp5-datepicker {
+      word-break: normal;
+    }
   }
 }
 
