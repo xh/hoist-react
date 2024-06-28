@@ -47,12 +47,14 @@
     margin: 0;
     padding: var(--xh-pad-double-px);
     background: var(--xh-popup-bg);
+
+    // See https://github.com/xh/hoist-react/issues/862 for why this is necessary. Note need for
+    // datepicker workaround below - indicates that this might be a problematic solution in general
+    // to the original issue, but after a few years that's been the only reported issue, so...
     word-break: break-word;
 
-    // ensure that date numbers in the datepicker do not wrap
-    // if the datepicker's portal is rendered inside a dialogBody,
-    // which happens to the datepicker when it is used in a grid dateEditor
-    // in a grid used inside a dialogBody.
+    // Ensure that date numbers in the datepicker do not wrap if the datePicker portal is rendered
+    // inside a dialogBody - e.g. `dateEditor` in a grid in a dialog. See comment on #862.
     .bp5-datepicker {
       word-break: normal;
     }
