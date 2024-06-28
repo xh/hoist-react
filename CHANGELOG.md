@@ -10,6 +10,7 @@
 
 * Fix timing issue with missing validation for records added immediately to new store.
 * Mobile `TabContainer` now flexes properly within flexbox containers.
+* Fixed CSS bug in which datePicker dates wrapped when datepicker was used in a grid inside a dialogBody.
 
 ## 65.0.0 - 2024-06-26
 
