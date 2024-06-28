@@ -141,6 +141,6 @@ class ToastSourceLocalModel extends HoistModel {
 }
 
 // `OverlayToasterProps` does not include `ref` prop, so we need to add it manually
-const overlayToaster = elementFactory<any, OverlayToasterProps & RefAttributes<OverlayToaster>>(
+const overlayToaster = elementFactory<OverlayToasterProps & RefAttributes<OverlayToaster>>(
     OverlayToaster
 );

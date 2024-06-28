@@ -15,7 +15,7 @@ import {
     ReactElement,
     ReactNode
 } from 'react';
-import {Some, Thunkable} from './types/Types';
+import {PlainObject, Some, Thunkable} from './types/Types';
 
 /**
  * Alternative format for specifying React Elements in render functions. This type is designed to
@@ -74,8 +74,17 @@ export type ElementSpec<P> = P & {
     $omit?: any;
 };
 
-export type ElementFactory<P = any> = ((...args: ReactNode[]) => ReactElement<P, any>) &
-    ((arg: ElementSpec<P>) => ReactElement<P, any>);
+/**
+ * Union type of all known React Component types supported by Hoist.
+ */
+export type ReactComponent = ComponentType | keyof JSX.IntrinsicElements;
+
+/**
+ * Factory function that can create a ReactElement from an ElementSpec or children.
+ * Hoist alternative to JSX.
+ */
+export type ElementFactory<P = any> = ((arg: ElementSpec<P>) => ReactElement<P, any>) &
+    ((...args: ReactNode[]) => ReactElement<P, any>);
 
 /**
  * Create a React Element from a Component type and an ElementSpec.
@@ -83,10 +92,13 @@ export type ElementFactory<P = any> = ((...args: ReactNode[]) => ReactElement<P,
  * This function is a thin-wrapper over `React.createChildren` that
  * consumes the ElementSpec format.
  *
- * @param type - React Component or string representing an HTML element.
+ * @param component - React Component or string representing an HTML element.
  * @param spec - element spec.
  */
-export function createElement<P = any>(type: any, spec: ElementSpec<P>): ReactElement<P, any> {
+export function createElement<C extends ReactComponent>(
+    component: C,
+    spec: ElementSpec<PropType<C>>
+): ReactElement<PropType<C>, C> {
     const {omit, item, items, ...props} = spec;
 
     // 1) Convenience omission syntax.
@@ -104,18 +116,17 @@ export function createElement<P = any>(type: any, spec: ElementSpec<P>): ReactEl
         }
     });
 
-    return reactCreateElement(type, props as P, ...children) as any;
+    return reactCreateElement(component, props, ...children) as ReactElement<PropType<C>, C>;
 }
 
 /**
- *  Create a factory function that can create a ReactElement from an ElementSpec.
+ *  Create a factory function that can create a ReactElement from an ElementSpec or list of children.
  */
-export function elementFactory<
-    T extends ComponentType | keyof JSX.IntrinsicElements,
-    P = PropType<T>
->(type: T): ElementFactory<P> {
+export function elementFactory<C extends ReactComponent>(component: C): ElementFactory<PropType<C>>;
+export function elementFactory<P extends PlainObject>(component: ReactComponent): ElementFactory<P>;
+export function elementFactory(component: ReactComponent): ElementFactory {
     const ret = function (...args) {
-        return createElement<P>(type, normalizeArgs(args, type));
+        return createElement(component, normalizeArgs(args, component));
     };
     ret.isElementFactory = true;
     return ret;
@@ -136,9 +147,9 @@ function normalizeArgs(args: any[], type: any) {
     return {items: args};
 }
 
-type PropType<T> =
-    T extends ComponentType<infer P>
+type PropType<C> =
+    C extends ComponentType<infer P>
         ? P
-        : T extends keyof JSX.IntrinsicElements
-          ? JSX.IntrinsicElements[T]
+        : C extends keyof JSX.IntrinsicElements
+          ? JSX.IntrinsicElements[C]
           : any;
