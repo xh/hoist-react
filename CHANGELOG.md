@@ -1,6 +1,17 @@
 # Changelog
 
-## 65.0.0-SNAPSHOT - unreleased
+## 66.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* New option for `XH.reloadApp` to reload specific app path
+
+### 🐞 Bug Fixes
+
+* Fix timing issue with missing validation for records added immediately to new store.
+* Mobile `TabContainer` now flexes properly within flexbox containers.
+
+## 65.0.0 - 2024-06-26
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies and renamed component prop)
 
@@ -39,7 +50,6 @@
 * react-markdown `8.0 → 9.0`
 * remark-breaks `3.0 → 4.0`
 * remark-gfm `4.0`
-
 
 ## 64.0.5 - 2024-06-14
 
