@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {DefaultHoistProps, hoistCmp, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {input} from '@xh/hoist/kit/onsen';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -15,7 +15,6 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import './TextInput.scss';
-import {ForwardedRef} from 'react';
 
 export interface TextInputProps extends HoistInputProps<null>, StyleProps, LayoutProps {
     value?: string;
@@ -111,44 +110,46 @@ class TextInputModel extends HoistInputModel<null> {
     };
 }
 
-const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref) => {
-    const {width, ...layoutProps} = getLayoutProps(props);
+const cmp = hoistCmp.factory<DefaultHoistProps<TextInputModel, HTMLDivElement>>(
+    ({model, className, ...props}, ref) => {
+        const {width, ...layoutProps} = getLayoutProps(props);
 
-    return hbox({
-        ref: ref as ForwardedRef<any>,
-        className,
-        style: {
-            ...props.style,
-            ...layoutProps,
-            width: withDefault(width, null)
-        },
-        items: [
-            input({
-                value: model.renderValue || '',
+        return hbox({
+            ref,
+            className,
+            style: {
+                ...props.style,
+                ...layoutProps,
+                width: withDefault(width, null)
+            },
+            items: [
+                input({
+                    value: model.renderValue || '',
 
-                autoCapitalize: props.autoCapitalize,
-                autoComplete: withDefault(
-                    props.autoComplete,
-                    props.type === 'password' ? 'new-password' : 'off'
-                ),
-                disabled: props.disabled,
-                modifier: props.modifier,
-                placeholder: props.placeholder,
-                spellCheck: withDefault(props.spellCheck, false),
-                tabIndex: props.tabIndex,
-                type: props.type,
-                className: 'xh-text-input__input',
-                style: {textAlign: withDefault(props.textAlign, 'left')},
+                    autoCapitalize: props.autoCapitalize,
+                    autoComplete: withDefault(
+                        props.autoComplete,
+                        props.type === 'password' ? 'new-password' : 'off'
+                    ),
+                    disabled: props.disabled,
+                    modifier: props.modifier,
+                    placeholder: props.placeholder,
+                    spellCheck: withDefault(props.spellCheck, false),
+                    tabIndex: props.tabIndex,
+                    type: props.type,
+                    className: 'xh-text-input__input',
+                    style: {textAlign: withDefault(props.textAlign, 'left')},
 
-                onInput: model.onChange,
-                onKeyDown: model.onKeyDown,
-                onBlur: model.onBlur,
-                onFocus: model.onFocus
-            }),
-            clearButton()
-        ]
-    });
-});
+                    onInput: model.onChange,
+                    onKeyDown: model.onKeyDown,
+                    onBlur: model.onBlur,
+                    onFocus: model.onFocus
+                }),
+                clearButton()
+            ]
+        });
+    }
+);
 
 const clearButton = hoistCmp.factory<TextInputModel>(({model}) =>
     button({

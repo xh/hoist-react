@@ -5,13 +5,13 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, Intent, WithoutModelAndRef, XH} from '@xh/hoist/core';
+import {DefaultHoistProps, hoistCmp, Intent, WithoutModelAndRef, XH} from '@xh/hoist/core';
 import {Button, buttonGroup, ButtonGroupProps, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, filter, isEmpty, without} from 'lodash';
-import {Children, cloneElement, ForwardedRef, isValidElement} from 'react';
+import {Children, cloneElement, isValidElement} from 'react';
 
 export interface ButtonGroupInputProps
     extends Omit<WithoutModelAndRef<ButtonGroupProps>, 'onChange'>,
@@ -100,68 +100,70 @@ class ButtonGroupInputModel extends HoistInputModel<null> {
     }
 }
 
-const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props}, ref) => {
-    const {
-        children,
-        // HoistInput Props
-        bind,
-        disabled,
-        onChange,
-        onCommit,
-        tabIndex,
-        value,
-        // FormField Props
-        commitOnChange,
-        // ButtonGroupInput Props
-        enableClear,
-        enableMulti,
-        // Button props applied to each child button
-        intent,
-        minimal,
-        outlined,
-        // ...and ButtonGroup gets all the rest
-        ...buttonGroupProps
-    } = getNonLayoutProps(props);
+const cmp = hoistCmp.factory<DefaultHoistProps<ButtonGroupInputModel, HTMLDivElement>>(
+    ({model, className, ...props}, ref) => {
+        const {
+            children,
+            // HoistInput Props
+            bind,
+            disabled,
+            onChange,
+            onCommit,
+            tabIndex,
+            value,
+            // FormField Props
+            commitOnChange,
+            // ButtonGroupInput Props
+            enableClear,
+            enableMulti,
+            // Button props applied to each child button
+            intent,
+            minimal,
+            outlined,
+            // ...and ButtonGroup gets all the rest
+            ...buttonGroupProps
+        } = getNonLayoutProps(props);
 
-    const buttons = Children.map(children, button => {
-        if (!button) return null;
+        const buttons = Children.map(children, button => {
+            if (!button) return null;
 
-        if (!isValidElement(button) || button.type !== Button) {
-            throw XH.exception('ButtonGroupInput child must be a Button.');
-        }
+            if (!isValidElement(button) || button.type !== Button) {
+                throw XH.exception('ButtonGroupInput child must be a Button.');
+            }
 
-        const props = button.props as ButtonProps,
-            {value, intent: btnIntent} = props,
-            btnDisabled = disabled || props.disabled;
+            const props = button.props as ButtonProps,
+                {value, intent: btnIntent} = props,
+                btnDisabled = disabled || props.disabled;
 
-        throwIf(
-            (enableClear || enableMulti) && value == null,
-            'ButtonGroupInput child must declare a non-null value when enableClear or enableMulti are true'
-        );
+            throwIf(
+                (enableClear || enableMulti) && value == null,
+                'ButtonGroupInput child must declare a non-null value when enableClear or enableMulti are true'
+            );
 
-        const isActive = model.isActive(value);
+            const isActive = model.isActive(value);
 
-        return cloneElement(button, {
-            active: isActive,
-            intent: btnIntent ?? intent,
-            minimal: withDefault(minimal, false),
-            outlined: withDefault(outlined, false),
-            disabled: withDefault(btnDisabled, false),
-            onClick: () => model.onButtonClick(value),
-            // Workaround for https://github.com/palantir/blueprint/issues/3971
-            key: `${isActive} ${value}`,
-            autoFocus: isActive && model.hasFocus
-        } as ButtonGroupProps);
-    });
+            return cloneElement(button, {
+                active: isActive,
+                intent: btnIntent ?? intent,
+                minimal: withDefault(minimal, false),
+                outlined: withDefault(outlined, false),
+                disabled: withDefault(btnDisabled, false),
+                onClick: () => model.onButtonClick(value),
+                // Workaround for https://github.com/palantir/blueprint/issues/3971
+                key: `${isActive} ${value}`,
+                autoFocus: isActive && model.hasFocus
+            } as ButtonGroupProps);
+        });
 
-    return buttonGroup({
-        items: buttons,
-        ...(buttonGroupProps as ButtonGroupProps),
-        minimal: withDefault(minimal, outlined, false),
-        ...getLayoutProps(props),
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        className,
-        ref: ref as ForwardedRef<HTMLDivElement>
-    });
-});
+        return buttonGroup({
+            items: buttons,
+            ...(buttonGroupProps as ButtonGroupProps),
+            minimal: withDefault(minimal, outlined, false),
+            ...getLayoutProps(props),
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            className,
+            ref
+        });
+    }
+);

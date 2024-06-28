@@ -81,7 +81,10 @@ class TextAreaInputModel extends HoistInputModel<HTMLTextAreaElement> {
     };
 }
 
-const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...rest}) => {
+// Note: we don't use the `ref` here, but the presence of a second argument is required
+// for the component to be wrapped with React.forwardRef, which is necessary since
+// `useHoistInputModel` always passes a ref to the component, even if it's not used.
+const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...rest}, ref) => {
     const props = rest as PlainObject,
         {width, height, flex, ...layoutProps} = getLayoutProps(props);
 

@@ -10,13 +10,13 @@ import {
 } from '@blueprintjs/core';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box} from '@xh/hoist/cmp/layout';
-import {hoistCmp, LayoutProps, Some} from '@xh/hoist/core';
+import {DefaultHoistProps, hoistCmp, LayoutProps, Some} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isArray} from 'lodash';
-import {ForwardedRef, ReactNode} from 'react';
+import {ReactNode} from 'react';
 import './Slider.scss';
 
 export interface SliderProps extends Omit<HoistInputProps<null>, 'tabIndex'>, LayoutProps {
@@ -82,41 +82,46 @@ class SliderInputModel extends HoistInputModel<null> {
     }
 }
 
-const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, ref) => {
-    const {width, ...layoutProps} = getLayoutProps(props);
+const cmp = hoistCmp.factory<DefaultHoistProps<SliderInputModel, HTMLDivElement>>(
+    ({model, className, ...props}, ref) => {
+        const {width, ...layoutProps} = getLayoutProps(props);
 
-    throwIf(props.labelStepSize <= 0, 'Error in Slider: labelStepSize must be greater than zero.');
+        throwIf(
+            props.labelStepSize <= 0,
+            'Error in Slider: labelStepSize must be greater than zero.'
+        );
 
-    // Set default left / right padding
-    if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;
-    if (!layoutProps.padding && !layoutProps.paddingRight) layoutProps.paddingRight = 20;
+        // Set default left / right padding
+        if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;
+        if (!layoutProps.padding && !layoutProps.paddingRight) layoutProps.paddingRight = 20;
 
-    const sliderProps: BpRangeSliderProps | BpSliderProps = {
-        value: model.renderValue,
+        const sliderProps: BpRangeSliderProps | BpSliderProps = {
+            value: model.renderValue,
 
-        disabled: props.disabled,
-        labelRenderer: props.labelRenderer,
-        labelStepSize: props.labelStepSize,
-        max: props.max,
-        min: props.min,
-        showTrackFill: props.showTrackFill,
-        stepSize: props.stepSize,
-        vertical: props.vertical,
+            disabled: props.disabled,
+            labelRenderer: props.labelRenderer,
+            labelStepSize: props.labelStepSize,
+            max: props.max,
+            min: props.min,
+            showTrackFill: props.showTrackFill,
+            stepSize: props.stepSize,
+            vertical: props.vertical,
 
-        onChange: val => model.noteValueChange(val)
-    };
+            onChange: val => model.noteValueChange(val)
+        };
 
-    return box({
-        item: isArray(model.renderValue)
-            ? bpRangeSlider(sliderProps as BpRangeSliderProps)
-            : bpSlider(sliderProps as BpSliderProps),
+        return box({
+            item: isArray(model.renderValue)
+                ? bpRangeSlider(sliderProps as BpRangeSliderProps)
+                : bpSlider(sliderProps as BpSliderProps),
 
-        ...layoutProps,
-        width: withDefault(width, 200),
-        className,
+            ...layoutProps,
+            width: withDefault(width, 200),
+            className,
 
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        ref: ref as ForwardedRef<any>
-    });
-});
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            ref
+        });
+    }
+);

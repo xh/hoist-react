@@ -7,7 +7,7 @@
 import {XH, HoistAppModel, ElementFactory, HoistProps, HoistPropsWithModel} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil, isString} from 'lodash';
-import {Component, ComponentClass, FunctionComponent} from 'react';
+import {Component, ComponentType, FunctionComponent} from 'react';
 
 /**
  * Specification for a client-side Hoist application.
@@ -40,14 +40,14 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
      * Root HoistComponent for the application. Despite the name,
      * functional components are fully supported and expected.
      */
-    componentClass: ComponentClass<HoistProps<T>> | FunctionComponent<HoistProps<T>>;
+    componentClass: ComponentType<HoistProps<T>>;
 
     /**
      * Container component to be used to host this application.
      * This class determines the platform used by Hoist. The value should be imported from
      * either `@xh/hoist/desktop/AppContainer` or `@xh/hoist/mobile/AppContainer`.
      */
-    containerClass: ComponentClass<HoistPropsWithModel> | FunctionComponent<HoistPropsWithModel>;
+    containerClass: ComponentType<HoistPropsWithModel>;
 
     /** True if the app should use the Hoist mobile toolkit.*/
     isMobileApp: boolean;
