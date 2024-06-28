@@ -105,6 +105,7 @@ const overflowBox = hoistCmp.factory({
     observer: false,
     memo: false,
     render({children, minVisibleItems, collapseFrom}) {
+        // @ts-expect-error - TS doesn't like how we remap items to $items
         return overflowList({
             $items: children,
             minVisibleItems,

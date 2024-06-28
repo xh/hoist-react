@@ -17,4 +17,5 @@ export const reactSelect = elementFactory(Select),
     reactCreatableSelect = elementFactory(Creatable),
     reactAsyncSelect = elementFactory(AsyncSelect),
     reactAsyncCreatableSelect = elementFactory(AsyncCreatable),
-    reactWindowedSelect = elementFactory(WindowedSelect);
+    // Typed as any due to issue with react-windowed-select types
+    reactWindowedSelect = elementFactory<any>(WindowedSelect);
