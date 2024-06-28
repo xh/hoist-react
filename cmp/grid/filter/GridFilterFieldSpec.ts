@@ -29,7 +29,7 @@ export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
      * Props to pass through to the HoistInput components used on the custom filter tab.
      * Note that the HoistInput component used is decided by fieldType.
      */
-    inputProps?: HoistInputProps;
+    inputProps?: HoistInputProps<unknown>;
 
     /** Default operator displayed in custom filter tab. */
     defaultOp?: FieldFilterOperator;

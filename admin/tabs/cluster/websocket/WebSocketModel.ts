@@ -23,7 +23,7 @@ import {RecordActionSpec} from '@xh/hoist/data';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 
 export class WebSocketModel extends BaseInstanceModel {
-    viewRef = createRef<HTMLElement>();
+    viewRef = createRef<HTMLDivElement>();
 
     @observable
     lastRefresh: number;

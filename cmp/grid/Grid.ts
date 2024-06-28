@@ -51,7 +51,10 @@ import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 
-export interface GridProps extends HoistProps<GridModel>, LayoutProps, TestSupportProps {
+export interface GridProps
+    extends HoistProps<GridModel, HTMLDivElement>,
+        LayoutProps,
+        TestSupportProps {
     /**
      * Options for ag-Grid's API.
      *
@@ -145,7 +148,7 @@ export class GridLocalModel extends HoistModel {
     @lookup(GridModel)
     private model: GridModel;
     agOptions: GridOptions;
-    viewRef = createObservableRef<HTMLElement>();
+    viewRef = createObservableRef<HTMLDivElement>();
     private rowKeyNavSupport: RowKeyNavSupport;
     private prevRs: RecordSet;
 

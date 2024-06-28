@@ -4,11 +4,11 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, BoxProps, setCmpErrorDisplay, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, BoxProps, setCmpErrorDisplay, HoistPropsWithRef} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
 import './Placeholder.scss';
 
-export interface PlaceholderProps extends HoistProps, BoxProps {}
+export interface PlaceholderProps extends HoistPropsWithRef<HTMLDivElement>, BoxProps {}
 
 /**
  * A thin wrapper around `Box` with standardized, muted styling.

@@ -6,14 +6,16 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, useContextModel} from '@xh/hoist/core';
+import {hoistCmp, HoistPropsWithRef, TestSupportProps, useContextModel} from '@xh/hoist/core';
 import {isString} from 'lodash';
-import {Children} from 'react';
+import {Children, ReactElement} from 'react';
 import {PanelModel} from '../PanelModel';
 import {dragger} from './dragger/Dragger';
 import {splitter} from './Splitter';
 
-export const resizeContainer = hoistCmp.factory({
+export const resizeContainer = hoistCmp.factory<
+    HoistPropsWithRef<HTMLDivElement> & TestSupportProps
+>({
     displayName: 'ResizeContainer',
     model: false,
     className: 'xh-resizable',
@@ -27,7 +29,7 @@ export const resizeContainer = hoistCmp.factory({
             sizeIsPct = isString(size) && size.endsWith('%');
 
         const boxSize = sizeIsPct ? `calc(100% - ${dragBarWidth})` : size;
-        let items = [collapsed ? box(child) : box({item: child, [dim]: boxSize})];
+        let items: ReactElement[] = [collapsed ? box(child) : box({item: child, [dim]: boxSize})];
 
         if (showSplitter) {
             const splitterCmp = splitter();

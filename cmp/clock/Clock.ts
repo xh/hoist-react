@@ -9,7 +9,7 @@ import {
     BoxProps,
     hoistCmp,
     HoistModel,
-    HoistProps,
+    HoistPropsWithRef,
     managed,
     useLocalModel,
     XH
@@ -21,7 +21,7 @@ import {MINUTES, ONE_SECOND} from '@xh/hoist/utils/datetime';
 import {isNumber} from 'lodash';
 import {getLayoutProps} from '../../utils/react';
 
-export interface ClockProps extends HoistProps, BoxProps {
+export interface ClockProps extends HoistPropsWithRef<HTMLDivElement>, BoxProps {
     /** String to display if the timezone is invalid or an offset cannot be fetched. */
     errorString?: string;
 

@@ -4,9 +4,13 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {
+    RangeSliderProps as BpRangeSliderProps,
+    SliderProps as BpSliderProps
+} from '@blueprintjs/core';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, Some} from '@xh/hoist/core';
+import {DefaultHoistProps, hoistCmp, LayoutProps, Some} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -15,7 +19,7 @@ import {isArray} from 'lodash';
 import {ReactNode} from 'react';
 import './Slider.scss';
 
-export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
+export interface SliderProps extends Omit<HoistInputProps<null>, 'tabIndex'>, LayoutProps {
     value?: Some<number>;
 
     /** Maximum value */
@@ -62,7 +66,7 @@ export const [Slider, slider] = hoistCmp.withFactory<SliderProps>({
 //-----------------------
 // Implementation
 //-----------------------
-class SliderInputModel extends HoistInputModel {
+class SliderInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     get sliderHandle(): HTMLElement {
@@ -78,18 +82,20 @@ class SliderInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, ref) => {
-    const {width, ...layoutProps} = getLayoutProps(props),
-        sliderType = isArray(model.renderValue) ? bpRangeSlider : bpSlider;
+const cmp = hoistCmp.factory<DefaultHoistProps<SliderInputModel, HTMLDivElement>>(
+    ({model, className, ...props}, ref) => {
+        const {width, ...layoutProps} = getLayoutProps(props);
 
-    throwIf(props.labelStepSize <= 0, 'Error in Slider: labelStepSize must be greater than zero.');
+        throwIf(
+            props.labelStepSize <= 0,
+            'Error in Slider: labelStepSize must be greater than zero.'
+        );
 
-    // Set default left / right padding
-    if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;
-    if (!layoutProps.padding && !layoutProps.paddingRight) layoutProps.paddingRight = 20;
+        // Set default left / right padding
+        if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;
+        if (!layoutProps.padding && !layoutProps.paddingRight) layoutProps.paddingRight = 20;
 
-    return box({
-        item: sliderType({
+        const sliderProps: BpRangeSliderProps | BpSliderProps = {
             value: model.renderValue,
 
             disabled: props.disabled,
@@ -99,18 +105,23 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
             min: props.min,
             showTrackFill: props.showTrackFill,
             stepSize: props.stepSize,
-            tabIndex: props.tabIndex,
             vertical: props.vertical,
 
             onChange: val => model.noteValueChange(val)
-        }),
+        };
 
-        ...layoutProps,
-        width: withDefault(width, 200),
-        className,
+        return box({
+            item: isArray(model.renderValue)
+                ? bpRangeSlider(sliderProps as BpRangeSliderProps)
+                : bpSlider(sliderProps as BpSliderProps),
 
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        ref
-    });
-});
+            ...layoutProps,
+            width: withDefault(width, 200),
+            className,
+
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            ref
+        });
+    }
+);

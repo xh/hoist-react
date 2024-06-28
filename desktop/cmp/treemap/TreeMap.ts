@@ -36,7 +36,10 @@ import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
 import './TreeMap.scss';
 import {TreeMapModel} from './TreeMapModel';
 
-export interface TreeMapProps extends HoistProps<TreeMapModel>, LayoutProps, TestSupportProps {}
+export interface TreeMapProps
+    extends HoistProps<TreeMapModel, HTMLDivElement>,
+        LayoutProps,
+        TestSupportProps {}
 
 /**
  * Component for rendering a TreeMap.

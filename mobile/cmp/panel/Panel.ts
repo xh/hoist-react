@@ -10,10 +10,10 @@ import {
     TaskObserver,
     useContextModel,
     Some,
-    HoistProps,
     ElementFactory,
     hoistCmp,
-    HoistModel
+    HoistModel,
+    HoistPropsWithRef
 } from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
 import {mask} from '@xh/hoist/mobile/cmp/mask';
@@ -27,7 +27,7 @@ import {panelHeader} from './impl/PanelHeader';
 import './Panel.scss';
 import {logWarn} from '@xh/hoist/utils/js';
 
-export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
+export interface PanelProps extends HoistPropsWithRef<HTMLDivElement>, Omit<BoxProps, 'title'> {
     /** A toolbar to be docked at the bottom of the panel. */
     bbar?: Some<ReactNode>;
 

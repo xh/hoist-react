@@ -12,7 +12,11 @@ import {
     DefaultHoistProps,
     elementFactory,
     ElementFactory,
-    TestSupportProps
+    TestSupportProps,
+    ModelTypeOf,
+    RefTypeOf,
+    PlainObject,
+    HoistPropsWithModel
 } from './';
 import {
     useModelLinker,
@@ -52,26 +56,26 @@ import {
  * `ref` is passed as the second argument to the render function.
  */
 
-export type RenderPropsOf<P extends HoistProps> = P & {
-    /** Pre-processed by HoistComponent internals into a mounted model.  Never passed to render. */
-    modelConfig: never;
-
-    /** Pre-processed by HoistComponent internals and attached to model.  Never passed to render. */
-    modelRef: never;
-
-    /** Pre-processed by HoistComponent internals and passed as second argument to render. */
-    ref: never;
-};
+export type RenderPropsOf<P extends HoistProps<ModelTypeOf<P>, RefTypeOf<P>>> = Omit<
+    P,
+    'modelConfig' | 'modelRef' | 'ref'
+>;
 
 /**
  * Configuration for creating a Component.  May be specified either as a render function,
  * or an object containing a render function and associated metadata.
  */
-export type ComponentConfig<P extends HoistProps> =
-    | ((props: RenderPropsOf<P>, ref?: ForwardedRef<any>) => ReactNode)
+export type ComponentConfig<
+    /** HoistProps used to infer model and ref types */
+    P extends HoistProps<ModelTypeOf<P>, RefTypeOf<P>>,
+    /** Additional props that may be passed to the render function */
+    D extends PlainObject = {},
+    R = RefTypeOf<P> extends never ? unknown : RefTypeOf<P>
+> =
+    | ((props: RenderPropsOf<P> & D, ref?: ForwardedRef<R>) => ReactNode)
     | {
           /** Render function defining the component. */
-          render(props: RenderPropsOf<P>, ref?: ForwardedRef<any>): ReactNode;
+          render(props: RenderPropsOf<P> & D, ref?: ForwardedRef<R>): ReactNode;
 
           /**
            * Spec defining the model to be rendered by this component.
@@ -79,7 +83,7 @@ export type ComponentConfig<P extends HoistProps> =
            * return of {@link uses} or {@link creates} - these factory functions will create a spec for
            * either externally-provided or internally-created models. Defaults to `uses('*')`.
            */
-          model?: ModelSpec<P['model']> | false;
+          model?: ModelTypeOf<P> extends never ? false : ModelSpec<ModelTypeOf<P>>;
 
           /**
            * Base CSS class for this component. Will be combined with any className
@@ -137,11 +141,13 @@ let cmpIndex = 0; // index for anonymous component dispay names
  *   - `hoistCmp.withFactory` - return a 2-element list containing both the newly
  *          defined Component and an elementFactory for it.
  */
-export function hoistCmp<M extends HoistModel>(
-    config: ComponentConfig<DefaultHoistProps<M>>
+export function hoistCmp<M extends HoistModel = never>(
+    config: ComponentConfig<HoistProps<M>, PlainObject> // Infer model, but accept all props
 ): FC<DefaultHoistProps<M>>;
-export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P>;
-export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P> {
+export function hoistCmp<P extends HoistProps<ModelTypeOf<P>, RefTypeOf<P>>>(
+    config: ComponentConfig<P>
+): FC<P>;
+export function hoistCmp(config) {
     // 0) Pre-process/parse args.
     if (isFunction(config)) config = {render: config, displayName: config.name};
 
@@ -202,10 +208,10 @@ export const hoistComponent = hoistCmp;
  *
  * Most typically used by application, this provides a simple element factory.
  */
-export function hoistCmpFactory<M extends HoistModel>(
-    config: ComponentConfig<DefaultHoistProps<M>>
+export function hoistCmpFactory<M extends HoistModel = never>(
+    config: ComponentConfig<HoistProps<M>, PlainObject> // Infer model, but accept all props
 ): ElementFactory<DefaultHoistProps<M>>;
-export function hoistCmpFactory<P extends HoistProps>(
+export function hoistCmpFactory<P extends HoistProps<ModelTypeOf<P>, RefTypeOf<P>>>(
     config: ComponentConfig<P>
 ): ElementFactory<P>;
 export function hoistCmpFactory(config) {
@@ -219,13 +225,13 @@ hoistCmp.factory = hoistCmpFactory;
  *
  * Not typically used by applications.
  */
-export function hoistCmpWithFactory<M extends HoistModel>(
-    config: ComponentConfig<DefaultHoistProps<M>>
+export function hoistCmpWithFactory<M extends HoistModel = never>(
+    config: ComponentConfig<HoistProps<M>, PlainObject> // Infer model, but accept all props
 ): [FC<DefaultHoistProps<M>>, ElementFactory<DefaultHoistProps<M>>];
-export function hoistCmpWithFactory<P extends HoistProps>(
+export function hoistCmpWithFactory<P extends HoistProps<ModelTypeOf<P>, RefTypeOf<P>>>(
     config: ComponentConfig<P>
 ): [FC<P>, ElementFactory<P>];
-export function hoistCmpWithFactory(config) {
+export function hoistCmpWithFactory(config: ComponentConfig<HoistProps<HoistModel | never>>) {
     const cmp = hoistCmp(config);
     return [cmp, elementFactory(cmp)];
 }
@@ -238,7 +244,10 @@ hoistCmp.withFactory = hoistCmpWithFactory;
 //----------------------------------
 // internal types and core wrappers
 //----------------------------------
-type RenderFn = (props: HoistProps & TestSupportProps, ref?: ForwardedRef<any>) => ReactNode;
+type RenderFn = (
+    props: HoistPropsWithModel & TestSupportProps,
+    ref?: ForwardedRef<any>
+) => ReactNode;
 
 interface Config {
     displayName: string;
@@ -353,7 +362,11 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
 //-------------------------------------------------------------------------
 // Support to resolve/create model at render-time.  Used by wrappers above.
 //-------------------------------------------------------------------------
-function useResolvedModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): ResolvedModel {
+function useResolvedModel(
+    props: HoistProps<HoistModel>,
+    modelLookup: ModelLookup,
+    cfg: Config
+): ResolvedModel {
     let ref = useRef<ResolvedModel>(null),
         resolvedModel = ref.current;
 
@@ -393,7 +406,11 @@ function createModel(spec: CreatesSpec<HoistModel>): ResolvedModel {
     return {model, isLinked: true, fromContext: false};
 }
 
-function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): ResolvedModel {
+function lookupModel(
+    props: HoistPropsWithModel,
+    modelLookup: ModelLookup,
+    cfg: Config
+): ResolvedModel {
     let {model, modelConfig} = props,
         spec = cfg.modelSpec as UsesSpec<HoistModel>,
         selector = spec.selector as any;

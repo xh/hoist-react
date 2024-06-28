@@ -4,11 +4,11 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, BoxProps, HoistPropsWithRef} from '@xh/hoist/core';
 import {box} from './Box';
 import './Viewport.scss';
 
-export interface ViewportProps extends HoistProps, BoxProps {}
+export interface ViewportProps extends HoistPropsWithRef<HTMLDivElement>, BoxProps {}
 
 /**
  * A container for the top level of the application.

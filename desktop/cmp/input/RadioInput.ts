@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps, HSide} from '@xh/hoist/core';
+import {hoistCmp, HSide} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
 import {computed, makeObservable} from '@xh/hoist/mobx';
@@ -13,7 +13,7 @@ import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {filter, isObject} from 'lodash';
 import './RadioInput.scss';
 
-export interface RadioInputProps extends HoistProps, HoistInputProps {
+export interface RadioInputProps extends HoistInputProps<null> {
     /** True to display each radio button inline with each other. */
     inline?: boolean;
 
@@ -43,7 +43,7 @@ export const [RadioInput, radioInput] = hoistCmp.withFactory<RadioInputProps>({
 //-----------------------
 // Implementation
 //-----------------------
-class RadioInputModel extends HoistInputModel {
+class RadioInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     get enabledInputs(): HTMLInputElement[] {
@@ -88,6 +88,9 @@ class RadioInputModel extends HoistInputModel {
     }
 }
 
+// Note: we don't use the `ref` here, but the presence of a second argument is required
+// for the component to be wrapped with React.forwardRef, which is necessary since
+// `useHoistInputModel` always passes a ref to the component, even if it's not used.
 const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref) => {
     const {normalizedOptions} = model,
         labelSide = withDefault(props.labelSide, 'right');
@@ -112,7 +115,6 @@ const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref
         inline: props.inline,
         selectedValue: model.renderValue,
         onChange: model.onChange,
-        testId: props.testId,
-        ref
+        [TEST_ID]: props.testId
     });
 });

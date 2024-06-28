@@ -4,13 +4,13 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {BoxProps, hoistCmp, HoistProps} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistPropsWithRef} from '@xh/hoist/core';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {merge} from 'lodash';
 import {div} from './Tags';
 
-export interface BoxComponentProps extends HoistProps, BoxProps {}
+export interface BoxComponentProps extends HoistPropsWithRef<HTMLDivElement>, BoxProps {}
 
 /**
  * A Component that supports flexbox-based layout of its contents.

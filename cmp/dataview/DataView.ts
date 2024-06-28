@@ -23,7 +23,10 @@ import {isFunction, merge} from 'lodash';
 import './DataView.scss';
 import {DataViewModel} from './DataViewModel';
 
-export interface DataViewProps extends HoistProps<DataViewModel>, LayoutProps, TestSupportProps {
+export interface DataViewProps
+    extends HoistProps<DataViewModel, HTMLDivElement>,
+        LayoutProps,
+        TestSupportProps {
     /**
      * Options for ag-Grid's API.
      *

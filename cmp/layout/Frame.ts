@@ -4,10 +4,10 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, BoxProps, HoistPropsWithRef} from '@xh/hoist/core';
 import {box} from './Box';
 
-export interface FrameProps extends HoistProps, BoxProps {}
+export interface FrameProps extends HoistPropsWithRef<HTMLDivElement>, BoxProps {}
 
 /**
  * A Box class that flexes to grow and stretch within its *own* parent via flex:'auto', useful for

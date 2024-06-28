@@ -7,8 +7,7 @@
 import {ButtonProps as BpButtonProps} from '@blueprintjs/core';
 import {
     hoistCmp,
-    HoistModel,
-    HoistProps,
+    HoistPropsWithRef,
     Intent,
     LayoutProps,
     StyleProps,
@@ -22,8 +21,8 @@ import classNames from 'classnames';
 import {ReactElement, ReactNode} from 'react';
 import './Button.scss';
 
-export interface ButtonProps<M extends HoistModel = null>
-    extends HoistProps<M>,
+export interface ButtonProps
+    extends HoistPropsWithRef<HTMLButtonElement>,
         StyleProps,
         LayoutProps,
         TestSupportProps,

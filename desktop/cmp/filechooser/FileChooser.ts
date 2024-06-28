@@ -14,7 +14,7 @@ import {ReactNode} from 'react';
 import './FileChooser.scss';
 import {FileChooserModel} from './FileChooserModel';
 
-export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps {
+export interface FileChooserProps extends HoistProps<FileChooserModel, HTMLDivElement>, BoxProps {
     /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
     accept?: Some<string>;
 
@@ -88,7 +88,9 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                     maxSize,
                     minSize,
                     multiple: enableAddMulti,
-                    item: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
+                    // Passing children directly since it is not possible to pass a function via
+                    // elementFactory items prop.
+                    children: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
                         const draggedCount = draggedFiles.length,
                             targetTxt = isDragActive
                                 ? `Drop to add ${fileNoun(draggedCount)}.`

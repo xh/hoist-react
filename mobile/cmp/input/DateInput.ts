@@ -6,7 +6,14 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, StyleProps, LayoutProps, HSide, PlainObject} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    StyleProps,
+    LayoutProps,
+    HSide,
+    PlainObject,
+    DefaultHoistProps
+} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {singleDatePicker} from '@xh/hoist/kit/react-dates';
@@ -19,7 +26,7 @@ import moment from 'moment';
 import './DateInput.scss';
 import {ReactElement} from 'react';
 
-export interface DateInputProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
+export interface DateInputProps extends HoistInputProps<null>, StyleProps, LayoutProps {
     value?: Date | LocalDate;
 
     /** True to show a "clear" button aligned to the right of the control. Default false. */
@@ -90,7 +97,7 @@ export const [DateInput, dateInput] = hoistCmp.withFactory<DateInputProps>({
 //---------------------------------
 // Implementation
 //---------------------------------
-class DateInputModel extends HoistInputModel {
+class DateInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     @observable popoverOpen = false;
@@ -180,43 +187,45 @@ class DateInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref) => {
-    const layoutProps = getLayoutProps(props),
-        {renderValue} = model,
-        value = renderValue ? moment(renderValue) : null,
-        enableClear = withDefault(props.enableClear, false),
-        textAlign = withDefault(props.textAlign, 'left'),
-        leftIcon = withDefault(props.leftIcon, null),
-        rightIcon = withDefault(props.rightIcon, Icon.calendar()),
-        isOpen = model.popoverOpen && !props.disabled;
+const cmp = hoistCmp.factory<DefaultHoistProps<DateInputModel, HTMLDivElement>>(
+    ({model, className, ...props}, ref) => {
+        const layoutProps = getLayoutProps(props),
+            {renderValue} = model,
+            value = renderValue ? moment(renderValue) : null,
+            enableClear = withDefault(props.enableClear, false),
+            textAlign = withDefault(props.textAlign, 'left'),
+            leftIcon = withDefault(props.leftIcon, null),
+            rightIcon = withDefault(props.rightIcon, Icon.calendar()),
+            isOpen = model.popoverOpen && !props.disabled;
 
-    return div({
-        className,
-        items: [
-            leftIcon,
-            singleDatePicker({
-                date: value,
-                focused: isOpen,
-                onFocusChange: ({focused}) => model.setPopoverOpen(focused),
-                onDateChange: date => model.onDateChange(date),
-                initialVisibleMonth: () => model.initialMonth,
-                isOutsideRange: date => model.isOutsideRange(date),
-                withPortal: true,
-                noBorder: true,
-                numberOfMonths: 1,
-                displayFormat: model.getFormat(),
-                showClearDate: enableClear,
-                placeholder: props.placeholder,
+        return div({
+            className,
+            items: [
+                leftIcon,
+                singleDatePicker({
+                    date: value,
+                    focused: isOpen,
+                    onFocusChange: ({focused}) => model.setPopoverOpen(focused),
+                    onDateChange: date => model.onDateChange(date),
+                    initialVisibleMonth: () => model.initialMonth,
+                    isOutsideRange: date => model.isOutsideRange(date),
+                    withPortal: true,
+                    noBorder: true,
+                    numberOfMonths: 1,
+                    displayFormat: model.getFormat(),
+                    showClearDate: enableClear,
+                    placeholder: props.placeholder,
 
-                ...props.singleDatePickerProps
-            }),
-            rightIcon
-        ],
-        style: {
-            ...props.style,
-            ...layoutProps,
-            textAlign
-        },
-        ref
-    });
-});
+                    ...props.singleDatePickerProps
+                }),
+                rightIcon
+            ],
+            style: {
+                ...props.style,
+                ...layoutProps,
+                textAlign
+            },
+            ref
+        });
+    }
+);

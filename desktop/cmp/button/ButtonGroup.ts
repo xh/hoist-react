@@ -19,8 +19,8 @@ import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {SetOptional} from 'type-fest';
 
-export interface ButtonGroupProps<M extends HoistModel = null>
-    extends HoistProps<M>,
+export interface ButtonGroupProps<M extends HoistModel = never>
+    extends HoistProps<M, HTMLDivElement>,
         LayoutProps,
         StyleProps,
         TestSupportProps,
@@ -56,7 +56,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
                 ...layoutProps
             },
             ref,
-            ...rest
+            ...(rest as BpButtonGroupProps)
         });
     }
 });

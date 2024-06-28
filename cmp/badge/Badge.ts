@@ -5,14 +5,14 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistPropsWithRef, Intent} from '@xh/hoist/core';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {merge} from 'lodash';
 import './Badge.scss';
 
-export interface BadgeProps extends HoistProps, BoxProps {
+export interface BadgeProps extends HoistPropsWithRef<HTMLDivElement>, BoxProps {
     /** Sets fontsize to half that of parent element (default false). */
     compact?: boolean;
 

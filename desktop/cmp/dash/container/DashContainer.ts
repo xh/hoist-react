@@ -22,7 +22,9 @@ import './DashContainer.scss';
 import {DashContainerModel} from './DashContainerModel';
 import {dashContainerAddViewButton} from './impl/DashContainerContextMenu';
 
-export type DashContainerProps = HoistProps<DashContainerModel> & TestSupportProps;
+export interface DashContainerProps
+    extends HoistProps<DashContainerModel, HTMLDivElement>,
+        TestSupportProps {}
 
 /**
  * Display a set of child components in accordance with a DashContainerModel.

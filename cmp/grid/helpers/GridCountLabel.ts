@@ -5,12 +5,12 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {box} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, useContextModel} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistPropsWithRef, useContextModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {logError, pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
 import {GridModel} from '../GridModel';
 
-export interface GridCountLabelProps extends HoistProps, BoxProps {
+export interface GridCountLabelProps extends HoistPropsWithRef<HTMLDivElement>, BoxProps {
     /** GridModel to which this component should bind. */
     gridModel?: GridModel;
 
@@ -39,13 +39,16 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLa
     displayName: 'GridCountLabel',
     className: 'xh-grid-count-label',
 
-    render({
-        gridModel,
-        includeChildren = false,
-        showSelectionCount = 'auto',
-        unit = 'record',
-        ...props
-    }) {
+    render(
+        {
+            gridModel,
+            includeChildren = false,
+            showSelectionCount = 'auto',
+            unit = 'record',
+            ...props
+        },
+        ref
+    ) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
         if (!gridModel) {
@@ -77,7 +80,8 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLa
 
         return box({
             ...props,
-            item: `${recCountString()} ${selCountString()}`
+            item: `${recCountString()} ${selCountString()}`,
+            ref
         });
     }
 });

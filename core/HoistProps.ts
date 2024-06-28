@@ -9,15 +9,17 @@ import {Property} from 'csstype';
 import {CSSProperties, HTMLAttributes, LegacyRef, ReactNode, Ref} from 'react';
 
 /**
- * Props interface for Hoist Components.
+ * Props interfaces for Hoist Components.
  *
- * This interface brings in additional properties that are added to the props
+ * These interfaces bring in additional properties that are added to the props
  * collection by HoistComponent.
  */
-export interface HoistProps<M extends HoistModel = HoistModel> {
+export type HoistPropsWithModel<M extends HoistModel = HoistModel> = HoistProps<M>;
+export type HoistPropsWithRef<R> = HoistProps<never, R>;
+export interface HoistProps<M extends HoistModel = never, R = never> {
     /**
      * Associated HoistModel for this Component.  Depending on the component, may be specified as
-     * an instance of a HoistModel, or a configuration object to create one, or left undefined.
+     * an instance of a HoistModel or left undefined.
      * HoistComponent will resolve (i.e. lookup in context or create if needed) a concrete Model
      * instance and provide it to the Render method of the component.
      */
@@ -28,12 +30,12 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
      * when first mounted.  Should be used only on a component that specifies the 'uses()' directive
      * with the `createFromConfig` set as true. See the `uses()` directive for more information.
      */
-    modelConfig?: M extends null ? never : M['config'];
+    modelConfig?: M extends never ? never : M['config'];
 
     /**
      * Used for gaining a reference to the model of a HoistComponent.
      */
-    modelRef?: M extends null ? never : Ref<M>;
+    modelRef?: M extends never ? never : Ref<M>;
 
     /**
      * ClassName for the component.  Includes the classname as provided in props, enhanced with
@@ -45,8 +47,25 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
     children?: ReactNode;
 
     /** React Ref for this component. */
-    ref?: LegacyRef<any>;
+    ref?: R extends never ? never : LegacyRef<R>;
 }
+
+/** Infer the Model type from a HoistProps type. */
+export type ModelTypeOf<T extends HoistProps<any, any>> = T extends never
+    ? never
+    : T extends HoistProps<infer M, any>
+      ? M
+      : never;
+
+/** Infer the Ref type from a HoistProps type. */
+export type RefTypeOf<T extends HoistProps<any, any>> =
+    T extends HoistProps<any, infer R> ? R : never;
+
+/** Extract all non-model and non-ref props from a HoistProps type. */
+export type WithoutModelAndRef<T extends HoistProps<any, any>> = Omit<
+    T,
+    'model' | 'modelRef' | 'modelConfig' | 'ref'
+>;
 
 /**
  * A version of Hoist props that allows dynamic keys/properties.   This is the interface that
@@ -56,7 +75,7 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
  * props API.
  */
 
-export interface DefaultHoistProps<M extends HoistModel = HoistModel> extends HoistProps<M> {
+export interface DefaultHoistProps<M extends HoistModel, R = never> extends HoistProps<M, R> {
     [x: string]: any;
 }
 

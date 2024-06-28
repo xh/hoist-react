@@ -5,10 +5,10 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {
-    DefaultHoistProps,
     elementFactory,
     hoistCmp,
     HoistProps,
+    PlainObject,
     TestSupportProps,
     uses
 } from '@xh/hoist/core';
@@ -21,7 +21,7 @@ import {FormModel} from './FormModel';
 /** @internal */
 export interface FormContextType {
     /** Defaults props to be applied to contained fields. */
-    fieldDefaults?: Partial<BaseFormFieldProps> & DefaultHoistProps;
+    fieldDefaults?: Partial<BaseFormFieldProps> & PlainObject;
 
     /** Reference to associated FormModel. */
     model?: FormModel;
@@ -44,7 +44,7 @@ export interface FormProps extends HoistProps<FormModel>, TestSupportProps {
      * Defaults for certain props on child/nested FormFields.
      * @see FormField (note there are both desktop and mobile implementations).
      */
-    fieldDefaults?: Partial<BaseFormFieldProps> & DefaultHoistProps;
+    fieldDefaults?: Partial<BaseFormFieldProps> & PlainObject;
 }
 
 /**

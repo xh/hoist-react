@@ -6,7 +6,7 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp, LayoutProps, PlainObject, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
@@ -14,7 +14,10 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {Ref} from 'react';
 import './TextArea.scss';
 
-export interface TextAreaProps extends HoistProps, HoistInputProps, LayoutProps, StyleProps {
+export interface TextAreaProps
+    extends HoistInputProps<HTMLTextAreaElement>,
+        LayoutProps,
+        StyleProps {
     value?: string;
 
     /** True to focus the control on render. */
@@ -54,7 +57,7 @@ export const [TextArea, textArea] = hoistCmp.withFactory<TextAreaProps>({
 //-----------------------
 // Implementation
 //-----------------------
-class TextAreaInputModel extends HoistInputModel {
+class TextAreaInputModel extends HoistInputModel<HTMLTextAreaElement> {
     override xhImpl = true;
 
     override get commitOnChange() {
@@ -78,8 +81,12 @@ class TextAreaInputModel extends HoistInputModel {
     };
 }
 
-const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, ref) => {
-    const {width, height, flex, ...layoutProps} = getLayoutProps(props);
+// Note: we don't use the `ref` here, but the presence of a second argument is required
+// for the component to be wrapped with React.forwardRef, which is necessary since
+// `useHoistInputModel` always passes a ref to the component, even if it's not used.
+const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...rest}, ref) => {
+    const props = rest as PlainObject,
+        {width, height, flex, ...layoutProps} = getLayoutProps(props);
 
     return bpTextarea({
         value: model.renderValue || '',
@@ -103,7 +110,6 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
         onBlur: model.onBlur,
         onChange: model.onChange,
         onFocus: model.onFocus,
-        onKeyDown: model.onKeyDown,
-        ref
+        onKeyDown: model.onKeyDown
     });
 });

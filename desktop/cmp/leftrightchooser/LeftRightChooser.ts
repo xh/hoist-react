@@ -14,7 +14,9 @@ import './LeftRightChooser.scss';
 import {LeftRightChooserModel} from './LeftRightChooserModel';
 import {cloneDeep} from 'lodash';
 
-export interface LeftRightChooserProps extends HoistProps<LeftRightChooserModel>, BoxProps {}
+export interface LeftRightChooserProps
+    extends HoistProps<LeftRightChooserModel, HTMLDivElement>,
+        BoxProps {}
 
 /**
  * A component for moving a list of items between two arbitrary groups. By convention, the left

@@ -17,14 +17,19 @@
 
 ## 65.0.0 - 2024-06-26
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies and renamed component prop)
 
 * Requires update to `hoist-dev-utils >= v9.0.0` with updated handling of static/public assets.
   This should be a drop-in change for applications.
+* `RefreshButton` component `model` prop renamed to `target`.
 
 ### 🎁 New Features
 
 * Enhanced `markdown` component to support GitHub Flavored Markdown (GFM) syntax.
+
+### 🐞 Bug Fixes
+
+* Fix bug where `model` passed to `RelativeTimestamp` was being ignored.
 
 ### ✨ Styles
 
@@ -38,6 +43,10 @@
 * Added new convenience method `XH.renderAdminApp()` - consider replacing the call within your
   project's `src/apps/admin.ts` file with this new method and removing any duplicate config values
   if the defaults introduced here are suitable for your application's Hoist Admin console.
+* Typescript: Overall type improvements and cleanup. Note: `AppConfigs` with `model: false` will
+  need to specify a `null` model type in the generic argument to `hoistCmp`, `hoistCmp.factory` or
+  `hoistCmp.withFactory` to avoid a type error. Additionally, prop types for components passed to
+  `elementFactory` are now inferred from the component itself where possible.
 
 ### 📚 Libraries
 

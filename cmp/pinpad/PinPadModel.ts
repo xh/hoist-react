@@ -27,7 +27,7 @@ export class PinPadModel extends HoistModel {
     @bindable subHeaderText: string;
     @bindable errorText: string;
 
-    ref = createObservableRef();
+    ref = createObservableRef<HTMLDivElement>();
 
     @observable
     private _enteredDigits: number[];

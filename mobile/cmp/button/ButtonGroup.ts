@@ -5,13 +5,13 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {hbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, Intent, XH} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistPropsWithRef, Intent, XH} from '@xh/hoist/core';
 import {Button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {Children, cloneElement, isValidElement} from 'react';
 import './ButtonGroup.scss';
 
-export interface ButtonGroupProps extends HoistProps, BoxProps {
+export interface ButtonGroupProps extends HoistPropsWithRef<HTMLDivElement>, BoxProps {
     intent?: Intent;
     minimal?: boolean;
     outlined?: boolean;

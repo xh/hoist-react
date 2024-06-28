@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {div, filler, frame, hbox, p} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistModel, HoistProps} from '@xh/hoist/core';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {isNil, isString} from 'lodash';
@@ -13,7 +13,9 @@ import {isValidElement, ReactNode} from 'react';
 import './ErrorMessage.scss';
 import {Icon} from '@xh/hoist/icon';
 
-export interface ErrorMessageProps extends HoistProps, Omit<BoxProps, 'title'> {
+export interface ErrorMessageProps
+    extends HoistProps<HoistModel, HTMLDivElement>,
+        Omit<BoxProps, 'title'> {
     /**
      * If provided, will render a "Retry" button that calls this function.
      * Use `actionButtonProps` for further control over this button.

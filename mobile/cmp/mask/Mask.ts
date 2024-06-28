@@ -6,13 +6,20 @@
  */
 import {box, div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {hoistCmp, HoistModel, HoistProps, Some, TaskObserver, useLocalModel} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistModel,
+    HoistPropsWithRef,
+    Some,
+    TaskObserver,
+    useLocalModel
+} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import {ReactNode, MouseEvent} from 'react';
 import './Mask.scss';
 
-export interface MaskProps extends HoistProps {
+export interface MaskProps extends HoistPropsWithRef<HTMLDivElement> {
     /** Task(s) that should be monitored to determine if the mask should be displayed. */
     bind?: Some<TaskObserver>;
     /** True to display the mask. */

@@ -22,7 +22,7 @@ import {Timer} from '@xh/hoist/utils/async';
 import {DAYS, HOURS, LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {logWarn, withDefault} from '@xh/hoist/utils/js';
 
-interface RelativeTimestampProps extends HoistProps, BoxProps {
+interface RelativeTimestampProps extends HoistProps<HoistModel, HTMLDivElement>, BoxProps {
     /**
      * Property on context model containing timestamp.
      * Specify as an alternative to direct `timestamp` prop (and minimize parent re-renders).
@@ -91,7 +91,7 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<Relat
     displayName: 'RelativeTimestamp',
     className: 'xh-relative-timestamp',
 
-    render({className, bind, timestamp, options, ...rest}, ref) {
+    render({className, model, bind, timestamp, options, ...rest}, ref) {
         const impl = useLocalModel(RelativeTimestampLocalModel);
 
         return box({
@@ -121,8 +121,9 @@ class RelativeTimestampLocalModel extends HoistModel {
     });
 
     get timestamp(): Date | number {
-        const {model} = this,
-            {timestamp, bind} = this.componentProps;
+        const {componentProps} = this,
+            {timestamp, bind} = componentProps,
+            model = componentProps.model ?? this.model;
         return withDefault(timestamp, model && bind ? model[bind] : null);
     }
 

@@ -7,20 +7,19 @@
 
 import {grid} from '@xh/hoist/cmp/grid';
 import {fragment} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, PlainObject, Some, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, PlainObject, Some, uses, WithoutModelAndRef} from '@xh/hoist/core';
 import {MaskProps} from '@xh/hoist/desktop/cmp/mask';
 import {panel, PanelProps} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
 import {getTestId} from '@xh/hoist/utils/js';
 import {cloneElement, isValidElement, ReactElement, ReactNode} from 'react';
-
 import {restForm} from './impl/RestForm';
 import {restGridToolbar} from './impl/RestGridToolbar';
 import {RestGridModel} from './RestGridModel';
 
 export interface RestGridProps
-    extends HoistProps<RestGridModel>,
-        Omit<PanelProps, 'model' | 'modelConfig' | 'modelRef'> {
+    extends HoistProps<RestGridModel, HTMLDivElement>,
+        WithoutModelAndRef<PanelProps> {
     /**
      * This constitutes an 'escape hatch' for applications that need to get to the underlying
      * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or

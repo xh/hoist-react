@@ -28,10 +28,10 @@ export const [ErrorBoundary, errorBoundary] = hoistCmp.withFactory<ErrorBoundary
         publishMode: 'limited'
     }),
 
-    render({model, ...props}) {
+    render({model, children}) {
         let {error, errorRenderer} = model;
 
-        if (!error) return reactErrorBoundary({model, ...props});
+        if (!error) return reactErrorBoundary({model, children});
         if (errorRenderer) return errorRenderer(error);
 
         const cmp = XH.isMobileApp ? mobileErrorMessage : desktopErrorMessage;
