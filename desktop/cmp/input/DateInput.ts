@@ -4,8 +4,10 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {PopperBoundary, PopperModifierOverrides} from '@blueprintjs/core';
+import {PopperModifierOverrides} from '@blueprintjs/core';
 import {TimePickerProps} from '@blueprintjs/datetime';
+import {ReactDayPickerSingleProps} from '@blueprintjs/datetime2/src/common/reactDayPickerProps';
+import type {RootBoundary} from '@popperjs/core';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, HSide, LayoutProps, Some} from '@xh/hoist/core';
@@ -23,15 +25,14 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {assign, castArray, clone, trim} from 'lodash';
 import moment from 'moment';
-import {createRef, ReactElement, ReactNode} from 'react';
-import {DayPickerProps} from 'react-day-picker';
+import {createRef, JSX, ReactElement} from 'react';
 import './DateInput.scss';
 
 export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps {
     value?: Date | LocalDate;
 
     /** Props passed to ReactDayPicker component, as per DayPicker docs. */
-    dayPickerProps?: DayPickerProps;
+    dayPickerProps?: ReactDayPickerSingleProps['dayPickerProps'];
 
     /** Enable using the DatePicker popover. Default true. */
     enablePicker?: boolean;
@@ -71,7 +72,7 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
      * Element to display inline on the right side of the input. Note if provided, this will
      * take the place of the (default) calendar-picker button and (optional) clear button.
      */
-    rightElement?: ReactNode;
+    rightElement?: JSX.Element;
 
     /**
      * Maximum (inclusive) valid date that can be entered by the user via the calendar picker or
@@ -101,8 +102,8 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
      */
     popoverPosition?: Position;
 
-    /** Boundary for calendar popover, as per Popper.js docs. Defaults to viewport. */
-    popoverBoundary?: PopperBoundary;
+    /** Root boundary for calendar popover, as per Popper.js docs. Defaults to viewport. */
+    popoverBoundary?: RootBoundary;
 
     /** Modifiers for calendar popover, as per Blueprint docs. Defaults to null */
     popoverModifiers?: PopperModifierOverrides;
@@ -439,7 +440,7 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
                 enforceFocus: false,
                 modifiers: props.popoverModifiers,
                 position: props.popoverPosition ?? 'auto',
-                boundary: props.popoverBoundary ?? 'viewport',
+                rootBoundary: props.popoverBoundary ?? 'viewport',
                 portalContainer: props.portalContainer ?? document.body,
                 popoverRef: model.popoverRef,
                 onClose: model.onPopoverClose,

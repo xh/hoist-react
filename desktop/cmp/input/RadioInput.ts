@@ -88,6 +88,7 @@ class RadioInputModel extends HoistInputModel {
     }
 }
 
+// Note: we don't use the `ref` here, but the presence of a second argument is required.
 const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref) => {
     const {normalizedOptions} = model,
         labelSide = withDefault(props.labelSide, 'right');
@@ -112,7 +113,6 @@ const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref
         inline: props.inline,
         selectedValue: model.renderValue,
         onChange: model.onChange,
-        testId: props.testId,
-        ref
+        [TEST_ID]: props.testId
     });
 });

@@ -39,7 +39,6 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory<DateEditorProps>({
                 enablePicker: !!portalContainer,
                 showPickerOnFocus: !!portalContainer,
                 portalContainer,
-                popoverBoundary: 'clippingParents',
                 ...props.inputProps
             }
         };

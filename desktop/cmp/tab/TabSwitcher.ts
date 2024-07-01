@@ -101,7 +101,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                 item: bpTooltip({
                     content: tooltip,
                     disabled: !tooltip,
-                    boundary: 'viewport',
+                    rootBoundary: 'viewport',
                     hoverOpenDelay: 1000,
                     position: flipOrientation(orientation),
                     item: hframe({
@@ -142,7 +142,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                         animate,
                         items,
                         selectedTabId: activeTabId,
-                        onChange: tabId => model.activateTab(tabId)
+                        onChange: tabId => model.activateTab(tabId as string)
                     }),
                     onKeyDown: e => impl.onKeyDown(e)
                 }),
