@@ -27,14 +27,6 @@ import {ReactNode} from 'react';
  */
 export class HoistAppModel extends HoistModel {
     /**
-     * Hoist will call this method early in the initialization sequence, prior to user
-     * authentication and full Hoist initialization. This means that several core services
-     * (identity, configs, prefs) will *not* be available, but it provides the app a hook to
-     * do early service initialization or other work to support flows such as OAuth.
-     */
-    static async preAuthAsync() {}
-
-    /**
      * Hoist will call this method after Hoist services have initialized and the application
      * has mounted. Use to trigger initialization of the app and any app-specific services.
      *
@@ -44,15 +36,14 @@ export class HoistAppModel extends HoistModel {
     async initAsync() {}
 
     /**
-     * Called by {@link IdentityService.logoutAsync} to provide an app-specific hook after
-     * logging out an authenticated user. Applicable only to apps that generally support
-     * logout and require handling in addition to Hoist server logout.
+     * Called by Hoist as an app-specific hook after logging out an authenticated user. Applicable
+     * only to apps that generally support logout and require handling in addition to Hoist server logout.
      */
     async logoutAsync() {}
 
     /**
      * Should the version bar be shown in this application?.
-     * Applications  for which  a version bar might not be appropriate (e.g. a mini-app
+     * Applications for which a version bar might not be appropriate (e.g. a mini-app
      * being shown in a frame or modal) may override this getter and return false
      */
     get supportsVersionBar(): boolean {

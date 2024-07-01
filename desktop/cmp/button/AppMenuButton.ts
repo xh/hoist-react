@@ -169,7 +169,7 @@ function buildMenuItems(props: AppMenuButtonProps) {
             text: 'Logout',
             icon: Icon.logout(),
             intent: 'danger',
-            actionFn: () => XH.identityService.logoutAsync()
+            actionFn: () => XH.logoutAsync()
         }
     ];
 
