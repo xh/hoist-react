@@ -88,9 +88,7 @@ class RadioInputModel extends HoistInputModel {
     }
 }
 
-// Note: we don't use the `ref` here, but the presence of a second argument is required
-// for the component to be wrapped with React.forwardRef, which is necessary since
-// `useHoistInputModel` always passes a ref to the component, even if it's not used.
+// Note: we don't use the `ref` here, but the presence of a second argument is required.
 const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref) => {
     const {normalizedOptions} = model,
         labelSide = withDefault(props.labelSide, 'right');

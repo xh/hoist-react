@@ -473,7 +473,7 @@ const inputCmp = hoistCmp.factory<CodeInputModel>(({model, ...props}, ref) =>
                 className: 'xh-code-input__inner-wrapper',
                 item: textArea({
                     value: model.renderValue || '',
-                    inputRef: model.manageCodeEditor, // TODO - confirm this is correct change
+                    inputRef: model.manageCodeEditor,
                     onChange: model.onChange
                 })
             }),

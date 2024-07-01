@@ -40,7 +40,7 @@ import {PlainObject, Some, Thunkable} from './types/Types';
  * with this API.  The '$' will be stripped from the prop name before passing it along to the
  * underlying component.
  */
-export type ElementSpec<P> = P & {
+export type ElementSpec<P> = Omit<P, 'items' | 'item' | 'omit'> & {
     //---------------------------------------------
     // Enhanced attributes to support element factory
     //---------------------------------------------
@@ -65,13 +65,11 @@ export type ElementSpec<P> = P & {
      * Hoist components accept and should use.
      */
     [TEST_ID]?: string;
-
+} & {
     //----------------------------
     // Technical -- Escape support
     //----------------------------
-    $items?: any;
-    $item?: any;
-    $omit?: any;
+    [K in keyof P & ('items' | 'item' | 'omit') as `$${K}`]?: P[K];
 };
 
 /**

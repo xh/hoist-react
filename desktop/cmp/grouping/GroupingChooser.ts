@@ -164,7 +164,7 @@ const dimensionList = hoistCmp.factory<GroupingChooserModel>({
             onDragEnd: result => model.onDragEnd(result),
             item: droppable({
                 droppableId: 'dimension-list',
-                item: dndProps =>
+                children: dndProps =>
                     div({
                         ref: dndProps.innerRef,
                         className: 'xh-grouping-chooser__list',
@@ -189,7 +189,7 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
             key: dimension,
             draggableId: dimension,
             index: idx,
-            item: (dndProps, dndState) => {
+            children: (dndProps, dndState) => {
                 // Because the popover uses css transforms to position itself,
                 // we need to adjust the draggable's transform to account for this.
                 //
