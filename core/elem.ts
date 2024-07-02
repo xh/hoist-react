@@ -65,11 +65,13 @@ export type ElementSpec<P> = Omit<P, 'items' | 'item' | 'omit'> & {
      * Hoist components accept and should use.
      */
     [TEST_ID]?: string;
-} & {
+
     //----------------------------
     // Technical -- Escape support
     //----------------------------
-    [K in keyof P & ('items' | 'item' | 'omit') as `$${K}`]?: P[K];
+    $items?: 'items' extends keyof P ? P['items'] : never;
+    $item?: 'item' extends keyof P ? P['item'] : never;
+    $omit?: 'omit' extends keyof P ? P['omit'] : never;
 };
 
 /**

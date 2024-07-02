@@ -25,7 +25,7 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {assign, castArray, clone, trim} from 'lodash';
 import moment from 'moment';
-import {createRef, JSX, ReactElement} from 'react';
+import {createRef, ReactElement, ReactNode} from 'react';
 import './DateInput.scss';
 
 export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps {
@@ -72,7 +72,7 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
      * Element to display inline on the right side of the input. Note if provided, this will
      * take the place of the (default) calendar-picker button and (optional) clear button.
      */
-    rightElement?: JSX.Element;
+    rightElement?: ReactNode;
 
     /**
      * Maximum (inclusive) valid date that can be entered by the user via the calendar picker or
@@ -476,7 +476,7 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
                         onCommit: model.onInputCommit,
                         onChange: model.onInputChange,
                         onKeyDown: model.onInputKeyDown,
-                        rightElement,
+                        rightElement: rightElement as ReactElement,
                         disabled: disabled || !enableTextInput,
                         leftIcon: props.leftIcon,
                         tabIndex: props.tabIndex,

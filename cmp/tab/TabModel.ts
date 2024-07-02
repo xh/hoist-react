@@ -19,7 +19,6 @@ import {action, computed, observable, makeObservable, bindable} from '@xh/hoist/
 import {throwIf} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 import {TabContainerModel} from '@xh/hoist/cmp/tab/TabContainerModel';
-import {JSX} from 'react';
 import {ReactElement, ReactNode} from 'react';
 
 export interface TabConfig {
@@ -39,7 +38,7 @@ export interface TabConfig {
     icon?: ReactElement;
 
     /** Tooltip for the Tab in the container's TabSwitcher. */
-    tooltip?: JSX.Element | string;
+    tooltip?: ReactNode;
 
     /** True to disable this tab in the TabSwitcher and block routing. */
     disabled?: boolean;
@@ -86,7 +85,7 @@ export class TabModel extends HoistModel {
     id: string;
     @bindable.ref title: ReactNode;
     @bindable.ref icon: ReactElement;
-    @bindable.ref tooltip: JSX.Element | string;
+    @bindable.ref tooltip: ReactNode;
     @observable disabled: boolean;
     @bindable excludeFromSwitcher: boolean;
     showRemoveAction: boolean;
