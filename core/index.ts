@@ -19,6 +19,7 @@ export * from './HoistProps';
 export * from './HoistComponent';
 export * from './RefreshContextView';
 export * from './HoistAppModel';
+export * from './HoistAuthModel';
 
 export * from './exception/ExceptionHandler';
 export * from './exception/Exception';

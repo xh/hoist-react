@@ -15,13 +15,13 @@ export type LogoutButtonProps = ButtonProps;
  * Convenience Button preconfigured for use as a trigger for a logout operation.
  *
  * An onClick handler can be provided to implement additional operations on logout,
- * but should ensure it calls `XH.identityService.logoutAsync()`.
+ * but should ensure it calls `XH.logoutAsync()`.
  */
 export const [LogoutButton, logoutButton] = hoistCmp.withFactory<LogoutButtonProps>({
     displayName: 'LogoutButton',
     model: false,
 
-    render({icon = Icon.logout(), onClick = () => XH.identityService.logoutAsync(), ...props}) {
+    render({icon = Icon.logout(), onClick = () => XH.logoutAsync(), ...props}) {
         if (!XH.appSpec.enableLogout) return null;
         return button({icon, onClick, ...props});
     }

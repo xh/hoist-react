@@ -6,6 +6,15 @@
 
 * New option for `XH.reloadApp` to reload specific app path
 
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM)
+* New `HoistAuthModel` consolidates and exposes the client-side authentication lifecycle in a single
+overridable API. This new API provides more easy customization of auth across all client-side
+apps by being easily overrideable and installed on the AppSpec.  In most cases, upgrade should be a
+simple matter of moving code from `HoistAppModel.preInitAsync()` and `HoistAppModel.logoutAsync()`
+(now removed) to new overrides of `HoistAuthModel.completeAuthAsync()` and `HoistAuthModel.logoutAsync()`.
+See `HoistAuthModel` for more info.
+
+
 ### 🐞 Bug Fixes
 
 * Updated `.xh-viewport` sizing styles and mobile `dialog` sizing to use `dvw/dvh` instead of prior
