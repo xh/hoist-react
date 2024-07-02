@@ -101,7 +101,6 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                 item: bpTooltip({
                     content: tooltip as ReactElement,
                     disabled: !tooltip,
-                    rootBoundary: 'viewport',
                     hoverOpenDelay: 1000,
                     position: flipOrientation(orientation),
                     item: hframe({

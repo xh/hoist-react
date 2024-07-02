@@ -4,10 +4,9 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {PopperModifierOverrides} from '@blueprintjs/core';
+import {PopperBoundary, PopperModifierOverrides} from '@blueprintjs/core';
 import {TimePickerProps} from '@blueprintjs/datetime';
 import {ReactDayPickerSingleProps} from '@blueprintjs/datetime2/src/common/reactDayPickerProps';
-import type {RootBoundary} from '@popperjs/core';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, HSide, LayoutProps, Some} from '@xh/hoist/core';
@@ -102,8 +101,8 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
      */
     popoverPosition?: Position;
 
-    /** Root boundary for calendar popover, as per Popper.js docs. Defaults to viewport. */
-    popoverBoundary?: RootBoundary;
+    /** Boundary for calendar popover, as per Popper.js docs. Defaults to viewport. */
+    popoverBoundary?: PopperBoundary;
 
     /** Modifiers for calendar popover, as per Blueprint docs. Defaults to null */
     popoverModifiers?: PopperModifierOverrides;
@@ -440,7 +439,7 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
                 enforceFocus: false,
                 modifiers: props.popoverModifiers,
                 position: props.popoverPosition ?? 'auto',
-                rootBoundary: props.popoverBoundary ?? 'viewport',
+                boundary: props.popoverBoundary ?? 'clippingParents',
                 portalContainer: props.portalContainer ?? document.body,
                 popoverRef: model.popoverRef,
                 onClose: model.onPopoverClose,

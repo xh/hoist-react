@@ -38,7 +38,6 @@ export const columnHeaderFilter = hoistCmp.factory({
             ),
             popoverClassName: 'xh-popup--framed',
             position: 'right-top',
-            rootBoundary: 'viewport',
             hasBackdrop: true,
             interactionKind: 'click',
             onInteraction: open => {

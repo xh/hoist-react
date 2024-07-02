@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {MenuItemProps} from '@blueprintjs/core';
-import {hoistCmp, MenuItemLike, MenuItem, XH, ElementSpec} from '@xh/hoist/core';
+import {hoistCmp, MenuItemLike, MenuItem, XH} from '@xh/hoist/core';
 import {ButtonProps, button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -197,7 +197,7 @@ function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
             const {actionFn} = item;
 
             // Create menuItem from config
-            const cfg: ElementSpec<MenuItemProps> = {
+            const cfg: MenuItemProps = {
                 text: item.text,
                 icon: item.icon,
                 intent: item.intent,
@@ -208,7 +208,7 @@ function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
 
             // Recursively parse any submenus
             if (!isEmpty(item.items)) {
-                cfg.items = parseMenuItems(item.items);
+                cfg.children = parseMenuItems(item.items);
                 cfg.popoverProps = {openOnTargetFocus: false};
             }
 
