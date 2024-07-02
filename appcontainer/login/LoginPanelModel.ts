@@ -40,7 +40,7 @@ export class LoginPanelModel extends HoistModel {
         try {
             this.loginInProgress = true;
             const success = await XH.authModel
-                .loginFromFormAsync(username, password)
+                .loginWithCredentialsAsync(username, password)
                 .linkTo(loginTask)
                 .catchDefault({
                     hideParams: ['password']

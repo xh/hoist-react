@@ -36,12 +36,6 @@ export class HoistAppModel extends HoistModel {
     async initAsync() {}
 
     /**
-     * Called by Hoist as an app-specific hook after logging out an authenticated user. Applicable
-     * only to apps that generally support logout and require handling in addition to Hoist server logout.
-     */
-    async logoutAsync() {}
-
-    /**
      * Should the version bar be shown in this application?.
      * Applications for which a version bar might not be appropriate (e.g. a mini-app
      * being shown in a frame or modal) may override this getter and return false

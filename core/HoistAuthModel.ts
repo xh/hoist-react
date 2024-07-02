@@ -56,7 +56,7 @@ export class HoistAuthModel extends HoistModel {
      *
      * Return true if user is successfully logged in, otherwise false.
      */
-    async loginFromFormAsync(username: string, password: string): Promise<boolean> {
+    async loginWithCredentialsAsync(username: string, password: string): Promise<boolean> {
         const resp = await XH.fetchJson({
             url: 'xh/login',
             params: {username, password}

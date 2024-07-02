@@ -336,7 +336,6 @@ export class XHApi {
      */
     async logoutAsync(): Promise<void> {
         await this.authModel?.logoutAsync();
-        await this.appModel?.logoutAsync();
         this.reloadApp();
     }
 
