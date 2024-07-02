@@ -27,12 +27,13 @@ export class HoistAuthModel extends HoistModel {
      *
      * It should return true if the user could be successfully authenticated, false if the user
      * is not authenticated, and throw in the case of technical failure. If false is returned and
-     * `AppSpec.enableLoginForm` is true the framework will enter the 'loginRequired' state and
-     * show the user a *manual* login form.
+     * `AppSpec.enableLoginForm` is true the framework will enter the 'LOGIN_REQUIRED' state and
+     * show the user a secure login form with username and password fields to be submitted securely
+     * to the server.
      *
-     *  The default implementation of this method simply checks the auth status on the server, which
-     *  may be appropriate for fully SSO (e.g. NTLM) based solutions.  Override to consult or
-     *  initialize third-party client resources such as OAuth.
+     * The default implementation of this method simply checks the auth status on the server, which
+     * may be appropriate for fully SSO (e.g. NTLM) based solutions.  Override to consult or
+     * initialize third-party client resources such as OAuth.
      */
     async completeAuthAsync(): Promise<boolean> {
         return this.getAuthStatusFromServerAsync();
