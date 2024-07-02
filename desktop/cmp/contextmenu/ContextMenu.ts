@@ -38,8 +38,8 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>
     observer: false,
 
     render({menuItems}) {
-        menuItems = parseItems(menuItems);
-        return isEmpty(menuItems) ? null : menu(menuItems);
+        const items = parseItems(menuItems);
+        return isEmpty(items) ? null : menu(items);
     }
 });
 

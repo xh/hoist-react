@@ -38,6 +38,8 @@
 * Added new convenience method `XH.renderAdminApp()` - consider replacing the call within your
   project's `src/apps/admin.ts` file with this new method and removing any duplicate config values
   if the defaults introduced here are suitable for your application's Hoist Admin console.
+* Prop types for components passed to `elementFactory` and `createElement` are now inferred from the
+  component itself where possible.
 
 ### 📚 Libraries
 
