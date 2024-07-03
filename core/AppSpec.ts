@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {XH, HoistAppModel, ElementFactory, HoistProps} from '@xh/hoist/core';
+import {XH, HoistAppModel, HoistAuthModel, ElementFactory, HoistProps} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil, isString} from 'lodash';
 import {Component, ComponentClass, FunctionComponent} from 'react';
@@ -35,6 +35,12 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
      * to the class itself, not an instance, and must extend {@link HoistAppModel}.
      */
     modelClass: new () => T;
+
+    /**
+     * AuthModel class for the application.  Note this is a reference to
+     * the class itself, not an instance, and must extend {@link HoistAuthModel}.
+     */
+    authModelClass?: new () => HoistAuthModel;
 
     /**
      * Root HoistComponent for the application. Despite the name,
@@ -120,6 +126,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         modelClass,
         componentClass,
         containerClass,
+        authModelClass = HoistAuthModel,
         isMobileApp,
         checkAccess,
         enableLoginForm = false,
@@ -154,6 +161,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         this.modelClass = modelClass;
         this.componentClass = componentClass;
         this.containerClass = containerClass;
+        this.authModelClass = authModelClass;
         this.isMobileApp = isMobileApp;
         this.checkAccess = checkAccess;
 
