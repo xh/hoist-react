@@ -15,17 +15,17 @@ import {
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {
     Column,
-    ColumnSpec,
+    ColumnCellClassRuleFn,
     ColumnGroup,
     ColumnGroupSpec,
+    ColumnSpec,
     GridAutosizeMode,
     GridFilterModelConfig,
     GridGroupSortFn,
-    TreeStyle,
-    ColumnCellClassRuleFn
+    TreeStyle
 } from '@xh/hoist/cmp/grid';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
-import {br, fragment} from '@xh/hoist/cmp/layout';
+import {fragment, p} from '@xh/hoist/cmp/layout';
 import {
     Awaitable,
     HoistModel,
@@ -51,12 +51,18 @@ import {
 } from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
-import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {deepFreeze, logWithDebug, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {
+    deepFreeze,
+    executeIfFunction,
+    logWithDebug,
+    throwIf,
+    warnIf,
+    withDefault
+} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
 import {
     castArray,
@@ -84,11 +90,12 @@ import {
     pick,
     pull
 } from 'lodash';
-import {GridPersistenceModel} from './impl/GridPersistenceModel';
-import {GridSorter, GridSorterLike} from './GridSorter';
-import {GridAutosizeOptions} from './GridAutosizeOptions';
-import {managedRenderer} from './impl/Utils';
 import {ReactNode} from 'react';
+import {GridAutosizeOptions} from './GridAutosizeOptions';
+import {GridContextMenuSpec} from './GridContextMenu';
+import {GridSorter, GridSorterLike} from './GridSorter';
+import {GridPersistenceModel} from './impl/GridPersistenceModel';
+import {managedRenderer} from './impl/Utils';
 import {
     AutosizeState,
     ColChooserConfig,
@@ -98,7 +105,6 @@ import {
     RowClassFn,
     RowClassRuleFn
 } from './Types';
-import {GridContextMenuSpec} from './GridContextMenu';
 
 export interface GridConfig {
     /** Columns for this grid. */
@@ -116,7 +122,7 @@ export interface GridConfig {
     /** True if grid is a tree grid (default false). */
     treeMode?: boolean;
 
-    /** Location for a docked summary row. Requires `store.SummaryRecord` to be populated. */
+    /** Location for docked summary row(s). Requires `store.summaryRecords` to be populated. */
     showSummary?: boolean | VSide;
 
     /** Specification of selection behavior. Defaults to 'single' (desktop) and 'disabled' (mobile) */
@@ -342,10 +348,10 @@ export interface GridConfig {
  */
 export class GridModel extends HoistModel {
     static DEFAULT_RESTORE_DEFAULTS_WARNING = fragment(
-        'This action will clear any customizations you have made to this grid, including filters, column selection, ordering, and sizing.',
-        br(),
-        br(),
-        'OK to proceed?'
+        p(
+            'This action will clear any customizations you have made to this grid, including filters, column selection, ordering, and sizing.'
+        ),
+        p('OK to proceed?')
     );
 
     static DEFAULT_AUTOSIZE_MODE: GridAutosizeMode = 'onSizingModeChange';
@@ -625,8 +631,6 @@ export class GridModel extends HoistModel {
     async restoreDefaultsAsync(): Promise<boolean> {
         if (this.restoreDefaultsWarning) {
             const confirmed = await XH.confirm({
-                title: 'Please Confirm',
-                icon: Icon.warning(),
                 message: this.restoreDefaultsWarning,
                 confirmProps: {
                     text: 'Yes, restore defaults',
@@ -872,10 +876,6 @@ export class GridModel extends HoistModel {
         return this.agGridModel.agApi;
     }
 
-    get agColumnApi() {
-        return this.agGridModel.agColumnApi;
-    }
-
     get sizingMode(): SizingMode {
         return this.agGridModel.sizingMode;
     }
@@ -1031,7 +1031,7 @@ export class GridModel extends HoistModel {
     }
 
     /** Load the underlying store. */
-    loadData(rawData: any[], rawSummaryData?: PlainObject) {
+    loadData(rawData: any[], rawSummaryData?: Some<PlainObject>) {
         return this.store.loadData(rawData, rawSummaryData);
     }
 
@@ -1449,7 +1449,7 @@ export class GridModel extends HoistModel {
             config = defaultsDeep({}, config, colDefaults);
         }
 
-        const omit = isFunction(config.omit) ? config.omit() : config.omit;
+        const omit = executeIfFunction(config.omit);
         if (omit) return null;
 
         if (this.isGroupSpec(config)) {
@@ -1802,8 +1802,8 @@ export class GridModel extends HoistModel {
         side: 'left' | 'right',
         group: ColumnGroupSpec
     ): ColumnCellClassRuleFn {
-        return ({api, column, columnApi, ...ctx}) => {
-            if (!api || !column || !columnApi) return false;
+        return ({api, column, ...ctx}) => {
+            if (!api || !column) return false;
 
             // Re-evaluate cell class rules when column is re-ordered
             // See https://www.ag-grid.com/javascript-data-grid/column-object/#reference-events
@@ -1816,7 +1816,7 @@ export class GridModel extends HoistModel {
 
             // Don't render a left-border if col is first or if prev col already has right-border
             if (side === 'left') {
-                const prevCol = columnApi.getDisplayedColBefore(column);
+                const prevCol = api.getDisplayedColBefore(column);
 
                 if (!prevCol) return false;
 
@@ -1828,8 +1828,7 @@ export class GridModel extends HoistModel {
                         ...ctx,
                         api,
                         colDef: prevColDef,
-                        column: prevCol,
-                        columnApi
+                        column: prevCol
                     })
                 ) {
                     return false;

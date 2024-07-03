@@ -38,8 +38,8 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>
     observer: false,
 
     render({menuItems}) {
-        menuItems = parseItems(menuItems);
-        return isEmpty(menuItems) ? null : menu(menuItems);
+        const items = parseItems(menuItems);
+        return isEmpty(items) ? null : menu(items);
     }
 });
 
@@ -70,6 +70,7 @@ function parseItems(items: MenuItemLike[]): ReactNode[] {
                 text: item.text,
                 icon: item.icon,
                 intent: item.intent,
+                className: item.className,
                 onClick: item.actionFn ? () => wait().then(item.actionFn) : null, // do async to allow menu to close
                 disabled: item.disabled,
                 items

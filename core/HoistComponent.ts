@@ -25,7 +25,7 @@ import {
     formatSelector,
     HoistModel
 } from './model';
-import {apiDeprecated, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
@@ -47,15 +47,20 @@ import {
 /**
  * Type representing props passed to a HoistComponent's render function.
  *
- * This type removes from its base type several props that are used by HoistComponent itself and
- * not provided to the render function.
+ * This type removes from its base type several properties that are pulled out by the HoistComponent itself and
+ * not provided to the render function.  `modelConfig` and `modelRef` are resolved into the `model` property.
+ * `ref` is passed as the second argument to the render function.
  */
+
 export type RenderPropsOf<P extends HoistProps> = P & {
     /** Pre-processed by HoistComponent internals into a mounted model.  Never passed to render. */
     modelConfig: never;
 
     /** Pre-processed by HoistComponent internals and attached to model.  Never passed to render. */
     modelRef: never;
+
+    /** Pre-processed by HoistComponent internals and passed as second argument to render. */
+    ref: never;
 };
 
 /**
@@ -395,13 +400,7 @@ function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): 
 
     // 1) props - config
     if (spec.createFromConfig) {
-        if (isPlainObject(model)) {
-            // 1a) legacy, pre-typescript
-            apiDeprecated('model', {msg: "Use 'modelConfig' instead", v: 'v58'});
-            return {model: new selector(model), isLinked: true, fromContext: false};
-        }
         if (isPlainObject(modelConfig)) {
-            // 1b) new location
             return {model: new selector(modelConfig), isLinked: true, fromContext: false};
         }
     }

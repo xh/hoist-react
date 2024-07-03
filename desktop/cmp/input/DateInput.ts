@@ -4,8 +4,9 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {PopperBoundary, PopperModifiers} from '@blueprintjs/core';
-import {ITimePickerProps} from '@blueprintjs/datetime';
+import {PopperBoundary, PopperModifierOverrides} from '@blueprintjs/core';
+import {TimePickerProps} from '@blueprintjs/datetime';
+import {ReactDayPickerSingleProps} from '@blueprintjs/datetime2/src/common/reactDayPickerProps';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, HSide, LayoutProps, Some} from '@xh/hoist/core';
@@ -24,14 +25,13 @@ import classNames from 'classnames';
 import {assign, castArray, clone, trim} from 'lodash';
 import moment from 'moment';
 import {createRef, ReactElement, ReactNode} from 'react';
-import {DayPickerProps} from 'react-day-picker';
 import './DateInput.scss';
 
 export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps {
     value?: Date | LocalDate;
 
     /** Props passed to ReactDayPicker component, as per DayPicker docs. */
-    dayPickerProps?: DayPickerProps;
+    dayPickerProps?: ReactDayPickerSingleProps['dayPickerProps'];
 
     /** Enable using the DatePicker popover. Default true. */
     enablePicker?: boolean;
@@ -105,7 +105,7 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
     popoverBoundary?: PopperBoundary;
 
     /** Modifiers for calendar popover, as per Blueprint docs. Defaults to null */
-    popoverModifiers?: PopperModifiers;
+    popoverModifiers?: PopperModifierOverrides;
 
     /** Container DOM element to render the calendar popover inside. Defaults to document body. */
     portalContainer?: HTMLElement;
@@ -134,7 +134,7 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
      * Props passed to the TimePicker, as per Blueprint docs.
      * @see https://blueprintjs.com/docs/#datetime/dateinput
      */
-    timePickerProps?: ITimePickerProps;
+    timePickerProps?: TimePickerProps;
 
     /**
      * The precision of time selection that accompanies the calendar.
@@ -405,7 +405,7 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
                     ),
                     icon: Icon.calendar(),
                     tabIndex: enableTextInput || disabled ? -1 : undefined,
-                    elementRef: model.buttonRef,
+                    ref: model.buttonRef,
                     onClick: enablePicker && !disabled ? model.onOpenPopoverClick : null,
                     testId: getTestId(props, 'picker')
                 })
@@ -439,7 +439,7 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
                 enforceFocus: false,
                 modifiers: props.popoverModifiers,
                 position: props.popoverPosition ?? 'auto',
-                boundary: props.popoverBoundary ?? 'viewport',
+                boundary: props.popoverBoundary ?? 'clippingParents',
                 portalContainer: props.portalContainer ?? document.body,
                 popoverRef: model.popoverRef,
                 onClose: model.onPopoverClose,
@@ -475,7 +475,7 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
                         onCommit: model.onInputCommit,
                         onChange: model.onInputChange,
                         onKeyDown: model.onInputKeyDown,
-                        rightElement,
+                        rightElement: rightElement as ReactElement,
                         disabled: disabled || !enableTextInput,
                         leftIcon: props.leftIcon,
                         tabIndex: props.tabIndex,

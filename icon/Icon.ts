@@ -19,11 +19,14 @@ export interface IconProps extends HoistProps, Partial<Omit<FontAwesomeIconProps
     iconName?: string;
 
     /**
-     * Prefix or weight of the icon. By default, 'far' for the standard
-     * variant of each icon. Pass a value of either 'fas' for a heavier-weight/solid variant
-     * or 'fal' for a lighter-weight variant.
+     * Prefix / weight of the icon (or "fab" if your app has imported the free-brand-icons pkg).
+     *   - far - Regular
+     *   - fas - Solid
+     *   - fal - Light
+     *   - fat - Thin (yes, unfortunate)
+     *   - fab - Brand (requires optional import, see Toolbox)
      */
-    prefix?: 'far' | 'fas' | 'fal' | 'fab';
+    prefix?: 'far' | 'fas' | 'fal' | 'fat' | 'fab';
 
     intent?: Intent;
 
@@ -232,6 +235,9 @@ export const Icon = {
     },
     checkCircle(p?: IconProps) {
         return Icon.icon({...p, iconName: 'check-circle'});
+    },
+    checkSquare(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'check-square'});
     },
     chess(p?: IconProps) {
         return Icon.icon({...p, iconName: 'chess'});
@@ -633,6 +639,12 @@ export const Icon = {
     spinner(p?: IconProps) {
         return Icon.icon({...p, iconName: 'spinner'});
     },
+    square(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'square'});
+    },
+    squareMinus(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'square-minus'});
+    },
     star(p?: IconProps) {
         return Icon.icon({...p, iconName: 'star'});
     },
@@ -684,8 +696,14 @@ export const Icon = {
     trash(p?: IconProps) {
         return Icon.icon({...p, iconName: 'trash-alt'});
     },
+    treeGraph(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'sitemap'});
+    },
     treeList(p?: IconProps) {
         return Icon.icon({...p, iconName: 'list-tree'});
+    },
+    treeMap(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'chart-tree-map'});
     },
     undo(p?: IconProps) {
         return Icon.icon({...p, iconName: 'undo'});
@@ -867,7 +885,7 @@ export const Icon = {
      *   create icon.  Name will be parsed for an extension.  If not provided or recognized, a
      *   default icon will be returned.
      */
-    fileIcon(opts: IconProps & {filename: string}): ReactElement | string {
+    fileIcon(opts: IconProps & {filename: string}): any {
         const {filename, ...rest} = opts,
             {factory, className} = getFileIconConfig(filename);
 
@@ -879,7 +897,7 @@ export const Icon = {
      * where an icon might otherwise go - e.g. to align a series of menu items, where some items do
      * not have an icon but others do.
      */
-    placeholder(opts?: IconProps): ReactElement | string {
+    placeholder(opts?: IconProps): any {
         const {size, asHtml = false} = opts ?? {},
             className = enhanceFaClasses('xh-icon--placeholder', size);
         return asHtml ? `<div class="${className}"></div>` : div({className});

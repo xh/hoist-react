@@ -5,12 +5,12 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {exportFilename} from '@xh/hoist/admin/AdminUtils';
+import * as Col from '@xh/hoist/admin/columns';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {managed, HoistModel, lookup} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {fmtJson} from '@xh/hoist/format';
-import * as Col from '@xh/hoist/admin/columns';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
 
 export class ActivityDetailModel extends HoistModel {
@@ -19,20 +19,24 @@ export class ActivityDetailModel extends HoistModel {
     @managed formModel: FormModel;
     @observable formattedData;
 
+    @computed
+    get hasSelection() {
+        return this.gridModel.selectedRecord != null;
+    }
+
     constructor() {
         super();
         makeObservable(this);
     }
 
     override onLinked() {
-        const hidden = true,
-            filterable = true;
+        const hidden = true;
 
         this.gridModel = new GridModel({
             sortBy: 'dateCreated|desc',
             colChooserModel: true,
             enableExport: true,
-            filterModel: true,
+            filterModel: false,
             exportOptions: {
                 columns: 'ALL',
                 filename: exportFilename('activity-detail')
@@ -41,17 +45,21 @@ export class ActivityDetailModel extends HoistModel {
             columns: [
                 {...Col.impersonatingFlag},
                 {...Col.entryId, hidden},
-                {...Col.username, filterable},
+                {...Col.username},
                 {...Col.impersonating, hidden},
-                {...Col.category, filterable},
-                {...Col.msg, filterable},
+                {...Col.category},
+                {...Col.msg},
+                {...Col.url},
+                {...Col.instance, hidden},
+                {...Col.appVersion},
+                {...Col.appEnvironment, hidden},
                 {...Col.data, hidden},
-                {...Col.device, filterable},
-                {...Col.browser, filterable},
-                {...Col.userAgent, hidden, filterable},
-                {...Col.elapsed, filterable},
-                {...Col.dateCreatedWithSec, displayName: 'Timestamp', filterable},
-                {...Col.correlationId, hidden, filterable}
+                {...Col.device},
+                {...Col.browser},
+                {...Col.userAgent, hidden},
+                {...Col.elapsed},
+                {...Col.dateCreatedWithSec, displayName: 'Timestamp'},
+                {...Col.correlationId, hidden}
             ]
         });
 
@@ -62,15 +70,16 @@ export class ActivityDetailModel extends HoistModel {
                 .map(it => ({name: it.field, displayName: it.headerName as string}))
         });
 
-        this.addReaction({
-            track: () => this.activityTrackingModel.gridModel.selectedRecord,
-            run: aggRec => this.showActivityEntriesAsync(aggRec)
-        });
-
-        this.addReaction({
-            track: () => this.gridModel.selectedRecord,
-            run: detailRec => this.showEntryDetail(detailRec)
-        });
+        this.addReaction(
+            {
+                track: () => this.activityTrackingModel.gridModel.selectedRecord,
+                run: aggRec => this.showActivityEntriesAsync(aggRec)
+            },
+            {
+                track: () => this.gridModel.selectedRecord,
+                run: detailRec => this.showEntryDetail(detailRec)
+            }
+        );
     }
 
     private async showActivityEntriesAsync(aggRec) {

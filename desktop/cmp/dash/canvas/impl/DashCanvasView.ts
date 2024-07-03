@@ -15,6 +15,7 @@ import {button} from '../../../button';
 import {panel} from '../../../panel';
 import {DashCanvasViewModel} from '../DashCanvasViewModel';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
+import {ReactElement} from 'react';
 
 /**
  * Implementation component to show an item within a DashCanvas.  This component
@@ -114,7 +115,7 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
                 '-',
                 ...(containerModel.extraMenuItems ?? [])
             ]
-        });
+        }) as ReactElement;
 
     // Workaround using React functional component to check if ContextMenu renders null
     // TODO - build a popover wrapper that null-checks content instead of this workaround
@@ -123,7 +124,7 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
     return popover({
         position: Position.BOTTOM,
         minimal: true,
-        target: button({
+        item: button({
             icon: Icon.ellipsisVertical()
         }),
         content

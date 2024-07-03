@@ -13,8 +13,9 @@ import {
     PlainObject,
     XH
 } from '@xh/hoist/core';
-import {never, PromiseTimeoutSpec} from '@xh/hoist/promise';
-import {isLocalDate, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
+import {PromiseTimeoutSpec} from '@xh/hoist/promise';
+import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
+import {apiDeprecated} from '@xh/hoist/utils/js';
 import {throwIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {compact, isDate, isFunction, isNil, omitBy} from 'lodash';
@@ -50,32 +51,8 @@ export class FetchService extends HoistService {
     private autoGenerateCorrelationIds = false;
     private correlationIdPrefix: string;
     correlationIdHeaderKey: string = 'X-Correlation-ID';
-    defaultHeaders = {};
+    defaultHeaders: (PlainObject | ((arg: FetchOptions) => Awaitable<PlainObject>))[] = [];
     defaultTimeout = (30 * SECONDS) as any;
-
-    override async initAsync() {
-        // pre-flight to allows clean recognition when we have no server.
-        try {
-            await this.fetch({url: 'ping'});
-        } catch (e) {
-            if (e.isServerUnavailable) {
-                const {baseUrl} = XH,
-                    pingURL = baseUrl.startsWith('http')
-                        ? `${baseUrl}ping`
-                        : `${window.location.origin}${baseUrl}ping`;
-
-                throw XH.exception({
-                    name: 'UI Server Unavailable',
-                    detail: e.message,
-                    message:
-                        'Client cannot reach UI server.  Please check UI server at the ' +
-                        `following location: ${pingURL}`
-                });
-            }
-
-            throw e;
-        }
-    }
 
     /**
      * Automatically generate a unique correlationId for all subsequent requests unless explicitly
@@ -103,9 +80,19 @@ export class FetchService extends HoistService {
     /**
      * Set default headers to be sent with all subsequent requests.
      * @param headers - to be sent with all fetch requests, or a function to generate.
+     * @deprecated use addDefaultHeaders instead.
      */
-    setDefaultHeaders(headers: PlainObject | ((arg: FetchOptions) => PlainObject)) {
-        this.defaultHeaders = headers;
+    setDefaultHeaders(headers: PlainObject | ((arg: FetchOptions) => Awaitable<PlainObject>)) {
+        apiDeprecated('setDefaultHeaders', {v: '66', msg: 'Use addDefaultHeaders instead'});
+        this.addDefaultHeaders(headers);
+    }
+
+    /**
+     * Add default headers to be sent with all subsequent requests.
+     * @param headers - to be sent with all fetch requests, or a function to generate.
+     */
+    addDefaultHeaders(headers: PlainObject | ((arg: FetchOptions) => Awaitable<PlainObject>)) {
+        this.defaultHeaders.push(headers);
     }
 
     /**
@@ -121,8 +108,7 @@ export class FetchService extends HoistService {
      * @returns Promise which resolves to a Fetch Response.
      */
     fetch(opts: FetchOptions): Promise<FetchResponse> {
-        opts = this.withDefaults(opts);
-        const ret = this.managedFetchAsync(opts);
+        const ret = this.withDefaultsAsync(opts).then(opts => this.managedFetchAsync(opts));
         ret['correlationId'] = opts.correlationId;
         return ret;
     }
@@ -132,14 +118,15 @@ export class FetchService extends HoistService {
      * @returns the decoded JSON object, or null if the response has status in {@link NO_JSON_RESPONSES}.
      */
     fetchJson(opts: FetchOptions): Promise<any> {
-        opts = this.withDefaults(opts, {Accept: 'application/json'});
-        const ret = this.managedFetchAsync(opts, async r => {
-            if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
+        const ret = this.withDefaultsAsync(opts, {Accept: 'application/json'}).then(opts =>
+            this.managedFetchAsync(opts, async r => {
+                if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
 
-            return r.json().catchWhen('SyntaxError', e => {
-                throw Exception.fetchJsonParseError(opts, e);
-            });
-        });
+                return r.json().catchWhen('SyntaxError', e => {
+                    throw Exception.fetchJsonParseError(opts, e);
+                });
+            })
+        );
         ret['correlationId'] = opts.correlationId;
         return ret;
     }
@@ -202,27 +189,36 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
-    private withDefaults(opts: FetchOptions, extraHeaders: PlainObject = null): FetchOptions {
-        const {correlationIdHeaderKey, defaultHeaders} = this,
+    private async withDefaultsAsync(
+        opts: FetchOptions,
+        extraHeaders: PlainObject = null
+    ): Promise<FetchOptions> {
+        const {correlationIdHeaderKey} = this,
             method = opts.method ?? (opts.params ? 'POST' : 'GET'),
             isPost = method === 'POST',
             correlationId =
                 (opts.correlationId ?? this.autoGenerateCorrelationIds) === true
                     ? opts.loadSpec?.correlationId ?? this.generateCorrelationId()
-                    : opts.correlationId,
-            headers = {
-                'Content-Type': isPost ? 'application/x-www-form-urlencoded' : 'text/plain',
-                ...(isFunction(defaultHeaders) ? defaultHeaders(opts) : defaultHeaders),
-                ...extraHeaders,
-                ...opts.headers
-            };
+                    : opts.correlationId;
+
+        const defaultHeaders = {};
+        for (const h of this.defaultHeaders) {
+            Object.assign(defaultHeaders, isFunction(h) ? await h(opts) : h);
+        }
+
+        const headers = {
+            'Content-Type': isPost ? 'application/x-www-form-urlencoded' : 'text/plain',
+            ...defaultHeaders,
+            ...extraHeaders,
+            ...opts.headers
+        };
 
         if (correlationId) {
             throwIf(headers[correlationIdHeaderKey], 'Correlation ID already set via Fetch API.');
             headers[correlationIdHeaderKey] = correlationId;
         }
 
-        return {...opts, method, headers, correlationId};
+        return {...opts, method, headers};
     }
 
     private async managedFetchAsync(
@@ -288,7 +284,7 @@ export class FetchService extends HoistService {
 
         // 3) Preprocess and apply params
         if (params) {
-            const qsOpts: IStringifyOptions = {
+            const qsOpts: IStringifyOptions<true> = {
                 arrayFormat: 'repeat',
                 allowDots: true,
                 filter: this.qsFilterFn,
@@ -312,33 +308,13 @@ export class FetchService extends HoistService {
 
         if (!ret.ok) {
             ret.responseText = await this.safeResponseTextAsync(ret);
-            const e = Exception.fetchError(opts, ret);
-            if (!XH.appSpec.isSSO && isRelativeUrl && e.httpStatus === 401) {
-                await this.maybeReloadForAuthAsync();
-            }
-            throw e;
+            throw Exception.fetchError(opts, ret);
         }
 
         return ret;
     }
 
-    private async maybeReloadForAuthAsync() {
-        const {appState, configService, localStorageService} = XH;
-
-        // Don't interfere with initialization, avoid tight loops, and provide kill switch
-        if (
-            appState === 'RUNNING' &&
-            configService.get('xhReloadOnFailedAuth', true) &&
-            !localStorageService.isFake &&
-            olderThan(localStorageService.get('xhLastFailedAuthReload', null), ONE_MINUTE)
-        ) {
-            localStorageService.set('xhLastFailedAuthReload', Date.now());
-            XH.reloadApp();
-            await never();
-        }
-    }
-
-    private sendJsonInternalAsync(opts: FetchOptions) {
+    private async sendJsonInternalAsync(opts: FetchOptions) {
         return this.fetchJson({
             ...opts,
             body: JSON.stringify(opts.body),

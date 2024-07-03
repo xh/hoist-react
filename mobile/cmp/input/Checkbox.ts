@@ -11,7 +11,7 @@ import '@xh/hoist/mobile/register';
 import './Checkbox.scss';
 
 export interface CheckboxProps extends HoistProps, HoistInputProps {
-    value?: string;
+    value?: boolean;
 
     /** Onsen modifier string */
     modifier?: string;

@@ -24,9 +24,9 @@ export interface AppMenuButtonProps extends MenuButtonProps {
     hideFeedbackItem?: boolean;
 
     /** True to hide the Reload button. Defaulted to false. */
-    hideReloadItem: boolean;
+    hideReloadItem?: boolean;
 
-    /** True to hide the Logout button. Defaulted to appSpec.isSSO. */
+    /** True to hide the Logout button. Defaulted to !appSpec.enableLogout. */
     hideLogoutItem?: boolean;
 
     /** True to hide the Options button. */
@@ -68,7 +68,8 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
         return menuButton({
             className,
             menuItems: buildMenuItems(props),
-            popoverProps: {popoverClassName: 'xh-app-menu'},
+            menuClassName: 'xh-app-menu',
+            popoverProps: {popoverClassName: 'xh-app-menu-popover'},
             ...rest
         });
     }
@@ -91,7 +92,7 @@ function buildMenuItems({
     hideOptionsItem = hideOptionsItem || !XH.appContainerModel.optionsDialogModel.hasOptions;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
     hideReloadItem = withDefault(hideReloadItem, false);
-    hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
+    hideLogoutItem = withDefault(hideLogoutItem, !XH.appSpec.enableLogout);
 
     const defaultItems = [
         {
@@ -137,7 +138,7 @@ function buildMenuItems({
             omit: hideLogoutItem,
             text: 'Logout',
             icon: Icon.logout(),
-            actionFn: () => XH.identityService.logoutAsync()
+            actionFn: () => XH.logoutAsync()
         }
     ];
 

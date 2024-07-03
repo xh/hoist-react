@@ -5,6 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
+import {HoistAuthModel} from '@xh/hoist/core/HoistAuthModel';
 import {Store} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {action} from '@xh/hoist/mobx';
@@ -28,9 +29,11 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
+import {apiDeprecated} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
+import {SetOptional} from 'type-fest';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {BannerModel} from '../appcontainer/BannerModel';
 import {ToastModel} from '../appcontainer/ToastModel';
@@ -61,7 +64,6 @@ import {
 import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
-import {apiDeprecated} from '@xh/hoist/utils/js';
 
 export const MIN_HOIST_CORE_VERSION = '18.0';
 
@@ -92,8 +94,8 @@ export class XHApi {
     exceptionHandler: ExceptionHandler = new ExceptionHandler();
 
     //----------------------------------------------------------------------------------------------
-    // Metadata - set via webpack.DefinePlugin at build time.
-    // See @xh/hoist-dev-utils/configureWebpack.
+    // Metadata - the `xhXXX` values on the right hand of these assignments are injected at build
+    // time via webpack.DefinePlugin. See @xh/hoist-dev-utils/configureWebpack.js.
     //----------------------------------------------------------------------------------------------
     /** Short internal code for the application. */
     readonly appCode: string = xhAppCode;
@@ -118,6 +120,9 @@ export class XHApi {
 
     /** True if the app is running in a local development environment. */
     readonly isDevelopmentMode: boolean = xhIsDevelopmentMode;
+
+    /** Authentication Model for this App. */
+    authModel: HoistAuthModel;
 
     //----------------------------------------------------------------------------------------------
     // Hoist Core Services
@@ -325,6 +330,15 @@ export class XHApi {
         return this.identityService?.username ?? null;
     }
 
+    /**
+     * Logout the current user.
+     * @see HoistAuthModel.logoutAsync
+     */
+    async logoutAsync(): Promise<void> {
+        await this.authModel?.logoutAsync();
+        this.reloadApp();
+    }
+
     //----------------------
     // App lifecycle support
     //----------------------
@@ -334,6 +348,27 @@ export class XHApi {
      */
     renderApp<T extends HoistAppModel>(appSpec: AppSpec<T>) {
         this.acm.renderApp(appSpec);
+    }
+
+    /**
+     * Entry-point to start the Hoist Admin console app, with common properties defaulted.
+     * Call this from within your project's `/client-app/src/apps/admin.ts` file.
+     *
+     * NOTE you must still import and pass in the `componentClass`, `containerClass`, and
+     * `modelClass` options. We don't default those here, as we do not want to import admin-only
+     * code in XH, where it would be added to the bundles for all client apps.
+     */
+    renderAdminApp<T extends HoistAppModel>(
+        appSpec: SetOptional<AppSpec<T>, 'isMobileApp' | 'checkAccess'>
+    ) {
+        this.acm.renderApp({
+            clientAppCode: 'admin',
+            clientAppName: `${this.appName} Admin`,
+            isMobileApp: false,
+            webSocketsEnabled: true,
+            checkAccess: 'HOIST_ADMIN_READER',
+            ...appSpec
+        });
     }
 
     /**
@@ -349,13 +384,18 @@ export class XHApi {
     /**
      * Trigger a full reload of the current application.
      *
+     * @param path - relative path to reload (e.g. 'mobile/').  Defaults to the
+     * existing location pathname.
+     *
      * This method will reload the entire application document in the browser - to trigger a
      * refresh of the loadable content within the app, use {@link refreshAppAsync} instead.
      */
     @action
-    reloadApp() {
+    reloadApp(path?: string) {
         never().linkTo(this.appLoadModel);
-        const url = new URL(window.location.href);
+        const {location} = window,
+            href = path ? `${location.origin}/${path.replace(/^\/+/, '')}` : location.href,
+            url = new URL(href);
         // Add a unique query param to force a full reload without using the browser cache.
         url.searchParams.set('xhCacheBuster', Date.now().toString());
         document.location.assign(url);

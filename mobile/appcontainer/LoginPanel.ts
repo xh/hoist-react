@@ -43,6 +43,7 @@ export const loginPanel = hoistCmp.factory({
                                     bind: 'username',
                                     placeholder: 'Username',
                                     autoComplete: 'username',
+                                    autoCapitalize: 'none',
                                     commitOnChange: true
                                 }),
                                 textInput({

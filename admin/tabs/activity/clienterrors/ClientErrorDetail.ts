@@ -35,12 +35,32 @@ export const clientErrorDetail = hoistCmp.factory<ClientErrorsModel>(({model}) =
                     style: {width: '400px'},
                     items: [
                         h3(Icon.info(), 'Error Info'),
-                        formField({field: 'username'}),
+                        formField({
+                            field: 'username',
+                            readonlyRenderer: username => {
+                                if (!username) return naSpan();
+                                const {impersonating} = formModel.values,
+                                    impSpan = impersonating
+                                        ? span({
+                                              className: 'xh-text-color-accent',
+                                              item: ` (impersonating ${impersonating})`
+                                          })
+                                        : null;
+                                return span(username, impSpan);
+                            }
+                        }),
                         formField({
                             field: 'dateCreated',
                             readonlyRenderer: v => fmtDateTimeSec(v)
                         }),
-                        formField({field: 'appVersion'}),
+                        formField({
+                            field: 'appVersion',
+                            readonlyRenderer: appVersion => {
+                                if (!appVersion) return naSpan();
+                                const {appEnvironment} = formModel.values;
+                                return `${appVersion} (${appEnvironment})`;
+                            }
+                        }),
                         formField({
                             field: 'userAlerted',
                             label: 'User Alerted?'

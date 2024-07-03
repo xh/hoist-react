@@ -11,10 +11,10 @@ import '@xh/hoist/desktop/register';
 import {fmtNumber, parseNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
-import {apiRemoved, debounced, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {debounced, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber, round} from 'lodash';
-import {ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
+import {KeyboardEventHandler, ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
 
 export interface NumberInputProps extends HoistProps, LayoutProps, StyleProps, HoistInputProps {
     value?: number;
@@ -56,7 +56,7 @@ export interface NumberInputProps extends HoistProps, LayoutProps, StyleProps, H
     majorStepSize?: number;
 
     /** Callback for normalized keydown event. */
-    onKeyDown?: (e: KeyboardEvent) => void;
+    onKeyDown?: KeyboardEventHandler<HTMLInputElement>;
 
     /** Text to display when control is empty. */
     placeholder?: string;
@@ -113,7 +113,6 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>
     displayName: 'NumberInput',
     className: 'xh-number-input',
     render(props, ref) {
-        apiRemoved(`fill`, {test: props['fill'], msg: 'Use the `flex` prop instead.', v: '58'});
         return useHoistInputModel(cmp, props, ref, NumberInputModel);
     }
 });
@@ -186,7 +185,7 @@ class NumberInputModel extends HoistInputModel {
         return true;
     }
 
-    onKeyDown = (ev: KeyboardEvent) => {
+    onKeyDown: KeyboardEventHandler<HTMLInputElement> = ev => {
         if (ev.key === 'Enter') this.doCommit();
         this.componentProps.onKeyDown?.(ev);
     };
@@ -227,6 +226,7 @@ class NumberInputModel extends HoistInputModel {
     }
 }
 
+// Note: we don't use the `ref` here, but the presence of a second argument is required.
 const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, ref) => {
     const {width, flex, ...layoutProps} = getLayoutProps(props),
         renderValue = model.formatRenderValue(model.renderValue);
@@ -254,7 +254,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
         allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
         buttonPosition: 'none',
         disabled: props.disabled,
-        inputRef: composeRefs(model.inputRef, props.inputRef),
+        inputRef: composeRefs(model.inputRef as Ref<HTMLInputElement>, props.inputRef),
         leftIcon: props.leftIcon,
         min: props.min,
         max: props.max,
@@ -279,7 +279,6 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
         onBlur: model.onBlur,
         onFocus: model.onFocus,
         onKeyDown: model.onKeyDown,
-        onValueChange: model.onValueChange,
-        ref
+        onValueChange: model.onValueChange
     });
 });

@@ -150,6 +150,15 @@ export const url: ColumnSpec = {
     autosizeMaxWidth: 400
 };
 
+export const instance: ColumnSpec = {
+    field: {
+        name: 'instance',
+        type: 'string',
+        displayName: 'Instance'
+    },
+    width: 100
+};
+
 export const userAgent: ColumnSpec = {
     field: {
         name: 'userAgent',

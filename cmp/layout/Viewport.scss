@@ -1,0 +1,13 @@
+.xh-viewport {
+  background-color: var(--xh-viewport-bg);
+  top: 0;
+  left: 0;
+  width: 100svw;
+  height: 100dvh;
+}
+
+// On mobile, this works in concert with modification to the viewport meta tag within AppContainerModel
+// to ensure that we don't allow app content to be obscured by the notch, bottom task switcher, etc.
+.xh-mobile .xh-viewport {
+  padding: var(--xh-pad-safe-all);
+}

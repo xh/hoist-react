@@ -153,7 +153,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             label = defaultProp('label', props, formContext, model?.displayName),
             commitOnChange = defaultProp('commitOnChange', props, formContext, undefined),
             tooltipPosition = defaultProp('tooltipPosition', props, formContext, 'right'),
-            tooltipBoundary = defaultProp('tooltipBoundary', props, formContext, 'viewport'),
+            tooltipBoundary = defaultProp('tooltipBoundary', props, formContext, 'clippingParents'),
             readonlyRenderer = defaultProp(
                 'readonlyRenderer',
                 props,
@@ -197,8 +197,8 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         if (minimal) {
             childEl = tooltip({
-                target: childEl,
-                targetClassName: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
+                item: childEl,
+                className: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
                 targetTagName:
                     !blockChildren.includes(childElementName) || childWidth ? 'span' : 'div',
                 position: tooltipPosition,
@@ -243,7 +243,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             openOnTargetFocus: false,
                             className: 'xh-form-field-error-msg',
                             item: errors ? errors[0] : null,
-                            content: getErrorTooltipContent(errors)
+                            content: getErrorTooltipContent(errors) as ReactElement
                         })
                     ]
                 })
@@ -359,8 +359,16 @@ function getValidChild(children) {
     return child;
 }
 
-function getErrorTooltipContent(errors: string[]): ReactNode {
-    if (isEmpty(errors)) return null;
+function getErrorTooltipContent(errors: string[]): ReactElement | string {
+    // If no errors, something other than null must be returned.
+    // If null is returned, as of Blueprint v5, the Blueprint Tooltip component causes deep re-renders of its target
+    // when content changes from null <-> not null.
+    // In `formField` `minimal:true` mode with `commitonchange:true`, this causes the
+    // TextInput component to lose focus when its validation state changes, which is undesirable.
+    // It is not clear if this is a bug or intended behavior in BP v5, but this workaround prevents the issue.
+    // `Tooltip:content` has been a required prop since at least BP v4, but something about the way it is used in BP v5 changed.
+    if (isEmpty(errors)) return 'Is Valid';
+
     if (errors.length === 1) return errors[0];
     return ul({
         className: 'xh-form-field-error-tooltip',

@@ -4,9 +4,10 @@
 .xh-input {
   input,
   textarea {
-    font-size: var(--xh-font-size);
     font-family: var(--xh-font-family);
+    font-size: var(--xh-mobile-input-font-size-px);
     font-weight: 400;
+
     color: var(--xh-text-color);
     border: none !important;
     outline: none !important;
@@ -19,7 +20,7 @@
   }
 
   &:not(.xh-input-label):not(.xh-button-group):not(.xh-switch-input):not(.xh-check-box) {
-    font-size: 14px;
+    font-size: var(--xh-mobile-input-font-size-px);
     border: var(--xh-border-solid);
     border-radius: var(--xh-border-radius-px);
 

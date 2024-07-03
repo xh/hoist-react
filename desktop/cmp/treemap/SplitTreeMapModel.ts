@@ -24,7 +24,7 @@ import {TreeMapAlgorithm, TreeMapColorMode, TreeMapModel, TreeMapConfig} from '.
  * Additionally, accepts and passes along all settings for TreeMapModel.
  * @see TreeMapModel
  */
-interface SplitTreeMapConfig extends TreeMapConfig {
+export interface SplitTreeMapConfig extends TreeMapConfig {
     /**
      * Filter used to allocate records between the primary and secondary maps.
      * Defaults to: `record[valueField] >= 0`.
