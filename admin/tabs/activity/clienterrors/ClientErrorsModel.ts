@@ -74,7 +74,7 @@ export class ClientErrorsModel extends HoistModel {
         const enableValues = true;
         this.filterChooserModel = new FilterChooserModel({
             fieldSpecs: [
-                {field: 'correlationId', enableValues},
+                {field: 'correlationId'},
                 {field: 'username', displayName: 'User', enableValues},
                 {field: 'browser', enableValues},
                 {field: 'device', enableValues},

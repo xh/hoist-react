@@ -108,8 +108,10 @@ export class FetchService extends HoistService {
      * @returns Promise which resolves to a Fetch Response.
      */
     fetch(opts: FetchOptions): Promise<FetchResponse> {
-        const ret = this.withDefaultsAsync(opts).then(opts => this.managedFetchAsync(opts));
-        ret['correlationId'] = opts.correlationId;
+        const ret = this.withDefaultsAsync(opts).then(opts => {
+            ret['correlationId'] = opts.correlationId;
+            return this.managedFetchAsync(opts);
+        });
         return ret;
     }
 
@@ -121,13 +123,12 @@ export class FetchService extends HoistService {
         const ret = this.withDefaultsAsync(opts, {Accept: 'application/json'}).then(opts =>
             this.managedFetchAsync(opts, async r => {
                 if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
-
+                ret['correlationId'] = opts.correlationId;
                 return r.json().catchWhen('SyntaxError', e => {
                     throw Exception.fetchJsonParseError(opts, e);
                 });
             })
         );
-        ret['correlationId'] = opts.correlationId;
         return ret;
     }
 
@@ -218,7 +219,7 @@ export class FetchService extends HoistService {
             headers[correlationIdHeaderKey] = correlationId;
         }
 
-        return {...opts, method, headers};
+        return {...opts, method, headers, correlationId};
     }
 
     private async managedFetchAsync(

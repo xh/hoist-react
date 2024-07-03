@@ -5,8 +5,8 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {FetchOptions} from '@xh/hoist/svc';
-import {isPlainObject} from 'lodash';
 import {FetchResponse, PlainObject, XH} from '../';
+import {isPlainObject} from 'lodash';
 
 import {FetchException, HoistException, TimeoutException, TimeoutExceptionConfig} from './Types';
 

@@ -112,7 +112,7 @@ export class ActivityTrackingModel extends HoistModel {
         this.filterChooserModel = new FilterChooserModel({
             fieldSpecs: [
                 {field: 'category', enableValues},
-                {field: 'correlationId', enableValues},
+                {field: 'correlationId'},
                 {field: 'username', displayName: 'User', enableValues},
                 {field: 'device', enableValues},
                 {field: 'browser', enableValues},
