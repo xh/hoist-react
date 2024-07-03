@@ -6,10 +6,23 @@
 
 * New option for `XH.reloadApp` to reload specific app path
 
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM)
+* New `HoistAuthModel` consolidates and exposes the client-side authentication lifecycle in a single
+overridable API. This new API provides more easy customization of auth across all client-side
+apps by being easily overrideable and installed on the AppSpec.  In most cases, upgrade should be a
+simple matter of moving code from `HoistAppModel.preInitAsync()` and `HoistAppModel.logoutAsync()`
+(now removed) to new overrides of `HoistAuthModel.completeAuthAsync()` and `HoistAuthModel.logoutAsync()`.
+See `HoistAuthModel` for more info.
+
+
 ### 🐞 Bug Fixes
 
-* Fix timing issue with missing validation for records added immediately to new store.
-* Mobile `TabContainer` now flexes properly within flexbox containers.
+* Updated `.xh-viewport` sizing styles and mobile `dialog` sizing to use `dvw/dvh` instead of prior
+  `svw/svh` - resolves edge case mobile issue where redirects back from an OAuth flow could leave
+  an unexpected gap across the bottom of the screen.
+* Updated mobile `TabContainer` to flex properly within flexbox containers.
+* Fixed timing issue with missing validation for records added immediately to new store.
+* Fixed CSS bug in which date picker dates wrapped when `dateEditor` used in a grid in a dialog.
 
 ## 65.0.0 - 2024-06-26
 
@@ -34,6 +47,8 @@
 * Added new convenience method `XH.renderAdminApp()` - consider replacing the call within your
   project's `src/apps/admin.ts` file with this new method and removing any duplicate config values
   if the defaults introduced here are suitable for your application's Hoist Admin console.
+* Prop types for components passed to `elementFactory` and `createElement` are now inferred from the
+  component itself where possible.
 
 ### 📚 Libraries
 

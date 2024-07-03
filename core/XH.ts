@@ -5,6 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
+import {HoistAuthModel} from '@xh/hoist/core/HoistAuthModel';
 import {Store} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {action} from '@xh/hoist/mobx';
@@ -119,6 +120,9 @@ export class XHApi {
 
     /** True if the app is running in a local development environment. */
     readonly isDevelopmentMode: boolean = xhIsDevelopmentMode;
+
+    /** Authentication Model for this App. */
+    authModel: HoistAuthModel;
 
     //----------------------------------------------------------------------------------------------
     // Hoist Core Services
@@ -324,6 +328,15 @@ export class XHApi {
      */
     getUsername(): string {
         return this.identityService?.username ?? null;
+    }
+
+    /**
+     * Logout the current user.
+     * @see HoistAuthModel.logoutAsync
+     */
+    async logoutAsync(): Promise<void> {
+        await this.authModel?.logoutAsync();
+        this.reloadApp();
     }
 
     //----------------------
