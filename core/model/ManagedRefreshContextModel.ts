@@ -8,12 +8,12 @@ import {loadAllAsync, Loadable, LoadSpec} from '../load';
 import {RefreshContextModel} from './';
 import {RefreshMode} from '../';
 
-export type ManagedRefreshTarget = Loadable & {isActive: boolean; refreshMode: RefreshMode};
+export type ManagedRefreshTarget = Loadable & {isActive?: boolean; refreshMode?: RefreshMode};
 /**
  * A refresh context model that consults a model's RefreshMode and active state to manage
  * refreshes of its target models.
  *
- * The associated Loadable must have both:
+ * The associated Loadable should have at least one of:
  *  a) An observable `isActive` property, that returns a boolean value.
  *  b) A `refreshMode` property, that returns a RefreshMode enum value.
  */
