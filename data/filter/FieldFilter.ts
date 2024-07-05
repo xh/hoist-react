@@ -115,10 +115,11 @@ export class FieldFilter extends Filter {
             const storeField = store.getField(field);
             if (!storeField) return () => true; // Ignore (do not filter out) if field not in store
 
-            const fieldType = storeField.type === 'tags' ? 'string' : storeField.type;
-            value = isArray(value)
-                ? value.map(v => parseFieldValue(v, fieldType))
-                : parseFieldValue(value, fieldType);
+            const fieldType = storeField.type;
+            value =
+                isArray(value) && storeField.type !== 'tags'
+                    ? value.map(v => parseFieldValue(v, fieldType))
+                    : parseFieldValue(value, fieldType);
         }
 
         if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
