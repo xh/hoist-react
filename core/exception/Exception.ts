@@ -195,9 +195,9 @@ export class Exception {
 
     private static createInternal(attributes: PlainObject, baseError: Error = new Error()) {
         let correlationId: string;
-        const correlationIdToken = XH?.fetchService?.correlationIdHeaderKey;
-        if (correlationIdToken) {
-            correlationId = attributes.fetchOptions?.headers?.[correlationIdToken];
+        const correlationIdHeaderKey = XH?.fetchService?.correlationIdHeaderKey;
+        if (correlationIdHeaderKey) {
+            correlationId = attributes.fetchOptions?.headers?.[correlationIdHeaderKey];
         }
         return Object.assign(
             baseError,

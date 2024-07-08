@@ -30,7 +30,7 @@ import {PlainObject} from '../types/Types';
  */
 
 export type LoadSpecConfig = {
-    /** Unique identifier for tracking and logging. If true, a new UUID will be generated. */
+    /** Unique identifier for tracking and logging. If `true`, a new UUID will be generated. */
     correlationId?: string | true;
     /** True if triggered by a refresh request (automatic or user). */
     isRefresh?: boolean;

@@ -356,8 +356,8 @@ export interface FetchOptions {
     body?: any;
 
     /**
-     * Unique identifier for this request, used for tracking and logging. If true, a UUID will be
-     * sourced from `LoadSpec.correlationId` or generated. If false, no correlationId will be set.
+     * Unique identifier for this request, used for tracking and logging. If `true`, a UUID will be
+     * sourced from `LoadSpec.correlationId` or generated. If `false`, no correlationId will be set.
      * */
     correlationId?: string | boolean;
 
