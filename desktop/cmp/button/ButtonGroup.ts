@@ -56,7 +56,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
                 ...layoutProps
             },
             ref,
-            ...rest
+            ...(rest as BpButtonGroupProps)
         });
     }
 });

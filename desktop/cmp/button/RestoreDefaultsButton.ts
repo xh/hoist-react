@@ -13,10 +13,10 @@ import {button, ButtonProps} from './Button';
 
 export interface RestoreDefaultsButtonProps extends ButtonProps {
     /** Message for confirm dialog shown prior to clearing user customizations. */
-    warningMessage: ReactNode;
+    warningMessage?: ReactNode;
 
     /** Title for confirm dialog shown prior to clearing user customizations. */
-    warningTitle: string;
+    warningTitle?: string;
 }
 
 /**
@@ -32,7 +32,7 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] =
 
         render(
             {
-                warningTitle = 'Please Confirm',
+                warningTitle = 'Please confirm...',
                 warningMessage = fragment(
                     'All app options (including grid customizations) will be restored to their default settings, and the app will be reloaded.',
                     br(),

@@ -1,30 +1,234 @@
 # Changelog
 
-## 64.0.0-SNAPSHOT - unreleased
-
-### 💥 Breaking Changes
-
-* `HoistComponent` prop `model` removed. Use the `modelConfig` prop instead.  Put another way,
-   use the `modelConfig` prop, not the `model` prop, when passing
-   a model constructor configuration object to a component as prop.
-* Requires update to `hoist-core >= 20.0.0`.
-* Requires update to `@ag-grid >= 31.x`.
-* ag-grid removed `ColumnApi`.  Most methods that were on `ColumnApi` are now on `GridApi`.
-  As a result, Hoist-React has removed the `agColumnApi` from the `GridModel`
-  Apps that use `agColumnApi` will need to update to use `agApi` instead.
-  Many methods on `agApi` are replaced with `agApi.updateGridOptions({property: value})`.
-  All apps will need to update their ag-grid version fetch as per this [Toolbox example](https://github.com/xh/toolbox/pull/709/files/5626e21d778e1fc72f9735d2d8f011513e1ac9c6#diff-304055320a29f66ea1255446ba8f13e0f3f1b13643bcea0c0466aa60e9288a8f).
-  See [What's New in AG Grid 31](https://blog.ag-grid.com/whats-new-in-ag-grid-31/) and [Upgrading to AG Grid 31](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-31/?ref=blog.ag-grid.com) for more details.
-
+## 66.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
 
-* Provides admin support for Cluster-aware version of Hoist.
-* `Store` now supports multiple `summaryRecords`.
+* New option for `XH.reloadApp` to reload specific app path
+
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM)
+* New `HoistAuthModel` consolidates and exposes the client-side authentication lifecycle in a single
+overridable API. This new API provides more easy customization of auth across all client-side
+apps by being easily overrideable and installed on the AppSpec.  In most cases, upgrade should be a
+simple matter of moving code from `HoistAppModel.preInitAsync()` and `HoistAppModel.logoutAsync()`
+(now removed) to new overrides of `HoistAuthModel.completeAuthAsync()` and `HoistAuthModel.logoutAsync()`.
+See `HoistAuthModel` for more info.
+
+
+### 🐞 Bug Fixes
+
+* Updated `.xh-viewport` sizing styles and mobile `dialog` sizing to use `dvw/dvh` instead of prior
+  `svw/svh` - resolves edge case mobile issue where redirects back from an OAuth flow could leave
+  an unexpected gap across the bottom of the screen.
+* Updated mobile `TabContainer` to flex properly within flexbox containers.
+* Fixed timing issue with missing validation for records added immediately to new store.
+* Fixed CSS bug in which date picker dates wrapped when `dateEditor` used in a grid in a dialog.
+
+## 65.0.0 - 2024-06-26
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
+
+* Requires update to `hoist-dev-utils >= v9.0.0` with updated handling of static/public assets.
+  This should be a drop-in change for applications.
+
+### 🎁 New Features
+
+* Enhanced `markdown` component to support GitHub Flavored Markdown (GFM) syntax.
+
+### ✨ Styles
+
+* Refactored CSS classnames applied to the primary application (☰) menu on desktop and mobile.
+  On both platforms the button itself now has an `xh-app-menu-button` class, the popover has
+  `xh-app-menu-popover`, and the menu itself has `xh-app-menu`.
+
+### ⚙️ Technical
+
+* Improved popup behavior of (beta) `MsalClient` - uses recommended `blank.html`.
+* Added new convenience method `XH.renderAdminApp()` - consider replacing the call within your
+  project's `src/apps/admin.ts` file with this new method and removing any duplicate config values
+  if the defaults introduced here are suitable for your application's Hoist Admin console.
+* Prop types for components passed to `elementFactory` and `createElement` are now inferred from the
+  component itself where possible.
 
 ### 📚 Libraries
 
-* @ag-grid `30.x -> 31.x`
+* @xh/hoist-dev-utils `8.x → 9.x`
+* react-markdown `8.0 → 9.0`
+* remark-breaks `3.0 → 4.0`
+* remark-gfm `4.0`
+
+## 64.0.5 - 2024-06-14
+
+### 🐞 Bug Fixes
+
+* Added a workaround for a mobile-only bug where Safari auto-zooms on orientation change if the user
+  had previously zoomed the page themselves.
+
+### ⚙️ Technical
+
+* Improved logout behavior of (beta) `MsalClient`.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.14 → 3.17`
+
+## 64.0.4 - 2024-06-05
+
+### ⚙️ Typescript API Adjustments
+
+* Improved `ref` typing in JSX.
+
+## 64.0.3 - 2024-05-31
+
+### 🐞 Bug Fixes
+
+* Restored previous suppression of Blueprint animations on popovers and tooltips. These had been
+  unintentionally (re)enabled in v63 and are now turned off again.
+
+### ⚙️ Technical
+
+* Adjusted (beta) APIs of OAuth-related `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient`.
+
+## 64.0.2 - 2024-05-23
+
+### ⚙️ Technical
+
+* Adjusted (beta) API of `BaseOAuthClient`.
+* Improved `FetchService.addDefaultHeaders()` to support async functions.
+
+## 64.0.1 - 2024-05-19
+
+### ⚙️ Technical
+
+* Adjusted (beta) API of `BaseOAuthClient` and its approach to loading ID tokens.
+
+## 64.0.0 - 2024-05-17
+
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - major Hoist Core = AG Grid updates)
+
+#### Hoist Core v20 with Multi-Instance Support
+
+Requires update to `hoist-core >= 20.0.0` with multi-instance support.
+
+* See the Hoist Core changelog for details on this major upgrade to Hoist's back-end capabilities.
+* Client-side application changes should be minimal or non-existent, but the Hoist Admin Console has
+  been updated extensively to support management of multiple instances within a cluster.
+
+#### AG Grid v31
+
+Requires update to `@ag-grid >= 31.x`, a new major AG Grid release with its own breaking changes.
+See AG's [What's New](https://blog.ag-grid.com/whats-new-in-ag-grid-31/)
+and [Upgrade Guide](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-31/?ref=blog.ag-grid.com)
+for more details.
+
+* AG Grid removed `ColumnApi`, consolidating most of its methods to `GridApi`. Corresponding Hoist
+  update removes `GridModel.agColumnApi` - review and migrate usages to `GridModel.agApi` as
+  appropriate.
+* Many methods on `agApi` are replaced with `agApi.updateGridOptions({property: value})`. Review
+  your app for any direct usages of the underlying AG API that might need to change.
+* All apps will need to update their `@ag-grid` dependencies within `package.json` and make a minor
+  update to their `Bootstrap` registration as per
+  this [Toolbox example](https://github.com/xh/toolbox/pull/709/files/5626e21d778e1fc72f9735d2d8f011513e1ac9c6#diff-304055320a29f66ea1255446ba8f13e0f3f1b13643bcea0c0466aa60e9288a8f).
+    * `Grid` and `AgGrid` components default to `reactiveCustomComponents: true`. If your app has
+      custom tooltips or editors, you should confirm that they still work with this setting. (It
+      will be the default in agGrid v32.)
+    * For custom editors, you will have to convert them from "imperative" to "reactive". If this is
+      not possible, you can set `reactiveCustomComponents: false` in your `GridModel` to continue
+      using the old "imperative" mode, but note that this will preclude the use of upgraded Hoist
+      editors in that same grid instance. (See the links below for AG docs on this change.)
+    * For custom tooltips, note AG-Grid's deprecation of `getReactContainerClasses`.
+    * Consult the AG Grid docs for more information:
+        * [Updated docs on Custom Components](https://ag-grid.com/react-data-grid/cell-editors/#custom-components)
+        * [Migrating from Imperative to Reactive components](https://ag-grid.com/react-data-grid/upgrading-to-ag-grid-31-1/#migrating-custom-components-to-use-reactivecustomcomponents-option)
+        * [React-related deprecations](https://ag-grid.com/react-data-grid/upgrading-to-ag-grid-31-1/#react)
+
+#### Other Breaking Changes
+
+* Removed support for passing a plain object to the `model` prop of Hoist Components (previously
+  deprecated back in v58). Use the `modelConfig` prop instead.
+* Removed the `multiFieldRenderer` utility function. This has been made internal and renamed
+  to `zoneGridRenderer` for exclusive use by the `ZoneGrid` component.
+* Updated CSS variables related to the `ZoneGrid` component - vars formerly prefixed
+  by `--xh-grid-multifield` are now prefixed by `--xh-zone-grid`, several vars have been added, and
+  some defaults have changed.
+* Removed obsolete `AppSpec.isSSO` property in favor of two new properties `AppSpec.enableLogout`
+  and `AppSpec.enableLoginForm`. This should have no effect on the vast majority of apps which had
+  `isSSO` set to `true`. For apps where `isSSO` was set to `false`, the new flags should be
+  used to more clearly indicate the desired auth behavior.
+
+### 🎁 New Features
+
+* Improved mobile viewport handling to ensure that both standard pages and full screen dialogs
+  respect "safe area" boundaries, avoiding overlap with system UI elements such as the iOS task
+  switcher at the bottom of the screen. Also set background letterboxing color (to black) when
+  in landscape mode for a more resolved-looking layout.
+* Improved the inline grid `selectEditor` to commit its value to the backing record as soon as an
+  option is selected, rather than waiting for the user to click away from the cell.
+* Improved the display of Role details in the Admin Console. The detail panel for the selected role
+  now includes a sub-tab listing all other roles inherited by the selected role, something that
+  was previously accessible only via the linked graph visualization.
+* Added new `checkboxRenderer` for rendering booleans with a checkbox input look and feel.
+* Added new mobile `checkboxButton`, an alternate input component for toggling boolean values.
+* Added beta version of a new Hoist `security` package, providing built-in support for OAuth flows.
+  See `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient` for more information. Please note that
+  package is being released as a *beta* and is subject to change before final release.
+
+### ✨ Styles
+
+* Default mobile font size has been increased to 16px, both for better overall legibility and also
+  specifically for input elements to avoid triggering Safari's auto-zoom behavior on focus.
+    * Added new mobile-only CSS vars to allow for more granular control over font sizes:
+        * `--xh-mobile-input-font-size`
+        * `--xh-mobile-input-label-font-size`
+        * `--xh-mobile-input-height-px`
+    * Increased height of mobile toolbars to better accommodate larger nested inputs.
+    * Grid font sizes have not changed, but other application layouts might need to be adjusted to
+      ensure labels and other text elements fit as intended.
+* Mobile App Options dialog has been updated to use a full-screen `DialogPanel` to provide a more
+  native feel and better accommodate longer lists of app options.
+
+### 🐞 Bug Fixes
+
+* Fixed poor truncation / clipping behavior of the primary (right-side) metric in `ZoneGrid`. Values
+  that do not fit within the available width of the cell will now truncate their right edge and
+  display an ellipsis to indicate they have been clipped.
+* Improved `RestGridModel.actionWarning` behavior to suppress any warning when the provided function
+  returns a falsy value.
+* Fixed mobile `Toast` intent styling.
+
+### ⚙️ Technical
+
+* NumberEditor no longer activates on keypress of letter characters.
+* Removed initial `ping` call `FetchService` init.
+* Deprecated `FetchService.setDefaultHeaders` and replaced with new `addDefaultHeaders` method to
+  support independent additions of default headers from multiple sources in an application.
+
+### 📚 Libraries
+
+* @ag-grid `30.x → 31.x`
+* @auth0/auth0-spa-js `added @ 2.1`
+* @azure/msal-browser `added @ 3.14`
+* dompurify `3.0 → 3.1`
+* jwt-decode `added @ 4.0`
+* moment `2.29 → 2.30`
+* numbro `2.4 → 2.5`
+* qs `6.11 → 6.12`
+* semver `7.5 → 7.6`
+
+## 63.1.1 - 2024-04-26
+
+### 🐞 Bug Fixes
+
+* Fixed over-eager error handler installed on window during preflight app initialization. This can
+  catch errors thrown by browser extensions unrelated to the app itself, which should not block
+  startup. Make opt-in via special query param `catchPreflightError=true`.
+
+## 63.1.0 - 2024-04-23
+
+### 🎁 New Features
+
+* `Store` now supports multiple `summaryRecords`, displayed if so configured as multiple pinned
+  rows within a bound grid.
 
 ### 🐞 Bug Fixes
 
@@ -34,23 +238,21 @@
 
 ### 🐞 Bug Fixes
 
-* Import BPs default datetime package css in addition to datetime2 css to support BP datetime components.
+* Ensure all required styles imported for Blueprint datetime components.
 
 ## 63.0.2 - 2024-04-16
 
 ### 🐞 Bug Fixes
 
-* Fixed issue with GroupingChooser: dragged items were not correctly positioned.
+* Fixed `GroupingChooser` items appearing in incorrect location while dragging to re-order.
 * Removed extraneous internal padding override to Blueprint menu styles. Fixes overhang of menu
-divider borders and avoids possible triggering of horizontal scrollbars.
+  divider borders and avoids possible triggering of horizontal scrollbars.
 
 ## 63.0.1 - 2024-04-05
 
 ### 🐞 Bug Fixes
 
-* New filterable fields exposed in Admin Console for Activity Tracking and Client Errors.
-    * Activity Tracking adds `url`, `appEnvironment`, `appVersion`.
-    * Client Errors adds `impersonating`.
+* Recently added fields now fully available in Admin Console Activity Tracking + Client Errors.
 
 ## 63.0.0 - 2024-04-04
 
@@ -104,8 +306,8 @@ There are some common breaking changes that most/many apps will need to address:
 
 ### 📚 Libraries
 
-* @blueprintjs/core `4.20 -> 5.10`
-* @blueprintjs/datetime `4.4` -> @blueprintjs/datetime2 `2.3`
+* @blueprintjs/core `4.20 → 5.10`
+* @blueprintjs/datetime `4.4` → @blueprintjs/datetime2 `2.3`
 
 ## 62.0.1 - 2024-03-28
 

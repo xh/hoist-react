@@ -199,7 +199,11 @@ export class Store extends HoistBase {
     @observable
     lastLoaded: number = null;
 
-    /** Records containing summary data. */
+    /**
+     * Records containing summary data, such as top-level aggregations produced by a Hoist Cube
+     * or any other custom aggregation(s) calculated and installed by the application. Set via
+     * {@link loadData} or by loading a tree structure with `loadRootAsSummary` set to true.
+     */
     @observable.ref
     summaryRecords: StoreRecord[] = null;
 
@@ -678,11 +682,14 @@ export class Store extends HoistBase {
         return this._current.rootList;
     }
 
-    /** Record containing summary data. */
+    /**
+     * Single summary data record, if only one (or null if none). Maintained for convenience and
+     * for backwards compat with app code predating support for multiple {@link summaryRecords}.
+     */
     get summaryRecord(): StoreRecord {
         throwIf(
             this.summaryRecords.length > 1,
-            'Store has multiple summary records. Use Store.summaryRecords.'
+            'Store has multiple summary records - must access via Store.summaryRecords.'
         );
         return first(this.summaryRecords);
     }

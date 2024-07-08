@@ -3,19 +3,27 @@
 
   & > .dialog-mask {
     background-color: var(--xh-backdrop-bg);
+    top: var(--xh-pad-safe-top);
+    bottom: var(--xh-pad-safe-bottom);
+    left: var(--xh-pad-safe-left);
+    right: var(--xh-pad-safe-right);
   }
 
   & > .dialog {
-    // Constrain max height on the outer container.
-    // vh units are unreliable on mobile, as they don't account for address bar / navigation.
+    // Constrain max height on the outer container to safe area.
     display: flex;
     flex-direction: column;
-    max-height: calc(100% - var(--xh-pad-double-px));
+    max-height: calc(100dvh - var(--xh-pad-double-px));
+
+    // Increase min-width from Onsen 270px default. This seems to drive actual width in most cases.
+    // and 270px looks a bit cramped.
+    min-width: 320px;
 
     .dialog-container {
+      margin: var(--xh-pad-safe-all);
       display: flex;
       flex-direction: column;
-      max-width: calc(100vw - var(--xh-pad-double-px));
+      max-width: calc(100svw - var(--xh-pad-double-px));
       // Background on inner onsen container deliberately set to *border* color - this avoids small
       // but noticeable gaps around the edges. The dialog body gets a defined background below for
       // the actual contents of the component.

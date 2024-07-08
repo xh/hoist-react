@@ -123,9 +123,9 @@ export class WebSocketModel extends BaseInstanceModel {
                 text: 'Force Suspend',
                 icon: Icon.stopCircle(),
                 intent: 'danger',
-                outlined: true
+                outlined: true,
+                autoFocus: false
             },
-            cancelProps: {autoFocus: true},
             message: div(
                 p(
                     `This action will force ${selectedRecords.length} connected client(s) into suspended mode, halting all background refreshes and other activity, masking the UI, and requiring users to reload the app to continue.`

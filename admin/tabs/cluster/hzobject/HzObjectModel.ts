@@ -10,6 +10,7 @@ import {timestampNoYear} from '@xh/hoist/admin/columns';
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
+import {br, fragment} from '@xh/hoist/cmp/layout';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
@@ -68,13 +69,21 @@ export class HzObjectModel extends BaseInstanceModel {
         const {gridModel} = this;
         if (
             gridModel.selectedRecords.some(
-                it => it.data.objectType != 'Cache' && !it.data.name.startsWith('cache')
+                it => it.data.type != 'Cache' && !it.data.name.startsWith('cache')
             ) &&
             !(await XH.confirm({
-                title: 'Warning',
-                message:
-                    'Your selection contains objects that may not be caches.' +
-                    'This may impact application behavior.  Continue?'
+                message: fragment(
+                    'Your selection contains objects that may not be caches and may not be designed to be cleared.',
+                    br(),
+                    br(),
+                    `Please ensure you understand the impact of this operation on the running application before proceeding.`
+                ),
+                confirmProps: {
+                    text: 'Clear Objects',
+                    outlined: true,
+                    intent: 'danger',
+                    autoFocus: false
+                }
             }))
         ) {
             return;
@@ -97,6 +106,22 @@ export class HzObjectModel extends BaseInstanceModel {
     }
 
     async clearHibernateCachesAsync() {
+        const confirmed = await XH.confirm({
+            message: fragment(
+                'This will clear the second-level Hibernate caches for all domain objects, requiring the server to re-query the database for their latest state.',
+                br(),
+                br(),
+                `This can resolve issues with data modifications made directly to the database not appearing in a running application, but should be used with care as it can have a temporary performance impact.`
+            ),
+            confirmProps: {
+                text: 'Clear Hibernate Caches',
+                intent: 'danger',
+                outlined: true,
+                autoFocus: false
+            }
+        });
+        if (!confirmed) return;
+
         try {
             await XH.fetchJson({
                 url: 'hzObjectAdmin/clearHibernateCaches',

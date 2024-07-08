@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistService, HoistUser, XH} from '@xh/hoist/core';
-import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
+import {apiDeprecated, deepFreeze, throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Provides basic information related to the authenticated user, including application roles.
@@ -55,18 +55,12 @@ export class IdentityService extends HoistService {
     }
 
     /**
-     * For applications that support a logout operation (i.e. not SSO), logs the current user out
-     * and refreshes the application to present a login panel.
+     * Logs the current user out and reloads the application.
+     * @deprecated use XH.logoutAsync() instead.
      */
     async logoutAsync() {
-        try {
-            await XH.appModel?.logoutAsync();
-        } catch (e) {
-            this.logError('Error calling XH.appModel.logoutAsync()', e);
-        }
-        return XH.fetchJson({url: 'xh/logout'})
-            .then(() => XH.reloadApp())
-            .catchDefault();
+        apiDeprecated('logoutAsync', {v: '67', msg: 'Call XH.logoutAsync() instead.'});
+        return XH.logoutAsync();
     }
 
     //------------------------

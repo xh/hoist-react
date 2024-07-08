@@ -83,12 +83,16 @@ export class EnvironmentService extends HoistService {
         return this._data[key];
     }
 
+    get appEnvironment(): AppEnvironment {
+        return this.get('appEnvironment');
+    }
+
     isProduction(): boolean {
-        return this.get('appEnvironment') === 'Production';
+        return this.appEnvironment === 'Production';
     }
 
     isTest(): boolean {
-        return this.get('appEnvironment') === 'Test';
+        return this.appEnvironment === 'Test';
     }
 
     isMinHoistCoreVersion(version: string): boolean {
@@ -156,3 +160,18 @@ export class EnvironmentService extends HoistService {
         this.serverBuild = serverBuild;
     }
 }
+
+/**
+ * Available application deployment environments, as defined by Hoist Core `AppEnvironment.groovy`.
+ *
+ * Note that this is distinct from node's `process.env.NODE_ENV`, which will be "production" at
+ * runtime on any built/deployed instances of the app, including on Dev/UAT servers.
+ */
+export type AppEnvironment =
+    | 'Production'
+    | 'Beta'
+    | 'Staging'
+    | 'Development'
+    | 'Test'
+    | 'UAT'
+    | 'BCP';

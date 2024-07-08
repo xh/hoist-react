@@ -39,8 +39,8 @@ export const lockoutPanel = hoistCmp.factory<AppContainerModel>({
                     button({
                         icon: Icon.logout(),
                         text: 'Logout',
-                        omit: appSpec.isSSO,
-                        onClick: () => identityService.logoutAsync()
+                        omit: !appSpec.enableLogout,
+                        onClick: () => XH.logoutAsync()
                     }),
                     vspacer(10),
                     button({

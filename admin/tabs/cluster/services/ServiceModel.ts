@@ -9,9 +9,11 @@ import {AppModel} from '@xh/hoist/admin/AppModel';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {br, fragment} from '@xh/hoist/cmp/layout';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
+import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty, lowerFirst} from 'lodash';
 
 export class ServiceModel extends BaseInstanceModel {
@@ -22,7 +24,7 @@ export class ServiceModel extends BaseInstanceModel {
         actionFn: () => this.clearCachesAsync(false),
         displayFn: () => ({
             hidden: AppModel.readonly,
-            text: `Clear Caches (@ ${this.instanceName})`
+            text: `Clear Caches (${this.instanceName})`
         }),
         recordsRequired: true
     };
@@ -71,17 +73,39 @@ export class ServiceModel extends BaseInstanceModel {
     });
 
     async clearCachesAsync(entireCluster: boolean) {
-        const {selectedRecords} = this.gridModel;
+        const {gridModel, instanceName, loadModel} = this,
+            {selectedRecords} = gridModel;
         if (isEmpty(selectedRecords)) return;
+
+        const cacheStr =
+            selectedRecords.length > 1
+                ? pluralize('selected service cache', selectedRecords.length, true)
+                : `${selectedRecords[0].data.displayName} cache`;
+
+        const confirmed = await XH.confirm({
+            message: fragment(
+                `This will clear the ${cacheStr} ${entireCluster ? 'for all instances in this cluster' : 'for instance ' + instanceName}.`,
+                br(),
+                br(),
+                `Please ensure you understand the impact of this operation on the running application before proceeding.`
+            ),
+            confirmProps: {
+                text: 'Clear Caches',
+                outlined: true,
+                intent: 'danger',
+                autoFocus: false
+            }
+        });
+        if (!confirmed) return;
 
         try {
             await XH.fetchJson({
                 url: 'serviceManagerAdmin/clearCaches',
                 params: {
-                    instance: entireCluster ? null : this.instanceName,
+                    instance: entireCluster ? null : instanceName,
                     names: selectedRecords.map(it => it.data.name)
                 }
-            }).linkTo(this.loadModel);
+            }).linkTo(loadModel);
             await this.refreshAsync();
             XH.successToast('Service caches cleared.');
         } catch (e) {

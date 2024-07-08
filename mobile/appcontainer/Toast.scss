@@ -1,34 +1,54 @@
-.xh-toast {
-  bottom: unset;
-
-  &__title {
-    margin-bottom: var(--xh-pad-half-px);
-    display: block;
-    color: rgba(255, 255, 255, 0.7);
-  }
+ons-toast.xh-toast {
+  // Better constrain height to available viewport, allows margins below to position as expected.
+  height: 100dvh;
 
   .toast {
+    // Ensure toasts respect safe area for full-screen apps. We don't want them to overlap
+    // with the iOS task switcher (as with full screen DialogPanel).
+    margin: var(--xh-pad-safe-all);
+    // Customize bottom margin to pick toast up off of the very bottom of the screen.
+    margin-bottom: calc(var(--xh-pad-safe-bottom) + var(--xh-pad-px));
+
     padding: var(--xh-pad-px);
-    background-color: var(--xh-blue-gray-dark);
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+
+    // Handle edge-case where dev configures toast with `intent: null` (vs. default of 'primary')
+    // Onsen uses a semi-transparent background - this works better as fallback.
+    background-color: var(--xh-blue-gray-dark);
+
+    &__message {
+      margin: 0;
+      display: flex;
+      align-items: center;
+
+      & > svg {
+        margin-left: var(--xh-pad-half-px);
+        margin-right: var(--xh-pad-px);
+      }
+
+      & > span {
+        flex: 1;
+      }
+    }
+
+    .xh-button {
+      --xh-text-color: rgba(255, 255, 255, 0.7);
+    }
   }
 
-  .toast__message {
-    margin: 0;
-    display: flex;
-    align-items: center;
+  &.toast-bg-intent-primary .toast {
+    background-color: var(--xh-intent-primary);
+  }
 
-    & > svg {
-      margin-left: var(--xh-pad-half-px);
-      margin-right: var(--xh-pad-px);
-    }
+  &.toast-bg-intent-danger .toast {
+    background-color: var(--xh-intent-danger);
+  }
 
-    & > span {
-      flex: 1;
-    }
+  &.toast-bg-intent-success .toast {
+    background-color: var(--xh-intent-success);
+  }
 
-    .xh-button svg {
-      color: rgba(255, 255, 255, 0.7);
-    }
+  &.toast-bg-intent-warning .toast {
+    background-color: var(--xh-intent-warning);
   }
 }

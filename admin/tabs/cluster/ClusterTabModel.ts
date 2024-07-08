@@ -70,10 +70,11 @@ export class ClusterTabModel extends HoistModel {
 
     constructor() {
         super();
+
         this.addReaction({
-            track: () => this.instance,
-            run: () => {
-                if (this.instance) this.tabModel.refreshContextModel.refreshAsync();
+            track: () => this.instanceName,
+            run: instName => {
+                if (instName) this.tabModel.refreshContextModel.refreshAsync();
             }
         });
     }
@@ -84,7 +85,7 @@ export class ClusterTabModel extends HoistModel {
                 idSpec: 'name',
                 fields: [
                     {name: 'name', type: 'string'},
-                    {name: 'isMaster', type: 'bool'},
+                    {name: 'isPrimary', type: 'bool'},
                     {name: 'isLocal', type: 'bool'},
                     {name: 'isReady', type: 'bool'},
                     {name: 'wsConnections', type: 'int'},
@@ -124,7 +125,8 @@ export class ClusterTabModel extends HoistModel {
                 },
                 {
                     field: 'wsConnections',
-                    headerName: 'WS Connections',
+                    headerName: Icon.bolt(),
+                    headerTooltip: 'Active Websocket Connections',
                     ...numberCol
                 },
                 {
@@ -170,7 +172,7 @@ export class ClusterTabModel extends HoistModel {
 
     formatInstance(instance: PlainObject): ReactNode {
         const content = [instance.name];
-        if (instance.isMaster) content.push(badge({item: 'master', intent: 'primary'}));
+        if (instance.isPrimary) content.push(badge({item: 'primary', intent: 'primary'}));
         if (instance.isLocal) content.push(badge('local'));
         return hbox(content);
     }
@@ -179,7 +181,6 @@ export class ClusterTabModel extends HoistModel {
         if (
             !(await XH.confirm({
                 message: `Are you SURE you want to shutdown instance ${instance.name}?`,
-                title: 'Please confirm...',
                 confirmProps: {
                     icon: Icon.skull(),
                     text: 'Shutdown Now',

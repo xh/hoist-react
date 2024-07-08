@@ -38,7 +38,6 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {MINUTES} from '@xh/hoist/utils/datetime';
 import {checkMinVersion, throwIf} from '@xh/hoist/utils/js';
 import {compact, isEmpty} from 'lodash';
 import {AboutDialogModel} from './AboutDialogModel';
@@ -145,38 +144,53 @@ export class AppContainerModel extends HoistModel {
             ])
         );
 
-        // Disable browser context menu on long-press, used to show (app) context menus and as an
-        // alternate gesture for tree grid drill-own.
         if (isMobileApp) {
+            // Disable browser context menu on long-press, used to show (app) context menus and as an
+            // alternate gesture for tree grid drill-own.
             window.addEventListener('contextmenu', e => e.preventDefault(), {capture: true});
+
+            // Spec viewport-fit=cover to allow use of safe-area-inset envs for mobile styling
+            // (e.g. `env(safe-area-inset-top)`). This allows us to avoid overlap with OS-level
+            // controls like the iOS tab switcher, as well as to more easily set the background
+            // color of the (effectively) unusable portions of the screen via
+            this.setViewportContent(this.getViewportContent() + ', viewport-fit=cover');
+
+            // Temporarily set maximum-scale=1 on orientation change to force reset Safari iOS
+            // zoom level, and then remove to restore user zooming. This is a workaround for a bug
+            // where Safari full-screen re-zooms on orientation change if user has *ever* zoomed.
+            window.addEventListener(
+                'orientationchange',
+                () => {
+                    const content = this.getViewportContent();
+                    this.setViewportContent(content + ', maximum-scale=1');
+                    setTimeout(() => this.setViewportContent(content), 0);
+                },
+                false
+            );
         }
 
         try {
-            await installServicesAsync(FetchService);
+            await installServicesAsync([FetchService]);
 
-            // consult (optional) pre-auth init for app
-            const modelClass: any = this.appSpec.modelClass;
-            await modelClass.preAuthAsync();
-
-            // Check if user has already been authenticated (prior login, OAuth, SSO)...
-            const userIsAuthenticated = await this.getAuthStatusFromServerAsync();
-
-            // ...if not, throw in SSO mode (unexpected error case) or trigger a login prompt.
-            if (!userIsAuthenticated) {
+            // Check auth, locking out, or showing login if possible
+            XH.authModel = new this.appSpec.authModelClass();
+            const isAuthenticated = await XH.authModel.completeAuthAsync();
+            if (!isAuthenticated) {
                 throwIf(
-                    appSpec.isSSO,
-                    'Unable to complete required authentication (SSO/Oauth failure).'
+                    !appSpec.enableLoginForm,
+                    'Unable to complete required authentication (SSO/Auth failure).'
                 );
                 this.setAppState('LOGIN_REQUIRED');
                 return;
             }
-
-            // ...if so, continue with initialization.
-            await this.completeInitAsync();
         } catch (e) {
             this.setAppState('LOAD_FAILED');
             XH.handleException(e, {requireReload: true});
+            return;
         }
+
+        // ...if made it to here, continue with initialization.
+        await this.completeInitAsync();
     }
 
     /**
@@ -305,21 +319,6 @@ export class AppContainerModel extends HoistModel {
     //----------------------------
     // Implementation
     //-----------------------------
-    private async getAuthStatusFromServerAsync(): Promise<boolean> {
-        return XH.fetchService
-            .fetchJson({
-                url: 'xh/authStatus',
-                timeout: 3 * MINUTES // Accommodate delay for user at a credentials prompt
-            })
-            .then(r => r.authenticated)
-            .catch(e => {
-                // 401s normal / expected for non-SSO apps when user not yet logged in.
-                if (e.httpStatus === 401) return false;
-                // Other exceptions indicate e.g. connectivity issue, server down - raise to user.
-                throw e;
-            });
-    }
-
     private setDocTitle() {
         const env = XH.getEnv('appEnvironment'),
             {clientAppName} = this.appSpec;
@@ -347,5 +346,15 @@ export class AppContainerModel extends HoistModel {
         const terminalStates: AppState[] = ['RUNNING', 'SUSPENDED', 'LOAD_FAILED', 'ACCESS_DENIED'],
             loadingPromise = mobxWhen(() => terminalStates.includes(this.appStateModel.state));
         loadingPromise.linkTo(this.appLoadModel);
+    }
+
+    private setViewportContent(content: string) {
+        const vp = document.querySelector('meta[name=viewport]');
+        vp?.setAttribute('content', content);
+    }
+
+    private getViewportContent(): string {
+        const vp = document.querySelector('meta[name=viewport]');
+        return vp ? vp.getAttribute('content') : '';
     }
 }
