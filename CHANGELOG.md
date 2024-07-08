@@ -14,7 +14,7 @@ simple matter of moving code from `HoistAppModel.preInitAsync()` and `HoistAppMo
 (now removed) to new overrides of `HoistAuthModel.completeAuthAsync()` and `HoistAuthModel.logoutAsync()`.
 See `HoistAuthModel` for more info.
 * Added support for Correlation ID's across fetch requests and error / activity tracking:
-    * Requires `hoist-core >= v19.0.0`.
+    * Requires `hoist-core >= v21.0.0`.
     * Correlation ID's are exposed in `Admin` > `Activity` > `Tracking` and `Client Errors` tabs.
     * `FetchService` now has `setCorrelationIdHeaderKey` and `enableCorrelationIds` methods for
       specifying a Correlation ID header key and globally enabling Correlation ID generation
