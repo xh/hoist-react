@@ -10,7 +10,7 @@ import {fmtNumber} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {wait} from '@xh/hoist/promise';
-import {debounced, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber, round} from 'lodash';
 import './NumberInput.scss';
@@ -122,11 +122,6 @@ class NumberInputModel extends HoistInputModel {
     onValueChange = ev => {
         this.noteValueChange(ev.target.value);
     };
-
-    @debounced(250)
-    override doCommitOnChangeInternal() {
-        super.doCommitOnChangeInternal();
-    }
 
     override toInternal(val) {
         if (isNaN(val)) return val;

@@ -11,7 +11,7 @@ import '@xh/hoist/desktop/register';
 import {fmtNumber, parseNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
-import {debounced, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isNaN, isNil, isNumber, round} from 'lodash';
 import {KeyboardEventHandler, ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
@@ -144,11 +144,6 @@ class NumberInputModel extends HoistInputModel {
     onValueChange = (val, valAsString) => {
         this.noteValueChange(valAsString);
     };
-
-    @debounced(250)
-    override doCommitOnChangeInternal() {
-        super.doCommitOnChangeInternal();
-    }
 
     override toInternal(val: number): number {
         if (isNaN(val)) return val;
