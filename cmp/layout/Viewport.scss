@@ -3,6 +3,7 @@
   top: 0;
   left: 0;
   /* stylelint-disable */
+  // Fallbacks for secure client browsers that don't support dynamic viewport units.
   width: 100vw;
   width: 100svw;
   height: 100vh;

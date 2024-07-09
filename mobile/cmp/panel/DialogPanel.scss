@@ -1,20 +1,18 @@
 // Sizing below designed to ensure that DialogPanel occupies the entire (safe) area of the screen.
 .xh-dialog-panel {
   & > .dialog {
-    /* stylelint-disable */
+    // Fallbacks for secure client browsers that don't support dynamic viewport units.
     width: 100vw;
     width: 100svw;
     max-height: 100vh !important;
     max-height: 100dvh !important;
-    /* stylelint-enable */
 
     .dialog-container {
-      /* stylelint-disable */
+      // Fallbacks for secure client browsers that don't support dynamic viewport units.
       height: 100vh;
       height: 100dvh;
       max-width: 100vw !important;
       max-width: 100svw !important;
-      /* stylelint-enable */
 
       border: 0 !important;
 
