@@ -4,7 +4,8 @@
 
 ### 🎁 New Features
 
-* New option for `XH.reloadApp` to reload specific app path
+* New option for `XH.reloadApp` to reload specific app path.
+* Added `headerTooltip` prop to `ColumnGroup`.
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM)
 * New `HoistAuthModel` consolidates and exposes the client-side authentication lifecycle in a single
