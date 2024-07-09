@@ -2,8 +2,12 @@
   background-color: var(--xh-viewport-bg);
   top: 0;
   left: 0;
+  /* stylelint-disable */
+  width: 100vw;
+  height: 100vh;
   width: 100svw;
   height: 100dvh;
+  /* stylelint-enable */
 }
 
 // On mobile, this works in concert with modification to the viewport meta tag within AppContainerModel
