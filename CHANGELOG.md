@@ -20,7 +20,8 @@
 
 * Updated `.xh-viewport` sizing styles and mobile `dialog` sizing to use `dvw/dvh` instead of prior
   `svw/svh` - resolves edge case mobile issue where redirects back from an OAuth flow could leave
-  an unexpected gap across the bottom of the screen.
+  an unexpected gap across the bottom of the screen. Include fallback for secure client browsers
+  that don't support dynamic viewport units.
 * Updated mobile `TabContainer` to flex properly within flexbox containers.
 * Fixed timing issue with missing validation for records added immediately to new store.
 * Fixed CSS bug in which date picker dates wrapped when `dateEditor` used in a grid in a dialog.
