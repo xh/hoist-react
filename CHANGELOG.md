@@ -1,5 +1,7 @@
 # Changelog
 
+## 67.0.0-SNAPSHOT - unreleased
+
 ## 66.0.0 - 2024-07-09
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - minor adjustments to client-side auth)
