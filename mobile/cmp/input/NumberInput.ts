@@ -12,7 +12,7 @@ import '@xh/hoist/mobile/register';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import {isNaN, isNil, isNumber, round} from 'lodash';
+import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import './NumberInput.scss';
 
 export interface NumberInputProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
@@ -122,6 +122,14 @@ class NumberInputModel extends HoistInputModel {
     onValueChange = ev => {
         this.noteValueChange(ev.target.value);
     };
+
+    /** TODO: Completely remove the debounce, or find and verify a reason why we need it set to 250. */
+    override doCommitOnChangeInternal() {
+        debounce(
+            () => super.doCommitOnChangeInternal(),
+            withDefault(this.componentProps.commitOnChangeDebounce, 250)
+        )();
+    }
 
     override toInternal(val) {
         if (isNaN(val)) return val;

@@ -13,7 +13,7 @@ import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import {isNaN, isNil, isNumber, round} from 'lodash';
+import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import {KeyboardEventHandler, ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
 
 export interface NumberInputProps extends HoistProps, LayoutProps, StyleProps, HoistInputProps {
@@ -144,6 +144,14 @@ class NumberInputModel extends HoistInputModel {
     onValueChange = (val, valAsString) => {
         this.noteValueChange(valAsString);
     };
+
+    /** TODO: Completely remove the debounce, or find and verify a reason why we need it set to 250. */
+    override doCommitOnChangeInternal() {
+        debounce(
+            () => super.doCommitOnChangeInternal(),
+            withDefault(this.componentProps.commitOnChangeDebounce, 250)
+        )();
+    }
 
     override toInternal(val: number): number {
         if (isNaN(val)) return val;
