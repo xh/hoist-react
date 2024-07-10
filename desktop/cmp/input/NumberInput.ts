@@ -11,9 +11,9 @@ import '@xh/hoist/desktop/register';
 import {fmtNumber, parseNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
-import {debounced, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import {isNaN, isNil, isNumber, round} from 'lodash';
+import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import {KeyboardEventHandler, ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
 
 export interface NumberInputProps extends HoistProps, LayoutProps, StyleProps, HoistInputProps {
@@ -145,9 +145,12 @@ class NumberInputModel extends HoistInputModel {
         this.noteValueChange(valAsString);
     };
 
-    @debounced(250)
+    /** TODO: Completely remove the debounce, or find and verify a reason why we need it set to 250. */
     override doCommitOnChangeInternal() {
-        super.doCommitOnChangeInternal();
+        debounce(
+            () => super.doCommitOnChangeInternal(),
+            withDefault(this.componentProps.commitOnChangeDebounce, 250)
+        )();
     }
 
     override toInternal(val: number): number {
