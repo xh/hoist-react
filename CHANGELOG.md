@@ -2,6 +2,10 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed bug where inline grid edit of NumberInput was lost after quick navigation.
+
 ## 66.0.0 - 2024-07-09
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - minor adjustments to client-side auth)
@@ -27,7 +31,6 @@
 * Updated mobile `TabContainer` to flex properly within flexbox containers.
 * Fixed timing issue with missing validation for records added immediately to new store.
 * Fixed CSS bug in which date picker dates wrapped when `dateEditor` used in a grid in a dialog.
-* Fixed bug where inline grid edit of NumberInput was lost after quick navigation.
 
 ## 65.0.0 - 2024-06-26
 
