@@ -5,13 +5,13 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistBase, managed, XH} from '@xh/hoist/core';
+import {action, makeObservable} from '@xh/hoist/mobx';
 import {Token, TokenMap} from '@xh/hoist/security/Token';
 import {Timer} from '@xh/hoist/utils/async';
-import {MINUTES, olderThan, SECONDS} from '@xh/hoist/utils/datetime';
+import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
 import {isJSON, throwIf} from '@xh/hoist/utils/js';
 import {find, forEach, isEmpty, isObject, keys, pickBy, union} from 'lodash';
 import {v4 as uuid} from 'uuid';
-import {action, makeObservable} from '@xh/hoist/mobx';
 
 export type LoginMethod = 'REDIRECT' | 'POPUP';
 
@@ -20,14 +20,14 @@ export interface BaseOAuthClientConfig<S> {
     clientId: string;
 
     /**
-     * The redirect URL where authentication responses can be received by your application.
+     * Redirect URL where authentication responses can be received by your application.
      * It must exactly match one of the redirect URIs registered in the relevant OAuth authority.
      * Default is 'APP_BASE_URL' which will be replaced with the current app's base URL.
      */
     redirectUrl?: 'APP_BASE_URL' | string;
 
     /**
-     * The redirect URL after a successful logout.
+     * Redirect URL after a successful logout.
      * Default is 'APP_BASE_URL' which will be replaced with the current app's base URL.
      */
     postLogoutRedirectUrl?: 'APP_BASE_URL' | string;
@@ -96,7 +96,7 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     /** Config loaded from UI server + init method. */
     protected config: C;
 
-    /** Id Scopes */
+    /** ID Scopes */
     protected idScopes: string[];
 
     /** Specification for Access Tokens **/
@@ -165,7 +165,7 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     }
 
     /**
-     * Get a Access token.
+     * Get an Access token.
      */
     async getAccessTokenAsync(key: string): Promise<Token> {
         return this.fetchAccessTokenAsync(this.accessSpecs[key], true);
@@ -181,7 +181,7 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     /**
      * The last authenticated OAuth username.
      *
-     * Provided to facilitate more efficient re-login via SSO or otherwise.  Cleared on logout.
+     * Provided to facilitate more efficient re-login via SSO or otherwise. Cleared on logout.
      * Note: not necessarily a currently authenticated user, and not necessarily the Hoist username.
      */
     getSelectedUsername(): string {
@@ -312,18 +312,18 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     // Implementation
     //-------------------
     private async fetchIdTokenSafeAsync(useCache: boolean): Promise<Token> {
-        // Client libraries can apparently return expired idIokens when using local cache.
+        // Client libraries can apparently return expired id tokens when using local cache.
         // See: https://github.com/auth0/auth0-spa-js/issues/1089 and
         // https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/4206
         // Protect ourselves from this, without losing benefits of local cache.
         let ret = await this.fetchIdTokenAsync(useCache);
-        if (useCache && ret.expiresWithin(1 * MINUTES)) {
-            this.logDebug('Stale Id Token loaded from the cache, reloading without cache.');
+        if (useCache && ret.expiresWithin(ONE_MINUTE)) {
+            this.logDebug('Stale ID Token loaded from the cache, reloading without cache.');
             ret = await this.fetchIdTokenAsync(false);
         }
 
         // Paranoia -- we don't expect this after workaround above to skip cache
-        throwIf(ret.expiresWithin(1 * MINUTES), 'Cannot get valid Id Token from provider.');
+        throwIf(ret.expiresWithin(ONE_MINUTE), 'Cannot get valid ID Token from provider.');
         return ret;
     }
 
