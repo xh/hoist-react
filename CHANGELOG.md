@@ -2,6 +2,12 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Improved redirect handling within beta `MsalClient` to use Hoist-provided blank URL (an empty,
+  static page) for all iFrame-based "silent" token requests, as per MS recommendations. Intended to
+  avoid potential race conditions triggered by redirecting to the base app URL in these cases.
+
 ## 66.0.1 - 2024-07-10
 
 ### 🐞 Bug Fixes
