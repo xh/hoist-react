@@ -283,13 +283,21 @@ details.
 There are some common breaking changes that most/many apps will need to address:
 
 * CSS rules with the `bp4-` prefix should be updated to use the `bp5-` prefix.
-* For `popover` and `tooltip` components, replace `target` with `item` if using elementFactory.
-  If using JSX, replace `target` prop with a child element. Also applies to the mobile `popover`.
-* Popovers no longer have a popover-wrapper element - remove/replace any CSS rules
-  targeting `bp4-popover-wrapper`.
-* All components which render popovers now depend
-  on [`popper.js v2.x`](https://popper.js.org/docs/v2/). Complex customizations to popovers may
-  need to be reworked.
+* Popovers
+  * For `popover` and `tooltip` components, replace `target` with `item` if using elementFactory.
+    If using JSX, replace `target` prop with a child element. Also applies to the mobile `popover`.
+  * Popovers no longer have a popover-wrapper element - remove/replace any CSS rules
+    targeting `bp4-popover-wrapper`.
+  * All components which render popovers now depend
+    on [`popper.js v2.x`](https://popper.js.org/docs/v2/). Complex customizations to popovers may
+    need to be reworked.
+  * A breaking change to `Popover` in BP5 was splitting the `boundary` prop into `rootBoundary` and `boundary`:
+    Popovers were frequently set up with `boundary: 'viewport'`, which is no longer valid since
+    "viewport" can be assigned to the `rootBoundary` but not to the `boundary`.
+    However, viewport is the DEFAULT value for `rootBoundary` per [popper.js docs](https://popper.js.org/docs/v2/utils/detect-overflow/#boundary),
+    so `boundary: 'viewport'` should be safe to remove entirely.
+      * [see Blueprint's Popover2 migration guide](https://github.com/palantir/blueprint/wiki/Popover2-migration)
+      * [see Popover2's `boundary` & `rootBoundary` docs](https://popper.js.org/docs/v2/utils/detect-overflow/#boundary)
 * Where applicable, the former `elementRef` prop has been replaced by the simpler, more
   straightforward `ref` prop using `React.forwardRef()` - e.g. Hoist's `button.elementRef` prop
   becomes just `ref`. Review your app for uses of `elementRef`.
