@@ -72,6 +72,7 @@ function parseItems(items: MenuItemLike[]): ReactNode[] {
                 intent: item.intent,
                 className: item.className,
                 onClick: item.actionFn ? () => wait().then(item.actionFn) : null, // do async to allow menu to close
+                popoverProps: {usePortal: true},
                 disabled: item.disabled,
                 items
             });

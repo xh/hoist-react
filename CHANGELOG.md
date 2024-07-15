@@ -7,6 +7,15 @@
 * Improved redirect handling within beta `MsalClient` to use Hoist-provided blank URL (an empty,
   static page) for all iFrame-based "silent" token requests, as per MS recommendations. Intended to
   avoid potential race conditions triggered by redirecting to the base app URL in these cases.
+* Fixed bug where `ContextMenu` items were being improperly positioned.
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - uncommon use case)
+
+* `MenuItems` inside a desktop `ContextMenu` are now rendered in a portal, outside the normal
+  component hierarchy. This change was made to ensure that menu items are positioned properly
+  relative to their parent.  It should not affect the vast majority of applications, but could
+  impact apps that rely on specific CSS selectors targeting the previous DOM structure.
+
 
 ## 66.0.1 - 2024-07-10
 
