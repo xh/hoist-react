@@ -50,7 +50,7 @@ export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'titl
     /** Icon to be used when the panel is collapsed. Defaults to `icon`. */
     collapsedIcon?: ReactElement;
 
-    /** Context Menu to show on context clicking this panel. */
+    /** Context menu to show on a right-click within this panel. */
     contextMenu?: ContextMenuSpec;
 
     /**

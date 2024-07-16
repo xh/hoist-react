@@ -13,7 +13,7 @@ import {clone, isEmpty, isString} from 'lodash';
 import {isValidElement, ReactElement, ReactNode} from 'react';
 
 /**
- * A context menu is specified as  an array of items, a function to generate one from a click, or
+ * A context menu is specified as an array of items, a function to generate one from a click, or
  * a full element representing a contextMenu Component.
  */
 export type ContextMenuSpec = MenuItemLike[] | ((e: MouseEvent) => MenuItemLike[]) | ReactElement;
@@ -23,12 +23,11 @@ export interface ContextMenuProps extends HoistProps {
 }
 
 /**
- * ContextMenu
+ * Component for a right-click context menu. Not typically used directly by applications - use
+ * the {@link useContextMenu} hook to add a context menu to an app component, or leverage Panel's
+ * built-in support via {@link PanelProps.contextMenu}.
  *
- * Not typically used directly by applications.  To add a Context Menu to an application
- * see ContextMenuHost, or the `contextMenu` prop on panel.
- *
- * See {@link GridContextMenu} to specify a context menu on Grid and DataView components.
+ * See {@link GridContextMenuSpec} to specify a context menu on `Grid` and `DataView` components.
  * That API will receive specific information about the current selection
  */
 export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>({

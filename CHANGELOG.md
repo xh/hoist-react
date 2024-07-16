@@ -7,36 +7,32 @@
 * Improved redirect handling within beta `MsalClient` to use Hoist-provided blank URL (an empty,
   static page) for all iFrame-based "silent" token requests, as per MS recommendations. Intended to
   avoid potential race conditions triggered by redirecting to the base app URL in these cases.
-* Fixed bug where `ContextMenu` items were being improperly positioned.
-
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - uncommon use case)
-
-* `MenuItems` inside a desktop `ContextMenu` are now rendered in a portal, outside the normal
-  component hierarchy. This change was made to ensure that menu items are positioned properly
-  relative to their parent.  It should not affect the vast majority of applications, but could
-  impact apps that rely on specific CSS selectors targeting the previous DOM structure.
-
+* Fixed bug where `ContextMenu` items could be improperly positioned.
+    * ⚠️Note that `MenuItems` inside a desktop `ContextMenu` are now rendered in a portal, outside
+      the normal component hierarchy, to ensures that menu items are positioned properly relative to
+      their parent. It should not affect most apps, but could impact menu style customizations that
+      rely on specific CSS selectors targeting the previous DOM structure.
 
 ## 66.0.1 - 2024-07-10
 
 ### 🐞 Bug Fixes
 
-* Fixed bug where inline grid edit of NumberInput was lost after quick navigation.
+* Fixed bug where inline grid edit of `NumberInput` was lost after quick navigation.
 
 ## 66.0.0 - 2024-07-09
 
-### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - minor adjustments to client-side auth)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor adjustments to client-side auth)
 
 * New `HoistAuthModel` exposes the client-side authentication lifecycle via a newly consolidated,
   overridable API. This new API provides more easy customization of auth across all client-side
   apps by being easily overrideable and specified via the `AppSpec` passed to `XH.renderApp()`.
-    * In most cases, upgrading should be a simple matter of moving code
-      from `HoistAppModel.preAuthInitAsync()` and `logoutAsync()` (both removed) to new overrides
-      of `HoistAuthModel.completeAuthAsync()` and `logoutAsync()`.
+    * In most cases, upgrading should be a simple matter of moving code from `HoistAppModel` methods
+      `preAuthInitAsync()` and `logoutAsync()` (removed by this change) to new `HoistAuthModel`
+      methods `completeAuthAsync()` and `logoutAsync()`.
 
 ### 🎁 New Features
 
-* New option for `XH.reloadApp` to reload specific app path.
+* Added option to `XH.reloadApp()` to reload specific app path.
 * Added `headerTooltip` prop to `ColumnGroup`.
 
 ### 🐞 Bug Fixes
@@ -46,7 +42,7 @@
   an unexpected gap across the bottom of the screen. Includes fallback for secure client browsers
   that don't support dynamic viewport units.
 * Updated mobile `TabContainer` to flex properly within flexbox containers.
-* Fixed timing issue with missing validation for records added immediately to new store.
+* Fixed timing issue with missing validation for records added immediately to a new `Store`.
 * Fixed CSS bug in which date picker dates wrapped when `dateEditor` used in a grid in a dialog.
 
 ## 65.0.0 - 2024-06-26
@@ -293,20 +289,23 @@ There are some common breaking changes that most/many apps will need to address:
 
 * CSS rules with the `bp4-` prefix should be updated to use the `bp5-` prefix.
 * Popovers
-  * For `popover` and `tooltip` components, replace `target` with `item` if using elementFactory.
-    If using JSX, replace `target` prop with a child element. Also applies to the mobile `popover`.
-  * Popovers no longer have a popover-wrapper element - remove/replace any CSS rules
-    targeting `bp4-popover-wrapper`.
-  * All components which render popovers now depend
-    on [`popper.js v2.x`](https://popper.js.org/docs/v2/). Complex customizations to popovers may
-    need to be reworked.
-  * A breaking change to `Popover` in BP5 was splitting the `boundary` prop into `rootBoundary` and `boundary`:
-    Popovers were frequently set up with `boundary: 'viewport'`, which is no longer valid since
-    "viewport" can be assigned to the `rootBoundary` but not to the `boundary`.
-    However, viewport is the DEFAULT value for `rootBoundary` per [popper.js docs](https://popper.js.org/docs/v2/utils/detect-overflow/#boundary),
-    so `boundary: 'viewport'` should be safe to remove entirely.
-      * [see Blueprint's Popover2 migration guide](https://github.com/palantir/blueprint/wiki/Popover2-migration)
-      * [see Popover2's `boundary` & `rootBoundary` docs](https://popper.js.org/docs/v2/utils/detect-overflow/#boundary)
+    * For `popover` and `tooltip` components, replace `target` with `item` if using elementFactory.
+      If using JSX, replace `target` prop with a child element. Also applies to the
+      mobile `popover`.
+    * Popovers no longer have a popover-wrapper element - remove/replace any CSS rules
+      targeting `bp4-popover-wrapper`.
+    * All components which render popovers now depend
+      on [`popper.js v2.x`](https://popper.js.org/docs/v2/). Complex customizations to popovers may
+      need to be reworked.
+    * A breaking change to `Popover` in BP5 was splitting the `boundary` prop into `rootBoundary`
+      and `boundary`:
+      Popovers were frequently set up with `boundary: 'viewport'`, which is no longer valid since
+      "viewport" can be assigned to the `rootBoundary` but not to the `boundary`.
+      However, viewport is the DEFAULT value for `rootBoundary`
+      per [popper.js docs](https://popper.js.org/docs/v2/utils/detect-overflow/#boundary),
+      so `boundary: 'viewport'` should be safe to remove entirely.
+        * [see Blueprint's Popover2 migration guide](https://github.com/palantir/blueprint/wiki/Popover2-migration)
+        * [see Popover2's `boundary` & `rootBoundary` docs](https://popper.js.org/docs/v2/utils/detect-overflow/#boundary)
 * Where applicable, the former `elementRef` prop has been replaced by the simpler, more
   straightforward `ref` prop using `React.forwardRef()` - e.g. Hoist's `button.elementRef` prop
   becomes just `ref`. Review your app for uses of `elementRef`.
