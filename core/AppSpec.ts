@@ -31,20 +31,20 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
     clientAppName?: string;
 
     /**
-     * Root Model class for the application. Note this is a reference
-     * to the class itself, not an instance, and must extend {@link HoistAppModel}.
+     * Root Model class for the application. Note this is a reference to the class itself, not an
+     * instance, and must extend {@link HoistAppModel}.
      */
     modelClass: new () => T;
 
     /**
-     * AuthModel class for the application.  Note this is a reference to
-     * the class itself, not an instance, and must extend {@link HoistAuthModel}.
+     * AuthModel class for the application.  Note this is a reference to the class itself, not an
+     * instance, and must extend {@link HoistAuthModel}.
      */
     authModelClass?: new () => HoistAuthModel;
 
     /**
-     * Root HoistComponent for the application. Despite the name,
-     * functional components are fully supported and expected.
+     * Root HoistComponent for the application. Despite the name, functional components are fully
+     * supported and expected.
      */
     componentClass: ComponentClass<HoistProps> | FunctionComponent<HoistProps>;
 
@@ -62,17 +62,14 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
     enableLoginForm?: boolean;
 
     /**
-     * True to show logout options in the app.
-     *
-     * For apps with auth schemes that can support this operation (e.g. OAuth).  (default false)
+     * True to show logout options in the app, for apps with auth schemes that can support this
+     * operation (e.g. OAuth). (default false)
      */
     enableLogout?: boolean;
 
     /**
      * Method for determining if user may access the app.
      * If a string, will be interpreted as the role required for basic UI access.
-     * Otherwise, function taking a user and returning a boolean or an object of the form
-     * `{hasAccess: boolean, message: 'explanatory message'}`.
      */
     checkAccess: string | ((user: object) => boolean | {hasAccess: boolean; message: string});
 
@@ -82,7 +79,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
      */
     trackAppLoad?: boolean;
 
-    /** Enable Hoist websocket connectivity? (default false) */
+    /** True to enable Hoist websocket connectivity. (default false) */
     webSocketsEnabled?: boolean;
 
     /**
@@ -115,7 +112,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
     /**
      * True to disable Field-level XSS protection by default across all Stores/Fields in the app.
      * For use with secure, internal apps that do not display arbitrary/external user input and
-     * have tight performance tolerances and/or load very large recordsets.
+     * have tight performance tolerances and/or load very large record sets.
      * @see FieldConfig.disableXssProtection
      */
     disableXssProtection?: boolean;
