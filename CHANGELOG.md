@@ -4,8 +4,8 @@
 
 ### 🎁 New Features
 
-* Enhanced `markdown` component to support a `components` prop to map standard html tags to
-  custom components.
+* Enhanced `markdown` component to support the underlying `components` prop from
+  `react-markdown`. Use this prop to customize markdown rendering.
 
 ## 66.0.2 - 2024-07-17
 
