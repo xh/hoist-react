@@ -6,46 +6,17 @@
  */
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {reactMarkdown} from '@xh/hoist/kit/react-markdown';
-import {ReactElement} from 'react';
+import {Components} from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import {PluggableList} from 'unified/lib';
-
-type ValidElements =
-    | 'a'
-    | 'blockquote'
-    | 'br'
-    | 'code'
-    | 'em'
-    | 'h1'
-    | 'h2'
-    | 'h3'
-    | 'h4'
-    | 'h5'
-    | 'h6'
-    | 'hr'
-    | 'img'
-    | 'li'
-    | 'ol'
-    | 'p'
-    | 'pre'
-    | 'strong'
-    | 'ul'
-    | 'del'
-    | 'input'
-    | 'table'
-    | 'tbody'
-    | 'td'
-    | 'th'
-    | 'thead'
-    | 'tr';
 
 interface MarkdownProps extends HoistProps {
     /** Markdown formatted string to render. */
     content: string;
 
-    /** Map of html tags to render functions. */
-    components?: Record<ValidElements, () => ReactElement>;
+    /** Map of html tags to components. */
+    components?: Components;
 
     /** True (default) to render new lines with <br/> tags. */
     lineBreaks?: boolean;
