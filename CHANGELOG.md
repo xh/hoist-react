@@ -2,6 +2,8 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
+## 66.0.2 - 2024-07-17
+
 ### 🐞 Bug Fixes
 
 * Improved redirect handling within beta `MsalClient` to use Hoist-provided blank URL (an empty,
