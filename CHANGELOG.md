@@ -2,6 +2,11 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Enhanced `markdown` component to support the underlying `components` prop from
+  `react-markdown`. Use this prop to customize markdown rendering.
+
 ## 66.0.2 - 2024-07-17
 
 ### 🐞 Bug Fixes
