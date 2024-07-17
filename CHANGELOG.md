@@ -2,6 +2,11 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Enhanced `markdown` component to support a `components` prop to map standard html tags to
+  custom components.
+
 ## 66.0.2 - 2024-07-17
 
 ### 🐞 Bug Fixes
