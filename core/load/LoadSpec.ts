@@ -41,15 +41,8 @@ export type LoadSpecConfig = {
 };
 
 export class LoadSpec {
-    get isLoadSpec(): boolean {
-        return true;
-    }
-
     /** Unique identifier for tracking and logging. */
     correlationId?: string;
-
-    /** index of the associated load on this object. 0 for the first load. */
-    loadNumber: number;
 
     /** True if triggered by a refresh request (automatic or user). */
     isRefresh: boolean;
@@ -57,14 +50,17 @@ export class LoadSpec {
     /** true if triggered by an automatic refresh process. */
     isAutoRefresh: boolean;
 
+    /** Application specific information about the load request */
+    meta: PlainObject;
+
     /** Time the load started. */
     dateCreated: Date;
 
+    /** index of the associated load on this object. 0 for the first load. */
+    loadNumber: number;
+
     /** Owner of this object. */
     owner: LoadSupport;
-
-    /** Application specific information about the load request */
-    meta: PlainObject;
 
     /** True if a more recent request to load this object's owner has *started*. */
     get isStale(): boolean {
@@ -90,10 +86,8 @@ export class LoadSpec {
      *
      * Not for direct application use -- LoadSpecs are constructed by Hoist internally.
      */
-    constructor(
-        {correlationId, isRefresh, isAutoRefresh, meta}: LoadSpecConfig = {},
-        owner: LoadSupport
-    ) {
+    constructor(config: LoadSpecConfig, owner: LoadSupport) {
+        const {correlationId, isRefresh, isAutoRefresh, meta} = config;
         this.correlationId =
             correlationId === true ? XH.fetchService.generateCorrelationId() : correlationId;
         this.isRefresh = !!(isRefresh || isAutoRefresh);

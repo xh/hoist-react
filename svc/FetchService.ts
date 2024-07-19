@@ -18,7 +18,7 @@ import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 import {throwIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
-import {compact, isDate, isFunction, isNil, omitBy} from 'lodash';
+import {compact, isDate, isFunction, isNil, isString, omit, omitBy} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
 import {v4} from 'uuid';
 
@@ -108,10 +108,9 @@ export class FetchService extends HoistService {
      * @returns Promise which resolves to a Fetch Response.
      */
     fetch(opts: FetchOptions): Promise<FetchResponse> {
-        const ret = this.withDefaultsAsync(opts).then(opts => {
-            ret['correlationId'] = opts.correlationId;
-            return this.managedFetchAsync(opts);
-        });
+        opts = this.withResolvedCorrelationId(opts);
+        const ret = this.withDefaultHeadersAsync(opts).then(opts => this.managedFetchAsync(opts));
+        ret.correlationId = opts.correlationId as string;
         return ret;
     }
 
@@ -120,15 +119,16 @@ export class FetchService extends HoistService {
      * @returns the decoded JSON object, or null if the response has status in {@link NO_JSON_RESPONSES}.
      */
     fetchJson(opts: FetchOptions): Promise<any> {
-        const ret = this.withDefaultsAsync(opts, {Accept: 'application/json'}).then(opts =>
+        opts = this.withResolvedCorrelationId(opts);
+        const ret = this.withDefaultHeadersAsync(opts, {Accept: 'application/json'}).then(opts =>
             this.managedFetchAsync(opts, async r => {
                 if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
-                ret['correlationId'] = opts.correlationId;
                 return r.json().catchWhen('SyntaxError', e => {
                     throw Exception.fetchJsonParseError(opts, e);
                 });
             })
         );
+        ret.correlationId = opts.correlationId as string;
         return ret;
     }
 
@@ -190,17 +190,26 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
-    private async withDefaultsAsync(
+
+    /** Resolve convenience options for Correlation ID to server-ready string */
+    private withResolvedCorrelationId(opts: FetchOptions): FetchOptions {
+        if (isString(opts.correlationId)) return opts;
+        if (opts.correlationId === false) return omit(opts, 'correlationId');
+
+        let correlationId = opts.loadSpec?.correlationId;
+        if (!correlationId && this.autoGenerateCorrelationIds) {
+            correlationId = this.generateCorrelationId();
+        }
+
+        return {...opts, correlationId};
+    }
+
+    private async withDefaultHeadersAsync(
         opts: FetchOptions,
         extraHeaders: PlainObject = null
     ): Promise<FetchOptions> {
-        const {correlationIdHeaderKey} = this,
-            method = opts.method ?? (opts.params ? 'POST' : 'GET'),
-            isPost = method === 'POST',
-            correlationId =
-                (opts.correlationId ?? this.autoGenerateCorrelationIds) === true
-                    ? opts.loadSpec?.correlationId ?? this.generateCorrelationId()
-                    : opts.correlationId;
+        const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
+            isPost = method === 'POST';
 
         const defaultHeaders = {};
         for (const h of this.defaultHeaders) {
@@ -214,12 +223,13 @@ export class FetchService extends HoistService {
             ...opts.headers
         };
 
-        if (correlationId) {
+        const {correlationIdHeaderKey} = this;
+        if (opts.correlationId) {
             throwIf(headers[correlationIdHeaderKey], 'Correlation ID already set via Fetch API.');
-            headers[correlationIdHeaderKey] = correlationId;
+            headers[correlationIdHeaderKey] = opts.correlationId;
         }
 
-        return {...opts, method, headers, correlationId};
+        return {...opts, method, headers};
     }
 
     private async managedFetchAsync(

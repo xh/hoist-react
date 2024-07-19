@@ -92,6 +92,11 @@ declare global {
          * @param options - TrackOptions, or simply a message string.
          */
         track(options: TrackOptions | string): Promise<T>;
+
+        /**
+         * @internal
+         */
+        correlationId?: string;
     }
 }
 

@@ -57,7 +57,7 @@ export class LoadSupport extends HoistBase implements Loadable {
             'Unexpected param passed to loadAsync().  If triggered via a reaction ' +
                 'ensure call is wrapped in a closure.'
         );
-        const newSpec = new LoadSpec(loadSpec, this);
+        const newSpec = new LoadSpec(loadSpec ?? {}, this);
 
         return this.doLoadAsync(newSpec);
     }
