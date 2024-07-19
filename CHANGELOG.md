@@ -8,7 +8,7 @@
   `react-markdown`. Use this prop to customize markdown rendering.
 * Added support for Correlation ID's across fetch requests and error / activity tracking:
     * Requires `hoist-core >= v21.0.0`.
-    * Correlation ID's are exposed in `Admin` > `Activity` > `Tracking` and `Client Errors` tabs.
+    * Correlation ID's are exposed in `Admin` > `User Activity` > `Tracking` and `Client Errors` tabs.
     * `FetchService` now has `setCorrelationIdHeaderKey` and `enableCorrelationIds` methods for
       specifying a Correlation ID header key and globally enabling Correlation ID generation
       unless explicitly overridden via the following configs:
