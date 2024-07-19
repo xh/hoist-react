@@ -1116,13 +1116,13 @@
   dependencies:
     tslib "~2.6.2"
 
-"@blueprintjs/core@^5.10.3":
-  version "5.10.3"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-5.10.3.tgz#92daf209ceb1b4bc33c3fb8c53287e63430bf0b9"
-  integrity sha512-QlfvAkZOimeyJKs9+EKd52nYfHd1yltSJQLAmv0+0wF/5m+eQ5jeWjF8Mr/vwq2EqiC3pS2+i3mivORvxXTgDg==
+"@blueprintjs/core@^5.10.5":
+  version "5.10.5"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-5.10.5.tgz#cdc993007b0e9950ef5804773e1a25b4293b7b8b"
+  integrity sha512-mvTB+Ox31nt9830hEgVOi/A53QI71hpOzV/7i3ZgzzrYAaEGgFMcwa7X0kn9PSOGfxw87nWL9VpYSirnzpC6lw==
   dependencies:
     "@blueprintjs/colors" "^5.1.1"
-    "@blueprintjs/icons" "^5.9.0"
+    "@blueprintjs/icons" "^5.10.0"
     "@popperjs/core" "^2.11.8"
     classnames "^2.3.1"
     normalize.css "^8.0.1"
@@ -1132,51 +1132,50 @@
     tslib "~2.6.2"
     use-sync-external-store "^1.2.0"
 
-"@blueprintjs/datetime2@^2.3.5":
-  version "2.3.5"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime2/-/datetime2-2.3.5.tgz#05ec3ed8bdc4a5b344f3baeb60785fa99d8d720e"
-  integrity sha512-dEmLY52fVM4NrCsn9EedTsH8XVtMy+UW5g3u8RaJ5tfUQ4aeKjwiInHdmMp83co4PvR2EiL+n5czVRjJecLCNA==
+"@blueprintjs/datetime2@^2.3.7":
+  version "2.3.7"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime2/-/datetime2-2.3.7.tgz#f545f0bc9bdc5aa7677371690ba2ed0259edad2b"
+  integrity sha512-Q6IBo5hcvoDtH9FsFaysZhadXNS6iyhuyaRY+rJD3y3qLaUt6wiYDhw5LN6L4wuasbPO1g0lVDwY6bkGuIG4jg==
   dependencies:
-    "@blueprintjs/core" "^5.10.3"
-    "@blueprintjs/datetime" "^5.3.5"
-    "@blueprintjs/icons" "^5.9.0"
+    "@blueprintjs/core" "^5.10.5"
+    "@blueprintjs/datetime" "^5.3.7"
+    "@blueprintjs/icons" "^5.10.0"
     classnames "^2.3.1"
     date-fns "^2.28.0"
     react-day-picker "^8.10.0"
     react-innertext "^1.1.5"
     tslib "~2.6.2"
 
-"@blueprintjs/datetime@^5.3.5":
-  version "5.3.5"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-5.3.5.tgz#25936b05e158c79e6f496398e52b824e14c2fb51"
-  integrity sha512-bx69myARKe71u3GdCsKKWEvyw5QJFvCSOAKANCl0ZnZkiuiqJ6FxaxFrpJrV8nvXyyFifHdxlaRLbK/NwSbibw==
+"@blueprintjs/datetime@^5.3.7":
+  version "5.3.7"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-5.3.7.tgz#6c8cb197dc62f454e5ecebd17d7a293c51683ba1"
+  integrity sha512-6rDMqSU8jeiAlMxS30MYAQc4X1sfMGWwFjfs3IoKxJfcfieN+ytus5G+if6zjsSKUjdhL9+qBTgKRo3VJJEQ3g==
   dependencies:
-    "@blueprintjs/core" "^5.10.3"
-    "@blueprintjs/icons" "^5.9.0"
-    "@blueprintjs/select" "^5.1.5"
+    "@blueprintjs/core" "^5.10.5"
+    "@blueprintjs/icons" "^5.10.0"
+    "@blueprintjs/select" "^5.2.1"
     classnames "^2.3.1"
     date-fns "^2.28.0"
     date-fns-tz "^2.0.0"
-    lodash "^4.17.21"
     react-day-picker "7.4.9"
     tslib "~2.6.2"
 
-"@blueprintjs/icons@^5.9.0":
-  version "5.9.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-5.9.0.tgz#f1d6ebffa3033bbdd8ea05dbfa6fb8e5e88cf119"
-  integrity sha512-9W9DYFqSORBr1QPSEwpbjnftbU+hfWB/gFtpa4LdzR7VhtQaCdcrinyXFmNUFacQ9czYrmr72bP567Rv6pRUDg==
+"@blueprintjs/icons@^5.10.0":
+  version "5.10.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-5.10.0.tgz#fc49e2bbaf8843fb517f36b30dcff8d0ef415a9f"
+  integrity sha512-Qp9H2U2/m6+p0Lh9ACuF2O6o0uVINMFimo+EgasgGaLx8SkJsl7ApB3hYQ+iRSYlQWotnoqd4Vtzj4c7sKukHQ==
   dependencies:
     change-case "^4.1.2"
     classnames "^2.3.1"
     tslib "~2.6.2"
 
-"@blueprintjs/select@^5.1.5":
-  version "5.1.5"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-5.1.5.tgz#bcf17932d2da38dc91175d5240e5b0babf8012c7"
-  integrity sha512-7oSO6fmZ9lZpzPpAuxoIzgczTWvyNmUOxDUAzO5LltcKL5jNg9V8L/wADNvRTrr9MAw8IbVwEw5fPDeZ8iP3Vg==
+"@blueprintjs/select@^5.2.1":
+  version "5.2.1"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-5.2.1.tgz#a2569a075dedf9ad93daf143095f764f7eb95973"
+  integrity sha512-rXM9ik2mLd394g+sxwbHv2bGfrLbcdY9gFftqmJmm3vu7XJ2kRrsC1oOlNSC4dNBpUdHnyAzBTHEu81B1LkRbQ==
   dependencies:
-    "@blueprintjs/core" "^5.10.3"
-    "@blueprintjs/icons" "^5.9.0"
+    "@blueprintjs/core" "^5.10.5"
+    "@blueprintjs/icons" "^5.10.0"
     classnames "^2.3.1"
     tslib "~2.6.2"
 

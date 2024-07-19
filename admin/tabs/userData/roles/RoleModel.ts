@@ -17,7 +17,7 @@ import {wait} from '@xh/hoist/promise';
 import {compact, groupBy, mapValues} from 'lodash';
 import moment from 'moment/moment';
 import {RoleEditorModel} from './editor/RoleEditorModel';
-import {HoistRole, RoleMemberType, RoleModuleConfig} from './Types';
+import {HoistRole, RoleModuleConfig} from './Types';
 
 export class RoleModel extends HoistModel {
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
@@ -100,7 +100,26 @@ export class RoleModel extends HoistModel {
         this.gridModel.clear();
     }
 
+    async createAsync(roleSpec?: HoistRole): Promise<void> {
+        if (this.readonly) return;
+
+        const addedRole = await this.roleEditorModel.createAsync(roleSpec);
+        if (!addedRole) return;
+        await this.refreshAsync();
+        await this.gridModel.selectAsync(addedRole.name);
+    }
+
+    async editAsync(role: HoistRole): Promise<void> {
+        if (this.readonly) return;
+
+        const updatedRole = await this.roleEditorModel.editAsync(role);
+        if (!updatedRole) return;
+        await this.refreshAsync();
+    }
+
     async deleteAsync(role: HoistRole): Promise<boolean> {
+        if (this.readonly) return false;
+
         const confirm = await XH.confirm({
             icon: Icon.warning(),
             title: 'Confirm delete?',
@@ -108,17 +127,18 @@ export class RoleModel extends HoistModel {
             confirmProps: {intent: 'danger', text: 'Confirm Delete'}
         });
         if (!confirm) return false;
+
         await XH.fetchJson({
             url: `roleAdmin/delete/${role.name}`,
             method: 'DELETE'
         });
-        this.refreshAsync();
+        await this.refreshAsync();
         return true;
     }
 
-    // -------------------------------
+    //------------------
     // Actions
-    // -------------------------------
+    //------------------
     addAction(): RecordActionSpec {
         return {
             text: 'Add',
@@ -142,7 +162,7 @@ export class RoleModel extends HoistModel {
         };
     }
 
-    cloneAction(): RecordActionSpec {
+    private cloneAction(): RecordActionSpec {
         return {
             text: 'Clone',
             icon: Icon.copy(),
@@ -154,7 +174,7 @@ export class RoleModel extends HoistModel {
         };
     }
 
-    deleteAction(): RecordActionSpec {
+    private deleteAction(): RecordActionSpec {
         return {
             text: 'Delete',
             icon: Icon.delete(),
@@ -181,16 +201,10 @@ export class RoleModel extends HoistModel {
             }
         };
     }
-    async editAsync(role: HoistRole): Promise<void> {
-        const updatedRole = await this.roleEditorModel.editAsync(role);
-        if (!updatedRole) return;
-        await this.refreshAsync();
-    }
 
-    // -------------------------------
+    //------------------
     // Implementation
-    // -------------------------------
-
+    //------------------
     private displayRoles() {
         const {gridModel} = this,
             gridData = this.showInGroups
@@ -250,13 +264,6 @@ export class RoleModel extends HoistModel {
         return root;
     }
 
-    private async createAsync(roleSpec?: HoistRole): Promise<void> {
-        const addedRole = await this.roleEditorModel.createAsync(roleSpec);
-        if (!addedRole) return;
-        await this.refreshAsync();
-        await this.gridModel.selectAsync(addedRole.name);
-    }
-
     private createGridModel(): GridModel {
         return new GridModel({
             treeMode: true,
@@ -272,13 +279,6 @@ export class RoleModel extends HoistModel {
                 'xh-grid-clear-background-color': ({data}) => !data.data.isGroupRow
             },
             headerMenuDisplay: 'hover',
-            onRowDoubleClicked: ({data: record}) => {
-                if (!this.readonly && record && record.data.isGroupRow) {
-                    this.roleEditorModel
-                        .editAsync(record.data)
-                        .then(role => role && this.refreshAsync());
-                }
-            },
             persistWith: {...this.persistWith, path: 'mainGrid'},
             store: {
                 idSpec: ({id, name}) => {
@@ -344,7 +344,12 @@ export class RoleModel extends HoistModel {
                       '-',
                       this.groupByAction(),
                       ...GridModel.defaultContextMenu
-                  ]
+                  ],
+            onRowDoubleClicked: ({data: record}) => {
+                if (record && !record.data.isGroupRow) {
+                    this.editAsync(record.data as HoistRole);
+                }
+            }
         });
     }
 
@@ -383,16 +388,5 @@ export class RoleModel extends HoistModel {
             ]),
             persistWith: {...RoleModel.PERSIST_WITH, path: 'mainFilterChooser'}
         });
-    }
-
-    private getFieldForMemberType(type: RoleMemberType, effective: boolean): string {
-        switch (type) {
-            case 'USER':
-                return effective ? 'effectiveUserNames' : 'users';
-            case 'DIRECTORY_GROUP':
-                return effective ? 'effectiveDirectoryGroupNames' : 'directoryGroups';
-            case 'ROLE':
-                return effective ? 'effectiveRoleNames' : 'roles';
-        }
     }
 }

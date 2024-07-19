@@ -4,6 +4,8 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {withDefault} from '@xh/hoist/utils/js';
+import {isNil} from 'lodash';
 import {useCallback, useEffect} from 'react';
 import {CustomCellEditorProps, useGridCellEditor} from '@ag-grid-community/react';
 import {hoistCmp} from '@xh/hoist/core';
@@ -22,6 +24,16 @@ export const [NumberEditor, numberEditor] = hoistCmp.withFactory<NumberEditorPro
     observer: false,
     render(props, ref) {
         useNumberGuard(props.agParams);
+
+        // Make sure to override the NumberEditor debounce to 0 to prevent a bug where rapid changes are not saved.
+        if (isNil(props.inputProps)) props.inputProps = {};
+        // @ts-ignore
+        props.inputProps.commitOnChangeDebounce = withDefault(
+            // @ts-ignore
+            props.inputProps.commitOnChangeDebounce,
+            0
+        );
+
         return useInlineEditorModel(numberInput, props, ref);
     }
 });
