@@ -48,7 +48,7 @@ export class FetchService extends HoistService {
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
     private autoAborters = {};
-    private autoGenerateCorrelationIds = false;
+    private _autoGenerateCorrelationIds = false;
     private correlationIdPrefix: string;
     correlationIdHeaderKey: string = 'X-Correlation-ID';
     defaultHeaders: (PlainObject | ((arg: FetchOptions) => Awaitable<PlainObject>))[] = [];
@@ -58,8 +58,8 @@ export class FetchService extends HoistService {
      * Automatically generate a unique correlationId for all subsequent requests unless explicitly
      * provided via FetchOptions or LoadSpec.
      */
-    enableCorrelationIds(prefix = XH.appCode) {
-        this.autoGenerateCorrelationIds = true;
+    autoGenerateCorrelationIds(prefix?: string) {
+        this._autoGenerateCorrelationIds = true;
         this.correlationIdPrefix = prefix;
     }
 
@@ -73,7 +73,7 @@ export class FetchService extends HoistService {
     /**
      * Generate a unique correlationId, optionally prefixed with the provided string.
      */
-    generateCorrelationId(prefix = this.correlationIdPrefix) {
+    generateCorrelationId(prefix: string = this.correlationIdPrefix): string {
         return compact([prefix, v4()]).join('-');
     }
 
@@ -197,7 +197,7 @@ export class FetchService extends HoistService {
         if (opts.correlationId === false) return omit(opts, 'correlationId');
 
         let correlationId = opts.loadSpec?.correlationId;
-        if (!correlationId && this.autoGenerateCorrelationIds) {
+        if (!correlationId && this._autoGenerateCorrelationIds) {
             correlationId = this.generateCorrelationId();
         }
 
