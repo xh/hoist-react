@@ -7,6 +7,10 @@
 * Enhanced `markdown` component to support the underlying `components` prop from
   `react-markdown`. Use this prop to customize markdown rendering.
 
+### 🐞 Bug Fixes
+* The `Record.descendants` and `Record.allDescendants` getters were incorrectly returning the
+ record itself. This has been fixed.
+
 ## 66.0.2 - 2024-07-17
 
 ### 🐞 Bug Fixes
