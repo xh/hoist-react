@@ -6,6 +6,7 @@
 
 * Enhanced `markdown` component to support the underlying `components` prop from
   `react-markdown`. Use this prop to customize markdown rendering.
+* New `mergeDeep` method provided in `@xh/hoist/utils/js`.
 
 ## 66.0.2 - 2024-07-17
 
