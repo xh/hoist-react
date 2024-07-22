@@ -6,8 +6,8 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {LoadSupport} from './';
 import {PlainObject} from '../types/Types';
+import {LoadSupport} from './';
 
 /**
  * Object describing a load/refresh request in Hoist.
@@ -32,11 +32,11 @@ import {PlainObject} from '../types/Types';
 export type LoadSpecConfig = {
     /** Unique identifier for tracking and logging. If `true`, a new UUID will be generated. */
     correlationId?: string | true;
-    /** True if triggered by a refresh request (automatic or user). */
+    /** True if triggered by a refresh request (automatic or user-driven). */
     isRefresh?: boolean;
-    /** true if triggered by an automatic refresh process. */
+    /** True if triggered by an automatic refresh process. */
     isAutoRefresh?: boolean;
-    /** Application specific information about the load request */
+    /** Application specific information about the load request. */
     meta?: PlainObject;
 };
 
@@ -44,19 +44,19 @@ export class LoadSpec {
     /** Unique identifier for tracking and logging. */
     correlationId?: string;
 
-    /** True if triggered by a refresh request (automatic or user). */
+    /** True if triggered by a refresh request (automatic or user-driven). */
     isRefresh: boolean;
 
-    /** true if triggered by an automatic refresh process. */
+    /** True if triggered by an automatic refresh process. */
     isAutoRefresh: boolean;
 
-    /** Application specific information about the load request */
+    /** Application specific information about the load request. */
     meta: PlainObject;
 
     /** Time the load started. */
     dateCreated: Date;
 
-    /** index of the associated load on this object. 0 for the first load. */
+    /** Index of the associated load on this object - 0 for the first load. */
     loadNumber: number;
 
     /** Owner of this object. */
@@ -72,9 +72,7 @@ export class LoadSpec {
         return this.owner.lastSucceeded?.loadNumber > this.loadNumber;
     }
 
-    /**
-     * display type of refresh for troubleshooting and logging.
-     */
+    /** Display type of refresh for troubleshooting and logging. */
     get typeDisplay(): string {
         if (this.isAutoRefresh) return 'Auto-Refresh';
         if (this.isRefresh) return 'Refresh';
@@ -82,9 +80,8 @@ export class LoadSpec {
     }
 
     /**
-     * Construct this object.
-     *
-     * Not for direct application use -- LoadSpecs are constructed by Hoist internally.
+     * @internal - not for application use. LoadSpecs are constructed automatically by Hoist's
+     * {@link LoadSupport} class as part of its managed `loadAsync()` wrapper.
      */
     constructor(config: LoadSpecConfig, owner: LoadSupport) {
         const {correlationId, isRefresh, isAutoRefresh, meta} = config;
