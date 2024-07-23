@@ -310,7 +310,7 @@ export function executeIfFunction<T>(v: Thunkable<T>): T {
  * The target value will be mutated and returned.
  *
  * Note that this method has the same semantics as Lodash merge, with the important exception
- * that properties containing arrays will *not* be merged element-wise.
+ * that properties containing arrays will *not* be merged deeply.
  */
 export function mergeDeep<T, S>(object: T, source: S): T & S;
 export function mergeDeep<T, S1, S2>(object: T, source1: S1, source2: S2): T & S1 & S2;

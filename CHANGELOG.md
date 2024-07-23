@@ -6,7 +6,8 @@
 
 * Enhanced `markdown` component to support the underlying `components` prop from
   `react-markdown`. Use this prop to customize markdown rendering.
-* New `mergeDeep` method provided in `@xh/hoist/utils/js`.
+* New `mergeDeep` method provided in `@xh/hoist/utils/js` as an alternative to lodash.merge,
+ without lodash's surprising deep-merging of array-based properties.
 
 ## 66.0.2 - 2024-07-17
 
