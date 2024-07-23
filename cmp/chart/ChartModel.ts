@@ -6,7 +6,8 @@
  */
 import {HoistModel, PlainObject, Some} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {castArray, cloneDeep, merge} from 'lodash';
+import {castArray, cloneDeep} from 'lodash';
+import {mergeDeep} from '@xh/hoist/utils/js';
 
 interface ChartConfig {
     /** The initial highchartsConfig for this chart. */
@@ -81,7 +82,7 @@ export class ChartModel extends HoistModel {
      */
     @action
     updateHighchartsConfig(update: any) {
-        this.highchartsConfig = merge(cloneDeep(this.highchartsConfig), update);
+        this.highchartsConfig = mergeDeep(cloneDeep(this.highchartsConfig), update);
     }
 
     /** @param series - one or more data series to be charted. */
