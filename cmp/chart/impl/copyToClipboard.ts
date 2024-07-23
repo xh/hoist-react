@@ -5,7 +5,6 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {merge} from 'lodash';
 
 /**
  * Copy the chart in it's current state to the clipboard.
@@ -45,7 +44,7 @@ export function installCopyToClipboard(Highcharts) {
 async function convertChartToPngAsync(chart) {
     const svg = await new Promise((resolve, reject) =>
             chart.getSVGForLocalExport(
-                merge(chart.options.exporting),
+                chart.options.exporting,
                 {},
                 () => reject('Cannot fallback to export server'),
                 svg => resolve(svg)
