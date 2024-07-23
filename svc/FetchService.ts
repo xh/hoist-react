@@ -32,7 +32,7 @@ import {v4} from 'uuid';
  * Custom headers can be provided to fetch as a plain object. App-wide default headers can be set
  * using `setDefaultHeaders()`.
  *
- * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API|Fetch API Docs}
+ * Also see the {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API | Fetch API Docs}.
  *
  * Note that the convenience methods `fetchJson`, `postJson`, `putJson` all accept the same options
  * as the main entry point `fetch`, as they delegate to fetch after setting additional defaults.
