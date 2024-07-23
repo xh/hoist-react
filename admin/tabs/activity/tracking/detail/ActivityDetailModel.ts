@@ -59,7 +59,7 @@ export class ActivityDetailModel extends HoistModel {
                 {...Col.userAgent, hidden},
                 {...Col.elapsed},
                 {...Col.dateCreatedWithSec, displayName: 'Timestamp'},
-                {...Col.correlationId, hidden}
+                {...Col.correlationId}
             ]
         });
 

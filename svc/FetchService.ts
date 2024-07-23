@@ -15,8 +15,7 @@ import {
 } from '@xh/hoist/core';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {apiDeprecated} from '@xh/hoist/utils/js';
-import {throwIf} from '@xh/hoist/utils/js';
+import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {compact, isDate, isFunction, isNil, isString, omit, omitBy} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
@@ -108,7 +107,7 @@ export class FetchService extends HoistService {
      * @returns Promise which resolves to a Fetch Response.
      */
     fetch(opts: FetchOptions): Promise<FetchResponse> {
-        opts = this.withResolvedCorrelationId(opts);
+        opts = this.withCorrelationId(opts);
         const ret = this.withDefaultHeadersAsync(opts).then(opts => this.managedFetchAsync(opts));
         ret.correlationId = opts.correlationId as string;
         return ret;
@@ -119,7 +118,7 @@ export class FetchService extends HoistService {
      * @returns the decoded JSON object, or null if the response has status in {@link NO_JSON_RESPONSES}.
      */
     fetchJson(opts: FetchOptions): Promise<any> {
-        opts = this.withResolvedCorrelationId(opts);
+        opts = this.withCorrelationId(opts);
         const ret = this.withDefaultHeadersAsync(opts, {Accept: 'application/json'}).then(opts =>
             this.managedFetchAsync(opts, async r => {
                 if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
@@ -192,7 +191,7 @@ export class FetchService extends HoistService {
     //-----------------------
 
     /** Resolve convenience options for Correlation ID to server-ready string */
-    private withResolvedCorrelationId(opts: FetchOptions): FetchOptions {
+    private withCorrelationId(opts: FetchOptions): FetchOptions {
         if (isString(opts.correlationId)) return opts;
         if (opts.correlationId === false) return omit(opts, 'correlationId');
 
@@ -225,7 +224,10 @@ export class FetchService extends HoistService {
 
         const {correlationIdHeaderKey} = this;
         if (opts.correlationId) {
-            throwIf(headers[correlationIdHeaderKey], 'Correlation ID already set via Fetch API.');
+            warnIf(
+                headers[correlationIdHeaderKey],
+                `Header ${correlationIdHeaderKey} value already set within FetchOptions being overridden by Correlation ID.`
+            );
             headers[correlationIdHeaderKey] = opts.correlationId;
         }
 
@@ -366,9 +368,10 @@ export interface FetchOptions {
     body?: any;
 
     /**
-     * Unique identifier for this request, used for tracking and logging. If `true`, a UUID will be
-     * sourced from `LoadSpec.correlationId` or generated. If `false`, no correlationId will be set.
-     * */
+     * Unique identifier for this request, used for tracking and logging. If unspecified,
+     * `FetchService` will check for a `correlationId` on this config's `loadSpec` (if provided) or
+     * generate a new one if so enabled. If `false`, no `correlationId` will be set.
+     */
     correlationId?: string | boolean;
 
     /**

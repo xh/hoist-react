@@ -24,7 +24,7 @@
 
 ### 📚 Libraries
 
-* uuid `added @ 9.0`
+* uuid `added @ 10.0`
 
 ## 66.0.2 - 2024-07-17
 

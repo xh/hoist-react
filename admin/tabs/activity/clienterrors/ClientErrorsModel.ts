@@ -67,7 +67,7 @@ export class ClientErrorsModel extends HoistModel {
                 {...Col.day},
                 {...Col.dateCreatedWithSec, displayName: 'Timestamp'},
                 {...Col.impersonating, hidden},
-                {...Col.correlationId, hidden}
+                {...Col.correlationId}
             ]
         });
 

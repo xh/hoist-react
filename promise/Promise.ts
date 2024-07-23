@@ -94,6 +94,7 @@ declare global {
         track(options: TrackOptions | string): Promise<T>;
 
         /**
+         * Set by FetchService to relay correlation IDs to downstream error handling and tracking.
          * @internal
          */
         correlationId?: string;
