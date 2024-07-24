@@ -12,6 +12,8 @@
 ### 🐞 Bug Fixes
 * The `Record.descendants` and `Record.allDescendants` getters were incorrectly returning the
  record itself. This has been fixed.
+* Fixed `Grid` regression where pinned columns were automatically un-pinned when the viewport became
+ too small to accommodate them.
 
 ## 66.0.2 - 2024-07-17
 
