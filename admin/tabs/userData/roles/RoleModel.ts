@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {RecategorizeDialogModel} from '@xh/hoist/admin/tabs/userData/roles/recategorize/RecategorizeDialogModel';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
@@ -14,8 +15,7 @@ import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {pluralize} from '@xh/hoist/utils/js';
-import {compact, filter, groupBy, isEmpty, map, mapValues, uniq} from 'lodash';
+import {compact, groupBy, mapValues} from 'lodash';
 import moment from 'moment/moment';
 import {RoleEditorModel} from './editor/RoleEditorModel';
 import {HoistRole, RoleModuleConfig} from './Types';
@@ -35,10 +35,10 @@ export class RoleModel extends HoistModel {
     @managed gridModel: GridModel;
     @managed filterChooserModel: FilterChooserModel;
     @managed readonly roleEditorModel = new RoleEditorModel(this);
+    @managed recategorizeDialogModel = new RecategorizeDialogModel(this);
 
     @observable.ref allRoles: HoistRole[] = [];
     @observable.ref moduleConfig: RoleModuleConfig;
-    @observable.ref categoryOptions: string[] = [];
 
     @bindable showInGroups = true;
 
@@ -79,7 +79,6 @@ export class RoleModel extends HoistModel {
 
             runInAction(() => {
                 this.allRoles = this.processRolesFromServer(data);
-                this.categoryOptions = compact(uniq(this.allRoles.map(it => it.category))).sort();
             });
             this.displayRoles();
             await this.gridModel.preSelectFirstAsync();
@@ -141,19 +140,6 @@ export class RoleModel extends HoistModel {
         return true;
     }
 
-    async changeCategoryAsync(roleSpecs: HoistRole[], category: string): Promise<void> {
-        if (this.readonly) return;
-        const roles: string[] = map(roleSpecs, it => it.name);
-        await XH.fetchService.postJson({
-            url: 'roleAdmin/bulkCategoryUpdate',
-            body: {
-                roles,
-                category
-            }
-        });
-        await this.refreshAsync();
-    }
-
     //------------------
     // Actions
     //------------------
@@ -206,54 +192,6 @@ export class RoleModel extends HoistModel {
                     .linkTo(this.loadModel),
             recordsRequired: 1
         };
-    }
-
-    private changeCategoryAction(): RecordActionSpec {
-        return {
-            text: 'Change Category',
-            icon: Icon.folder(),
-            displayFn: ({selectedRecords}) => {
-                const hoistRoles: HoistRole[] = filter(
-                        selectedRecords.map(it => it.data),
-                        it => !it.isGroupRow
-                    ) as HoistRole[],
-                    firstCategory = hoistRoles[0]?.category,
-                    currCategory =
-                        firstCategory && hoistRoles.every(it => it.category === firstCategory)
-                            ? firstCategory
-                            : null;
-                return {
-                    text:
-                        'Change Category' +
-                        (hoistRoles.length > 0
-                            ? ` for ${pluralize('Roles', hoistRoles.length, true)}`
-                            : ''),
-                    disabled: isEmpty(hoistRoles),
-                    items: this.getCategoryOptions(hoistRoles, currCategory)
-                };
-            },
-            recordsRequired: true
-        };
-    }
-
-    private getCategoryOptions(hoistRoles, currCategory) {
-        return [
-            ...this.categoryOptions.map(category => ({
-                text: category,
-                icon: category === currCategory ? Icon.check() : null,
-                actionFn: () => {
-                    if (category !== currCategory) {
-                        this.changeCategoryAsync(hoistRoles, category);
-                    }
-                }
-            })),
-            '-',
-            {
-                text: 'Clear Category',
-                icon: Icon.x(),
-                actionFn: () => this.changeCategoryAsync(hoistRoles, null)
-            }
-        ];
     }
 
     private groupByAction(): RecordActionSpec {
@@ -418,7 +356,7 @@ export class RoleModel extends HoistModel {
                   this.editAction(),
                   this.cloneAction(),
                   this.deleteAction(),
-                  this.changeCategoryAction(),
+                  this.recategorizeDialogModel.reCategorizeAction(),
                   '-',
                   this.groupByAction(),
                   ...GridModel.defaultContextMenu

@@ -52,7 +52,7 @@ export const roleForm = hoistCmp.factory({
                                         placeholder: null,
                                         enableClear: true,
                                         enableCreate: true,
-                                        options: model.roleModel.categoryOptions
+                                        options: model.categoryOptions
                                     })
                                 })
                             ),
