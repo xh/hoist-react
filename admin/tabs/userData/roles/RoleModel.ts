@@ -79,9 +79,7 @@ export class RoleModel extends HoistModel {
 
             runInAction(() => {
                 this.allRoles = this.processRolesFromServer(data);
-                this.categoryOptions = uniq(
-                    this.allRoles.map(it => it.category).filter(it => it != null)
-                ).sort();
+                this.categoryOptions = compact(uniq(this.allRoles.map(it => it.category))).sort();
             });
             this.displayRoles();
             await this.gridModel.preSelectFirstAsync();
@@ -143,13 +141,13 @@ export class RoleModel extends HoistModel {
         return true;
     }
 
-    async changeCategoryAsync(roles: HoistRole[], category: string): Promise<void> {
+    async changeCategoryAsync(roleSpecs: HoistRole[], category: string): Promise<void> {
         if (this.readonly) return;
-        const roleNames: string[] = map(roles, it => it.name);
+        const roles: string[] = map(roleSpecs, it => it.name);
         await XH.fetchService.postJson({
             url: 'roleAdmin/bulkCategoryUpdate',
             body: {
-                roleNames,
+                roles,
                 category
             }
         });
@@ -174,11 +172,11 @@ export class RoleModel extends HoistModel {
             tooltip: 'Add or remove users from this role.',
             icon: Icon.edit(),
             intent: 'primary',
-            displayFn: ({record, gridModel}) => ({
-                disabled: !record || record.data.isGroupRow || gridModel.selectedRecords.length > 1
+            displayFn: ({record}) => ({
+                disabled: !record || record.data.isGroupRow
             }),
             actionFn: ({record}) => this.editAsync(record.data as HoistRole),
-            recordsRequired: true
+            recordsRequired: 1
         };
     }
 
@@ -186,11 +184,11 @@ export class RoleModel extends HoistModel {
         return {
             text: 'Clone',
             icon: Icon.copy(),
-            displayFn: ({record, gridModel}) => ({
-                disabled: !record || record.data.isGroupRow || gridModel.selectedRecords.length > 1
+            displayFn: ({record}) => ({
+                disabled: !record || record.data.isGroupRow
             }),
             actionFn: ({record}) => this.createAsync(record.data as HoistRole),
-            recordsRequired: true
+            recordsRequired: 1
         };
     }
 
@@ -206,7 +204,7 @@ export class RoleModel extends HoistModel {
                 this.deleteAsync(record.data as HoistRole)
                     .catchDefault()
                     .linkTo(this.loadModel),
-            recordsRequired: true
+            recordsRequired: 1
         };
     }
 
@@ -239,7 +237,7 @@ export class RoleModel extends HoistModel {
     }
 
     private getCategoryOptions(hoistRoles, currCategory) {
-        return compact([
+        return [
             ...this.categoryOptions.map(category => ({
                 text: category,
                 icon: category === currCategory ? Icon.check() : null,
@@ -255,7 +253,7 @@ export class RoleModel extends HoistModel {
                 icon: Icon.x(),
                 actionFn: () => this.changeCategoryAsync(hoistRoles, null)
             }
-        ]);
+        ];
     }
 
     private groupByAction(): RecordActionSpec {
