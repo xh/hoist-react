@@ -142,6 +142,34 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
 export class GridLocalModel extends HoistModel {
     override xhImpl = true;
 
+    private static instances = new Set<GridLocalModel>();
+
+    /**
+     * When a `Grid` context menu is open at the same time as a BP `Overlay2` with `enforceFocus`,
+     * the context menu will lose focus, causing menu items not to highlight on hover. By
+     * conditionally stopping the focus event from propagating, we can prevent this behavior.
+     */
+    private static focusEventListener(e: FocusEvent) {
+        const {target} = e;
+        if (target instanceof HTMLElement && target.classList.contains('ag-menu-option')) {
+            e.stopImmediatePropagation();
+        }
+    }
+
+    static addInstance(instance: GridLocalModel) {
+        this.instances.add(instance);
+        if (this.instances.size === 1) {
+            window.addEventListener('focus', this.focusEventListener, true);
+        }
+    }
+
+    static removeInstance(instance: GridLocalModel) {
+        this.instances.delete(instance);
+        if (this.instances.size === 0) {
+            window.removeEventListener('focus', this.focusEventListener, true);
+        }
+    }
+
     @lookup(GridModel)
     private model: GridModel;
     agOptions: GridOptions;
@@ -161,6 +189,16 @@ export class GridLocalModel extends HoistModel {
         const {store, hideEmptyTextBeforeLoad, emptyText} = this.model;
         if (hideEmptyTextBeforeLoad && !store.lastLoaded) return null;
         return emptyText;
+    }
+
+    constructor() {
+        super();
+        GridLocalModel.addInstance(this);
+    }
+
+    override destroy() {
+        super.destroy();
+        GridLocalModel.removeInstance(this);
     }
 
     override onLinked() {
@@ -867,19 +905,3 @@ export class GridLocalModel extends HoistModel {
         }
     };
 }
-
-/**
- * When a `Grid` context menu is open at the same time as a BP `Overlay2` with `enforceFocus`, the
- * context menu will lose focus, causing menu items not to highlight on hover. By conditionally
- * stopping the focus event from propagating, we can prevent this behavior.
- */
-document.addEventListener(
-    'focus',
-    (e: FocusEvent) => {
-        const {target} = e;
-        if (target instanceof HTMLElement && target.classList.contains('ag-menu-option')) {
-            e.stopImmediatePropagation();
-        }
-    },
-    true
-);
