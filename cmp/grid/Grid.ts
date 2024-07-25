@@ -867,3 +867,19 @@ export class GridLocalModel extends HoistModel {
         }
     };
 }
+
+/**
+ * When a `Grid` context menu is open at the same time as a BP `Overlay2` with `enforceFocus`, the
+ * context menu will lose focus, causing menu items not to highlight on hover. By conditionally
+ * stopping the focus event from propagating, we can prevent this behavior.
+ */
+document.addEventListener(
+    'focus',
+    (e: FocusEvent) => {
+        const {target} = e;
+        if (target instanceof HTMLElement && target.classList.contains('ag-menu-option')) {
+            e.stopImmediatePropagation();
+        }
+    },
+    true
+);
