@@ -254,7 +254,9 @@ export class GridLocalModel extends HoistModel {
             suppressClickEdit: clicksToEdit !== 1 && clicksToEdit !== 2,
             stopEditingWhenCellsLoseFocus: true,
             suppressLastEmptyLineOnPaste: true,
-            suppressClipboardApi: true
+            suppressClipboardApi: true,
+            // Override AG-Grid's default behavior of automatically unpinning columns to make the center viewport visible
+            processUnpinnedColumns: () => []
         };
 
         // Platform specific defaults
