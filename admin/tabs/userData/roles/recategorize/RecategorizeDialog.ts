@@ -57,7 +57,7 @@ const tbar = hoistCmp.factory<RecategorizeDialogModel>(({model}) => {
             text: 'Save',
             icon: Icon.check(),
             intent: 'success',
-            disabled: model.groupName == null,
+            disabled: model.categoryName == null,
             onClick: () => model.saveAsync()
         })
     );

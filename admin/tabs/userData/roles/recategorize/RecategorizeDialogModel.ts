@@ -13,7 +13,7 @@ import {compact, every, filter, map, uniq} from 'lodash';
 export class RecategorizeDialogModel extends HoistModel {
     _parent: RoleModel;
 
-    @bindable groupName = null;
+    @bindable categoryName = null;
     @observable isOpen = false;
 
     reCategorizeAction() {
@@ -52,7 +52,7 @@ export class RecategorizeDialogModel extends HoistModel {
             url: 'roleAdmin/bulkCategoryUpdate',
             body: {
                 roles,
-                category: clear ? null : this.groupName
+                category: clear ? null : this.categoryName
             }
         });
         await this._parent.refreshAsync();
@@ -64,7 +64,7 @@ export class RecategorizeDialogModel extends HoistModel {
     //-----------------
     @action
     close() {
-        this.groupName = null;
+        this.categoryName = null;
         this.isOpen = false;
     }
 
