@@ -2,6 +2,9 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+* Requires `hoist-core >= 21.0` to use corresponding role delete bug fix.
+
 ### 🎁 New Features
 
 * Enhanced `markdown` component to support the underlying `components` prop from
@@ -14,6 +17,7 @@
  record itself. This has been fixed.
 * Fixed `Grid` regression where pinned columns were automatically un-pinned when the viewport became
  too small to accommodate them.
+* Fixed bug where a role with a dot in its name could not be deleted.
 
 ## 66.0.2 - 2024-07-17
 
