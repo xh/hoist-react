@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {RecategorizeDialogModel} from '@xh/hoist/admin/tabs/userData/roles/recategorize/RecategorizeDialogModel';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
@@ -34,6 +35,7 @@ export class RoleModel extends HoistModel {
     @managed gridModel: GridModel;
     @managed filterChooserModel: FilterChooserModel;
     @managed readonly roleEditorModel = new RoleEditorModel(this);
+    @managed recategorizeDialogModel = new RecategorizeDialogModel(this);
 
     @observable.ref allRoles: HoistRole[] = [];
     @observable.ref moduleConfig: RoleModuleConfig;
@@ -75,7 +77,9 @@ export class RoleModel extends HoistModel {
             const {data} = await XH.fetchJson({url: 'roleAdmin/list', loadSpec});
             if (loadSpec.isStale) return;
 
-            runInAction(() => (this.allRoles = this.processRolesFromServer(data)));
+            runInAction(() => {
+                this.allRoles = this.processRolesFromServer(data);
+            });
             this.displayRoles();
             await this.gridModel.preSelectFirstAsync();
         } catch (e) {
@@ -158,7 +162,7 @@ export class RoleModel extends HoistModel {
                 disabled: !record || record.data.isGroupRow
             }),
             actionFn: ({record}) => this.editAsync(record.data as HoistRole),
-            recordsRequired: true
+            recordsRequired: 1
         };
     }
 
@@ -170,7 +174,7 @@ export class RoleModel extends HoistModel {
                 disabled: !record || record.data.isGroupRow
             }),
             actionFn: ({record}) => this.createAsync(record.data as HoistRole),
-            recordsRequired: true
+            recordsRequired: 1
         };
     }
 
@@ -186,7 +190,7 @@ export class RoleModel extends HoistModel {
                 this.deleteAsync(record.data as HoistRole)
                     .catchDefault()
                     .linkTo(this.loadModel),
-            recordsRequired: true
+            recordsRequired: 1
         };
     }
 
@@ -269,6 +273,7 @@ export class RoleModel extends HoistModel {
             treeMode: true,
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
             autosizeOptions: {mode: 'managed'},
+            selModel: 'multiple',
             emptyText: 'No roles found.',
             colChooserModel: true,
             sortBy: 'name',
@@ -334,23 +339,28 @@ export class RoleModel extends HoistModel {
                 {field: {name: 'lastUpdatedBy', type: 'string'}, hidden: true},
                 {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1}
             ],
-            contextMenu: this.readonly
-                ? [this.groupByAction(), ...GridModel.defaultContextMenu]
-                : [
-                      this.addAction(),
-                      this.editAction(),
-                      this.cloneAction(),
-                      this.deleteAction(),
-                      '-',
-                      this.groupByAction(),
-                      ...GridModel.defaultContextMenu
-                  ],
+            contextMenu: () => this.getContextMenuItems(),
             onRowDoubleClicked: ({data: record}) => {
                 if (record && !record.data.isGroupRow) {
                     this.editAsync(record.data as HoistRole);
                 }
             }
         });
+    }
+
+    private getContextMenuItems() {
+        return this.readonly
+            ? [this.groupByAction(), ...GridModel.defaultContextMenu]
+            : [
+                  this.addAction(),
+                  this.editAction(),
+                  this.cloneAction(),
+                  this.deleteAction(),
+                  this.recategorizeDialogModel.recategorizeAction(),
+                  '-',
+                  this.groupByAction(),
+                  ...GridModel.defaultContextMenu
+              ];
     }
 
     private createFilterChooserModel(): FilterChooserModel {
