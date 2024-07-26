@@ -140,8 +140,6 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
 // Implementation
 //------------------------
 export class GridLocalModel extends HoistModel {
-    static didAddEventListener = false;
-
     override xhImpl = true;
 
     @lookup(GridModel)
@@ -167,27 +165,7 @@ export class GridLocalModel extends HoistModel {
 
     constructor() {
         super();
-        if (!GridLocalModel.didAddEventListener) {
-            /**
-             * When a `Grid` context menu is open at the same time as a BP `Overlay2` with
-             * `enforceFocus`, the context menu will lose focus, causing menu items not to highlight
-             * on hover. Prevent this by conditionally stopping the focus event from propagating.
-             */
-            document.addEventListener(
-                'focus',
-                (e: FocusEvent) => {
-                    const {target} = e;
-                    if (
-                        target instanceof HTMLElement &&
-                        target.classList.contains('ag-menu-option')
-                    ) {
-                        e.stopImmediatePropagation();
-                    }
-                },
-                true
-            );
-            GridLocalModel.didAddEventListener = true;
-        }
+        GridLocalModel.addFocusFixListener();
     }
 
     override onLinked() {
@@ -893,4 +871,25 @@ export class GridLocalModel extends HoistModel {
             consumeEvent(event);
         }
     };
+
+    /**
+     * When a `Grid` context menu is open at the same time as a BP `Overlay2` with `enforceFocus`,
+     * the context menu will lose focus, causing menu items not to highlight on hover. Prevent this
+     * by conditionally stopping the focus event from propagating.
+     */
+    private static didAddFocusFixListener = false;
+    static addFocusFixListener() {
+        if (this.didAddFocusFixListener) return;
+        document.addEventListener(
+            'focus',
+            (e: FocusEvent) => {
+                const {target} = e;
+                if (target instanceof HTMLElement && target.classList.contains('ag-menu-option')) {
+                    e.stopImmediatePropagation();
+                }
+            },
+            true
+        );
+        this.didAddFocusFixListener = true;
+    }
 }
