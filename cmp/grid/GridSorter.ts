@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {isNumber, isNil, isString} from 'lodash';
+import {isNil, isNumber, isString} from 'lodash';
 
 export type GridSorterLike = GridSorterSpec | string | GridSorter;
 
@@ -24,6 +24,7 @@ export class GridSorter {
      * generated using GridSorter.toString().
      */
     static parse(cfg: GridSorterLike) {
+        if (isNil(cfg)) return null;
         if (cfg instanceof GridSorter) return cfg;
         if (isString(cfg)) {
             const [colId, sort, abs] = cfg.split('|').map(s => s.trim()) as any;

@@ -7,8 +7,8 @@
 import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {action, bindable, makeObservable} from '@xh/hoist/mobx';
-import {ensureNotEmpty, ensureUniqueBy, throwIf, warnIf} from '@xh/hoist/utils/js';
-import {find, isEqual, keys, merge} from 'lodash';
+import {ensureNotEmpty, ensureUniqueBy, throwIf, warnIf, mergeDeep} from '@xh/hoist/utils/js';
+import {find, isEqual, keys} from 'lodash';
 import {page} from './impl/Page';
 import {PageConfig, PageModel} from './PageModel';
 
@@ -170,7 +170,7 @@ export class NavigatorModel extends HoistModel {
             if (init && pageModelCfg.disableDirectLink) {
                 const completedRouteParts = routeParts.slice(0, i),
                     newRouteName = completedRouteParts.map(it => it.id).join('.'),
-                    newRouteParams = merge({}, ...completedRouteParts.map(it => it.props));
+                    newRouteParams = mergeDeep({}, ...completedRouteParts.map(it => it.props));
 
                 XH.navigate(newRouteName, newRouteParams, {replace: true});
                 return;
@@ -178,7 +178,7 @@ export class NavigatorModel extends HoistModel {
 
             const page = new PageModel({
                 navigatorModel: this,
-                ...merge({}, pageModelCfg, part)
+                ...mergeDeep({}, pageModelCfg, part)
             });
 
             stack.push(page);
