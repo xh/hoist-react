@@ -356,7 +356,7 @@ export class RoleModel extends HoistModel {
                   this.editAction(),
                   this.cloneAction(),
                   this.deleteAction(),
-                  this.recategorizeDialogModel.reCategorizeAction(),
+                  this.recategorizeDialogModel.recategorizeAction(),
                   '-',
                   this.groupByAction(),
                   ...GridModel.defaultContextMenu

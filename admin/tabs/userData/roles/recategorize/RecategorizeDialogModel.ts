@@ -6,25 +6,27 @@
  */
 import {RoleModel} from '@xh/hoist/admin/tabs/userData/roles/RoleModel';
 import {HoistModel, XH} from '@xh/hoist/core';
+import {StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {compact, every, filter, map, uniq} from 'lodash';
 
 export class RecategorizeDialogModel extends HoistModel {
-    _parent: RoleModel;
+    private parent: RoleModel;
+    selectedRecords: StoreRecord[];
 
     @bindable categoryName = null;
     @observable isOpen = false;
 
-    reCategorizeAction() {
+    recategorizeAction() {
         return {
             text: 'Change Category',
             icon: Icon.folder(),
             recordsRequired: true,
-            actionFn: () => this.open(),
+            actionFn: ({selectedRecords}) => this.open(selectedRecords),
             displayFn: ({selectedRecords}) => {
                 return {
-                    hidden: this._parent.readonly,
+                    hidden: this.parent.readonly,
                     disabled: every(selectedRecords, it => it.data?.isGroupRow)
                 };
             }
@@ -32,30 +34,35 @@ export class RecategorizeDialogModel extends HoistModel {
     }
 
     get options() {
-        return compact(uniq(this._parent.allRoles.map(it => it.category))).sort();
+        return [
+            ...compact(uniq(this.parent.allRoles.map(it => it.category))).sort(),
+            {value: '_CLEAR_ROLES_', label: '[Clear Existing Category]'}
+        ];
     }
 
     constructor(parent) {
         super();
         makeObservable(this);
-        this._parent = parent;
+        this.parent = parent;
     }
 
-    async saveAsync(clear: boolean = false) {
-        if (this._parent.readonly) return;
+    async saveAsync() {
+        if (this.parent.readonly) return;
         const roleSpec = filter(
-            this._parent.gridModel.selectedRecords.map(it => it.data),
+            this.selectedRecords.map(it => it.data),
             it => !it.isGroupRow
         );
         const roles: string[] = map(roleSpec, it => it.name);
-        await XH.fetchService.postJson({
-            url: 'roleAdmin/bulkCategoryUpdate',
-            body: {
-                roles,
-                category: clear ? null : this.categoryName
-            }
-        });
-        await this._parent.refreshAsync();
+        await XH.fetchService
+            .postJson({
+                url: 'roleAdmin/bulkCategoryUpdate',
+                body: {
+                    roles,
+                    category: this.categoryName === '_CLEAR_ROLES_' ? null : this.categoryName
+                }
+            })
+            .catchDefault();
+        await this.parent.refreshAsync();
         this.close();
     }
 
@@ -69,7 +76,8 @@ export class RecategorizeDialogModel extends HoistModel {
     }
 
     @action
-    open() {
+    open(selectedRecords) {
+        this.selectedRecords = selectedRecords;
         this.isOpen = true;
     }
 }
