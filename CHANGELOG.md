@@ -4,15 +4,18 @@
 
 ### 🎁 New Features
 
-* Enhanced `markdown` component to support the underlying `components` prop from
-  `react-markdown`. Use this prop to customize markdown rendering.
-* New `mergeDeep` method provided in `@xh/hoist/utils/js` as an alternative to lodash.merge,
- without lodash's surprising deep-merging of array-based properties.
+* Enhanced `markdown` component to support the underlying `components` prop from `react-markdown`.
+  Use this prop to customize markdown rendering.
+* New `mergeDeep` method provided in `@xh/hoist/utils/js` as an alternative to `lodash.merge`,
+  without lodash's surprising deep-merging of array-based properties.
 * Enhanced Roles Admin UI to support bulk category reassignment.
 
 ### 🐞 Bug Fixes
-* The `Record.descendants` and `Record.allDescendants` getters were incorrectly returning the
- record itself. This has been fixed.
+
+* Fixed `Record.descendants` and `Record.allDescendants` getters that were incorrectly returning the
+  parent record itself. Now only the descendants are returned, as expected.
+* Fixed `Grid` regression where pinned columns were automatically un-pinned when the viewport became
+  too small to accommodate them.
 
 ## 66.0.2 - 2024-07-17
 
