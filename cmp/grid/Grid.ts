@@ -140,35 +140,9 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
 // Implementation
 //------------------------
 export class GridLocalModel extends HoistModel {
+    static didAddEventListener = false;
+
     override xhImpl = true;
-
-    private static instances = new Set<GridLocalModel>();
-
-    /**
-     * When a `Grid` context menu is open at the same time as a BP `Overlay2` with `enforceFocus`,
-     * the context menu will lose focus, causing menu items not to highlight on hover. By
-     * conditionally stopping the focus event from propagating, we can prevent this behavior.
-     */
-    private static focusEventListener(e: FocusEvent) {
-        const {target} = e;
-        if (target instanceof HTMLElement && target.classList.contains('ag-menu-option')) {
-            e.stopImmediatePropagation();
-        }
-    }
-
-    static addInstance(instance: GridLocalModel) {
-        this.instances.add(instance);
-        if (this.instances.size === 1) {
-            window.addEventListener('focus', this.focusEventListener, true);
-        }
-    }
-
-    static removeInstance(instance: GridLocalModel) {
-        this.instances.delete(instance);
-        if (this.instances.size === 0) {
-            window.removeEventListener('focus', this.focusEventListener, true);
-        }
-    }
 
     @lookup(GridModel)
     private model: GridModel;
@@ -193,12 +167,27 @@ export class GridLocalModel extends HoistModel {
 
     constructor() {
         super();
-        GridLocalModel.addInstance(this);
-    }
-
-    override destroy() {
-        super.destroy();
-        GridLocalModel.removeInstance(this);
+        if (!GridLocalModel.didAddEventListener) {
+            /**
+             * When a `Grid` context menu is open at the same time as a BP `Overlay2` with
+             * `enforceFocus`, the context menu will lose focus, causing menu items not to highlight
+             * on hover. Prevent this by conditionally stopping the focus event from propagating.
+             */
+            document.addEventListener(
+                'focus',
+                (e: FocusEvent) => {
+                    const {target} = e;
+                    if (
+                        target instanceof HTMLElement &&
+                        target.classList.contains('ag-menu-option')
+                    ) {
+                        e.stopImmediatePropagation();
+                    }
+                },
+                true
+            );
+            GridLocalModel.didAddEventListener = true;
+        }
     }
 
     override onLinked() {
