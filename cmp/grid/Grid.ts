@@ -163,6 +163,11 @@ export class GridLocalModel extends HoistModel {
         return emptyText;
     }
 
+    constructor() {
+        super();
+        GridLocalModel.addFocusFixListener();
+    }
+
     override onLinked() {
         this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(this.model) : null;
         this.addReaction(
@@ -866,4 +871,25 @@ export class GridLocalModel extends HoistModel {
             consumeEvent(event);
         }
     };
+
+    /**
+     * When a `Grid` context menu is open at the same time as a BP `Overlay2` with `enforceFocus`,
+     * the context menu will lose focus, causing menu items not to highlight on hover. Prevent this
+     * by conditionally stopping the focus event from propagating.
+     */
+    private static didAddFocusFixListener = false;
+    static addFocusFixListener() {
+        if (this.didAddFocusFixListener) return;
+        document.addEventListener(
+            'focus',
+            (e: FocusEvent) => {
+                const {target} = e;
+                if (target instanceof HTMLElement && target.classList.contains('ag-menu-option')) {
+                    e.stopImmediatePropagation();
+                }
+            },
+            true
+        );
+        this.didAddFocusFixListener = true;
+    }
 }

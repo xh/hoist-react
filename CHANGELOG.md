@@ -14,6 +14,7 @@
  record itself. This has been fixed.
 * Fixed `Grid` regression where pinned columns were automatically un-pinned when the viewport became
  too small to accommodate them.
+* Fixed bug where `Grid` context-menus would lose focus when rendered inside `Overlay` components.
 
 ## 66.0.2 - 2024-07-17
 
