@@ -4,18 +4,25 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {Auth0Client} from '@auth0/auth0-spa-js';
+import {Auth0Client, Auth0ClientOptions} from '@auth0/auth0-spa-js';
 import {XH} from '@xh/hoist/core';
 import {never, wait} from '@xh/hoist/promise';
 import {Token, TokenMap} from '@xh/hoist/security/Token';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {throwIf} from '@xh/hoist/utils/js';
+import {mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 
 export interface AuthZeroClientConfig extends BaseOAuthClientConfig<AuthZeroTokenSpec> {
     /** Domain of your app registered with Auth0 */
     domain: string;
+
+    /**
+     * Additional options for the Auth0Client ctor. Will be deep merged with defaults, with options
+     * supplied here taking precedence. Use with care, as overriding defaults may have unintended
+     * consequences or fail to work with Hoist's expected usage of the client library.
+     */
+    authZeroClientOptions?: Partial<Auth0ClientOptions>;
 }
 
 export interface AuthZeroTokenSpec {
@@ -160,23 +167,25 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
     // Private implementation
     //------------------------
     private createClient(): Auth0Client {
-        const config = this.config,
-            {clientId, domain} = config;
-
+        const {clientId, domain, authZeroClientOptions} = this.config;
         throwIf(!domain, 'Missing Auth0 "domain". Please review your config.');
 
-        const ret = new Auth0Client({
-            clientId,
-            domain,
-            useRefreshTokens: true,
-            useRefreshTokensFallback: true,
-            authorizationParams: {
-                scope: this.loginScope,
-                redirect_uri: this.redirectUrl
-            },
-            cacheLocation: 'localstorage'
-        });
-        return ret;
+        return new Auth0Client(
+            mergeDeep(
+                {
+                    clientId,
+                    domain,
+                    useRefreshTokens: true,
+                    // useRefreshTokensFallback: true,
+                    authorizationParams: {
+                        scope: this.loginScope,
+                        redirect_uri: this.redirectUrl
+                    },
+                    cacheLocation: 'localstorage'
+                },
+                authZeroClientOptions
+            )
+        );
     }
 
     private get loginScope(): string {

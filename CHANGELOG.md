@@ -17,6 +17,11 @@
 * Fixed `Grid` regression where pinned columns were automatically un-pinned when the viewport became
   too small to accommodate them.
 
+### ⚙️ Technical
+
+* Enhanced beta `MsalClient` and `AuthZeroClient` OAuth implementations to support passing
+  app-specific configs directly into the constructors of their underlying client implementation.
+
 ## 66.0.2 - 2024-07-17
 
 ### 🐞 Bug Fixes
