@@ -28,7 +28,7 @@ import {
 } from '@xh/hoist/kit/react-select';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {elemWithin, getTestId, TEST_ID, throwIf, withDefault, mergeDeep} from '@xh/hoist/utils/js';
+import {elemWithin, getTestId, mergeDeep, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import debouncePromise from 'debounce-promise';
@@ -51,6 +51,13 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
 
     /** True (default) to close the menu after each selection. */
     closeMenuOnSelect?: boolean;
+
+    /**
+     *  Value to use when the input is empty. Defaults to null.
+     *  The expected use case is to set it to [] for multi-selects where that is desired,
+     *  but could enable for app-specific use for setting it to another value like false or 0
+     *  */
+    emptyValue?: any;
 
     /** True to show a "clear" button at the right of the control. */
     enableClear?: boolean;
@@ -234,6 +241,10 @@ class SelectInputModel extends HoistInputModel {
 
     get multiMode(): boolean {
         return !!this.componentProps.enableMulti;
+    }
+
+    get emptyValue(): any {
+        return this.componentProps.emptyValue ?? null;
     }
 
     get filterMode(): boolean {
@@ -449,7 +460,7 @@ class SelectInputModel extends HoistInputModel {
         if (isNil(internal)) return null;
 
         if (this.multiMode) {
-            if (isEmpty(internal)) return null;
+            if (isEmpty(internal)) return this.emptyValue;
             return castArray(internal).map(it => it.value);
         }
 
