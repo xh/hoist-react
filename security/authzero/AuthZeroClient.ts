@@ -176,7 +176,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
                     clientId,
                     domain,
                     useRefreshTokens: true,
-                    // useRefreshTokensFallback: true,
+                    useRefreshTokensFallback: true,
                     authorizationParams: {
                         scope: this.loginScope,
                         redirect_uri: this.redirectUrl
