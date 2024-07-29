@@ -430,14 +430,19 @@ function calcStyleFromColorSpec(v: number, colorSpec: ColorSpec | boolean): CSSP
 }
 
 function buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma): Numbro.Format {
-    const num = Math.abs(v);
+    const num = Math.abs(v),
+        decimalCount = countDecimalPlaces(num);
 
     const config: Numbro.Format = {};
     let mantissa = undefined;
 
     if (precision % 1 === 0) {
         precision = precision < MAX_NUMERIC_PRECISION ? precision : MAX_NUMERIC_PRECISION;
-        mantissa = precision === 0 ? 0 : precision;
+        if (typeof zeroPad === 'boolean') {
+            mantissa = precision === 0 ? 0 : precision;
+        } else {
+            mantissa = decimalCount < zeroPad ? zeroPad : decimalCount;
+        }
     } else {
         if (num === 0) {
             mantissa = 2;
@@ -462,6 +467,16 @@ function buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma
     config.mantissa = mantissa;
     config.trimMantissa = !zeroPad && mantissa != 0;
     return config;
+}
+
+function countDecimalPlaces(number) {
+    const numberStr = number.toString(),
+        decimalIndex = numberStr.indexOf('.');
+
+    if (decimalIndex === -1) return 0;
+
+    const decimalStr = numberStr.slice(decimalIndex + 1);
+    return decimalStr.replace(/0+$/, '').length; // Remove trailing zeros then return count
 }
 
 function isInvalidInput(v) {

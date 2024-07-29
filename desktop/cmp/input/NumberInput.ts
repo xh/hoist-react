@@ -90,8 +90,12 @@ export interface NumberInputProps extends HoistProps, LayoutProps, StyleProps, H
      */
     valueLabel?: string;
 
-    /** True to pad with trailing zeros out to precision, default false. */
-    zeroPad?: boolean;
+    /**
+     * True to pad with trailing zeros out to precision, default false.
+     * Can also be a number to specify a specific number decimal places out to which a formatted
+     * number should be zero-padded.
+     *  */
+    zeroPad?: boolean | number;
 }
 
 /**
