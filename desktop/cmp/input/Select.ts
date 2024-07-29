@@ -53,9 +53,8 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     closeMenuOnSelect?: boolean;
 
     /**
-     *  Value to use when the input is empty. Defaults to null.
-     *  The expected use case is to set it to [] for multi-selects where that is desired,
-     *  but could enable for app-specific use for setting it to another value like false or 0
+     *  Value to use when the input is empty. Defaults to null. Typical usage is to set to [] for
+     *  multi-selects.
      *  */
     emptyValue?: any;
 
@@ -435,11 +434,11 @@ class SelectInputModel extends HoistInputModel {
     // (Exception for a null value, which we will only accept if explicitly present in options.)
     override toInternal(external) {
         if (this.multiMode) {
-            if (external == null) external = []; // avoid [null]
+            if (external == this.emptyValue) external = []; // avoid [null]
             return castArray(external).map(it => this.findOption(it, !isNil(it)));
         }
 
-        return this.findOption(external, !isNil(external));
+        return this.findOption(external, external !== this.emptyValue);
     }
 
     private findOption(value, createIfNotFound, options = this.internalOptions) {
@@ -457,7 +456,7 @@ class SelectInputModel extends HoistInputModel {
     }
 
     override toExternal(internal) {
-        if (isNil(internal)) return null;
+        if (isNil(internal)) return this.emptyValue;
 
         if (this.multiMode) {
             if (isEmpty(internal)) return this.emptyValue;
