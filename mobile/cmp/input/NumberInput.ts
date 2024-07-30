@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps, StyleProps, LayoutProps, HSide} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
@@ -68,8 +68,12 @@ export interface NumberInputProps extends HoistProps, HoistInputProps, StyleProp
      */
     valueLabel?: string;
 
-    /** True to pad with trailing zeros out to precision, default false. */
-    zeroPad?: boolean;
+    /**
+     * True to pad with trailing zeros out to precision, default false.
+     * Can also be a number to specify a specific number decimal places out to which a formatted
+     * number should be zero-padded.
+     * */
+    zeroPad?: boolean | number;
 }
 
 /**

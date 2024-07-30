@@ -35,8 +35,12 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
     /** Desired number of decimal places. */
     precision?: number | 'auto';
 
-    /** True to pad with trailing zeros out to given precision. */
-    zeroPad?: boolean;
+    /**
+     * True to pad with trailing zeros out to precision, default false.
+     * Can also be a number to specify a specific number decimal places out to which a formatted
+     * number should be zero-padded.
+     * */
+    zeroPad?: boolean | number;
 
     /** Optional display value for the input value 0. */
     zeroDisplay?: ReactNode;
@@ -431,14 +435,13 @@ function calcStyleFromColorSpec(v: number, colorSpec: ColorSpec | boolean): CSSP
 
 function buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma): Numbro.Format {
     const num = Math.abs(v),
-        decimalCount = countDecimalPlaces(num);
-
-    const config: Numbro.Format = {};
+        config: Numbro.Format = {};
     let mantissa = undefined;
 
     if (precision % 1 === 0) {
         precision = precision < MAX_NUMERIC_PRECISION ? precision : MAX_NUMERIC_PRECISION;
         if (typeof zeroPad === 'number' && zeroPad < precision) {
+            const decimalCount = countDecimalPlaces(num);
             mantissa = decimalCount < zeroPad ? zeroPad : decimalCount;
         } else {
             mantissa = precision === 0 ? 0 : precision;
@@ -469,14 +472,10 @@ function buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma
     return config;
 }
 
-function countDecimalPlaces(number) {
+function countDecimalPlaces(number: number): number {
     const numberStr = number.toString(),
         decimalIndex = numberStr.indexOf('.');
-
-    if (decimalIndex === -1) return 0;
-
-    const decimalStr = numberStr.slice(decimalIndex + 1);
-    return decimalStr.replace(/0+$/, '').length; // Remove trailing zeros then return count
+    return decimalIndex === -1 ? 0 : numberStr.length - decimalIndex - 1;
 }
 
 function isInvalidInput(v) {
