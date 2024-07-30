@@ -19,8 +19,18 @@
           relayed from a `FetchService` response.
     * If set on a fetch request, Correlation IDs are passed through to downstream Hoist activity
       tracking and error reporting and are available for review in the Admin Console.
-* Enhanced `markdown` component to support the underlying `components` prop from
-  `react-markdown`. Use this prop to customize markdown rendering.
+* Enhanced `markdown` component to support the underlying `components` prop from `react-markdown`.
+  Use this prop to customize markdown rendering.
+* New `mergeDeep` method provided in `@xh/hoist/utils/js` as an alternative to `lodash.merge`,
+  without lodash's surprising deep-merging of array-based properties.
+* Enhanced Roles Admin UI to support bulk category reassignment.
+
+### 🐞 Bug Fixes
+
+* Fixed `Record.descendants` and `Record.allDescendants` getters that were incorrectly returning the
+  parent record itself. Now only the descendants are returned, as expected.
+* Fixed `Grid` regression where pinned columns were automatically un-pinned when the viewport became
+  too small to accommodate them.
 
 ### 📚 Libraries
 
