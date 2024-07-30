@@ -434,12 +434,10 @@ class SelectInputModel extends HoistInputModel {
     // (Exception for a null value, which we will only accept if explicitly present in options.)
     override toInternal(external) {
         if (this.multiMode) {
-            if (external === null) external = []; // avoid [null]
-            return castArray(external).map(it =>
-                this.findOption(it, !isNil(it) && it?.toString() !== this.emptyValue?.toString())
-            );
+            if (external == null || isEqual(external, this.emptyValue)) external = []; // avoid [null]
+            return castArray(external).map(it => this.findOption(it, !isNil(it)));
         }
-        return this.findOption(external, !isNil(external) && external !== this.emptyValue);
+        return this.findOption(external, !isNil(external) && !isEqual(external, this.emptyValue));
     }
 
     private findOption(value, createIfNotFound, options = this.internalOptions) {
