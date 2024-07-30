@@ -16,6 +16,7 @@
   parent record itself. Now only the descendants are returned, as expected.
 * Fixed `Grid` regression where pinned columns were automatically un-pinned when the viewport became
   too small to accommodate them.
+* Fixed `GridModel.cellBorders` prop to apply previously missing top and bottom borders to cells in the grid.
 
 ## 66.0.2 - 2024-07-17
 
