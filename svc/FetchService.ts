@@ -15,7 +15,7 @@ import {
 } from '@xh/hoist/core';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
+import {apiDeprecated} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {compact, isDate, isFunction, isNil, isString, omit, omitBy} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
@@ -224,11 +224,13 @@ export class FetchService extends HoistService {
 
         const {correlationIdHeaderKey} = this;
         if (opts.correlationId) {
-            warnIf(
-                headers[correlationIdHeaderKey],
-                `Header ${correlationIdHeaderKey} value already set within FetchOptions being overridden by Correlation ID.`
-            );
-            headers[correlationIdHeaderKey] = opts.correlationId;
+            if (headers[correlationIdHeaderKey]) {
+                console.warn(
+                    `Header ${correlationIdHeaderKey} value already set within FetchOptions.`
+                );
+            } else {
+                headers[correlationIdHeaderKey] = opts.correlationId;
+            }
         }
 
         return {...opts, method, headers};
