@@ -438,10 +438,10 @@ function buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma
 
     if (precision % 1 === 0) {
         precision = precision < MAX_NUMERIC_PRECISION ? precision : MAX_NUMERIC_PRECISION;
-        if (typeof zeroPad === 'boolean') {
-            mantissa = precision === 0 ? 0 : precision;
-        } else {
+        if (typeof zeroPad === 'number' && zeroPad < precision) {
             mantissa = decimalCount < zeroPad ? zeroPad : decimalCount;
+        } else {
+            mantissa = precision === 0 ? 0 : precision;
         }
     } else {
         if (num === 0) {
