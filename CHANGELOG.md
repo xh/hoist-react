@@ -9,7 +9,7 @@
 * New `mergeDeep` method provided in `@xh/hoist/utils/js` as an alternative to `lodash.merge`,
   without lodash's surprising deep-merging of array-based properties.
 * Enhanced Roles Admin UI to support bulk category reassignment.
-* New `Empty Value` prop for select inputs, allowing for a custom value to be returned when select
+* New `emptyValue` prop for select inputs, allowing for a custom value to be returned when select
   is empty.
 
 ### 🐞 Bug Fixes
