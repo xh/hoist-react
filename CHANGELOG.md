@@ -1,5 +1,7 @@
 # Changelog
 
+## 67.0.0-SNAPSHOT - unreleased
+
 ## 66.1.0 - 2024-07-31
 
 ### 🎁 New Features
