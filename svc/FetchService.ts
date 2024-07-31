@@ -17,9 +17,8 @@ import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
-import {compact, isDate, isFunction, isNil, isString, omit, omitBy} from 'lodash';
+import {isDate, isFunction, isNil, isString, omit, omitBy} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
-import {v4} from 'uuid';
 
 /**
  * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
@@ -47,33 +46,15 @@ export class FetchService extends HoistService {
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
     private autoAborters = {};
-    private _autoGenerateCorrelationIds = false;
-    private correlationIdPrefix: string;
     correlationIdHeaderKey: string = 'X-Correlation-ID';
     defaultHeaders: (PlainObject | ((arg: FetchOptions) => Awaitable<PlainObject>))[] = [];
     defaultTimeout = (30 * SECONDS) as any;
-
-    /**
-     * Automatically generate a unique correlationId for all subsequent requests unless explicitly
-     * provided via FetchOptions or LoadSpec.
-     */
-    autoGenerateCorrelationIds(prefix?: string) {
-        this._autoGenerateCorrelationIds = true;
-        this.correlationIdPrefix = prefix;
-    }
 
     /**
      * Set the header name to be used for correlationId tracking.
      */
     setCorrelationIdHeaderKey(key: string) {
         this.correlationIdHeaderKey = key;
-    }
-
-    /**
-     * Generate a unique correlationId, optionally prefixed with the provided string.
-     */
-    generateCorrelationId(prefix: string = this.correlationIdPrefix): string {
-        return compact([prefix, v4()]).join('-');
     }
 
     /**
@@ -195,12 +176,10 @@ export class FetchService extends HoistService {
         if (isString(opts.correlationId)) return opts;
         if (opts.correlationId === false) return omit(opts, 'correlationId');
 
-        let correlationId = opts.loadSpec?.correlationId;
-        if (!correlationId && this._autoGenerateCorrelationIds) {
-            correlationId = this.generateCorrelationId();
-        }
-
-        return {...opts, correlationId};
+        return {
+            ...opts,
+            correlationId: opts.correlationId === true ? XH.genUUID() : opts.loadSpec?.correlationId
+        };
     }
 
     private async withDefaultHeadersAsync(
@@ -370,9 +349,9 @@ export interface FetchOptions {
     body?: any;
 
     /**
-     * Unique identifier for this request, used for tracking and logging. If unspecified,
-     * `FetchService` will check for a `correlationId` on this config's `loadSpec` (if provided) or
-     * generate a new one if so enabled. If `false`, no `correlationId` will be set.
+     * Unique identifier for this request, used for tracking and logging. If `false`, no
+     * `correlationId` will be set. If `true`, one will be auto-generated. If unspecified,
+     * `FetchService` will check for a `correlationId` on this config's `loadSpec` (if provided).
      */
     correlationId?: string | boolean;
 

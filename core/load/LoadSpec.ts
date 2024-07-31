@@ -85,8 +85,7 @@ export class LoadSpec {
      */
     constructor(config: LoadSpecConfig, owner: LoadSupport) {
         const {correlationId, isRefresh, isAutoRefresh, meta} = config;
-        this.correlationId =
-            correlationId === true ? XH.fetchService.generateCorrelationId() : correlationId;
+        this.correlationId = correlationId === true ? XH.genUUID() : correlationId;
         this.isRefresh = !!(isRefresh || isAutoRefresh);
         this.isAutoRefresh = !!isAutoRefresh;
         this.meta = meta ?? {};
