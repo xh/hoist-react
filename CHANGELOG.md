@@ -2,18 +2,28 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
+## 66.1.0 - 2024-07-31
+
 ### 🎁 New Features
 
-* Enhanced `markdown` component to support the underlying `components` prop from
-  `react-markdown`. Use this prop to customize markdown rendering.
-* New `mergeDeep` method provided in `@xh/hoist/utils/js` as an alternative to lodash.merge,
- without lodash's surprising deep-merging of array-based properties.
+* Enhanced `markdown` component to support the underlying `components` prop from `react-markdown`.
+  Use this prop to customize markdown rendering.
+* New `mergeDeep` method provided in `@xh/hoist/utils/js` as an alternative to `lodash.merge`,
+  without lodash's surprising deep-merging of array-based properties.
+* Enhanced Roles Admin UI to support bulk category reassignment.
 
 ### 🐞 Bug Fixes
-* The `Record.descendants` and `Record.allDescendants` getters were incorrectly returning the
- record itself. This has been fixed.
+
+* Fixed `Record.descendants` and `Record.allDescendants` getters that were incorrectly returning the
+  parent record itself. Now only the descendants are returned, as expected.
 * Fixed `Grid` regression where pinned columns were automatically un-pinned when the viewport became
- too small to accommodate them.
+  too small to accommodate them.
+* Fixed bug where `Grid` context-menus would lose focus when rendered inside `Overlay` components.
+
+### ⚙️ Technical
+
+* Enhanced beta `MsalClient` and `AuthZeroClient` OAuth implementations to support passing
+  app-specific configs directly into the constructors of their underlying client implementation.
 
 ## 66.0.2 - 2024-07-17
 

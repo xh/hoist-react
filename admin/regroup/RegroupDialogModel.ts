@@ -4,38 +4,38 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {uniq} from 'lodash';
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, bindable, observable, makeObservable} from '@xh/hoist/mobx';
 import {Icon} from '@xh/hoist/icon/Icon';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {uniq} from 'lodash';
 
 export class RegroupDialogModel extends HoistModel {
-    _parent;
+    private parent;
 
     @bindable groupName = null;
     @observable isOpen = false;
 
     regroupAction = {
         text: 'Change Group',
-        icon: Icon.grip(),
+        icon: Icon.folder(),
         recordsRequired: true,
         actionFn: () => this.open(),
-        displayFn: () => ({hidden: this._parent.gridModel.readonly})
+        displayFn: () => ({hidden: this.parent.gridModel.readonly})
     };
 
     get options() {
-        return uniq(this._parent.gridModel.store.allRecords.map(it => it.data.groupName)).sort();
+        return uniq(this.parent.gridModel.store.allRecords.map(it => it.data.groupName)).sort();
     }
 
     constructor(parent) {
         super();
         makeObservable(this);
-        this._parent = parent;
+        this.parent = parent;
     }
 
     async saveAsync() {
-        const {_parent, groupName} = this,
-            {selectedRecords, store} = _parent.gridModel,
+        const {parent, groupName} = this,
+            {selectedRecords, store} = parent.gridModel,
             ids = selectedRecords.map(it => it.id),
             resp = await store.bulkUpdateRecordsAsync(ids, {groupName}),
             failuresPresent = resp.fail > 0,
