@@ -13,17 +13,17 @@ import {
     PlainObject,
     XH
 } from '@xh/hoist/core';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {genDisplayName} from '@xh/hoist/data';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     cloneDeep,
     difference,
-    isFunction,
     isArray,
     isEmpty,
     isEqual,
+    isFunction,
     isString,
     keys,
     sortBy
@@ -84,7 +84,7 @@ export class GroupingChooserModel extends HoistModel {
 
     @observable.ref favorites: string[][] = [];
 
-    dimensions: Record<string, DimensionSpec>;
+    @observable.ref dimensions: Record<string, DimensionSpec>;
     dimensionNames: string[];
     allowEmpty: boolean;
     maxDepth: number;
@@ -183,8 +183,19 @@ export class GroupingChooserModel extends HoistModel {
             }
         });
 
+        this.addReaction({
+            track: () => this.dimensions,
+            run: () => this.cleanStaleDims()
+        });
+
         this.setValue(value);
         this.setFavorites(favorites);
+    }
+
+    @action
+    setDimensions(dimensions: Array<DimensionSpec | string>) {
+        this.dimensions = this.normalizeDimensions(dimensions);
+        this.dimensionNames = keys(this.dimensions);
     }
 
     @action
@@ -289,7 +300,7 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     getDimDisplayName(dimName: string) {
-        return this.dimensions[dimName].displayName;
+        return this.dimensions[dimName]?.displayName ?? dimName;
     }
 
     //--------------------
@@ -308,7 +319,7 @@ export class GroupingChooserModel extends HoistModel {
         return sortBy(
             this.favorites.map(value => ({
                 value,
-                label: this.getValueLabel(value)
+                label: this.getValueLabel(value) ?? value
             })),
             it => it.label[0]
         );
@@ -342,5 +353,16 @@ export class GroupingChooserModel extends HoistModel {
         if (this.persistValue) ret.value = this.value;
         if (this.persistFavorites) ret.favorites = this.favorites;
         return ret;
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    private cleanStaleDims() {
+        const {value, dimensionNames, allowEmpty} = this,
+            newValue = value.filter(dim => dimensionNames.includes(dim));
+        isEmpty(newValue) && !allowEmpty
+            ? this.setValue([this.dimensionNames[0]])
+            : this.setValue(newValue);
     }
 }
