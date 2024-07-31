@@ -2,6 +2,8 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
+## 66.1.0 - 2024-07-31
+
 ### 🎁 New Features
 
 * Enhanced `markdown` component to support the underlying `components` prop from `react-markdown`.
@@ -16,6 +18,12 @@
   parent record itself. Now only the descendants are returned, as expected.
 * Fixed `Grid` regression where pinned columns were automatically un-pinned when the viewport became
   too small to accommodate them.
+* Fixed bug where `Grid` context-menus would lose focus when rendered inside `Overlay` components.
+
+### ⚙️ Technical
+
+* Enhanced beta `MsalClient` and `AuthZeroClient` OAuth implementations to support passing
+  app-specific configs directly into the constructors of their underlying client implementation.
 
 ## 66.0.2 - 2024-07-17
 
