@@ -8,7 +8,7 @@ import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {fmtNumber, parseNumber} from '@xh/hoist/format';
+import {fmtNumber, parseNumber, Precision, ZeroPad} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -90,12 +90,8 @@ export interface NumberInputProps extends HoistProps, LayoutProps, StyleProps, H
      */
     valueLabel?: string;
 
-    /**
-     * True to pad with trailing zeros out to precision, default false.
-     * Can also be a number to specify a specific number decimal places out to which a formatted
-     * number should be zero-padded.
-     *  */
-    zeroPad?: boolean | number;
+    /** @see NumberFormatOptions.zeroPad */
+    zeroPad?: ZeroPad;
 }
 
 /**
@@ -133,12 +129,12 @@ class NumberInputModel extends HoistInputModel {
         throwIf(Math.log10(this.scaleFactor) % 1 !== 0, 'scaleFactor must be a factor of 10');
     }
 
-    get precision(): number {
-        return withDefault(this.componentProps.precision, 4);
-    }
-
     override get commitOnChange(): boolean {
         return withDefault(this.componentProps.commitOnChange, false);
+    }
+
+    get precision(): number {
+        return withDefault(this.componentProps.precision, 4);
     }
 
     get scaleFactor(): number {
@@ -210,7 +206,7 @@ class NumberInputModel extends HoistInputModel {
         const {valueLabel, displayWithCommas} = componentProps,
             zeroPad = withDefault(componentProps.zeroPad, false),
             formattedVal = fmtNumber(value, {
-                precision,
+                precision: precision as Precision,
                 zeroPad,
                 label: valueLabel,
                 labelCls: null,
