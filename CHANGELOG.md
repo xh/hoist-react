@@ -2,6 +2,10 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* `HoistException` now correctly passes an exception message to its underlying `Error` instance.
+
 ## 66.1.0 - 2024-07-31
 
 ### 🎁 New Features

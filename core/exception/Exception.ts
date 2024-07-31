@@ -193,7 +193,10 @@ export class Exception {
         }) as FetchException;
     }
 
-    private static createInternal(attributes: PlainObject, baseError: Error = new Error()) {
+    private static createInternal(
+        attributes: PlainObject,
+        baseError: Error = new Error(attributes.message)
+    ) {
         return Object.assign(
             baseError,
             {
