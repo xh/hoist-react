@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {recategorizeDialog} from '@xh/hoist/admin/tabs/userData/roles/recategorize/RecategorizeDialog';
 import {grid} from '@xh/hoist/cmp/grid';
 import {fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
@@ -48,7 +49,8 @@ export const rolePanel = hoistCmp.factory({
                 ],
                 item: hframe(vframe(grid(), roleGraph()), detailsPanel())
             }),
-            roleEditor()
+            roleEditor(),
+            recategorizeDialog()
         );
     }
 });

@@ -16,7 +16,7 @@ import {
 import {XH} from '@xh/hoist/core';
 import {never} from '@xh/hoist/promise';
 import {Token, TokenMap} from '@xh/hoist/security/Token';
-import {logDebug, logError, logInfo, logWarn, throwIf} from '@xh/hoist/utils/js';
+import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 
@@ -58,6 +58,13 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
 
     /** The log level of MSAL. Default is LogLevel.Warning. */
     msalLogLevel?: LogLevel;
+
+    /**
+     * Additional options for the MSAL client ctor. Will be deep merged with defaults, with options
+     * supplied here taking precedence. Use with care, as overriding defaults may have unintended
+     * consequences or fail to work with Hoist's expected usage of the client library.
+     */
+    msalClientOptions?: Partial<msal.Configuration>;
 }
 
 export interface MsalTokenSpec {
@@ -260,26 +267,30 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     private async createClientAsync(): Promise<IPublicClientApplication> {
-        const {clientId, authority, msalLogLevel} = this.config;
-
+        const {clientId, authority, msalLogLevel, msalClientOptions} = this.config;
         throwIf(!authority, 'Missing MSAL authority. Please review your configuration.');
 
-        return msal.PublicClientApplication.createPublicClientApplication({
-            auth: {
-                clientId,
-                authority,
-                postLogoutRedirectUri: this.postLogoutRedirectUrl
-            },
-            system: {
-                loggerOptions: {
-                    loggerCallback: this.logFromMsal,
-                    logLevel: msalLogLevel
-                }
-            },
-            cache: {
-                cacheLocation: 'localStorage' // allows sharing auth info across tabs.
-            }
-        });
+        return msal.PublicClientApplication.createPublicClientApplication(
+            mergeDeep(
+                {
+                    auth: {
+                        clientId,
+                        authority,
+                        postLogoutRedirectUri: this.postLogoutRedirectUrl
+                    },
+                    system: {
+                        loggerOptions: {
+                            loggerCallback: this.logFromMsal,
+                            logLevel: msalLogLevel
+                        }
+                    },
+                    cache: {
+                        cacheLocation: 'localStorage' // allows sharing auth info across tabs.
+                    }
+                },
+                msalClientOptions
+            )
+        );
     }
 
     private logFromMsal(level: LogLevel, message: string) {
