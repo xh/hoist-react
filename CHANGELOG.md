@@ -5,6 +5,7 @@
 ### 🐞 Bug Fixes
 
 * `HoistException` now correctly passes an exception message to its underlying `Error` instance.
+* Fixed `GridModel.cellBorders` prop to apply previously missing top and bottom borders to cells in the grid.
 
 ## 66.1.0 - 2024-07-31
 
@@ -20,6 +21,9 @@
 
 * Fixed `Record.descendants` and `Record.allDescendants` getters that were incorrectly returning the
   parent record itself. Now only the descendants are returned, as expected.
+  * ⚠️ Potentially Breaking Change: apps relying on the previous behavior may need to adjust their code
+    to account for the parent record no longer being included in the results.  Tree mode checkbox
+    grids are one example of a component that may be affected by this change.
 * Fixed `Grid` regression where pinned columns were automatically un-pinned when the viewport became
   too small to accommodate them.
 * Fixed bug where `Grid` context-menus would lose focus when rendered inside `Overlay` components.
