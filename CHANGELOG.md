@@ -2,6 +2,12 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed `GridModel.cellBorders` prop to apply previously missing top and bottom borders to cells in the grid.
+
+## 66.1.0 - 2024-07-31
+
 ### 🎁 New Features
 
 * Enhanced `markdown` component to support the underlying `components` prop from `react-markdown`.
@@ -14,9 +20,17 @@
 
 * Fixed `Record.descendants` and `Record.allDescendants` getters that were incorrectly returning the
   parent record itself. Now only the descendants are returned, as expected.
+  * ⚠️ Potentially Breaking Change: apps relying on the previous behavior may need to adjust their code
+    to account for the parent record no longer being included in the results.  Tree mode checkbox
+    grids are one example of a component that may be affected by this change.
 * Fixed `Grid` regression where pinned columns were automatically un-pinned when the viewport became
   too small to accommodate them.
-* Fixed `GridModel.cellBorders` prop to apply previously missing top and bottom borders to cells in the grid.
+* Fixed bug where `Grid` context-menus would lose focus when rendered inside `Overlay` components.
+
+### ⚙️ Technical
+
+* Enhanced beta `MsalClient` and `AuthZeroClient` OAuth implementations to support passing
+  app-specific configs directly into the constructors of their underlying client implementation.
 
 ## 66.0.2 - 2024-07-17
 
