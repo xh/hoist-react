@@ -84,7 +84,8 @@ export class GroupingChooserModel extends HoistModel {
 
     @observable.ref favorites: string[][] = [];
 
-    @observable.ref dimensions: Record<string, DimensionSpec>;
+    @observable.ref private _dimensions: Record<string, DimensionSpec>;
+
     dimensionNames: string[];
     allowEmpty: boolean;
     maxDepth: number;
@@ -104,6 +105,11 @@ export class GroupingChooserModel extends HoistModel {
     @computed
     get availableDims(): string[] {
         return difference(this.dimensionNames, this.pendingValue);
+    }
+
+    @computed
+    get dimensions() {
+        return this._dimensions;
     }
 
     @computed
@@ -132,13 +138,15 @@ export class GroupingChooserModel extends HoistModel {
         super();
         makeObservable(this);
 
-        this.dimensions = this.normalizeDimensions(dimensions);
-        this.dimensionNames = keys(this.dimensions);
+        this.setDimensions(dimensions);
         this.allowEmpty = allowEmpty;
         this.maxDepth = maxDepth;
         this.commitOnChange = commitOnChange;
 
-        throwIf(isEmpty(this.dimensions), 'Must provide valid dimensions available for selection.');
+        throwIf(
+            isEmpty(this._dimensions),
+            'Must provide valid dimensions available for selection.'
+        );
 
         // Read and validate value and favorites
         let value = isFunction(initialValue) ? initialValue() : initialValue,
@@ -183,19 +191,15 @@ export class GroupingChooserModel extends HoistModel {
             }
         });
 
-        this.addReaction({
-            track: () => this.dimensions,
-            run: () => this.cleanStaleDims()
-        });
-
         this.setValue(value);
         this.setFavorites(favorites);
     }
 
     @action
     setDimensions(dimensions: Array<DimensionSpec | string>) {
-        this.dimensions = this.normalizeDimensions(dimensions);
-        this.dimensionNames = keys(this.dimensions);
+        this._dimensions = this.normalizeDimensions(dimensions);
+        this.dimensionNames = keys(this._dimensions);
+        this.cleanStaleDims();
     }
 
     @action
@@ -295,12 +299,14 @@ export class GroupingChooserModel extends HoistModel {
         return {displayName: genDisplayName(src.name), ...src};
     }
 
-    getValueLabel(value: string[]) {
-        return value.map(dimName => this.getDimDisplayName(dimName)).join(' › ');
+    getValueLabel(value: string[]): string {
+        return (
+            value.map(dimName => this.getDimDisplayName(dimName)).join(' › ') ?? value.toString()
+        );
     }
 
     getDimDisplayName(dimName: string) {
-        return this.dimensions[dimName]?.displayName ?? dimName;
+        return this._dimensions[dimName]?.displayName ?? dimName;
     }
 
     //--------------------
@@ -319,7 +325,7 @@ export class GroupingChooserModel extends HoistModel {
         return sortBy(
             this.favorites.map(value => ({
                 value,
-                label: this.getValueLabel(value) ?? value
+                label: this.getValueLabel(value)
             })),
             it => it.label[0]
         );
@@ -360,7 +366,7 @@ export class GroupingChooserModel extends HoistModel {
     //------------------------
     private cleanStaleDims() {
         const {value, dimensionNames, allowEmpty} = this,
-            newValue = value.filter(dim => dimensionNames.includes(dim));
+            newValue = value?.filter(dim => dimensionNames.includes(dim));
         isEmpty(newValue) && !allowEmpty
             ? this.setValue([this.dimensionNames[0]])
             : this.setValue(newValue);
