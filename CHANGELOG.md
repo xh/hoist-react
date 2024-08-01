@@ -2,6 +2,10 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed `GridModel.cellBorders` prop to apply previously missing top and bottom borders to cells in the grid.
+
 ## 66.1.0 - 2024-07-31
 
 ### 🎁 New Features
