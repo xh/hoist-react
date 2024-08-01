@@ -193,14 +193,15 @@ export class Exception {
         }) as FetchException;
     }
 
-    private static createInternal(attributes: PlainObject, baseError: Error = new Error()) {
+    private static createInternal(attributes: PlainObject, baseError?: Error) {
+        const {message, ...rest} = attributes;
         return Object.assign(
-            baseError,
+            baseError ?? new Error(message),
             {
                 isRoutine: false,
                 isHoistException: true
             },
-            attributes
+            rest
         ) as HoistException;
     }
 }

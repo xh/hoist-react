@@ -140,11 +140,14 @@
         border-color: var(--xh-grid-group-border-color);
       }
     }
+    .ag-cell {
+      border-bottom: none;
+      border-top: none;
+    }
   }
 
   &--no-row-borders {
-    .ag-row,
-    .ag-cell {
+    .ag-row {
       border-bottom: none;
       border-top: none;
     }
@@ -249,6 +252,7 @@
   &--cell-borders {
     .ag-cell {
       border-right-color: var(--xh-grid-border-color);
+      border-bottom-color: var(--xh-grid-border-color);
     }
 
     .ag-row {

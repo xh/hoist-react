@@ -2,6 +2,11 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* `HoistException` now correctly passes an exception message to its underlying `Error` instance.
+* Fixed `GridModel.cellBorders` prop to apply previously missing top and bottom borders to cells in the grid.
+
 ## 66.1.0 - 2024-07-31
 
 ### 🎁 New Features
@@ -11,11 +16,16 @@
 * New `mergeDeep` method provided in `@xh/hoist/utils/js` as an alternative to `lodash.merge`,
   without lodash's surprising deep-merging of array-based properties.
 * Enhanced Roles Admin UI to support bulk category reassignment.
+* fmtNumber `zeroPad` now supports numbers to specify the decimal places out to which a
+  formatted number should be zero-padded.
 
 ### 🐞 Bug Fixes
 
 * Fixed `Record.descendants` and `Record.allDescendants` getters that were incorrectly returning the
   parent record itself. Now only the descendants are returned, as expected.
+  * ⚠️ Potentially Breaking Change: apps relying on the previous behavior may need to adjust their code
+    to account for the parent record no longer being included in the results.  Tree mode checkbox
+    grids are one example of a component that may be affected by this change.
 * Fixed `Grid` regression where pinned columns were automatically un-pinned when the viewport became
   too small to accommodate them.
 * Fixed bug where `Grid` context-menus would lose focus when rendered inside `Overlay` components.
