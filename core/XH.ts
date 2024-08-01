@@ -28,7 +28,7 @@ import {
     PrefService,
     TrackService,
     WebSocketService,
-    ServerConnectionService
+    ServerConnectivityService
 } from '@xh/hoist/svc';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
@@ -143,7 +143,7 @@ export class XHApi {
     jsonBlobService: JsonBlobService;
     localStorageService: LocalStorageService;
     prefService: PrefService;
-    serverConnectionService: ServerConnectionService;
+    serverConnectionService: ServerConnectivityService;
     trackService: TrackService;
     webSocketService: WebSocketService;
 
