@@ -16,6 +16,8 @@
 * New `mergeDeep` method provided in `@xh/hoist/utils/js` as an alternative to `lodash.merge`,
   without lodash's surprising deep-merging of array-based properties.
 * Enhanced Roles Admin UI to support bulk category reassignment.
+* fmtNumber `zeroPad` now supports numbers to specify the decimal places out to which a
+  formatted number should be zero-padded.
 
 ### 🐞 Bug Fixes
 
