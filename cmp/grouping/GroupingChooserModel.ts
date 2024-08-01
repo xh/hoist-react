@@ -331,7 +331,7 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     isFavorite(value: string[]) {
-        return this.favorites?.find(v => isEqual(v, value));
+        return this.favorites?.some(v => isEqual(v, value));
     }
 
     //-------------------------

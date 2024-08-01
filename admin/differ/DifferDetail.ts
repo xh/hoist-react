@@ -27,7 +27,7 @@ export const differDetail = hoistCmp.factory({
         return dialog({
             title: 'Detail',
             icon: Icon.diff(),
-            isOpen: model.record,
+            isOpen: !!model.record,
             className: 'xh-admin-diff-detail',
             onClose: () => model.close(),
             item: panel({

@@ -68,7 +68,8 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
         return menuButton({
             className,
             menuItems: buildMenuItems(props),
-            popoverProps: {popoverClassName: 'xh-app-menu'},
+            menuClassName: 'xh-app-menu',
+            popoverProps: {popoverClassName: 'xh-app-menu-popover'},
             ...rest
         });
     }
@@ -137,7 +138,7 @@ function buildMenuItems({
             omit: hideLogoutItem,
             text: 'Logout',
             icon: Icon.logout(),
-            actionFn: () => XH.identityService.logoutAsync()
+            actionFn: () => XH.logoutAsync()
         }
     ];
 

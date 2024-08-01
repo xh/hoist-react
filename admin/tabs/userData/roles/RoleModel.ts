@@ -4,20 +4,21 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {RecategorizeDialogModel} from '@xh/hoist/admin/tabs/userData/roles/recategorize/RecategorizeDialogModel';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {compact, groupBy, isEmpty, mapValues} from 'lodash';
+import {compact, groupBy, mapValues} from 'lodash';
 import moment from 'moment/moment';
 import {RoleEditorModel} from './editor/RoleEditorModel';
-import {HoistRole, RoleMemberType, RoleModuleConfig} from './Types';
+import {HoistRole, RoleModuleConfig} from './Types';
 
 export class RoleModel extends HoistModel {
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
@@ -34,21 +35,38 @@ export class RoleModel extends HoistModel {
     @managed gridModel: GridModel;
     @managed filterChooserModel: FilterChooserModel;
     @managed readonly roleEditorModel = new RoleEditorModel(this);
+    @managed recategorizeDialogModel = new RecategorizeDialogModel(this);
 
     @observable.ref allRoles: HoistRole[] = [];
     @observable.ref moduleConfig: RoleModuleConfig;
+
+    @bindable showInGroups = true;
 
     get readonly() {
         return !XH.getUser().isHoistRoleManager;
     }
 
     get selectedRole(): HoistRole {
-        return this.gridModel.selectedRecord?.data as HoistRole;
+        const selected = this.gridModel.selectedRecord?.data;
+        if (selected && !selected.isGroupRow) return selected as HoistRole;
+        return null;
     }
 
     constructor() {
         super();
         makeObservable(this);
+        this.addReaction({
+            track: () => this.showInGroups,
+            run: showInGroups => {
+                const {gridModel} = this;
+                if (showInGroups) {
+                    gridModel.hideColumn('category');
+                } else {
+                    gridModel.showColumn('category');
+                }
+                this.displayRoles();
+            }
+        });
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
@@ -59,7 +77,10 @@ export class RoleModel extends HoistModel {
             const {data} = await XH.fetchJson({url: 'roleAdmin/list', loadSpec});
             if (loadSpec.isStale) return;
 
-            this.setRoles(this.processRolesFromServer(data));
+            runInAction(() => {
+                this.allRoles = this.processRolesFromServer(data);
+            });
+            this.displayRoles();
             await this.gridModel.preSelectFirstAsync();
         } catch (e) {
             if (loadSpec.isStale) return;
@@ -78,24 +99,31 @@ export class RoleModel extends HoistModel {
     }
 
     @action
-    setRoles(roles: HoistRole[]) {
-        this.allRoles = roles;
-        this.gridModel.loadData(roles);
-    }
-
-    @action
     clear() {
         this.allRoles = [];
         this.gridModel.clear();
     }
 
-    applyMemberFilter(name: string, type: RoleMemberType, includeEffective: boolean) {
-        const {gridModel} = this,
-            field = this.getFieldForMemberType(type, includeEffective);
-        gridModel.filterModel.setFilter({field, op: 'includes', value: name});
+    async createAsync(roleSpec?: HoistRole): Promise<void> {
+        if (this.readonly) return;
+
+        const addedRole = await this.roleEditorModel.createAsync(roleSpec);
+        if (!addedRole) return;
+        await this.refreshAsync();
+        await this.gridModel.selectAsync(addedRole.name);
+    }
+
+    async editAsync(role: HoistRole): Promise<void> {
+        if (this.readonly) return;
+
+        const updatedRole = await this.roleEditorModel.editAsync(role);
+        if (!updatedRole) return;
+        await this.refreshAsync();
     }
 
     async deleteAsync(role: HoistRole): Promise<boolean> {
+        if (this.readonly) return false;
+
         const confirm = await XH.confirm({
             icon: Icon.warning(),
             title: 'Confirm delete?',
@@ -103,17 +131,18 @@ export class RoleModel extends HoistModel {
             confirmProps: {intent: 'danger', text: 'Confirm Delete'}
         });
         if (!confirm) return false;
+
         await XH.fetchJson({
             url: `roleAdmin/delete/${role.name}`,
             method: 'DELETE'
         });
-        this.refreshAsync();
+        await this.refreshAsync();
         return true;
     }
 
-    // -------------------------------
+    //------------------
     // Actions
-    // -------------------------------
+    //------------------
     addAction(): RecordActionSpec {
         return {
             text: 'Add',
@@ -129,60 +158,67 @@ export class RoleModel extends HoistModel {
             tooltip: 'Add or remove users from this role.',
             icon: Icon.edit(),
             intent: 'primary',
+            displayFn: ({record}) => ({
+                disabled: !record || record.data.isGroupRow
+            }),
             actionFn: ({record}) => this.editAsync(record.data as HoistRole),
-            recordsRequired: true
+            recordsRequired: 1
         };
     }
 
-    cloneAction(): RecordActionSpec {
+    private cloneAction(): RecordActionSpec {
         return {
             text: 'Clone',
             icon: Icon.copy(),
+            displayFn: ({record}) => ({
+                disabled: !record || record.data.isGroupRow
+            }),
             actionFn: ({record}) => this.createAsync(record.data as HoistRole),
-            recordsRequired: true
+            recordsRequired: 1
         };
     }
 
-    deleteAction(): RecordActionSpec {
+    private deleteAction(): RecordActionSpec {
         return {
             text: 'Delete',
             icon: Icon.delete(),
             intent: 'danger',
+            displayFn: ({record}) => ({
+                disabled: !record || record.data.isGroupRow
+            }),
             actionFn: ({record}) =>
                 this.deleteAsync(record.data as HoistRole)
                     .catchDefault()
                     .linkTo(this.loadModel),
-            recordsRequired: true
+            recordsRequired: 1
         };
     }
 
     private groupByAction(): RecordActionSpec {
         return {
             text: 'Group By Category',
-            displayFn: ({gridModel}) => ({
-                icon: isEmpty(gridModel.groupBy) ? Icon.circle() : Icon.checkCircle()
+            displayFn: () => ({
+                icon: this.showInGroups ? Icon.checkCircle() : Icon.circle()
             }),
-            actionFn: ({gridModel}) => {
-                if (isEmpty(gridModel.groupBy)) {
-                    gridModel.setGroupBy('category');
-                    gridModel.hideColumn('category');
-                } else {
-                    gridModel.setGroupBy(null);
-                    gridModel.showColumn('category');
-                    gridModel.autosizeAsync();
-                }
+            actionFn: () => {
+                this.showInGroups = !this.showInGroups;
             }
         };
     }
-    async editAsync(role: HoistRole): Promise<void> {
-        const updatedRole = await this.roleEditorModel.editAsync(role);
-        if (!updatedRole) return;
-        await this.refreshAsync();
+
+    //------------------
+    // Implementation
+    //------------------
+    private displayRoles() {
+        const {gridModel} = this,
+            gridData = this.showInGroups
+                ? this.processRolesForTreeGrid(this.allRoles)
+                : this.allRoles;
+        gridModel.loadData(gridData);
+        gridModel.expandAll();
+        gridModel.autosizeAsync({includeCollapsedChildren: true});
     }
 
-    // -------------------------------
-    // Implementation
-    // -------------------------------
     private async ensureInitializedAsync() {
         if (!this.moduleConfig) {
             const config = await XH.fetchJson({url: 'roleAdmin/config'});
@@ -196,9 +232,7 @@ export class RoleModel extends HoistModel {
         }
     }
 
-    private processRolesFromServer(
-        roles: Omit<HoistRole, 'users' | 'directoryGroups' | 'roles'>[]
-    ): HoistRole[] {
+    private processRolesFromServer(roles: Partial<HoistRole>[]): HoistRole[] {
         return roles.map(role => {
             const membersByType = mapValues(groupBy(role.members, 'type'), members =>
                 members.map(member => member.name)
@@ -208,38 +242,53 @@ export class RoleModel extends HoistModel {
                 users: membersByType['USER'] ?? [],
                 directoryGroups: membersByType['DIRECTORY_GROUP'] ?? [],
                 roles: membersByType['ROLE'] ?? []
-            };
+            } as HoistRole;
         });
     }
 
-    private async createAsync(roleSpec?: HoistRole): Promise<void> {
-        const addedRole = await this.roleEditorModel.createAsync(roleSpec);
-        if (!addedRole) return;
-        await this.refreshAsync();
-        await this.gridModel.selectAsync(addedRole.name);
+    private processRolesForTreeGrid(roles: HoistRole[]) {
+        const root = [];
+        roles.forEach(role => {
+            const categories = role.category ? role.category.split('\\') : ['Uncategorized'];
+
+            let children = root,
+                id = '';
+            categories.forEach(category => {
+                let currCat = children.find(it => it.name === category && it.isGroupRow);
+                if (!currCat) {
+                    currCat = {name: category, children: [], isGroupRow: true};
+                    currCat.id = `${id}-${currCat.name}`;
+                    children.push(currCat);
+                }
+                children = currCat.children;
+                id = currCat.id;
+            });
+            children.push(role);
+        });
+        return root;
     }
 
     private createGridModel(): GridModel {
         return new GridModel({
+            treeMode: true,
+            treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
             autosizeOptions: {mode: 'managed'},
+            selModel: 'multiple',
             emptyText: 'No roles found.',
             colChooserModel: true,
-            sortBy: 'name|asc',
+            sortBy: 'name',
             enableExport: true,
             exportOptions: {filename: 'roles'},
             filterModel: true,
-            groupBy: 'category',
-            groupRowRenderer: ({value}) => (!value ? 'Uncategorized' : value),
+            rowClassRules: {
+                'xh-grid-clear-background-color': ({data}) => !data.data.isGroupRow
+            },
             headerMenuDisplay: 'hover',
-            onRowDoubleClicked: ({data: record}) =>
-                !this.readonly &&
-                record &&
-                this.roleEditorModel
-                    .editAsync(record.data)
-                    .then(role => role && this.refreshAsync()),
             persistWith: {...this.persistWith, path: 'mainGrid'},
             store: {
-                idSpec: 'name',
+                idSpec: ({id, name}) => {
+                    return id ?? name;
+                },
                 fields: [
                     {name: 'users', displayName: 'Assigned Users', type: 'tags'},
                     {name: 'directoryGroups', displayName: 'Assigned Groups', type: 'tags'},
@@ -250,6 +299,7 @@ export class RoleModel extends HoistModel {
                     {name: 'effectiveRoles', type: 'json'},
                     {name: 'errors', type: 'json'},
                     {name: 'inheritedRoleNames', displayName: 'Inherited Roles', type: 'tags'},
+                    {name: 'isGroupRow', type: 'bool'},
                     {name: 'effectiveUserNames', displayName: 'Users', type: 'tags'},
                     {
                         name: 'effectiveDirectoryGroupNames',
@@ -261,10 +311,11 @@ export class RoleModel extends HoistModel {
                 ],
                 processRawData: raw => ({
                     ...raw,
-                    effectiveUserNames: raw.effectiveUsers.map(it => it.name),
-                    effectiveDirectoryGroupNames: raw.effectiveDirectoryGroups.map(it => it.name),
-                    effectiveRoleNames: raw.effectiveRoles.map(it => it.name),
-                    inheritedRoleNames: raw.inheritedRoles.map(it => it.name)
+                    effectiveUserNames: raw.effectiveUsers?.map(it => it.name),
+                    effectiveDirectoryGroupNames: raw.effectiveDirectoryGroups?.map(it => it.name),
+                    effectiveRoleNames: raw.effectiveRoles?.map(it => it.name),
+                    inheritedRoleNames: raw.inheritedRoles?.map(it => it.name),
+                    isGroupRow: !!raw.isGroupRow
                 })
             },
             colDefaults: {
@@ -278,24 +329,38 @@ export class RoleModel extends HoistModel {
                     actions: [this.editAction()],
                     omit: this.readonly
                 },
-                {field: {name: 'name', type: 'string'}},
-                {field: {name: 'category', type: 'string'}, hidden: true},
+                {field: {name: 'name', type: 'string'}, isTreeColumn: true},
+                {
+                    field: {name: 'category', type: 'string'},
+                    hidden: true,
+                    renderer: v => tagsRenderer(v?.split('\\'))
+                },
                 {field: {name: 'lastUpdated', type: 'date'}, ...Col.dateTime, hidden: true},
                 {field: {name: 'lastUpdatedBy', type: 'string'}, hidden: true},
                 {field: {name: 'notes', type: 'string'}, filterable: false, flex: 1}
             ],
-            contextMenu: this.readonly
-                ? GridModel.defaultContextMenu
-                : [
-                      this.addAction(),
-                      this.editAction(),
-                      this.cloneAction(),
-                      this.deleteAction(),
-                      '-',
-                      this.groupByAction(),
-                      ...GridModel.defaultContextMenu
-                  ]
+            contextMenu: () => this.getContextMenuItems(),
+            onRowDoubleClicked: ({data: record}) => {
+                if (record && !record.data.isGroupRow) {
+                    this.editAsync(record.data as HoistRole);
+                }
+            }
         });
+    }
+
+    private getContextMenuItems() {
+        return this.readonly
+            ? [this.groupByAction(), ...GridModel.defaultContextMenu]
+            : [
+                  this.addAction(),
+                  this.editAction(),
+                  this.cloneAction(),
+                  this.deleteAction(),
+                  this.recategorizeDialogModel.recategorizeAction(),
+                  '-',
+                  this.groupByAction(),
+                  ...GridModel.defaultContextMenu
+              ];
     }
 
     private createFilterChooserModel(): FilterChooserModel {
@@ -333,16 +398,5 @@ export class RoleModel extends HoistModel {
             ]),
             persistWith: {...RoleModel.PERSIST_WITH, path: 'mainFilterChooser'}
         });
-    }
-
-    private getFieldForMemberType(type: RoleMemberType, effective: boolean): string {
-        switch (type) {
-            case 'USER':
-                return effective ? 'effectiveUserNames' : 'users';
-            case 'DIRECTORY_GROUP':
-                return effective ? 'effectiveDirectoryGroupNames' : 'directoryGroups';
-            case 'ROLE':
-                return effective ? 'effectiveRoleNames' : 'roles';
-        }
     }
 }

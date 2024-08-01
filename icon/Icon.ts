@@ -19,11 +19,14 @@ export interface IconProps extends HoistProps, Partial<Omit<FontAwesomeIconProps
     iconName?: string;
 
     /**
-     * Prefix or weight of the icon. By default, 'far' for the standard
-     * variant of each icon. Pass a value of either 'fas' for a heavier-weight/solid variant
-     * or 'fal' for a lighter-weight variant.
+     * Prefix / weight of the icon (or "fab" if your app has imported the free-brand-icons pkg).
+     *   - far - Regular
+     *   - fas - Solid
+     *   - fal - Light
+     *   - fat - Thin (yes, unfortunate)
+     *   - fab - Brand (requires optional import, see Toolbox)
      */
-    prefix?: 'far' | 'fas' | 'fal' | 'fab';
+    prefix?: 'far' | 'fas' | 'fal' | 'fat' | 'fab';
 
     intent?: Intent;
 
@@ -882,7 +885,7 @@ export const Icon = {
      *   create icon.  Name will be parsed for an extension.  If not provided or recognized, a
      *   default icon will be returned.
      */
-    fileIcon(opts: IconProps & {filename: string}): ReactElement | string {
+    fileIcon(opts: IconProps & {filename: string}): any {
         const {filename, ...rest} = opts,
             {factory, className} = getFileIconConfig(filename);
 
@@ -894,7 +897,7 @@ export const Icon = {
      * where an icon might otherwise go - e.g. to align a series of menu items, where some items do
      * not have an icon but others do.
      */
-    placeholder(opts?: IconProps): ReactElement | string {
+    placeholder(opts?: IconProps): any {
         const {size, asHtml = false} = opts ?? {},
             className = enhanceFaClasses('xh-icon--placeholder', size);
         return asHtml ? `<div class="${className}"></div>` : div({className});

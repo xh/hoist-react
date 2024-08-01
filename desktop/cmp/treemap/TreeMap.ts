@@ -31,7 +31,8 @@ import {
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import equal from 'fast-deep-equal';
-import {assign, cloneDeep, debounce, isFunction, merge, omit} from 'lodash';
+import {assign, cloneDeep, debounce, isFunction, omit} from 'lodash';
+import {mergeDeep} from '@xh/hoist/utils/js';
 
 import './TreeMap.scss';
 import {TreeMapModel} from './TreeMapModel';
@@ -266,7 +267,7 @@ class TreeMapLocalModel extends HoistModel {
             colorConf = this.getColorConfig(),
             modelConf = this.getModelConfig();
 
-        return merge(defaultConf, colorConf, modelConf);
+        return mergeDeep(defaultConf, colorConf, modelConf);
     }
 
     getDefaultConfig() {
@@ -301,7 +302,7 @@ class TreeMapLocalModel extends HoistModel {
         const {data, algorithm, tooltip, highchartsConfig} = this.model,
             {defaultTooltip} = this;
 
-        return merge(
+        return mergeDeep(
             {
                 tooltip: {
                     enabled: !!tooltip,

@@ -37,7 +37,7 @@ export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps
      * True (default) to display the selected file(s) in a grid alongside the dropzone. Note
      * that, if false, the component will not provide any built-in indication of its selection.
      */
-    showFileGrid: boolean;
+    showFileGrid?: boolean;
 
     /** Intro/help text to display within the dropzone target. */
     targetText?: ReactNode;
@@ -88,7 +88,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                     maxSize,
                     minSize,
                     multiple: enableAddMulti,
-                    item: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
+                    children: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
                         const draggedCount = draggedFiles.length,
                             targetTxt = isDragActive
                                 ? `Drop to add ${fileNoun(draggedCount)}.`

@@ -5,10 +5,11 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {chart} from '@xh/hoist/cmp/chart';
+import {errorBoundary} from '@xh/hoist/cmp/error';
 import {div, hspacer, placeholder} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {buttonGroupInput, slider} from '@xh/hoist/desktop/cmp/input';
+import {buttonGroupInput, slider, switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -22,16 +23,17 @@ import './RoleGraph.scss';
 export const roleGraph = hoistCmp.factory({
     displayName: 'RoleGraph',
     model: creates(RoleGraphModel),
+
     render({model}) {
         const {role} = model;
         return panel({
             compactHeader: true,
-            icon: Icon.idBadge(),
+            icon: Icon.treeGraph(),
             title: role ? `Relationships - ${role.name} ` : 'Relationships',
             item: div({
                 item: div({
                     style: {margin: 'auto'},
-                    item: content()
+                    item: errorBoundary(content())
                 }),
                 style: {
                     display: 'flex',
@@ -78,6 +80,10 @@ export const roleGraph = hoistCmp.factory({
                         max: 2,
                         stepSize: 0.005,
                         labelRenderer: false
+                    }),
+                    'Limit to one level',
+                    switchInput({
+                        bind: 'limitToOneLevel'
                     })
                 ],
                 omit: !role
@@ -107,8 +113,9 @@ const content = hoistCmp.factory<RoleGraphModel>(({model}) => {
     }
     if (isEmpty(relatedRoles))
         return placeholder(
+            Icon.treeGraph(),
             !role
-                ? 'No role selected.'
+                ? 'Select a role to view relationships...'
                 : relationship === 'inherited'
                   ? `${role.name} does not inherit from any other roles.`
                   : `${role.name} has not been granted to any other roles.`

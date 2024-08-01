@@ -8,7 +8,7 @@ import {ChartModel} from '@xh/hoist/cmp/chart';
 import {HoistModel, lookup, managed, PlainObject} from '@xh/hoist/core';
 import {bindable, computed} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {isEmpty, isMatch, sortBy, sumBy} from 'lodash';
+import {compact, isEmpty, isMatch, sortBy, sumBy} from 'lodash';
 import {RoleModel} from '../RoleModel';
 import {EffectiveRoleMember, HoistRole} from '../Types';
 
@@ -21,6 +21,8 @@ export class RoleGraphModel extends HoistModel {
     @bindable inverted: boolean = true;
 
     @bindable widthScale: number = 1.0;
+
+    @bindable limitToOneLevel: boolean = true;
 
     get relatedRoles(): EffectiveRoleMember[] {
         const {role, relationship} = this;
@@ -35,7 +37,7 @@ export class RoleGraphModel extends HoistModel {
 
     @computed
     get size() {
-        const {inverted, maxDepth, leafCount, widthScale} = this;
+        const {inverted, leafCount, maxDepth, widthScale} = this;
         if (inverted) {
             const AVG_WIDTH = 150,
                 AVG_HEIGHT = 26;
@@ -57,7 +59,7 @@ export class RoleGraphModel extends HoistModel {
         const {chartModel} = this;
         this.addReaction(
             {
-                track: () => [this.role, this.relationship],
+                track: () => [this.role, this.relationship, this.limitToOneLevel],
                 run: async ([role]) => {
                     chartModel.clear(); //  avoid HC rendering glitches
                     await wait();
@@ -86,15 +88,15 @@ export class RoleGraphModel extends HoistModel {
     // Implementation
     // -------------------------------
     private getSeriesData(): PlainObject[] {
-        const {role, relatedRoles} = this,
-            {name} = role;
+        const {role, relatedRoles, limitToOneLevel} = this,
+            {name: rootName} = role;
         if (isEmpty(relatedRoles)) return [];
         const alreadyAdded = new Set<string>();
         return [
             {
-                id: name,
+                id: rootName,
                 // Replace spaces with non-breaking spaces to prevent wrapping.
-                name: name.replaceAll(' ', '&nbsp'),
+                name: rootName.replaceAll(' ', '&nbsp'),
                 dataLabels: {
                     style: {
                         fontWeight: 600
@@ -105,24 +107,28 @@ export class RoleGraphModel extends HoistModel {
                     fillColor: 'var(--xh-bg-alt)'
                 }
             },
-            ...sortBy(relatedRoles, 'name').flatMap(({name, sourceRoles}) =>
-                [...sourceRoles]
-                    .sort((a, b) => {
-                        if (a === role.name) return -1;
-                        if (b === role.name) return 1;
-                        return a > b ? 1 : -1;
-                    })
-                    .map(source => {
-                        // Adds a space to the id to differentiate subsequent nodes from the single expanded one.
-                        const id = alreadyAdded.has(name) ? `${name} ` : name;
-                        alreadyAdded.add(name);
-                        return {
-                            id,
-                            // Replace spaces with non-breaking spaces to prevent wrapping.
-                            name: name.replaceAll(' ', '&nbsp'),
-                            parent: source
-                        };
-                    })
+            ...compact(
+                sortBy(relatedRoles, 'name').flatMap(({name, sourceRoles}) =>
+                    [...sourceRoles]
+                        .sort((a, b) => {
+                            if (a === role.name) return -1;
+                            if (b === role.name) return 1;
+                            return a > b ? 1 : -1;
+                        })
+                        .map(source => {
+                            // Omit all non-root nodes if limitToOneLevel is true
+                            if (limitToOneLevel && source !== rootName) return null;
+                            // Adds a space to the id to differentiate subsequent nodes from the single expanded one.
+                            const id = alreadyAdded.has(name) ? `${name} ` : name;
+                            alreadyAdded.add(name);
+                            return {
+                                id,
+                                // Replace spaces with non-breaking spaces to prevent wrapping.
+                                name: name.replaceAll(' ', '&nbsp'),
+                                parent: source
+                            };
+                        })
+                )
             )
         ];
     }
@@ -184,7 +190,11 @@ export class RoleGraphModel extends HoistModel {
 
     @computed
     private get leafCount(): number {
-        const {relatedRoles} = this;
+        const {relatedRoles, limitToOneLevel, role} = this;
+        // Limit to one level means that we only show the direct children of the root role.
+        if (limitToOneLevel)
+            return sumBy(relatedRoles, it => (it.sourceRoles.includes(role.name) ? 1 : 0));
+
         return sumBy(relatedRoles, it => {
             const hasChildren = relatedRoles.some(other => other.sourceRoles.includes(it.name)),
                 parentCount = it.sourceRoles.length;
@@ -195,8 +205,11 @@ export class RoleGraphModel extends HoistModel {
 
     @computed
     private get maxDepth(): number {
-        const {role: root, relatedRoles} = this;
+        const {role: root, relatedRoles, limitToOneLevel} = this;
+        // Only the root node.
         if (isEmpty(relatedRoles)) return 1;
+        // Limit to one level means that we only show two levels.
+        if (limitToOneLevel) return 2;
 
         const maxDepthRecursive = (roleName: string) => {
             if (roleName === root.name) return 1;

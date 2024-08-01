@@ -22,14 +22,14 @@ import {useContextMenu} from '@xh/hoist/dynamics/desktop';
 import {Icon} from '@xh/hoist/icon';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {runInAction} from '@xh/hoist/mobx';
-import {logError} from '@xh/hoist/utils/js';
+import {logError, mergeDeep} from '@xh/hoist/utils/js';
 import {
     createObservableRef,
     getLayoutProps,
     useOnResize,
     useOnVisibleChange
 } from '@xh/hoist/utils/react';
-import {assign, castArray, cloneDeep, forOwn, isEqual, isPlainObject, merge, omit} from 'lodash';
+import {assign, castArray, cloneDeep, forOwn, isEqual, isPlainObject, omit} from 'lodash';
 import {placeholder} from '../layout';
 import './Chart.scss';
 import {ChartModel} from './ChartModel';
@@ -252,7 +252,7 @@ class ChartLocalModel extends HoistModel {
             defaultConf = this.getDefaultConfig();
 
         this.mergeAxisConfigs(themeConf, propsConf);
-        return merge(defaultConf, themeConf, propsConf);
+        return mergeDeep(defaultConf, themeConf, propsConf);
     }
 
     getDefaultConfig() {
@@ -336,7 +336,7 @@ class ChartLocalModel extends HoistModel {
                 arr = castArray(conf[axis] || {}),
                 defaultAxisConfig = this.getDefaultAxisConfig(axis);
 
-            conf[axis] = arr.map(it => merge({}, defaultAxisConfig, theme[axis], it));
+            conf[axis] = arr.map(it => mergeDeep({}, defaultAxisConfig, theme[axis], it));
             theme[axis] = null;
         });
     }
