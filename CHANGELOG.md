@@ -1,11 +1,12 @@
 # Changelog
 
-## 67.0.0-SNAPSHOT - unreleased
+## 66.1.1 - 2024-08-01
 
 ### 🐞 Bug Fixes
 
 * `HoistException` now correctly passes an exception message to its underlying `Error` instance.
 * Fixed `GridModel.cellBorders` prop to apply previously missing top and bottom borders to cells in the grid.
+* Fix to new `mergeDeep` method.
 
 ## 66.1.0 - 2024-07-31
 
