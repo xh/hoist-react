@@ -165,7 +165,7 @@ The `HoistBase` class adds two key methods by default to these core Hoist artifa
 and `addReaction()`. These methods build on top of the native MobX autorun and reaction utilities
 with some additional syntax for clarity (in the case of reactions) and, importantly, a managed
 lifecycle that automatically disposes of these listeners when the owning artifact's `destroy` method
-is called. See that class for further details on this API.
+is called. See that class for further taskDetails on this API.
 
 Hoist leverages MobX in a wide variety of other contexts, including observable data stores, the
 handling and validation of form field inputs, routing, and more. In many cases, MobX-provided

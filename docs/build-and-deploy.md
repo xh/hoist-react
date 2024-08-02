@@ -1,6 +1,6 @@
 # 🛠️ Hoist Build and Deployment (CI) Configuration
 
-This section details the general steps we use to build a typical full-stack Hoist React application.
+This section taskDetails the general steps we use to build a typical full-stack Hoist React application.
 We consider the Grails-based back-end and React-based front-end to be two sides of the same
 application. We build and deploy them together, and so the below includes info on building the
 Grails / Gradle based server. That is technically the domain of
@@ -297,7 +297,7 @@ server {
 -   Uses the `try_files` directive to attempt to service requests at sub-paths by handing back asset
     files if they exist, but otherwise falling back to `index.html` within that path. This allows for
     the use of HTML5 “pushState” routing, where in-app routes are written to the URL without the use
-    of a traditional `#` symbol (e.g. <http://host/app/details/123>).
+    of a traditional `#` symbol (e.g. <http://host/app/taskDetails/123>).
 -   Creates a proxy endpoint at `/api/` to pass traffic through to the Tomcat back-end. This path is
     expected by the JS client, which will automatically prepend it to the path of any local/relative
     Ajax requests. This can be customized if needed on the client by adjusting the `baserUrl` param
