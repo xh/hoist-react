@@ -2,18 +2,6 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
-* No changes yet...
-
-## 66.1.1 - 2024-08-01
-
-### 🐞 Bug Fixes
-
-* `HoistException` now correctly passes an exception message to its underlying `Error` instance.
-* Fixed `GridModel.cellBorders` to apply top and bottom cell borders, as expected.
-* Fix to new `mergeDeep` method.
-
-## 66.1.0 - 2024-07-31
-
 ### 🎁 New Features
 
 * Added support for Correlation IDs across fetch requests and error / activity tracking:
@@ -32,6 +20,23 @@
     * If set on a fetch request, Correlation IDs are passed through to downstream Hoist activity
       tracking and error reporting and are available for review in the Admin Console.
     * New `XH.genUUID()` method to generate UUIDs for use as Correlation IDs or elsewhere.
+
+### 📚 Libraries
+
+* uuid `added @ 10.0`
+
+## 66.1.1 - 2024-08-01
+
+### 🐞 Bug Fixes
+
+* `HoistException` now correctly passes an exception message to its underlying `Error` instance.
+* Fixed `GridModel.cellBorders` to apply top and bottom cell borders, as expected.
+* Fix to new `mergeDeep` method.
+
+## 66.1.0 - 2024-07-31
+
+### 🎁 New Features
+
 * Enhanced `markdown` component to support the underlying `components` prop from `react-markdown`.
   Use this prop to customize markdown rendering.
 * New `mergeDeep` method provided in `@xh/hoist/utils/js` as an alternative to `lodash.merge`,
@@ -64,10 +69,6 @@
 
 * Enhanced beta `MsalClient` and `AuthZeroClient` OAuth implementations to support passing
   app-specific configs directly into the constructors of their underlying client implementation.
-
-### 📚 Libraries
-
-* uuid `added @ 10.0`
 
 ## 66.0.2 - 2024-07-17
 
