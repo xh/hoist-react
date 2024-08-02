@@ -788,6 +788,12 @@ export class XHApi {
         return v4();
     }
 
+    /**
+     * Method for generating Correlation ID's. Defaults to `XH.genUUID()` but can be modified
+     * by applications looking to customize the format of their Correlation ID's.
+     */
+    genCID = () => this.genUUID();
+
     //----------------
     // Implementation
     //----------------

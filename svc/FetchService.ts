@@ -17,7 +17,7 @@ import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
-import {isDate, isFunction, isNil, isString, omit, omitBy} from 'lodash';
+import {isDate, isFunction, isNil, isObject, isString, omit, omitBy} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
 
 /**
@@ -46,15 +46,24 @@ export class FetchService extends HoistService {
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
     private autoAborters = {};
+
+    /** True to auto-generate a Correlation ID for each request unless otherwise specified. */
+    autoGenerateCorrelationIds = false;
+
+    /** Request header name to be used for Correlation ID tracking. */
     correlationIdHeaderKey: string = 'X-Correlation-ID';
-    defaultHeaders: (PlainObject | ((arg: FetchOptions) => Awaitable<PlainObject>))[] = [];
-    defaultTimeout = (30 * SECONDS) as any;
 
     /**
-     * Set the header name to be used for correlationId tracking.
+     * Timeout to be used for all requests made via this service that do not themselves spec a
+     * custom timeout.
      */
-    setCorrelationIdHeaderKey(key: string) {
-        this.correlationIdHeaderKey = key;
+    defaultTimeout: PromiseTimeoutSpec = 30 * SECONDS;
+
+    private _defaultHeaders: Array<PlainObject | ((arg: FetchOptions) => Awaitable<PlainObject>)> =
+        [];
+
+    get defaultHeaders(): Array<PlainObject | ((arg: FetchOptions) => Awaitable<PlainObject>)> {
+        return this._defaultHeaders;
     }
 
     /**
@@ -72,14 +81,19 @@ export class FetchService extends HoistService {
      * @param headers - to be sent with all fetch requests, or a function to generate.
      */
     addDefaultHeaders(headers: PlainObject | ((arg: FetchOptions) => Awaitable<PlainObject>)) {
-        this.defaultHeaders.push(headers);
+        this._defaultHeaders.push(headers);
     }
 
     /**
      * Set the timeout (default 30 seconds) to be used for all requests made via this service that
      * do not themselves spec a custom timeout.
+     * @deprecated modify `defaultTimeout` directly instead.
      */
     setDefaultTimeout(timeout: PromiseTimeoutSpec) {
+        apiDeprecated('setDefaultTimeout', {
+            v: '68',
+            msg: 'Modify `defaultTimeout` directly instead.'
+        });
         this.defaultTimeout = timeout;
     }
 
@@ -173,13 +187,14 @@ export class FetchService extends HoistService {
 
     /** Resolve convenience options for Correlation ID to server-ready string */
     private withCorrelationId(opts: FetchOptions): FetchOptions {
-        if (isString(opts.correlationId)) return opts;
-        if (opts.correlationId === false) return omit(opts, 'correlationId');
-
-        return {
-            ...opts,
-            correlationId: opts.correlationId === true ? XH.genUUID() : opts.loadSpec?.correlationId
-        };
+        const {correlationId, loadSpec} = opts;
+        if (isString(correlationId)) return opts;
+        if (correlationId === false || correlationId === null) return omit(opts, 'correlationId');
+        if (loadSpec?.correlationId) return {...opts, correlationId: loadSpec.correlationId};
+        if (correlationId === true || this.autoGenerateCorrelationIds) {
+            return {...opts, correlationId: XH.genCID()};
+        }
+        return opts;
     }
 
     private async withDefaultHeadersAsync(
@@ -236,8 +251,9 @@ export class FetchService extends HoistService {
             if (e.isTimeout) {
                 aborter.abort();
                 const msg =
-                    timeout?.message ??
-                    `Timed out loading '${opts.url}' - no response after ${e.interval}ms.`;
+                    isObject(timeout) && 'message' in timeout
+                        ? timeout.message
+                        : `Timed out loading '${opts.url}' - no response after ${e.interval}ms.`;
                 throw Exception.fetchTimeout(opts, e, msg);
             }
 

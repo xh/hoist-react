@@ -184,7 +184,7 @@ export class Exception {
     // Implementation
     //-----------------------
     private static createFetchException(attributes: PlainObject) {
-        let correlationId: string;
+        let correlationId: string = null;
         const correlationIdHeaderKey = XH?.fetchService?.correlationIdHeaderKey;
         if (correlationIdHeaderKey) {
             correlationId = attributes.fetchOptions?.headers?.[correlationIdHeaderKey];

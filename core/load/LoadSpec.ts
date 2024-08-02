@@ -6,6 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
+import {apiDeprecated} from '@xh/hoist/utils/js';
 import {PlainObject} from '../types/Types';
 import {LoadSupport} from './';
 
@@ -30,8 +31,8 @@ import {LoadSupport} from './';
  */
 
 export type LoadSpecConfig = {
-    /** Unique identifier for tracking and logging. If `true`, a new UUID will be generated. */
-    correlationId?: string | true;
+    /** Unique identifier for tracking and logging or `true` to generate from `XH.genCID()`. */
+    correlationId?: string | boolean;
     /** True if triggered by a refresh request (automatic or user-driven). */
     isRefresh?: boolean;
     /** True if triggered by an automatic refresh process. */
@@ -85,7 +86,12 @@ export class LoadSpec {
      */
     constructor(config: LoadSpecConfig, owner: LoadSupport) {
         const {correlationId, isRefresh, isAutoRefresh, meta} = config;
-        this.correlationId = correlationId === true ? XH.genUUID() : correlationId;
+        this.correlationId =
+            correlationId === true
+                ? XH.genCID()
+                : correlationId === false
+                  ? undefined
+                  : correlationId;
         this.isRefresh = !!(isRefresh || isAutoRefresh);
         this.isAutoRefresh = !!isAutoRefresh;
         this.meta = meta ?? {};
@@ -96,5 +102,11 @@ export class LoadSpec {
         this.dateCreated = new Date();
 
         Object.freeze(this);
+    }
+
+    /** @deprecated Applications should use `instanceof` instead of this property. */
+    get isLoadSpec(): boolean {
+        apiDeprecated('isLoadSpec', {v: '68', msg: 'Use `instanceof` instead.'});
+        return true;
     }
 }
