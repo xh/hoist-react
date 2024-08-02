@@ -322,5 +322,7 @@ export function mergeDeep<T, S1, S2, S3>(
 ): T & S1 & S2 & S3;
 export function mergeDeep<T, S>(target: T, ...sources: S[]): T & S;
 export function mergeDeep(target: PlainObject, ...sources: PlainObject[]): PlainObject {
-    return mergeWith(target, ...sources, (obj, src) => (isArray(obj) ? obj : undefined));
+    return mergeWith(target, ...sources, (tgtVal, srcVal) =>
+        isArray(srcVal) ? srcVal : undefined
+    );
 }

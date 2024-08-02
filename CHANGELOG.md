@@ -2,6 +2,18 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
+* No changes yet...
+
+## 66.1.1 - 2024-08-01
+
+### 🐞 Bug Fixes
+
+* `HoistException` now correctly passes an exception message to its underlying `Error` instance.
+* Fixed `GridModel.cellBorders` to apply top and bottom cell borders, as expected.
+* Fix to new `mergeDeep` method.
+
+## 66.1.0 - 2024-07-31
+
 ### 🎁 New Features
 
 * Added support for Correlation IDs across fetch requests and error / activity tracking:
@@ -25,13 +37,33 @@
 * New `mergeDeep` method provided in `@xh/hoist/utils/js` as an alternative to `lodash.merge`,
   without lodash's surprising deep-merging of array-based properties.
 * Enhanced Roles Admin UI to support bulk category reassignment.
+* Enhanced the number formatters' `zeroPad` option to take an integer in addition to true/false, for
+  finer-grained control over padding length.
 
 ### 🐞 Bug Fixes
 
 * Fixed `Record.descendants` and `Record.allDescendants` getters that were incorrectly returning the
   parent record itself. Now only the descendants are returned, as expected.
+    * ⚠️ Note that apps relying on the previous behavior will need to adjust to account for the
+      parent record no longer being included. (Tree grids with custom parent/child checkbox
+      selection are one example of a component that might be affected by this change.)
 * Fixed `Grid` regression where pinned columns were automatically un-pinned when the viewport became
   too small to accommodate them.
+* Fixed bug where `Grid` context-menus would lose focus when rendered inside `Overlay` components.
+
+### ⚙️ Typescript API Adjustments
+
+* ⚠️ Please ensure you update your app to `hoist-dev-utils >= v9.0.1` - this ensures you have a
+  recent version of `type-fest` as a dev dependency, required to compile some recent Hoist
+  typescript changes.
+* The `NumberFormatOptions.precision` arg has been more strictly typed to `Precision`, a new type
+  exported from `@xh/hoist/format`. (It was previously `number`.) Apps might require minor
+  adjustments - e.g. typing shared format configs as `NumberFormatOptions` to satisfy the compiler.
+
+### ⚙️ Technical
+
+* Enhanced beta `MsalClient` and `AuthZeroClient` OAuth implementations to support passing
+  app-specific configs directly into the constructors of their underlying client implementation.
 
 ### 📚 Libraries
 
