@@ -2,7 +2,13 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
-* No changes yet...
+### 🎁 New Features
+
+* `GridModel` will now accept `false` as a value to omit context menus.
+
+### ⚙️ Technical
+
+* Remove context menus from column choosers.
 
 ## 66.1.1 - 2024-08-01
 
