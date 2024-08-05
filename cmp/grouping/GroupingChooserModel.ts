@@ -85,7 +85,7 @@ export class GroupingChooserModel extends HoistModel {
     @observable.ref favorites: string[][] = [];
 
     @observable.ref private _dimensions: Record<string, DimensionSpec>;
-    dimensionNames: string[];
+    @observable.ref private dimensionNames: string[];
 
     allowEmpty: boolean;
     maxDepth: number;
@@ -143,11 +143,6 @@ export class GroupingChooserModel extends HoistModel {
         this.maxDepth = maxDepth;
         this.commitOnChange = commitOnChange;
 
-        throwIf(
-            isEmpty(this._dimensions),
-            'Must provide valid dimensions available for selection.'
-        );
-
         // Read and validate value and favorites
         let value = isFunction(initialValue) ? initialValue() : initialValue,
             favorites = isFunction(initialFavorites) ? initialFavorites() : initialFavorites;
@@ -197,6 +192,8 @@ export class GroupingChooserModel extends HoistModel {
 
     @action
     setDimensions(dimensions: Array<DimensionSpec | string>) {
+        throwIf(isEmpty(dimensions), 'Must provide valid dimensions available for selection.');
+
         this._dimensions = this.normalizeDimensions(dimensions);
         this.dimensionNames = keys(this._dimensions);
         this.cleanStaleDims();
@@ -280,25 +277,6 @@ export class GroupingChooserModel extends HoistModel {
         return value.every(dim => this.dimensionNames.includes(dim));
     }
 
-    normalizeDimensions(dims: Array<DimensionSpec | string>): Record<string, DimensionSpec> {
-        dims = dims ?? [];
-        const ret = {};
-        dims.forEach(it => {
-            const dim = this.createDimension(it);
-            ret[dim.name] = dim;
-        });
-        return ret;
-    }
-
-    createDimension(src: DimensionSpec | string) {
-        src = isString(src) ? {name: src} : src;
-        throwIf(
-            !src.hasOwnProperty('name'),
-            "Dimensions provided as Objects must define a 'name' property."
-        );
-        return {displayName: genDisplayName(src.name), ...src};
-    }
-
     getValueLabel(value: string[]): string {
         return value.map(dimName => this.getDimDisplayName(dimName)).join(' › ');
     }
@@ -362,6 +340,27 @@ export class GroupingChooserModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
+    private normalizeDimensions(
+        dims: Array<DimensionSpec | string>
+    ): Record<string, DimensionSpec> {
+        dims = dims ?? [];
+        const ret = {};
+        dims.forEach(it => {
+            const dim = this.createDimension(it);
+            ret[dim.name] = dim;
+        });
+        return ret;
+    }
+
+    private createDimension(src: DimensionSpec | string) {
+        src = isString(src) ? {name: src} : src;
+        throwIf(
+            !src.hasOwnProperty('name'),
+            "Dimensions provided as Objects must define a 'name' property."
+        );
+        return {displayName: genDisplayName(src.name), ...src};
+    }
+
     private cleanStaleDims() {
         const {value, dimensionNames, allowEmpty} = this,
             cleanValue = value.filter(dim => dimensionNames.includes(dim));
