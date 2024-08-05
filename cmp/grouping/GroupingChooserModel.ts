@@ -85,8 +85,8 @@ export class GroupingChooserModel extends HoistModel {
     @observable.ref favorites: string[][] = [];
 
     @observable.ref private _dimensions: Record<string, DimensionSpec>;
-
     dimensionNames: string[];
+
     allowEmpty: boolean;
     maxDepth: number;
     commitOnChange: boolean;
@@ -366,9 +366,14 @@ export class GroupingChooserModel extends HoistModel {
     //------------------------
     private cleanStaleDims() {
         const {value, dimensionNames, allowEmpty} = this,
-            newValue = value?.filter(dim => dimensionNames.includes(dim));
-        isEmpty(newValue) && !allowEmpty
-            ? this.setValue([this.dimensionNames[0]])
-            : this.setValue(newValue);
+            cleanValue = value.filter(dim => dimensionNames.includes(dim));
+
+        if (isEqual(value, cleanValue)) return;
+
+        if (isEmpty(cleanValue) && !allowEmpty) {
+            cleanValue.push(dimensionNames[0]);
+        }
+
+        this.setValue(cleanValue);
     }
 }
