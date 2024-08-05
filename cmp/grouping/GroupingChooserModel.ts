@@ -300,9 +300,7 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     getValueLabel(value: string[]): string {
-        return (
-            value.map(dimName => this.getDimDisplayName(dimName)).join(' › ') ?? value.toString()
-        );
+        return value.map(dimName => this.getDimDisplayName(dimName)).join(' › ');
     }
 
     getDimDisplayName(dimName: string) {
