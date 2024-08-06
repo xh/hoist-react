@@ -5,7 +5,7 @@
 ### 🎁 New Features
 
 * Added support for Correlation IDs across fetch requests and error / activity tracking:
-    * ⚠️ Upgrade to `hoist-core >= v20.4.0` to enable support for persisting correlation IDs to
+    * ⚠️ Upgrade to `hoist-core >= v20.5.0` to enable support for persisting correlation IDs to
       Hoist activity tracking and client error logs.
     * New `FetchService` members: `autoGenCorrelationIds`, `genCorrelationId` and
       `correlationIdHeaderKey` to support generation and inclusion of Correlation IDs on outbound
