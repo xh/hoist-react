@@ -6,6 +6,10 @@
 
 * `GridModel` will now accept `false` as a value to omit context menus.
 
+### 🐞 Bug Fixes
+
+* Fixed `SelectEditor` to ensure new value is flushed before editing stops.
+
 ### ⚙️ Technical
 
 * Remove context menus from column choosers.
