@@ -18,6 +18,11 @@
     * If set on a fetch request, Correlation IDs are passed through to downstream Hoist activity
       tracking and error reporting and are available for review in the Admin Console.
     * New `XH.genUUID()` method to generate UUIDs for use as Correlation IDs or elsewhere.
+* `GridModel` will now accept `false` as a value to omit context menus.
+
+### ⚙️ Technical
+
+* Remove context menus from column choosers.
 
 ### 📚 Libraries
 
