@@ -48,7 +48,13 @@ export class FetchService extends HoistService {
     private autoAborters = {};
 
     /** True to auto-generate a Correlation ID for each request unless otherwise specified. */
-    autoGenerateCorrelationIds = false;
+    autoGenCorrelationIds = false;
+
+    /**
+     * Method for generating Correlation ID's. Defaults to `XH.genUUID()` but can be modified
+     * by applications looking to customize the format of their Correlation ID's.
+     */
+    genCorrelationId = () => XH.genUUID();
 
     /** Request header name to be used for Correlation ID tracking. */
     correlationIdHeaderKey: string = 'X-Correlation-ID';
@@ -187,12 +193,11 @@ export class FetchService extends HoistService {
 
     /** Resolve convenience options for Correlation ID to server-ready string */
     private withCorrelationId(opts: FetchOptions): FetchOptions {
-        const {correlationId, loadSpec} = opts;
+        const {correlationId} = opts;
         if (isString(correlationId)) return opts;
         if (correlationId === false || correlationId === null) return omit(opts, 'correlationId');
-        if (loadSpec?.correlationId) return {...opts, correlationId: loadSpec.correlationId};
-        if (correlationId === true || this.autoGenerateCorrelationIds) {
-            return {...opts, correlationId: XH.genCID()};
+        if (correlationId === true || this.autoGenCorrelationIds) {
+            return {...opts, correlationId: this.genCorrelationId()};
         }
         return opts;
     }
@@ -366,8 +371,7 @@ export interface FetchOptions {
 
     /**
      * Unique identifier for this request, used for tracking and logging. If `false`, no
-     * `correlationId` will be set. If `true`, one will be auto-generated. If unspecified,
-     * `FetchService` will check for a `correlationId` on this config's `loadSpec` (if provided).
+     * `correlationId` will be set. If `true`, one will be auto-generated.
      */
     correlationId?: string | boolean;
 

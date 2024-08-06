@@ -5,7 +5,6 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 import {PlainObject} from '../types/Types';
 import {LoadSupport} from './';
@@ -31,8 +30,6 @@ import {LoadSupport} from './';
  */
 
 export type LoadSpecConfig = {
-    /** Unique identifier for tracking and logging or `true` to generate from `XH.genCID()`. */
-    correlationId?: string | boolean;
     /** True if triggered by a refresh request (automatic or user-driven). */
     isRefresh?: boolean;
     /** True if triggered by an automatic refresh process. */
@@ -42,9 +39,6 @@ export type LoadSpecConfig = {
 };
 
 export class LoadSpec {
-    /** Unique identifier for tracking and logging. */
-    correlationId?: string;
-
     /** True if triggered by a refresh request (automatic or user-driven). */
     isRefresh: boolean;
 
@@ -85,13 +79,7 @@ export class LoadSpec {
      * {@link LoadSupport} class as part of its managed `loadAsync()` wrapper.
      */
     constructor(config: LoadSpecConfig, owner: LoadSupport) {
-        const {correlationId, isRefresh, isAutoRefresh, meta} = config;
-        this.correlationId =
-            correlationId === true
-                ? XH.genCID()
-                : correlationId === false
-                  ? undefined
-                  : correlationId;
+        const {isRefresh, isAutoRefresh, meta} = config;
         this.isRefresh = !!(isRefresh || isAutoRefresh);
         this.isAutoRefresh = !!isAutoRefresh;
         this.meta = meta ?? {};

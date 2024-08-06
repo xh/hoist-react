@@ -214,8 +214,8 @@ export interface TrackOptions {
     category?: string;
 
     /**
-     * Correlation ID to save along with track log. If not provided, will attempt to source in
-     * priority order from 1) the underlying Fetch Request or 2) the provided loadSpec.
+     * Correlation ID to save along with track log. If not provided, will attempt to source from the
+     * underlying Fetch Request.
      */
     correlationId?: string;
 

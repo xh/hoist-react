@@ -40,7 +40,6 @@ export class TrackService extends HoistService {
         // Normalize string form, msg -> message, default severity.
         if (isString(options)) options = {message: options};
         if (isOmitted(options)) return;
-        options.correlationId = withDefault(options.correlationId, options.loadSpec?.correlationId);
         options.message = withDefault(options.message, (options as any).msg);
         options.severity = withDefault(options.severity, 'INFO');
 
