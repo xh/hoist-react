@@ -27,18 +27,17 @@ import {IStringifyOptions, stringify} from 'qs';
  * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
  * included, and redirects followed.
  *
- * Custom headers can be provided to fetch as a plain object. App-wide default headers can be set
- * using `setDefaultHeaders()`.
+ * Set {@link autoGenCorrelationIds} to true on this service to enable auto-generation of UUID
+ * Correlation IDs for all requests issued by this service. Can also be set on a per-request basis
+ * via {@link FetchOptions.correlationId}.
+ *
+ * Custom headers can be set on a request via {@link FetchOptions.headers}. Default headers for all
+ * requests can be set / customized using {@link addDefaultHeaders}.
  *
  * Also see the {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API | Fetch API Docs}.
  *
  * Note that the convenience methods `fetchJson`, `postJson`, `putJson` all accept the same options
  * as the main entry point `fetch`, as they delegate to fetch after setting additional defaults.
- *
- * Note: For non-SSO apps, FetchService will automatically trigger a reload of the app if a
- * 401 is encountered from a local (relative) request.  This default behavior is designed to allow
- * more seamless re-establishment of timed out authentication sessions, but can be turned off
- * via config if needed.
  */
 export class FetchService extends HoistService {
     static instance: FetchService;
