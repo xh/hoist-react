@@ -64,6 +64,7 @@ import {
 import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
+import {v4} from 'uuid';
 
 export const MIN_HOIST_CORE_VERSION = '18.0';
 
@@ -778,6 +779,13 @@ export class XHApi {
      */
     genId(): string {
         return uniqueId('xh-id-');
+    }
+
+    /**
+     * Generate a universally unique identifier (UUID). Useful for generating Correlation IDs.
+     */
+    genUUID(): string {
+        return v4();
     }
 
     //----------------
