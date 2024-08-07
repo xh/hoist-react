@@ -6,13 +6,15 @@
  */
 import '@xh/hoist/mobile/register';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, WithoutModelAndRef} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import './CheckboxButton.scss';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {withDefault} from '@xh/hoist/utils/js';
 
-export interface CheckboxButtonProps extends ButtonProps, HoistInputProps {
+export interface CheckboxButtonProps
+    extends WithoutModelAndRef<ButtonProps>,
+        HoistInputProps<null> {
     value?: boolean;
 }
 
@@ -29,14 +31,17 @@ export const [CheckboxButton, checkboxButton] = hoistCmp.withFactory<CheckboxBut
     }
 });
 
-class CheckboxButtonInputModel extends HoistInputModel {
+class CheckboxButtonInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 }
 
 //----------------------------------
 // Implementation
 //----------------------------------
-const cmp = hoistCmp.factory<CheckboxButtonInputModel>(({model, text, ...props}, ref) => {
+const cmp = hoistCmp.factory<
+    HoistProps<CheckboxButtonInputModel, HTMLButtonElement> &
+        WithoutModelAndRef<CheckboxButtonProps>
+>(({model, text, ...props}, ref) => {
     const checked = !!model.renderValue;
     return button({
         text: withDefault(text, model.getField()?.displayName),

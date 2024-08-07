@@ -4,13 +4,13 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, WithoutModelAndRef} from '@xh/hoist/core';
 import {dialog} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import './DialogPanel.scss';
 import {panel, PanelProps} from './Panel';
 
-export interface DialogPanelProps extends PanelProps {
+export interface DialogPanelProps extends HoistProps, WithoutModelAndRef<PanelProps> {
     /** Is the dialog panel shown.  */
     isOpen?: boolean;
 }

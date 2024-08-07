@@ -26,7 +26,7 @@ import './AgGrid.scss';
 import {AgGridModel} from './AgGridModel';
 
 export interface AgGridProps
-    extends HoistProps<AgGridModel>,
+    extends HoistProps<AgGridModel, HTMLDivElement>,
         GridOptions,
         LayoutProps,
         TestSupportProps {}

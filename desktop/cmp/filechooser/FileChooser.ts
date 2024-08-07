@@ -14,7 +14,7 @@ import {ReactNode} from 'react';
 import './FileChooser.scss';
 import {FileChooserModel} from './FileChooserModel';
 
-export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps {
+export interface FileChooserProps extends HoistProps<FileChooserModel, HTMLDivElement>, BoxProps {
     /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
     accept?: Some<string>;
 

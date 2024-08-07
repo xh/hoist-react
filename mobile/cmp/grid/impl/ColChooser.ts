@@ -4,8 +4,17 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {Column} from '@xh/hoist/cmp/grid';
 import {div, filler, placeholder as placeholderCmp} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, HoistProps, lookup, useLocalModel, uses} from '@xh/hoist/core';
+import {
+    DefaultHoistProps,
+    hoistCmp,
+    HoistModel,
+    HoistProps,
+    lookup,
+    useLocalModel,
+    uses
+} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -15,6 +24,7 @@ import '@xh/hoist/mobile/register';
 import classNames from 'classnames';
 import './ColChooser.scss';
 import {isEmpty} from 'lodash';
+import {ReactNode} from 'react';
 import {ColChooserModel} from './ColChooserModel';
 
 export interface ColChooserProps extends HoistProps<ColChooserModel> {}
@@ -133,7 +143,12 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
 //------------------------
 // Implementation
 //------------------------
-const columnList = hoistCmp.factory({
+interface ColumnListProps extends HoistProps<ColChooserLocalModel, HTMLDivElement> {
+    cols: Column[];
+    placeholder: ReactNode;
+}
+
+const columnList = hoistCmp.factory<ColumnListProps>({
     render({cols, placeholder, className, ...props}, ref) {
         return div({
             className: classNames('xh-col-chooser__list', className),
@@ -168,7 +183,7 @@ const draggableRow = hoistCmp.factory({
     }
 });
 
-const row = hoistCmp.factory<ColChooserLocalModel>({
+const row = hoistCmp.factory<DefaultHoistProps<ColChooserLocalModel, HTMLDivElement>>({
     render({model, col, isDragging, ...props}, ref) {
         if (!col) return null;
 

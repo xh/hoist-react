@@ -24,7 +24,10 @@ import './DataView.scss';
 import {DataViewModel} from './DataViewModel';
 import {mergeDeep} from '@xh/hoist/utils/js';
 
-export interface DataViewProps extends HoistProps<DataViewModel>, LayoutProps, TestSupportProps {
+export interface DataViewProps
+    extends HoistProps<DataViewModel, HTMLDivElement>,
+        LayoutProps,
+        TestSupportProps {
     /**
      * Options for ag-Grid's API.
      *

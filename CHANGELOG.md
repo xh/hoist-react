@@ -2,6 +2,10 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - renamed component prop)
+
+* `RefreshButton` component `model` prop renamed to `target`.
+
 ### 🎁 New Features
 
 * Added support for Correlation IDs across fetch requests and error / activity tracking:
@@ -23,10 +27,14 @@
 ### 🐞 Bug Fixes
 
 * Fixed `SelectEditor` to ensure new value is flushed before editing stops.
+* Fix bug where `model` passed to `RelativeTimestamp` was being ignored.
 
 ### ⚙️ Technical
 
 * Remove context menus from column choosers.
+* Typescript: Overall type improvements and cleanup. Note: `AppConfigs` with `model: false` will
+  need to specify a `null` model type in the generic argument to `hoistCmp`, `hoistCmp.factory` or
+  `hoistCmp.withFactory` to avoid a type error.
 
 ### 📚 Libraries
 

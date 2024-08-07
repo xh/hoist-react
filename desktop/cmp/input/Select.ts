@@ -9,8 +9,8 @@ import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
 import {
     Awaitable,
     createElement,
+    DefaultHoistProps,
     hoistCmp,
-    HoistProps,
     LayoutProps,
     PlainObject,
     SelectOption,
@@ -39,7 +39,7 @@ import './Select.scss';
 
 export const MENU_PORTAL_ID = 'xh-select-input-portal';
 
-export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
+export interface SelectProps extends HoistInputProps<null>, LayoutProps {
     /** True to focus the control on render. */
     autoFocus?: boolean;
 
@@ -212,7 +212,7 @@ export const [Select, select] = hoistCmp.withFactory<SelectProps>({
 //-----------------------
 // Implementation
 //-----------------------
-class SelectInputModel extends HoistInputModel {
+class SelectInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
@@ -683,116 +683,118 @@ class SelectInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, ref) => {
-    const {width, height, ...layoutProps} = getLayoutProps(props),
-        rsProps: PlainObject = {
-            value: model.renderValue,
+const cmp = hoistCmp.factory<DefaultHoistProps<SelectInputModel, HTMLDivElement>>(
+    ({model, className, ...props}, ref) => {
+        const {width, height, ...layoutProps} = getLayoutProps(props),
+            rsProps: PlainObject = {
+                value: model.renderValue,
 
-            autoFocus: props.autoFocus,
-            formatOptionLabel: model.formatOptionLabel,
-            isDisabled: props.disabled,
-            isMulti: props.enableMulti,
-            closeMenuOnSelect: props.closeMenuOnSelect,
-            hideSelectedOptions: model.hideSelectedOptions,
-            maxMenuHeight: props.maxMenuHeight,
+                autoFocus: props.autoFocus,
+                formatOptionLabel: model.formatOptionLabel,
+                isDisabled: props.disabled,
+                isMulti: props.enableMulti,
+                closeMenuOnSelect: props.closeMenuOnSelect,
+                hideSelectedOptions: model.hideSelectedOptions,
+                maxMenuHeight: props.maxMenuHeight,
 
-            // Explicit false ensures consistent default for single and multi-value instances.
-            isClearable: withDefault(props.enableClear, false),
-            menuPlacement: withDefault(props.menuPlacement, 'auto'),
-            noOptionsMessage: model.noOptionsMessageFn,
-            openMenuOnFocus: props.openMenuOnFocus,
-            placeholder: withDefault(props.placeholder, 'Select...'),
-            tabIndex: props.tabIndex,
+                // Explicit false ensures consistent default for single and multi-value instances.
+                isClearable: withDefault(props.enableClear, false),
+                menuPlacement: withDefault(props.menuPlacement, 'auto'),
+                noOptionsMessage: model.noOptionsMessageFn,
+                openMenuOnFocus: props.openMenuOnFocus,
+                placeholder: withDefault(props.placeholder, 'Select...'),
+                tabIndex: props.tabIndex,
 
-            // Minimize (or hide) bulky dropdown
-            components: {
-                DropdownIndicator: model.getDropdownIndicatorCmp(),
-                ClearIndicator: model.getClearIndicatorCmp(),
-                Menu: model.getMenuCmp(),
-                IndicatorSeparator: () => null,
-                ValueContainer: model.getValueContainerCmp(),
-                MultiValueLabel: model.getMultiValueLabelCmp(),
-                SingleValue: model.getSingleValueCmp()
+                // Minimize (or hide) bulky dropdown
+                components: {
+                    DropdownIndicator: model.getDropdownIndicatorCmp(),
+                    ClearIndicator: model.getClearIndicatorCmp(),
+                    Menu: model.getMenuCmp(),
+                    IndicatorSeparator: () => null,
+                    ValueContainer: model.getValueContainerCmp(),
+                    MultiValueLabel: model.getMultiValueLabelCmp(),
+                    SingleValue: model.getSingleValueCmp()
+                },
+
+                // A shared div is created lazily here as needed, appended to the body, and assigned
+                // a high z-index to ensure options menus render over dialogs or other modals.
+                menuPortalTarget: model.getOrCreatePortalDiv(),
+
+                inputId: props.id,
+                classNamePrefix: 'xh-select',
+                theme: model.getThemeConfig(),
+
+                onBlur: model.onBlur,
+                onChange: model.onSelectChange,
+                onFocus: model.onFocus,
+                filterOption: model.filterOption,
+
+                ref: model.reactSelectRef
+            };
+
+        if (model.manageInputValue) {
+            rsProps.inputValue = model.inputValue || '';
+            rsProps.onInputChange = model.onInputChange;
+            rsProps.controlShouldRenderValue = !model.hasFocus;
+            rsProps.onMenuOpen = () => {
+                wait().then(() => {
+                    const selectedEl = document.getElementsByClassName(
+                        'xh-select__option--is-selected'
+                    )[0];
+                    selectedEl?.scrollIntoView({block: 'end'});
+                });
+            };
+        }
+
+        if (model.asyncMode) {
+            rsProps.loadOptions = model.doQueryAsync;
+            rsProps.loadingMessage = model.loadingMessageFn;
+            if (model.renderValue) rsProps.defaultOptions = [model.renderValue];
+        } else {
+            rsProps.options = model.internalOptions;
+            rsProps.isSearchable = model.filterMode;
+        }
+
+        if (model.creatableMode) {
+            rsProps.formatCreateLabel = model.createMessageFn;
+        }
+
+        if (props.menuWidth) {
+            rsProps.styles = {
+                menu: provided => ({...provided, width: `${props.menuWidth}px`}),
+                ...props.rsOptions?.styles
+            };
+        }
+
+        const factory = model.getSelectFactory();
+        mergeDeep(rsProps, props.rsOptions);
+
+        return box({
+            item: factory(rsProps),
+            className: classNames(className, height ? 'xh-select--has-height' : null),
+            onKeyDown: e => {
+                // Esc. and Enter can be listened for by parents -- stop the keydown event
+                // propagation only if react-select already likely to have used for menu management.
+                // note: menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
+                const menuIsOpen = model.reactSelect?.state?.menuIsOpen;
+                if (menuIsOpen && (e.key === 'Escape' || e.key === 'Enter')) {
+                    e.stopPropagation();
+                }
             },
-
-            // A shared div is created lazily here as needed, appended to the body, and assigned
-            // a high z-index to ensure options menus render over dialogs or other modals.
-            menuPortalTarget: model.getOrCreatePortalDiv(),
-
-            inputId: props.id,
-            classNamePrefix: 'xh-select',
-            theme: model.getThemeConfig(),
-
-            onBlur: model.onBlur,
-            onChange: model.onSelectChange,
-            onFocus: model.onFocus,
-            filterOption: model.filterOption,
-
-            ref: model.reactSelectRef
-        };
-
-    if (model.manageInputValue) {
-        rsProps.inputValue = model.inputValue || '';
-        rsProps.onInputChange = model.onInputChange;
-        rsProps.controlShouldRenderValue = !model.hasFocus;
-        rsProps.onMenuOpen = () => {
-            wait().then(() => {
-                const selectedEl = document.getElementsByClassName(
-                    'xh-select__option--is-selected'
-                )[0];
-                selectedEl?.scrollIntoView({block: 'end'});
-            });
-        };
+            onMouseDown: e => {
+                // Some internal elements, like the dropdown indicator and the rendered single value,
+                // fire 'mousedown' events. These can bubble and inadvertently close Popovers that
+                // contain Selects.
+                const target = e?.target as HTMLElement;
+                if (target && elemWithin(target, 'bp5-popover')) {
+                    e.stopPropagation();
+                }
+            },
+            testId: props.testId,
+            ...layoutProps,
+            width: withDefault(width, 200),
+            height: height,
+            ref
+        });
     }
-
-    if (model.asyncMode) {
-        rsProps.loadOptions = model.doQueryAsync;
-        rsProps.loadingMessage = model.loadingMessageFn;
-        if (model.renderValue) rsProps.defaultOptions = [model.renderValue];
-    } else {
-        rsProps.options = model.internalOptions;
-        rsProps.isSearchable = model.filterMode;
-    }
-
-    if (model.creatableMode) {
-        rsProps.formatCreateLabel = model.createMessageFn;
-    }
-
-    if (props.menuWidth) {
-        rsProps.styles = {
-            menu: provided => ({...provided, width: `${props.menuWidth}px`}),
-            ...props.rsOptions?.styles
-        };
-    }
-
-    const factory = model.getSelectFactory();
-    mergeDeep(rsProps, props.rsOptions);
-
-    return box({
-        item: factory(rsProps),
-        className: classNames(className, height ? 'xh-select--has-height' : null),
-        onKeyDown: e => {
-            // Esc. and Enter can be listened for by parents -- stop the keydown event
-            // propagation only if react-select already likely to have used for menu management.
-            // note: menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
-            const menuIsOpen = model.reactSelect?.state?.menuIsOpen;
-            if (menuIsOpen && (e.key === 'Escape' || e.key === 'Enter')) {
-                e.stopPropagation();
-            }
-        },
-        onMouseDown: e => {
-            // Some internal elements, like the dropdown indicator and the rendered single value,
-            // fire 'mousedown' events. These can bubble and inadvertently close Popovers that
-            // contain Selects.
-            const target = e?.target as HTMLElement;
-            if (target && elemWithin(target, 'bp5-popover')) {
-                e.stopPropagation();
-            }
-        },
-        testId: props.testId,
-        ...layoutProps,
-        width: withDefault(width, 200),
-        height: height,
-        ref
-    });
-});
+);

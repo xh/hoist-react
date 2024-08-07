@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {fmtNumber, Precision, ZeroPad} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
@@ -15,7 +15,7 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import './NumberInput.scss';
 
-export interface NumberInputProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
+export interface NumberInputProps extends HoistInputProps<null>, StyleProps, LayoutProps {
     value?: number;
 
     /** True to commit on every change/keystroke, default false. */
@@ -87,7 +87,7 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>
 //-----------------------
 // Implementation
 //-----------------------
-class NumberInputModel extends HoistInputModel {
+class NumberInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;

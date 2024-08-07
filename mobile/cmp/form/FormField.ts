@@ -7,7 +7,7 @@
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
-import {DefaultHoistProps, hoistCmp, HoistProps, TestSupportProps, uses, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, PlainObject, TestSupportProps, uses, XH} from '@xh/hoist/core';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
@@ -105,9 +105,9 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         let childEl =
             readonly || !child
-                ? readonlyChild({model, readonlyRenderer})
+                ? readonlyChild({fieldModel: model, readonlyRenderer})
                 : editableChild({
-                      model,
+                      fieldModel: model,
                       child,
                       childIsSizeable,
                       disabled,
@@ -156,34 +156,35 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
     }
 });
 
-interface ReadonlyChildProps extends HoistProps<FieldModel>, TestSupportProps {
+interface ReadonlyChildProps extends HoistProps, TestSupportProps {
+    fieldModel: FieldModel;
     readonlyRenderer: (v: any, model: FieldModel) => ReactNode;
 }
 
 const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
     model: false,
 
-    render({model, readonlyRenderer}) {
-        const value = model ? model['value'] : null;
+    render({fieldModel, readonlyRenderer}) {
+        const value = fieldModel ? fieldModel['value'] : null;
         return div({
             className: 'xh-form-field-readonly-display',
-            item: readonlyRenderer(value, model)
+            item: readonlyRenderer(value, fieldModel)
         });
     }
 });
 
-const editableChild = hoistCmp.factory<FieldModel>({
+const editableChild = hoistCmp.factory({
     model: false,
 
-    render({model, child, childIsSizeable, disabled, commitOnChange, width, height, flex}) {
+    render({child, childIsSizeable, disabled, commitOnChange, fieldModel, width, height, flex}) {
         const {props} = child;
 
         // Overrides -- be sure not to clobber selected properties on child
-        const overrides: DefaultHoistProps = {
-            model,
+        const overrides: PlainObject = {
+            model: fieldModel,
             bind: 'value',
             disabled: props.disabled || disabled,
-            ref: composeRefs(model?.boundInputRef, child.ref)
+            ref: composeRefs(fieldModel?.boundInputRef, child.ref)
         };
 
         // If FormField is sized and item doesn't specify its own dimensions,

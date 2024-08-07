@@ -9,7 +9,7 @@ import {BoxProps, HoistProps} from '@xh/hoist/core';
 import {ReactNode} from 'react';
 import {FieldModel} from './field/FieldModel';
 
-export interface BaseFormFieldProps extends HoistProps<FieldModel>, BoxProps {
+export interface BaseFormFieldProps extends HoistProps<FieldModel, HTMLDivElement>, BoxProps {
     /**
      * CommitOnChange property for underlying HoistInput (for inputs that support).
      * Defaulted from containing Form.

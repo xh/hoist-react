@@ -41,7 +41,10 @@ import {LightTheme} from './theme/Light';
 installZoomoutGesture(Highcharts);
 installCopyToClipboard(Highcharts);
 
-export interface ChartProps extends HoistProps<ChartModel>, LayoutProps, TestSupportProps {
+export interface ChartProps
+    extends HoistProps<ChartModel, HTMLDivElement>,
+        LayoutProps,
+        TestSupportProps {
     /**
      * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will
      * respect this ratio within the available space.  Otherwise, the chart will stretch on both

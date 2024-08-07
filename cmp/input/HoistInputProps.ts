@@ -5,9 +5,17 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {TestSupportProps} from '@xh/hoist/core';
+import {HoistInputModel} from '@xh/hoist/cmp/input/HoistInputModel';
+import {HoistModel, HoistProps, TestSupportProps} from '@xh/hoist/core';
+import {CSSProperties} from 'react';
 
-export interface HoistInputProps extends TestSupportProps {
+/**
+ * Props for HoistInput components.
+ * @typeparam R - the type of HoistInputModel.inputRef (if any) for this component.
+ */
+export interface HoistInputProps<R>
+    extends TestSupportProps,
+        HoistProps<HoistModel, HoistInputModel<R>> {
     /**
      * Field or model property name from which this component should read and write its value
      * in controlled mode. Can be set by parent FormField.
@@ -25,6 +33,9 @@ export interface HoistInputProps extends TestSupportProps {
 
     /** Called when value is committed to backing model - passed new and prior values. */
     onCommit?: (value: any, oldValue: any) => void;
+
+    /** CSS style attributes for the input element. */
+    style?: CSSProperties;
 
     /** Tab order for focus control, or -1 to skip. If unset, browser layout-based order. */
     tabIndex?: number;

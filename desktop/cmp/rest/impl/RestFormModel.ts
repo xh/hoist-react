@@ -33,7 +33,7 @@ export class RestFormModel extends HoistModel {
 
     @observable types: PlainObject = {};
 
-    dialogRef = createRef<HTMLElement>();
+    dialogRef = createRef<HTMLDivElement>();
 
     get unit() {
         return this.parent.unit;

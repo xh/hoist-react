@@ -6,13 +6,13 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div, textarea as textareaTag} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {DefaultHoistProps, hoistCmp, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import './TextArea.scss';
 
-export interface TextAreaProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
+export interface TextAreaProps extends HoistInputProps<null>, StyleProps, LayoutProps {
     value?: string;
 
     /** True to commit on every change/keystroke, default false. */
@@ -46,7 +46,7 @@ export const [TextArea, textArea] = hoistCmp.withFactory<TextAreaProps>({
 //-----------------------
 // Implementation
 //-----------------------
-class TextAreaInputModel extends HoistInputModel {
+class TextAreaInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     override get commitOnChange() {
@@ -73,31 +73,33 @@ class TextAreaInputModel extends HoistInputModel {
     };
 }
 
-const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, ref) => {
-    const {width, height, ...layoutProps} = getLayoutProps(props);
+const cmp = hoistCmp.factory<DefaultHoistProps<TextAreaInputModel, HTMLDivElement>>(
+    ({model, className, ...props}, ref) => {
+        const {width, height, ...layoutProps} = getLayoutProps(props);
 
-    return div({
-        item: textareaTag({
-            value: model.renderValue || '',
+        return div({
+            item: textareaTag({
+                value: model.renderValue || '',
 
-            disabled: props.disabled,
-            placeholder: props.placeholder,
-            spellCheck: withDefault(props.spellCheck, false),
-            tabIndex: props.tabIndex,
+                disabled: props.disabled,
+                placeholder: props.placeholder,
+                spellCheck: withDefault(props.spellCheck, false),
+                tabIndex: props.tabIndex,
 
-            onChange: model.onChange,
-            onKeyDown: model.onKeyDown,
-            onBlur: model.onBlur,
-            onFocus: model.onFocus
-        }),
-        style: {
-            ...props.style,
-            ...layoutProps,
-            width: withDefault(width, null),
-            height: withDefault(height, 100)
-        },
+                onChange: model.onChange,
+                onKeyDown: model.onKeyDown,
+                onBlur: model.onBlur,
+                onFocus: model.onFocus
+            }),
+            style: {
+                ...props.style,
+                ...layoutProps,
+                width: withDefault(width, null),
+                height: withDefault(height, 100)
+            },
 
-        className,
-        ref
-    });
-});
+            className,
+            ref
+        });
+    }
+);

@@ -8,15 +8,7 @@ import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {BaseFormFieldProps, FieldModel, FormContext, FormContextType} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
-import {
-    DefaultHoistProps,
-    hoistCmp,
-    HoistProps,
-    HSide,
-    TestSupportProps,
-    uses,
-    XH
-} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HSide, PlainObject, TestSupportProps, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
@@ -179,12 +171,12 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         let childEl: ReactElement =
             !child || readonly
                 ? readonlyChild({
-                      model,
+                      fieldModel: model,
                       readonlyRenderer,
                       testId: getTestId(testId, 'readonly-display')
                   })
                 : editableChild({
-                      model,
+                      fieldModel: model,
                       child,
                       childIsSizeable,
                       childId,
@@ -252,28 +244,29 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
     }
 });
 
-interface ReadonlyChildProps extends HoistProps<FieldModel>, TestSupportProps {
+interface ReadonlyChildProps extends HoistProps, TestSupportProps {
+    fieldModel: FieldModel;
     readonlyRenderer: (v: any, model: FieldModel) => ReactNode;
 }
 
 const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
     model: false,
 
-    render({model, readonlyRenderer, testId}) {
-        const value = model ? model['value'] : null;
+    render({fieldModel, readonlyRenderer, testId}) {
+        const value = fieldModel ? fieldModel['value'] : null;
         return div({
             className: 'xh-form-field-readonly-display',
             [TEST_ID]: testId,
-            item: readonlyRenderer(value, model)
+            item: readonlyRenderer(value, fieldModel)
         });
     }
 });
 
-const editableChild = hoistCmp.factory<FieldModel>({
+const editableChild = hoistCmp.factory({
     model: false,
 
     render({
-        model,
+        fieldModel,
         child,
         childIsSizeable,
         childId,
@@ -286,12 +279,12 @@ const editableChild = hoistCmp.factory<FieldModel>({
         const {props} = child;
 
         // Overrides -- be sure not to clobber selected properties on child
-        const overrides: DefaultHoistProps = {
-            model,
+        const overrides: PlainObject = {
+            model: fieldModel,
             bind: 'value',
             id: childId,
             disabled: props.disabled || disabled,
-            ref: composeRefs(model?.boundInputRef, child.ref),
+            ref: composeRefs(fieldModel?.boundInputRef, child.ref),
             testId: props.testId ?? testId
         };
 

@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {MenuItemProps} from '@blueprintjs/core';
-import {hoistCmp, MenuItemLike, MenuItem, XH} from '@xh/hoist/core';
+import {hoistCmp, ElementSpec, MenuItemLike, MenuItem, XH} from '@xh/hoist/core';
 import {ButtonProps, button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -197,7 +197,7 @@ function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
             const {actionFn} = item;
 
             // Create menuItem from config
-            const cfg: MenuItemProps = {
+            const cfg: ElementSpec<MenuItemProps> = {
                 text: item.text,
                 icon: item.icon,
                 intent: item.intent,

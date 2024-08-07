@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, PlainObject, SelectOption} from '@xh/hoist/core';
+import {DefaultHoistProps, hoistCmp, LayoutProps, PlainObject, SelectOption} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {
     reactAsyncCreatableSelect,
@@ -27,7 +27,7 @@ import {Children, ReactNode, ReactPortal} from 'react';
 import ReactDom from 'react-dom';
 import './Select.scss';
 
-export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
+export interface SelectProps extends HoistInputProps<null>, LayoutProps {
     /**
      * Function to return a "create a new option" string prompt. Requires `allowCreate` true.
      * Passed current query input.
@@ -186,7 +186,7 @@ export const [Select, select] = hoistCmp.withFactory<SelectProps>({
 //-----------------------
 // Implementation
 //-----------------------
-class SelectInputModel extends HoistInputModel {
+class SelectInputModel extends HoistInputModel<null> {
     override xhImpl = true;
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
@@ -587,97 +587,99 @@ class SelectInputModel extends HoistInputModel {
     }
 }
 
-const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, ref) => {
-    const {width, ...layoutProps} = getLayoutProps(props),
-        rsProps: PlainObject = {
-            value: model.renderValue,
+const cmp = hoistCmp.factory<DefaultHoistProps<SelectInputModel, HTMLDivElement>>(
+    ({model, className, ...props}, ref) => {
+        const {width, ...layoutProps} = getLayoutProps(props),
+            rsProps: PlainObject = {
+                value: model.renderValue,
 
-            formatOptionLabel: model.formatOptionLabel,
-            isDisabled: props.disabled,
-            closeMenuOnSelect: props.closeMenuOnSelect,
-            hideSelectedOptions: model.hideSelectedOptions,
-            menuPlacement: withDefault(props.menuPlacement, 'auto'),
-            maxMenuHeight: props.maxMenuHeight,
-            noOptionsMessage: model.noOptionsMessageFn,
-            openMenuOnFocus: props.openMenuOnFocus || model.fullscreen,
-            placeholder: withDefault(props.placeholder, 'Select...'),
-            tabIndex: props.tabIndex,
-            menuShouldBlockScroll: true,
+                formatOptionLabel: model.formatOptionLabel,
+                isDisabled: props.disabled,
+                closeMenuOnSelect: props.closeMenuOnSelect,
+                hideSelectedOptions: model.hideSelectedOptions,
+                menuPlacement: withDefault(props.menuPlacement, 'auto'),
+                maxMenuHeight: props.maxMenuHeight,
+                noOptionsMessage: model.noOptionsMessageFn,
+                openMenuOnFocus: props.openMenuOnFocus || model.fullscreen,
+                placeholder: withDefault(props.placeholder, 'Select...'),
+                tabIndex: props.tabIndex,
+                menuShouldBlockScroll: true,
 
-            // Minimize (or hide) bulky dropdown
-            components: {
-                DropdownIndicator: model.getDropdownIndicatorCmp(),
-                IndicatorSeparator: () => null
-            },
+                // Minimize (or hide) bulky dropdown
+                components: {
+                    DropdownIndicator: model.getDropdownIndicatorCmp(),
+                    IndicatorSeparator: () => null
+                },
 
-            // A shared div is created lazily here as needed, appended to the body, and assigned
-            // a high z-index to ensure options menus render over dialogs or other modals.
-            menuPortalTarget: model.getOrCreatePortalDiv(),
+                // A shared div is created lazily here as needed, appended to the body, and assigned
+                // a high z-index to ensure options menus render over dialogs or other modals.
+                menuPortalTarget: model.getOrCreatePortalDiv(),
 
-            inputId: props.id,
-            classNamePrefix: 'xh-select',
-            theme: model.getThemeConfig(),
+                inputId: props.id,
+                classNamePrefix: 'xh-select',
+                theme: model.getThemeConfig(),
 
-            onBlur: model.onBlur,
-            onChange: model.onSelectChange,
-            onFocus: model.onFocus,
-            filterOption: model.filterOption,
+                onBlur: model.onBlur,
+                onChange: model.onSelectChange,
+                onFocus: model.onFocus,
+                filterOption: model.filterOption,
 
-            ref: model.reactSelectRef
-        };
+                ref: model.reactSelectRef
+            };
 
-    if (model.manageInputValue) {
-        rsProps.inputValue = model.inputValue || '';
-        rsProps.onInputChange = model.onInputChange;
-        rsProps.controlShouldRenderValue = !model.hasFocus;
+        if (model.manageInputValue) {
+            rsProps.inputValue = model.inputValue || '';
+            rsProps.onInputChange = model.onInputChange;
+            rsProps.controlShouldRenderValue = !model.hasFocus;
+        }
+
+        if (model.asyncMode) {
+            rsProps.loadOptions = model.doQueryAsync;
+            rsProps.loadingMessage = model.loadingMessageFn;
+            if (model.renderValue) rsProps.defaultOptions = [model.renderValue];
+        } else {
+            rsProps.options = model.internalOptions;
+            rsProps.isSearchable = model.filterMode;
+        }
+
+        if (model.creatableMode) {
+            rsProps.formatCreateLabel = model.createMessageFn;
+        }
+
+        if (props.menuWidth) {
+            rsProps.styles = {
+                menu: provided => ({...provided, width: `${props.menuWidth}px`}),
+                ...props.rsOptions?.styles
+            };
+        }
+
+        const factory = model.getSelectFactory();
+        mergeDeep(rsProps, props.rsOptions);
+
+        if (model.fullscreen) {
+            return ReactDom.createPortal(
+                fullscreenWrapper({
+                    model,
+                    title: props.title,
+                    item: box({
+                        item: factory(rsProps),
+                        className,
+                        ref
+                    })
+                }),
+                model.getOrCreateFullscreenPortalDiv()
+            ) as ReactPortal;
+        } else {
+            return box({
+                item: factory(rsProps),
+                className,
+                ...layoutProps,
+                width: withDefault(width, null),
+                ref
+            });
+        }
     }
-
-    if (model.asyncMode) {
-        rsProps.loadOptions = model.doQueryAsync;
-        rsProps.loadingMessage = model.loadingMessageFn;
-        if (model.renderValue) rsProps.defaultOptions = [model.renderValue];
-    } else {
-        rsProps.options = model.internalOptions;
-        rsProps.isSearchable = model.filterMode;
-    }
-
-    if (model.creatableMode) {
-        rsProps.formatCreateLabel = model.createMessageFn;
-    }
-
-    if (props.menuWidth) {
-        rsProps.styles = {
-            menu: provided => ({...provided, width: `${props.menuWidth}px`}),
-            ...props.rsOptions?.styles
-        };
-    }
-
-    const factory = model.getSelectFactory();
-    mergeDeep(rsProps, props.rsOptions);
-
-    if (model.fullscreen) {
-        return ReactDom.createPortal(
-            fullscreenWrapper({
-                model,
-                title: props.title,
-                item: box({
-                    item: factory(rsProps),
-                    className,
-                    ref
-                })
-            }),
-            model.getOrCreateFullscreenPortalDiv()
-        ) as ReactPortal;
-    } else {
-        return box({
-            item: factory(rsProps),
-            className,
-            ...layoutProps,
-            width: withDefault(width, null),
-            ref
-        });
-    }
-});
+);
 
 const fullscreenWrapper = hoistCmp.factory<SelectInputModel>(({model, title, children}) => {
     return div({
