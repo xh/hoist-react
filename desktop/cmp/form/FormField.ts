@@ -235,7 +235,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             openOnTargetFocus: false,
                             className: 'xh-form-field-error-msg',
                             item: errors ? errors[0] : null,
-                            content: getErrorTooltipContent(errors)
+                            content: getErrorTooltipContent(errors) as ReactElement
                         })
                     ]
                 })

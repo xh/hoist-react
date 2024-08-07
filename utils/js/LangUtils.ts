@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {Thunkable} from '@xh/hoist/core';
+import {PlainObject, Thunkable} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/core/exception/Exception';
 import {
     flatMap,
@@ -15,6 +15,7 @@ import {
     isObject,
     isPlainObject,
     isUndefined,
+    mergeWith,
     mixin,
     uniq,
     uniqBy
@@ -300,4 +301,28 @@ export function intersperse<T>(arr: T[], separator: T): T[] {
  */
 export function executeIfFunction<T>(v: Thunkable<T>): T {
     return isFunction(v) ? v() : v;
+}
+
+/**
+ * Merge objects deeply.
+ *
+ * Use this for merging properties from various sources into a target object.
+ * The target value will be mutated and returned.
+ *
+ * Note that this method has the same semantics as Lodash merge, with the important exception
+ * that properties containing arrays will *not* be merged deeply.
+ */
+export function mergeDeep<T, S>(object: T, source: S): T & S;
+export function mergeDeep<T, S1, S2>(object: T, source1: S1, source2: S2): T & S1 & S2;
+export function mergeDeep<T, S1, S2, S3>(
+    object: T,
+    source1: S1,
+    source2: S2,
+    source3: S3
+): T & S1 & S2 & S3;
+export function mergeDeep<T, S>(target: T, ...sources: S[]): T & S;
+export function mergeDeep(target: PlainObject, ...sources: PlainObject[]): PlainObject {
+    return mergeWith(target, ...sources, (tgtVal, srcVal) =>
+        isArray(srcVal) ? srcVal : undefined
+    );
 }

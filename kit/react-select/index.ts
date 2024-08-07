@@ -5,6 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {elementFactory} from '@xh/hoist/core';
+import {ComponentType} from 'react';
 import Select from 'react-select';
 import AsyncSelect from 'react-select/async';
 import AsyncCreatable from 'react-select/async-creatable';
@@ -17,5 +18,4 @@ export const reactSelect = elementFactory(Select),
     reactCreatableSelect = elementFactory(Creatable),
     reactAsyncSelect = elementFactory(AsyncSelect),
     reactAsyncCreatableSelect = elementFactory(AsyncCreatable),
-    // Typed as any due to issue with react-windowed-select types
-    reactWindowedSelect = elementFactory<any>(WindowedSelect);
+    reactWindowedSelect = elementFactory(WindowedSelect as ComponentType);

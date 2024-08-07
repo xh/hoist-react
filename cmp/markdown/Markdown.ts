@@ -6,6 +6,7 @@
  */
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {reactMarkdown} from '@xh/hoist/kit/react-markdown';
+import {Components} from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import {PluggableList} from 'unified/lib';
@@ -13,6 +14,13 @@ import {PluggableList} from 'unified/lib';
 interface MarkdownProps extends HoistProps {
     /** Markdown formatted string to render. */
     content: string;
+
+    /**
+     * Map of html tag to tag or functional component to control rendering of standard html
+     * elements. See https://www.npmjs.com/package/react-markdown/v/8.0.6#appendix-b-components
+     * for details.
+     */
+    components?: Components;
 
     /** True (default) to render new lines with <br/> tags. */
     lineBreaks?: boolean;
@@ -26,12 +34,13 @@ interface MarkdownProps extends HoistProps {
  */
 export const [Markdown, markdown] = hoistCmp.withFactory<MarkdownProps>({
     displayName: 'Markdown',
-    render({content, lineBreaks = true}) {
+    render({content, lineBreaks = true, components = {}}) {
         const remarkPlugins: PluggableList = [remarkGfm];
         if (lineBreaks) remarkPlugins.push(remarkBreaks);
         return reactMarkdown({
             item: content,
-            remarkPlugins
+            remarkPlugins,
+            components
         });
     }
 });

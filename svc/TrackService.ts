@@ -86,6 +86,7 @@ export class TrackService extends HoistService {
             };
 
             if (options.category) query.category = options.category;
+            if (options.correlationId) query.correlationId = options.correlationId;
             if (options.data) query.data = options.data;
             if (options.severity) query.severity = options.severity;
             if (options.logData !== undefined) query.logData = options.logData;

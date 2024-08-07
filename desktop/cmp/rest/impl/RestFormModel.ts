@@ -10,8 +10,8 @@ import {required} from '@xh/hoist/data';
 import {RestGridEditor, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
-import {isFunction, isNil, merge} from 'lodash';
+import {throwIf, mergeDeep} from '@xh/hoist/utils/js';
+import {isFunction, isNil} from 'lodash';
 import {createRef} from 'react';
 import {RestField} from '../data/RestField';
 
@@ -179,7 +179,7 @@ export class RestFormModel extends HoistModel {
             restField = this.getStoreField(name);
         throwIf(!restField, `Unknown field '${name}' in RestGrid.`);
 
-        return merge(
+        return mergeDeep(
             {
                 name,
                 rules: restField.required ? [required] : [],

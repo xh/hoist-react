@@ -14,7 +14,7 @@ import {filterConsecutiveToolbarSeparators} from '@xh/hoist/utils/impl';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty} from 'lodash';
-import {Children} from 'react';
+import {Children, ReactNode} from 'react';
 import './Toolbar.scss';
 import {toolbarSeparator} from './ToolbarSep';
 
@@ -108,7 +108,7 @@ const overflowBox = hoistCmp.factory({
     render({children, minVisibleItems, collapseFrom}) {
         // @ts-expect-error - TS doesn't like how we remap items to $items
         return overflowList({
-            $items: children,
+            $items: children as readonly ReactNode[],
             minVisibleItems,
             collapseFrom,
             visibleItemRenderer: item => item,

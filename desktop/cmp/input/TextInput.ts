@@ -22,7 +22,7 @@ import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
-import {FocusEvent, JSX, KeyboardEventHandler, ReactElement, Ref} from 'react';
+import {FocusEvent, KeyboardEventHandler, ReactElement, ReactNode, Ref} from 'react';
 
 export interface TextInputProps extends HoistInputProps<HTMLInputElement>, LayoutProps, StyleProps {
     value?: string;
@@ -61,7 +61,7 @@ export interface TextInputProps extends HoistInputProps<HTMLInputElement>, Layou
     placeholder?: string;
 
     /** Element to display inline on the right side of the input. */
-    rightElement?: JSX.Element;
+    rightElement?: ReactNode;
 
     /** True to display with rounded caps. */
     round?: boolean;
@@ -141,7 +141,7 @@ const cmp = hoistCmp.factory<
             leftIcon: props.leftIcon,
             placeholder: props.placeholder,
             rightElement:
-                props.rightElement ||
+                (props.rightElement as ReactElement) ||
                 (props.enableClear && !props.disabled && isClearable ? clearButton() : null),
             round: withDefault(props.round, false),
             spellCheck: withDefault(props.spellCheck, false),

@@ -30,7 +30,7 @@ import {
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, isEmpty, isFinite} from 'lodash';
-import {CSSProperties} from 'react';
+import {CSSProperties, ReactElement} from 'react';
 
 /**
  * Component to indicate and control the active tab of a TabContainer.
@@ -99,7 +99,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                 disabled,
                 style: tabStyle,
                 item: bpTooltip({
-                    content: tooltip,
+                    content: tooltip as ReactElement,
                     disabled: !tooltip,
                     hoverOpenDelay: 1000,
                     position: flipOrientation(orientation),

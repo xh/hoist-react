@@ -13,6 +13,9 @@ import {FetchOptions} from '@xh/hoist/svc';
 export interface HoistException extends Error {
     isHoistException: true;
 
+    /** Correlation ID associated with this exception, if any. */
+    correlationId?: string;
+
     /**
      * Is the exception an expected, normal behavior of the app?
      *

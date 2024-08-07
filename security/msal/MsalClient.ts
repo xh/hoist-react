@@ -16,20 +16,18 @@ import {
 import {XH} from '@xh/hoist/core';
 import {never} from '@xh/hoist/promise';
 import {Token, TokenMap} from '@xh/hoist/security/Token';
-import {logDebug, logError, logInfo, logWarn, throwIf} from '@xh/hoist/utils/js';
+import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 
 export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
-    /** Tenant ID (GUID) of your organization */
-    tenantId: string;
-
     /**
-     * You can use a specific authority, like "https://login.microsoftonline.com/[tenantId]".
-     * Enterprise apps will most likely use a specific authority.
-     * MSAL Browser Lib defaults authority to "https://login.microsoftonline.com/common"
+     * Authority for your organization's tenant: `https://login.microsoftonline.com/[tenantId]`.
+     * MSAL defaults to their "common" tenant (https://login.microsoftonline.com/common") to support
+     * auth with personal MS accounts, but enterprise/Hoist apps will almost certainly use a
+     * specific authority to point to their own private/corporate tenant.
      */
-    authority?: string;
+    authority: string;
 
     /**
      * A hint about the tenant or domain that the user should use to sign in.
@@ -60,6 +58,13 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
 
     /** The log level of MSAL. Default is LogLevel.Warning. */
     msalLogLevel?: LogLevel;
+
+    /**
+     * Additional options for the MSAL client ctor. Will be deep merged with defaults, with options
+     * supplied here taking precedence. Use with care, as overriding defaults may have unintended
+     * consequences or fail to work with Hoist's expected usage of the client library.
+     */
+    msalClientOptions?: Partial<msal.Configuration>;
 }
 
 export interface MsalTokenSpec {
@@ -90,10 +95,13 @@ export interface MsalTokenSpec {
  * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/token-lifetimes.md
  * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/login-user.md
  *
- *  TODO: The handling of `ssoSilent` and `initRefreshTokenExpirationOffsetSecs` in this library
- * require 3rd party cookies to be enabled in the browser so that MSAL can load contact in a
- * hidden iFrame  If its *not* enabled, we may be doing extra work.  Consider checking 3rd party
- * cookie support and adding conditional behavior?
+ * Also see this doc re. use of blankUrl as redirectUri for all "silent" token requests:
+ * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/errors.md#issues-caused-by-the-redirecturi-page
+ *
+ * TODO: The handling of `ssoSilent` and `initRefreshTokenExpirationOffsetSecs` in this library
+ *   require 3rd party cookies to be enabled in the browser so that MSAL can load contact in a
+ *   hidden iFrame  If its *not* enabled, we may be doing extra work.  Consider checking 3rd party
+ *   cookie support and adding conditional behavior?
  */
 export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec> {
     private client: IPublicClientApplication;
@@ -174,7 +182,8 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 loginHint: this.getSelectedUsername(),
                 domainHint: this.config.domainHint,
                 scopes: this.loginScopes,
-                extraScopesToConsent: this.loginExtraScopesToConsent
+                extraScopesToConsent: this.loginExtraScopesToConsent,
+                redirectUri: this.blankUrl
             };
         try {
             const ret = await client.acquireTokenPopup(opts);
@@ -199,7 +208,8 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 loginHint: this.getSelectedUsername(),
                 domainHint: this.config.domainHint,
                 scopes: this.loginScopes,
-                extraScopesToConsent: this.loginExtraScopesToConsent
+                extraScopesToConsent: this.loginExtraScopesToConsent,
+                redirectUri: this.redirectUrl
             };
         await client.acquireTokenRedirect(opts);
         await never();
@@ -211,6 +221,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             scopes: this.idScopes,
             forceRefresh: !useCache,
             prompt: 'none',
+            redirectUri: this.blankUrl,
             ...this.refreshOffsetArgs
         });
         return new Token(ret.idToken);
@@ -225,6 +236,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             scopes: spec.scopes,
             forceRefresh: !useCache,
             prompt: 'none',
+            redirectUri: this.blankUrl,
             ...this.refreshOffsetArgs
         });
         return new Token(ret.accessToken);
@@ -255,28 +267,30 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     private async createClientAsync(): Promise<IPublicClientApplication> {
-        const {config, loginMethod} = this,
-            {clientId, authority, msalLogLevel} = config;
-
+        const {clientId, authority, msalLogLevel, msalClientOptions} = this.config;
         throwIf(!authority, 'Missing MSAL authority. Please review your configuration.');
 
-        return msal.PublicClientApplication.createPublicClientApplication({
-            auth: {
-                clientId,
-                authority,
-                redirectUri: loginMethod == 'POPUP' ? this.blankUrl : this.redirectUrl,
-                postLogoutRedirectUri: this.postLogoutRedirectUrl
-            },
-            system: {
-                loggerOptions: {
-                    loggerCallback: this.logFromMsal,
-                    logLevel: msalLogLevel
-                }
-            },
-            cache: {
-                cacheLocation: 'localStorage' // allows sharing auth info across tabs.
-            }
-        });
+        return msal.PublicClientApplication.createPublicClientApplication(
+            mergeDeep(
+                {
+                    auth: {
+                        clientId,
+                        authority,
+                        postLogoutRedirectUri: this.postLogoutRedirectUrl
+                    },
+                    system: {
+                        loggerOptions: {
+                            loggerCallback: this.logFromMsal,
+                            logLevel: msalLogLevel
+                        }
+                    },
+                    cache: {
+                        cacheLocation: 'localStorage' // allows sharing auth info across tabs.
+                    }
+                },
+                msalClientOptions
+            )
+        );
     }
 
     private logFromMsal(level: LogLevel, message: string) {

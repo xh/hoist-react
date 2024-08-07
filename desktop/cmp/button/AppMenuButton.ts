@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {MenuItemProps} from '@blueprintjs/core';
-import {hoistCmp, MenuItemLike, MenuItem, XH, ElementSpec} from '@xh/hoist/core';
+import {hoistCmp, ElementSpec, MenuItemLike, MenuItem, XH} from '@xh/hoist/core';
 import {ButtonProps, button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -170,7 +170,7 @@ function buildMenuItems(props: AppMenuButtonProps) {
             text: 'Logout',
             icon: Icon.logout(),
             intent: 'danger',
-            actionFn: () => XH.identityService.logoutAsync()
+            actionFn: () => XH.logoutAsync()
         }
     ];
 
@@ -208,7 +208,7 @@ function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
 
             // Recursively parse any submenus
             if (!isEmpty(item.items)) {
-                cfg.items = parseMenuItems(item.items);
+                cfg.children = parseMenuItems(item.items);
                 cfg.popoverProps = {openOnTargetFocus: false};
             }
 

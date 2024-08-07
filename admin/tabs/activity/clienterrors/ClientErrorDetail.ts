@@ -66,6 +66,7 @@ export const clientErrorDetail = hoistCmp.factory<ClientErrorsModel>(({model}) =
                             label: 'User Alerted?'
                         }),
                         formField({field: 'id'}),
+                        formField({field: 'correlationId'}),
                         formField({
                             field: 'url',
                             readonlyRenderer: hyperlinkVal

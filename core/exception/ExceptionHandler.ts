@@ -95,7 +95,7 @@ export class ExceptionHandler {
      * logging back to the server for stateful error tracking in the Admin Console.
      *
      * Typical application entry points to this method are the {@link XH.handleException} alias and
-     * {@link Promise.catchDefault}.
+     * {@link Promise.prototype.catchDefault}.
      *
      * This handler provides the most value with HoistExceptions created by {@link Exception.create}.
      * Hoist automatically creates such exceptions in most instances, most notably in FetchService,
@@ -201,7 +201,8 @@ export class ExceptionHandler {
                     appVersion: XH.getEnv('clientVersion'),
                     url: window.location.href,
                     userAlerted,
-                    clientUsername: username
+                    clientUsername: username,
+                    correlationId: exception.correlationId
                 },
                 // Post clientUsername as a parameter to ensure client username matches session.
                 params: {

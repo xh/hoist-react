@@ -19,10 +19,10 @@ import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, withDefault, mergeDeep} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import debouncePromise from 'debounce-promise';
-import {escapeRegExp, isEqual, isNil, isPlainObject, keyBy, merge} from 'lodash';
+import {escapeRegExp, isEqual, isNil, isPlainObject, keyBy} from 'lodash';
 import {Children, ReactNode, ReactPortal} from 'react';
 import ReactDom from 'react-dom';
 import './Select.scss';
@@ -654,7 +654,7 @@ const cmp = hoistCmp.factory<DefaultHoistProps<SelectInputModel, HTMLDivElement>
         }
 
         const factory = model.getSelectFactory();
-        merge(rsProps, props.rsOptions);
+        mergeDeep(rsProps, props.rsOptions);
 
         if (model.fullscreen) {
             return ReactDom.createPortal(

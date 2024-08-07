@@ -5,6 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
+import {HoistAuthModel} from '@xh/hoist/core/HoistAuthModel';
 import {Store} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {action} from '@xh/hoist/mobx';
@@ -63,6 +64,7 @@ import {
 import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
+import {v4} from 'uuid';
 
 export const MIN_HOIST_CORE_VERSION = '18.0';
 
@@ -119,6 +121,9 @@ export class XHApi {
 
     /** True if the app is running in a local development environment. */
     readonly isDevelopmentMode: boolean = xhIsDevelopmentMode;
+
+    /** Authentication Model for this App. */
+    authModel: HoistAuthModel;
 
     //----------------------------------------------------------------------------------------------
     // Hoist Core Services
@@ -324,6 +329,15 @@ export class XHApi {
      */
     getUsername(): string {
         return this.identityService?.username ?? null;
+    }
+
+    /**
+     * Logout the current user.
+     * @see HoistAuthModel.logoutAsync
+     */
+    async logoutAsync(): Promise<void> {
+        await this.authModel?.logoutAsync();
+        this.reloadApp();
     }
 
     //----------------------
@@ -765,6 +779,13 @@ export class XHApi {
      */
     genId(): string {
         return uniqueId('xh-id-');
+    }
+
+    /**
+     * Generate a universally unique identifier (UUID). Useful for generating Correlation IDs.
+     */
+    genUUID(): string {
+        return v4();
     }
 
     //----------------

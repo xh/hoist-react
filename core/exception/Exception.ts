@@ -184,23 +184,31 @@ export class Exception {
     // Implementation
     //-----------------------
     private static createFetchException(attributes: PlainObject) {
+        let correlationId: string = null;
+        const correlationIdHeaderKey = XH?.fetchService?.correlationIdHeaderKey;
+        if (correlationIdHeaderKey) {
+            correlationId = attributes.fetchOptions?.headers?.[correlationIdHeaderKey];
+        }
+
         return this.createInternal({
             isFetchAborted: false,
             httpStatus: 0, // native fetch doesn't put status on its Error
             serverDetails: null,
             stack: null, // server-sourced exceptions do not include, neither should client, not relevant
+            correlationId,
             ...attributes
         }) as FetchException;
     }
 
-    private static createInternal(attributes: PlainObject, baseError: Error = new Error()) {
+    private static createInternal(attributes: PlainObject, baseError?: Error) {
+        const {message, ...rest} = attributes;
         return Object.assign(
-            baseError,
+            baseError ?? new Error(message),
             {
                 isRoutine: false,
                 isHoistException: true
             },
-            attributes
+            rest
         ) as HoistException;
     }
 }

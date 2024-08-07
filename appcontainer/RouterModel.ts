@@ -6,7 +6,7 @@
  */
 import {HoistModel} from '../core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {merge} from 'lodash';
+import {mergeDeep} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {createRouter, Router, State} from 'router5';
 import browserPlugin from 'router5-plugin-browser';
@@ -51,7 +51,7 @@ export class RouterModel extends HoistModel {
      */
     appendRoute(routeName: string, newParams: object = {}) {
         const {name, params} = this.currentState;
-        return this.router.navigate(`${name}.${routeName}`, merge({}, params, newParams));
+        return this.router.navigate(`${name}.${routeName}`, mergeDeep({}, params, newParams));
     }
 
     /**

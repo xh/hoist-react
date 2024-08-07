@@ -108,11 +108,8 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         }
 
         // 2) Set coreContents element based on scrollable.
-        const coreContentsEl = scrollable ? div : (vbox as ElementFactory),
-            coreContents = coreContentsEl({
-                className: 'xh-panel__content',
-                items: children
-            });
+        const coreContentProps = {className: 'xh-panel__content', items: children},
+            coreContents = scrollable ? div(coreContentProps) : vbox(coreContentProps);
 
         // 3) Prepare combined layout.
         return vbox({

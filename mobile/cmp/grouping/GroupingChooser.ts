@@ -148,7 +148,7 @@ const dimensionList = hoistCmp.factory<GroupingChooserModel>({
             onDragEnd: result => model.onDragEnd(result),
             item: droppable({
                 droppableId: 'dimension-list',
-                item: dndProps =>
+                children: dndProps =>
                     div({
                         ref: dndProps.innerRef,
                         className: 'xh-grouping-chooser__list',
@@ -173,7 +173,7 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
             key: dimension,
             draggableId: dimension,
             index: idx,
-            item: (dndProps, dndState) => {
+            children: (dndProps, dndState) => {
                 return div({
                     key: dimension,
                     className: classNames(

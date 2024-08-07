@@ -77,7 +77,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                                 row({col: pinnedColumn, model: impl}),
                                 droppable({
                                     droppableId: 'visible-columns',
-                                    item: dndProps =>
+                                    children: dndProps =>
                                         columnList({
                                             model: impl,
                                             cols: visibleColumns,
@@ -100,7 +100,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                             scrollable: true,
                             item: droppable({
                                 droppableId: 'hidden-columns',
-                                item: dndProps =>
+                                children: dndProps =>
                                     columnList({
                                         model: impl,
                                         cols: hiddenColumns,
@@ -170,7 +170,7 @@ const draggableRow = hoistCmp.factory({
             draggableId: colId,
             index: idx,
             isDragDisabled: !!pinned,
-            item: (dndProps, dndState) =>
+            children: (dndProps, dndState) =>
                 row({
                     key: colId,
                     col,

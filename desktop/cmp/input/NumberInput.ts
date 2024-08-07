@@ -8,12 +8,12 @@ import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {fmtNumber, parseNumber} from '@xh/hoist/format';
+import {fmtNumber, parseNumber, Precision, ZeroPad} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
-import {debounced, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import {isNaN, isNil, isNumber, round} from 'lodash';
+import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import {KeyboardEventHandler, ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
 
 export interface NumberInputProps
@@ -93,8 +93,8 @@ export interface NumberInputProps
      */
     valueLabel?: string;
 
-    /** True to pad with trailing zeros out to precision, default false. */
-    zeroPad?: boolean;
+    /** @see NumberFormatOptions.zeroPad */
+    zeroPad?: ZeroPad;
 }
 
 /**
@@ -132,12 +132,12 @@ class NumberInputModel extends HoistInputModel<HTMLInputElement> {
         throwIf(Math.log10(this.scaleFactor) % 1 !== 0, 'scaleFactor must be a factor of 10');
     }
 
-    get precision(): number {
-        return withDefault(this.componentProps.precision, 4);
-    }
-
     override get commitOnChange(): boolean {
         return withDefault(this.componentProps.commitOnChange, false);
+    }
+
+    get precision(): number {
+        return withDefault(this.componentProps.precision, 4);
     }
 
     get scaleFactor(): number {
@@ -148,9 +148,12 @@ class NumberInputModel extends HoistInputModel<HTMLInputElement> {
         this.noteValueChange(valAsString);
     };
 
-    @debounced(250)
+    /** TODO: Completely remove the debounce, or find and verify a reason why we need it set to 250. */
     override doCommitOnChangeInternal() {
-        super.doCommitOnChangeInternal();
+        debounce(
+            () => super.doCommitOnChangeInternal(),
+            withDefault(this.componentProps.commitOnChangeDebounce, 250)
+        )();
     }
 
     override toInternal(val: number): number {
@@ -206,7 +209,7 @@ class NumberInputModel extends HoistInputModel<HTMLInputElement> {
         const {valueLabel, displayWithCommas} = componentProps,
             zeroPad = withDefault(componentProps.zeroPad, false),
             formattedVal = fmtNumber(value, {
-                precision,
+                precision: precision as Precision,
                 zeroPad,
                 label: valueLabel,
                 labelCls: null,
@@ -229,9 +232,7 @@ class NumberInputModel extends HoistInputModel<HTMLInputElement> {
     }
 }
 
-// Note: we don't use the `ref` here, but the presence of a second argument is required
-// for the component to be wrapped with React.forwardRef, which is necessary since
-// `useHoistInputModel` always passes a ref to the component, even if it's not used.
+// Note: we don't use the `ref` here, but the presence of a second argument is required.
 const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, ref) => {
     const {width, flex, ...layoutProps} = getLayoutProps(props),
         renderValue = model.formatRenderValue(model.renderValue);
@@ -259,7 +260,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
         allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
         buttonPosition: 'none',
         disabled: props.disabled,
-        inputRef: composeRefs(model.inputRef, props.inputRef),
+        inputRef: composeRefs(model.inputRef as Ref<HTMLInputElement>, props.inputRef),
         leftIcon: props.leftIcon,
         min: props.min,
         max: props.max,

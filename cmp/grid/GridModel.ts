@@ -277,9 +277,9 @@ export interface GridConfig {
 
     /**
      * Array of RecordActions, dividers, or token strings with which to create a context menu.
-     * May also be specified as a function returning same.
+     * May also be specified as a function returning same or false to omit context menu from grid.
      */
-    contextMenu?: GridContextMenuSpec;
+    contextMenu?: GridContextMenuSpec | false;
 
     /**
      * Governs if the grid should reuse a limited set of DOM elements for columns visible in the
@@ -539,7 +539,8 @@ export class GridModel extends HoistModel {
         this.groupRowRenderer = managedRenderer(groupRowRenderer, 'GROUP_ROW');
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
-        this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
+        this.contextMenu =
+            contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
         this.autosizeOptions = defaults(

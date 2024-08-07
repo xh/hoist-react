@@ -138,7 +138,7 @@ function buildMenuItems({
             omit: hideLogoutItem,
             text: 'Logout',
             icon: Icon.logout(),
-            actionFn: () => XH.identityService.logoutAsync()
+            actionFn: () => XH.logoutAsync()
         }
     ];
 

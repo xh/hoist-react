@@ -28,20 +28,11 @@ import {
 } from '@xh/hoist/kit/react-select';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {elemWithin, getTestId, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {elemWithin, getTestId, TEST_ID, throwIf, withDefault, mergeDeep} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import debouncePromise from 'debounce-promise';
-import {
-    castArray,
-    escapeRegExp,
-    isEmpty,
-    isEqual,
-    isNil,
-    isPlainObject,
-    keyBy,
-    merge
-} from 'lodash';
+import {castArray, escapeRegExp, isEmpty, isEqual, isNil, isPlainObject, keyBy} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import {components} from 'react-select';
 import './Select.scss';
@@ -776,7 +767,7 @@ const cmp = hoistCmp.factory<DefaultHoistProps<SelectInputModel, HTMLDivElement>
         }
 
         const factory = model.getSelectFactory();
-        merge(rsProps, props.rsOptions);
+        mergeDeep(rsProps, props.rsOptions);
 
         return box({
             item: factory(rsProps),
