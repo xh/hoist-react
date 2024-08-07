@@ -34,8 +34,7 @@
 * Remove context menus from column choosers.
 * Typescript: Overall type improvements and cleanup. Note: `AppConfigs` with `model: false` will
   need to specify a `null` model type in the generic argument to `hoistCmp`, `hoistCmp.factory` or
-  `hoistCmp.withFactory` to avoid a type error. Additionally, prop types for components passed to
-  `elementFactory` are now inferred from the component itself where possible.
+  `hoistCmp.withFactory` to avoid a type error.
 
 ### 📚 Libraries
 
