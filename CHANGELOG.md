@@ -20,6 +20,10 @@
     * New `XH.genUUID()` method to generate UUIDs for use as Correlation IDs or elsewhere.
 * `GridModel` will now accept `false` as a value to omit context menus.
 
+### 🐞 Bug Fixes
+
+* Fixed `SelectEditor` to ensure new value is flushed before editing stops.
+
 ### ⚙️ Technical
 
 * Remove context menus from column choosers.
