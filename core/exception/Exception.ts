@@ -184,11 +184,18 @@ export class Exception {
     // Implementation
     //-----------------------
     private static createFetchException(attributes: PlainObject) {
+        let correlationId: string = null;
+        const correlationIdHeaderKey = XH?.fetchService?.correlationIdHeaderKey;
+        if (correlationIdHeaderKey) {
+            correlationId = attributes.fetchOptions?.headers?.[correlationIdHeaderKey];
+        }
+
         return this.createInternal({
             isFetchAborted: false,
             httpStatus: 0, // native fetch doesn't put status on its Error
             serverDetails: null,
             stack: null, // server-sourced exceptions do not include, neither should client, not relevant
+            correlationId,
             ...attributes
         }) as FetchException;
     }
