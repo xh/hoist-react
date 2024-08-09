@@ -45,7 +45,12 @@ export class FetchService extends HoistService {
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
     private autoAborters = {};
-
+    private _defaultHeaders: DefaultHeaders[] = [];
+    private _successHandlers: FetchSuccessHandler[] = [];
+    private _exceptionHandlers: FetchExceptionHandler[] = [];
+    //-----------------------------------
+    // Public properties, Getters/Setters
+    //------------------------------------
     /** True to auto-generate a Correlation ID for each request unless otherwise specified. */
     autoGenCorrelationIds = false;
 
@@ -53,55 +58,58 @@ export class FetchService extends HoistService {
      * Method for generating Correlation ID's. Defaults to `XH.genUUID()` but can be modified
      * by applications looking to customize the format of their Correlation ID's.
      */
-    genCorrelationId = () => XH.genUUID();
+    genCorrelationId: () => string = () => XH.genUUID();
 
     /** Request header name to be used for Correlation ID tracking. */
     correlationIdHeaderKey: string = 'X-Correlation-ID';
 
-    /**
-     * Timeout to be used for all requests made via this service that do not themselves spec a
-     * custom timeout.
-     */
+    /** Default timeout to be used for all requests made via this service */
     defaultTimeout: PromiseTimeoutSpec = 30 * SECONDS;
 
-    private _defaultHeaders: Array<PlainObject | ((arg: FetchOptions) => Awaitable<PlainObject>)> =
-        [];
-
-    get defaultHeaders(): Array<PlainObject | ((arg: FetchOptions) => Awaitable<PlainObject>)> {
+    /** Default headers to be sent with all subsequent requests. */
+    get defaultHeaders(): DefaultHeaders[] {
         return this._defaultHeaders;
     }
 
     /**
-     * Set default headers to be sent with all subsequent requests.
-     * @param headers - to be sent with all fetch requests, or a function to generate.
-     * @deprecated use addDefaultHeaders instead.
+     * Add Handler to be executed before returning any results to caller.
+     *
+     * For use in apps that need to do standard pre-processing of fetch results.
+     *
+     * May be particularly useful for apps that wish to throw an exception for a server "error"
+     * that is returned as part of a successful 200 response.
+     *
+     * Handlers may return a valid response or throw as appropriate.
      */
-    setDefaultHeaders(headers: PlainObject | ((arg: FetchOptions) => Awaitable<PlainObject>)) {
-        apiDeprecated('setDefaultHeaders', {v: '66', msg: 'Use addDefaultHeaders instead'});
-        this.addDefaultHeaders(headers);
+    addSuccessHandler(handler: FetchSuccessHandler) {
+        this._successHandlers.push(handler);
+    }
+
+    /**
+     * Handler to be executed before throwing any exception to caller.
+     *
+     * For use in apps requiring common handling for particular exceptions. Useful for
+     * recognizing 401s (i.e. session end), initiating retries, or wrapping or
+     * enhancing exceptions.
+     *
+     * Handlers may return a valid response, return a promise that never resolves, or
+     * (most-commonly) simply rethrow.
+     */
+    addExceptionHandler(handler: FetchExceptionHandler) {
+        this._exceptionHandlers.push(handler);
     }
 
     /**
      * Add default headers to be sent with all subsequent requests.
      * @param headers - to be sent with all fetch requests, or a function to generate.
      */
-    addDefaultHeaders(headers: PlainObject | ((arg: FetchOptions) => Awaitable<PlainObject>)) {
+    addDefaultHeaders(headers: DefaultHeaders) {
         this._defaultHeaders.push(headers);
     }
 
-    /**
-     * Set the timeout (default 30 seconds) to be used for all requests made via this service that
-     * do not themselves spec a custom timeout.
-     * @deprecated modify `defaultTimeout` directly instead.
-     */
-    setDefaultTimeout(timeout: PromiseTimeoutSpec) {
-        apiDeprecated('setDefaultTimeout', {
-            v: '68',
-            msg: 'Modify `defaultTimeout` directly instead.'
-        });
-        this.defaultTimeout = timeout;
-    }
-
+    //--------------------
+    // Main Entry Points
+    //--------------------
     /**
      * Send a request via the underlying fetch API.
      * @returns Promise which resolves to a Fetch Response.
@@ -186,11 +194,36 @@ export class FetchService extends HoistService {
         return true;
     }
 
+    //-------------
+    // Deprecations
+    //-------------
+    /**
+     * Set the timeout (default 30 seconds) to be used for all requests made via this service that
+     * do not themselves spec a custom timeout.
+     * @deprecated modify `defaultTimeout` directly instead.
+     */
+    setDefaultTimeout(timeout: PromiseTimeoutSpec) {
+        apiDeprecated('setDefaultTimeout', {
+            v: '68',
+            msg: 'Modify `defaultTimeout` directly instead.'
+        });
+        this.defaultTimeout = timeout;
+    }
+
+    /**
+     * Set default headers to be sent with all subsequent requests.
+     * @param headers - to be sent with all fetch requests, or a function to generate.
+     * @deprecated use addDefaultHeaders instead.
+     */
+    setDefaultHeaders(headers: DefaultHeaders) {
+        apiDeprecated('setDefaultHeaders', {v: '66', msg: 'Use addDefaultHeaders instead'});
+        this.addDefaultHeaders(headers);
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
-
-    /** Resolve convenience options for Correlation ID to server-ready string */
+    // Resolve convenience options for Correlation ID to server-ready string */
     private withCorrelationId(opts: FetchOptions): FetchOptions {
         const {correlationId} = opts;
         if (isString(correlationId)) return opts;
@@ -250,23 +283,41 @@ export class FetchService extends HoistService {
         }
 
         try {
-            return await this.fetchInternalAsync(opts, aborter).then(postProcess).timeout(timeout);
-        } catch (e) {
+            let ret = await this.fetchInternalAsync(opts, aborter)
+                .then(postProcess)
+                .timeout(timeout);
+            for (const handler of this._successHandlers) {
+                ret = await handler(opts, ret);
+            }
+            return ret;
+        } catch (ex) {
+            let e = ex;
             if (e.isTimeout) {
                 aborter.abort();
                 const msg =
                     isObject(timeout) && 'message' in timeout
                         ? timeout.message
                         : `Timed out loading '${opts.url}' - no response after ${e.interval}ms.`;
-                throw Exception.fetchTimeout(opts, e, msg);
+                e = Exception.fetchTimeout(opts, e, msg);
             }
 
-            if (e.isHoistException) throw e;
+            if (!e.isHoistException) {
+                // Just two other cases where we expect this to *throw* -- Typically we get a fail status
+                e =
+                    e.name === 'AbortError'
+                        ? Exception.fetchAborted(opts, e)
+                        : Exception.serverUnavailable(opts, e);
+            }
 
-            // Just two other cases where we expect this to *throw* -- Typically we get a fail status
-            throw e.name === 'AbortError'
-                ? Exception.fetchAborted(opts, e)
-                : Exception.serverUnavailable(opts, e);
+            for (const handler of this._exceptionHandlers) {
+                try {
+                    return handler(opts, e);
+                } catch (exception) {
+                    e = exception;
+                }
+            }
+
+            throw e;
         } finally {
             if (autoAborters[autoAbortKey] === aborter) {
                 delete autoAborters[autoAbortKey];
@@ -353,6 +404,15 @@ export class FetchService extends HoistService {
         return value;
     };
 }
+
+/** Headers to be applied to all requests.  Specified as object, or dynamic function to create. */
+export type DefaultHeaders = PlainObject | ((opts: FetchOptions) => Awaitable<PlainObject>);
+
+/** Handler to be executed before throwing any exception to caller. */
+export type FetchExceptionHandler = (opts: FetchOptions, e: unknown) => Promise<FetchResponse>;
+
+/** Handler to be executed before returning any response to caller. */
+export type FetchSuccessHandler = (opts: FetchOptions, r: FetchResponse) => Promise<FetchResponse>;
 
 /**
  * Standard options to pass through to fetch, with some additions.
