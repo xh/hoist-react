@@ -13,17 +13,17 @@ import {
     PlainObject,
     XH
 } from '@xh/hoist/core';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {genDisplayName} from '@xh/hoist/data';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     cloneDeep,
     difference,
-    isFunction,
     isArray,
     isEmpty,
     isEqual,
+    isFunction,
     isString,
     keys,
     sortBy
@@ -84,8 +84,9 @@ export class GroupingChooserModel extends HoistModel {
 
     @observable.ref favorites: string[][] = [];
 
-    dimensions: Record<string, DimensionSpec>;
-    dimensionNames: string[];
+    @observable.ref private _dimensions: Record<string, DimensionSpec>;
+    @observable.ref private dimensionNames: string[];
+
     allowEmpty: boolean;
     maxDepth: number;
     commitOnChange: boolean;
@@ -104,6 +105,11 @@ export class GroupingChooserModel extends HoistModel {
     @computed
     get availableDims(): string[] {
         return difference(this.dimensionNames, this.pendingValue);
+    }
+
+    @computed
+    get dimensions() {
+        return this._dimensions;
     }
 
     @computed
@@ -132,13 +138,10 @@ export class GroupingChooserModel extends HoistModel {
         super();
         makeObservable(this);
 
-        this.dimensions = this.normalizeDimensions(dimensions);
-        this.dimensionNames = keys(this.dimensions);
+        this.setDimensions(dimensions);
         this.allowEmpty = allowEmpty;
         this.maxDepth = maxDepth;
         this.commitOnChange = commitOnChange;
-
-        throwIf(isEmpty(this.dimensions), 'Must provide valid dimensions available for selection.');
 
         // Read and validate value and favorites
         let value = isFunction(initialValue) ? initialValue() : initialValue,
@@ -185,6 +188,15 @@ export class GroupingChooserModel extends HoistModel {
 
         this.setValue(value);
         this.setFavorites(favorites);
+    }
+
+    @action
+    setDimensions(dimensions: Array<DimensionSpec | string>) {
+        throwIf(isEmpty(dimensions), 'Must provide valid dimensions available for selection.');
+
+        this._dimensions = this.normalizeDimensions(dimensions);
+        this.dimensionNames = keys(this._dimensions);
+        this.cleanStaleDims();
     }
 
     @action
@@ -265,31 +277,12 @@ export class GroupingChooserModel extends HoistModel {
         return value.every(dim => this.dimensionNames.includes(dim));
     }
 
-    normalizeDimensions(dims: Array<DimensionSpec | string>): Record<string, DimensionSpec> {
-        dims = dims ?? [];
-        const ret = {};
-        dims.forEach(it => {
-            const dim = this.createDimension(it);
-            ret[dim.name] = dim;
-        });
-        return ret;
-    }
-
-    createDimension(src: DimensionSpec | string) {
-        src = isString(src) ? {name: src} : src;
-        throwIf(
-            !src.hasOwnProperty('name'),
-            "Dimensions provided as Objects must define a 'name' property."
-        );
-        return {displayName: genDisplayName(src.name), ...src};
-    }
-
-    getValueLabel(value: string[]) {
+    getValueLabel(value: string[]): string {
         return value.map(dimName => this.getDimDisplayName(dimName)).join(' › ');
     }
 
     getDimDisplayName(dimName: string) {
-        return this.dimensions[dimName].displayName;
+        return this._dimensions[dimName]?.displayName ?? dimName;
     }
 
     //--------------------
@@ -342,5 +335,42 @@ export class GroupingChooserModel extends HoistModel {
         if (this.persistValue) ret.value = this.value;
         if (this.persistFavorites) ret.favorites = this.favorites;
         return ret;
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    private normalizeDimensions(
+        dims: Array<DimensionSpec | string>
+    ): Record<string, DimensionSpec> {
+        dims = dims ?? [];
+        const ret = {};
+        dims.forEach(it => {
+            const dim = this.createDimension(it);
+            ret[dim.name] = dim;
+        });
+        return ret;
+    }
+
+    private createDimension(src: DimensionSpec | string) {
+        src = isString(src) ? {name: src} : src;
+        throwIf(
+            !src.hasOwnProperty('name'),
+            "Dimensions provided as Objects must define a 'name' property."
+        );
+        return {displayName: genDisplayName(src.name), ...src};
+    }
+
+    private cleanStaleDims() {
+        const {value, dimensionNames, allowEmpty} = this,
+            cleanValue = value.filter(dim => dimensionNames.includes(dim));
+
+        if (isEqual(value, cleanValue)) return;
+
+        if (isEmpty(cleanValue) && !allowEmpty) {
+            cleanValue.push(dimensionNames[0]);
+        }
+
+        this.setValue(cleanValue);
     }
 }
