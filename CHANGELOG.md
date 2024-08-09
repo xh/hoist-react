@@ -5,8 +5,6 @@
 ### 🎁 New Features
 
 * Added support for Correlation IDs across fetch requests and error / activity tracking:
-    * ⚠️ Upgrade to `hoist-core >= v20.5.0` to enable support for persisting correlation IDs to
-      Hoist activity tracking and client error logs.
     * New `FetchService` members: `autoGenCorrelationIds`, `genCorrelationId` and
       `correlationIdHeaderKey` to support generation and inclusion of Correlation IDs on outbound
       request headers.
@@ -22,7 +20,12 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed bug where a role with a dot in its name could not be deleted. 
 * Fixed `SelectEditor` to ensure new value is flushed before editing stops.
+
+
+### 💥 Breaking Changes
+* Requires `hoist-core >= 21.0`.
 
 ### ⚙️ Technical
 
