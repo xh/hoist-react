@@ -13,7 +13,8 @@ import {
     isInteger,
     isNil,
     isNumber,
-    isString
+    isString,
+    round
 } from 'lodash';
 import Numbro from 'numbro';
 import numbro from 'numbro';
@@ -497,14 +498,12 @@ function buildFormatConfig(
 
     // Calculate numbro mantissa and trimMantissa options based on precision and zeroPad settings.
     if (isNumber(zeroPad)) {
-        // Specific zeroPad set - need to read actual precision of number to determine exact
-        // mantissa, as we cannot use trimMantissa (since we do want to allow some trailing zeroes).
-        const actualPrecision = countDecimalPlaces(absVal);
+        // Specific zeroPad set - find a specific mantissa value between zeroPad and precision.
 
-        // How much precision do we actually want/need? Lower of actual vs. precision set above.
-        // Ensures we respect a deliberately low precision spec, but otherwise include only as
-        // much precision as we need to show the value.
-        const requiredPrecision = Math.min(actualPrecision, precision);
+        // Calculate the required precision of the number after rounding (since rounding can change
+        // the non-zero decimal places of a number, especially in cases of js floating point
+        // arithmetic errors). This is already guaranteed to be less than or equal to precision.
+        const requiredPrecision = countDecimalPlaces(round(absVal, precision));
 
         // Then set mantissa to higher of required precision vs. requested zeroPad.
         // Ensures we display all of the requested/available precision + extra zeros if needed.
