@@ -46,7 +46,6 @@ export class FetchService extends HoistService {
 
     private autoAborters = {};
     private _defaultHeaders: DefaultHeaders[] = [];
-    private _successHandlers: FetchSuccessHandler[] = [];
     private _exceptionHandlers: FetchExceptionHandler[] = [];
     //-----------------------------------
     // Public properties, Getters/Setters
@@ -72,28 +71,15 @@ export class FetchService extends HoistService {
     }
 
     /**
-     * Add Handler to be executed before returning any results to caller.
-     *
-     * For use in apps that need to do standard pre-processing of fetch results.
-     *
-     * May be particularly useful for apps that wish to throw an exception for a server "error"
-     * that is returned as part of a successful 200 response.
-     *
-     * Handlers may return a valid response or throw as appropriate.
-     */
-    addSuccessHandler(handler: FetchSuccessHandler) {
-        this._successHandlers.push(handler);
-    }
-
-    /**
-     * Handler to be executed before throwing any exception to caller.
+     * Handler to be executed before rejecting returned promise with an exception.
      *
      * For use in apps requiring common handling for particular exceptions. Useful for
-     * recognizing 401s (i.e. session end), initiating retries, or wrapping or
-     * enhancing exceptions.
+     * recognizing 401s (i.e. session end), or wrapping, logging, or enhancing exceptions.
      *
-     * Handlers may return a valid response, return a promise that never resolves, or
-     * (most-commonly) simply rethrow.
+     * The simplest handler will simply rethrow the passed exception, or a wrapped version of it.
+     * Handlers may also return `never()` to prevent further processing of the request -- this
+     * is useful, i.e. if the handler is going to redirect the entire app, or otherwise end normal
+     * app processing.  In rare cases, handlers may be able to retry an return valid results.
      */
     addExceptionHandler(handler: FetchExceptionHandler) {
         this._exceptionHandlers.push(handler);
@@ -116,7 +102,10 @@ export class FetchService extends HoistService {
      */
     fetch(opts: FetchOptions): Promise<FetchResponse> {
         opts = this.withCorrelationId(opts);
-        const ret = this.withDefaultHeadersAsync(opts).then(opts => this.managedFetchAsync(opts));
+        const ret = this.withDefaultHeadersAsync(opts).then(opts =>
+            this.managedFetchAsync(opts, false)
+        );
+
         ret.correlationId = opts.correlationId as string;
         return ret;
     }
@@ -128,13 +117,9 @@ export class FetchService extends HoistService {
     fetchJson(opts: FetchOptions): Promise<any> {
         opts = this.withCorrelationId(opts);
         const ret = this.withDefaultHeadersAsync(opts, {Accept: 'application/json'}).then(opts =>
-            this.managedFetchAsync(opts, async r => {
-                if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
-                return r.json().catchWhen('SyntaxError', e => {
-                    throw Exception.fetchJsonParseError(opts, e);
-                });
-            })
+            this.managedFetchAsync(opts, true)
         );
+
         ret.correlationId = opts.correlationId as string;
         return ret;
     }
@@ -267,10 +252,7 @@ export class FetchService extends HoistService {
         return {...opts, method, headers};
     }
 
-    private async managedFetchAsync(
-        opts: FetchOptions,
-        postProcess: (r: FetchResponse) => Awaitable<FetchResponse> = null
-    ): Promise<FetchResponse> {
+    private async managedFetchAsync(opts: FetchOptions, asJson: boolean): Promise<any> {
         // Prepare auto-aborter
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
@@ -283,13 +265,9 @@ export class FetchService extends HoistService {
         }
 
         try {
-            let ret = await this.fetchInternalAsync(opts, aborter)
-                .then(postProcess)
+            return await this.fetchInternalAsync(opts, aborter)
+                .then(asJson ? r => this.parseJsonAsync(opts, r) : null)
                 .timeout(timeout);
-            for (const handler of this._successHandlers) {
-                ret = await handler(opts, ret);
-            }
-            return ret;
         } catch (ex) {
             let e = ex;
             if (e.isTimeout) {
@@ -311,7 +289,7 @@ export class FetchService extends HoistService {
 
             for (const handler of this._exceptionHandlers) {
                 try {
-                    return handler(opts, e);
+                    return await handler(opts, e);
                 } catch (exception) {
                     e = exception;
                 }
@@ -390,6 +368,13 @@ export class FetchService extends HoistService {
         });
     }
 
+    private async parseJsonAsync(opts: FetchOptions, r: Response): Promise<any> {
+        if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
+        return r.json().catchWhen('SyntaxError', e => {
+            throw Exception.fetchJsonParseError(opts, e);
+        });
+    }
+
     private async safeResponseTextAsync(response: Response) {
         try {
             return await response.text();
@@ -408,11 +393,8 @@ export class FetchService extends HoistService {
 /** Headers to be applied to all requests.  Specified as object, or dynamic function to create. */
 export type DefaultHeaders = PlainObject | ((opts: FetchOptions) => Awaitable<PlainObject>);
 
-/** Handler to be executed before throwing any exception to caller. */
-export type FetchExceptionHandler = (opts: FetchOptions, e: unknown) => Promise<FetchResponse>;
-
-/** Handler to be executed before returning any response to caller. */
-export type FetchSuccessHandler = (opts: FetchOptions, r: FetchResponse) => Promise<FetchResponse>;
+/** Handler to be executed before rejecting with any exception to caller. */
+export type FetchExceptionHandler = (opts: FetchOptions, e: unknown) => Promise<any>;
 
 /**
  * Standard options to pass through to fetch, with some additions.
