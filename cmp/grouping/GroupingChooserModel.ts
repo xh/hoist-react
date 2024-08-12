@@ -108,8 +108,8 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     @computed
-    get dimensions() {
-        return this._dimensions;
+    get dimensionSpecs() {
+        return Object.values(this._dimensions);
     }
 
     @computed
@@ -192,7 +192,10 @@ export class GroupingChooserModel extends HoistModel {
 
     @action
     setDimensions(dimensions: Array<DimensionSpec | string>) {
-        throwIf(isEmpty(dimensions), 'Must provide valid dimensions available for selection.');
+        throwIf(
+            isEmpty(dimensions) && !this.allowEmpty,
+            'Must provide valid dimensions available for selection.'
+        );
 
         this._dimensions = this.normalizeDimensions(dimensions);
         this.dimensionNames = keys(this._dimensions);
