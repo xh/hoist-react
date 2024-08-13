@@ -84,7 +84,7 @@ export class GroupingChooserModel extends HoistModel {
 
     @observable.ref favorites: string[][] = [];
 
-    @observable.ref private _dimensions: Record<string, DimensionSpec>;
+    @observable.ref private dimensions: Record<string, DimensionSpec>;
     @observable.ref private dimensionNames: string[];
 
     allowEmpty: boolean;
@@ -109,7 +109,7 @@ export class GroupingChooserModel extends HoistModel {
 
     @computed
     get dimensionSpecs() {
-        return Object.values(this._dimensions);
+        return Object.values(this.dimensions);
     }
 
     @computed
@@ -138,10 +138,11 @@ export class GroupingChooserModel extends HoistModel {
         super();
         makeObservable(this);
 
-        this.setDimensions(dimensions);
         this.allowEmpty = allowEmpty;
         this.maxDepth = maxDepth;
         this.commitOnChange = commitOnChange;
+
+        this.setDimensions(dimensions);
 
         // Read and validate value and favorites
         let value = isFunction(initialValue) ? initialValue() : initialValue,
@@ -197,8 +198,8 @@ export class GroupingChooserModel extends HoistModel {
             'Must provide valid dimensions available for selection.'
         );
 
-        this._dimensions = this.normalizeDimensions(dimensions);
-        this.dimensionNames = keys(this._dimensions);
+        this.dimensions = this.normalizeDimensions(dimensions);
+        this.dimensionNames = keys(this.dimensions);
         this.cleanStaleDims();
     }
 
@@ -285,7 +286,7 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     getDimDisplayName(dimName: string) {
-        return this._dimensions[dimName]?.displayName ?? dimName;
+        return this.dimensions[dimName]?.displayName ?? dimName;
     }
 
     //--------------------
@@ -366,7 +367,7 @@ export class GroupingChooserModel extends HoistModel {
 
     private cleanStaleDims() {
         const {value, dimensionNames, allowEmpty} = this,
-            cleanValue = value.filter(dim => dimensionNames.includes(dim));
+            cleanValue = value?.filter(dim => dimensionNames.includes(dim));
 
         if (isEqual(value, cleanValue)) return;
 
