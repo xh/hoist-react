@@ -16,15 +16,15 @@
     * If set on a fetch request, Correlation IDs are passed through to downstream Hoist activity
       tracking and error reporting and are available for review in the Admin Console.
     * New `XH.genUUID()` method to generate UUIDs for use as Correlation IDs or elsewhere.
-* `GridModel` will now accept `false` as a value to omit context menus.
+* `GridModel` will now accept `contextMenu: false` to omit context menus.
 
 ### 🐞 Bug Fixes
 
-* Fixed bug where a role with a dot in its name could not be deleted. 
+* Fixed bug where a role with a dot in its name could not be deleted.
 * Fixed `SelectEditor` to ensure new value is flushed before editing stops.
 
-
 ### 💥 Breaking Changes
+
 * Requires `hoist-core >= 21.0`.
 
 ### ⚙️ Technical
@@ -385,7 +385,8 @@ There are some common breaking changes that most/many apps will need to address:
       per [popper.js docs](https://popper.js.org/docs/v2/utils/detect-overflow/#boundary),
       so `boundary: 'viewport'` should be safe to remove entirely.
         * [see Blueprint's Popover2 migration guide](https://github.com/palantir/blueprint/wiki/Popover2-migration)
-        * [see Popover2's `boundary` & `rootBoundary` docs](https://popper.js.org/docs/v2/utils/detect-overflow/#boundary)
+        * [see Popover2's `boundary` &
+          `rootBoundary` docs](https://popper.js.org/docs/v2/utils/detect-overflow/#boundary)
 * Where applicable, the former `elementRef` prop has been replaced by the simpler, more
   straightforward `ref` prop using `React.forwardRef()` - e.g. Hoist's `button.elementRef` prop
   becomes just `ref`. Review your app for uses of `elementRef`.
