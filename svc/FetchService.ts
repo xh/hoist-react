@@ -79,7 +79,7 @@ export class FetchService extends HoistService {
      * The simplest handler will simply rethrow the passed exception, or a wrapped version of it.
      * Handlers may also return `never()` to prevent further processing of the request -- this
      * is useful, i.e. if the handler is going to redirect the entire app, or otherwise end normal
-     * app processing.  In rare cases, handlers may be able to retry an return valid results.
+     * app processing.  In rare cases, handlers may be able to retry and return valid results.
      */
     addExceptionHandler(handler: FetchExceptionHandler) {
         this._exceptionHandlers.push(handler);
@@ -102,10 +102,7 @@ export class FetchService extends HoistService {
      */
     fetch(opts: FetchOptions): Promise<FetchResponse> {
         opts = this.withCorrelationId(opts);
-        const ret = this.withDefaultHeadersAsync(opts).then(opts =>
-            this.managedFetchAsync(opts, false)
-        );
-
+        const ret = this.withDefaultHeadersAsync(opts).then(opts => this.managedFetchAsync(opts));
         ret.correlationId = opts.correlationId as string;
         return ret;
     }
@@ -115,13 +112,7 @@ export class FetchService extends HoistService {
      * @returns the decoded JSON object, or null if the response has status in {@link NO_JSON_RESPONSES}.
      */
     fetchJson(opts: FetchOptions): Promise<any> {
-        opts = this.withCorrelationId(opts);
-        const ret = this.withDefaultHeadersAsync(opts, {Accept: 'application/json'}).then(opts =>
-            this.managedFetchAsync(opts, true)
-        );
-
-        ret.correlationId = opts.correlationId as string;
-        return ret;
+        return this.fetch({...opts, asJson: true});
     }
 
     /**
@@ -208,7 +199,7 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
-    // Resolve convenience options for Correlation ID to server-ready string */
+    // Resolve convenience options for Correlation ID to server-ready string
     private withCorrelationId(opts: FetchOptions): FetchOptions {
         const {correlationId} = opts;
         if (isString(correlationId)) return opts;
@@ -219,10 +210,7 @@ export class FetchService extends HoistService {
         return opts;
     }
 
-    private async withDefaultHeadersAsync(
-        opts: FetchOptions,
-        extraHeaders: PlainObject = null
-    ): Promise<FetchOptions> {
+    private async withDefaultHeadersAsync(opts: FetchOptions): Promise<FetchOptions> {
         const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
             isPost = method === 'POST';
 
@@ -234,7 +222,7 @@ export class FetchService extends HoistService {
         const headers = {
             'Content-Type': isPost ? 'application/x-www-form-urlencoded' : 'text/plain',
             ...defaultHeaders,
-            ...extraHeaders,
+            ...(opts.asJson ? {Accept: 'application/json'} : {}),
             ...opts.headers
         };
 
@@ -252,7 +240,7 @@ export class FetchService extends HoistService {
         return {...opts, method, headers};
     }
 
-    private async managedFetchAsync(opts: FetchOptions, asJson: boolean): Promise<any> {
+    private async managedFetchAsync(opts: FetchOptions): Promise<any> {
         // Prepare auto-aborter
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
@@ -266,7 +254,7 @@ export class FetchService extends HoistService {
 
         try {
             return await this.fetchInternalAsync(opts, aborter)
-                .then(asJson ? r => this.parseJsonAsync(opts, r) : null)
+                .then(opts.asJson ? r => this.parseJsonAsync(opts, r) : null)
                 .timeout(timeout);
         } catch (ex) {
             let e = ex;
@@ -462,4 +450,9 @@ export interface FetchOptions {
      * aborted in favor of the new request.
      */
     autoAbortKey?: string;
+
+    /**
+     * True to decode the HTTP response as JSON.
+     */
+    asJson?: boolean;
 }
