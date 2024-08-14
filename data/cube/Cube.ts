@@ -120,6 +120,11 @@ export class Cube extends HoistBase {
         return this.store.records;
     }
 
+    /** True if this Cube contains no data / records. */
+    get empty(): boolean {
+        return this.store.empty;
+    }
+
     /** Count of currently connected, auto-updating Views. */
     get connectedViewCount(): number {
         return this._connectedViews.size;

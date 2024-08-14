@@ -104,6 +104,7 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                               })
                           }),
                           formField({field: 'id'}),
+                          formField({field: 'correlationId'}),
                           formField({
                               field: 'url',
                               readonlyRenderer: hyperlinkVal
