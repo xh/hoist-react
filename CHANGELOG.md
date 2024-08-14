@@ -16,6 +16,10 @@
     * If set on a fetch request, Correlation IDs are passed through to downstream Hoist activity
       tracking and error reporting and are available for review in the Admin Console.
     * New `XH.genUUID()` method to generate UUIDs for use as Correlation IDs or elsewhere.
+* `GridModel.contextMenu` will now accept `false` as a value to omit context menus.
+* New global interceptors on `FetchService`. See `FetchService.addInterceptor()`.
+* New property `FetchOptions.asJson` to instruct `FetchService` to decode an HTTP response as JSON.
+  Note that `FetchService` methods suffixed with `Json` will set this property automatically.
 * `GridModel` will now accept `contextMenu: false` to omit context menus.
 
 ### 🐞 Bug Fixes
