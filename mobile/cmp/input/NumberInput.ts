@@ -6,7 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
-import {fmtNumber, Precision, ZeroPad} from '@xh/hoist/format';
+import {fmtNumber, NumericPrecision, Precision, ZeroPad} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {wait} from '@xh/hoist/promise';
@@ -46,7 +46,7 @@ export interface NumberInputProps extends HoistProps, HoistInputProps, StyleProp
     placeholder?: string;
 
     /** Max decimal precision of the value, defaults to 4. */
-    precision?: number;
+    precision?: NumericPrecision;
 
     /**
      * Scale factor to apply when converting between the internal and external value. Useful for

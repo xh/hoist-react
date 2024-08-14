@@ -38,8 +38,9 @@ const UP_TICK = '▴',
         neutral: 'xh-neutral-val'
     };
 
-export type Precision = 'auto' | IntRange<0, 13>;
-export type ZeroPad = boolean | IntRange<1, 13>;
+export type NumericPrecision = IntRange<0, 13>;
+export type Precision = NumericPrecision | 'auto';
+export type ZeroPad = NumericPrecision | boolean;
 
 export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'tooltip'> {
     /**

@@ -8,7 +8,7 @@ import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {fmtNumber, parseNumber, Precision, ZeroPad} from '@xh/hoist/format';
+import {fmtNumber, NumericPrecision, parseNumber, Precision, ZeroPad} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -62,7 +62,7 @@ export interface NumberInputProps extends HoistProps, LayoutProps, StyleProps, H
     placeholder?: string;
 
     /** Max decimal precision of the value, defaults to 4. */
-    precision?: number;
+    precision?: NumericPrecision;
 
     /** Element to display inline on the right side of the input. */
     rightElement?: ReactNode;

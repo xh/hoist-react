@@ -5,8 +5,6 @@
 ### 🎁 New Features
 
 * Added support for Correlation IDs across fetch requests and error / activity tracking:
-    * ⚠️ Upgrade to `hoist-core >= v20.5.0` to enable support for persisting correlation IDs to
-      Hoist activity tracking and client error logs.
     * New `FetchService` members: `autoGenCorrelationIds`, `genCorrelationId` and
       `correlationIdHeaderKey` to support generation and inclusion of Correlation IDs on outbound
       request headers.
@@ -22,10 +20,16 @@
 * New global interceptors on `FetchService`. See `FetchService.addInterceptor()`.
 * New property `FetchOptions.asJson` to instruct `FetchService` to decode an HTTP response as JSON.
   Note that `FetchService` methods suffixed with `Json` will set this property automatically.
+* `GridModel` will now accept `contextMenu: false` to omit context menus.
 
 ### 🐞 Bug Fixes
 
+* Fixed bug where a role with a dot in its name could not be deleted.
 * Fixed `SelectEditor` to ensure new value is flushed before editing stops.
+
+### 💥 Breaking Changes
+
+* Requires `hoist-core >= 21.0`.
 
 ### ⚙️ Technical
 
@@ -385,7 +389,8 @@ There are some common breaking changes that most/many apps will need to address:
       per [popper.js docs](https://popper.js.org/docs/v2/utils/detect-overflow/#boundary),
       so `boundary: 'viewport'` should be safe to remove entirely.
         * [see Blueprint's Popover2 migration guide](https://github.com/palantir/blueprint/wiki/Popover2-migration)
-        * [see Popover2's `boundary` & `rootBoundary` docs](https://popper.js.org/docs/v2/utils/detect-overflow/#boundary)
+        * [see Popover2's `boundary` &
+          `rootBoundary` docs](https://popper.js.org/docs/v2/utils/detect-overflow/#boundary)
 * Where applicable, the former `elementRef` prop has been replaced by the simpler, more
   straightforward `ref` prop using `React.forwardRef()` - e.g. Hoist's `button.elementRef` prop
   becomes just `ref`. Review your app for uses of `elementRef`.

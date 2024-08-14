@@ -74,6 +74,10 @@ export class LoadSpec {
         return 'Load';
     }
 
+    get isFirstLoad(): boolean {
+        return this.loadNumber === 0;
+    }
+
     /**
      * @internal - not for application use. LoadSpecs are constructed automatically by Hoist's
      * {@link LoadSupport} class as part of its managed `loadAsync()` wrapper.
