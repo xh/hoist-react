@@ -98,11 +98,20 @@ export class FetchService extends HoistService {
     //--------------------
     /**
      * Send a request via the underlying fetch API.
-     * @returns Promise which resolves to a Fetch Response.
+     *
+     * This is the main entry point for this API, and can be used to satisfy all
+     * requests.  Other shortcut variants will delegate to this method, after setting
+     * default options and pre-processing content.
+     *
+     *  Set `asJson` to true return a parsed JSON result, rather than the raw FetchResponse.
+     *  Note that shortcut variant of this method (e.g. `fetchJson`, `postJson`) will set this
+     *  flag for you.
+     *
+     * @returns Promise which resolves to a FetchResponse or JSON.
      */
-    fetch(opts: FetchOptions): Promise<FetchResponse> {
+    fetch(opts: FetchOptions): Promise<any> {
         opts = this.withCorrelationId(opts);
-        const ret = this.withDefaultHeadersAsync(opts).then(opts => this.managedFetchAsync(opts));
+        const ret = this.managedFetchAsync(opts);
         ret.correlationId = opts.correlationId as string;
         return ret;
     }
@@ -112,7 +121,7 @@ export class FetchService extends HoistService {
      * @returns the decoded JSON object, or null if the response has status in {@link NO_JSON_RESPONSES}.
      */
     fetchJson(opts: FetchOptions): Promise<any> {
-        return this.fetch({...opts, asJson: true});
+        return this.fetch({asJson: true, ...opts});
     }
 
     /**
@@ -120,7 +129,7 @@ export class FetchService extends HoistService {
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
     getJson(opts: FetchOptions): Promise<any> {
-        return this.fetchJson({method: 'GET', ...opts});
+        return this.fetch({asJson: true, method: 'GET', ...opts});
     }
 
     /**
@@ -241,6 +250,8 @@ export class FetchService extends HoistService {
     }
 
     private async managedFetchAsync(opts: FetchOptions): Promise<any> {
+        opts = await this.withDefaultHeadersAsync(opts);
+
         // Prepare auto-aborter
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
@@ -346,7 +357,8 @@ export class FetchService extends HoistService {
     }
 
     private async sendJsonInternalAsync(opts: FetchOptions) {
-        return this.fetchJson({
+        return this.fetch({
+            asJson: true,
             ...opts,
             body: JSON.stringify(opts.body),
             headers: {
@@ -452,7 +464,7 @@ export interface FetchOptions {
     autoAbortKey?: string;
 
     /**
-     * True to decode the HTTP response as JSON.
+     * True to decode the HTTP response as JSON. Default false.
      */
     asJson?: boolean;
 }
