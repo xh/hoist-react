@@ -46,7 +46,7 @@ export class FetchService extends HoistService {
 
     private autoAborters = {};
     private _defaultHeaders: DefaultHeaders[] = [];
-    private _exceptionHandlers: FetchExceptionHandler[] = [];
+    private _interceptors: FetchInterceptor[] = [];
     //-----------------------------------
     // Public properties, Getters/Setters
     //------------------------------------
@@ -71,18 +71,22 @@ export class FetchService extends HoistService {
     }
 
     /**
-     * Handler to be executed before rejecting returned promise with an exception.
+     * Promise handlers to be executed before fufilling or rejecting returned Promise.
      *
-     * For use in apps requiring common handling for particular exceptions. Useful for
-     * recognizing 401s (i.e. session end), or wrapping, logging, or enhancing exceptions.
-     *
-     * The simplest handler will simply rethrow the passed exception, or a wrapped version of it.
-     * Handlers may also return `never()` to prevent further processing of the request -- this
+     * Use the `onRejected` handler for apps requiring common handling for particular exceptions.
+     * Useful for recognizing 401s (i.e. session end), or wrapping, logging, or enhancing exceptions.
+     * The simplest onRejected handler will simply rethrow the passed exception, or a wrapped version of it.
+     * Such handlers may also return `never()` to prevent further processing of the request -- this
      * is useful, i.e. if the handler is going to redirect the entire app, or otherwise end normal
-     * app processing.  In rare cases, handlers may be able to retry and return valid results.
+     * app processing.  Rejected handlers may also be able to retry and return valid results via
+     * another call to fetch.
+     *
+     * Use the `onFulfilled` hander for enhancing, tracking, or even rejecting "successful" returns.
+     * For example, a handler of this form could be used to transform a 200 response returned by
+     * an API with an "error" flag into a proper client-side exception.
      */
-    addExceptionHandler(handler: FetchExceptionHandler) {
-        this._exceptionHandlers.push(handler);
+    addInterceptor(handler: FetchInterceptor) {
+        this._interceptors.push(handler);
     }
 
     /**
@@ -110,10 +114,7 @@ export class FetchService extends HoistService {
      * @returns Promise which resolves to a FetchResponse or JSON.
      */
     fetch(opts: FetchOptions): Promise<any> {
-        opts = this.withCorrelationId(opts);
-        const ret = this.managedFetchAsync(opts);
-        ret.correlationId = opts.correlationId as string;
-        return ret;
+        return this.fetchInternalAsync(opts);
     }
 
     /**
@@ -121,7 +122,7 @@ export class FetchService extends HoistService {
      * @returns the decoded JSON object, or null if the response has status in {@link NO_JSON_RESPONSES}.
      */
     fetchJson(opts: FetchOptions): Promise<any> {
-        return this.fetch({asJson: true, ...opts});
+        return this.fetchInternalAsync({asJson: true, ...opts});
     }
 
     /**
@@ -129,7 +130,7 @@ export class FetchService extends HoistService {
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
     getJson(opts: FetchOptions): Promise<any> {
-        return this.fetch({asJson: true, method: 'GET', ...opts});
+        return this.fetchInternalAsync({asJson: true, method: 'GET', ...opts});
     }
 
     /**
@@ -208,6 +209,33 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
+    private async fetchInternalAsync(opts: FetchOptions): Promise<any> {
+        opts = this.withCorrelationId(opts);
+        opts = await this.withDefaultHeadersAsync(opts);
+
+        let ret = this.managedFetchAsync(opts);
+        for (const h of this._interceptors) {
+            ret = ret.then(
+                v => h.onFulfilled(opts, v),
+                e => h.onRejected(opts, e)
+            );
+        }
+        ret.correlationId = opts.correlationId as string;
+        return ret;
+    }
+
+    private async sendJsonInternalAsync(opts: FetchOptions) {
+        return this.fetchInternalAsync({
+            asJson: true,
+            ...opts,
+            body: JSON.stringify(opts.body),
+            headers: {
+                'Content-Type': 'application/json',
+                ...opts.headers
+            }
+        });
+    }
+
     // Resolve convenience options for Correlation ID to server-ready string
     private withCorrelationId(opts: FetchOptions): FetchOptions {
         const {correlationId} = opts;
@@ -250,8 +278,6 @@ export class FetchService extends HoistService {
     }
 
     private async managedFetchAsync(opts: FetchOptions): Promise<any> {
-        opts = await this.withDefaultHeadersAsync(opts);
-
         // Prepare auto-aborter
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
@@ -264,36 +290,25 @@ export class FetchService extends HoistService {
         }
 
         try {
-            return await this.fetchInternalAsync(opts, aborter)
+            return await this.abortableFetchAsync(opts, aborter)
                 .then(opts.asJson ? r => this.parseJsonAsync(opts, r) : null)
                 .timeout(timeout);
-        } catch (ex) {
-            let e = ex;
+        } catch (e) {
             if (e.isTimeout) {
                 aborter.abort();
                 const msg =
                     isObject(timeout) && 'message' in timeout
                         ? timeout.message
                         : `Timed out loading '${opts.url}' - no response after ${e.interval}ms.`;
-                e = Exception.fetchTimeout(opts, e, msg);
+                throw Exception.fetchTimeout(opts, e, msg);
             }
 
             if (!e.isHoistException) {
                 // Just two other cases where we expect this to *throw* -- Typically we get a fail status
-                e =
-                    e.name === 'AbortError'
-                        ? Exception.fetchAborted(opts, e)
-                        : Exception.serverUnavailable(opts, e);
+                throw e.name === 'AbortError'
+                    ? Exception.fetchAborted(opts, e)
+                    : Exception.serverUnavailable(opts, e);
             }
-
-            for (const handler of this._exceptionHandlers) {
-                try {
-                    return await handler(opts, e);
-                } catch (exception) {
-                    e = exception;
-                }
-            }
-
             throw e;
         } finally {
             if (autoAborters[autoAbortKey] === aborter) {
@@ -302,7 +317,7 @@ export class FetchService extends HoistService {
         }
     }
 
-    private async fetchInternalAsync(
+    private async abortableFetchAsync(
         opts: FetchOptions,
         aborter: AbortController
     ): Promise<FetchResponse> {
@@ -356,18 +371,6 @@ export class FetchService extends HoistService {
         return ret;
     }
 
-    private async sendJsonInternalAsync(opts: FetchOptions) {
-        return this.fetch({
-            asJson: true,
-            ...opts,
-            body: JSON.stringify(opts.body),
-            headers: {
-                'Content-Type': 'application/json',
-                ...opts.headers
-            }
-        });
-    }
-
     private async parseJsonAsync(opts: FetchOptions, r: Response): Promise<any> {
         if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
         return r.json().catchWhen('SyntaxError', e => {
@@ -393,8 +396,11 @@ export class FetchService extends HoistService {
 /** Headers to be applied to all requests.  Specified as object, or dynamic function to create. */
 export type DefaultHeaders = PlainObject | ((opts: FetchOptions) => Awaitable<PlainObject>);
 
-/** Handler to be executed before rejecting with any exception to caller. */
-export type FetchExceptionHandler = (opts: FetchOptions, e: unknown) => Promise<any>;
+/** Handlers to be executed before fufilling or rejecting any exception to caller. */
+export interface FetchInterceptor {
+    onFulfilled: (opts: FetchOptions, value: any) => Promise<any>;
+    onRejected: (opts: FetchOptions, e: unknown) => Promise<any>;
+}
 
 /**
  * Standard options to pass through to fetch, with some additions.
