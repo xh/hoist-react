@@ -209,22 +209,24 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
-    private async fetchInternalAsync(opts: FetchOptions): Promise<any> {
+    private fetchInternalAsync(opts: FetchOptions): Promise<any> {
         opts = this.withCorrelationId(opts);
-        opts = await this.withDefaultHeadersAsync(opts);
+        const ret = this.withDefaultHeadersAsync(opts).then(opts => {
+            let fetchPromise = this.managedFetchAsync(opts);
+            for (const interceptor of this._interceptors) {
+                fetchPromise = fetchPromise.then(
+                    value => interceptor.onFulfilled(opts, value),
+                    cause => interceptor.onRejected(opts, cause)
+                );
+            }
+            return fetchPromise;
+        });
 
-        let ret = this.managedFetchAsync(opts);
-        for (const h of this._interceptors) {
-            ret = ret.then(
-                v => h.onFulfilled(opts, v),
-                e => h.onRejected(opts, e)
-            );
-        }
         ret.correlationId = opts.correlationId as string;
         return ret;
     }
 
-    private async sendJsonInternalAsync(opts: FetchOptions) {
+    private sendJsonInternalAsync(opts: FetchOptions) {
         return this.fetchInternalAsync({
             asJson: true,
             ...opts,
@@ -399,7 +401,7 @@ export type DefaultHeaders = PlainObject | ((opts: FetchOptions) => Awaitable<Pl
 /** Handlers to be executed before fufilling or rejecting any exception to caller. */
 export interface FetchInterceptor {
     onFulfilled: (opts: FetchOptions, value: any) => Promise<any>;
-    onRejected: (opts: FetchOptions, e: unknown) => Promise<any>;
+    onRejected: (opts: FetchOptions, cause: unknown) => Promise<any>;
 }
 
 /**
