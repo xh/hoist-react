@@ -212,17 +212,20 @@ export class FetchService extends HoistService {
     //-----------------------
     private fetchInternalAsync(opts: FetchOptions): FetchPromise<any> {
         opts = this.withCorrelationId(opts);
-        return new FetchPromise(resolve => {
-            this.withDefaultHeadersAsync(opts).then(opts => {
-                let ret = this.managedFetchAsync(opts);
-                for (const interceptor of this._interceptors) {
-                    ret = ret.then(
-                        value => interceptor.onFulfilled(opts, value),
-                        cause => interceptor.onRejected(opts, cause)
-                    );
-                }
-                resolve(ret);
-            });
+        return new FetchPromise((resolve, reject) => {
+            this.withDefaultHeadersAsync(opts).then(
+                opts => {
+                    let ret = this.managedFetchAsync(opts);
+                    for (const interceptor of this._interceptors) {
+                        ret = ret.then(
+                            value => interceptor.onFulfilled(opts, value),
+                            cause => interceptor.onRejected(opts, cause)
+                        );
+                    }
+                    resolve(ret);
+                },
+                cause => reject(cause)
+            );
         }, opts.correlationId as string);
     }
 
