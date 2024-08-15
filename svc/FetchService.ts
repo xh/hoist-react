@@ -11,11 +11,12 @@ import {
     HoistService,
     LoadSpec,
     PlainObject,
+    TrackOptions,
     XH
 } from '@xh/hoist/core';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {apiDeprecated} from '@xh/hoist/utils/js';
+import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, isObject, isString, omit, omitBy} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
@@ -113,7 +114,7 @@ export class FetchService extends HoistService {
      *
      * @returns Promise which resolves to a FetchResponse or JSON.
      */
-    fetch(opts: FetchOptions): Promise<any> {
+    fetch(opts: FetchOptions): FetchPromise<any> {
         return this.fetchInternalAsync(opts);
     }
 
@@ -121,7 +122,7 @@ export class FetchService extends HoistService {
      * Send an HTTP request and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response has status in {@link NO_JSON_RESPONSES}.
      */
-    fetchJson(opts: FetchOptions): Promise<any> {
+    fetchJson(opts: FetchOptions): FetchPromise<any> {
         return this.fetchInternalAsync({asJson: true, ...opts});
     }
 
@@ -129,7 +130,7 @@ export class FetchService extends HoistService {
      * Send a GET request and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
-    getJson(opts: FetchOptions): Promise<any> {
+    getJson(opts: FetchOptions): FetchPromise<any> {
         return this.fetchInternalAsync({asJson: true, method: 'GET', ...opts});
     }
 
@@ -137,7 +138,7 @@ export class FetchService extends HoistService {
      * Send a POST request with a JSON body and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
-    postJson(opts: FetchOptions): Promise<any> {
+    postJson(opts: FetchOptions): FetchPromise<any> {
         return this.sendJsonInternalAsync({method: 'POST', ...opts});
     }
 
@@ -145,7 +146,7 @@ export class FetchService extends HoistService {
      * Send a PUT request with a JSON body and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
-    putJson(opts: FetchOptions): Promise<any> {
+    putJson(opts: FetchOptions): FetchPromise<any> {
         return this.sendJsonInternalAsync({method: 'PUT', ...opts});
     }
 
@@ -153,7 +154,7 @@ export class FetchService extends HoistService {
      * Send a PATCH request with a JSON body and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
-    patchJson(opts: FetchOptions): Promise<any> {
+    patchJson(opts: FetchOptions): FetchPromise<any> {
         return this.sendJsonInternalAsync({method: 'PATCH', ...opts});
     }
 
@@ -161,7 +162,7 @@ export class FetchService extends HoistService {
      * Send a DELETE request with optional JSON body and decode the optional response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
-    deleteJson(opts: FetchOptions): Promise<any> {
+    deleteJson(opts: FetchOptions): FetchPromise<any> {
         return this.sendJsonInternalAsync({method: 'DELETE', ...opts});
     }
 
@@ -209,24 +210,23 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
-    private fetchInternalAsync(opts: FetchOptions): Promise<any> {
+    private fetchInternalAsync(opts: FetchOptions): FetchPromise<any> {
         opts = this.withCorrelationId(opts);
-        const ret = this.withDefaultHeadersAsync(opts).then(opts => {
-            let fetchPromise = this.managedFetchAsync(opts);
-            for (const interceptor of this._interceptors) {
-                fetchPromise = fetchPromise.then(
-                    value => interceptor.onFulfilled(opts, value),
-                    cause => interceptor.onRejected(opts, cause)
-                );
-            }
-            return fetchPromise;
-        });
-
-        ret.correlationId = opts.correlationId as string;
-        return ret;
+        return new FetchPromise(resolve => {
+            this.withDefaultHeadersAsync(opts).then(opts => {
+                let ret = this.managedFetchAsync(opts);
+                for (const interceptor of this._interceptors) {
+                    ret = ret.then(
+                        value => interceptor.onFulfilled(opts, value),
+                        cause => interceptor.onRejected(opts, cause)
+                    );
+                }
+                resolve(ret);
+            });
+        }, opts.correlationId as string);
     }
 
-    private sendJsonInternalAsync(opts: FetchOptions) {
+    private sendJsonInternalAsync(opts: FetchOptions): FetchPromise<any> {
         return this.fetchInternalAsync({
             asJson: true,
             ...opts,
@@ -475,4 +475,26 @@ export interface FetchOptions {
      * True to decode the HTTP response as JSON. Default false.
      */
     asJson?: boolean;
+}
+
+export class FetchPromise<T> extends Promise<T> {
+    correlationId?: string;
+
+    constructor(
+        executor: (resolve: (value?: any) => void, reject: (reason?: any) => void) => void,
+        correlationId?: string
+    ) {
+        super(executor);
+        this.correlationId = correlationId;
+    }
+
+    trackWithCorrelationId(options: string | TrackOptions): Promise<T> {
+        const trackOptions = isString(options) ? {message: options} : options,
+            {correlationId} = this;
+        warnIf(
+            !correlationId,
+            '`trackWithCorrelationId` called on `FetchPromise` with no correlationId'
+        );
+        return this.track({correlationId: this.correlationId, ...trackOptions});
+    }
 }

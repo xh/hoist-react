@@ -17,6 +17,7 @@ import {
     ConfigService,
     EnvironmentService,
     FetchOptions,
+    FetchPromise,
     FetchService,
     GridAutosizeService,
     GridExportService,
@@ -263,7 +264,7 @@ export class XHApi {
      * Send a request via the underlying fetch API.
      * @see FetchService.fetch
      */
-    fetch(opts: FetchOptions): Promise<FetchResponse> {
+    fetch(opts: FetchOptions): FetchPromise<FetchResponse> {
         return this.fetchService.fetch(opts);
     }
 
@@ -271,7 +272,7 @@ export class XHApi {
      * Send an HTTP request and decode the response as JSON.
      * @see FetchService.fetchJson
      */
-    fetchJson(opts: FetchOptions): Promise<any> {
+    fetchJson(opts: FetchOptions): FetchPromise<any> {
         return this.fetchService.fetchJson(opts);
     }
 
