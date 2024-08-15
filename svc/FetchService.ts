@@ -495,6 +495,10 @@ export class FetchPromise<T> extends Promise<T> {
             !correlationId,
             '`trackWithCorrelationId` called on `FetchPromise` with no correlationId'
         );
+        warnIf(
+            trackOptions.correlationId,
+            `Correlation ID ${trackOptions.correlationId} already set in Track Options`
+        );
         return this.track({correlationId: this.correlationId, ...trackOptions});
     }
 }
