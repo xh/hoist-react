@@ -7,7 +7,7 @@
 import {HoistService, TrackOptions, XH} from '@xh/hoist/core';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {stripTags, withDefault} from '@xh/hoist/utils/js';
-import {isString} from 'lodash';
+import {isNil, isString} from 'lodash';
 
 /**
  * Primary service for tracking any activity that an application's admins want to track.
@@ -105,7 +105,7 @@ export class TrackService extends HoistService {
 
             const elapsedStr = query.elapsed != null ? `${query.elapsed}ms` : null,
                 consoleMsgs = [query.category, query.msg, query.correlationId, elapsedStr].filter(
-                    it => it != null
+                    it => !isNil(it)
                 );
 
             this.logInfo(...consoleMsgs);
