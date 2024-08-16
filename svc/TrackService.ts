@@ -104,7 +104,9 @@ export class TrackService extends HoistService {
             }
 
             const elapsedStr = query.elapsed != null ? `${query.elapsed}ms` : null,
-                consoleMsgs = [query.category, query.msg, elapsedStr].filter(it => it != null);
+                consoleMsgs = [query.category, query.msg, query.correlationId, elapsedStr].filter(
+                    it => it != null
+                );
 
             this.logInfo(...consoleMsgs);
 

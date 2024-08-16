@@ -11,11 +11,12 @@ import {
     HoistService,
     LoadSpec,
     PlainObject,
+    TrackOptions,
     XH
 } from '@xh/hoist/core';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {apiDeprecated} from '@xh/hoist/utils/js';
+import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, isObject, isString, omit, omitBy} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
@@ -211,6 +212,7 @@ export class FetchService extends HoistService {
     //-----------------------
     private fetchInternalAsync(opts: FetchOptions): Promise<any> {
         opts = this.withCorrelationId(opts);
+
         const ret = this.withDefaultHeadersAsync(opts).then(opts => {
             let fetchPromise = this.managedFetchAsync(opts);
             for (const interceptor of this._interceptors) {
@@ -222,8 +224,13 @@ export class FetchService extends HoistService {
             return fetchPromise;
         });
 
-        ret.correlationId = opts.correlationId as string;
-        return ret;
+        const {correlationId, trackOptions} = opts;
+        if (!trackOptions) return ret;
+        warnIf(
+            trackOptions.correlationId,
+            'Correlation ID should not be set in `FetchOptions.trackOptions`. Use `FetchOptions.correlationId` instead.'
+        );
+        return ret.track({...trackOptions, correlationId: correlationId as string});
     }
 
     private sendJsonInternalAsync(opts: FetchOptions) {
@@ -475,4 +482,10 @@ export interface FetchOptions {
      * True to decode the HTTP response as JSON. Default false.
      */
     asJson?: boolean;
+
+    /**
+     * If set, the request will be tracked via Hoist activity tracking. (Do not set `correlationId`
+     * here - use the top-level `correlationId` property instead.)
+     */
+    trackOptions?: TrackOptions;
 }
