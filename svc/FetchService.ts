@@ -19,6 +19,7 @@ import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, isObject, isString, omit, omitBy} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
+import ShortUniqueId from 'short-unique-id';
 
 /**
  * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
@@ -44,6 +45,7 @@ export class FetchService extends HoistService {
 
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
+    private idGenerator = new ShortUniqueId({length: 16});
     private autoAborters = {};
     private _defaultHeaders: DefaultHeaders[] = [];
     private _interceptors: FetchInterceptor[] = [];
@@ -54,10 +56,11 @@ export class FetchService extends HoistService {
     autoGenCorrelationIds = false;
 
     /**
-     * Method for generating Correlation ID's. Defaults to `XH.genUUID()` but can be modified
-     * by applications looking to customize the format of their Correlation ID's.
+     * Method for generating Correlation ID's. Defaults to a 16 character random string with
+     * an extremely low probability of collisions.  Applications may customize
+     * to improve readability or provide a stronger uniqueness guarantee.
      */
-    genCorrelationId: () => string = () => XH.genUUID();
+    genCorrelationId: () => string = () => this.idGenerator.rnd();
 
     /** Request header name to be used for Correlation ID tracking. */
     correlationIdHeaderKey: string = 'X-Correlation-ID';

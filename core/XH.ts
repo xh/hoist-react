@@ -63,7 +63,6 @@ import {
 import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
-import ShortUniqueId from 'short-unique-id';
 
 export const MIN_HOIST_CORE_VERSION = '18.0';
 
@@ -780,21 +779,12 @@ export class XHApi {
         return uniqueId('xh-id-');
     }
 
-    /**
-     * Generate a universally unique identifier (UUID). Useful for generating Correlation IDs.
-     */
-    genUUID(): string {
-        return this.shortUniqueId.rnd();
-    }
-
     //----------------
     // Implementation
     //----------------
     private get acm(): AppContainerModel {
         return this.appContainerModel;
     }
-
-    private shortUniqueId = new ShortUniqueId({length: 16});
 }
 
 /** The app-wide singleton instance. */

@@ -15,7 +15,6 @@
           new `FetchOptions.track` API (see below).
     * If set on a fetch request, Correlation IDs are passed through to downstream error reporting
       and are available for review in the Admin Console.
-    * New `XH.genUUID()` method to generate UUIDs for use as Correlation IDs or elsewhere.
 * New `FetchOptions.track` - specify `TrackOptions` or message `string` to track a request via
   Hoist activity tracking. The request's Correlation ID and LoadSpec will be included automatically.
 * New global interceptors on `FetchService`. See `FetchService.addInterceptor()`.
