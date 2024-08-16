@@ -11,7 +11,6 @@ import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
 import {isJSON, throwIf} from '@xh/hoist/utils/js';
 import {find, forEach, isEmpty, isObject, keys, pickBy, union} from 'lodash';
-import {v4 as uuid} from 'uuid';
 
 export type LoginMethod = 'REDIRECT' | 'POPUP';
 
@@ -255,7 +254,7 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     protected captureRedirectState(): string {
         const {pathname, search} = window.location,
             state = {
-                key: uuid(),
+                key: XH.genUUID(),
                 timestamp: Date.now(),
                 pathname,
                 search
