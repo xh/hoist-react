@@ -21,6 +21,7 @@
 * New property `FetchOptions.asJson` to instruct `FetchService` to decode an HTTP response as JSON.
   Note that `FetchService` methods suffixed with `Json` will set this property automatically.
 * `GridModel` will now accept `contextMenu: false` to omit context menus.
+* Swapped locations of `primaryOnly` and `active` sliders in `MonitorEditorDialog`.
 
 ### 🐞 Bug Fixes
 
