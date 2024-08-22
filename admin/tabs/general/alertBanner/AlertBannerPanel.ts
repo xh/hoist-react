@@ -57,7 +57,7 @@ export const alertBannerPanel = hoistCmp.factory({
 });
 
 const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
-    const {formModel} = model,
+    const {formModel, limitToOptions} = model,
         {isDirty, isValid} = formModel;
 
     return panel({
@@ -163,16 +163,14 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                             })
                         }),
                         formField({
-                            field: 'clientApps',
+                            field: 'limitTo',
                             item: select({
                                 enableMulti: true,
                                 enableClear: true,
                                 closeMenuOnSelect: false,
-                                noOptionsMessageFn: () => 'Enter one or more app codes.',
-                                options: XH.clientApps.map(app => ({
-                                    label: app,
-                                    value: app
-                                }))
+                                noOptionsMessageFn: () =>
+                                    'Enter one or more app codes, app versions, or roles.',
+                                options: limitToOptions
                             }),
                             info: fragment(
                                 span('Specify what apps should the banner be shown to.'),

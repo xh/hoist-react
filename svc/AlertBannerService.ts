@@ -50,8 +50,7 @@ export class AlertBannerService extends HoistService {
         if (!this.enabled) return;
 
         const data: AlertBannerSpec = await XH.fetchJson({url: 'xh/alertBanner'}),
-            {active, expires, publishDate, message, intent, iconName, enableClose, clientApps} =
-                data,
+            {active, expires, publishDate, message, intent, iconName, enableClose, limitTo} = data,
             {lastDismissed, onClose} = this;
 
         if (
@@ -59,7 +58,10 @@ export class AlertBannerService extends HoistService {
             !message ||
             (expires && expires < Date.now()) ||
             (lastDismissed && lastDismissed > publishDate) ||
-            !this.isTargetedApp(clientApps)
+            isEmpty(limitTo) ||
+            !this.isTargetedApp(limitTo) ||
+            !this.isTargetedAppVersion(limitTo) ||
+            !this.isTargetedRole(limitTo)
         ) {
             XH.hideBanner('xhAlertBanner');
         } else {
@@ -109,8 +111,42 @@ export class AlertBannerService extends HoistService {
         XH.localStorageService.set('xhAlertBanner.lastDismissed', Date.now());
     };
 
-    private isTargetedApp(clientApps: string[]): boolean {
-        return isEmpty(clientApps) || clientApps.includes(XH.clientAppCode);
+    /**
+     * Returns `true` if there are no limitations on application or if the
+     * current application is included in the defined limits.
+     * Returns `false` otherwise.
+     */
+    private isTargetedApp(limitTo: string[]): boolean {
+        return (
+            !limitTo.some(entry => entry.includes('app-')) ||
+            limitTo.includes(`app-${XH.clientAppCode}`)
+        );
+    }
+
+    /**
+     * Returns `true` if there are no limitations on app version or if the
+     * current app version is within the defined limits.
+     * Returns `false` otherwise.
+     */
+    private isTargetedAppVersion(limitTo: string[]): boolean {
+        return (
+            !limitTo.some(entry => entry.includes('appVer-')) ||
+            limitTo.includes(`appVer-${XH.appVersion}`)
+        );
+    }
+
+    /**
+     * Returns `true` if there are no limitations on user role or if the
+     * current user has a role specified within the defined limits.
+     * Returns `false` otherwise.
+     */
+    private isTargetedRole(limitTo: string[]): boolean {
+        if (!limitTo.some(entry => entry.includes('role-'))) return true;
+        for (const entry of limitTo) {
+            if (!entry.includes('role-')) continue;
+            if (XH.getUser().hasRole(entry.substring(5))) return true;
+        }
+        return false;
     }
 }
 
@@ -125,7 +161,7 @@ export interface AlertBannerSpec {
     intent: Intent;
     iconName: string;
     enableClose: boolean;
-    clientApps: string[];
+    limitTo: string[];
     created: number;
     updated: number;
     updatedBy: string;

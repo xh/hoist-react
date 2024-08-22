@@ -22,6 +22,8 @@
   Note that `FetchService` methods suffixed with `Json` will set this property automatically.
 * `GridModel` will now accept `contextMenu: false` to omit context menus.
 * Swapped locations of `primaryOnly` and `active` sliders in `MonitorEditorDialog`.
+* Added new options for controlling alert banner visibility. Replaced `clientApps` filter in the admin
+  alert spec to the more generic `limitTo` filter, which also allows filtering by user role and app version.
 
 ### 🐞 Bug Fixes
 
