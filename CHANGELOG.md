@@ -22,6 +22,8 @@
   Note that `FetchService` methods suffixed with `Json` will set this property automatically.
 * `GridModel` will now accept `contextMenu: false` to omit context menus.
 * Swapped locations of `primaryOnly` and `active` sliders in `MonitorEditorDialog`.
+* Expose bindable `intializingLoadMaskMessage` from `AppContainerModel` to allow hoist applications to configure
+  custom loading mask messages on app initialization.
 
 ### 🐞 Bug Fixes
 

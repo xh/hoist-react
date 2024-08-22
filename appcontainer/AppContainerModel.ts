@@ -16,7 +16,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, when as mobxWhen} from '@xh/hoist/mobx';
+import {action, bindable, when as mobxWhen} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import numbro from 'numbro';
 import {createRoot} from 'react-dom/client';
@@ -72,10 +72,16 @@ export class AppContainerModel extends HoistModel {
     appSpec: AppSpec = null;
     appModel: HoistAppModel = null;
 
+    //---------------------------------
+    // Configurable Application State
+    //--------------------------------
+    @bindable initializingLoadMaskMessage;
+
     //------------
     // Sub-models
     //------------
-    @managed appLoadModel = TaskObserver.trackAll();
+    @managed
+    appLoadModel = TaskObserver.trackAll();
     @managed appStateModel = new AppStateModel();
     @managed pageStateModel = new PageStateModel();
     @managed routerModel = new RouterModel();
@@ -314,6 +320,10 @@ export class AppContainerModel extends HoistModel {
 
     hasAboutDialog() {
         return !isEmpty(this.aboutDialogModel.getItems());
+    }
+
+    setInitializingLoadMaskMessage(message: string) {
+        this.initializingLoadMaskMessage = message;
     }
 
     //----------------------------
