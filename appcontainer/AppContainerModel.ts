@@ -73,17 +73,10 @@ export class AppContainerModel extends HoistModel {
     appSpec: AppSpec = null;
     appModel: HoistAppModel = null;
 
-    /**
-     * Can be set by client application to customize message shown
-     * on spinner while the application is in the INITIALIZING state.
-     */
-    @bindable initializingLoadMaskMessage: ReactNode;
-
     //------------
     // Sub-models
     //------------
-    @managed
-    appLoadModel = TaskObserver.trackAll();
+    @managed appLoadModel = TaskObserver.trackAll();
     @managed appStateModel = new AppStateModel();
     @managed pageStateModel = new PageStateModel();
     @managed routerModel = new RouterModel();
@@ -104,6 +97,12 @@ export class AppContainerModel extends HoistModel {
     @managed viewportSizeModel = new ViewportSizeModel();
     @managed themeModel = new ThemeModel();
     @managed userAgentModel = new UserAgentModel();
+
+    /**
+     * Message shown on spinner while the application is in the INITIALIZING state.
+     * Update within `AppModel.initAsync()` to relay app-specific initialization status.
+     */
+    @bindable initializingLoadMaskMessage: ReactNode;
 
     /**
      * Main entry point. Initialize and render application code.
