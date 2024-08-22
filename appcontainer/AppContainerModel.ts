@@ -19,6 +19,7 @@ import {Icon} from '@xh/hoist/icon';
 import {action, bindable, when as mobxWhen} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import numbro from 'numbro';
+import {ReactNode} from 'react';
 import {createRoot} from 'react-dom/client';
 import {
     AlertBannerService,
@@ -72,10 +73,11 @@ export class AppContainerModel extends HoistModel {
     appSpec: AppSpec = null;
     appModel: HoistAppModel = null;
 
-    //---------------------------------
-    // Configurable Application State
-    //--------------------------------
-    @bindable initializingLoadMaskMessage;
+    /**
+     * Can be set by client application to customize message shown
+     * on spinner while the application is in the INITIALIZING state.
+     */
+    @bindable initializingLoadMaskMessage: ReactNode;
 
     //------------
     // Sub-models
@@ -320,10 +322,6 @@ export class AppContainerModel extends HoistModel {
 
     hasAboutDialog() {
         return !isEmpty(this.aboutDialogModel.getItems());
-    }
-
-    setInitializingLoadMaskMessage(message: string) {
-        this.initializingLoadMaskMessage = message;
     }
 
     //----------------------------

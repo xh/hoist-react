@@ -72,7 +72,7 @@ export const AppContainer = hoistCmp({
                     },
                     errorRenderer: () => null
                 },
-                item: viewForState()
+                item: viewForState({model})
             }),
             // Modal component helpers rendered here at top-level to support display of messages
             // and exceptions at any point during the app lifecycle.
@@ -86,11 +86,13 @@ export const AppContainer = hoistCmp({
 //-------------------
 // Implementation
 //-------------------
-function viewForState() {
+function viewForState({model}) {
     switch (XH.appState) {
         case 'PRE_AUTH':
         case 'INITIALIZING':
-            return viewport(mask({spinner: true, isDisplayed: true}));
+            return viewport(
+                mask({spinner: true, isDisplayed: true, message: model.initializingLoadMaskMessage})
+            );
         case 'LOGIN_REQUIRED':
             return loginPanel();
         case 'ACCESS_DENIED':
