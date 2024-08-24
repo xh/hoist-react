@@ -9,6 +9,7 @@ import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
@@ -17,7 +18,7 @@ export const recategorizeDialog = hoistCmp.factory({
     model: uses(RecategorizeDialogModel),
 
     render({model}) {
-        const {isOpen} = model;
+        const {isOpen, savingTask} = model;
         if (!isOpen) return null;
 
         return dialog({
@@ -26,8 +27,9 @@ export const recategorizeDialog = hoistCmp.factory({
             style: {width: 300},
             isOpen: true,
             isCloseButtonShown: false,
-            items: [
-                dialogBody(
+            item: panel({
+                mask: savingTask,
+                item: dialogBody(
                     select({
                         bind: 'categoryName',
                         enableCreate: true,
@@ -35,13 +37,13 @@ export const recategorizeDialog = hoistCmp.factory({
                         width: 260
                     })
                 ),
-                tbar()
-            ]
+                bbar: bbar()
+            })
         });
     }
 });
 
-const tbar = hoistCmp.factory<RecategorizeDialogModel>(({model}) => {
+const bbar = hoistCmp.factory<RecategorizeDialogModel>(({model}) => {
     return toolbar(
         filler(),
         button({
@@ -53,7 +55,7 @@ const tbar = hoistCmp.factory<RecategorizeDialogModel>(({model}) => {
             icon: Icon.check(),
             intent: 'success',
             disabled: model.categoryName == null,
-            onClick: () => model.saveAsync()
+            onClick: () => model.saveAsync().linkTo(model.savingTask)
         })
     );
 });
