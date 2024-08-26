@@ -55,17 +55,21 @@ export class RecategorizeDialogModel extends HoistModel {
             it => !it.isGroupRow
         );
         const roles: string[] = map(roleSpec, it => it.name);
-        await XH.fetchService
-            .postJson({
-                url: 'roleAdmin/bulkCategoryUpdate',
-                body: {
-                    roles,
-                    category: this.categoryName === '_CLEAR_ROLES_' ? null : this.categoryName
-                }
-            })
-            .catchDefault();
-        await this.parent.refreshAsync();
-        this.close();
+        try {
+            await XH.fetchService
+                .postJson({
+                    url: 'roleAdmin/bulkCategoryUpdate',
+                    body: {
+                        roles,
+                        category: this.categoryName === '_CLEAR_ROLES_' ? null : this.categoryName
+                    }
+                })
+                .linkTo(this.savingTask);
+            await this.parent.refreshAsync();
+            this.close();
+        } catch (e) {
+            XH.handleException(e);
+        }
     }
 
     //-----------------

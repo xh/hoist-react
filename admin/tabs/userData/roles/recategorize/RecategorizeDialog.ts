@@ -31,6 +31,7 @@ export const recategorizeDialog = hoistCmp.factory({
                 mask: savingTask,
                 item: dialogBody(
                     select({
+                        autoFocus: true,
                         bind: 'categoryName',
                         enableCreate: true,
                         options: model.options,
@@ -55,7 +56,7 @@ const bbar = hoistCmp.factory<RecategorizeDialogModel>(({model}) => {
             icon: Icon.check(),
             intent: 'success',
             disabled: model.categoryName == null,
-            onClick: () => model.saveAsync().linkTo(model.savingTask)
+            onClick: () => model.saveAsync()
         })
     );
 });
