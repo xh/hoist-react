@@ -16,6 +16,7 @@ import {isEqual, isMatch, sortBy, without} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
     savedValue;
+    roles;
     @observable.ref savedPresets: PlainObject[] = [];
 
     @managed
@@ -43,8 +44,8 @@ export class AlertBannerModel extends HoistModel {
                 initialValue: true
             },
             {
-                name: 'clientApps',
-                displayName: 'Client Apps',
+                name: 'limitTo',
+                displayName: 'Limit To',
                 initialValue: []
             },
             {name: 'created', readonly: true},
@@ -83,7 +84,7 @@ export class AlertBannerModel extends HoistModel {
                 formModel.values.intent,
                 formModel.values.iconName,
                 formModel.values.enableClose,
-                formModel.values.clientApps
+                formModel.values.limitTo
             ],
             run: () => this.syncPreview(),
             fireImmediately: true
@@ -92,6 +93,7 @@ export class AlertBannerModel extends HoistModel {
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         await this.loadPresetsAsync();
+        this.roles = await this.getRolesAsync();
         const {formModel} = this;
         if (formModel.isDirty && loadSpec.isAutoRefresh) return;
 
@@ -120,13 +122,13 @@ export class AlertBannerModel extends HoistModel {
 
     @action
     addPreset() {
-        const {message, intent, iconName, enableClose, clientApps} = this.formModel.values,
+        const {message, intent, iconName, enableClose, limitTo} = this.formModel.values,
             dateCreated = Date.now(),
             createdBy = XH.getUsername();
         this.savedPresets = sortBy(
             [
                 ...this.savedPresets,
-                {message, intent, iconName, enableClose, clientApps, dateCreated, createdBy}
+                {message, intent, iconName, enableClose, limitTo, dateCreated, createdBy}
             ],
             ['intent', 'message']
         );
@@ -152,15 +154,16 @@ export class AlertBannerModel extends HoistModel {
 
     @computed
     get isCurrentValuesFoundInPresets() {
-        const {message, intent, iconName, enableClose, clientApps} = this.formModel.values;
+        const {message, intent, iconName, enableClose, limitTo} = this.formModel.values;
         return this.savedPresets.some(
             preset =>
                 /*
-                    We also check equality of sets rather than just arrays for clientApps where targeted apps are the same,
-                    but order is not guaranteed (['app', 'admin'] vs ['admin', 'app']).
+                    We also check equality of sets rather than just arrays for limitTo where targeted apps,
+                    app versions, and roles are the same, but order is not guaranteed
+                    (['app', 'admin'] vs ['admin', 'app']).
                  */
                 isMatch(preset, {message, intent, iconName, enableClose}) &&
-                isEqual(new Set(preset.clientApps), new Set(clientApps))
+                isEqual(new Set(preset.limitTo), new Set(limitTo))
         );
     }
 
@@ -189,7 +192,7 @@ export class AlertBannerModel extends HoistModel {
     }
 
     async saveBannerSpecAsync(spec: AlertBannerSpec) {
-        const {active, message, intent, iconName, enableClose, clientApps} = spec;
+        const {active, message, intent, iconName, enableClose, limitTo} = spec;
         try {
             await XH.fetchService
                 .postJson({
@@ -199,12 +202,27 @@ export class AlertBannerModel extends HoistModel {
                 .track({
                     category: 'Audit',
                     message: 'Updated Alert Banner',
-                    data: {active, message, intent, iconName, enableClose, clientApps},
+                    data: {active, message, intent, iconName, enableClose, limitTo},
                     logData: ['active']
                 });
         } catch (e) {
             XH.handleException(e);
         }
+    }
+
+    get limitToOptions() {
+        return XH.clientApps
+            .map(app => ({
+                label: `App: ${app}`,
+                value: `app-${app}`
+            }))
+            .concat([{label: `App Version: ${XH.appVersion}`, value: `appVer-${XH.appVersion}`}])
+            .concat(
+                this.roles?.map(role => ({
+                    label: `Role: ${role}`,
+                    value: `role-${role}`
+                }))
+            );
     }
 
     //----------------
@@ -224,7 +242,7 @@ export class AlertBannerModel extends HoistModel {
 
     private async saveInternalAsync() {
         const {formModel, savedValue} = this,
-            {active, message, intent, iconName, enableClose, clientApps, expires, created} =
+            {active, message, intent, iconName, enableClose, limitTo, expires, created} =
                 formModel.getData();
 
         await formModel.validateAsync();
@@ -290,7 +308,7 @@ export class AlertBannerModel extends HoistModel {
                 intent,
                 iconName,
                 enableClose,
-                clientApps,
+                limitTo,
                 expires: expires?.getTime(),
                 publishDate: preservedPublishDate ?? now,
                 created: created ?? now,
@@ -301,5 +319,16 @@ export class AlertBannerModel extends HoistModel {
         await this.saveBannerSpecAsync(value);
         await XH.alertBannerService.checkForBannerAsync();
         await this.refreshAsync();
+    }
+
+    private async getRolesAsync() {
+        try {
+            const roles = await XH.fetchJson({
+                url: 'roleAdmin/list'
+            });
+            return roles.data.map(it => it.name);
+        } catch (e) {
+            XH.handleException(e);
+        }
     }
 }

@@ -23,6 +23,8 @@
 * `GridModel` will now accept `contextMenu: false` to omit context menus.
 * New bindable `AppContainerModel.intializingLoadMaskMessage` property to allow apps to customize
   the loading mask message shown during app initialization.
+* Added new options for controlling alert banner visibility. Replaced `clientApps` filter in the admin
+  alert spec to the more generic `limitTo` filter, which also allows filtering by user role and app version.
 
 ### 🐞 Bug Fixes
 
