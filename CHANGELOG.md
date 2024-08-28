@@ -28,6 +28,7 @@
 
 * Fixed bug where a role with a dot in its name could not be deleted.
 * Fixed `SelectEditor` to ensure new value is flushed before editing stops.
+* `WebSocketService` now attempts to establish a new connection when app's server instance changes.
 
 ### 💥 Breaking Changes
 

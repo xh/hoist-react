@@ -75,7 +75,7 @@ export class EnvironmentService extends HoistService {
 
         this.addReaction({
             when: () => XH.appIsRunning,
-            run: this.startVersionChecking
+            run: this.startStatusChecking
         });
     }
 
@@ -111,27 +111,24 @@ export class EnvironmentService extends HoistService {
         makeObservable(this);
     }
 
-    private startVersionChecking() {
-        const interval = XH.getConf('xhAppVersionCheck', {})?.interval ?? -1;
-        Timer.create({
-            runFn: this.checkServerVersionAsync,
-            interval: interval * SECONDS
-        });
+    private startStatusChecking() {
+        const {interval} = XH.getConf('xhAppStatusCheck', {interval: 10});
+        Timer.create({runFn: this.checkServerStatusAsync, interval, intervalUnits: SECONDS});
     }
 
-    private checkServerVersionAsync = async () => {
-        const data = await XH.fetchJson({url: 'xh/version'}),
-            {instanceName, appVersion, appBuild, mode} = data;
+    private checkServerStatusAsync = async () => {
+        const data = await XH.fetchJson({url: 'xh/status'}),
+            {instanceName, appVersion, appBuild, updateMode} = data;
 
         // Compare latest version/build info from server against the same info (also supplied by
         // server) when the app initialized. A change indicates an update to the app and will
         // force the user to refresh or prompt the user to refresh via the banner according to the
-        // `mode` set in `xhAppVersionCheck`. Builds are checked here to trigger refresh prompts
-        // across SNAPSHOT updates for projects with active dev/QA users.
+        // `updateMode` set in `xhAppStatusCheck`. Builds are checked here to trigger refresh
+        // prompts across SNAPSHOT updates for projects with active dev/QA users.
         if (appVersion !== this.get('appVersion') || appBuild !== this.get('appBuild')) {
-            if (mode === 'promptReload') {
+            if (updateMode === 'promptReload') {
                 XH.appContainerModel.showUpdateBanner(appVersion, appBuild);
-            } else if (mode === 'forceReload') {
+            } else if (updateMode === 'forceReload') {
                 XH.suspendApp({
                     reason: 'APP_UPDATE',
                     message: `A new version of ${XH.clientAppName} is now available (${appVersion}) and requires an immediate update.`
