@@ -53,9 +53,9 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     closeMenuOnSelect?: boolean;
 
     /**
-     *  Value to use when the input is empty. Defaults to null. Typical usage is to set to [] for
-     *  multi-selects.
-     *  */
+     * Value to use when the input is empty (default `null`).
+     * Recommended usage is `[]` when `enableMulti` is true to ensure value is always an array.
+     */
     emptyValue?: any;
 
     /** True to show a "clear" button at the right of the control. */
@@ -74,8 +74,8 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     enableMulti?: boolean;
 
     /**
-     * True to enable tooltips on selected values. Enable when the space
-     * available to the select component might not support showing the value's full text.
+     * True to enable tooltips on selected values. Enable when the space available to the
+     * component might not support showing the value's full text.
      */
     enableTooltips?: boolean;
 
