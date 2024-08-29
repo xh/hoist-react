@@ -23,6 +23,8 @@
 * `GridModel` will now accept `contextMenu: false` to omit context menus.
 * New bindable `AppContainerModel.intializingLoadMaskMessage` property to allow apps to customize
   the loading mask message shown during app initialization.
+* Enhanced `select` component with new `emptyValue` prop, allowing for a custom value to be returned
+  when the control is empty (vs default of `null`). Expected usage is `[]` when `enableMulti:true`.
 
 ### 🐞 Bug Fixes
 
