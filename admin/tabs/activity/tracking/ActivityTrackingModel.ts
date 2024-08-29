@@ -87,6 +87,7 @@ export class ActivityTrackingModel extends HoistModel {
             fields: [
                 Col.browser.field,
                 Col.category.field,
+                Col.correlationId.field,
                 Col.data.field,
                 {...(Col.dateCreated.field as FieldSpec), displayName: 'Timestamp'},
                 Col.day.field,
@@ -111,6 +112,7 @@ export class ActivityTrackingModel extends HoistModel {
         this.filterChooserModel = new FilterChooserModel({
             fieldSpecs: [
                 {field: 'category', enableValues},
+                {field: 'correlationId'},
                 {field: 'username', displayName: 'User', enableValues},
                 {field: 'device', enableValues},
                 {field: 'browser', enableValues},

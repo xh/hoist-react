@@ -38,9 +38,9 @@ import {find, pull} from 'lodash';
 export class WebSocketService extends HoistService {
     static instance: WebSocketService;
 
-    HEARTBEAT_TOPIC = 'xhHeartbeat';
-    REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
-    FORCE_APP_SUSPEND_TOPIC = 'xhForceAppSuspend';
+    readonly HEARTBEAT_TOPIC = 'xhHeartbeat';
+    readonly REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
+    readonly FORCE_APP_SUSPEND_TOPIC = 'xhForceAppSuspend';
 
     /** Unique channel assigned by server upon successful connection. */
     @observable

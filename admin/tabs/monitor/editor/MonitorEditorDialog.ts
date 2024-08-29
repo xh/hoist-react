@@ -88,14 +88,14 @@ const modelSpec: RestGridConfig = {
     editors: [
         {field: 'code'},
         {field: 'name'},
-        {field: 'primaryOnly'},
+        {field: 'active'},
         {field: 'metricType'},
         {field: 'warnThreshold'},
         {field: 'failThreshold'},
         {field: 'metricUnit'},
         {field: 'params'},
         {field: 'notes', formField: {item: textArea()}},
-        {field: 'active'},
+        {field: 'primaryOnly'},
         {field: 'sortOrder'},
         {field: 'lastUpdated'},
         {field: 'lastUpdatedBy'}

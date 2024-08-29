@@ -83,6 +83,7 @@
     "router5": "~7.0.2",
     "router5-plugin-browser": "~7.0.2",
     "semver": "~7.6.0",
+    "short-unique-id": "~5.2.0",
     "store2": "~2.13.1",
     "ua-parser-js": "~1.0.2"
   },

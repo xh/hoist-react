@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {FetchOptions} from '@xh/hoist/svc';
-import {FetchResponse, PlainObject, XH} from '../';
+import {PlainObject, XH} from '../';
 import {isPlainObject} from 'lodash';
 
 import {FetchException, HoistException, TimeoutException, TimeoutExceptionConfig} from './Types';
@@ -58,10 +58,15 @@ export class Exception {
     /**
      * Create an Error to throw when a fetch call returns a !ok response.
      * @param fetchOptions - original options passed to FetchService.
-     * @param fetchResponse - return value of native fetch, as enhanced by FetchService.
+     * @param response - return value of native fetch.
+     * @param responseText - optional additional details from the server.
      */
-    static fetchError(fetchOptions: FetchOptions, fetchResponse: FetchResponse): FetchException {
-        const {headers, status, statusText, responseText} = fetchResponse,
+    static fetchError(
+        fetchOptions: FetchOptions,
+        response: Response,
+        responseText: string = null
+    ): FetchException {
+        const {headers, status, statusText} = response,
             defaults = {
                 name: 'HTTP Error ' + (status || ''),
                 message: statusText,
@@ -184,23 +189,31 @@ export class Exception {
     // Implementation
     //-----------------------
     private static createFetchException(attributes: PlainObject) {
+        let correlationId: string = null;
+        const correlationIdHeaderKey = XH?.fetchService?.correlationIdHeaderKey;
+        if (correlationIdHeaderKey) {
+            correlationId = attributes.fetchOptions?.headers?.[correlationIdHeaderKey];
+        }
+
         return this.createInternal({
             isFetchAborted: false,
             httpStatus: 0, // native fetch doesn't put status on its Error
             serverDetails: null,
             stack: null, // server-sourced exceptions do not include, neither should client, not relevant
+            correlationId,
             ...attributes
         }) as FetchException;
     }
 
-    private static createInternal(attributes: PlainObject, baseError: Error = new Error()) {
+    private static createInternal(attributes: PlainObject, baseError?: Error) {
+        const {message, ...rest} = attributes;
         return Object.assign(
-            baseError,
+            baseError ?? new Error(message),
             {
                 isRoutine: false,
                 isHoistException: true
             },
-            attributes
+            rest
         ) as HoistException;
     }
 }

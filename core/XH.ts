@@ -46,7 +46,6 @@ import {
     Exception,
     ExceptionHandler,
     ExceptionHandlerOptions,
-    FetchResponse,
     HoistAppModel,
     HoistException,
     HoistService,
@@ -262,7 +261,7 @@ export class XHApi {
      * Send a request via the underlying fetch API.
      * @see FetchService.fetch
      */
-    fetch(opts: FetchOptions): Promise<FetchResponse> {
+    fetch(opts: FetchOptions): Promise<any> {
         return this.fetchService.fetch(opts);
     }
 

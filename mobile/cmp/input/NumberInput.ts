@@ -5,8 +5,8 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps, StyleProps, LayoutProps, HSide} from '@xh/hoist/core';
-import {fmtNumber} from '@xh/hoist/format';
+import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {fmtNumber, NumericPrecision, Precision, ZeroPad} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {wait} from '@xh/hoist/promise';
@@ -46,7 +46,7 @@ export interface NumberInputProps extends HoistProps, HoistInputProps, StyleProp
     placeholder?: string;
 
     /** Max decimal precision of the value, defaults to 4. */
-    precision?: number;
+    precision?: NumericPrecision;
 
     /**
      * Scale factor to apply when converting between the internal and external value. Useful for
@@ -68,8 +68,8 @@ export interface NumberInputProps extends HoistProps, HoistInputProps, StyleProp
      */
     valueLabel?: string;
 
-    /** True to pad with trailing zeros out to precision, default false. */
-    zeroPad?: boolean;
+    /** @see NumberFormatOptions.zeroPad */
+    zeroPad?: ZeroPad;
 }
 
 /**
@@ -97,15 +97,15 @@ class NumberInputModel extends HoistInputModel {
         throwIf(Math.log10(this.scaleFactor) % 1 !== 0, 'scaleFactor must be a factor of 10');
     }
 
-    get precision() {
-        return withDefault(this.componentProps.precision, 4);
-    }
-
     override get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
     }
 
-    get scaleFactor() {
+    get precision(): number {
+        return withDefault(this.componentProps.precision, 4);
+    }
+
+    get scaleFactor(): number {
         return withDefault(this.componentProps.scaleFactor, 1);
     }
 
@@ -195,7 +195,7 @@ class NumberInputModel extends HoistInputModel {
         const {valueLabel, displayWithCommas} = componentProps,
             zeroPad = withDefault(componentProps.zeroPad, false),
             formattedVal = fmtNumber(value, {
-                precision,
+                precision: precision as Precision,
                 zeroPad,
                 label: valueLabel,
                 labelCls: null,
