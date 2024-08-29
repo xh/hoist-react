@@ -39,14 +39,18 @@ const unauthorizedMessage = hoistCmp.factory<AppContainerModel>({
     render({model}) {
         const {identityService} = XH,
             {appSpec, appStateModel} = model,
+            {isImpersonating} = identityService,
             user = XH.getUser(),
+            authMsg = isImpersonating
+                ? `You are impersonating ${user.username}`
+                : `You are logged in as ${user.username}`,
             roleMsg = isEmpty(user.roles)
                 ? 'no roles assigned'
                 : `the roles [${user.roles.join(', ')}]`;
 
         return div(
             p(appStateModel.accessDeniedMessage ?? ''),
-            p(`You are logged in as ${user.username} and have ${roleMsg}.`),
+            p(`${authMsg} and have ${roleMsg}.`),
             p({
                 item: appSpec.lockoutMessage,
                 omit: !appSpec.lockoutMessage
@@ -60,7 +64,7 @@ const unauthorizedMessage = hoistCmp.factory<AppContainerModel>({
                 }),
                 hspacer(5),
                 button({
-                    omit: !identityService.isImpersonating,
+                    omit: !isImpersonating,
                     icon: Icon.impersonate(),
                     text: 'End Impersonation',
                     minimal: false,
