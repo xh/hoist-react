@@ -13,21 +13,11 @@ import {
     PlainObject,
     XH
 } from '@xh/hoist/core';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
 import {genDisplayName} from '@xh/hoist/data';
-import {throwIf} from '@xh/hoist/utils/js';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {
-    cloneDeep,
-    difference,
-    isFunction,
-    isArray,
-    isEmpty,
-    isEqual,
-    isString,
-    keys,
-    sortBy
-} from 'lodash';
+import {cloneDeep, difference, isArray, isEmpty, isEqual, isString, keys, sortBy} from 'lodash';
 
 export interface GroupingChooserConfig {
     /**
@@ -81,11 +71,8 @@ export interface GroupingChooserPersistOptions extends PersistOptions {
 
 export class GroupingChooserModel extends HoistModel {
     @observable.ref value: string[];
-
     @observable.ref favorites: string[][] = [];
 
-    dimensions: Record<string, DimensionSpec>;
-    dimensionNames: string[];
     allowEmpty: boolean;
     maxDepth: number;
     commitOnChange: boolean;
@@ -98,12 +85,20 @@ export class GroupingChooserModel extends HoistModel {
     @observable.ref pendingValue: string[] = [];
     @observable editorIsOpen: boolean = false;
     @observable favoritesIsOpen: boolean = false;
-
     popoverRef = createObservableRef<HTMLElement>();
+
+    // Internal state
+    @observable.ref private dimensions: Record<string, DimensionSpec>;
+    @observable.ref private dimensionNames: string[];
 
     @computed
     get availableDims(): string[] {
         return difference(this.dimensionNames, this.pendingValue);
+    }
+
+    @computed
+    get dimensionSpecs(): DimensionSpec[] {
+        return Object.values(this.dimensions);
     }
 
     @computed
@@ -132,17 +127,15 @@ export class GroupingChooserModel extends HoistModel {
         super();
         makeObservable(this);
 
-        this.dimensions = this.normalizeDimensions(dimensions);
-        this.dimensionNames = keys(this.dimensions);
         this.allowEmpty = allowEmpty;
         this.maxDepth = maxDepth;
         this.commitOnChange = commitOnChange;
 
-        throwIf(isEmpty(this.dimensions), 'Must provide valid dimensions available for selection.');
+        this.setDimensions(dimensions);
 
         // Read and validate value and favorites
-        let value = isFunction(initialValue) ? initialValue() : initialValue,
-            favorites = isFunction(initialFavorites) ? initialFavorites() : initialFavorites;
+        let value = executeIfFunction(initialValue),
+            favorites = executeIfFunction(initialFavorites);
 
         throwIf(isEmpty(value) && !this.allowEmpty, 'Initial value cannot be empty.');
         throwIf(!this.validateValue(value), 'Initial value is invalid.');
@@ -185,6 +178,18 @@ export class GroupingChooserModel extends HoistModel {
 
         this.setValue(value);
         this.setFavorites(favorites);
+    }
+
+    @action
+    setDimensions(dimensions: Array<DimensionSpec | string>) {
+        throwIf(
+            isEmpty(dimensions) && !this.allowEmpty,
+            'Must provide valid dimensions available for selection.'
+        );
+
+        this.dimensions = this.normalizeDimensions(dimensions);
+        this.dimensionNames = keys(this.dimensions);
+        this.removeUnknownDimsFromValue();
     }
 
     @action
@@ -259,37 +264,18 @@ export class GroupingChooserModel extends HoistModel {
         this.closePopover();
     }
 
-    validateValue(value) {
+    validateValue(value: string[]) {
         if (!isArray(value)) return false;
         if (isEmpty(value) && !this.allowEmpty) return false;
         return value.every(dim => this.dimensionNames.includes(dim));
     }
 
-    normalizeDimensions(dims: Array<DimensionSpec | string>): Record<string, DimensionSpec> {
-        dims = dims ?? [];
-        const ret = {};
-        dims.forEach(it => {
-            const dim = this.createDimension(it);
-            ret[dim.name] = dim;
-        });
-        return ret;
-    }
-
-    createDimension(src: DimensionSpec | string) {
-        src = isString(src) ? {name: src} : src;
-        throwIf(
-            !src.hasOwnProperty('name'),
-            "Dimensions provided as Objects must define a 'name' property."
-        );
-        return {displayName: genDisplayName(src.name), ...src};
-    }
-
-    getValueLabel(value: string[]) {
+    getValueLabel(value: string[]): string {
         return value.map(dimName => this.getDimDisplayName(dimName)).join(' › ');
     }
 
     getDimDisplayName(dimName: string) {
-        return this.dimensions[dimName].displayName;
+        return this.dimensions[dimName]?.displayName ?? dimName;
     }
 
     //--------------------
@@ -342,5 +328,42 @@ export class GroupingChooserModel extends HoistModel {
         if (this.persistValue) ret.value = this.value;
         if (this.persistFavorites) ret.favorites = this.favorites;
         return ret;
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    private normalizeDimensions(
+        dims: Array<DimensionSpec | string>
+    ): Record<string, DimensionSpec> {
+        dims = dims ?? [];
+        const ret = {};
+        dims.forEach(it => {
+            const dim = this.createDimension(it);
+            ret[dim.name] = dim;
+        });
+        return ret;
+    }
+
+    private createDimension(src: DimensionSpec | string) {
+        src = isString(src) ? {name: src} : src;
+        throwIf(
+            !src.hasOwnProperty('name'),
+            "Dimensions provided as Objects must define a 'name' property."
+        );
+        return {displayName: genDisplayName(src.name), ...src};
+    }
+
+    private removeUnknownDimsFromValue() {
+        const {value, dimensionNames, allowEmpty} = this,
+            cleanValue = value?.filter(dim => dimensionNames.includes(dim));
+
+        if (isEqual(value, cleanValue)) return;
+
+        if (isEmpty(cleanValue) && !allowEmpty) {
+            cleanValue.push(dimensionNames[0]);
+        }
+
+        this.setValue(cleanValue);
     }
 }
