@@ -92,12 +92,6 @@ declare global {
          * @param options - TrackOptions, or simply a message string.
          */
         track(options: TrackOptions | string): Promise<T>;
-
-        /**
-         * Set by FetchService to relay correlation IDs to downstream error handling and tracking.
-         * @internal
-         */
-        correlationId?: string;
     }
 }
 
@@ -206,7 +200,7 @@ const enhancePromise = promisePrototype => {
             const startTime = Date.now();
             return this.finally(() => {
                 options.elapsed = Date.now() - startTime;
-                XH.track({correlationId: this.correlationId, ...options});
+                XH.track(options);
             });
         },
 

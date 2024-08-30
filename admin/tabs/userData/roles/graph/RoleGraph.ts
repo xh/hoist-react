@@ -6,7 +6,7 @@
  */
 import {chart} from '@xh/hoist/cmp/chart';
 import {errorBoundary} from '@xh/hoist/cmp/error';
-import {div, hspacer, placeholder} from '@xh/hoist/cmp/layout';
+import {div, filler, placeholder, span} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput, slider, switchInput} from '@xh/hoist/desktop/cmp/input';
@@ -29,7 +29,7 @@ export const roleGraph = hoistCmp.factory({
         return panel({
             compactHeader: true,
             icon: Icon.treeGraph(),
-            title: role ? `Relationships - ${role.name} ` : 'Relationships',
+            title: role ? `${role.name} Relationships` : 'Relationships',
             item: div({
                 item: div({
                     style: {margin: 'auto'},
@@ -48,15 +48,31 @@ export const roleGraph = hoistCmp.factory({
                         items: [
                             button({
                                 value: 'effective',
-                                text: `Granted to ${role?.effectiveRoles.length} ${pluralize('role', role?.effectiveRoles.length)}`
+                                text: `Granted to ${pluralize('role', role?.effectiveRoles.length, true)}`
                             }),
                             button({
                                 value: 'inherited',
-                                text: `Inheriting from ${role?.inheritedRoles.length} ${pluralize('role', role?.inheritedRoles.length)}`
+                                text: `Inheriting from ${pluralize('role', role?.inheritedRoles.length, true)}`
                             })
                         ]
                     }),
-                    hspacer(10),
+                    filler(),
+                    span('Limit to one level'),
+                    switchInput({
+                        bind: 'limitToOneLevel'
+                    }),
+                    '-',
+                    span('Zoom'),
+                    slider({
+                        paddingLeft: 2,
+                        overflow: 'visible',
+                        bind: 'widthScale',
+                        min: 0,
+                        max: 2,
+                        stepSize: 0.005,
+                        labelRenderer: false
+                    }),
+                    '-',
                     buttonGroupInput({
                         bind: 'inverted',
                         items: [
@@ -69,21 +85,6 @@ export const roleGraph = hoistCmp.factory({
                                 icon: Icon.treeGraph({rotation: 270})
                             })
                         ]
-                    }),
-                    hspacer(10),
-                    'Zoom',
-                    slider({
-                        paddingLeft: 2,
-                        overflow: 'visible',
-                        bind: 'widthScale',
-                        min: 0,
-                        max: 2,
-                        stepSize: 0.005,
-                        labelRenderer: false
-                    }),
-                    'Limit to one level',
-                    switchInput({
-                        bind: 'limitToOneLevel'
                     })
                 ],
                 omit: !role

@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {RoleModel} from '@xh/hoist/admin/tabs/userData/roles/RoleModel';
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, TaskObserver, XH} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
@@ -14,6 +14,8 @@ import {compact, every, filter, map, uniq} from 'lodash';
 export class RecategorizeDialogModel extends HoistModel {
     private parent: RoleModel;
     selectedRecords: StoreRecord[];
+
+    readonly savingTask = TaskObserver.trackLast();
 
     @bindable categoryName = null;
     @observable isOpen = false;
@@ -53,17 +55,21 @@ export class RecategorizeDialogModel extends HoistModel {
             it => !it.isGroupRow
         );
         const roles: string[] = map(roleSpec, it => it.name);
-        await XH.fetchService
-            .postJson({
-                url: 'roleAdmin/bulkCategoryUpdate',
-                body: {
-                    roles,
-                    category: this.categoryName === '_CLEAR_ROLES_' ? null : this.categoryName
-                }
-            })
-            .catchDefault();
-        await this.parent.refreshAsync();
-        this.close();
+        try {
+            await XH.fetchService
+                .postJson({
+                    url: 'roleAdmin/bulkCategoryUpdate',
+                    body: {
+                        roles,
+                        category: this.categoryName === '_CLEAR_ROLES_' ? null : this.categoryName
+                    }
+                })
+                .linkTo(this.savingTask);
+            await this.parent.refreshAsync();
+            this.close();
+        } catch (e) {
+            XH.handleException(e);
+        }
     }
 
     //-----------------

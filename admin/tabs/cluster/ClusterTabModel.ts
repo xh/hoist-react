@@ -184,10 +184,8 @@ export class ClusterTabModel extends HoistModel {
                 confirmProps: {
                     icon: Icon.skull(),
                     text: 'Shutdown Now',
-                    intent: 'danger'
-                },
-                cancelProps: {
-                    autoFocus: true
+                    intent: 'danger',
+                    autoFocus: false
                 }
             }))
         )
