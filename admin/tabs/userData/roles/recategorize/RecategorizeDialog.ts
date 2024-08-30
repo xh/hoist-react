@@ -52,9 +52,10 @@ const bbar = hoistCmp.factory<RecategorizeDialogModel>(({model}) => {
             onClick: () => model.close()
         }),
         button({
-            text: 'Save',
+            text: 'Save Changes',
             icon: Icon.check(),
             intent: 'success',
+            outlined: true,
             disabled: model.categoryName == null,
             onClick: () => model.saveAsync()
         })
