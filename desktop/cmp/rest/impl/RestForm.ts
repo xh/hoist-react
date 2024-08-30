@@ -80,9 +80,10 @@ const tbar = hoistCmp.factory<RestFormModel>(({model}) => {
             onClick: () => model.close()
         }),
         button({
-            text: 'Save',
+            text: 'Save Changes',
             icon: Icon.check(),
             intent: 'success',
+            outlined: true,
             disabled: !model.isAdd && !formModel.isDirty,
             onClick: () => model.validateAndSaveAsync(),
             omit: formModel.readonly

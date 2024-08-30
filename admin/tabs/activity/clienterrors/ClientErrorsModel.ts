@@ -66,13 +66,15 @@ export class ClientErrorsModel extends HoistModel {
                 {...Col.instance, hidden},
                 {...Col.day},
                 {...Col.dateCreatedWithSec, displayName: 'Timestamp'},
-                {...Col.impersonating, hidden}
+                {...Col.impersonating, hidden},
+                {...Col.correlationId}
             ]
         });
 
         const enableValues = true;
         this.filterChooserModel = new FilterChooserModel({
             fieldSpecs: [
+                {field: 'correlationId'},
                 {field: 'username', displayName: 'User', enableValues},
                 {field: 'browser', enableValues},
                 {field: 'device', enableValues},

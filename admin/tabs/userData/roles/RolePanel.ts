@@ -45,7 +45,12 @@ export const rolePanel = hoistCmp.factory({
                     }),
                     '-',
                     filterChooser({flex: 1}),
-                    switchInput({bind: 'showInGroups', label: 'Show in Groups', labelSide: 'left'})
+                    '-',
+                    switchInput({
+                        bind: 'showInGroups',
+                        label: 'Group by Category',
+                        labelSide: 'left'
+                    })
                 ],
                 item: hframe(vframe(grid(), roleGraph()), detailsPanel())
             }),

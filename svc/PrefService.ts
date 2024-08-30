@@ -30,7 +30,7 @@ export class PrefService extends HoistService {
 
     private _data = {};
     private _updates = {};
-    private pushPendingBuffered: any;
+    private readonly pushPendingBuffered: any;
 
     constructor() {
         super();
