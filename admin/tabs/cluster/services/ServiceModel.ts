@@ -91,8 +91,8 @@ export class ServiceModel extends BaseInstanceModel {
             ),
             confirmProps: {
                 text: 'Clear Caches',
-                outlined: true,
                 intent: 'danger',
+                outlined: true,
                 autoFocus: false
             }
         });
