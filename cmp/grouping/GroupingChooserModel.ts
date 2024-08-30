@@ -15,19 +15,9 @@ import {
 } from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {
-    cloneDeep,
-    difference,
-    isArray,
-    isEmpty,
-    isEqual,
-    isFunction,
-    isString,
-    keys,
-    sortBy
-} from 'lodash';
+import {cloneDeep, difference, isArray, isEmpty, isEqual, isString, keys, sortBy} from 'lodash';
 
 export interface GroupingChooserConfig {
     /**
@@ -81,11 +71,7 @@ export interface GroupingChooserPersistOptions extends PersistOptions {
 
 export class GroupingChooserModel extends HoistModel {
     @observable.ref value: string[];
-
     @observable.ref favorites: string[][] = [];
-
-    @observable.ref private dimensions: Record<string, DimensionSpec>;
-    @observable.ref private dimensionNames: string[];
 
     allowEmpty: boolean;
     maxDepth: number;
@@ -99,8 +85,11 @@ export class GroupingChooserModel extends HoistModel {
     @observable.ref pendingValue: string[] = [];
     @observable editorIsOpen: boolean = false;
     @observable favoritesIsOpen: boolean = false;
-
     popoverRef = createObservableRef<HTMLElement>();
+
+    // Internal state
+    @observable.ref private dimensions: Record<string, DimensionSpec>;
+    @observable.ref private dimensionNames: string[];
 
     @computed
     get availableDims(): string[] {
@@ -108,7 +97,7 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     @computed
-    get dimensionSpecs() {
+    get dimensionSpecs(): DimensionSpec[] {
         return Object.values(this.dimensions);
     }
 
@@ -145,8 +134,8 @@ export class GroupingChooserModel extends HoistModel {
         this.setDimensions(dimensions);
 
         // Read and validate value and favorites
-        let value = isFunction(initialValue) ? initialValue() : initialValue,
-            favorites = isFunction(initialFavorites) ? initialFavorites() : initialFavorites;
+        let value = executeIfFunction(initialValue),
+            favorites = executeIfFunction(initialFavorites);
 
         throwIf(isEmpty(value) && !this.allowEmpty, 'Initial value cannot be empty.');
         throwIf(!this.validateValue(value), 'Initial value is invalid.');
@@ -200,7 +189,7 @@ export class GroupingChooserModel extends HoistModel {
 
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionNames = keys(this.dimensions);
-        this.cleanStaleDims();
+        this.removeUnknownDimsFromValue();
     }
 
     @action
@@ -275,7 +264,7 @@ export class GroupingChooserModel extends HoistModel {
         this.closePopover();
     }
 
-    validateValue(value) {
+    validateValue(value: string[]) {
         if (!isArray(value)) return false;
         if (isEmpty(value) && !this.allowEmpty) return false;
         return value.every(dim => this.dimensionNames.includes(dim));
@@ -365,7 +354,7 @@ export class GroupingChooserModel extends HoistModel {
         return {displayName: genDisplayName(src.name), ...src};
     }
 
-    private cleanStaleDims() {
+    private removeUnknownDimsFromValue() {
         const {value, dimensionNames, allowEmpty} = this,
             cleanValue = value?.filter(dim => dimensionNames.includes(dim));
 
