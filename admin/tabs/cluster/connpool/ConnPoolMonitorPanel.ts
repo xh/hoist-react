@@ -35,6 +35,7 @@ export const connPoolMonitorPanel = hoistCmp.factory({
                     omit: readonly,
                     onClick: () => model.takeSnapshotAsync()
                 }),
+                '-',
                 button({
                     text: 'Reset Stats',
                     icon: Icon.reset(),

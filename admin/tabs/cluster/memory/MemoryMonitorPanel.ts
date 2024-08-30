@@ -36,12 +36,14 @@ export const memoryMonitorPanel = hoistCmp.factory({
                     omit: readonly,
                     onClick: () => model.takeSnapshotAsync()
                 }),
+                '-',
                 button({
                     text: 'Request GC',
                     icon: Icon.trash(),
                     omit: readonly,
                     onClick: () => model.requestGcAsync()
                 }),
+                '-',
                 button({
                     text: 'Dump Heap',
                     icon: Icon.fileArchive(),

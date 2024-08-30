@@ -18,9 +18,9 @@ import {isEmpty} from 'lodash';
 
 export class HzObjectModel extends BaseInstanceModel {
     clearAction: RecordActionSpec = {
-        icon: Icon.reset(),
         text: 'Clear Objects',
-        intent: 'danger',
+        icon: Icon.reset(),
+        intent: 'warning',
         actionFn: () => this.clearAsync(),
         displayFn: ({selectedRecords}) => ({
             hidden: AppModel.readonly,
@@ -80,8 +80,9 @@ export class HzObjectModel extends BaseInstanceModel {
                 ),
                 confirmProps: {
                     text: 'Clear Objects',
+                    icon: Icon.reset(),
+                    intent: 'warning',
                     outlined: true,
-                    intent: 'danger',
                     autoFocus: false
                 }
             }))
@@ -115,7 +116,8 @@ export class HzObjectModel extends BaseInstanceModel {
             ),
             confirmProps: {
                 text: 'Clear Hibernate Caches',
-                intent: 'danger',
+                icon: Icon.reset(),
+                intent: 'warning',
                 outlined: true,
                 autoFocus: false
             }
