@@ -199,8 +199,9 @@ export class RoleModel extends HoistModel {
     private groupByAction(): RecordActionSpec {
         return {
             text: 'Group By Category',
+            icon: Icon.treeList(),
             displayFn: () => ({
-                icon: this.showInGroups ? Icon.checkCircle() : Icon.circle()
+                text: this.showInGroups ? 'Ungroup Grid' : 'Group by Category'
             }),
             actionFn: () => {
                 this.showInGroups = !this.showInGroups;
@@ -352,15 +353,17 @@ export class RoleModel extends HoistModel {
 
     private getContextMenuItems() {
         return this.readonly
-            ? [this.groupByAction(), ...GridModel.defaultContextMenu]
+            ? [this.groupByAction(), '-', ...GridModel.defaultContextMenu]
             : [
                   this.addAction(),
                   this.editAction(),
                   this.cloneAction(),
                   this.deleteAction(),
+                  '-',
                   this.recategorizeDialogModel.recategorizeAction(),
                   '-',
                   this.groupByAction(),
+                  '-',
                   ...GridModel.defaultContextMenu
               ];
     }
