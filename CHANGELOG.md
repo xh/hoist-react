@@ -2,6 +2,10 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* Requires `hoist-core >= 21.0`.
+
 ### 🎁 New Features
 
 * Added support for Correlation IDs across fetch requests and error / activity tracking:
@@ -33,9 +37,9 @@
 * Fixed bug where a role with a dot in its name could not be deleted.
 * Fixed `SelectEditor` to ensure new value is flushed before editing stops.
 
-### 💥 Breaking Changes
+### ✨ Styles
 
-* Requires `hoist-core >= 21.0`.
+* Added CSS variables to support customization of `Badge` component styling.
 
 ### ⚙️ Technical
 
