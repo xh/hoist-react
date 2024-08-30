@@ -159,6 +159,7 @@ export class RoleFormModel extends HoistModel {
         return new GridModel({
             emptyText: 'None added.',
             hideHeaders: true,
+            showHover: true,
             selModel: 'multiple',
             store: {
                 fields: [{name: 'error', type: 'string'}],
@@ -194,6 +195,7 @@ export class RoleFormModel extends HoistModel {
                             ...props,
                             inputProps: {
                                 enableCreate: entity !== 'ROLE',
+                                createMessageFn: user => `Add ${user}`,
                                 options: this.filterSelected(options, selected)
                             }
                         });
