@@ -21,10 +21,12 @@
 * New property `FetchOptions.asJson` to instruct `FetchService` to decode an HTTP response as JSON.
   Note that `FetchService` methods suffixed with `Json` will set this property automatically.
 * `GridModel` will now accept `contextMenu: false` to omit context menus.
-* New bindable `AppContainerModel.intializingLoadMaskMessage` property to allow apps to customize
+* New bindable property `AppContainerModel.intializingLoadMaskMessage` to allow apps to customize
   the loading mask message shown during app initialization.
 * Enhanced `select` component with new `emptyValue` prop, allowing for a custom value to be returned
   when the control is empty (vs default of `null`). Expected usage is `[]` when `enableMulti:true`.
+* New `GroupingChooserModel.setDimensions()` API, to support updating available dimensions on an
+  already constructed `GroupingChooserModel`.
 
 ### 🐞 Bug Fixes
 
