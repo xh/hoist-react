@@ -498,11 +498,10 @@ function buildFormatConfig(
 
     // Calculate numbro mantissa and trimMantissa options based on precision and zeroPad settings.
     if (isNumber(zeroPad)) {
-        // Specific zeroPad set - find a specific mantissa value between zeroPad and precision.
-
-        // Calculate the required precision of the number after rounding (since rounding can change
-        // the non-zero decimal places of a number, especially in cases of js floating point
-        // arithmetic errors). This is already guaranteed to be less than or equal to precision.
+        // Specific zeroPad set - we want to show at least this much precision, but not more unless
+        // the value actually has more precision. Note, we round to requested *max* precision first,
+        // then determine the value's actual precision. This avoids issues where values resulting
+        // from floating point operations have spurious precision that would defeat this routine.
         const requiredPrecision = countDecimalPlaces(round(absVal, precision));
 
         // Then set mantissa to higher of required precision vs. requested zeroPad.
