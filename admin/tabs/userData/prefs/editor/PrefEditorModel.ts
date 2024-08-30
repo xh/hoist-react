@@ -79,6 +79,7 @@ export class PrefEditorModel extends HoistModel {
                 addAction,
                 editAction,
                 deleteAction,
+                '-',
                 this.regroupDialogModel.regroupAction
             ],
             columns: [
