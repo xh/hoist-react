@@ -7,12 +7,12 @@
 import bpPkg from '@blueprintjs/core/package.json';
 import {HoistService, XH} from '@xh/hoist/core';
 import {agGridVersion} from '@xh/hoist/kit/ag-grid';
-import {observable, action, makeObservable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import hoistPkg from '@xh/hoist/package.json';
 import {Timer} from '@xh/hoist/utils/async';
-import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
+import {MINUTES, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {checkMaxVersion, checkMinVersion, deepFreeze} from '@xh/hoist/utils/js';
-import {defaults} from 'lodash';
+import {defaults, isNil} from 'lodash';
 import mobxPkg from 'mobx/package.json';
 import {version as reactVersion} from 'react';
 
@@ -40,47 +40,49 @@ export class EnvironmentService extends HoistService {
     @observable
     serverInstance: string;
 
-    private _data = {};
+    private data = {};
+    private pollingConfig: PollingConfig;
+    private pollingTimer: Timer;
 
     override async initAsync() {
-        const serverEnv = await XH.fetchJson({url: 'xh/environment'}),
+        const {pollingConfig, instanceName, ...serverEnv} = await XH.fetchJson({
+                url: 'xh/environment'
+            }),
             clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
             clientTimeZoneOffset = new Date().getTimezoneOffset() * -1 * MINUTES;
 
         // Favor client-side data injected via Webpack build or otherwise determined locally,
         // then apply all other env data sourced from the server.
-        this._data = defaults(
-            {
-                appCode: XH.appCode,
-                appName: XH.appName,
-                clientVersion: XH.appVersion,
-                clientBuild: XH.appBuild,
-                reactVersion,
-                hoistReactVersion: hoistPkg.version,
-                agGridVersion,
-                mobxVersion: mobxPkg.version,
-                blueprintCoreVersion: bpPkg.version,
-                clientTimeZone,
-                clientTimeZoneOffset
-            },
-            serverEnv
+        this.data = deepFreeze(
+            defaults(
+                {
+                    appCode: XH.appCode,
+                    appName: XH.appName,
+                    clientVersion: XH.appVersion,
+                    clientBuild: XH.appBuild,
+                    reactVersion,
+                    hoistReactVersion: hoistPkg.version,
+                    agGridVersion,
+                    mobxVersion: mobxPkg.version,
+                    blueprintCoreVersion: bpPkg.version,
+                    clientTimeZone,
+                    clientTimeZoneOffset
+                },
+                serverEnv
+            )
         );
 
-        // This bit is considered transient.  Maintain in 'serverInstance' mutable property only
-        delete this._data['instanceName'];
-
-        deepFreeze(this._data);
-
-        this.setServerInfo(serverEnv.instanceName, serverEnv.appVersion, serverEnv.appBuild);
+        this.pollingConfig = pollingConfig;
+        this.setServerInfo(instanceName, serverEnv.appVersion, serverEnv.appBuild);
 
         this.addReaction({
             when: () => XH.appIsRunning,
-            run: this.startStatusChecking
+            run: this.startPolling
         });
     }
 
     get(key: string): any {
-        return this._data[key];
+        return this.data[key];
     }
 
     get appEnvironment(): AppEnvironment {
@@ -111,28 +113,42 @@ export class EnvironmentService extends HoistService {
         makeObservable(this);
     }
 
-    private startStatusChecking() {
-        const {interval} = XH.getConf('xhAppStatusCheck', {interval: 10});
-        Timer.create({runFn: this.checkServerStatusAsync, interval, intervalUnits: SECONDS});
+    private startPolling() {
+        this.pollingTimer = Timer.create({
+            runFn: this.pollServerAsync,
+            interval: this.pollingIntervalMs,
+            delay: true
+        });
     }
 
-    private checkServerStatusAsync = async () => {
-        const data = await XH.fetchJson({url: 'xh/status'}),
-            {instanceName, appVersion, appBuild, updateMode} = data;
+    private pollServerAsync = async () => {
+        const data = await XH.fetchJson({url: 'xh/environment'}),
+            {pollingConfig, instanceName, appVersion, appBuild} = data;
+
+        // Note potential config change to requested polling interval and onVersionChange behavior.
+        if (pollingConfig) {
+            this.pollingConfig = pollingConfig;
+            this.pollingTimer.setInterval(this.pollingIntervalMs);
+        }
 
         // Compare latest version/build info from server against the same info (also supplied by
         // server) when the app initialized. A change indicates an update to the app and will
         // force the user to refresh or prompt the user to refresh via the banner according to the
         // `updateMode` set in `xhAppStatusCheck`. Builds are checked here to trigger refresh
         // prompts across SNAPSHOT updates for projects with active dev/QA users.
+        const {onVersionChange} = this.pollingConfig;
         if (appVersion !== this.get('appVersion') || appBuild !== this.get('appBuild')) {
-            if (updateMode === 'promptReload') {
+            if (onVersionChange === 'promptReload') {
                 XH.appContainerModel.showUpdateBanner(appVersion, appBuild);
-            } else if (updateMode === 'forceReload') {
+            } else if (onVersionChange === 'forceReload') {
                 XH.suspendApp({
                     reason: 'APP_UPDATE',
                     message: `A new version of ${XH.clientAppName} is now available (${appVersion}) and requires an immediate update.`
                 });
+            } else {
+                this.logWarn(
+                    `New version ${appVersion} reported by server, but xhEnvPollingConfig.onVersionChange is ${onVersionChange} - ignoring.`
+                );
             }
         }
 
@@ -151,10 +167,23 @@ export class EnvironmentService extends HoistService {
     };
 
     @action
-    private setServerInfo(serverInstance, serverVersion, serverBuild) {
+    private setServerInfo(serverInstance: string, serverVersion: string, serverBuild: string) {
         this.serverInstance = serverInstance;
         this.serverVersion = serverVersion;
         this.serverBuild = serverBuild;
+    }
+
+    private get pollingIntervalMs(): number {
+        const {pollingConfig} = this;
+
+        // Fallback in event of unexpected error reading polling instructions.
+        if (isNil(pollingConfig?.interval)) return 10 * SECONDS;
+
+        // Disable timer if interval is set to 0 or less.
+        if (pollingConfig.interval <= 0) return -1;
+
+        // Throttle polling to once every five seconds, at most.
+        return Math.max(pollingConfig.interval * ONE_SECOND, 5 * SECONDS);
     }
 }
 
@@ -172,3 +201,8 @@ export type AppEnvironment =
     | 'Test'
     | 'UAT'
     | 'BCP';
+
+interface PollingConfig {
+    interval: number;
+    onVersionChange: 'forceReload' | 'promptReload' | 'silent';
+}
