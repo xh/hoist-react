@@ -117,8 +117,8 @@ export class WebSocketModel extends BaseInstanceModel {
         if (isEmpty(selectedRecords)) return;
 
         const message = await XH.prompt<string>({
-            title: 'Force suspend',
-            icon: Icon.stopCircle(),
+            title: 'Please confirm...',
+            icon: Icon.warning(),
             confirmProps: {
                 text: 'Force Suspend',
                 icon: Icon.stopCircle(),

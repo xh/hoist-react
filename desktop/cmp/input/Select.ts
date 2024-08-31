@@ -28,7 +28,7 @@ import {
 } from '@xh/hoist/kit/react-select';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {elemWithin, getTestId, TEST_ID, throwIf, withDefault, mergeDeep} from '@xh/hoist/utils/js';
+import {elemWithin, getTestId, mergeDeep, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import debouncePromise from 'debounce-promise';
@@ -52,6 +52,12 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     /** True (default) to close the menu after each selection. */
     closeMenuOnSelect?: boolean;
 
+    /**
+     * Value to use when the input is empty (default `null`).
+     * Recommended usage is `[]` when `enableMulti` is true to ensure value is always an array.
+     */
+    emptyValue?: any;
+
     /** True to show a "clear" button at the right of the control. */
     enableClear?: boolean;
 
@@ -68,8 +74,8 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     enableMulti?: boolean;
 
     /**
-     * True to enable tooltips on selected values. Enable when the space
-     * available to the select component might not support showing the value's full text.
+     * True to enable tooltips on selected values. Enable when the space available to the
+     * component might not support showing the value's full text.
      */
     enableTooltips?: boolean;
 
@@ -234,6 +240,10 @@ class SelectInputModel extends HoistInputModel {
 
     get multiMode(): boolean {
         return !!this.componentProps.enableMulti;
+    }
+
+    get emptyValue(): any {
+        return this.componentProps.emptyValue ?? null;
     }
 
     get filterMode(): boolean {
@@ -424,11 +434,10 @@ class SelectInputModel extends HoistInputModel {
     // (Exception for a null value, which we will only accept if explicitly present in options.)
     override toInternal(external) {
         if (this.multiMode) {
-            if (external == null) external = []; // avoid [null]
+            if (external == null || isEqual(external, this.emptyValue)) external = []; // avoid [null]
             return castArray(external).map(it => this.findOption(it, !isNil(it)));
         }
-
-        return this.findOption(external, !isNil(external));
+        return this.findOption(external, !isNil(external) && !isEqual(external, this.emptyValue));
     }
 
     private findOption(value, createIfNotFound, options = this.internalOptions) {
@@ -446,10 +455,10 @@ class SelectInputModel extends HoistInputModel {
     }
 
     override toExternal(internal) {
-        if (isNil(internal)) return null;
+        if (isNil(internal)) return this.emptyValue;
 
         if (this.multiMode) {
-            if (isEmpty(internal)) return null;
+            if (isEmpty(internal)) return this.emptyValue;
             return castArray(internal).map(it => it.value);
         }
 

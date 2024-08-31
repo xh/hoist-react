@@ -2,6 +2,10 @@
 
 ## 67.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update only)
+
+* Requires `hoist-core >= 21.0`.
+
 ### 🎁 New Features
 
 * Added support for Correlation IDs across fetch requests and error / activity tracking:
@@ -15,28 +19,30 @@
           new `FetchOptions.track` API (see below).
     * If set on a fetch request, Correlation IDs are passed through to downstream error reporting
       and are available for review in the Admin Console.
-* New `FetchOptions.track` - specify `TrackOptions` or message `string` to track a request via
-  Hoist activity tracking. The request's Correlation ID and LoadSpec will be included automatically.
-* New global interceptors on `FetchService`. See `FetchService.addInterceptor()`.
-* New property `FetchOptions.asJson` to instruct `FetchService` to decode an HTTP response as JSON.
+* Added `FetchOptions.track` as streamlined syntax to track a request via Hoist activity tracking.
+  Prefer this option (vs. a chained `.track()` call) to relay the request's `correlationId` and
+  `loadSpec` automatically.
+* Added `FetchOptions.asJson` to instruct `FetchService` to decode an HTTP response as JSON.
   Note that `FetchService` methods suffixed with `Json` will set this property automatically.
+* Added global interceptors on `FetchService`. See `FetchService.addInterceptor()`.
 * `GridModel` will now accept `contextMenu: false` to omit context menus.
-* New bindable `AppContainerModel.intializingLoadMaskMessage` property to allow apps to customize
-  the loading mask message shown during app initialization.
+* Added bindable `AppContainerModel.intializingLoadMaskMessage` to allow apps to customize the
+  load mask message shown during app initialization.
+* Enhanced `select` component with new `emptyValue` prop, allowing for a custom value to be returned
+  when the control is empty (vs `null`). Expected usage is `[]` when `enableMulti:true`.
+* Added `GroupingChooserModel.setDimensions()` API, to support updating available dimensions on an
+  already constructed `GroupingChooserModel`.
 
 ### 🐞 Bug Fixes
 
-* Fixed bug where a role with a dot in its name could not be deleted.
-* Fixed `SelectEditor` to ensure new value is flushed before editing stops.
+* Fixed Admin Console bug where a role with a dot in its name could not be deleted.
+* Fixed inline `SelectEditor` to ensure new value is flushed before grid editing stops.
 * `WebSocketService` now attempts to establish a new connection when app's server instance changes.
 
-### 💥 Breaking Changes
 
-* Requires `hoist-core >= 21.0`.
+### ✨ Styles
 
-### ⚙️ Technical
-
-* Remove context menus from column choosers.
+* Added CSS variables to support customization of `Badge` component styling.
 
 ### 📚 Libraries
 

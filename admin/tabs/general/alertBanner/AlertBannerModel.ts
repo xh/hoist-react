@@ -277,7 +277,8 @@ export class AlertBannerModel extends HoistModel {
                 confirmProps: {
                     text: 'Yes, modify the banner',
                     intent: 'primary',
-                    outlined: true
+                    outlined: true,
+                    autoFocus: false
                 }
             });
             if (!finalConfirm) return;

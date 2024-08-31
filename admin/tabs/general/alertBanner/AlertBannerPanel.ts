@@ -227,9 +227,10 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                     onClick: () => model.resetForm()
                 }),
                 button({
-                    text: 'Save',
+                    text: 'Save Changes',
                     icon: Icon.check(),
                     intent: 'success',
+                    outlined: true,
                     disabled: !isValid || !isDirty,
                     onClick: () => model.saveAsync()
                 })

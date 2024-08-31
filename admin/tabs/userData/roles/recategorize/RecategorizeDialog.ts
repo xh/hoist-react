@@ -24,7 +24,7 @@ export const recategorizeDialog = hoistCmp.factory({
         return dialog({
             title: `Change Category (${model.selectedRecords.length} roles)`,
             icon: Icon.folder(),
-            style: {width: 300},
+            style: {width: 400},
             isOpen: true,
             isCloseButtonShown: false,
             item: panel({
@@ -35,7 +35,7 @@ export const recategorizeDialog = hoistCmp.factory({
                         bind: 'categoryName',
                         enableCreate: true,
                         options: model.options,
-                        width: 260
+                        width: '100%'
                     })
                 ),
                 bbar: bbar()
@@ -52,9 +52,10 @@ const bbar = hoistCmp.factory<RecategorizeDialogModel>(({model}) => {
             onClick: () => model.close()
         }),
         button({
-            text: 'Save',
+            text: 'Save Changes',
             icon: Icon.check(),
             intent: 'success',
+            outlined: true,
             disabled: model.categoryName == null,
             onClick: () => model.saveAsync()
         })

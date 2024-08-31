@@ -18,9 +18,9 @@ import {isEmpty, lowerFirst} from 'lodash';
 
 export class ServiceModel extends BaseInstanceModel {
     clearCachesAction: RecordActionSpec = {
-        icon: Icon.reset(),
         text: 'Clear Caches',
-        intent: 'danger',
+        icon: Icon.reset(),
+        intent: 'warning',
         actionFn: () => this.clearCachesAsync(false),
         displayFn: () => ({
             hidden: AppModel.readonly,
@@ -30,9 +30,9 @@ export class ServiceModel extends BaseInstanceModel {
     };
 
     clearClusterCachesAction: RecordActionSpec = {
-        icon: Icon.reset(),
         text: 'Clear Caches (entire cluster)',
-        intent: 'danger',
+        icon: Icon.reset(),
+        intent: 'warning',
         actionFn: () => this.clearCachesAsync(true),
         displayFn: () => ({
             hidden: AppModel.readonly || !this.parent.isMultiInstance
@@ -91,8 +91,9 @@ export class ServiceModel extends BaseInstanceModel {
             ),
             confirmProps: {
                 text: 'Clear Caches',
+                icon: Icon.reset(),
+                intent: 'warning',
                 outlined: true,
-                intent: 'danger',
                 autoFocus: false
             }
         });
