@@ -71,12 +71,18 @@ export class ClusterTabModel extends HoistModel {
     constructor() {
         super();
 
-        this.addReaction({
-            track: () => this.instanceName,
-            run: instName => {
-                if (instName) this.tabModel.refreshContextModel.refreshAsync();
+        this.addReaction(
+            {
+                track: () => this.instanceName,
+                run: instName => {
+                    if (instName) this.tabModel.refreshContextModel.refreshAsync();
+                }
+            },
+            {
+                track: () => XH.environmentService.serverInstance,
+                run: () => this.gridModel.agApi.refreshCells({force: true})
             }
-        });
+        );
     }
 
     private createGridModel() {
@@ -86,7 +92,6 @@ export class ClusterTabModel extends HoistModel {
                 fields: [
                     {name: 'name', type: 'string'},
                     {name: 'isPrimary', type: 'bool'},
-                    {name: 'isLocal', type: 'bool'},
                     {name: 'isReady', type: 'bool'},
                     {name: 'wsConnections', type: 'int'},
                     {name: 'startupTime', type: 'date'},
@@ -173,7 +178,7 @@ export class ClusterTabModel extends HoistModel {
     formatInstance(instance: PlainObject): ReactNode {
         const content = [instance.name];
         if (instance.isPrimary) content.push(badge({item: 'primary', intent: 'primary'}));
-        if (instance.isLocal) content.push(badge('local'));
+        if (instance.name === XH.environmentService.serverInstance) content.push(badge('local'));
         return hbox(content);
     }
 
