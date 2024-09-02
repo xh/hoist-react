@@ -10,12 +10,16 @@ import {agGridVersion} from '@xh/hoist/kit/ag-grid';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import hoistPkg from '@xh/hoist/package.json';
 import {Timer} from '@xh/hoist/utils/async';
-import {MINUTES, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
+import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
 import {checkMaxVersion, checkMinVersion, deepFreeze} from '@xh/hoist/utils/js';
-import {defaults, isNil} from 'lodash';
+import {defaults, isFinite} from 'lodash';
 import mobxPkg from 'mobx/package.json';
 import {version as reactVersion} from 'react';
 
+/**
+ * Load and report on the client and server environment, including software versions, timezones, and
+ * and other technical information.
+ */
 export class EnvironmentService extends HoistService {
     static instance: EnvironmentService;
 
@@ -41,11 +45,11 @@ export class EnvironmentService extends HoistService {
     serverInstance: string;
 
     private data = {};
-    private pollingConfig: PollingConfig;
-    private pollingTimer: Timer;
+    private pollConfig: PollConfig;
+    private pollTimer: Timer;
 
     override async initAsync() {
-        const {pollingConfig, instanceName, ...serverEnv} = await XH.fetchJson({
+        const {pollConfig, instanceName, ...serverEnv} = await XH.fetchJson({
                 url: 'xh/environment'
             }),
             clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
@@ -72,9 +76,9 @@ export class EnvironmentService extends HoistService {
             )
         );
 
-        this.pollingConfig = pollingConfig;
         this.setServerInfo(instanceName, serverEnv.appVersion, serverEnv.appBuild);
 
+        this.pollConfig = pollConfig;
         this.addReaction({
             when: () => XH.appIsRunning,
             run: this.startPolling
@@ -114,57 +118,50 @@ export class EnvironmentService extends HoistService {
     }
 
     private startPolling() {
-        this.pollingTimer = Timer.create({
-            runFn: this.pollServerAsync,
-            interval: this.pollingIntervalMs,
+        this.pollTimer = Timer.create({
+            runFn: () => this.pollServerAsync(),
+            interval: this.pollIntervalMs,
             delay: true
         });
     }
 
-    private pollServerAsync = async () => {
-        const data = await XH.fetchJson({url: 'xh/environment'}),
-            {pollingConfig, instanceName, appVersion, appBuild} = data;
-
-        // Note potential config change to requested polling interval and onVersionChange behavior.
-        if (pollingConfig) {
-            this.pollingConfig = pollingConfig;
-            this.pollingTimer.setInterval(this.pollingIntervalMs);
+    private async pollServerAsync() {
+        let data;
+        try {
+            data = await XH.fetchJson({url: 'xh/pollEnvironment'});
+        } catch (e) {
+            this.logError('Error polling server environment', e);
+            return;
         }
 
-        // Compare latest version/build info from server against the same info (also supplied by
-        // server) when the app initialized. A change indicates an update to the app and will
-        // force the user to refresh or prompt the user to refresh via the banner according to the
-        // `updateMode` set in `xhAppStatusCheck`. Builds are checked here to trigger refresh
-        // prompts across SNAPSHOT updates for projects with active dev/QA users.
-        const {onVersionChange} = this.pollingConfig;
-        if (appVersion !== this.get('appVersion') || appBuild !== this.get('appBuild')) {
-            if (onVersionChange === 'promptReload') {
-                XH.appContainerModel.showUpdateBanner(appVersion, appBuild);
-            } else if (onVersionChange === 'forceReload') {
-                XH.suspendApp({
-                    reason: 'APP_UPDATE',
-                    message: `A new version of ${XH.clientAppName} is now available (${appVersion}) and requires an immediate update.`
-                });
-            } else {
-                this.logWarn(
-                    `New version ${appVersion} reported by server, but xhEnvPollingConfig.onVersionChange is ${onVersionChange} - ignoring.`
-                );
+        // Update config/interval, and server info
+        const {pollConfig, serverInstance, appVersion, appBuild} = data;
+        this.pollConfig = pollConfig;
+        this.pollTimer.setInterval(this.pollIntervalMs);
+        this.setServerInfo(serverInstance, appVersion, appBuild);
+
+        // Handle version change
+        if (appVersion != XH.getEnv('appVersion') || appBuild != XH.getEnv('appBuild')) {
+            // force the user to refresh or prompt the user to refresh via the banner according to config
+            // build checked to trigger refresh across SNAPSHOT updates in lower environments
+            const {onVersionChange} = this.pollConfig;
+            switch (onVersionChange) {
+                case 'promptReload':
+                    XH.appContainerModel.showUpdateBanner(appVersion, appBuild);
+                    return;
+                case 'forceReload':
+                    XH.suspendApp({
+                        reason: 'APP_UPDATE',
+                        message: `A new version of ${XH.clientAppName} is now available (${appVersion}) and requires an immediate update.`
+                    });
+                    return;
+                default:
+                    this.logWarn(
+                        `New version ${appVersion} reported by server, onVersionChange is ${onVersionChange} - ignoring.`
+                    );
             }
         }
-
-        // Note that the case of version mismatches across the client and server we do *not* show
-        // the update bar to the user - that would indicate a deployment issue that a client reload
-        // is unlikely to resolve, leaving the user in a frustrating state where they are endlessly
-        // prompted to refresh.
-        const clientVersion = this.get('clientVersion');
-        if (appVersion !== clientVersion) {
-            this.logWarn(
-                `Version mismatch detected between client and server - ${clientVersion} vs ${appVersion}`
-            );
-        }
-
-        this.setServerInfo(instanceName, appVersion, appBuild);
-    };
+    }
 
     @action
     private setServerInfo(serverInstance: string, serverVersion: string, serverBuild: string) {
@@ -173,17 +170,10 @@ export class EnvironmentService extends HoistService {
         this.serverBuild = serverBuild;
     }
 
-    private get pollingIntervalMs(): number {
-        const {pollingConfig} = this;
-
-        // Fallback in event of unexpected error reading polling instructions.
-        if (isNil(pollingConfig?.interval)) return 10 * SECONDS;
-
-        // Disable timer if interval is set to 0 or less.
-        if (pollingConfig.interval <= 0) return -1;
-
-        // Throttle polling to once every five seconds, at most.
-        return Math.max(pollingConfig.interval * ONE_SECOND, 5 * SECONDS);
+    private get pollIntervalMs(): number {
+        // Throttle to 5secs, disable if set to 0 or less.
+        const {interval} = this.pollConfig;
+        return isFinite(interval) && interval > 0 ? Math.max(interval, 5) * SECONDS : -1;
     }
 }
 
@@ -202,7 +192,7 @@ export type AppEnvironment =
     | 'UAT'
     | 'BCP';
 
-interface PollingConfig {
+interface PollConfig {
     interval: number;
     onVersionChange: 'forceReload' | 'promptReload' | 'silent';
 }
