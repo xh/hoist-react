@@ -1,5 +1,7 @@
 # Changelog
 
+## 68.0.0-SNAPSHOT - unreleased
+
 ## 67.0.0 - 2024-09-03
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update only)
