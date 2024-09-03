@@ -324,7 +324,7 @@ export class TabContainerModel extends HoistModel {
     // Implementation
     //-------------------------
     @action
-    private setActiveTabIdInternal(id) {
+    protected setActiveTabIdInternal(id) {
         const tab = this.findTab(id);
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
@@ -333,27 +333,14 @@ export class TabContainerModel extends HoistModel {
         this.forwardRouterToTab(id);
     }
 
-    private syncWithRouter() {
-        const {tabs, route} = this,
-            {router} = XH,
-            state = router.getState();
-
-        if (state && router.isActive(route)) {
-            const tab = tabs.find(t => router.isActive(route + '.' + t.id, state.params));
-            if (tab && !tab.isActive && !tab.disabled) {
-                this.setActiveTabIdInternal(tab.id);
-            }
-        }
-    }
-
-    private forwardRouterToTab(id) {
+    protected forwardRouterToTab(id) {
         const {route} = this;
         if (route && id) {
             XH.router.forward(route, route + '.' + id);
         }
     }
 
-    private calculateActiveTabId(tabs) {
+    protected calculateActiveTabId(tabs) {
         let ret;
 
         // try route
@@ -373,6 +360,19 @@ export class TabContainerModel extends HoistModel {
         if (ret) return ret.id;
 
         return null;
+    }
+
+    protected syncWithRouter() {
+        const {tabs, route} = this,
+            {router} = XH,
+            state = router.getState();
+
+        if (state && router.isActive(route)) {
+            const tab = tabs.find(t => router.isActive(route + '.' + t.id, state.params));
+            if (tab && !tab.isActive && !tab.disabled) {
+                this.setActiveTabIdInternal(tab.id);
+            }
+        }
     }
 
     private setupStateProvider(persistWith) {

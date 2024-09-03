@@ -32,6 +32,7 @@
   when the control is empty (vs `null`). Expected usage is `[]` when `enableMulti:true`.
 * Added `GroupingChooserModel.setDimensions()` API, to support updating available dimensions on an
   already constructed `GroupingChooserModel`.
+* Modify TabContainerModel to be more extensible
 
 ### 🐞 Bug Fixes
 
