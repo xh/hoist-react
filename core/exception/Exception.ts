@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {FetchOptions} from '@xh/hoist/svc';
-import {FetchResponse, PlainObject, XH} from '../';
+import {PlainObject, XH} from '../';
 import {isPlainObject} from 'lodash';
 
 import {FetchException, HoistException, TimeoutException, TimeoutExceptionConfig} from './Types';
@@ -58,10 +58,15 @@ export class Exception {
     /**
      * Create an Error to throw when a fetch call returns a !ok response.
      * @param fetchOptions - original options passed to FetchService.
-     * @param fetchResponse - return value of native fetch, as enhanced by FetchService.
+     * @param response - return value of native fetch.
+     * @param responseText - optional additional details from the server.
      */
-    static fetchError(fetchOptions: FetchOptions, fetchResponse: FetchResponse): FetchException {
-        const {headers, status, statusText, responseText} = fetchResponse,
+    static fetchError(
+        fetchOptions: FetchOptions,
+        response: Response,
+        responseText: string = null
+    ): FetchException {
+        const {headers, status, statusText} = response,
             defaults = {
                 name: 'HTTP Error ' + (status || ''),
                 message: statusText,

@@ -71,7 +71,8 @@ export class WebSocketService extends HoistService {
 
     override async initAsync() {
         if (!this.enabled) return;
-        if (XH.environmentService.get('webSocketsEnabled') === false) {
+        const {environmentService} = XH;
+        if (environmentService.get('webSocketsEnabled') === false) {
             this.logError(
                 `WebSockets enabled on this client app but disabled on server. Adjust your server-side config.`
             );
@@ -80,6 +81,11 @@ export class WebSocketService extends HoistService {
         }
 
         this.connect();
+
+        this.addReaction({
+            track: () => environmentService.serverInstance,
+            run: () => this.onServerInstanceChange()
+        });
 
         this._timer = Timer.create({
             runFn: () => this.heartbeatOrReconnect(),
@@ -173,6 +179,12 @@ export class WebSocketService extends HoistService {
             this.disconnect();
             this.connect();
         }
+    }
+
+    private onServerInstanceChange() {
+        this.logWarn('Server instance changed - attempting to connect to new instance.');
+        this.disconnect();
+        this.connect();
     }
 
     shutdown() {

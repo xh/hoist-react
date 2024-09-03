@@ -25,10 +25,11 @@ export const hzObjectPanel = hoistCmp.factory({
                     selModel: model.gridModel.selModel,
                     actions: [model.clearAction]
                 }),
+                '-',
                 button({
                     text: 'Clear Hibernate Caches',
                     icon: Icon.reset(),
-                    intent: 'danger',
+                    intent: 'warning',
                     tooltip: 'Clear the Hibernate caches using the native Hibernate API',
                     onClick: () => model.clearHibernateCachesAsync()
                 }),

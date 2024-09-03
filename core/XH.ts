@@ -46,7 +46,6 @@ import {
     Exception,
     ExceptionHandler,
     ExceptionHandlerOptions,
-    FetchResponse,
     HoistAppModel,
     HoistException,
     HoistService,
@@ -64,7 +63,6 @@ import {
 import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
-import {v4} from 'uuid';
 
 export const MIN_HOIST_CORE_VERSION = '18.0';
 
@@ -263,7 +261,7 @@ export class XHApi {
      * Send a request via the underlying fetch API.
      * @see FetchService.fetch
      */
-    fetch(opts: FetchOptions): Promise<FetchResponse> {
+    fetch(opts: FetchOptions): Promise<any> {
         return this.fetchService.fetch(opts);
     }
 
@@ -779,13 +777,6 @@ export class XHApi {
      */
     genId(): string {
         return uniqueId('xh-id-');
-    }
-
-    /**
-     * Generate a universally unique identifier (UUID). Useful for generating Correlation IDs.
-     */
-    genUUID(): string {
-        return v4();
     }
 
     //----------------

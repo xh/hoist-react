@@ -50,9 +50,10 @@ const tbar = hoistCmp.factory<RegroupDialogModel>(({model}) => {
             onClick: () => model.close()
         }),
         button({
-            text: 'Save',
+            text: 'Save Changes',
             icon: Icon.check(),
             intent: 'success',
+            outlined: true,
             disabled: model.groupName == null,
             onClick: () => model.saveAsync()
         })

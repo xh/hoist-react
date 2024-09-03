@@ -16,9 +16,10 @@ import {
     XH
 } from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, when as mobxWhen} from '@xh/hoist/mobx';
+import {action, bindable, when as mobxWhen} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import numbro from 'numbro';
+import {ReactNode} from 'react';
 import {createRoot} from 'react-dom/client';
 import {
     AlertBannerService,
@@ -96,6 +97,12 @@ export class AppContainerModel extends HoistModel {
     @managed viewportSizeModel = new ViewportSizeModel();
     @managed themeModel = new ThemeModel();
     @managed userAgentModel = new UserAgentModel();
+
+    /**
+     * Message shown on spinner while the application is in the INITIALIZING state.
+     * Update within `AppModel.initAsync()` to relay app-specific initialization status.
+     */
+    @bindable initializingLoadMaskMessage: ReactNode;
 
     /**
      * Main entry point. Initialize and render application code.

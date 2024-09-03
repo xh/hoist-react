@@ -173,5 +173,6 @@ export type FieldType = (typeof FieldType)[keyof typeof FieldType];
  * @returns fieldName transformed into user-facing / longer name for display.
  */
 export function genDisplayName(fieldName: string): string {
-    return fieldName === 'id' ? 'ID' : startCase(fieldName);
+    // Handle common cases of "id" -> "ID" and "foo_id" -> "Foo ID" (vs "Foo Id")
+    return startCase(fieldName).replace(/(^| )Id\b/g, '$1ID');
 }

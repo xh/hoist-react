@@ -125,10 +125,12 @@ export class RoleModel extends HoistModel {
         if (this.readonly) return false;
 
         const confirm = await XH.confirm({
-            icon: Icon.warning(),
-            title: 'Confirm delete?',
-            message: `Are you sure you want to delete "${role.name}"? This may affect access to this applications.`,
-            confirmProps: {intent: 'danger', text: 'Confirm Delete'}
+            message: `Are you sure you want to delete "${role.name}"? This may affect access to this application.`,
+            confirmProps: {
+                text: 'Yes, delete role',
+                intent: 'danger',
+                autoFocus: false
+            }
         });
         if (!confirm) return false;
 
@@ -197,8 +199,9 @@ export class RoleModel extends HoistModel {
     private groupByAction(): RecordActionSpec {
         return {
             text: 'Group By Category',
+            icon: Icon.treeList(),
             displayFn: () => ({
-                icon: this.showInGroups ? Icon.checkCircle() : Icon.circle()
+                text: this.showInGroups ? 'Ungroup Grid' : 'Group by Category'
             }),
             actionFn: () => {
                 this.showInGroups = !this.showInGroups;
@@ -351,15 +354,17 @@ export class RoleModel extends HoistModel {
 
     private getContextMenuItems() {
         return this.readonly
-            ? [this.groupByAction(), ...GridModel.defaultContextMenu]
+            ? [this.groupByAction(), '-', ...GridModel.defaultContextMenu]
             : [
                   this.addAction(),
                   this.editAction(),
                   this.cloneAction(),
                   this.deleteAction(),
+                  '-',
                   this.recategorizeDialogModel.recategorizeAction(),
                   '-',
                   this.groupByAction(),
+                  '-',
                   ...GridModel.defaultContextMenu
               ];
     }

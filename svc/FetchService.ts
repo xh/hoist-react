@@ -7,18 +7,19 @@
 import {
     Awaitable,
     Exception,
-    FetchResponse,
     HoistService,
     LoadSpec,
     PlainObject,
+    TrackOptions,
     XH
 } from '@xh/hoist/core';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {apiDeprecated} from '@xh/hoist/utils/js';
+import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, isObject, isString, omit, omitBy} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
+import ShortUniqueId from 'short-unique-id';
 
 /**
  * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
@@ -44,6 +45,7 @@ export class FetchService extends HoistService {
 
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
+    private idGenerator = new ShortUniqueId({length: 16});
     private autoAborters = {};
     private _defaultHeaders: DefaultHeaders[] = [];
     private _interceptors: FetchInterceptor[] = [];
@@ -54,10 +56,11 @@ export class FetchService extends HoistService {
     autoGenCorrelationIds = false;
 
     /**
-     * Method for generating Correlation ID's. Defaults to `XH.genUUID()` but can be modified
-     * by applications looking to customize the format of their Correlation ID's.
+     * Method for generating Correlation ID's. Defaults to a 16 character random string with
+     * an extremely low probability of collisions.  Applications may customize
+     * to improve readability or provide a stronger uniqueness guarantee.
      */
-    genCorrelationId: () => string = () => XH.genUUID();
+    genCorrelationId: () => string = () => this.idGenerator.rnd();
 
     /** Request header name to be used for Correlation ID tracking. */
     correlationIdHeaderKey: string = 'X-Correlation-ID';
@@ -107,13 +110,13 @@ export class FetchService extends HoistService {
      * requests.  Other shortcut variants will delegate to this method, after setting
      * default options and pre-processing content.
      *
-     *  Set `asJson` to true return a parsed JSON result, rather than the raw FetchResponse.
+     *  Set `asJson` to true return a parsed JSON result, rather than the raw Response.
      *  Note that shortcut variant of this method (e.g. `fetchJson`, `postJson`) will set this
      *  flag for you.
      *
-     * @returns Promise which resolves to a FetchResponse or JSON.
+     * @returns Promise which resolves to a Response or JSON.
      */
-    fetch(opts: FetchOptions): Promise<any> {
+    async fetch(opts: FetchOptions): Promise<any> {
         return this.fetchInternalAsync(opts);
     }
 
@@ -121,7 +124,7 @@ export class FetchService extends HoistService {
      * Send an HTTP request and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response has status in {@link NO_JSON_RESPONSES}.
      */
-    fetchJson(opts: FetchOptions): Promise<any> {
+    async fetchJson(opts: FetchOptions): Promise<any> {
         return this.fetchInternalAsync({asJson: true, ...opts});
     }
 
@@ -129,7 +132,7 @@ export class FetchService extends HoistService {
      * Send a GET request and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
-    getJson(opts: FetchOptions): Promise<any> {
+    async getJson(opts: FetchOptions): Promise<any> {
         return this.fetchInternalAsync({asJson: true, method: 'GET', ...opts});
     }
 
@@ -137,7 +140,7 @@ export class FetchService extends HoistService {
      * Send a POST request with a JSON body and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
-    postJson(opts: FetchOptions): Promise<any> {
+    async postJson(opts: FetchOptions): Promise<any> {
         return this.sendJsonInternalAsync({method: 'POST', ...opts});
     }
 
@@ -145,7 +148,7 @@ export class FetchService extends HoistService {
      * Send a PUT request with a JSON body and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
-    putJson(opts: FetchOptions): Promise<any> {
+    async putJson(opts: FetchOptions): Promise<any> {
         return this.sendJsonInternalAsync({method: 'PUT', ...opts});
     }
 
@@ -153,7 +156,7 @@ export class FetchService extends HoistService {
      * Send a PATCH request with a JSON body and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
-    patchJson(opts: FetchOptions): Promise<any> {
+    async patchJson(opts: FetchOptions): Promise<any> {
         return this.sendJsonInternalAsync({method: 'PATCH', ...opts});
     }
 
@@ -161,7 +164,7 @@ export class FetchService extends HoistService {
      * Send a DELETE request with optional JSON body and decode the optional response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
-    deleteJson(opts: FetchOptions): Promise<any> {
+    async deleteJson(opts: FetchOptions): Promise<any> {
         return this.sendJsonInternalAsync({method: 'DELETE', ...opts});
     }
 
@@ -209,20 +212,30 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
-    private fetchInternalAsync(opts: FetchOptions): Promise<any> {
+    private async fetchInternalAsync(opts: FetchOptions): Promise<any> {
         opts = this.withCorrelationId(opts);
-        const ret = this.withDefaultHeadersAsync(opts).then(opts => {
-            let fetchPromise = this.managedFetchAsync(opts);
-            for (const interceptor of this._interceptors) {
-                fetchPromise = fetchPromise.then(
-                    value => interceptor.onFulfilled(opts, value),
-                    cause => interceptor.onRejected(opts, cause)
-                );
-            }
-            return fetchPromise;
-        });
+        opts = await this.withDefaultHeadersAsync(opts);
+        let ret = this.managedFetchAsync(opts);
 
-        ret.correlationId = opts.correlationId as string;
+        // Apply tracking
+        const {correlationId, loadSpec, track} = opts;
+        if (track) {
+            const trackOptions = isString(track) ? {message: track} : track;
+            warnIf(
+                trackOptions.correlationId || trackOptions.loadSpec,
+                'Neither Correlation ID nor LoadSpec should be set in `FetchOptions.track`. Use `FetchOptions` top-level properties instead.'
+            );
+            ret = ret.track({...trackOptions, correlationId: correlationId as string, loadSpec});
+        }
+
+        // Apply interceptors
+        for (const interceptor of this._interceptors) {
+            ret = ret.then(
+                value => interceptor.onFulfilled(opts, value),
+                cause => interceptor.onRejected(opts, cause)
+            );
+        }
+
         return ret;
     }
 
@@ -322,7 +335,7 @@ export class FetchService extends HoistService {
     private async abortableFetchAsync(
         opts: FetchOptions,
         aborter: AbortController
-    ): Promise<FetchResponse> {
+    ): Promise<Response> {
         // 1) Prepare URL
         let {url, method, headers, body, params} = opts,
             isRelativeUrl = !url.startsWith('/') && !url.includes('//');
@@ -363,12 +376,9 @@ export class FetchService extends HoistService {
         }
 
         // 4) Await underlying fetch and post-process response.
-        const ret = (await fetch(url, fetchOpts)) as FetchResponse;
+        const ret = await fetch(url, fetchOpts);
 
-        if (!ret.ok) {
-            ret.responseText = await this.safeResponseTextAsync(ret);
-            throw Exception.fetchError(opts, ret);
-        }
+        if (!ret.ok) throw Exception.fetchError(opts, ret, await this.safeResponseTextAsync(ret));
 
         return ret;
     }
@@ -475,4 +485,10 @@ export interface FetchOptions {
      * True to decode the HTTP response as JSON. Default false.
      */
     asJson?: boolean;
+
+    /**
+     * If set, the request will be tracked via Hoist activity tracking. (Do not set `correlationId`
+     * here - use the top-level `correlationId` property instead.)
+     */
+    track?: string | TrackOptions;
 }

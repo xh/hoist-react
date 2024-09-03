@@ -95,6 +95,7 @@ export class ConfigPanelModel extends HoistModel {
                 editAction,
                 cloneAction,
                 deleteAction,
+                '-',
                 this.regroupDialogModel.regroupAction
             ],
             prepareCloneFn: ({clone}) => (clone.name = `${clone.name}_CLONE`),
