@@ -135,10 +135,10 @@ export class EnvironmentService extends HoistService {
         }
 
         // Update config/interval, and server info
-        const {pollConfig, serverInstance, appVersion, appBuild} = data;
+        const {pollConfig, instanceName, appVersion, appBuild} = data;
         this.pollConfig = pollConfig;
         this.pollTimer.setInterval(this.pollIntervalMs);
-        this.setServerInfo(serverInstance, appVersion, appBuild);
+        this.setServerInfo(instanceName, appVersion, appBuild);
 
         // Handle version change
         if (appVersion != XH.getEnv('appVersion') || appBuild != XH.getEnv('appBuild')) {
