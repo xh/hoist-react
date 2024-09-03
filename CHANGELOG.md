@@ -1,6 +1,6 @@
 # Changelog
 
-## 67.0.0-SNAPSHOT - unreleased
+## 67.0.0 - 2024-09-03
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update only)
 
@@ -47,6 +47,7 @@
 ### 📚 Libraries
 
 * short-unique-id `added @ 5.2`
+* hoist-core 21.0`
 
 ## 66.1.1 - 2024-08-01
 
