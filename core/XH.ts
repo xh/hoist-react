@@ -29,7 +29,6 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {apiDeprecated} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
@@ -64,7 +63,7 @@ import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
 
-export const MIN_HOIST_CORE_VERSION = '18.0';
+export const MIN_HOIST_CORE_VERSION = '21.0';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
@@ -626,14 +625,6 @@ export class XHApi {
      */
     handleException(exception: unknown, options?: ExceptionHandlerOptions) {
         this.exceptionHandler.handleException(exception, options);
-    }
-
-    showException(exception: unknown, options?: ExceptionHandlerOptions) {
-        apiDeprecated('showException', {
-            msg: 'Use XH.exceptionHandler.showException instead',
-            v: '62'
-        });
-        this.exceptionHandler.showException(exception, options);
     }
 
     /**
