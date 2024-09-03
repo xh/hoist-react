@@ -128,7 +128,7 @@ export class EnvironmentService extends HoistService {
     private async pollServerAsync() {
         let data;
         try {
-            data = await XH.fetchJson({url: 'xh/pollEnvironment'});
+            data = await XH.fetchJson({url: 'xh/environmentPoll'});
         } catch (e) {
             this.logError('Error polling server environment', e);
             return;
@@ -144,7 +144,7 @@ export class EnvironmentService extends HoistService {
         if (appVersion != XH.getEnv('appVersion') || appBuild != XH.getEnv('appBuild')) {
             // force the user to refresh or prompt the user to refresh via the banner according to config
             // build checked to trigger refresh across SNAPSHOT updates in lower environments
-            const {onVersionChange} = this.pollConfig;
+            const {onVersionChange} = pollConfig;
             switch (onVersionChange) {
                 case 'promptReload':
                     XH.appContainerModel.showUpdateBanner(appVersion, appBuild);
