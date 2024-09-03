@@ -107,7 +107,7 @@ export class TabContainerModel extends HoistModel {
     @managed
     refreshContextModel: RefreshContextModel;
 
-    private lastActiveTabId: string;
+    protected lastActiveTabId: string;
 
     constructor({
         tabs = [],
