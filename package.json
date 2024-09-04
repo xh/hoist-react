@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "67.0.0-SNAPSHOT",
+  "version": "68.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:xh/hoist-react",
   "homepage": "https://xh.io",
@@ -20,8 +20,14 @@
     "./static/polyfills.js"
   ],
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": ["prettier --write", "eslint"],
-    "*.s?(a|c)ss": ["prettier --write", "stylelint"]
+    "*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "eslint"
+    ],
+    "*.s?(a|c)ss": [
+      "prettier --write",
+      "stylelint"
+    ]
   },
   "dependencies": {
     "@auth0/auth0-spa-js": "~2.1.3",
