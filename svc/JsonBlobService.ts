@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {XH, HoistService} from '@xh/hoist/core';
+import {XH, HoistService, PlainObject} from '@xh/hoist/core';
 
 /**
  * Service to read and set chunks of user-specific JSON persisted via Hoist Core's JSONBlob class.
@@ -36,12 +36,14 @@ export class JsonBlobService extends HoistService {
     async createAsync({
         type,
         name,
+        acl,
         value,
         meta,
         description
     }: {
         type: string;
         name: string;
+        acl?: string | PlainObject;
         description?: string;
         value: any;
         meta?: any;
@@ -49,7 +51,7 @@ export class JsonBlobService extends HoistService {
         return XH.fetchJson({
             url: 'xh/createJsonBlob',
             params: {
-                data: JSON.stringify({type, name, value, meta, description})
+                data: JSON.stringify({type, name, acl, value, meta, description})
             }
         });
     }
@@ -59,16 +61,23 @@ export class JsonBlobService extends HoistService {
         token: string,
         {
             name,
+            acl,
             value,
             meta,
             description
-        }: {name?: string; value?: any; meta?: any; description?: string}
+        }: {
+            name?: string;
+            acl?: string | PlainObject;
+            value?: any;
+            meta?: any;
+            description?: string;
+        }
     ) {
         return XH.fetchJson({
             url: 'xh/updateJsonBlob',
             params: {
                 token,
-                update: JSON.stringify({name, value, meta, description})
+                update: JSON.stringify({name, acl, value, meta, description})
             }
         });
     }

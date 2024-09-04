@@ -1,0 +1,30 @@
+.persistence-manager {
+  align-items: center;
+
+  // Save Button
+  & > .xh-button {
+    margin-right: var(--xh-pad-half-px);
+  }
+
+  // Dialogs
+  &__manage-dialog,
+  &__save-as-dialog {
+    &__form {
+      padding: var(--xh-pad-px);
+
+      .xh-form-field.xh-form-field-readonly .xh-form-field-readonly-display {
+        padding: 0;
+      }
+
+      .xh-form-field .xh-form-field-info {
+        line-height: 1.5em;
+        margin-top: var(--xh-pad-half-px);
+        white-space: unset;
+
+        .xh-icon {
+          margin-right: 2px;
+        }
+      }
+    }
+  }
+}
