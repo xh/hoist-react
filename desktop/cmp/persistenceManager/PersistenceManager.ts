@@ -10,8 +10,7 @@ import {saveDialog} from './impl/SaveDialog';
 import './PersistenceManager.scss';
 import {PersistenceManagerModel} from './PersistenceManagerModel';
 
-interface PersistenceManagerModelProps extends HoistProps {
-    model?: PersistenceManagerModel;
+interface PersistenceManagerModelProps extends HoistProps<PersistenceManagerModel> {
     /** True to disable options for saving/managing items. */
     minimal?: boolean;
 }
@@ -32,13 +31,13 @@ export const [PersistenceManager, persistenceManager] =
 
             return fragment(
                 hbox({
-                    className: 'persistence-manager',
+                    className: 'xh-persistence-manager',
                     items: [
                         popover({
                             item: button({
-                                text: selectedObject?.name
-                                    ? getHierarchyDisplayName(selectedObject.name)
-                                    : capitalPluralNoun,
+                                text:
+                                    getHierarchyDisplayName(selectedObject?.name) ??
+                                    capitalPluralNoun,
                                 icon: isShared ? Icon.users() : Icon.bookmark(),
                                 rightIcon: Icon.chevronDown(),
                                 outlined: true
@@ -54,8 +53,8 @@ export const [PersistenceManager, persistenceManager] =
                         saveButton()
                     ]
                 }),
-                manageDialogModel ? manageDialog({key: manageDialogModel.xhId}) : null,
-                saveDialogModel ? saveDialog({key: saveDialogModel.xhId}) : null
+                manageDialog({omit: !manageDialogModel}),
+                saveDialog({omit: !saveDialogModel})
             );
         }
     });
@@ -71,7 +70,7 @@ const saveButton = hoistCmp.factory<PersistenceManagerModel>({
             tooltip: `Save changes to this ${model.noun}`,
             intent: 'primary',
             omit: !model.enableTopLevelSaveButton || !model.canSave,
-            onClick: () => model.saveAsync(null).linkTo(model.loadModel)
+            onClick: () => model.saveAsync(false).linkTo(model.loadModel)
         });
     }
 });
@@ -79,7 +78,7 @@ const saveButton = hoistCmp.factory<PersistenceManagerModel>({
 const objMenu = hoistCmp.factory<PersistenceManagerModelProps>({
     render({model, minimal}) {
         const {pluralNoun, objects, loadModel} = model,
-            grouped = groupBy(objects, it => it.group),
+            grouped = groupBy(objects, 'group'),
             sortedGroupKeys = keys(grouped).sort(),
             items = [];
 
@@ -88,42 +87,38 @@ const objMenu = hoistCmp.factory<PersistenceManagerModelProps>({
             items.push(...hierarchicalMenus(sortBy(grouped[group], 'name')));
         });
 
+        if (minimal) return menu({items});
         return menu({
             items: [
                 ...items,
-                fragment({
-                    omit: minimal,
-                    items: [
-                        menuDivider(),
-                        menuItem({
-                            icon: Icon.plus(),
-                            text: 'New...',
-                            onClick: () => model.createNewAsync().linkTo(loadModel)
-                        }),
-                        menuItem({
-                            icon: Icon.save(),
-                            text: 'Save',
-                            disabled: !model.canSave,
-                            onClick: () => model.saveAsync(null).linkTo(loadModel)
-                        }),
-                        menuItem({
-                            icon: Icon.copy(),
-                            text: 'Save as...',
-                            onClick: () => model.saveAsAsync().linkTo(loadModel)
-                        }),
-                        menuItem({
-                            icon: Icon.reset(),
-                            text: 'Reset',
-                            disabled: !model.isDirty,
-                            onClick: () => model.resetAsync().linkTo(loadModel)
-                        }),
-                        menuDivider(),
-                        menuItem({
-                            icon: Icon.gear(),
-                            text: `Manage ${pluralNoun}...`,
-                            onClick: () => model.openManageDialog()
-                        })
-                    ]
+                menuDivider(),
+                menuItem({
+                    icon: Icon.plus(),
+                    text: 'New...',
+                    onClick: () => model.createNewAsync().linkTo(loadModel)
+                }),
+                menuItem({
+                    icon: Icon.save(),
+                    text: 'Save',
+                    disabled: !model.canSave,
+                    onClick: () => model.saveAsync(false).linkTo(loadModel)
+                }),
+                menuItem({
+                    icon: Icon.copy(),
+                    text: 'Save as...',
+                    onClick: () => model.saveAsAsync().linkTo(loadModel)
+                }),
+                menuItem({
+                    icon: Icon.reset(),
+                    text: 'Reset',
+                    disabled: !model.isDirty,
+                    onClick: () => model.resetAsync().linkTo(loadModel)
+                }),
+                menuDivider(),
+                menuItem({
+                    icon: Icon.gear(),
+                    text: `Manage ${pluralNoun}...`,
+                    onClick: () => model.openManageDialog()
                 })
             ]
         });

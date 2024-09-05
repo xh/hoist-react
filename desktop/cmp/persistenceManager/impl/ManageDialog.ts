@@ -22,8 +22,8 @@ export const manageDialog = hoistCmp.factory<ManageDialogModel>({
             isOpen: true,
             icon: Icon.gear(),
             title: `Manage ${model.parentModel.capitalPluralNoun}`,
-            className: 'persistence-manager__manage-dialog',
-            style: {width: 800, height: 475},
+            className: 'xh-persistence-manager__manage-dialog',
+            style: {width: 800, height: 475, maxWidth: '90vm'},
             canOutsideClickClose: false,
             onClose: () => model.close(),
             item: hframe(gridPanel(), formPanel(), mask({bind: model.loadModel, spinner: true}))
@@ -34,7 +34,7 @@ export const manageDialog = hoistCmp.factory<ManageDialogModel>({
 const gridPanel = hoistCmp.factory({
     render() {
         return panel({
-            className: 'persistence-manager__manage-dialog__grid-panel',
+            className: 'xh-persistence-manager__manage-dialog__grid-panel',
             modelConfig: {defaultSize: 350, side: 'left', collapsible: false},
             item: grid()
         });
@@ -59,9 +59,9 @@ const formPanel = hoistCmp.factory<ManageDialogModel>({
             });
 
         return panel({
-            className: 'persistence-manager__manage-dialog__form-panel',
+            className: 'xh-persistence-manager__manage-dialog__form-panel',
             item: vframe({
-                className: 'persistence-manager__manage-dialog__form',
+                className: 'xh-persistence-manager__manage-dialog__form',
                 items: [
                     form({
                         fieldDefaults: {

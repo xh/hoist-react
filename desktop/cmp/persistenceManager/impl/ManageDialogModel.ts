@@ -12,9 +12,9 @@ export class ManageDialogModel extends HoistModel {
 
     @observable isOpen: boolean = false;
 
-    @managed gridModel: GridModel;
+    @managed readonly gridModel: GridModel;
 
-    @managed formModel: FormModel;
+    @managed readonly formModel: FormModel;
 
     get noun(): string {
         return this.parentModel.noun;
@@ -37,11 +37,11 @@ export class ManageDialogModel extends HoistModel {
     }
 
     get canDelete(): boolean {
-        return this.parentModel.objects.length > 1 && (this.canManageGlobal || this.selIsShared);
+        return this.parentModel.objects.length > 1 && (this.canManageGlobal || !this.selIsShared);
     }
 
     get canEdit(): boolean {
-        return this.canManageGlobal || this.selIsShared;
+        return this.canManageGlobal || !this.selIsShared;
     }
 
     get showSaveButton(): boolean {
@@ -182,10 +182,10 @@ export class ManageDialogModel extends HoistModel {
             showGroupRowCounts: false,
             store: {
                 fields: [
-                    'token',
-                    'name',
-                    'description',
-                    'isShared',
+                    {name: 'token', type: 'string'},
+                    {name: 'name', type: 'string'},
+                    {name: 'description', type: 'string'},
+                    {name: 'isShared', type: 'bool'},
                     {name: 'acl', type: 'json'},
                     {name: 'meta', type: 'json'},
                     {name: 'dateCreated', type: 'date'},

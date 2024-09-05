@@ -7,27 +7,10 @@ import {PersistenceManagerModel} from '../PersistenceManagerModel';
 export class SaveDialogModel extends HoistModel {
     parentModel: PersistenceManagerModel;
 
-    @managed saveTask = TaskObserver.trackLast();
-
-    @managed formModel = new FormModel({
-        fields: [
-            {
-                name: 'name',
-                rules: [
-                    required,
-                    lengthIs({max: 255}),
-                    ({value}) => {
-                        if (this.parentModel?.objects.find(it => it.name === value)) {
-                            return `An entry with name "${value}" already exists`;
-                        }
-                    }
-                ]
-            },
-            {name: 'description'}
-        ]
-    });
-
-    objStub: ObjStub;
+    @managed
+    readonly formModel = this.createFormModel();
+    readonly saveTask = TaskObserver.trackLast();
+    readonly objStub: ObjStub;
 
     get isAdd(): boolean {
         return !!this.objStub?.isAdd;
@@ -50,12 +33,33 @@ export class SaveDialogModel extends HoistModel {
     }
 
     async saveAsAsync() {
-        return this.doSaveAsAsync().linkTo(this.saveTask).catchDefault();
+        return this.doSaveAsAsync().linkTo(this.saveTask);
     }
 
     //------------------------
     // Implementation
     //------------------------
+
+    createFormModel(): FormModel {
+        return new FormModel({
+            fields: [
+                {
+                    name: 'name',
+                    rules: [
+                        required,
+                        lengthIs({max: 255}),
+                        ({value}) => {
+                            if (this.parentModel?.objects.find(it => it.name === value)) {
+                                return `An entry with name "${value}" already exists`;
+                            }
+                        }
+                    ]
+                },
+                {name: 'description'}
+            ]
+        });
+    }
+
     async doSaveAsAsync() {
         const {formModel, parentModel, objStub} = this,
             {name, description} = formModel.getData(),
@@ -63,18 +67,22 @@ export class SaveDialogModel extends HoistModel {
 
         if (!isValid) return;
 
-        const newObj = await XH.jsonBlobService
-            .createAsync({
-                type: this.parentModel.type,
-                name,
-                description,
-                value: objStub.value
-            })
-            .catchDefault();
+        try {
+            const newObj = await XH.jsonBlobService
+                .createAsync({
+                    type: this.parentModel.type,
+                    name,
+                    description,
+                    value: objStub.value
+                })
+                .catchDefault();
 
-        await parentModel.refreshAsync();
-        await parentModel.selectAsync(newObj.id);
-        this.close();
+            await parentModel.refreshAsync();
+            await parentModel.selectAsync(newObj.id);
+            this.close();
+        } catch (e) {
+            XH.handleException(e);
+        }
     }
 }
 

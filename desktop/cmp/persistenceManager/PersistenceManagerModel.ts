@@ -10,8 +10,8 @@ import {
 } from '@xh/hoist/core';
 import {StoreRecordId} from '@xh/hoist/data/StoreRecord';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
-import {capitalize, cloneDeep, isEmpty, isEqualWith, isFunction, isNil} from 'lodash';
+import {executeIfFunction, pluralize} from '@xh/hoist/utils/js';
+import {capitalize, cloneDeep, isEmpty, isEqualWith, isNil} from 'lodash';
 import {ManageDialogModel} from './impl/ManageDialogModel';
 import {ObjStub, SaveDialogModel} from './impl/SaveDialogModel';
 import {runInAction} from 'mobx';
@@ -30,10 +30,7 @@ import {runInAction} from 'mobx';
  * share objects to their own company only and modify shared objects shared only within their company. All users can
  * save/update/delete their own private objects.
  */
-export interface PersistenceManagerProps {
-    // /** Endpoint for rest controller. */
-    // url: string;
-
+export interface PersistenceManagerConfig {
     /** Key used in JsonBlob */
     type: string;
     /** User-facing name/label for an object managed by this model. */
@@ -55,31 +52,34 @@ export class PersistenceManagerModel extends HoistModel {
     // Persistence Provider
     // Pass this to models that implement `persistWith` to include their state in the view.
     //------------------------
-    provider: PersistOptions = {
+    readonly provider: PersistOptions = {
         getData: () => cloneDeep(this.pendingValue ?? this.value ?? {}),
         setData: value => this.mergePendingValue(value)
     };
 
+    readonly enableTopLevelSaveButton: boolean = true;
+
+    private readonly canManageGlobalFn: Thunkable<boolean>;
+
+    readonly newObjectFn: () => PlainObject;
+
+    readonly onChangeAsync?: (value: PlainObject) => void;
+
+    /** Reference Key used to query JsonBlobs */
+    readonly type: string;
+
+    /** Configured word to label an object persisted by this model. */
+    readonly noun: string;
+
     @observable.ref @managed manageDialogModel: ManageDialogModel;
 
     @observable.ref @managed saveDialogModel: SaveDialogModel;
-
-    enableTopLevelSaveButton: boolean = true;
-
-    newObjectFn: () => PlainObject;
-
     /** Current state of the active object, can include not-yet-persisted changes. */
     @observable.ref pendingValue: PlainObject = null;
 
     @observable.ref views: PlainObject[] = [];
 
     @bindable selectedId: StoreRecordId;
-
-    /** Reference Key used to query JsonBlobs */
-    type: string;
-
-    /** Configured word to label an object persisted by this model. */
-    noun: string;
 
     get pluralNoun(): string {
         return pluralize(this.noun);
@@ -93,13 +93,9 @@ export class PersistenceManagerModel extends HoistModel {
         return capitalize(this.pluralNoun);
     }
 
-    private readonly canManageGlobalFn: Thunkable<boolean>;
-
     get canManageGlobal(): boolean {
         return executeIfFunction(this.canManageGlobalFn);
     }
-
-    onChangeAsync?: (value: PlainObject) => void;
 
     get value(): PlainObject {
         return this.selectedObject?.value;
@@ -118,7 +114,7 @@ export class PersistenceManagerModel extends HoistModel {
         const {value} = this;
         if (!value) return false;
         return (
-            this.isDirty && (this.canManageGlobal || value.isShared) && !this.loadModel.isPending
+            this.isDirty && (this.canManageGlobal || !value.isShared) && !this.loadModel.isPending
         );
     }
 
@@ -132,7 +128,7 @@ export class PersistenceManagerModel extends HoistModel {
     }
 
     // Internal persistence provider, used to save *this* model's state, i.e. selectedId
-    _provider;
+    private readonly _provider;
 
     constructor({
         type,
@@ -142,14 +138,9 @@ export class PersistenceManagerModel extends HoistModel {
         canManageGlobal,
         enableTopLevelSaveButton = true,
         newObjectFnAsync
-    }: PersistenceManagerProps) {
+    }: PersistenceManagerConfig) {
         super();
         makeObservable(this);
-
-        throwIf(
-            !isFunction(onChangeAsync),
-            'PersistenceManagerModel requires an `onChangeAsync` callback function'
-        );
 
         this.type = type;
         this.canManageGlobalFn = canManageGlobal;
@@ -226,10 +217,14 @@ export class PersistenceManagerModel extends HoistModel {
         if (this.isShared) {
             if (!(await this.confirmShareObjSaveAsync())) return;
         }
-        await XH.jsonBlobService.updateAsync(token, {
-            ...this.selectedObject,
-            value: this.pendingValue
-        });
+        try {
+            await XH.jsonBlobService.updateAsync(token, {
+                ...this.selectedObject,
+                value: this.pendingValue
+            });
+        } catch (e) {
+            return XH.handleException(e, {alertType: 'toast'});
+        }
         await this.refreshAsync();
         await this.selectAsync(id);
 
@@ -285,7 +280,6 @@ export class PersistenceManagerModel extends HoistModel {
         const {manageDialogModel} = this;
         this.manageDialogModel = null;
         XH.safeDestroy(manageDialogModel);
-        this.refreshAsync();
     }
 
     //------------------
