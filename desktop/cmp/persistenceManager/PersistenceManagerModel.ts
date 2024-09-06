@@ -11,10 +11,11 @@ import {
 import {StoreRecordId} from '@xh/hoist/data/StoreRecord';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, pluralize} from '@xh/hoist/utils/js';
-import {capitalize, cloneDeep, isEmpty, isEqualWith, isNil} from 'lodash';
+import {capitalize, cloneDeep, isEmpty, isEqualWith, isNil, isString, startCase} from 'lodash';
 import {ManageDialogModel} from './impl/ManageDialogModel';
-import {ObjStub, SaveDialogModel} from './impl/SaveDialogModel';
+import {SaveDialogModel} from './impl/SaveDialogModel';
 import {runInAction} from 'mobx';
+import {PersistenceView} from '@xh/hoist/desktop/cmp/persistenceManager/Types';
 
 /**
  * PersistenceManager provides re-usable loading, selection, and user management of named configs, which are modelled
@@ -30,91 +31,77 @@ import {runInAction} from 'mobx';
  * share objects to their own company only and modify shared objects shared only within their company. All users can
  * save/update/delete their own private objects.
  */
-export interface PersistenceManagerConfig {
+interface Entity {
     /** Key used in JsonBlob */
-    type: string;
+    name: string;
     /** User-facing name/label for an object managed by this model. */
-    noun: string;
+    displayName?: string;
+}
+
+export interface PersistenceManagerConfig<T extends PlainObject> {
+    entity: string | Entity;
     /** Whether user can publish or edit globally shared objects. */
     canManageGlobal: Thunkable<boolean>;
     /** Async callback triggered when view changes. Should be used to recreate the affected models. */
-    onChangeAsync: (value: PlainObject) => void;
+    onChangeAsync: (value: T) => void;
     /** Used to persist this model's selected ID. */
     persistWith: PersistOptions;
     /** True (default) to render a save button alongside the primary menu button when dirty. */
     enableTopLevelSaveButton?: boolean;
     /** Fn to produce a new, empty object - can be async. */
-    newObjectFnAsync?: () => PlainObject;
+    newObjectFnAsync?: () => T;
 }
 
-export class PersistenceManagerModel extends HoistModel {
+export class PersistenceManagerModel<T extends PlainObject = PlainObject> extends HoistModel {
     //------------------------
     // Persistence Provider
     // Pass this to models that implement `persistWith` to include their state in the view.
     //------------------------
     readonly provider: PersistOptions = {
         getData: () => cloneDeep(this.pendingValue ?? this.value ?? {}),
-        setData: value => this.mergePendingValue(value)
+        setData: (value: T) => this.mergePendingValue(value)
     };
 
     readonly enableTopLevelSaveButton: boolean = true;
 
-    private readonly canManageGlobalFn: Thunkable<boolean>;
+    private readonly _canManageGlobal: Thunkable<boolean>;
 
-    readonly newObjectFn: () => PlainObject;
+    readonly newObjectFn: () => T;
 
-    readonly onChangeAsync?: (value: PlainObject) => void;
+    readonly onChangeAsync?: (value: T) => void;
 
-    /** Reference Key used to query JsonBlobs */
-    readonly type: string;
-
-    /** Configured word to label an object persisted by this model. */
-    readonly noun: string;
+    readonly entity: Entity;
 
     @observable.ref @managed manageDialogModel: ManageDialogModel;
 
     @observable.ref @managed saveDialogModel: SaveDialogModel;
     /** Current state of the active object, can include not-yet-persisted changes. */
-    @observable.ref pendingValue: PlainObject = null;
+    @observable.ref pendingValue: T = null;
 
-    @observable.ref views: PlainObject[] = [];
+    @observable.ref views: PersistenceView<T>[] = [];
 
     @bindable selectedId: StoreRecordId;
 
-    get pluralNoun(): string {
-        return pluralize(this.noun);
-    }
-
-    get capitalNoun(): string {
-        return capitalize(this.noun);
-    }
-
-    get capitalPluralNoun(): string {
-        return capitalize(this.pluralNoun);
-    }
-
     get canManageGlobal(): boolean {
-        return executeIfFunction(this.canManageGlobalFn);
+        return executeIfFunction(this._canManageGlobal);
     }
 
-    get value(): PlainObject {
-        return this.selectedObject?.value;
+    get value(): T {
+        return this.selectedView?.value;
     }
 
-    get objects(): PlainObject[] {
-        return this.views;
-    }
-
-    get selectedObject(): PlainObject {
+    get selectedView(): PersistenceView<T> {
         return this.views.find(it => it.id === this.selectedId);
     }
 
     @computed
     get canSave(): boolean {
-        const {value} = this;
-        if (!value) return false;
+        const {selectedView} = this;
+        if (!selectedView) return false;
         return (
-            this.isDirty && (this.canManageGlobal || !value.isShared) && !this.loadModel.isPending
+            this.isDirty &&
+            (this.canManageGlobal || !selectedView.isShared) &&
+            !this.loadModel.isPending
         );
     }
 
@@ -124,31 +111,30 @@ export class PersistenceManagerModel extends HoistModel {
     }
 
     get isShared(): boolean {
-        return !!this.selectedObject?.isShared;
+        return !!this.selectedView?.isShared;
     }
 
     // Internal persistence provider, used to save *this* model's state, i.e. selectedId
     private readonly _provider;
 
     constructor({
-        type,
-        noun,
+        entity,
         onChangeAsync,
         persistWith,
         canManageGlobal,
         enableTopLevelSaveButton = true,
         newObjectFnAsync
-    }: PersistenceManagerConfig) {
+    }: PersistenceManagerConfig<T>) {
         super();
         makeObservable(this);
 
-        this.type = type;
-        this.canManageGlobalFn = canManageGlobal;
+        this.entity = this.parseEntity(entity);
+        this._canManageGlobal = canManageGlobal;
         this.enableTopLevelSaveButton = enableTopLevelSaveButton;
-        this.noun = noun || 'item';
-        this.newObjectFn = newObjectFnAsync ?? (() => ({}));
+        this.newObjectFn = newObjectFnAsync ?? null;
         this.onChangeAsync = onChangeAsync;
-
+        this.saveDialogModel = new SaveDialogModel(this, this.entity.name);
+        this.manageDialogModel = new ManageDialogModel(this);
         // Set up internal PersistenceProvider -- fail gently
         if (persistWith) {
             try {
@@ -175,24 +161,25 @@ export class PersistenceManagerModel extends HoistModel {
 
     // TODO - Carefully review if this method needs isStale checks, and how to properly implement them.
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const rawViews = await XH.jsonBlobService.listAsync({type: this.type, includeValue: true});
+        const {name, displayName} = this.entity,
+            rawViews = await XH.jsonBlobService.listAsync({type: name, includeValue: true});
 
         runInAction(() => (this.views = this.processRaw(rawViews)));
 
-        const {objects} = this;
+        const {views} = this;
         // Auto-create an empty view if required
-        if (!objects.length) {
+        if (!views.length) {
             const newValue = await this.newObjectFn(),
                 newObject = await XH.jsonBlobService.createAsync({
-                    type: this.type,
-                    name: `My ${this.capitalNoun}`,
+                    type: name,
+                    name: `My ${capitalize(displayName)}`,
                     value: newValue
                 });
             runInAction(() => (this.views = this.processRaw([newObject])));
         }
 
         // Always call selectAsync to ensure pendingValue updated and onChangeAsync callback fired if needed
-        const id = this.selectedObject?.id ?? this.objects[0].id;
+        const id = this.selectedView?.id ?? this.views[0].id;
         await this.selectAsync(id);
     }
 
@@ -213,14 +200,15 @@ export class PersistenceManagerModel extends HoistModel {
     }
 
     async saveAsync(skipToast: boolean = false) {
-        const {token, id} = this.selectedObject;
-        if (this.isShared) {
+        const {selectedView, entity, pendingValue, isShared} = this,
+            {token, id} = selectedView;
+        if (isShared) {
             if (!(await this.confirmShareObjSaveAsync())) return;
         }
         try {
             await XH.jsonBlobService.updateAsync(token, {
-                ...this.selectedObject,
-                value: this.pendingValue
+                ...selectedView,
+                value: pendingValue
             });
         } catch (e) {
             return XH.handleException(e, {alertType: 'toast'});
@@ -228,42 +216,30 @@ export class PersistenceManagerModel extends HoistModel {
         await this.refreshAsync();
         await this.selectAsync(id);
 
-        if (!skipToast) XH.successToast(`${capitalize(this.noun)} successfully saved.`);
+        if (!skipToast) XH.successToast(`${capitalize(entity.displayName)} successfully saved.`);
     }
 
     async saveAsAsync() {
-        const {name, description} = this.selectedObject;
-
-        this.openSaveDialog({
+        const {name, description} = this.selectedView;
+        this.saveDialogModel.open({
             name,
             description,
-            value: this.pendingValue,
-            isAdd: false
+            value: this.pendingValue
         });
     }
 
     async createNewAsync() {
-        const {name, description} = this.selectedObject,
+        const {name, description} = this.selectedView,
             newValue = await this.newObjectFn();
 
-        this.openSaveDialog({
-            name,
-            description,
-            value: newValue,
-            isAdd: true
-        });
-    }
-
-    @action
-    openSaveDialog(objStub: ObjStub) {
-        this.saveDialogModel = new SaveDialogModel(this, objStub);
-    }
-
-    @action
-    closeSaveDialog() {
-        const {saveDialogModel} = this;
-        this.saveDialogModel = null;
-        XH.safeDestroy(saveDialogModel);
+        this.saveDialogModel.open(
+            {
+                name,
+                description,
+                value: newValue
+            },
+            true
+        );
     }
 
     async resetAsync() {
@@ -272,42 +248,48 @@ export class PersistenceManagerModel extends HoistModel {
 
     @action
     openManageDialog() {
-        this.manageDialogModel = new ManageDialogModel(this);
+        this.manageDialogModel.openAsync();
     }
 
     @action
     closeManageDialog() {
-        const {manageDialogModel} = this;
-        this.manageDialogModel = null;
-        XH.safeDestroy(manageDialogModel);
+        this.manageDialogModel.close();
     }
 
     //------------------
     // Implementation
     //------------------
-    mergePendingValue(value: PlainObject) {
+
+    private parseEntity(entity: string | Entity): Entity {
+        const ret = isString(entity) ? {name: entity} : {...entity};
+        ret.displayName = ret.displayName ?? startCase(ret.name);
+        return ret;
+    }
+
+    mergePendingValue(value: T) {
         value = {...this.pendingValue, ...this.cleanValue(value)};
         this.setPendingValue(value);
     }
 
-    processRaw(raw: PlainObject): PlainObject[] {
-        const {capitalPluralNoun: noun} = this;
+    private processRaw(raw: PlainObject): PersistenceView<T>[] {
+        const {entity} = this,
+            name = capitalize(pluralize(entity.displayName));
         return raw.map(it => {
             it.isShared = it.acl === '*';
-            const group = it.isShared ? `Shared ${noun}` : `My ${noun}`;
+            const group = it.isShared ? `Shared ${name}` : `My ${name}`;
             return {...it, group};
         });
     }
 
     @action
-    setPendingValue(value: PlainObject) {
+    setPendingValue(value: T) {
         value = this.cleanValue(value);
         if (!this.isEqualSkipAutosize(this.pendingValue, value)) {
             this.pendingValue = value;
         }
     }
 
-    cleanValue(value: PlainObject): PlainObject {
+    cleanValue(value: T): T {
         // Stringify and parse to ensure that the value is valid JSON
         // (i.e. no object instances, no keys with undefined values, etc.)
         return JSON.parse(JSON.stringify(value));
@@ -324,7 +306,7 @@ export class PersistenceManagerModel extends HoistModel {
 
     async confirmShareObjSaveAsync() {
         return XH.confirm({
-            message: `You are saving a shared public ${this.noun}. Do you wish to continue?`,
+            message: `You are saving a shared public ${this.entity.displayName}. Do you wish to continue?`,
             confirmProps: {
                 text: 'Yes, save changes',
                 intent: 'primary',

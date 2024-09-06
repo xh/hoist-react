@@ -12,6 +12,8 @@ import {fmtCompactDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {ManageDialogModel} from './ManageDialogModel';
+import {pluralize} from '@xh/hoist/utils/js';
+import {capitalize} from 'lodash';
 
 export const manageDialog = hoistCmp.factory<ManageDialogModel>({
     displayName: 'ManageDialog',
@@ -19,9 +21,9 @@ export const manageDialog = hoistCmp.factory<ManageDialogModel>({
 
     render({model}) {
         return dialog({
-            isOpen: true,
+            isOpen: model.isOpen,
             icon: Icon.gear(),
-            title: `Manage ${model.parentModel.capitalPluralNoun}`,
+            title: `Manage ${capitalize(pluralize(model.parentModel.entity.displayName))}`,
             className: 'xh-persistence-manager__manage-dialog',
             style: {width: 800, height: 475, maxWidth: '90vm'},
             canOutsideClickClose: false,
@@ -43,12 +45,12 @@ const gridPanel = hoistCmp.factory({
 
 const formPanel = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
-        const {selectedId, noun, pluralNoun, formModel, canEdit} = model,
+        const {selectedId, parentModel, formModel, canEdit} = model,
             {values} = formModel;
 
         if (!selectedId)
             return panel({
-                item: placeholder(`Select a ${noun}`),
+                item: placeholder(`Select a ${parentModel.entity.displayName}`),
                 bbar: [
                     filler(),
                     button({
@@ -76,7 +78,7 @@ const formPanel = hoistCmp.factory<ManageDialogModel>({
                                 info: canEdit
                                     ? fragment(
                                           Icon.info(),
-                                          `Organize your ${pluralNoun} into folders by including the "\\" character in their names - e.g. "My folder\\My ${noun}".`
+                                          `Organize your ${pluralize(parentModel.entity.displayName)} into folders by including the "\\" character in their names - e.g. "My folder\\My ${parentModel.entity.displayName}".`
                                       )
                                     : null
                             }),

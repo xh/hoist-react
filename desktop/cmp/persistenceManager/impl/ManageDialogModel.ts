@@ -1,28 +1,19 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable, observable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {PersistenceManagerModel} from '../PersistenceManagerModel';
 
 export class ManageDialogModel extends HoistModel {
     parentModel: PersistenceManagerModel;
 
-    @observable isOpen: boolean = false;
+    @bindable isOpen: boolean = false;
 
     @managed readonly gridModel: GridModel;
 
     @managed readonly formModel: FormModel;
-
-    get noun(): string {
-        return this.parentModel.noun;
-    }
-
-    get pluralNoun(): string {
-        return this.parentModel.pluralNoun;
-    }
 
     get selectedId(): string {
         return this.gridModel.selectedId as string;
@@ -37,7 +28,7 @@ export class ManageDialogModel extends HoistModel {
     }
 
     get canDelete(): boolean {
-        return this.parentModel.objects.length > 1 && (this.canManageGlobal || !this.selIsShared);
+        return this.parentModel.views.length > 1 && (this.canManageGlobal || !this.selIsShared);
     }
 
     get canEdit(): boolean {
@@ -45,8 +36,8 @@ export class ManageDialogModel extends HoistModel {
     }
 
     get showSaveButton(): boolean {
-        const {formModel} = this;
-        return formModel.isDirty && !formModel.readonly && !this.loadModel.isPending;
+        const {formModel, parentModel} = this;
+        return formModel.isDirty && !formModel.readonly && !parentModel.loadModel.isPending;
     }
 
     /** True if the selected object would end up shared to all users if saved. */
@@ -66,26 +57,26 @@ export class ManageDialogModel extends HoistModel {
         this.gridModel = this.createGridModel();
         this.formModel = this.createFormModel();
 
-        const {gridModel, formModel} = this;
         this.addReaction({
-            track: () => gridModel.selectedRecord,
+            track: () => this.gridModel.selectedRecord,
             run: record => {
                 if (record) {
-                    formModel.readonly = !this.canEdit;
-                    formModel.init({
+                    this.formModel.readonly = !this.canEdit;
+                    this.formModel.init({
                         ...record.data
                     });
                 }
             }
         });
+    }
 
-        wait()
-            .then(() => this.loadAsync())
-            .then(() => this.ensureGridHasSelection());
+    async openAsync() {
+        this.isOpen = true;
+        await this.refreshModelsAsync();
     }
 
     close() {
-        this.parentModel.closeManageDialog();
+        this.isOpen = false;
     }
 
     async saveAsync() {
@@ -100,36 +91,26 @@ export class ManageDialogModel extends HoistModel {
     // Implementation
     //------------------------
 
-    override async doLoadAsync(loadSpec: LoadSpec) {
-        await this.parentModel.loadAsync(loadSpec);
-        const {objects, selectedObject, views} = this.parentModel;
-        this.gridModel.loadData(views);
-        const id = selectedObject?.id ?? objects[0].id;
-        await this.gridModel.selectAsync(id);
-        this.formModel.init({
-            ...this.gridModel.selectedRecord.data
-        });
-    }
-
     async doSaveAsync() {
-        const {formModel, noun, canManageGlobal, selectedId} = this,
+        const {formModel, parentModel, canManageGlobal, selectedId} = this,
             {fields, isDirty} = formModel,
             {name, description, isShared} = formModel.getData(),
-            isValid = await formModel.validateAsync();
+            isValid = await formModel.validateAsync(),
+            displayName = parentModel.entity.displayName;
 
         if (!isValid || !selectedId || !isDirty) return;
 
         // Additional sanity-check before POSTing an update - non-admins should never be modifying global views.
         if (isShared && !canManageGlobal)
             throw XH.exception(
-                `Cannot save changes to globally-shared ${noun} - missing required permission.`
+                `Cannot save changes to globally-shared ${parentModel.entity.displayName} - missing required permission.`
             );
 
         if (fields.isShared.isDirty) {
             const confirmed = await XH.confirm({
                 message: isShared
-                    ? `This will share the selected ${noun} with ALL other users.`
-                    : `The selected ${noun} will no longer be available to all other users.`
+                    ? `This will share the selected ${displayName} with ALL other users.`
+                    : `The selected ${displayName} will no longer be available to all other users.`
             });
 
             if (!confirmed) return;
@@ -141,7 +122,8 @@ export class ManageDialogModel extends HoistModel {
             acl: isShared ? '*' : null
         });
 
-        await this.refreshAsync();
+        await this.parentModel.refreshAsync();
+        await this.refreshModelsAsync();
     }
 
     async doDeleteAsync() {
@@ -157,18 +139,25 @@ export class ManageDialogModel extends HoistModel {
         if (!confirmed) return;
 
         await XH.jsonBlobService.archiveAsync(token);
-        await this.refreshAsync();
+        await this.parentModel.refreshAsync();
     }
 
-    ensureGridHasSelection() {
-        const {gridModel} = this;
-        if (gridModel.hasSelection) return;
+    async refreshModelsAsync() {
+        const {views} = this.parentModel;
+        this.gridModel.loadData(views);
+        await this.ensureGridHasSelection();
+        this.formModel.init({
+            ...this.gridModel.selectedRecord.data
+        });
+    }
 
-        const {selectedObject} = this.parentModel;
-        if (selectedObject) {
-            gridModel.selModel.select(selectedObject.id);
+    async ensureGridHasSelection() {
+        const {gridModel} = this;
+        const {selectedView} = this.parentModel;
+        if (selectedView) {
+            gridModel.selModel.select(selectedView.id);
         } else {
-            gridModel.preSelectFirstAsync();
+            await gridModel.preSelectFirstAsync();
         }
     }
 

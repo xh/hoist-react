@@ -9,6 +9,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
+import {capitalize} from 'lodash';
 import {SaveDialogModel} from './SaveDialogModel';
 
 export const saveDialog = hoistCmp.factory<SaveDialogModel>({
@@ -16,11 +17,13 @@ export const saveDialog = hoistCmp.factory<SaveDialogModel>({
     model: uses(SaveDialogModel),
 
     render({model}) {
-        const {objStub, isAdd, parentModel} = model;
+        const {viewStub, isNewAdd, isOpen, parentModel} = model;
         return dialog({
-            isOpen: true,
-            icon: isAdd ? Icon.plus() : Icon.copy(),
-            title: isAdd ? `Create new ${parentModel.capitalNoun}` : `Save "${objStub.name}" as...`,
+            isOpen: isOpen,
+            icon: isNewAdd ? Icon.plus() : Icon.copy(),
+            title: isNewAdd
+                ? `Create new ${capitalize(parentModel.entity.displayName)}`
+                : `Save "${viewStub?.name}" as...`,
             className: 'xh-persistence-manager__save-as-dialog',
             style: {width: 500, height: 255},
             canOutsideClickClose: false,
@@ -71,7 +74,7 @@ const formPanel = hoistCmp.factory<SaveDialogModel>({
 
 const bbar = hoistCmp.factory<SaveDialogModel>({
     render({model}) {
-        const {formModel, isAdd} = model;
+        const {formModel, isNewAdd} = model;
         return toolbar(
             filler(),
             button({
@@ -79,8 +82,8 @@ const bbar = hoistCmp.factory<SaveDialogModel>({
                 onClick: () => model.close()
             }),
             button({
-                icon: isAdd ? Icon.plus() : Icon.copy(),
-                text: isAdd ? `Create` : 'Save as new copy',
+                icon: isNewAdd ? Icon.plus() : Icon.copy(),
+                text: isNewAdd ? `Create` : 'Save as new copy',
                 outlined: true,
                 intent: 'success',
                 disabled: !formModel.isValid,

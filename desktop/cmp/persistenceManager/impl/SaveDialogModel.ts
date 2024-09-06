@@ -1,35 +1,45 @@
 import {FormModel} from '@xh/hoist/cmp/form';
-import {HoistModel, managed, PlainObject, TaskObserver, XH} from '@xh/hoist/core';
+import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
-import {makeObservable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {PersistenceManagerModel} from '../PersistenceManagerModel';
+import {PersistenceView} from '@xh/hoist/desktop/cmp/persistenceManager/Types';
 
 export class SaveDialogModel extends HoistModel {
+    readonly saveTask = TaskObserver.trackLast();
+    private readonly type: string;
+
     parentModel: PersistenceManagerModel;
 
-    @managed
-    readonly formModel = this.createFormModel();
-    readonly saveTask = TaskObserver.trackLast();
-    readonly objStub: ObjStub;
+    @bindable viewStub: Partial<PersistenceView>;
+    @bindable isOpen: boolean = false;
+    @bindable isNewAdd: boolean;
 
-    get isAdd(): boolean {
-        return !!this.objStub?.isAdd;
-    }
+    @managed readonly formModel = this.createFormModel();
 
-    constructor(parentModel: PersistenceManagerModel, objStub: ObjStub) {
+    constructor(parentModel: PersistenceManagerModel, type: string) {
         super();
         makeObservable(this);
 
         this.parentModel = parentModel;
-        this.objStub = objStub;
+        this.type = type;
+    }
+
+    open(viewStub: Partial<PersistenceView>, isNewAdd: boolean = false) {
+        this.isNewAdd = isNewAdd;
+        this.viewStub = viewStub;
+
         this.formModel.init({
-            name: this.isAdd ? `` : `${objStub.name} (COPY)`,
-            description: this.isAdd ? `` : objStub.description
+            name: isNewAdd ? `` : `${viewStub.name} (COPY)`,
+            description: isNewAdd ? `` : viewStub.description
         });
+
+        this.isOpen = true;
     }
 
     close() {
-        this.parentModel.closeSaveDialog();
+        this.isOpen = false;
+        this.formModel.init();
     }
 
     async saveAsAsync() {
@@ -49,7 +59,7 @@ export class SaveDialogModel extends HoistModel {
                         required,
                         lengthIs({max: 255}),
                         ({value}) => {
-                            if (this.parentModel?.objects.find(it => it.name === value)) {
+                            if (this.parentModel?.views.find(it => it.name === value)) {
                                 return `An entry with name "${value}" already exists`;
                             }
                         }
@@ -61,34 +71,25 @@ export class SaveDialogModel extends HoistModel {
     }
 
     async doSaveAsAsync() {
-        const {formModel, parentModel, objStub} = this,
+        const {formModel, parentModel, viewStub, type} = this,
             {name, description} = formModel.getData(),
             isValid = await formModel.validateAsync();
 
         if (!isValid) return;
 
         try {
-            const newObj = await XH.jsonBlobService
-                .createAsync({
-                    type: this.parentModel.type,
-                    name,
-                    description,
-                    value: objStub.value
-                })
-                .catchDefault();
+            const newObj = await XH.jsonBlobService.createAsync({
+                type,
+                name,
+                description,
+                value: viewStub.value
+            });
+            this.close();
 
             await parentModel.refreshAsync();
             await parentModel.selectAsync(newObj.id);
-            this.close();
         } catch (e) {
             XH.handleException(e);
         }
     }
-}
-
-export interface ObjStub {
-    name: string;
-    description: string;
-    value: PlainObject;
-    isAdd: boolean;
 }
