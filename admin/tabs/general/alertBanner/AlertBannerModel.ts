@@ -15,7 +15,7 @@ import {AlertBannerSpec} from '@xh/hoist/svc';
 import {isEqual, isMatch, sortBy, without} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
-    savedValue;
+    savedValue: AlertBannerSpec;
     @observable.ref savedPresets: PlainObject[] = [];
 
     @managed
@@ -191,10 +191,10 @@ export class AlertBannerModel extends HoistModel {
     //----------------
     // Implementation
     //----------------
-    private async saveBannerSpecAsync(spec: AlertBannerSpec): Promise<AlertBannerSpec> {
+    private async saveBannerSpecAsync(spec: AlertBannerSpec) {
         const {active, message, intent, iconName, enableClose, clientApps} = spec;
         try {
-            return await XH.fetchService
+            await XH.fetchService
                 .postJson({
                     url: 'alertBannerAdmin/setAlertSpec',
                     body: spec
@@ -299,8 +299,8 @@ export class AlertBannerModel extends HoistModel {
                 updatedBy: XH.getUsername()
             };
 
-        const newSpec = await this.saveBannerSpecAsync(value);
-        await XH.alertBannerService.updateBanner(newSpec);
+        await this.saveBannerSpecAsync(value);
+        await XH.environmentService.pollServerAsync();
         await this.refreshAsync();
     }
 }

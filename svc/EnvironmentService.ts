@@ -112,23 +112,15 @@ export class EnvironmentService extends HoistService {
         return checkMaxVersion(this.get('hoistCoreVersion'), version);
     }
 
-    //------------------------------
-    // Implementation
-    //------------------------------
-    constructor() {
-        super();
-        makeObservable(this);
-    }
-
-    private startPolling() {
-        this.pollTimer = Timer.create({
-            runFn: () => this.pollServerAsync(),
-            interval: this.pollIntervalMs,
-            delay: true
-        });
-    }
-
-    private async pollServerAsync() {
+    /**
+     * Update critical environment information from server.
+     *
+     * Not for application use. Intended to be called frequently on a timer,
+     * and as needed by Hoist.
+     *
+     * @internal
+     */
+    async pollServerAsync() {
         let data;
         try {
             data = await XH.fetchJson({url: 'xh/environmentPoll'});
@@ -165,6 +157,22 @@ export class EnvironmentService extends HoistService {
                     );
             }
         }
+    }
+
+    //------------------------------
+    // Implementation
+    //------------------------------
+    constructor() {
+        super();
+        makeObservable(this);
+    }
+
+    private startPolling() {
+        this.pollTimer = Timer.create({
+            runFn: () => this.pollServerAsync(),
+            interval: this.pollIntervalMs,
+            delay: true
+        });
     }
 
     @action
