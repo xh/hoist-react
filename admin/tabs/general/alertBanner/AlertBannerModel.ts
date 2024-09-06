@@ -188,10 +188,13 @@ export class AlertBannerModel extends HoistModel {
         }
     }
 
-    async saveBannerSpecAsync(spec: AlertBannerSpec) {
+    //----------------
+    // Implementation
+    //----------------
+    private async saveBannerSpecAsync(spec: AlertBannerSpec): Promise<AlertBannerSpec> {
         const {active, message, intent, iconName, enableClose, clientApps} = spec;
         try {
-            await XH.fetchService
+            return await XH.fetchService
                 .postJson({
                     url: 'alertBannerAdmin/setAlertSpec',
                     body: spec
@@ -207,9 +210,6 @@ export class AlertBannerModel extends HoistModel {
         }
     }
 
-    //----------------
-    // Implementation
-    //----------------
     @action
     private syncPreview() {
         const vals = this.formModel.values,
@@ -233,7 +233,7 @@ export class AlertBannerModel extends HoistModel {
         let preservedPublishDate = null;
 
         // Ask some questions if we are dealing with live stuff
-        if (XH.alertBannerService.enabled && (active || savedValue?.active)) {
+        if (active || savedValue?.active) {
             // Question 1. Reshow when modifying an active && already active, closable banner?
             if (
                 active &&
@@ -299,8 +299,8 @@ export class AlertBannerModel extends HoistModel {
                 updatedBy: XH.getUsername()
             };
 
-        await this.saveBannerSpecAsync(value);
-        await XH.alertBannerService.checkForBannerAsync();
+        const newSpec = await this.saveBannerSpecAsync(value);
+        await XH.alertBannerService.updateBanner(newSpec);
         await this.refreshAsync();
     }
 }

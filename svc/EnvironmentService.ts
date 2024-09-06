@@ -18,7 +18,7 @@ import {version as reactVersion} from 'react';
 
 /**
  * Load and report on the client and server environment, including software versions, timezones, and
- * and other technical information.
+ * other technical information.
  */
 export class EnvironmentService extends HoistService {
     static instance: EnvironmentService;
@@ -49,7 +49,7 @@ export class EnvironmentService extends HoistService {
     private pollTimer: Timer;
 
     override async initAsync() {
-        const {pollConfig, instanceName, ...serverEnv} = await XH.fetchJson({
+        const {pollConfig, instanceName, alertBanner, ...serverEnv} = await XH.fetchJson({
                 url: 'xh/environment'
             }),
             clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
@@ -81,7 +81,10 @@ export class EnvironmentService extends HoistService {
         this.pollConfig = pollConfig;
         this.addReaction({
             when: () => XH.appIsRunning,
-            run: this.startPolling
+            run: () => {
+                XH.alertBannerService.updateBanner(alertBanner);
+                this.startPolling();
+            }
         });
     }
 
@@ -135,10 +138,11 @@ export class EnvironmentService extends HoistService {
         }
 
         // Update config/interval, and server info
-        const {pollConfig, instanceName, appVersion, appBuild} = data;
+        const {pollConfig, instanceName, alertBanner, appVersion, appBuild} = data;
         this.pollConfig = pollConfig;
         this.pollTimer.setInterval(this.pollIntervalMs);
         this.setServerInfo(instanceName, appVersion, appBuild);
+        XH.alertBannerService.updateBanner(alertBanner);
 
         // Handle version change
         if (appVersion != XH.getEnv('appVersion') || appBuild != XH.getEnv('appBuild')) {
