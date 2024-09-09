@@ -83,7 +83,7 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
             const {xhColumn} = model;
             if (
                 !xhColumn ||
-                !xhColumn.isTreeColumn ||
+                !(xhColumn.isTreeColumn || xhColumn.isLeftZoneColumn) ||
                 !xhColumn.headerHasExpandCollapse ||
                 !model.rootsWithChildren
             ) {
