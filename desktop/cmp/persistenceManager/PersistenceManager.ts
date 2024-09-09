@@ -23,7 +23,7 @@ export const [PersistenceManager, persistenceManager] =
 
         render({model, minimal = false}) {
             const {selectedView, isShared, entity, manageDialogModel, saveDialogModel} = model,
-                displayName = capitalize(pluralize(entity.displayName));
+                displayName = entity.displayName;
 
             return fragment(
                 hbox({
@@ -31,14 +31,19 @@ export const [PersistenceManager, persistenceManager] =
                     items: [
                         popover({
                             item: button({
-                                text: getHierarchyDisplayName(selectedView?.name) ?? displayName,
+                                text:
+                                    getHierarchyDisplayName(selectedView?.name) ??
+                                    `Default ${capitalize(displayName)}`,
                                 icon: isShared ? Icon.users() : Icon.bookmark(),
                                 rightIcon: Icon.chevronDown(),
                                 outlined: true
                             }),
                             content: div({
                                 items: [
-                                    div({className: 'xh-popup__title', item: displayName}),
+                                    div({
+                                        className: 'xh-popup__title',
+                                        item: capitalize(pluralize(displayName))
+                                    }),
                                     objMenu({minimal})
                                 ]
                             }),
@@ -85,13 +90,13 @@ const objMenu = hoistCmp.factory<PersistenceManagerModelProps>({
         return menu({
             items: [
                 ...items,
-                menuDivider(),
+                menuDivider({title: `Default ${entity.displayName}`}),
                 menuItem({
-                    icon: Icon.plus(),
-                    text: 'New...',
-                    omit: !model.newObjectFn,
-                    onClick: () => model.createNewAsync().linkTo(loadModel)
+                    icon: model.selectedId === null ? Icon.check() : Icon.placeholder(),
+                    text: entity.displayName,
+                    onClick: () => model.selectAsync(null).linkTo(loadModel)
                 }),
+                menuDivider(),
                 menuItem({
                     icon: Icon.save(),
                     text: 'Save',

@@ -629,8 +629,10 @@ export class GridModel extends HoistModel {
      *
      * @returns true if defaults were restored
      */
-    async restoreDefaultsAsync(): Promise<boolean> {
-        if (this.restoreDefaultsWarning) {
+    async restoreDefaultsAsync(
+        {skipWarning}: {skipWarning: boolean} = {skipWarning: !!this.restoreDefaultsWarning}
+    ): Promise<boolean> {
+        if (this.restoreDefaultsWarning && !skipWarning) {
             const confirmed = await XH.confirm({
                 message: this.restoreDefaultsWarning,
                 confirmProps: {

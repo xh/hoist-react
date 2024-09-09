@@ -11,7 +11,7 @@ import {
 import {StoreRecordId} from '@xh/hoist/data/StoreRecord';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, pluralize} from '@xh/hoist/utils/js';
-import {capitalize, cloneDeep, isEmpty, isEqualWith, isNil, isString, startCase} from 'lodash';
+import {capitalize, cloneDeep, isEqualWith, isNil, isString, startCase} from 'lodash';
 import {ManageDialogModel} from './impl/ManageDialogModel';
 import {SaveDialogModel} from './impl/SaveDialogModel';
 import {runInAction} from 'mobx';
@@ -97,8 +97,8 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
     @computed
     get canSave(): boolean {
         const {selectedView} = this;
-        if (!selectedView) return false;
         return (
+            selectedView &&
             this.isDirty &&
             (this.canManageGlobal || !selectedView.isShared) &&
             !this.loadModel.isPending
@@ -161,22 +161,10 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
 
     // TODO - Carefully review if this method needs isStale checks, and how to properly implement them.
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {name, displayName} = this.entity,
+        const {name} = this.entity,
             rawViews = await XH.jsonBlobService.listAsync({type: name, includeValue: true});
 
         runInAction(() => (this.views = this.processRaw(rawViews)));
-
-        const {views} = this;
-        // Auto-create an empty view if required
-        if (!views.length) {
-            const newValue = await this.newObjectFn(),
-                newObject = await XH.jsonBlobService.createAsync({
-                    type: name,
-                    name: `My ${capitalize(displayName)}`,
-                    value: newValue
-                });
-            runInAction(() => (this.views = this.processRaw([newObject])));
-        }
 
         // Always call selectAsync to ensure pendingValue updated and onChangeAsync callback fired if needed
         const id = this.selectedView?.id ?? this.views[0].id;
@@ -191,12 +179,6 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
 
         this.setPendingValue(value);
         await this.onChangeAsync(value);
-
-        // If current value is empty, we know it is the auto-created default view -
-        // save it to capture the default state.
-        if (isEmpty(value)) {
-            await this.saveAsync(true);
-        }
     }
 
     async saveAsync(skipToast: boolean = false) {
@@ -220,26 +202,12 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
     }
 
     async saveAsAsync() {
-        const {name, description} = this.selectedView;
+        const {name, description} = this.selectedView ?? {};
         this.saveDialogModel.open({
             name,
             description,
             value: this.pendingValue
         });
-    }
-
-    async createNewAsync() {
-        const {name, description} = this.selectedView,
-            newValue = await this.newObjectFn();
-
-        this.saveDialogModel.open(
-            {
-                name,
-                description,
-                value: newValue
-            },
-            true
-        );
     }
 
     async resetAsync() {
@@ -283,6 +251,10 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
 
     @action
     setPendingValue(value: T) {
+        if (isNil(value)) {
+            this.pendingValue = null;
+            return;
+        }
         value = this.cleanValue(value);
         if (!this.isEqualSkipAutosize(this.pendingValue, value)) {
             this.pendingValue = value;

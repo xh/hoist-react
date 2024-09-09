@@ -140,6 +140,7 @@ export class ManageDialogModel extends HoistModel {
 
         await XH.jsonBlobService.archiveAsync(token);
         await this.parentModel.refreshAsync();
+        await this.refreshModelsAsync();
     }
 
     async refreshModelsAsync() {

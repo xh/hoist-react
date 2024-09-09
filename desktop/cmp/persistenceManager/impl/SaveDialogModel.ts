@@ -13,7 +13,6 @@ export class SaveDialogModel extends HoistModel {
 
     @bindable viewStub: Partial<PersistenceView>;
     @bindable isOpen: boolean = false;
-    @bindable isNewAdd: boolean;
 
     @managed readonly formModel = this.createFormModel();
 
@@ -25,13 +24,12 @@ export class SaveDialogModel extends HoistModel {
         this.type = type;
     }
 
-    open(viewStub: Partial<PersistenceView>, isNewAdd: boolean = false) {
-        this.isNewAdd = isNewAdd;
+    open(viewStub: Partial<PersistenceView>) {
         this.viewStub = viewStub;
 
         this.formModel.init({
-            name: isNewAdd ? `` : `${viewStub.name} (COPY)`,
-            description: isNewAdd ? `` : viewStub.description
+            name: viewStub.name ? `${viewStub.name} (COPY)` : '',
+            description: viewStub.description
         });
 
         this.isOpen = true;
