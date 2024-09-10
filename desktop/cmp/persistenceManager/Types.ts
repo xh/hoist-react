@@ -17,3 +17,11 @@ export interface PersistenceView<T extends PlainObject = PlainObject> {
     isShared: boolean;
     value: T;
 }
+
+export interface TreeView {
+    itemType: string;
+    text: string;
+    items?: TreeView[];
+    selected?: boolean;
+    key?: number;
+}

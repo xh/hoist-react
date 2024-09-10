@@ -1,9 +1,10 @@
 import {div, fragment, hbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, PlainObject, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {TreeView} from '@xh/hoist/desktop/cmp/persistenceManager/Types';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
-import {capitalize, groupBy, keys, sortBy} from 'lodash';
+import {capitalize} from 'lodash';
 import {ReactNode} from 'react';
 import {manageDialog} from './impl/ManageDialog';
 import {saveDialog} from './impl/SaveDialog';
@@ -11,18 +12,25 @@ import './PersistenceManager.scss';
 import {PersistenceManagerModel} from './PersistenceManagerModel';
 import {pluralize} from '@xh/hoist/utils/js';
 
-interface PersistenceManagerModelProps extends HoistProps<PersistenceManagerModel> {
+interface PersistenceManagerProps extends HoistProps<PersistenceManagerModel> {
     /** True to disable options for saving/managing items. */
     minimal?: boolean;
 }
 
 export const [PersistenceManager, persistenceManager] =
-    hoistCmp.withFactory<PersistenceManagerModelProps>({
+    hoistCmp.withFactory<PersistenceManagerProps>({
         displayName: 'PersistenceManager',
         model: uses(PersistenceManagerModel),
 
         render({model, minimal = false}) {
-            const {selectedView, isShared, entity, manageDialogModel, saveDialogModel} = model,
+            const {
+                    selectedView,
+                    isShared,
+                    entity,
+                    manageDialogModel,
+                    saveDialogModel,
+                    omitDefaultMenuComponent
+                } = model,
                 displayName = entity.displayName;
 
             return fragment(
@@ -30,10 +38,9 @@ export const [PersistenceManager, persistenceManager] =
                     className: 'xh-persistence-manager',
                     items: [
                         popover({
+                            omit: omitDefaultMenuComponent,
                             item: button({
-                                text:
-                                    getHierarchyDisplayName(selectedView?.name) ??
-                                    `Default ${capitalize(displayName)}`,
+                                text: model.getHierarchyDisplayName(selectedView?.name) ?? `-`,
                                 icon: isShared ? Icon.users() : Icon.bookmark(),
                                 rightIcon: Icon.chevronDown(),
                                 outlined: true
@@ -74,28 +81,19 @@ const saveButton = hoistCmp.factory<PersistenceManagerModel>({
     }
 });
 
-const objMenu = hoistCmp.factory<PersistenceManagerModelProps>({
+const objMenu = hoistCmp.factory<PersistenceManagerProps>({
     render({model, minimal}) {
-        const {views, loadModel, entity} = model,
-            grouped = groupBy(views, 'group'),
-            sortedGroupKeys = keys(grouped).sort(),
+        const {loadModel, entity} = model,
             items = [];
 
-        sortedGroupKeys.forEach(group => {
-            items.push(menuDivider({title: group}));
-            items.push(...hierarchicalMenus(sortBy(grouped[group], 'name')));
+        model.viewTree.forEach(it => {
+            items.push(buildView(it, model));
         });
 
         if (minimal) return menu({items});
         return menu({
             items: [
                 ...items,
-                menuDivider({title: `Default ${entity.displayName}`}),
-                menuItem({
-                    icon: model.selectedId === null ? Icon.check() : Icon.placeholder(),
-                    text: entity.displayName,
-                    onClick: () => model.selectAsync(null).linkTo(loadModel)
-                }),
                 menuDivider(),
                 menuItem({
                     icon: Icon.save(),
@@ -110,9 +108,14 @@ const objMenu = hoistCmp.factory<PersistenceManagerModelProps>({
                 }),
                 menuItem({
                     icon: Icon.reset(),
-                    text: 'Reset',
+                    text: 'Revert View',
                     disabled: !model.isDirty,
                     onClick: () => model.resetAsync().linkTo(loadModel)
+                }),
+                menuItem({
+                    icon: Icon.refresh(),
+                    text: 'Reset Defaults',
+                    onClick: () => model.selectAsync(null).linkTo(loadModel)
                 }),
                 menuDivider(),
                 menuItem({
@@ -125,85 +128,25 @@ const objMenu = hoistCmp.factory<PersistenceManagerModelProps>({
     }
 });
 
-/**
- * @param records
- * @param depth  used during recursion, depth in the path string/hierarchy
- * @returns an array of menuItem()s
- */
-function hierarchicalMenus(records: PlainObject[], depth: number = 0): ReactNode[] {
-    const groups = {},
-        unbalancedStableGroupsAndRecords = [];
-
-    records.forEach(record => {
-        // Leaf Node
-        if (getNameHierarchySubstring(record.name, depth + 1) == null) {
-            unbalancedStableGroupsAndRecords.push(record);
-            return;
-        }
-        // Belongs to an already defined group
-        const group = getNameHierarchySubstring(record.name, depth);
-        if (groups[group]) {
-            groups[group].children.push(record);
-            return;
-        }
-        // Belongs to a not defined group, create it
-        groups[group] = {name: group, children: [record], isMenuFolder: true};
-        unbalancedStableGroupsAndRecords.push(groups[group]);
-    });
-
-    return unbalancedStableGroupsAndRecords.map(it => {
-        if (it.isMenuFolder) {
-            return objMenuFolder({
-                name: it.name,
-                items: hierarchicalMenus(it.children, depth + 1),
-                depth
+function buildView(view: TreeView, model: PersistenceManagerModel): ReactNode {
+    const {itemType, text, selected, items, key} = view,
+        icon = selected ? Icon.check() : Icon.placeholder();
+    switch (itemType) {
+        case 'divider':
+            return menuDivider({title: text});
+        case 'menuFolder':
+            return menuItem({
+                text,
+                icon,
+                shouldDismissPopover: false,
+                children: items ? items.map(child => buildView(child, model)) : []
             });
-        }
-        return objMenuItem({record: it});
-    });
-}
-
-const objMenuFolder = hoistCmp.factory<PersistenceManagerModel>({
-    render({model, name, depth, children}) {
-        const selected = isFolderForEntry(name, model.selectedView?.name, depth),
-            icon = selected ? Icon.check() : Icon.placeholder();
-        return menuItem({
-            text: getHierarchyDisplayName(name),
-            icon,
-            shouldDismissPopover: false,
-            children
-        });
+        case 'view':
+            return menuItem({
+                key,
+                icon,
+                text,
+                onClick: () => model.selectAsync(key).linkTo(model.loadModel)
+            });
     }
-});
-
-const objMenuItem = hoistCmp.factory<PersistenceManagerModel>({
-    render({model, record}) {
-        const {id, name} = record,
-            selected = model.selectedId === id,
-            icon = selected ? Icon.check() : Icon.placeholder();
-
-        return menuItem({
-            key: id,
-            icon: icon,
-            text: getHierarchyDisplayName(name),
-            onClick: () => model.selectAsync(id).linkTo(model.loadModel)
-        });
-    }
-});
-
-function isFolderForEntry(folderName, entryName, depth) {
-    const name = getNameHierarchySubstring(entryName, depth);
-    return name && name === folderName && folderName.length < entryName.length;
-}
-
-function getNameHierarchySubstring(name, depth) {
-    const arr = name?.split('\\') ?? [];
-    if (arr.length <= depth) {
-        return null;
-    }
-    return arr.slice(0, depth + 1).join('\\');
-}
-
-function getHierarchyDisplayName(name) {
-    return name?.substring(name.lastIndexOf('\\') + 1);
 }
