@@ -68,7 +68,7 @@ export class MonitorTabModel extends HoistModel {
 
         this.addReaction({
             track: () => this.showInactive,
-            run: () => this.refreshAsync()
+            run: this.refreshAsync
         });
     }
 

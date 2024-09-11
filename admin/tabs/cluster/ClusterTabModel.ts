@@ -91,7 +91,7 @@ export class ClusterTabModel extends HoistModel {
             },
             {
                 track: () => XH.environmentService.serverInstance,
-                run: () => this.refreshAsync()
+                run: this.refreshAsync
             }
         );
     }
