@@ -41,7 +41,6 @@
 * Fixed inline `SelectEditor` to ensure new value is flushed before grid editing stops.
 * `WebSocketService` now attempts to establish a new connection when app's server instance changes.
 
-
 ### ✨ Styles
 
 * Added CSS variables to support customization of `Badge` component styling.
@@ -49,7 +48,6 @@
 ### 📚 Libraries
 
 * short-unique-id `added @ 5.2`
-* hoist-core 21.0`
 
 ## 66.1.1 - 2024-08-01
 
