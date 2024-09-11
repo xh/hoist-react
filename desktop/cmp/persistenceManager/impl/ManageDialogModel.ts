@@ -94,7 +94,7 @@ export class ManageDialogModel extends HoistModel {
     async doSaveAsync() {
         const {formModel, parentModel, canManageGlobal, selectedId} = this,
             {fields, isDirty} = formModel,
-            {name, description, isShared} = formModel.getData(),
+            {name, description, isShared, isFavorite} = formModel.getData(),
             isValid = await formModel.validateAsync(),
             displayName = parentModel.entity.displayName;
 
@@ -119,7 +119,8 @@ export class ManageDialogModel extends HoistModel {
         await XH.jsonBlobService.updateAsync(this.gridModel.selectedRecord.data.token, {
             name,
             description,
-            acl: isShared ? '*' : null
+            acl: isShared ? '*' : null,
+            meta: {isFavorite}
         });
 
         await this.parentModel.refreshAsync();
@@ -176,6 +177,7 @@ export class ManageDialogModel extends HoistModel {
                     {name: 'name', type: 'string'},
                     {name: 'description', type: 'string'},
                     {name: 'isShared', type: 'bool'},
+                    {name: 'isFavorite', type: 'bool'},
                     {name: 'acl', type: 'json'},
                     {name: 'meta', type: 'json'},
                     {name: 'dateCreated', type: 'date'},
@@ -207,6 +209,7 @@ export class ManageDialogModel extends HoistModel {
                 {name: 'name', rules: [required, lengthIs({max: 255})]},
                 {name: 'description'},
                 {name: 'isShared', displayName: 'Shared'},
+                {name: 'isFavorite', displayName: 'Favorite'},
                 {name: 'owner', readonly: true},
                 {name: 'dateCreated', displayName: 'Created', readonly: true},
                 {name: 'lastUpdated', displayName: 'Updated', readonly: true},

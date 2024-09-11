@@ -126,10 +126,20 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
         return !!this.selectedView?.isShared;
     }
 
+    get favoritedViews(): PersistenceView<T>[] {
+        return this.views.filter(it => it.isFavorite);
+    }
+
     get viewTree(): TreeView[] {
         const groupedViews = groupBy(this.views, 'group'),
             sortedGroupKeys = keys(groupedViews).sort(),
             ret = [];
+
+        if (this.favoritedViews.length > 0) {
+            ret.push({itemType: 'divider', text: 'Favorites'});
+            ret.push(...this.hierarchicalItemSpecs(this.favoritedViews));
+        }
+
         sortedGroupKeys.forEach(group => {
             ret.push({itemType: 'divider', text: group});
             ret.push(...this.hierarchicalItemSpecs(sortBy(groupedViews[group], 'name')));
@@ -271,6 +281,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
             name = capitalize(pluralize(entity.displayName));
         return raw.map(it => {
             it.isShared = it.acl === '*';
+            it.isFavorite = it.meta?.isFavorite;
             const group = it.isShared ? `Shared ${name}` : `My ${name}`;
             return {...it, group};
         });

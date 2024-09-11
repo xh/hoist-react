@@ -96,6 +96,12 @@ const formPanel = hoistCmp.factory<ManageDialogModel>({
                                     labelSide: 'left'
                                 }),
                                 omit: !model.canManageGlobal
+                            }),
+                            formField({
+                                field: 'isFavorite',
+                                item: switchInput({
+                                    labelSide: 'left'
+                                })
                             })
                         ]
                     }),
