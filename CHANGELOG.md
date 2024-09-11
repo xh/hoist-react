@@ -2,6 +2,10 @@
 
 ## 68.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+
+* Updated Admin Console's Cluster tab to refresh more frequently.
+
 ## 67.0.0 - 2024-09-03
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update only)

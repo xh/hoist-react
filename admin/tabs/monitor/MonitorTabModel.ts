@@ -18,7 +18,8 @@ export class MonitorTabModel extends HoistModel {
 
     @observable.ref results: MonitorResults[] = [];
     @observable lastRun: number = null;
-    @managed timer: Timer = null;
+
+    @managed readonly timer: Timer;
 
     @bindable @persist showInactive = false;
     @bindable showEditorDialog = false;
@@ -60,7 +61,7 @@ export class MonitorTabModel extends HoistModel {
         makeObservable(this);
 
         this.timer = Timer.create({
-            runFn: () => this.autoRefreshAsync(),
+            runFn: this.autoRefreshAsync,
             interval: 5 * SECONDS,
             delay: true
         });

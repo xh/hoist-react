@@ -22,6 +22,8 @@ import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
+import {Timer} from '@xh/hoist/utils/async';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {ReactNode} from 'react';
 
 export class ClusterTabModel extends HoistModel {
@@ -36,8 +38,9 @@ export class ClusterTabModel extends HoistModel {
         recordsRequired: 1
     };
 
-    @managed gridModel: GridModel = this.createGridModel();
-    @managed tabModel: TabContainerModel = this.createTabModel();
+    @managed readonly gridModel: GridModel = this.createGridModel();
+    @managed readonly tabModel: TabContainerModel = this.createTabModel();
+    @managed readonly timer: Timer;
 
     get instance(): PlainObject {
         return this.gridModel.selectedRecord?.data;
@@ -57,6 +60,7 @@ export class ClusterTabModel extends HoistModel {
             let data = await XH.fetchJson({url: 'clusterAdmin/allInstances', loadSpec});
             data = data.map(row => ({
                 ...row,
+                isLocal: row.name == XH.environmentService.serverInstance,
                 usedHeapMb: row.memory?.usedHeapMb,
                 usedPctMax: row.memory?.usedPctMax
             }));
@@ -64,12 +68,19 @@ export class ClusterTabModel extends HoistModel {
             gridModel.loadData(data);
             await gridModel.preSelectFirstAsync();
         } catch (e) {
+            gridModel.clear();
             XH.handleException(e);
         }
     }
 
     constructor() {
         super();
+
+        this.timer = Timer.create({
+            runFn: this.autoRefreshAsync,
+            interval: 5 * SECONDS,
+            delay: true
+        });
 
         this.addReaction(
             {
@@ -80,7 +91,7 @@ export class ClusterTabModel extends HoistModel {
             },
             {
                 track: () => XH.environmentService.serverInstance,
-                run: () => this.gridModel.agApi.refreshCells({force: true})
+                run: () => this.refreshAsync()
             }
         );
     }
@@ -91,6 +102,7 @@ export class ClusterTabModel extends HoistModel {
                 idSpec: 'name',
                 fields: [
                     {name: 'name', type: 'string'},
+                    {name: 'isLocal', type: 'bool'},
                     {name: 'isPrimary', type: 'bool'},
                     {name: 'isReady', type: 'bool'},
                     {name: 'wsConnections', type: 'int'},
@@ -178,7 +190,7 @@ export class ClusterTabModel extends HoistModel {
     formatInstance(instance: PlainObject): ReactNode {
         const content = [instance.name];
         if (instance.isPrimary) content.push(badge({item: 'primary', intent: 'primary'}));
-        if (instance.name === XH.environmentService.serverInstance) content.push(badge('local'));
+        if (instance.isLocal) content.push(badge('local'));
         return hbox(content);
     }
 
