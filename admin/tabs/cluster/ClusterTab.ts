@@ -10,7 +10,7 @@ import {creates, hoistCmp} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
-import {box, hspacer, placeholder, vframe} from '@xh/hoist/cmp/layout';
+import {box, hbox, hspacer, placeholder, span, vframe} from '@xh/hoist/cmp/layout';
 import {ClusterTabModel} from './ClusterTabModel';
 import {Icon} from '@xh/hoist/icon';
 
@@ -27,7 +27,7 @@ export const clusterTab = hoistCmp.factory({
                     collapsible: false,
                     persistWith: model.persistWith
                 },
-                item: grid()
+                items: [errorMessageBanner(), grid()]
             }),
             instance?.isReady
                 ? panel({
@@ -44,4 +44,20 @@ export const clusterTab = hoistCmp.factory({
             mask({bind: model.loadModel})
         );
     }
+});
+
+const errorMessageBanner = hoistCmp.factory<ClusterTabModel>(({model}) => {
+    const {error} = model;
+    if (!error) return null;
+    return hbox({
+        alignItems: 'center',
+        className: 'xh-bg-intent-danger xh-pad-lr',
+        items: [
+            Icon.error(),
+            span({
+                className: 'xh-pad',
+                item: error.message || error.name || 'Unknown Error'
+            })
+        ]
+    });
 });

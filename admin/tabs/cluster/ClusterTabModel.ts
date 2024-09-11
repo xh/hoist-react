@@ -18,16 +18,19 @@ import {badge} from '@xh/hoist/cmp/badge';
 import {GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
-import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
+import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
+import {HoistModel, LoadSpec, lookup, managed, PlainObject, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
+import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {ReactNode} from 'react';
 
 export class ClusterTabModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminClusterTabState'};
+
+    @lookup(TabModel) private tabModel: TabModel;
 
     shutdownAction: RecordActionSpec = {
         icon: Icon.skull(),
@@ -39,11 +42,13 @@ export class ClusterTabModel extends HoistModel {
     };
 
     @managed readonly gridModel: GridModel = this.createGridModel();
-    @managed readonly tabModel: TabContainerModel = this.createTabModel();
+    @managed readonly tabContainerModel: TabContainerModel = this.createTabContainerModel();
     @managed readonly timer: Timer;
 
+    @observable.ref error: Error = null;
+
     get instance(): PlainObject {
-        return this.gridModel.selectedRecord?.data;
+        return this.error ? null : this.gridModel.selectedRecord?.data;
     }
 
     get instanceName(): string {
@@ -64,20 +69,22 @@ export class ClusterTabModel extends HoistModel {
                 usedHeapMb: row.memory?.usedHeapMb,
                 usedPctMax: row.memory?.usedPctMax
             }));
-
             gridModel.loadData(data);
             await gridModel.preSelectFirstAsync();
+            runInAction(() => (this.error = null));
         } catch (e) {
-            gridModel.clear();
-            XH.handleException(e);
+            runInAction(() => (this.error = e));
         }
     }
 
     constructor() {
         super();
+        makeObservable(this);
 
         this.timer = Timer.create({
-            runFn: this.autoRefreshAsync,
+            runFn: () => {
+                if (this.tabModel?.isActive) this.autoRefreshAsync();
+            },
             interval: 5 * SECONDS,
             delay: true
         });
@@ -86,7 +93,7 @@ export class ClusterTabModel extends HoistModel {
             {
                 track: () => this.instanceName,
                 run: instName => {
-                    if (instName) this.tabModel.refreshContextModel.refreshAsync();
+                    if (instName) this.tabContainerModel.refreshContextModel.refreshAsync();
                 }
             },
             {
@@ -161,7 +168,7 @@ export class ClusterTabModel extends HoistModel {
         });
     }
 
-    createTabModel() {
+    createTabContainerModel() {
         return new TabContainerModel({
             route: 'default.cluster',
             switcher: false,
