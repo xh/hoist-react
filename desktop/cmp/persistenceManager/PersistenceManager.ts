@@ -129,7 +129,7 @@ const objMenu = hoistCmp.factory<PersistenceManagerProps>({
 });
 
 function buildView(view: TreeView, model: PersistenceManagerModel): ReactNode {
-    const {itemType, text, selected, items, key} = view,
+    const {itemType, text, selected, items, id, isFavorite} = view,
         icon = selected ? Icon.check() : Icon.placeholder();
     switch (itemType) {
         case 'divider':
@@ -143,10 +143,10 @@ function buildView(view: TreeView, model: PersistenceManagerModel): ReactNode {
             });
         case 'view':
             return menuItem({
-                key,
+                key: isFavorite ? `${id}-isFavorite` : id,
                 icon,
                 text,
-                onClick: () => model.selectAsync(key).linkTo(model.loadModel)
+                onClick: () => model.selectAsync(id).linkTo(model.loadModel)
             });
     }
 }

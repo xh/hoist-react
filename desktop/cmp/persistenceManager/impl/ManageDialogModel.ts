@@ -4,6 +4,7 @@ import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {includes} from 'lodash';
 import {PersistenceManagerModel} from '../PersistenceManagerModel';
 
 export class ManageDialogModel extends HoistModel {
@@ -63,7 +64,8 @@ export class ManageDialogModel extends HoistModel {
                 if (record) {
                     this.formModel.readonly = !this.canEdit;
                     this.formModel.init({
-                        ...record.data
+                        ...record.data,
+                        isFavorite: includes(this.parentModel.favorites, record.data.token)
                     });
                 }
             }
@@ -92,11 +94,12 @@ export class ManageDialogModel extends HoistModel {
     //------------------------
 
     async doSaveAsync() {
-        const {formModel, parentModel, canManageGlobal, selectedId} = this,
+        const {formModel, parentModel, canManageGlobal, selectedId, gridModel} = this,
             {fields, isDirty} = formModel,
             {name, description, isShared, isFavorite} = formModel.getData(),
             isValid = await formModel.validateAsync(),
-            displayName = parentModel.entity.displayName;
+            displayName = parentModel.entity.displayName,
+            token = gridModel.selectedRecord.data.token;
 
         if (!isValid || !selectedId || !isDirty) return;
 
@@ -116,11 +119,18 @@ export class ManageDialogModel extends HoistModel {
             if (!confirmed) return;
         }
 
-        await XH.jsonBlobService.updateAsync(this.gridModel.selectedRecord.data.token, {
+        if (fields.isFavorite.isDirty) {
+            if (isFavorite) {
+                parentModel.favorites = [...parentModel.favorites, token];
+            } else {
+                parentModel.favorites = parentModel.favorites.filter(it => it !== token);
+            }
+        }
+
+        await XH.jsonBlobService.updateAsync(token, {
             name,
             description,
-            acl: isShared ? '*' : null,
-            meta: {isFavorite}
+            acl: isShared ? '*' : null
         });
 
         await this.parentModel.refreshAsync();
@@ -128,7 +138,10 @@ export class ManageDialogModel extends HoistModel {
     }
 
     async doDeleteAsync() {
-        const {selectedRecord} = this.gridModel;
+        const {parentModel, gridModel, formModel} = this,
+            {selectedRecord} = gridModel,
+            {isFavorite} = formModel.getData(),
+            {favorites} = parentModel;
         if (!selectedRecord) return;
 
         const {name, token} = selectedRecord.data;
@@ -139,17 +152,27 @@ export class ManageDialogModel extends HoistModel {
         });
         if (!confirmed) return;
 
+        if (formModel.fields.isFavorite.isDirty) {
+            if (isFavorite) {
+                parentModel.favorites = [...favorites, token];
+            } else {
+                parentModel.favorites = favorites.filter(it => it !== token);
+            }
+        }
+
         await XH.jsonBlobService.archiveAsync(token);
-        await this.parentModel.refreshAsync();
+        await parentModel.refreshAsync();
         await this.refreshModelsAsync();
     }
 
     async refreshModelsAsync() {
-        const {views} = this.parentModel;
-        this.gridModel.loadData(views);
+        const {views, favorites} = this.parentModel,
+            {gridModel, formModel} = this;
+        gridModel.loadData(views);
         await this.ensureGridHasSelection();
-        this.formModel.init({
-            ...this.gridModel.selectedRecord.data
+        formModel.init({
+            ...gridModel.selectedRecord.data,
+            isFavorite: includes(favorites, gridModel.selectedRecord.data.token)
         });
     }
 

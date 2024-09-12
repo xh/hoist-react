@@ -15,7 +15,6 @@ export interface PersistenceView<T extends PlainObject = PlainObject> {
     type: string;
     group: string;
     isShared: boolean;
-    isFavorite: boolean;
     value: T;
 }
 
@@ -24,5 +23,6 @@ export interface TreeView {
     text: string;
     items?: TreeView[];
     selected?: boolean;
-    key?: number;
+    id?: number;
+    isFavorite?: boolean;
 }

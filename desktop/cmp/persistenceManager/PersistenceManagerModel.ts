@@ -93,6 +93,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
     @observable.ref views: PersistenceView<T>[] = [];
 
     @bindable selectedId: StoreRecordId;
+    @bindable favorites: string[] = [];
 
     get canManageGlobal(): boolean {
         return executeIfFunction(this._canManageGlobal);
@@ -127,7 +128,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
     }
 
     get favoritedViews(): PersistenceView<T>[] {
-        return this.views.filter(it => it.isFavorite);
+        return this.views.filter(it => this.favorites.includes(it.token));
     }
 
     get viewTree(): TreeView[] {
@@ -137,13 +138,28 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
 
         if (this.favoritedViews.length > 0) {
             ret.push({itemType: 'divider', text: 'Favorites'});
-            ret.push(...this.hierarchicalItemSpecs(this.favoritedViews));
+            ret.push(
+                ...this.favoritedViews.map(it => ({
+                    itemType: 'view',
+                    text: this.getHierarchyDisplayName(it.name),
+                    selected: this.selectedId === it.id,
+                    id: it.id,
+                    isFavorite: true
+                }))
+            );
         }
 
         sortedGroupKeys.forEach(group => {
             ret.push({itemType: 'divider', text: group});
             ret.push(...this.hierarchicalItemSpecs(sortBy(groupedViews[group], 'name')));
         });
+        return ret;
+    }
+
+    get persistState() {
+        const ret: PlainObject = {};
+        if (this.selectedId) ret.selectedId = this.selectedId;
+        if (this.favorites) ret.favorites = this.favorites;
         return ret;
     }
 
@@ -178,9 +194,10 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
 
                 const state = this._provider.read();
                 if (state?.selectedId) this.selectedId = state.selectedId;
+                if (state?.favorites) this.favorites = state.favorites;
                 this.addReaction({
-                    track: () => this.selectedId,
-                    run: selectedId => this._provider.write({selectedId})
+                    track: () => this.persistState,
+                    run: state => this._provider.write(state)
                 });
             } catch (e) {
                 this.logError('Error applying persistWith', persistWith, e);
@@ -281,7 +298,6 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
             name = capitalize(pluralize(entity.displayName));
         return raw.map(it => {
             it.isShared = it.acl === '*';
-            it.isFavorite = it.meta?.isFavorite;
             const group = it.isShared ? `Shared ${name}` : `My ${name}`;
             return {...it, group};
         });
@@ -364,7 +380,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
                 itemType: 'view',
                 text: this.getHierarchyDisplayName(name),
                 selected: this.selectedId === id,
-                key: id
+                id: id
             };
         });
     }
