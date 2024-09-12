@@ -48,7 +48,7 @@ export class ClusterTabModel extends HoistModel {
     @observable.ref error: Error = null;
 
     get instance(): PlainObject {
-        return this.error ? null : this.gridModel.selectedRecord?.data;
+        return this.gridModel.selectedRecord?.data;
     }
 
     get instanceName(): string {
