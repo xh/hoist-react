@@ -11,7 +11,7 @@ import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
-import {debounced, isDisplayed} from '@xh/hoist/utils/js';
+import {debounced} from '@xh/hoist/utils/js';
 import {escapeRegExp, maxBy} from 'lodash';
 import {LogViewerModel} from './LogViewerModel';
 
@@ -105,26 +105,21 @@ export class LogDisplayModel extends HoistModel {
             return;
         }
 
-        try {
-            const response = await XH.fetchJson({
-                url: 'logViewerAdmin/getFile',
-                params: {
-                    filename: parent.file,
-                    startLine: this.startLine,
-                    maxLines: this.maxLines,
-                    pattern: this.regexOption ? this.pattern : escapeRegExp(this.pattern),
-                    caseSensitive: this.caseSensitive,
-                    instance: parent.instanceName
-                },
-                loadSpec
-            });
-            if (!response.success) throw XH.exception(response.exception);
-            this.updateGridData(response.content);
-        } catch (e) {
-            // Show errors inline in the viewer vs. a modal alert or catchDefault().
-            const msg = e.message || 'An unknown error occurred';
-            this.updateGridData([[0, `Error: ${msg}`]]);
-        }
+        const response = await XH.fetchJson({
+            url: 'logViewerAdmin/getFile',
+            params: {
+                filename: parent.file,
+                startLine: this.startLine,
+                maxLines: this.maxLines,
+                pattern: this.regexOption ? this.pattern : escapeRegExp(this.pattern),
+                caseSensitive: this.caseSensitive,
+                instance: parent.instanceName
+            },
+            loadSpec
+        });
+        // Backward compatibility for Hoist Core < v22, which returned exception in-band
+        if (!response.success) throw XH.exception(response.exception);
+        this.updateGridData(response.content);
     }
 
     async scrollToTail() {
@@ -209,14 +204,13 @@ export class LogDisplayModel extends HoistModel {
     }
 
     private autoRefreshLines() {
-        const {tailActive, parent} = this,
-            {viewRef} = parent;
+        const {tailActive} = this;
 
         if (
             tailActive &&
             olderThan(this.lastLoadCompleted, 5 * SECONDS) &&
             !this.loadModel.isPending &&
-            isDisplayed(viewRef.current)
+            this.parent.isVisible
         ) {
             this.loadLog();
         }

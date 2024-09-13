@@ -9,8 +9,12 @@ import {HoistModel, LoadSpec, lookup, PlainObject, XH} from '@xh/hoist/core';
 import {fmtDateTimeSec, fmtJson} from '@xh/hoist/format';
 import {DAYS} from '@xh/hoist/utils/datetime';
 import {cloneDeep, forOwn, isArray, isNumber, isPlainObject} from 'lodash';
+import {createRef} from 'react';
+import {isDisplayed} from '@xh/hoist/utils/js';
 
 export class BaseInstanceModel extends HoistModel {
+    viewRef = createRef<HTMLElement>();
+
     @lookup(() => ClusterTabModel) parent: ClusterTabModel;
 
     get instanceName(): string {
@@ -24,20 +28,28 @@ export class BaseInstanceModel extends HoistModel {
     }
 
     handleLoadException(e: unknown, loadSpec: LoadSpec) {
-        const instanceNotFound = this.isInstanceNotFound(e);
+        const instanceNotFound = this.isInstanceNotFound(e),
+            connDown = this.parent.lastLoadException,
+            {isVisible} = this,
+            {isAutoRefresh} = loadSpec;
         XH.handleException(e, {
-            showAlert: !loadSpec.isAutoRefresh && !instanceNotFound,
-            logOnServer: !instanceNotFound
+            alertType: 'toast',
+            showAlert: !instanceNotFound && !connDown && isVisible,
+            logOnServer: !instanceNotFound && !connDown && isVisible && !isAutoRefresh
         });
     }
 
-    isInstanceNotFound(e: unknown): boolean {
-        return e['name'] == 'InstanceNotFoundException';
+    get isVisible() {
+        return isDisplayed(this.viewRef.current);
     }
 
     //-------------------
     // Implementation
     //-------------------
+    private isInstanceNotFound(e: unknown): boolean {
+        return e['name'] == 'InstanceNotFoundException';
+    }
+
     private processTimestamps(stats: PlainObject) {
         forOwn(stats, (v, k) => {
             // Convert numbers that look like recent timestamps to date values.
