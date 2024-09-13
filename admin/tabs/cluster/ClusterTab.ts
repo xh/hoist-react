@@ -29,15 +29,7 @@ export const clusterTab = hoistCmp.factory({
                 item: grid()
             }),
             detailPanel(),
-            mask({
-                message: div(
-                    p('Attempting to connect to cluster.'),
-                    p('Local instance may be unavailable, please wait.')
-                ),
-                isDisplayed: true,
-                spinner: true,
-                omit: !model.lastLoadException
-            })
+            failedConnectionMask()
         );
     }
 });
@@ -61,6 +53,20 @@ export const detailPanel = hoistCmp.factory<ClusterTabModel>({
             ],
             flex: 1,
             item: tabContainer()
+        });
+    }
+});
+
+export const failedConnectionMask = hoistCmp.factory<ClusterTabModel>({
+    render({model}) {
+        return mask({
+            message: div(
+                p('Attempting to connect to cluster.'),
+                p('Local instance may be unavailable, please wait.')
+            ),
+            isDisplayed: true,
+            spinner: true,
+            omit: !model.lastLoadException
         });
     }
 });
