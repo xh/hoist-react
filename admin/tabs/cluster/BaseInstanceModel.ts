@@ -34,8 +34,8 @@ export class BaseInstanceModel extends HoistModel {
             {isAutoRefresh} = loadSpec;
         XH.handleException(e, {
             alertType: 'toast',
-            showAlert: !instanceNotFound && !connDown && isVisible && !isAutoRefresh,
-            logOnServer: !instanceNotFound && !connDown && isVisible
+            showAlert: !instanceNotFound && !connDown && isVisible,
+            logOnServer: !instanceNotFound && !connDown && isVisible && !isAutoRefresh
         });
     }
 
