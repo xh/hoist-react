@@ -154,7 +154,8 @@ export const instance: ColumnSpec = {
     field: {
         name: 'instance',
         type: 'string',
-        displayName: 'Instance'
+        isDimension: true,
+        aggregator: 'UNIQUE'
     },
     width: 100
 };
