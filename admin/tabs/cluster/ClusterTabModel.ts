@@ -22,7 +22,7 @@ import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, LoadSpec, lookup, managed, PlainObject, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {ReactNode} from 'react';
@@ -45,8 +45,6 @@ export class ClusterTabModel extends HoistModel {
     @managed readonly tabContainerModel: TabContainerModel = this.createTabContainerModel();
     @managed readonly timer: Timer;
 
-    @observable.ref error: Error = null;
-
     get instance(): PlainObject {
         return this.gridModel.selectedRecord?.data;
     }
@@ -61,20 +59,15 @@ export class ClusterTabModel extends HoistModel {
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {gridModel} = this;
-        try {
-            let data = await XH.fetchJson({url: 'clusterAdmin/allInstances', loadSpec});
-            data = data.map(row => ({
-                ...row,
-                isLocal: row.name == XH.environmentService.serverInstance,
-                usedHeapMb: row.memory?.usedHeapMb,
-                usedPctMax: row.memory?.usedPctMax
-            }));
-            gridModel.loadData(data);
-            await gridModel.preSelectFirstAsync();
-            runInAction(() => (this.error = null));
-        } catch (e) {
-            runInAction(() => (this.error = e));
-        }
+        let data = await XH.fetchJson({url: 'clusterAdmin/allInstances', loadSpec});
+        data = data.map(row => ({
+            ...row,
+            isLocal: row.name == XH.environmentService.serverInstance,
+            usedHeapMb: row.memory?.usedHeapMb,
+            usedPctMax: row.memory?.usedPctMax
+        }));
+        gridModel.loadData(data);
+        await gridModel.preSelectFirstAsync();
     }
 
     constructor() {
