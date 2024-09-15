@@ -10,13 +10,13 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, Intent, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {dateIs, required} from '@xh/hoist/data';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {AlertBannerSpec} from '@xh/hoist/svc';
 import {isEqual, isMatch, sortBy, without} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
     savedValue: AlertBannerSpec;
-    @observable.ref savedPresets: PlainObject[] = [];
+    @bindable.ref savedPresets: PlainObject[] = [];
 
     @managed
     formModel = new FormModel({
@@ -118,7 +118,6 @@ export class AlertBannerModel extends HoistModel {
         this.formModel.setValues({...preset, expires: null});
     }
 
-    @action
     addPreset() {
         const {message, intent, iconName, enableClose, clientApps} = this.formModel.values,
             dateCreated = Date.now(),
