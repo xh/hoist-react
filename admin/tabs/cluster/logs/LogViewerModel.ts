@@ -14,7 +14,6 @@ import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import download from 'downloadjs';
-import {createRef} from 'react';
 import {LogDisplayModel} from './LogDisplayModel';
 
 /**
@@ -22,8 +21,6 @@ import {LogDisplayModel} from './LogDisplayModel';
  */
 export class LogViewerModel extends BaseInstanceModel {
     @observable file: string = null;
-
-    viewRef = createRef<HTMLElement>();
 
     @managed
     logDisplayModel = new LogDisplayModel(this);

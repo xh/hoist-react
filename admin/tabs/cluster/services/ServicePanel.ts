@@ -41,7 +41,8 @@ export const servicePanel = hoistCmp.factory({
                 }),
                 detailsPanel()
             ),
-            mask: 'onLoad'
+            mask: 'onLoad',
+            ref: model.viewRef
         });
     }
 });
