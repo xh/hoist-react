@@ -10,14 +10,13 @@ import {creates, hoistCmp} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
-import {box, hspacer, placeholder, vframe} from '@xh/hoist/cmp/layout';
+import {box, div, hspacer, p, placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {ClusterTabModel} from './ClusterTabModel';
 import {Icon} from '@xh/hoist/icon';
 
 export const clusterTab = hoistCmp.factory({
     model: creates(ClusterTabModel),
     render({model}) {
-        const {instance} = model;
         return vframe(
             panel({
                 modelConfig: {
@@ -29,19 +28,45 @@ export const clusterTab = hoistCmp.factory({
                 },
                 item: grid()
             }),
-            instance?.isReady
-                ? panel({
-                      compactHeader: true,
-                      tbar: [
-                          box({width: 150, item: model.formatInstance(instance)}),
-                          hspacer(25),
-                          tabSwitcher()
-                      ],
-                      flex: 1,
-                      item: tabContainer()
-                  })
-                : placeholder(Icon.server(), 'Select a running instance above.'),
-            mask({bind: model.loadModel})
+            detailPanel(),
+            failedConnectionMask()
         );
+    }
+});
+
+export const detailPanel = hoistCmp.factory<ClusterTabModel>({
+    render({model}) {
+        const {instance, lastLoadException} = model;
+        if (!instance?.isReady) {
+            return placeholder({
+                items: [Icon.server(), 'Select a running instance above.'],
+                omit: lastLoadException
+            });
+        }
+
+        return panel({
+            compactHeader: true,
+            tbar: [
+                box({width: 150, item: model.formatInstance(instance)}),
+                hspacer(25),
+                tabSwitcher()
+            ],
+            flex: 1,
+            item: tabContainer()
+        });
+    }
+});
+
+export const failedConnectionMask = hoistCmp.factory<ClusterTabModel>({
+    render({model}) {
+        return mask({
+            message: div(
+                p('Attempting to connect to cluster.'),
+                p('Local instance may be unavailable, please wait.')
+            ),
+            isDisplayed: true,
+            spinner: true,
+            omit: !model.lastLoadException
+        });
     }
 });

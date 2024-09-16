@@ -29,7 +29,6 @@ export const logViewer = hoistCmp.factory({
 
         return hframe({
             className,
-            ref: model.viewRef,
             items: [
                 panel({
                     collapsedTitle: 'Log Files',
@@ -57,7 +56,8 @@ export const logViewer = hoistCmp.factory({
                 }),
                 logDisplay(),
                 model.showLogLevelDialog ? logLevelDialog() : null
-            ]
+            ],
+            ref: model.viewRef
         });
     }
 });
