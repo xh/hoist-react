@@ -583,7 +583,7 @@ export class ZoneGridModel extends HoistModel {
             const colId = it.field;
             subFields.push({
                 colId,
-                label: it.showLabel ? (labelRenderers[colId] ?? true) : false,
+                label: it.showLabel ? labelRenderers[colId] ?? true : false,
                 position: 'top'
             });
         });
@@ -591,7 +591,7 @@ export class ZoneGridModel extends HoistModel {
             const colId = it.field;
             subFields.push({
                 colId,
-                label: it.showLabel ? (labelRenderers[colId] ?? true) : false,
+                label: it.showLabel ? labelRenderers[colId] ?? true : false,
                 position: 'bottom'
             });
         });
