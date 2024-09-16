@@ -94,8 +94,8 @@ export interface ColumnSpec {
     isTreeColumn?: boolean;
 
     /**
-     * For ZoneGrid's the left most column will have this flag set to true by Hoist. Similarly to
-     * isTreeColumn this flag is used in conjunction with the headerHasExpandCollapse flag to
+     * For ZoneGrids, the left most column will be set to true by Hoist. Similar to
+     * isTreeColumn, this flag is used in conjunction with the headerHasExpandCollapse flag to
      * potentially provide a expand/collapse all icon in the column header.
      */
     isLeftZoneColumn?: boolean;
