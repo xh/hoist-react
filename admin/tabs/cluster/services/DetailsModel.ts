@@ -48,14 +48,6 @@ export class DetailsModel extends HoistModel {
             loadSpec
         });
         if (loadSpec.isStale) return;
-        this.preprocessRawData(resp);
         this.stats = resp;
-    }
-
-    private preprocessRawData(resp) {
-        // Format distributed objects for readability
-        resp.distributedObjects?.forEach(obj => {
-            obj.name = obj.name.substring(obj.name.indexOf('_') + 1);
-        });
     }
 }
