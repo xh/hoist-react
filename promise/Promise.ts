@@ -10,7 +10,9 @@ import {
     ExceptionHandlerOptions,
     TaskObserver,
     TrackOptions,
-    XH
+    XH,
+    Some,
+    Awaitable
 } from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
@@ -26,10 +28,7 @@ declare global {
          * Version of `then()` that wraps the callback in a MobX action, for use in a Promise chain
          * that modifies MobX observables.
          */
-        thenAction(
-            onFulfilled?: (value: T) => any,
-            onRejected?: (reason: any) => any
-        ): Promise<any>;
+        thenAction<TResult>(onFulfilled: (value: T) => Awaitable<TResult>): Promise<TResult>;
 
         /**
          * Version of `catch()` that will only catch certain exceptions.
@@ -39,24 +38,24 @@ declare global {
          *      selector will be handled by this method.
          * @param fn - catch handler
          */
-        catchWhen(
-            selector: ((e: any) => boolean) | string | string[],
-            fn?: (reason: any) => any
-        ): Promise<any>;
+        catchWhen<TResult = undefined>(
+            selector: ((e: any) => boolean) | Some<string>,
+            fn?: (reason: any) => Awaitable<TResult>
+        ): Promise<T | TResult>;
 
         /**
          * Version of `catch()` that passes the error onto Hoist's default exception handler for
          * convention-driven logging and alerting. Typically called last in a Promise chain.
          */
-        catchDefault(options?: ExceptionHandlerOptions): Promise<any>;
+        catchDefault(options?: ExceptionHandlerOptions): Promise<T | undefined>;
 
         /**
          * Version of `catchDefault()` that will only catch certain exceptions.
          */
         catchDefaultWhen(
-            selector: ((e: any) => boolean) | string | string[],
+            selector: ((e: any) => boolean) | Some<string>,
             options: ExceptionHandlerOptions
-        ): Promise<any>;
+        ): Promise<T | undefined>;
 
         /**
          * Wait on a potentially async function before passing on the original value.

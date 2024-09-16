@@ -180,10 +180,11 @@ export class PrefService extends HoistService {
                     params: {
                         clientUsername: XH.getUsername(),
                         updates: JSON.stringify(updates)
+                    },
+                    track: {
+                        message: `Migrated ${updateCount} preferences`,
+                        data: updates
                     }
-                }).track({
-                    message: `Migrated ${updateCount} preferences`,
-                    data: updates
                 });
                 XH.localStorageService.remove(key);
             }

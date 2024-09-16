@@ -40,7 +40,8 @@ export const hzObjectPanel = hoistCmp.factory({
                 exportButton()
             ],
             item: hframe(grid(), detailsPanel()),
-            mask: 'onLoad'
+            mask: 'onLoad',
+            ref: model.viewRef
         });
     }
 });
