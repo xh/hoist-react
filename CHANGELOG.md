@@ -2,6 +2,10 @@
 
 ## 68.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added expand/collapse affordance in the left column header of ZoneGrids.
+
 ### ⚙️ Technical
 
 * Updated Admin Console's Cluster tab to refresh more frequently.
