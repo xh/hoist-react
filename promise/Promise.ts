@@ -11,7 +11,8 @@ import {
     TaskObserver,
     TrackOptions,
     XH,
-    Some
+    Some,
+    Awaitable
 } from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
@@ -27,9 +28,7 @@ declare global {
          * Version of `then()` that wraps the callback in a MobX action, for use in a Promise chain
          * that modifies MobX observables.
          */
-        thenAction<TResult1 = T>(
-            onFulfilled?: (value: T) => TResult1 | PromiseLike<TResult1>
-        ): Promise<TResult1 | never>;
+        thenAction<TResult>(onFulfilled: (value: T) => Awaitable<TResult>): Promise<TResult>;
 
         /**
          * Version of `catch()` that will only catch certain exceptions.
@@ -39,16 +38,16 @@ declare global {
          *      selector will be handled by this method.
          * @param fn - catch handler
          */
-        catchWhen<TResult = never>(
+        catchWhen<TResult = undefined>(
             selector: ((e: any) => boolean) | Some<string>,
-            fn?: (reason: any) => TResult | PromiseLike<TResult>
+            fn?: (reason: any) => Awaitable<TResult>
         ): Promise<T | TResult>;
 
         /**
          * Version of `catch()` that passes the error onto Hoist's default exception handler for
          * convention-driven logging and alerting. Typically called last in a Promise chain.
          */
-        catchDefault(options?: ExceptionHandlerOptions): Promise<T | never>;
+        catchDefault(options?: ExceptionHandlerOptions): Promise<T | undefined>;
 
         /**
          * Version of `catchDefault()` that will only catch certain exceptions.
@@ -56,7 +55,7 @@ declare global {
         catchDefaultWhen(
             selector: ((e: any) => boolean) | Some<string>,
             options: ExceptionHandlerOptions
-        ): Promise<T | never>;
+        ): Promise<T | undefined>;
 
         /**
          * Wait on a potentially async function before passing on the original value.
