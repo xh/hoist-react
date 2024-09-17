@@ -16,6 +16,11 @@
 
 * Corrected types of enhanced `Promise` methods.
 
+### 📚 Libraries
+
+* @azure/msal-browser `3.17 → 3.23`
+
+
 ## 67.0.0 - 2024-09-03
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update only)
