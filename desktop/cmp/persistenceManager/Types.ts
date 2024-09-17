@@ -18,11 +18,20 @@ export interface PersistenceView<T extends PlainObject = PlainObject> {
     value: T;
 }
 
-export interface TreeView {
-    itemType: string;
+export type PersistenceViewTree = {
     text: string;
-    items?: TreeView[];
-    selected?: boolean;
-    id?: number;
-    isFavorite?: boolean;
-}
+    selected: boolean;
+} & (
+    | {
+          type: 'directory';
+          items: PersistenceViewTree[];
+      }
+    | {
+          type: 'view';
+          id: number;
+          isFavorite: boolean;
+      }
+    | {
+          type: 'divider';
+      }
+);

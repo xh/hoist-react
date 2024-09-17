@@ -29,7 +29,9 @@ export class ManageDialogModel extends HoistModel {
     }
 
     get canDelete(): boolean {
-        return this.parentModel.views.length > 1 && (this.canManageGlobal || !this.selIsShared);
+        const {parentModel, selIsShared, canManageGlobal} = this,
+            {views, isAllowEmpty} = parentModel;
+        return (isAllowEmpty ? views.length > 1 : true) && (canManageGlobal || !selIsShared);
     }
 
     get canEdit(): boolean {

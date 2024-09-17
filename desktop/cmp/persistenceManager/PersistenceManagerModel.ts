@@ -25,7 +25,7 @@ import {
 import {ManageDialogModel} from './impl/ManageDialogModel';
 import {SaveDialogModel} from './impl/SaveDialogModel';
 import {runInAction} from 'mobx';
-import {PersistenceView, TreeView} from '@xh/hoist/desktop/cmp/persistenceManager/Types';
+import {PersistenceView, PersistenceViewTree} from '@xh/hoist/desktop/cmp/persistenceManager/Types';
 
 /**
  * PersistenceManager provides re-usable loading, selection, and user management of named configs, which are modelled
@@ -49,19 +49,16 @@ interface Entity {
 }
 
 export interface PersistenceManagerConfig<T extends PlainObject> {
+    /** Entity name or object for this model. */
     entity: string | Entity;
-    /** True to omit the default menu component. Should be used when creating custom app-specific component */
-    omitDefaultMenuComponent?: boolean;
     /** Whether user can publish or edit globally shared objects. */
     canManageGlobal: Thunkable<boolean>;
     /** Async callback triggered when view changes. Should be used to recreate the affected models. */
     onChangeAsync: (value: T) => void;
     /** Used to persist this model's selected ID. */
     persistWith: PersistOptions;
-    /** True (default) to render a save button alongside the primary menu button when dirty. */
-    enableTopLevelSaveButton?: boolean;
-    /** Fn to produce a new, empty object - can be async. */
-    newObjectFnAsync?: () => T;
+    /** Optional flag to force selection of a view. Defaults false*/
+    allowEmpty?: boolean;
 }
 
 export class PersistenceManagerModel<T extends PlainObject = PlainObject> extends HoistModel {
@@ -74,24 +71,23 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
         setData: (value: T) => this.mergePendingValue(value)
     };
 
-    readonly enableTopLevelSaveButton: boolean = true;
-
     private readonly _canManageGlobal: Thunkable<boolean>;
+
+    private readonly _allowEmpty: boolean;
 
     readonly onChangeAsync?: (value: T) => void;
 
     readonly entity: Entity;
 
-    readonly omitDefaultMenuComponent: boolean = false;
+    @managed readonly manageDialogModel: ManageDialogModel;
 
-    @observable.ref @managed manageDialogModel: ManageDialogModel;
-
-    @observable.ref @managed saveDialogModel: SaveDialogModel;
+    @managed readonly saveDialogModel: SaveDialogModel;
     /** Current state of the active object, can include not-yet-persisted changes. */
     @observable.ref pendingValue: T = null;
 
     @observable.ref views: PersistenceView<T>[] = [];
 
+    @bindable private _loadedInitially: boolean = false;
     @bindable selectedId: StoreRecordId;
     @bindable favorites: string[] = [];
 
@@ -127,30 +123,25 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
         return !!this.selectedView?.isShared;
     }
 
+    get isAllowEmpty(): boolean {
+        return this._allowEmpty;
+    }
+
+    get isLoadedInitially(): boolean {
+        return this._loadedInitially;
+    }
+
     get favoritedViews(): PersistenceView<T>[] {
         return this.views.filter(it => this.favorites.includes(it.token));
     }
 
-    get viewTree(): TreeView[] {
+    get viewTree(): PersistenceViewTree[] {
         const groupedViews = groupBy(this.views, 'group'),
             sortedGroupKeys = keys(groupedViews).sort(),
             ret = [];
 
-        if (this.favoritedViews.length > 0) {
-            ret.push({itemType: 'divider', text: 'Favorites'});
-            ret.push(
-                ...this.favoritedViews.map(it => ({
-                    itemType: 'view',
-                    text: this.getHierarchyDisplayName(it.name),
-                    selected: this.selectedId === it.id,
-                    id: it.id,
-                    isFavorite: true
-                }))
-            );
-        }
-
         sortedGroupKeys.forEach(group => {
-            ret.push({itemType: 'divider', text: group});
+            ret.push({type: 'divider', text: group});
             ret.push(...this.hierarchicalItemSpecs(sortBy(groupedViews[group], 'name')));
         });
         return ret;
@@ -168,19 +159,17 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
 
     constructor({
         entity,
-        omitDefaultMenuComponent,
         onChangeAsync,
         persistWith,
         canManageGlobal,
-        enableTopLevelSaveButton = true
+        allowEmpty = false
     }: PersistenceManagerConfig<T>) {
         super();
         makeObservable(this);
 
         this.entity = this.parseEntity(entity);
         this._canManageGlobal = canManageGlobal;
-        this.enableTopLevelSaveButton = enableTopLevelSaveButton;
-        this.omitDefaultMenuComponent = omitDefaultMenuComponent;
+        this._allowEmpty = allowEmpty;
         this.onChangeAsync = onChangeAsync;
         this.saveDialogModel = new SaveDialogModel(this, this.entity.name);
         this.manageDialogModel = new ManageDialogModel(this);
@@ -217,7 +206,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
         runInAction(() => (this.views = this.processRaw(rawViews)));
 
         // Always call selectAsync to ensure pendingValue updated and onChangeAsync callback fired if needed
-        const id = this.selectedView?.id ?? this.views[0].id;
+        const id = (this.selectedView?.id ?? this.isAllowEmpty) ? this.views[0]?.id : null;
         await this.selectAsync(id);
     }
 
@@ -229,6 +218,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
 
         this.setPendingValue(value);
         await this.onChangeAsync(value);
+        this._loadedInitially = true;
     }
 
     async saveAsync(skipToast: boolean = false) {
@@ -345,7 +335,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
         });
     }
 
-    private hierarchicalItemSpecs(views, depth: number = 0): TreeView[] {
+    private hierarchicalItemSpecs(views, depth: number = 0): PersistenceViewTree[] {
         const groups = {},
             unbalancedStableGroupsAndViews = [];
 
@@ -370,17 +360,18 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
             const {name, id, isMenuFolder, children} = it;
             if (isMenuFolder) {
                 return {
-                    itemType: 'menuFolder',
+                    type: 'directory',
                     text: name,
                     items: this.hierarchicalItemSpecs(children, depth + 1),
                     selected: this.isFolderForEntry(name, this.selectedView?.name, depth)
                 };
             }
             return {
-                itemType: 'view',
+                type: 'view',
                 text: this.getHierarchyDisplayName(name),
                 selected: this.selectedId === id,
-                id: id
+                id: id,
+                isFavorite: false
             };
         });
     }

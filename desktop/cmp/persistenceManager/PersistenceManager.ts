@@ -1,7 +1,7 @@
 import {div, fragment, hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {TreeView} from '@xh/hoist/desktop/cmp/persistenceManager/Types';
+import {PersistenceViewTree} from '@xh/hoist/desktop/cmp/persistenceManager/Types';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {capitalize} from 'lodash';
@@ -15,6 +15,10 @@ import {pluralize} from '@xh/hoist/utils/js';
 interface PersistenceManagerProps extends HoistProps<PersistenceManagerModel> {
     /** True to disable options for saving/managing items. */
     minimal?: boolean;
+    /** True (default) to render a save button alongside the primary menu button when dirty. */
+    enableTopLevelSaveButton?: boolean;
+    /** True to omit the default menu component. Should be used when creating custom app-specific component */
+    omitDefaultMenuComponent?: boolean;
 }
 
 export const [PersistenceManager, persistenceManager] =
@@ -22,46 +26,8 @@ export const [PersistenceManager, persistenceManager] =
         displayName: 'PersistenceManager',
         model: uses(PersistenceManagerModel),
 
-        render({model, minimal = false}) {
-            const {
-                    selectedView,
-                    isShared,
-                    entity,
-                    manageDialogModel,
-                    saveDialogModel,
-                    omitDefaultMenuComponent
-                } = model,
-                displayName = entity.displayName;
-
-            return fragment(
-                hbox({
-                    className: 'xh-persistence-manager',
-                    items: [
-                        popover({
-                            omit: omitDefaultMenuComponent,
-                            item: button({
-                                text: model.getHierarchyDisplayName(selectedView?.name) ?? `-`,
-                                icon: isShared ? Icon.users() : Icon.bookmark(),
-                                rightIcon: Icon.chevronDown(),
-                                outlined: true
-                            }),
-                            content: div({
-                                items: [
-                                    div({
-                                        className: 'xh-popup__title',
-                                        item: capitalize(pluralize(displayName))
-                                    }),
-                                    objMenu({minimal})
-                                ]
-                            }),
-                            placement: 'bottom-start'
-                        }),
-                        saveButton()
-                    ]
-                }),
-                manageDialog({omit: !manageDialogModel}),
-                saveDialog({omit: !saveDialogModel})
-            );
+        render({model, ...props}) {
+            return fragment(defaultMenu({...props}), manageDialog(), saveDialog());
         }
     });
 
@@ -69,13 +35,47 @@ export const [PersistenceManager, persistenceManager] =
 // Implementation
 //------------------------
 
+const defaultMenu = hoistCmp.factory<PersistenceManagerModel>({
+    render({
+        model,
+        omitDefaultMenuComponent = false,
+        minimal = false,
+        enableTopLevelSaveButton = true
+    }) {
+        const {selectedView, isShared, entity} = model,
+            displayName = entity.displayName;
+        return hbox({
+            className: 'xh-persistence-manager',
+            items: [
+                popover({
+                    omit: omitDefaultMenuComponent,
+                    item: button({
+                        text: model.getHierarchyDisplayName(selectedView?.name) ?? `-`,
+                        icon: isShared ? Icon.users() : Icon.bookmark(),
+                        rightIcon: Icon.chevronDown(),
+                        outlined: true
+                    }),
+                    content: div(
+                        div({
+                            className: 'xh-popup__title',
+                            item: capitalize(pluralize(displayName))
+                        }),
+                        objMenu({minimal})
+                    ),
+                    placement: 'bottom-start'
+                }),
+                saveButton({omit: !enableTopLevelSaveButton || !model.canSave})
+            ]
+        });
+    }
+});
+
 const saveButton = hoistCmp.factory<PersistenceManagerModel>({
     render({model}) {
         return button({
             icon: Icon.save(),
             tooltip: `Save changes to this ${model.entity.displayName}`,
             intent: 'primary',
-            omit: !model.enableTopLevelSaveButton || !model.canSave,
             onClick: () => model.saveAsync(false).linkTo(model.loadModel)
         });
     }
@@ -86,7 +86,22 @@ const objMenu = hoistCmp.factory<PersistenceManagerProps>({
         const {loadModel, entity} = model,
             items = [];
 
+        if (model.favoritedViews.length > 0) {
+            items.push(menuDivider({title: 'Favorites'}));
+            items.push(
+                ...model.favoritedViews.map(it => {
+                    return menuItem({
+                        key: `${it.id}-isFavorite`,
+                        icon: model.selectedId === it.id ? Icon.check() : Icon.placeholder(),
+                        text: model.getHierarchyDisplayName(it.name),
+                        onClick: () => model.selectAsync(it.id).linkTo(model.loadModel)
+                    });
+                })
+            );
+        }
+
         model.viewTree.forEach(it => {
+            if (it.type === 'divider') items.push(menuDivider({title: it.text}));
             items.push(buildView(it, model));
         });
 
@@ -114,7 +129,8 @@ const objMenu = hoistCmp.factory<PersistenceManagerProps>({
                 }),
                 menuItem({
                     icon: Icon.refresh(),
-                    text: 'Reset Defaults',
+                    text: 'Reset Default View',
+                    omit: !model.isAllowEmpty,
                     onClick: () => model.selectAsync(null).linkTo(loadModel)
                 }),
                 menuDivider(),
@@ -128,25 +144,23 @@ const objMenu = hoistCmp.factory<PersistenceManagerProps>({
     }
 });
 
-function buildView(view: TreeView, model: PersistenceManagerModel): ReactNode {
-    const {itemType, text, selected, items, id, isFavorite} = view,
+function buildView(view: PersistenceViewTree, model: PersistenceManagerModel): ReactNode {
+    const {type, text, selected} = view,
         icon = selected ? Icon.check() : Icon.placeholder();
-    switch (itemType) {
-        case 'divider':
-            return menuDivider({title: text});
-        case 'menuFolder':
+    switch (type) {
+        case 'directory':
             return menuItem({
                 text,
                 icon,
                 shouldDismissPopover: false,
-                children: items ? items.map(child => buildView(child, model)) : []
+                children: view.items ? view.items.map(child => buildView(child, model)) : []
             });
         case 'view':
             return menuItem({
-                key: isFavorite ? `${id}-isFavorite` : id,
+                key: view.isFavorite ? `${view.id}-isFavorite` : view.id,
                 icon,
                 text,
-                onClick: () => model.selectAsync(id).linkTo(model.loadModel)
+                onClick: () => model.selectAsync(view.id).linkTo(model.loadModel)
             });
     }
 }
