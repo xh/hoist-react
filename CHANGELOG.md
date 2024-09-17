@@ -19,6 +19,8 @@
 ### 📚 Libraries
 
 * @azure/msal-browser `3.17 → 3.23`
+* mobx  `6.9.1 -> 6.13.2`,
+* mobx-react-lite  `3.4.3 -> 4.0.7`,
 
 
 ## 67.0.0 - 2024-09-03
