@@ -2,9 +2,15 @@
 
 ## 68.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update only)
+
+* Requires `hoist-core >= 21.1` for consolidated polling of Alert Banner updates (see below).
+
 ### ⚙️ Technical
 
 * Updated Admin Console's Cluster tab to refresh more frequently.
+* Consolidated the polling check for Alert Banner updates into existing `EnvironmentService`
+  polling, avoiding an extra request and improving alert banner responsiveness.
 
 ### ⚙️ Typescript API Adjustments
 
