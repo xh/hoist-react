@@ -114,11 +114,7 @@ export class EnvironmentService extends HoistService {
 
     /**
      * Update critical environment information from server.
-     *
-     * Not for application use. Intended to be called frequently on a timer,
-     * and as needed by Hoist.
-     *
-     * @internal
+     * @internal - not for app use. Called by `pollTimer` and as needed by Hoist code.
      */
     async pollServerAsync() {
         let data;
