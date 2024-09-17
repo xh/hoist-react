@@ -119,8 +119,7 @@ export const correlationId: ColumnSpec = {
 export const error: ColumnSpec = {
     field: {
         name: 'error',
-        type: 'string',
-        displayName: 'Error Details'
+        type: 'string'
     },
     flex: true,
     minWidth: 150,

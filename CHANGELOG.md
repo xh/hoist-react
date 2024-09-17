@@ -10,6 +10,10 @@
 * Updated Admin Console's Cluster tab to refresh more frequently.
 * Alert Banner is now updated via the shared environment polling for improved simplicity and frequency.
 
+### ⚙️ Typescript API Adjustments
+
+* Corrected types of enhanced `Promise` methods.
+
 ## 67.0.0 - 2024-09-03
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update only)

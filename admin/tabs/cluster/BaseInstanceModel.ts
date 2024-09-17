@@ -54,7 +54,10 @@ export class BaseInstanceModel extends HoistModel {
         forOwn(stats, (v, k) => {
             // Convert numbers that look like recent timestamps to date values.
             if (
-                (k.endsWith('Time') || k.endsWith('Date') || k == 'timestamp') &&
+                (k.endsWith('Time') ||
+                    k.endsWith('Date') ||
+                    k.endsWith('Timestamp') ||
+                    k == 'timestamp') &&
                 isNumber(v) &&
                 v > Date.now() - 365 * DAYS
             ) {
