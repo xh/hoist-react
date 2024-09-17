@@ -127,7 +127,7 @@ export class ExceptionHandler {
                     ),
                     actionButtonProps: {
                         icon: Icon.search(),
-                        onClick: () => exceptionDialogModel.show(e, opts)
+                        onClick: () => exceptionDialogModel.showDetails(e, opts)
                     },
                     intent: showAsError ? 'danger' : 'primary',
                     ...ExceptionHandler.TOAST_PROPS

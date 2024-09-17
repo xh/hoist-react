@@ -191,17 +191,16 @@ export class AlertBannerModel extends HoistModel {
     async saveBannerSpecAsync(spec: AlertBannerSpec) {
         const {active, message, intent, iconName, enableClose, clientApps} = spec;
         try {
-            await XH.fetchService
-                .postJson({
-                    url: 'alertBannerAdmin/setAlertSpec',
-                    body: spec
-                })
-                .track({
+            await XH.fetchService.postJson({
+                url: 'alertBannerAdmin/setAlertSpec',
+                body: spec,
+                track: {
                     category: 'Audit',
                     message: 'Updated Alert Banner',
                     data: {active, message, intent, iconName, enableClose, clientApps},
                     logData: ['active']
-                });
+                }
+            });
         } catch (e) {
             XH.handleException(e);
         }
