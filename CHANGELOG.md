@@ -8,7 +8,7 @@
 
 ### 🎁 New Features
 
-* Added expand/collapse affordance in the left column header of ZoneGrids.
+* Added expand/collapse affordance in the left column header of ZoneGrids in tree mode.
 
 ### ⚙️ Technical
 

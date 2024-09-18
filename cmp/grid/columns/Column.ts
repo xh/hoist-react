@@ -94,13 +94,6 @@ export interface ColumnSpec {
     isTreeColumn?: boolean;
 
     /**
-     * For ZoneGrids, the left most column will be set to true by Hoist. Similar to
-     * isTreeColumn, this flag is used in conjunction with the headerHasExpandCollapse flag to
-     * potentially provide a expand/collapse all icon in the column header.
-     */
-    isLeftZoneColumn?: boolean;
-
-    /**
      * Primary user-facing name for this Column. Sourced from the corresponding data
      * `Field.displayName` from the parent `GridModel.store` config, if available, or defaulted
      * via transform of `field` string config. Used as default value for more specialized
@@ -119,8 +112,8 @@ export interface ColumnSpec {
     headerTooltip?: string;
 
     /**
-     * True if this column header will host an expand/collapse all icon. `Column.isTreeColumn` or
-     * `Column.isLeftZoneColumn` must be enabled. Defaults to true.
+     * True if this column header will host an expand/collapse all icon. `Column.isTreeColumn`
+     * must be enabled. Defaults to true.
      */
     headerHasExpandCollapse?: boolean;
 
@@ -431,7 +424,6 @@ export class Column {
     fieldPath: Some<string>;
     colId: string;
     isTreeColumn: boolean;
-    isLeftZoneColumn: boolean;
     displayName: string;
     headerName: ColumnHeaderNameFn | ReactNode;
     headerTooltip: string;
@@ -505,7 +497,6 @@ export class Column {
             field,
             colId,
             isTreeColumn,
-            isLeftZoneColumn,
             displayName,
             headerName,
             headerTooltip,
@@ -577,7 +568,6 @@ export class Column {
         throwIf(!this.colId, 'Must specify colId or field for a Column.');
 
         this.isTreeColumn = withDefault(isTreeColumn, false);
-        this.isLeftZoneColumn = withDefault(isLeftZoneColumn, false);
 
         // Note that parent GridModel might have already defaulted displayName from an associated
         // `Store.field` when pre-processing Column configs - prior to calling this ctor. If that
@@ -1113,6 +1103,6 @@ export class Column {
 
         return isFunction(sortValue)
             ? sortValue(v, {record, column: this, gridModel})
-            : record?.data[sortValue] ?? v;
+            : (record?.data[sortValue] ?? v);
     }
 }
