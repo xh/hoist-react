@@ -1,10 +1,10 @@
 # Changelog
 
-## 68.0.0-SNAPSHOT - unreleased
+## 68.0.0 - 2024-09-18
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update only)
 
-* Requires `hoist-core >= 21.1` for consolidated polling of Alert Banner updates (see below).
+* Requires `hoist-core >= 22.0` for consolidated polling of Alert Banner updates (see below).
 
 ### 🎁 New Features
 
