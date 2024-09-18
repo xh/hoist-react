@@ -2,6 +2,10 @@
 
 ## 68.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update only)
+
+* Requires `hoist-core >= 21.1` for consolidated polling of Alert Banner updates (see below).
+
 ### 🎁 New Features
 
 * Added expand/collapse affordance in the left column header of ZoneGrids.
@@ -9,10 +13,19 @@
 ### ⚙️ Technical
 
 * Updated Admin Console's Cluster tab to refresh more frequently.
+* Consolidated the polling check for Alert Banner updates into existing `EnvironmentService`
+  polling, avoiding an extra request and improving alert banner responsiveness.
 
 ### ⚙️ Typescript API Adjustments
 
 * Corrected types of enhanced `Promise` methods.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.17 → 3.23`
+* mobx  `6.9.1 -> 6.13.2`,
+* mobx-react-lite  `3.4.3 -> 4.0.7`,
+
 
 ## 67.0.0 - 2024-09-03
 
