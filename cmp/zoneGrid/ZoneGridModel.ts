@@ -386,6 +386,7 @@ export class ZoneGridModel extends HoistModel {
                 message: this.restoreDefaultsWarning,
                 confirmProps: {
                     text: 'Yes, restore defaults',
+                    icon: Icon.reset(),
                     intent: 'primary'
                 }
             });
