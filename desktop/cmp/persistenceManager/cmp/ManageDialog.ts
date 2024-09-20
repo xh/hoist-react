@@ -17,6 +17,7 @@ import {capitalize} from 'lodash';
 
 export const manageDialog = hoistCmp.factory<ManageDialogModel>({
     displayName: 'ManageDialog',
+    className: 'xh-persistence-manager__manage-dialog',
     model: uses(ManageDialogModel),
 
     render({model}) {

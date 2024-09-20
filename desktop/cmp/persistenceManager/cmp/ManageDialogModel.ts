@@ -4,7 +4,7 @@ import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {includes} from 'lodash';
+import {includes, isEmpty} from 'lodash';
 import {PersistenceManagerModel} from '../PersistenceManagerModel';
 
 export class ManageDialogModel extends HoistModel {
@@ -24,14 +24,10 @@ export class ManageDialogModel extends HoistModel {
         return this.gridModel.selectedRecord?.data.isShared ?? false;
     }
 
-    get userCreated(): boolean {
-        return this.gridModel.selectedRecord?.data.createdBy === XH.getUser().username;
-    }
-
     get canDelete(): boolean {
         const {parentModel, selIsShared, canManageGlobal} = this,
-            {views, isAllowEmpty} = parentModel;
-        return (isAllowEmpty ? views.length > 1 : true) && (canManageGlobal || !selIsShared);
+            {views, enableDefault} = parentModel;
+        return (enableDefault ? true : views.length > 1) && (canManageGlobal || !selIsShared);
     }
 
     get canEdit(): boolean {
@@ -80,6 +76,8 @@ export class ManageDialogModel extends HoistModel {
     }
 
     close() {
+        this.gridModel.clear();
+        this.formModel.init();
         this.isOpen = false;
     }
 
@@ -123,9 +121,9 @@ export class ManageDialogModel extends HoistModel {
 
         if (fields.isFavorite.isDirty) {
             if (isFavorite) {
-                parentModel.favorites = [...parentModel.favorites, token];
+                parentModel.addFavorite(token);
             } else {
-                parentModel.favorites = parentModel.favorites.filter(it => it !== token);
+                parentModel.removeFavorite(token);
             }
         }
 
@@ -170,6 +168,12 @@ export class ManageDialogModel extends HoistModel {
     async refreshModelsAsync() {
         const {views, favorites} = this.parentModel,
             {gridModel, formModel} = this;
+
+        if (isEmpty(views)) {
+            this.close();
+            return;
+        }
+
         gridModel.loadData(views);
         await this.ensureGridHasSelection();
         formModel.init({

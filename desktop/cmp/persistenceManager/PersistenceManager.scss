@@ -8,7 +8,7 @@
 
   // Dialogs
   &__manage-dialog,
-  &__save-as-dialog {
+  &__save-dialog {
     &__form {
       padding: var(--xh-pad-px);
 
@@ -24,6 +24,24 @@
         .xh-icon {
           margin-right: 2px;
         }
+      }
+    }
+  }
+
+  &__menu-item-fav {
+    opacity: 0.1;
+
+    &:hover {
+      opacity: 1;
+      color: var(--xh-yellow);
+    }
+
+    &--active {
+      opacity: 1;
+      color: var(--xh-yellow);
+
+      &:hover {
+        color: var(--xh-orange-muted);
       }
     }
   }

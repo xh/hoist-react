@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {XH, HoistService, PlainObject} from '@xh/hoist/core';
+import {XH, HoistService, PlainObject, LoadSpec} from '@xh/hoist/core';
 
 /**
  * Service to read and set chunks of user-specific JSON persisted via Hoist Core's JSONBlob class.
@@ -25,10 +25,14 @@ export class JsonBlobService extends HoistService {
      * @param type - reference key for which type of data to list.
      * @param includeValue - true to include the full value string for each blob.
      */
-    async listAsync({type, includeValue}: {type: string; includeValue?: boolean}) {
+    async listAsync(
+        {type, includeValue}: {type: string; includeValue?: boolean},
+        loadSpec: LoadSpec
+    ) {
         return XH.fetchJson({
             url: 'xh/listJsonBlobs',
-            params: {type, includeValue}
+            params: {type, includeValue},
+            loadSpec
         });
     }
 

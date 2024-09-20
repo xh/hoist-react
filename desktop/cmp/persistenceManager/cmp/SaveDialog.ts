@@ -13,6 +13,7 @@ import {SaveDialogModel} from './SaveDialogModel';
 
 export const saveDialog = hoistCmp.factory<SaveDialogModel>({
     displayName: 'SaveDialog',
+    className: 'xh-persistence-manager__save-dialog',
     model: uses(SaveDialogModel),
 
     render({model}) {
@@ -21,7 +22,7 @@ export const saveDialog = hoistCmp.factory<SaveDialogModel>({
             isOpen: isOpen,
             icon: Icon.copy(),
             title: `Save as...`,
-            className: 'xh-persistence-manager__save-as-dialog',
+            className: 'xh-persistence-manager__save-dialog',
             style: {width: 500, height: 255},
             canOutsideClickClose: false,
             onClose: () => model.close(),
@@ -34,7 +35,7 @@ const formPanel = hoistCmp.factory<SaveDialogModel>({
     render({model}) {
         return panel({
             item: vframe({
-                className: 'xh-persistence-manager__save-as-dialog__form',
+                className: 'xh-persistence-manager__save-dialog__form',
                 items: [
                     form({
                         fieldDefaults: {

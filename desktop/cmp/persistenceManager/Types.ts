@@ -29,9 +29,5 @@ export type PersistenceViewTree = {
     | {
           type: 'view';
           id: number;
-          isFavorite: boolean;
-      }
-    | {
-          type: 'divider';
       }
 );

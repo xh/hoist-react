@@ -11,19 +11,9 @@ import {
 import {StoreRecordId} from '@xh/hoist/data/StoreRecord';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, pluralize} from '@xh/hoist/utils/js';
-import {
-    capitalize,
-    cloneDeep,
-    groupBy,
-    isEqualWith,
-    isNil,
-    isString,
-    keys,
-    sortBy,
-    startCase
-} from 'lodash';
-import {ManageDialogModel} from './impl/ManageDialogModel';
-import {SaveDialogModel} from './impl/SaveDialogModel';
+import {capitalize, cloneDeep, isEqualWith, isNil, isString, sortBy, startCase} from 'lodash';
+import {ManageDialogModel} from './cmp/ManageDialogModel';
+import {SaveDialogModel} from './cmp/SaveDialogModel';
 import {runInAction} from 'mobx';
 import {PersistenceView, PersistenceViewTree} from '@xh/hoist/desktop/cmp/persistenceManager/Types';
 
@@ -57,8 +47,8 @@ export interface PersistenceManagerConfig<T extends PlainObject> {
     onChangeAsync: (value: T) => void;
     /** Used to persist this model's selected ID. */
     persistWith: PersistOptions;
-    /** Optional flag to force selection of a view. Defaults false*/
-    allowEmpty?: boolean;
+    /** Optional flag to allow empty view selection. Defaults false*/
+    enableDefault?: boolean;
 }
 
 export class PersistenceManagerModel<T extends PlainObject = PlainObject> extends HoistModel {
@@ -73,7 +63,10 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
 
     private readonly _canManageGlobal: Thunkable<boolean>;
 
-    private readonly _allowEmpty: boolean;
+    // Internal persistence provider, used to save *this* model's state, i.e. selectedId
+    private readonly _provider;
+
+    readonly enableDefault: boolean;
 
     readonly onChangeAsync?: (value: T) => void;
 
@@ -87,8 +80,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
 
     @observable.ref views: PersistenceView<T>[] = [];
 
-    @bindable private _loadedInitially: boolean = false;
-    @bindable selectedId: StoreRecordId;
+    @bindable selectedId: StoreRecordId = null;
     @bindable favorites: string[] = [];
 
     get canManageGlobal(): boolean {
@@ -123,53 +115,47 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
         return !!this.selectedView?.isShared;
     }
 
-    get isAllowEmpty(): boolean {
-        return this._allowEmpty;
-    }
-
     get isLoadedInitially(): boolean {
-        return this._loadedInitially;
+        return !!this.loadSupport.lastSucceeded;
     }
 
     get favoritedViews(): PersistenceView<T>[] {
         return this.views.filter(it => this.favorites.includes(it.token));
     }
 
-    get viewTree(): PersistenceViewTree[] {
-        const groupedViews = groupBy(this.views, 'group'),
-            sortedGroupKeys = keys(groupedViews).sort(),
-            ret = [];
+    get sharedViews(): PersistenceView<T>[] {
+        return this.views.filter(it => it.isShared);
+    }
 
-        sortedGroupKeys.forEach(group => {
-            ret.push({type: 'divider', text: group});
-            ret.push(...this.hierarchicalItemSpecs(sortBy(groupedViews[group], 'name')));
-        });
-        return ret;
+    get privateViews(): PersistenceView<T>[] {
+        return this.views.filter(it => !it.isShared);
+    }
+
+    get sharedViewTree(): PersistenceViewTree[] {
+        return this.hierarchicalItemSpecs(sortBy(this.sharedViews, 'name'));
+    }
+
+    get privateViewTree(): PersistenceViewTree[] {
+        return this.hierarchicalItemSpecs(sortBy(this.privateViews, 'name'));
     }
 
     get persistState() {
-        const ret: PlainObject = {};
-        if (this.selectedId) ret.selectedId = this.selectedId;
-        if (this.favorites) ret.favorites = this.favorites;
-        return ret;
+        return {selectedId: this.selectedId, favorites: this.favorites};
     }
-
-    // Internal persistence provider, used to save *this* model's state, i.e. selectedId
-    private readonly _provider;
 
     constructor({
         entity,
         onChangeAsync,
         persistWith,
         canManageGlobal,
-        allowEmpty = false
+        enableDefault = false
     }: PersistenceManagerConfig<T>) {
         super();
         makeObservable(this);
 
         this.entity = this.parseEntity(entity);
         this._canManageGlobal = canManageGlobal;
-        this._allowEmpty = allowEmpty;
+        this.enableDefault = enableDefault;
         this.onChangeAsync = onChangeAsync;
         this.saveDialogModel = new SaveDialogModel(this, this.entity.name);
         this.manageDialogModel = new ManageDialogModel(this);
@@ -201,12 +187,15 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
     // TODO - Carefully review if this method needs isStale checks, and how to properly implement them.
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {name} = this.entity,
-            rawViews = await XH.jsonBlobService.listAsync({type: name, includeValue: true});
+            rawViews = await XH.jsonBlobService.listAsync(
+                {type: name, includeValue: true},
+                loadSpec
+            );
 
         runInAction(() => (this.views = this.processRaw(rawViews)));
 
         // Always call selectAsync to ensure pendingValue updated and onChangeAsync callback fired if needed
-        const id = (this.selectedView?.id ?? this.isAllowEmpty) ? this.views[0]?.id : null;
+        const id = this.selectedView?.id ?? (!this.enableDefault ? this.views[0]?.id : null);
         await this.selectAsync(id);
     }
 
@@ -218,7 +207,6 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
 
         this.setPendingValue(value);
         await this.onChangeAsync(value);
-        this._loadedInitially = true;
     }
 
     async saveAsync(skipToast: boolean = false) {
@@ -252,6 +240,30 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
 
     async resetAsync() {
         return this.selectAsync(this.selectedId);
+    }
+
+    toggleFavorite(id: number) {
+        const token = this.views.find(it => it.id === id)?.token;
+        if (!token) return;
+
+        if (this.favorites.includes(token)) {
+            this.removeFavorite(token);
+        } else {
+            this.addFavorite(token);
+        }
+    }
+
+    addFavorite(token: string) {
+        this.favorites = [...this.favorites, token];
+    }
+
+    removeFavorite(token: string) {
+        this.favorites = this.favorites.filter(it => it !== token);
+    }
+
+    isFavorite(id: number) {
+        const token = this.views.find(it => it.id === id)?.token;
+        return this.favorites.includes(token);
     }
 
     @action
@@ -370,8 +382,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
                 type: 'view',
                 text: this.getHierarchyDisplayName(name),
                 selected: this.selectedId === id,
-                id: id,
-                isFavorite: false
+                id
             };
         });
     }
