@@ -173,7 +173,7 @@ export class HzObjectModel extends BaseInstanceModel {
     //----------------------
     private processRawData(obj: PlainObject): PlainObject {
         const tail: string = last(obj.name.split('.')),
-            className = first(tail.split('_'));
+            className = first(tail.split('['));
 
         const owner = className.endsWith('Service')
             ? className

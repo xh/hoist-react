@@ -37,16 +37,16 @@ export const hzObjectPanel = hoistCmp.factory({
 const detailsPanel = hoistCmp.factory({
     model: uses(HzObjectModel),
     render({model}) {
-        const data = model.gridModel.selectedRecord?.raw;
+        const record = model.gridModel.selectedRecord;
         return panel({
-            title: data ? `Stats: ${data.name}` : 'Stats',
+            title: record ? `Stats: ${record.data.displayName}` : 'Stats',
             icon: Icon.info(),
             compactHeader: true,
             modelConfig: {
                 side: 'right',
                 defaultSize: 450
             },
-            item: data
+            item: record
                 ? panel({
                       item: jsonInput({
                           readonly: true,
@@ -54,7 +54,7 @@ const detailsPanel = hoistCmp.factory({
                           height: '100%',
                           showFullscreenButton: false,
                           editorProps: {lineNumbers: false},
-                          value: model.fmtStats(data)
+                          value: model.fmtStats(record.raw)
                       })
                   })
                 : placeholder(Icon.grip(), 'Select an object')
