@@ -21,8 +21,13 @@ export const hzObjectPanel = hoistCmp.factory({
 
     render({model}) {
         return panel({
-            item: hframe(grid({agOptions: {groupDefaultExpanded: 0}}), detailsPanel()),
-            bbar: bbar(),
+            item: hframe(
+                panel({
+                    item: grid({agOptions: {groupDefaultExpanded: 0}}),
+                    bbar: bbar()
+                }),
+                detailsPanel()
+            ),
             mask: 'onLoad',
             ref: model.viewRef
         });

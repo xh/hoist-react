@@ -22,17 +22,19 @@ export const servicePanel = hoistCmp.factory({
     render({model}) {
         return panel({
             item: hframe(
-                grid({
-                    flex: 1,
-                    agOptions: {
-                        groupRowRendererParams: {
-                            innerRenderer: params => params.value + ' Services'
+                panel({
+                    item: grid({
+                        flex: 1,
+                        agOptions: {
+                            groupRowRendererParams: {
+                                innerRenderer: params => params.value + ' Services'
+                            }
                         }
-                    }
+                    }),
+                    bbar: bbar()
                 }),
                 detailsPanel()
             ),
-            bbar: bbar(),
             mask: 'onLoad',
             ref: model.viewRef
         });
