@@ -11,12 +11,15 @@ import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel'
 import {GridModel} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {LoadSpec, managed, XH} from '@xh/hoist/core';
+import {LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {isEmpty} from 'lodash';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {first, isEmpty, last} from 'lodash';
 
 export class HzObjectModel extends BaseInstanceModel {
+    @bindable groupBy: 'type' | 'owner' = 'owner';
+
     clearAction: RecordActionSpec = {
         text: 'Clear Objects',
         icon: Icon.reset(),
@@ -35,21 +38,25 @@ export class HzObjectModel extends BaseInstanceModel {
         selModel: 'multiple',
         enableExport: true,
         exportOptions: {filename: exportFilenameWithDate('distributed-objects'), columns: 'ALL'},
-        sortBy: 'name',
-        groupBy: 'type',
+        sortBy: 'displayName',
+        groupBy: this.groupBy,
         store: {
             fields: [
                 {name: 'name', type: 'string'},
+                {name: 'displayName', type: 'string'},
+                {name: 'owner', type: 'string'},
                 {name: 'type', type: 'string', displayName: 'Type'},
                 {name: 'size', type: 'int'},
                 {name: 'lastUpdateTime', type: 'date'},
                 {name: 'lastAccessTime', type: 'date'}
             ],
-            idSpec: 'name'
+            idSpec: 'name',
+            processRawData: o => this.processRawData(o)
         },
         columns: [
-            {field: 'type', hidden: true},
-            {field: 'name', flex: 1},
+            {field: 'displayName', flex: 1},
+            {field: 'owner'},
+            {field: 'type'},
             {field: 'size', displayName: 'Entry Count', ...Col.number, width: 130},
             {
                 ...timestampNoYear,
@@ -64,6 +71,15 @@ export class HzObjectModel extends BaseInstanceModel {
         ],
         contextMenu: [this.clearAction, '-', ...GridModel.defaultContextMenu]
     });
+
+    constructor() {
+        super();
+        makeObservable(this);
+        this.addReaction({
+            track: () => this.groupBy,
+            run: v => this.gridModel.setGroupBy(v)
+        });
+    }
 
     async clearAsync() {
         const {gridModel} = this;
@@ -150,5 +166,27 @@ export class HzObjectModel extends BaseInstanceModel {
         } catch (e) {
             this.handleLoadException(e, loadSpec);
         }
+    }
+
+    //----------------------
+    // Implementation
+    //----------------------
+    private processRawData(obj: PlainObject): PlainObject {
+        const tail: string = last(obj.name.split('.')),
+            className = first(tail.split('_'));
+
+        const owner = className.endsWith('Service')
+            ? className
+            : className.startsWith('xh')
+              ? 'Hoist'
+              : obj.type == 'Cache'
+                ? 'Hibernate'
+                : 'Other';
+
+        return {
+            displayName: tail,
+            owner: owner,
+            ...obj
+        };
     }
 }

@@ -8,10 +8,12 @@ import {detailsPanel} from '@xh/hoist/admin/tabs/cluster/services/DetailsPanel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, hframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {creates, hoistCmp} from '@xh/hoist/core';
+import {creates, hoistCmp, uses} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {select} from '@xh/hoist/desktop/cmp/input';
 import {ServiceModel} from './ServiceModel';
 
 export const servicePanel = hoistCmp.factory({
@@ -19,17 +21,6 @@ export const servicePanel = hoistCmp.factory({
 
     render({model}) {
         return panel({
-            bbar: [
-                recordActionBar({
-                    selModel: model.gridModel.selModel,
-                    actions: [model.clearCachesAction, model.clearClusterCachesAction]
-                }),
-                filler(),
-                gridCountLabel({unit: 'service'}),
-                '-',
-                storeFilterField({matchMode: 'any'}),
-                exportButton()
-            ],
             item: hframe(
                 grid({
                     flex: 1,
@@ -41,8 +32,40 @@ export const servicePanel = hoistCmp.factory({
                 }),
                 detailsPanel()
             ),
+            bbar: bbar(),
             mask: 'onLoad',
             ref: model.viewRef
         });
+    }
+});
+
+const bbar = hoistCmp.factory({
+    model: uses(ServiceModel),
+    render({model}) {
+        return toolbar(
+            recordActionBar({
+                selModel: model.gridModel.selModel,
+                actions: [model.clearCachesAction, model.clearClusterCachesAction]
+            }),
+            filler(),
+            gridCountLabel({unit: 'service'}),
+            '-',
+            select({
+                options: [
+                    {value: 'all', label: 'All'},
+                    {value: 'app', label: 'App Only'},
+                    {value: 'hoist', label: 'Hoist Only'}
+                ],
+                width: 125,
+                bind: 'typeFilter',
+                hideDropdownIndicator: true
+            }),
+            storeFilterField({
+                matchMode: 'any',
+                autoApply: false,
+                onFilterChange: f => (model.textFilter = f)
+            }),
+            exportButton()
+        );
     }
 });
