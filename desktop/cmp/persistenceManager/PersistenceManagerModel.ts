@@ -8,7 +8,8 @@ import {
     Thunkable,
     XH
 } from '@xh/hoist/core';
-import {StoreRecordId} from '@xh/hoist/data/StoreRecord';
+import {RecordActionSpec} from '@xh/hoist/data';
+import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, pluralize} from '@xh/hoist/utils/js';
 import {capitalize, cloneDeep, isEqualWith, isNil, isString, sortBy, startCase} from 'lodash';
@@ -16,6 +17,8 @@ import {ManageDialogModel} from './cmp/ManageDialogModel';
 import {SaveDialogModel} from './cmp/SaveDialogModel';
 import {runInAction} from 'mobx';
 import {PersistenceView, PersistenceViewTree} from '@xh/hoist/desktop/cmp/persistenceManager/Types';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {Icon} from '@xh/hoist/icon';
 
 /**
  * PersistenceManager provides re-usable loading, selection, and user management of named configs, which are modelled
@@ -75,12 +78,15 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
     @managed readonly manageDialogModel: ManageDialogModel;
 
     @managed readonly saveDialogModel: SaveDialogModel;
+
+    @managed readonly gridModel: GridModel;
+
     /** Current state of the active object, can include not-yet-persisted changes. */
     @observable.ref pendingValue: T = null;
 
     @observable.ref views: PersistenceView<T>[] = [];
 
-    @bindable selectedId: StoreRecordId = null;
+    @bindable selectedId: number = null;
     @bindable favorites: string[] = [];
 
     get canManageGlobal(): boolean {
@@ -159,6 +165,8 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
         this.onChangeAsync = onChangeAsync;
         this.saveDialogModel = new SaveDialogModel(this, this.entity.name);
         this.manageDialogModel = new ManageDialogModel(this);
+        this.gridModel = this.createGridModel();
+
         // Set up internal PersistenceProvider -- fail gently
         if (persistWith) {
             try {
@@ -170,10 +178,25 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
                 const state = this._provider.read();
                 if (state?.selectedId) this.selectedId = state.selectedId;
                 if (state?.favorites) this.favorites = state.favorites;
-                this.addReaction({
-                    track: () => this.persistState,
-                    run: state => this._provider.write(state)
-                });
+                this.addReaction(
+                    {
+                        track: () => this.persistState,
+                        run: state => this._provider.write(state)
+                    },
+                    {
+                        track: () => this.gridModel.selectedRecord,
+                        run: record => {
+                            if (record) {
+                                let id = record.id;
+                                if (typeof id === 'string') {
+                                    id = +id.replace('-favorite', '');
+                                }
+                                this.selectAsync(id);
+                                this.gridModel.selectAsync(record.id);
+                            }
+                        }
+                    }
+                );
             } catch (e) {
                 this.logError('Error applying persistWith', persistWith, e);
                 XH.safeDestroy(this._provider);
@@ -197,16 +220,16 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
         // Always call selectAsync to ensure pendingValue updated and onChangeAsync callback fired if needed
         const id = this.selectedView?.id ?? (!this.enableDefault ? this.views[0]?.id : null);
         await this.selectAsync(id);
+        this.loadGrid();
     }
 
-    async selectAsync(id: StoreRecordId) {
+    async selectAsync(id: number) {
         this.selectedId = id;
-        if (!this.isDirty) return;
-
         const {value} = this;
 
         this.setPendingValue(value);
         await this.onChangeAsync(value);
+        this.gridModel.agApi?.redrawRows();
     }
 
     async saveAsync(skipToast: boolean = false) {
@@ -251,6 +274,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
         } else {
             this.addFavorite(token);
         }
+        this.loadGrid();
     }
 
     addFavorite(token: string) {
@@ -283,6 +307,71 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
     //------------------
     // Implementation
     //------------------
+
+    private createGridModel(): GridModel {
+        return new GridModel({
+            groupBy: 'group',
+            autosizeOptions: {mode: 'managed'},
+            selModel: 'single',
+            store: {fields: ['token']},
+            showHover: true,
+            groupSortFn: (aVal, bVal, groupField) => {
+                return groupField === 'Favorites' ? -1 : aVal.localeCompare(bVal);
+            },
+            cellBorders: true,
+            columns: [
+                {
+                    field: 'id',
+                    renderer: v => {
+                        let id = v;
+                        if (typeof id === 'string') {
+                            id = +id.replace('-favorite', '');
+                        }
+                        return this.selectedId === id ? Icon.check() : null;
+                    }
+                },
+                {field: 'name'},
+                {field: 'group', hidden: true},
+                {field: 'description', flex: 1},
+                {
+                    ...actionCol,
+                    width: calcActionColWidth(1),
+                    actions: [this.favoriteAction()],
+                    colId: 'favAction'
+                }
+            ],
+            hideHeaders: true,
+            showGroupRowCounts: false
+        });
+    }
+
+    private loadGrid() {
+        const favoriteViews = this.favoritedViews.map(it => ({
+            ...it,
+            id: `${it.id}-favorite`,
+            group: 'Favorites'
+        }));
+        this.gridModel.loadData([...favoriteViews, ...this.views]);
+        this.gridModel.agApi?.redrawRows();
+    }
+
+    private favoriteAction(): RecordActionSpec {
+        return {
+            icon: Icon.star(),
+            tooltip: 'Click to add to favorites',
+            displayFn: ({record}) => ({
+                className: `xh-persistence-manager__menu-item-fav ${this.favorites.includes(record.data.token) ? 'xh-persistence-manager__menu-item-fav--active' : ''}`,
+                icon: this.favorites.includes(record.data.token)
+                    ? Icon.star({prefix: 'fas'})
+                    : Icon.star({prefix: 'far'})
+            }),
+            actionFn: ({record}) => {
+                const id =
+                    typeof record.id === 'string' ? +record.id.replace('-favorite', '') : record.id;
+                this.toggleFavorite(id);
+            }
+        };
+    }
 
     private parseEntity(entity: string | Entity): Entity {
         const ret = isString(entity) ? {name: entity} : {...entity};

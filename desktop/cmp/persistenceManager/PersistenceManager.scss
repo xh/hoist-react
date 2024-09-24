@@ -29,20 +29,19 @@
   }
 
   &__menu-item-fav {
-    opacity: 0.1;
+    opacity: 0.5;
+    color: var(--xh-yellow) !important;
+  }
+  &--active {
+    color: var(--xh-orange-muted) !important;
+  }
 
-    &:hover {
+  .ag-row-hover .xh-persistence-manager {
+    &__menu-item-fav {
       opacity: 1;
-      color: var(--xh-yellow);
     }
-
     &--active {
       opacity: 1;
-      color: var(--xh-yellow);
-
-      &:hover {
-        color: var(--xh-orange-muted);
-      }
     }
   }
 }

@@ -1,7 +1,7 @@
 import {div, filler, hbox, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {PersistenceManagerModel} from '@xh/hoist/desktop/cmp/persistenceManager';
+import {PersistenceManagerModel, saveButton} from '@xh/hoist/desktop/cmp/persistenceManager';
 import {PersistenceViewTree} from '@xh/hoist/desktop/cmp/persistenceManager/Types';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
@@ -27,8 +27,8 @@ export const [PersistenceMenu, persistenceMenu] = hoistCmp.withFactory<Persisten
         model,
         omitDefaultMenuComponent = false,
         minimal = false,
-        omitTopLevelSaveButton = true
-    }) {
+        omitTopLevelSaveButton = false
+    }: PersistenceMenuProps) {
         if (omitDefaultMenuComponent) return null;
         const {selectedView, isShared, entity} = model,
             displayName = entity.displayName;
@@ -53,7 +53,7 @@ export const [PersistenceMenu, persistenceMenu] = hoistCmp.withFactory<Persisten
                     ),
                     placement: 'bottom-start'
                 }),
-                saveButton({omit: !omitTopLevelSaveButton || !model.canSave})
+                saveButton({omit: omitTopLevelSaveButton || !model.canSave})
             ]
         });
     }
@@ -78,17 +78,6 @@ const menuFavorite = hoistCmp.factory<PersistenceManagerModel>({
                     }
                 })
             ]
-        });
-    }
-});
-
-const saveButton = hoistCmp.factory<PersistenceMenuProps>({
-    render({model}) {
-        return button({
-            icon: Icon.save(),
-            tooltip: `Save changes to this ${model.entity.displayName}`,
-            intent: 'primary',
-            onClick: () => model.saveAsync(false).linkTo(model.loadModel)
         });
     }
 });
