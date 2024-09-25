@@ -2,6 +2,9 @@
 
 ## 69.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+* Misc. Improvements to Cluster Tab in Admin Panel.
+
 ## 68.0.0 - 2024-09-18
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update only)
