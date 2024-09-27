@@ -2,6 +2,11 @@
 
 ## 69.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `Markdown` now supports a `reactMarkdownOptions` prop to allow passing React Markdown
+  props to the underlying `reactMarkdown` instance.
+
 ### ⚙️ Technical
 * Misc. Improvements to Cluster Tab in Admin Panel.
 
