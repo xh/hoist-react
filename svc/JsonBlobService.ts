@@ -47,7 +47,7 @@ export class JsonBlobService extends HoistService {
     }: {
         type: string;
         name: string;
-        acl?: string | PlainObject;
+        acl?: string;
         description?: string;
         value: any;
         meta?: any;
