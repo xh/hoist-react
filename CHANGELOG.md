@@ -4,7 +4,8 @@
 
 ### 🎁 New Features
 
-* Enhanced `markdown` component to accept remark and rehype plugins.
+* `Markdown` now supports a `reactMarkdownOptions` prop to allow passing React Markdown
+  props to the underlying `reactMarkdown` instance.
 
 ### ⚙️ Technical
 * Misc. Improvements to Cluster Tab in Admin Panel.
