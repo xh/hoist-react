@@ -2,7 +2,6 @@ import {PlainObject} from '@xh/hoist/core';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 
 export interface PersistenceView<T extends PlainObject = PlainObject> {
-    id: number;
     acl: string;
     archived: boolean;
     dateCreated: LocalDate;
@@ -28,7 +27,6 @@ export type PersistenceViewTree = {
       }
     | {
           type: 'view';
-          id: number;
           token: string;
       }
 );

@@ -373,7 +373,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
         });
 
         return unbalancedStableGroupsAndViews.map(it => {
-            const {name, id, isMenuFolder, children, token} = it;
+            const {name, isMenuFolder, children, token} = it;
             if (isMenuFolder) {
                 return {
                     type: 'directory',
@@ -385,8 +385,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
             return {
                 type: 'view',
                 text: this.getHierarchyDisplayName(name),
-                selected: this.selectedView?.id === id,
-                id,
+                selected: this.selectedToken === token,
                 token
             };
         });

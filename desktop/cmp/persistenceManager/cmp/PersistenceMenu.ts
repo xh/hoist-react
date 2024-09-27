@@ -112,7 +112,7 @@ const objMenu = hoistCmp.factory<PersistenceMenuProps>({
             items.push(
                 ...model.favoritedViews.map(it => {
                     return menuItem({
-                        key: `${it.id}-isFavorite`,
+                        key: `${it.token}-isFavorite`,
                         icon: model.selectedToken === it.token ? Icon.check() : Icon.placeholder(),
                         text: menuFavorite({
                             view: {...it, text: model.getHierarchyDisplayName(it.name)}
@@ -223,7 +223,7 @@ function buildView(view: PersistenceViewTree, model: PersistenceManagerModel): R
         case 'view':
             return menuItem({
                 className: 'xh-persistence-manager__menu-item',
-                key: view.id,
+                key: view.token,
                 icon,
                 text: menuFavorite({model, view}),
                 onClick: () => model.selectAsync(view.token).linkTo(model.loadModel)

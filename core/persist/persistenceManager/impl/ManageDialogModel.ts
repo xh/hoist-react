@@ -184,9 +184,9 @@ export class ManageDialogModel extends HoistModel {
 
     async ensureGridHasSelection() {
         const {gridModel} = this;
-        const {selectedView} = this.parentModel;
-        if (selectedView) {
-            gridModel.selModel.select(selectedView.id);
+        const {selectedToken} = this.parentModel;
+        if (selectedToken) {
+            gridModel.selModel.select(selectedToken);
         } else {
             await gridModel.preSelectFirstAsync();
         }
@@ -201,6 +201,7 @@ export class ManageDialogModel extends HoistModel {
             hideHeaders: true,
             showGroupRowCounts: false,
             store: {
+                idSpec: 'token',
                 fields: [
                     {name: 'token', type: 'string'},
                     {name: 'name', type: 'string'},
