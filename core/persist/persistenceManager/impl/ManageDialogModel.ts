@@ -1,11 +1,11 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {PersistenceManagerModel} from '@xh/hoist/core/persist/persistenceManager';
 import {lengthIs, required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {includes, isEmpty} from 'lodash';
-import {PersistenceManagerModel} from '../PersistenceManagerModel';
 
 export class ManageDialogModel extends HoistModel {
     parentModel: PersistenceManagerModel;

@@ -4,3 +4,4 @@ export * from './LocalStorageProvider';
 export * from './DashViewProvider';
 export * from './PrefProvider';
 export * from './CustomProvider';
+export * from './PersistenceManagerProvider';

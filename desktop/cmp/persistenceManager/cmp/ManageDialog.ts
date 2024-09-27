@@ -2,6 +2,7 @@ import {form} from '@xh/hoist/cmp/form';
 import {grid} from '@xh/hoist/cmp/grid';
 import {br, div, filler, fragment, hframe, placeholder, spacer, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
+import {ManageDialogModel} from '@xh/hoist/core/persist/persistenceManager/impl/ManageDialogModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {switchInput, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
@@ -11,7 +12,6 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtCompactDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {ManageDialogModel} from './ManageDialogModel';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize} from 'lodash';
 
