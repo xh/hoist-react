@@ -1,6 +1,7 @@
 import {form} from '@xh/hoist/cmp/form';
 import {filler, fragment, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
+import {SaveDialogModel} from '@xh/hoist/core/persist/persistenceManager/impl/SaveDialogModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {textArea, textInput} from '@xh/hoist/desktop/cmp/input';
@@ -9,7 +10,6 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {SaveDialogModel} from './SaveDialogModel';
 
 export const saveDialog = hoistCmp.factory<SaveDialogModel>({
     displayName: 'SaveDialog',

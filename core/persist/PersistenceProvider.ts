@@ -10,6 +10,7 @@ import {
     LocalStorageProvider,
     PrefProvider,
     DashViewProvider,
+    PersistenceManagerProvider,
     CustomProvider,
     PersistOptions
 } from './';
@@ -53,6 +54,7 @@ export class PersistenceProvider {
             if (rest.prefKey) type = 'pref';
             if (rest.localStorageKey) type = 'localStorage';
             if (rest.dashViewModel) type = 'dashView';
+            if (rest.persistenceManagerModel) type = 'persistenceManagerModel';
             if (rest.getData || rest.setData) type = 'custom';
         }
 
@@ -63,6 +65,8 @@ export class PersistenceProvider {
                 return new LocalStorageProvider(rest);
             case `dashView`:
                 return new DashViewProvider(rest);
+            case 'persistenceManagerModel':
+                return new PersistenceManagerProvider(rest);
             case 'custom':
                 return new CustomProvider(rest);
             default:

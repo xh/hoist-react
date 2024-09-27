@@ -1,9 +1,8 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import {PersistenceManagerModel, PersistenceView} from '@xh/hoist/core/persist/persistenceManager';
 import {lengthIs, required} from '@xh/hoist/data';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {PersistenceManagerModel} from '../PersistenceManagerModel';
-import {PersistenceView} from '@xh/hoist/desktop/cmp/persistenceManager/Types';
 
 export class SaveDialogModel extends HoistModel {
     readonly saveTask = TaskObserver.trackLast();

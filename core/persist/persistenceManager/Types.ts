@@ -29,5 +29,6 @@ export type PersistenceViewTree = {
     | {
           type: 'view';
           id: number;
+          token: string;
       }
 );

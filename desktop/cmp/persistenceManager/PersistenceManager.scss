@@ -28,20 +28,29 @@
     }
   }
 
-  &__menu-item-fav {
-    opacity: 0.5;
-    color: var(--xh-yellow) !important;
-  }
-  &--active {
-    color: var(--xh-orange-muted) !important;
-  }
-
-  .ag-row-hover .xh-persistence-manager {
-    &__menu-item-fav {
-      opacity: 1;
+  &__menu-item {
+    &:hover {
+      .xh-persistence-manager__menu-item--fav {
+        opacity: 1;
+        color: var(--xh-yellow);
+      }
     }
-    &--active {
-      opacity: 1;
+
+    &--fav {
+      opacity: 0;
+
+      &:hover {
+        color: var(--xh-yellow-light) !important;
+      }
+
+      &--active {
+        opacity: 1;
+        color: var(--xh-yellow);
+      }
+
+      &--active:hover {
+        color: var(--xh-yellow-light) !important;
+      }
     }
   }
 }

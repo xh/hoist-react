@@ -1,14 +1,25 @@
-import {grid} from '@xh/hoist/cmp/grid';
+import {grid, GridModel} from '@xh/hoist/cmp/grid';
 import {filler, hbox} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistModel,
+    HoistProps,
+    lookup,
+    managed,
+    useLocalModel,
+    uses
+} from '@xh/hoist/core';
+import {RecordActionSpec} from '@xh/hoist/data';
+import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {persistenceSaveButton} from '@xh/hoist/desktop/cmp/persistenceManager';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {capitalize, isEmpty, isNull} from 'lodash';
-import {button} from '../../button';
 import {popover} from '@xh/hoist/kit/blueprint';
-import {PersistenceManagerModel, saveButton} from '@xh/hoist/desktop/cmp/persistenceManager';
+import {capitalize, isEmpty, isNull} from 'lodash';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {PersistenceManagerModel} from '@xh/hoist/core/persist/persistenceManager';
 
 export interface PersistenceGridPopoverProps extends HoistProps<PersistenceManagerModel> {
     /** True (default) to render a save button alongside the primary menu button when dirty. */
@@ -28,6 +39,8 @@ export const [PersistenceGridPopover, persistenceGridPopover] =
             omitDefaultGridComponent = false,
             omitTopLevelSaveButton = false
         }: PersistenceGridPopoverProps) {
+            const impl = useLocalModel(PersistenceGridPopoverModel),
+                {store} = impl.gridModel;
             if (omitDefaultGridComponent) return null;
             const {selectedView, isShared, entity} = model,
                 displayName = entity.displayName;
@@ -47,26 +60,29 @@ export const [PersistenceGridPopover, persistenceGridPopover] =
                             className: 'xh-persistence-manager',
                             compactHeader: true,
                             style: {minHeight: 100, width: 500},
-                            item: grid({agOptions: {domLayout: 'autoHeight'}}),
-                            bbar: bbar()
+                            item: grid({
+                                model: impl.gridModel,
+                                agOptions: {domLayout: 'autoHeight'}
+                            }),
+                            bbar: bbar({store})
                         })
                     }),
-                    saveButton({omit: omitTopLevelSaveButton || !model.canSave})
+                    persistenceSaveButton({omit: omitTopLevelSaveButton || !model.canSave})
                 ]
             });
         }
     });
 
 const bbar = hoistCmp.factory<PersistenceManagerModel>({
-    render({model}) {
+    render({model, store}) {
         return toolbar(
-            storeFilterField({store: model.gridModel.store}),
+            storeFilterField({store}),
             filler(),
             button({
                 icon: Icon.home(),
                 intent: 'primary',
                 omit: !model.enableDefault,
-                disabled: isNull(model.selectedId),
+                disabled: isNull(model.selectedToken),
                 onClick: () => model.selectAsync(null)
             }),
             button({
@@ -97,3 +113,101 @@ const bbar = hoistCmp.factory<PersistenceManagerModel>({
         );
     }
 });
+
+class PersistenceGridPopoverModel extends HoistModel {
+    @lookup(PersistenceManagerModel)
+    persistenceManagerModel: PersistenceManagerModel;
+
+    @managed gridModel = this.createGridModel();
+
+    override onLinked() {
+        const {persistenceManagerModel} = this;
+        this.addReaction(
+            {
+                track: () => this.gridModel.selectedRecord,
+                run: record => {
+                    if (record) {
+                        persistenceManagerModel.selectAsync(record.data.token);
+                    }
+                }
+            },
+            {
+                track: () => [
+                    persistenceManagerModel.favorites,
+                    persistenceManagerModel.selectedToken,
+                    persistenceManagerModel.views
+                ],
+                run: () => this.loadGrid(),
+                fireImmediately: true
+            }
+        );
+    }
+
+    private createGridModel(): GridModel {
+        return new GridModel({
+            groupBy: 'group',
+            autosizeOptions: {mode: 'managed'},
+            selModel: 'single',
+            store: {fields: ['token']},
+            showHover: true,
+            groupSortFn: (aVal, bVal, groupField) => {
+                return groupField === 'Favorites' ? -1 : aVal.localeCompare(bVal);
+            },
+            cellBorders: true,
+            columns: [
+                {
+                    field: 'id',
+                    renderer: v => {
+                        let id = v;
+                        if (typeof id === 'string') {
+                            id = +id.replace('-favorite', '');
+                        }
+                        return this.persistenceManagerModel.selectedView?.id === id
+                            ? Icon.check()
+                            : null;
+                    }
+                },
+                {field: 'name'},
+                {field: 'group', hidden: true},
+                {field: 'description', flex: 1},
+                {
+                    ...actionCol,
+                    width: calcActionColWidth(1),
+                    actions: [this.favoriteAction()],
+                    colId: 'favAction'
+                }
+            ],
+            hideHeaders: true,
+            showGroupRowCounts: false
+        });
+    }
+
+    private favoriteAction(): RecordActionSpec {
+        return {
+            icon: Icon.star(),
+            tooltip: 'Click to add to favorites',
+            displayFn: ({record}) => {
+                const {favorites} = this.persistenceManagerModel;
+                return {
+                    className: `xh-persistence-manager__menu-item-fav ${favorites.includes(record.data.token) ? 'xh-persistence-manager__menu-item-fav--active' : ''}`,
+                    icon: favorites.includes(record.data.token)
+                        ? Icon.star({prefix: 'fas'})
+                        : Icon.star({prefix: 'far'})
+                };
+            },
+            actionFn: ({record}) => {
+                this.persistenceManagerModel.toggleFavorite(record.data.token);
+            }
+        };
+    }
+
+    private loadGrid() {
+        const favoriteViews = this.persistenceManagerModel.favoritedViews.map(it => ({
+            ...it,
+            id: `${it.id}-favorite`,
+            group: 'Favorites'
+        }));
+        this.gridModel.loadData([...favoriteViews, ...this.persistenceManagerModel.views]);
+        this.gridModel.agApi?.redrawRows();
+    }
+}

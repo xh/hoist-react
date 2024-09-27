@@ -1,8 +1,10 @@
 import {div, filler, hbox, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import {
+    PersistenceManagerModel,
+    PersistenceViewTree
+} from '@xh/hoist/core/persist/persistenceManager';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {PersistenceManagerModel, saveButton} from '@xh/hoist/desktop/cmp/persistenceManager';
-import {PersistenceViewTree} from '@xh/hoist/desktop/cmp/persistenceManager/Types';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {consumeEvent, pluralize} from '@xh/hoist/utils/js';
@@ -10,12 +12,12 @@ import {capitalize, isEmpty} from 'lodash';
 import {ReactNode} from 'react';
 
 export interface PersistenceMenuProps extends HoistProps<PersistenceManagerModel> {
-    /** True to disable options for saving/managing items. */
-    minimal?: boolean;
-    /** True (default) to render a save button alongside the primary menu button when dirty. */
-    omitTopLevelSaveButton?: boolean;
-    /** True to omit the default menu component. Should be used when creating custom app-specific component */
-    omitDefaultMenuComponent?: boolean;
+    /**  */
+    showSaveButton?: 'whenDirty' | 'always' | 'never';
+    /**  */
+    showPrivateViewsInSubMenu?: boolean;
+    /**  */
+    showSharedViewsInSubMenu?: boolean;
 }
 
 export const [PersistenceMenu, persistenceMenu] = hoistCmp.withFactory<PersistenceMenuProps>({
@@ -25,11 +27,10 @@ export const [PersistenceMenu, persistenceMenu] = hoistCmp.withFactory<Persisten
 
     render({
         model,
-        omitDefaultMenuComponent = false,
-        minimal = false,
-        omitTopLevelSaveButton = false
+        showSaveButton = 'whenDirty',
+        showPrivateViewsInSubMenu = false,
+        showSharedViewsInSubMenu = false
     }: PersistenceMenuProps) {
-        if (omitDefaultMenuComponent) return null;
         const {selectedView, isShared, entity} = model,
             displayName = entity.displayName;
         return hbox({
@@ -49,32 +50,51 @@ export const [PersistenceMenu, persistenceMenu] = hoistCmp.withFactory<Persisten
                             className: 'xh-popup__title',
                             item: capitalize(pluralize(displayName))
                         }),
-                        objMenu({minimal})
+                        objMenu({showPrivateViewsInSubMenu, showSharedViewsInSubMenu})
                     ),
                     placement: 'bottom-start'
                 }),
-                saveButton({omit: omitTopLevelSaveButton || !model.canSave})
+                persistenceSaveButton({
+                    omit:
+                        showSaveButton === 'never' ||
+                        (showSaveButton === 'whenDirty' && !model.isDirty && !model.canSave) ||
+                        (model.enableAutoSave && !model.canSave && model.isSharedViewSelected),
+                    disabled: !model.canSave
+                })
             ]
+        });
+    }
+});
+
+export const persistenceSaveButton = hoistCmp.factory<PersistenceManagerModel>({
+    render({model, disabled}) {
+        return button({
+            icon: Icon.save(),
+            tooltip: `Save changes to this ${model.entity.displayName}`,
+            intent: 'primary',
+            disabled,
+            onClick: () => model.saveAsync(false).linkTo(model.loadModel)
         });
     }
 });
 
 const menuFavorite = hoistCmp.factory<PersistenceManagerModel>({
     render({model, view}) {
-        const isFavorite = model.isFavorite(view.id);
+        const isFavorite = model.isFavorite(view.token);
         return hbox({
+            className: 'xh-persistence-manager__menu-item',
             alignItems: 'center',
             items: [
                 span({style: {paddingRight: 5}, item: view.text}),
                 filler(),
                 div({
-                    className: `xh-persistence-manager__menu-item-fav ${isFavorite ? 'xh-persistence-manager__menu-item-fav--active' : ''}`,
+                    className: `xh-persistence-manager__menu-item--fav ${isFavorite ? 'xh-persistence-manager__menu-item--fav--active' : ''}`,
                     item: Icon.favorite({
                         prefix: isFavorite ? 'fas' : 'far'
                     }),
                     onClick: e => {
                         consumeEvent(e);
-                        model.toggleFavorite(view.id);
+                        model.toggleFavorite(view.token);
                     }
                 })
             ]
@@ -83,7 +103,7 @@ const menuFavorite = hoistCmp.factory<PersistenceManagerModel>({
 });
 
 const objMenu = hoistCmp.factory<PersistenceMenuProps>({
-    render({model, minimal}) {
+    render({model, showPrivateViewsInSubMenu, showSharedViewsInSubMenu}) {
         const {entity} = model,
             items = [];
 
@@ -93,35 +113,68 @@ const objMenu = hoistCmp.factory<PersistenceMenuProps>({
                 ...model.favoritedViews.map(it => {
                     return menuItem({
                         key: `${it.id}-isFavorite`,
-                        icon: model.selectedId === it.id ? Icon.check() : Icon.placeholder(),
+                        icon: model.selectedToken === it.token ? Icon.check() : Icon.placeholder(),
                         text: menuFavorite({
                             view: {...it, text: model.getHierarchyDisplayName(it.name)}
                         }),
-                        onClick: () => model.selectAsync(it.id).linkTo(model.loadModel)
+                        onClick: () => model.selectAsync(it.token).linkTo(model.loadModel)
                     });
                 })
             );
         }
         if (!isEmpty(model.privateViewTree)) {
-            items.push(menuDivider({title: `My ${pluralize(entity.displayName)}`}));
-            model.privateViewTree.forEach(it => {
-                items.push(buildView(it, model));
-            });
+            items.push(
+                menuDivider({
+                    title: showPrivateViewsInSubMenu ? null : `My ${pluralize(entity.displayName)}`
+                })
+            );
+            if (showPrivateViewsInSubMenu) {
+                items.push(
+                    menuItem({
+                        text: `My ${pluralize(entity.displayName)}`,
+                        shouldDismissPopover: false,
+                        children: model.privateViewTree.map(it => {
+                            return buildView(it, model);
+                        })
+                    })
+                );
+            } else {
+                model.privateViewTree.forEach(it => {
+                    items.push(buildView(it, model));
+                });
+            }
         }
         if (!isEmpty(model.sharedViewTree)) {
-            items.push(menuDivider({title: `Shared ${pluralize(entity.displayName)}`}));
-            model.sharedViewTree.forEach(it => {
-                items.push(buildView(it, model));
-            });
+            items.push(
+                menuDivider({
+                    title: showSharedViewsInSubMenu
+                        ? null
+                        : `Shared ${pluralize(entity.displayName)}`
+                })
+            );
+            if (showSharedViewsInSubMenu) {
+                items.push(
+                    menuItem({
+                        text: `Shared ${pluralize(entity.displayName)}`,
+                        shouldDismissPopover: false,
+                        children: model.sharedViewTree.map(it => {
+                            return buildView(it, model);
+                        })
+                    })
+                );
+            } else {
+                model.sharedViewTree.forEach(it => {
+                    items.push(buildView(it, model));
+                });
+            }
         }
 
-        if (minimal) return menu({items});
         return menu({
             items: [
                 ...items,
                 menuDivider({omit: !model.enableDefault || isEmpty(items)}),
                 menuItem({
-                    icon: model.selectedId ? Icon.placeholder() : Icon.check(),
+                    icon: model.selectedToken ? Icon.placeholder() : Icon.check(),
                     text: `Default ${capitalize(entity.displayName)}`,
                     omit: !model.enableDefault,
                     onClick: () => model.selectAsync(null)
@@ -173,7 +226,7 @@ function buildView(view: PersistenceViewTree, model: PersistenceManagerModel): R
                 key: view.id,
                 icon,
                 text: menuFavorite({model, view}),
-                onClick: () => model.selectAsync(view.id).linkTo(model.loadModel)
+                onClick: () => model.selectAsync(view.token).linkTo(model.loadModel)
             });
     }
 }
