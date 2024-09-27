@@ -2,6 +2,10 @@
 
 ## 69.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Enhanced `markdown` component to accept remark and rehype plugins.
+
 ### ⚙️ Technical
 * Misc. Improvements to Cluster Tab in Admin Panel.
 

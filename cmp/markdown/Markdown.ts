@@ -22,6 +22,16 @@ interface MarkdownProps extends HoistProps {
      */
     components?: Components;
 
+    /**
+     * List of plugins for the Remark library to extend markdown processing.
+     */
+    remarkPlugins?: PluggableList;
+
+    /**
+     * List of plugins for the Rehype library to extend HTML processing.
+     */
+    rehypePlugins?: PluggableList;
+
     /** True (default) to render new lines with <br/> tags. */
     lineBreaks?: boolean;
 }
@@ -34,12 +44,19 @@ interface MarkdownProps extends HoistProps {
  */
 export const [Markdown, markdown] = hoistCmp.withFactory<MarkdownProps>({
     displayName: 'Markdown',
-    render({content, lineBreaks = true, components = {}}) {
-        const remarkPlugins: PluggableList = [remarkGfm];
+    render({
+        content,
+        lineBreaks = true,
+        components = {},
+        remarkPlugins: remark = [],
+        rehypePlugins = []
+    }) {
+        const remarkPlugins: PluggableList = [remarkGfm, ...remark];
         if (lineBreaks) remarkPlugins.push(remarkBreaks);
         return reactMarkdown({
             item: content,
             remarkPlugins,
+            rehypePlugins,
             components
         });
     }
