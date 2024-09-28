@@ -2,6 +2,12 @@
 
 ## 69.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* New `AppState` `AppState.Authenticating`, provides additional support for tracking apps during
+  authentication flows.
+* Improved timing data about app loading now posted to tracking log.
+
 ## 68.1.0 - 2024-09-27
 
 ### 🎁 New Features

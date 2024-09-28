@@ -180,6 +180,7 @@ export class AppContainerModel extends HoistModel {
             await installServicesAsync([FetchService]);
 
             // Check auth, locking out, or showing login if possible
+            this.setAppState('AUTHENTICATING');
             XH.authModel = new this.appSpec.authModelClass();
             const isAuthenticated = await XH.authModel.completeAuthAsync();
             if (!isAuthenticated) {
@@ -197,6 +198,7 @@ export class AppContainerModel extends HoistModel {
         }
 
         // ...if made it to here, continue with initialization.
+        this.setAppState('INITIALIZING');
         await this.completeInitAsync();
     }
 
@@ -215,7 +217,6 @@ export class AppContainerModel extends HoistModel {
             }
 
             // Complete initialization process
-            this.setAppState('INITIALIZING');
             await installServicesAsync([ConfigService, LocalStorageService]);
             await installServicesAsync(TrackService);
             await installServicesAsync([EnvironmentService, PrefService, JsonBlobService]);
