@@ -52,9 +52,10 @@ export class ClientErrorsModel extends HoistModel {
             columns: [
                 {...Col.userMessageFlag},
                 {...Col.userAlertedFlag},
-                {...Col.entryId, hidden},
                 {...Col.impersonatingFlag},
+                {...Col.entryId, hidden},
                 {...Col.username},
+                {...Col.impersonating, hidden},
                 {...Col.browser},
                 {...Col.device},
                 {...Col.userAgent, hidden},
@@ -63,11 +64,10 @@ export class ClientErrorsModel extends HoistModel {
                 {...Col.msg, displayName: 'User Message', hidden},
                 {...Col.error, hidden},
                 {...Col.url},
+                {...Col.correlationId},
                 {...Col.instance, hidden},
                 {...Col.day},
-                {...Col.dateCreatedWithSec, displayName: 'Timestamp'},
-                {...Col.impersonating, hidden},
-                {...Col.correlationId}
+                {...Col.dateCreatedWithSec, displayName: 'Timestamp'}
             ]
         });
 

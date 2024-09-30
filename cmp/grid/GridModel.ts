@@ -51,6 +51,7 @@ import {
 } from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
+import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
@@ -637,6 +638,7 @@ export class GridModel extends HoistModel {
                 message: this.restoreDefaultsWarning,
                 confirmProps: {
                     text: 'Yes, restore defaults',
+                    icon: Icon.reset(),
                     intent: 'primary'
                 }
             });

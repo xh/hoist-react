@@ -1103,6 +1103,6 @@ export class Column {
 
         return isFunction(sortValue)
             ? sortValue(v, {record, column: this, gridModel})
-            : record?.data[sortValue] ?? v;
+            : (record?.data[sortValue] ?? v);
     }
 }

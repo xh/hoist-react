@@ -386,6 +386,7 @@ export class ZoneGridModel extends HoistModel {
                 message: this.restoreDefaultsWarning,
                 confirmProps: {
                     text: 'Yes, restore defaults',
+                    icon: Icon.reset(),
                     intent: 'primary'
                 }
             });
@@ -583,7 +584,7 @@ export class ZoneGridModel extends HoistModel {
             const colId = it.field;
             subFields.push({
                 colId,
-                label: it.showLabel ? labelRenderers[colId] ?? true : false,
+                label: it.showLabel ? (labelRenderers[colId] ?? true) : false,
                 position: 'top'
             });
         });
@@ -591,7 +592,7 @@ export class ZoneGridModel extends HoistModel {
             const colId = it.field;
             subFields.push({
                 colId,
-                label: it.showLabel ? labelRenderers[colId] ?? true : false,
+                label: it.showLabel ? (labelRenderers[colId] ?? true) : false,
                 position: 'bottom'
             });
         });
@@ -608,6 +609,7 @@ export class ZoneGridModel extends HoistModel {
             // Controlled properties
             field: isLeft ? 'left_column' : 'right_column',
             align: isLeft ? 'left' : 'right',
+            isTreeColumn: gridModel?.treeMode && isLeft,
             flex: overrideSpec.width ? null : isLeft ? 2 : 1,
             renderer: (value, context) => zoneGridRenderer(value, context, isLeft),
             rendererIsComplex: true,

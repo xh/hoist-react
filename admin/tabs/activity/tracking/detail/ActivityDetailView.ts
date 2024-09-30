@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {correlationId, instance} from '@xh/hoist/admin/columns';
 import {form} from '@xh/hoist/cmp/form';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, div, filler, h3, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
@@ -81,6 +82,7 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                               }
                           }),
                           formField({field: 'category'}),
+                          formField({field: 'msg'}),
                           formField({
                               field: 'appVersion',
                               readonlyRenderer: appVersion => {
@@ -89,10 +91,17 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                                   return `${appVersion} (${appEnvironment})`;
                               }
                           }),
-                          formField({field: 'msg'}),
                           formField({
-                              field: 'dateCreated',
-                              readonlyRenderer: dateTimeSecRenderer({})
+                              field: 'url',
+                              readonlyRenderer: hyperlinkVal
+                          }),
+                          formField({
+                              field: 'instance',
+                              readonlyRenderer: v => instance.renderer(v, null)
+                          }),
+                          formField({
+                              field: 'correlationId',
+                              readonlyRenderer: v => correlationId.renderer(v, null)
                           }),
                           formField({
                               field: 'elapsed',
@@ -102,11 +111,9 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                                   formatConfig: {thousandSeparated: false, mantissa: 0}
                               })
                           }),
-                          formField({field: 'id'}),
-                          formField({field: 'correlationId'}),
                           formField({
-                              field: 'url',
-                              readonlyRenderer: hyperlinkVal
+                              field: 'dateCreated',
+                              readonlyRenderer: dateTimeSecRenderer({})
                           }),
                           h3(Icon.desktop(), 'Device / Browser'),
                           formField({field: 'device'}),
@@ -136,4 +143,4 @@ const additionalDataJsonInput = hoistCmp.factory<ActivityDetailModel>(({model}) 
 
 const valOrNa = v => (v != null ? v : naSpan());
 const naSpan = () => span({item: 'N/A', className: 'xh-text-color-muted'});
-const hyperlinkVal = v => a({href: v, item: v, target: '_blank'});
+const hyperlinkVal = v => (v ? a({href: v, item: v, target: '_blank'}) : '-');

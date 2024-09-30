@@ -4,15 +4,16 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {clusterTab} from '@xh/hoist/admin/tabs/cluster/ClusterTab';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistAppModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {without} from 'lodash';
 import {Route} from 'router5';
 import {activityTab} from './tabs/activity/ActivityTab';
 import {generalTab} from './tabs/general/GeneralTab';
 import {monitorTab} from './tabs/monitor/MonitorTab';
-import {clusterTab} from '@xh/hoist/admin/tabs/cluster/ClusterTab';
 import {userDataTab} from './tabs/userData/UserDataTab';
 
 export class AppModel extends HoistAppModel {
@@ -135,5 +136,15 @@ export class AppModel extends HoistAppModel {
                 content: activityTab
             }
         ];
+    }
+
+    /** Open the primary business-facing application, typically 'app'. */
+    openPrimaryApp() {
+        window.open(`/${this.getPrimaryAppCode()}`);
+    }
+
+    getPrimaryAppCode() {
+        const appCodes = without(XH.clientApps, XH.clientAppCode, 'mobile');
+        return appCodes.find(it => it === 'app') ?? appCodes[0];
     }
 }

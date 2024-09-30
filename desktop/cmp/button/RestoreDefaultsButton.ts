@@ -51,6 +51,7 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] =
                     onConfirm: () => XH.restoreDefaultsAsync(),
                     confirmProps: {
                         text: 'Yes, restore defaults',
+                        icon: Icon.reset(),
                         intent: 'primary'
                     }
                 });

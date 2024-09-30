@@ -11,12 +11,19 @@ import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel'
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';
-import {RecordActionSpec} from '@xh/hoist/data';
+import {FilterLike, FilterTestFn, RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {isEmpty, lowerFirst} from 'lodash';
+import {capitalize, isEmpty, lowerFirst} from 'lodash';
 
 export class ServiceModel extends BaseInstanceModel {
+    @bindable
+    typeFilter: 'hoist' | 'app' | 'all' = 'all';
+
+    @bindable.ref
+    textFilter: FilterTestFn = null;
+
     clearCachesAction: RecordActionSpec = {
         text: 'Clear Caches',
         icon: Icon.reset(),
@@ -57,10 +64,9 @@ export class ServiceModel extends BaseInstanceModel {
             ]
         },
         sortBy: 'displayName',
-        groupBy: 'provider',
         columns: [
-            {field: 'provider', hidden: true},
             {field: 'displayName', flex: 1},
+            {field: 'provider'},
             {...timestampNoYear, field: 'lastCachesCleared'},
             {...timestampNoYear, field: 'initializedDate'}
         ],
@@ -71,6 +77,16 @@ export class ServiceModel extends BaseInstanceModel {
             ...GridModel.defaultContextMenu
         ]
     });
+
+    constructor() {
+        super();
+        makeObservable(this);
+        this.addReaction({
+            track: () => [this.textFilter, this.typeFilter],
+            run: this.applyFilters,
+            fireImmediately: true
+        });
+    }
 
     async clearCachesAsync(entireCluster: boolean) {
         const {gridModel, instanceName, loadModel} = this,
@@ -131,5 +147,15 @@ export class ServiceModel extends BaseInstanceModel {
         const provider = r.name && r.name.startsWith('hoistCore') ? 'Hoist' : 'App';
         const displayName = lowerFirst(r.name.replace('hoistCore', ''));
         return {provider, displayName, ...r};
+    }
+
+    private applyFilters() {
+        const {typeFilter, textFilter} = this;
+        const filters: FilterLike[] = [textFilter];
+
+        if (typeFilter == 'hoist' || typeFilter == 'app') {
+            filters.push({field: 'provider', op: '=', value: capitalize(typeFilter)});
+        }
+        this.gridModel.store.setFilter(filters);
     }
 }

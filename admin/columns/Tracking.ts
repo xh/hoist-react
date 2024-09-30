@@ -5,10 +5,13 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {RangeAggregator} from '@xh/hoist/admin/tabs/activity/aggregators/RangeAggregator';
+import {badge} from '@xh/hoist/cmp/badge';
+import {XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {fmtDate, fmtSpan, numberRenderer} from '@xh/hoist/format';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
+import copy from 'clipboard-copy';
 
 export const appEnvironment: ColumnSpec = {
     field: {
@@ -113,6 +116,7 @@ export const correlationId: ColumnSpec = {
         type: 'string',
         displayName: 'Correlation ID'
     },
+    renderer: badgeRenderer,
     width: 100
 };
 
@@ -121,8 +125,8 @@ export const error: ColumnSpec = {
         name: 'error',
         type: 'string'
     },
-    flex: true,
-    minWidth: 150,
+    width: 250,
+    autosizeMaxWidth: 400,
     renderer: e => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
 };
 
@@ -134,9 +138,8 @@ export const msg: ColumnSpec = {
         isDimension: true,
         aggregator: 'UNIQUE'
     },
-    minWidth: 120,
-    autosizeMaxWidth: 400,
-    flex: true
+    width: 250,
+    autosizeMaxWidth: 400
 };
 
 export const url: ColumnSpec = {
@@ -156,6 +159,7 @@ export const instance: ColumnSpec = {
         isDimension: true,
         aggregator: 'UNIQUE'
     },
+    renderer: badgeRenderer,
     width: 100
 };
 
@@ -229,4 +233,21 @@ function dayRangeComparator(rangeA, rangeB, sortDir, abs, {defaultComparator}) {
         maxB = rangeB?.max;
 
     return defaultComparator(maxA, maxB);
+}
+
+function badgeRenderer(v) {
+    return v
+        ? badge({
+              item: v,
+              className: 'xh-font-family-mono xh-title-tip',
+              title: 'Double-click to copy',
+              onDoubleClick: () => {
+                  copy(v);
+                  XH.toast({
+                      icon: Icon.copy(),
+                      message: `Copied ${v}`
+                  });
+              }
+          })
+        : '-';
 }
