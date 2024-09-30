@@ -12,11 +12,11 @@ import {capitalize, isEmpty} from 'lodash';
 import {ReactNode} from 'react';
 
 export interface PersistenceMenuProps extends HoistProps<PersistenceManagerModel> {
-    /**  */
+    /** 'whenDirty' to only show saveButton when persistence state is dirty. (Default 'whenDirty') */
     showSaveButton?: 'whenDirty' | 'always' | 'never';
-    /**  */
+    /** True to render private views in sub-menu (Default false)*/
     showPrivateViewsInSubMenu?: boolean;
-    /**  */
+    /** True to render shared views in sub-menu (Default false)*/
     showSharedViewsInSubMenu?: boolean;
 }
 
