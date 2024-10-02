@@ -127,7 +127,7 @@ export class ExceptionHandler {
                     ),
                     actionButtonProps: {
                         icon: Icon.search(),
-                        onClick: () => exceptionDialogModel.show(e, opts)
+                        onClick: () => exceptionDialogModel.showDetails(e, opts)
                     },
                     intent: showAsError ? 'danger' : 'primary',
                     ...ExceptionHandler.TOAST_PROPS
@@ -242,14 +242,17 @@ export class ExceptionHandler {
             ret = this.cloneAndTrim(ret);
 
             // 3) Additional ad-hoc cleanups
+            // Remove finger pointing at Hoist
+            delete ret.isHoistException;
+
             // Remove noisy grails exception wrapper info
-            // Remove verbose loadSpec from fetchOptions
             const {serverDetails} = ret;
             if (serverDetails?.className === 'GrailsCompressingFilter') {
                 delete serverDetails.className;
                 delete serverDetails.lineNumber;
             }
 
+            // Remove verbose loadSpec from fetchOptions
             const {fetchOptions} = ret;
             if (fetchOptions?.loadSpec) {
                 fetchOptions.loadType = fetchOptions.loadSpec.typeDisplay;

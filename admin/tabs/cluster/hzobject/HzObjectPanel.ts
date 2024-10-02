@@ -9,8 +9,9 @@ import {filler, hframe, placeholder} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, uses} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
-import {jsonInput} from '@xh/hoist/desktop/cmp/input';
+import {jsonInput, select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {Icon} from '@xh/hoist/icon';
 import {HzObjectModel} from './HzObjectModel';
@@ -20,27 +21,15 @@ export const hzObjectPanel = hoistCmp.factory({
 
     render({model}) {
         return panel({
-            bbar: [
-                recordActionBar({
-                    selModel: model.gridModel.selModel,
-                    actions: [model.clearAction]
+            item: hframe(
+                panel({
+                    item: grid({agOptions: {groupDefaultExpanded: 0}}),
+                    bbar: bbar()
                 }),
-                '-',
-                button({
-                    text: 'Clear Hibernate Caches',
-                    icon: Icon.reset(),
-                    intent: 'warning',
-                    tooltip: 'Clear the Hibernate caches using the native Hibernate API',
-                    onClick: () => model.clearHibernateCachesAsync()
-                }),
-                filler(),
-                gridCountLabel({unit: 'objects'}),
-                '-',
-                storeFilterField({matchMode: 'any'}),
-                exportButton()
-            ],
-            item: hframe(grid(), detailsPanel()),
-            mask: 'onLoad'
+                detailsPanel()
+            ),
+            mask: 'onLoad',
+            ref: model.viewRef
         });
     }
 });
@@ -48,16 +37,16 @@ export const hzObjectPanel = hoistCmp.factory({
 const detailsPanel = hoistCmp.factory({
     model: uses(HzObjectModel),
     render({model}) {
-        const data = model.gridModel.selectedRecord?.raw;
+        const record = model.gridModel.selectedRecord;
         return panel({
-            title: data ? `Stats: ${data.name}` : 'Stats',
+            title: record ? `Stats: ${record.data.displayName}` : 'Stats',
             icon: Icon.info(),
             compactHeader: true,
             modelConfig: {
                 side: 'right',
                 defaultSize: 450
             },
-            item: data
+            item: record
                 ? panel({
                       item: jsonInput({
                           readonly: true,
@@ -65,10 +54,45 @@ const detailsPanel = hoistCmp.factory({
                           height: '100%',
                           showFullscreenButton: false,
                           editorProps: {lineNumbers: false},
-                          value: model.fmtStats(data)
+                          value: model.fmtStats(record.raw)
                       })
                   })
                 : placeholder(Icon.grip(), 'Select an object')
         });
+    }
+});
+
+const bbar = hoistCmp.factory({
+    model: uses(HzObjectModel),
+    render({model}) {
+        return toolbar(
+            recordActionBar({
+                selModel: model.gridModel.selModel,
+                actions: [model.clearAction]
+            }),
+            '-',
+            button({
+                text: 'Clear Hibernate Caches',
+                icon: Icon.reset(),
+                intent: 'warning',
+                tooltip: 'Clear the Hibernate caches using the native Hibernate API',
+                onClick: () => model.clearHibernateCachesAsync()
+            }),
+            filler(),
+            gridCountLabel({unit: 'objects'}),
+            '-',
+            select({
+                options: [
+                    {label: 'By Owner', value: 'owner'},
+                    {label: 'By Type', value: 'type'},
+                    {label: 'Ungrouped', value: null}
+                ],
+                width: 125,
+                bind: 'groupBy',
+                hideDropdownIndicator: true
+            }),
+            storeFilterField({matchMode: 'any'}),
+            exportButton()
+        );
     }
 });

@@ -1,6 +1,43 @@
 # Changelog
 
-## 68.0.0-SNAPSHOT - unreleased
+## 69.0.0-SNAPSHOT - unreleased
+
+## 68.1.0 - 2024-09-27
+
+### 🎁 New Features
+
+* `Markdown` now supports a `reactMarkdownOptions` prop to allow passing React Markdown
+  props to the underlying `reactMarkdown` instance.
+
+### ⚙️ Technical
+* Misc. Improvements to Cluster Tab in Admin Panel.
+
+## 68.0.0 - 2024-09-18
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update only)
+
+* Requires `hoist-core >= 22.0` for consolidated polling of Alert Banner updates (see below).
+
+### 🎁 New Features
+
+* Added expand/collapse affordance in the left column header of ZoneGrids in tree mode.
+
+### ⚙️ Technical
+
+* Updated Admin Console's Cluster tab to refresh more frequently.
+* Consolidated the polling check for Alert Banner updates into existing `EnvironmentService`
+  polling, avoiding an extra request and improving alert banner responsiveness.
+
+### ⚙️ Typescript API Adjustments
+
+* Corrected types of enhanced `Promise` methods.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.17 → 3.23`
+* mobx  `6.9.1 -> 6.13.2`,
+* mobx-react-lite  `3.4.3 -> 4.0.7`,
+
 
 ## 67.0.0 - 2024-09-03
 
@@ -42,7 +79,6 @@
 * Fixed inline `SelectEditor` to ensure new value is flushed before grid editing stops.
 * `WebSocketService` now attempts to establish a new connection when app's server instance changes.
 
-
 ### ✨ Styles
 
 * Added CSS variables to support customization of `Badge` component styling.
@@ -50,7 +86,6 @@
 ### 📚 Libraries
 
 * short-unique-id `added @ 5.2`
-* hoist-core 21.0`
 
 ## 66.1.1 - 2024-08-01
 

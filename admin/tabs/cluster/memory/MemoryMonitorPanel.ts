@@ -69,7 +69,8 @@ export const memoryMonitorPanel = hoistCmp.factory({
                     item: chart()
                 })
             ],
-            mask: 'onLoad'
+            mask: 'onLoad',
+            ref: model.viewRef
         });
     }
 });

@@ -60,7 +60,8 @@ export const connPoolMonitorPanel = hoistCmp.factory({
                 ),
                 poolConfigPanel()
             ),
-            mask: 'onLoad'
+            mask: 'onLoad',
+            ref: model.viewRef
         });
     }
 });

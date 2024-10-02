@@ -10,13 +10,13 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, Intent, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {dateIs, required} from '@xh/hoist/data';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {AlertBannerSpec} from '@xh/hoist/svc';
 import {isEqual, isMatch, sortBy, without} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
-    savedValue;
-    @observable.ref savedPresets: PlainObject[] = [];
+    savedValue: AlertBannerSpec;
+    @bindable.ref savedPresets: PlainObject[] = [];
 
     @managed
     formModel = new FormModel({
@@ -118,7 +118,6 @@ export class AlertBannerModel extends HoistModel {
         this.formModel.setValues({...preset, expires: null});
     }
 
-    @action
     addPreset() {
         const {message, intent, iconName, enableClose, clientApps} = this.formModel.values,
             dateCreated = Date.now(),
@@ -188,25 +187,6 @@ export class AlertBannerModel extends HoistModel {
         }
     }
 
-    async saveBannerSpecAsync(spec: AlertBannerSpec) {
-        const {active, message, intent, iconName, enableClose, clientApps} = spec;
-        try {
-            await XH.fetchService
-                .postJson({
-                    url: 'alertBannerAdmin/setAlertSpec',
-                    body: spec
-                })
-                .track({
-                    category: 'Audit',
-                    message: 'Updated Alert Banner',
-                    data: {active, message, intent, iconName, enableClose, clientApps},
-                    logData: ['active']
-                });
-        } catch (e) {
-            XH.handleException(e);
-        }
-    }
-
     //----------------
     // Implementation
     //----------------
@@ -233,7 +213,7 @@ export class AlertBannerModel extends HoistModel {
         let preservedPublishDate = null;
 
         // Ask some questions if we are dealing with live stuff
-        if (XH.alertBannerService.enabled && (active || savedValue?.active)) {
+        if (active || savedValue?.active) {
             // Question 1. Reshow when modifying an active && already active, closable banner?
             if (
                 active &&
@@ -300,7 +280,25 @@ export class AlertBannerModel extends HoistModel {
             };
 
         await this.saveBannerSpecAsync(value);
-        await XH.alertBannerService.checkForBannerAsync();
+        await XH.environmentService.pollServerAsync();
         await this.refreshAsync();
+    }
+
+    private async saveBannerSpecAsync(spec: AlertBannerSpec) {
+        const {active, message, intent, iconName, enableClose, clientApps} = spec;
+        try {
+            await XH.fetchService.postJson({
+                url: 'alertBannerAdmin/setAlertSpec',
+                body: spec,
+                track: {
+                    category: 'Audit',
+                    message: 'Updated Alert Banner',
+                    data: {active, message, intent, iconName, enableClose, clientApps},
+                    logData: ['active']
+                }
+            });
+        } catch (e) {
+            XH.handleException(e);
+        }
     }
 }

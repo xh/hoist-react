@@ -49,17 +49,17 @@ export class ActivityDetailModel extends HoistModel {
                 {...Col.impersonating, hidden},
                 {...Col.category},
                 {...Col.msg},
-                {...Col.url},
-                {...Col.instance, hidden},
+                {...Col.browser},
+                {...Col.device},
+                {...Col.userAgent, hidden},
                 {...Col.appVersion},
                 {...Col.appEnvironment, hidden},
                 {...Col.data, hidden},
-                {...Col.device},
-                {...Col.browser},
-                {...Col.userAgent, hidden},
+                {...Col.url},
+                {...Col.correlationId},
+                {...Col.instance, hidden},
                 {...Col.elapsed},
-                {...Col.dateCreatedWithSec, displayName: 'Timestamp'},
-                {...Col.correlationId}
+                {...Col.dateCreatedWithSec, displayName: 'Timestamp'}
             ]
         });
 

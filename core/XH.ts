@@ -273,6 +273,14 @@ export class XHApi {
     }
 
     /**
+     * Send a POST request with a JSON body and decode the response as JSON.
+     * @see FetchService.postJson
+     */
+    postJson(opts: FetchOptions): Promise<any> {
+        return this.fetchService.postJson(opts);
+    }
+
+    /**
      * Read soft configuration values.
      * @see ConfigService.get
      */

@@ -15,16 +15,12 @@ import {Icon} from '@xh/hoist/icon';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {isDisplayed} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import {createRef} from 'react';
 import * as WSCol from './WebSocketColumns';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 
 export class WebSocketModel extends BaseInstanceModel {
-    viewRef = createRef<HTMLElement>();
-
     @observable
     lastRefresh: number;
 
@@ -87,9 +83,7 @@ export class WebSocketModel extends BaseInstanceModel {
 
         this._timer = Timer.create({
             runFn: () => {
-                if (isDisplayed(this.viewRef.current)) {
-                    this.autoRefreshAsync();
-                }
+                if (this.isVisible) this.autoRefreshAsync();
             },
             interval: 5 * SECONDS,
             delay: true

@@ -27,22 +27,24 @@ export const AppComponent = hoistCmp({
     }
 });
 
-const tbar = hoistCmp.factory<AppModel>(({model}) =>
-    appBar({
+const tbar = hoistCmp.factory<AppModel>(({model}) => {
+    const primaryApp = model.getPrimaryAppCode();
+    return appBar({
         icon: Icon.gears({size: '2x', prefix: 'fal'}),
         leftItems: [tabSwitcher({testId: 'tab-switcher', enableOverflow: true})],
         rightItems: [
             button({
                 icon: Icon.openExternal(),
-                title: 'Open app...',
-                onClick: () => window.open('/')
+                tooltip: `Open ${primaryApp}...`,
+                omit: !primaryApp,
+                onClick: () => model.openPrimaryApp()
             }),
-            appBarSeparator()
+            appBarSeparator({omit: !primaryApp})
         ],
         appMenuButtonProps: {
             hideAdminItem: true,
             hideFeedbackItem: true,
             extraItems: model.getAppMenuButtonExtraItems()
         }
-    })
-);
+    });
+});

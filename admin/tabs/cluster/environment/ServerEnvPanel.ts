@@ -28,7 +28,8 @@ export const serverEnvPanel = hoistCmp.factory({
                 exportButton()
             ],
             item: lastLoadException ? errorMessage({error: lastLoadException}) : grid(),
-            mask: 'onLoad'
+            mask: 'onLoad',
+            ref: model.viewRef
         });
     }
 });
