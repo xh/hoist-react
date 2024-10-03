@@ -2,6 +2,17 @@
 
 ## 69.0.0-SNAPSHOT - unreleased
 
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW )
+* The `INITIALIZING` AppState has been replaced with more fine-grained states (see below).  This
+is not expected to effect any applications.
+
+### 🎁 New Features
+
+* Added new AppStates `AUTHENTICATING`, `INITIALIZING_HOIST`, and `INITIALIZING_APP` to support
+more granular tracking and timing of app startup lifecycle.
+* Improved the default "Loaded App" activity tracking entry with more granular data on load timing.
+
 ## 68.1.0 - 2024-09-27
 
 ### 🎁 New Features

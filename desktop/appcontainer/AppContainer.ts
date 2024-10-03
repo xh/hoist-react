@@ -104,7 +104,9 @@ export const AppContainer = hoistCmp({
 function viewForState({model}) {
     switch (XH.appState) {
         case 'PRE_AUTH':
-        case 'INITIALIZING':
+        case 'AUTHENTICATING':
+        case 'INITIALIZING_HOIST':
+        case 'INITIALIZING_APP':
             return viewport(
                 mask({spinner: true, isDisplayed: true, message: model.initializingLoadMaskMessage})
             );

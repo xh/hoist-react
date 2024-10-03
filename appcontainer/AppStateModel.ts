@@ -5,10 +5,10 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {AppState, AppSuspendData, HoistModel, XH} from '@xh/hoist/core';
-import {action, makeObservable, observable, reaction} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {getClientDeviceInfo} from '@xh/hoist/utils/js';
-import {isBoolean, isString} from 'lodash';
+import {camelCase, isBoolean, isString, mapKeys} from 'lodash';
 
 /**
  * Support for Core Hoist Application state and loading.
@@ -24,6 +24,10 @@ export class AppStateModel extends HoistModel {
     suspendData: AppSuspendData;
     accessDeniedMessage: string = 'Access Denied';
 
+    private timings: Record<AppState, number> = {} as Record<AppState, number>;
+    private loadStarted: number = window['_xhLoadTimestamp']; // set in index.html
+    private lastStateChangeTime: number = this.loadStarted;
+
     constructor() {
         super();
         makeObservable(this);
@@ -33,10 +37,14 @@ export class AppStateModel extends HoistModel {
 
     @action
     setAppState(nextState: AppState) {
-        if (this.state !== nextState) {
-            this.logDebug(`AppState change`, `${this.state} → ${nextState}`);
-        }
+        if (this.state === nextState) return;
+
+        const {state, timings, lastStateChangeTime} = this,
+            now = Date.now();
+        timings[state] = (timings[state] ?? 0) + now - lastStateChangeTime;
+        this.lastStateChangeTime = now;
         this.state = nextState;
+        this.logDebug(`AppState change`, `${state} → ${nextState}`);
     }
 
     suspendApp(suspendData: AppSuspendData) {
@@ -70,39 +78,25 @@ export class AppStateModel extends HoistModel {
     // Implementation
     //------------------
     private trackLoad() {
-        let loadStarted = window['_xhLoadTimestamp'], // set in index.html
-            loginStarted = null,
-            loginElapsed = 0;
-
-        const disposer = reaction(
-            () => this.state,
-            state => {
-                const now = Date.now();
-                switch (state) {
-                    case 'RUNNING':
-                        XH.track({
-                            category: 'App',
-                            message: `Loaded ${XH.clientAppCode}`,
-                            elapsed: now - loadStarted - loginElapsed,
-                            data: {
-                                appVersion: XH.appVersion,
-                                appBuild: XH.appBuild,
-                                locationHref: window.location.href,
-                                ...getClientDeviceInfo()
-                            },
-                            logData: ['appVersion', 'appBuild'],
-                            omit: !XH.appSpec.trackAppLoad
-                        });
-                        disposer();
-                        break;
-                    case 'LOGIN_REQUIRED':
-                        loginStarted = now;
-                        break;
-                    default:
-                        if (loginStarted) loginElapsed = now - loginStarted;
-                }
-            }
-        );
+        const {timings, loadStarted} = this;
+        this.addReaction({
+            when: () => this.state === 'RUNNING',
+            run: () =>
+                XH.track({
+                    category: 'App',
+                    message: `Loaded ${XH.clientAppCode}`,
+                    elapsed: Date.now() - loadStarted - (timings.LOGIN_REQUIRED ?? 0),
+                    data: {
+                        appVersion: XH.appVersion,
+                        appBuild: XH.appBuild,
+                        locationHref: window.location.href,
+                        timings: mapKeys(timings, (v, k) => camelCase(k)),
+                        ...getClientDeviceInfo()
+                    },
+                    logData: ['appVersion', 'appBuild'],
+                    omit: !XH.appSpec.trackAppLoad
+                })
+        });
     }
 
     //---------------------
