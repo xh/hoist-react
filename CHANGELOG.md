@@ -4,9 +4,8 @@
 
 ### 🎁 New Features
 
-* New `AppState` `AppState.Authenticating`, provides additional support for tracking apps during
-  authentication flows.
-* Improved timing data about app loading now posted to tracking log.
+* Added `AppState.Authenticating` to support additional tracking and timing of auth flows.
+* Improved the default "Loaded App" activity tracking entry with more granular data on load timing.
 
 ## 68.1.0 - 2024-09-27
 
