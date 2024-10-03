@@ -90,7 +90,8 @@ function viewForState({model}) {
     switch (XH.appState) {
         case 'PRE_AUTH':
         case 'AUTHENTICATING':
-        case 'INITIALIZING':
+        case 'INITIALIZING_HOIST':
+        case 'INITIALIZING_APP':
             return viewport(
                 mask({spinner: true, isDisplayed: true, message: model.initializingLoadMaskMessage})
             );

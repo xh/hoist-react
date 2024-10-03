@@ -99,7 +99,7 @@ export class AppContainerModel extends HoistModel {
     @managed userAgentModel = new UserAgentModel();
 
     /**
-     * Message shown on spinner while the application is in the INITIALIZING state.
+     * Message shown on spinner while the application is in a pre-running state.
      * Update within `AppModel.initAsync()` to relay app-specific initialization status.
      */
     @bindable initializingLoadMaskMessage: ReactNode;
@@ -108,7 +108,7 @@ export class AppContainerModel extends HoistModel {
      * Main entry point. Initialize and render application code.
      */
     renderApp<T extends HoistAppModel>(appSpec: AppSpec<T>) {
-        // Remove the pre-load exception handler installed by preflight.js
+        // Remove the preload exception handler installed by preflight.js
         window.onerror = null;
         const spinner = document.getElementById('xh-preload-spinner');
         if (spinner) spinner.style.display = 'none';
@@ -198,7 +198,6 @@ export class AppContainerModel extends HoistModel {
         }
 
         // ...if made it to here, continue with initialization.
-        this.setAppState('INITIALIZING');
         await this.completeInitAsync();
     }
 
@@ -208,6 +207,7 @@ export class AppContainerModel extends HoistModel {
      */
     @action
     async completeInitAsync() {
+        this.setAppState('INITIALIZING_HOIST');
         try {
             // Install identity service and confirm access
             await installServicesAsync(IdentityService);
@@ -273,6 +273,7 @@ export class AppContainerModel extends HoistModel {
             // Delay to workaround hot-reload styling issues in dev.
             await wait(XH.isDevelopmentMode ? 300 : 1);
 
+            this.setAppState('INITIALIZING_APP');
             const modelClass: any = this.appSpec.modelClass;
             this.appModel = modelClass.instance = new modelClass();
             await this.appModel.initAsync();
