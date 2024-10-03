@@ -179,7 +179,11 @@ export class ViewManagerModel<T extends PlainObject = PlainObject> extends Hoist
                     {
                         track: () => this.pendingValue,
                         run: () => {
-                            if (this.enableAutoSave && !this.isSharedViewSelected) {
+                            if (
+                                this.enableAutoSave &&
+                                !this.isSharedViewSelected &&
+                                this.selectedToken !== null
+                            ) {
                                 this.saveAsync(true);
                             }
                         }
@@ -244,6 +248,8 @@ export class ViewManagerModel<T extends PlainObject = PlainObject> extends Hoist
         });
     }
 
+    // TODO Reset for default view currently not working because value doesnt change so reaction on
+    //  portfolioPanelModel doesnt trigger.
     async resetAsync() {
         return this.selectAsync(this.selectedToken);
     }

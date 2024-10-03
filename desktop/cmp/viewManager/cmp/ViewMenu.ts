@@ -19,7 +19,7 @@ export interface ViewMenuProps extends HoistProps<ViewManagerModel> {
 
 export const [ViewMenu, viewMenu] = hoistCmp.withFactory<ViewMenuProps>({
     displayName: 'ViewMenu',
-    className: 'xh-persistence-manager__menu',
+    className: 'xh-view-manager__menu',
     model: uses(ViewManagerModel),
 
     render({
@@ -30,8 +30,9 @@ export const [ViewMenu, viewMenu] = hoistCmp.withFactory<ViewMenuProps>({
     }: ViewMenuProps) {
         const {selectedView, isShared, entity} = model,
             displayName = entity.displayName;
+
         return hbox({
-            className: 'xh-persistence-manager__menu',
+            className: 'xh-view-manager__menu',
             items: [
                 popover({
                     item: button({
@@ -54,7 +55,8 @@ export const [ViewMenu, viewMenu] = hoistCmp.withFactory<ViewMenuProps>({
                 persistenceSaveButton({
                     omit:
                         showSaveButton === 'never' ||
-                        (showSaveButton === 'whenDirty' && !model.isDirty && !model.canSave) ||
+                        (showSaveButton === 'whenDirty' && !model.isDirty) ||
+                        !model.canSave ||
                         (model.enableAutoSave && !model.canSave && model.isSharedViewSelected),
                     disabled: !model.canSave
                 })
@@ -79,13 +81,13 @@ const menuFavorite = hoistCmp.factory<ViewManagerModel>({
     render({model, view}) {
         const isFavorite = model.isFavorite(view.token);
         return hbox({
-            className: 'xh-persistence-manager__menu-item',
+            className: 'xh-view-manager__menu-item',
             alignItems: 'center',
             items: [
                 span({style: {paddingRight: 5}, item: view.text}),
                 filler(),
                 div({
-                    className: `xh-persistence-manager__menu-item--fav ${isFavorite ? 'xh-persistence-manager__menu-item--fav--active' : ''}`,
+                    className: `xh-view-manager__menu-item--fav ${isFavorite ? 'xh-view-manager__menu-item--fav--active' : ''}`,
                     item: Icon.favorite({
                         prefix: isFavorite ? 'fas' : 'far'
                     }),
@@ -219,7 +221,7 @@ function buildView(view: ViewTree, model: ViewManagerModel): ReactNode {
             });
         case 'view':
             return menuItem({
-                className: 'xh-persistence-manager__menu-item',
+                className: 'xh-view-manager__menu-item',
                 key: view.token,
                 icon,
                 text: menuFavorite({model, view}),
