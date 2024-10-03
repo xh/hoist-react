@@ -55,7 +55,7 @@ export class RoleDetailsModel extends HoistModel {
     //------------------
     // Implementation
     //------------------
-    private setTabTitle(id: string, name: string, col: []) {
+    private setTabTitle(id: string, name: string, col: any[]) {
         const title = col != null ? hbox(name, badge(col.length)) : name;
         this.tabContainerModel.setTabTitle(id, title);
     }
