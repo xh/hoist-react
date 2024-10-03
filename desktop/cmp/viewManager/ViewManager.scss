@@ -1,4 +1,4 @@
-.xh-persistence-manager {
+.xh-view-manager {
   align-items: center;
 
   // Save Button
@@ -30,7 +30,7 @@
 
   &__menu-item {
     &:hover {
-      .xh-persistence-manager__menu-item--fav {
+      .xh-view-manager__menu-item--fav {
         opacity: 1;
         color: var(--xh-yellow);
       }

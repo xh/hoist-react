@@ -1,14 +1,14 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {PersistenceManagerModel} from '@xh/hoist/core/persist/persistenceManager';
 import {lengthIs, required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {includes, isEmpty} from 'lodash';
+import {ViewManagerModel} from '../ViewManagerModel';
 
 export class ManageDialogModel extends HoistModel {
-    parentModel: PersistenceManagerModel;
+    parentModel: ViewManagerModel;
 
     @bindable isOpen: boolean = false;
 
@@ -48,7 +48,7 @@ export class ManageDialogModel extends HoistModel {
         return this.parentModel.canManageGlobal;
     }
 
-    constructor(parentModel: PersistenceManagerModel) {
+    constructor(parentModel: ViewManagerModel) {
         super();
         makeObservable(this);
 

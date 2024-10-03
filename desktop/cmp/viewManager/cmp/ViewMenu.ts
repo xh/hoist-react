@@ -1,9 +1,6 @@
 import {div, filler, hbox, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
-import {
-    PersistenceManagerModel,
-    PersistenceViewTree
-} from '@xh/hoist/core/persist/persistenceManager';
+import {ViewManagerModel, ViewTree} from '@xh/hoist/core/persist/viewManager';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
@@ -11,7 +8,7 @@ import {consumeEvent, pluralize} from '@xh/hoist/utils/js';
 import {capitalize, isEmpty} from 'lodash';
 import {ReactNode} from 'react';
 
-export interface PersistenceMenuProps extends HoistProps<PersistenceManagerModel> {
+export interface ViewMenuProps extends HoistProps<ViewManagerModel> {
     /** 'whenDirty' to only show saveButton when persistence state is dirty. (Default 'whenDirty') */
     showSaveButton?: 'whenDirty' | 'always' | 'never';
     /** True to render private views in sub-menu (Default false)*/
@@ -20,17 +17,17 @@ export interface PersistenceMenuProps extends HoistProps<PersistenceManagerModel
     showSharedViewsInSubMenu?: boolean;
 }
 
-export const [PersistenceMenu, persistenceMenu] = hoistCmp.withFactory<PersistenceMenuProps>({
-    displayName: 'PersistenceMenu',
+export const [ViewMenu, viewMenu] = hoistCmp.withFactory<ViewMenuProps>({
+    displayName: 'ViewMenu',
     className: 'xh-persistence-manager__menu',
-    model: uses(PersistenceManagerModel),
+    model: uses(ViewManagerModel),
 
     render({
         model,
         showSaveButton = 'whenDirty',
         showPrivateViewsInSubMenu = false,
         showSharedViewsInSubMenu = false
-    }: PersistenceMenuProps) {
+    }: ViewMenuProps) {
         const {selectedView, isShared, entity} = model,
             displayName = entity.displayName;
         return hbox({
@@ -66,7 +63,7 @@ export const [PersistenceMenu, persistenceMenu] = hoistCmp.withFactory<Persisten
     }
 });
 
-export const persistenceSaveButton = hoistCmp.factory<PersistenceManagerModel>({
+export const persistenceSaveButton = hoistCmp.factory<ViewManagerModel>({
     render({model, disabled}) {
         return button({
             icon: Icon.save(),
@@ -78,7 +75,7 @@ export const persistenceSaveButton = hoistCmp.factory<PersistenceManagerModel>({
     }
 });
 
-const menuFavorite = hoistCmp.factory<PersistenceManagerModel>({
+const menuFavorite = hoistCmp.factory<ViewManagerModel>({
     render({model, view}) {
         const isFavorite = model.isFavorite(view.token);
         return hbox({
@@ -102,7 +99,7 @@ const menuFavorite = hoistCmp.factory<PersistenceManagerModel>({
     }
 });
 
-const objMenu = hoistCmp.factory<PersistenceMenuProps>({
+const objMenu = hoistCmp.factory<ViewMenuProps>({
     render({model, showPrivateViewsInSubMenu, showSharedViewsInSubMenu}) {
         const {entity} = model,
             items = [];
@@ -209,7 +206,7 @@ const objMenu = hoistCmp.factory<PersistenceMenuProps>({
     }
 });
 
-function buildView(view: PersistenceViewTree, model: PersistenceManagerModel): ReactNode {
+function buildView(view: ViewTree, model: ViewManagerModel): ReactNode {
     const {type, text, selected} = view,
         icon = selected ? Icon.check() : Icon.placeholder();
     switch (type) {

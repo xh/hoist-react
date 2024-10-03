@@ -1,7 +1,7 @@
 import {form} from '@xh/hoist/cmp/form';
 import {filler, fragment, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {SaveDialogModel} from '@xh/hoist/core/persist/persistenceManager/impl/SaveDialogModel';
+import {SaveDialogModel} from '@xh/hoist/core/persist/viewManager/impl/SaveDialogModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {textArea, textInput} from '@xh/hoist/desktop/cmp/input';

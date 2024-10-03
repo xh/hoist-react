@@ -1,21 +1,22 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {PersistenceManagerModel, PersistenceView} from '@xh/hoist/core/persist/persistenceManager';
 import {lengthIs, required} from '@xh/hoist/data';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {ViewManagerModel} from '../ViewManagerModel';
+import {View} from '../Types';
 
 export class SaveDialogModel extends HoistModel {
     readonly saveTask = TaskObserver.trackLast();
     private readonly type: string;
 
-    parentModel: PersistenceManagerModel;
+    parentModel: ViewManagerModel;
 
-    @bindable viewStub: Partial<PersistenceView>;
+    @bindable viewStub: Partial<View>;
     @bindable isOpen: boolean = false;
 
     @managed readonly formModel = this.createFormModel();
 
-    constructor(parentModel: PersistenceManagerModel, type: string) {
+    constructor(parentModel: ViewManagerModel, type: string) {
         super();
         makeObservable(this);
 
@@ -23,7 +24,7 @@ export class SaveDialogModel extends HoistModel {
         this.type = type;
     }
 
-    open(viewStub: Partial<PersistenceView>) {
+    open(viewStub: Partial<View>) {
         this.viewStub = viewStub;
 
         this.formModel.init({

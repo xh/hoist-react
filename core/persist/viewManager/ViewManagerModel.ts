@@ -14,10 +14,10 @@ import {capitalize, find, isEqualWith, isNil, isString, sortBy, startCase} from 
 import {runInAction} from 'mobx';
 import {ManageDialogModel} from './impl/ManageDialogModel';
 import {SaveDialogModel} from './impl/SaveDialogModel';
-import {PersistenceView, PersistenceViewTree} from './Types';
+import {View, ViewTree} from './Types';
 
 /**
- * PersistenceManager provides re-usable loading, selection, and user management of named configs, which are modelled
+ * ViewManager provides re-usable loading, selection, and user management of named configs, which are modelled
  * and persisted on the server as databased domain objects extending the `PersistedObject` trait.
  *
  * These generic configs are intended for specific use cases such as saved Grid views, Dashboards, and data import
@@ -37,7 +37,7 @@ interface Entity {
     displayName?: string;
 }
 
-export interface PersistenceManagerConfig {
+export interface ViewManagerConfig {
     /** Entity name or object for this model. */
     entity: string | Entity;
     /** Whether user can publish or edit globally shared objects. */
@@ -50,9 +50,9 @@ export interface PersistenceManagerConfig {
     enableAutoSave?: boolean;
 }
 
-export class PersistenceManagerModel<T extends PlainObject = PlainObject> extends HoistModel {
-    static async createAsync(config: PersistenceManagerConfig): Promise<PersistenceManagerModel> {
-        const ret = new PersistenceManagerModel(config);
+export class ViewManagerModel<T extends PlainObject = PlainObject> extends HoistModel {
+    static async createAsync(config: ViewManagerConfig): Promise<ViewManagerModel> {
+        const ret = new ViewManagerModel(config);
         await ret.loadAsync();
         return ret;
     }
@@ -74,7 +74,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
     /** Current state of the active object, can include not-yet-persisted changes. */
     @observable.ref pendingValue: T = null;
 
-    @observable.ref views: PersistenceView<T>[] = [];
+    @observable.ref views: View<T>[] = [];
 
     @bindable selectedToken: string = null;
     @bindable favorites: string[] = [];
@@ -87,7 +87,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
         return this.selectedView?.value;
     }
 
-    get selectedView(): PersistenceView<T> {
+    get selectedView(): View<T> {
         return this.views.find(it => it.token === this.selectedToken);
     }
 
@@ -119,23 +119,23 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
         return !!this.selectedView?.isShared;
     }
 
-    get favoritedViews(): PersistenceView<T>[] {
+    get favoritedViews(): View<T>[] {
         return this.views.filter(it => this.favorites.includes(it.token));
     }
 
-    get sharedViews(): PersistenceView<T>[] {
+    get sharedViews(): View<T>[] {
         return this.views.filter(it => it.isShared);
     }
 
-    get privateViews(): PersistenceView<T>[] {
+    get privateViews(): View<T>[] {
         return this.views.filter(it => !it.isShared);
     }
 
-    get sharedViewTree(): PersistenceViewTree[] {
+    get sharedViewTree(): ViewTree[] {
         return this.hierarchicalItemSpecs(sortBy(this.sharedViews, 'name'));
     }
 
-    get privateViewTree(): PersistenceViewTree[] {
+    get privateViewTree(): ViewTree[] {
         return this.hierarchicalItemSpecs(sortBy(this.privateViews, 'name'));
     }
 
@@ -149,7 +149,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
         canManageGlobal,
         enableDefault = false,
         enableAutoSave = false
-    }: PersistenceManagerConfig) {
+    }: ViewManagerConfig) {
         super();
         makeObservable(this);
 
@@ -164,7 +164,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
         if (persistWith) {
             try {
                 this._provider = PersistenceProvider.create({
-                    path: 'persistenceManager',
+                    path: 'viewManager',
                     ...persistWith
                 });
 
@@ -299,7 +299,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
         return ret;
     }
 
-    private processRaw(raw: PlainObject): PersistenceView<T>[] {
+    private processRaw(raw: PlainObject): View<T>[] {
         const {entity} = this,
             name = capitalize(pluralize(entity.displayName));
         return raw.map(it => {
@@ -351,7 +351,7 @@ export class PersistenceManagerModel<T extends PlainObject = PlainObject> extend
         });
     }
 
-    private hierarchicalItemSpecs(views, depth: number = 0): PersistenceViewTree[] {
+    private hierarchicalItemSpecs(views, depth: number = 0): ViewTree[] {
         const groups = {},
             unbalancedStableGroupsAndViews = [];
 

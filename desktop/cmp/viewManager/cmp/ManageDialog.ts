@@ -2,7 +2,7 @@ import {form} from '@xh/hoist/cmp/form';
 import {grid} from '@xh/hoist/cmp/grid';
 import {br, div, filler, fragment, hframe, placeholder, spacer, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
-import {ManageDialogModel} from '@xh/hoist/core/persist/persistenceManager/impl/ManageDialogModel';
+import {ManageDialogModel} from '@xh/hoist/core/persist/viewManager/impl/ManageDialogModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {switchInput, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
