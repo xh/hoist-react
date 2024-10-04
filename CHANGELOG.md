@@ -2,10 +2,13 @@
 
 ## 69.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Added a workaround for a bug where Panel drag resizing was broken in Safari.
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW )
 * The `INITIALIZING` AppState has been replaced with more fine-grained states (see below).  This
-is not expected to effect any applications.
+is not expected to affect any applications.
 
 ### 🎁 New Features
 

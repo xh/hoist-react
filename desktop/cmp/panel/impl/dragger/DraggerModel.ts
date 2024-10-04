@@ -254,7 +254,9 @@ export class DraggerModel extends HoistModel {
     }
 
     private isValidMouseEvent(e) {
-        return e.buttons && e.buttons !== 0;
+        // Note: We fall back to deprecated 'which' to work around a Safari issue where `buttons`
+        // was not being set. We may be able to remove in the future.
+        return (e.buttons && e.buttons !== 0) || (e.which && e.which !== 0);
     }
 
     private isValidTouchEvent(e) {
