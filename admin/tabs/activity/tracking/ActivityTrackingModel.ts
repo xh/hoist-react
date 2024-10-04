@@ -70,7 +70,7 @@ export class ActivityTrackingModel extends HoistModel {
     }
 
     private _monthFormat = 'MMM YYYY';
-    private _defaultDims = ['day', 'username'];
+    private _defaultDims = ['username'];
 
     constructor() {
         super();
