@@ -2,10 +2,6 @@
 
 ## 69.0.0-SNAPSHOT - unreleased
 
-### 🐞 Bug Fixes
-
-* Added a workaround for a bug where Panel drag resizing was broken in Safari.
-
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW )
 * The `INITIALIZING` AppState has been replaced with more fine-grained states (see below).  This
 is not expected to affect any applications.
@@ -15,6 +11,17 @@ is not expected to affect any applications.
 * Added new AppStates `AUTHENTICATING`, `INITIALIZING_HOIST`, and `INITIALIZING_APP` to support
 more granular tracking and timing of app startup lifecycle.
 * Improved the default "Loaded App" activity tracking entry with more granular data on load timing.
+
+### ⚙️ Technical
+
+* Improvements to the typing of `HoistBase.addReaction`.  Note that applications may need to adjust
+typescript slightly in calls to this method to conform to the tighter typing.
+
+
+### 🐞 Bug Fixes
+
+* Added a workaround for a bug where Panel drag resizing was broken in Safari.
+
 
 ## 68.1.0 - 2024-09-27
 

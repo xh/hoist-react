@@ -137,9 +137,12 @@ export abstract class HoistBase {
      * @param specs - one or more reactions to add
      * @returns disposer(s) to manually dispose of each created reaction.
      */
+    addReaction<T>(spec: ReactionSpec<T>): IReactionDisposer;
     addReaction<T extends any[]>(
         ...specs: {[K in keyof T]: ReactionSpec<T[K]>}
-    ): IReactionDisposer | IReactionDisposer[] {
+    ): IReactionDisposer[];
+
+    addReaction(...specs: ReactionSpec[]): IReactionDisposer | IReactionDisposer[] {
         const disposers = specs.map(s => {
             if (!s) return null;
             let {track, when, run, debounce, ...rest} = s;
