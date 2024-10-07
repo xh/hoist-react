@@ -2,6 +2,7 @@ import {div, filler, hbox, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import {ViewManagerModel, ViewTree} from '@xh/hoist/core/persist/viewManager';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {consumeEvent, pluralize} from '@xh/hoist/utils/js';
@@ -57,7 +58,10 @@ export const [ViewMenu, viewMenu] = hoistCmp.withFactory<ViewMenuProps>({
                         showSaveButton === 'never' ||
                         (showSaveButton === 'whenDirty' && !model.isDirty) ||
                         !model.canSave ||
-                        (model.enableAutoSave && !model.canSave && model.isSharedViewSelected),
+                        (model.enableAutoSave &&
+                            model.autoSaveToggle &&
+                            !model.canSave &&
+                            model.isSharedViewSelected),
                     disabled: !model.canSave
                 })
             ]
@@ -195,6 +199,15 @@ const objMenu = hoistCmp.factory<ViewMenuProps>({
                     text: `Revert ${capitalize(entity.displayName)}`,
                     disabled: !model.isDirty,
                     onClick: () => model.resetAsync()
+                }),
+                menuDivider(),
+                menuItem({
+                    text: switchInput({
+                        label: 'Auto Save',
+                        bind: 'autoSaveToggle',
+                        inline: true
+                    }),
+                    shouldDismissPopover: false
                 }),
                 menuDivider(),
                 menuItem({

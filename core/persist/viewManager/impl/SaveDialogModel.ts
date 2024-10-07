@@ -85,7 +85,7 @@ export class SaveDialogModel extends HoistModel {
             this.close();
 
             await parentModel.refreshAsync();
-            await parentModel.selectAsync(newObj.id);
+            await parentModel.selectAsync(newObj.token);
         } catch (e) {
             XH.handleException(e);
         }

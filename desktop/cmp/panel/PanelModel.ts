@@ -299,7 +299,8 @@ export class PanelModel extends HoistModel {
                     if (resizable) state.size = this.size;
                     return state;
                 },
-                run: state => this.provider.write(state)
+                run: state => this.provider.write(state),
+                fireImmediately: this.provider.isWriteStateImmediately
             });
         }
     }

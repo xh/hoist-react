@@ -16,6 +16,10 @@ import {ViewManagerModel} from './viewManager';
 export class ViewManagerProvider extends PersistenceProvider {
     viewManagerModel: ViewManagerModel;
 
+    override get isWriteStateImmediately(): boolean {
+        return true;
+    }
+
     constructor({viewManagerModel, ...rest}: PersistOptions) {
         throwIf(!viewManagerModel, `ViewManagerProvider requires a 'viewManagerModel'.`);
         super(rest);

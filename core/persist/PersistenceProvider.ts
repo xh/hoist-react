@@ -46,6 +46,10 @@ export class PersistenceProvider {
     path: string;
     debounce: DebounceSpec;
 
+    get isWriteStateImmediately(): boolean {
+        return false;
+    }
+
     /**
      * Construct an instance of this class.
      */

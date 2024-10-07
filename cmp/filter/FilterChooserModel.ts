@@ -196,7 +196,10 @@ export class FilterChooserModel extends HoistModel {
 
                 this.addReaction({
                     track: () => this.persistState,
-                    run: state => this.provider.write(state)
+                    run: state => {
+                        this.provider.write(state);
+                    },
+                    fireImmediately: this.provider.isWriteStateImmediately
                 });
             } catch (e) {
                 this.logError(e);

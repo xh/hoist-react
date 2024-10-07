@@ -211,7 +211,8 @@ export class DashContainerModel extends DashModel<
 
         this.addReaction({
             track: () => this.viewState,
-            run: () => this.updateState()
+            run: () => this.updateState(),
+            fireImmediately: this.provider.isWriteStateImmediately
         });
     }
 

@@ -10,7 +10,7 @@ import {
 } from '@xh/hoist/core';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, pluralize} from '@xh/hoist/utils/js';
-import {capitalize, find, isEqualWith, isNil, isString, sortBy, startCase} from 'lodash';
+import {capitalize, clone, find, isEqualWith, isNil, isString, sortBy, startCase} from 'lodash';
 import {runInAction} from 'mobx';
 import {ManageDialogModel} from './impl/ManageDialogModel';
 import {SaveDialogModel} from './impl/SaveDialogModel';
@@ -76,15 +76,14 @@ export class ViewManagerModel<T extends PlainObject = PlainObject> extends Hoist
 
     @observable.ref views: View<T>[] = [];
 
+    @observable.ref value: T = null;
+
     @bindable selectedToken: string = null;
     @bindable favorites: string[] = [];
+    @bindable autoSaveToggle: boolean = false;
 
     get canManageGlobal(): boolean {
         return executeIfFunction(this._canManageGlobal);
-    }
-
-    get value(): T {
-        return this.selectedView?.value;
     }
 
     get selectedView(): View<T> {
@@ -181,11 +180,18 @@ export class ViewManagerModel<T extends PlainObject = PlainObject> extends Hoist
                         run: () => {
                             if (
                                 this.enableAutoSave &&
+                                this.autoSaveToggle &&
                                 !this.isSharedViewSelected &&
                                 this.selectedToken !== null
                             ) {
                                 this.saveAsync(true);
                             }
+                        }
+                    },
+                    {
+                        track: () => this.autoSaveToggle,
+                        run: autoSaveToggle => {
+                            if (autoSaveToggle) this.saveAsync(false);
                         }
                     }
                 );
@@ -215,8 +221,10 @@ export class ViewManagerModel<T extends PlainObject = PlainObject> extends Hoist
 
     async selectAsync(token: string) {
         this.selectedToken = token;
-        const {value} = this;
-        this.setPendingValue(value);
+        runInAction(() => {
+            this.value = clone(this.selectedView?.value ?? ({} as T));
+        });
+        this.setPendingValue(this.value);
     }
 
     async saveAsync(skipToast: boolean = false) {
@@ -248,10 +256,10 @@ export class ViewManagerModel<T extends PlainObject = PlainObject> extends Hoist
         });
     }
 
-    // TODO Reset for default view currently not working because value doesnt change so reaction on
-    //  portfolioPanelModel doesnt trigger.
     async resetAsync() {
-        return this.selectAsync(this.selectedToken);
+        runInAction(() => {
+            this.value = clone(this.selectedView?.value ?? ({} as T));
+        });
     }
 
     toggleFavorite(token: string) {
@@ -263,7 +271,6 @@ export class ViewManagerModel<T extends PlainObject = PlainObject> extends Hoist
             this.addFavorite(token);
         }
     }
-
     addFavorite(token: string) {
         this.favorites = [...this.favorites, token];
     }
@@ -321,6 +328,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject> extends Hoist
             this.pendingValue = null;
             return;
         }
+
         value = this.cleanValue(value);
         if (!this.isEqualSkipAutosize(this.pendingValue, value)) {
             this.pendingValue = value;
