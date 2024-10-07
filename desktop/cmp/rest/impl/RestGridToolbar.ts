@@ -11,6 +11,7 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {castArray, isEmpty, isFunction} from 'lodash';
 import {RestGridModel} from '../RestGridModel';
 
@@ -52,7 +53,8 @@ export const restGridToolbar = hoistCmp.factory({
             exportButton({
                 gridModel,
                 omit: !model.gridModel.enableExport
-            })
+            }),
+            refreshButton({model})
         );
     }
 });

@@ -49,8 +49,7 @@ export const category: ColumnSpec = {
 
 export const data: ColumnSpec = {
     field: {name: 'data', type: 'json'},
-    flex: true,
-    minWidth: 120,
+    width: 250,
     autosizeMaxWidth: 400
 };
 
