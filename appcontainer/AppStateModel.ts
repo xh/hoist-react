@@ -85,6 +85,7 @@ export class AppStateModel extends HoistModel {
                 XH.track({
                     category: 'App',
                     message: `Loaded ${XH.clientAppCode}`,
+                    timestamp: loadStarted,
                     elapsed: Date.now() - loadStarted - (timings.LOGIN_REQUIRED ?? 0),
                     data: {
                         appVersion: XH.appVersion,

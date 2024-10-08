@@ -6,8 +6,8 @@
  */
 import {HoistService, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
-import {cloneDeep, debounce, forEach, isEmpty, isEqual, size} from 'lodash';
+import {debounced, deepFreeze, throwIf} from '@xh/hoist/utils/js';
+import {cloneDeep, forEach, isEmpty, isEqual, size} from 'lodash';
 
 /**
  * Service to read and set user-specific preference values.
@@ -30,16 +30,9 @@ export class PrefService extends HoistService {
 
     private _data = {};
     private _updates = {};
-    private readonly pushPendingBuffered: any;
-
-    constructor() {
-        super();
-        const pushFn = () => this.pushPendingAsync();
-        window.addEventListener('beforeunload', pushFn);
-        this.pushPendingBuffered = debounce(pushFn, 5 * SECONDS);
-    }
 
     override async initAsync() {
+        window.addEventListener('beforeunload', () => this.pushPendingAsync());
         await this.migrateLocalPrefsAsync();
         return this.loadPrefsAsync();
     }
@@ -139,23 +132,25 @@ export class PrefService extends HoistService {
 
         if (isEmpty(updates)) return;
 
-        // clear obj state immediately to allow picking up next batch during async operation
         this._updates = {};
 
-        if (!isEmpty(updates)) {
-            await XH.fetchJson({
-                url: 'xh/setPrefs',
-                params: {
-                    updates: JSON.stringify(updates),
-                    clientUsername: XH.getUsername()
-                }
-            });
-        }
+        await XH.fetchJson({
+            url: 'xh/setPrefs',
+            params: {
+                updates: JSON.stringify(updates),
+                clientUsername: XH.getUsername()
+            }
+        });
     }
 
     //-------------------
     //  Implementation
     //-------------------
+    @debounced(5 * SECONDS)
+    private pushPendingBuffered() {
+        this.pushPendingAsync();
+    }
+
     private async loadPrefsAsync() {
         const data = await XH.fetchJson({
             url: 'xh/getPrefs',

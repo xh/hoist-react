@@ -4,7 +4,9 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW )
 * The `INITIALIZING` AppState has been replaced with more fine-grained states (see below).  This
-is not expected to affect any applications.
+is not expected to affect most applications.
+* Support for debounced and bulk upload of tracking messages to server
+ (requires Hoist-Core v23.1.0 or greater).
 
 ### 🎁 New Features
 
