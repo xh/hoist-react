@@ -234,6 +234,9 @@ export interface TrackOptions {
     /** Optional LoadSpec associated with this track.*/
     loadSpec?: LoadSpec;
 
+    /** Timestamp for action. */
+    timestamp?: number;
+
     /** Elapsed time (ms) for action. */
     elapsed?: number;
 
