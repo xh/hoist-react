@@ -11,6 +11,7 @@ is not expected to affect any applications.
 * Added new AppStates `AUTHENTICATING`, `INITIALIZING_HOIST`, and `INITIALIZING_APP` to support
 more granular tracking and timing of app startup lifecycle.
 * Improved the default "Loaded App" activity tracking entry with more granular data on load timing.
+* `RestGrid` now displays an optional refresh button in its toolbar.
 
 ### ⚙️ Technical
 

@@ -43,6 +43,7 @@ export class PrefEditorModel extends HoistModel {
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('prefs')},
             selModel: 'multiple',
+            showRefreshButton: true,
             store: {
                 url: 'rest/preferenceAdmin',
                 reloadLookupsOnLoad: true,
