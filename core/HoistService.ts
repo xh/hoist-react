@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {HoistBase, managed, LoadSupport, LoadSpec, Loadable, PlainObject} from './';
+import {XH, HoistBase, managed, LoadSupport, LoadSpec, Loadable, PlainObject} from './';
 
 /**
  * Core superclass for Services in Hoist. Services are special classes used in both Hoist and
@@ -83,9 +83,18 @@ export class HoistService extends HoistBase implements Loadable {
     async autoRefreshAsync(meta?: PlainObject) {
         return this.loadSupport?.autoRefreshAsync(meta);
     }
-    async doLoadAsync(loadSpec: LoadSpec) {}
     async loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>) {
         return this.loadSupport?.loadAsync(loadSpec);
+    }
+
+    //--------------
+    // For override
+    //--------------
+    async doLoadAsync(loadSpec: LoadSpec) {}
+    async onLoadException(e: unknown, loadSpec: LoadSpec) {
+        if (!e['isRoutine']) {
+            XH.handleException(e, {showAlert: false});
+        }
     }
 }
 

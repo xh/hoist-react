@@ -59,4 +59,6 @@ export interface Loadable {
      *      `loadSupport` or when making calls to {@link FetchService} APIs.
      */
     doLoadAsync(loadSpec: LoadSpec): Promise<void>;
+
+    onLoadException(e: unknown, loadSpec: LoadSpec): void;
 }
