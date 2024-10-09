@@ -6,6 +6,7 @@
  */
 
 import {DebounceSpec} from '../';
+import {ViewManagerModel} from './viewManager';
 
 /**
  * Options governing persistence.
@@ -18,8 +19,8 @@ export interface PersistOptions {
     debounce?: DebounceSpec;
 
     /**
-     * Type of PersistenceProvider to create. If not provided, defaulted based
-     * on the presence of `prefKey`, `localStorageKey`, `dashViewModel`, `getData` and `setData`.
+     * Type of PersistenceProvider to create. If not provided, defaulted based on the presence of
+     * `prefKey`, `localStorageKey`, `dashViewModel`, `viewManagerModel`, `getData` and `setData`.
      */
     type?: string;
 
@@ -31,6 +32,9 @@ export interface PersistOptions {
 
     /** DashViewModel used to read / write view state. */
     dashViewModel?: object;
+
+    /** ViewManagerModel used to read / write view state. */
+    viewManagerModel?: ViewManagerModel;
 
     /**
      *  Function returning blob of data to be used for reading state.

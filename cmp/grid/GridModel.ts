@@ -630,8 +630,16 @@ export class GridModel extends HoistModel {
      *
      * @returns true if defaults were restored
      */
-    async restoreDefaultsAsync(): Promise<boolean> {
-        if (this.restoreDefaultsWarning) {
+    async restoreDefaultsAsync(
+        {
+            skipWarning,
+            skipClearPersistenceModel
+        }: {skipWarning?: boolean; skipClearPersistenceModel?: boolean} = {
+            skipWarning: !!this.restoreDefaultsWarning,
+            skipClearPersistenceModel: false
+        }
+    ): Promise<boolean> {
+        if (this.restoreDefaultsWarning && !skipWarning) {
             const confirmed = await XH.confirm({
                 message: this.restoreDefaultsWarning,
                 confirmProps: {
@@ -649,7 +657,7 @@ export class GridModel extends HoistModel {
         this.setGroupBy(groupBy);
 
         this.filterModel?.clear();
-        this.persistenceModel?.clear();
+        if (!skipClearPersistenceModel) this.persistenceModel?.clear();
 
         if (this.autosizeOptions.mode === 'managed') {
             await this.autosizeAsync();

@@ -55,7 +55,8 @@ export class GridPersistenceModel extends HoistModel {
             this.state = this.loadState() ?? this.legacyState() ?? {version: this.VERSION};
             this.addReaction({
                 track: () => this.state,
-                run: state => this.provider.write(state)
+                run: state => this.provider.write(state),
+                fireImmediately: this.provider.isWriteStateImmediately
             });
         } catch (e) {
             this.logError(e);

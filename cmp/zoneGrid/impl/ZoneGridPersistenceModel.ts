@@ -91,7 +91,8 @@ export class ZoneGridPersistenceModel extends HoistModel {
             track: () => this.zoneGridModel.mappings,
             run: mappings => {
                 this.patchState({mappings});
-            }
+            },
+            fireImmediately: this.provider.isWriteStateImmediately
         };
     }
 
@@ -108,7 +109,8 @@ export class ZoneGridPersistenceModel extends HoistModel {
             track: () => this.zoneGridModel.sortBy,
             run: sortBy => {
                 this.patchState({sortBy: sortBy?.toString()});
-            }
+            },
+            fireImmediately: this.provider.isWriteStateImmediately
         };
     }
 
@@ -125,7 +127,8 @@ export class ZoneGridPersistenceModel extends HoistModel {
             track: () => this.zoneGridModel.groupBy,
             run: groupBy => {
                 this.patchState({groupBy});
-            }
+            },
+            fireImmediately: this.provider.isWriteStateImmediately
         };
     }
 
