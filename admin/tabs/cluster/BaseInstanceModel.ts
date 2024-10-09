@@ -61,7 +61,7 @@ export class BaseInstanceModel extends HoistModel {
                 isNumber(v) &&
                 v > Date.now() - 365 * DAYS
             ) {
-                stats[k] = v ? fmtDateTimeSec(v, {fmt: 'MMM DD HH:mm:ss'}) : null;
+                stats[k] = v ? fmtDateTimeSec(v, {fmt: 'MMM DD HH:mm:ss.SSS'}) : null;
             }
             if (isPlainObject(v) || isArray(v)) {
                 this.processTimestamps(v);
