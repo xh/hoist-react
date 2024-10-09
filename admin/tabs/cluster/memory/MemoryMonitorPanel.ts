@@ -8,11 +8,12 @@ import {AppModel} from '@xh/hoist/admin/AppModel';
 import {MemoryMonitorModel} from '@xh/hoist/admin/tabs/cluster/memory/MemoryMonitorModel';
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler} from '@xh/hoist/cmp/layout';
+import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {isNil} from 'lodash';
 
@@ -26,40 +27,8 @@ export const memoryMonitorPanel = hoistCmp.factory({
             });
         }
 
-        const {readonly} = AppModel,
-            dumpDisabled = isNil(model.heapDumpDir);
         return panel({
-            bbar: [
-                button({
-                    text: 'Take Snapshot',
-                    icon: Icon.camera(),
-                    omit: readonly,
-                    onClick: () => model.takeSnapshotAsync()
-                }),
-                '-',
-                button({
-                    text: 'Request GC',
-                    icon: Icon.trash(),
-                    omit: readonly,
-                    onClick: () => model.requestGcAsync()
-                }),
-                '-',
-                button({
-                    text: 'Dump Heap',
-                    icon: Icon.fileArchive(),
-                    omit: readonly,
-                    disabled: dumpDisabled,
-                    tooltip: dumpDisabled
-                        ? 'Missing required config xhMemoryMonitoringConfig.heapDumpDir'
-                        : null,
-                    onClick: () => model.dumpHeapAsync()
-                }),
-                filler(),
-                gridCountLabel({unit: 'snapshot'}),
-                '-',
-                exportButton()
-            ],
-            items: [
+            item: vframe(
                 grid(),
                 panel({
                     modelConfig: {
@@ -68,9 +37,48 @@ export const memoryMonitorPanel = hoistCmp.factory({
                     },
                     item: chart()
                 })
-            ],
-            mask: 'onLoad',
-            ref: model.viewRef
+            ),
+            bbar: bbar(),
+            ref: model.viewRef,
+            mask: 'onLoad'
         });
+    }
+});
+
+const bbar = hoistCmp.factory<MemoryMonitorModel>({
+    render({model}) {
+        const {readonly} = AppModel,
+            dumpDisabled = isNil(model.heapDumpDir);
+
+        return toolbar(
+            button({
+                text: 'Take Snapshot',
+                icon: Icon.camera(),
+                omit: readonly,
+                onClick: () => model.takeSnapshotAsync()
+            }),
+            '-',
+            button({
+                text: 'Request GC',
+                icon: Icon.trash(),
+                omit: readonly,
+                onClick: () => model.requestGcAsync()
+            }),
+            '-',
+            button({
+                text: 'Dump Heap',
+                icon: Icon.fileArchive(),
+                omit: readonly,
+                disabled: dumpDisabled,
+                tooltip: dumpDisabled
+                    ? 'Missing required config xhMemoryMonitoringConfig.heapDumpDir'
+                    : null,
+                onClick: () => model.dumpHeapAsync()
+            }),
+            filler(),
+            gridCountLabel({unit: 'snapshot'}),
+            '-',
+            exportButton()
+        );
     }
 });

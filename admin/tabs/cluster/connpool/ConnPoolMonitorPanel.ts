@@ -14,6 +14,7 @@ import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 
 export const connPoolMonitorPanel = hoistCmp.factory({
@@ -26,28 +27,8 @@ export const connPoolMonitorPanel = hoistCmp.factory({
             });
         }
 
-        const {readonly} = AppModel;
         return panel({
-            bbar: [
-                button({
-                    text: 'Take Snapshot',
-                    icon: Icon.camera(),
-                    omit: readonly,
-                    onClick: () => model.takeSnapshotAsync()
-                }),
-                '-',
-                button({
-                    text: 'Reset Stats',
-                    icon: Icon.reset(),
-                    omit: readonly,
-                    onClick: () => model.resetStatsAsync()
-                }),
-                filler(),
-                gridCountLabel({unit: 'snapshot'}),
-                '-',
-                exportButton()
-            ],
-            items: hframe(
+            item: hframe(
                 vframe(
                     grid(),
                     panel({
@@ -60,9 +41,35 @@ export const connPoolMonitorPanel = hoistCmp.factory({
                 ),
                 poolConfigPanel()
             ),
-            mask: 'onLoad',
-            ref: model.viewRef
+            bbar: bbar(),
+            ref: model.viewRef,
+            mask: 'onLoad'
         });
+    }
+});
+
+const bbar = hoistCmp.factory<ConnPoolMonitorModel>({
+    render({model}) {
+        const {readonly} = AppModel;
+        return toolbar(
+            button({
+                text: 'Take Snapshot',
+                icon: Icon.camera(),
+                omit: readonly,
+                onClick: () => model.takeSnapshotAsync()
+            }),
+            '-',
+            button({
+                text: 'Reset Stats',
+                icon: Icon.reset(),
+                omit: readonly,
+                onClick: () => model.resetStatsAsync()
+            }),
+            filler(),
+            gridCountLabel({unit: 'snapshot'}),
+            '-',
+            exportButton()
+        );
     }
 });
 

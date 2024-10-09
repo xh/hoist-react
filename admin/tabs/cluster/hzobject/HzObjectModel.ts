@@ -13,12 +13,18 @@ import * as Col from '@xh/hoist/cmp/grid/columns';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
+import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {first, isEmpty, last} from 'lodash';
 
 export class HzObjectModel extends BaseInstanceModel {
     @bindable groupBy: 'type' | 'owner' = 'owner';
+
+    @managed detailPanelModel = new PanelModel({
+        side: 'right',
+        defaultSize: 450
+    });
 
     clearAction: RecordActionSpec = {
         text: 'Clear Objects',
@@ -37,6 +43,7 @@ export class HzObjectModel extends BaseInstanceModel {
     gridModel = new GridModel({
         selModel: 'multiple',
         enableExport: true,
+        autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
         exportOptions: {filename: exportFilenameWithDate('distributed-objects'), columns: 'ALL'},
         sortBy: 'displayName',
         groupBy: this.groupBy,
@@ -54,10 +61,10 @@ export class HzObjectModel extends BaseInstanceModel {
             processRawData: o => this.processRawData(o)
         },
         columns: [
-            {field: 'displayName', flex: 1},
+            {field: 'displayName'},
             {field: 'owner'},
             {field: 'type'},
-            {field: 'size', displayName: 'Entry Count', ...Col.number, width: 130},
+            {field: 'size', displayName: 'Entries', ...Col.number},
             {
                 ...timestampNoYear,
                 field: 'lastUpdateTime',

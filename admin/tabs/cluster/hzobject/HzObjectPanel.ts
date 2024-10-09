@@ -62,8 +62,7 @@ const detailsPanel = hoistCmp.factory({
     }
 });
 
-const bbar = hoistCmp.factory({
-    model: uses(HzObjectModel),
+const bbar = hoistCmp.factory<HzObjectModel>({
     render({model}) {
         return toolbar(
             recordActionBar({
@@ -89,7 +88,8 @@ const bbar = hoistCmp.factory({
                 ],
                 width: 125,
                 bind: 'groupBy',
-                hideDropdownIndicator: true
+                hideDropdownIndicator: true,
+                enableFilter: false
             }),
             storeFilterField({matchMode: 'any'}),
             exportButton()
