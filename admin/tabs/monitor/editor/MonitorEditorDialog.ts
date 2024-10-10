@@ -28,7 +28,13 @@ export const monitorEditorDialog = hoistCmp.factory<MonitorTabModel>(({model}) =
         canOutsideClickClose: false,
         onClose: () => (model.showEditorDialog = false),
         item: panel({
-            item: restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}}),
+            item: restGrid({
+                modelConfig: {
+                    ...modelSpec,
+                    readonly: AppModel.readonly,
+                    showRefreshButton: true
+                }
+            }),
             bbar: [
                 filler(),
                 button({
