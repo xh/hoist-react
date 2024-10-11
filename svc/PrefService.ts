@@ -134,10 +134,10 @@ export class PrefService extends HoistService {
 
         this._updates = {};
 
-        await XH.fetchJson({
+        await XH.postJson({
             url: 'xh/setPrefs',
+            body: updates,
             params: {
-                updates: JSON.stringify(updates),
                 clientUsername: XH.getUsername()
             }
         });
