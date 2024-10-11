@@ -17,7 +17,8 @@ more granular tracking and timing of app startup lifecycle.
 
 * Improvements to the typing of `HoistBase.addReaction`.  Note that applications may need to adjust
 typescript slightly in calls to this method to conform to the tighter typing.
-
+* The filter field in the top toolbar of Grid's Column Filter Values tab now filters with `any`,
+  instead of `startsWith`.
 
 ### 🐞 Bug Fixes
 
