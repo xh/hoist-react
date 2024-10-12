@@ -375,6 +375,9 @@ export const Icon = {
     fileWord(p?: IconProps) {
         return Icon.icon({...p, iconName: 'file-word'});
     },
+    fileXml(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'file-xml'});
+    },
     flag(p?: IconProps) {
         return Icon.icon({...p, iconName: 'flag'});
     },
@@ -981,6 +984,8 @@ function getFileIconConfig(filename: string) {
             return {factory: Icon.filePdf, className: 'xh-file-icon-pdf'};
         case 'txt':
             return {factory: Icon.fileText};
+        case 'xml':
+            return {factory: Icon.fileXml};
         case 'zip':
             return {factory: Icon.fileArchive};
         default:
