@@ -48,6 +48,7 @@ export class LogLevelDialogModel extends HoistModel {
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('log-levels')},
             readonly: AppModel.readonly,
+            showRefreshButton: true,
             store: {
                 url: 'rest/logLevelAdmin',
                 fieldDefaults: {disableXssProtection: true},

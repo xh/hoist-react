@@ -34,7 +34,10 @@ export interface RestGridConfig extends GridConfig {
     /** Actions to display in the form toolbar. Defaults to delete. */
     formActions?: Array<RecordAction | RecordActionSpec>;
 
-    /** Warning to display before actions on a selection of  records. */
+    /** Show a refresh button in the toolbar. Defaults to false. **/
+    showRefreshButton?: boolean;
+
+    /** Warning to display before actions on a selection of records. */
     actionWarning?: {
         add?: string | ((recs: StoreRecord[]) => string);
         del?: string | ((recs: StoreRecord[]) => string);
@@ -97,6 +100,7 @@ export class RestGridModel extends HoistModel {
     toolbarActions: Array<RecordAction | RecordActionSpec>;
     menuActions: Array<RecordAction | RecordActionSpec | '-'>;
     formActions: Array<RecordAction | RecordActionSpec>;
+    showRefreshButton: boolean;
     prepareCloneFn: (input: {record: StoreRecord; clone: PlainObject}) => void;
     unit: string;
     filterFields: string[] = null;
@@ -133,6 +137,7 @@ export class RestGridModel extends HoistModel {
         toolbarActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         menuActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         formActions = !readonly ? [deleteAction] : [],
+        showRefreshButton = false,
         actionWarning,
         prepareCloneFn,
         unit = 'record',
@@ -149,6 +154,7 @@ export class RestGridModel extends HoistModel {
         this.toolbarActions = toolbarActions;
         this.menuActions = menuActions;
         this.formActions = formActions;
+        this.showRefreshButton = showRefreshButton;
 
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
 

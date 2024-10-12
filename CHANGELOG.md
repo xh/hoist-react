@@ -8,13 +8,18 @@
 * `AppState.INITIALIZING` replaced with finer-grained states (not expected to impact most apps).
 
 ### 🎁 New Features
-
+* Added new AppStates `AUTHENTICATING`, `INITIALIZING_HOIST`, and `INITIALIZING_APP` to support
+more granular tracking and timing of app startup lifecycle.
+* Improved the default "Loaded App" activity tracking entry with more granular data on load timing.
+* `RestGrid` now displays an optional refresh button in its toolbar.
 * Enhanced tracking data posted with the built-in "Loaded App" entry to include a new `timings`
   block that breaks down the overall initial load time into more discrete phases. Supported by
   new `AppState` enums `AUTHENTICATING`, `INITIALIZING_HOIST`, and `INITIALIZING_APP`.
+* The filter field in the top toolbar of Grid's Column Filter Values tab now filters with `any`,
+  instead of `startsWith`.
+
 
 ### ⚙️ Typescript API Adjustments
-
 * Improved typing of `HoistBase.addReaction` to flow types returned by the `track` closure through
   to the `run` closure that receives them.
   * Note that apps might need to adjust their reaction signatures slightly to accommodate the more

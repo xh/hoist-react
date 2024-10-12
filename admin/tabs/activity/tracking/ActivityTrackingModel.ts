@@ -288,6 +288,11 @@ export class ActivityTrackingModel extends HoistModel {
         });
     }
 
+    isInterval(value, unit) {
+        const {startDay, endDay} = this.formModel.values;
+        return startDay === endDay.subtract(value, unit).nextDay();
+    }
+
     cubeLabelComparator(valA, valB, sortDir, abs, {recordA, recordB, defaultComparator}) {
         const rawA = recordA?.raw,
             rawB = recordB?.raw,

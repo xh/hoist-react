@@ -180,6 +180,10 @@ export class ClientErrorsModel extends HoistModel {
         this.startDay = this.endDay.subtract(value, unit).nextDay();
     }
 
+    isInterval(value, unit) {
+        return this.startDay === this.endDay.subtract(value, unit).nextDay();
+    }
+
     @computed
     private get query() {
         return {

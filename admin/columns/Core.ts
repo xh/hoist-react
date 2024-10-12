@@ -44,5 +44,5 @@ export const note: ColumnSpec = {
 export const timestampNoYear: ColumnSpec = {
     field: {name: 'timestamp', type: 'date'},
     ...dateTimeSec,
-    renderer: dateTimeRenderer({fmt: 'MMM DD HH:mm:ss'})
+    renderer: dateTimeRenderer({fmt: 'MMM DD HH:mm:ss.SSS'})
 };
