@@ -3,27 +3,32 @@
 ## 69.0.0-SNAPSHOT - unreleased
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW )
-* The `INITIALIZING` AppState has been replaced with more fine-grained states (see below).  This
-is not expected to affect any applications.
+
+* Requires `hoist-core >= 23.1` to support bulk upload of activity tracking logs to server.
+* `AppState.INITIALIZING` replaced with finer-grained states (not expected to impact most apps).
 
 ### 🎁 New Features
-
 * Added new AppStates `AUTHENTICATING`, `INITIALIZING_HOIST`, and `INITIALIZING_APP` to support
 more granular tracking and timing of app startup lifecycle.
 * Improved the default "Loaded App" activity tracking entry with more granular data on load timing.
 * `RestGrid` now displays an optional refresh button in its toolbar.
-
-### ⚙️ Technical
-
-* Improvements to the typing of `HoistBase.addReaction`.  Note that applications may need to adjust
-typescript slightly in calls to this method to conform to the tighter typing.
+* Enhanced tracking data posted with the built-in "Loaded App" entry to include a new `timings`
+  block that breaks down the overall initial load time into more discrete phases. Supported by
+  new `AppState` enums `AUTHENTICATING`, `INITIALIZING_HOIST`, and `INITIALIZING_APP`.
 * The filter field in the top toolbar of Grid's Column Filter Values tab now filters with `any`,
   instead of `startsWith`.
 
+
+### ⚙️ Typescript API Adjustments
+* Improved typing of `HoistBase.addReaction` to flow types returned by the `track` closure through
+  to the `run` closure that receives them.
+  * Note that apps might need to adjust their reaction signatures slightly to accommodate the more
+    accurate typing, specifically if they are tracking an array of values, destructuring those
+    values in their `run` closure, and passing them on to typed APIs. Look out for `tsc` warnings.
+
 ### 🐞 Bug Fixes
 
-* Added a workaround for a bug where Panel drag resizing was broken in Safari.
-
+* Fixed broken `Panel` resizing in Safari. (Other browsers were not affected.)
 
 ## 68.1.0 - 2024-09-27
 
@@ -33,6 +38,7 @@ typescript slightly in calls to this method to conform to the tighter typing.
   props to the underlying `reactMarkdown` instance.
 
 ### ⚙️ Technical
+
 * Misc. Improvements to Cluster Tab in Admin Panel.
 
 ## 68.0.0 - 2024-09-18
@@ -60,7 +66,6 @@ typescript slightly in calls to this method to conform to the tighter typing.
 * @azure/msal-browser `3.17 → 3.23`
 * mobx  `6.9.1 -> 6.13.2`,
 * mobx-react-lite  `3.4.3 -> 4.0.7`,
-
 
 ## 67.0.0 - 2024-09-03
 
