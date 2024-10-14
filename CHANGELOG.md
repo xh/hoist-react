@@ -25,6 +25,10 @@
       accurate typing, specifically if they are tracking an array of values, destructuring those
       values in their `run` closure, and passing them on to typed APIs. Look out for `tsc` warnings.
 
+### ✨ Styles
+
+* Reset the `--xh-popup-bg` background color to match the primary `--xh-bg` color by default.
+
 ### 🐞 Bug Fixes
 
 * Fixed broken `Panel` resizing in Safari. (Other browsers were not affected.)
