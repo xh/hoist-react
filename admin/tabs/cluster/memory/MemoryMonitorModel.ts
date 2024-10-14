@@ -9,20 +9,25 @@ import {timestampNoYear} from '@xh/hoist/admin/columns';
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
-import {LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
+import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {fmtTime, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {forOwn, sortBy} from 'lodash';
+import {forOwn, orderBy, sortBy} from 'lodash';
 import {observable, runInAction} from 'mobx';
+
+export interface PastInstance {
+    name: string;
+    lastUpdated: number;
+}
 
 export class MemoryMonitorModel extends BaseInstanceModel {
     @managed gridModel: GridModel;
     @managed chartModel: ChartModel;
 
-    @bindable pastInstance: string = null;
-    @observable.ref pastInstances: PlainObject[];
+    @bindable.ref pastInstance: PastInstance = null;
+    @observable.ref pastInstances: PastInstance[];
 
     get enabled(): boolean {
         return this.conf.enabled;
@@ -178,7 +183,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
         const {gridModel, chartModel, pastInstance} = this;
 
         const action = pastInstance ? `snapshotsForPastInstance` : 'snapshots',
-            instance = pastInstance ?? this.instanceName;
+            instance = pastInstance ? pastInstance.name : this.instanceName;
         const snapsByTimestamp = await XH.fetchJson({
             url: 'memoryMonitorAdmin/' + action,
             params: {instance},
@@ -246,7 +251,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
             loadSpec
         });
         runInAction(() => {
-            this.pastInstances = sortBy(instances, 'lastUpdated');
+            this.pastInstances = orderBy(instances, ['lastUpdated'], ['desc']);
         });
     }
 
