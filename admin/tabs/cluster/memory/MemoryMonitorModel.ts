@@ -9,15 +9,20 @@ import {timestampNoYear} from '@xh/hoist/admin/columns';
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
-import {LoadSpec, managed, XH} from '@xh/hoist/core';
+import {LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {fmtTime, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {forOwn, sortBy} from 'lodash';
+import {observable, runInAction} from 'mobx';
 
 export class MemoryMonitorModel extends BaseInstanceModel {
     @managed gridModel: GridModel;
     @managed chartModel: ChartModel;
+
+    @bindable pastInstance: string = null;
+    @observable.ref pastInstances: PlainObject[];
 
     get enabled(): boolean {
         return this.conf.enabled;
@@ -29,133 +34,19 @@ export class MemoryMonitorModel extends BaseInstanceModel {
 
     constructor() {
         super();
-
-        this.gridModel = new GridModel({
-            enableExport: true,
-            exportOptions: {filename: exportFilenameWithDate('memory-monitor')},
-            filterModel: true,
-            sortBy: 'timestamp|desc',
-            store: {idSpec: 'timestamp'},
-            colDefaults: {filterable: true},
-            headerMenuDisplay: 'hover',
-            columns: [
-                {...timestampNoYear},
-                {
-                    groupId: 'heap',
-                    headerAlign: 'center',
-                    children: [totalHeapMb, maxHeapMb, freeHeapMb, usedHeapMb, usedPctMax]
-                },
-                {
-                    groupId: 'GC',
-                    headerAlign: 'center',
-                    children: [collectionCount, avgCollectionTime, pctCollectionTime]
-                }
-            ]
-        });
-
-        this.chartModel = new ChartModel({
-            highchartsConfig: {
-                chart: {
-                    zoomType: 'x',
-                    animation: false
-                },
-                plotOptions: {
-                    series: {
-                        animation: false,
-                        marker: {enabled: false}
-                    }
-                },
-                title: {text: null},
-                xAxis: {
-                    type: 'datetime',
-                    labels: {
-                        formatter: function () {
-                            return fmtTime(this.value);
-                        }
-                    }
-                },
-                yAxis: [
-                    {
-                        floor: 0,
-                        height: '20%',
-                        title: {text: 'GC Avg (ms)'}
-                    },
-                    {
-                        floor: 0,
-                        top: '30%',
-                        height: '70%',
-                        title: {text: 'Heap (mb)'},
-                        offset: 0
-                    }
-                ],
-                tooltip: {outside: true, shared: true}
-            }
+        makeObservable(this);
+        this.gridModel = this.createGridModel();
+        this.chartModel = this.createChartModel();
+        this.addReaction({
+            track: () => this.pastInstance,
+            run: () => this.loadAsync()
         });
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {gridModel, chartModel} = this;
-
         try {
-            const snapsByTimestamp = await XH.fetchJson({
-                url: 'memoryMonitorAdmin/snapshots',
-                params: {instance: this.instanceName},
-                loadSpec
-            });
-
-            // Server returns map by timestamp - flatted to array and load into grid records.
-            let snaps = [];
-            forOwn(snapsByTimestamp, (snap, ts) => {
-                snaps.push({timestamp: parseInt(ts), ...snap});
-            });
-            snaps = sortBy(snaps, 'timestamp');
-            gridModel.loadData(snaps);
-
-            // Process further for chart series.
-            const maxSeries = [],
-                totalSeries = [],
-                usedSeries = [],
-                avgGCSeries = [];
-
-            snaps.forEach(snap => {
-                maxSeries.push([snap.timestamp, snap.maxHeapMb]);
-                totalSeries.push([snap.timestamp, snap.totalHeapMb]);
-                usedSeries.push([snap.timestamp, snap.usedHeapMb]);
-
-                avgGCSeries.push([snap.timestamp, snap.avgCollectionTime]);
-            });
-
-            chartModel.setSeries([
-                {
-                    name: 'GC Avg',
-                    data: avgGCSeries,
-                    step: true,
-                    yAxis: 0
-                },
-                {
-                    name: 'Heap Max',
-                    data: maxSeries,
-                    color: '#ef6c00',
-                    step: true,
-                    yAxis: 1
-                },
-                {
-                    name: 'Heap Total',
-                    data: totalSeries,
-                    color: '#1976d2',
-                    step: true,
-                    yAxis: 1
-                },
-                {
-                    name: 'Heap Used',
-                    type: 'area',
-                    data: usedSeries,
-                    color: '#bd7c7c',
-                    fillOpacity: 0.3,
-                    lineWidth: 1,
-                    yAxis: 1
-                }
-            ]);
+            await this.loadDataAsync(loadSpec);
+            await this.loadPastInstancesAsync(loadSpec);
         } catch (e) {
             this.handleLoadException(e, loadSpec);
         }
@@ -212,6 +103,151 @@ export class MemoryMonitorModel extends BaseInstanceModel {
         } catch (e) {
             XH.handleException(e);
         }
+    }
+
+    //-------------------
+    // Implementation
+    //-------------------
+    private createGridModel(): GridModel {
+        return new GridModel({
+            enableExport: true,
+            exportOptions: {filename: exportFilenameWithDate('memory-monitor')},
+            filterModel: true,
+            sortBy: 'timestamp|desc',
+            store: {idSpec: 'timestamp'},
+            colDefaults: {filterable: true},
+            headerMenuDisplay: 'hover',
+            columns: [
+                {...timestampNoYear},
+                {
+                    groupId: 'heap',
+                    headerAlign: 'center',
+                    children: [totalHeapMb, maxHeapMb, freeHeapMb, usedHeapMb, usedPctMax]
+                },
+                {
+                    groupId: 'GC',
+                    headerAlign: 'center',
+                    children: [collectionCount, avgCollectionTime, pctCollectionTime]
+                }
+            ]
+        });
+    }
+
+    private createChartModel(): ChartModel {
+        return new ChartModel({
+            highchartsConfig: {
+                chart: {
+                    zoomType: 'x',
+                    animation: false
+                },
+                plotOptions: {
+                    series: {
+                        animation: false,
+                        marker: {enabled: false}
+                    }
+                },
+                title: {text: null},
+                xAxis: {
+                    type: 'datetime',
+                    labels: {
+                        formatter: function () {
+                            return fmtTime(this.value);
+                        }
+                    }
+                },
+                yAxis: [
+                    {
+                        floor: 0,
+                        height: '20%',
+                        title: {text: 'GC Avg (ms)'}
+                    },
+                    {
+                        floor: 0,
+                        top: '30%',
+                        height: '70%',
+                        title: {text: 'Heap (mb)'},
+                        offset: 0
+                    }
+                ],
+                tooltip: {outside: true, shared: true}
+            }
+        });
+    }
+
+    private async loadDataAsync(loadSpec: LoadSpec) {
+        const {gridModel, chartModel, pastInstance} = this;
+
+        const action = pastInstance ? `snapshotsForPastInstance` : 'snapshots',
+            instance = pastInstance ?? this.instanceName;
+        const snapsByTimestamp = await XH.fetchJson({
+            url: 'memoryMonitorAdmin/' + action,
+            params: {instance},
+            loadSpec
+        });
+
+        // Server returns map by timestamp - flatted to array and load into grid records.
+        let snaps = [];
+        forOwn(snapsByTimestamp, (snap, ts) => {
+            snaps.push({timestamp: parseInt(ts), ...snap});
+        });
+        snaps = sortBy(snaps, 'timestamp');
+        gridModel.loadData(snaps);
+
+        // Process further for chart series.
+        const maxSeries = [],
+            totalSeries = [],
+            usedSeries = [],
+            avgGCSeries = [];
+
+        snaps.forEach(snap => {
+            maxSeries.push([snap.timestamp, snap.maxHeapMb]);
+            totalSeries.push([snap.timestamp, snap.totalHeapMb]);
+            usedSeries.push([snap.timestamp, snap.usedHeapMb]);
+
+            avgGCSeries.push([snap.timestamp, snap.avgCollectionTime]);
+        });
+
+        chartModel.setSeries([
+            {
+                name: 'GC Avg',
+                data: avgGCSeries,
+                step: true,
+                yAxis: 0
+            },
+            {
+                name: 'Heap Max',
+                data: maxSeries,
+                color: '#ef6c00',
+                step: true,
+                yAxis: 1
+            },
+            {
+                name: 'Heap Total',
+                data: totalSeries,
+                color: '#1976d2',
+                step: true,
+                yAxis: 1
+            },
+            {
+                name: 'Heap Used',
+                type: 'area',
+                data: usedSeries,
+                color: '#bd7c7c',
+                fillOpacity: 0.3,
+                lineWidth: 1,
+                yAxis: 1
+            }
+        ]);
+    }
+
+    private async loadPastInstancesAsync(loadSpec: LoadSpec) {
+        const instances = await XH.fetchJson({
+            url: 'memoryMonitorAdmin/availablePastInstances',
+            loadSpec
+        });
+        runInAction(() => {
+            this.pastInstances = sortBy(instances, 'lastUpdated');
+        });
     }
 
     private get conf() {

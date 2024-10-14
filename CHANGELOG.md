@@ -4,7 +4,8 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW )
 
-* Requires `hoist-core >= 23.1` to support bulk upload of activity tracking logs to server.
+* Requires `hoist-core >= 24` to support bulk upload of activity tracking logs to server and
+  new memory monitoring persistence.
 * `AppState.INITIALIZING` replaced with finer-grained states (not expected to impact most apps).
 
 ### 🎁 New Features
@@ -17,6 +18,7 @@ more granular tracking and timing of app startup lifecycle.
   new `AppState` enums `AUTHENTICATING`, `INITIALIZING_HOIST`, and `INITIALIZING_APP`.
 * The filter field in the top toolbar of Grid's Column Filter Values tab now filters with `any`,
   instead of `startsWith`.
+* Support for persisting of memory monitoring results
 
 
 ### ⚙️ Typescript API Adjustments
