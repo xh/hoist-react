@@ -2,31 +2,35 @@
 
 ## 69.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW )
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist core update)
 
-* Requires `hoist-core >= 24` to support bulk upload of activity tracking logs to server and
+* Requires `hoist-core >= 24` to support batch upload of activity tracking logs to server and
   new memory monitoring persistence.
-* `AppState.INITIALIZING` replaced with finer-grained states (not expected to impact most apps).
+* Replaced `AppState.INITIALIZING` with finer-grained states (not expected to impact most apps).
+
 
 ### 🎁 New Features
-* Added new AppStates `AUTHENTICATING`, `INITIALIZING_HOIST`, and `INITIALIZING_APP` to support
-more granular tracking and timing of app startup lifecycle.
-* Improved the default "Loaded App" activity tracking entry with more granular data on load timing.
-* `RestGrid` now displays an optional refresh button in its toolbar.
-* Enhanced tracking data posted with the built-in "Loaded App" entry to include a new `timings`
-  block that breaks down the overall initial load time into more discrete phases. Supported by
-  new `AppState` enums `AUTHENTICATING`, `INITIALIZING_HOIST`, and `INITIALIZING_APP`.
-* The filter field in the top toolbar of Grid's Column Filter Values tab now filters with `any`,
-  instead of `startsWith`.
+
+* Optimized activity tracking to batch its calls to the server, reducing network overhead.
+* Enhanced data posted with the built-in "Loaded App" entry to include a new `timings` block that
+  breaks down the overall initial load time into more discrete phases.
+* Added an optional refresh button to `RestGrid`s toolbar.
+* Updated the nested search input within Grid column filters to match candidate values on `any` vs
+  `startsWith`. (Note that this does not change how grid filters are applied, only how users can
+  search for values to select/deselect.)
 * Support for persisting of memory monitoring results
 
-
 ### ⚙️ Typescript API Adjustments
+
 * Improved typing of `HoistBase.addReaction` to flow types returned by the `track` closure through
   to the `run` closure that receives them.
-  * Note that apps might need to adjust their reaction signatures slightly to accommodate the more
-    accurate typing, specifically if they are tracking an array of values, destructuring those
-    values in their `run` closure, and passing them on to typed APIs. Look out for `tsc` warnings.
+    * Note that apps might need to adjust their reaction signatures slightly to accommodate the more
+      accurate typing, specifically if they are tracking an array of values, destructuring those
+      values in their `run` closure, and passing them on to typed APIs. Look out for `tsc` warnings.
+
+### ✨ Styles
+
+* Reset the `--xh-popup-bg` background color to match the primary `--xh-bg` color by default.
 
 ### 🐞 Bug Fixes
 
@@ -45,7 +49,7 @@ more granular tracking and timing of app startup lifecycle.
 
 ## 68.0.0 - 2024-09-18
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update only)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update)
 
 * Requires `hoist-core >= 22.0` for consolidated polling of Alert Banner updates (see below).
 
@@ -71,7 +75,7 @@ more granular tracking and timing of app startup lifecycle.
 
 ## 67.0.0 - 2024-09-03
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update only)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update)
 
 * Requires `hoist-core >= 21.0`.
 
