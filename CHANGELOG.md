@@ -4,7 +4,7 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist core update)
 
-* Requires `hoist-core >= 23.1` to support batch upload of activity tracking logs to server.
+* Requires `hoist-core >= 24` to support batch upload of activity tracking logs to server.
 * Replaced `AppState.INITIALIZING` with finer-grained states (not expected to impact most apps).
 
 ### 🎁 New Features
