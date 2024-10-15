@@ -27,7 +27,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
     @managed chartModel: ChartModel;
 
     @bindable.ref pastInstance: PastInstance = null;
-    @observable.ref pastInstances: PastInstance[];
+    @observable.ref pastInstances: PastInstance[] = [];
 
     get enabled(): boolean {
         return this.conf.enabled;
