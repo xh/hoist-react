@@ -4,8 +4,10 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist core update)
 
-* Requires `hoist-core >= 24` to support batch upload of activity tracking logs to server.
+* Requires `hoist-core >= 24` to support batch upload of activity tracking logs to server and
+  new memory monitoring persistence.
 * Replaced `AppState.INITIALIZING` with finer-grained states (not expected to impact most apps).
+
 
 ### 🎁 New Features
 
@@ -16,6 +18,7 @@
 * Updated the nested search input within Grid column filters to match candidate values on `any` vs
   `startsWith`. (Note that this does not change how grid filters are applied, only how users can
   search for values to select/deselect.)
+* Support for persisting of memory monitoring results
 
 ### ⚙️ Typescript API Adjustments
 
