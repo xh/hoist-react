@@ -14,7 +14,7 @@ import {
 } from '../';
 import {LoadSpec, Loadable} from './';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
-import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
+import {logDebug, throwIf} from '@xh/hoist/utils/js';
 import {isPlainObject, pull} from 'lodash';
 
 /**
@@ -29,7 +29,7 @@ import {isPlainObject, pull} from 'lodash';
  */
 export class LoadSupport extends HoistBase implements Loadable {
     lastRequested: LoadSpec = null;
-    lastSucceeded: LoadSpec = null;
+    lastCompleted: LoadSpec = null;
 
     @managed
     loadModel: TaskObserver = TaskObserver.trackLast();
@@ -70,6 +70,10 @@ export class LoadSupport extends HoistBase implements Loadable {
         return this.loadAsync({meta, isAutoRefresh: true});
     }
 
+    onLoadException(exception: unknown, loadSpec: LoadSpec) {
+        this.target.onLoadException(exception, loadSpec);
+    }
+
     async doLoadAsync(loadSpec: LoadSpec) {
         let {target, loadModel} = this;
 
@@ -90,31 +94,27 @@ export class LoadSupport extends HoistBase implements Loadable {
             .linkTo(loadModel)
             .catch(e => {
                 exception = e;
+                target.onLoadException(exception, loadSpec);
                 throw e;
             })
             .finally(() => {
-                runInAction(() => {
-                    this.lastLoadCompleted = new Date();
-                    this.lastLoadException = exception;
-                });
+                const now = new Date();
 
-                if (!exception) {
-                    this.lastSucceeded = loadSpec;
+                // If not obsolete, update state.
+                if (!loadSpec.isObsolete) {
+                    runInAction(() => {
+                        this.lastCompleted = loadSpec;
+                        this.lastLoadCompleted = now;
+                        this.lastLoadException = exception;
+                    });
                 }
 
-                if (target instanceof RefreshContextModel) return;
+                // Basic client-side debug logging
+                if (!(target instanceof RefreshContextModel)) {
+                    const elapsed = now.getTime() - loadSpec.dateCreated.getTime(),
+                        status = exception ? 'failed' : null,
+                        msg = pull([loadSpec.typeDisplay, status, `${elapsed}ms`, exception], null);
 
-                const elapsed = this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime(),
-                    status = exception ? 'failed' : null,
-                    msg = pull([loadSpec.typeDisplay, status, `${elapsed}ms`, exception], null);
-
-                if (exception) {
-                    if (exception.isRoutine) {
-                        logDebug(msg, target);
-                    } else {
-                        logError(msg, target);
-                    }
-                } else {
                     logDebug(msg, target);
                 }
             });
