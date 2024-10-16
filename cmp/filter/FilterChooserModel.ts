@@ -199,7 +199,7 @@ export class FilterChooserModel extends HoistModel {
                     run: state => {
                         this.provider.write(state);
                     },
-                    fireImmediately: this.provider.isWriteStateImmediately
+                    fireImmediately: this.provider.shouldWriteInitialState
                 });
             } catch (e) {
                 this.logError(e);

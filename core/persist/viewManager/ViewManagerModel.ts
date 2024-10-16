@@ -10,9 +10,8 @@ import {
 } from '@xh/hoist/core';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, pluralize} from '@xh/hoist/utils/js';
-import {capitalize, clone, find, isEqualWith, isNil, isString, sortBy, startCase} from 'lodash';
+import {capitalize, clone, find, isEqual, isNil, isString, sortBy, startCase} from 'lodash';
 import {runInAction} from 'mobx';
-import {ManageDialogModel} from './impl/ManageDialogModel';
 import {SaveDialogModel} from './impl/SaveDialogModel';
 import {View, ViewTree} from './Types';
 
@@ -57,30 +56,25 @@ export class ViewManagerModel<T extends PlainObject = PlainObject> extends Hoist
         return ret;
     }
 
-    private readonly _canManageGlobal: Thunkable<boolean>;
-
-    // Internal persistence provider, used to save *this* model's state, i.e. selectedId
-    private readonly _provider;
+    @managed readonly saveDialogModel: SaveDialogModel;
 
     readonly enableDefault: boolean;
     readonly enableAutoSave: boolean;
-
     readonly entity: Entity;
-
-    @managed readonly manageDialogModel: ManageDialogModel;
-
-    @managed readonly saveDialogModel: SaveDialogModel;
 
     /** Current state of the active object, can include not-yet-persisted changes. */
     @observable.ref pendingValue: T = null;
-
     @observable.ref views: View<T>[] = [];
-
     @observable.ref value: T = null;
+    @observable isManageDialogVisible = false;
 
     @bindable selectedToken: string = null;
     @bindable favorites: string[] = [];
-    @bindable autoSaveToggle: boolean = false;
+    @bindable autoSaveToggle = false;
+
+    // Internal persistence provider, used to save *this* model's state, i.e. selectedId
+    private readonly _provider;
+    private readonly _canManageGlobal: Thunkable<boolean>;
 
     get canManageGlobal(): boolean {
         return executeIfFunction(this._canManageGlobal);
@@ -111,7 +105,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject> extends Hoist
 
     @computed
     get isDirty(): boolean {
-        return !this.isEqualSkipAutosize(this.pendingValue, this.value);
+        return !isEqual(this.pendingValue, this.value);
     }
 
     get isShared(): boolean {
@@ -156,8 +150,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject> extends Hoist
         this._canManageGlobal = canManageGlobal;
         this.enableDefault = enableDefault;
         this.enableAutoSave = enableAutoSave;
-        this.saveDialogModel = new SaveDialogModel(this, this.entity.name);
-        this.manageDialogModel = new ManageDialogModel(this);
+        this.saveDialogModel = new SaveDialogModel(this.entity.name);
 
         // Set up internal PersistenceProvider -- fail gently
         if (persistWith) {
@@ -249,11 +242,20 @@ export class ViewManagerModel<T extends PlainObject = PlainObject> extends Hoist
 
     async saveAsAsync() {
         const {name, description} = this.selectedView ?? {};
-        this.saveDialogModel.open({
-            name,
-            description,
-            value: this.pendingValue
-        });
+        const newView = await this.saveDialogModel.openAsync(
+            {
+                name,
+                description,
+                value: this.pendingValue
+            },
+            this.views.map(it => it.name)
+        );
+
+        if (newView) {
+            await this.refreshAsync();
+            await this.selectAsync(newView.token);
+            XH.successToast(`${capitalize(this.entity.displayName)} successfully saved.`);
+        }
     }
 
     async resetAsync() {
@@ -285,12 +287,12 @@ export class ViewManagerModel<T extends PlainObject = PlainObject> extends Hoist
 
     @action
     openManageDialog() {
-        this.manageDialogModel.openAsync();
+        this.isManageDialogVisible = true;
     }
 
     @action
     closeManageDialog() {
-        this.manageDialogModel.close();
+        this.isManageDialogVisible = false;
     }
 
     getHierarchyDisplayName(name) {
@@ -323,15 +325,15 @@ export class ViewManagerModel<T extends PlainObject = PlainObject> extends Hoist
     }
 
     @action
-    private setPendingValue(value: T) {
-        if (isNil(value)) {
+    private setPendingValue(pendingValue: T) {
+        if (isNil(pendingValue)) {
             this.pendingValue = null;
             return;
         }
 
-        value = this.cleanValue(value);
-        if (!this.isEqualSkipAutosize(this.pendingValue, value)) {
-            this.pendingValue = value;
+        pendingValue = this.cleanValue(pendingValue);
+        if (!isEqual(this.pendingValue, pendingValue)) {
+            this.pendingValue = pendingValue;
         }
     }
 
@@ -339,15 +341,6 @@ export class ViewManagerModel<T extends PlainObject = PlainObject> extends Hoist
         // Stringify and parse to ensure that the value is valid JSON
         // (i.e. no object instances, no keys with undefined values, etc.)
         return JSON.parse(JSON.stringify(value));
-    }
-
-    private isEqualSkipAutosize(a, b) {
-        // Skip spurious column autosize differences between states
-        const comparer = (aVal, bVal, key, aObj) => {
-            if (key === 'width' && !isNil(aObj.colId) && !aObj.manuallySized) return true;
-            return undefined;
-        };
-        return isEqualWith(a, b, comparer);
     }
 
     private async confirmShareObjSaveAsync() {

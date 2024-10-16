@@ -1,12 +1,11 @@
 import {form} from '@xh/hoist/cmp/form';
 import {grid} from '@xh/hoist/cmp/grid';
 import {br, div, filler, fragment, hframe, placeholder, spacer, vframe} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses, XH} from '@xh/hoist/core';
+import {creates, hoistCmp, HoistProps, XH} from '@xh/hoist/core';
 import {ManageDialogModel} from '@xh/hoist/core/persist/viewManager/impl/ManageDialogModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {switchInput, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtCompactDate} from '@xh/hoist/format';
@@ -15,21 +14,29 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize} from 'lodash';
 
-export const manageDialog = hoistCmp.factory<ManageDialogModel>({
+export interface ManageDialogProps extends HoistProps<ManageDialogModel> {
+    onClose: () => void;
+}
+
+export const manageDialog = hoistCmp.factory<ManageDialogProps>({
     displayName: 'ManageDialog',
     className: 'xh-persistence-manager__manage-dialog',
-    model: uses(ManageDialogModel),
+    model: creates(ManageDialogModel),
 
-    render({model}) {
+    render({model, onClose}) {
+        const {displayName, saveTask, deleteTask} = model;
         return dialog({
-            isOpen: model.isOpen,
+            isOpen: true,
             icon: Icon.gear(),
-            title: `Manage ${capitalize(pluralize(model.parentModel.entity.displayName))}`,
+            title: `Manage ${capitalize(pluralize(displayName))}`,
             className: 'xh-persistence-manager__manage-dialog',
             style: {width: 800, height: 475, maxWidth: '90vm'},
             canOutsideClickClose: false,
-            onClose: () => model.close(),
-            item: hframe(gridPanel(), formPanel(), mask({bind: model.loadModel, spinner: true}))
+            onClose,
+            item: panel({
+                mask: [saveTask, deleteTask],
+                item: hframe(gridPanel(), formPanel({onClose}))
+            })
         });
     }
 });
@@ -44,19 +51,19 @@ const gridPanel = hoistCmp.factory({
     }
 });
 
-const formPanel = hoistCmp.factory<ManageDialogModel>({
-    render({model}) {
-        const {selectedId, parentModel, formModel, canEdit} = model,
+const formPanel = hoistCmp.factory<ManageDialogProps>({
+    render({model, onClose}) {
+        const {selectedId, displayName, formModel, canEdit} = model,
             {values} = formModel;
 
         if (!selectedId)
             return panel({
-                item: placeholder(`Select a ${parentModel.entity.displayName}`),
+                item: placeholder(`Select a ${displayName}`),
                 bbar: [
                     filler(),
                     button({
                         text: 'Close',
-                        onClick: () => model.close()
+                        onClick: onClose
                     })
                 ]
             });
@@ -79,7 +86,7 @@ const formPanel = hoistCmp.factory<ManageDialogModel>({
                                 info: canEdit
                                     ? fragment(
                                           Icon.info(),
-                                          `Organize your ${pluralize(parentModel.entity.displayName)} into folders by including the "\\" character in their names - e.g. "My folder\\My ${parentModel.entity.displayName}".`
+                                          `Organize your ${pluralize(displayName)} into folders by including the "\\" character in their names - e.g. "My folder\\My ${displayName}".`
                                       )
                                     : null
                             }),
@@ -136,13 +143,13 @@ const formPanel = hoistCmp.factory<ManageDialogModel>({
                     })
                 ]
             }),
-            bbar: bbar()
+            bbar: bbar({onClose})
         });
     }
 });
 
-const bbar = hoistCmp.factory<ManageDialogModel>({
-    render({model}) {
+const bbar = hoistCmp.factory<ManageDialogProps>({
+    render({model, onClose}) {
         const {formModel} = model;
         return toolbar(
             button({
@@ -162,7 +169,7 @@ const bbar = hoistCmp.factory<ManageDialogModel>({
             '-',
             button({
                 text: 'Close',
-                onClick: () => model.close()
+                onClick: onClose
             })
         );
     }

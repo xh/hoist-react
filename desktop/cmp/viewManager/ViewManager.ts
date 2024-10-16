@@ -15,7 +15,14 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
     className: 'xh-view-manager',
     model: uses(ViewManagerModel),
 
-    render({viewMenuProps}) {
-        return fragment(viewMenu(viewMenuProps), manageDialog(), saveDialog());
+    render({model, viewMenuProps}) {
+        return fragment(
+            viewMenu(viewMenuProps),
+            manageDialog({
+                omit: !model.isManageDialogVisible,
+                onClose: () => model.closeManageDialog()
+            }),
+            saveDialog()
+        );
     }
 });

@@ -270,7 +270,7 @@ export abstract class HoistBase {
             this.addReaction({
                 track: () => this[property],
                 run: data => provider.write(data),
-                fireImmediately: provider.isWriteStateImmediately
+                fireImmediately: provider.shouldWriteInitialState
             });
         } catch (e) {
             this.logError(

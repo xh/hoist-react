@@ -300,7 +300,7 @@ export class PanelModel extends HoistModel {
                     return state;
                 },
                 run: state => this.provider.write(state),
-                fireImmediately: this.provider.isWriteStateImmediately
+                fireImmediately: this.provider.shouldWriteInitialState
             });
         }
     }

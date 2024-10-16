@@ -46,7 +46,8 @@ export class PersistenceProvider {
     path: string;
     debounce: DebounceSpec;
 
-    get isWriteStateImmediately(): boolean {
+    // TODO - to discuss
+    get shouldWriteInitialState(): boolean {
         return false;
     }
 

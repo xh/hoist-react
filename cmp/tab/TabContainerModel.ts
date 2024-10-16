@@ -403,7 +403,7 @@ export class TabContainerModel extends HoistModel {
             this.addReaction({
                 track: () => this.activeTabId,
                 run: activeTabId => this.provider.write({activeTabId}),
-                fireImmediately: this.provider.isWriteStateImmediately
+                fireImmediately: this.provider.shouldWriteInitialState
             });
         }
     }

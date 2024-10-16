@@ -202,7 +202,7 @@ export class DashCanvasModel extends DashModel<
             {
                 track: () => this.viewState,
                 run: () => this.publishState(),
-                fireImmediately: this.provider.isWriteStateImmediately
+                fireImmediately: this.provider.shouldWriteInitialState
             },
             {
                 when: () => !!this.ref.current,

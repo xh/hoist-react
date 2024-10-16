@@ -4,7 +4,17 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {XH, HoistService, PlainObject, LoadSpec} from '@xh/hoist/core';
+import {XH, HoistService, LoadSpec} from '@xh/hoist/core';
+
+export interface JsonBlob {
+    type: string;
+    name: string;
+    token: string;
+    acl?: string;
+    description?: string;
+    value?: any;
+    meta?: any;
+}
 
 /**
  * Service to read and set chunks of user-specific JSON persisted via Hoist Core's JSONBlob class.
@@ -12,7 +22,7 @@ import {XH, HoistService, PlainObject, LoadSpec} from '@xh/hoist/core';
 export class JsonBlobService extends HoistService {
     static instance: JsonBlobService;
 
-    async getAsync(token) {
+    async getAsync(token: string): Promise<JsonBlob> {
         return XH.fetchJson({
             url: 'xh/getJsonBlob',
             params: {token}
@@ -44,14 +54,7 @@ export class JsonBlobService extends HoistService {
         value,
         meta,
         description
-    }: {
-        type: string;
-        name: string;
-        acl?: string;
-        description?: string;
-        value: any;
-        meta?: any;
-    }) {
+    }: Omit<JsonBlob, 'token'>): Promise<JsonBlob> {
         return XH.fetchJson({
             url: 'xh/createJsonBlob',
             params: {
@@ -63,20 +66,8 @@ export class JsonBlobService extends HoistService {
     /** Modify an existing JSONBlob, as identified by its unique token. */
     async updateAsync(
         token: string,
-        {
-            name,
-            acl,
-            value,
-            meta,
-            description
-        }: {
-            name?: string;
-            acl?: string | PlainObject;
-            value?: any;
-            meta?: any;
-            description?: string;
-        }
-    ) {
+        {name, acl, value, meta, description}: Omit<JsonBlob, 'token' | 'type'>
+    ): Promise<JsonBlob> {
         return XH.fetchJson({
             url: 'xh/updateJsonBlob',
             params: {

@@ -16,7 +16,7 @@ import {ViewManagerModel} from './viewManager';
 export class ViewManagerProvider extends PersistenceProvider {
     viewManagerModel: ViewManagerModel;
 
-    override get isWriteStateImmediately(): boolean {
+    override get shouldWriteInitialState(): boolean {
         return true;
     }
 

@@ -25,7 +25,7 @@ export const saveDialog = hoistCmp.factory<SaveDialogModel>({
             className: 'xh-persistence-manager__save-dialog',
             style: {width: 500, height: 255},
             canOutsideClickClose: false,
-            onClose: () => model.close(),
+            onClose: () => model.cancel(),
             item: fragment(formPanel(), mask({bind: model.saveTask, spinner: true}))
         });
     }
@@ -77,7 +77,7 @@ const bbar = hoistCmp.factory<SaveDialogModel>({
             filler(),
             button({
                 text: 'Cancel',
-                onClick: () => model.close()
+                onClick: () => model.cancel()
             }),
             button({
                 icon: Icon.copy(),

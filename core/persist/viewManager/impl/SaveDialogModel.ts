@@ -1,31 +1,34 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {ViewManagerModel} from '../ViewManagerModel';
+import {makeObservable} from '@xh/hoist/mobx';
+import {JsonBlob} from '@xh/hoist/svc';
+import {action, observable} from 'mobx';
 import {View} from '../Types';
 
 export class SaveDialogModel extends HoistModel {
+    @managed readonly formModel: FormModel;
+
     readonly saveTask = TaskObserver.trackLast();
+
+    @observable viewStub: Partial<View>;
+    @observable isOpen: boolean = false;
+
+    private resolveOpen: (value: JsonBlob) => void;
     private readonly type: string;
+    private invalidNames: string[] = [];
 
-    parentModel: ViewManagerModel;
-
-    @bindable viewStub: Partial<View>;
-    @bindable isOpen: boolean = false;
-
-    @managed readonly formModel = this.createFormModel();
-
-    constructor(parentModel: ViewManagerModel, type: string) {
+    constructor(type: string) {
         super();
         makeObservable(this);
-
-        this.parentModel = parentModel;
         this.type = type;
+        this.formModel = this.createFormModel();
     }
 
-    open(viewStub: Partial<View>) {
+    @action
+    openAsync(viewStub: Partial<View>, invalidNames: string[]): Promise<JsonBlob> {
         this.viewStub = viewStub;
+        this.invalidNames = invalidNames;
 
         this.formModel.init({
             name: viewStub.name ? `${viewStub.name} (COPY)` : '',
@@ -33,11 +36,15 @@ export class SaveDialogModel extends HoistModel {
         });
 
         this.isOpen = true;
+
+        return new Promise(resolve => {
+            this.resolveOpen = resolve;
+        });
     }
 
-    close() {
-        this.isOpen = false;
-        this.formModel.init();
+    cancel() {
+        this.close();
+        this.resolveOpen(null);
     }
 
     async saveAsAsync() {
@@ -48,7 +55,7 @@ export class SaveDialogModel extends HoistModel {
     // Implementation
     //------------------------
 
-    createFormModel(): FormModel {
+    private createFormModel(): FormModel {
         return new FormModel({
             fields: [
                 {
@@ -57,7 +64,7 @@ export class SaveDialogModel extends HoistModel {
                         required,
                         lengthIs({max: 255}),
                         ({value}) => {
-                            if (this.parentModel?.views.find(it => it.name === value)) {
+                            if (this.invalidNames.includes(value)) {
                                 return `An entry with name "${value}" already exists`;
                             }
                         }
@@ -68,8 +75,8 @@ export class SaveDialogModel extends HoistModel {
         });
     }
 
-    async doSaveAsAsync() {
-        const {formModel, parentModel, viewStub, type} = this,
+    private async doSaveAsAsync() {
+        const {formModel, viewStub, type} = this,
             {name, description} = formModel.getData(),
             isValid = await formModel.validateAsync();
 
@@ -83,11 +90,15 @@ export class SaveDialogModel extends HoistModel {
                 value: viewStub.value
             });
             this.close();
-
-            await parentModel.refreshAsync();
-            await parentModel.selectAsync(newObj.token);
+            this.resolveOpen(newObj);
         } catch (e) {
             XH.handleException(e);
         }
+    }
+
+    @action
+    private close() {
+        this.isOpen = false;
+        this.formModel.init();
     }
 }

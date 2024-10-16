@@ -1,20 +1,21 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {HoistModel, lookup, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {includes, isEmpty} from 'lodash';
+import {makeObservable} from '@xh/hoist/mobx';
+import {includes} from 'lodash';
 import {ViewManagerModel} from '../ViewManagerModel';
 
 export class ManageDialogModel extends HoistModel {
-    parentModel: ViewManagerModel;
-
-    @bindable isOpen: boolean = false;
-
     @managed readonly gridModel: GridModel;
-
     @managed readonly formModel: FormModel;
+
+    readonly saveTask = TaskObserver.trackLast();
+    readonly deleteTask = TaskObserver.trackLast();
+
+    @lookup(() => ViewManagerModel)
+    private readonly viewManagerModel: ViewManagerModel;
 
     get selectedId(): string {
         return this.gridModel.selectedId as string;
@@ -24,9 +25,13 @@ export class ManageDialogModel extends HoistModel {
         return this.gridModel.selectedRecord?.data.isShared ?? false;
     }
 
+    get displayName(): string {
+        return this.viewManagerModel.entity.displayName;
+    }
+
     get canDelete(): boolean {
-        const {parentModel, selIsShared, canManageGlobal} = this,
-            {views, enableDefault} = parentModel;
+        const {viewManagerModel, selIsShared, canManageGlobal} = this,
+            {views, enableDefault} = viewManagerModel;
         return (enableDefault ? true : views.length > 1) && (canManageGlobal || !selIsShared);
     }
 
@@ -35,24 +40,19 @@ export class ManageDialogModel extends HoistModel {
     }
 
     get showSaveButton(): boolean {
-        const {formModel, parentModel} = this;
-        return formModel.isDirty && !formModel.readonly && !parentModel.loadModel.isPending;
-    }
-
-    /** True if the selected object would end up shared to all users if saved. */
-    get willBeGlobal(): boolean {
-        return this.formModel.values.isGlobal;
+        const {formModel, viewManagerModel} = this;
+        return formModel.isDirty && !formModel.readonly && !viewManagerModel.loadModel.isPending;
     }
 
     get canManageGlobal(): boolean {
-        return this.parentModel.canManageGlobal;
+        return this.viewManagerModel.canManageGlobal;
     }
 
     constructor(parentModel: ViewManagerModel) {
         super();
         makeObservable(this);
 
-        this.parentModel = parentModel;
+        this.viewManagerModel = parentModel;
         this.gridModel = this.createGridModel();
         this.formModel = this.createFormModel();
 
@@ -63,30 +63,24 @@ export class ManageDialogModel extends HoistModel {
                     this.formModel.readonly = !this.canEdit;
                     this.formModel.init({
                         ...record.data,
-                        isFavorite: includes(this.parentModel.favorites, record.data.token)
+                        isFavorite: includes(this.viewManagerModel.favorites, record.data.token)
                     });
                 }
             }
         });
     }
 
-    async openAsync() {
-        this.isOpen = true;
-        await this.refreshModelsAsync();
-    }
-
-    close() {
-        this.gridModel.clear();
-        this.formModel.init();
-        this.isOpen = false;
+    override async doLoadAsync() {
+        this.gridModel.loadData(this.viewManagerModel.views);
+        await this.ensureGridHasSelection();
     }
 
     async saveAsync() {
-        return this.doSaveAsync().linkTo(this.loadModel).catchDefault();
+        return this.doSaveAsync().linkTo(this.saveTask).catchDefault();
     }
 
     async deleteAsync() {
-        return this.doDeleteAsync().linkTo(this.loadModel).catchDefault();
+        return this.doDeleteAsync().linkTo(this.deleteTask).catchDefault();
     }
 
     //------------------------
@@ -94,11 +88,11 @@ export class ManageDialogModel extends HoistModel {
     //------------------------
 
     async doSaveAsync() {
-        const {formModel, parentModel, canManageGlobal, selectedId, gridModel} = this,
+        const {formModel, viewManagerModel, canManageGlobal, selectedId, gridModel} = this,
             {fields, isDirty} = formModel,
             {name, description, isShared, isFavorite} = formModel.getData(),
             isValid = await formModel.validateAsync(),
-            displayName = parentModel.entity.displayName,
+            displayName = viewManagerModel.entity.displayName,
             token = gridModel.selectedRecord.data.token;
 
         if (!isValid || !selectedId || !isDirty) return;
@@ -106,7 +100,7 @@ export class ManageDialogModel extends HoistModel {
         // Additional sanity-check before POSTing an update - non-admins should never be modifying global views.
         if (isShared && !canManageGlobal)
             throw XH.exception(
-                `Cannot save changes to globally-shared ${parentModel.entity.displayName} - missing required permission.`
+                `Cannot save changes to globally-shared ${viewManagerModel.entity.displayName} - missing required permission.`
             );
 
         if (fields.isShared.isDirty) {
@@ -121,9 +115,9 @@ export class ManageDialogModel extends HoistModel {
 
         if (fields.isFavorite.isDirty) {
             if (isFavorite) {
-                parentModel.addFavorite(token);
+                viewManagerModel.addFavorite(token);
             } else {
-                parentModel.removeFavorite(token);
+                viewManagerModel.removeFavorite(token);
             }
         }
 
@@ -133,58 +127,37 @@ export class ManageDialogModel extends HoistModel {
             acl: isShared ? '*' : null
         });
 
-        await this.parentModel.refreshAsync();
-        await this.refreshModelsAsync();
+        await this.viewManagerModel.refreshAsync();
+        await this.refreshAsync();
     }
 
     async doDeleteAsync() {
-        const {parentModel, gridModel, formModel} = this,
-            {selectedRecord} = gridModel,
-            {isFavorite} = formModel.getData(),
-            {favorites} = parentModel;
+        const {viewManagerModel, gridModel} = this,
+            {selectedRecord} = gridModel;
         if (!selectedRecord) return;
 
-        const {name, token} = selectedRecord.data;
-        const confirmed = await XH.confirm({
-            title: 'Delete',
-            icon: Icon.delete(),
-            message: `Are you sure you want to delete "${name}"?`
-        });
+        const {name, token} = selectedRecord.data,
+            confirmed = await XH.confirm({
+                title: 'Delete',
+                icon: Icon.delete(),
+                message: `Are you sure you want to delete "${name}"?`
+            });
         if (!confirmed) return;
 
-        if (formModel.fields.isFavorite.isDirty) {
-            if (isFavorite) {
-                parentModel.favorites = [...favorites, token];
-            } else {
-                parentModel.favorites = favorites.filter(it => it !== token);
-            }
-        }
+        viewManagerModel.removeFavorite(token);
 
         await XH.jsonBlobService.archiveAsync(token);
-        await parentModel.refreshAsync();
-        await this.refreshModelsAsync();
+        await viewManagerModel.refreshAsync();
+        await this.refreshAsync();
     }
 
-    async refreshModelsAsync() {
-        const {views, favorites} = this.parentModel,
-            {gridModel, formModel} = this;
+    //-------------------------
+    // Implementation
+    //-------------------------
 
-        if (isEmpty(views)) {
-            this.close();
-            return;
-        }
-
-        gridModel.loadData(views);
-        await this.ensureGridHasSelection();
-        formModel.init({
-            ...gridModel.selectedRecord.data,
-            isFavorite: includes(favorites, gridModel.selectedRecord.data.token)
-        });
-    }
-
-    async ensureGridHasSelection() {
-        const {gridModel} = this;
-        const {selectedToken} = this.parentModel;
+    private async ensureGridHasSelection() {
+        const {gridModel, viewManagerModel} = this,
+            {selectedToken} = viewManagerModel;
         if (selectedToken) {
             gridModel.selModel.select(selectedToken);
         } else {
@@ -192,7 +165,7 @@ export class ManageDialogModel extends HoistModel {
         }
     }
 
-    createGridModel(): GridModel {
+    private createGridModel(): GridModel {
         return new GridModel({
             sortBy: 'name',
             groupBy: 'group',
@@ -233,7 +206,7 @@ export class ManageDialogModel extends HoistModel {
         });
     }
 
-    createFormModel(): FormModel {
+    private createFormModel(): FormModel {
         return new FormModel({
             fields: [
                 {name: 'name', rules: [required, lengthIs({max: 255})]},

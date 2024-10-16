@@ -56,7 +56,7 @@ export class GridPersistenceModel extends HoistModel {
             this.addReaction({
                 track: () => this.state,
                 run: state => this.provider.write(state),
-                fireImmediately: this.provider.isWriteStateImmediately
+                fireImmediately: this.provider.shouldWriteInitialState
             });
         } catch (e) {
             this.logError(e);
@@ -82,6 +82,7 @@ export class GridPersistenceModel extends HoistModel {
 
     @action
     clear() {
+        if (this.provider.shouldWriteInitialState) return;
         this.state = {version: this.VERSION};
     }
 
@@ -97,7 +98,8 @@ export class GridPersistenceModel extends HoistModel {
                     columns: gridModel.cleanColumnState(columnState),
                     autosize: autosizeState
                 });
-            }
+            },
+            fireImmediately: this.provider.shouldWriteInitialState
         };
     }
 
@@ -115,7 +117,8 @@ export class GridPersistenceModel extends HoistModel {
             track: () => this.gridModel.sortBy,
             run: sortBy => {
                 this.patchState({sortBy: sortBy.map(it => it.toString())});
-            }
+            },
+            fireImmediately: this.provider.shouldWriteInitialState
         };
     }
 
@@ -132,7 +135,8 @@ export class GridPersistenceModel extends HoistModel {
             track: () => this.gridModel.groupBy,
             run: groupBy => {
                 this.patchState({groupBy});
-            }
+            },
+            fireImmediately: this.provider.shouldWriteInitialState
         };
     }
 
