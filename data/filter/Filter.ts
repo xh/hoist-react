@@ -5,6 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
+import {PlainObject} from '@xh/hoist/core';
 import {Store} from '../Store';
 import {FilterTestFn} from './Types';
 
@@ -33,4 +34,6 @@ export abstract class Filter {
 
     /** @returns true if the provided other Filter is equivalent to this instance.*/
     abstract equals(other: Filter): boolean;
+
+    abstract toJSON(): PlainObject;
 }
