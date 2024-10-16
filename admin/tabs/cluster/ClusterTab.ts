@@ -47,6 +47,7 @@ export const detailPanel = hoistCmp.factory<ClusterTabModel>({
         return panel({
             compactHeader: true,
             tbar: [
+                Icon.server(),
                 box({width: 150, item: model.formatInstance(instance)}),
                 hspacer(25),
                 tabSwitcher()

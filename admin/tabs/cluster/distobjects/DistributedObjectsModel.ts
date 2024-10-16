@@ -18,7 +18,7 @@ import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {first, isEmpty, last} from 'lodash';
 
-export class HzObjectModel extends BaseInstanceModel {
+export class DistributedObjectsModel extends BaseInstanceModel {
     @bindable groupBy: 'type' | 'owner' = 'owner';
 
     @managed detailPanelModel = new PanelModel({

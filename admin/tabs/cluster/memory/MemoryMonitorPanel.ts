@@ -35,7 +35,7 @@ export const memoryMonitorPanel = hoistCmp.factory({
                 panel({
                     modelConfig: {
                         side: 'bottom',
-                        defaultSize: 400
+                        defaultSize: '50%'
                     },
                     item: chart()
                 })

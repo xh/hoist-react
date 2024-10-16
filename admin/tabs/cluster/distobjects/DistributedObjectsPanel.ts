@@ -14,16 +14,17 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {Icon} from '@xh/hoist/icon';
-import {HzObjectModel} from './HzObjectModel';
+import {DistributedObjectsModel} from './DistributedObjectsModel';
 
-export const hzObjectPanel = hoistCmp.factory({
-    model: creates(HzObjectModel),
+export const distributedObjectsPanel = hoistCmp.factory({
+    displayName: 'DistributedObjectsPanel',
+    model: creates(DistributedObjectsModel),
 
     render({model}) {
         return panel({
             item: hframe(
                 panel({
-                    item: grid({agOptions: {groupDefaultExpanded: 0}}),
+                    item: grid(),
                     bbar: bbar()
                 }),
                 detailsPanel()
@@ -35,7 +36,7 @@ export const hzObjectPanel = hoistCmp.factory({
 });
 
 const detailsPanel = hoistCmp.factory({
-    model: uses(HzObjectModel),
+    model: uses(DistributedObjectsModel),
     render({model}) {
         const record = model.gridModel.selectedRecord;
         return panel({
@@ -62,7 +63,7 @@ const detailsPanel = hoistCmp.factory({
     }
 });
 
-const bbar = hoistCmp.factory<HzObjectModel>({
+const bbar = hoistCmp.factory<DistributedObjectsModel>({
     render({model}) {
         return toolbar(
             recordActionBar({

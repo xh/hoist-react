@@ -238,7 +238,8 @@ function badgeRenderer(v) {
     return v
         ? badge({
               item: v,
-              className: 'xh-font-family-mono xh-title-tip',
+              className: 'xh-font-family-mono',
+              style: {cursor: 'copy'},
               title: 'Double-click to copy',
               onDoubleClick: () => {
                   copy(v);

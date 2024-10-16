@@ -41,8 +41,9 @@ export const logViewer = hoistCmp.factory({
                     bbar: [
                         storeFilterField({flex: 1}),
                         select({
+                            leftIcon: Icon.server(),
                             bind: 'instanceOnly',
-                            width: 90,
+                            width: 110,
                             enableFilter: false,
                             hideDropdownIndicator: true,
                             hideSelectedOptionCheck: true,

@@ -7,8 +7,8 @@
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
 import {connPoolMonitorPanel} from '@xh/hoist/admin/tabs/cluster/connpool/ConnPoolMonitorPanel';
+import {distributedObjectsPanel} from '@xh/hoist/admin/tabs/cluster/distobjects/DistributedObjectsPanel';
 import {serverEnvPanel} from '@xh/hoist/admin/tabs/cluster/environment/ServerEnvPanel';
-import {hzObjectPanel} from '@xh/hoist/admin/tabs/cluster/hzobject/HzObjectPanel';
 import {logViewer} from '@xh/hoist/admin/tabs/cluster/logs/LogViewer';
 import {usedHeapMb, usedPctMax} from '@xh/hoist/admin/tabs/cluster/memory/MemoryMonitorModel';
 import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/cluster/memory/MemoryMonitorPanel';
@@ -180,7 +180,7 @@ export class ClusterTabModel extends HoistModel {
                     id: 'objects',
                     title: 'Distributed Objects',
                     icon: Icon.grip(),
-                    content: hzObjectPanel
+                    content: distributedObjectsPanel
                 },
                 {id: 'webSockets', title: 'WebSockets', icon: Icon.bolt(), content: webSocketPanel}
             ]
