@@ -63,10 +63,10 @@ export class ServiceModel extends BaseInstanceModel {
                 {name: 'lastCachesCleared', type: 'date', displayName: 'Last Cleared'}
             ]
         },
-        sortBy: 'displayName',
+        sortBy: ['provider', 'displayName'],
         columns: [
-            {field: 'displayName', flex: 1},
             {field: 'provider'},
+            {field: 'displayName', flex: 1},
             {...timestampNoYear, field: 'lastCachesCleared'},
             {...timestampNoYear, field: 'initializedDate'}
         ],
