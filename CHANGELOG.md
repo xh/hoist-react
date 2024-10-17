@@ -1,13 +1,14 @@
 # Changelog
 
-## 69.0.0-SNAPSHOT - unreleased
+## 70.0.0-SNAPSHOT - unreleased
+
+## 69.0.0 - 2024-10-17
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist core update)
 
 * Requires `hoist-core >= 24` to support batch upload of activity tracking logs to server and
   new memory monitoring persistence.
 * Replaced `AppState.INITIALIZING` with finer-grained states (not expected to impact most apps).
-
 
 ### 🎁 New Features
 
