@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {DebounceSpec, XH} from '../';
+import {DebounceSpec, Persistable, XH} from '../';
 import {
     LocalStorageProvider,
     PrefProvider,
@@ -20,9 +20,11 @@ import {
     set,
     unset,
     isNumber,
-    debounce as lodashDebounce
+    debounce as lodashDebounce,
+    isEqual
 } from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
+import {comparer, IReactionDisposer, reaction, runInAction} from 'mobx';
 
 /**
  * Abstract superclass for adaptor objects used by models and components to (re)store state to and
@@ -37,7 +39,12 @@ import {throwIf} from '@xh/hoist/utils/js';
  *   - {@link DashViewProvider} - stores state with other Dashboard-specific state via a `DashViewModel`.
  *   - {@link CustomProvider} - API for app and components to provide their own storage mechanism.
  */
-export class PersistenceProvider {
+
+export interface PersistenceProviderConfig<S> extends PersistOptions {
+    bind: Persistable<S>;
+}
+
+export abstract class PersistenceProvider<S> {
     get isPersistenceProvider(): boolean {
         return true;
     }
@@ -45,10 +52,18 @@ export class PersistenceProvider {
     path: string;
     debounce: DebounceSpec;
 
+    protected readonly bind: Persistable<S>;
+    protected readonly initialState: S;
+
+    private readonly disposer: IReactionDisposer;
+
     /**
      * Construct an instance of this class.
+     * Throws if unable to perform initial read operation.
+     * Note: `destroy()` must be called when the provider is no longer needed.
+     *
      */
-    static create({type, ...rest}: PersistOptions): PersistenceProvider {
+    static create<S>({type, ...rest}: PersistenceProviderConfig<S>): PersistenceProvider<S> {
         if (!type) {
             if (rest.prefKey) type = 'pref';
             if (rest.localStorageKey) type = 'localStorage';
@@ -73,15 +88,40 @@ export class PersistenceProvider {
     /**
      * Called by implementations only. See create.
      */
-    protected constructor({path, debounce = 250}: PersistOptions) {
+    protected constructor(config: PersistenceProviderConfig<S>) {
+        const {path, debounce = 250, bind} = config;
         throwIf(isUndefined(path), 'Path not specified in PersistenceProvider.');
+
         this.path = path;
         this.debounce = debounce;
+        this.bind = bind;
+        this.initialState = cloneDeep(bind.getPersistableState());
+
         if (debounce) {
             this.writeInternal = isNumber(debounce)
                 ? lodashDebounce(this.writeInternal, debounce)
                 : lodashDebounce(this.writeInternal, debounce.interval, debounce);
         }
+
+        this.init(config);
+
+        const persistedState = this.read();
+        if (!isUndefined(persistedState)) {
+            runInAction(() => bind.setPersistableState(cloneDeep(persistedState)));
+        }
+
+        // Direct use of MobX reaction to avoid circular dependencies with HoistBase
+        this.disposer = reaction(
+            () => bind.getPersistableState(),
+            state => {
+                if (isEqual(state, this.initialState)) {
+                    this.clear();
+                } else {
+                    this.write(state);
+                }
+            },
+            {equals: comparer.structural}
+        );
     }
 
     /**
@@ -115,9 +155,16 @@ export class PersistenceProvider {
         this.clearRaw();
     }
 
+    destroy() {
+        this.disposer();
+    }
+
     //----------------
     // Implementation
     //----------------
+    /** Perform any initialization required by the implementation before reading or writing. */
+    protected init(config: PersistenceProviderConfig<S>): void {}
+
     protected writeInternal(data: object) {
         const obj = cloneDeep(this.readRaw());
         set(obj, this.path, data);

@@ -5,19 +5,18 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {PersistenceProvider, PersistOptions} from './';
+import {PersistenceProvider, PersistenceProviderConfig} from './';
 import {throwIf} from '@xh/hoist/utils/js';
 import {XH} from '../';
 
 /**
  * PersistenceProvider that stores state within the Browser's LocalStorage.
  */
-export class LocalStorageProvider extends PersistenceProvider {
-    key: string;
+export class LocalStorageProvider<S> extends PersistenceProvider<S> {
+    declare key: string;
 
-    constructor({localStorageKey: key, ...rest}: PersistOptions) {
+    override init({localStorageKey: key}: PersistenceProviderConfig<S>) {
         throwIf(!key, `LocalStorageProvider requires a 'localStorageKey'.`);
-        super(rest);
         this.key = key;
     }
 
