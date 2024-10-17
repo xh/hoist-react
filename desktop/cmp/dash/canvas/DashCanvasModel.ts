@@ -183,7 +183,6 @@ export class DashCanvasModel
 
         this.loadState(initialState, true);
 
-        // Read state from provider -- fail gently
         if (persistWith) {
             try {
                 this.provider = PersistenceProvider.create({
@@ -193,7 +192,6 @@ export class DashCanvasModel
                 });
             } catch (e) {
                 this.logError(e);
-                this.provider = null;
             }
         }
 

@@ -98,7 +98,6 @@ import {GridSorter, GridSorterLike} from './GridSorter';
 import {GridPersistenceModel} from './impl/GridPersistenceModel';
 import {managedRenderer} from './impl/Utils';
 import {
-    AutosizeState,
     ColChooserConfig,
     ColumnState,
     GridModelPersistOptions,
@@ -405,9 +404,12 @@ export class GridModel extends HoistModel {
     @observable.ref columns: Array<ColumnGroup | Column> = [];
     @observable.ref columnState: ColumnState[] = [];
     @observable.ref expandState: any = {};
-    @observable.ref autosizeState: AutosizeState = {};
     @observable.ref sortBy: GridSorter[] = [];
     @observable.ref groupBy: string[] = null;
+
+    get persistableColumnState(): ColumnState[] {
+        return this.cleanColumnState(this.columnState);
+    }
 
     @bindable showSummary: boolean | VSide = false;
     @bindable.ref emptyText: ReactNode;
@@ -1111,24 +1113,11 @@ export class GridModel extends HoistModel {
         }
     }
 
-    @action
-    setAutosizeState(autosizeState) {
-        if (!equal(this.autosizeState, autosizeState)) {
-            this.autosizeState = deepFreeze(autosizeState);
-        }
-    }
-
     noteColumnManuallySized(colId, width) {
         const col = this.findColumn(this.columns, colId);
         if (!width || !col || col.flex) return;
         const colStateChanges = [{colId, width, manuallySized: true}];
         this.applyColumnStateChanges(colStateChanges);
-    }
-
-    noteColumnsAutosized(colIds) {
-        const colStateChanges = castArray(colIds).map(colId => ({colId, manuallySized: false}));
-        this.applyColumnStateChanges(colStateChanges);
-        this.setAutosizeState({sizingMode: this.sizingMode});
     }
 
     /**
@@ -1484,7 +1473,6 @@ export class GridModel extends HoistModel {
 
         try {
             await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
-            this.noteColumnsAutosized(colIds);
         } finally {
             if (showMask) {
                 await wait();
@@ -1615,7 +1603,8 @@ export class GridModel extends HoistModel {
             // Remove the width from any non-resizable column - we don't want to track those widths as
             // they are set programmatically (e.g. fixed / action columns), and saved state should not
             // conflict with any code-level updates to their widths.
-            if (!col.resizable) state = omit(state, 'width');
+            if (!col.resizable || !state.manuallySized) state = omit(state, 'width');
+            state = {...state, manuallySized: state.manuallySized ?? false};
 
             // Remove all metadata other than the id and the hidden state from hidden columns, to save
             // on space when storing user configs with large amounts of hidden fields.

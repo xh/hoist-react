@@ -114,7 +114,6 @@ function createPersistDescriptor(
             hasInitialized = true;
         }
 
-        // 2) Return data from provider data *or* code, if provider not yet set or failed
         initialState = !isUndefined(providerState) ? providerState : codeState;
         return initialState;
     };

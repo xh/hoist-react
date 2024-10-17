@@ -15,8 +15,7 @@ import {
     RefreshContextModel,
     RefreshMode,
     RenderMode,
-    Side,
-    XH
+    Side
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {action, makeObservable, observable, bindable} from '@xh/hoist/mobx';
@@ -275,7 +274,6 @@ export class PanelModel extends HoistModel implements Persistable<PersistablePan
             this._resizeRef = createRef();
         }
 
-        // Read state from provider -- fail gently
         if (persistWith) {
             try {
                 this.provider = PersistenceProvider.create({
@@ -285,8 +283,6 @@ export class PanelModel extends HoistModel implements Persistable<PersistablePan
                 });
             } catch (e) {
                 this.logError(e);
-                XH.safeDestroy(this.provider);
-                this.provider = null;
             }
         }
     }

@@ -147,7 +147,9 @@ export class GroupingChooserModel
         throwIf(isEmpty(value) && !this.allowEmpty, 'Initial value cannot be empty.');
         throwIf(!this.validateValue(value), 'Initial value is invalid.');
 
-        // Read state from provider -- fail gently
+        this.setValue(value);
+        this.setFavorites(favorites);
+
         if (persistWith) {
             try {
                 this.persistValue = persistWith.persistValue ?? true;
@@ -159,7 +161,6 @@ export class GroupingChooserModel
                 });
             } catch (e) {
                 this.logError(e);
-                this.provider = null;
             }
         }
 
@@ -169,9 +170,6 @@ export class GroupingChooserModel
                 if (this.commitOnChange) this.setValue(this.pendingValue);
             }
         });
-
-        this.setValue(value);
-        this.setFavorites(favorites);
     }
 
     @action

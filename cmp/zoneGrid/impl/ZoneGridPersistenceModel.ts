@@ -58,7 +58,6 @@ export class ZoneGridPersistenceModel extends HoistModel implements Persistable<
             });
         } catch (e) {
             this.logError(e);
-            this.provider = null;
         }
     }
 

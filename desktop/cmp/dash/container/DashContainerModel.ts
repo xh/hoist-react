@@ -189,7 +189,6 @@ export class DashContainerModel
         this.extraMenuItems = extraMenuItems;
         this.state = initialState;
 
-        // Read state from provider -- fail gently
         if (persistWith) {
             try {
                 this.provider = PersistenceProvider.create({
@@ -199,7 +198,6 @@ export class DashContainerModel
                 });
             } catch (e) {
                 this.logError(e);
-                this.provider = null;
             }
         }
 

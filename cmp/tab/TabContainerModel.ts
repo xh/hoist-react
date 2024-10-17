@@ -157,7 +157,15 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
 
             this.forwardRouterToTab(this.activeTabId);
         } else if (persistWith) {
-            this.setupStateProvider(persistWith);
+            try {
+                this.provider = PersistenceProvider.create({
+                    path: 'tabContainer',
+                    ...persistWith,
+                    bind: this
+                });
+            } catch (e) {
+                this.logError(e);
+            }
         }
 
         if (track) {
@@ -385,20 +393,6 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         if (ret) return ret.id;
 
         return null;
-    }
-
-    private setupStateProvider(persistWith: PersistOptions) {
-        // Read state from provider -- fail gently
-        try {
-            this.provider = PersistenceProvider.create({
-                path: 'tabContainer',
-                ...persistWith,
-                bind: this
-            });
-        } catch (e) {
-            this.logError(e);
-            this.provider = null;
-        }
     }
 }
 

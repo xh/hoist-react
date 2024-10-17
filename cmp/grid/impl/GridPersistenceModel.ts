@@ -13,22 +13,10 @@ import {GridModel} from '../GridModel';
 import {ColumnState, GridModelPersistOptions} from '../Types';
 
 /**
- * State for GridModel persistence.
- * @internal
- */
-export interface GridState {
-    columns?: Partial<ColumnState>[];
-    sortBy?: Some<GridSorterLike>;
-    groupBy?: Some<string>;
-    version?: number;
-    autosize?: any;
-}
-
-/**
  * Model to manage persisting state from GridModel.
  * @internal
  */
-export class GridPersistenceModel extends HoistModel implements Persistable<GridState> {
+export class GridPersistenceModel extends HoistModel implements Persistable<GridPersistState> {
     override xhImpl = true;
 
     VERSION = 1; // Increment to abandon state.
@@ -36,10 +24,10 @@ export class GridPersistenceModel extends HoistModel implements Persistable<Grid
     gridModel: GridModel;
 
     @observable.ref
-    state: GridState = {version: this.VERSION};
+    state: GridPersistState = {version: this.VERSION};
 
     @managed
-    provider: PersistenceProvider<GridState>;
+    provider: PersistenceProvider<GridPersistState>;
 
     private readonly persistColumns: boolean;
     private readonly persistGrouping: boolean;
@@ -61,30 +49,50 @@ export class GridPersistenceModel extends HoistModel implements Persistable<Grid
         this.persistGrouping = persistGrouping;
         this.persistSort = persistSort;
 
-        this.addReaction(this.columnReaction(), this.groupReaction(), this.sortReaction());
+        if (persistColumns) {
+            this.patchState({columns: gridModel.persistableColumnState});
+        }
+
+        if (persistSort) {
+            this.patchState({sortBy: gridModel.sortBy.map(it => it.toString())});
+        }
+
+        if (persistGrouping) {
+            this.patchState({groupBy: gridModel.groupBy});
+        }
 
         try {
             this.provider = PersistenceProvider.create({path: 'grid', ...persistWith, bind: this});
         } catch (e) {
             this.logError(e);
-            this.provider = null;
+        }
+
+        if (persistColumns) {
+            this.addReaction(this.columnReaction());
+        }
+
+        if (persistSort) {
+            this.addReaction(this.sortReaction());
+        }
+
+        if (persistGrouping) {
+            this.addReaction(this.groupReaction());
         }
     }
 
     //--------------------------
     // Persistable Interface
     //--------------------------
-    getPersistableState(): GridState {
+    getPersistableState(): GridPersistState {
         return this.state;
     }
 
-    setPersistableState(state: GridState) {
+    setPersistableState(state: GridPersistState) {
         if (state.version !== this.VERSION) return;
 
         if (this.persistColumns) {
-            const {columns, autosize} = state;
+            const {columns} = state;
             if (!isUndefined(columns)) this.gridModel.setColumnState(columns);
-            if (!isUndefined(autosize)) this.gridModel.setAutosizeState(autosize);
         }
 
         if (this.persistSort) {
@@ -102,39 +110,32 @@ export class GridPersistenceModel extends HoistModel implements Persistable<Grid
     // Reactions
     //--------------------------
     private columnReaction() {
-        if (!this.persistColumns) return;
         const {gridModel} = this;
         return {
-            track: () => [gridModel.columnState, gridModel.autosizeState],
-            run: ([columnState, autosizeState]) => {
+            track: () => gridModel.persistableColumnState,
+            run: columnState => {
                 this.patchState({
-                    columns: gridModel.cleanColumnState(columnState),
-                    autosize: autosizeState
+                    columns: columnState
                 });
-            },
-            fireImmediately: true
+            }
         };
     }
 
     private sortReaction() {
-        if (!this.persistSort) return;
         return {
             track: () => this.gridModel.sortBy,
             run: sortBy => {
                 this.patchState({sortBy: sortBy.map(it => it.toString())});
-            },
-            fireImmediately: true
+            }
         };
     }
 
     private groupReaction() {
-        if (!this.persistGrouping) return;
         return {
             track: () => this.gridModel.groupBy,
             run: groupBy => {
                 this.patchState({groupBy});
-            },
-            fireImmediately: true
+            }
         };
     }
 
@@ -145,4 +146,11 @@ export class GridPersistenceModel extends HoistModel implements Persistable<Grid
     private patchState(updates) {
         this.state = {...this.state, ...updates};
     }
+}
+
+interface GridPersistState {
+    columns?: Partial<ColumnState>[];
+    sortBy?: Some<GridSorterLike>;
+    groupBy?: Some<string>;
+    version?: number;
 }

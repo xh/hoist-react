@@ -186,7 +186,6 @@ export class FilterChooserModel
             )
         );
 
-        // Read state from provider -- fail gently
         if (persistWith) {
             try {
                 this.persistValue = persistWith.persistValue ?? true;
@@ -198,7 +197,6 @@ export class FilterChooserModel
                 });
             } catch (e) {
                 this.logError(e);
-                this.provider = null;
             }
         }
 
