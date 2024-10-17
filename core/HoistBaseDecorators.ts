@@ -4,8 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {cloneDeep, isUndefined} from 'lodash';
-import {wait} from '../promise';
+import {isUndefined} from 'lodash';
 import {logError, throwIf} from '../utils/js';
 import {HoistBaseClass, PersistenceProvider, PersistOptions} from './';
 
@@ -74,21 +73,34 @@ function createPersistDescriptor(
         return descriptor;
     }
     const codeValue = descriptor.initializer;
+    let hasInitialized = false,
+        initialState;
     const initializer = function () {
-        let providerState;
+        // Initializer can be called multiple times when stacking decorators.
+        if (hasInitialized) return initialState;
+
+        let providerState,
+            codeState = codeValue.call(this);
 
         // Read from and attach to Provider.
         // Fail gently -- initialization exceptions causes stack overflows for MobX.
         try {
-            const persistWith = {path: property, ...this.persistWith, ...options},
-                provider = this.markManaged(PersistenceProvider.create(persistWith));
-            providerState = cloneDeep(provider.read());
-            wait().then(() => {
-                this.addReaction({
-                    track: () => this[property],
-                    run: data => provider.write(data)
-                });
-            });
+            const persistWith = {path: property, ...this.persistWith, ...options};
+            this.markManaged(
+                PersistenceProvider.create({
+                    ...persistWith,
+                    bind: {
+                        getPersistableState: () => (hasInitialized ? this[property] : codeState),
+                        setPersistableState: state => {
+                            if (!hasInitialized) {
+                                providerState = state;
+                            } else {
+                                this[property] = state;
+                            }
+                        }
+                    }
+                })
+            );
         } catch (e) {
             logError(
                 [
@@ -98,10 +110,13 @@ function createPersistDescriptor(
                 ],
                 target
             );
+        } finally {
+            hasInitialized = true;
         }
 
         // 2) Return data from provider data *or* code, if provider not yet set or failed
-        return !isUndefined(providerState) ? providerState : codeValue?.call(this);
+        initialState = !isUndefined(providerState) ? providerState : codeState;
+        return initialState;
     };
     return {...descriptor, initializer};
 }

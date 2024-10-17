@@ -649,7 +649,6 @@ export class GridModel extends HoistModel {
         this.setGroupBy(groupBy);
 
         this.filterModel?.clear();
-        this.persistenceModel?.clear();
 
         if (this.autosizeOptions.mode === 'managed') {
             await this.autosizeAsync();

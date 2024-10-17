@@ -8,16 +8,15 @@
 import {
     HoistModel,
     managed,
+    Persistable,
     PersistenceProvider,
-    PersistOptions,
-    PlainObject,
-    XH
+    PersistOptions
 } from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {cloneDeep, difference, isArray, isEmpty, isEqual, isString, keys, sortBy} from 'lodash';
+import {difference, isArray, isEmpty, isEqual, isString, isUndefined, keys, sortBy} from 'lodash';
 
 export interface GroupingChooserConfig {
     /**
@@ -69,7 +68,15 @@ export interface GroupingChooserPersistOptions extends PersistOptions {
     persistFavorites?: boolean;
 }
 
-export class GroupingChooserModel extends HoistModel {
+export interface GroupingChooserPersistState {
+    value?: string[];
+    favorites?: string[][];
+}
+
+export class GroupingChooserModel
+    extends HoistModel
+    implements Persistable<GroupingChooserPersistState>
+{
     @observable.ref value: string[];
     @observable.ref favorites: string[][] = [];
 
@@ -77,7 +84,7 @@ export class GroupingChooserModel extends HoistModel {
     maxDepth: number;
     commitOnChange: boolean;
 
-    @managed provider: PersistenceProvider = null;
+    @managed provider: PersistenceProvider<GroupingChooserPersistState> = null;
     persistValue: boolean = false;
     persistFavorites: boolean = false;
 
@@ -143,28 +150,15 @@ export class GroupingChooserModel extends HoistModel {
         // Read state from provider -- fail gently
         if (persistWith) {
             try {
-                this.provider = PersistenceProvider.create({
-                    path: 'groupingChooser',
-                    ...persistWith
-                });
                 this.persistValue = persistWith.persistValue ?? true;
                 this.persistFavorites = persistWith.persistFavorites ?? true;
-
-                const state = cloneDeep(this.provider.read());
-                if (this.persistValue && state?.value && this.validateValue(state?.value)) {
-                    value = state.value;
-                }
-                if (this.persistFavorites && state?.favorites) {
-                    favorites = state.favorites;
-                }
-
-                this.addReaction({
-                    track: () => this.persistState,
-                    run: state => this.provider.write(state)
+                this.provider = PersistenceProvider.create({
+                    path: 'groupingChooser',
+                    ...persistWith,
+                    bind: this
                 });
             } catch (e) {
                 this.logError(e);
-                XH.safeDestroy(this.provider);
                 this.provider = null;
             }
         }
@@ -323,11 +317,17 @@ export class GroupingChooserModel extends HoistModel {
     //-------------------------
     // Persistence handling
     //-------------------------
-    get persistState() {
-        const ret: PlainObject = {};
+    getPersistableState(): GroupingChooserPersistState {
+        const ret: GroupingChooserPersistState = {};
         if (this.persistValue) ret.value = this.value;
         if (this.persistFavorites) ret.favorites = this.favorites;
         return ret;
+    }
+
+    setPersistableState(state: GroupingChooserPersistState): void {
+        const {value, favorites} = state;
+        if (this.persistValue && !isUndefined(value)) this.setValue(value);
+        if (this.persistFavorites && !isUndefined(favorites)) this.setFavorites(favorites);
     }
 
     //------------------------

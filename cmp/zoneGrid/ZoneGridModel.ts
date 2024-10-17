@@ -398,8 +398,6 @@ export class ZoneGridModel extends HoistModel {
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
 
-        this.persistenceModel?.clear();
-
         if (this.restoreDefaultsFn) {
             await this.restoreDefaultsFn();
         }

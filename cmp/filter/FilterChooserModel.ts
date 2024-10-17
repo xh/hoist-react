@@ -7,6 +7,7 @@
 import {
     HoistModel,
     managed,
+    Persistable,
     PersistenceProvider,
     PersistOptions,
     PlainObject,
@@ -41,6 +42,7 @@ import {
     isFinite,
     isFunction,
     isString,
+    isUndefined,
     partition,
     sortBy,
     uniq,
@@ -118,7 +120,10 @@ export interface FilterChooserConfig {
     persistWith?: FilterChooserPersistOptions;
 }
 
-export class FilterChooserModel extends HoistModel {
+export class FilterChooserModel
+    extends HoistModel
+    implements Persistable<FilterChooserPersistState>
+{
     @observable.ref value: FilterChooserFilter = null;
     @observable.ref favorites: FilterChooserFilter[] = [];
     bind: Store | View;
@@ -132,7 +137,7 @@ export class FilterChooserModel extends HoistModel {
     maxResults: number;
     introHelpText: ReactNode;
 
-    @managed provider: PersistenceProvider;
+    @managed provider: PersistenceProvider<FilterChooserPersistState>;
     persistValue: boolean = false;
     persistFavorites: boolean = false;
 
@@ -174,39 +179,28 @@ export class FilterChooserModel extends HoistModel {
         this.introHelpText = withDefault(introHelpText, this.getDefaultIntroHelpText());
         this.queryEngine = new QueryEngine(this);
 
-        let value = isFunction(initialValue) ? initialValue() : initialValue,
-            favorites = (isFunction(initialFavorites) ? initialFavorites() : initialFavorites).map(
-                f => parseFilter(f)
-            );
+        this.setValue(isFunction(initialValue) ? initialValue() : initialValue);
+        this.setFavorites(
+            (isFunction(initialFavorites) ? initialFavorites() : initialFavorites).map(f =>
+                parseFilter(f)
+            )
+        );
 
         // Read state from provider -- fail gently
         if (persistWith) {
             try {
-                this.provider = PersistenceProvider.create({path: 'filterChooser', ...persistWith});
                 this.persistValue = persistWith.persistValue ?? true;
                 this.persistFavorites = persistWith.persistFavorites ?? true;
-
-                const state = this.provider.read();
-                if (this.persistValue && state?.value) {
-                    value = state.value;
-                }
-                if (this.persistFavorites && state?.favorites) {
-                    favorites = state.favorites.map(f => parseFilter(f));
-                }
-
-                this.addReaction({
-                    track: () => this.persistState,
-                    run: state => this.provider.write(state)
+                this.provider = PersistenceProvider.create({
+                    path: 'filterChooser',
+                    ...persistWith,
+                    bind: this
                 });
             } catch (e) {
                 this.logError(e);
-                XH.safeDestroy(this.provider);
                 this.provider = null;
             }
         }
-
-        this.setValue(value);
-        this.setFavorites(favorites);
 
         if (bind) {
             this.addReaction({
@@ -507,6 +501,22 @@ export class FilterChooserModel extends HoistModel {
     getDefaultIntroHelpText(): string {
         return 'Select or enter a field name (below) or begin typing to match available field values.';
     }
+
+    //--------------------------
+    // Persistable Interface
+    //--------------------------
+    getPersistableState(): FilterChooserPersistState {
+        const ret: FilterChooserPersistState = {};
+        if (this.persistValue) ret.value = this.value;
+        if (this.persistFavorites) ret.favorites = this.favorites;
+        return ret;
+    }
+
+    setPersistableState(state: FilterChooserPersistState) {
+        const {value, favorites} = state;
+        if (this.persistValue && !isUndefined(value)) this.setValue(value);
+        if (this.persistFavorites && !isUndefined(favorites)) this.setFavorites(favorites);
+    }
 }
 
 interface FilterChooserPersistOptions extends PersistOptions {
@@ -515,6 +525,11 @@ interface FilterChooserPersistOptions extends PersistOptions {
 
     /** True (default) to include favorites. */
     persistFavorites?: boolean;
+}
+
+interface FilterChooserPersistState {
+    value?: FilterChooserFilter;
+    favorites?: FilterChooserFilter[];
 }
 
 /** A variant of {@link Filter} that excludes FunctionFilter (unsupported by FilterChooser). */

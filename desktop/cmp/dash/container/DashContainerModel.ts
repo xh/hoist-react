@@ -7,6 +7,7 @@
 import {
     managed,
     modelLookupContextProvider,
+    Persistable,
     PersistenceProvider,
     PlainObject,
     RefreshMode,
@@ -113,11 +114,10 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
  * @see http://golden-layout.com/docs/ItemConfig.html
  * @see http://golden-layout.com/tutorials/getting-started-react.html
  */
-export class DashContainerModel extends DashModel<
-    DashContainerViewSpec,
-    DashViewState,
-    DashViewModel
-> {
+export class DashContainerModel
+    extends DashModel<DashContainerViewSpec, DashViewState, DashViewModel>
+    implements Persistable<{state: DashViewState[]}>
+{
     //---------------------
     // Settable State
     //----------------------
@@ -187,21 +187,21 @@ export class DashContainerModel extends DashModel<
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
         this.extraMenuItems = extraMenuItems;
+        this.state = initialState;
 
         // Read state from provider -- fail gently
-        let persistState = null;
         if (persistWith) {
             try {
-                this.provider = PersistenceProvider.create({path: 'dashContainer', ...persistWith});
-                persistState = this.provider.read();
+                this.provider = PersistenceProvider.create({
+                    path: 'dashContainer',
+                    ...persistWith,
+                    bind: this
+                });
             } catch (e) {
                 this.logError(e);
-                XH.safeDestroy(this.provider);
                 this.provider = null;
             }
         }
-
-        this.state = persistState?.state ?? initialState;
 
         // Initialize GoldenLayout with initial state once ref is ready
         this.addReaction({
@@ -228,7 +228,6 @@ export class DashContainerModel extends DashModel<
         this.contentLocked = restoreState.contentLocked;
         this.renameLocked = restoreState.renameLocked;
         await this.loadStateAsync(restoreState.initialState);
-        this.provider?.clear();
     }
 
     /**
@@ -319,6 +318,23 @@ export class DashContainerModel extends DashModel<
     }
 
     //------------------------
+    // Persistable Interface
+    //------------------------
+    getPersistableState(): {state: DashViewState[]} {
+        return {state: this.state};
+    }
+
+    setPersistableState({state}: {state: DashViewState[]}) {
+        if (!state) return;
+        if (this.containerRef.current) {
+            this.loadStateAsync(state);
+        } else {
+            // If the container is not yet rendered, store the state directly
+            this.state = state;
+        }
+    }
+
+    //------------------------
     // Implementation
     //------------------------
     private updateState() {
@@ -342,7 +358,6 @@ export class DashContainerModel extends DashModel<
         runInAction(() => {
             this.state = convertGLToState(goldenLayout, this);
         });
-        this.provider?.write({state: this.state});
     }
 
     private onItemDestroyed(item) {
