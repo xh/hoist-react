@@ -5,6 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
+import {PlainObject} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import {Store} from '../Store';
@@ -50,5 +51,10 @@ export class FunctionFilter extends Filter {
     override equals(other: Filter) {
         if (other === this) return true;
         return other instanceof FunctionFilter && this.testFn === other.testFn;
+    }
+
+    /** @returns Undefined because to JSON on a FunctionFilter is not supported */
+    override toJSON(): PlainObject {
+        return undefined;
     }
 }

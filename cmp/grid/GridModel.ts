@@ -630,8 +630,12 @@ export class GridModel extends HoistModel {
      *
      * @returns true if defaults were restored
      */
-    async restoreDefaultsAsync(): Promise<boolean> {
-        if (this.restoreDefaultsWarning) {
+    async restoreDefaultsAsync(
+        {skipWarning}: {skipWarning?: boolean} = {
+            skipWarning: !!this.restoreDefaultsWarning
+        }
+    ): Promise<boolean> {
+        if (this.restoreDefaultsWarning && !skipWarning) {
             const confirmed = await XH.confirm({
                 message: this.restoreDefaultsWarning,
                 confirmProps: {
@@ -1616,7 +1620,7 @@ export class GridModel extends HoistModel {
             // Remove the width from any non-resizable column - we don't want to track those widths as
             // they are set programmatically (e.g. fixed / action columns), and saved state should not
             // conflict with any code-level updates to their widths.
-            if (!col.resizable) state = omit(state, 'width');
+            if (!col.resizable || !col.manuallySized) state = omit(state, 'width'); // TODO
 
             // Remove all metadata other than the id and the hidden state from hidden columns, to save
             // on space when storing user configs with large amounts of hidden fields.

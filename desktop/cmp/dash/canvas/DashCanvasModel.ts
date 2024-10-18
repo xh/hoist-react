@@ -201,7 +201,8 @@ export class DashCanvasModel extends DashModel<
         this.addReaction(
             {
                 track: () => this.viewState,
-                run: () => this.publishState()
+                run: () => this.publishState(),
+                fireImmediately: this.provider.shouldWriteInitialState
             },
             {
                 when: () => !!this.ref.current,
