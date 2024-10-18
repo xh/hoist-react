@@ -14,7 +14,7 @@
     * `PersistenceProvider` now binds to a `Persistable` and is responsible for setting persisted
       state on its bound `Persistable` when the provider is constructed.
     * In its constructor, `PersistenceProvider` also stores the initial state of its bound
-      `Persistable` and clears its persisted state when structurally equivalent to  the initial state.
+      `Persistable` and clears its persisted state when structurally equal to the initial state.
 
 ### ⚙️ Typescript API Adjustments
 * Improved type of `HoistBase.markPersist` `property` argument.
