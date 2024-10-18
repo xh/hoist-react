@@ -60,8 +60,11 @@ export abstract class PersistenceProvider<S> {
     /**
      * Construct an instance of this class.
      * Throws if unable to perform initial read operation.
-     * Note: `destroy()` must be called when the provider is no longer needed.
      *
+     * Note:
+     * - `destroy()` must be called when the provider is no longer needed.
+     * - Bound models should initialize their default persistable state *before* creating a
+     *   `PersistenceProvider` and avoid setting up any reactions to persistable state until *after*
      */
     static create<S>({type, ...rest}: PersistenceProviderConfig<S>): PersistenceProvider<S> {
         if (!type) {
