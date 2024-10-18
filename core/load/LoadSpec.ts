@@ -62,9 +62,9 @@ export class LoadSpec {
         return this !== this.owner.lastRequested;
     }
 
-    /** True if a more recent request to load this object's owner has *successfully completed*. */
+    /** True if a more recent request to load this object's owner has completed*. */
     get isObsolete(): boolean {
-        return this.owner.lastSucceeded?.loadNumber > this.loadNumber;
+        return this.owner.lastCompleted?.loadNumber > this.loadNumber;
     }
 
     /** Display type of refresh for troubleshooting and logging. */

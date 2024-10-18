@@ -7,7 +7,7 @@
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {forOwn, has, isFunction} from 'lodash';
-import {DefaultHoistProps, HoistBase, LoadSpecConfig, managed, PlainObject} from '../';
+import {DefaultHoistProps, HoistBase, LoadSpecConfig, managed, PlainObject, XH} from '../';
 import {instanceManager} from '../impl/InstanceManager';
 import {Loadable, LoadSpec, LoadSupport} from '../load';
 import {ModelSelector} from './';
@@ -115,9 +115,18 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     async autoRefreshAsync(meta?: PlainObject) {
         return this.loadSupport?.autoRefreshAsync(meta);
     }
-    async doLoadAsync(loadSpec: LoadSpec) {}
     async loadAsync(loadSpec?: LoadSpecConfig) {
         return this.loadSupport?.loadAsync(loadSpec);
+    }
+
+    //--------------
+    // For override
+    //--------------
+    async doLoadAsync(loadSpec: LoadSpec) {}
+    async onLoadException(e: unknown, loadSpec: LoadSpec) {
+        if (!e['isRoutine']) {
+            XH.handleException(e, {showAlert: false});
+        }
     }
 
     //---------------------------
