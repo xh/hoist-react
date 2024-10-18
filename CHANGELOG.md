@@ -17,7 +17,7 @@
       `Persistable` and clears its persisted state when structurally equal to the initial state.
 
 ### ⚙️ Typescript API Adjustments
-* Improved type of `HoistBase.markPersist` `property` argument.
+* Improved `HoistBase.markPersist` signature.
 
 ## 69.0.0 - 2024-10-17
 
