@@ -478,7 +478,6 @@ export class Column {
     actions?: Array<RecordActionSpec | RecordAction>;
     actionsShowOnHoverOnly?: boolean;
     fieldSpec: FieldSpec;
-    manuallySized: boolean;
     omit: Thunkable<boolean>;
 
     gridModel: GridModel;

@@ -16,19 +16,16 @@ import {
     withInfo
 } from '@xh/hoist/utils/js';
 import {
-    cloneDeep,
     debounce as lodashDebounce,
     isFunction,
     isNil,
     isNumber,
     isPlainObject,
     isString,
-    isUndefined,
     upperFirst
 } from 'lodash';
 import {
     action,
-    runInAction,
     comparer,
     autorun as mobxAutorun,
     reaction as mobxReaction,
@@ -258,19 +255,20 @@ export abstract class HoistBase {
      * @param options - options governing the persistence of this object. These will be applied
      *      on top of any default persistWith options defined on the instance itself.
      */
-    markPersist(property: string, options: PersistOptions = {}) {
+    markPersist(property: keyof this & string, options: PersistOptions = {}) {
         // Read from and attach to Provider, failing gently
         try {
-            const persistWith = {path: property, ...this.persistWith, ...options},
-                provider = this.markManaged(PersistenceProvider.create(persistWith)),
-                providerState = provider.read();
-            if (!isUndefined(providerState)) {
-                runInAction(() => (this[property] = cloneDeep(providerState)));
-            }
-            this.addReaction({
-                track: () => this[property],
-                run: data => provider.write(data)
-            });
+            this.markManaged(
+                PersistenceProvider.create({
+                    path: property,
+                    ...this.persistWith,
+                    ...options,
+                    bind: {
+                        getPersistableState: () => this[property],
+                        setPersistableState: state => (this[property] = state)
+                    }
+                })
+            );
         } catch (e) {
             this.logError(
                 `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +

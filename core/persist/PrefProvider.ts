@@ -6,18 +6,17 @@
  */
 
 import {XH} from '../';
-import {PersistenceProvider, PersistOptions} from './';
+import {PersistenceProvider, PersistenceProviderConfig} from './';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * PersistenceProvider that stores state within the Hoist Preferences system.
  */
-export class PrefProvider extends PersistenceProvider {
-    key: string;
+export class PrefProvider<S> extends PersistenceProvider<S> {
+    declare key: string;
 
-    constructor({prefKey: key, ...rest}: PersistOptions) {
+    override init({prefKey: key}: PersistenceProviderConfig<S>) {
         throwIf(!key, `PrefProvider requires a 'prefKey'.`);
-        super(rest);
         this.key = key;
     }
 

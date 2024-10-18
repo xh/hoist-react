@@ -66,7 +66,9 @@ export class GridAutosizeService extends HoistService {
 
         runInAction(() => {
             // 4) Set columns to their required widths.
-            gridModel.applyColumnStateChanges(requiredWidths);
+            gridModel.applyColumnStateChanges(
+                requiredWidths.map(it => ({...it, manuallySized: false}))
+            );
             this.logDebug(`Auto-sized columns`, `${records.length} records`, requiredWidths);
 
             // 5) Grow columns to fill any remaining space, if enabled.

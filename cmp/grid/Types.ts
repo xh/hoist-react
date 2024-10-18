@@ -7,7 +7,7 @@
 
 import {IRowNode} from '@xh/hoist/kit/ag-grid';
 import {GridFilterFieldSpecConfig} from '@xh/hoist/cmp/grid/filter/GridFilterFieldSpec';
-import {HSide, PersistOptions, SizingMode, Some} from '@xh/hoist/core';
+import {HSide, PersistOptions, Some} from '@xh/hoist/core';
 import {Store, StoreRecord, View} from '@xh/hoist/data';
 import {ReactElement, ReactNode} from 'react';
 import {Column} from './columns/Column';
@@ -33,11 +33,6 @@ export interface ColumnState {
     manuallySized?: boolean;
     /** Side if pinned, null if not. */
     pinned?: HSide;
-}
-
-export interface AutosizeState {
-    /** Sizing mode used last time the columns were autosized. */
-    sizingMode?: SizingMode;
 }
 
 /**

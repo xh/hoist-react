@@ -2,6 +2,24 @@
 
 ## 70.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW  - Persistence and Grid changes)
+* See `PersistenceProvider` API changes noted in `New Features`. Should only affect applications
+  using the `PersistenceProvider` API directly.
+* `GridModel` no longer persists widths for auto-sized columns.
+* Removed `GridModel.autosizeState` and `Column.manuallySized`.
+
+### 🎁 New Features
+* Enhancements to `PersistenceProvider`
+    * Added new `Persistable` interface.
+    * `PersistenceProvider` now binds to a `Persistable` and is responsible for setting persisted
+      state on its bound `Persistable` when the provider is constructed and persisting state from
+      its bound `Persistable` when changes are detected.
+    * In its constructor, `PersistenceProvider` also stores the initial state of its bound
+      `Persistable` and clears its persisted state when structurally equal to the initial state.
+
+### ⚙️ Typescript API Adjustments
+* Improved `HoistBase.markPersist` signature.
+
 ## 69.0.0 - 2024-10-17
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist core update)

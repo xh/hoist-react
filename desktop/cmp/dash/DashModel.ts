@@ -40,7 +40,7 @@ export abstract class DashModel<VSPEC, VSTATE, VMODEL> extends HoistModel {
     // Implementation properties
     //------------------------
     protected restoreState: any;
-    protected provider: PersistenceProvider;
+    protected provider: PersistenceProvider<{state: VSTATE[]}>;
 
     constructor() {
         super();

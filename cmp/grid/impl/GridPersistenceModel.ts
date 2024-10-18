@@ -5,7 +5,8 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {GridSorterLike} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, PersistenceProvider, Some, XH} from '@xh/hoist/core';
+import {HoistModel, managed, PersistenceProvider, Some} from '@xh/hoist/core';
+import {Persistable} from '@xh/hoist/core/persist/Persistable';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
 import {GridModel} from '../GridModel';
@@ -15,7 +16,7 @@ import {ColumnState, GridModelPersistOptions} from '../Types';
  * Model to manage persisting state from GridModel.
  * @internal
  */
-export class GridPersistenceModel extends HoistModel {
+export class GridPersistenceModel extends HoistModel implements Persistable<GridPersistState> {
     override xhImpl = true;
 
     VERSION = 1; // Increment to abandon state.
@@ -23,16 +24,14 @@ export class GridPersistenceModel extends HoistModel {
     gridModel: GridModel;
 
     @observable.ref
-    state: {
-        columns?: Partial<ColumnState>[];
-        sortBy?: Some<GridSorterLike>;
-        groupBy?: Some<string>;
-        version?: number;
-        autosize?: any;
-    };
+    state: GridPersistState = {version: this.VERSION};
 
     @managed
-    provider: PersistenceProvider;
+    provider: PersistenceProvider<GridPersistState>;
+
+    private readonly persistColumns: boolean;
+    private readonly persistGrouping: boolean;
+    private readonly persistSort: boolean;
 
     constructor(
         gridModel: GridModel,
@@ -46,70 +45,83 @@ export class GridPersistenceModel extends HoistModel {
         super();
         makeObservable(this);
         this.gridModel = gridModel;
+        this.persistColumns = persistColumns;
+        this.persistGrouping = persistGrouping;
+        this.persistSort = persistSort;
 
-        persistWith = {path: 'grid', ...persistWith};
-
-        // 1) Read state from and attach to provider -- fail gently
-        try {
-            this.provider = PersistenceProvider.create(persistWith);
-            this.state = this.loadState() ?? this.legacyState() ?? {version: this.VERSION};
-            this.addReaction({
-                track: () => this.state,
-                run: state => this.provider.write(state)
-            });
-        } catch (e) {
-            this.logError(e);
-            this.state = {version: this.VERSION};
-        }
-
-        // 2) Bind self to grid, and populate grid.
         if (persistColumns) {
-            this.updateGridColumns();
-            this.addReaction(this.columnReaction());
-        }
-
-        if (persistGrouping) {
-            this.updateGridGroupBy();
-            this.addReaction(this.groupReaction());
+            this.patchState({columns: gridModel.persistableColumnState});
         }
 
         if (persistSort) {
-            this.updateGridSort();
+            this.patchState({sortBy: gridModel.sortBy.map(it => it.toString())});
+        }
+
+        if (persistGrouping) {
+            this.patchState({groupBy: gridModel.groupBy});
+        }
+
+        try {
+            this.provider = PersistenceProvider.create({path: 'grid', ...persistWith, bind: this});
+        } catch (e) {
+            this.logError(e);
+        }
+
+        if (persistColumns) {
+            this.addReaction(this.columnReaction());
+        }
+
+        if (persistSort) {
             this.addReaction(this.sortReaction());
+        }
+
+        if (persistGrouping) {
+            this.addReaction(this.groupReaction());
         }
     }
 
-    @action
-    clear() {
-        this.state = {version: this.VERSION};
+    //--------------------------
+    // Persistable Interface
+    //--------------------------
+    getPersistableState(): GridPersistState {
+        return this.state;
+    }
+
+    setPersistableState(state: GridPersistState) {
+        if (state.version !== this.VERSION) return;
+
+        if (this.persistColumns) {
+            const {columns} = state;
+            if (!isUndefined(columns)) this.gridModel.setColumnState(columns);
+        }
+
+        if (this.persistSort) {
+            const {sortBy} = state;
+            if (!isUndefined(sortBy)) this.gridModel.setSortBy(sortBy);
+        }
+
+        if (this.persistGrouping) {
+            const {groupBy} = state;
+            if (!isUndefined(groupBy)) this.gridModel.setGroupBy(groupBy);
+        }
     }
 
     //--------------------------
-    // Columns
+    // Reactions
     //--------------------------
-    columnReaction() {
+    private columnReaction() {
         const {gridModel} = this;
         return {
-            track: () => [gridModel.columnState, gridModel.autosizeState],
-            run: ([columnState, autosizeState]) => {
+            track: () => gridModel.persistableColumnState,
+            run: columnState => {
                 this.patchState({
-                    columns: gridModel.cleanColumnState(columnState),
-                    autosize: autosizeState
+                    columns: columnState
                 });
             }
         };
     }
 
-    updateGridColumns() {
-        const {columns, autosize} = this.state;
-        if (!isUndefined(columns)) this.gridModel.setColumnState(columns);
-        if (!isUndefined(autosize)) this.gridModel.setAutosizeState(autosize);
-    }
-
-    //--------------------------
-    // Sort
-    //--------------------------
-    sortReaction() {
+    private sortReaction() {
         return {
             track: () => this.gridModel.sortBy,
             run: sortBy => {
@@ -118,15 +130,7 @@ export class GridPersistenceModel extends HoistModel {
         };
     }
 
-    updateGridSort() {
-        const {sortBy} = this.state;
-        if (!isUndefined(sortBy)) this.gridModel.setSortBy(sortBy);
-    }
-
-    //--------------------------
-    // Grouping
-    //--------------------------
-    groupReaction() {
+    private groupReaction() {
         return {
             track: () => this.gridModel.groupBy,
             run: groupBy => {
@@ -135,40 +139,18 @@ export class GridPersistenceModel extends HoistModel {
         };
     }
 
-    updateGridGroupBy() {
-        const {groupBy} = this.state;
-        if (!isUndefined(groupBy)) this.gridModel.setGroupBy(groupBy);
-    }
-
     //--------------------------
     // Other Implementation
     //--------------------------
     @action
-    patchState(updates) {
+    private patchState(updates) {
         this.state = {...this.state, ...updates};
     }
+}
 
-    loadState() {
-        const ret = this.provider.read();
-        return ret?.version === this.VERSION ? ret : null;
-    }
-
-    legacyState() {
-        const {VERSION} = this,
-            provider = this.provider as any;
-        if (VERSION === 1) {
-            let legacyKey = provider.legacyStateKey ?? provider.key;
-            if (legacyKey) {
-                legacyKey = 'gridState.v1.' + legacyKey;
-                let data = XH.localStorageService.get(legacyKey);
-                if (data) {
-                    data = {...data, version: VERSION};
-                    provider.write(data);
-                    XH.localStorageService.remove(legacyKey);
-                    return data;
-                }
-            }
-        }
-        return null;
-    }
+interface GridPersistState {
+    columns?: Partial<ColumnState>[];
+    sortBy?: Some<GridSorterLike>;
+    groupBy?: Some<string>;
+    version?: number;
 }
