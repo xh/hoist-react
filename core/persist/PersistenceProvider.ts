@@ -113,7 +113,7 @@ export abstract class PersistenceProvider<S> {
             runInAction(() => bind.setPersistableState(cloneDeep(persistedState)));
         }
 
-        // Direct use of MobX reaction to avoid circular dependencies with HoistBase
+        // Direct use of MobX reaction to avoid circular dependency with HoistBase
         this.disposer = reaction(
             () => bind.getPersistableState(),
             state => {
