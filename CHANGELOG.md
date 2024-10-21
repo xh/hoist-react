@@ -2,6 +2,10 @@
 
 ## 70.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+
+* Deprecated `FileChooserModel.removeAllFiles()`, replaced with `clear()` for brevity/consistency.
+
 ## 69.0.0 - 2024-10-17
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist core update)
