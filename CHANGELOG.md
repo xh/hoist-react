@@ -2,6 +2,10 @@
 
 ## 70.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed `genDisplayName` method to use reg-ex that works on iOS Safari 16 (used by BB Access)
+
 ## 69.0.0 - 2024-10-17
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist core update)

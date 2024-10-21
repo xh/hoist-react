@@ -173,6 +173,9 @@ export type FieldType = (typeof FieldType)[keyof typeof FieldType];
  * @returns fieldName transformed into user-facing / longer name for display.
  */
 export function genDisplayName(fieldName: string): string {
-    // Handle common cases of "id" -> "ID" and "foo_id" -> "Foo ID" (vs "Foo Id")
-    return startCase(fieldName).replace(/(^| )Id\b/g, '$1ID');
+    const ret = startCase(fieldName);
+    // Handle common cases of "id" -> "ID"  (vs "Id") and "foo_id" -> "Foo ID" (vs "Foo Id")
+    // safely by avoiding using grouping in a regex, which is not supported in older versions
+    // of Safari Mobile (<16.4), which BlackBerry Access uses (16.0).
+    return ret.replace(/\bid\b/gi, 'ID');
 }
