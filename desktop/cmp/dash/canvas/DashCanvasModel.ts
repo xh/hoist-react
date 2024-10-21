@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {Persistable, PersistenceProvider, XH} from '@xh/hoist/core';
+import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
 import '@xh/hoist/desktop/register';
@@ -188,7 +188,7 @@ export class DashCanvasModel
                 this.provider = PersistenceProvider.create({
                     path: 'dashCanvas',
                     ...persistWith,
-                    bind: this
+                    target: this
                 });
             } catch (e) {
                 this.logError(e);
@@ -317,11 +317,12 @@ export class DashCanvasModel
     //------------------------
     // Persistable Interface
     //------------------------
-    getPersistableState(): {state: DashCanvasItemState[]} {
-        return {state: this.state};
+    getPersistableState(): PersistableState<{state: DashCanvasItemState[]}> {
+        return new PersistableState({state: this.state});
     }
 
-    setPersistableState({state}: {state: DashCanvasItemState[]}) {
+    setPersistableState(persistableState: PersistableState<{state: DashCanvasItemState[]}>) {
+        const {state} = persistableState.value;
         if (state) this.loadState(state);
     }
 

@@ -13,11 +13,12 @@ import {XH} from '../';
  * PersistenceProvider that stores state within the Browser's LocalStorage.
  */
 export class LocalStorageProvider<S> extends PersistenceProvider<S> {
-    declare key: string;
+    readonly key: string;
 
-    override init({localStorageKey: key}: PersistenceProviderConfig<S>) {
-        throwIf(!key, `LocalStorageProvider requires a 'localStorageKey'.`);
-        this.key = key;
+    constructor(cfg: PersistenceProviderConfig<S>) {
+        super(cfg);
+        throwIf(!cfg.localStorageKey, `LocalStorageProvider requires a 'localStorageKey'.`);
+        this.key = cfg.localStorageKey;
     }
 
     //----------------

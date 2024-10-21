@@ -10,6 +10,7 @@ import {
     managed,
     ManagedRefreshContextModel,
     Persistable,
+    PersistableState,
     PersistenceProvider,
     PersistOptions,
     RefreshContextModel,
@@ -279,7 +280,7 @@ export class PanelModel extends HoistModel implements Persistable<PersistablePan
                 this.provider = PersistenceProvider.create({
                     path: 'panel',
                     ...persistWith,
-                    bind: this
+                    target: this
                 });
             } catch (e) {
                 this.logError(e);
@@ -338,15 +339,15 @@ export class PanelModel extends HoistModel implements Persistable<PersistablePan
     //---------------------------------------------
     // Persistable Interface
     //---------------------------------------------
-    getPersistableState(): PersistablePanelState {
+    getPersistableState(): PersistableState<PersistablePanelState> {
         const ret: PersistablePanelState = {};
         if (this.collapsible) ret.collapsed = this.collapsed;
         if (this.resizable) ret.size = this.size;
-        return ret;
+        return new PersistableState(ret);
     }
 
-    setPersistableState(state: PersistablePanelState): void {
-        const {collapsed, size} = state;
+    setPersistableState(state: PersistableState<PersistablePanelState>): void {
+        const {collapsed, size} = state.value;
         if (this.resizable && !isNil(size)) this.size = size;
         if (this.collapsed && !isNil(collapsed)) this.setCollapsed(collapsed);
     }

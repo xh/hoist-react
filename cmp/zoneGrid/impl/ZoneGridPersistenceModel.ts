@@ -4,7 +4,13 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, Persistable, PersistenceProvider} from '@xh/hoist/core';
+import {
+    HoistModel,
+    managed,
+    Persistable,
+    PersistableState,
+    PersistenceProvider
+} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
 import {ZoneGridModel} from '../ZoneGridModel';
@@ -54,7 +60,7 @@ export class ZoneGridPersistenceModel extends HoistModel implements Persistable<
             this.provider = PersistenceProvider.create({
                 path: 'zoneGrid',
                 ...persistWith,
-                bind: this
+                target: this
             });
         } catch (e) {
             this.logError(e);
@@ -64,11 +70,13 @@ export class ZoneGridPersistenceModel extends HoistModel implements Persistable<
     //--------------------------
     // Persistable Interface
     //--------------------------
-    getPersistableState(): ZoneGridState {
-        return this.state;
+    getPersistableState(): PersistableState<ZoneGridState> {
+        return new PersistableState(this.state);
     }
 
-    setPersistableState(state: ZoneGridState): void {
+    setPersistableState(persistableState: PersistableState<ZoneGridState>): void {
+        const state = persistableState.value;
+
         if (state.version !== this.VERSION) return;
 
         if (this.persistMapping) {

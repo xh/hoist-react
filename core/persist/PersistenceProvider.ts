@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {DebounceSpec, Persistable, XH} from '../';
+import {DebounceSpec, Persistable, PersistableState, XH} from '../';
 import {
     LocalStorageProvider,
     PrefProvider,
@@ -20,11 +20,10 @@ import {
     set,
     unset,
     isNumber,
-    debounce as lodashDebounce,
-    isEqual
+    debounce as lodashDebounce
 } from 'lodash';
-import {throwIf} from '@xh/hoist/utils/js';
-import {comparer, IReactionDisposer, reaction, runInAction} from 'mobx';
+import {logError, throwIf} from '@xh/hoist/utils/js';
+import {IReactionDisposer, reaction} from 'mobx';
 
 /**
  * Abstract superclass for adaptor objects used by models and components to (re)store state to and
@@ -41,7 +40,7 @@ import {comparer, IReactionDisposer, reaction, runInAction} from 'mobx';
  */
 
 export interface PersistenceProviderConfig<S> extends PersistOptions {
-    bind: Persistable<S>;
+    target: Persistable<S>;
 }
 
 export abstract class PersistenceProvider<S> {
@@ -49,13 +48,14 @@ export abstract class PersistenceProvider<S> {
         return true;
     }
 
-    path: string;
-    debounce: DebounceSpec;
+    readonly path: string;
+    readonly debounce: DebounceSpec;
 
-    protected readonly bind: Persistable<S>;
-    protected readonly initialState: S;
+    protected readonly target: Persistable<S>;
 
-    private readonly disposer: IReactionDisposer;
+    protected defaultState: PersistableState<S>;
+
+    private disposer: IReactionDisposer;
 
     /**
      * Construct an instance of this class.
@@ -63,7 +63,7 @@ export abstract class PersistenceProvider<S> {
      *
      * Note:
      * - `destroy()` must be called when the provider is no longer needed.
-     * - Bound models should initialize their default persistable state *before* creating a
+     * - Targets should initialize their default persistable state *before* creating a
      *   `PersistenceProvider` and avoid setting up any reactions to persistable state until *after*
      */
     static create<S>({type, ...rest}: PersistenceProviderConfig<S>): PersistenceProvider<S> {
@@ -74,17 +74,32 @@ export abstract class PersistenceProvider<S> {
             if (rest.getData || rest.setData) type = 'custom';
         }
 
+        let ret: PersistenceProvider<S>;
+
         switch (type) {
             case 'pref':
-                return new PrefProvider(rest);
+                ret = new PrefProvider(rest);
+                break;
             case 'localStorage':
-                return new LocalStorageProvider(rest);
+                ret = new LocalStorageProvider(rest);
+                break;
             case `dashView`:
-                return new DashViewProvider(rest);
+                ret = new DashViewProvider(rest);
+                break;
             case 'custom':
-                return new CustomProvider(rest);
+                ret = new CustomProvider(rest);
+                break;
             default:
                 throw XH.exception(`Unknown Persistence Provider for type: ${type}`);
+        }
+
+        try {
+            ret.bindToTarget();
+            return ret;
+        } catch (e) {
+            logError(e);
+            ret.destroy();
+            return null;
         }
     }
 
@@ -92,53 +107,33 @@ export abstract class PersistenceProvider<S> {
      * Called by implementations only. See create.
      */
     protected constructor(config: PersistenceProviderConfig<S>) {
-        const {path, debounce = 250, bind} = config;
+        const {path, debounce = 250, target} = config;
         throwIf(isUndefined(path), 'Path not specified in PersistenceProvider.');
 
         this.path = path;
         this.debounce = debounce;
-        this.bind = bind;
-        this.initialState = cloneDeep(bind.getPersistableState());
+        this.target = target;
 
         if (debounce) {
             this.writeInternal = isNumber(debounce)
                 ? lodashDebounce(this.writeInternal, debounce)
                 : lodashDebounce(this.writeInternal, debounce.interval, debounce);
         }
-
-        this.init(config);
-
-        const persistedState = this.read();
-        if (!isUndefined(persistedState)) {
-            runInAction(() => bind.setPersistableState(cloneDeep(persistedState)));
-        }
-
-        // Direct use of MobX reaction to avoid circular dependency with HoistBase
-        this.disposer = reaction(
-            () => bind.getPersistableState(),
-            state => {
-                if (isEqual(state, this.initialState)) {
-                    this.clear();
-                } else {
-                    this.write(state);
-                }
-            },
-            {equals: comparer.structural}
-        );
     }
 
     /**
      * Read data at a path
      */
-    read(): any {
-        return get(this.readRaw(), this.path);
+    read(): PersistableState<S> {
+        const state = get(this.readRaw(), this.path);
+        return !isUndefined(state) ? new PersistableState(state) : null;
     }
 
     /**
      * Save data at a path
      * @param data  - data to be written to the path, must be serializable to JSON.
      */
-    write(data: any) {
+    write(data: S) {
         this.writeInternal(data);
     }
 
@@ -159,23 +154,42 @@ export abstract class PersistenceProvider<S> {
     }
 
     destroy() {
-        this.disposer();
+        this.disposer?.();
     }
 
     //----------------
     // Implementation
     //----------------
-    /** Perform any initialization required by the implementation before reading or writing. */
-    protected init(config: PersistenceProviderConfig<S>): void {}
+    /** Called by factory method to bind this provider to its target. */
+    protected bindToTarget() {
+        const {target} = this;
 
-    protected writeInternal(data: object) {
+        this.defaultState = target.getPersistableState();
+
+        const state = this.read();
+        if (state) target.setPersistableState(state);
+
+        // Direct use of MobX reaction to avoid circular dependency with HoistBase
+        this.disposer = reaction(
+            () => this.target.getPersistableState(),
+            state => {
+                if (state.equals(this.defaultState)) {
+                    this.clear();
+                } else {
+                    this.write(state.value);
+                }
+            }
+        );
+    }
+
+    protected writeInternal(data: S) {
         const obj = cloneDeep(this.readRaw());
         set(obj, this.path, data);
         this.writeRaw(obj);
     }
 
-    protected writeRaw(obj: object) {}
-    protected readRaw(): object {
+    protected writeRaw(obj: Record<typeof this.path, S>) {}
+    protected readRaw(): Record<typeof this.path, S> {
         return null;
     }
     protected clearRaw() {}

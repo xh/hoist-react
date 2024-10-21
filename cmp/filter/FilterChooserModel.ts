@@ -8,6 +8,7 @@ import {
     HoistModel,
     managed,
     Persistable,
+    PersistableState,
     PersistenceProvider,
     PersistOptions,
     PlainObject,
@@ -179,7 +180,7 @@ export class FilterChooserModel
         this.introHelpText = withDefault(introHelpText, this.getDefaultIntroHelpText());
         this.queryEngine = new QueryEngine(this);
 
-        this.setValue(isFunction(initialValue) ? initialValue() : initialValue);
+        this.setValue(isFunction(initialValue) ? initialValue() : initialValue, false);
         this.setFavorites(
             (isFunction(initialFavorites) ? initialFavorites() : initialFavorites).map(f =>
                 parseFilter(f)
@@ -187,18 +188,16 @@ export class FilterChooserModel
         );
 
         if (persistWith) {
-            try {
-                this.persistValue = persistWith.persistValue ?? true;
-                this.persistFavorites = persistWith.persistFavorites ?? true;
-                this.provider = PersistenceProvider.create({
-                    path: 'filterChooser',
-                    ...persistWith,
-                    bind: this
-                });
-            } catch (e) {
-                this.logError(e);
-            }
+            this.persistValue = persistWith.persistValue ?? true;
+            this.persistFavorites = persistWith.persistFavorites ?? true;
+            this.provider = PersistenceProvider.create({
+                path: 'filterChooser',
+                ...persistWith,
+                target: this
+            });
         }
+
+        this.updateSelectValueAndBind();
 
         if (bind) {
             this.addReaction({
@@ -224,8 +223,8 @@ export class FilterChooserModel
      * Any other Filter is unsupported and will cause the control to show a placeholder error.
      */
     @action
-    setValue(rawValue: FilterLike) {
-        const {bind, maxTags} = this;
+    setValue(rawValue: FilterLike, updateSelectValueAndBind = true) {
+        const {maxTags} = this;
         try {
             const value = parseFilter(rawValue);
             if (this.value?.equals(value)) return;
@@ -256,33 +255,7 @@ export class FilterChooserModel
 
             this.selectOptions = !isEmpty(options) ? options : null;
 
-            // 4) Do the next steps asynchronously for UI responsiveness and to ensure the component
-            // is ready to render the tags correctly (after selectOptions set above).
-            wait()
-                .thenAction(() => {
-                    // No-op if we've already re-entered this method by the time this async routine runs.
-                    if (this.value !== value) {
-                        return;
-                    }
-
-                    this.selectValue = sortBy(
-                        displayFilters.map(f => JSON.stringify(f)),
-                        f => {
-                            const idx = this.selectValue?.indexOf(f);
-                            return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
-                        }
-                    );
-
-                    // 5) Round-trip value to bound filter
-                    if (bind) {
-                        const filter = withFilterByTypes(bind.filter, value, [
-                            'FieldFilter',
-                            'CompoundFilter'
-                        ]);
-                        bind.setFilter(filter);
-                    }
-                })
-                .linkTo(this.filterTask);
+            if (updateSelectValueAndBind) this.updateSelectValueAndBind(displayFilters);
         } catch (e) {
             this.logError('Failed to set value', e);
             this.value = null;
@@ -503,17 +476,54 @@ export class FilterChooserModel
     //--------------------------
     // Persistable Interface
     //--------------------------
-    getPersistableState(): FilterChooserPersistState {
+    getPersistableState(): PersistableState<FilterChooserPersistState> {
         const ret: FilterChooserPersistState = {};
         if (this.persistValue) ret.value = this.value;
         if (this.persistFavorites) ret.favorites = this.favorites;
-        return ret;
+        return new PersistableState(ret);
     }
 
-    setPersistableState(state: FilterChooserPersistState) {
-        const {value, favorites} = state;
-        if (this.persistValue && !isUndefined(value)) this.setValue(value);
+    setPersistableState(state: PersistableState<FilterChooserPersistState>) {
+        const {value, favorites} = state.value;
+        // Only want to updateSelectValueAndBind once in the constructor
+        if (this.persistValue && !isUndefined(value)) this.setValue(value, !!this.provider);
         if (this.persistFavorites && !isUndefined(favorites)) this.setFavorites(favorites);
+    }
+
+    // -------------------------------
+    // Implementation
+    // -------------------------------
+    /**
+     * Update the select value and bind the filter to the bound model. Runs asynchronously after
+     * selectOptions are set to ensure the component is ready to render the tags correctly.
+     */
+    private updateSelectValueAndBind(displayFilters = this.toDisplayFilters(this.value)) {
+        const {bind, value} = this;
+        wait()
+            .thenAction(() => {
+                // No-op if we've already re-entered this method by the time this async routine runs.
+                if (this.value !== value) {
+                    return;
+                }
+
+                this.selectValue = sortBy(
+                    displayFilters.map(f => JSON.stringify(f)),
+                    f => {
+                        const idx = this.selectValue?.indexOf(f);
+                        return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
+                    }
+                );
+
+                // Round-trip value to bound filter
+                if (bind) {
+                    const filter = withFilterByTypes(bind.filter, value, [
+                        'FieldFilter',
+                        'CompoundFilter'
+                    ]);
+                    bind.setFilter(filter);
+                }
+            })
+            .linkTo(this.filterTask);
     }
 }
 

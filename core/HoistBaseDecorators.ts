@@ -4,7 +4,6 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {isUndefined} from 'lodash';
 import {logError, throwIf} from '../utils/js';
 import {HoistBaseClass, PersistenceProvider, PersistOptions} from './';
 
@@ -74,48 +73,31 @@ function createPersistDescriptor(
     }
     const codeValue = descriptor.initializer;
     let hasInitialized = false,
-        initialState;
+        ret;
     const initializer = function () {
         // Initializer can be called multiple times when stacking decorators.
-        if (hasInitialized) return initialState;
+        if (hasInitialized) return ret;
 
-        let providerState,
-            codeState = codeValue.call(this);
+        ret = codeValue.call(this);
 
-        // Read from and attach to Provider.
-        // Fail gently -- initialization exceptions causes stack overflows for MobX.
-        try {
-            const persistWith = {path: property, ...this.persistWith, ...options};
-            this.markManaged(
-                PersistenceProvider.create({
-                    ...persistWith,
-                    bind: {
-                        getPersistableState: () => (hasInitialized ? this[property] : codeState),
-                        setPersistableState: state => {
-                            if (!hasInitialized) {
-                                providerState = state;
-                            } else {
-                                this[property] = state;
-                            }
+        const persistWith = {path: property, ...this.persistWith, ...options},
+            provider = PersistenceProvider.create({
+                ...persistWith,
+                target: {
+                    getPersistableState: () => (hasInitialized ? this[property] : ret),
+                    setPersistableState: state => {
+                        if (!hasInitialized) {
+                            ret = state;
+                        } else {
+                            this[property] = state;
                         }
                     }
-                })
-            );
-        } catch (e) {
-            logError(
-                [
-                    `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
-                        `'persistWith' on this object or annotation`,
-                    e
-                ],
-                target
-            );
-        } finally {
-            hasInitialized = true;
-        }
+                }
+            });
+        this.markManaged(provider);
 
-        initialState = !isUndefined(providerState) ? providerState : codeState;
-        return initialState;
+        hasInitialized = true;
+        return ret;
     };
     return {...descriptor, initializer};
 }

@@ -8,6 +8,7 @@ import {
     HoistModel,
     managed,
     Persistable,
+    PersistableState,
     PersistenceProvider,
     PersistOptions,
     RefreshContextModel,
@@ -161,7 +162,7 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
                 this.provider = PersistenceProvider.create({
                     path: 'tabContainer',
                     ...persistWith,
-                    bind: this
+                    target: this
                 });
             } catch (e) {
                 this.logError(e);
@@ -332,12 +333,12 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
     //-------------------------
     // Persistable Interface
     //-------------------------
-    getPersistableState(): {activeTabId: string} {
-        return {activeTabId: this.activeTabId};
+    getPersistableState(): PersistableState<{activeTabId: string}> {
+        return new PersistableState({activeTabId: this.activeTabId});
     }
 
-    setPersistableState(state: {activeTabId: string}): void {
-        this.activateTab(state.activeTabId);
+    setPersistableState(state: PersistableState<{activeTabId: string}>): void {
+        this.activateTab(state.value.activeTabId);
     }
 
     //-------------------------

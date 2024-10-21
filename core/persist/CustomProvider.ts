@@ -16,16 +16,17 @@ import {throwIf} from '@xh/hoist/utils/js';
  * components without actually writing to any pre-defined storage.
  */
 export class CustomProvider<S> extends PersistenceProvider<S> {
-    declare getData;
-    declare setData;
+    readonly getData;
+    readonly setData;
 
-    override init({getData, setData, ...rest}: PersistenceProviderConfig<S>) {
+    constructor(cfg: PersistenceProviderConfig<S>) {
+        super(cfg);
         throwIf(
-            !getData || !setData,
+            !cfg.getData || !cfg.setData,
             `CustomProvider requires a 'getData' and a 'setData' function.`
         );
-        this.getData = getData;
-        this.setData = setData;
+        this.getData = cfg.getData;
+        this.setData = cfg.setData;
     }
 
     //----------------

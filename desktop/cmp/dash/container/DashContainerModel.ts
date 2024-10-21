@@ -8,6 +8,7 @@ import {
     managed,
     modelLookupContextProvider,
     Persistable,
+    PersistableState,
     PersistenceProvider,
     PlainObject,
     RefreshMode,
@@ -194,7 +195,7 @@ export class DashContainerModel
                 this.provider = PersistenceProvider.create({
                     path: 'dashContainer',
                     ...persistWith,
-                    bind: this
+                    target: this
                 });
             } catch (e) {
                 this.logError(e);
@@ -318,11 +319,12 @@ export class DashContainerModel
     //------------------------
     // Persistable Interface
     //------------------------
-    getPersistableState(): {state: DashViewState[]} {
-        return {state: this.state};
+    getPersistableState(): PersistableState<{state: DashViewState[]}> {
+        return new PersistableState({state: this.state});
     }
 
-    setPersistableState({state}: {state: DashViewState[]}) {
+    setPersistableState(persistableState: PersistableState<{state: DashViewState[]}>) {
+        const {state} = persistableState.value;
         if (!state) return;
         if (this.containerRef.current) {
             this.loadStateAsync(state);

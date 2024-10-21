@@ -9,6 +9,7 @@ import {
     HoistModel,
     managed,
     Persistable,
+    PersistableState,
     PersistenceProvider,
     PersistOptions
 } from '@xh/hoist/core';
@@ -150,19 +151,13 @@ export class GroupingChooserModel
         this.setValue(value);
         this.setFavorites(favorites);
 
-        if (persistWith) {
-            try {
-                this.persistValue = persistWith.persistValue ?? true;
-                this.persistFavorites = persistWith.persistFavorites ?? true;
-                this.provider = PersistenceProvider.create({
-                    path: 'groupingChooser',
-                    ...persistWith,
-                    bind: this
-                });
-            } catch (e) {
-                this.logError(e);
-            }
-        }
+        this.persistValue = persistWith.persistValue ?? true;
+        this.persistFavorites = persistWith.persistFavorites ?? true;
+        this.provider = PersistenceProvider.create({
+            path: 'groupingChooser',
+            ...persistWith,
+            target: this
+        });
 
         this.addReaction({
             track: () => this.pendingValue,
@@ -315,15 +310,15 @@ export class GroupingChooserModel
     //-------------------------
     // Persistence handling
     //-------------------------
-    getPersistableState(): GroupingChooserPersistState {
+    getPersistableState(): PersistableState<GroupingChooserPersistState> {
         const ret: GroupingChooserPersistState = {};
         if (this.persistValue) ret.value = this.value;
         if (this.persistFavorites) ret.favorites = this.favorites;
-        return ret;
+        return new PersistableState(ret);
     }
 
-    setPersistableState(state: GroupingChooserPersistState): void {
-        const {value, favorites} = state;
+    setPersistableState(state: PersistableState<GroupingChooserPersistState>): void {
+        const {value, favorites} = state.value;
         if (this.persistValue && !isUndefined(value)) this.setValue(value);
         if (this.persistFavorites && !isUndefined(favorites)) this.setFavorites(favorites);
     }

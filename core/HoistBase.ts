@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {XH, PersistenceProvider, PersistOptions, DebounceSpec, Some} from './';
+import {XH, PersistenceProvider, PersistOptions, DebounceSpec, Some, PersistableState} from './';
 import {
     throwIf,
     getOrCreate,
@@ -258,17 +258,16 @@ export abstract class HoistBase {
     markPersist(property: keyof this & string, options: PersistOptions = {}) {
         // Read from and attach to Provider, failing gently
         try {
-            this.markManaged(
-                PersistenceProvider.create({
-                    path: property,
-                    ...this.persistWith,
-                    ...options,
-                    bind: {
-                        getPersistableState: () => this[property],
-                        setPersistableState: state => (this[property] = state)
-                    }
-                })
-            );
+            const persistenceProvider = PersistenceProvider.create({
+                path: property,
+                ...this.persistWith,
+                ...options,
+                target: {
+                    getPersistableState: () => new PersistableState(this[property]),
+                    setPersistableState: state => (this[property] = state.value)
+                }
+            });
+            this.markManaged(persistenceProvider);
         } catch (e) {
             this.logError(
                 `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +

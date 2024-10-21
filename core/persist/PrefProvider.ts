@@ -13,11 +13,12 @@ import {throwIf} from '@xh/hoist/utils/js';
  * PersistenceProvider that stores state within the Hoist Preferences system.
  */
 export class PrefProvider<S> extends PersistenceProvider<S> {
-    declare key: string;
+    readonly key: string;
 
-    override init({prefKey: key}: PersistenceProviderConfig<S>) {
-        throwIf(!key, `PrefProvider requires a 'prefKey'.`);
-        this.key = key;
+    constructor(cfg: PersistenceProviderConfig<S>) {
+        super(cfg);
+        throwIf(!cfg.prefKey, `PrefProvider requires a 'prefKey'.`);
+        this.key = cfg.prefKey;
     }
 
     //----------------

@@ -12,11 +12,12 @@ import {throwIf} from '@xh/hoist/utils/js';
  * PersistenceProvider that stores state within a DashViewModel.
  */
 export class DashViewProvider<S> extends PersistenceProvider<S> {
-    declare dashViewModel;
+    readonly dashViewModel;
 
-    override init({dashViewModel}: PersistenceProviderConfig<S>) {
-        throwIf(!dashViewModel, `DashViewProvider requires a 'dashViewModel'.`);
-        this.dashViewModel = dashViewModel;
+    constructor(cfg: PersistenceProviderConfig<S>) {
+        super(cfg);
+        throwIf(!cfg.dashViewModel, `DashViewProvider requires a 'dashViewModel'.`);
+        this.dashViewModel = cfg.dashViewModel;
     }
 
     //----------------

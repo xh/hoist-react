@@ -11,7 +11,7 @@
 ### 🎁 New Features
 * Enhancements to `PersistenceProvider`
     * Added new `Persistable` interface.
-    * `PersistenceProvider` now binds to a `Persistable` and is responsible for setting persisted
+    * `PersistenceProvider` now targets a `Persistable` and is responsible for setting persisted
       state on its bound `Persistable` when the provider is constructed and persisting state from
       its bound `Persistable` when changes are detected.
     * In its constructor, `PersistenceProvider` also stores the initial state of its bound
