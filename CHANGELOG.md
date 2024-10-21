@@ -5,6 +5,7 @@
 ### 🐞 Bug Fixes
 
 * Fixed `genDisplayName` method to use reg-ex that works on iOS Safari 16 (used by BB Access)
+* Fixed import of fontawesome. xmlFile icon is only available in > v6.5.0
 
 ## 69.0.0 - 2024-10-17
 
