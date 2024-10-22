@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {runInAction} from 'mobx';
 import {XH, PersistenceProvider, PersistOptions, DebounceSpec, Some, PersistableState} from './';
 import {
     throwIf,
@@ -264,7 +265,7 @@ export abstract class HoistBase {
                 ...options,
                 target: {
                     getPersistableState: () => new PersistableState(this[property]),
-                    setPersistableState: state => (this[property] = state.value)
+                    setPersistableState: state => runInAction(() => (this[property] = state.value))
                 }
             });
             this.markManaged(persistenceProvider);
