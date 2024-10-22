@@ -225,6 +225,7 @@
 
 * Requires update to `hoist-dev-utils >= v9.0.0` with updated handling of static/public assets.
   This should be a drop-in change for applications.
+* iOS < 16.4 is no longer supported, due to the use of complex RegExes in GFM parsing.
 
 ### 🎁 New Features
 
