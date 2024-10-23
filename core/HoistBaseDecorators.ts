@@ -78,7 +78,8 @@ function createPersistDescriptor(
         // Initializer can be called multiple times when stacking decorators.
         if (hasInitialized) return ret;
 
-        ret = codeValue.call(this);
+        // codeValue undefined if no initial in-code value provided, otherwise call to get initial value.
+        ret = codeValue?.call(this);
 
         const persistWith = {path: property, ...this.persistWith, ...options},
             provider = PersistenceProvider.create({
