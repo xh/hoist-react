@@ -17,7 +17,7 @@ export interface ColAutosizeButtonProps extends ButtonProps {
     gridModel?: GridModel;
 
     /** Options for the grid autosize. */
-    autosizeOptions?: GridAutosizeOptions;
+    autosizeOptions?: Omit<GridAutosizeOptions, 'mode'>;
 }
 
 /**

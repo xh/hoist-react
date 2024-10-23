@@ -1279,11 +1279,11 @@ export class GridModel extends HoistModel {
      * columns are also ignored unless {@link GridAutosizeOptions.includeHiddenColumns} has been
      * set to true.
      *
-     * @param options - optional overrides of this model's configured {@link autosizeOptions}.
+     * @param overrideOpts - optional overrides of this model's {@link GridAutosizeOptions}.
      */
     @logWithDebug
-    async autosizeAsync(options: GridAutosizeOptions = {}) {
-        options = {...this.autosizeOptions, ...options};
+    async autosizeAsync(overrideOpts: Omit<GridAutosizeOptions, 'mode'> = {}) {
+        const options = {...this.autosizeOptions, ...overrideOpts};
 
         if (options.mode === 'disabled') {
             return;
@@ -1293,16 +1293,16 @@ export class GridModel extends HoistModel {
         const {columns} = options;
         if (columns) options.fillMode = 'none'; // Fill makes sense only for the entire set.
 
-        let colIds,
-            includeColFn = col => true;
+        let colIds: string[],
+            includeColFn = (_: Column) => true;
         if (isFunction(columns)) {
-            includeColFn = columns as (col) => boolean;
+            includeColFn = columns as (col: Column) => boolean;
             colIds = this.columnState.map(it => it.colId);
         } else {
-            colIds = columns ?? this.columnState.map(it => it.colId);
+            colIds = columns ? castArray(columns) : this.columnState.map(it => it.colId);
         }
 
-        colIds = castArray(colIds).filter(id => {
+        colIds = colIds.filter(id => {
             if (!options.includeHiddenColumns && !this.isColumnVisible(id)) return false;
             const col = this.getColumn(id);
             return col && col.autosizable && !col.flex && includeColFn(col);
@@ -1315,7 +1315,7 @@ export class GridModel extends HoistModel {
 
     /**
      * Begin an inline editing session.
-     * @param recOrId - StoreRecord/ID to edit. If unspecified, the first selected StoreRecord
+     * @param record - StoreRecord/ID to edit. If unspecified, the first selected StoreRecord
      *      will be used, if any, or the first overall StoreRecord in the grid.
      * @param colId - ID of column on which to start editing. If unspecified, the first
      *      editable column will be used.
@@ -1460,7 +1460,7 @@ export class GridModel extends HoistModel {
         return new Column(config, this);
     }
 
-    private async autosizeColsInternalAsync(colIds, options) {
+    private async autosizeColsInternalAsync(colIds: string[], options: GridAutosizeOptions) {
         await this.whenReadyAsync();
         if (!this.isReady) return;
 

@@ -33,7 +33,7 @@ import {IReactionDisposer, reaction} from 'mobx';
  * Implementations should take care to incorporate any writes immediately into the readable state.
  *
  * Hoist-provided implementations include:
- *   - {@link PrefProvider} - stores state in a predefined Hoist application Preference.
+ *   - {@link PrefProvider} - stores state in a predefined Hoist JSON Preference.
  *   - {@link LocalStorageProvider} - stores state in browser local storage under a configured key.
  *   - {@link DashViewProvider} - stores state with other Dashboard-specific state via a `DashViewModel`.
  *   - {@link CustomProvider} - API for app and components to provide their own storage mechanism.
@@ -44,10 +44,6 @@ export interface PersistenceProviderConfig<S> extends PersistOptions {
 }
 
 export abstract class PersistenceProvider<S> {
-    get isPersistenceProvider(): boolean {
-        return true;
-    }
-
     readonly path: string;
     readonly debounce: DebounceSpec;
 
@@ -59,12 +55,15 @@ export abstract class PersistenceProvider<S> {
 
     /**
      * Construct an instance of this class.
-     * Throws if unable to perform initial read operation.
+     *
+     * Will fail gently, returning `null` and logging an error if the provider could not be created
+     * due to an unparseable config or failure on initial read.
      *
      * Note:
-     * - `destroy()` must be called when the provider is no longer needed.
-     * - Targets should initialize their default persistable state *before* creating a
-     *   `PersistenceProvider` and avoid setting up any reactions to persistable state until *after*
+     *  - Callers should `destroy()` the returned provider when no longer needed, or install into
+     *    an `@managed` property on themselves.
+     *  - Targets should initialize their default persistable state *before* creating a
+     *    `PersistenceProvider` and avoid setting up any reactions to persistable state until *after*
      */
     static create<S>({type, ...rest}: PersistenceProviderConfig<S>): PersistenceProvider<S> {
         if (!type) {
@@ -75,37 +74,72 @@ export abstract class PersistenceProvider<S> {
         }
 
         let ret: PersistenceProvider<S>;
-
-        switch (type) {
-            case 'pref':
-                ret = new PrefProvider(rest);
-                break;
-            case 'localStorage':
-                ret = new LocalStorageProvider(rest);
-                break;
-            case `dashView`:
-                ret = new DashViewProvider(rest);
-                break;
-            case 'custom':
-                ret = new CustomProvider(rest);
-                break;
-            default:
-                throw XH.exception(`Unknown Persistence Provider for type: ${type}`);
-        }
-
         try {
+            switch (type) {
+                case 'pref':
+                    ret = new PrefProvider(rest);
+                    break;
+                case 'localStorage':
+                    ret = new LocalStorageProvider(rest);
+                    break;
+                case `dashView`:
+                    ret = new DashViewProvider(rest);
+                    break;
+                case 'custom':
+                    ret = new CustomProvider(rest);
+                    break;
+                default:
+                    throw XH.exception(
+                        `Failed to create PersistenceProvider: ` +
+                            (type
+                                ? `type [${type}] not recognized`
+                                : 'no type specified, and could not be inferred from config')
+                    );
+            }
+
             ret.bindToTarget();
             return ret;
         } catch (e) {
-            logError(e);
-            ret.destroy();
+            logError(e, 'PersistenceProvider');
+            XH.safeDestroy(ret);
             return null;
         }
     }
 
+    /** Read persisted data at a path. */
+    read(): PersistableState<S> {
+        const state = get(this.readRaw(), this.path);
+        return !isUndefined(state) ? new PersistableState(state) : null;
+    }
+
     /**
-     * Called by implementations only. See create.
+     * Persist data to a path.
+     * @param data  - data to be written to the path, must be JSON serializable.
      */
+    write(data: S) {
+        this.writeInternal(data);
+    }
+
+    /** Clear any persisted data at a path. */
+    clear(path: string = this.path) {
+        const obj = cloneDeep(this.readRaw());
+        unset(obj, this.path);
+        this.writeRaw(obj);
+    }
+
+    /** Clear *all* persisted data managed by this provider. */
+    clearAll() {
+        this.clearRaw();
+    }
+
+    destroy() {
+        this.disposer?.();
+    }
+
+    //----------------
+    // Protected API
+    //----------------
+    /** Called by implementations only. Use the {@link create} factory instead. */
     protected constructor(config: PersistenceProviderConfig<S>) {
         const {path, debounce = 250, target} = config;
         throwIf(isUndefined(path), 'Path not specified in PersistenceProvider.');
@@ -121,45 +155,6 @@ export abstract class PersistenceProvider<S> {
         }
     }
 
-    /**
-     * Read data at a path
-     */
-    read(): PersistableState<S> {
-        const state = get(this.readRaw(), this.path);
-        return !isUndefined(state) ? new PersistableState(state) : null;
-    }
-
-    /**
-     * Save data at a path
-     * @param data  - data to be written to the path, must be serializable to JSON.
-     */
-    write(data: S) {
-        this.writeInternal(data);
-    }
-
-    /**
-     * Clear any state saved by this object at a path
-     */
-    clear(path: string = this.path) {
-        const obj = cloneDeep(this.readRaw());
-        unset(obj, this.path);
-        this.writeRaw(obj);
-    }
-
-    /**
-     * Clear *all* state held by this object.
-     */
-    clearAll() {
-        this.clearRaw();
-    }
-
-    destroy() {
-        this.disposer?.();
-    }
-
-    //----------------
-    // Implementation
-    //----------------
     /** Called by factory method to bind this provider to its target. */
     protected bindToTarget() {
         const {target} = this;
