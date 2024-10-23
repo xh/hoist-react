@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {logError, throwIf} from '../utils/js';
-import {HoistBaseClass, PersistenceProvider, PersistOptions} from './';
+import {HoistBaseClass, PersistableState, PersistenceProvider, PersistOptions} from './';
 
 /**
  * Decorator to make a property "managed". Managed properties are designed to hold objects that
@@ -85,12 +85,13 @@ function createPersistDescriptor(
             provider = PersistenceProvider.create({
                 ...persistWith,
                 target: {
-                    getPersistableState: () => (hasInitialized ? this[property] : ret),
+                    getPersistableState: () =>
+                        new PersistableState(hasInitialized ? this[property] : ret),
                     setPersistableState: state => {
                         if (!hasInitialized) {
-                            ret = state;
+                            ret = state.value;
                         } else {
-                            this[property] = state;
+                            this[property] = state.value;
                         }
                     }
                 }
