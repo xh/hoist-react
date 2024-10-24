@@ -62,4 +62,6 @@ export class UrlStore extends Store implements Loadable {
         if (dataRoot) data = data[dataRoot];
         this.loadData(data);
     }
+
+    onLoadException(e: unknown, loadSpec: LoadSpec) {}
 }
