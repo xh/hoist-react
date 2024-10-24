@@ -8,7 +8,7 @@ import {HoistModel} from '@xh/hoist/core';
 import {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
 import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
-import {isArray, isNil} from 'lodash';
+import {isArray, isEmpty, isNil} from 'lodash';
 import {CustomTabModel} from './CustomTabModel';
 
 type OperatorOptionValue = 'blank' | 'not blank' | FieldFilterOperator;
@@ -82,7 +82,7 @@ export class CustomRowModel extends HoistModel {
         makeObservable(this);
 
         let newOp = op as OperatorOptionValue;
-        if (isNil(value)) {
+        if (isNil(value) || (isArray(value) && isEmpty(value))) {
             if (op === '=') newOp = 'blank';
             if (op === '!=') newOp = 'not blank';
         }

@@ -118,6 +118,6 @@ const switcherButton = hoistCmp.factory<ColumnHeaderFilterModel>(({model, id, ti
         text: title,
         active: activeTabId === id,
         outlined: true,
-        onClick: () => tabContainerModel.activateTab(id)
+        onClick: () => model.activateTab(id)
     });
 });
