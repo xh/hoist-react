@@ -81,22 +81,22 @@ function createPersistDescriptor(
         // codeValue undefined if no initial in-code value provided, otherwise call to get initial value.
         ret = codeValue?.call(this);
 
-        const persistWith = {path: property, ...this.persistWith, ...options},
-            provider = PersistenceProvider.create({
-                ...persistWith,
-                target: {
-                    getPersistableState: () =>
-                        new PersistableState(hasInitialized ? this[property] : ret),
-                    setPersistableState: state => {
-                        if (!hasInitialized) {
-                            ret = state.value;
-                        } else {
-                            this[property] = state.value;
-                        }
+        const persistOptions = {path: property, ...this.persistWith, ...options};
+        PersistenceProvider.create({
+            persistOptions,
+            owner: this,
+            target: {
+                getPersistableState: () =>
+                    new PersistableState(hasInitialized ? this[property] : ret),
+                setPersistableState: state => {
+                    if (!hasInitialized) {
+                        ret = state.value;
+                    } else {
+                        this[property] = state.value;
                     }
                 }
-            });
-        this.markManaged(provider);
+            }
+        });
 
         hasInitialized = true;
         return ret;

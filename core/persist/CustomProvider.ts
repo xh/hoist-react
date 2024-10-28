@@ -21,12 +21,13 @@ export class CustomProvider<S> extends PersistenceProvider<S> {
 
     constructor(cfg: PersistenceProviderConfig<S>) {
         super(cfg);
+        const {getData, setData} = cfg.persistOptions;
         throwIf(
-            !cfg.getData || !cfg.setData,
+            !getData || !setData,
             `CustomProvider requires a 'getData' and a 'setData' function.`
         );
-        this.getData = cfg.getData;
-        this.setData = cfg.setData;
+        this.getData = getData;
+        this.setData = setData;
     }
 
     //----------------

@@ -104,7 +104,6 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
     renderMode: RenderMode;
     refreshMode: RefreshMode;
     emptyText: ReactNode;
-    provider: PersistenceProvider<{activeTabId: string}>;
 
     @managed
     refreshContextModel: RefreshContextModel;
@@ -158,15 +157,13 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
 
             this.forwardRouterToTab(this.activeTabId);
         } else if (persistWith) {
-            try {
-                this.provider = PersistenceProvider.create({
+            PersistenceProvider.create({
+                persistOptions: {
                     path: 'tabContainer',
-                    ...persistWith,
-                    target: this
-                });
-            } catch (e) {
-                this.logError(e);
-            }
+                    ...persistWith
+                },
+                target: this
+            });
         }
 
         if (track) {

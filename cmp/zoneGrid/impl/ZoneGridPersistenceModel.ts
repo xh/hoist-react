@@ -4,13 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {
-    HoistModel,
-    managed,
-    Persistable,
-    PersistableState,
-    PersistenceProvider
-} from '@xh/hoist/core';
+import {HoistModel, Persistable, PersistableState, PersistenceProvider} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
 import {ZoneGridModel} from '../ZoneGridModel';
@@ -29,9 +23,6 @@ export class ZoneGridPersistenceModel extends HoistModel implements Persistable<
 
     @observable.ref
     state: ZoneGridState = {version: this.VERSION};
-
-    @managed
-    provider: PersistenceProvider<ZoneGridState>;
 
     private readonly persistMapping: boolean;
     private readonly persistGrouping: boolean;
@@ -54,16 +45,24 @@ export class ZoneGridPersistenceModel extends HoistModel implements Persistable<
         this.persistGrouping = persistGrouping;
         this.persistSort = persistSort;
 
-        this.addReaction(this.mappingReaction(), this.groupReaction(), this.sortReaction());
-
-        try {
-            this.provider = PersistenceProvider.create({
+        const provider = PersistenceProvider.create({
+            persistOptions: {
                 path: 'zoneGrid',
-                ...persistWith,
-                target: this
-            });
-        } catch (e) {
-            this.logError(e);
+                ...persistWith
+            },
+            target: this
+        });
+
+        if (provider) {
+            if (this.persistMapping) {
+                this.addReaction(this.mappingReaction());
+            }
+            if (this.persistGrouping) {
+                this.addReaction(this.groupReaction());
+            }
+            if (persistSort) {
+                this.addReaction(this.sortReaction());
+            }
         }
     }
 
@@ -99,7 +98,6 @@ export class ZoneGridPersistenceModel extends HoistModel implements Persistable<
     // Reactions
     //--------------------------
     mappingReaction() {
-        if (!this.persistMapping) return;
         return {
             track: () => this.zoneGridModel.mappings,
             run: mappings => {
@@ -109,7 +107,6 @@ export class ZoneGridPersistenceModel extends HoistModel implements Persistable<
     }
 
     sortReaction() {
-        if (!this.persistSort) return;
         return {
             track: () => this.zoneGridModel.sortBy,
             run: sortBy => {
@@ -119,7 +116,6 @@ export class ZoneGridPersistenceModel extends HoistModel implements Persistable<
     }
 
     groupReaction() {
-        if (!this.persistGrouping) return;
         return {
             track: () => this.zoneGridModel.groupBy,
             run: groupBy => {

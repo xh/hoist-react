@@ -6,6 +6,7 @@
  */
 
 import {DebounceSpec} from '../';
+import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash'; // Import type only
 
 /**
  * Options governing persistence.
@@ -30,7 +31,7 @@ export interface PersistOptions {
     localStorageKey?: string;
 
     /** DashViewModel used to read / write view state. */
-    dashViewModel?: object;
+    dashViewModel?: DashViewModel;
 
     /**
      *  Function returning blob of data to be used for reading state.

@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {GridSorterLike} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, PersistableState, PersistenceProvider, Some} from '@xh/hoist/core';
+import {HoistModel, PersistableState, PersistenceProvider, Some} from '@xh/hoist/core';
 import {Persistable} from '@xh/hoist/core/persist/Persistable';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isUndefined} from 'lodash';
@@ -18,9 +18,6 @@ import {ColumnState, GridModelPersistOptions} from '../Types';
  */
 export class GridPersistenceModel extends HoistModel implements Persistable<GridPersistState> {
     override xhImpl = true;
-
-    @managed
-    provider: PersistenceProvider<GridPersistState>;
 
     private readonly VERSION = 1; // Increment to abandon state.
     private readonly gridModel: GridModel;
@@ -59,13 +56,15 @@ export class GridPersistenceModel extends HoistModel implements Persistable<Grid
             this.patchState({groupBy: gridModel.groupBy});
         }
 
-        this.provider = PersistenceProvider.create({
-            path: 'grid',
-            ...persistWith,
+        const provider = PersistenceProvider.create({
+            persistOptions: {
+                path: 'grid',
+                ...persistWith
+            },
             target: this
         });
 
-        if (this.provider) {
+        if (provider) {
             if (persistColumns) {
                 this.addReaction(this.columnReaction());
             }

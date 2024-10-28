@@ -28,7 +28,7 @@ import {
 import {CompoundFilterSpec, FieldFilterSpec, FilterLike} from '@xh/hoist/data/filter/Types';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {ReactNode} from 'react';
 import {
@@ -41,7 +41,6 @@ import {
     isArray,
     isEmpty,
     isFinite,
-    isFunction,
     isString,
     isUndefined,
     partition,
@@ -138,7 +137,6 @@ export class FilterChooserModel
     maxResults: number;
     introHelpText: ReactNode;
 
-    @managed provider: PersistenceProvider<FilterChooserPersistState>;
     persistValue: boolean = false;
     persistFavorites: boolean = false;
 
@@ -152,6 +150,8 @@ export class FilterChooserModel
     @observable favoritesIsOpen = false;
     @observable unsupportedFilter = false;
     inputRef = createObservableRef<HTMLElement>();
+
+    private readonly provider: PersistenceProvider<FilterChooserPersistState>;
 
     constructor({
         fieldSpecs,
@@ -180,19 +180,17 @@ export class FilterChooserModel
         this.introHelpText = withDefault(introHelpText, this.getDefaultIntroHelpText());
         this.queryEngine = new QueryEngine(this);
 
-        this.setValue(isFunction(initialValue) ? initialValue() : initialValue, false);
-        this.setFavorites(
-            (isFunction(initialFavorites) ? initialFavorites() : initialFavorites).map(f =>
-                parseFilter(f)
-            )
-        );
+        this.setValueInternal(executeIfFunction(initialValue), false);
+        this.setFavorites(executeIfFunction(initialFavorites).map(f => parseFilter(f)));
 
         if (persistWith) {
             this.persistValue = persistWith.persistValue ?? true;
             this.persistFavorites = persistWith.persistFavorites ?? true;
             this.provider = PersistenceProvider.create({
-                path: 'filterChooser',
-                ...persistWith,
+                persistOptions: {
+                    path: 'filterChooser',
+                    ...persistWith
+                },
                 target: this
             });
         }
@@ -222,47 +220,8 @@ export class FilterChooserModel
      *
      * Any other Filter is unsupported and will cause the control to show a placeholder error.
      */
-    @action
-    setValue(rawValue: FilterLike, updateSelectValueAndBind = true) {
-        const {maxTags} = this;
-        try {
-            const value = parseFilter(rawValue);
-            if (this.value?.equals(value)) return;
-
-            // 1) Ensure FilterChooser can handle the requested value.
-            const isValid = this.validateFilter(value),
-                displayFilters = isValid ? this.toDisplayFilters(value) : null;
-
-            this.unsupportedFilter = !isValid || (maxTags && displayFilters.length > maxTags);
-            if (this.unsupportedFilter) {
-                this.value = null;
-                this.selectOptions = null;
-                this.selectValue = null;
-                return;
-            }
-
-            // 2) Main path - filter has been validated as supported, set internal value.
-            this.logDebug('Setting value', value);
-            this.value = value as FilterChooserFilter;
-
-            // 3) Set props on select input needed to display
-            // Build list of options, used for displaying tags. We combine the needed
-            // options for the current filter tags with any previous ones to ensure
-            // tags are rendered correctly throughout the transition.
-            const newOptions = displayFilters.map(f => this.createFilterOption(f)),
-                previousOptions = this.selectOptions ?? [],
-                options = uniqBy([...newOptions, ...previousOptions], 'value');
-
-            this.selectOptions = !isEmpty(options) ? options : null;
-
-            if (updateSelectValueAndBind) this.updateSelectValueAndBind(displayFilters);
-        } catch (e) {
-            this.logError('Failed to set value', e);
-            this.value = null;
-            this.selectOptions = null;
-            this.selectValue = null;
-            this.unsupportedFilter = true;
-        }
+    setValue(rawValue: FilterLike) {
+        this.setValueInternal(rawValue, true);
     }
 
     //---------------------------
@@ -486,13 +445,56 @@ export class FilterChooserModel
     setPersistableState(state: PersistableState<FilterChooserPersistState>) {
         const {value, favorites} = state.value;
         // Only want to updateSelectValueAndBind once in the constructor
-        if (this.persistValue && !isUndefined(value)) this.setValue(value, !!this.provider);
+        if (this.persistValue && !isUndefined(value)) this.setValueInternal(value, !!this.provider);
         if (this.persistFavorites && !isUndefined(favorites)) this.setFavorites(favorites);
     }
 
     // -------------------------------
     // Implementation
     // -------------------------------
+    @action
+    private setValueInternal(rawValue: FilterLike, updateSelectValueAndBind: boolean) {
+        const {maxTags} = this;
+        try {
+            const value = parseFilter(rawValue);
+            if (this.value?.equals(value)) return;
+
+            // 1) Ensure FilterChooser can handle the requested value.
+            const isValid = this.validateFilter(value),
+                displayFilters = isValid ? this.toDisplayFilters(value) : null;
+
+            this.unsupportedFilter = !isValid || (maxTags && displayFilters.length > maxTags);
+            if (this.unsupportedFilter) {
+                this.value = null;
+                this.selectOptions = null;
+                this.selectValue = null;
+                return;
+            }
+
+            // 2) Main path - filter has been validated as supported, set internal value.
+            this.logDebug('Setting value', value);
+            this.value = value as FilterChooserFilter;
+
+            // 3) Set props on select input needed to display
+            // Build list of options, used for displaying tags. We combine the needed
+            // options for the current filter tags with any previous ones to ensure
+            // tags are rendered correctly throughout the transition.
+            const newOptions = displayFilters.map(f => this.createFilterOption(f)),
+                previousOptions = this.selectOptions ?? [],
+                options = uniqBy([...newOptions, ...previousOptions], 'value');
+
+            this.selectOptions = !isEmpty(options) ? options : null;
+
+            if (updateSelectValueAndBind) this.updateSelectValueAndBind(displayFilters);
+        } catch (e) {
+            this.logError('Failed to set value', e);
+            this.value = null;
+            this.selectOptions = null;
+            this.selectValue = null;
+            this.unsupportedFilter = true;
+        }
+    }
+
     /**
      * Update the select value and bind the filter to the bound model. Runs asynchronously after
      * selectOptions are set to ensure the component is ready to render the tags correctly.

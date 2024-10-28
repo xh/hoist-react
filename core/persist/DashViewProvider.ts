@@ -7,17 +7,19 @@
 
 import {PersistenceProvider, PersistenceProviderConfig} from './';
 import {throwIf} from '@xh/hoist/utils/js';
+import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash'; // Import type only
 
 /**
  * PersistenceProvider that stores state within a DashViewModel.
  */
 export class DashViewProvider<S> extends PersistenceProvider<S> {
-    readonly dashViewModel;
+    readonly dashViewModel: DashViewModel;
 
     constructor(cfg: PersistenceProviderConfig<S>) {
         super(cfg);
-        throwIf(!cfg.dashViewModel, `DashViewProvider requires a 'dashViewModel'.`);
-        this.dashViewModel = cfg.dashViewModel;
+        const {dashViewModel} = cfg.persistOptions;
+        throwIf(!dashViewModel, `DashViewProvider requires a 'dashViewModel'.`);
+        this.dashViewModel = dashViewModel;
     }
 
     //----------------
@@ -29,10 +31,10 @@ export class DashViewProvider<S> extends PersistenceProvider<S> {
     }
 
     override writeRaw(data) {
-        this.dashViewModel.setViewState(data);
+        this.dashViewModel.viewState = data;
     }
 
     override clearRaw() {
-        return this.dashViewModel.setViewState(null);
+        return (this.dashViewModel.viewState = null);
     }
 }

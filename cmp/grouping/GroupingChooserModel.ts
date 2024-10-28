@@ -7,7 +7,6 @@
 
 import {
     HoistModel,
-    managed,
     Persistable,
     PersistableState,
     PersistenceProvider,
@@ -85,7 +84,6 @@ export class GroupingChooserModel
     maxDepth: number;
     commitOnChange: boolean;
 
-    @managed provider: PersistenceProvider<GroupingChooserPersistState> = null;
     persistValue: boolean = false;
     persistFavorites: boolean = false;
 
@@ -153,9 +151,11 @@ export class GroupingChooserModel
 
         this.persistValue = persistWith.persistValue ?? true;
         this.persistFavorites = persistWith.persistFavorites ?? true;
-        this.provider = PersistenceProvider.create({
-            path: 'groupingChooser',
-            ...persistWith,
+        PersistenceProvider.create({
+            persistOptions: {
+                path: 'groupingChooser',
+                ...persistWith
+            },
             target: this
         });
 

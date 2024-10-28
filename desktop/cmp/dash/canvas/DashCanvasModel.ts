@@ -184,15 +184,13 @@ export class DashCanvasModel
         this.loadState(initialState, true);
 
         if (persistWith) {
-            try {
-                this.provider = PersistenceProvider.create({
+            PersistenceProvider.create({
+                persistOptions: {
                     path: 'dashCanvas',
-                    ...persistWith,
-                    target: this
-                });
-            } catch (e) {
-                this.logError(e);
-            }
+                    ...persistWith
+                },
+                target: this
+            });
         }
 
         this.addReaction(

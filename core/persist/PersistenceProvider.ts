@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {DebounceSpec, Persistable, PersistableState, XH} from '../';
+import {DebounceSpec, HoistBase, Persistable, PersistableState, XH} from '../';
 import {
     LocalStorageProvider,
     PrefProvider,
@@ -39,8 +39,10 @@ import {IReactionDisposer, reaction} from 'mobx';
  *   - {@link CustomProvider} - API for app and components to provide their own storage mechanism.
  */
 
-export interface PersistenceProviderConfig<S> extends PersistOptions {
+export interface PersistenceProviderConfig<S> {
+    persistOptions: PersistOptions;
     target: Persistable<S>;
+    owner?: HoistBase;
 }
 
 export abstract class PersistenceProvider<S> {
@@ -50,9 +52,9 @@ export abstract class PersistenceProvider<S> {
 
     readonly path: string;
     readonly debounce: DebounceSpec;
+    readonly owner: HoistBase;
 
-    protected readonly target: Persistable<S>;
-
+    protected target: Persistable<S>;
     protected defaultState: PersistableState<S>;
 
     private disposer: IReactionDisposer;
@@ -62,43 +64,50 @@ export abstract class PersistenceProvider<S> {
      * Throws if unable to perform initial read operation.
      *
      * Note:
-     * - `destroy()` must be called when the provider is no longer needed.
+     * - `destroy()` must be called when the provider is no longer needed unless an owner is provided.
      * - Targets should initialize their default persistable state *before* creating a
      *   `PersistenceProvider` and avoid setting up any reactions to persistable state until *after*
      */
-    static create<S>({type, ...rest}: PersistenceProviderConfig<S>): PersistenceProvider<S> {
-        if (!type) {
-            if (rest.prefKey) type = 'pref';
-            if (rest.localStorageKey) type = 'localStorage';
-            if (rest.dashViewModel) type = 'dashView';
-            if (rest.getData || rest.setData) type = 'custom';
-        }
+    static create<S>(cfg: PersistenceProviderConfig<S>): PersistenceProvider<S> {
+        cfg = {
+            owner: cfg.target instanceof HoistBase ? cfg.target : null,
+            ...cfg
+        };
+        const {target, persistOptions} = cfg;
 
-        let ret: PersistenceProvider<S>;
-
-        switch (type) {
-            case 'pref':
-                ret = new PrefProvider(rest);
-                break;
-            case 'localStorage':
-                ret = new LocalStorageProvider(rest);
-                break;
-            case `dashView`:
-                ret = new DashViewProvider(rest);
-                break;
-            case 'custom':
-                ret = new CustomProvider(rest);
-                break;
-            default:
-                throw XH.exception(`Unknown Persistence Provider for type: ${type}`);
-        }
+        let {type, ...rest} = persistOptions,
+            ret: PersistenceProvider<S>;
 
         try {
-            ret.bindToTarget();
+            if (!type) {
+                if (rest.prefKey) type = 'pref';
+                if (rest.localStorageKey) type = 'localStorage';
+                if (rest.dashViewModel) type = 'dashView';
+                if (rest.getData || rest.setData) type = 'custom';
+            }
+
+            switch (type) {
+                case 'pref':
+                    ret = new PrefProvider(cfg);
+                    break;
+                case 'localStorage':
+                    ret = new LocalStorageProvider(cfg);
+                    break;
+                case `dashView`:
+                    ret = new DashViewProvider(cfg);
+                    break;
+                case 'custom':
+                    ret = new CustomProvider(cfg);
+                    break;
+                default:
+                    throw XH.exception(`Unknown Persistence Provider for type: ${type}`);
+            }
+
+            ret.bindToTarget(target);
             return ret;
         } catch (e) {
-            logError(e);
-            ret.destroy();
+            logError(e, cfg.owner ?? 'PersistenceProvider');
+            ret?.destroy();
             return null;
         }
     }
@@ -106,13 +115,16 @@ export abstract class PersistenceProvider<S> {
     /**
      * Called by implementations only. See create.
      */
-    protected constructor(config: PersistenceProviderConfig<S>) {
-        const {path, debounce = 250, target} = config;
-        throwIf(isUndefined(path), 'Path not specified in PersistenceProvider.');
+    protected constructor(cfg: PersistenceProviderConfig<S>) {
+        const {owner, persistOptions} = cfg;
+        this.owner = owner;
+
+        const {path, debounce = 250} = persistOptions;
+        throwIf(!path, 'Path not specified in PersistenceProvider.');
 
         this.path = path;
         this.debounce = debounce;
-        this.target = target;
+        this.owner?.markManaged(this);
 
         if (debounce) {
             this.writeInternal = isNumber(debounce)
@@ -161,9 +173,8 @@ export abstract class PersistenceProvider<S> {
     // Implementation
     //----------------
     /** Called by factory method to bind this provider to its target. */
-    protected bindToTarget() {
-        const {target} = this;
-
+    protected bindToTarget(target: Persistable<S>) {
+        this.target = target;
         this.defaultState = target.getPersistableState();
 
         const state = this.read();
