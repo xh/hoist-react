@@ -33,7 +33,7 @@ import {IReactionDisposer, reaction} from 'mobx';
  * Implementations should take care to incorporate any writes immediately into the readable state.
  *
  * Hoist-provided implementations include:
- *   - {@link PrefProvider} - stores state in a predefined Hoist application Preference.
+ *   - {@link PrefProvider} - stores state in a predefined Hoist JSON Preference.
  *   - {@link LocalStorageProvider} - stores state in browser local storage under a configured key.
  *   - {@link DashViewProvider} - stores state with other Dashboard-specific state via a `DashViewModel`.
  *   - {@link CustomProvider} - API for app and components to provide their own storage mechanism.
@@ -46,10 +46,6 @@ export interface PersistenceProviderConfig<S> {
 }
 
 export abstract class PersistenceProvider<S> {
-    get isPersistenceProvider(): boolean {
-        return true;
-    }
-
     readonly path: string;
     readonly debounce: DebounceSpec;
     readonly owner: HoistBase;
@@ -61,7 +57,9 @@ export abstract class PersistenceProvider<S> {
 
     /**
      * Construct an instance of this class.
-     * Throws if unable to perform initial read operation.
+     *
+     * Will fail gently, returning `null` and logging an error if the provider could not be created
+     * due to an unparseable config or failure on initial read.
      *
      * Note:
      * - `destroy()` must be called when the provider is no longer needed unless an owner is provided.
@@ -113,8 +111,41 @@ export abstract class PersistenceProvider<S> {
     }
 
     /**
-     * Called by implementations only. See create.
+     * Read persisted data at a path
      */
+    read(): PersistableState<S> {
+        const state = get(this.readRaw(), this.path);
+        return !isUndefined(state) ? new PersistableState(state) : null;
+    }
+
+    /**
+     * Persist data to a path.
+     * @param data  - data to be written to the path, must be JSON serializable.
+     */
+    write(data: S) {
+        this.writeInternal(data);
+    }
+
+    /** Clear any persisted data at a path. */
+    clear(path: string = this.path) {
+        const obj = cloneDeep(this.readRaw());
+        unset(obj, this.path);
+        this.writeRaw(obj);
+    }
+
+    /** Clear *all* persisted data managed by this provider. */
+    clearAll() {
+        this.clearRaw();
+    }
+
+    destroy() {
+        this.disposer?.();
+    }
+
+    //----------------
+    // Protected API
+    //----------------
+    /** Called by implementations only. Use the {@link create} factory instead. */
     protected constructor(cfg: PersistenceProviderConfig<S>) {
         const {owner, persistOptions} = cfg;
         this.owner = owner;
@@ -133,45 +164,6 @@ export abstract class PersistenceProvider<S> {
         }
     }
 
-    /**
-     * Read data at a path
-     */
-    read(): PersistableState<S> {
-        const state = get(this.readRaw(), this.path);
-        return !isUndefined(state) ? new PersistableState(state) : null;
-    }
-
-    /**
-     * Save data at a path
-     * @param data  - data to be written to the path, must be serializable to JSON.
-     */
-    write(data: S) {
-        this.writeInternal(data);
-    }
-
-    /**
-     * Clear any state saved by this object at a path
-     */
-    clear(path: string = this.path) {
-        const obj = cloneDeep(this.readRaw());
-        unset(obj, this.path);
-        this.writeRaw(obj);
-    }
-
-    /**
-     * Clear *all* state held by this object.
-     */
-    clearAll() {
-        this.clearRaw();
-    }
-
-    destroy() {
-        this.disposer?.();
-    }
-
-    //----------------
-    // Implementation
-    //----------------
     /** Called by factory method to bind this provider to its target. */
     protected bindToTarget(target: Persistable<S>) {
         this.target = target;

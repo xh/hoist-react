@@ -5,12 +5,12 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
+import {GridAutosizeOptions, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistService} from '@xh/hoist/core';
-import {isFinite, map, sum, compact, sortBy, isEmpty} from 'lodash';
-import {runInAction} from '@xh/hoist/mobx';
-import {GridModel, GridAutosizeOptions} from '@xh/hoist/cmp/grid';
-import {ColumnWidthCalculator} from '../cmp/grid/impl/ColumnWidthCalculator';
 import {StoreRecord} from '@xh/hoist/data';
+import {runInAction} from '@xh/hoist/mobx';
+import {compact, isEmpty, isFinite, map, sortBy, sum} from 'lodash';
+import {ColumnWidthCalculator} from '../cmp/grid/impl/ColumnWidthCalculator';
 
 /**
  * Sets appropriate column widths for a grid based on its contents. Generally seeks to make columns
@@ -42,21 +42,28 @@ export class GridAutosizeService extends HoistService {
         await gridModel.whenReadyAsync();
         if (!gridModel.isReady) return;
 
-        // 1) Check columns exist
+        // If not in MANAGED mode, report this change as a manual resize via updated state set on
+        // gridModel, as if the user had resized each column to fit. It is only in managed mode that
+        // we are truly deferring to autosize. Otherwise we should persist the widths we calculate.
+        // See GridModel.cleanColumnState() where that distinction is applied.
+        const asManuallySized = options.mode !== 'managed';
+
+        // Check columns exist
         colIds = colIds.filter(id => gridModel.getColumn(id));
         if (isEmpty(colIds)) return;
 
-        // 2) Ensure order of passed colIds matches the current GridModel.columnState.
+        // Ensure order of passed colIds matches the current GridModel.columnState.
         // This is to prevent changing the column order when applying column state changes
         colIds = sortBy(colIds, id => gridModel.columnState.findIndex(col => col.colId === id));
 
-        // 3) Perform computation.  This is async and expensive, and may become obsolete
+        // Perform computation. This is async and expensive, and may become obsolete
         const records = this.gatherRecordsToBeSized(gridModel, options),
             requiredWidths = await this.calcRequiredWidthsAsync(
                 gridModel,
                 colIds,
                 records,
-                options
+                options,
+                asManuallySized
             );
 
         if (!requiredWidths) {
@@ -65,16 +72,19 @@ export class GridAutosizeService extends HoistService {
         }
 
         runInAction(() => {
-            // 4) Set columns to their required widths.
-            gridModel.applyColumnStateChanges(
-                requiredWidths.map(it => ({...it, manuallySized: false}))
-            );
+            // Apply calculated widths to grid.
+            gridModel.applyColumnStateChanges(requiredWidths);
             this.logDebug(`Auto-sized columns`, `${records.length} records`, requiredWidths);
 
-            // 5) Grow columns to fill any remaining space, if enabled.
+            // Optionally grow columns to fill any remaining space, if enabled.
             const {fillMode} = options;
             if (fillMode && fillMode !== 'none') {
-                const fillWidths = this.calcFillWidths(gridModel, colIds, fillMode);
+                const fillWidths = this.calcFillWidths(
+                    gridModel,
+                    colIds,
+                    fillMode,
+                    asManuallySized
+                );
                 gridModel.applyColumnStateChanges(fillWidths);
                 this.logDebug('Auto-sized columns using fillMode', fillWidths);
             }
@@ -88,10 +98,11 @@ export class GridAutosizeService extends HoistService {
         gridModel: GridModel,
         colIds: string[],
         records: StoreRecord[],
-        options: GridAutosizeOptions
-    ): Promise<{coldId: string; width: number}[]> {
+        options: GridAutosizeOptions,
+        manuallySized: boolean
+    ): Promise<ColWidthSpec[]> {
         const startRecords = gridModel.store._filtered,
-            ret = [];
+            ret: ColWidthSpec[] = [];
 
         for (const colId of colIds) {
             const width = await this._columnWidthCalculator.calcWidthAsync(
@@ -100,7 +111,7 @@ export class GridAutosizeService extends HoistService {
                 colId,
                 options
             );
-            if (isFinite(width)) ret.push({colId, width});
+            if (isFinite(width)) ret.push({colId, width, manuallySized});
 
             // Bail out if GridModel has moved on to new data.
             if (startRecords !== gridModel.store._filtered) return null;
@@ -147,14 +158,13 @@ export class GridAutosizeService extends HoistService {
         return ret;
     }
 
-    /**
-     * Calculate the increased size of columns to fill any remaining space.
-     */
+    // Calculate the increased size of columns to fill any remaining space.
     private calcFillWidths(
         gridModel: GridModel,
         colIds: string[],
-        fillMode: string
-    ): {colId: string; width: number}[] {
+        fillMode: string,
+        manuallySized: boolean
+    ): ColWidthSpec[] {
         if (gridModel.getVisibleLeafColumns().some(it => it.flex)) {
             return [];
         }
@@ -174,23 +184,27 @@ export class GridAutosizeService extends HoistService {
         }
 
         // 2) Get remaining space to be filled
-        const fillState = this.getFillState(gridModel, colIds),
-            remaining = available - fillState.total;
+        const {total, colFillSpecs} = this.getFillState(gridModel, colIds),
+            remaining = available - total;
         if (remaining <= 0) return [];
 
         // 3) Distribute remaining space according to fill mode
         switch (fillMode) {
             case 'all':
-                return this.fillEvenly(fillState.columns, remaining);
+                return this.fillEvenly(colFillSpecs, remaining, manuallySized);
             case 'left':
-                return this.fillSequentially(fillState.columns, remaining);
+                return this.fillSequentially(colFillSpecs, remaining, manuallySized);
             case 'right':
-                return this.fillSequentially(fillState.columns.reverse(), remaining);
+                return this.fillSequentially(colFillSpecs.reverse(), remaining, manuallySized);
         }
     }
 
     // Divide the remaining space evenly amongst columns, while respecting their maxWidths.
-    private fillEvenly(columns, remaining) {
+    private fillEvenly(
+        columns: ColFillSpec[],
+        remaining: number,
+        manuallySized: boolean
+    ): ColWidthSpec[] {
         const ret = {};
 
         while (remaining > 0) {
@@ -217,20 +231,24 @@ export class GridAutosizeService extends HoistService {
         }
 
         return map(ret, (width, colId) => {
-            return {width, colId};
+            return {width, colId, manuallySized};
         });
     }
 
     // Divide the remaining space across columns in order, while respecting their maxWidths.
-    private fillSequentially(columns, remaining) {
-        const ret = [];
+    private fillSequentially(
+        columns: ColFillSpec[],
+        remaining: number,
+        manuallySized: boolean
+    ): ColWidthSpec[] {
+        const ret: ColWidthSpec[] = [];
         for (const col of columns) {
             const {colId, maxWidth, width} = col,
                 extraWidth = isFinite(maxWidth) ? Math.min(maxWidth - width, remaining) : remaining;
 
             if (extraWidth > 0) {
                 remaining -= extraWidth;
-                ret.push({colId, width: width + extraWidth});
+                ret.push({colId, width: width + extraWidth, manuallySized});
             }
 
             if (remaining <= 0) break;
@@ -238,16 +256,16 @@ export class GridAutosizeService extends HoistService {
         return ret;
     }
 
-    private getFillState(gridModel, colIds) {
+    private getFillState(gridModel: GridModel, colIds: string[]) {
         return {
             total: this.getTotalColumnWidth(gridModel),
-            columns: compact(colIds.map(colId => this.getColumnFillState(gridModel, colId)))
+            colFillSpecs: compact(colIds.map(colId => this.getColFillSpec(gridModel, colId)))
         };
     }
 
     // Returns an array of column state representations,
     // suitable for use by the column fill algorithms.
-    private getColumnFillState(gridModel, colId) {
+    private getColFillSpec(gridModel: GridModel, colId: string): ColFillSpec {
         const column = gridModel.getColumn(colId),
             colState = gridModel.getStateForColumn(colId);
 
@@ -261,8 +279,20 @@ export class GridAutosizeService extends HoistService {
     }
 
     // Returns the total combined width of visible columns.
-    private getTotalColumnWidth(gridModel) {
+    private getTotalColumnWidth(gridModel: GridModel): number {
         const widths = gridModel.columnState.filter(it => !it.hidden).map(it => it.width);
         return sum(widths);
     }
+}
+
+interface ColWidthSpec {
+    colId: string;
+    width: number;
+    manuallySized: boolean;
+}
+
+interface ColFillSpec {
+    colId: string;
+    width: number;
+    maxWidth: number;
 }
