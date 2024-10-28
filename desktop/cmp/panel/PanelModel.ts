@@ -139,7 +139,6 @@ export class PanelModel extends HoistModel implements Persistable<PersistablePan
     @managed modalSupportModel: ModalSupportModel;
     @managed refreshContextModel: RefreshContextModel;
     @managed errorBoundaryModel: ErrorBoundaryModel;
-    @managed provider: PersistenceProvider<PersistablePanelState>;
 
     //----------------
     // Settable State
@@ -276,15 +275,13 @@ export class PanelModel extends HoistModel implements Persistable<PersistablePan
         }
 
         if (persistWith) {
-            try {
-                this.provider = PersistenceProvider.create({
+            PersistenceProvider.create({
+                persistOptions: {
                     path: 'panel',
-                    ...persistWith,
-                    target: this
-                });
-            } catch (e) {
-                this.logError(e);
-            }
+                    ...persistWith
+                },
+                target: this
+            });
         }
     }
 

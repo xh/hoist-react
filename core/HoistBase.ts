@@ -258,24 +258,18 @@ export abstract class HoistBase {
      */
     markPersist(property: keyof this & string, options: PersistOptions = {}) {
         // Read from and attach to Provider, failing gently
-        try {
-            const persistenceProvider = PersistenceProvider.create({
+        PersistenceProvider.create({
+            persistOptions: {
                 path: property,
                 ...this.persistWith,
-                ...options,
-                target: {
-                    getPersistableState: () => new PersistableState(this[property]),
-                    setPersistableState: state => runInAction(() => (this[property] = state.value))
-                }
-            });
-            this.markManaged(persistenceProvider);
-        } catch (e) {
-            this.logError(
-                `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
-                    `'persistWith' on this object or in the method call`,
-                e
-            );
-        }
+                ...options
+            },
+            owner: this,
+            target: {
+                getPersistableState: () => new PersistableState(this[property]),
+                setPersistableState: state => runInAction(() => (this[property] = state.value))
+            }
+        });
     }
 
     /** @returns true if this instance has been destroyed. */

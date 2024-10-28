@@ -193,8 +193,10 @@ export class DashContainerModel
         if (persistWith) {
             try {
                 this.provider = PersistenceProvider.create({
-                    path: 'dashContainer',
-                    ...persistWith,
+                    persistOptions: {
+                        path: 'dashContainer',
+                        ...persistWith
+                    },
                     target: this
                 });
             } catch (e) {

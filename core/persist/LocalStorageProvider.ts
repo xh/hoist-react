@@ -17,8 +17,9 @@ export class LocalStorageProvider<S> extends PersistenceProvider<S> {
 
     constructor(cfg: PersistenceProviderConfig<S>) {
         super(cfg);
-        throwIf(!cfg.localStorageKey, `LocalStorageProvider requires a 'localStorageKey'.`);
-        this.key = cfg.localStorageKey;
+        const {localStorageKey} = cfg.persistOptions;
+        throwIf(!localStorageKey, `LocalStorageProvider requires a 'localStorageKey'.`);
+        this.key = localStorageKey;
     }
 
     //----------------

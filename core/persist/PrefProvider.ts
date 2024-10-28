@@ -5,8 +5,8 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '../';
-import {PersistenceProvider, PersistenceProviderConfig} from './';
+import {PersistenceProviderConfig, XH} from '../';
+import {PersistenceProvider} from './';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -17,8 +17,9 @@ export class PrefProvider<S> extends PersistenceProvider<S> {
 
     constructor(cfg: PersistenceProviderConfig<S>) {
         super(cfg);
-        throwIf(!cfg.prefKey, `PrefProvider requires a 'prefKey'.`);
-        this.key = cfg.prefKey;
+        const {prefKey} = cfg.persistOptions;
+        throwIf(!prefKey, `PrefProvider requires a 'prefKey'.`);
+        this.key = prefKey;
     }
 
     //----------------
