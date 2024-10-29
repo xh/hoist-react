@@ -25,6 +25,12 @@ import {
 import {logError, throwIf} from '@xh/hoist/utils/js';
 import {IReactionDisposer, reaction} from 'mobx';
 
+export interface PersistenceProviderConfig<S> {
+    persistOptions: PersistOptions;
+    target: Persistable<S>;
+    owner?: HoistBase;
+}
+
 /**
  * Abstract superclass for adaptor objects used by models and components to (re)store state to and
  * from a persistent location, typically a Hoist preference or key within browser local storage.
@@ -35,16 +41,12 @@ import {IReactionDisposer, reaction} from 'mobx';
  * Hoist-provided implementations include:
  *   - {@link PrefProvider} - stores state in a predefined Hoist JSON Preference.
  *   - {@link LocalStorageProvider} - stores state in browser local storage under a configured key.
- *   - {@link DashViewProvider} - stores state with other Dashboard-specific state via a `DashViewModel`.
+ *   - {@link DashViewProvider} - stores view (widget) state via a bound `DashViewModel`. For use
+ *     with any components or models nested within a Dashboard. For this to be useful, the parent
+ *     `Dash[Container|Canvas]Model` must itself be persisted via a different provider - it acts as
+ *     a collector of the widget-level state managed by its DashViewModels and this provider.
  *   - {@link CustomProvider} - API for app and components to provide their own storage mechanism.
  */
-
-export interface PersistenceProviderConfig<S> {
-    persistOptions: PersistOptions;
-    target: Persistable<S>;
-    owner?: HoistBase;
-}
-
 export abstract class PersistenceProvider<S> {
     readonly path: string;
     readonly debounce: DebounceSpec;
@@ -63,8 +65,8 @@ export abstract class PersistenceProvider<S> {
      *
      * Note:
      * - `destroy()` must be called when the provider is no longer needed unless an owner is provided.
-     * - Targets should initialize their default persistable state *before* creating a
-     *   `PersistenceProvider` and avoid setting up any reactions to persistable state until *after*
+     * - Targets should initialize their default persistable state *before* calling this factory
+     *   and avoid setting up any reactions to persistable state until *after*
      */
     static create<S>(cfg: PersistenceProviderConfig<S>): PersistenceProvider<S> {
         cfg = {
