@@ -3,12 +3,14 @@
 ## 70.0.0-SNAPSHOT - unreleased
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW  - Persistence and Grid changes)
+
 * See `PersistenceProvider` API changes noted in `New Features`. Should only affect applications
   using the `PersistenceProvider` API directly.
 * `GridModel` no longer persists widths for auto-sized columns.
 * Removed `GridModel.autosizeState` and `Column.manuallySized`.
 
 ### 🎁 New Features
+
 * Enhancements to `PersistenceProvider`
     * Added new `Persistable` interface.
     * `PersistenceProvider` now targets a `Persistable` and is responsible for setting persisted
@@ -18,7 +20,17 @@
       `Persistable` and clears its persisted state when structurally equal to the initial state.
 
 ### ⚙️ Typescript API Adjustments
+
 * Improved `HoistBase.markPersist` signature.
+
+### ⚙️ Technical
+
+* Deprecated `FileChooserModel.removeAllFiles()`, replaced with `clear()` for brevity/consistency.
+
+### 📚 Libraries
+
+* @fortawesome/fontawesome-pro `6.2 → 6.6`
+
 
 ## 69.0.0 - 2024-10-17
 
@@ -235,6 +247,7 @@
 
 * Requires update to `hoist-dev-utils >= v9.0.0` with updated handling of static/public assets.
   This should be a drop-in change for applications.
+* iOS < 16.4 is no longer supported, due to the use of complex RegExes in GFM parsing.
 
 ### 🎁 New Features
 
