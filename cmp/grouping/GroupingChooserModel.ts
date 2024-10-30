@@ -149,15 +149,17 @@ export class GroupingChooserModel
         this.setValue(value);
         this.setFavorites(favorites);
 
-        this.persistValue = persistWith.persistValue ?? true;
-        this.persistFavorites = persistWith.persistFavorites ?? true;
-        PersistenceProvider.create({
-            persistOptions: {
-                path: 'groupingChooser',
-                ...persistWith
-            },
-            target: this
-        });
+        if (persistWith) {
+            this.persistValue = persistWith.persistValue ?? true;
+            this.persistFavorites = persistWith.persistFavorites ?? true;
+            PersistenceProvider.create({
+                persistOptions: {
+                    path: 'groupingChooser',
+                    ...persistWith
+                },
+                target: this
+            });
+        }
 
         this.addReaction({
             track: () => this.pendingValue,
