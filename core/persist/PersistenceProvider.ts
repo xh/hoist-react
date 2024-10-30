@@ -22,14 +22,8 @@ import {
     isNumber,
     debounce as lodashDebounce
 } from 'lodash';
-import {logError, throwIf} from '@xh/hoist/utils/js';
+import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
 import {IReactionDisposer, reaction} from 'mobx';
-
-export interface PersistenceProviderConfig<S> {
-    persistOptions: PersistOptions;
-    target: Persistable<S>;
-    owner?: HoistBase;
-}
 
 /**
  * Abstract superclass for adaptor objects used by models and components to (re)store state to and
@@ -47,6 +41,19 @@ export interface PersistenceProviderConfig<S> {
  *     a collector of the widget-level state managed by its DashViewModels and this provider.
  *   - {@link CustomProvider} - API for app and components to provide their own storage mechanism.
  */
+
+export type PersistenceProviderConfig<S> =
+    | {
+          persistOptions: PersistOptions;
+          target: Persistable<S>;
+          owner: HoistBase;
+      }
+    | {
+          persistOptions: PersistOptions;
+          target: Persistable<S> & HoistBase;
+          owner?: HoistBase;
+      };
+
 export abstract class PersistenceProvider<S> {
     readonly path: string;
     readonly debounce: DebounceSpec;
@@ -64,13 +71,12 @@ export abstract class PersistenceProvider<S> {
      * due to an unparseable config or failure on initial read.
      *
      * Note:
-     * - `destroy()` must be called when the provider is no longer needed unless an owner is provided.
-     * - Targets should initialize their default persistable state *before* calling this factory
-     *   and avoid setting up any reactions to persistable state until *after*
+     * - Targets should initialize their default persistable state *before* creating a
+     *   `PersistenceProvider` and avoid setting up any reactions to persistable state until *after*
      */
     static create<S>(cfg: PersistenceProviderConfig<S>): PersistenceProvider<S> {
         cfg = {
-            owner: cfg.target instanceof HoistBase ? cfg.target : null,
+            owner: cfg.target instanceof HoistBase ? cfg.target : cfg.owner,
             ...cfg
         };
         const {target, persistOptions} = cfg;
@@ -106,7 +112,7 @@ export abstract class PersistenceProvider<S> {
             ret.bindToTarget(target);
             return ret;
         } catch (e) {
-            logError(e, cfg.owner ?? 'PersistenceProvider');
+            logError(e, cfg.owner);
             ret?.destroy();
             return null;
         }
@@ -116,6 +122,7 @@ export abstract class PersistenceProvider<S> {
      * Read persisted data at a path
      */
     read(): PersistableState<S> {
+        logDebug('Reading persisted state', this.owner);
         const state = get(this.readRaw(), this.path);
         return !isUndefined(state) ? new PersistableState(state) : null;
     }
@@ -125,11 +132,13 @@ export abstract class PersistenceProvider<S> {
      * @param data  - data to be written to the path, must be JSON serializable.
      */
     write(data: S) {
+        logDebug('Persisting state', this.owner);
         this.writeInternal(data);
     }
 
     /** Clear any persisted data at a path. */
     clear(path: string = this.path) {
+        logDebug('Clearing persisted state', this.owner);
         const obj = cloneDeep(this.readRaw());
         unset(obj, this.path);
         this.writeRaw(obj);
@@ -157,7 +166,7 @@ export abstract class PersistenceProvider<S> {
 
         this.path = path;
         this.debounce = debounce;
-        this.owner?.markManaged(this);
+        this.owner.markManaged(this);
 
         if (debounce) {
             this.writeInternal = isNumber(debounce)

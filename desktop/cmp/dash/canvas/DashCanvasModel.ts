@@ -181,7 +181,8 @@ export class DashCanvasModel
         this.addViewButtonText = addViewButtonText;
         this.extraMenuItems = extraMenuItems;
 
-        this.loadState(initialState, true);
+        this.loadState(initialState);
+        this.state = this.buildState();
 
         if (persistWith) {
             PersistenceProvider.create({
@@ -196,7 +197,7 @@ export class DashCanvasModel
         this.addReaction(
             {
                 track: () => this.viewState,
-                run: () => this.publishState()
+                run: () => (this.state = this.buildState())
             },
             {
                 when: () => !!this.ref.current,
@@ -402,7 +403,7 @@ export class DashCanvasModel
         if (!layoutChanged) return;
 
         this.layout = layout;
-        if (!this.isLoadingState) this.publishState();
+        if (!this.isLoadingState) this.state = this.buildState();
 
         // Check if scrollbar visibility has changed, and force resize event if so
         const node = this.ref.current;
@@ -415,7 +416,7 @@ export class DashCanvasModel
     }
 
     @action
-    private loadState(state: DashCanvasItemState[], publish = false) {
+    private loadState(state: DashCanvasItemState[]) {
         this.isLoadingState = true;
         try {
             this.clear();
@@ -431,12 +432,6 @@ export class DashCanvasModel
         } finally {
             this.isLoadingState = false;
         }
-        if (publish) this.publishState();
-    }
-
-    @action
-    private publishState() {
-        this.state = this.buildState();
     }
 
     private buildState(): DashCanvasItemState[] {

@@ -4,8 +4,8 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, RefreshContextModel} from '@xh/hoist/core';
 import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {HoistModel, managed, RefreshContextModel} from '@xh/hoist/core';
 
 /**
  * Base Model for {@link DashCanvasModel} and {@link DashContainerModel}.
