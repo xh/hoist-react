@@ -191,17 +191,13 @@ export class DashContainerModel
         this.state = initialState;
 
         if (persistWith) {
-            try {
-                this.provider = PersistenceProvider.create({
-                    persistOptions: {
-                        path: 'dashContainer',
-                        ...persistWith
-                    },
-                    target: this
-                });
-            } catch (e) {
-                this.logError(e);
-            }
+            PersistenceProvider.create({
+                persistOptions: {
+                    path: 'dashContainer',
+                    ...persistWith
+                },
+                target: this
+            });
         }
 
         // Initialize GoldenLayout with initial state once ref is ready
