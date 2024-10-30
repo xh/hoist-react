@@ -107,7 +107,7 @@ export interface PanelConfig {
     xhImpl?;
 }
 
-export interface PersistablePanelState {
+export interface PanelPersistState {
     collapsed?: boolean;
     size?: number | string;
 }
@@ -116,7 +116,7 @@ export interface PersistablePanelState {
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
  * expand/collapse, along with support for saving this state via a configured PersistenceProvider.
  */
-export class PanelModel extends HoistModel implements Persistable<PersistablePanelState> {
+export class PanelModel extends HoistModel implements Persistable<PanelPersistState> {
     declare config: PanelConfig;
 
     //-----------------------
@@ -336,14 +336,14 @@ export class PanelModel extends HoistModel implements Persistable<PersistablePan
     //---------------------------------------------
     // Persistable Interface
     //---------------------------------------------
-    getPersistableState(): PersistableState<PersistablePanelState> {
-        const ret: PersistablePanelState = {};
+    getPersistableState(): PersistableState<PanelPersistState> {
+        const ret: PanelPersistState = {};
         if (this.collapsible) ret.collapsed = this.collapsed;
         if (this.resizable) ret.size = this.size;
         return new PersistableState(ret);
     }
 
-    setPersistableState(state: PersistableState<PersistablePanelState>): void {
+    setPersistableState(state: PersistableState<PanelPersistState>): void {
         const {collapsed, size} = state.value;
         if (this.resizable && !isNil(size)) this.size = size;
         if (this.collapsed && !isNil(collapsed)) this.setCollapsed(collapsed);
