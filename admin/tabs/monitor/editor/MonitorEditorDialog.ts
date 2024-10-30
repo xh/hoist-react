@@ -48,6 +48,7 @@ const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminMonitorState'},
     colChooserModel: true,
     enableExport: true,
+    showRefreshButton: true,
     store: {
         url: 'rest/monitorAdmin',
         fieldDefaults: {disableXssProtection: true},

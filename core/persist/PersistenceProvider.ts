@@ -35,7 +35,10 @@ import {IReactionDisposer, reaction} from 'mobx';
  * Hoist-provided implementations include:
  *   - {@link PrefProvider} - stores state in a predefined Hoist JSON Preference.
  *   - {@link LocalStorageProvider} - stores state in browser local storage under a configured key.
- *   - {@link DashViewProvider} - stores state with other Dashboard-specific state via a `DashViewModel`.
+ *   - {@link DashViewProvider} - stores view (widget) state via a bound `DashViewModel`. For use
+ *     with any components or models nested within a Dashboard. For this to be useful, the parent
+ *     `Dash[Container|Canvas]Model` must itself be persisted via a different provider - it acts as
+ *     a collector of the widget-level state managed by its DashViewModels and this provider.
  *   - {@link CustomProvider} - API for app and components to provide their own storage mechanism.
  */
 

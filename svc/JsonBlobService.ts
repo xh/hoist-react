@@ -4,7 +4,17 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {XH, HoistService} from '@xh/hoist/core';
+import {HoistService, LoadSpec, XH} from '@xh/hoist/core';
+
+export interface JsonBlob {
+    type: string;
+    name: string;
+    token: string;
+    acl?: string;
+    description?: string;
+    value?: any;
+    meta?: any;
+}
 
 /**
  * Service to read and set chunks of user-specific JSON persisted via Hoist Core's JSONBlob class.
@@ -12,7 +22,7 @@ import {XH, HoistService} from '@xh/hoist/core';
 export class JsonBlobService extends HoistService {
     static instance: JsonBlobService;
 
-    async getAsync(token) {
+    async getAsync(token: string): Promise<JsonBlob> {
         return XH.fetchJson({
             url: 'xh/getJsonBlob',
             params: {token}
@@ -25,10 +35,14 @@ export class JsonBlobService extends HoistService {
      * @param type - reference key for which type of data to list.
      * @param includeValue - true to include the full value string for each blob.
      */
-    async listAsync({type, includeValue}: {type: string; includeValue?: boolean}) {
+    async listAsync(
+        {type, includeValue}: {type: string; includeValue?: boolean},
+        loadSpec: LoadSpec
+    ) {
         return XH.fetchJson({
             url: 'xh/listJsonBlobs',
-            params: {type, includeValue}
+            params: {type, includeValue},
+            loadSpec
         });
     }
 
@@ -36,20 +50,15 @@ export class JsonBlobService extends HoistService {
     async createAsync({
         type,
         name,
+        acl,
         value,
         meta,
         description
-    }: {
-        type: string;
-        name: string;
-        description?: string;
-        value: any;
-        meta?: any;
-    }) {
+    }: Omit<JsonBlob, 'token'>): Promise<JsonBlob> {
         return XH.fetchJson({
             url: 'xh/createJsonBlob',
             params: {
-                data: JSON.stringify({type, name, value, meta, description})
+                data: JSON.stringify({type, name, acl, value, meta, description})
             }
         });
     }
@@ -57,18 +66,13 @@ export class JsonBlobService extends HoistService {
     /** Modify an existing JSONBlob, as identified by its unique token. */
     async updateAsync(
         token: string,
-        {
-            name,
-            value,
-            meta,
-            description
-        }: {name?: string; value?: any; meta?: any; description?: string}
-    ) {
+        {name, acl, value, meta, description}: Omit<JsonBlob, 'token' | 'type'>
+    ): Promise<JsonBlob> {
         return XH.fetchJson({
             url: 'xh/updateJsonBlob',
             params: {
                 token,
-                update: JSON.stringify({name, value, meta, description})
+                update: JSON.stringify({name, acl, value, meta, description})
             }
         });
     }

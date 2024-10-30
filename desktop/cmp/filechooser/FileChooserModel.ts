@@ -10,6 +10,7 @@ import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {apiDeprecated} from '@xh/hoist/utils/js';
 import {isEmpty} from 'codemirror/src/util/misc';
 import filesize from 'filesize';
 import {find, uniqBy, without} from 'lodash';
@@ -51,9 +52,7 @@ export class FileChooserModel extends HoistModel {
         this.files = [file];
     }
 
-    /**
-     * Remove a single file from the current selection.
-     */
+    /** Remove a single file from the current selection. */
     @action
     removeFileByName(name: string) {
         const toRemove = find(this.files, {name});
@@ -62,8 +61,14 @@ export class FileChooserModel extends HoistModel {
 
     /** Clear the current selection. */
     @action
-    removeAllFiles() {
+    clear() {
         this.files = [];
+    }
+
+    /** @deprecated use clear() instead */
+    removeAllFiles() {
+        apiDeprecated('FileChooserModel.removeAllFiles()', {msg: 'Use clear() instead'});
+        this.clear();
     }
 
     //------------------------

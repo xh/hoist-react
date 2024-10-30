@@ -416,7 +416,7 @@ export class DashCanvasModel
     }
 
     @action
-    private loadState(state) {
+    private loadState(state: DashCanvasItemState[]) {
         this.isLoadingState = true;
         try {
             this.clear();
