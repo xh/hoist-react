@@ -8,6 +8,7 @@ import {
     PersistOptions,
     PlainObject,
     Thunkable,
+    ViewManagerProvider,
     XH
 } from '@xh/hoist/core';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
@@ -23,7 +24,7 @@ export interface ViewManagerConfig {
     /** Whether user can publish or edit globally shared objects. */
     canManageGlobal: Thunkable<boolean>;
     /** Used to persist the user's last selected and favorite views. */
-    persistWith: PersistOptions;
+    persistWith?: PersistOptions;
     /** Optional flag to allow empty view selection. Defaults false*/
     enableDefault?: boolean;
     /** Optional flag to allow auto save state. Defaults false*/
@@ -54,23 +55,34 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         return ret;
     }
 
-    @managed readonly saveDialogModel: SaveDialogModel;
-
+    /** Immutable configuration for this model. */
     readonly enableDefault: boolean;
     readonly enableAutoSave: boolean;
     readonly entity: Entity;
 
+    /** Last selected, fully-persisted state of the active object. */
+    @observable.ref value: T = null;
+
     /** Current state of the active object, can include not-yet-persisted changes. */
     @observable.ref pendingValue: T = null;
+
+    /** Loaded saved view definitions - both private and shared. */
     @observable.ref views: View<T>[] = [];
-    @observable.ref value: T = null;
-    @observable isManageDialogVisible = false;
 
     @bindable selectedToken: string = null;
     @bindable favorites: string[] = [];
     @bindable autoSaveToggle = false;
+    @observable manageDialogOpen = false;
+
+    @managed readonly saveDialogModel: SaveDialogModel;
 
     private readonly _canManageGlobal: Thunkable<boolean>;
+
+    /**
+     * Providers bound to this model. Note that any {@link ViewManagerProvider} will auto-push
+     * itself onto this array when constructed with a reference to this model.
+     */
+    providers: ViewManagerProvider<any>[] = [];
 
     get canManageGlobal(): boolean {
         return executeIfFunction(this._canManageGlobal);
@@ -108,7 +120,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         return !!this.selectedView?.isShared;
     }
 
-    get favoritedViews(): View<T>[] {
+    get favoriteViews(): View<T>[] {
         return this.views.filter(it => this.favorites.includes(it.token));
     }
 
@@ -144,6 +156,8 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         this.enableAutoSave = enableAutoSave;
         this.saveDialogModel = new SaveDialogModel(this.entity.name);
 
+        // TODO - disable favorites functionality if not persisting, or make persistWith required
+        //      (breaking with the convention used elsewhere)
         if (persistWith) {
             PersistenceProvider.create({
                 persistOptions: {
@@ -155,6 +169,10 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         }
 
         this.addReaction(
+            {
+                track: () => this.value,
+                run: () => this.providers.forEach(it => it.pushStateToTarget())
+            },
             {
                 track: () => this.pendingValue,
                 run: () => {
@@ -269,21 +287,37 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
     @action
     openManageDialog() {
-        this.isManageDialogVisible = true;
+        this.manageDialogOpen = true;
     }
 
     @action
     closeManageDialog() {
-        this.isManageDialogVisible = false;
+        this.manageDialogOpen = false;
     }
 
     getHierarchyDisplayName(name) {
         return name?.substring(name.lastIndexOf('\\') + 1);
     }
 
+    // TODO - do we want / need this? Note that the provider API has providers read, patch, and set
+    //      the entire block of state managed by their backing store, not just their path, so we
+    //      do NOT want to call this method from ViewManagerProvider - it calls setPendingValue()
     mergePendingValue(value: T) {
         value = {...this.pendingValue, ...this.cleanValue(value)};
         this.setPendingValue(value);
+    }
+
+    @action
+    setPendingValue(pendingValue: T) {
+        if (isNil(pendingValue)) {
+            this.pendingValue = null;
+            return;
+        }
+
+        pendingValue = this.cleanValue(pendingValue);
+        if (!isEqual(this.pendingValue, pendingValue)) {
+            this.pendingValue = pendingValue;
+        }
     }
 
     //------------------
@@ -316,19 +350,6 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
             const group = it.isShared ? `Shared ${name}` : `My ${name}`;
             return {...it, group};
         });
-    }
-
-    @action
-    private setPendingValue(pendingValue: T) {
-        if (isNil(pendingValue)) {
-            this.pendingValue = null;
-            return;
-        }
-
-        pendingValue = this.cleanValue(pendingValue);
-        if (!isEqual(this.pendingValue, pendingValue)) {
-            this.pendingValue = pendingValue;
-        }
     }
 
     private cleanValue(value: T): T {

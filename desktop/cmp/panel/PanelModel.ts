@@ -346,7 +346,7 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
     setPersistableState(state: PersistableState<PanelPersistState>): void {
         const {collapsed, size} = state.value;
         if (this.resizable && !isNil(size)) this.size = size;
-        if (this.collapsed && !isNil(collapsed)) this.setCollapsed(collapsed);
+        if (this.collapsible && !isNil(collapsed)) this.setCollapsed(collapsed);
     }
 
     //---------------------------------------------

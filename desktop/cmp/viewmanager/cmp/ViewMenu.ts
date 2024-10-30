@@ -110,10 +110,10 @@ const objMenu = hoistCmp.factory<ViewMenuProps>({
         const {entity} = model,
             items = [];
 
-        if (!isEmpty(model.favoritedViews)) {
+        if (!isEmpty(model.favoriteViews)) {
             items.push(menuDivider({title: 'Favorites'}));
             items.push(
-                ...model.favoritedViews.map(it => {
+                ...model.favoriteViews.map(it => {
                     return menuItem({
                         key: `${it.token}-isFavorite`,
                         icon: model.selectedToken === it.token ? Icon.check() : Icon.placeholder(),

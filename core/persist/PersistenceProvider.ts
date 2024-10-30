@@ -5,25 +5,38 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {DebounceSpec, HoistBase, Persistable, PersistableState, XH} from '../';
-import {
-    LocalStorageProvider,
-    PrefProvider,
-    DashViewProvider,
-    CustomProvider,
-    PersistOptions
-} from './';
+import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
-    isUndefined,
+    debounce as lodashDebounce,
     get,
-    set,
-    unset,
     isNumber,
-    debounce as lodashDebounce
+    isUndefined,
+    set,
+    unset
 } from 'lodash';
-import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
 import {IReactionDisposer, reaction} from 'mobx';
+import {DebounceSpec, HoistBase, Persistable, PersistableState, XH} from '../';
+import {
+    CustomProvider,
+    DashViewProvider,
+    LocalStorageProvider,
+    PersistOptions,
+    PrefProvider,
+    ViewManagerProvider
+} from './';
+
+export type PersistenceProviderConfig<S> =
+    | {
+          persistOptions: PersistOptions;
+          target: Persistable<S>;
+          owner: HoistBase;
+      }
+    | {
+          persistOptions: PersistOptions;
+          target: Persistable<S> & HoistBase;
+          owner?: HoistBase;
+      };
 
 /**
  * Abstract superclass for adaptor objects used by models and components to (re)store state to and
@@ -41,19 +54,6 @@ import {IReactionDisposer, reaction} from 'mobx';
  *     a collector of the widget-level state managed by its DashViewModels and this provider.
  *   - {@link CustomProvider} - API for app and components to provide their own storage mechanism.
  */
-
-export type PersistenceProviderConfig<S> =
-    | {
-          persistOptions: PersistOptions;
-          target: Persistable<S>;
-          owner: HoistBase;
-      }
-    | {
-          persistOptions: PersistOptions;
-          target: Persistable<S> & HoistBase;
-          owner?: HoistBase;
-      };
-
 export abstract class PersistenceProvider<S> {
     readonly path: string;
     readonly debounce: DebounceSpec;
@@ -89,6 +89,7 @@ export abstract class PersistenceProvider<S> {
                 if (rest.prefKey) type = 'pref';
                 if (rest.localStorageKey) type = 'localStorage';
                 if (rest.dashViewModel) type = 'dashView';
+                if (rest.viewManagerModel) type = 'viewManager';
                 if (rest.getData || rest.setData) type = 'custom';
             }
 
@@ -101,6 +102,9 @@ export abstract class PersistenceProvider<S> {
                     break;
                 case `dashView`:
                     ret = new DashViewProvider(cfg);
+                    break;
+                case `viewManager`:
+                    ret = new ViewManagerProvider(cfg);
                     break;
                 case 'custom':
                     ret = new CustomProvider(cfg);
@@ -118,27 +122,22 @@ export abstract class PersistenceProvider<S> {
         }
     }
 
-    /**
-     * Read persisted data at a path
-     */
+    /** Read persisted state at this provider's path. */
     read(): PersistableState<S> {
-        logDebug('Reading persisted state', this.owner);
         const state = get(this.readRaw(), this.path);
+        logDebug(['Reading state', state], this.owner);
         return !isUndefined(state) ? new PersistableState(state) : null;
     }
 
-    /**
-     * Persist data to a path.
-     * @param data  - data to be written to the path, must be JSON serializable.
-     */
-    write(data: S) {
-        logDebug('Persisting state', this.owner);
-        this.writeInternal(data);
+    /** Persist JSON-serializable state to this provider's path. */
+    write(state: S) {
+        logDebug(['Writing state', state], this.owner);
+        this.writeInternal(state);
     }
 
     /** Clear any persisted data at a path. */
     clear(path: string = this.path) {
-        logDebug('Clearing persisted state', this.owner);
+        logDebug('Clearing state', this.owner);
         const obj = cloneDeep(this.readRaw());
         unset(obj, this.path);
         this.writeRaw(obj);

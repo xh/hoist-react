@@ -5,9 +5,9 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {PersistenceProvider, PersistenceProviderConfig} from './';
-import {throwIf} from '@xh/hoist/utils/js';
 import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash'; // Import type only
+import {throwIf} from '@xh/hoist/utils/js';
+import {PersistenceProvider, PersistenceProviderConfig} from './';
 
 /**
  * PersistenceProvider that stores state within a DashViewModel.
