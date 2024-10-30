@@ -39,7 +39,8 @@ import {
 } from './impl/DashContainerUtils';
 import {dashContainerView} from './impl/DashContainerView';
 
-export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, DashViewState> {
+export interface DashContainerConfig
+    extends DashConfig<DashContainerViewSpec, DashContainerViewState> {
     /** Strategy for rendering DashContainerViews. Can also be set per-view in `viewSpecs`*/
     renderMode?: RenderMode;
 
@@ -59,6 +60,16 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
     goldenLayoutSettings?: PlainObject;
 }
 
+// TODO - review other state inserted by library, determine if we want to model here
+export interface DashContainerViewState {
+    type: 'row' | 'column' | 'stack' | 'view';
+    id?: string;
+    content?: DashContainerViewState[];
+    title?: string;
+    width?: number | string;
+    height?: number | string;
+}
+
 /**
  * Model for a DashContainer, representing its contents and layout state.
  *
@@ -67,7 +78,7 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
  *
  * State should be structured as nested arrays of container objects, according to
  * GoldenLayout's content config. Supported container types are `row`, `column` and `stack`.
- * Child containers and views should be provided as an array under the `contents` key.
+ * Child containers and views should be provided as an array under the `content` key.
  *
  *      + `row` lay out its children horizontally.
  *      + `column` lays out its children vertically.
@@ -88,20 +99,20 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
  * ```
  * [{
  *     type: 'row',
- *     contents: [
+ *     content: [
  *          // The first child of this row has pixel width of '200px'.
  *          // The column will take the remaining width.
  *         {
  *             type: 'stack',
  *             width: '200px',
- *             contents: [
+ *             content: [
  *                 {type: 'view', id: 'viewId'},
  *                 {type: 'view', id: 'viewId'}
  *             ]
  *         },
  *         {
  *             type: 'column',
- *             contents: [
+ *             content: [
  *                 // Relative height of 40%. The remaining 60% will be split equally by the other views.
  *                 {type: 'view', id: 'viewId', height: 40},
  *                 {type: 'view', id: 'viewId'},
