@@ -201,15 +201,16 @@ export class DashContainerModel
         }
 
         // Initialize GoldenLayout with initial state once ref is ready
-        this.addReaction({
-            track: () => [this.containerRef.current, this.layoutLocked],
-            run: () => this.loadStateAsync(this.state)
-        });
-
-        this.addReaction({
-            track: () => this.viewState,
-            run: () => this.updateState()
-        });
+        this.addReaction(
+            {
+                track: () => [this.containerRef.current, this.layoutLocked],
+                run: () => this.loadStateAsync(this.state)
+            },
+            {
+                track: () => this.viewState,
+                run: () => this.updateState()
+            }
+        );
     }
 
     /**
