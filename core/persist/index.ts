@@ -5,4 +5,4 @@ export * from './LocalStorageProvider';
 export * from './DashViewProvider';
 export * from './PrefProvider';
 export * from './CustomProvider';
-export * from './ViewManagerProvider';
+export * from './viewmanager/ViewManagerProvider';
