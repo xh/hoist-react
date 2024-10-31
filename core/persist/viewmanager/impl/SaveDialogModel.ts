@@ -54,7 +54,6 @@ export class SaveDialogModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
-
     private createFormModel(): FormModel {
         return new FormModel({
             fields: [

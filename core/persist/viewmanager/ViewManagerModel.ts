@@ -121,7 +121,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     }
 
     get favoriteViews(): View<T>[] {
-        return this.views.filter(it => this.favorites.includes(it.token));
+        return this.views.filter(it => it.isFavorite);
     }
 
     get sharedViews(): View<T>[] {
@@ -191,6 +191,10 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
                 run: autoSaveToggle => {
                     if (autoSaveToggle) this.saveAsync(false);
                 }
+            },
+            {
+                track: () => this.favorites,
+                run: () => this.onFavoritesChange()
             }
         );
     }
@@ -264,13 +268,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     }
 
     toggleFavorite(token: string) {
-        if (!token) return;
-
-        if (this.favorites.includes(token)) {
-            this.removeFavorite(token);
-        } else {
-            this.addFavorite(token);
-        }
+        this.isFavorite(token) ? this.removeFavorite(token) : this.addFavorite(token);
     }
 
     addFavorite(token: string) {
@@ -297,14 +295,6 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
     getHierarchyDisplayName(name) {
         return name?.substring(name.lastIndexOf('\\') + 1);
-    }
-
-    // TODO - do we want / need this? Note that the provider API has providers read, patch, and set
-    //      the entire block of state managed by their backing store, not just their path, so we
-    //      do NOT want to call this method from ViewManagerProvider - it calls setPendingValue()
-    mergePendingValue(value: T) {
-        value = {...this.pendingValue, ...this.cleanValue(value)};
-        this.setPendingValue(value);
     }
 
     @action
@@ -342,13 +332,18 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         return ret;
     }
 
-    private processRaw(raw: PlainObject): View<T>[] {
+    private processRaw(raw: PlainObject[]): View<T>[] {
         const {entity} = this,
             name = capitalize(pluralize(entity.displayName));
+
         return raw.map(it => {
-            it.isShared = it.acl === '*';
-            const group = it.isShared ? `Shared ${name}` : `My ${name}`;
-            return {...it, group};
+            const isShared = it.acl === '*';
+            return {
+                ...it,
+                isShared,
+                group: isShared ? `Shared ${name}` : `My ${name}`,
+                isFavorite: this.isFavorite(it.token)
+            } as View<T>;
         });
     }
 
@@ -373,24 +368,24 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         });
     }
 
-    private hierarchicalItemSpecs(views, depth: number = 0): ViewTree[] {
+    private hierarchicalItemSpecs(views: View<T>[], depth: number = 0): ViewTree[] {
         const groups = {},
             unbalancedStableGroupsAndViews = [];
 
-        views.forEach(record => {
+        views.forEach(view => {
             // Leaf Node
-            if (this.getNameHierarchySubstring(record.name, depth + 1) == null) {
-                unbalancedStableGroupsAndViews.push(record);
+            if (this.getNameHierarchySubstring(view.name, depth + 1) == null) {
+                unbalancedStableGroupsAndViews.push(view);
                 return;
             }
             // Belongs to an already defined group
-            const group = this.getNameHierarchySubstring(record.name, depth);
+            const group = this.getNameHierarchySubstring(view.name, depth);
             if (groups[group]) {
-                groups[group].children.push(record);
+                groups[group].children.push(view);
                 return;
             }
             // Belongs to a not defined group, create it
-            groups[group] = {name: group, children: [record], isMenuFolder: true};
+            groups[group] = {name: group, children: [view], isMenuFolder: true};
             unbalancedStableGroupsAndViews.push(groups[group]);
         });
 
@@ -413,7 +408,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         });
     }
 
-    private getNameHierarchySubstring(name, depth) {
+    private getNameHierarchySubstring(name: string, depth: number) {
         const arr = name?.split('\\') ?? [];
         if (arr.length <= depth) {
             return null;
@@ -421,9 +416,15 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         return arr.slice(0, depth + 1).join('\\');
     }
 
-    private isFolderForEntry(folderName, entryName, depth) {
+    private isFolderForEntry(folderName: string, entryName: string, depth: number) {
         const name = this.getNameHierarchySubstring(entryName, depth);
         return name && name === folderName && folderName.length < entryName.length;
+    }
+
+    private onFavoritesChange() {
+        this.views.forEach(view => {
+            view.isFavorite = this.isFavorite(view.token);
+        });
     }
 }
 

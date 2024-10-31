@@ -25,6 +25,7 @@ export const [ViewMenu, viewMenu] = hoistCmp.withFactory<ViewMenuProps>({
 
     render({
         model,
+        className,
         showSaveButton = 'whenDirty',
         showPrivateViewsInSubMenu = false,
         showSharedViewsInSubMenu = false
@@ -33,7 +34,7 @@ export const [ViewMenu, viewMenu] = hoistCmp.withFactory<ViewMenuProps>({
             displayName = entity.displayName;
 
         return hbox({
-            className: 'xh-view-manager__menu',
+            className,
             items: [
                 popover({
                     item: button({
@@ -44,13 +45,7 @@ export const [ViewMenu, viewMenu] = hoistCmp.withFactory<ViewMenuProps>({
                         rightIcon: Icon.chevronDown(),
                         outlined: true
                     }),
-                    content: div(
-                        div({
-                            className: 'xh-popup__title',
-                            item: capitalize(pluralize(displayName))
-                        }),
-                        objMenu({showPrivateViewsInSubMenu, showSharedViewsInSubMenu})
-                    ),
+                    content: objMenu({showPrivateViewsInSubMenu, showSharedViewsInSubMenu}),
                     placement: 'bottom-start'
                 }),
                 persistenceSaveButton({

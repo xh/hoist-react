@@ -4,7 +4,7 @@ import {HoistModel, lookup, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
-import {includes} from 'lodash';
+import {throwIf} from '@xh/hoist/utils/js';
 import {ViewManagerModel} from '../ViewManagerModel';
 
 export class ManageDialogModel extends HoistModel {
@@ -61,10 +61,7 @@ export class ManageDialogModel extends HoistModel {
             run: record => {
                 if (record) {
                     this.formModel.readonly = !this.canEdit;
-                    this.formModel.init({
-                        ...record.data,
-                        isFavorite: includes(this.viewManagerModel.favorites, record.data.token)
-                    });
+                    this.formModel.init(record.data);
                 }
             }
         });
@@ -86,24 +83,33 @@ export class ManageDialogModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
-
-    async doSaveAsync() {
+    private async doSaveAsync() {
         const {formModel, viewManagerModel, canManageGlobal, selectedId, gridModel} = this,
-            {fields, isDirty} = formModel,
-            {name, description, isShared, isFavorite} = formModel.getData(),
+            {isDirty} = formModel,
+            {name, description, isShared} = formModel.getData(),
+            dirtyFields = formModel.fieldList.filter(f => f.isDirty).map(f => f.name),
             isValid = await formModel.validateAsync(),
             displayName = viewManagerModel.entity.displayName,
             token = gridModel.selectedRecord.data.token;
 
         if (!isValid || !selectedId || !isDirty) return;
 
-        // Additional sanity-check before POSTing an update - non-admins should never be modifying global views.
-        if (isShared && !canManageGlobal)
-            throw XH.exception(
-                `Cannot save changes to globally-shared ${viewManagerModel.entity.displayName} - missing required permission.`
-            );
+        if (dirtyFields.includes('isFavorite')) {
+            viewManagerModel.toggleFavorite(token);
+            // Nothing else to do - favorite toggle a purely local operation.
+            if (dirtyFields.length === 1) {
+                await this.refreshAsync();
+                return;
+            }
+        }
 
-        if (fields.isShared.isDirty) {
+        // Additional sanity-check before POSTing an update - non-admins should never be modifying global views.
+        throwIf(
+            isShared && !canManageGlobal,
+            `Cannot save changes to shared ${viewManagerModel.entity.displayName} - missing required permission.`
+        );
+
+        if (dirtyFields.includes('isShared')) {
             const confirmed = await XH.confirm({
                 message: isShared
                     ? `This will share the selected ${displayName} with ALL other users.`
@@ -111,14 +117,6 @@ export class ManageDialogModel extends HoistModel {
             });
 
             if (!confirmed) return;
-        }
-
-        if (fields.isFavorite.isDirty) {
-            if (isFavorite) {
-                viewManagerModel.addFavorite(token);
-            } else {
-                viewManagerModel.removeFavorite(token);
-            }
         }
 
         await XH.jsonBlobService.updateAsync(token, {
@@ -131,16 +129,20 @@ export class ManageDialogModel extends HoistModel {
         await this.refreshAsync();
     }
 
-    async doDeleteAsync() {
-        const {viewManagerModel, gridModel} = this,
+    private async doDeleteAsync() {
+        const {viewManagerModel, gridModel, displayName} = this,
             {selectedRecord} = gridModel;
         if (!selectedRecord) return;
 
         const {name, token} = selectedRecord.data,
             confirmed = await XH.confirm({
-                title: 'Delete',
-                icon: Icon.delete(),
-                message: `Are you sure you want to delete "${name}"?`
+                message: `Are you sure you want to delete "${name}"?`,
+                confirmProps: {
+                    text: `Yes, delete ${displayName}`,
+                    outlined: true,
+                    autoFocus: false,
+                    intent: 'danger'
+                }
             });
         if (!confirmed) return;
 
@@ -151,17 +153,14 @@ export class ManageDialogModel extends HoistModel {
         await this.refreshAsync();
     }
 
-    //-------------------------
-    // Implementation
-    //-------------------------
-
     private async ensureGridHasSelection() {
         const {gridModel, viewManagerModel} = this,
             {selectedToken} = viewManagerModel;
-        if (selectedToken) {
-            gridModel.selModel.select(selectedToken);
-        } else {
-            await gridModel.preSelectFirstAsync();
+
+        if (!gridModel.hasSelection) {
+            selectedToken
+                ? await gridModel.selectAsync(selectedToken)
+                : await gridModel.preSelectFirstAsync();
         }
     }
 
@@ -169,8 +168,6 @@ export class ManageDialogModel extends HoistModel {
         return new GridModel({
             sortBy: 'name',
             groupBy: 'group',
-            stripeRows: false,
-            rowBorders: true,
             hideHeaders: true,
             showGroupRowCounts: false,
             store: {
@@ -201,6 +198,14 @@ export class ManageDialogModel extends HoistModel {
                     tooltip: v => (v ? 'Shared with all users.' : '')
                 },
                 {field: 'name', flex: true},
+                {
+                    field: 'isFavorite',
+                    width: 40,
+                    align: 'center',
+                    headerName: Icon.favorite(),
+                    renderer: v =>
+                        v ? Icon.favorite({prefix: 'fas', className: 'xh-yellow'}) : null
+                },
                 {field: 'group', hidden: true}
             ]
         });

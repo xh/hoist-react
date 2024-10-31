@@ -14,6 +14,7 @@ export interface View<T extends PlainObject = PlainObject> {
     type: string;
     group: string;
     isShared: boolean;
+    isFavorite: boolean;
     value: T;
 }
 
