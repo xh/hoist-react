@@ -61,8 +61,12 @@ const gridPanel = hoistCmp.factory({
 
 const formPanel = hoistCmp.factory<ManageDialogProps>({
     render({model, onClose}) {
-        const {selectedId, displayName, formModel, canEdit} = model,
+        const {hasMultiSelection, selectedId, displayName, formModel, canEdit} = model,
             {values} = formModel;
+
+        if (hasMultiSelection) {
+            return multiSelectionPanel();
+        }
 
         if (!selectedId)
             return panel({
@@ -154,6 +158,27 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
     }
 });
 
+const multiSelectionPanel = hoistCmp.factory<ManageDialogProps>({
+    render({model, onClose}) {
+        const {selectedIds} = model;
+        return panel({
+            item: vframe({
+                alignItems: 'center',
+                justifyContent: 'center',
+                item: button({
+                    text: `Delete ${selectedIds.length} ${pluralize(model.displayName)}`,
+                    icon: Icon.delete(),
+                    intent: 'danger',
+                    outlined: true,
+                    disabled: !model.canDelete,
+                    onClick: () => model.deleteAsync()
+                })
+            }),
+            bbar: bbar({onClose})
+        });
+    }
+});
+
 const bbar = hoistCmp.factory<ManageDialogProps>({
     render({model, onClose}) {
         return toolbar(
@@ -162,6 +187,7 @@ const bbar = hoistCmp.factory<ManageDialogProps>({
                 icon: Icon.delete(),
                 intent: 'danger',
                 disabled: !model.canDelete,
+                omit: model.hasMultiSelection,
                 onClick: () => model.deleteAsync()
             }),
             filler(),

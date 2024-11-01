@@ -4,12 +4,12 @@ import {HoistModel, lookup, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
+import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {ViewManagerModel} from '../ViewManagerModel';
 
 export class ManageDialogModel extends HoistModel {
-    @managed readonly gridModel: GridModel;
-    @managed readonly formModel: FormModel;
+    @managed gridModel: GridModel;
+    @managed formModel: FormModel;
 
     readonly saveTask = TaskObserver.trackLast();
     readonly deleteTask = TaskObserver.trackLast();
@@ -21,18 +21,31 @@ export class ManageDialogModel extends HoistModel {
         return this.gridModel.selectedId as string;
     }
 
+    get selectedIds(): string[] {
+        return this.gridModel.selectedIds as string[];
+    }
+
+    get hasMultiSelection(): boolean {
+        return this.selectedIds.length > 1;
+    }
+
     get selIsShared(): boolean {
-        return this.gridModel.selectedRecord?.data.isShared ?? false;
+        return this.gridModel.selectedRecords.some(rec => rec.data.isShared);
     }
 
     get displayName(): string {
-        return this.viewManagerModel.entity.displayName;
+        return this.viewManagerModel.entity.displayName.toLowerCase(); // usages here all look better in lowercase
     }
 
     get canDelete(): boolean {
-        const {viewManagerModel, selIsShared, canManageGlobal} = this,
+        const {viewManagerModel, selIsShared, canManageGlobal, selectedIds} = this,
             {views, enableDefault} = viewManagerModel;
-        return (enableDefault ? true : views.length > 1) && (canManageGlobal || !selIsShared);
+
+        // Can't delete shared views without manager role.
+        if (selIsShared && !canManageGlobal) return false;
+
+        // Can't delete all the views, unless default mode is enabled.
+        return enableDefault || views.length - selectedIds.length > 0;
     }
 
     get canEdit(): boolean {
@@ -48,11 +61,14 @@ export class ManageDialogModel extends HoistModel {
         return this.viewManagerModel.canManageGlobal;
     }
 
-    constructor(parentModel: ViewManagerModel) {
+    constructor() {
         super();
         makeObservable(this);
+    }
 
-        this.viewManagerModel = parentModel;
+    override onLinked() {
+        super.onLinked();
+
         this.gridModel = this.createGridModel();
         this.formModel = this.createFormModel();
 
@@ -84,12 +100,12 @@ export class ManageDialogModel extends HoistModel {
     // Implementation
     //------------------------
     private async doSaveAsync() {
-        const {formModel, viewManagerModel, canManageGlobal, selectedId, gridModel} = this,
+        const {formModel, viewManagerModel, canManageGlobal, selectedId, gridModel, displayName} =
+                this,
             {isDirty} = formModel,
             {name, description, isShared} = formModel.getData(),
             dirtyFields = formModel.fieldList.filter(f => f.isDirty).map(f => f.name),
             isValid = await formModel.validateAsync(),
-            displayName = viewManagerModel.entity.displayName,
             token = gridModel.selectedRecord.data.token;
 
         if (!isValid || !selectedId || !isDirty) return;
@@ -130,15 +146,17 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private async doDeleteAsync() {
-        const {viewManagerModel, gridModel, displayName} = this,
-            {selectedRecord} = gridModel;
-        if (!selectedRecord) return;
+        const {viewManagerModel, gridModel, displayName, selectedIds, hasMultiSelection} = this,
+            count = selectedIds.length;
+        if (!count) return;
 
-        const {name, token} = selectedRecord.data,
+        const confirmStr = hasMultiSelection
+                ? pluralize(displayName, count, true)
+                : `"${gridModel.selectedRecord.data.name}"`,
             confirmed = await XH.confirm({
-                message: `Are you sure you want to delete "${name}"?`,
+                message: `Are you sure you want to delete ${confirmStr}?`,
                 confirmProps: {
-                    text: `Yes, delete ${displayName}`,
+                    text: `Yes, delete ${pluralize(displayName, count)}`,
                     outlined: true,
                     autoFocus: false,
                     intent: 'danger'
@@ -146,9 +164,11 @@ export class ManageDialogModel extends HoistModel {
             });
         if (!confirmed) return;
 
-        viewManagerModel.removeFavorite(token);
+        for (const token of selectedIds) {
+            viewManagerModel.removeFavorite(token);
+            await XH.jsonBlobService.archiveAsync(token);
+        }
 
-        await XH.jsonBlobService.archiveAsync(token);
         await viewManagerModel.refreshAsync();
         await this.refreshAsync();
     }
@@ -166,10 +186,12 @@ export class ManageDialogModel extends HoistModel {
 
     private createGridModel(): GridModel {
         return new GridModel({
+            emptyText: `No saved ${pluralize(this.displayName)} found...`,
             sortBy: 'name',
             groupBy: 'group',
             hideHeaders: true,
             showGroupRowCounts: false,
+            selModel: 'multiple',
             store: {
                 idSpec: 'token',
                 fields: [
