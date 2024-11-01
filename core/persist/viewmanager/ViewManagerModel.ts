@@ -140,6 +140,14 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         return this.hierarchicalItemSpecs(sortBy(this.privateViews, 'name'));
     }
 
+    get displayName(): string {
+        return this.entity.displayName;
+    }
+
+    get DisplayName(): string {
+        return capitalize(this.displayName);
+    }
+
     private constructor({
         entity,
         persistWith,
@@ -171,11 +179,17 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         this.addReaction(
             {
                 track: () => this.value,
-                run: () => this.providers.forEach(it => it.pushStateToTarget())
+                run: value => {
+                    console.log('ViewManagerModel value changed', value);
+                    this.pendingValue = value; // TODO - confirm if this is the best place to do this
+                    this.providers.forEach(it => it.pushStateToTarget());
+                }
             },
             {
                 track: () => this.pendingValue,
-                run: () => {
+                run: pValue => {
+                    console.log('ViewManagerModel pendingValue changed', pValue);
+                    console.log('ViewManagerModel isDirty', this.isDirty);
                     if (
                         this.enableAutoSave &&
                         this.autoSaveToggle &&
@@ -199,19 +213,19 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         );
     }
 
-    // TODO - Carefully review if this method needs isStale checks, and how to properly implement them.
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {name} = this.entity,
-            rawViews = await XH.jsonBlobService.listAsync(
-                {type: name, includeValue: true},
-                loadSpec
-            );
+        const rawViews = await XH.jsonBlobService.listAsync(
+            {type: this.entity.name, includeValue: true},
+            loadSpec
+        );
+        if (loadSpec.isStale) return;
 
         runInAction(() => (this.views = this.processRaw(rawViews)));
 
-        // Always call selectAsync to ensure pendingValue updated and onChangeAsync callback fired if needed
         const token =
-            this.selectedView?.token ?? (!this.enableDefault ? this.views[0]?.token : null);
+            loadSpec.meta.selectToken ??
+            this.selectedView?.token ??
+            (this.enableDefault ? null : this.views[0]?.token);
         await this.selectAsync(token);
     }
 
@@ -224,11 +238,13 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     }
 
     async saveAsync(skipToast: boolean = false) {
-        const {selectedView, entity, pendingValue, isShared} = this,
+        const {selectedView, pendingValue, isShared, DisplayName} = this,
             {token} = selectedView;
+
         if (isShared) {
             if (!(await this.confirmShareObjSaveAsync())) return;
         }
+
         try {
             await XH.jsonBlobService.updateAsync(token, {
                 ...selectedView,
@@ -237,27 +253,27 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         } catch (e) {
             return XH.handleException(e, {alertType: 'toast'});
         }
-        await this.refreshAsync();
-        await this.selectAsync(token);
 
-        if (!skipToast) XH.successToast(`${capitalize(entity.displayName)} successfully saved.`);
+        await this.refreshAsync({selectToken: token});
+        if (!skipToast) XH.successToast(`${DisplayName} successfully saved.`);
     }
 
     async saveAsAsync() {
-        const {name, description} = this.selectedView ?? {};
+        const {selectedView, views, DisplayName} = this,
+            {name, description} = selectedView ?? {};
+
         const newView = await this.saveDialogModel.openAsync(
             {
                 name,
                 description,
                 value: this.pendingValue
             },
-            this.views.map(it => it.name)
+            views.map(it => it.name)
         );
 
         if (newView) {
-            await this.refreshAsync();
-            await this.selectAsync(newView.token);
-            XH.successToast(`${capitalize(this.entity.displayName)} successfully saved.`);
+            await this.refreshAsync({selectToken: newView.token});
+            XH.successToast(`${DisplayName} successfully saved.`);
         }
     }
 
@@ -333,9 +349,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     }
 
     private processRaw(raw: PlainObject[]): View<T>[] {
-        const {entity} = this,
-            name = capitalize(pluralize(entity.displayName));
-
+        const name = pluralize(this.DisplayName);
         return raw.map(it => {
             const isShared = it.acl === '*';
             return {
@@ -355,7 +369,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
     private async confirmShareObjSaveAsync() {
         return XH.confirm({
-            message: `You are saving a shared public ${this.entity.displayName}. Do you wish to continue?`,
+            message: `You are saving a shared public ${this.displayName}. Do you wish to continue?`,
             confirmProps: {
                 text: 'Yes, save changes',
                 intent: 'primary',

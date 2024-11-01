@@ -102,7 +102,7 @@ const menuFavorite = hoistCmp.factory<ViewManagerModel>({
 
 const objMenu = hoistCmp.factory<ViewMenuProps>({
     render({model, showPrivateViewsInSubMenu, showSharedViewsInSubMenu}) {
-        const {entity} = model,
+        const {displayName, DisplayName} = model,
             items = [];
 
         if (!isEmpty(model.favoriteViews)) {
@@ -123,13 +123,13 @@ const objMenu = hoistCmp.factory<ViewMenuProps>({
         if (!isEmpty(model.privateViewTree)) {
             items.push(
                 menuDivider({
-                    title: showPrivateViewsInSubMenu ? null : `My ${pluralize(entity.displayName)}`
+                    title: showPrivateViewsInSubMenu ? null : `My ${pluralize(displayName)}`
                 })
             );
             if (showPrivateViewsInSubMenu) {
                 items.push(
                     menuItem({
-                        text: `My ${pluralize(entity.displayName)}`,
+                        text: `My ${pluralize(displayName)}`,
                         shouldDismissPopover: false,
                         children: model.privateViewTree.map(it => {
                             return buildView(it, model);
@@ -145,15 +145,13 @@ const objMenu = hoistCmp.factory<ViewMenuProps>({
         if (!isEmpty(model.sharedViewTree)) {
             items.push(
                 menuDivider({
-                    title: showSharedViewsInSubMenu
-                        ? null
-                        : `Shared ${pluralize(entity.displayName)}`
+                    title: showSharedViewsInSubMenu ? null : `Shared ${pluralize(displayName)}`
                 })
             );
             if (showSharedViewsInSubMenu) {
                 items.push(
                     menuItem({
-                        text: `Shared ${pluralize(entity.displayName)}`,
+                        text: `Shared ${pluralize(displayName)}`,
                         shouldDismissPopover: false,
                         children: model.sharedViewTree.map(it => {
                             return buildView(it, model);
@@ -173,7 +171,7 @@ const objMenu = hoistCmp.factory<ViewMenuProps>({
                 menuDivider({omit: !model.enableDefault || isEmpty(items)}),
                 menuItem({
                     icon: model.selectedToken ? Icon.placeholder() : Icon.check(),
-                    text: `Default ${capitalize(entity.displayName)}`,
+                    text: `Default ${DisplayName}`,
                     omit: !model.enableDefault,
                     onClick: () => model.selectAsync(null)
                 }),
@@ -191,7 +189,7 @@ const objMenu = hoistCmp.factory<ViewMenuProps>({
                 }),
                 menuItem({
                     icon: Icon.reset(),
-                    text: `Revert ${capitalize(entity.displayName)}`,
+                    text: `Revert ${DisplayName}`,
                     disabled: !model.isDirty,
                     onClick: () => model.resetAsync()
                 }),
@@ -208,7 +206,7 @@ const objMenu = hoistCmp.factory<ViewMenuProps>({
                 menuItem({
                     icon: Icon.gear(),
                     disabled: isEmpty(model.views),
-                    text: `Manage ${pluralize(entity.displayName)}...`,
+                    text: `Manage ${pluralize(displayName)}...`,
                     onClick: () => model.openManageDialog()
                 })
             ]

@@ -143,11 +143,6 @@ export abstract class PersistenceProvider<S> {
         this.writeRaw(obj);
     }
 
-    /** Clear *all* persisted data managed by this provider. */
-    clearAll() {
-        this.clearRaw();
-    }
-
     destroy() {
         this.disposer?.();
     }
@@ -205,5 +200,4 @@ export abstract class PersistenceProvider<S> {
     protected readRaw(): Record<typeof this.path, S> {
         return null;
     }
-    protected clearRaw() {}
 }

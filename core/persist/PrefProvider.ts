@@ -32,8 +32,4 @@ export class PrefProvider<S> extends PersistenceProvider<S> {
     override writeRaw(data) {
         XH.prefService.set(this.key, data);
     }
-
-    override clearRaw() {
-        XH.prefService.unset(this.key);
-    }
 }

@@ -32,8 +32,4 @@ export class LocalStorageProvider<S> extends PersistenceProvider<S> {
     override writeRaw(data) {
         XH.localStorageService.set(this.key, data);
     }
-
-    override clearRaw() {
-        XH.localStorageService.remove(this.key);
-    }
 }

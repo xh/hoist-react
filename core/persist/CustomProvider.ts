@@ -40,8 +40,4 @@ export class CustomProvider<S> extends PersistenceProvider<S> {
     override writeRaw(data) {
         this.setData(data);
     }
-
-    override clearRaw() {
-        this.setData(null);
-    }
 }

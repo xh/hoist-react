@@ -33,8 +33,4 @@ export class DashViewProvider<S> extends PersistenceProvider<S> {
     override writeRaw(data) {
         this.dashViewModel.viewState = data;
     }
-
-    override clearRaw() {
-        this.dashViewModel.viewState = null;
-    }
 }
