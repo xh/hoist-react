@@ -243,7 +243,7 @@ export class DashContainerModel
      * Load state into the DashContainer, recreating its layout and contents
      * @param state - State to load
      */
-    async loadStateAsync(state) {
+    async loadStateAsync(state: DashViewState[]) {
         const containerEl = this.containerRef.current;
         if (!containerEl) {
             this.logWarn(
@@ -326,6 +326,14 @@ export class DashContainerModel
         this.goldenLayout?.updateSize();
     }
 
+    getViewSpec(id: string): DashContainerViewSpec {
+        return this.viewSpecs.find(it => it.id === id);
+    }
+
+    getViewModel(id: string): DashViewModel<DashContainerViewSpec> {
+        return find(this.viewModels, {id});
+    }
+
     //------------------------
     // Persistable Interface
     //------------------------
@@ -376,10 +384,6 @@ export class DashContainerModel
         if (id) this.removeViewModel(id);
     }
 
-    private getViewSpec(id: string) {
-        return this.viewSpecs.find(it => it.id === id);
-    }
-
     //-----------------
     // Items
     //-----------------
@@ -409,10 +413,6 @@ export class DashContainerModel
             ret[id] = {icon, title, viewState};
         });
         return ret;
-    }
-
-    private getViewModel(id: string) {
-        return find(this.viewModels, {id});
     }
 
     @action
@@ -591,7 +591,7 @@ export class DashContainerModel
     //-----------------
     // Misc
     //-----------------
-    private createGoldenLayout(containerEl: HTMLElement, state: any): GoldenLayout {
+    private createGoldenLayout(containerEl: HTMLElement, state: DashViewState[]): GoldenLayout {
         const {viewSpecs} = this,
             ret = new GoldenLayout(
                 {
