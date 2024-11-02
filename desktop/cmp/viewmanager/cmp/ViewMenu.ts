@@ -1,4 +1,4 @@
-import {div, filler, hbox, span} from '@xh/hoist/cmp/layout';
+import {div, filler, fragment, hbox, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import {ViewManagerModel, ViewTree} from '@xh/hoist/core/persist/viewmanager';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -7,7 +7,7 @@ import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {consumeEvent, pluralize} from '@xh/hoist/utils/js';
 import {capitalize, isEmpty} from 'lodash';
-import {ReactNode} from 'react';
+import {ReactElement, ReactNode} from 'react';
 
 export interface ViewMenuProps extends HoistProps<ViewManagerModel> {
     /** 'whenDirty' to only show saveButton when persistence state is dirty. (Default 'whenDirty') */
@@ -16,6 +16,8 @@ export interface ViewMenuProps extends HoistProps<ViewManagerModel> {
     showPrivateViewsInSubMenu?: boolean;
     /** True to render shared views in sub-menu (Default false)*/
     showSharedViewsInSubMenu?: boolean;
+    sharedViewIcon?: ReactElement;
+    privateViewIcon?: ReactElement;
 }
 
 export const [ViewMenu, viewMenu] = hoistCmp.withFactory<ViewMenuProps>({
@@ -26,11 +28,13 @@ export const [ViewMenu, viewMenu] = hoistCmp.withFactory<ViewMenuProps>({
     render({
         model,
         className,
+        sharedViewIcon = Icon.globe(),
+        privateViewIcon = Icon.bookmark(),
         showSaveButton = 'whenDirty',
         showPrivateViewsInSubMenu = false,
         showSharedViewsInSubMenu = false
     }: ViewMenuProps) {
-        const {selectedView, isShared, entity} = model,
+        const {selectedView, isSharedViewSelected, entity} = model,
             displayName = entity.displayName;
 
         return hbox({
@@ -41,7 +45,7 @@ export const [ViewMenu, viewMenu] = hoistCmp.withFactory<ViewMenuProps>({
                         text:
                             model.getHierarchyDisplayName(selectedView?.name) ??
                             `Default ${capitalize(displayName)}`,
-                        icon: isShared ? Icon.users() : Icon.bookmark(),
+                        icon: isSharedViewSelected ? sharedViewIcon : privateViewIcon,
                         rightIcon: Icon.chevronDown(),
                         outlined: true
                     }),
@@ -54,7 +58,7 @@ export const [ViewMenu, viewMenu] = hoistCmp.withFactory<ViewMenuProps>({
                         (showSaveButton === 'whenDirty' && !model.isDirty) ||
                         !model.canSave ||
                         (model.enableAutoSave &&
-                            model.autoSaveToggle &&
+                            model.autoSaveActive &&
                             !model.canSave &&
                             model.isSharedViewSelected),
                     disabled: !model.canSave
@@ -84,16 +88,19 @@ const menuFavorite = hoistCmp.factory<ViewManagerModel>({
             alignItems: 'center',
             items: [
                 span({style: {paddingRight: 5}, item: view.text}),
-                filler(),
-                div({
-                    className: `xh-view-manager__menu-item--fav ${isFavorite ? 'xh-view-manager__menu-item--fav--active' : ''}`,
-                    item: Icon.favorite({
-                        prefix: isFavorite ? 'fas' : 'far'
-                    }),
-                    onClick: e => {
-                        consumeEvent(e);
-                        model.toggleFavorite(view.token);
-                    }
+                fragment({
+                    omit: !model.enableFavorites,
+                    items: [
+                        filler(),
+                        div({
+                            className: `xh-view-manager__menu-item--fav ${isFavorite ? 'xh-view-manager__menu-item--fav--active' : ''}`,
+                            item: Icon.favorite({prefix: isFavorite ? 'fas' : 'far'}),
+                            onClick: e => {
+                                consumeEvent(e);
+                                model.toggleFavorite(view.token);
+                            }
+                        })
+                    ]
                 })
             ]
         });
@@ -115,7 +122,7 @@ const objMenu = hoistCmp.factory<ViewMenuProps>({
                         text: menuFavorite({
                             view: {...it, text: model.getHierarchyDisplayName(it.name)}
                         }),
-                        onClick: () => model.selectAsync(it.token).linkTo(model.loadModel)
+                        onClick: () => model.selectViewAsync(it.token).linkTo(model.loadModel)
                     });
                 })
             );
@@ -173,7 +180,7 @@ const objMenu = hoistCmp.factory<ViewMenuProps>({
                     icon: model.selectedToken ? Icon.placeholder() : Icon.check(),
                     text: `Default ${DisplayName}`,
                     omit: !model.enableDefault,
-                    onClick: () => model.selectAsync(null)
+                    onClick: () => model.selectViewAsync(null)
                 }),
                 menuDivider({omit: !model.enableDefault}),
                 menuItem({
@@ -197,8 +204,9 @@ const objMenu = hoistCmp.factory<ViewMenuProps>({
                 menuItem({
                     text: switchInput({
                         label: 'Auto Save',
-                        bind: 'autoSaveToggle',
-                        inline: true
+                        bind: 'autoSaveActive',
+                        inline: true,
+                        disabled: !model.enableAutoSaveToggle
                     }),
                     shouldDismissPopover: false
                 }),
@@ -231,7 +239,7 @@ function buildView(view: ViewTree, model: ViewManagerModel): ReactNode {
                 key: view.token,
                 icon,
                 text: menuFavorite({model, view}),
-                onClick: () => model.selectAsync(view.token).linkTo(model.loadModel)
+                onClick: () => model.selectViewAsync(view.token).linkTo(model.loadModel)
             });
     }
 }

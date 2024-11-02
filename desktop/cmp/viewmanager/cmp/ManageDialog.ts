@@ -61,14 +61,14 @@ const gridPanel = hoistCmp.factory({
 
 const formPanel = hoistCmp.factory<ManageDialogProps>({
     render({model, onClose}) {
-        const {hasMultiSelection, selectedId, displayName, formModel, canEdit} = model,
+        const {displayName, formModel} = model,
             {values} = formModel;
 
-        if (hasMultiSelection) {
+        if (model.hasMultiSelection) {
             return multiSelectionPanel();
         }
 
-        if (!selectedId)
+        if (!model.selectedId)
             return panel({
                 item: placeholder(Icon.gears(), `Select a ${displayName}`),
                 bbar: bbar({onClose})
@@ -87,7 +87,7 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
                         formField({
                             field: 'name',
                             item: textInput(),
-                            info: canEdit
+                            info: model.canEdit
                                 ? fragment(
                                       Icon.info(),
                                       `Organize your ${pluralize(displayName)} into folders by including the "\\" character in their names - e.g. "My folder\\My ${displayName}".`
@@ -104,16 +104,13 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
                         }),
                         formField({
                             field: 'isShared',
-                            item: switchInput({
-                                labelSide: 'left'
-                            }),
+                            item: switchInput({labelSide: 'left'}),
                             omit: !model.canManageGlobal
                         }),
                         formField({
                             field: 'isFavorite',
-                            item: switchInput({
-                                labelSide: 'left'
-                            })
+                            omit: !model.enableFavorites,
+                            item: switchInput({labelSide: 'left'})
                         }),
                         hbox({
                             omit: !model.showSaveButton,

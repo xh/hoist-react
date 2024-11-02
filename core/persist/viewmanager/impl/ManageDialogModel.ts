@@ -52,13 +52,17 @@ export class ManageDialogModel extends HoistModel {
         return this.canManageGlobal || !this.selIsShared;
     }
 
+    get canManageGlobal(): boolean {
+        return this.viewManagerModel.canManageGlobal;
+    }
+
     get showSaveButton(): boolean {
         const {formModel, viewManagerModel} = this;
         return formModel.isDirty && !formModel.readonly && !viewManagerModel.loadModel.isPending;
     }
 
-    get canManageGlobal(): boolean {
-        return this.viewManagerModel.canManageGlobal;
+    get enableFavorites(): boolean {
+        return this.viewManagerModel.enableFavorites;
     }
 
     constructor() {
@@ -214,6 +218,7 @@ export class ManageDialogModel extends HoistModel {
                 {field: 'name', flex: true},
                 {
                     field: 'isFavorite',
+                    omit: !this.enableFavorites,
                     width: 40,
                     align: 'center',
                     headerName: Icon.favorite(),
