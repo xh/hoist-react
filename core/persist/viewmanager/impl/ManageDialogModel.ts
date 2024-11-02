@@ -211,14 +211,6 @@ export class ManageDialogModel extends HoistModel {
             },
             autosizeOptions: {mode: GridAutosizeMode.DISABLED},
             columns: [
-                {
-                    field: 'isShared',
-                    width: 40,
-                    align: 'center',
-                    headerName: Icon.globe(),
-                    renderer: v => (v ? Icon.globe() : null),
-                    tooltip: v => (v ? 'Shared with all users.' : '')
-                },
                 {field: 'name', flex: true},
                 {
                     field: 'isFavorite',
