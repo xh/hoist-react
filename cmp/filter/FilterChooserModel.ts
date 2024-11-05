@@ -11,7 +11,6 @@ import {
     PersistableState,
     PersistenceProvider,
     PersistOptions,
-    PlainObject,
     TaskObserver,
     XH
 } from '@xh/hoist/core';
@@ -30,7 +29,6 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {ReactNode} from 'react';
 import {
     cloneDeep,
     compact,
@@ -48,6 +46,7 @@ import {
     uniq,
     uniqBy
 } from 'lodash';
+import {ReactNode} from 'react';
 
 import {FilterChooserFieldSpec, FilterChooserFieldSpecConfig} from './FilterChooserFieldSpec';
 import {compoundFilterOption, fieldFilterOption, FilterChooserOption} from './impl/Option';
@@ -369,16 +368,6 @@ export class FilterChooserModel
         return !!this.findFavorite(filter);
     }
 
-    //-------------------------
-    // Persistence handling
-    //-------------------------
-    get persistState() {
-        const ret: PlainObject = {};
-        if (this.persistValue) ret.value = this.value;
-        if (this.persistFavorites) ret.favorites = this.favorites;
-        return ret;
-    }
-
     //--------------------------------
     // FilterChooserFieldSpec handling
     //--------------------------------
@@ -437,16 +426,22 @@ export class FilterChooserModel
     //--------------------------
     getPersistableState(): PersistableState<FilterChooserPersistState> {
         const ret: FilterChooserPersistState = {};
-        if (this.persistValue) ret.value = this.value;
-        if (this.persistFavorites) ret.favorites = this.favorites;
+        if (this.persistValue) ret.value = this.value?.toJSON();
+        if (this.persistFavorites) ret.favorites = this.favorites.map(f => f.toJSON());
         return new PersistableState(ret);
     }
 
     setPersistableState(state: PersistableState<FilterChooserPersistState>) {
         const {value, favorites} = state.value;
+
         // Only want to updateSelectValueAndBind once in the constructor
-        if (this.persistValue && !isUndefined(value)) this.setValueInternal(value, !!this.provider);
-        if (this.persistFavorites && !isUndefined(favorites)) this.setFavorites(favorites);
+        if (this.persistValue && !isUndefined(value)) {
+            this.setValueInternal(value, !!this.provider);
+        }
+
+        if (this.persistFavorites && !isUndefined(favorites)) {
+            this.setFavorites(favorites.map(f => parseFilter(f)));
+        }
     }
 
     // -------------------------------
@@ -538,12 +533,13 @@ interface FilterChooserPersistOptions extends PersistOptions {
 }
 
 interface FilterChooserPersistState {
-    value?: FilterChooserFilter;
-    favorites?: FilterChooserFilter[];
+    value?: FilterChooserFilterSpec;
+    favorites?: FilterChooserFilterSpec[];
 }
 
 /** A variant of {@link Filter} that excludes FunctionFilter (unsupported by FilterChooser). */
 export type FilterChooserFilter = CompoundFilter | FieldFilter;
+export type FilterChooserFilterSpec = CompoundFilterSpec | FieldFilterSpec;
 
 /** A variant of {@link FilterLike} that excludes FunctionFilters and FilterTestFn. */
 export type FilterChooserFilterLike =
