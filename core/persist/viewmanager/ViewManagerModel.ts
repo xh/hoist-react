@@ -23,7 +23,7 @@ export interface ViewManagerConfig {
     /** Entity name or object for this model. */
     entity: string | Entity;
     /** Whether user can publish or edit globally shared objects. */
-    canManageGlobal: Thunkable<boolean>;
+    enableSharing: Thunkable<boolean>;
     /** Used to persist the user's last selected + favorite views and autoSave preference. */
     persistWith?: PersistOptions;
     /**
@@ -72,7 +72,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     @observable manageDialogOpen = false;
     @managed readonly saveDialogModel: SaveDialogModel;
 
-    private readonly _canManageGlobal: Thunkable<boolean>;
+    private readonly _enableSharing: Thunkable<boolean>;
 
     /**
      * Providers bound to this model. Note that any {@link ViewManagerProvider} will auto-push
@@ -80,8 +80,8 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
      */
     providers: ViewManagerProvider<any>[] = [];
 
-    get canManageGlobal(): boolean {
-        return executeIfFunction(this._canManageGlobal);
+    get enableSharing(): boolean {
+        return executeIfFunction(this._enableSharing);
     }
 
     get selectedView(): View<T> {
@@ -99,7 +99,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         return (
             selectedView &&
             this.isDirty &&
-            (this.canManageGlobal || !selectedView.isShared) &&
+            (this.enableSharing || !selectedView.isShared) &&
             !this.loadModel.isPending
         );
     }
@@ -149,7 +149,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     private constructor({
         entity,
         persistWith,
-        canManageGlobal,
+        enableSharing,
         enableDefault = true,
         enableAutoSave = true,
         enableFavorites = true
@@ -158,7 +158,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         makeObservable(this);
 
         this.entity = this.parseEntity(entity);
-        this._canManageGlobal = canManageGlobal;
+        this._enableSharing = enableSharing;
         this.enableDefault = enableDefault;
         this.enableAutoSave = enableAutoSave && !!persistWith;
         this.enableFavorites = enableFavorites && !!persistWith;

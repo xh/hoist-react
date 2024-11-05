@@ -38,22 +38,22 @@ export class ManageDialogModel extends HoistModel {
     }
 
     get canDelete(): boolean {
-        const {viewManagerModel, selIsShared, canManageGlobal, selectedIds} = this,
+        const {viewManagerModel, selIsShared, enableSharing, selectedIds} = this,
             {views, enableDefault} = viewManagerModel;
 
         // Can't delete shared views without manager role.
-        if (selIsShared && !canManageGlobal) return false;
+        if (selIsShared && !enableSharing) return false;
 
         // Can't delete all the views, unless default mode is enabled.
         return enableDefault || views.length - selectedIds.length > 0;
     }
 
     get canEdit(): boolean {
-        return this.canManageGlobal || !this.selIsShared;
+        return this.enableSharing || !this.selIsShared;
     }
 
-    get canManageGlobal(): boolean {
-        return this.viewManagerModel.canManageGlobal;
+    get enableSharing(): boolean {
+        return this.viewManagerModel.enableSharing;
     }
 
     get showSaveButton(): boolean {
@@ -104,7 +104,7 @@ export class ManageDialogModel extends HoistModel {
     // Implementation
     //------------------------
     private async doSaveAsync() {
-        const {formModel, viewManagerModel, canManageGlobal, selectedId, gridModel, displayName} =
+        const {formModel, viewManagerModel, enableSharing, selectedId, gridModel, displayName} =
                 this,
             {isDirty} = formModel,
             {name, description, isShared} = formModel.getData(),
@@ -125,7 +125,7 @@ export class ManageDialogModel extends HoistModel {
 
         // Additional sanity-check before POSTing an update - non-admins should never be modifying global views.
         throwIf(
-            isShared && !canManageGlobal,
+            isShared && !enableSharing,
             `Cannot save changes to shared ${viewManagerModel.entity.displayName} - missing required permission.`
         );
 

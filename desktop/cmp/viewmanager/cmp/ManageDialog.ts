@@ -105,7 +105,7 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
                         formField({
                             field: 'isShared',
                             item: switchInput({labelSide: 'left'}),
-                            omit: !model.canManageGlobal
+                            omit: !model.enableSharing
                         }),
                         formField({
                             field: 'isFavorite',
