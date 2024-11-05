@@ -82,10 +82,6 @@ export class GridPersistenceModel extends HoistModel implements Persistable<Grid
     //--------------------------
     // Persistable Interface
     //--------------------------
-    getDefaultPersistableState(): PersistableState<GridPersistState> {
-        return this.getPersistableState();
-    }
-
     getPersistableState(): PersistableState<GridPersistState> {
         return new PersistableState(this.state);
     }
