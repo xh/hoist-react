@@ -14,7 +14,7 @@ import {
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {executeIfFunction, pluralize} from '@xh/hoist/utils/js';
-import {capitalize, isEqual, isNil, isString, sortBy, startCase} from 'lodash';
+import {capitalize, isEmpty, isEqual, isNil, isString, sortBy, startCase} from 'lodash';
 import {runInAction} from 'mobx';
 import {SaveDialogModel} from './impl/SaveDialogModel';
 import {View, ViewTree} from './Types';
@@ -219,11 +219,10 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
         this.selectedToken = token;
 
-        // TODO - review + comment - this avoids initial setValue call on persistence init within ctor
-        //      We want to set the selected token, but then let the auto-select at end of loadAsync
-        //      be the thing that actually triggers the setValue call - only then will the state for
-        //      our selected view be available. But is this the best way to check?
-        if (!this.lastLoadCompleted) return;
+        // Allow this model to restore its own persisted state in its ctor and note the desired
+        // selected token before views have been loaded. Once views are loaded, this method will
+        // be called again with the desired token and will proceed to set the value.
+        if (isEmpty(this.views)) return;
 
         this.setValue(this.selectedView?.value ?? ({} as T));
     }
