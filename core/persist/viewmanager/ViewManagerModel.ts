@@ -349,7 +349,8 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     @action
     private setValue(value: T) {
         value = this.cleanValue(value);
-        if (isEqual(value, this.value)) return;
+        // TODO - checking both seems clumsy, but added for "reset" operation
+        if (isEqual(value, this.value) && isEqual(value, this.pendingValue)) return;
 
         console.log('ViewManagerModel.setValue', value);
         this.value = value;
