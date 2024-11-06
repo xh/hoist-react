@@ -86,6 +86,7 @@ export class GridPersistenceModel extends HoistModel implements Persistable<Grid
         return new PersistableState(this.state);
     }
 
+    @action
     setPersistableState(persistableState: PersistableState<GridPersistState>) {
         const state = persistableState.value;
         if (state.version !== this.VERSION) return;

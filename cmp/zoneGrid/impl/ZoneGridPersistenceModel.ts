@@ -73,6 +73,7 @@ export class ZoneGridPersistenceModel extends HoistModel implements Persistable<
         return new PersistableState(this.state);
     }
 
+    @action
     setPersistableState(persistableState: PersistableState<ZoneGridState>): void {
         const state = persistableState.value;
 

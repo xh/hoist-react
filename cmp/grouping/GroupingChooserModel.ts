@@ -319,6 +319,7 @@ export class GroupingChooserModel
         return new PersistableState(ret);
     }
 
+    @action
     setPersistableState(state: PersistableState<GroupingChooserPersistState>): void {
         const {value, favorites} = state.value;
         if (this.persistValue && !isUndefined(value)) this.setValue(value);

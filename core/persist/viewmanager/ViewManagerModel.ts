@@ -346,16 +346,13 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         });
     }
 
+    @action
     private setValue(value: T) {
         value = this.cleanValue(value);
         if (isEqual(value, this.value) && isEqual(value, this.pendingValue)) return;
 
-        runInAction(() => {
-            console.log('ViewManagerModel.setValue', value);
-            this.value = value;
-            this.pendingValue = value;
-        });
-
+        this.value = value;
+        this.pendingValue = value;
         this.providers.forEach(it => it.pushStateToTarget());
     }
 

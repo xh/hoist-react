@@ -426,11 +426,12 @@ export class FilterChooserModel
     //--------------------------
     getPersistableState(): PersistableState<FilterChooserPersistState> {
         const ret: FilterChooserPersistState = {};
-        if (this.persistValue) ret.value = this.value?.toJSON();
+        if (this.persistValue) ret.value = this.value?.toJSON() ?? null;
         if (this.persistFavorites) ret.favorites = this.favorites.map(f => f.toJSON());
         return new PersistableState(ret);
     }
 
+    @action
     setPersistableState(state: PersistableState<FilterChooserPersistState>) {
         const {value, favorites} = state.value;
 
