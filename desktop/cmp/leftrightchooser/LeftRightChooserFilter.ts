@@ -32,7 +32,7 @@ export const [LeftRightChooserFilter, leftRightChooserFilter] =
         render() {
             const impl = useLocalModel(LeftRightChooserFilterLocalModel);
             return textInput({
-                placeholder: 'Quick filter...',
+                placeholder: 'Filter...',
                 bind: 'value',
                 model: impl,
                 commitOnChange: true,

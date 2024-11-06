@@ -1,10 +1,11 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
+import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, lookup, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
-import {pluralize, throwIf} from '@xh/hoist/utils/js';
+import {intersperse, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {ViewManagerModel} from '../ViewManagerModel';
 
 export class ManageDialogModel extends HoistModel {
@@ -76,15 +77,21 @@ export class ManageDialogModel extends HoistModel {
         this.gridModel = this.createGridModel();
         this.formModel = this.createFormModel();
 
-        this.addReaction({
-            track: () => this.gridModel.selectedRecord,
-            run: record => {
-                if (record) {
-                    this.formModel.readonly = !this.canEdit;
-                    this.formModel.init(record.data);
+        this.addReaction(
+            {
+                track: () => this.viewManagerModel.views,
+                run: () => this.refreshAsync()
+            },
+            {
+                track: () => this.gridModel.selectedRecord,
+                run: record => {
+                    if (record) {
+                        this.formModel.readonly = !this.canEdit;
+                        this.formModel.init(record.data);
+                    }
                 }
             }
-        });
+        );
     }
 
     override async doLoadAsync() {
@@ -108,20 +115,11 @@ export class ManageDialogModel extends HoistModel {
                 this,
             {isDirty} = formModel,
             {name, description, isShared} = formModel.getData(),
-            dirtyFields = formModel.fieldList.filter(f => f.isDirty).map(f => f.name),
             isValid = await formModel.validateAsync(),
-            token = gridModel.selectedRecord.data.token;
+            {token, owner} = gridModel.selectedRecord.data,
+            isOwnView = owner === XH.getUsername();
 
         if (!isValid || !selectedId || !isDirty) return;
-
-        if (dirtyFields.includes('isFavorite')) {
-            viewManagerModel.toggleFavorite(token);
-            // Nothing else to do - favorite toggle a purely local operation.
-            if (dirtyFields.length === 1) {
-                await this.refreshAsync();
-                return;
-            }
-        }
 
         // Additional sanity-check before POSTing an update - non-admins should never be modifying global views.
         throwIf(
@@ -129,11 +127,33 @@ export class ManageDialogModel extends HoistModel {
             `Cannot save changes to shared ${viewManagerModel.entity.displayName} - missing required permission.`
         );
 
-        if (dirtyFields.includes('isShared')) {
+        if (formModel.getField('isShared').isDirty) {
+            const confirmMsgs = [];
+            if (isShared) {
+                confirmMsgs.push(
+                    `This ${displayName} will become visible to all other ${XH.appName} users.`
+                );
+            } else if (isOwnView) {
+                confirmMsgs.push(
+                    `The selected ${displayName} will revert to being private to you. It will no longer be available to other users.`
+                );
+            } else {
+                confirmMsgs.push(
+                    `The selected ${displayName} will revert to being private to its owner (${owner}).`,
+                    `Note that you will no longer have access to this view, meaning you will not be able to undo this change.`
+                );
+            }
+
+            confirmMsgs.push('Are you sure you want to proceed?');
+
             const confirmed = await XH.confirm({
-                message: isShared
-                    ? `This will share the selected ${displayName} with ALL other users.`
-                    : `The selected ${displayName} will no longer be available to all other users.`
+                message: intersperse(confirmMsgs, fragment(br(), br())),
+                confirmProps: {
+                    text: 'Yes, update visibility',
+                    outlined: true,
+                    autoFocus: false,
+                    intent: 'primary'
+                }
             });
 
             if (!confirmed) return;
@@ -146,7 +166,6 @@ export class ManageDialogModel extends HoistModel {
         });
 
         await this.viewManagerModel.refreshAsync();
-        await this.refreshAsync();
     }
 
     private async doDeleteAsync() {
@@ -222,11 +241,21 @@ export class ManageDialogModel extends HoistModel {
                     width: 40,
                     align: 'center',
                     headerName: Icon.favorite(),
-                    renderer: v =>
-                        v ? Icon.favorite({prefix: 'fas', className: 'xh-yellow'}) : null
+                    highlightOnChange: true,
+                    renderer: v => {
+                        return Icon.favorite({
+                            prefix: v ? 'fas' : 'fal',
+                            className: v ? 'xh-yellow' : 'xh-text-color-muted'
+                        });
+                    }
                 },
                 {field: 'group', hidden: true}
-            ]
+            ],
+            onCellClicked: ({colDef, data: record}) => {
+                if (colDef.colId === 'isFavorite') {
+                    this.viewManagerModel.toggleFavorite(record.id);
+                }
+            }
         });
     }
 
@@ -236,7 +265,6 @@ export class ManageDialogModel extends HoistModel {
                 {name: 'name', rules: [required, lengthIs({max: 255})]},
                 {name: 'description'},
                 {name: 'isShared', displayName: 'Shared'},
-                {name: 'isFavorite', displayName: 'Favorite'},
                 {name: 'owner', readonly: true},
                 {name: 'dateCreated', displayName: 'Created', readonly: true},
                 {name: 'lastUpdated', displayName: 'Updated', readonly: true},

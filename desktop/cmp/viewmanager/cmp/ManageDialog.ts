@@ -1,20 +1,12 @@
 import {form} from '@xh/hoist/cmp/form';
 import {grid} from '@xh/hoist/cmp/grid';
-import {
-    div,
-    filler,
-    fragment,
-    hbox,
-    hframe,
-    hspacer,
-    placeholder,
-    vframe
-} from '@xh/hoist/cmp/layout';
+import {div, filler, hbox, hframe, hspacer, placeholder, span, vframe} from '@xh/hoist/cmp/layout';
+import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, HoistProps, XH} from '@xh/hoist/core';
 import {ManageDialogModel} from '@xh/hoist/core/persist/viewmanager/impl/ManageDialogModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {switchInput, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
+import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtCompactDate} from '@xh/hoist/format';
@@ -39,7 +31,7 @@ export const manageDialog = hoistCmp.factory<ManageDialogProps>({
             icon: Icon.gear(),
             className,
             isOpen: true,
-            style: {width: '800px', maxWidth: '90vm', minHeight: '420px'},
+            style: {width: '800px', maxWidth: '90vm', minHeight: '430px'},
             canOutsideClickClose: false,
             onClose,
             item: panel({
@@ -54,7 +46,8 @@ const gridPanel = hoistCmp.factory({
     render() {
         return panel({
             modelConfig: {defaultSize: 350, side: 'left', collapsible: false},
-            item: grid()
+            item: grid(),
+            bbar: [storeFilterField()]
         });
     }
 });
@@ -62,7 +55,8 @@ const gridPanel = hoistCmp.factory({
 const formPanel = hoistCmp.factory<ManageDialogProps>({
     render({model, onClose}) {
         const {displayName, formModel} = model,
-            {values} = formModel;
+            {values} = formModel,
+            isOwnView = values.owner === XH.getUsername();
 
         if (model.hasMultiSelection) {
             return multiSelectionPanel();
@@ -77,8 +71,6 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
         return panel({
             item: form({
                 fieldDefaults: {
-                    inline: true,
-                    minimal: true,
                     commitOnChange: true
                 },
                 item: vframe({
@@ -88,10 +80,7 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
                             field: 'name',
                             item: textInput(),
                             info: model.canEdit
-                                ? fragment(
-                                      Icon.info(),
-                                      `Organize your ${pluralize(displayName)} into folders by including the "\\" character in their names - e.g. "My folder\\My ${displayName}".`
-                                  )
+                                ? `Organize your ${pluralize(displayName)} into folders by including the "\\" character in their names - e.g. "My folder\\My ${displayName}".`
                                 : null
                         }),
                         formField({
@@ -100,17 +89,28 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
                                 selectOnFocus: true,
                                 height: 70
                             }),
-                            readonlyRenderer: v => (v ? v : '[None]')
+                            readonlyRenderer: v =>
+                                v
+                                    ? v
+                                    : span({
+                                          item: 'None provided',
+                                          className: 'xh-text-color-muted'
+                                      })
                         }),
                         formField({
                             field: 'isShared',
-                            item: switchInput({labelSide: 'left'}),
+                            label: 'Visibility',
+                            item: select({
+                                options: [
+                                    {value: true, label: 'Shared with all users'},
+                                    {
+                                        value: false,
+                                        label: `Private to ${isOwnView ? 'me' : values.owner}`
+                                    }
+                                ],
+                                enableFilter: false
+                            }),
                             omit: !model.enableSharing
-                        }),
-                        formField({
-                            field: 'isFavorite',
-                            omit: !model.enableFavorites,
-                            item: switchInput({labelSide: 'left'})
                         }),
                         hbox({
                             omit: !model.showSaveButton,
