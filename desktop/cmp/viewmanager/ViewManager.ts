@@ -102,7 +102,8 @@ const saveButton = hoistCmp.factory<ViewManagerModel>({
 
 const viewMenu = hoistCmp.factory<ViewManagerProps>({
     render({model, showPrivateViewsInSubMenu, showSharedViewsInSubMenu}) {
-        const {displayName, DisplayName} = model,
+        const {DisplayName} = model,
+            pluralDisp = pluralize(DisplayName),
             items = [];
 
         if (!isEmpty(model.favoriteViews)) {
@@ -123,13 +124,13 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
         if (!isEmpty(model.privateViewTree)) {
             items.push(
                 menuDivider({
-                    title: showPrivateViewsInSubMenu ? null : `My ${pluralize(displayName)}`
+                    title: showPrivateViewsInSubMenu ? null : `My ${pluralDisp}`
                 })
             );
             if (showPrivateViewsInSubMenu) {
                 items.push(
                     menuItem({
-                        text: `My ${pluralize(displayName)}`,
+                        text: `My ${pluralDisp}`,
                         shouldDismissPopover: false,
                         children: model.privateViewTree.map(it => {
                             return buildView(it, model);
@@ -145,13 +146,13 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
         if (!isEmpty(model.sharedViewTree)) {
             items.push(
                 menuDivider({
-                    title: showSharedViewsInSubMenu ? null : `Shared ${pluralize(displayName)}`
+                    title: showSharedViewsInSubMenu ? null : `Shared ${pluralDisp}`
                 })
             );
             if (showSharedViewsInSubMenu) {
                 items.push(
                     menuItem({
-                        text: `Shared ${pluralize(displayName)}`,
+                        text: `Shared ${pluralDisp}`,
                         shouldDismissPopover: false,
                         children: model.sharedViewTree.map(it => {
                             return buildView(it, model);
@@ -208,7 +209,7 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                 menuItem({
                     icon: Icon.gear(),
                     disabled: isEmpty(model.views),
-                    text: `Manage ${pluralize(displayName)}...`,
+                    text: `Manage ${pluralDisp}...`,
                     onClick: () => model.openManageDialog()
                 })
             ]
