@@ -444,10 +444,12 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         return name && name === folderName && folderName.length < entryName.length;
     }
 
+    // Update flag on each view, replacing entire views collection for observability.
     private onFavoritesChange() {
-        this.views.forEach(view => {
-            view.isFavorite = this.isFavorite(view.token);
-        });
+        this.views = this.views.map(view => ({
+            ...view,
+            isFavorite: this.isFavorite(view.token)
+        }));
     }
 }
 
