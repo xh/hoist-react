@@ -1,6 +1,12 @@
 # Changelog
 
-## 70.0.0-SNAPSHOT - unreleased
+## 69.1.0 - 2024-11-07
+
+### 🐞 Bug Fixes
+
+* Updated minimum required version of FontAwesome to 6.6, as required by the `fileXml()` icon added
+  in the prior Hoist release. The previous spec for FA dependencies allowed apps to upgrade to 6.6,
+  but did not enforce it, which could result in a build error due to an unresolved import.
 
 ### ⚙️ Technical
 
