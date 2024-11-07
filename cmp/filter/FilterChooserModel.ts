@@ -131,6 +131,7 @@ export class FilterChooserModel extends HoistModel {
     maxTags: number;
     maxResults: number;
     introHelpText: ReactNode;
+    persistFavorites: boolean = false;
 
     /** Tracks execution of filtering operation on bound object.*/
     @managed filterTask = TaskObserver.trackAll();
@@ -430,20 +431,21 @@ export class FilterChooserModel extends HoistModel {
         }
 
         if (persistFavorites) {
-            const persistWith = isObject(persistFavorites) ? persistFavorites : rootPersistWith;
-            PersistenceProvider.create({
-                persistOptions: {
-                    path: `${path}.favorites`,
-                    ...persistWith
-                },
-                target: {
-                    getPersistableState: () =>
-                        new PersistableState(this.favorites.map(f => f.toJSON())),
-                    setPersistableState: ({value}) =>
-                        this.setFavorites(value.map(f => parseFilter(f)))
-                },
-                owner: this
-            });
+            const persistWith = isObject(persistFavorites) ? persistFavorites : rootPersistWith,
+                provider = PersistenceProvider.create({
+                    persistOptions: {
+                        path: `${path}.favorites`,
+                        ...persistWith
+                    },
+                    target: {
+                        getPersistableState: () =>
+                            new PersistableState(this.favorites.map(f => f.toJSON())),
+                        setPersistableState: ({value}) =>
+                            this.setFavorites(value.map(f => parseFilter(f)))
+                    },
+                    owner: this
+                });
+            if (provider) this.persistFavorites = true;
         }
     }
 
@@ -525,10 +527,10 @@ export class FilterChooserModel extends HoistModel {
 }
 
 interface FilterChooserPersistOptions extends PersistOptions {
-    /** True (default) to include value or provide value-specific PersistOptions  */
+    /** True (default) to include value or provide value-specific PersistOptions. */
     persistValue?: boolean;
 
-    /** True (default) to include favorites or provide favorites-specific PersistOptions  */
+    /** True (default) to include favorites or provide favorites-specific PersistOptions. */
     persistFavorites?: boolean;
 }
 

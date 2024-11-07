@@ -5,18 +5,12 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {
-    HoistModel,
-    Persistable,
-    PersistableState,
-    PersistenceProvider,
-    PersistOptions
-} from '@xh/hoist/core';
+import {HoistModel, PersistableState, PersistenceProvider, PersistOptions} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {difference, isArray, isEmpty, isEqual, isString, isUndefined, keys, sortBy} from 'lodash';
+import {difference, isArray, isEmpty, isEqual, isObject, isString, keys, sortBy} from 'lodash';
 
 export interface GroupingChooserConfig {
     /**
@@ -61,30 +55,20 @@ export interface DimensionSpec {
 }
 
 export interface GroupingChooserPersistOptions extends PersistOptions {
-    /** True (default) to save value to state. */
+    /** True (default) to include value or provide value-specific PersistOptions. */
     persistValue?: boolean;
 
-    /** True (default) to include favorites. */
+    /** True (default) to include favorites or provide favorites-specific PersistOptions. */
     persistFavorites?: boolean;
 }
 
-export interface GroupingChooserPersistState {
-    value?: string[];
-    favorites?: string[][];
-}
-
-export class GroupingChooserModel
-    extends HoistModel
-    implements Persistable<GroupingChooserPersistState>
-{
+export class GroupingChooserModel extends HoistModel {
     @observable.ref value: string[];
     @observable.ref favorites: string[][] = [];
 
     allowEmpty: boolean;
     maxDepth: number;
     commitOnChange: boolean;
-
-    persistValue: boolean = false;
     persistFavorites: boolean = false;
 
     // Implementation fields for Control
@@ -149,17 +133,7 @@ export class GroupingChooserModel
         this.setValue(value);
         this.setFavorites(favorites);
 
-        if (persistWith) {
-            this.persistValue = persistWith.persistValue ?? true;
-            this.persistFavorites = persistWith.persistFavorites ?? true;
-            PersistenceProvider.create({
-                persistOptions: {
-                    path: 'groupingChooser',
-                    ...persistWith
-                },
-                target: this
-            });
-        }
+        if (persistWith) this.initPersist(persistWith);
 
         this.addReaction({
             track: () => this.pendingValue,
@@ -309,26 +283,47 @@ export class GroupingChooserModel
         return this.favorites?.some(v => isEqual(v, value));
     }
 
-    //-------------------------
-    // Persistence handling
-    //-------------------------
-    getPersistableState(): PersistableState<GroupingChooserPersistState> {
-        const ret: GroupingChooserPersistState = {};
-        if (this.persistValue) ret.value = this.value;
-        if (this.persistFavorites) ret.favorites = this.favorites;
-        return new PersistableState(ret);
-    }
-
-    @action
-    setPersistableState(state: PersistableState<GroupingChooserPersistState>): void {
-        const {value, favorites} = state.value;
-        if (this.persistValue && !isUndefined(value)) this.setValue(value);
-        if (this.persistFavorites && !isUndefined(favorites)) this.setFavorites(favorites);
-    }
-
     //------------------------
     // Implementation
     //------------------------
+    private initPersist({
+        persistValue = true,
+        persistFavorites = true,
+        path = 'groupingChooser',
+        ...rootPersistWith
+    }: GroupingChooserPersistOptions) {
+        if (persistValue) {
+            const persistWith = isObject(persistValue) ? persistValue : rootPersistWith;
+            PersistenceProvider.create({
+                persistOptions: {
+                    path: `${path}.value`,
+                    ...persistWith
+                },
+                target: {
+                    getPersistableState: () => new PersistableState(this.value),
+                    setPersistableState: ({value}) => this.setValue(value)
+                },
+                owner: this
+            });
+        }
+
+        if (persistFavorites) {
+            const persistWith = isObject(persistFavorites) ? persistFavorites : rootPersistWith,
+                provider = PersistenceProvider.create({
+                    persistOptions: {
+                        path: `${path}.favorites`,
+                        ...persistWith
+                    },
+                    target: {
+                        getPersistableState: () => new PersistableState(this.favorites),
+                        setPersistableState: ({value}) => this.setFavorites(value)
+                    },
+                    owner: this
+                });
+            if (provider) this.persistFavorites = true;
+        }
+    }
+
     private normalizeDimensions(
         dims: Array<DimensionSpec | string>
     ): Record<string, DimensionSpec> {
