@@ -525,10 +525,10 @@ export class FilterChooserModel extends HoistModel {
 }
 
 interface FilterChooserPersistOptions extends PersistOptions {
-    /** True (default) to save value to state. */
+    /** True (default) to include value or provide value-specific PersistOptions  */
     persistValue?: boolean;
 
-    /** True (default) to include favorites. */
+    /** True (default) to include favorites or provide favorites-specific PersistOptions  */
     persistFavorites?: boolean;
 }
 
