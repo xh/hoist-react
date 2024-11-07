@@ -18,6 +18,9 @@
       its bound `Persistable` when changes are detected.
     * In its constructor, `PersistenceProvider` also stores the initial state of its bound
       `Persistable` and clears its persisted state when structurally equal to the initial state.
+* Enhancements to `FilterChooserPersistOptions`, `GridModelPersistOptions`,
+  `GroupingChooserPersistOptions` and `ZoneGridModelPersistOptions` to support specifying individual
+  `PersistOptions` for each piece of state.
 
 ### ⚙️ Typescript API Adjustments
 
