@@ -7,7 +7,6 @@
 import {
     HoistModel,
     managed,
-    Persistable,
     PersistableState,
     PersistenceProvider,
     PersistOptions,
@@ -39,8 +38,8 @@ import {
     isArray,
     isEmpty,
     isFinite,
+    isObject,
     isString,
-    isUndefined,
     partition,
     sortBy,
     uniq,
@@ -119,10 +118,7 @@ export interface FilterChooserConfig {
     persistWith?: FilterChooserPersistOptions;
 }
 
-export class FilterChooserModel
-    extends HoistModel
-    implements Persistable<FilterChooserPersistState>
-{
+export class FilterChooserModel extends HoistModel {
     @observable.ref value: FilterChooserFilter = null;
     @observable.ref favorites: FilterChooserFilter[] = [];
     bind: Store | View;
@@ -136,9 +132,6 @@ export class FilterChooserModel
     maxResults: number;
     introHelpText: ReactNode;
 
-    persistValue: boolean = false;
-    persistFavorites: boolean = false;
-
     /** Tracks execution of filtering operation on bound object.*/
     @managed filterTask = TaskObserver.trackAll();
 
@@ -149,8 +142,6 @@ export class FilterChooserModel
     @observable favoritesIsOpen = false;
     @observable unsupportedFilter = false;
     inputRef = createObservableRef<HTMLElement>();
-
-    private readonly provider: PersistenceProvider<FilterChooserPersistState>;
 
     constructor({
         fieldSpecs,
@@ -182,17 +173,7 @@ export class FilterChooserModel
         this.setValueInternal(executeIfFunction(initialValue), false);
         this.setFavorites(executeIfFunction(initialFavorites).map(f => parseFilter(f)));
 
-        if (persistWith) {
-            this.persistValue = persistWith.persistValue ?? true;
-            this.persistFavorites = persistWith.persistFavorites ?? true;
-            this.provider = PersistenceProvider.create({
-                persistOptions: {
-                    path: 'filterChooser',
-                    ...persistWith
-                },
-                target: this
-            });
-        }
+        if (persistWith) this.initPersist(persistWith);
 
         this.updateSelectValueAndBind();
 
@@ -421,33 +402,51 @@ export class FilterChooserModel
         return 'Select or enter a field name (below) or begin typing to match available field values.';
     }
 
-    //--------------------------
-    // Persistable Interface
-    //--------------------------
-    getPersistableState(): PersistableState<FilterChooserPersistState> {
-        const ret: FilterChooserPersistState = {};
-        if (this.persistValue) ret.value = this.value?.toJSON() ?? null;
-        if (this.persistFavorites) ret.favorites = this.favorites.map(f => f.toJSON());
-        return new PersistableState(ret);
-    }
-
-    @action
-    setPersistableState(state: PersistableState<FilterChooserPersistState>) {
-        const {value, favorites} = state.value;
-
-        // Only want to updateSelectValueAndBind once in the constructor
-        if (this.persistValue && !isUndefined(value)) {
-            this.setValueInternal(value, !!this.provider);
-        }
-
-        if (this.persistFavorites && !isUndefined(favorites)) {
-            this.setFavorites(favorites.map(f => parseFilter(f)));
-        }
-    }
-
     // -------------------------------
     // Implementation
     // -------------------------------
+    private initPersist({
+        persistValue = true,
+        persistFavorites = true,
+        path = 'filterChooser',
+        ...rootPersistWith
+    }: FilterChooserPersistOptions) {
+        if (persistValue) {
+            const status = {initialized: false},
+                persistWith = isObject(persistValue) ? persistValue : rootPersistWith;
+            PersistenceProvider.create({
+                persistOptions: {
+                    path: `${path}.value`,
+                    ...persistWith
+                },
+                target: {
+                    getPersistableState: () => new PersistableState(this.value?.toJSON() ?? null),
+                    setPersistableState: ({value}) =>
+                        this.setValueInternal(value, status.initialized)
+                },
+                owner: this
+            });
+            status.initialized = true;
+        }
+
+        if (persistFavorites) {
+            const persistWith = isObject(persistFavorites) ? persistFavorites : rootPersistWith;
+            PersistenceProvider.create({
+                persistOptions: {
+                    path: `${path}.favorites`,
+                    ...persistWith
+                },
+                target: {
+                    getPersistableState: () =>
+                        new PersistableState(this.favorites.map(f => f.toJSON())),
+                    setPersistableState: ({value}) =>
+                        this.setFavorites(value.map(f => parseFilter(f)))
+                },
+                owner: this
+            });
+        }
+    }
+
     @action
     private setValueInternal(rawValue: FilterLike, updateSelectValueAndBind: boolean) {
         const {maxTags} = this;
@@ -531,11 +530,6 @@ interface FilterChooserPersistOptions extends PersistOptions {
 
     /** True (default) to include favorites. */
     persistFavorites?: boolean;
-}
-
-interface FilterChooserPersistState {
-    value?: FilterChooserFilterSpec;
-    favorites?: FilterChooserFilterSpec[];
 }
 
 /** A variant of {@link Filter} that excludes FunctionFilter (unsupported by FilterChooser). */
