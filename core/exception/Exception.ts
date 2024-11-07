@@ -7,7 +7,6 @@
 import {FetchOptions} from '@xh/hoist/svc';
 import {PlainObject, XH} from '../';
 import {isPlainObject} from 'lodash';
-
 import {FetchException, HoistException, TimeoutException, TimeoutExceptionConfig} from './Types';
 
 /**
