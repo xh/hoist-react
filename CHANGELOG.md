@@ -5,6 +5,8 @@
 ### ⚙️ Technical
 
 * Deprecated `FileChooserModel.removeAllFiles()`, replaced with `clear()` for brevity/consistency.
+* Improved timeout error message thrown by `FetchService` to format the timeout interval in seconds
+  where possible.
 
 ### 📚 Libraries
 
