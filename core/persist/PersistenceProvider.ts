@@ -10,10 +10,11 @@ import {
     cloneDeep,
     debounce as lodashDebounce,
     get,
+    isEmpty,
     isNumber,
     isUndefined,
     set,
-    unset
+    toPath
 } from 'lodash';
 import {IReactionDisposer, reaction} from 'mobx';
 import {DebounceSpec, HoistBase, Persistable, PersistableState, XH} from '../';
@@ -135,11 +136,17 @@ export abstract class PersistenceProvider<S> {
         this.writeInternal(state);
     }
 
-    /** Clear any persisted data at a path. */
-    clear(path: string = this.path) {
+    /** Clear any persisted data at a path. Also clears any parent objects that become empty. */
+    clear() {
         logDebug('Clearing state', this.owner);
-        const obj = cloneDeep(this.readRaw());
-        unset(obj, this.path);
+        const obj = cloneDeep(this.readRaw()),
+            path = toPath(this.path);
+        do {
+            const property = path.pop(),
+                parent = isEmpty(path) ? obj : get(obj, path);
+            if (parent) delete parent[property];
+            if (!isEmpty(parent)) break;
+        } while (!isEmpty(path));
         this.writeRaw(obj);
     }
 
