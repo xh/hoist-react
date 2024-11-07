@@ -95,7 +95,7 @@ import {ReactNode} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridContextMenuSpec} from './GridContextMenu';
 import {GridSorter, GridSorterLike} from './GridSorter';
-import {GridPersistenceModel} from './impl/GridPersistenceModel';
+import {initPersist} from './impl/InitPersist';
 import {managedRenderer} from './impl/Utils';
 import {
     ColChooserConfig,
@@ -448,7 +448,6 @@ export class GridModel extends HoistModel {
     ];
 
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
-    @managed persistenceModel: GridPersistenceModel;
 
     /**
      * Is autosizing enabled on this grid?
@@ -601,7 +600,7 @@ export class GridModel extends HoistModel {
         this.colChooserModel = this.parseChooserModel(colChooserModel);
         this.selModel = this.parseSelModel(selModel);
         this.filterModel = this.parseFilterModel(filterModel);
-        this.persistenceModel = persistWith ? new GridPersistenceModel(this, persistWith) : null;
+        if (persistWith) initPersist(this, persistWith);
         this.experimental = this.parseExperimental(experimental);
         this.onKeyDown = onKeyDown;
         this.onRowClicked = onRowClicked;
