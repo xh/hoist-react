@@ -5,8 +5,8 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {Column, ColumnRenderer, ColumnSortSpec, GridSorterLike} from '@xh/hoist/cmp/grid';
-import {PersistOptions, Some} from '@xh/hoist/core';
+import {Column, ColumnRenderer, ColumnSortSpec} from '@xh/hoist/cmp/grid';
+import {PersistOptions} from '@xh/hoist/core';
 
 export type Zone = 'tl' | 'tr' | 'bl' | 'br';
 
@@ -38,17 +38,10 @@ export interface ZoneField {
 }
 
 export interface ZoneGridModelPersistOptions extends PersistOptions {
-    /** True to include mapping information (default true) */
+    /** True (default) to include mapping state or provide mapping-specific PersistOptions. */
     persistMapping?: boolean;
-    /** True to include grouping information (default true) */
+    /** True (default) to include grouping state or provide grouping-specific PersistOptions. */
     persistGrouping?: boolean;
-    /** True to include sorting information (default true) */
+    /** True (default) to include sort state or provide sort-specific PersistOptions. */
     persistSort?: boolean;
-}
-
-export interface ZoneGridState {
-    sortBy?: GridSorterLike;
-    groupBy?: Some<string>;
-    version?: number;
-    mappings?: Record<Zone, Some<string | ZoneMapping>>;
 }

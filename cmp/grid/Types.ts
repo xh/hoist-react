@@ -74,11 +74,11 @@ export type RowClassFn = (record: StoreRecord) => Some<string>;
 export type RowClassRuleFn = (agParams: RowClassParams) => boolean;
 
 export interface GridModelPersistOptions extends PersistOptions {
-    /** True (default) to include column state or provide column-specific PersistOptions  */
+    /** True (default) to include column state or provide column-specific PersistOptions. */
     persistColumns?: boolean | PersistOptions;
-    /** True (default) to include grouping state or provide grouping-specific PersistOptions */
+    /** True (default) to include grouping state or provide grouping-specific PersistOptions. */
     persistGrouping?: boolean | PersistOptions;
-    /** True (default) to include sort state or provide sort-specific PersistOptions */
+    /** True (default) to include sort state or provide sort-specific PersistOptions. */
     persistSort?: boolean | PersistOptions;
 }
 
