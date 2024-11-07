@@ -10,7 +10,10 @@
 
 ### 📚 Libraries
 
+* @azure/msal-browser `3.23 → 3.27`
 * @fortawesome/fontawesome-pro `6.2 → 6.6`
+* qs `6.12 → 6.13`
+* store2 `2.13 → 2.14`
 
 ## 69.0.0 - 2024-10-17
 
