@@ -314,7 +314,8 @@ export class FetchService extends HoistService {
                 const msg =
                     isObject(timeout) && 'message' in timeout
                         ? timeout.message
-                        : `Timed out loading '${opts.url}' - no response after ${e.interval}ms.`;
+                        : // Exception.timeout() message already includes interval - add URL here.
+                          e.message + ` loading '${opts.url}'`;
                 throw Exception.fetchTimeout(opts, e, msg);
             }
 
