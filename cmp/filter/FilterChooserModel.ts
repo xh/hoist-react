@@ -528,10 +528,10 @@ export class FilterChooserModel extends HoistModel {
 
 interface FilterChooserPersistOptions extends PersistOptions {
     /** True (default) to include value or provide value-specific PersistOptions. */
-    persistValue?: boolean;
+    persistValue?: boolean | PersistOptions;
 
     /** True (default) to include favorites or provide favorites-specific PersistOptions. */
-    persistFavorites?: boolean;
+    persistFavorites?: boolean | PersistOptions;
 }
 
 /** A variant of {@link Filter} that excludes FunctionFilter (unsupported by FilterChooser). */

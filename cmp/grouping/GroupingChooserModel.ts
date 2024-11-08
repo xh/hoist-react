@@ -56,10 +56,10 @@ export interface DimensionSpec {
 
 export interface GroupingChooserPersistOptions extends PersistOptions {
     /** True (default) to include value or provide value-specific PersistOptions. */
-    persistValue?: boolean;
+    persistValue?: boolean | PersistOptions;
 
     /** True (default) to include favorites or provide favorites-specific PersistOptions. */
-    persistFavorites?: boolean;
+    persistFavorites?: boolean | PersistOptions;
 }
 
 export class GroupingChooserModel extends HoistModel {
