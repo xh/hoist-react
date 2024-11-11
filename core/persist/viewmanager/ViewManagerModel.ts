@@ -104,6 +104,21 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         );
     }
 
+    /**
+     * True if displaying the save button is appropriate from the model's point of view, even if
+     * that button might be disabled due to no changes having been made. Works in concert with the
+     * desktop ViewManager component's `showSaveButton` prop.
+     */
+    @computed
+    get canShowSaveButton(): boolean {
+        const {selectedView} = this;
+        return (
+            selectedView &&
+            (!this.enableAutoSave || !this.autoSaveActive) &&
+            (this.enableSharing || !selectedView.isShared)
+        );
+    }
+
     @computed
     get enableAutoSaveToggle(): boolean {
         return this.selectedView && !this.isSharedViewSelected;
@@ -201,10 +216,11 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const rawViews = await XH.jsonBlobService.listAsync(
-            {type: this.entity.name, includeValue: true},
+        const rawViews = await XH.jsonBlobService.listAsync({
+            type: this.entity.name,
+            includeValue: true,
             loadSpec
-        );
+        });
         if (loadSpec.isStale) return;
 
         runInAction(() => (this.views = this.processRaw(rawViews)));
@@ -417,7 +433,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
             const {name, isMenuFolder, children, description, token} = it;
             if (isMenuFolder) {
                 return {
-                    type: 'directory',
+                    type: 'folder',
                     text: name,
                     items: this.buildViewTree(children, depth + 1),
                     selected: this.isFolderForEntry(name, this.selectedView?.name, depth)

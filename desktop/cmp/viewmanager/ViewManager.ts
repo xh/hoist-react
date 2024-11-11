@@ -24,6 +24,12 @@ export interface ViewManagerProps extends HoistProps<ViewManagerModel> {
     showSharedViewsInSubMenu?: boolean;
 }
 
+/**
+ * Desktop ViewManager component - a button-based menu for saving and swapping between named
+ * bundles of persisted component state (eg grid views, dashboards, and similar).
+ *
+ * See {@link ViewManagerModel} for additional details and configuration options.
+ */
 export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>({
     displayName: 'ViewManager',
     className: 'xh-view-manager',
@@ -80,10 +86,9 @@ const menuButton = hoistCmp.factory<ViewManagerModel>({
 const saveButton = hoistCmp.factory<ViewManagerModel>({
     render({model, showSaveButton, ...rest}) {
         if (
+            !model.canShowSaveButton ||
             showSaveButton === 'never' ||
-            (showSaveButton === 'whenDirty' && !model.isDirty) ||
-            !model.canSave ||
-            (model.enableAutoSave && model.autoSaveActive)
+            (showSaveButton === 'whenDirty' && !model.isDirty)
         ) {
             return null;
         }
@@ -107,13 +112,13 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
             items = [];
 
         if (!isEmpty(model.favoriteViews)) {
-            items.push(menuDivider({title: 'Favorites'}));
             items.push(
+                menuDivider({title: 'Favorites'}),
                 ...model.favoriteViews.map(it => {
                     return menuItem({
-                        key: `${it.token}-isFavorite`,
+                        key: `${it.token}-favorite`,
                         icon: model.selectedToken === it.token ? Icon.check() : Icon.placeholder(),
-                        text: menuFavorite({
+                        text: menuItemTextAndFaveToggle({
                             view: {...it, text: model.getHierarchyDisplayName(it.name)}
                         }),
                         onClick: () => model.selectViewAsync(it.token).linkTo(model.loadModel),
@@ -122,48 +127,44 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                 })
             );
         }
+
         if (!isEmpty(model.privateViewTree)) {
-            items.push(
-                menuDivider({
-                    title: showPrivateViewsInSubMenu ? null : `My ${pluralDisp}`
-                })
-            );
             if (showPrivateViewsInSubMenu) {
                 items.push(
+                    menuDivider({omit: isEmpty(items)}),
                     menuItem({
                         text: `My ${pluralDisp}`,
                         shouldDismissPopover: false,
                         children: model.privateViewTree.map(it => {
-                            return buildView(it, model);
+                            return buildMenuItem(it, model);
                         })
                     })
                 );
             } else {
-                model.privateViewTree.forEach(it => {
-                    items.push(buildView(it, model));
-                });
+                items.push(
+                    menuDivider({title: `My ${pluralDisp}`}),
+                    ...model.privateViewTree.map(it => buildMenuItem(it, model))
+                );
             }
         }
+
         if (!isEmpty(model.sharedViewTree)) {
-            items.push(
-                menuDivider({
-                    title: showSharedViewsInSubMenu ? null : `Shared ${pluralDisp}`
-                })
-            );
             if (showSharedViewsInSubMenu) {
                 items.push(
+                    menuDivider({omit: isEmpty(items)}),
                     menuItem({
                         text: `Shared ${pluralDisp}`,
                         shouldDismissPopover: false,
                         children: model.sharedViewTree.map(it => {
-                            return buildView(it, model);
+                            return buildMenuItem(it, model);
                         })
                     })
                 );
             } else {
-                model.sharedViewTree.forEach(it => {
-                    items.push(buildView(it, model));
-                });
+                items.push(
+                    menuDivider({title: `Shared ${pluralDisp}`}),
+                    ...model.sharedViewTree.map(it => buildMenuItem(it, model))
+                );
             }
         }
 
@@ -178,7 +179,7 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                     omit: !model.enableDefault,
                     onClick: () => model.selectViewAsync(null)
                 }),
-                menuDivider({omit: !model.enableDefault}),
+                menuDivider(),
                 menuItem({
                     icon: Icon.save(),
                     text: 'Save',
@@ -220,7 +221,33 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
     }
 });
 
-const menuFavorite = hoistCmp.factory<ViewManagerModel>({
+function buildMenuItem(viewOrFolder: ViewTree, model: ViewManagerModel): ReactNode {
+    const {type, text, selected} = viewOrFolder,
+        icon = selected ? Icon.check() : Icon.placeholder();
+
+    switch (type) {
+        case 'folder':
+            return menuItem({
+                text,
+                icon,
+                shouldDismissPopover: false,
+                children: viewOrFolder.items
+                    ? viewOrFolder.items.map(child => buildMenuItem(child, model))
+                    : []
+            });
+        case 'view':
+            return menuItem({
+                className: 'xh-view-manager__menu-item',
+                key: viewOrFolder.token,
+                icon,
+                text: menuItemTextAndFaveToggle({model, view: viewOrFolder}),
+                title: viewOrFolder.description,
+                onClick: () => model.selectViewAsync(viewOrFolder.token).linkTo(model.loadModel)
+            });
+    }
+}
+
+const menuItemTextAndFaveToggle = hoistCmp.factory<ViewManagerModel>({
     render({model, view}) {
         const isFavorite = model.isFavorite(view.token);
         return hbox({
@@ -245,26 +272,3 @@ const menuFavorite = hoistCmp.factory<ViewManagerModel>({
         });
     }
 });
-
-function buildView(view: ViewTree, model: ViewManagerModel): ReactNode {
-    const {type, text, selected} = view,
-        icon = selected ? Icon.check() : Icon.placeholder();
-    switch (type) {
-        case 'directory':
-            return menuItem({
-                text,
-                icon,
-                shouldDismissPopover: false,
-                children: view.items ? view.items.map(child => buildView(child, model)) : []
-            });
-        case 'view':
-            return menuItem({
-                className: 'xh-view-manager__menu-item',
-                key: view.token,
-                icon,
-                text: menuFavorite({model, view}),
-                title: view.description,
-                onClick: () => model.selectViewAsync(view.token).linkTo(model.loadModel)
-            });
-    }
-}
