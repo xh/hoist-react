@@ -1,5 +1,44 @@
 # Changelog
 
+## v70.0.0-SNAPSHOT
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - changes to advanced persistence APIs)
+
+* Upgraded the `PersistenceProvider` API as noted in `New Features`. Could require updates in apps
+  with advanced direct usages of this API (uncommon).
+* Updated `GridModel` persistence to omit the widths of autosized columns from its persisted state.
+  This helps to keep persisted state more stable, avoiding spurious diffs due to autosize updates.
+  Note this can result in more visible column resizing for large grids without in-code default
+  widths. Please let XH know if this is a noticeable annoyance for your app.
+* Removed `GridModel.autosizeState` and `Column.manuallySized`.
+
+### 🎁 New Features
+
+* Introduced a new `ViewManager` component and backing model to support user-driven management of
+  persisted component state - e.g. saved grid views.
+  * Bundled with a desktop-only menu button based component to start, but designed to be extensible.
+  * Bindable to any persistable component with `persistWith: {viewManager: someViewManagerModel}`.
+  * Detects changes to any bound components and syncs them back to saved views, with support for
+    an autosave option or user-driven saving with a clear "dirty" indicator.
+  * Includes a simple sharing model - if enabled for all or some subset of users, allows those users
+    to publish saved views to everyone else in the application.
+  * Users can rename views, nest them into folders, and start them as favorites for quick access.
+* Generally enhanced Hoist's persistence-related APIs:
+    * Added new `Persistable` interface to formalize the contract for objects that can be persisted.
+    * `PersistenceProvider` now targets a `Persistable` and is responsible for setting persisted
+      state on its bound `Persistable` when the provider is constructed and persisting state from
+      its bound `Persistable` when changes are detected.
+    * In its constructor, `PersistenceProvider` also stores the initial state of its bound
+      `Persistable` and clears its persisted state when structurally equal to the initial state.
+* Updated persistable components to support specifying distinct `PersistOptions` for individual
+  bits of persisted state. E.g. you can now configure a `GroupingChooserModel` used within a
+  dashboard widget to persist its value to that particular widget's `DashViewModel` while saving the
+  user's favorites to a global preference.
+
+### ⚙️ Typescript API Adjustments
+
+* Improved `HoistBase.markPersist` signature.
+
 ## 69.1.0 - 2024-11-07
 
 ### 🐞 Bug Fixes
@@ -7,30 +46,6 @@
 * Updated minimum required version of FontAwesome to 6.6, as required by the `fileXml()` icon added
   in the prior Hoist release. The previous spec for FA dependencies allowed apps to upgrade to 6.6,
   but did not enforce it, which could result in a build error due to an unresolved import.
-
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW  - Persistence and Grid changes)
-
-* See `PersistenceProvider` API changes noted in `New Features`. Should only affect applications
-  using the `PersistenceProvider` API directly.
-* `GridModel` no longer persists widths for auto-sized columns.
-* Removed `GridModel.autosizeState` and `Column.manuallySized`.
-
-### 🎁 New Features
-
-* Enhancements to `PersistenceProvider`
-    * Added new `Persistable` interface.
-    * `PersistenceProvider` now targets a `Persistable` and is responsible for setting persisted
-      state on its bound `Persistable` when the provider is constructed and persisting state from
-      its bound `Persistable` when changes are detected.
-    * In its constructor, `PersistenceProvider` also stores the initial state of its bound
-      `Persistable` and clears its persisted state when structurally equal to the initial state.
-* Enhancements to `FilterChooserPersistOptions`, `GridModelPersistOptions`,
-  `GroupingChooserPersistOptions` and `ZoneGridModelPersistOptions` to support specifying individual
-  `PersistOptions` for each piece of state.
-
-### ⚙️ Typescript API Adjustments
-
-* Improved `HoistBase.markPersist` signature.
 
 ### ⚙️ Technical
 
@@ -44,7 +59,6 @@
 * @fortawesome/fontawesome-pro `6.2 → 6.6`
 * qs `6.12 → 6.13`
 * store2 `2.13 → 2.14`
-
 
 ## 69.0.0 - 2024-10-17
 
