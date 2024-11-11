@@ -1,11 +1,11 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
-import {br, fragment} from '@xh/hoist/cmp/layout';
+import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, lookup, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
-import {intersperse, pluralize, throwIf} from '@xh/hoist/utils/js';
+import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {ViewManagerModel} from '../ViewManagerModel';
 
 export class ManageDialogModel extends HoistModel {
@@ -147,7 +147,7 @@ export class ManageDialogModel extends HoistModel {
             confirmMsgs.push('Are you sure you want to proceed?');
 
             const confirmed = await XH.confirm({
-                message: intersperse(confirmMsgs, fragment(br(), br())),
+                message: fragment(confirmMsgs.map(msg => p(msg))),
                 confirmProps: {
                     text: 'Yes, update visibility',
                     outlined: true,
@@ -165,7 +165,7 @@ export class ManageDialogModel extends HoistModel {
             acl: isShared ? '*' : null
         });
 
-        await this.viewManagerModel.refreshAsync();
+        await viewManagerModel.refreshAsync();
     }
 
     private async doDeleteAsync() {
@@ -193,7 +193,6 @@ export class ManageDialogModel extends HoistModel {
         }
 
         await viewManagerModel.refreshAsync();
-        await this.refreshAsync();
     }
 
     private async ensureGridHasSelection() {
