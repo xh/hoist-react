@@ -178,8 +178,6 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
             {
                 track: () => this.pendingValue,
                 run: pValue => {
-                    console.log('ViewManagerModel pendingValue changed', pValue);
-                    console.log('ViewManagerModel isDirty', this.isDirty);
                     this.maybeAutoSaveAsync({skipToast: true});
                 }
             },
@@ -207,12 +205,10 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
             loadSpec.meta.selectToken ??
             this.selectedView?.token ??
             (this.enableDefault ? null : this.views[0]?.token);
-        console.log('doLoadAsync complete, selecting token', token);
         await this.selectViewAsync(token);
     }
 
     async selectViewAsync(token: string) {
-        console.log('selectView', token);
         // TODO - review if we benefit from async + masking - eg during intensive
         //      component rebuild within setValue?
         await wait();

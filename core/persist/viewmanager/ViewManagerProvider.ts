@@ -23,7 +23,6 @@ export class ViewManagerProvider<S> extends PersistenceProvider<S> {
 
     pushStateToTarget() {
         const state = this.read();
-        console.log('ViewManagerProvider.pushStateToTarget', this.path, state);
         if (state) {
             this.target.setPersistableState(state);
         } else {
@@ -39,7 +38,6 @@ export class ViewManagerProvider<S> extends PersistenceProvider<S> {
     }
 
     override writeRaw(data: Record<typeof this.path, S>) {
-        console.log('ViewManagerProvider.writeRaw', this.path, data);
         this.viewManagerModel.setPendingValue(data);
     }
 
