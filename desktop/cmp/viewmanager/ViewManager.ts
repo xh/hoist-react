@@ -116,7 +116,8 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                         text: menuFavorite({
                             view: {...it, text: model.getHierarchyDisplayName(it.name)}
                         }),
-                        onClick: () => model.selectViewAsync(it.token).linkTo(model.loadModel)
+                        onClick: () => model.selectViewAsync(it.token).linkTo(model.loadModel),
+                        title: it.description
                     });
                 })
             );
@@ -197,12 +198,14 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                 }),
                 menuDivider(),
                 menuItem({
+                    omit: !model.enableAutoSave,
                     text: switchInput({
                         label: 'Auto Save',
                         bind: 'autoSaveActive',
                         inline: true,
                         disabled: !model.enableAutoSaveToggle
                     }),
+                    title: model.disabledAutoSaveReason,
                     shouldDismissPopover: false
                 }),
                 menuDivider(),
@@ -260,6 +263,7 @@ function buildView(view: ViewTree, model: ViewManagerModel): ReactNode {
                 key: view.token,
                 icon,
                 text: menuFavorite({model, view}),
+                title: view.description,
                 onClick: () => model.selectViewAsync(view.token).linkTo(model.loadModel)
             });
     }

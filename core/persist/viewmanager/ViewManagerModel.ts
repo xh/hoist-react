@@ -106,7 +106,15 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
     @computed
     get enableAutoSaveToggle(): boolean {
-        return this.enableAutoSave && this.selectedView && !this.isSharedViewSelected;
+        return this.selectedView && !this.isSharedViewSelected;
+    }
+
+    @computed
+    get disabledAutoSaveReason(): string {
+        const {displayName} = this;
+        if (!this.selectedView) return `Cannot auto-save default ${displayName}.`;
+        if (this.isSharedViewSelected) return `Cannot auto-save shared ${displayName}.`;
+        return null;
     }
 
     @computed
@@ -406,7 +414,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         });
 
         return unbalancedStableGroupsAndViews.map(it => {
-            const {name, isMenuFolder, children, token} = it;
+            const {name, isMenuFolder, children, description, token} = it;
             if (isMenuFolder) {
                 return {
                     type: 'directory',
@@ -419,7 +427,8 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
                 type: 'view',
                 text: this.getHierarchyDisplayName(name),
                 selected: this.selectedToken === token,
-                token
+                token,
+                description
             };
         });
     }

@@ -29,5 +29,6 @@ export type ViewTree = {
     | {
           type: 'view';
           token: string;
+          description: string;
       }
 );
