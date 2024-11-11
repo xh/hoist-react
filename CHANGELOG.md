@@ -11,6 +11,7 @@
   Note this can result in more visible column resizing for large grids without in-code default
   widths. Please let XH know if this is a noticeable annoyance for your app.
 * Removed `GridModel.autosizeState` and `Column.manuallySized`.
+* Updated `JsonBlobService.listAsync` to inline `loadSpec` with all other args in a single object.
 
 ### 🎁 New Features
 
@@ -20,6 +21,7 @@
   * Bindable to any persistable component with `persistWith: {viewManager: someViewManagerModel}`.
   * Detects changes to any bound components and syncs them back to saved views, with support for
     an autosave option or user-driven saving with a clear "dirty" indicator.
+  * Saves persisted state back to the server using Hoist Core `JSONBlob`s for storage.
   * Includes a simple sharing model - if enabled for all or some subset of users, allows those users
     to publish saved views to everyone else in the application.
   * Users can rename views, nest them into folders, and start them as favorites for quick access.
@@ -38,6 +40,7 @@
 ### ⚙️ Typescript API Adjustments
 
 * Improved `HoistBase.markPersist` signature.
+* Expanded the `JsonBlob` interface to include additional properties present on all blobs.
 
 ## 69.1.0 - 2024-11-07
 
