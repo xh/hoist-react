@@ -25,11 +25,7 @@ export interface View<T extends PlainObject = PlainObject> {
     /** Original creator of the view, and the only user with access to it if not shared. */
     owner: string;
     token: string;
-    /**
-     * Application defined type for this view, read/set from {@link ViewManagerModel.entity.name}.
-     * Specific to a particular instance/use-case of ViewManager within an app - eg one viewManager
-     * loads `portfolioGridView` views and another `tradeDashboard` views.
-     */
+    /** App-defined type discriminator, as per {@link ViewManagerConfig.viewType}. */
     type: string;
     value: T;
 }

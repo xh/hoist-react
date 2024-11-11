@@ -197,7 +197,7 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                     disabled: !model.isDirty,
                     onClick: () => model.resetAsync()
                 }),
-                menuDivider(),
+                menuDivider({omit: !model.enableAutoSave}),
                 menuItem({
                     omit: !model.enableAutoSave,
                     text: switchInput({

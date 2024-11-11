@@ -9,14 +9,14 @@ import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {ViewManagerModel} from '../ViewManagerModel';
 
 export class ManageDialogModel extends HoistModel {
+    @lookup(() => ViewManagerModel)
+    private viewManagerModel: ViewManagerModel;
+
     @managed gridModel: GridModel;
     @managed formModel: FormModel;
 
     readonly saveTask = TaskObserver.trackLast();
     readonly deleteTask = TaskObserver.trackLast();
-
-    @lookup(() => ViewManagerModel)
-    private readonly viewManagerModel: ViewManagerModel;
 
     get selectedId(): string {
         return this.gridModel.selectedId as string;
@@ -32,10 +32,6 @@ export class ManageDialogModel extends HoistModel {
 
     get selIsShared(): boolean {
         return this.gridModel.selectedRecords.some(rec => rec.data.isShared);
-    }
-
-    get displayName(): string {
-        return this.viewManagerModel.entity.displayName.toLowerCase(); // usages here all look better in lowercase
     }
 
     get canDelete(): boolean {
@@ -60,6 +56,10 @@ export class ManageDialogModel extends HoistModel {
     get showSaveButton(): boolean {
         const {formModel, viewManagerModel} = this;
         return formModel.isDirty && !formModel.readonly && !viewManagerModel.loadModel.isPending;
+    }
+
+    get displayName(): string {
+        return this.viewManagerModel.displayName;
     }
 
     get enableFavorites(): boolean {
@@ -124,7 +124,7 @@ export class ManageDialogModel extends HoistModel {
         // Additional sanity-check before POSTing an update - non-admins should never be modifying global views.
         throwIf(
             isShared && !enableSharing,
-            `Cannot save changes to shared ${viewManagerModel.entity.displayName} - missing required permission.`
+            `Cannot save changes to shared ${displayName} - missing required permission.`
         );
 
         if (formModel.getField('isShared').isDirty) {

@@ -36,8 +36,6 @@ const formPanel = hoistCmp.factory<SaveDialogModel>({
         return panel({
             item: form({
                 fieldDefaults: {
-                    inline: true,
-                    minimal: true,
                     commitOnChange: true
                 },
                 item: vframe({
@@ -71,7 +69,7 @@ const formPanel = hoistCmp.factory<SaveDialogModel>({
 
 const bbar = hoistCmp.factory<SaveDialogModel>({
     render({model}) {
-        const {formModel} = model;
+        const {formModel, DisplayName} = model;
         return toolbar(
             filler(),
             button({
@@ -79,7 +77,7 @@ const bbar = hoistCmp.factory<SaveDialogModel>({
                 onClick: () => model.cancel()
             }),
             button({
-                text: 'Save as new copy',
+                text: `Save as new ${DisplayName}`,
                 icon: Icon.copy(),
                 outlined: true,
                 intent: 'success',

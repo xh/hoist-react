@@ -1,5 +1,6 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import {ViewManagerModel} from '@xh/hoist/core/persist/viewmanager';
 import {lengthIs, required} from '@xh/hoist/data';
 import {makeObservable} from '@xh/hoist/mobx';
 import {JsonBlob} from '@xh/hoist/svc';
@@ -7,21 +8,29 @@ import {action, observable} from 'mobx';
 import {View} from '../Types';
 
 export class SaveDialogModel extends HoistModel {
-    @managed readonly formModel: FormModel;
+    private readonly viewManagerModel: ViewManagerModel;
 
+    @managed readonly formModel: FormModel;
     readonly saveTask = TaskObserver.trackLast();
 
     @observable viewStub: Partial<View>;
     @observable isOpen: boolean = false;
 
     private resolveOpen: (value: JsonBlob) => void;
-    private readonly type: string;
     private invalidNames: string[] = [];
 
-    constructor(type: string) {
+    get type(): string {
+        return this.viewManagerModel.viewType;
+    }
+
+    get DisplayName(): string {
+        return this.viewManagerModel.DisplayName;
+    }
+
+    constructor(viewManagerModel: ViewManagerModel) {
         super();
         makeObservable(this);
-        this.type = type;
+        this.viewManagerModel = viewManagerModel;
         this.formModel = this.createFormModel();
     }
 

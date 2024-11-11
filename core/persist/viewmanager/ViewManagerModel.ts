@@ -11,30 +11,48 @@ import {
     ViewManagerProvider,
     XH
 } from '@xh/hoist/core';
+import {genDisplayName} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {executeIfFunction, pluralize} from '@xh/hoist/utils/js';
-import {capitalize, isEmpty, isEqual, isNil, isString, sortBy, startCase} from 'lodash';
+import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
+import {isEmpty, isEqual, isNil, lowerCase, sortBy, startCase} from 'lodash';
 import {runInAction} from 'mobx';
 import {SaveDialogModel} from './impl/SaveDialogModel';
 import {View, ViewTree} from './Types';
 
 export interface ViewManagerConfig {
-    /** Entity name or object for this model. */
-    entity: string | Entity;
-    /** Whether user can publish or edit globally shared objects. */
-    enableSharing: Thunkable<boolean>;
+    /**
+     * True (default) to allow user to opt-in to automatically saving changes to their private
+     * views - requires `persistWith`.
+     */
+    enableAutoSave?: boolean;
+    /**
+     * True (default) to allow the user to select a "Default" option that restores all persisted
+     * objects to their in-code defaults. If not enabled, at least one saved view should be created
+     * in advance, so that there is a clear initial selection for users without any private views.
+     */
+    enableDefault?: boolean;
+    /** True (default) to allow user to mark views as favorites. Requires `persistWith`. */
+    enableFavorites?: boolean;
+    /**
+     * True to allow the user to publish or edit globally shared views. Apps are expected to
+     * commonly set this based on user roles - e.g. `XH.getUser().hasRole('MANAGE_GRID_VIEWS')`.
+     */
+    enableSharing?: Thunkable<boolean>;
     /** Used to persist the user's last selected + favorite views and autoSave preference. */
     persistWith?: PersistOptions;
     /**
-     * True (default) to allow the user to select a "Default" option that restores all persisted
-     * objects to their in-code defaults. If not enabled, at least one saved view is required.
+     * Required discriminator for the particular class of views to be loaded and managed by this
+     * model. Maps onto the `type` field of the persisted `JsonBlob`. Set to something descriptive
+     * and specific enough to be identifiable and allow for different viewManagers to be added
+     * to your app in the future - e.g. `portfolioGridView` or `tradeBlotterDashboard`.
      */
-    enableDefault?: boolean;
-    /** True (default) to allow user to autoSave changes to personal views - requires persistWith. */
-    enableAutoSave?: boolean;
-    /** True (default) to allow user to mark views as favorites - requires persistWith. */
-    enableFavorites?: boolean;
+    viewType: string;
+    /**
+     * Optional user-facing display name for the view type, displayed in the ViewManager menu
+     * and associated management dialogs and prompts. Defaulted from `viewType` if not provided.
+     */
+    viewTypeDisplayName?: string;
 }
 
 /**
@@ -44,6 +62,19 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     extends HoistModel
     implements Persistable<ViewManagerModelPersistState>
 {
+    /**
+     * Factory to create new instances of this model and await its initial load before binding to
+     * any persistable component models. This ensures that bound models will have the expected
+     * initial persisted state applied within their constructor, before their components have
+     * rendered, and avoids thrashing of component state during initial load.
+     *
+     * To minimize the impact this async requirement has on the design and lifecycle of individual
+     * components within an app, consider eagerly constructing any viewManagerModels required within
+     * your `AppModel.initAsync` method and saving a reference to them there for component models
+     * to then use when they are mounted. The VM model instances will then be "ready to go" and
+     * usable within model constructors. (Initializing and referencing from one or more app
+     * services would be another, similar option.)
+     */
     static async createAsync(config: ViewManagerConfig): Promise<ViewManagerModel> {
         const ret = new ViewManagerModel(config);
         await ret.loadAsync();
@@ -51,10 +82,12 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     }
 
     /** Immutable configuration for this model. */
+    readonly viewType: string;
+    readonly displayName: string; // from viewTypeDisplayName, or generated off of viewType
+    readonly DisplayName: string; // capitalized viewTypeDisplayName
     readonly enableDefault: boolean;
     readonly enableAutoSave: boolean;
     readonly enableFavorites: boolean;
-    readonly entity: Entity;
 
     /** Last selected, fully-persisted state of the active view. */
     @observable.ref value: T = {} as T;
@@ -66,7 +99,10 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     @bindable selectedToken: string = null;
     /** List of tokens for the user's favorite views. */
     @bindable favorites: string[] = [];
-    /** True if user has elected to auto-save their personal views (if autoSave generally enabled). */
+    /**
+     * True if user has opted-in to automatically saving changes to personal views (if auto-save
+     * generally available as per `enableAutoSave`).
+     */
     @bindable autoSaveActive = false;
 
     @observable manageDialogOpen = false;
@@ -75,8 +111,9 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     private readonly _enableSharing: Thunkable<boolean>;
 
     /**
-     * Providers bound to this model. Note that any {@link ViewManagerProvider} will auto-push
-     * itself onto this array when constructed with a reference to this model.
+     * @internal array of {@link ViewManagerProvider} instances bound to this model. Providers will
+     * push themselves onto this array when constructed with a reference to this model. Used to
+     * proactively push state to the target components when the model's selected `value` changes.
      */
     providers: ViewManagerProvider<any>[] = [];
 
@@ -161,18 +198,15 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         return this.buildViewTree(sortBy(this.privateViews, 'name'));
     }
 
-    get displayName(): string {
-        return this.entity.displayName;
-    }
-
-    get DisplayName(): string {
-        return capitalize(this.displayName);
-    }
-
+    /**
+     * Use the static {@link createAsync} factory to create an instance of this model and await its
+     * initial load before binding to persistable components.
+     */
     private constructor({
-        entity,
+        viewType,
+        viewTypeDisplayName,
         persistWith,
-        enableSharing,
+        enableSharing = false,
         enableDefault = true,
         enableAutoSave = true,
         enableFavorites = true
@@ -180,12 +214,16 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         super();
         makeObservable(this);
 
-        this.entity = this.parseEntity(entity);
+        throwIf(!viewType, 'Missing required viewType in ViewManagerModel config.');
+        this.viewType = viewType;
+        this.displayName = lowerCase(viewTypeDisplayName ?? genDisplayName(viewType));
+        this.DisplayName = startCase(this.displayName);
+
         this._enableSharing = enableSharing;
         this.enableDefault = enableDefault;
         this.enableAutoSave = enableAutoSave && !!persistWith;
         this.enableFavorites = enableFavorites && !!persistWith;
-        this.saveDialogModel = new SaveDialogModel(this.entity.name);
+        this.saveDialogModel = new SaveDialogModel(this);
 
         if (persistWith) {
             PersistenceProvider.create({
@@ -200,9 +238,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         this.addReaction(
             {
                 track: () => this.pendingValue,
-                run: pValue => {
-                    this.maybeAutoSaveAsync({skipToast: true});
-                }
+                run: () => this.maybeAutoSaveAsync({skipToast: true})
             },
             {
                 track: () => this.autoSaveActive,
@@ -217,7 +253,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         const rawViews = await XH.jsonBlobService.listAsync({
-            type: this.entity.name,
+            type: this.viewType,
             includeValue: true,
             loadSpec
         });
@@ -248,25 +284,21 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     }
 
     async saveAsync(skipToast: boolean = false) {
-        const {selectedView, pendingValue, isSharedViewSelected, DisplayName} = this;
-        if (!selectedView) return; // nothing to save
-
-        const {token} = selectedView;
+        const {canSave, selectedToken, pendingValue, isSharedViewSelected, DisplayName} = this;
+        throwIf(!canSave, 'Unable to save view at this time.'); // sanity check - user should not reach
 
         if (isSharedViewSelected) {
-            if (!(await this.confirmShareObjSaveAsync())) return;
+            if (!(await this.confirmSaveForSharedViewAsync())) return;
         }
 
         try {
-            await XH.jsonBlobService.updateAsync(token, {
-                ...selectedView,
-                value: pendingValue
-            });
+            await XH.jsonBlobService.updateAsync(selectedToken, {value: pendingValue});
         } catch (e) {
-            return XH.handleException(e, {alertType: 'toast'});
+            XH.handleException(e, {alertType: 'toast'});
+            skipToast = true; // don't show the success toast below, but still refresh.
         }
 
-        await this.refreshAsync({selectToken: token});
+        await this.refreshAsync({selectToken: selectedToken});
         if (!skipToast) XH.successToast(`${DisplayName} successfully saved.`);
     }
 
@@ -301,6 +333,23 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         }
     }
 
+    @action
+    openManageDialog() {
+        this.manageDialogOpen = true;
+    }
+
+    @action
+    closeManageDialog() {
+        this.manageDialogOpen = false;
+    }
+
+    getHierarchyDisplayName(name: string) {
+        return name?.substring(name.lastIndexOf('\\') + 1);
+    }
+
+    //------------------
+    // Favorites
+    //------------------
     toggleFavorite(token: string) {
         this.isFavorite(token) ? this.removeFavorite(token) : this.addFavorite(token);
     }
@@ -315,20 +364,6 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
     isFavorite(token: string) {
         return this.favorites.includes(token);
-    }
-
-    @action
-    openManageDialog() {
-        this.manageDialogOpen = true;
-    }
-
-    @action
-    closeManageDialog() {
-        this.manageDialogOpen = false;
-    }
-
-    getHierarchyDisplayName(name: string) {
-        return name?.substring(name.lastIndexOf('\\') + 1);
     }
 
     //------------------
@@ -347,12 +382,6 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     //------------------
     // Implementation
     //------------------
-    private parseEntity(entity: string | Entity): Entity {
-        const ret = isString(entity) ? {name: entity} : {...entity};
-        ret.displayName = ret.displayName ?? startCase(ret.name);
-        return ret;
-    }
-
     private processRaw(raw: PlainObject[]): View<T>[] {
         const name = pluralize(this.DisplayName);
         return raw.map(it => {
@@ -382,7 +411,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         return JSON.parse(JSON.stringify(value));
     }
 
-    private async confirmShareObjSaveAsync() {
+    private async confirmSaveForSharedViewAsync() {
         return XH.confirm({
             message: `You are saving a shared public ${this.displayName}. Do you wish to continue?`,
             confirmProps: {
@@ -401,10 +430,10 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         if (
             this.enableAutoSave &&
             this.autoSaveActive &&
-            this.selectedToken &&
+            this.canSave &&
             !this.isSharedViewSelected
         ) {
-            return this.saveAsync(skipToast);
+            await this.saveAsync(skipToast);
         }
     }
 
@@ -469,13 +498,6 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
             isFavorite: this.isFavorite(view.token)
         }));
     }
-}
-
-interface Entity {
-    /** Key used in JsonBlob */
-    name: string;
-    /** User-facing name/label for an object managed by this model. */
-    displayName?: string;
 }
 
 interface ViewManagerModelPersistState {
