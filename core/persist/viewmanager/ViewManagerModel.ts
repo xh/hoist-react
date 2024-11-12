@@ -56,7 +56,16 @@ export interface ViewManagerConfig {
 }
 
 /**
- *  TODO: Document this class.
+ *  ViewManagerModel coordinates the loading, saving, and management of user-defined bundles of
+ *  {@link Persistable} component/model state.
+ *
+ *  - Models to be persisted are bound to this model via their `persistWith` config. One or more
+ *    models can be bound to a single ViewManagerModel, allowing a single view to capture the state
+ *    of multiple components - e.g. grouping and filtering options along with grid state.
+ *  - Views are persisted back to the server as JsonBlob objects.
+ *  - Views can be private to their owner, or optionally enabled for sharing to (all) other users.
+ *  - Views can be marked as favorites for quick access.
+ *  - See the desktop {@link ViewManager} component - the initial Hoist UI for this model.
  */
 export class ViewManagerModel<T extends PlainObject = PlainObject>
     extends HoistModel

@@ -18,13 +18,13 @@
 * Introduced a new `ViewManager` component and backing model to support user-driven management of
   persisted component state - e.g. saved grid views.
   * Bundled with a desktop-only menu button based component to start, but designed to be extensible.
-  * Bindable to any persistable component with `persistWith: {viewManager: someViewManagerModel}`.
+  * Bindable to any persistable component with `persistWith: {viewManagerModel: myViewManager}`.
   * Detects changes to any bound components and syncs them back to saved views, with support for
     an autosave option or user-driven saving with a clear "dirty" indicator.
   * Saves persisted state back to the server using Hoist Core `JSONBlob`s for storage.
   * Includes a simple sharing model - if enabled for all or some subset of users, allows those users
     to publish saved views to everyone else in the application.
-  * Users can rename views, nest them into folders, and start them as favorites for quick access.
+  * Users can rename views, nest them into folders, and mark them as favorites for quick access.
 * Generally enhanced Hoist's persistence-related APIs:
     * Added new `Persistable` interface to formalize the contract for objects that can be persisted.
     * `PersistenceProvider` now targets a `Persistable` and is responsible for setting persisted

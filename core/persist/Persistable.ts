@@ -1,7 +1,7 @@
 import {isEqual} from 'lodash';
 
 /**
- * Interface for objects that can be bound to a PersistenceProvider.
+ * Interface for objects that can be bound to a {@link PersistenceProvider}.
  * @typeParam S - must be serializable to JSON and PersistableState<S> must be observable
  */
 export interface Persistable<S> {
@@ -9,9 +9,7 @@ export interface Persistable<S> {
     setPersistableState(state: PersistableState<S>): void;
 }
 
-/**
- * Wraps a serializable Persistable state object.
- */
+/** Wrapper for a serializable Persistable state object. */
 export class PersistableState<S> {
     value: S;
 
