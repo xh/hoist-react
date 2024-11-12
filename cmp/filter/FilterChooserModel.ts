@@ -11,6 +11,7 @@ import {
     PersistenceProvider,
     PersistOptions,
     TaskObserver,
+    Thunkable,
     XH
 } from '@xh/hoist/core';
 import {
@@ -80,12 +81,12 @@ export interface FilterChooserConfig {
      * to produce the same. Note that FilterChooser currently can only edit and create a flat collection
      * of FieldFilters, to be 'AND'ed together.
      */
-    initialValue?: FilterChooserFilterLike | (() => FilterChooserFilterLike);
+    initialValue?: Thunkable<FilterChooserFilterLike>;
 
     /**
      * Initial favorites as an array of filter configurations, or a function to produce such an array.
      */
-    initialFavorites?: FilterChooserFilterLike[] | (() => FilterChooserFilterLike[]);
+    initialFavorites?: Thunkable<FilterChooserFilterLike[]>;
 
     /**
      * true to offer all field suggestions when the control is focused with an empty query,
@@ -172,7 +173,7 @@ export class FilterChooserModel extends HoistModel {
         this.queryEngine = new QueryEngine(this);
 
         this.setValueInternal(executeIfFunction(initialValue), false);
-        this.setFavorites(executeIfFunction(initialFavorites).map(f => parseFilter(f)));
+        this.setFavorites(executeIfFunction(initialFavorites));
 
         if (persistWith) this.initPersist(persistWith);
 
@@ -327,8 +328,8 @@ export class FilterChooserModel extends HoistModel {
     }
 
     @action
-    setFavorites(favorites: Filter[]) {
-        this.favorites = favorites.filter(this.validateFilter.bind(this));
+    setFavorites(favorites: FilterChooserFilterLike[]) {
+        this.favorites = favorites.map(parseFilter).filter(this.validateFilter.bind(this));
     }
 
     @action
@@ -440,8 +441,7 @@ export class FilterChooserModel extends HoistModel {
                     target: {
                         getPersistableState: () =>
                             new PersistableState(this.favorites.map(f => f.toJSON())),
-                        setPersistableState: ({value}) =>
-                            this.setFavorites(value.map(f => parseFilter(f)))
+                        setPersistableState: ({value}) => this.setFavorites(value)
                     },
                     owner: this
                 });
@@ -540,7 +540,6 @@ export type FilterChooserFilterSpec = CompoundFilterSpec | FieldFilterSpec;
 
 /** A variant of {@link FilterLike} that excludes FunctionFilters and FilterTestFn. */
 export type FilterChooserFilterLike =
-    | Filter
-    | CompoundFilterSpec
-    | FieldFilterSpec
+    | FilterChooserFilter
+    | FilterChooserFilterSpec
     | FilterChooserFilterLike[];
