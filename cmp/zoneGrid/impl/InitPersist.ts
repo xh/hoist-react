@@ -10,21 +10,21 @@ import {ZoneGridModel} from '../ZoneGridModel';
 import {ZoneGridModelPersistOptions} from '../Types';
 
 /**
- * Initialize persistence for a ZoneGridModel.
+ * Initialize persistence for a {@link ZoneGridModel} by applying its `persistWith` config.
  * @internal
  */
 export function initPersist(
     zoneGridModel: ZoneGridModel,
     {
-        persistMapping = true,
+        persistMappings = true,
         persistGrouping = true,
         persistSort = true,
         path = 'zoneGrid',
         ...rootPersistWith
     }: ZoneGridModelPersistOptions
 ) {
-    if (persistMapping) {
-        const persistWith = isObject(persistMapping) ? persistMapping : rootPersistWith;
+    if (persistMappings) {
+        const persistWith = isObject(persistMappings) ? persistMappings : rootPersistWith;
         PersistenceProvider.create({
             persistOptions: {
                 path: `${path}.mappings`,

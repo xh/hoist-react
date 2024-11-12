@@ -10,7 +10,7 @@ import {GridModel} from '../GridModel';
 import {GridModelPersistOptions} from '../Types';
 
 /**
- * Initialize persistence for a GridModel.
+ * Initialize persistence for a {@link GridModel} by applying its `persistWith` config.
  * @internal
  */
 export function initPersist(

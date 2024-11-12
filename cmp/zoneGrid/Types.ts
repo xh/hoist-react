@@ -39,7 +39,7 @@ export interface ZoneField {
 
 export interface ZoneGridModelPersistOptions extends PersistOptions {
     /** True (default) to include mapping state or provide mapping-specific PersistOptions. */
-    persistMapping?: boolean | PersistOptions;
+    persistMappings?: boolean | PersistOptions;
     /** True (default) to include grouping state or provide grouping-specific PersistOptions. */
     persistGrouping?: boolean | PersistOptions;
     /** True (default) to include sort state or provide sort-specific PersistOptions. */
