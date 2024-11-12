@@ -1,8 +1,8 @@
 import {PlainObject} from '@xh/hoist/core';
 
 /**
- * Interface for a bundle of persisted component state managed by {@link ViewManagerModel}.
- * Views are persisted to the server as {@link JsonBlob}s.
+ * Interface for a bundle of {@link PersistableState} managed by {@link ViewManagerModel}.
+ * Views are persisted to / loaded from the server as {@link JsonBlob}s.
  */
 export interface View<T extends PlainObject = PlainObject> {
     /** Either null for private views or special token "*" for globally shared views. */

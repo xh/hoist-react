@@ -45,10 +45,10 @@ export class GridAutosizeService extends HoistService {
         // If not in MANAGED mode, report this change as a manual resize via updated state set on
         // gridModel, as if the user had resized each column to fit. It is only in managed mode that
         // we are truly deferring to autosize. Otherwise we should persist the widths we calculate.
-        // See GridModel.cleanColumnState() where that distinction is applied.
+        // (The user has autosized manually to get col widths as desired - don't then forget them!)
         const asManuallySized = options.mode !== 'managed';
 
-        // Check columns exist
+        // Check columns exist.
         colIds = colIds.filter(id => gridModel.getColumn(id));
         if (isEmpty(colIds)) return;
 
@@ -56,7 +56,7 @@ export class GridAutosizeService extends HoistService {
         // This is to prevent changing the column order when applying column state changes
         colIds = sortBy(colIds, id => gridModel.columnState.findIndex(col => col.colId === id));
 
-        // Perform computation. This is async and expensive, and may become obsolete
+        // Perform computation. This is async and expensive, and may become obsolete.
         const records = this.gatherRecordsToBeSized(gridModel, options),
             requiredWidths = await this.calcRequiredWidthsAsync(
                 gridModel,
@@ -67,14 +67,19 @@ export class GridAutosizeService extends HoistService {
             );
 
         if (!requiredWidths) {
-            this.logDebug('Autosize aborted, grid data is obsolete.');
+            this.logDebug(
+                'Autosize aborted, grid data has changed since autosize operation began.'
+            );
             return;
         }
 
         runInAction(() => {
             // Apply calculated widths to grid.
             gridModel.applyColumnStateChanges(requiredWidths);
-            this.logDebug(`Auto-sized columns`, `${records.length} records`, requiredWidths);
+            this.logDebug(
+                `Auto-sized ${requiredWidths.length} columns`,
+                `${records.length} records`
+            );
 
             // Optionally grow columns to fill any remaining space, if enabled.
             const {fillMode} = options;
@@ -86,7 +91,7 @@ export class GridAutosizeService extends HoistService {
                     asManuallySized
                 );
                 gridModel.applyColumnStateChanges(fillWidths);
-                this.logDebug('Auto-sized columns using fillMode', fillWidths);
+                this.logDebug(`Auto-sized ${fillWidths.length} columns using fillMode`);
             }
         });
     }

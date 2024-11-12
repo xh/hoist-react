@@ -10,21 +10,29 @@
   This helps to keep persisted state more stable, avoiding spurious diffs due to autosize updates.
   Note this can result in more visible column resizing for large grids without in-code default
   widths. Please let XH know if this is a noticeable annoyance for your app.
-* Removed `GridModel.autosizeState` and `Column.manuallySized`.
+* Removed the following persistence-related model classes, properties, and methods:
+    * `GridPersistenceModel` and `ZoneGridPersistenceModel`
+    * `GridModel|ZoneGridModel.persistenceModel`
+    * `GridModel.autosizeState`
+    * `Column.manuallySized`
+    * `GroupingChooserModel|FilterChooserModel.persistValue`
+    * `DashModel|GroupingChooserModel|FilterChooserModel|PanelModel|TabContainerModel.provider`
+    * `PersistenceProvider.clearRaw()`
+* Renamed `ZoneGridModelPersistOptions.persistMappings`, adding the trailing `s` for consistency.
 * Updated `JsonBlobService.listAsync` to inline `loadSpec` with all other args in a single object.
 
 ### 🎁 New Features
 
 * Introduced a new `ViewManager` component and backing model to support user-driven management of
   persisted component state - e.g. saved grid views.
-  * Bundled with a desktop-only menu button based component to start, but designed to be extensible.
-  * Bindable to any persistable component with `persistWith: {viewManagerModel: myViewManager}`.
-  * Detects changes to any bound components and syncs them back to saved views, with support for
-    an autosave option or user-driven saving with a clear "dirty" indicator.
-  * Saves persisted state back to the server using Hoist Core `JSONBlob`s for storage.
-  * Includes a simple sharing model - if enabled for all or some subset of users, allows those users
-    to publish saved views to everyone else in the application.
-  * Users can rename views, nest them into folders, and mark them as favorites for quick access.
+    * Bundled with a desktop-only menu button based component, but designed to be extensible.
+    * Bindable to any persistable component with `persistWith: {viewManagerModel: myViewManager}`.
+    * Detects changes to any bound components and syncs them back to saved views, with support for
+      an autosave option or user-driven saving with a clear "dirty" indicator.
+    * Saves persisted state back to the server using Hoist Core `JSONBlob`s for storage.
+    * Includes a simple sharing model - if enabled for all or some users, allows those users to
+      publish saved views to everyone else in the application.
+    * Users can rename views, nest them into folders, and mark them as favorites for quick access.
 * Generally enhanced Hoist's persistence-related APIs:
     * Added new `Persistable` interface to formalize the contract for objects that can be persisted.
     * `PersistenceProvider` now targets a `Persistable` and is responsible for setting persisted
@@ -39,8 +47,12 @@
 
 ### ⚙️ Typescript API Adjustments
 
-* Improved `HoistBase.markPersist` signature.
+* Tightened `FilterChooserFilterLike` union type to remove the generic `Filter` type, as filter
+  chooser supports only `FieldFilter` and `CompoundFilter`.
+* Improved `HoistBase.markPersist()` signature to ensure the provided property name is a known key
+  of the model.
 * Expanded the `JsonBlob` interface to include additional properties present on all blobs.
+* Corrected `DashViewSpec.title` to be optional - it can be defaulted from the `id`.
 
 ## 69.1.0 - 2024-11-07
 
