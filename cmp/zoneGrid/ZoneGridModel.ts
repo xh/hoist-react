@@ -56,7 +56,7 @@ import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {castArray, find, forOwn, isEmpty, isFinite, isPlainObject, isString} from 'lodash';
 import {ReactNode} from 'react';
-import {ZoneGridPersistenceModel} from './impl/ZoneGridPersistenceModel';
+import {initPersist} from './impl/InitPersist';
 import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
 import {Zone, ZoneGridModelPersistOptions, ZoneLimit, ZoneMapping} from './Types';
 
@@ -315,7 +315,6 @@ export class ZoneGridModel extends HoistModel {
     restoreDefaultsWarning: ReactNode;
 
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
-    @managed persistenceModel: ZoneGridPersistenceModel;
 
     constructor(config: ZoneGridConfig) {
         super();
@@ -363,9 +362,7 @@ export class ZoneGridModel extends HoistModel {
         this.setGroupBy(groupBy);
 
         this.mapperModel = this.parseMapperModel(zoneMapperModel);
-        this.persistenceModel = persistWith
-            ? new ZoneGridPersistenceModel(this, persistWith)
-            : null;
+        if (persistWith) initPersist(this, persistWith);
 
         this.addReaction({
             track: () => [this.leftColumnSpec, this.rightColumnSpec],
@@ -397,8 +394,6 @@ export class ZoneGridModel extends HoistModel {
         this.setMappings(mappings);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
-
-        this.persistenceModel?.clear();
 
         if (this.restoreDefaultsFn) {
             await this.restoreDefaultsFn();

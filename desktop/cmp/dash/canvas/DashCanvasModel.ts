@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {PersistenceProvider, XH} from '@xh/hoist/core';
+import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
 import '@xh/hoist/desktop/register';
@@ -64,11 +64,10 @@ export interface DashCanvasItemLayout {
  * Model for {@link DashCanvas}, managing all configurable options for the component and publishing
  * the observable state of its current widgets and their layout.
  */
-export class DashCanvasModel extends DashModel<
-    DashCanvasViewSpec,
-    DashCanvasItemState,
-    DashCanvasViewModel
-> {
+export class DashCanvasModel
+    extends DashModel<DashCanvasViewSpec, DashCanvasItemState, DashCanvasViewModel>
+    implements Persistable<{state: DashCanvasItemState[]}>
+{
     //-----------------------------
     // Settable State
     //------------------------------
@@ -182,26 +181,23 @@ export class DashCanvasModel extends DashModel<
         this.addViewButtonText = addViewButtonText;
         this.extraMenuItems = extraMenuItems;
 
-        // Read state from provider -- fail gently
-        let persistState = null;
-        if (persistWith) {
-            try {
-                this.provider = PersistenceProvider.create({path: 'dashCanvas', ...persistWith});
-                persistState = this.provider.read();
-            } catch (e) {
-                this.logError(e);
-                XH.safeDestroy(this.provider);
-                this.provider = null;
-            }
-        }
-
-        this.loadState(persistState?.state ?? initialState);
+        this.loadState(initialState);
         this.state = this.buildState();
+
+        if (persistWith) {
+            PersistenceProvider.create({
+                persistOptions: {
+                    path: 'dashCanvas',
+                    ...persistWith
+                },
+                target: this
+            });
+        }
 
         this.addReaction(
             {
                 track: () => this.viewState,
-                run: () => this.publishState()
+                run: () => (this.state = this.buildState())
             },
             {
                 when: () => !!this.ref.current,
@@ -238,7 +234,6 @@ export class DashCanvasModel extends DashModel<
         this.columns = restoreState.columns;
         this.rowHeight = restoreState.rowHeight;
         this.loadState(restoreState.initialState);
-        this.provider?.clear();
     }
 
     /**
@@ -319,6 +314,18 @@ export class DashCanvasModel extends DashModel<
     }
 
     //------------------------
+    // Persistable Interface
+    //------------------------
+    getPersistableState(): PersistableState<{state: DashCanvasItemState[]}> {
+        return new PersistableState({state: this.state});
+    }
+
+    setPersistableState(persistableState: PersistableState<{state: DashCanvasItemState[]}>) {
+        const {state} = persistableState.value;
+        if (state) this.loadState(state);
+    }
+
+    //------------------------
     // Implementation
     //------------------------
     private getLayoutFromPosition(position: string, specId: string) {
@@ -396,7 +403,7 @@ export class DashCanvasModel extends DashModel<
         if (!layoutChanged) return;
 
         this.layout = layout;
-        if (!this.isLoadingState) this.publishState();
+        if (!this.isLoadingState) this.state = this.buildState();
 
         // Check if scrollbar visibility has changed, and force resize event if so
         const node = this.ref.current;
@@ -409,7 +416,7 @@ export class DashCanvasModel extends DashModel<
     }
 
     @action
-    private loadState(state) {
+    private loadState(state: DashCanvasItemState[]) {
         this.isLoadingState = true;
         try {
             this.clear();
@@ -427,13 +434,7 @@ export class DashCanvasModel extends DashModel<
         }
     }
 
-    @action
-    private publishState() {
-        this.state = this.buildState();
-        this.provider?.write({state: this.state});
-    }
-
-    private buildState() {
+    private buildState(): DashCanvasItemState[] {
         const {viewState} = this;
 
         return this.layout.map(it => {

@@ -5,20 +5,21 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '../';
-import {PersistenceProvider, PersistOptions} from './';
+import {PersistenceProviderConfig, XH} from '../';
+import {PersistenceProvider} from './';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * PersistenceProvider that stores state within the Hoist Preferences system.
  */
-export class PrefProvider extends PersistenceProvider {
-    key: string;
+export class PrefProvider<S> extends PersistenceProvider<S> {
+    readonly key: string;
 
-    constructor({prefKey: key, ...rest}: PersistOptions) {
-        throwIf(!key, `PrefProvider requires a 'prefKey'.`);
-        super(rest);
-        this.key = key;
+    constructor(cfg: PersistenceProviderConfig<S>) {
+        super(cfg);
+        const {prefKey} = cfg.persistOptions;
+        throwIf(!prefKey, `PrefProvider requires a 'prefKey'.`);
+        this.key = prefKey;
     }
 
     //----------------
@@ -30,9 +31,5 @@ export class PrefProvider extends PersistenceProvider {
 
     override writeRaw(data) {
         XH.prefService.set(this.key, data);
-    }
-
-    override clearRaw() {
-        XH.prefService.unset(this.key);
     }
 }

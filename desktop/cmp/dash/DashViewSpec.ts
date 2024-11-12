@@ -21,7 +21,7 @@ export interface DashViewSpec {
     content: Content;
 
     /** Title text added to the tab header. */
-    title: string;
+    title?: string;
 
     /** An icon placed at the left-side of the tab header. */
     icon?: ReactElement;

@@ -7,7 +7,7 @@
 
 import {IRowNode} from '@xh/hoist/kit/ag-grid';
 import {GridFilterFieldSpecConfig} from '@xh/hoist/cmp/grid/filter/GridFilterFieldSpec';
-import {HSide, PersistOptions, SizingMode, Some} from '@xh/hoist/core';
+import {HSide, PersistOptions, Some} from '@xh/hoist/core';
 import {Store, StoreRecord, View} from '@xh/hoist/data';
 import {ReactElement, ReactNode} from 'react';
 import {Column} from './columns/Column';
@@ -33,11 +33,6 @@ export interface ColumnState {
     manuallySized?: boolean;
     /** Side if pinned, null if not. */
     pinned?: HSide;
-}
-
-export interface AutosizeState {
-    /** Sizing mode used last time the columns were autosized. */
-    sizingMode?: SizingMode;
 }
 
 /**
@@ -79,21 +74,12 @@ export type RowClassFn = (record: StoreRecord) => Some<string>;
 export type RowClassRuleFn = (agParams: RowClassParams) => boolean;
 
 export interface GridModelPersistOptions extends PersistOptions {
-    /** True to include column information (default true) */
-    persistColumns?: boolean;
-    /** True to include grouping information (default true) */
-    persistGrouping?: boolean;
-    /** True to include sorting information (default true) */
-    persistSort?: boolean;
-
-    /**
-     * Key to be used to identify location of legacy grid state from LocalStorage.
-     * This key will identify the pre-v35 location for grid state, and will be used
-     * as an initial source of grid state after an upgrade to v35.0.0 or greater.
-     * Defaults to the new value of 'key'.  If no legacy state is available at this
-     * location, the key is ignored.
-     */
-    legacyStateKey?: string;
+    /** True (default) to include column state or provide column-specific PersistOptions. */
+    persistColumns?: boolean | PersistOptions;
+    /** True (default) to include grouping state or provide grouping-specific PersistOptions. */
+    persistGrouping?: boolean | PersistOptions;
+    /** True (default) to include sort state or provide sort-specific PersistOptions. */
+    persistSort?: boolean | PersistOptions;
 }
 
 export interface GridFilterModelConfig {

@@ -7,6 +7,8 @@
 import {
     managed,
     modelLookupContextProvider,
+    Persistable,
+    PersistableState,
     PersistenceProvider,
     PlainObject,
     RefreshMode,
@@ -37,7 +39,8 @@ import {
 } from './impl/DashContainerUtils';
 import {dashContainerView} from './impl/DashContainerView';
 
-export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, DashViewState> {
+export interface DashContainerConfig
+    extends DashConfig<DashContainerViewSpec, DashContainerViewState> {
     /** Strategy for rendering DashContainerViews. Can also be set per-view in `viewSpecs`*/
     renderMode?: RenderMode;
 
@@ -57,6 +60,16 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
     goldenLayoutSettings?: PlainObject;
 }
 
+// TODO - review other state inserted by library, determine if we want to model here
+export interface DashContainerViewState {
+    type: 'row' | 'column' | 'stack' | 'view';
+    id?: string;
+    content?: DashContainerViewState[];
+    title?: string;
+    width?: number | string;
+    height?: number | string;
+}
+
 /**
  * Model for a DashContainer, representing its contents and layout state.
  *
@@ -65,7 +78,7 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
  *
  * State should be structured as nested arrays of container objects, according to
  * GoldenLayout's content config. Supported container types are `row`, `column` and `stack`.
- * Child containers and views should be provided as an array under the `contents` key.
+ * Child containers and views should be provided as an array under the `content` key.
  *
  *      + `row` lay out its children horizontally.
  *      + `column` lays out its children vertically.
@@ -86,20 +99,20 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
  * ```
  * [{
  *     type: 'row',
- *     contents: [
+ *     content: [
  *          // The first child of this row has pixel width of '200px'.
  *          // The column will take the remaining width.
  *         {
  *             type: 'stack',
  *             width: '200px',
- *             contents: [
+ *             content: [
  *                 {type: 'view', id: 'viewId'},
  *                 {type: 'view', id: 'viewId'}
  *             ]
  *         },
  *         {
  *             type: 'column',
- *             contents: [
+ *             content: [
  *                 // Relative height of 40%. The remaining 60% will be split equally by the other views.
  *                 {type: 'view', id: 'viewId', height: 40},
  *                 {type: 'view', id: 'viewId'},
@@ -113,11 +126,10 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
  * @see http://golden-layout.com/docs/ItemConfig.html
  * @see http://golden-layout.com/tutorials/getting-started-react.html
  */
-export class DashContainerModel extends DashModel<
-    DashContainerViewSpec,
-    DashViewState,
-    DashViewModel
-> {
+export class DashContainerModel
+    extends DashModel<DashContainerViewSpec, DashViewState, DashViewModel>
+    implements Persistable<{state: DashViewState[]}>
+{
     //---------------------
     // Settable State
     //----------------------
@@ -187,32 +199,29 @@ export class DashContainerModel extends DashModel<
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
         this.extraMenuItems = extraMenuItems;
+        this.state = initialState;
 
-        // Read state from provider -- fail gently
-        let persistState = null;
         if (persistWith) {
-            try {
-                this.provider = PersistenceProvider.create({path: 'dashContainer', ...persistWith});
-                persistState = this.provider.read();
-            } catch (e) {
-                this.logError(e);
-                XH.safeDestroy(this.provider);
-                this.provider = null;
-            }
+            PersistenceProvider.create({
+                persistOptions: {
+                    path: 'dashContainer',
+                    ...persistWith
+                },
+                target: this
+            });
         }
 
-        this.state = persistState?.state ?? initialState;
-
         // Initialize GoldenLayout with initial state once ref is ready
-        this.addReaction({
-            track: () => [this.containerRef.current, this.layoutLocked],
-            run: () => this.loadStateAsync(this.state)
-        });
-
-        this.addReaction({
-            track: () => this.viewState,
-            run: () => this.updateState()
-        });
+        this.addReaction(
+            {
+                track: () => [this.containerRef.current, this.layoutLocked],
+                run: () => this.loadStateAsync(this.state)
+            },
+            {
+                track: () => this.viewState,
+                run: () => this.updateState()
+            }
+        );
     }
 
     /**
@@ -228,14 +237,13 @@ export class DashContainerModel extends DashModel<
         this.contentLocked = restoreState.contentLocked;
         this.renameLocked = restoreState.renameLocked;
         await this.loadStateAsync(restoreState.initialState);
-        this.provider?.clear();
     }
 
     /**
      * Load state into the DashContainer, recreating its layout and contents
      * @param state - State to load
      */
-    async loadStateAsync(state) {
+    async loadStateAsync(state: DashViewState[]) {
         const containerEl = this.containerRef.current;
         if (!containerEl) {
             this.logWarn(
@@ -318,6 +326,32 @@ export class DashContainerModel extends DashModel<
         this.goldenLayout?.updateSize();
     }
 
+    getViewSpec(id: string): DashContainerViewSpec {
+        return this.viewSpecs.find(it => it.id === id);
+    }
+
+    getViewModel(id: string): DashViewModel<DashContainerViewSpec> {
+        return find(this.viewModels, {id});
+    }
+
+    //------------------------
+    // Persistable Interface
+    //------------------------
+    getPersistableState(): PersistableState<{state: DashViewState[]}> {
+        return new PersistableState({state: this.state});
+    }
+
+    setPersistableState(persistableState: PersistableState<{state: DashViewState[]}>) {
+        const {state} = persistableState.value;
+        if (!state) return;
+        if (this.containerRef.current) {
+            this.loadStateAsync(state);
+        } else {
+            // If the container is not yet rendered, store the state directly
+            this.state = state;
+        }
+    }
+
     //------------------------
     // Implementation
     //------------------------
@@ -342,17 +376,12 @@ export class DashContainerModel extends DashModel<
         runInAction(() => {
             this.state = convertGLToState(goldenLayout, this);
         });
-        this.provider?.write({state: this.state});
     }
 
     private onItemDestroyed(item) {
         if (!item.isComponent) return;
         const id = getViewModelId(item);
         if (id) this.removeViewModel(id);
-    }
-
-    private getViewSpec(id: string) {
-        return this.viewSpecs.find(it => it.id === id);
     }
 
     //-----------------
@@ -384,10 +413,6 @@ export class DashContainerModel extends DashModel<
             ret[id] = {icon, title, viewState};
         });
         return ret;
-    }
-
-    private getViewModel(id: string) {
-        return find(this.viewModels, {id});
     }
 
     @action
@@ -566,7 +591,7 @@ export class DashContainerModel extends DashModel<
     //-----------------
     // Misc
     //-----------------
-    private createGoldenLayout(containerEl: HTMLElement, state: any): GoldenLayout {
+    private createGoldenLayout(containerEl: HTMLElement, state: DashViewState[]): GoldenLayout {
         const {viewSpecs} = this,
             ret = new GoldenLayout(
                 {

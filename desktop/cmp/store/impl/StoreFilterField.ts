@@ -17,7 +17,7 @@ export function storeFilterFieldImpl(props) {
         commitOnChange: true,
         leftIcon: Icon.filter(),
         enableClear: true,
-        placeholder: 'Filter',
+        placeholder: 'Filter...',
         selectOnFocus: true,
         width: 180,
         ...props

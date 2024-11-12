@@ -5,18 +5,20 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {PersistenceProvider, PersistOptions} from './';
+import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash'; // Import type only
 import {throwIf} from '@xh/hoist/utils/js';
+import {PersistenceProvider, PersistenceProviderConfig} from './';
 
 /**
  * PersistenceProvider that stores state within a DashViewModel.
  */
-export class DashViewProvider extends PersistenceProvider {
-    dashViewModel;
+export class DashViewProvider<S> extends PersistenceProvider<S> {
+    readonly dashViewModel: DashViewModel;
 
-    constructor({dashViewModel, ...rest}: PersistOptions) {
+    constructor(cfg: PersistenceProviderConfig<S>) {
+        super(cfg);
+        const {dashViewModel} = cfg.persistOptions;
         throwIf(!dashViewModel, `DashViewProvider requires a 'dashViewModel'.`);
-        super(rest);
         this.dashViewModel = dashViewModel;
     }
 
@@ -29,10 +31,6 @@ export class DashViewProvider extends PersistenceProvider {
     }
 
     override writeRaw(data) {
-        this.dashViewModel.setViewState(data);
-    }
-
-    override clearRaw() {
-        return this.dashViewModel.setViewState(null);
+        this.dashViewModel.viewState = data;
     }
 }

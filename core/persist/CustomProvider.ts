@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {PersistenceProvider, PersistOptions} from './';
+import {PersistenceProvider, PersistenceProviderConfig} from './';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -15,16 +15,17 @@ import {throwIf} from '@xh/hoist/utils/js';
  * This provider allows applications to use the Persistence API to populate and read state from
  * components without actually writing to any pre-defined storage.
  */
-export class CustomProvider extends PersistenceProvider {
-    getData;
-    setData;
+export class CustomProvider<S> extends PersistenceProvider<S> {
+    readonly getData;
+    readonly setData;
 
-    constructor({getData, setData, ...rest}: PersistOptions) {
+    constructor(cfg: PersistenceProviderConfig<S>) {
+        super(cfg);
+        const {getData, setData} = cfg.persistOptions;
         throwIf(
             !getData || !setData,
             `CustomProvider requires a 'getData' and a 'setData' function.`
         );
-        super(rest);
         this.getData = getData;
         this.setData = setData;
     }
@@ -38,9 +39,5 @@ export class CustomProvider extends PersistenceProvider {
 
     override writeRaw(data) {
         this.setData(data);
-    }
-
-    override clearRaw() {
-        this.setData(null);
     }
 }

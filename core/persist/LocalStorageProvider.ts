@@ -5,20 +5,21 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {PersistenceProvider, PersistOptions} from './';
+import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import {XH} from '../';
+import {PersistenceProvider, PersistenceProviderConfig} from './';
 
 /**
  * PersistenceProvider that stores state within the Browser's LocalStorage.
  */
-export class LocalStorageProvider extends PersistenceProvider {
-    key: string;
+export class LocalStorageProvider<S> extends PersistenceProvider<S> {
+    readonly key: string;
 
-    constructor({localStorageKey: key, ...rest}: PersistOptions) {
-        throwIf(!key, `LocalStorageProvider requires a 'localStorageKey'.`);
-        super(rest);
-        this.key = key;
+    constructor(cfg: PersistenceProviderConfig<S>) {
+        super(cfg);
+        const {localStorageKey} = cfg.persistOptions;
+        throwIf(!localStorageKey, `LocalStorageProvider requires a 'localStorageKey'.`);
+        this.key = localStorageKey;
     }
 
     //----------------
@@ -30,9 +31,5 @@ export class LocalStorageProvider extends PersistenceProvider {
 
     override writeRaw(data) {
         XH.localStorageService.set(this.key, data);
-    }
-
-    override clearRaw() {
-        XH.localStorageService.remove(this.key);
     }
 }
