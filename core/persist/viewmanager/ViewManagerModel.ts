@@ -7,6 +7,7 @@ import {
     PersistenceProvider,
     PersistOptions,
     PlainObject,
+    TaskObserver,
     Thunkable,
     ViewManagerProvider,
     XH
@@ -22,7 +23,7 @@ import {View, ViewTree} from './Types';
 
 export interface ViewManagerConfig {
     /**
-     * True (default) to allow user to opt-in to automatically saving changes to their private
+     * True (default) to allow user to opt in to automatically saving changes to their private
      * views - requires `persistWith`.
      */
     enableAutoSave?: boolean;
@@ -113,6 +114,12 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
      * generally available as per `enableAutoSave`).
      */
     @bindable autoSaveActive = false;
+
+    /**
+     * TaskObserver linked to {@link selectViewAsync}. If a change to the active view is likely to
+     * require intensive layout/grid work, consider masking affected components with this observer.
+     */
+    viewSelectionObserver: TaskObserver;
 
     @observable manageDialogOpen = false;
     @managed readonly saveDialogModel: SaveDialogModel;
@@ -234,6 +241,10 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         this.enableFavorites = enableFavorites && !!persistWith;
         this.saveDialogModel = new SaveDialogModel(this);
 
+        this.viewSelectionObserver = TaskObserver.trackLast({
+            message: `Updating ${this.displayName}...`
+        });
+
         if (persistWith) {
             PersistenceProvider.create({
                 persistOptions: {
@@ -278,18 +289,19 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     }
 
     async selectViewAsync(token: string) {
-        // TODO - review if we benefit from async + masking - eg during intensive
-        //      component rebuild within setValue?
-        await wait();
+        // Introduce minimal wait and link to viewSelectionObserver to allow apps to mask.
+        await wait(100)
+            .then(() => {
+                this.selectedToken = token;
 
-        this.selectedToken = token;
+                // Allow this model to restore its own persisted state in its ctor and note the desired
+                // selected token before views have been loaded. Once views are loaded, this method will
+                // be called again with the desired token and will proceed to set the value.
+                if (isEmpty(this.views)) return;
 
-        // Allow this model to restore its own persisted state in its ctor and note the desired
-        // selected token before views have been loaded. Once views are loaded, this method will
-        // be called again with the desired token and will proceed to set the value.
-        if (isEmpty(this.views)) return;
-
-        this.setValue(this.selectedView?.value ?? ({} as T));
+                this.setValue(this.selectedView?.value ?? ({} as T));
+            })
+            .linkTo(this.viewSelectionObserver);
     }
 
     async saveAsync(skipToast: boolean = false) {
