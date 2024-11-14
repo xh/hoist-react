@@ -19,7 +19,10 @@
     * `DashModel|GroupingChooserModel|FilterChooserModel|PanelModel|TabContainerModel.provider`
     * `PersistenceProvider.clearRaw()`
 * Renamed `ZoneGridModelPersistOptions.persistMappings`, adding the trailing `s` for consistency.
-* Updated `JsonBlobService.listAsync` to inline `loadSpec` with all other args in a single object.
+* Changed signature of `JsonBlobService.listAsync()` to inline `loadSpec` with all other args in a
+  single options object.
+* Changed signature of `waitFor()` to take its optional `interval` and `timeout` arguments in a
+  single options object.
 
 ### 🎁 New Features
 
