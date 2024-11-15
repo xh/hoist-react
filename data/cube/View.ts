@@ -472,6 +472,12 @@ export class View extends HoistBase {
             'Store.reuseRecords cannot be used on a Store that is connected to a Cube View'
         );
 
+        throwIf(
+            ret.some(s => s.idEncodesTreePath) &&
+                (!isNil(this.cube.bucketSpecFn) || !isNil(this.cube.omitFn)),
+            'Store.idEncodesTreePath cannot be used on a Store that is connected to a Cube with a `bucketSpecFn` or `omitFn`'
+        );
+
         return ret;
     }
 
