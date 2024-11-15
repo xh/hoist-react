@@ -1,5 +1,7 @@
 # Changelog
 
+## v71.0.0-SNAPSHOT - unreleased
+
 ## v70.0.0 - 2024-11-15
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - changes to advanced persistence APIs)
