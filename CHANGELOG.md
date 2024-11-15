@@ -56,6 +56,8 @@
   of the model.
 * Expanded the `JsonBlob` interface to include additional properties present on all blobs.
 * Corrected `DashViewSpec.title` to be optional - it can be defaulted from the `id`.
+* Corrected the return type for `SelectProps.loadingMessageFn` and `noOptionsMessageFn` to return
+  `ReactNode` vs `string`. The component supports rendering richer content via these options.
 
 ## 69.1.0 - 2024-11-07
 
