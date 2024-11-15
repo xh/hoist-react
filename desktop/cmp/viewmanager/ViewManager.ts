@@ -193,7 +193,7 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                 }),
                 menuItem({
                     icon: Icon.reset(),
-                    text: `Revert ${DisplayName}`,
+                    text: `Revert`,
                     disabled: !model.isDirty,
                     onClick: () => model.resetAsync()
                 }),
