@@ -12,7 +12,6 @@ import {
     ViewManagerProvider,
     XH
 } from '@xh/hoist/core';
-import {buildViewTree} from '@xh/hoist/core/persist/viewmanager/impl/BuildViewTree';
 import {genDisplayName} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -20,6 +19,7 @@ import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {isEmpty, isEqual, isNil, lowerCase, startCase} from 'lodash';
 import {runInAction} from 'mobx';
 import {SaveDialogModel} from './impl/SaveDialogModel';
+import {buildViewTree} from './impl/BuildViewTree';
 import {View, ViewTree} from './Types';
 
 export interface ViewManagerConfig {
