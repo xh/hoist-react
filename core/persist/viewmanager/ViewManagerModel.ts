@@ -14,9 +14,8 @@ import {
 } from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
-import {isEmpty, isEqual, isNil, lowerCase, startCase} from 'lodash';
+import {isEqual, isNil, lowerCase, startCase} from 'lodash';
 import {runInAction} from 'mobx';
 import {SaveDialogModel} from './impl/SaveDialogModel';
 import {buildViewTree} from './impl/BuildViewTree';
@@ -106,8 +105,11 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     @observable.ref pendingValue: T = {} as T;
     /** Loaded saved view definitions - both private and shared. */
     @observable.ref views: View<T>[] = [];
-    /** Token identifier for the currently selected view, or null if in default mode. */
-    @bindable selectedToken: string = null;
+
+    /** Currently selected view, or null if in default mode. Token only will be set during pre-loading.*/
+    @observable selectedToken: string = null;
+    @observable.ref selectedView: View<T> = null;
+
     /** List of tokens for the user's favorite views. */
     @bindable favorites: string[] = [];
     /**
@@ -136,11 +138,6 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
     get enableSharing(): boolean {
         return executeIfFunction(this._enableSharing);
-    }
-
-    @computed
-    get selectedView(): View<T> {
-        return this.views.find(it => it.token === this.selectedToken);
     }
 
     get isSharedViewSelected(): boolean {
@@ -273,36 +270,27 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const rawViews = await XH.jsonBlobService.listAsync({
-            type: this.viewType,
-            includeValue: true,
-            loadSpec
-        });
+        const rawViews = await XH.jsonBlobService.listAsync({type: this.viewType, loadSpec});
         if (loadSpec.isStale) return;
 
-        runInAction(() => (this.views = this.processRaw(rawViews)));
+        runInAction(() => {
+            this.views = rawViews.map(it => this.processRaw(it));
+        });
 
         const token =
             loadSpec.meta.selectToken ??
-            this.selectedView?.token ??
+            this.selectedToken ??
             (this.enableDefault ? null : this.views[0]?.token);
         await this.selectViewAsync(token);
     }
 
     async selectViewAsync(token: string) {
-        // Introduce minimal wait and link to viewSelectionObserver to allow apps to mask.
-        await wait(100)
-            .then(() => {
-                this.selectedToken = token;
-
-                // Allow this model to restore its own persisted state in its ctor and note the desired
-                // selected token before views have been loaded. Once views are loaded, this method will
-                // be called again with the desired token and will proceed to set the value.
-                if (isEmpty(this.views)) return;
-
-                this.setValue(this.selectedView?.value ?? ({} as T));
-            })
-            .linkTo(this.viewSelectionObserver);
+        // If views have not been loaded yet (e.g. constructing), nothing to be done but pre-set state
+        if (!this.views) {
+            this.selectedToken = token;
+            return;
+        }
+        await this.selectViewInternalAsync(token).linkTo(this.viewSelectionObserver);
     }
 
     async saveAsync(skipToast: boolean = false) {
@@ -400,18 +388,36 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     //------------------
     // Implementation
     //------------------
-    private processRaw(raw: PlainObject[]): View<T>[] {
-        const name = pluralize(this.DisplayName);
-        return raw.map(it => {
-            const isShared = it.acl === '*';
-            return {
-                ...it,
-                shortName: it.name?.substring(it.name.lastIndexOf('\\') + 1),
-                isShared,
-                group: isShared ? `Shared ${name}` : `My ${name}`,
-                isFavorite: this.isFavorite(it.token)
-            } as View<T>;
+    private async selectViewInternalAsync(token: string) {
+        let view: View<T> = null;
+        if (token != null) {
+            try {
+                const raw = await XH.jsonBlobService.getAsync(token);
+                view = this.processRaw(raw);
+            } catch (e) {
+                XH.handleException(e, {showAlert: false});
+                view = null;
+                token = null;
+            }
+        }
+
+        runInAction(() => {
+            this.selectedToken = token;
+            this.selectedView = view;
+            this.setValue(this.selectedView?.value ?? ({} as T));
         });
+    }
+
+    private processRaw(raw: PlainObject): View<T> {
+        const name = pluralize(this.DisplayName);
+        const isShared = raw.acl === '*';
+        return {
+            ...raw,
+            shortName: raw.name?.substring(raw.name.lastIndexOf('\\') + 1),
+            isShared,
+            group: isShared ? `Shared ${name}` : `My ${name}`,
+            isFavorite: this.isFavorite(raw.token)
+        } as View<T>;
     }
 
     @action
