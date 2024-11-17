@@ -20,8 +20,10 @@ export interface View<T extends PlainObject = PlainObject> {
     isShared: boolean;
     lastUpdated: number;
     lastUpdatedBy: string;
-    /** User-supplied descriptive name. */
+    /** User-supplied descriptive name, including folder designating prefix. */
     name: string;
+    /** User-supplied descriptive name, without folder designating prefix. */
+    shortName: string;
     /** Original creator of the view, and the only user with access to it if not shared. */
     owner: string;
     token: string;

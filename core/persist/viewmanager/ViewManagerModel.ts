@@ -12,11 +12,12 @@ import {
     ViewManagerProvider,
     XH
 } from '@xh/hoist/core';
+import {buildViewTree} from '@xh/hoist/core/persist/viewmanager/impl/BuildViewTree';
 import {genDisplayName} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
-import {isEmpty, isEqual, isNil, lowerCase, sortBy, startCase} from 'lodash';
+import {isEmpty, isEqual, isNil, lowerCase, startCase} from 'lodash';
 import {runInAction} from 'mobx';
 import {SaveDialogModel} from './impl/SaveDialogModel';
 import {View, ViewTree} from './Types';
@@ -137,11 +138,11 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         return executeIfFunction(this._enableSharing);
     }
 
+    @computed
     get selectedView(): View<T> {
         return this.views.find(it => it.token === this.selectedToken);
     }
 
-    @computed
     get isSharedViewSelected(): boolean {
         return !!this.selectedView?.isShared;
     }
@@ -207,11 +208,11 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     }
 
     get sharedViewTree(): ViewTree[] {
-        return this.buildViewTree(sortBy(this.sharedViews, 'name'));
+        return buildViewTree(this.sharedViews, this);
     }
 
     get privateViewTree(): ViewTree[] {
-        return this.buildViewTree(sortBy(this.privateViews, 'name'));
+        return buildViewTree(this.privateViews, this);
     }
 
     /**
@@ -364,10 +365,6 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         this.manageDialogOpen = false;
     }
 
-    getHierarchyDisplayName(name: string) {
-        return name?.substring(name.lastIndexOf('\\') + 1);
-    }
-
     //------------------
     // Favorites
     //------------------
@@ -409,6 +406,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
             const isShared = it.acl === '*';
             return {
                 ...it,
+                shortName: it.name?.substring(it.name.lastIndexOf('\\') + 1),
                 isShared,
                 group: isShared ? `Shared ${name}` : `My ${name}`,
                 isFavorite: this.isFavorite(it.token)
@@ -456,60 +454,6 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         ) {
             await this.saveAsync(skipToast);
         }
-    }
-
-    private buildViewTree(views: View<T>[], depth: number = 0): ViewTree[] {
-        const groups = {},
-            unbalancedStableGroupsAndViews = [];
-
-        views.forEach(view => {
-            // Leaf Node
-            if (this.getNameHierarchySubstring(view.name, depth + 1) == null) {
-                unbalancedStableGroupsAndViews.push(view);
-                return;
-            }
-            // Belongs to an already defined group
-            const group = this.getNameHierarchySubstring(view.name, depth);
-            if (groups[group]) {
-                groups[group].children.push(view);
-                return;
-            }
-            // Belongs to a not defined group, create it
-            groups[group] = {name: group, children: [view], isMenuFolder: true};
-            unbalancedStableGroupsAndViews.push(groups[group]);
-        });
-
-        return unbalancedStableGroupsAndViews.map(it => {
-            const {name, isMenuFolder, children, description, token} = it;
-            if (isMenuFolder) {
-                return {
-                    type: 'folder',
-                    text: name,
-                    items: this.buildViewTree(children, depth + 1),
-                    selected: this.isFolderForEntry(name, this.selectedView?.name, depth)
-                };
-            }
-            return {
-                type: 'view',
-                text: this.getHierarchyDisplayName(name),
-                selected: this.selectedToken === token,
-                token,
-                description
-            };
-        });
-    }
-
-    private getNameHierarchySubstring(name: string, depth: number) {
-        const arr = name?.split('\\') ?? [];
-        if (arr.length <= depth) {
-            return null;
-        }
-        return arr.slice(0, depth + 1).join('\\');
-    }
-
-    private isFolderForEntry(folderName: string, entryName: string, depth: number) {
-        const name = this.getNameHierarchySubstring(entryName, depth);
-        return name && name === folderName && folderName.length < entryName.length;
     }
 
     // Update flag on each view, replacing entire views collection for observability.

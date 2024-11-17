@@ -74,7 +74,7 @@ const menuButton = hoistCmp.factory<ViewManagerModel>({
         const {selectedView, DisplayName} = model;
         return button({
             className: 'xh-view-manager__menu-button',
-            text: model.getHierarchyDisplayName(selectedView?.name) ?? `Default ${DisplayName}`,
+            text: selectedView?.shortName ?? `Default ${DisplayName}`,
             icon: Icon.bookmark(),
             rightIcon: Icon.chevronDown(),
             outlined: true,
@@ -119,7 +119,7 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                         key: `${it.token}-favorite`,
                         icon: model.selectedToken === it.token ? Icon.check() : Icon.placeholder(),
                         text: menuItemTextAndFaveToggle({
-                            view: {...it, text: model.getHierarchyDisplayName(it.name)}
+                            view: {...it, text: it.shortName}
                         }),
                         onClick: () => model.selectViewAsync(it.token).linkTo(model.loadModel),
                         title: it.description
