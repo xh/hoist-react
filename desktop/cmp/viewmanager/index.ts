@@ -1,3 +1,3 @@
 export * from './ViewManager';
-export * from './cmp/ManageDialog';
-export * from './cmp/SaveDialog';
+export * from '@xh/hoist/desktop/cmp/viewmanager/impl/ManageDialog';
+export * from '@xh/hoist/desktop/cmp/viewmanager/impl/SaveDialog';

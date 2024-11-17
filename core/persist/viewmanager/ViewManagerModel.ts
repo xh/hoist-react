@@ -15,7 +15,7 @@ import {
 import {genDisplayName} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
-import {isEqual, isNil, lowerCase, startCase} from 'lodash';
+import {isEqual, isNil, isUndefined, lowerCase, startCase} from 'lodash';
 import {runInAction} from 'mobx';
 import {SaveDialogModel} from './impl/SaveDialogModel';
 import {buildViewTree} from './impl/BuildViewTree';
@@ -116,7 +116,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
      * True if user has opted-in to automatically saving changes to personal views (if auto-save
      * generally available as per `enableAutoSave`).
      */
-    @bindable autoSaveActive = false;
+    @bindable autoSave = false;
 
     /**
      * TaskObserver linked to {@link selectViewAsync}. If a change to the active view is likely to
@@ -140,46 +140,30 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         return executeIfFunction(this._enableSharing);
     }
 
-    get isSharedViewSelected(): boolean {
-        return !!this.selectedView?.isShared;
-    }
-
     @computed
     get canSave(): boolean {
-        const {selectedView} = this;
-        return (
-            selectedView &&
-            this.isDirty &&
-            (this.enableSharing || !selectedView.isShared) &&
-            !this.loadModel.isPending
-        );
+        const {loadModel, selectedView, enableSharing} = this;
+        return !loadModel.isPending && selectedView && (enableSharing || !selectedView.isShared);
     }
 
-    /**
-     * True if displaying the save button is appropriate from the model's point of view, even if
-     * that button might be disabled due to no changes having been made. Works in concert with the
-     * desktop ViewManager component's `showSaveButton` prop.
-     */
     @computed
-    get canShowSaveButton(): boolean {
-        const {selectedView} = this;
+    get canAutoSave(): boolean {
+        const {enableAutoSave, autoSave, loadModel, selectedView} = this;
         return (
+            enableAutoSave &&
+            autoSave &&
+            !loadModel.isPending &&
             selectedView &&
-            (!this.enableAutoSave || !this.autoSaveActive) &&
-            (this.enableSharing || !selectedView.isShared)
+            !selectedView.isShared
         );
     }
 
     @computed
-    get enableAutoSaveToggle(): boolean {
-        return this.selectedView && !this.isSharedViewSelected;
-    }
-
-    @computed
-    get disabledAutoSaveReason(): string {
-        const {displayName} = this;
-        if (!this.selectedView) return `Cannot auto-save default ${displayName}.`;
-        if (this.isSharedViewSelected) return `Cannot auto-save shared ${displayName}.`;
+    get autoSaveUnavailableReason(): string {
+        const {canAutoSave, selectedView, displayName} = this;
+        if (canAutoSave) return null;
+        if (!selectedView) return `Cannot auto-save default ${displayName}.`;
+        if (selectedView.isShared) return `Cannot auto-save shared ${displayName}.`;
         return null;
     }
 
@@ -255,11 +239,11 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
         this.addReaction(
             {
-                track: () => this.pendingValue,
+                track: () => this.isDirty,
                 run: () => this.maybeAutoSaveAsync({skipToast: true})
             },
             {
-                track: () => this.autoSaveActive,
+                track: () => this.canAutoSave,
                 run: () => this.maybeAutoSaveAsync({skipToast: false})
             },
             {
@@ -293,11 +277,14 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         await this.selectViewInternalAsync(token).linkTo(this.viewSelectionObserver);
     }
 
+    //------------------------
+    // Saving/resetting
+    //------------------------
     async saveAsync(skipToast: boolean = false) {
-        const {canSave, selectedToken, pendingValue, isSharedViewSelected, DisplayName} = this;
-        throwIf(!canSave, 'Unable to save view at this time.'); // sanity check - user should not reach
+        const {canSave, selectedToken, pendingValue, selectedView, DisplayName} = this;
+        throwIf(!canSave, 'Unable to save view.');
 
-        if (isSharedViewSelected) {
+        if (selectedView?.isShared) {
             if (!(await this.confirmSaveForSharedViewAsync())) return;
         }
 
@@ -376,13 +363,27 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     // Persistable
     //------------------
     getPersistableState(): PersistableState<ViewManagerModelPersistState> {
-        return new PersistableState({selectedToken: this.selectedToken, favorites: this.favorites});
+        const state: ViewManagerModelPersistState = {
+            selectedToken: this.selectedToken,
+            favorites: this.favorites
+        };
+        if (this.enableAutoSave) {
+            state.autoSave = this.autoSave;
+        }
+        return new PersistableState(state);
     }
 
     setPersistableState(state: PersistableState<ViewManagerModelPersistState>) {
-        const {selectedToken, favorites} = state.value;
-        if (selectedToken) this.selectViewAsync(selectedToken);
-        if (favorites) this.favorites = favorites;
+        const {selectedToken, favorites, autoSave} = state.value;
+        if (!isUndefined(selectedToken)) {
+            this.selectViewAsync(selectedToken);
+        }
+        if (!isUndefined(favorites)) {
+            this.favorites = favorites;
+        }
+        if (!isUndefined(autoSave) && this.enableAutoSave) {
+            this.autoSave = autoSave;
+        }
     }
 
     //------------------
@@ -452,12 +453,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     }
 
     private async maybeAutoSaveAsync({skipToast}: {skipToast: boolean}) {
-        if (
-            this.enableAutoSave &&
-            this.autoSaveActive &&
-            this.canSave &&
-            !this.isSharedViewSelected
-        ) {
+        if (this.canAutoSave && this.isDirty) {
             await this.saveAsync(skipToast);
         }
     }
@@ -472,6 +468,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 }
 
 interface ViewManagerModelPersistState {
-    selectedToken: string;
-    favorites: string[];
+    selectedToken?: string;
+    favorites?: string[];
+    autoSave?: boolean;
 }

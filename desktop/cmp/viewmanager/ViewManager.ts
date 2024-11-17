@@ -5,8 +5,8 @@ import {ViewTree} from '@xh/hoist/core/persist/viewmanager';
 import {ViewManagerModel} from '@xh/hoist/core/persist/viewmanager/ViewManagerModel';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
-import {manageDialog} from '@xh/hoist/desktop/cmp/viewmanager/cmp/ManageDialog';
-import {saveDialog} from '@xh/hoist/desktop/cmp/viewmanager/cmp/SaveDialog';
+import {manageDialog} from './impl/ManageDialog';
+import {saveDialog} from './impl/SaveDialog';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {consumeEvent, pluralize} from '@xh/hoist/utils/js';
@@ -86,9 +86,9 @@ const menuButton = hoistCmp.factory<ViewManagerModel>({
 const saveButton = hoistCmp.factory<ViewManagerModel>({
     render({model, showSaveButton, ...rest}) {
         if (
-            !model.canShowSaveButton ||
             showSaveButton === 'never' ||
-            (showSaveButton === 'whenDirty' && !model.isDirty)
+            (showSaveButton === 'whenDirty' && !model.isDirty) ||
+            model.canAutoSave
         ) {
             return null;
         }
@@ -98,8 +98,10 @@ const saveButton = hoistCmp.factory<ViewManagerModel>({
             icon: Icon.save(),
             tooltip: `Save changes to this ${model.displayName}`,
             intent: 'primary',
-            disabled: !model.canSave,
-            onClick: () => model.saveAsync(false).linkTo(model.loadModel),
+            disabled: !model.isDirty,
+            onClick: () => {
+                model.canSave ? model.saveAsync() : model.saveAsAsync();
+            },
             ...rest
         });
     }
@@ -107,63 +109,72 @@ const saveButton = hoistCmp.factory<ViewManagerModel>({
 
 const viewMenu = hoistCmp.factory<ViewManagerProps>({
     render({model, showPrivateViewsInSubMenu, showSharedViewsInSubMenu}) {
-        const {DisplayName} = model,
-            pluralDisp = pluralize(DisplayName),
-            items = [];
+        const {
+            autoSaveUnavailableReason,
+            enableDefault,
+            canSave,
+            selectedToken,
+            enableAutoSave,
+            DisplayName,
+            autoSave,
+            privateViewTree,
+            sharedViewTree,
+            favoriteViews,
+            views,
+            isDirty
+        } = model;
 
-        if (!isEmpty(model.favoriteViews)) {
+        const pluralDisp = pluralize(DisplayName),
+            items = [];
+        if (!isEmpty(favoriteViews)) {
             items.push(
                 menuDivider({title: 'Favorites'}),
-                ...model.favoriteViews.map(it => {
+                ...favoriteViews.map(it => {
                     return menuItem({
                         key: `${it.token}-favorite`,
                         icon: model.selectedToken === it.token ? Icon.check() : Icon.placeholder(),
                         text: menuItemTextAndFaveToggle({
                             view: {...it, text: it.shortName}
                         }),
-                        onClick: () => model.selectViewAsync(it.token).linkTo(model.loadModel),
+                        onClick: () => model.selectViewAsync(it.token),
                         title: it.description
                     });
                 })
             );
         }
 
-        if (!isEmpty(model.privateViewTree)) {
+        if (!isEmpty(privateViewTree)) {
             if (showPrivateViewsInSubMenu) {
                 items.push(
                     menuDivider({omit: isEmpty(items)}),
                     menuItem({
                         text: `My ${pluralDisp}`,
                         shouldDismissPopover: false,
-                        children: model.privateViewTree.map(it => {
-                            return buildMenuItem(it, model);
-                        })
+                        children: privateViewTree.map(it => buildMenuItem(it, model))
                     })
                 );
             } else {
                 items.push(
                     menuDivider({title: `My ${pluralDisp}`}),
-                    ...model.privateViewTree.map(it => buildMenuItem(it, model))
+                    ...privateViewTree.map(it => buildMenuItem(it, model))
                 );
             }
         }
 
-        if (!isEmpty(model.sharedViewTree)) {
+        if (!isEmpty(sharedViewTree)) {
             if (showSharedViewsInSubMenu) {
                 items.push(
                     menuDivider({omit: isEmpty(items)}),
                     menuItem({
                         text: `Shared ${pluralDisp}`,
                         shouldDismissPopover: false,
-                        children: model.sharedViewTree.map(it => {
-                            return buildMenuItem(it, model);
-                        })
+                        children: sharedViewTree.map(it => buildMenuItem(it, model))
                     })
                 );
             } else {
                 items.push(
                     menuDivider({title: `Shared ${pluralDisp}`}),
-                    ...model.sharedViewTree.map(it => buildMenuItem(it, model))
+                    ...sharedViewTree.map(it => buildMenuItem(it, model))
                 );
             }
         }
@@ -172,19 +183,19 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
             className: 'xh-view-manager__menu',
             items: [
                 ...items,
-                menuDivider({omit: !model.enableDefault || isEmpty(items)}),
+                menuDivider({omit: !enableDefault || isEmpty(items)}),
                 menuItem({
-                    icon: model.selectedToken ? Icon.placeholder() : Icon.check(),
+                    icon: selectedToken ? Icon.placeholder() : Icon.check(),
                     text: `Default ${DisplayName}`,
-                    omit: !model.enableDefault,
+                    omit: !enableDefault,
                     onClick: () => model.selectViewAsync(null)
                 }),
                 menuDivider(),
                 menuItem({
                     icon: Icon.save(),
                     text: 'Save',
-                    disabled: !model.canSave,
-                    onClick: () => model.saveAsync(false)
+                    disabled: !canSave || !isDirty,
+                    onClick: () => model.saveAsync()
                 }),
                 menuItem({
                     icon: Icon.copy(),
@@ -194,25 +205,26 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                 menuItem({
                     icon: Icon.reset(),
                     text: `Revert`,
-                    disabled: !model.isDirty,
+                    disabled: !isDirty,
                     onClick: () => model.resetAsync()
                 }),
-                menuDivider({omit: !model.enableAutoSave}),
+                menuDivider({omit: !enableAutoSave}),
                 menuItem({
-                    omit: !model.enableAutoSave,
+                    omit: !enableAutoSave,
                     text: switchInput({
                         label: 'Auto Save',
-                        bind: 'autoSaveActive',
-                        inline: true,
-                        disabled: !model.enableAutoSaveToggle
+                        value: !autoSaveUnavailableReason && autoSave,
+                        disabled: !!autoSaveUnavailableReason,
+                        onChange: v => (model.autoSave = v),
+                        inline: true
                     }),
-                    title: model.disabledAutoSaveReason,
+                    title: autoSaveUnavailableReason,
                     shouldDismissPopover: false
                 }),
                 menuDivider(),
                 menuItem({
                     icon: Icon.gear(),
-                    disabled: isEmpty(model.views),
+                    disabled: isEmpty(views),
                     text: `Manage ${pluralDisp}...`,
                     onClick: () => model.openManageDialog()
                 })
@@ -242,7 +254,7 @@ function buildMenuItem(viewOrFolder: ViewTree, model: ViewManagerModel): ReactNo
                 icon,
                 text: menuItemTextAndFaveToggle({model, view: viewOrFolder}),
                 title: viewOrFolder.description,
-                onClick: () => model.selectViewAsync(viewOrFolder.token).linkTo(model.loadModel)
+                onClick: () => model.selectViewAsync(viewOrFolder.token)
             });
     }
 }
