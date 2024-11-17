@@ -13,11 +13,28 @@ import {consumeEvent, pluralize} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import {ReactNode} from 'react';
 
+/**
+ * Visibility options for save/revert button.
+ *
+ * 'never' to hide button.
+ * 'whenDirty' to only show when persistence state is dirty and button is therefore enabled.
+ * 'always' will always show button, unless autoSave is active.
+ *
+ *  Note that we never show the button when 'autoSave' is active because it would never be enabled
+ *  for more than a flash.
+ */
+export type ViewManagerStateButtonMode = 'whenDirty' | 'always' | 'never';
+
 export interface ViewManagerProps extends HoistProps<ViewManagerModel> {
     menuButtonProps?: Partial<ButtonProps>;
     saveButtonProps?: Partial<ButtonProps>;
-    /** 'whenDirty' to only show saveButton when persistence state is dirty. (Default 'whenDirty') */
-    showSaveButton?: 'whenDirty' | 'always' | 'never';
+    revertButtonProps?: Partial<ButtonProps>;
+
+    /** Default 'whenDirty' */
+    showSaveButton?: ViewManagerStateButtonMode;
+    /** Default 'never' */
+    showRevertButton?: ViewManagerStateButtonMode;
+
     /** True to render private views in sub-menu (Default false)*/
     showPrivateViewsInSubMenu?: boolean;
     /** True to render shared views in sub-menu (Default false)*/
@@ -40,7 +57,9 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
         className,
         menuButtonProps,
         saveButtonProps,
+        revertButtonProps,
         showSaveButton = 'whenDirty',
+        showRevertButton = 'never',
         showPrivateViewsInSubMenu = false,
         showSharedViewsInSubMenu = false
     }: ViewManagerProps) {
@@ -55,8 +74,12 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                         popoverClassName: 'xh-view-manager__popover'
                     }),
                     saveButton({
-                        showSaveButton,
+                        mode: showSaveButton,
                         ...saveButtonProps
+                    }),
+                    revertButton({
+                        mode: showRevertButton,
+                        ...revertButtonProps
                     })
                 ]
             }),
@@ -84,15 +107,8 @@ const menuButton = hoistCmp.factory<ViewManagerModel>({
 });
 
 const saveButton = hoistCmp.factory<ViewManagerModel>({
-    render({model, showSaveButton, ...rest}) {
-        if (
-            showSaveButton === 'never' ||
-            (showSaveButton === 'whenDirty' && !model.isDirty) ||
-            model.canAutoSave
-        ) {
-            return null;
-        }
-
+    render({model, mode, ...rest}) {
+        if (hideStateButton(model, mode)) return null;
         return button({
             className: 'xh-view-manager__save-button',
             icon: Icon.save(),
@@ -106,6 +122,25 @@ const saveButton = hoistCmp.factory<ViewManagerModel>({
         });
     }
 });
+
+const revertButton = hoistCmp.factory<ViewManagerModel>({
+    render({model, mode, ...rest}) {
+        if (hideStateButton(model, mode)) return null;
+        return button({
+            className: 'xh-view-manager__revert-button',
+            icon: Icon.reset(),
+            tooltip: `Revert changes to this ${model.displayName}`,
+            intent: 'danger',
+            disabled: !model.isDirty,
+            onClick: () => model.resetAsync(),
+            ...rest
+        });
+    }
+});
+
+function hideStateButton(model: ViewManagerModel, mode: ViewManagerStateButtonMode): boolean {
+    return mode === 'never' || (mode === 'whenDirty' && !model.isDirty) || model.canAutoSave;
+}
 
 const viewMenu = hoistCmp.factory<ViewManagerProps>({
     render({model, showPrivateViewsInSubMenu, showSharedViewsInSubMenu}) {
