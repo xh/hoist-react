@@ -239,12 +239,9 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
         this.addReaction(
             {
-                track: () => this.isDirty,
-                run: () => this.maybeAutoSaveAsync({skipToast: true})
-            },
-            {
-                track: () => this.canAutoSave,
-                run: () => this.maybeAutoSaveAsync({skipToast: false})
+                // Track pendingValue, so we retry on fail if view stays dirty -- could use backup timer
+                track: () => [this.pendingValue, this.autoSave],
+                run: () => this.maybeAutoSaveAsync()
             },
             {
                 track: () => this.favorites,
@@ -280,7 +277,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     //------------------------
     // Saving/resetting
     //------------------------
-    async saveAsync(skipToast: boolean = false) {
+    async saveAsync() {
         const {canSave, selectedToken, pendingValue, selectedView, DisplayName} = this;
         throwIf(!canSave, 'Unable to save view.');
 
@@ -290,13 +287,13 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
         try {
             await XH.jsonBlobService.updateAsync(selectedToken, {value: pendingValue});
+            runInAction(() => {
+                this.value = this.pendingValue;
+            });
+            XH.successToast(`${DisplayName} successfully saved.`);
         } catch (e) {
             XH.handleException(e, {alertType: 'toast'});
-            skipToast = true; // don't show the success toast below, but still refresh.
         }
-
-        await this.refreshAsync({selectToken: selectedToken});
-        if (!skipToast) XH.successToast(`${DisplayName} successfully saved.`);
     }
 
     async saveAsAsync() {
@@ -421,13 +418,11 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         } as View<T>;
     }
 
-    @action
     private setValue(value: T) {
         value = this.cleanValue(value);
         if (isEqual(value, this.value) && isEqual(value, this.pendingValue)) return;
 
-        this.value = value;
-        this.pendingValue = value;
+        this.value = this.pendingValue = value;
         this.providers.forEach(it => it.pushStateToTarget());
     }
 
@@ -452,9 +447,17 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         });
     }
 
-    private async maybeAutoSaveAsync({skipToast}: {skipToast: boolean}) {
+    private async maybeAutoSaveAsync() {
         if (this.canAutoSave && this.isDirty) {
-            await this.saveAsync(skipToast);
+            const {selectedToken, pendingValue} = this;
+            try {
+                await XH.jsonBlobService.updateAsync(selectedToken, {value: pendingValue});
+                runInAction(() => {
+                    this.value = this.pendingValue;
+                });
+            } catch (e) {
+                XH.handleException(e, {showAlert: false});
+            }
         }
     }
 
