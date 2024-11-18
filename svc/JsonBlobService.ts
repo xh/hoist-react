@@ -58,15 +58,12 @@ export class JsonBlobService extends HoistService {
     }
 
     /** Retrieve all blobs of a particular type that are visible to the current user. */
-    async listAsync({
-        type,
-        includeValue,
-        loadSpec
-    }: {
+    async listAsync(spec: {
         type: string;
         includeValue?: boolean;
         loadSpec?: LoadSpec;
-    }) {
+    }): Promise<JsonBlob[]> {
+        const {type, includeValue, loadSpec} = spec;
         return XH.fetchJson({
             url: 'xh/listJsonBlobs',
             params: {type, includeValue},

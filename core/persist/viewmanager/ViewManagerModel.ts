@@ -14,11 +14,11 @@ import {
 } from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
-import {isEmpty, isEqual, isNil, lowerCase, sortBy, startCase} from 'lodash';
+import {isEqual, isNil, isUndefined, lowerCase, startCase} from 'lodash';
 import {runInAction} from 'mobx';
 import {SaveDialogModel} from './impl/SaveDialogModel';
+import {buildViewTree} from './impl/BuildViewTree';
 import {View, ViewTree} from './Types';
 
 export interface ViewManagerConfig {
@@ -104,16 +104,19 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     /** Current state of the active view, can include not-yet-persisted changes. */
     @observable.ref pendingValue: T = {} as T;
     /** Loaded saved view definitions - both private and shared. */
-    @observable.ref views: View<T>[] = [];
-    /** Token identifier for the currently selected view, or null if in default mode. */
-    @bindable selectedToken: string = null;
+    @observable.ref views: View<T>[] = null;
+
+    /** Currently selected view, or null if in default mode. Token only will be set during pre-loading.*/
+    @observable selectedToken: string = null;
+    @observable.ref selectedView: View<T> = null;
+
     /** List of tokens for the user's favorite views. */
     @bindable favorites: string[] = [];
     /**
      * True if user has opted-in to automatically saving changes to personal views (if auto-save
      * generally available as per `enableAutoSave`).
      */
-    @bindable autoSaveActive = false;
+    @bindable autoSave = false;
 
     /**
      * TaskObserver linked to {@link selectViewAsync}. If a change to the active view is likely to
@@ -137,51 +140,30 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         return executeIfFunction(this._enableSharing);
     }
 
-    get selectedView(): View<T> {
-        return this.views.find(it => it.token === this.selectedToken);
-    }
-
-    @computed
-    get isSharedViewSelected(): boolean {
-        return !!this.selectedView?.isShared;
-    }
-
     @computed
     get canSave(): boolean {
-        const {selectedView} = this;
-        return (
-            selectedView &&
-            this.isDirty &&
-            (this.enableSharing || !selectedView.isShared) &&
-            !this.loadModel.isPending
-        );
+        const {loadModel, selectedView, enableSharing} = this;
+        return !loadModel.isPending && selectedView && (enableSharing || !selectedView.isShared);
     }
 
-    /**
-     * True if displaying the save button is appropriate from the model's point of view, even if
-     * that button might be disabled due to no changes having been made. Works in concert with the
-     * desktop ViewManager component's `showSaveButton` prop.
-     */
     @computed
-    get canShowSaveButton(): boolean {
-        const {selectedView} = this;
+    get canAutoSave(): boolean {
+        const {enableAutoSave, autoSave, loadModel, selectedView} = this;
         return (
+            !loadModel.isPending &&
+            enableAutoSave &&
+            autoSave &&
             selectedView &&
-            (!this.enableAutoSave || !this.autoSaveActive) &&
-            (this.enableSharing || !selectedView.isShared)
+            !selectedView.isShared
         );
     }
 
     @computed
-    get enableAutoSaveToggle(): boolean {
-        return this.selectedView && !this.isSharedViewSelected;
-    }
-
-    @computed
-    get disabledAutoSaveReason(): string {
-        const {displayName} = this;
-        if (!this.selectedView) return `Cannot auto-save default ${displayName}.`;
-        if (this.isSharedViewSelected) return `Cannot auto-save shared ${displayName}.`;
+    get autoSaveUnavailableReason(): string {
+        const {canAutoSave, selectedView, displayName} = this;
+        if (canAutoSave) return null;
+        if (!selectedView) return `Cannot auto-save default ${displayName}.`;
+        if (selectedView.isShared) return `Cannot auto-save shared ${displayName}.`;
         return null;
     }
 
@@ -207,11 +189,11 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     }
 
     get sharedViewTree(): ViewTree[] {
-        return this.buildViewTree(sortBy(this.sharedViews, 'name'));
+        return buildViewTree(this.sharedViews, this);
     }
 
     get privateViewTree(): ViewTree[] {
-        return this.buildViewTree(sortBy(this.privateViews, 'name'));
+        return buildViewTree(this.privateViews, this);
     }
 
     /**
@@ -257,12 +239,9 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
         this.addReaction(
             {
-                track: () => this.pendingValue,
-                run: () => this.maybeAutoSaveAsync({skipToast: true})
-            },
-            {
-                track: () => this.autoSaveActive,
-                run: () => this.maybeAutoSaveAsync({skipToast: false})
+                // Track pendingValue, so we retry on fail if view stays dirty -- could use backup timer
+                track: () => [this.pendingValue, this.autoSave],
+                run: () => this.maybeAutoSaveAsync()
             },
             {
                 track: () => this.favorites,
@@ -274,53 +253,51 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     override async doLoadAsync(loadSpec: LoadSpec) {
         const rawViews = await XH.jsonBlobService.listAsync({
             type: this.viewType,
-            includeValue: true,
+            includeValue: false,
             loadSpec
         });
         if (loadSpec.isStale) return;
 
-        runInAction(() => (this.views = this.processRaw(rawViews)));
+        runInAction(() => {
+            this.views = rawViews.map(it => this.processRaw(it));
+        });
 
         const token =
             loadSpec.meta.selectToken ??
-            this.selectedView?.token ??
+            this.selectedToken ??
             (this.enableDefault ? null : this.views[0]?.token);
         await this.selectViewAsync(token);
     }
 
     async selectViewAsync(token: string) {
-        // Introduce minimal wait and link to viewSelectionObserver to allow apps to mask.
-        await wait(100)
-            .then(() => {
-                this.selectedToken = token;
-
-                // Allow this model to restore its own persisted state in its ctor and note the desired
-                // selected token before views have been loaded. Once views are loaded, this method will
-                // be called again with the desired token and will proceed to set the value.
-                if (isEmpty(this.views)) return;
-
-                this.setValue(this.selectedView?.value ?? ({} as T));
-            })
-            .linkTo(this.viewSelectionObserver);
+        // If views have not been loaded yet (e.g. constructing), nothing to be done but pre-set state
+        if (!this.views) {
+            this.selectedToken = token;
+            return;
+        }
+        await this.selectViewInternalAsync(token).linkTo(this.viewSelectionObserver);
     }
 
-    async saveAsync(skipToast: boolean = false) {
-        const {canSave, selectedToken, pendingValue, isSharedViewSelected, DisplayName} = this;
-        throwIf(!canSave, 'Unable to save view at this time.'); // sanity check - user should not reach
+    //------------------------
+    // Saving/resetting
+    //------------------------
+    async saveAsync() {
+        const {canSave, selectedToken, pendingValue, selectedView, DisplayName} = this;
+        throwIf(!canSave, 'Unable to save view.');
 
-        if (isSharedViewSelected) {
+        if (selectedView?.isShared) {
             if (!(await this.confirmSaveForSharedViewAsync())) return;
         }
 
         try {
             await XH.jsonBlobService.updateAsync(selectedToken, {value: pendingValue});
+            runInAction(() => {
+                this.value = this.pendingValue;
+            });
+            XH.successToast(`${DisplayName} successfully saved.`);
         } catch (e) {
             XH.handleException(e, {alertType: 'toast'});
-            skipToast = true; // don't show the success toast below, but still refresh.
         }
-
-        await this.refreshAsync({selectToken: selectedToken});
-        if (!skipToast) XH.successToast(`${DisplayName} successfully saved.`);
     }
 
     async saveAsAsync() {
@@ -364,10 +341,6 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         this.manageDialogOpen = false;
     }
 
-    getHierarchyDisplayName(name: string) {
-        return name?.substring(name.lastIndexOf('\\') + 1);
-    }
-
     //------------------
     // Favorites
     //------------------
@@ -391,38 +364,69 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     // Persistable
     //------------------
     getPersistableState(): PersistableState<ViewManagerModelPersistState> {
-        return new PersistableState({selectedToken: this.selectedToken, favorites: this.favorites});
+        const state: ViewManagerModelPersistState = {
+            selectedToken: this.selectedToken,
+            favorites: this.favorites
+        };
+        if (this.enableAutoSave) {
+            state.autoSave = this.autoSave;
+        }
+        return new PersistableState(state);
     }
 
     setPersistableState(state: PersistableState<ViewManagerModelPersistState>) {
-        const {selectedToken, favorites} = state.value;
-        if (selectedToken) this.selectViewAsync(selectedToken);
-        if (favorites) this.favorites = favorites;
+        const {selectedToken, favorites, autoSave} = state.value;
+        if (!isUndefined(selectedToken)) {
+            this.selectViewAsync(selectedToken);
+        }
+        if (!isUndefined(favorites)) {
+            this.favorites = favorites;
+        }
+        if (!isUndefined(autoSave) && this.enableAutoSave) {
+            this.autoSave = autoSave;
+        }
     }
 
     //------------------
     // Implementation
     //------------------
-    private processRaw(raw: PlainObject[]): View<T>[] {
-        const name = pluralize(this.DisplayName);
-        return raw.map(it => {
-            const isShared = it.acl === '*';
-            return {
-                ...it,
-                isShared,
-                group: isShared ? `Shared ${name}` : `My ${name}`,
-                isFavorite: this.isFavorite(it.token)
-            } as View<T>;
+    private async selectViewInternalAsync(token: string) {
+        let view: View<T> = null;
+        if (token != null) {
+            try {
+                const raw = await XH.jsonBlobService.getAsync(token);
+                view = this.processRaw(raw);
+            } catch (e) {
+                XH.handleException(e, {showAlert: false});
+                view = null;
+                token = null;
+            }
+        }
+
+        runInAction(() => {
+            this.selectedToken = token;
+            this.selectedView = view;
+            this.setValue(this.selectedView?.value ?? ({} as T));
         });
     }
 
-    @action
+    private processRaw(raw: PlainObject): View<T> {
+        const name = pluralize(this.DisplayName);
+        const isShared = raw.acl === '*';
+        return {
+            ...raw,
+            shortName: raw.name?.substring(raw.name.lastIndexOf('\\') + 1),
+            isShared,
+            group: isShared ? `Shared ${name}` : `My ${name}`,
+            isFavorite: this.isFavorite(raw.token)
+        } as View<T>;
+    }
+
     private setValue(value: T) {
         value = this.cleanValue(value);
         if (isEqual(value, this.value) && isEqual(value, this.pendingValue)) return;
 
-        this.value = value;
-        this.pendingValue = value;
+        this.value = this.pendingValue = value;
         this.providers.forEach(it => it.pushStateToTarget());
     }
 
@@ -447,69 +451,18 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         });
     }
 
-    private async maybeAutoSaveAsync({skipToast}: {skipToast: boolean}) {
-        if (
-            this.enableAutoSave &&
-            this.autoSaveActive &&
-            this.canSave &&
-            !this.isSharedViewSelected
-        ) {
-            await this.saveAsync(skipToast);
+    private async maybeAutoSaveAsync() {
+        if (this.canAutoSave && this.isDirty) {
+            const {selectedToken, pendingValue} = this;
+            try {
+                await XH.jsonBlobService.updateAsync(selectedToken, {value: pendingValue});
+                runInAction(() => {
+                    this.value = this.pendingValue;
+                });
+            } catch (e) {
+                XH.handleException(e, {showAlert: false});
+            }
         }
-    }
-
-    private buildViewTree(views: View<T>[], depth: number = 0): ViewTree[] {
-        const groups = {},
-            unbalancedStableGroupsAndViews = [];
-
-        views.forEach(view => {
-            // Leaf Node
-            if (this.getNameHierarchySubstring(view.name, depth + 1) == null) {
-                unbalancedStableGroupsAndViews.push(view);
-                return;
-            }
-            // Belongs to an already defined group
-            const group = this.getNameHierarchySubstring(view.name, depth);
-            if (groups[group]) {
-                groups[group].children.push(view);
-                return;
-            }
-            // Belongs to a not defined group, create it
-            groups[group] = {name: group, children: [view], isMenuFolder: true};
-            unbalancedStableGroupsAndViews.push(groups[group]);
-        });
-
-        return unbalancedStableGroupsAndViews.map(it => {
-            const {name, isMenuFolder, children, description, token} = it;
-            if (isMenuFolder) {
-                return {
-                    type: 'folder',
-                    text: name,
-                    items: this.buildViewTree(children, depth + 1),
-                    selected: this.isFolderForEntry(name, this.selectedView?.name, depth)
-                };
-            }
-            return {
-                type: 'view',
-                text: this.getHierarchyDisplayName(name),
-                selected: this.selectedToken === token,
-                token,
-                description
-            };
-        });
-    }
-
-    private getNameHierarchySubstring(name: string, depth: number) {
-        const arr = name?.split('\\') ?? [];
-        if (arr.length <= depth) {
-            return null;
-        }
-        return arr.slice(0, depth + 1).join('\\');
-    }
-
-    private isFolderForEntry(folderName: string, entryName: string, depth: number) {
-        const name = this.getNameHierarchySubstring(entryName, depth);
-        return name && name === folderName && folderName.length < entryName.length;
     }
 
     // Update flag on each view, replacing entire views collection for observability.
@@ -522,6 +475,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 }
 
 interface ViewManagerModelPersistState {
-    selectedToken: string;
-    favorites: string[];
+    selectedToken?: string;
+    favorites?: string[];
+    autoSave?: boolean;
 }

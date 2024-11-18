@@ -40,7 +40,7 @@ export class SaveDialogModel extends HoistModel {
         this.invalidNames = invalidNames;
 
         this.formModel.init({
-            name: viewStub.name ? `${viewStub.name} (COPY)` : '',
+            name: viewStub.name ?? '',
             description: viewStub.description
         });
 

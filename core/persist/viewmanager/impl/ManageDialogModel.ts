@@ -214,6 +214,8 @@ export class ManageDialogModel extends HoistModel {
             hideHeaders: true,
             showGroupRowCounts: false,
             selModel: 'multiple',
+            contextMenu: null,
+            sizingMode: 'standard',
             store: {
                 idSpec: 'token',
                 fields: [
