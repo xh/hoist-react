@@ -59,7 +59,7 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
             isOwnView = values.owner === XH.getUsername();
 
         if (model.hasMultiSelection) {
-            return multiSelectionPanel();
+            return multiSelectionPanel({onClose});
         }
 
         if (!model.selectedId)
