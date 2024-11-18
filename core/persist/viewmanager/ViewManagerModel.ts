@@ -104,7 +104,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     /** Current state of the active view, can include not-yet-persisted changes. */
     @observable.ref pendingValue: T = {} as T;
     /** Loaded saved view definitions - both private and shared. */
-    @observable.ref views: View<T>[] = [];
+    @observable.ref views: View<T>[] = null;
 
     /** Currently selected view, or null if in default mode. Token only will be set during pre-loading.*/
     @observable selectedToken: string = null;
@@ -150,9 +150,9 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     get canAutoSave(): boolean {
         const {enableAutoSave, autoSave, loadModel, selectedView} = this;
         return (
+            !loadModel.isPending &&
             enableAutoSave &&
             autoSave &&
-            !loadModel.isPending &&
             selectedView &&
             !selectedView.isShared
         );
@@ -251,7 +251,11 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const rawViews = await XH.jsonBlobService.listAsync({type: this.viewType, loadSpec});
+        const rawViews = await XH.jsonBlobService.listAsync({
+            type: this.viewType,
+            includeValue: false,
+            loadSpec
+        });
         if (loadSpec.isStale) return;
 
         runInAction(() => {

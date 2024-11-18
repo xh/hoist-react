@@ -185,7 +185,7 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                     menuItem({
                         text: `My ${pluralDisp}`,
                         shouldDismissPopover: false,
-                        children: privateViewTree.map(it => buildMenuItem(it, model))
+                        items: privateViewTree.map(it => buildMenuItem(it, model))
                     })
                 );
             } else {
@@ -203,7 +203,7 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                     menuItem({
                         text: `Shared ${pluralDisp}`,
                         shouldDismissPopover: false,
-                        children: sharedViewTree.map(it => buildMenuItem(it, model))
+                        items: sharedViewTree.map(it => buildMenuItem(it, model))
                     })
                 );
             } else {
@@ -278,7 +278,7 @@ function buildMenuItem(viewOrFolder: ViewTree, model: ViewManagerModel): ReactNo
                 text,
                 icon,
                 shouldDismissPopover: false,
-                children: viewOrFolder.items
+                items: viewOrFolder.items
                     ? viewOrFolder.items.map(child => buildMenuItem(child, model))
                     : []
             });
