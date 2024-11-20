@@ -13,7 +13,7 @@ import {fmtCompactDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
-import {capitalize} from 'lodash';
+import {capitalize, startCase} from 'lodash';
 
 export interface ManageDialogProps extends HoistProps<ManageDialogModel> {
     onClose: () => void;
@@ -25,9 +25,9 @@ export const manageDialog = hoistCmp.factory<ManageDialogProps>({
     model: creates(ManageDialogModel),
 
     render({model, className, onClose}) {
-        const {displayName, saveTask, deleteTask} = model;
+        const {typeDisplayName, saveTask, deleteTask} = model;
         return dialog({
-            title: `Manage ${capitalize(pluralize(displayName))}`,
+            title: `Manage ${capitalize(pluralize(typeDisplayName))}`,
             icon: Icon.gear(),
             className,
             isOpen: true,
@@ -54,7 +54,7 @@ const gridPanel = hoistCmp.factory({
 
 const formPanel = hoistCmp.factory<ManageDialogProps>({
     render({model, onClose}) {
-        const {displayName, formModel} = model,
+        const {typeDisplayName, globalDisplayName, formModel} = model,
             {values} = formModel,
             isOwnView = values.owner === XH.getUsername();
 
@@ -64,7 +64,7 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
 
         if (!model.selectedId)
             return panel({
-                item: placeholder(Icon.gears(), `Select a ${displayName}`),
+                item: placeholder(Icon.gears(), `Select a ${typeDisplayName}`),
                 bbar: bbar({onClose})
             });
 
@@ -80,7 +80,7 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
                             field: 'name',
                             item: textInput(),
                             info: model.canEdit
-                                ? `Organize your ${pluralize(displayName)} into folders by including the "\\" character in their names - e.g. "My folder\\My ${displayName}".`
+                                ? `Organize your ${pluralize(typeDisplayName)} into folders by including the "\\" character in their names - e.g. "My folder\\My ${typeDisplayName}".`
                                 : null
                         }),
                         formField({
@@ -98,11 +98,11 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
                                       })
                         }),
                         formField({
-                            field: 'isShared',
+                            field: 'isGlobal',
                             label: 'Visibility',
                             item: select({
                                 options: [
-                                    {value: true, label: 'Shared with all users'},
+                                    {value: true, label: startCase(globalDisplayName)},
                                     {
                                         value: false,
                                         label: `Private to ${isOwnView ? 'me' : values.owner}`
@@ -110,7 +110,7 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
                                 ],
                                 enableFilter: false
                             }),
-                            omit: !model.enableSharing
+                            omit: !model.manageGlobal
                         }),
                         hbox({
                             omit: !model.showSaveButton,
@@ -163,7 +163,7 @@ const multiSelectionPanel = hoistCmp.factory<ManageDialogProps>({
                 alignItems: 'center',
                 justifyContent: 'center',
                 item: button({
-                    text: `Delete ${selectedIds.length} ${pluralize(model.displayName)}`,
+                    text: `Delete ${selectedIds.length} ${pluralize(model.typeDisplayName)}`,
                     icon: Icon.delete(),
                     intent: 'danger',
                     outlined: true,

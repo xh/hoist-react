@@ -7,6 +7,7 @@ import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {ViewManagerModel} from '../ViewManagerModel';
+import {startCase} from 'lodash';
 
 export class ManageDialogModel extends HoistModel {
     @lookup(() => ViewManagerModel)
@@ -30,27 +31,27 @@ export class ManageDialogModel extends HoistModel {
         return this.selectedIds.length > 1;
     }
 
-    get selIsShared(): boolean {
-        return this.gridModel.selectedRecords.some(rec => rec.data.isShared);
+    get selIsGlobal(): boolean {
+        return this.gridModel.selectedRecords.some(rec => rec.data.isGlobal);
     }
 
     get canDelete(): boolean {
-        const {viewManagerModel, selIsShared, enableSharing, selectedIds} = this,
+        const {viewManagerModel, selIsGlobal, manageGlobal, selectedIds} = this,
             {views, enableDefault} = viewManagerModel;
 
-        // Can't delete shared views without manager role.
-        if (selIsShared && !enableSharing) return false;
+        // Can't delete  global views without role.
+        if (selIsGlobal && !manageGlobal) return false;
 
         // Can't delete all the views, unless default mode is enabled.
         return enableDefault || views.length - selectedIds.length > 0;
     }
 
     get canEdit(): boolean {
-        return this.enableSharing || !this.selIsShared;
+        return this.manageGlobal || !this.selIsGlobal;
     }
 
-    get enableSharing(): boolean {
-        return this.viewManagerModel.enableSharing;
+    get manageGlobal(): boolean {
+        return this.viewManagerModel.manageGlobal;
     }
 
     get showSaveButton(): boolean {
@@ -58,8 +59,12 @@ export class ManageDialogModel extends HoistModel {
         return formModel.isDirty && !formModel.readonly && !viewManagerModel.loadModel.isPending;
     }
 
-    get displayName(): string {
-        return this.viewManagerModel.displayName;
+    get typeDisplayName(): string {
+        return this.viewManagerModel.typeDisplayName;
+    }
+
+    get globalDisplayName(): string {
+        return this.viewManagerModel.globalDisplayName;
     }
 
     get enableFavorites(): boolean {
@@ -95,7 +100,15 @@ export class ManageDialogModel extends HoistModel {
     }
 
     override async doLoadAsync() {
-        this.gridModel.loadData(this.viewManagerModel.views);
+        const {viewManagerModel, typeDisplayName, globalDisplayName} = this,
+            data = viewManagerModel.views.map(v => {
+                const pluralType = startCase(pluralize(typeDisplayName));
+                return {
+                    ...v,
+                    group: v.isGlobal ? `${globalDisplayName} ${pluralType}` : `My ${pluralType}`
+                };
+            });
+        this.gridModel.loadData(data);
         await this.ensureGridHasSelection();
     }
 
@@ -111,10 +124,17 @@ export class ManageDialogModel extends HoistModel {
     // Implementation
     //------------------------
     private async doSaveAsync() {
-        const {formModel, viewManagerModel, enableSharing, selectedId, gridModel, displayName} =
-                this,
+        const {
+                formModel,
+                viewManagerModel,
+                manageGlobal,
+                selectedId,
+                gridModel,
+                typeDisplayName,
+                globalDisplayName
+            } = this,
             {isDirty} = formModel,
-            {name, description, isShared} = formModel.getData(),
+            {name, description, isGlobal} = formModel.getData(),
             isValid = await formModel.validateAsync(),
             {token, owner} = gridModel.selectedRecord.data,
             isOwnView = owner === XH.getUsername();
@@ -123,23 +143,23 @@ export class ManageDialogModel extends HoistModel {
 
         // Additional sanity-check before POSTing an update - non-admins should never be modifying global views.
         throwIf(
-            isShared && !enableSharing,
-            `Cannot save changes to shared ${displayName} - missing required permission.`
+            isGlobal && !manageGlobal,
+            `Cannot save changes to ${globalDisplayName} ${typeDisplayName} - missing required permission.`
         );
 
-        if (formModel.getField('isShared').isDirty) {
+        if (formModel.getField('isGlobal').isDirty) {
             const confirmMsgs = [];
-            if (isShared) {
+            if (isGlobal) {
                 confirmMsgs.push(
-                    `This ${displayName} will become visible to all other ${XH.appName} users.`
+                    `This ${typeDisplayName} will become visible to all other ${XH.appName} users.`
                 );
             } else if (isOwnView) {
                 confirmMsgs.push(
-                    `The selected ${displayName} will revert to being private to you. It will no longer be available to other users.`
+                    `The selected ${typeDisplayName} will revert to being private to you. It will no longer be available to other users.`
                 );
             } else {
                 confirmMsgs.push(
-                    `The selected ${displayName} will revert to being private to its owner (${owner}).`,
+                    `The selected ${typeDisplayName} will revert to being private to its owner (${owner}).`,
                     `Note that you will no longer have access to this view, meaning you will not be able to undo this change.`
                 );
             }
@@ -162,24 +182,24 @@ export class ManageDialogModel extends HoistModel {
         await XH.jsonBlobService.updateAsync(token, {
             name,
             description,
-            acl: isShared ? '*' : null
+            acl: isGlobal ? '*' : null
         });
 
         await viewManagerModel.refreshAsync();
     }
 
     private async doDeleteAsync() {
-        const {viewManagerModel, gridModel, displayName, selectedIds, hasMultiSelection} = this,
+        const {viewManagerModel, gridModel, typeDisplayName, selectedIds, hasMultiSelection} = this,
             count = selectedIds.length;
         if (!count) return;
 
         const confirmStr = hasMultiSelection
-                ? pluralize(displayName, count, true)
+                ? pluralize(typeDisplayName, count, true)
                 : `"${gridModel.selectedRecord.data.name}"`,
             confirmed = await XH.confirm({
                 message: `Are you sure you want to delete ${confirmStr}?`,
                 confirmProps: {
-                    text: `Yes, delete ${pluralize(displayName, count)}`,
+                    text: `Yes, delete ${pluralize(typeDisplayName, count)}`,
                     outlined: true,
                     autoFocus: false,
                     intent: 'danger'
@@ -208,7 +228,7 @@ export class ManageDialogModel extends HoistModel {
 
     private createGridModel(): GridModel {
         return new GridModel({
-            emptyText: `No saved ${pluralize(this.displayName)} found...`,
+            emptyText: `No saved ${pluralize(this.typeDisplayName)} found...`,
             sortBy: 'name',
             groupBy: 'group',
             hideHeaders: true,
@@ -222,7 +242,7 @@ export class ManageDialogModel extends HoistModel {
                     {name: 'token', type: 'string'},
                     {name: 'name', type: 'string'},
                     {name: 'description', type: 'string'},
-                    {name: 'isShared', type: 'bool'},
+                    {name: 'isGlobal', type: 'bool'},
                     {name: 'isFavorite', type: 'bool'},
                     {name: 'acl', type: 'json'},
                     {name: 'meta', type: 'json'},
@@ -265,7 +285,7 @@ export class ManageDialogModel extends HoistModel {
             fields: [
                 {name: 'name', rules: [required, lengthIs({max: 255})]},
                 {name: 'description'},
-                {name: 'isShared', displayName: 'Shared'},
+                {name: 'isGlobal', displayName: 'Global'},
                 {name: 'owner', readonly: true},
                 {name: 'dateCreated', displayName: 'Created', readonly: true},
                 {name: 'lastUpdated', displayName: 'Updated', readonly: true},

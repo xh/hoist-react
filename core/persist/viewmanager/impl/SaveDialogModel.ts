@@ -23,8 +23,12 @@ export class SaveDialogModel extends HoistModel {
         return this.viewManagerModel.viewType;
     }
 
-    get DisplayName(): string {
-        return this.viewManagerModel.DisplayName;
+    get typeDisplayName(): string {
+        return this.viewManagerModel.typeDisplayName;
+    }
+
+    get globalDisplayName(): string {
+        return this.viewManagerModel.globalDisplayName;
     }
 
     constructor(viewManagerModel: ViewManagerModel) {

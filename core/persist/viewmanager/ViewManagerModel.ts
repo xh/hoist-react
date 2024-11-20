@@ -8,13 +8,12 @@ import {
     PersistOptions,
     PlainObject,
     TaskObserver,
-    Thunkable,
     ViewManagerProvider,
     XH
 } from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
+import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
 import {isEqual, isNil, isUndefined, lowerCase, startCase} from 'lodash';
 import {runInAction} from 'mobx';
 import {SaveDialogModel} from './impl/SaveDialogModel';
@@ -22,11 +21,6 @@ import {buildViewTree} from './impl/BuildViewTree';
 import {View, ViewTree} from './Types';
 
 export interface ViewManagerConfig {
-    /**
-     * True (default) to allow user to opt in to automatically saving changes to their private
-     * views - requires `persistWith`.
-     */
-    enableAutoSave?: boolean;
     /**
      * True (default) to allow the user to select a "Default" option that restores all persisted
      * objects to their in-code defaults. If not enabled, at least one saved view should be created
@@ -36,10 +30,11 @@ export interface ViewManagerConfig {
     /** True (default) to allow user to mark views as favorites. Requires `persistWith`. */
     enableFavorites?: boolean;
     /**
-     * True to allow the user to publish or edit globally shared views. Apps are expected to
+     * True to allow the user to publish or edit the global views. Apps are expected to
      * commonly set this based on user roles - e.g. `XH.getUser().hasRole('MANAGE_GRID_VIEWS')`.
      */
-    enableSharing?: Thunkable<boolean>;
+    manageGlobal?: boolean;
+
     /** Used to persist the user's last selected + favorite views and autoSave preference. */
     persistWith?: PersistOptions;
     /**
@@ -49,11 +44,17 @@ export interface ViewManagerConfig {
      * to your app in the future - e.g. `portfolioGridView` or `tradeBlotterDashboard`.
      */
     viewType: string;
+
     /**
      * Optional user-facing display name for the view type, displayed in the ViewManager menu
      * and associated management dialogs and prompts. Defaulted from `viewType` if not provided.
      */
-    viewTypeDisplayName?: string;
+    typeDisplayName?: string;
+
+    /**
+     * Optional user-facing display name for describing global views. Defaults to 'global'
+     */
+    globalDisplayName?: string;
 }
 
 /**
@@ -64,7 +65,7 @@ export interface ViewManagerConfig {
  *    models can be bound to a single ViewManagerModel, allowing a single view to capture the state
  *    of multiple components - e.g. grouping and filtering options along with grid state.
  *  - Views are persisted back to the server as JsonBlob objects.
- *  - Views can be private to their owner, or optionally enabled for sharing to (all) other users.
+ *  - Views can be private to their owner, or optionally enabled for global use by (all) other users.
  *  - Views can be marked as favorites for quick access.
  *  - See the desktop {@link ViewManager} component - the initial Hoist UI for this model.
  */
@@ -93,17 +94,17 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
     /** Immutable configuration for this model. */
     readonly viewType: string;
-    readonly displayName: string; // from viewTypeDisplayName, or generated off of viewType
-    readonly DisplayName: string; // capitalized viewTypeDisplayName
+    readonly typeDisplayName: string;
+    readonly globalDisplayName: string;
     readonly enableDefault: boolean;
-    readonly enableAutoSave: boolean;
     readonly enableFavorites: boolean;
+    readonly manageGlobal: boolean;
 
     /** Last selected, fully-persisted state of the active view. */
     @observable.ref value: T = {} as T;
     /** Current state of the active view, can include not-yet-persisted changes. */
     @observable.ref pendingValue: T = {} as T;
-    /** Loaded saved view definitions - both private and shared. */
+    /** Loaded saved view definitions - both private and global */
     @observable.ref views: View<T>[] = null;
 
     /** Currently selected view, or null if in default mode. Token only will be set during pre-loading.*/
@@ -112,11 +113,6 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
     /** List of tokens for the user's favorite views. */
     @bindable favorites: string[] = [];
-    /**
-     * True if user has opted-in to automatically saving changes to personal views (if auto-save
-     * generally available as per `enableAutoSave`).
-     */
-    @bindable autoSave = false;
 
     /**
      * TaskObserver linked to {@link selectViewAsync}. If a change to the active view is likely to
@@ -127,8 +123,6 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     @observable manageDialogOpen = false;
     @managed readonly saveDialogModel: SaveDialogModel;
 
-    private readonly _enableSharing: Thunkable<boolean>;
-
     /**
      * @internal array of {@link ViewManagerProvider} instances bound to this model. Providers will
      * push themselves onto this array when constructed with a reference to this model. Used to
@@ -136,35 +130,10 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
      */
     providers: ViewManagerProvider<any>[] = [];
 
-    get enableSharing(): boolean {
-        return executeIfFunction(this._enableSharing);
-    }
-
     @computed
     get canSave(): boolean {
-        const {loadModel, selectedView, enableSharing} = this;
-        return !loadModel.isPending && selectedView && (enableSharing || !selectedView.isShared);
-    }
-
-    @computed
-    get canAutoSave(): boolean {
-        const {enableAutoSave, autoSave, loadModel, selectedView} = this;
-        return (
-            !loadModel.isPending &&
-            enableAutoSave &&
-            autoSave &&
-            selectedView &&
-            !selectedView.isShared
-        );
-    }
-
-    @computed
-    get autoSaveUnavailableReason(): string {
-        const {canAutoSave, selectedView, displayName} = this;
-        if (canAutoSave) return null;
-        if (!selectedView) return `Cannot auto-save default ${displayName}.`;
-        if (selectedView.isShared) return `Cannot auto-save shared ${displayName}.`;
-        return null;
+        const {loadModel, selectedView, manageGlobal} = this;
+        return !loadModel.isPending && selectedView && (manageGlobal || !selectedView.isGlobal);
     }
 
     @computed
@@ -172,24 +141,20 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         return !isEqual(this.pendingValue, this.value);
     }
 
-    get isShared(): boolean {
-        return !!this.selectedView?.isShared;
-    }
-
     get favoriteViews(): View<T>[] {
         return this.views.filter(it => it.isFavorite);
     }
 
-    get sharedViews(): View<T>[] {
-        return this.views.filter(it => it.isShared);
+    get globalViews(): View<T>[] {
+        return this.views.filter(it => it.isGlobal);
     }
 
     get privateViews(): View<T>[] {
-        return this.views.filter(it => !it.isShared);
+        return this.views.filter(it => !it.isGlobal);
     }
 
-    get sharedViewTree(): ViewTree[] {
-        return buildViewTree(this.sharedViews, this);
+    get globalViewTree(): ViewTree[] {
+        return buildViewTree(this.globalViews, this);
     }
 
     get privateViewTree(): ViewTree[] {
@@ -202,11 +167,11 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
      */
     private constructor({
         viewType,
-        viewTypeDisplayName,
+        typeDisplayName,
+        globalDisplayName,
         persistWith,
-        enableSharing = false,
+        manageGlobal = false,
         enableDefault = true,
-        enableAutoSave = true,
         enableFavorites = true
     }: ViewManagerConfig) {
         super();
@@ -214,17 +179,15 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
         throwIf(!viewType, 'Missing required viewType in ViewManagerModel config.');
         this.viewType = viewType;
-        this.displayName = lowerCase(viewTypeDisplayName ?? genDisplayName(viewType));
-        this.DisplayName = startCase(this.displayName);
-
-        this._enableSharing = enableSharing;
+        this.typeDisplayName = lowerCase(typeDisplayName ?? genDisplayName(viewType));
+        this.globalDisplayName = globalDisplayName;
+        this.manageGlobal = executeIfFunction(manageGlobal) ?? false;
         this.enableDefault = enableDefault;
-        this.enableAutoSave = enableAutoSave && !!persistWith;
         this.enableFavorites = enableFavorites && !!persistWith;
         this.saveDialogModel = new SaveDialogModel(this);
 
         this.viewSelectionObserver = TaskObserver.trackLast({
-            message: `Updating ${this.displayName}...`
+            message: `Updating ${this.typeDisplayName}...`
         });
 
         if (persistWith) {
@@ -237,17 +200,10 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
             });
         }
 
-        this.addReaction(
-            {
-                // Track pendingValue, so we retry on fail if view stays dirty -- could use backup timer
-                track: () => [this.pendingValue, this.autoSave],
-                run: () => this.maybeAutoSaveAsync()
-            },
-            {
-                track: () => this.favorites,
-                run: () => this.onFavoritesChange()
-            }
-        );
+        this.addReaction({
+            track: () => this.favorites,
+            run: () => this.onFavoritesChange()
+        });
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
@@ -282,11 +238,11 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     // Saving/resetting
     //------------------------
     async saveAsync() {
-        const {canSave, selectedToken, pendingValue, selectedView, DisplayName} = this;
+        const {canSave, selectedToken, pendingValue, selectedView, typeDisplayName} = this;
         throwIf(!canSave, 'Unable to save view.');
 
-        if (selectedView?.isShared) {
-            if (!(await this.confirmSaveForSharedViewAsync())) return;
+        if (selectedView?.isGlobal) {
+            if (!(await this.confirmSaveForGlobalViewAsync())) return;
         }
 
         try {
@@ -294,14 +250,14 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
             runInAction(() => {
                 this.value = this.pendingValue;
             });
-            XH.successToast(`${DisplayName} successfully saved.`);
+            XH.successToast(`${startCase(typeDisplayName)} successfully saved.`);
         } catch (e) {
             XH.handleException(e, {alertType: 'toast'});
         }
     }
 
     async saveAsAsync() {
-        const {selectedView, views, DisplayName} = this,
+        const {selectedView, views, typeDisplayName} = this,
             {name, description} = selectedView ?? {};
 
         const newView = await this.saveDialogModel.openAsync(
@@ -315,7 +271,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
         if (newView) {
             await this.refreshAsync({selectToken: newView.token});
-            XH.successToast(`${DisplayName} successfully saved.`);
+            XH.successToast(`${startCase(typeDisplayName)} successfully saved.`);
         }
     }
 
@@ -368,22 +324,16 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
             selectedToken: this.selectedToken,
             favorites: this.favorites
         };
-        if (this.enableAutoSave) {
-            state.autoSave = this.autoSave;
-        }
         return new PersistableState(state);
     }
 
     setPersistableState(state: PersistableState<ViewManagerModelPersistState>) {
-        const {selectedToken, favorites, autoSave} = state.value;
+        const {selectedToken, favorites} = state.value;
         if (!isUndefined(selectedToken)) {
             this.selectViewAsync(selectedToken);
         }
         if (!isUndefined(favorites)) {
             this.favorites = favorites;
-        }
-        if (!isUndefined(autoSave) && this.enableAutoSave) {
-            this.autoSave = autoSave;
         }
     }
 
@@ -411,13 +361,11 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     }
 
     private processRaw(raw: PlainObject): View<T> {
-        const name = pluralize(this.DisplayName);
-        const isShared = raw.acl === '*';
+        const isGlobal = raw.acl === '*';
         return {
             ...raw,
             shortName: raw.name?.substring(raw.name.lastIndexOf('\\') + 1),
-            isShared,
-            group: isShared ? `Shared ${name}` : `My ${name}`,
+            isGlobal,
             isFavorite: this.isFavorite(raw.token)
         } as View<T>;
     }
@@ -436,9 +384,9 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         return JSON.parse(JSON.stringify(value));
     }
 
-    private async confirmSaveForSharedViewAsync() {
+    private async confirmSaveForGlobalViewAsync() {
         return XH.confirm({
-            message: `You are saving a shared public ${this.displayName}. Do you wish to continue?`,
+            message: `You are saving a ${this.globalDisplayName} ${this.typeDisplayName}. Do you wish to continue?`,
             confirmProps: {
                 text: 'Yes, save changes',
                 intent: 'primary',
@@ -449,20 +397,6 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
                 autoFocus: true
             }
         });
-    }
-
-    private async maybeAutoSaveAsync() {
-        if (this.canAutoSave && this.isDirty) {
-            const {selectedToken, pendingValue} = this;
-            try {
-                await XH.jsonBlobService.updateAsync(selectedToken, {value: pendingValue});
-                runInAction(() => {
-                    this.value = this.pendingValue;
-                });
-            } catch (e) {
-                XH.handleException(e, {showAlert: false});
-            }
-        }
     }
 
     // Update flag on each view, replacing entire views collection for observability.
@@ -477,5 +411,4 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 interface ViewManagerModelPersistState {
     selectedToken?: string;
     favorites?: string[];
-    autoSave?: boolean;
 }

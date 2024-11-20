@@ -5,30 +5,39 @@ import {PlainObject} from '@xh/hoist/core';
  * Views are persisted to / loaded from the server as {@link JsonBlob}s.
  */
 export interface View<T extends PlainObject = PlainObject> {
-    /** Either null for private views or special token "*" for globally shared views. */
+    /** Either null for private views or special token "*" for global views. */
     acl: '*' | null;
-    dateCreated: number;
     description: string;
-    /** Calculated display group - either "Shared [entityName]" or "My [entityName]". */
-    group: string;
+
+    dateCreated: number;
+    lastUpdated: number;
+    lastUpdatedBy: string;
+
+    /** Unique Id */
+    token: string;
+
+    /** App-defined type discriminator, as per {@link ViewManagerConfig.viewType}. */
+    type: string;
+
     /**
      * True if user has tagged this view as a favorite. Note that a user's list of favorite views is
      * persisted via `ViewManagerModel.persistWith` and *not* stored in the blob itself.
      */
     isFavorite: boolean;
-    /** True if this view has been shared (acl == "*") and is visible to all users. */
-    isShared: boolean;
-    lastUpdated: number;
-    lastUpdatedBy: string;
+
+    /** True if this view is global (acl == "*") and is visible to all users. */
+    isGlobal: boolean;
+
     /** User-supplied descriptive name, including folder designating prefix. */
     name: string;
+
     /** User-supplied descriptive name, without folder designating prefix. */
     shortName: string;
+
     /** Original creator of the view, and the only user with access to it if not shared. */
     owner: string;
-    token: string;
-    /** App-defined type discriminator, as per {@link ViewManagerConfig.viewType}. */
-    type: string;
+
+    /** Persisted value of the view.  Maybe null for "stub" listing of the view. */
     value: T;
 }
 
