@@ -226,7 +226,7 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                     onClick: () => model.saveAsync()
                 }),
                 menuItem({
-                    icon: Icon.copy(),
+                    icon: Icon.placeholder(),
                     text: 'Save As...',
                     onClick: () => model.saveAsAsync()
                 }),
