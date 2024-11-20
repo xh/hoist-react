@@ -102,10 +102,11 @@ export class ManageDialogModel extends HoistModel {
     override async doLoadAsync() {
         const {viewManagerModel, typeDisplayName, globalDisplayName} = this,
             data = viewManagerModel.views.map(v => {
-                const pluralType = startCase(pluralize(typeDisplayName));
+                const pluralType = startCase(pluralize(typeDisplayName)),
+                    global = startCase(globalDisplayName);
                 return {
                     ...v,
-                    group: v.isGlobal ? `${globalDisplayName} ${pluralType}` : `My ${pluralType}`
+                    group: v.isGlobal ? `${global} ${pluralType}` : `My ${pluralType}`
                 };
             });
         this.gridModel.loadData(data);

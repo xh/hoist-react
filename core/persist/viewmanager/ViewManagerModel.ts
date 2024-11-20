@@ -168,7 +168,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     private constructor({
         viewType,
         typeDisplayName,
-        globalDisplayName,
+        globalDisplayName = 'global',
         persistWith,
         manageGlobal = false,
         enableDefault = true,
