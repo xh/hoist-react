@@ -140,7 +140,7 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
         const {
             enableDefault,
             canSave,
-            selectedToken,
+            selectedView,
             typeDisplayName,
             globalDisplayName,
             privateViewTree,
@@ -160,7 +160,7 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                 ...favoriteViews.map(it => {
                     return menuItem({
                         key: `${it.token}-favorite`,
-                        icon: model.selectedToken === it.token ? Icon.check() : Icon.placeholder(),
+                        icon: selectedView?.token === it.token ? Icon.check() : Icon.placeholder(),
                         text: menuItemTextAndFaveToggle({
                             view: {...it, text: it.shortName}
                         }),
@@ -213,7 +213,7 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                 ...items,
                 menuDivider({omit: !enableDefault || isEmpty(items)}),
                 menuItem({
-                    icon: selectedToken ? Icon.placeholder() : Icon.check(),
+                    icon: selectedView ? Icon.placeholder() : Icon.check(),
                     text: `Default ${startCase(typeDisplayName)}`,
                     omit: !enableDefault,
                     onClick: () => model.selectViewAsync(null)

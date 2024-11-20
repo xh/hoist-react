@@ -218,11 +218,11 @@ export class ManageDialogModel extends HoistModel {
 
     private async ensureGridHasSelection() {
         const {gridModel, viewManagerModel} = this,
-            {selectedToken} = viewManagerModel;
+            {selectedView} = viewManagerModel;
 
         if (!gridModel.hasSelection) {
-            selectedToken
-                ? await gridModel.selectAsync(selectedToken)
+            selectedView
+                ? await gridModel.selectAsync(selectedView?.token)
                 : await gridModel.preSelectFirstAsync();
         }
     }
