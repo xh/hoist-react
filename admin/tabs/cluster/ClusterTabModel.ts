@@ -32,6 +32,10 @@ export class ClusterTabModel extends HoistModel {
 
     @lookup(TabModel) private tabModel: TabModel;
 
+    @managed readonly gridModel: GridModel = this.createGridModel();
+    @managed readonly tabContainerModel: TabContainerModel = this.createTabContainerModel();
+    @managed readonly timer: Timer;
+
     shutdownAction: RecordActionSpec = {
         icon: Icon.skull(),
         text: 'Shutdown Instance',
@@ -40,10 +44,6 @@ export class ClusterTabModel extends HoistModel {
         displayFn: () => ({hidden: AppModel.readonly}),
         recordsRequired: 1
     };
-
-    @managed readonly gridModel: GridModel = this.createGridModel();
-    @managed readonly tabContainerModel: TabContainerModel = this.createTabContainerModel();
-    @managed readonly timer: Timer;
 
     get instance(): PlainObject {
         return this.gridModel.selectedRecord?.data;
@@ -59,7 +59,16 @@ export class ClusterTabModel extends HoistModel {
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {gridModel} = this;
-        let data = await XH.fetchJson({url: 'clusterAdmin/allInstances', loadSpec});
+
+        let data = await XH.fetchJson({
+            url: 'clusterAdmin/allInstances',
+            // Tighter default timeout for background auto-refresh, to ensure we report connectivity
+            // issues promptly. This call should be quick, but still allow full default timeout for
+            // a manual refresh.
+            timeout: loadSpec.isAutoRefresh ? this.autoRefreshTimeout : undefined,
+            loadSpec
+        });
+
         data = data.map(row => ({
             ...row,
             isLocal: row.name == XH.environmentService.serverInstance,
@@ -78,7 +87,7 @@ export class ClusterTabModel extends HoistModel {
             runFn: () => {
                 if (this.tabModel?.isActive) this.autoRefreshAsync();
             },
-            interval: 5 * SECONDS,
+            interval: this.autoRefreshInterval,
             delay: true
         });
 
@@ -96,6 +105,16 @@ export class ClusterTabModel extends HoistModel {
         );
     }
 
+    formatInstance(instance: PlainObject): ReactNode {
+        const content = [instance.name];
+        if (instance.isPrimary) content.push(badge({item: 'primary', intent: 'primary'}));
+        if (instance.isLocal) content.push(badge('local'));
+        return hbox(content);
+    }
+
+    //------------------
+    // Implementation
+    //------------------
     private createGridModel() {
         return new GridModel({
             store: {
@@ -161,7 +180,7 @@ export class ClusterTabModel extends HoistModel {
         });
     }
 
-    createTabContainerModel() {
+    private createTabContainerModel() {
         return new TabContainerModel({
             route: 'default.cluster',
             switcher: false,
@@ -187,14 +206,7 @@ export class ClusterTabModel extends HoistModel {
         });
     }
 
-    formatInstance(instance: PlainObject): ReactNode {
-        const content = [instance.name];
-        if (instance.isPrimary) content.push(badge({item: 'primary', intent: 'primary'}));
-        if (instance.isLocal) content.push(badge('local'));
-        return hbox(content);
-    }
-
-    async shutdownInstanceAsync(instance: PlainObject) {
+    private async shutdownInstanceAsync(instance: PlainObject) {
         if (
             !(await XH.confirm({
                 message: `Are you SURE you want to shutdown instance ${instance.name}?`,
@@ -215,5 +227,13 @@ export class ClusterTabModel extends HoistModel {
             .finally(() => this.loadAsync())
             .linkTo({observer: this.loadModel, message: 'Attempting instance shutdown'})
             .catchDefault();
+    }
+
+    private get autoRefreshInterval(): number {
+        return XH.getConf('xhAdminAppConfig', {}).clusterTabAutoRefreshInterval ?? 4 * SECONDS;
+    }
+
+    private get autoRefreshTimeout(): number {
+        return XH.getConf('xhAdminAppConfig', {}).clusterTabAutoRefreshTimeout ?? 2 * SECONDS;
     }
 }
