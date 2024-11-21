@@ -359,6 +359,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         return new PersistableState(state);
     }
 
+    @action
     setPersistableState(state: PersistableState<ViewManagerModelPersistState<T>>) {
         const {value, favorites} = state.value;
         this.setValueAsync(this.persistWith.persistTransientState ? value : omit(value, 'state'));
