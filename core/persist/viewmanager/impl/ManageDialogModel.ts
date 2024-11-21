@@ -190,6 +190,16 @@ export class ManageDialogModel extends HoistModel {
     private async doDeleteAsync() {
         const {viewManagerModel, gridModel, typeDisplayName, selectedIds, hasMultiSelection} = this,
             count = selectedIds.length;
+
+        // TODO - should be validating this on server in case another user deleted remaining views
+        if (viewManagerModel.views.length === count && !viewManagerModel.enableDefault) {
+            XH.alert({
+                title: 'Cannot delete all views',
+                message: `You cannot delete all ${pluralize(typeDisplayName)}.`
+            });
+            return;
+        }
+
         if (!count) return;
 
         const confirmStr = hasMultiSelection
@@ -216,12 +226,10 @@ export class ManageDialogModel extends HoistModel {
 
     private async ensureGridHasSelection() {
         const {gridModel, viewManagerModel} = this,
-            {selectedView} = viewManagerModel;
+            {view} = viewManagerModel.savedValue;
 
         if (!gridModel.hasSelection) {
-            selectedView
-                ? await gridModel.selectAsync(selectedView?.token)
-                : await gridModel.preSelectFirstAsync();
+            view ? await gridModel.selectAsync(view.token) : await gridModel.preSelectFirstAsync();
         }
     }
 

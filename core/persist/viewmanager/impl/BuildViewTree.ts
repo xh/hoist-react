@@ -9,7 +9,7 @@ import {sortBy} from 'lodash';
  */
 export function buildViewTree(views: View[], model: ViewManagerModel): ViewTree[] {
     views = sortBy(views, 'name');
-    return buildTreeInternal(views, model.selectedView, 0);
+    return buildTreeInternal(views, model.savedValue.view, 0);
 }
 
 function buildTreeInternal(views: View[], selected: View, depth: number): ViewTree[] {
