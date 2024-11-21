@@ -14,7 +14,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {JsonBlob} from '@xh/hoist/svc';
 import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
 import {first, isEmpty, isEqual, isNil, lowerCase, omit, startCase} from 'lodash';
@@ -114,9 +114,8 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     @observable.ref currentValue: ViewWithState<T> = this.savedValue;
     /** Loaded saved view definitions - both private and global */
     @observable.ref views: View[] = [];
-
     /** List of tokens for the user's favorite views. */
-    @bindable favorites: string[] = [];
+    @observable.ref favorites: string[] = [];
 
     /**
      * TaskObserver linked to {@link selectViewAsync}. If a change to the active view is likely to
@@ -329,10 +328,12 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         this.isFavorite(token) ? this.removeFavorite(token) : this.addFavorite(token);
     }
 
+    @action
     addFavorite(token: string) {
         this.favorites = [...this.favorites, token];
     }
 
+    @action
     removeFavorite(token: string) {
         this.favorites = this.favorites.filter(it => it !== token);
     }
