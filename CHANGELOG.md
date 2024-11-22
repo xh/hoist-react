@@ -2,9 +2,12 @@
 
 ## v71.0.0-SNAPSHOT - unreleased
 
-
-### ⚙️ Technical
-* Misc. Improvements to ViewManager
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - changes to new ViewManager APIs)
+*
+* Improvements to ViewManager API and functionality.
+  * Replace `autoSave` with option to persist pending view.
+  * More customization options.
+  * Handle deleted and update collisions more gracefully.
 
 
 ## v70.0.0 - 2024-11-15
