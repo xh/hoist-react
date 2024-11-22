@@ -1,10 +1,8 @@
-import {PlainObject} from '@xh/hoist/core';
-
 /**
  * Interface for metadata describing a bundle of {@link PersistableState} managed by
  * {@link ViewManagerModel}. Views are persisted to / loaded from the server as {@link JsonBlob}s.
  */
-export interface View {
+export interface ViewInfo {
     /** Either null for private views or special token "*" for global views. */
     acl: '*';
     description: string;
@@ -36,16 +34,6 @@ export interface View {
 
     /** Original creator of the view, and the only user with access to it if not shared. */
     owner: string;
-}
-
-/**
- * Wrapper for a view object accompanied by its state.
- */
-export interface ViewWithState<T extends PlainObject = PlainObject> {
-    /** Null for 'default' view */
-    view: View;
-    /** State for the view. Only state that differs from the initial "code" state is stored. */
-    state: Partial<T>;
 }
 
 /**

@@ -1,4 +1,4 @@
-import {View, ViewManagerModel, ViewTree} from '@xh/hoist/core/persist/viewmanager';
+import {ViewInfo, ViewManagerModel, ViewTree} from '@xh/hoist/core/persist/viewmanager';
 import {sortBy} from 'lodash';
 
 /**
@@ -7,12 +7,12 @@ import {sortBy} from 'lodash';
  *
  * @internal
  */
-export function buildViewTree(views: View[], model: ViewManagerModel): ViewTree[] {
+export function buildViewTree(views: ViewInfo[], model: ViewManagerModel): ViewTree[] {
     views = sortBy(views, 'name');
-    return buildTreeInternal(views, model.savedValue.view, 0);
+    return buildTreeInternal(views, model.view.info, 0);
 }
 
-function buildTreeInternal(views: View[], selected: View, depth: number): ViewTree[] {
+function buildTreeInternal(views: ViewInfo[], selected: ViewInfo, depth: number): ViewTree[] {
     // 1) Get groups and leaves at this level.
     const groups = {},
         groupsAndLeaves = [];

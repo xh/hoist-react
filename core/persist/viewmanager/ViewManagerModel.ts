@@ -13,15 +13,16 @@ import {
     ViewManagerProvider,
     XH
 } from '@xh/hoist/core';
+import {View} from '@xh/hoist/core/persist/viewmanager/View';
 import {genDisplayName} from '@xh/hoist/data';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {JsonBlob} from '@xh/hoist/svc';
-import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
-import {first, isEmpty, isEqual, isNil, lowerCase, omit, startCase} from 'lodash';
+import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
+import {first, isEmpty, isEqual, isNil, lowerCase, pick, startCase} from 'lodash';
 import {runInAction, when} from 'mobx';
 import {SaveDialogModel} from './impl/SaveDialogModel';
 import {buildViewTree} from './impl/BuildViewTree';
-import {View, ViewTree, ViewWithState} from './Types';
+import {ViewInfo, ViewTree} from './Types';
 
 export interface ViewManagerConfig {
     /**
@@ -61,8 +62,8 @@ export interface ViewManagerConfig {
 }
 
 export interface ViewManagerPersistOptions extends PersistOptions {
-    /** False to persist selected view *without* transient state. Default is true. */
-    persistTransientState?: boolean;
+    /** Save the pending (unsaved) value in state. Default is true. */
+    persistPendingView?: boolean;
 }
 
 /**
@@ -77,7 +78,7 @@ export interface ViewManagerPersistOptions extends PersistOptions {
  *  - Views can be marked as favorites for quick access.
  *  - See the desktop {@link ViewManager} component - the initial Hoist UI for this model.
  */
-export class ViewManagerModel<T extends PlainObject = PlainObject>
+export class ViewManagerModel<T = PlainObject>
     extends HoistModel
     implements Persistable<ViewManagerModelPersistState<T>>
 {
@@ -108,12 +109,12 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     readonly enableFavorites: boolean;
     readonly manageGlobal: boolean;
 
-    /** Last saved view + state. */
-    @observable.ref savedValue: ViewWithState<T> = {view: null, state: {}};
-    /** Current (transient) view + state, can include not-yet-saved changes. */
-    @observable.ref currentValue: ViewWithState<T> = this.savedValue;
-    /** Loaded saved view definitions - both private and global */
-    @observable.ref views: View[] = [];
+    /** Current view or the "default" view. Will not include uncommitted changes */
+    @observable.ref view: View<T> = View.DEFAULT;
+    /** Pending (transient) view, can include not-yet-saved changes. */
+    @observable.ref pendingView: View<T> = this.view;
+    /** Loaded saved view library - both private and global */
+    @observable.ref views: ViewInfo[] = [];
     /** List of tokens for the user's favorite views. */
     @observable.ref favorites: string[] = [];
 
@@ -121,7 +122,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
      * TaskObserver linked to {@link selectViewAsync}. If a change to the active view is likely to
      * require intensive layout/grid work, consider masking affected components with this observer.
      */
-    viewSelectionTask: TaskObserver;
+    selectTask: TaskObserver;
 
     /**
      * TaskObserver linked to {@link saveAsync}.
@@ -142,25 +143,24 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
     @computed
     get canSave(): boolean {
-        const {isLoading, savedValue, manageGlobal} = this,
-            {view} = savedValue;
-        return !isLoading && view && (manageGlobal || !view.isGlobal);
+        const {isLoading, view, manageGlobal} = this;
+        return !isLoading && !view.isDefault && (manageGlobal || !view.isGlobal);
     }
 
     @computed
-    get isStateDirty(): boolean {
-        return !isEqual(this.currentValue.state, this.savedValue.state);
+    get isValueDirty(): boolean {
+        return !this.view.isValueEqual(this.pendingView);
     }
 
-    get favoriteViews(): View[] {
+    get favoriteViews(): ViewInfo[] {
         return this.views.filter(it => it.isFavorite);
     }
 
-    get globalViews(): View[] {
+    get globalViews(): ViewInfo[] {
         return this.views.filter(it => it.isGlobal);
     }
 
-    get privateViews(): View[] {
+    get privateViews(): ViewInfo[] {
         return this.views.filter(it => !it.isGlobal);
     }
 
@@ -174,8 +174,8 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
     /** True if any async tasks are pending. */
     get isLoading(): boolean {
-        const {loadModel, saveTask, viewSelectionTask} = this;
-        return loadModel.isPending || saveTask.isPending || viewSelectionTask.isPending;
+        const {loadModel, saveTask, selectTask} = this;
+        return loadModel.isPending || saveTask.isPending || selectTask.isPending;
     }
 
     /**
@@ -198,26 +198,24 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         this.viewType = viewType;
         this.typeDisplayName = lowerCase(typeDisplayName ?? genDisplayName(viewType));
         this.globalDisplayName = globalDisplayName;
-        this.persistWith = {persistTransientState: true, ...persistWith};
+        this.persistWith = {persistPendingView: true, ...persistWith};
         this.manageGlobal = executeIfFunction(manageGlobal) ?? false;
         this.enableDefault = enableDefault;
         this.enableFavorites = enableFavorites && !!persistWith;
         this.saveDialogModel = new SaveDialogModel(this);
 
-        this.viewSelectionTask = TaskObserver.trackLast({
+        this.selectTask = TaskObserver.trackLast({
             message: `Updating ${this.typeDisplayName}...`
         });
         this.saveTask = TaskObserver.trackLast({
             message: `Saving ${this.typeDisplayName}...`
         });
 
-        if (this.enableFavorites) {
-            this.addReaction(this.favoritesReaction(), this.viewsReaction());
-        }
+        this.addReaction(this.favoritesReaction(), this.viewsReaction());
     }
 
     private async initAsync() {
-        const views = await this.fetchViewsAsync();
+        const views = await this.fetchViewInfosAsync();
         throwIf(!this.enableDefault && isEmpty(views), 'No views found for View Manager.');
 
         runInAction(() => (this.views = views));
@@ -231,17 +229,17 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
                 },
                 target: this
             });
-            await when(() => !this.viewSelectionTask.isPending);
+            await when(() => !this.selectTask.isPending);
         }
 
-        if (!this.currentValue.view && !this.enableDefault) {
-            await this.setValueAsync({view: first(views)});
+        if (this.view.isDefault && !this.enableDefault) {
+            await this.setViewAsync(first(views));
         }
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         try {
-            const views = await this.fetchViewsAsync();
+            const views = await this.fetchViewInfosAsync();
             if (loadSpec.isStale) return;
             runInAction(() => (this.views = views));
         } catch (e) {
@@ -251,63 +249,66 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     }
 
     async selectViewAsync(token: string): Promise<void> {
-        // TODO - prompt if dirty
-        return this.setValueAsync({view: token && this.views.find(it => it.token === token)});
+        if (!this.isValueDirty || (await this.confirmDiscardChangesAsync())) {
+            await this.setViewAsync(token && this.views.find(it => it.token === token)).catch(e =>
+                XH.handleException(e, {alertType: 'toast'})
+            );
+        }
     }
 
     //------------------------
     // Saving/resetting
     //------------------------
     async saveAsync(): Promise<void> {
-        const {canSave, savedValue, currentValue, typeDisplayName} = this;
+        const {canSave, view, pendingView, typeDisplayName} = this;
         throwIf(!canSave, 'Unable to save view.');
 
-        if (savedValue.view.isGlobal) {
-            if (!(await this.confirmSaveForGlobalViewAsync())) return;
-        }
+        const current = await this.getSavedViewAsync(view.token);
+        if (!current) return this.saveAsAsync();
 
-        // todo - check if basis is older than savedValue. Could also be different entirely!
+        if (current.isSameVersion(view) && !(await this.confirmStaleSaveAsync())) return;
+        if (current.isGlobal && !(await this.confirmSaveForGlobalViewAsync())) return;
+
         try {
-            const blob = await XH.jsonBlobService
-                .updateAsync(savedValue.view.token, {
-                    value: currentValue.state
-                })
+            const update = await XH.jsonBlobService
+                .updateAsync(view.token, {value: pendingView.value})
                 .linkTo(this.saveTask);
             runInAction(() => {
-                this.savedValue = this.currentValue = this.blobToViewWithState(blob);
+                this.view = this.pendingView = this.blobToView(update);
             });
             XH.successToast(`${startCase(typeDisplayName)} successfully saved.`);
         } catch (e) {
             XH.handleException(e, {alertType: 'toast'});
         }
+        this.refreshAsync();
     }
 
     async saveAsAsync(): Promise<void> {
-        const {currentValue, views, typeDisplayName} = this;
+        const {pendingView, typeDisplayName} = this,
+            view = (await this.saveDialogModel.openAsync(pendingView)) as View<T>;
 
-        const blob = await this.saveDialogModel.openAsync(
-            currentValue,
-            views.map(it => it.name)
-        );
-
-        if (blob) {
+        if (view) {
+            runInAction(() => (this.view = this.pendingView = view));
             XH.successToast(`${startCase(typeDisplayName)} successfully saved.`);
-            await this.setValueAsync(this.blobToViewWithState(blob));
-            await this.refreshAsync();
         }
+        this.refreshAsync();
     }
 
     async resetAsync(): Promise<void> {
-        const {view} = this.savedValue;
-        await this.setValueAsync({view});
+        await this.setViewAsync(this.view.info).catch(e =>
+            XH.handleException(e, {alertType: 'toast'})
+        );
+    }
+
+    getPendingValue(): Partial<T> {
+        return this.pendingView.value;
     }
 
     @action
-    // TODO - state is not a great name -- maybe "setTransientState"?
-    setCurrentState(state: Partial<T>) {
-        state = this.cleanState(state);
-        if (!isEqual(state, this.currentValue.state)) {
-            this.currentValue = {...this.currentValue, state};
+    setPendingValue(value: Partial<T>) {
+        value = this.cleanState(value);
+        if (!isEqual(value, this.pendingView.value)) {
+            this.pendingView = new View(this.pendingView.info, value);
         }
     }
 
@@ -346,12 +347,12 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     // Persistable
     //------------------
     getPersistableState(): PersistableState<ViewManagerModelPersistState<T>> {
-        const {currentValue, isStateDirty, persistWith, savedValue} = this,
+        const {pendingView, isValueDirty, persistWith, view} = this,
             state: ViewManagerModelPersistState<T> = {
-                value:
-                    persistWith.persistTransientState && isStateDirty
-                        ? currentValue
-                        : omit(savedValue, 'state')
+                view:
+                    persistWith.persistPendingView && isValueDirty
+                        ? pick(pendingView, ['info', 'value']) // Persist value + basis
+                        : pick(view, 'info') // Only persist selected view info
             };
 
         if (this.enableFavorites) state.favorites = this.favorites;
@@ -361,9 +362,8 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
 
     @action
     setPersistableState(state: PersistableState<ViewManagerModelPersistState<T>>) {
-        const {value, favorites} = state.value;
-        this.setValueAsync(this.persistWith.persistTransientState ? value : omit(value, 'state'));
-
+        const {view, favorites} = state.value;
+        this.setViewAsync(view?.info, this.persistWith.persistPendingView ? view?.value : null);
         if (favorites && this.enableFavorites) this.favorites = favorites;
     }
 
@@ -371,6 +371,7 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
     // Implementation
     //------------------
     private favoritesReaction(): ReactionSpec<string[]> {
+        if (!this.enableFavorites) return null;
         return {
             track: () => this.favorites,
             run: () => {
@@ -382,61 +383,79 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         };
     }
 
-    private viewsReaction(): ReactionSpec<View[]> {
+    private viewsReaction(): ReactionSpec<ViewInfo[]> {
         return {
             track: () => this.views,
             run: views => {
-                if (this.savedValue.view) {
-                    const updatedView = views.find(it => it.token === this.savedValue.view.token);
-                    if (updatedView) {
-                        this.savedValue = {...this.savedValue, view: updatedView};
+                if (!this.view.isDefault) {
+                    const updatedInfo = views.find(it => it.token === this.view.token);
+                    if (updatedInfo) {
+                        // todo - view and state could get out of sync
+                        if (!isEqual(updatedInfo, this.view.info)) {
+                            this.view = new View(updatedInfo, this.view.value);
+                        }
                     } else if (this.enableDefault) {
-                        this.savedValue = {view: null, state: {}}; // View no longer exists
+                        this.view = View.DEFAULT; // View no longer exists
                     } else {
-                        this.setValueAsync({view: first(views), state: this.currentValue.state});
+                        // todo - catch?
+                        this.setViewAsync(first(views), this.pendingView.value);
                     }
                 }
             }
         };
     }
 
-    private async fetchViewsAsync(): Promise<View[]> {
+    private async fetchViewInfosAsync(): Promise<ViewInfo[]> {
         const blobs = await XH.jsonBlobService.listAsync({
             type: this.viewType,
             includeValue: false
         });
-        return blobs.map(it => this.blobToView(it));
+        return blobs.map(it => this.blobToViewInfo(it));
     }
 
     /**
-     * Set the current value. If state is not provided, the view's saved state will be used.
+     * Set the current view. If a value is not provided, the view's saved value will be used.
+     * If info not provided, the "default" view will be used.
      */
-    private setValueAsync(viewWithState: Partial<ViewWithState<T>>): Promise<void> {
-        const {view, state} = viewWithState;
-        return this.getSavedValueAsync(view?.token)
+    private setViewAsync(info: ViewInfo = null, value: Partial<T> = null): Promise<void> {
+        return this.getSavedValueAsync(info?.token)
             .thenAction(savedValue => {
-                this.savedValue = savedValue;
-                // todo - handle case where view no longer exists
-                this.currentValue = state ? {view, state} : savedValue;
+                this.view = savedValue;
+                this.pendingView = value ? new View(info, value) : savedValue;
                 this.providers.forEach(it => it.pushStateToTarget());
             })
-            .linkTo(this.viewSelectionTask);
+            .catch(e => {
+                if (value)
+                    runInAction(() => {
+                        this.pendingView = new View(info, value);
+                        this.providers.forEach(it => it.pushStateToTarget());
+                    });
+                throw e;
+            })
+            .linkTo(this.selectTask);
     }
 
-    private async getSavedValueAsync(token: string): Promise<ViewWithState<T>> {
-        if (!token) return {view: null, state: {}};
-        const blob = await XH.jsonBlobService.getAsync(token);
-        return this.blobToViewWithState(blob);
+    private async getSavedValueAsync(token: string = null): Promise<View<T>> {
+        if (!token) return View.DEFAULT;
+        const view = await this.getSavedViewAsync(token);
+        if (!view) throw XH.exception('Unable to load view.');
+        return view;
     }
 
-    private blobToViewWithState({value, ...blob}: JsonBlob): ViewWithState<T> {
-        return {
-            view: this.blobToView(blob),
-            state: value
-        };
+    private async getSavedViewAsync(token: string): Promise<View<T>> {
+        try {
+            const blob = await XH.jsonBlobService.getAsync(token);
+            return this.blobToView(blob);
+        } catch (e) {
+            return null;
+        }
     }
 
-    private blobToView(blob: JsonBlob): View {
+    blobToView({value, ...blob}: JsonBlob): View<T> {
+        return new View(this.blobToViewInfo(blob), value);
+    }
+
+    private blobToViewInfo(blob: JsonBlob): ViewInfo {
         const isGlobal = blob.acl === '*';
         return {
             ...blob,
@@ -454,6 +473,21 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
         return JSON.parse(JSON.stringify(state));
     }
 
+    private async confirmDiscardChangesAsync() {
+        // TODO - offer save option here as well
+        return XH.confirm({
+            message: `You have unsaved changes. Discard them and continue to switch ${pluralize(this.typeDisplayName)}?`,
+            confirmProps: {
+                text: 'Discard changes',
+                intent: 'danger'
+            },
+            cancelProps: {
+                text: 'Cancel',
+                autoFocus: true
+            }
+        });
+    }
+
     private async confirmSaveForGlobalViewAsync() {
         return XH.confirm({
             message: `You are saving a ${this.globalDisplayName} ${this.typeDisplayName}. Do you wish to continue?`,
@@ -468,10 +502,24 @@ export class ViewManagerModel<T extends PlainObject = PlainObject>
             }
         });
     }
+
+    private async confirmStaleSaveAsync() {
+        return XH.confirm({
+            message: `This ${this.typeDisplayName} has been updated since you last loaded it. Do you wish to save anyway?`,
+            confirmProps: {
+                text: 'Yes, save changes',
+                intent: 'success'
+            },
+            cancelProps: {
+                text: 'Cancel',
+                autoFocus: true
+            }
+        });
+    }
 }
 
 interface ViewManagerModelPersistState<T> {
     // Will only persist state if the view is dirty
-    value: Partial<ViewWithState<T>>;
+    view: Partial<View<T>>;
     favorites?: string[];
 }

@@ -7,7 +7,6 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {startCase} from 'lodash';
 
@@ -78,7 +77,6 @@ const bbar = hoistCmp.factory<SaveDialogModel>({
             }),
             button({
                 text: `Save as new ${startCase(typeDisplayName)}`,
-                icon: Icon.copy(),
                 outlined: true,
                 intent: 'success',
                 onClick: () => model.saveAsAsync()

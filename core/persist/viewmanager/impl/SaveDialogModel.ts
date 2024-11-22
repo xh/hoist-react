@@ -1,10 +1,10 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {ViewManagerModel, ViewWithState} from '@xh/hoist/core/persist/viewmanager';
+import {ViewManagerModel} from '@xh/hoist/core/persist/viewmanager';
 import {lengthIs, required} from '@xh/hoist/data';
 import {makeObservable} from '@xh/hoist/mobx';
-import {JsonBlob} from '@xh/hoist/svc';
 import {action, observable} from 'mobx';
+import {View} from '../View';
 
 export class SaveDialogModel extends HoistModel {
     private readonly viewManagerModel: ViewManagerModel;
@@ -12,11 +12,10 @@ export class SaveDialogModel extends HoistModel {
     @managed readonly formModel: FormModel;
     readonly saveTask = TaskObserver.trackLast();
 
-    @observable viewWithState: Partial<ViewWithState>;
+    @observable view: Partial<View>;
     @observable isOpen: boolean = false;
 
-    private resolveOpen: (value: JsonBlob) => void;
-    private invalidNames: string[] = [];
+    private resolveOpen: (value: View) => void;
 
     get type(): string {
         return this.viewManagerModel.viewType;
@@ -38,11 +37,10 @@ export class SaveDialogModel extends HoistModel {
     }
 
     @action
-    openAsync(viewWithState: Partial<ViewWithState>, invalidNames: string[]): Promise<JsonBlob> {
-        this.viewWithState = viewWithState;
-        this.invalidNames = invalidNames;
+    openAsync(view: Partial<View>): Promise<View> {
+        this.view = view;
 
-        this.formModel.init(viewWithState.view ?? {});
+        this.formModel.init(view.info ?? {});
         this.isOpen = true;
 
         return new Promise(resolve => (this.resolveOpen = resolve));
@@ -69,7 +67,7 @@ export class SaveDialogModel extends HoistModel {
                         required,
                         lengthIs({max: 255}),
                         ({value}) => {
-                            if (this.invalidNames.includes(value)) {
+                            if (this.viewManagerModel.views.some(view => view.name === value)) {
                                 return `An entry with name "${value}" already exists`;
                             }
                         }
@@ -81,7 +79,7 @@ export class SaveDialogModel extends HoistModel {
     }
 
     private async doSaveAsAsync() {
-        const {formModel, viewWithState, type} = this,
+        const {formModel, view, type} = this,
             {name, description} = formModel.getData(),
             isValid = await formModel.validateAsync();
 
@@ -92,10 +90,10 @@ export class SaveDialogModel extends HoistModel {
                 type,
                 name,
                 description,
-                value: viewWithState.state
+                value: view.value
             });
             this.close();
-            this.resolveOpen(newObj);
+            this.resolveOpen(this.viewManagerModel.blobToView(newObj));
         } catch (e) {
             XH.handleException(e);
         }

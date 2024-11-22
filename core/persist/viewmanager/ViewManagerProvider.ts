@@ -34,11 +34,11 @@ export class ViewManagerProvider<S> extends PersistenceProvider<S> {
     // Implementation
     //----------------
     override readRaw() {
-        return this.viewManagerModel.currentValue.state;
+        return this.viewManagerModel.getPendingValue();
     }
 
     override writeRaw(data: Record<typeof this.path, S>) {
-        this.viewManagerModel.setCurrentState(data);
+        this.viewManagerModel.setPendingValue(data);
     }
 
     override destroy() {

@@ -87,10 +87,10 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
 
 const menuButton = hoistCmp.factory<ViewManagerModel>({
     render({model, ...rest}) {
-        const {savedValue, typeDisplayName, isLoading} = model;
+        const {view, typeDisplayName, isLoading} = model;
         return button({
             className: 'xh-view-manager__menu-button',
-            text: savedValue.view?.shortName ?? `Default ${startCase(typeDisplayName)}`,
+            text: view.info?.shortName ?? `Default ${startCase(typeDisplayName)}`,
             icon: !isLoading ? Icon.bookmark() : Icon.spinner({className: 'fa-spin'}),
             rightIcon: Icon.chevronDown(),
             outlined: true,
@@ -107,7 +107,7 @@ const saveButton = hoistCmp.factory<ViewManagerModel>({
             icon: Icon.save(),
             tooltip: `Save changes to this ${model.typeDisplayName}`,
             intent: 'primary',
-            disabled: !model.isStateDirty || !model.canSave,
+            disabled: !model.isValueDirty || !model.canSave,
             onClick: () => {
                 model.canSave ? model.saveAsync() : model.saveAsAsync();
             },
@@ -124,7 +124,7 @@ const revertButton = hoistCmp.factory<ViewManagerModel>({
             icon: Icon.reset(),
             tooltip: `Revert changes to this ${model.typeDisplayName}`,
             intent: 'danger',
-            disabled: !model.isStateDirty || model.isLoading,
+            disabled: !model.isValueDirty || model.isLoading,
             onClick: () => model.resetAsync(),
             ...rest
         });
@@ -132,7 +132,7 @@ const revertButton = hoistCmp.factory<ViewManagerModel>({
 });
 
 function hideStateButton(model: ViewManagerModel, mode: ViewManagerStateButtonMode): boolean {
-    return mode === 'never' || (mode === 'whenDirty' && !model.isStateDirty);
+    return mode === 'never' || (mode === 'whenDirty' && !model.isValueDirty);
 }
 
 const viewMenu = hoistCmp.factory<ViewManagerProps>({
@@ -140,14 +140,14 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
         const {
             enableDefault,
             canSave,
-            savedValue,
+            view,
             typeDisplayName,
             globalDisplayName,
             privateViewTree,
             globalViewTree,
             favoriteViews,
             views,
-            isStateDirty
+            isValueDirty
         } = model;
 
         const pluralName = pluralize(startCase(typeDisplayName)),
@@ -160,8 +160,7 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                 ...favoriteViews.map(it => {
                     return menuItem({
                         key: `${it.token}-favorite`,
-                        icon:
-                            savedValue.view?.token === it.token ? Icon.check() : Icon.placeholder(),
+                        icon: view.info?.token === it.token ? Icon.check() : Icon.placeholder(),
                         text: menuItemTextAndFaveToggle({
                             view: {...it, text: it.shortName}
                         }),
@@ -214,7 +213,7 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                 ...items,
                 menuDivider({omit: !enableDefault || isEmpty(items)}),
                 menuItem({
-                    icon: savedValue.view ? Icon.placeholder() : Icon.check(),
+                    icon: view.isDefault ? Icon.check() : Icon.placeholder(),
                     text: `Default ${startCase(typeDisplayName)}`,
                     omit: !enableDefault,
                     onClick: () => model.selectViewAsync(null)
@@ -223,7 +222,7 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                 menuItem({
                     icon: Icon.save(),
                     text: 'Save',
-                    disabled: !canSave || !isStateDirty,
+                    disabled: !canSave || !isValueDirty,
                     onClick: () => model.saveAsync()
                 }),
                 menuItem({
@@ -234,7 +233,7 @@ const viewMenu = hoistCmp.factory<ViewManagerProps>({
                 menuItem({
                     icon: Icon.reset(),
                     text: `Revert`,
-                    disabled: !isStateDirty,
+                    disabled: !isValueDirty,
                     onClick: () => model.resetAsync()
                 }),
                 menuDivider(),
