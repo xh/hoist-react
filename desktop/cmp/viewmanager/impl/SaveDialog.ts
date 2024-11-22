@@ -7,7 +7,6 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {startCase} from 'lodash';
 
@@ -21,7 +20,6 @@ export const saveDialog = hoistCmp.factory<SaveDialogModel>({
 
         return dialog({
             title: `Save as...`,
-            icon: Icon.copy(),
             className,
             isOpen: true,
             style: {width: 500},
@@ -70,7 +68,7 @@ const formPanel = hoistCmp.factory<SaveDialogModel>({
 
 const bbar = hoistCmp.factory<SaveDialogModel>({
     render({model}) {
-        const {formModel, typeDisplayName} = model;
+        const {typeDisplayName} = model;
         return toolbar(
             filler(),
             button({
@@ -79,10 +77,8 @@ const bbar = hoistCmp.factory<SaveDialogModel>({
             }),
             button({
                 text: `Save as new ${startCase(typeDisplayName)}`,
-                icon: Icon.copy(),
                 outlined: true,
                 intent: 'success',
-                disabled: !formModel.isValid,
                 onClick: () => model.saveAsAsync()
             })
         );

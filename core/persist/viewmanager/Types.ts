@@ -1,12 +1,10 @@
-import {PlainObject} from '@xh/hoist/core';
-
 /**
- * Interface for a bundle of {@link PersistableState} managed by {@link ViewManagerModel}.
- * Views are persisted to / loaded from the server as {@link JsonBlob}s.
+ * Interface for metadata describing a bundle of {@link PersistableState} managed by
+ * {@link ViewManagerModel}. Views are persisted to / loaded from the server as {@link JsonBlob}s.
  */
-export interface View<T extends PlainObject = PlainObject> {
+export interface ViewInfo {
     /** Either null for private views or special token "*" for global views. */
-    acl: '*' | null;
+    acl: '*';
     description: string;
 
     dateCreated: number;
@@ -36,9 +34,6 @@ export interface View<T extends PlainObject = PlainObject> {
 
     /** Original creator of the view, and the only user with access to it if not shared. */
     owner: string;
-
-    /** Persisted value of the view.  Maybe null for "stub" listing of the view. */
-    value: T;
 }
 
 /**
