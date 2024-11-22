@@ -43,7 +43,7 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
     /** True to focus the control on render. */
     autoFocus?: boolean;
 
-    /** True to commit on every change/keystroke, default false. */
+    /** False to not commit on every change/keystroke, default true. */
     commitOnChange?: boolean;
 
     /**
