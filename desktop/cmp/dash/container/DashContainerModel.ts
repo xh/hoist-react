@@ -214,8 +214,12 @@ export class DashContainerModel
         // Initialize GoldenLayout with initial state once ref is ready
         this.addReaction(
             {
-                track: () => [this.containerRef.current, this.layoutLocked],
-                run: () => this.loadStateAsync(this.state)
+                track: () => [this.containerRef.current, this.layoutLocked] as const,
+                run: ([ref, locked]) => {
+                    // This reaction is intended to run when ref becomes available.
+                    // It's a no-op if ref *removed* due to component re-render.
+                    if (ref) this.loadStateAsync(this.state);
+                }
             },
             {
                 track: () => this.viewState,
@@ -239,32 +243,36 @@ export class DashContainerModel
         await this.loadStateAsync(restoreState.initialState);
     }
 
-    /**
-     * Load state into the DashContainer, recreating its layout and contents
-     * @param state - State to load
-     */
+    /** Load state into the DashContainer, recreating its layout and contents */
     async loadStateAsync(state: DashViewState[]) {
-        const containerEl = this.containerRef.current;
-        if (!containerEl) {
-            this.logWarn(
-                'DashboardContainer not yet rendered - cannot update state - change will be discarded!'
-            );
-            return;
-        }
+        // Always save a reference to the state, even if the container is not yet rendered.
+        // Allows ref reaction on this class to loop back and apply it once GL is ready.
+        runInAction(() => (this.state = state));
 
-        // Show mask to provide user feedback
-        return wait()
-            .thenAction(() => {
-                this.destroyGoldenLayout();
-                this.goldenLayout = this.createGoldenLayout(containerEl, state);
-            })
-            .wait(500)
-            .then(() => {
+        // DOM required from this point on to recreate GL with new state.
+        const containerEl = this.containerRef.current;
+        if (!containerEl) return;
+
+        // Use of async below requires we check after each wait to ensure we haven't re-rendered
+        // again with a new ref. Bail out if so - ref reaction will re-enter and complete the job.
+        const refIsStale = () => this.containerRef.current !== containerEl;
+
+        return (
+            wait()
+                .thenAction(() => {
+                    if (refIsStale()) return;
+                    this.destroyGoldenLayout();
+                    this.goldenLayout = this.createGoldenLayout(containerEl, state);
+                })
                 // Since React v18, it's necessary to wait a short while for ViewModels to be available.
-                this.refreshActiveViews();
-                this.updateTabHeaders();
-            })
-            .linkTo(this.loadingStateTask);
+                .wait(500)
+                .then(() => {
+                    if (refIsStale()) return;
+                    this.refreshActiveViews();
+                    this.updateTabHeaders();
+                })
+                .linkTo(this.loadingStateTask)
+        );
     }
 
     /**
@@ -343,13 +351,7 @@ export class DashContainerModel
 
     setPersistableState(persistableState: PersistableState<{state: DashViewState[]}>) {
         const {state} = persistableState.value;
-        if (!state) return;
-        if (this.containerRef.current) {
-            this.loadStateAsync(state);
-        } else {
-            // If the container is not yet rendered, store the state directly
-            this.state = state;
-        }
+        if (state) this.loadStateAsync(state);
     }
 
     //------------------------
