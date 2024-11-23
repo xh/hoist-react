@@ -266,7 +266,7 @@ export class ViewManagerModel<T = PlainObject>
         const current = await this.getSavedViewAsync(view.token);
         if (!current) return this.saveAsAsync();
 
-        if (current.isSameVersion(view) && !(await this.confirmStaleSaveAsync())) return;
+        if (!current.isSameVersion(view) && !(await this.confirmStaleSaveAsync())) return;
         if (current.isGlobal && !(await this.confirmSaveForGlobalViewAsync())) return;
 
         try {
@@ -367,6 +367,10 @@ export class ViewManagerModel<T = PlainObject>
         if (favorites && this.enableFavorites) this.favorites = favorites;
     }
 
+    blobToView({value, ...blob}: JsonBlob): View<T> {
+        return new View(this.blobToViewInfo(blob), value);
+    }
+
     //------------------
     // Implementation
     //------------------
@@ -449,10 +453,6 @@ export class ViewManagerModel<T = PlainObject>
         } catch (e) {
             return null;
         }
-    }
-
-    blobToView({value, ...blob}: JsonBlob): View<T> {
-        return new View(this.blobToViewInfo(blob), value);
     }
 
     private blobToViewInfo(blob: JsonBlob): ViewInfo {
