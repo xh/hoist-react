@@ -42,7 +42,7 @@ export interface ViewManagerProps extends HoistProps<ViewManagerModel> {
 
 /**
  * Desktop ViewManager component - a button-based menu for saving and swapping between named
- * bundles of persisted component state (eg grid views, dashboards, and similar).
+ * bundles of persisted component state (e.g. grid views, dashboards, and similar).
  *
  * See {@link ViewManagerModel} for additional details and configuration options.
  */
@@ -107,7 +107,7 @@ const saveButton = hoistCmp.factory<ViewManagerModel>({
             icon: Icon.save(),
             tooltip: `Save changes to this ${model.typeDisplayName}`,
             intent: 'primary',
-            disabled: !model.isValueDirty || !model.canSave,
+            disabled: !model.isValueDirty || model.isLoading,
             onClick: () => {
                 model.canSave ? model.saveAsync() : model.saveAsAsync();
             },
