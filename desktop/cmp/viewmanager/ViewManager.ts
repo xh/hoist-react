@@ -7,15 +7,15 @@
 
 import {fragment, hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
-import './ViewManager.scss';
 import {ViewManagerModel} from '@xh/hoist/core/persist/viewmanager';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
-import {manageDialog} from '@xh/hoist/desktop/cmp/viewmanager/impl/ManageDialog';
-import {saveAsDialog} from './impl/SaveAsDialog';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {startCase} from 'lodash';
 import {viewMenu} from './impl/ViewMenu';
+import {manageDialog} from './impl/ManageDialog';
+import {saveAsDialog} from './impl/SaveAsDialog';
+
 import './ViewManager.scss';
 
 /**
@@ -94,7 +94,7 @@ const menuButton = hoistCmp.factory<ViewManagerModel>({
         const {view, typeDisplayName, isLoading} = model;
         return button({
             className: 'xh-view-manager__menu-button',
-            text: view.info?.shortName ?? `Default ${startCase(typeDisplayName)}`,
+            text: view.info?.shortDisplayName ?? `Default ${startCase(typeDisplayName)}`,
             icon: !isLoading ? Icon.bookmark() : Icon.spinner({className: 'fa-spin'}),
             rightIcon: Icon.chevronDown(),
             outlined: true,

@@ -152,11 +152,11 @@ function buildMenuItem(node: ViewTree, model: ViewManagerModel): ReactNode {
 
 const textAndFaveToggle = hoistCmp.factory<ViewManagerModel>({
     render({model, info}) {
-        const {isFavorite, shortName} = info;
+        const {isFavorite, shortDisplayName} = info;
         return hbox({
             alignItems: 'center',
             items: [
-                span({style: {paddingRight: 5}, item: shortName}),
+                span({style: {paddingRight: 5}, item: shortDisplayName}),
                 fragment({
                     omit: !model.enableFavorites,
                     items: [

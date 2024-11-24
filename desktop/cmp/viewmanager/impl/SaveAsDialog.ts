@@ -89,6 +89,7 @@ const bbar = hoistCmp.factory<SaveAsDialogModel>({
                 text: `Save as new ${startCase(typeDisplayName)}`,
                 outlined: true,
                 intent: 'success',
+                disabled: !model.formModel.isValid,
                 onClick: () => model.saveAsAsync()
             })
         );
