@@ -1,3 +1,4 @@
+import {truncate} from 'lodash';
 import {ViewManagerModel} from './ViewManagerModel';
 import {JsonBlob} from '@xh/hoist/svc';
 
@@ -15,7 +16,10 @@ export class ViewInfo {
     readonly name: string;
 
     /** User-supplied descriptive name, without folder designating prefix. */
-    readonly shortName: string;
+    readonly displayName: string;
+
+    /** Potentially truncated shortName for display in UI */
+    readonly shortDisplayName: string;
 
     /** Description of the view. **/
     readonly description: string;
@@ -37,7 +41,8 @@ export class ViewInfo {
         this.type = blob.type;
         this.name = blob.name;
         this.owner = blob.owner;
-        this.shortName = this.name?.substring(this.name.lastIndexOf('\\') + 1);
+        this.displayName = this.name?.substring(this.name.lastIndexOf('\\') + 1);
+        this.shortDisplayName = truncate(this.displayName, {length: 50});
         this.description = blob.description;
         this.isGlobal = blob.acl === '*';
         this.dateCreated = blob.dateCreated;
@@ -55,6 +60,6 @@ export class ViewInfo {
     }
 
     get typedName(): string {
-        return `${this.model.typeDisplayName} '${this.shortName}'`;
+        return `${this.model.typeDisplayName} '${this.displayName}'`;
     }
 }
