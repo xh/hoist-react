@@ -1,17 +1,25 @@
 import {PlainObject} from '@xh/hoist/core';
-import {ViewInfo} from '@xh/hoist/core/persist/viewmanager/index';
-import {isEqual} from 'lodash';
+import {ViewManagerModel} from './ViewManagerModel';
+import {ViewInfo} from './ViewInfo';
+import {JsonBlob} from '@xh/hoist/svc';
 
 /**
- * Wrapper for a ViewInfo object accompanied by its state.
+ * A named saved bundle of state for components.
  */
 export class View<T = PlainObject> {
-    /** Null for 'default' view */
-    info: ViewInfo;
-    /** State for the view. Only state that differs from the initial "code" state is captured. */
-    value: Partial<T>;
+    /**
+     * Default View representing code state of all contained components.
+     * Available for all view managers where `enableDefault` is true.
+     */
 
-    static DEFAULT = new View<{}>(null, {});
+    /** Metadata about this View. Null for 'default' view */
+    readonly info: ViewInfo;
+
+    /**
+     * State for the components in the view. Only state that differs from the initial "code"
+     * state of the components is captured.
+     */
+    readonly value: Partial<T> = null;
 
     get isDefault(): boolean {
         return !this.info;
@@ -29,16 +37,20 @@ export class View<T = PlainObject> {
         return this.info?.token ?? null;
     }
 
+    static fromBlob<T>(blob: JsonBlob, model: ViewManagerModel): View<T> {
+        return new View(new ViewInfo(blob, model), blob.value);
+    }
+
+    static createDefault<T>(): View<T> {
+        return new View(null, {});
+    }
+
+    withUpdatedValue(value: Partial<T>): View<T> {
+        return new View(this.info, value);
+    }
+
     constructor(info: ViewInfo, value: Partial<T>) {
         this.info = info;
         this.value = value;
-    }
-
-    isValueEqual(other: View<T>): boolean {
-        return isEqual(this.value, other.value);
-    }
-
-    isSameVersion(other: View<T>): boolean {
-        return this.lastUpdated === other.lastUpdated;
     }
 }

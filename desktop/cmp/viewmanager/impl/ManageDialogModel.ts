@@ -1,3 +1,10 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2024 Extremely Heavy Industries Inc.
+ */
+
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {fragment, p} from '@xh/hoist/cmp/layout';
@@ -6,12 +13,16 @@ import {lengthIs, required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
-import {ViewManagerModel} from '../ViewManagerModel';
+import {ViewManagerModel} from '@xh/hoist/core/persist/viewmanager';
 import {startCase} from 'lodash';
 
+/**
+ * Backing model for ManageDialog.
+ * @internal
+ */
 export class ManageDialogModel extends HoistModel {
     @lookup(() => ViewManagerModel)
-    private viewManagerModel: ViewManagerModel;
+    private parent: ViewManagerModel;
 
     @managed gridModel: GridModel;
     @managed formModel: FormModel;
@@ -36,8 +47,8 @@ export class ManageDialogModel extends HoistModel {
     }
 
     get canDelete(): boolean {
-        const {viewManagerModel, selIsGlobal, manageGlobal, selectedIds} = this,
-            {views, enableDefault} = viewManagerModel;
+        const {parent, selIsGlobal, manageGlobal, selectedIds} = this,
+            {views, enableDefault} = parent;
 
         // Can't delete  global views without role.
         if (selIsGlobal && !manageGlobal) return false;
@@ -51,24 +62,24 @@ export class ManageDialogModel extends HoistModel {
     }
 
     get manageGlobal(): boolean {
-        return this.viewManagerModel.manageGlobal;
+        return this.parent.manageGlobal;
     }
 
     get showSaveButton(): boolean {
-        const {formModel, viewManagerModel} = this;
-        return formModel.isDirty && !formModel.readonly && !viewManagerModel.loadModel.isPending;
+        const {formModel, parent} = this;
+        return formModel.isDirty && !formModel.readonly && !parent.loadModel.isPending;
     }
 
     get typeDisplayName(): string {
-        return this.viewManagerModel.typeDisplayName;
+        return this.parent.typeDisplayName;
     }
 
     get globalDisplayName(): string {
-        return this.viewManagerModel.globalDisplayName;
+        return this.parent.globalDisplayName;
     }
 
     get enableFavorites(): boolean {
-        return this.viewManagerModel.enableFavorites;
+        return this.parent.enableFavorites;
     }
 
     constructor() {
@@ -84,7 +95,7 @@ export class ManageDialogModel extends HoistModel {
 
         this.addReaction(
             {
-                track: () => this.viewManagerModel.views,
+                track: () => this.parent.views,
                 run: () => this.refreshAsync()
             },
             {
@@ -100,10 +111,10 @@ export class ManageDialogModel extends HoistModel {
     }
 
     override async doLoadAsync() {
-        const {viewManagerModel, typeDisplayName, globalDisplayName} = this,
+        const {parent, typeDisplayName, globalDisplayName} = this,
             pluralType = startCase(pluralize(typeDisplayName)),
             global = startCase(globalDisplayName),
-            data = viewManagerModel.views.map(v => ({
+            data = parent.views.map(v => ({
                 ...v,
                 group: v.isGlobal ? `${global} ${pluralType}` : `My ${pluralType}`
             }));
@@ -125,7 +136,7 @@ export class ManageDialogModel extends HoistModel {
     private async doSaveAsync() {
         const {
                 formModel,
-                viewManagerModel,
+                parent,
                 manageGlobal,
                 selectedId,
                 gridModel,
@@ -184,15 +195,15 @@ export class ManageDialogModel extends HoistModel {
             acl: isGlobal ? '*' : null
         });
 
-        await viewManagerModel.refreshAsync();
+        await parent.refreshAsync();
     }
 
     private async doDeleteAsync() {
-        const {viewManagerModel, gridModel, typeDisplayName, selectedIds, hasMultiSelection} = this,
+        const {parent, gridModel, typeDisplayName, selectedIds, hasMultiSelection} = this,
             count = selectedIds.length;
 
         // TODO - should be validating this on server in case another user deleted remaining views
-        if (viewManagerModel.views.length === count && !viewManagerModel.enableDefault) {
+        if (parent.views.length === count && !parent.enableDefault) {
             XH.alert({
                 title: 'Cannot delete all views',
                 message: `You cannot delete all ${pluralize(typeDisplayName)}.`
@@ -217,16 +228,16 @@ export class ManageDialogModel extends HoistModel {
         if (!confirmed) return;
 
         for (const token of selectedIds) {
-            viewManagerModel.removeFavorite(token);
+            parent.removeFavorite(token);
             await XH.jsonBlobService.archiveAsync(token);
         }
 
-        await viewManagerModel.refreshAsync();
+        await parent.refreshAsync();
     }
 
     private async ensureGridHasSelection() {
-        const {gridModel, viewManagerModel} = this,
-            {token} = viewManagerModel.view;
+        const {gridModel, parent} = this,
+            {token} = parent.view;
 
         if (!gridModel.hasSelection) {
             await (token ? gridModel.selectAsync(token) : gridModel.preSelectFirstAsync());
@@ -281,7 +292,7 @@ export class ManageDialogModel extends HoistModel {
             ],
             onCellClicked: ({colDef, data: record}) => {
                 if (colDef.colId === 'isFavorite') {
-                    this.viewManagerModel.toggleFavorite(record.id);
+                    this.parent.toggleFavorite(record.id);
                 }
             }
         });

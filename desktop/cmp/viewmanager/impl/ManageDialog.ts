@@ -1,15 +1,22 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2024 Extremely Heavy Industries Inc.
+ */
+
 import {form} from '@xh/hoist/cmp/form';
 import {grid} from '@xh/hoist/cmp/grid';
 import {div, filler, hbox, hframe, hspacer, placeholder, span, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, HoistProps, XH} from '@xh/hoist/core';
-import {ManageDialogModel} from '@xh/hoist/core/persist/viewmanager/impl/ManageDialogModel';
+import {ManageDialogModel} from './ManageDialogModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {fmtCompactDate} from '@xh/hoist/format';
+import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
@@ -19,6 +26,9 @@ export interface ManageDialogProps extends HoistProps<ManageDialogModel> {
     onClose: () => void;
 }
 
+/**
+ * @internal
+ */
 export const manageDialog = hoistCmp.factory<ManageDialogProps>({
     displayName: 'ManageDialog',
     className: 'xh-view-manager__manage-dialog',
@@ -56,7 +66,8 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
     render({model, onClose}) {
         const {typeDisplayName, globalDisplayName, formModel} = model,
             {values} = formModel,
-            isOwnView = values.owner === XH.getUsername();
+            {lastUpdated, lastUpdatedBy, owner} = values,
+            isOwnView = owner === XH.getUsername();
 
         if (model.hasMultiSelection) {
             return multiSelectionPanel({onClose});
@@ -136,16 +147,7 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
                         filler(),
                         div({
                             className: 'xh-view-manager__manage-dialog__metadata',
-                            items: [
-                                `Created ${fmtCompactDate(values.dateCreated)} by ${
-                                    values.owner === XH.getUsername() ? 'you' : values.owner
-                                }. `,
-                                `Updated ${fmtCompactDate(values.lastUpdated)} by ${
-                                    values.lastUpdatedBy === XH.getUsername()
-                                        ? 'you'
-                                        : values.lastUpdatedBy
-                                }.`
-                            ]
+                            item: `Updated ${fmtDate(lastUpdated)} by ${lastUpdatedBy === XH.getUsername() ? 'you' : lastUpdatedBy}.`
                         })
                     ]
                 })

@@ -1,0 +1,60 @@
+import {ViewManagerModel} from './ViewManagerModel';
+import {JsonBlob} from '@xh/hoist/svc';
+
+/**
+ * Metadata describing {@link View} managed by {@link ViewManagerModel}.
+ */
+export class ViewInfo {
+    /** Unique Id */
+    readonly token: string;
+
+    /** App-defined type discriminator, as per {@link ViewManagerConfig.viewType}. */
+    readonly type: string;
+
+    /** User-supplied descriptive name, including folder designating prefix. */
+    readonly name: string;
+
+    /** User-supplied descriptive name, without folder designating prefix. */
+    readonly shortName: string;
+
+    /** Description of the view. **/
+    readonly description: string;
+
+    /** True if this view is global and visible to all users. */
+    readonly isGlobal: boolean;
+
+    /** Original creator of the view, and the only user with access to it if not global. */
+    readonly owner: string;
+
+    dateCreated: number;
+    lastUpdated: number;
+    lastUpdatedBy: string;
+
+    private readonly model: ViewManagerModel;
+
+    constructor(blob: JsonBlob, model: ViewManagerModel) {
+        this.token = blob.token;
+        this.type = blob.type;
+        this.name = blob.name;
+        this.owner = blob.owner;
+        this.shortName = this.name?.substring(this.name.lastIndexOf('\\') + 1);
+        this.description = blob.description;
+        this.isGlobal = blob.acl === '*';
+        this.dateCreated = blob.dateCreated;
+        this.lastUpdated = blob.lastUpdated;
+        this.lastUpdatedBy = blob.lastUpdatedBy;
+        this.model = model;
+    }
+
+    /**
+     * True if user has tagged this view as a favorite. Note that a user's list of favorite views
+     * is persisted via `ViewManagerModel.persistWith` and *not* stored in the blob itself.
+     */
+    get isFavorite(): boolean {
+        return this.model.isFavorite(this.token);
+    }
+
+    get typedName(): string {
+        return `${this.model.typeDisplayName} '${this.shortName}'`;
+    }
+}

@@ -1,46 +1,50 @@
-import {FormModel} from '@xh/hoist/cmp/form';
-import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {ViewManagerModel} from '@xh/hoist/core/persist/viewmanager';
-import {lengthIs, required} from '@xh/hoist/data';
-import {makeObservable} from '@xh/hoist/mobx';
-import {action, observable} from 'mobx';
-import {View} from '../View';
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2024 Extremely Heavy Industries Inc.
+ */
 
-export class SaveDialogModel extends HoistModel {
-    private readonly viewManagerModel: ViewManagerModel;
+import {FormModel} from '@xh/hoist/cmp/form';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {lengthIs, required} from '@xh/hoist/data';
+import {makeObservable, action, observable} from '@xh/hoist/mobx';
+import {View} from './View';
+import {ViewManagerModel} from './ViewManagerModel';
+
+/**
+ * Backing model for ViewManagerModel's SaveAs
+ */
+export class SaveAsDialogModel extends HoistModel {
+    readonly parent: ViewManagerModel;
 
     @managed readonly formModel: FormModel;
-    readonly saveTask = TaskObserver.trackLast();
-
-    @observable view: Partial<View>;
     @observable isOpen: boolean = false;
 
     private resolveOpen: (value: View) => void;
 
     get type(): string {
-        return this.viewManagerModel.viewType;
+        return this.parent.viewType;
     }
 
     get typeDisplayName(): string {
-        return this.viewManagerModel.typeDisplayName;
+        return this.parent.typeDisplayName;
     }
 
     get globalDisplayName(): string {
-        return this.viewManagerModel.globalDisplayName;
+        return this.parent.globalDisplayName;
     }
 
-    constructor(viewManagerModel: ViewManagerModel) {
+    constructor(parent: ViewManagerModel) {
         super();
         makeObservable(this);
-        this.viewManagerModel = viewManagerModel;
+        this.parent = parent;
         this.formModel = this.createFormModel();
     }
 
     @action
-    openAsync(view: Partial<View>): Promise<View> {
-        this.view = view;
-
-        this.formModel.init(view.info ?? {});
+    openAsync(): Promise<View> {
+        this.formModel.init(this.parent.view.info ?? {});
         this.isOpen = true;
 
         return new Promise(resolve => (this.resolveOpen = resolve));
@@ -52,7 +56,7 @@ export class SaveDialogModel extends HoistModel {
     }
 
     async saveAsAsync() {
-        return this.doSaveAsAsync().linkTo(this.saveTask);
+        return this.doSaveAsAsync().linkTo(this.parent.saveTask);
     }
 
     //------------------------
@@ -67,7 +71,7 @@ export class SaveDialogModel extends HoistModel {
                         required,
                         lengthIs({max: 255}),
                         ({value}) => {
-                            if (this.viewManagerModel.views.some(view => view.name === value)) {
+                            if (this.parent.views.some(view => view.name === value)) {
                                 return `An entry with name "${value}" already exists`;
                             }
                         }
@@ -79,21 +83,21 @@ export class SaveDialogModel extends HoistModel {
     }
 
     private async doSaveAsAsync() {
-        const {formModel, view, type} = this,
+        const {formModel, parent, type} = this,
             {name, description} = formModel.getData(),
             isValid = await formModel.validateAsync();
 
         if (!isValid) return;
 
         try {
-            const newObj = await XH.jsonBlobService.createAsync({
+            const blob = await XH.jsonBlobService.createAsync({
                 type,
                 name,
                 description,
-                value: view.value
+                value: parent.getValue()
             });
             this.close();
-            this.resolveOpen(this.viewManagerModel.blobToView(newObj));
+            this.resolveOpen(View.fromBlob(blob, this.parent));
         } catch (e) {
             XH.handleException(e);
         }

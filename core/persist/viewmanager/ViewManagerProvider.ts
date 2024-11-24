@@ -8,7 +8,7 @@
 import {throwIf} from '@xh/hoist/utils/js';
 import {pull} from 'lodash';
 import {PersistenceProvider, PersistenceProviderConfig} from '../index';
-import type {ViewManagerModel} from './index';
+import type {ViewManagerModel} from './ViewManagerModel';
 
 export class ViewManagerProvider<S> extends PersistenceProvider<S> {
     readonly viewManagerModel: ViewManagerModel;
@@ -23,22 +23,18 @@ export class ViewManagerProvider<S> extends PersistenceProvider<S> {
 
     pushStateToTarget() {
         const state = this.read();
-        if (state) {
-            this.target.setPersistableState(state);
-        } else {
-            this.target.setPersistableState(this.defaultState);
-        }
+        this.target.setPersistableState(state ? state : this.defaultState);
     }
 
     //----------------
     // Implementation
     //----------------
     override readRaw() {
-        return this.viewManagerModel.getPendingValue();
+        return this.viewManagerModel.getValue();
     }
 
     override writeRaw(data: Record<typeof this.path, S>) {
-        this.viewManagerModel.setPendingValue(data);
+        this.viewManagerModel.setValue(data);
     }
 
     override destroy() {
