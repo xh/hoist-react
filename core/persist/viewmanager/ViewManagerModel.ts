@@ -5,6 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
+import {fragment, li, p, ul} from '@xh/hoist/cmp/layout';
 import {
     ExceptionHandlerOptions,
     HoistModel,
@@ -21,6 +22,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
+import {fmtDateTime} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable, runInAction, when} from '@xh/hoist/mobx';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {find, first, isEmpty, isEqual, isNil, lowerCase, without} from 'lodash';
@@ -282,22 +284,16 @@ export class ViewManagerModel<T = PlainObject>
             this.logError('Unexpected conditions for call to save, skipping');
             return;
         }
-
         const {pendingValue} = this,
             {info} = this.view;
         try {
-            // 1) Pre-confirm change with latest server version
-            const latest = await this.fetchViewAsync(info),
-                isStale = latest.lastUpdated != pendingValue.baseUpdated;
-            if (isStale && !(await this.confirmStaleSaveAsync())) return;
-            if (latest.isGlobal && !(await this.confirmSaveForGlobalViewAsync())) return;
-
-            // 2) Execute update of value.
+            if (!(await this.maybeConfirmSaveAsync(info, pendingValue))) {
+                return;
+            }
             const update = await XH.jsonBlobService
                 .updateAsync(info.token, {value: pendingValue.value})
                 .linkTo(this.saveTask);
 
-            // 3) Install
             this.setAsClean(View.fromBlob(update, this));
             this.noteSuccess(`Saved ${info.typedName}`);
         } catch (e) {
@@ -336,7 +332,7 @@ export class ViewManagerModel<T = PlainObject>
         value = this.cleanState(value);
 
         this.pendingValue = !isEqual(value, view.value)
-            ? {value, baseUpdated: pendingValue?.baseUpdated ?? view?.lastUpdated}
+            ? {value, baseUpdated: pendingValue ? pendingValue.baseUpdated : view?.lastUpdated}
             : null;
     }
 
@@ -491,27 +487,35 @@ export class ViewManagerModel<T = PlainObject>
         });
     }
 
-    private async confirmSaveForGlobalViewAsync() {
+    private async maybeConfirmSaveAsync(info: ViewInfo, pendingValue: PendingValue<T>) {
+        // Get latest from server for reference
+        const latest = await this.fetchViewAsync(info),
+            isGlobal = latest.isGlobal,
+            isStale = latest.lastUpdated > pendingValue.baseUpdated;
+        if (!isStale && !isGlobal) return true;
+
+        const latestInfo = latest.info,
+            {typeDisplayName, globalDisplayName} = this,
+            messages = [];
+        if (isGlobal) {
+            messages.push(
+                `This is a ${globalDisplayName} ${typeDisplayName}. ` +
+                    `Changes will be visible to ALL users.`
+            );
+        }
+        if (isStale) {
+            messages.push(
+                `This ${typeDisplayName} was updated by ${latestInfo.lastUpdatedBy} on ` +
+                    `${fmtDateTime(latestInfo.lastUpdated)}.  Your change may override those changes.`
+            );
+        }
+
         return XH.confirm({
-            message: `You are saving a ${this.globalDisplayName} ${this.typeDisplayName}. Do you wish to continue?`,
+            message: fragment(p(`Save ${info.typedName}?`), ul(messages.map(it => li(it)))),
             confirmProps: {
                 text: 'Yes, save changes',
                 intent: 'primary',
                 outlined: true
-            },
-            cancelProps: {
-                text: 'Cancel',
-                autoFocus: true
-            }
-        });
-    }
-
-    private async confirmStaleSaveAsync() {
-        return XH.confirm({
-            message: `This ${this.typeDisplayName} has been updated since you last loaded it. Do you wish to save anyway?`,
-            confirmProps: {
-                text: 'Yes, save changes',
-                intent: 'success'
             },
             cancelProps: {
                 text: 'Cancel',

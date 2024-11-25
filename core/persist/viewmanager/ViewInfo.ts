@@ -1,3 +1,4 @@
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {truncate} from 'lodash';
 import {ViewManagerModel} from './ViewManagerModel';
 import {JsonBlob} from '@xh/hoist/svc';
@@ -46,7 +47,8 @@ export class ViewInfo {
         this.description = blob.description;
         this.isGlobal = blob.acl === '*';
         this.dateCreated = blob.dateCreated;
-        this.lastUpdated = blob.lastUpdated;
+        // Round to seconds.  See: https://github.com/xh/hoist-core/issues/423
+        this.lastUpdated = Math.round(blob.lastUpdated / SECONDS) * SECONDS;
         this.lastUpdatedBy = blob.lastUpdatedBy;
         this.model = model;
     }
