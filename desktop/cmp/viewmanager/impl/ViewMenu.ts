@@ -22,7 +22,7 @@ export const viewMenu = hoistCmp.factory<ViewManagerProps>({
     render({model, showPrivateViewsInSubMenu, showGlobalViewsInSubMenu}) {
         const {
             enableDefault,
-            canSave,
+            isViewSavable,
             view,
             typeDisplayName,
             globalDisplayName,
@@ -103,7 +103,7 @@ export const viewMenu = hoistCmp.factory<ViewManagerProps>({
                 menuItem({
                     icon: Icon.save(),
                     text: 'Save',
-                    disabled: !canSave || !isValueDirty,
+                    disabled: !isViewSavable || !isValueDirty,
                     onClick: () => model.saveAsync()
                 }),
                 menuItem({

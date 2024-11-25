@@ -40,14 +40,14 @@ export class ViewInfo {
     constructor(blob: JsonBlob, model: ViewManagerModel) {
         this.token = blob.token;
         this.type = blob.type;
-        this.name = blob.name;
         this.owner = blob.owner;
+        this.name = blob.name;
         this.displayName = this.name?.substring(this.name.lastIndexOf('\\') + 1);
         this.shortDisplayName = truncate(this.displayName, {length: 50});
         this.description = blob.description;
         this.isGlobal = blob.acl === '*';
-        this.dateCreated = blob.dateCreated;
         // Round to seconds.  See: https://github.com/xh/hoist-core/issues/423
+        this.dateCreated = Math.round(blob.dateCreated / SECONDS) * SECONDS;
         this.lastUpdated = Math.round(blob.lastUpdated / SECONDS) * SECONDS;
         this.lastUpdatedBy = blob.lastUpdatedBy;
         this.model = model;

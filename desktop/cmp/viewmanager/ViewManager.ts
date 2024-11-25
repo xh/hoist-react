@@ -113,7 +113,7 @@ const saveButton = hoistCmp.factory<ViewManagerModel>({
             intent: 'primary',
             disabled: !model.isValueDirty || model.isLoading,
             onClick: () => {
-                model.canSave ? model.saveAsync() : model.saveAsAsync();
+                model.isViewSavable ? model.saveAsync() : model.saveAsAsync();
             },
             ...rest
         });

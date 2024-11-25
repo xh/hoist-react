@@ -6,7 +6,7 @@ import {JsonBlob} from '@xh/hoist/svc';
 /**
  * A named saved bundle of state for components.
  */
-export class View<T = PlainObject> {
+export class View<T extends PlainObject = PlainObject> {
     /**
      * Default View representing code state of all contained components.
      * Available for all view managers where `enableDefault` is true.

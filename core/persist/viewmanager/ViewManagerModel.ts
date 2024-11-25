@@ -23,7 +23,7 @@ import {
 } from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
-import {action, computed, makeObservable, observable, runInAction, when} from '@xh/hoist/mobx';
+import {action, makeObservable, observable, runInAction, when} from '@xh/hoist/mobx';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {find, first, isEmpty, isEqual, isNil, lowerCase, without} from 'lodash';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
@@ -122,8 +122,6 @@ export class ViewManagerModel<T = PlainObject>
 
     /** Current view. Will not include uncommitted changes */
     @observable.ref view: View<T> = View.createDefault();
-    /** Unsaved changes on the current view. */
-    @observable.ref pendingValue: PendingValue<T> = null;
     /** Loaded saved view library - both private and global */
     @observable.ref views: ViewInfo[] = [];
     /** List of tokens for the user's favorite views. */
@@ -143,6 +141,10 @@ export class ViewManagerModel<T = PlainObject>
     @observable manageDialogOpen = false;
     @managed readonly saveAsDialogModel: SaveAsDialogModel;
 
+    // Unsaved changes on the current view.
+    @observable.ref
+    private pendingValue: PendingValue<T> = null;
+
     /**
      * @internal array of {@link ViewManagerProvider} instances bound to this model. Providers will
      * push themselves onto this array when constructed with a reference to this model. Used to
@@ -152,12 +154,11 @@ export class ViewManagerModel<T = PlainObject>
 
     declare persistWith: ViewManagerPersistOptions;
 
-    @computed
     get isValueDirty(): boolean {
-        return this.pendingValue && !isEqual(this.view.value, this.pendingValue.value);
+        return !!this.pendingValue;
     }
 
-    get canSave(): boolean {
+    get isViewSavable(): boolean {
         const {view, manageGlobal} = this;
         return !view.isDefault && (manageGlobal || !view.isGlobal);
     }
@@ -280,7 +281,7 @@ export class ViewManagerModel<T = PlainObject>
     // Saving/resetting
     //------------------------
     async saveAsync(): Promise<void> {
-        if (!this.pendingValue || !this.canSave || this.isLoading) {
+        if (!this.pendingValue || !this.isViewSavable || this.isLoading) {
             this.logError('Unexpected conditions for call to save, skipping');
             return;
         }
@@ -361,7 +362,7 @@ export class ViewManagerModel<T = PlainObject>
     // Persistence
     //------------------
     getPersistableState(): PersistableState<ViewManagerModelPersistState<T>> {
-        const state = {token: this.view.token} as ViewManagerModelPersistState<T>;
+        const state: ViewManagerModelPersistState<T> = {token: this.view.token};
         if (this.persistWith.persistPendingValue) {
             state.pendingValue = this.pendingValue;
         }
@@ -372,7 +373,7 @@ export class ViewManagerModel<T = PlainObject>
     }
 
     @action
-    setPersistableState(state: PersistableState<ViewManagerModelPersistState<T>>) {
+    async setPersistableState(state: PersistableState<ViewManagerModelPersistState<T>>) {
         const {views} = this,
             {value} = state,
             token = value.token,
@@ -380,19 +381,24 @@ export class ViewManagerModel<T = PlainObject>
             favorites = this.enableFavorites ? value.favorites : null;
 
         if (favorites) {
-            this.favorites = favorites.filter(tkn => views.some(v => v.token == tkn));
+            this.favorites = favorites.filter(tkn => views.some(v => v.token === tkn));
         }
 
-        const viewInfo = token ? find(this.views, {token}) : null;
-        if (!token || viewInfo) {
-            // 1) View available, or requesting default -- load it with pending value.
-            this.loadViewAsync(viewInfo, pendingValue);
-        } else {
-            // 2) View Unavailable -- make best effort to preserve pending value on default
-            this.logWarn('Persisted view not found, it may have been deleted.');
-            if (pendingValue && this.enableDefault) {
-                this.loadViewAsync(null, pendingValue);
+        // Requesting default or a view still available -- load it with pending value.
+        if (!token) return this.loadViewAsync(null, pendingValue);
+        const viewInfo = find(this.views, {token});
+        if (viewInfo) {
+            try {
+                return await this.loadViewAsync(viewInfo, pendingValue);
+            } catch (e) {
+                this.logError('Failure loading persisted value', e);
             }
+        }
+
+        // ...otherwise, make best effort to preserve pending value on default
+        this.logWarn('Persisted view not found, it may have been deleted.');
+        if (pendingValue && this.enableDefault) {
+            this.loadViewAsync(null, pendingValue);
         }
     }
 
@@ -537,7 +543,7 @@ export type ViewTree = {
 
 export interface ViewManagerModelPersistState<T> {
     token: string;
-    pendingValue: PendingValue<T>;
+    pendingValue?: PendingValue<T>;
     favorites?: string[];
 }
 
