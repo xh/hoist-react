@@ -35,7 +35,7 @@ export const viewMenu = hoistCmp.factory<ViewManagerProps>({
 
         const pluralName = pluralize(startCase(typeDisplayName)),
             myPluralName = `My  ${pluralName}`,
-            globalPluralName = `${globalDisplayName}  ${pluralName}`,
+            globalPluralName = `${startCase(globalDisplayName)}  ${pluralName}`,
             items = [];
         if (!isEmpty(favoriteViews)) {
             items.push(
