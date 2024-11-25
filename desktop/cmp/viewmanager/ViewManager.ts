@@ -1,16 +1,22 @@
-import {div, filler, fragment, hbox, span} from '@xh/hoist/cmp/layout';
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2024 Extremely Heavy Industries Inc.
+ */
+
+import {fragment, hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
-import './ViewManager.scss';
-import {ViewTree} from '@xh/hoist/core/persist/viewmanager';
-import {ViewManagerModel} from '@xh/hoist/core/persist/viewmanager/ViewManagerModel';
+import {ViewManagerModel} from '@xh/hoist/core/persist/viewmanager';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
-import {manageDialog} from './impl/ManageDialog';
-import {saveDialog} from './impl/SaveDialog';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
-import {consumeEvent, pluralize} from '@xh/hoist/utils/js';
-import {isEmpty, startCase} from 'lodash';
-import {ReactNode} from 'react';
+import {popover} from '@xh/hoist/kit/blueprint';
+import {startCase} from 'lodash';
+import {viewMenu} from './impl/ViewMenu';
+import {manageDialog} from './impl/ManageDialog';
+import {saveAsDialog} from './impl/SaveAsDialog';
+
+import './ViewManager.scss';
 
 /**
  * Visibility options for save/revert button.
@@ -30,10 +36,8 @@ export interface ViewManagerProps extends HoistProps<ViewManagerModel> {
     showSaveButton?: ViewManagerStateButtonMode;
     /** Default 'never' */
     showRevertButton?: ViewManagerStateButtonMode;
-
     /** Side the save and revert buttons should appear on (default 'right') */
     buttonSide?: 'left' | 'right';
-
     /** True to render private views in sub-menu (Default false)*/
     showPrivateViewsInSubMenu?: boolean;
     /** True to render global views in sub-menu (Default false)*/
@@ -80,7 +84,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                 omit: !model.manageDialogOpen,
                 onClose: () => model.closeManageDialog()
             }),
-            saveDialog()
+            saveAsDialog()
         );
     }
 });
@@ -90,7 +94,7 @@ const menuButton = hoistCmp.factory<ViewManagerModel>({
         const {view, typeDisplayName, isLoading} = model;
         return button({
             className: 'xh-view-manager__menu-button',
-            text: view.info?.shortName ?? `Default ${startCase(typeDisplayName)}`,
+            text: view.info?.shortDisplayName ?? `Default ${startCase(typeDisplayName)}`,
             icon: !isLoading ? Icon.bookmark() : Icon.spinner({className: 'fa-spin'}),
             rightIcon: Icon.chevronDown(),
             outlined: true,
@@ -109,7 +113,7 @@ const saveButton = hoistCmp.factory<ViewManagerModel>({
             intent: 'primary',
             disabled: !model.isValueDirty || model.isLoading,
             onClick: () => {
-                model.canSave ? model.saveAsync() : model.saveAsAsync();
+                model.isViewSavable ? model.saveAsync() : model.saveAsAsync();
             },
             ...rest
         });
@@ -134,168 +138,3 @@ const revertButton = hoistCmp.factory<ViewManagerModel>({
 function hideStateButton(model: ViewManagerModel, mode: ViewManagerStateButtonMode): boolean {
     return mode === 'never' || (mode === 'whenDirty' && !model.isValueDirty);
 }
-
-const viewMenu = hoistCmp.factory<ViewManagerProps>({
-    render({model, showPrivateViewsInSubMenu, showGlobalViewsInSubMenu}) {
-        const {
-            enableDefault,
-            canSave,
-            view,
-            typeDisplayName,
-            globalDisplayName,
-            privateViewTree,
-            globalViewTree,
-            favoriteViews,
-            views,
-            isValueDirty
-        } = model;
-
-        const pluralName = pluralize(startCase(typeDisplayName)),
-            myPluralName = `My  ${pluralName}`,
-            globalPluralName = `${globalDisplayName}  ${pluralName}`,
-            items = [];
-        if (!isEmpty(favoriteViews)) {
-            items.push(
-                menuDivider({title: 'Favorites'}),
-                ...favoriteViews.map(it => {
-                    return menuItem({
-                        key: `${it.token}-favorite`,
-                        icon: view.info?.token === it.token ? Icon.check() : Icon.placeholder(),
-                        text: menuItemTextAndFaveToggle({
-                            view: {...it, text: it.shortName}
-                        }),
-                        onClick: () => model.selectViewAsync(it.token),
-                        title: it.description
-                    });
-                })
-            );
-        }
-
-        if (!isEmpty(privateViewTree)) {
-            if (showPrivateViewsInSubMenu) {
-                items.push(
-                    menuDivider({omit: isEmpty(items)}),
-                    menuItem({
-                        text: myPluralName,
-                        shouldDismissPopover: false,
-                        items: privateViewTree.map(it => buildMenuItem(it, model))
-                    })
-                );
-            } else {
-                items.push(
-                    menuDivider({title: myPluralName}),
-                    ...privateViewTree.map(it => buildMenuItem(it, model))
-                );
-            }
-        }
-
-        if (!isEmpty(globalViewTree)) {
-            if (showGlobalViewsInSubMenu) {
-                items.push(
-                    menuDivider({omit: isEmpty(items)}),
-                    menuItem({
-                        text: globalPluralName,
-                        shouldDismissPopover: false,
-                        items: globalViewTree.map(it => buildMenuItem(it, model))
-                    })
-                );
-            } else {
-                items.push(
-                    menuDivider({title: globalPluralName}),
-                    ...globalViewTree.map(it => buildMenuItem(it, model))
-                );
-            }
-        }
-
-        return menu({
-            className: 'xh-view-manager__menu',
-            items: [
-                ...items,
-                menuDivider({omit: !enableDefault || isEmpty(items)}),
-                menuItem({
-                    icon: view.isDefault ? Icon.check() : Icon.placeholder(),
-                    text: `Default ${startCase(typeDisplayName)}`,
-                    omit: !enableDefault,
-                    onClick: () => model.selectViewAsync(null)
-                }),
-                menuDivider(),
-                menuItem({
-                    icon: Icon.save(),
-                    text: 'Save',
-                    disabled: !canSave || !isValueDirty,
-                    onClick: () => model.saveAsync()
-                }),
-                menuItem({
-                    icon: Icon.placeholder(),
-                    text: 'Save As...',
-                    onClick: () => model.saveAsAsync()
-                }),
-                menuItem({
-                    icon: Icon.reset(),
-                    text: `Revert`,
-                    disabled: !isValueDirty,
-                    onClick: () => model.resetAsync()
-                }),
-                menuDivider(),
-                menuItem({
-                    icon: Icon.gear(),
-                    disabled: isEmpty(views),
-                    text: `Manage ${pluralName}...`,
-                    onClick: () => model.openManageDialog()
-                })
-            ]
-        });
-    }
-});
-
-function buildMenuItem(viewOrFolder: ViewTree, model: ViewManagerModel): ReactNode {
-    const {type, text, selected} = viewOrFolder,
-        icon = selected ? Icon.check() : Icon.placeholder();
-
-    switch (type) {
-        case 'folder':
-            return menuItem({
-                text,
-                icon,
-                shouldDismissPopover: false,
-                items: viewOrFolder.items
-                    ? viewOrFolder.items.map(child => buildMenuItem(child, model))
-                    : []
-            });
-        case 'view':
-            return menuItem({
-                className: 'xh-view-manager__menu-item',
-                key: viewOrFolder.token,
-                icon,
-                text: menuItemTextAndFaveToggle({model, view: viewOrFolder}),
-                title: viewOrFolder.description,
-                onClick: () => model.selectViewAsync(viewOrFolder.token)
-            });
-    }
-}
-
-const menuItemTextAndFaveToggle = hoistCmp.factory<ViewManagerModel>({
-    render({model, view}) {
-        const isFavorite = model.isFavorite(view.token);
-        return hbox({
-            alignItems: 'center',
-            items: [
-                span({style: {paddingRight: 5}, item: view.text}),
-                fragment({
-                    omit: !model.enableFavorites,
-                    items: [
-                        filler(),
-                        div({
-                            className: `xh-view-manager__menu-item__fave-toggle ${isFavorite ? 'xh-view-manager__menu-item__fave-toggle--active' : ''}`,
-                            item: Icon.favorite({prefix: isFavorite ? 'fas' : 'far'}),
-                            onClick: e => {
-                                consumeEvent(e);
-                                model.toggleFavorite(view.token);
-                            }
-                        })
-                    ]
-                })
-            ]
-        });
-    }
-});

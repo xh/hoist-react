@@ -1,4 +1,11 @@
-import {ViewInfo, ViewManagerModel, ViewTree} from '@xh/hoist/core/persist/viewmanager';
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2024 Extremely Heavy Industries Inc.
+ */
+import {ViewManagerModel, ViewTree} from '../ViewManagerModel';
+import {ViewInfo} from '../ViewInfo';
 import {sortBy} from 'lodash';
 
 /**
@@ -29,26 +36,23 @@ function buildTreeInternal(views: ViewInfo[], selected: ViewInfo, depth: number)
             return;
         }
         // Belongs to a not defined group, create it
-        groups[group] = {name: group, children: [view], isMenuFolder: true};
+        groups[group] = {group, children: [view]};
         groupsAndLeaves.push(groups[group]);
     });
 
     // 2) Make ViewTree, recursing for groups
     return groupsAndLeaves.map(it => {
-        const {name, isMenuFolder, children, description, token} = it;
-        return isMenuFolder
+        return it instanceof ViewInfo
             ? {
-                  type: 'folder',
-                  text: getFolderDisplayName(name, depth),
-                  items: buildTreeInternal(children, selected, depth + 1),
-                  selected: isFolderForEntry(name, selected?.name, depth)
+                  data: it,
+                  selected: selected?.token === it.token
               }
             : {
-                  type: 'view',
-                  text: it.shortName,
-                  selected: selected?.token === token,
-                  token,
-                  description
+                  data: {
+                      folderName: getFolderDisplayName(it.group, depth),
+                      children: buildTreeInternal(it.children, selected, depth + 1)
+                  },
+                  selected: isFolderForEntry(it.group, selected?.name, depth)
               };
     });
 }
