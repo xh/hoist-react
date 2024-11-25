@@ -115,7 +115,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
 
         try {
             await XH.fetchJson({
-                url: 'hzObjectAdmin/clearObjects',
+                url: 'distributedObjectAdmin/clearObjects',
                 params: {
                     instance: this.instanceName,
                     names: this.gridModel.selectedIds
@@ -149,7 +149,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
 
         try {
             await XH.fetchJson({
-                url: 'hzObjectAdmin/clearHibernateCaches',
+                url: 'distributedObjectAdmin/clearHibernateCaches',
                 params: {instance: this.instanceName}
             }).linkTo(this.loadModel);
 
@@ -163,7 +163,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         try {
             const response = await XH.fetchJson({
-                url: 'hzObjectAdmin/listObjects',
+                url: 'distributedObjectAdmin/listObjects',
                 params: {
                     instance: this.instanceName
                 }
