@@ -15,14 +15,14 @@ import filesize from 'filesize';
 import {find, isEmpty, uniqBy, without} from 'lodash';
 
 export class FileChooserModel extends HoistModel {
-    @observable
-    draggedCount: number;
-
     @observable.ref
     files: File[] = [];
 
     @observable
     lastRejectedCount: number;
+
+    @observable
+    draggedCount: number;
 
     @managed
     gridModel: GridModel;
@@ -122,6 +122,11 @@ export class FileChooserModel extends HoistModel {
     @action
     onDragEnter(event) {
         this.draggedCount = event.dataTransfer.items.length;
+    }
+
+    @action
+    onDragLeave(event) {
+        this.draggedCount = null;
     }
 
     @action

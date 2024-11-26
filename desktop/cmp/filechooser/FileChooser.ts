@@ -117,6 +117,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                         });
                     },
                     onDragEnter: e => model.onDragEnter(e),
+                    onDragLeave: e => model.onDragLeave(e),
                     onDrop: (accepted, rejected) => model.onDrop(accepted, rejected, enableMulti)
                 }),
                 grid({
