@@ -68,7 +68,7 @@
     "qs": "~6.13.0",
     "react-beautiful-dnd": "~13.1.0",
     "react-dates": "~21.8.0",
-    "react-dropzone": "~10.2.2",
+    "react-dropzone": "~14.3.5",
     "react-grid-layout": "1.4.3",
     "react-markdown": "~9.0.1",
     "react-onsenui": "~1.13.2",

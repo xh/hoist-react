@@ -11,11 +11,13 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {apiDeprecated} from '@xh/hoist/utils/js';
-import {isEmpty} from 'codemirror/src/util/misc';
 import filesize from 'filesize';
-import {find, uniqBy, without} from 'lodash';
+import {find, isEmpty, uniqBy, without} from 'lodash';
 
 export class FileChooserModel extends HoistModel {
+    @observable
+    draggedCount: number;
+
     @observable.ref
     files: File[] = [];
 
@@ -118,6 +120,11 @@ export class FileChooserModel extends HoistModel {
     }
 
     @action
+    onDragEnter(event) {
+        this.draggedCount = event.dataTransfer.items.length;
+    }
+
+    @action
     onDrop(accepted, rejected, enableMulti) {
         if (!isEmpty(accepted)) {
             if (!enableMulti) {
@@ -126,6 +133,7 @@ export class FileChooserModel extends HoistModel {
                 this.addFiles(accepted);
             }
         }
+        this.draggedCount = null;
         this.lastRejectedCount = rejected.length;
     }
 

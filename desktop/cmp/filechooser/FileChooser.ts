@@ -6,7 +6,7 @@
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {div, hbox, input} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, Some, uses} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
 import classNames from 'classnames';
@@ -15,8 +15,10 @@ import './FileChooser.scss';
 import {FileChooserModel} from './FileChooserModel';
 
 export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps {
-    /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
-    accept?: Some<string>;
+    /** Map of MIME type to file extensions to accept
+     * (e.g. `{'image/png': ['.png'], 'text/html': ['.html', '.htm']}`).
+     */
+    accept?: {[key: string]: readonly string[]};
 
     /** True (default) to allow multiple files in a single upload. */
     enableMulti?: boolean;
@@ -88,10 +90,9 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                     maxSize,
                     minSize,
                     multiple: enableAddMulti,
-                    children: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
-                        const draggedCount = draggedFiles.length,
-                            targetTxt = isDragActive
-                                ? `Drop to add ${fileNoun(draggedCount)}.`
+                    children: ({getRootProps, getInputProps, isDragActive}) => {
+                        const targetTxt = isDragActive
+                                ? `Drop to add ${fileNoun(model.draggedCount)}.`
                                 : targetText,
                             rejectTxt =
                                 lastRejectedCount && !isDragActive
@@ -115,6 +116,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                             )
                         });
                     },
+                    onDragEnter: e => model.onDragEnter(e),
                     onDrop: (accepted, rejected) => model.onDrop(accepted, rejected, enableMulti)
                 }),
                 grid({

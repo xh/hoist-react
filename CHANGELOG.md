@@ -2,10 +2,23 @@
 
 ## v71.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - `FileChooser` props)
+
+* Upgraded `FileChooser` now requires the accepted file types `accept` prop to be an object
+  mapping MIME type to list of file extensions, e.g.
+```
+    accept: {
+        'image/png': ['.png'],
+        'text/html': ['.html', '.htm']
+    }
+```
 
 ### ⚙️ Technical
 * Misc. Improvements to ViewManager
 
+### 📚 Libraries
+
+* react-dropzone `10.2.2 → 14.3.5`
 
 ## v70.0.0 - 2024-11-15
 
