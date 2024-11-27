@@ -123,6 +123,14 @@ export const viewMenu = hoistCmp.factory<ViewManagerProps>({
                     disabled: isEmpty(views),
                     text: `Manage ${pluralName}...`,
                     onClick: () => model.openManageDialog()
+                }),
+                menuItem({
+                    icon: Icon.refresh(),
+                    text: `Refresh ${pluralName}`,
+                    onClick: e => {
+                        model.refreshAsync();
+                        consumeEvent(e);
+                    }
                 })
             ]
         });

@@ -30,6 +30,10 @@ export class ManageDialogModel extends HoistModel {
     readonly saveTask = TaskObserver.trackLast();
     readonly deleteTask = TaskObserver.trackLast();
 
+    get loadTask(): TaskObserver {
+        return this.parent.loadModel;
+    }
+
     get selectedId(): string {
         return this.gridModel.selectedId as string;
     }

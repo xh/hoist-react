@@ -224,28 +224,28 @@ export class ViewManagerModel<T = PlainObject>
     }
 
     private async initAsync() {
-        const views = await this.fetchViewInfosAsync();
+        try {
+            const views = await this.fetchViewInfosAsync();
 
-        // TODO: consider a stored error, that could be revealed in GUI, using warning icon.
-        // Could be effective for display of init issues at proper time as well as other errors.
-        throwIf(!this.enableDefault && isEmpty(views), 'No views found for View Manager.');
+            runInAction(() => (this.views = views));
 
-        runInAction(() => (this.views = views));
+            // Setup persistence
+            if (this.persistWith) {
+                PersistenceProvider.create({
+                    persistOptions: {
+                        path: 'viewManager',
+                        ...this.persistWith
+                    },
+                    target: this
+                });
+                await when(() => !this.selectTask.isPending);
+            }
 
-        // Setup persistence
-        if (this.persistWith) {
-            PersistenceProvider.create({
-                persistOptions: {
-                    path: 'viewManager',
-                    ...this.persistWith
-                },
-                target: this
-            });
-            await when(() => !this.selectTask.isPending);
-        }
-
-        if (this.view.isDefault && !this.enableDefault) {
-            await this.loadViewAsync(first(views));
+            if (this.view.isDefault && !this.enableDefault && !isEmpty(views)) {
+                await this.loadViewAsync(first(views));
+            }
+        } catch (e) {
+            this.handleException(e, {showAlert: false, logOnServer: true});
         }
     }
 
@@ -408,6 +408,7 @@ export class ViewManagerModel<T = PlainObject>
     @action
     openManageDialog() {
         this.manageDialogOpen = true;
+        this.refreshAsync();
     }
 
     @action

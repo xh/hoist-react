@@ -35,7 +35,7 @@ export const manageDialog = hoistCmp.factory<ManageDialogProps>({
     model: creates(ManageDialogModel),
 
     render({model, className, onClose}) {
-        const {typeDisplayName, saveTask, deleteTask} = model;
+        const {typeDisplayName, saveTask, deleteTask, loadTask} = model;
         return dialog({
             title: `Manage ${capitalize(pluralize(typeDisplayName))}`,
             icon: Icon.gear(),
@@ -46,7 +46,7 @@ export const manageDialog = hoistCmp.factory<ManageDialogProps>({
             onClose,
             item: panel({
                 item: hframe(gridPanel(), formPanel({onClose})),
-                mask: [saveTask, deleteTask]
+                mask: [saveTask, deleteTask, loadTask]
             })
         });
     }
