@@ -7,6 +7,7 @@
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
 import {connPoolMonitorPanel} from '@xh/hoist/admin/tabs/cluster/connpool/ConnPoolMonitorPanel';
+import {clusterConsistencyPanel} from '@xh/hoist/admin/tabs/cluster/consistency/ClusterConsistencyPanel';
 import {distributedObjectsPanel} from '@xh/hoist/admin/tabs/cluster/distobjects/DistributedObjectsPanel';
 import {serverEnvPanel} from '@xh/hoist/admin/tabs/cluster/environment/ServerEnvPanel';
 import {logViewer} from '@xh/hoist/admin/tabs/cluster/logs/LogViewer';
@@ -200,6 +201,12 @@ export class ClusterTabModel extends HoistModel {
                     title: 'Distributed Objects',
                     icon: Icon.grip(),
                     content: distributedObjectsPanel
+                },
+                {
+                    id: 'consistency',
+                    title: 'Consistency Checks',
+                    icon: Icon.equals(),
+                    content: clusterConsistencyPanel
                 },
                 {id: 'webSockets', title: 'WebSockets', icon: Icon.bolt(), content: webSocketPanel}
             ]
