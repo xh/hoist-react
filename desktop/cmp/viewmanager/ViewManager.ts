@@ -94,7 +94,7 @@ const menuButton = hoistCmp.factory<ViewManagerModel>({
         const {view, typeDisplayName, isLoading} = model;
         return button({
             className: 'xh-view-manager__menu-button',
-            text: view.info?.shortDisplayName ?? `Default ${startCase(typeDisplayName)}`,
+            text: view.info?.name ?? `Default ${startCase(typeDisplayName)}`,
             icon: !isLoading ? Icon.bookmark() : Icon.spinner({className: 'fa-spin'}),
             rightIcon: Icon.chevronDown(),
             outlined: true,

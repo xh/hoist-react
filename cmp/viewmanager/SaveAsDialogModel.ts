@@ -6,6 +6,7 @@
  */
 
 import {FormModel} from '@xh/hoist/cmp/form';
+import {ViewInfo} from '@xh/hoist/cmp/viewmanager/ViewInfo';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {makeObservable, action, observable} from '@xh/hoist/mobx';
@@ -69,7 +70,7 @@ export class SaveAsDialogModel extends HoistModel {
                     name: 'name',
                     rules: [
                         required,
-                        lengthIs({max: 255}),
+                        lengthIs({max: ViewInfo.NAME_MAX_LENGTH}),
                         ({value}) => {
                             if (this.parent.views.some(view => view.name === value?.trim())) {
                                 return `An entry with name "${value}" already exists`;

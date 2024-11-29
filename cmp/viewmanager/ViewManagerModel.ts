@@ -29,7 +29,6 @@ import {find, first, isEmpty, isEqual, isNil, lowerCase, without} from 'lodash';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
-import {buildViewTree} from './impl/BuildViewTree';
 
 export interface ViewManagerConfig {
     /**
@@ -173,14 +172,6 @@ export class ViewManagerModel<T = PlainObject>
 
     get privateViews(): ViewInfo[] {
         return this.views.filter(it => !it.isGlobal);
-    }
-
-    get globalViewTree(): ViewTree[] {
-        return buildViewTree(this.globalViews, this);
-    }
-
-    get privateViewTree(): ViewTree[] {
-        return buildViewTree(this.privateViews, this);
     }
 
     /** True if any async tasks are pending. */
@@ -531,16 +522,6 @@ export class ViewManagerModel<T = PlainObject>
         });
     }
 }
-
-/**
- * Abstract representation of ViewManager views available for selection, potentially grouped into
- * hierarchical folders. Lightweight, user-driven organization into "folders" is supported by
- * inserting a "\" in the name of any view.
- */
-export type ViewTree = {
-    selected: boolean;
-    data: ViewInfo | {folderName: string; children: ViewTree[]};
-};
 
 export interface ViewManagerModelPersistState<T> {
     token: string;

@@ -1,5 +1,4 @@
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {truncate} from 'lodash';
 import {ViewManagerModel} from './ViewManagerModel';
 import {JsonBlob} from '@xh/hoist/svc';
 
@@ -7,20 +6,16 @@ import {JsonBlob} from '@xh/hoist/svc';
  * Metadata describing {@link View} managed by {@link ViewManagerModel}.
  */
 export class ViewInfo {
+    static NAME_MAX_LENGTH = 50;
+
     /** Unique Id */
     readonly token: string;
 
     /** App-defined type discriminator, as per {@link ViewManagerConfig.viewType}. */
     readonly type: string;
 
-    /** User-supplied descriptive name, including folder designating prefix. */
+    /** User-supplied descriptive name. */
     readonly name: string;
-
-    /** User-supplied descriptive name, without folder designating prefix. */
-    readonly displayName: string;
-
-    /** Potentially truncated shortName for display in UI */
-    readonly shortDisplayName: string;
 
     /** Description of the view. **/
     readonly description: string;
@@ -42,8 +37,6 @@ export class ViewInfo {
         this.type = blob.type;
         this.owner = blob.owner;
         this.name = blob.name;
-        this.displayName = this.name?.substring(this.name.lastIndexOf('\\') + 1);
-        this.shortDisplayName = truncate(this.displayName, {length: 50});
         this.description = blob.description;
         this.isGlobal = blob.acl === '*';
         // Round to seconds.  See: https://github.com/xh/hoist-core/issues/423
@@ -62,6 +55,6 @@ export class ViewInfo {
     }
 
     get typedName(): string {
-        return `${this.model.typeDisplayName} '${this.displayName}'`;
+        return `${this.model.typeDisplayName} '${this.name}'`;
     }
 }

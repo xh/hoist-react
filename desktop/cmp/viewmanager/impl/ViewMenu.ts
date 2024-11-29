@@ -7,7 +7,7 @@
 
 import {div, filler, fragment, hbox, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
-import {ViewTree, ViewManagerModel, ViewInfo} from '@xh/hoist/cmp/viewmanager';
+import {ViewManagerModel, ViewInfo} from '@xh/hoist/cmp/viewmanager';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {consumeEvent, pluralize} from '@xh/hoist/utils/js';
@@ -26,11 +26,11 @@ export const viewMenu = hoistCmp.factory<ViewManagerProps>({
             view,
             typeDisplayName,
             globalDisplayName,
-            privateViewTree,
-            globalViewTree,
             favoriteViews,
             views,
-            isValueDirty
+            isValueDirty,
+            privateViews,
+            globalViews
         } = model;
 
         const pluralName = pluralize(startCase(typeDisplayName)),
@@ -52,39 +52,35 @@ export const viewMenu = hoistCmp.factory<ViewManagerProps>({
             );
         }
 
-        if (!isEmpty(privateViewTree)) {
+        if (!isEmpty(privateViews)) {
+            const privateItems = privateViews.map(it => buildMenuItem(it, model));
             if (showPrivateViewsInSubMenu) {
                 items.push(
                     menuDivider({omit: isEmpty(items)}),
                     menuItem({
                         text: myPluralName,
                         shouldDismissPopover: false,
-                        items: privateViewTree.map(it => buildMenuItem(it, model))
+                        items: privateItems
                     })
                 );
             } else {
-                items.push(
-                    menuDivider({title: myPluralName}),
-                    ...privateViewTree.map(it => buildMenuItem(it, model))
-                );
+                items.push(menuDivider({title: myPluralName}), ...privateItems);
             }
         }
 
-        if (!isEmpty(globalViewTree)) {
+        if (!isEmpty(globalViews)) {
+            const globalItems = globalViews.map(it => buildMenuItem(it, model));
             if (showGlobalViewsInSubMenu) {
                 items.push(
                     menuDivider({omit: isEmpty(items)}),
                     menuItem({
                         text: globalPluralName,
                         shouldDismissPopover: false,
-                        items: globalViewTree.map(it => buildMenuItem(it, model))
+                        items: globalItems
                     })
                 );
             } else {
-                items.push(
-                    menuDivider({title: globalPluralName}),
-                    ...globalViewTree.map(it => buildMenuItem(it, model))
-                );
+                items.push(menuDivider({title: globalPluralName}), ...globalItems);
             }
         }
 
@@ -137,34 +133,27 @@ export const viewMenu = hoistCmp.factory<ViewManagerProps>({
     }
 });
 
-function buildMenuItem(node: ViewTree, model: ViewManagerModel): ReactNode {
-    const {selected, data} = node,
+function buildMenuItem(data: ViewInfo, model: ViewManagerModel): ReactNode {
+    const selected = data.token === model.view.token,
         icon = selected ? Icon.check() : Icon.placeholder();
 
-    return data instanceof ViewInfo
-        ? menuItem({
-              className: 'xh-view-manager__menu-item',
-              key: data.token,
-              icon,
-              text: textAndFaveToggle({info: data}),
-              title: data.description,
-              onClick: () => model.selectViewAsync(data)
-          })
-        : menuItem({
-              icon,
-              text: data.folderName,
-              shouldDismissPopover: false,
-              items: data.children.map(child => buildMenuItem(child, model))
-          });
+    return menuItem({
+        className: 'xh-view-manager__menu-item',
+        key: data.token,
+        icon,
+        text: textAndFaveToggle({info: data}),
+        title: data.description,
+        onClick: () => model.selectViewAsync(data)
+    });
 }
 
 const textAndFaveToggle = hoistCmp.factory<ViewManagerModel>({
     render({model, info}) {
-        const {isFavorite, shortDisplayName} = info;
+        const {isFavorite, name} = info;
         return hbox({
             alignItems: 'center',
             items: [
-                span({style: {paddingRight: 5}, item: shortDisplayName}),
+                span({style: {paddingRight: 5}, item: name}),
                 fragment({
                     omit: !model.enableFavorites,
                     items: [

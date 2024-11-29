@@ -89,10 +89,7 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
                     items: [
                         formField({
                             field: 'name',
-                            item: textInput(),
-                            info: model.canEdit
-                                ? `Organize your ${pluralize(typeDisplayName)} into folders by including the "\\" character in their names - e.g. "My folder\\My ${typeDisplayName}".`
-                                : null
+                            item: textInput()
                         }),
                         formField({
                             field: 'description',

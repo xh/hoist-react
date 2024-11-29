@@ -13,7 +13,7 @@ import {lengthIs, required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
-import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import {ViewInfo, ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {startCase} from 'lodash';
 
 /**
@@ -305,7 +305,7 @@ export class ManageDialogModel extends HoistModel {
     private createFormModel(): FormModel {
         return new FormModel({
             fields: [
-                {name: 'name', rules: [required, lengthIs({max: 255})]},
+                {name: 'name', rules: [required, lengthIs({max: ViewInfo.NAME_MAX_LENGTH})]},
                 {name: 'description'},
                 {name: 'isGlobal', displayName: 'Global'},
                 {name: 'owner', readonly: true},
