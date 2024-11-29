@@ -28,6 +28,9 @@ export interface PersistOptions {
     /** Browser local storage key used to store state. */
     localStorageKey?: string;
 
+    /** Session (tab-specific) storage key uses to store state. */
+    sessionStorageKey?: string;
+
     /** DashViewModel used to read / write view state. */
     dashViewModel?: DashViewModel;
 

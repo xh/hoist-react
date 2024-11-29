@@ -1,11 +1,14 @@
 # Changelog
 
 ## v71.0.0-SNAPSHOT - unreleased
-*
+
+### 🎁 New Features
+
 * Improvements to ViewManager API and functionality.
-  * Replace `autoSave` with option to persist pending view.
   * More customization options.
   * Handle delete and update collisions more gracefully.
+* New `SessionStorageService` and associated persistence provider provides support for saving
+  tab local data across reloads.
 
 
 ## v70.0.0 - 2024-11-15

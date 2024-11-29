@@ -2,6 +2,7 @@ export * from './Persistable';
 export * from './PersistOptions';
 export * from './PersistenceProvider';
 export * from './LocalStorageProvider';
+export * from './SessionStorageProvider';
 export * from './DashViewProvider';
 export * from './PrefProvider';
 export * from './CustomProvider';

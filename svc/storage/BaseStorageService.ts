@@ -6,26 +6,22 @@
  */
 import {HoistService, XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import store from 'store2';
+import {StoreType} from 'store2';
 
 /**
- * Service to provide simple key/value access to browser local storage, appropriately namespaced
- * by application code and username.
+ * Service to provide simple key/value access to browser local/session storage, appropriately
+ * namespaced by application code and username.
  *
- * In the unexpected case that local storage is not available, will provide a transient in-memory
+ * In the unexpected case that the core apis are not available, will provide a transient in-memory
  * storage to support its operations and API.
- *
- * Relied upon by Hoist features such as local preference values and grid state.
  */
-export class LocalStorageService extends HoistService {
-    static instance: LocalStorageService;
-
+export abstract class BaseStorageService extends HoistService {
     constructor() {
         super();
         if (this.isFake) {
             XH.handleException(
                 XH.exception(
-                    'Local Storage is not supported in this browser. Transient in-memory storage ' +
+                    'Requested Storage is not supported in this browser. Transient in-memory storage ' +
                         'will be used as a fallback.  All data stored will be lost when page is closed.'
                 ),
                 {showAlert: false}
@@ -34,7 +30,7 @@ export class LocalStorageService extends HoistService {
     }
 
     get(key: string, defaultValue?: any): any {
-        const storage = this.getInstance(),
+        const storage = this.storeInstance,
             val = storage.get(key, defaultValue);
 
         throwIf(val === undefined, `Key '${key}' not found`);
@@ -42,7 +38,7 @@ export class LocalStorageService extends HoistService {
     }
 
     set(key: string, value: any) {
-        this.getInstance().set(key, value, true);
+        this.storeInstance.set(key, value, true);
     }
 
     apply(key: string, newProps: object) {
@@ -53,7 +49,7 @@ export class LocalStorageService extends HoistService {
     }
 
     remove(key: string) {
-        this.getInstance().remove(key);
+        this.storeInstance.remove(key);
     }
 
     removeIf(predicateFn: (s: string) => boolean) {
@@ -63,25 +59,19 @@ export class LocalStorageService extends HoistService {
     }
 
     clear() {
-        this.getInstance().clear();
+        this.storeInstance().clear();
     }
 
     keys(): string[] {
-        return this.getInstance().keys();
+        return this.storeInstance.keys();
     }
 
     get isFake(): boolean {
-        return store.isFake();
+        return this.storeInstance.isFake();
     }
 
     //------------------
     //  Implementation
     //------------------
-    private getInstance() {
-        return store.namespace(this.getNamespace());
-    }
-
-    private getNamespace() {
-        return `${XH.appCode}.${XH.getUsername()}`;
-    }
+    protected abstract get storeInstance(): StoreType;
 }
