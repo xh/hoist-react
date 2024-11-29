@@ -304,7 +304,14 @@ export class ManageDialogModel extends HoistModel {
     private createFormModel(): FormModel {
         return new FormModel({
             fields: [
-                {name: 'name', rules: [required, lengthIs({max: ViewInfo.NAME_MAX_LENGTH})]},
+                {
+                    name: 'name',
+                    rules: [
+                        required,
+                        lengthIs({max: ViewInfo.NAME_MAX_LENGTH}),
+                        ({value}) => this.parent.validateViewNameAsync(value)
+                    ]
+                },
                 {name: 'description'},
                 {name: 'isGlobal', displayName: 'Global'},
                 {name: 'owner', readonly: true},

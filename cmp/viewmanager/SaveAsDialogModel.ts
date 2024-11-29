@@ -71,11 +71,7 @@ export class SaveAsDialogModel extends HoistModel {
                     rules: [
                         required,
                         lengthIs({max: ViewInfo.NAME_MAX_LENGTH}),
-                        ({value}) => {
-                            if (this.parent.views.some(view => view.name === value?.trim())) {
-                                return `An entry with name "${value}" already exists`;
-                            }
-                        }
+                        ({value}) => this.parent.validateViewNameAsync(value)
                     ]
                 },
                 {name: 'description'}

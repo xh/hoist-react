@@ -394,7 +394,7 @@ export class ViewManagerModel<T = PlainObject>
     }
 
     //-----------------
-    // Misc
+    // Management
     //-----------------
     @action
     openManageDialog() {
@@ -405,6 +405,14 @@ export class ViewManagerModel<T = PlainObject>
     @action
     closeManageDialog() {
         this.manageDialogOpen = false;
+    }
+
+    async validateViewNameAsync(name: string): Promise<string> {
+        // TODO: Consider going to server.
+        if (this.views.some(view => view.name === name?.trim())) {
+            return `A ${this.typeDisplayName} with name '${name}' already exists`;
+        }
+        return null;
     }
 
     //------------------

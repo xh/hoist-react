@@ -16,7 +16,7 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {fmtDate} from '@xh/hoist/format';
+import {fmtCompactDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
@@ -129,6 +129,7 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
                                     icon: Icon.check(),
                                     intent: 'success',
                                     minimal: false,
+                                    disabled: !formModel.isValid,
                                     flex: 1,
                                     onClick: () => model.saveAsync()
                                 }),
@@ -144,7 +145,7 @@ const formPanel = hoistCmp.factory<ManageDialogProps>({
                         filler(),
                         div({
                             className: 'xh-view-manager__manage-dialog__metadata',
-                            item: `Updated ${fmtDate(lastUpdated)} by ${lastUpdatedBy === XH.getUsername() ? 'you' : lastUpdatedBy}.`
+                            item: `Last Updated: ${fmtCompactDate(lastUpdated)} (${lastUpdatedBy === XH.getUsername() ? 'you' : lastUpdatedBy})`
                         })
                     ]
                 })
