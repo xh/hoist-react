@@ -7,7 +7,7 @@
 
 import {DebounceSpec} from '../';
 import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash'; // Import type only
-import type {ViewManagerModel} from '@xh/hoist/core/persist/viewmanager'; // Import type only
+import type {ViewManagerModel} from '@xh/hoist/cmp/viewmanager'; // Import type only
 
 export interface PersistOptions {
     /** Dot delimited path to store state. */

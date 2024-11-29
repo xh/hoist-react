@@ -8,7 +8,7 @@
 import {form} from '@xh/hoist/cmp/form';
 import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {SaveAsDialogModel} from '@xh/hoist/core/persist/viewmanager/';
+import {SaveAsDialogModel} from '@xh/hoist/cmp/viewmanager/';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {textArea, textInput} from '@xh/hoist/desktop/cmp/input';

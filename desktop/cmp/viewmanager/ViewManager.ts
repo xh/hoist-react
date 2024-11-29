@@ -7,7 +7,7 @@
 
 import {fragment, hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
-import {ViewManagerModel} from '@xh/hoist/core/persist/viewmanager';
+import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';

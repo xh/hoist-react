@@ -13,7 +13,7 @@ import {lengthIs, required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
-import {ViewManagerModel} from '@xh/hoist/core/persist/viewmanager';
+import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {startCase} from 'lodash';
 
 /**

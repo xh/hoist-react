@@ -7,7 +7,7 @@
 
 import {div, filler, fragment, hbox, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
-import {ViewTree, ViewManagerModel, ViewInfo} from '@xh/hoist/core/persist/viewmanager';
+import {ViewTree, ViewManagerModel, ViewInfo} from '@xh/hoist/cmp/viewmanager';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {consumeEvent, pluralize} from '@xh/hoist/utils/js';
