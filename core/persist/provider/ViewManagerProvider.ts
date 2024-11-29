@@ -7,8 +7,8 @@
 
 import {throwIf} from '@xh/hoist/utils/js';
 import {pull} from 'lodash';
-import {PersistenceProvider, PersistenceProviderConfig} from '../index';
-import type {ViewManagerModel} from './ViewManagerModel';
+import {PersistenceProvider, PersistenceProviderConfig} from '../PersistenceProvider';
+import type {ViewManagerModel} from '../viewmanager/ViewManagerModel';
 
 export class ViewManagerProvider<S> extends PersistenceProvider<S> {
     readonly viewManagerModel: ViewManagerModel;

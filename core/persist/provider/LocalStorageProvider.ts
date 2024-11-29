@@ -7,29 +7,29 @@
 
 import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import {PersistenceProvider, PersistenceProviderConfig} from './';
+import {PersistenceProvider, PersistenceProviderConfig} from '../PersistenceProvider';
 
 /**
- * PersistenceProvider that stores state within the Browser's SessionStorage.
+ * PersistenceProvider that stores state within the Browser's LocalStorage.
  */
-export class SessionStorageProvider<S> extends PersistenceProvider<S> {
+export class LocalStorageProvider<S> extends PersistenceProvider<S> {
     readonly key: string;
 
     constructor(cfg: PersistenceProviderConfig<S>) {
         super(cfg);
-        const {sessionStorageKey} = cfg.persistOptions;
-        throwIf(!sessionStorageKey, `SessionStorageProvider requires a 'sessionStorageKey'.`);
-        this.key = sessionStorageKey;
+        const {localStorageKey} = cfg.persistOptions;
+        throwIf(!localStorageKey, `LocalStorageProvider requires a 'localStorageKey'.`);
+        this.key = localStorageKey;
     }
 
     //----------------
     // Implementation
     //----------------
     override readRaw() {
-        return XH.sessionStorageService.get(this.key, {});
+        return XH.localStorageService.get(this.key, {});
     }
 
     override writeRaw(data) {
-        XH.sessionStorageService.set(this.key, data);
+        XH.localStorageService.set(this.key, data);
     }
 }

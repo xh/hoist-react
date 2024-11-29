@@ -18,9 +18,9 @@ import {
     PlainObject,
     TaskObserver,
     Thunkable,
-    ViewManagerProvider,
     XH
 } from '@xh/hoist/core';
+import type {ViewManagerProvider} from '../provider/ViewManagerProvider';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
 import {action, makeObservable, observable, runInAction, when} from '@xh/hoist/mobx';
