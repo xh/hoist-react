@@ -13,10 +13,10 @@ import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {consumeEvent, pluralize} from '@xh/hoist/utils/js';
 import {isEmpty, startCase} from 'lodash';
 import {ReactNode} from 'react';
-import {ViewManagerProps} from '../ViewManager';
+import {ViewManagerProps} from './ViewManager';
 
 /**
- * @internal
+ * Default Menu used by ViewManager.
  */
 export const viewMenu = hoistCmp.factory<ViewManagerProps>({
     render({model, showPrivateViewsInSubMenu, showGlobalViewsInSubMenu}) {

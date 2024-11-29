@@ -12,9 +12,9 @@ import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {startCase} from 'lodash';
-import {viewMenu} from './impl/ViewMenu';
-import {manageDialog} from './impl/ManageDialog';
-import {saveAsDialog} from './impl/SaveAsDialog';
+import {viewMenu} from './ViewMenu';
+import {manageDialog} from './dialog/ManageDialog';
+import {saveAsDialog} from './dialog/SaveAsDialog';
 
 import './ViewManager.scss';
 

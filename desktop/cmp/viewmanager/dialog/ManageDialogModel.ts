@@ -17,8 +17,7 @@ import {ViewInfo, ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {startCase} from 'lodash';
 
 /**
- * Backing model for ManageDialog.
- * @internal
+ * Backing model for default Management Dialog for Desktop ViewManager
  */
 export class ManageDialogModel extends HoistModel {
     @lookup(() => ViewManagerModel)

@@ -18,7 +18,7 @@ import {dialog} from '@xh/hoist/kit/blueprint';
 import {startCase} from 'lodash';
 
 /**
- * @internal
+ * Default Save As dialog used by ViewManager.
  */
 export const saveAsDialog = hoistCmp.factory<SaveAsDialogModel>({
     displayName: 'SaveDialog',

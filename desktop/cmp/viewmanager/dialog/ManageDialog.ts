@@ -27,7 +27,7 @@ export interface ManageDialogProps extends HoistProps<ManageDialogModel> {
 }
 
 /**
- * @internal
+ * Default Management Dialog for Desktop ViewManager
  */
 export const manageDialog = hoistCmp.factory<ManageDialogProps>({
     displayName: 'ManageDialog',
