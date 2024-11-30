@@ -11,7 +11,6 @@ import {
     HoistModel,
     LoadSpec,
     managed,
-    Persistable,
     PersistableState,
     PersistenceProvider,
     PersistOptions,
@@ -25,7 +24,17 @@ import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
 import {action, makeObservable, observable, runInAction, when} from '@xh/hoist/mobx';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
-import {find, first, isEmpty, isEqual, isNil, lowerCase, without} from 'lodash';
+import {
+    find,
+    first,
+    isEmpty,
+    isEqual,
+    isNil,
+    isObject,
+    isUndefined,
+    lowerCase,
+    without
+} from 'lodash';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
@@ -45,7 +54,7 @@ export interface ViewManagerConfig {
      */
     manageGlobal?: Thunkable<boolean>;
 
-    /** Used to persist the user's last selected view + favorite views */
+    /** Used to persist the user's state. */
     persistWith?: ViewManagerPersistOptions;
 
     /**
@@ -69,8 +78,14 @@ export interface ViewManagerConfig {
 }
 
 export interface ViewManagerPersistOptions extends PersistOptions {
-    /** Save the pending (unsaved) value in state. Default is true. */
-    persistPendingValue?: boolean;
+    /** True to include pending value or provide specific PersistOptions. (Default true) */
+    persistView?: boolean | PersistOptions;
+
+    /** True to persist favorites or provide specific PersistOptions. (Default true) */
+    persistFavorites?: boolean | PersistOptions;
+
+    /** True to include pending value or provide specific PersistOptions. (Default false) */
+    persistPendingValue?: boolean | PersistOptions;
 }
 
 /**
@@ -85,10 +100,7 @@ export interface ViewManagerPersistOptions extends PersistOptions {
  *  - Views can be marked as favorites for quick access.
  *  - See the desktop {@link ViewManager} component - the initial Hoist UI for this model.
  */
-export class ViewManagerModel<T = PlainObject>
-    extends HoistModel
-    implements Persistable<ViewManagerModelPersistState<T>>
-{
+export class ViewManagerModel<T = PlainObject> extends HoistModel {
     /**
      * Factory to create new instances of this model and await its initial load before binding to
      * any persistable component models. This ensures that bound models will have the expected
@@ -143,6 +155,8 @@ export class ViewManagerModel<T = PlainObject>
     // Unsaved changes on the current view.
     @observable.ref
     private pendingValue: PendingValue<T> = null;
+
+    private initPendingValue: PendingValue<T> = undefined;
 
     /**
      * @internal array of {@link ViewManagerProvider} instances bound to this model. Providers will
@@ -200,10 +214,16 @@ export class ViewManagerModel<T = PlainObject>
         this.viewType = viewType;
         this.typeDisplayName = lowerCase(typeDisplayName ?? genDisplayName(viewType));
         this.globalDisplayName = globalDisplayName;
-        this.persistWith = {persistPendingValue: true, ...persistWith};
+        this.persistWith = {
+            persistView: true,
+            persistFavorites: true,
+            persistPendingValue: false,
+            path: 'viewManager',
+            ...persistWith
+        };
         this.manageGlobal = executeIfFunction(manageGlobal) ?? false;
         this.enableDefault = enableDefault;
-        this.enableFavorites = enableFavorites && !!persistWith;
+        this.enableFavorites = enableFavorites && !!this.persistWith.persistFavorites;
         this.saveAsDialogModel = new SaveAsDialogModel(this);
 
         this.selectTask = TaskObserver.trackLast({
@@ -220,15 +240,8 @@ export class ViewManagerModel<T = PlainObject>
 
             runInAction(() => (this.views = views));
 
-            // Setup persistence
             if (this.persistWith) {
-                PersistenceProvider.create({
-                    persistOptions: {
-                        path: 'viewManager',
-                        ...this.persistWith
-                    },
-                    target: this
-                });
+                this.initPersist(this.persistWith);
                 await when(() => !this.selectTask.isPending);
             }
 
@@ -323,9 +336,15 @@ export class ViewManagerModel<T = PlainObject>
         const {view, pendingValue} = this;
         value = this.cleanState(value);
 
-        this.pendingValue = !isEqual(value, view.value)
-            ? {value, baseUpdated: pendingValue ? pendingValue.baseUpdated : view?.lastUpdated}
-            : null;
+        if (!isEqual(value, view.value)) {
+            this.pendingValue = {
+                token: pendingValue ? pendingValue.token : view.token,
+                baseUpdated: pendingValue ? pendingValue.baseUpdated : view.lastUpdated,
+                value
+            };
+        } else {
+            this.pendingValue = null;
+        }
     }
 
     //------------------
@@ -347,50 +366,6 @@ export class ViewManagerModel<T = PlainObject>
 
     isFavorite(token: string) {
         return this.favorites.includes(token);
-    }
-
-    //------------------
-    // Persistence
-    //------------------
-    getPersistableState(): PersistableState<ViewManagerModelPersistState<T>> {
-        const state: ViewManagerModelPersistState<T> = {token: this.view.token};
-        if (this.persistWith.persistPendingValue) {
-            state.pendingValue = this.pendingValue;
-        }
-        if (this.enableFavorites) {
-            state.favorites = this.favorites;
-        }
-        return new PersistableState(state);
-    }
-
-    @action
-    async setPersistableState(state: PersistableState<ViewManagerModelPersistState<T>>) {
-        const {views} = this,
-            {value} = state,
-            token = value.token,
-            pendingValue = this.persistWith.persistPendingValue ? value.pendingValue : null,
-            favorites = this.enableFavorites ? value.favorites : null;
-
-        if (favorites) {
-            this.favorites = favorites.filter(tkn => views.some(v => v.token === tkn));
-        }
-
-        // Requesting default or a view still available -- load it with pending value.
-        if (!token) return this.loadViewAsync(null, pendingValue);
-        const viewInfo = find(this.views, {token});
-        if (viewInfo) {
-            try {
-                return await this.loadViewAsync(viewInfo, pendingValue);
-            } catch (e) {
-                this.logError('Failure loading persisted value', e);
-            }
-        }
-
-        // ...otherwise, make best effort to preserve pending value on default
-        this.logWarn('Persisted view not found, it may have been deleted.');
-        if (pendingValue && this.enableDefault) {
-            this.loadViewAsync(null, pendingValue);
-        }
     }
 
     //-----------------
@@ -567,15 +542,77 @@ export class ViewManagerModel<T = PlainObject>
             }
         });
     }
-}
 
-export interface ViewManagerModelPersistState<T> {
-    token: string;
-    pendingValue?: PendingValue<T>;
-    favorites?: string[];
+    //------------------
+    // Persistence
+    //------------------
+    private initPersist(options: ViewManagerPersistOptions) {
+        const {persistView, persistFavorites, persistPendingValue, path, ...rootPersistWith} =
+            options;
+
+        if (persistFavorites) {
+            const opts = isObject(persistFavorites) ? persistFavorites : rootPersistWith;
+            PersistenceProvider.create({
+                persistOptions: {path: `${path}.favorites`, ...opts},
+                target: {
+                    getPersistableState: () => new PersistableState(this.favorites),
+                    setPersistableState: async ({value}) => {
+                        this.favorites = value.filter(tkn => this.views.some(v => v.token === tkn));
+                    }
+                },
+                owner: this
+            });
+        }
+
+        // Do this *before* processing any persisted view.
+        // Stash away for one time use when loading a persisted view.
+        if (persistPendingValue) {
+            const opts = isObject(persistPendingValue) ? persistPendingValue : rootPersistWith;
+            PersistenceProvider.create({
+                persistOptions: {path: `${path}.pendingValue`, ...opts},
+                target: {
+                    getPersistableState: () => {
+                        return new PersistableState(this.initPendingValue ?? this.pendingValue);
+                    },
+                    setPersistableState: ({value}) => {
+                        if (isUndefined(this.initPendingValue)) this.initPendingValue = value;
+                    }
+                },
+                owner: this
+            });
+        }
+
+        if (persistView) {
+            const opts = isObject(persistView) ? persistView : rootPersistWith;
+            PersistenceProvider.create({
+                persistOptions: {path: `${path}.view`, ...opts},
+                target: {
+                    getPersistableState: () => new PersistableState(this.view.token),
+                    setPersistableState: async ({value: token}) => {
+                        // Requesting default or available view -- load it with any init pending val.
+                        const viewInfo = token ? find(this.views, {token}) : null;
+                        if (viewInfo || token == null) {
+                            try {
+                                let {initPendingValue} = this;
+                                if (initPendingValue?.token != viewInfo?.token) {
+                                    initPendingValue = null;
+                                }
+                                this.initPendingValue = null;
+                                return await this.loadViewAsync(viewInfo, initPendingValue);
+                            } catch (e) {
+                                this.logError('Failure loading persisted view', e);
+                            }
+                        }
+                    }
+                },
+                owner: this
+            });
+        }
+    }
 }
 
 interface PendingValue<T> {
+    token: string;
     baseUpdated: number;
     value: Partial<T>;
 }
