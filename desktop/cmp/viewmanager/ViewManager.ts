@@ -38,9 +38,9 @@ export interface ViewManagerProps extends HoistProps<ViewManagerModel> {
     showRevertButton?: ViewManagerStateButtonMode;
     /** Side the save and revert buttons should appear on (default 'right') */
     buttonSide?: 'left' | 'right';
-    /** True to render private views in sub-menu (Default false)*/
+    /** True to render private views in sub-menu (Default false) */
     showPrivateViewsInSubMenu?: boolean;
-    /** True to render global views in sub-menu (Default false)*/
+    /** True to render global views in sub-menu (Default false) */
     showGlobalViewsInSubMenu?: boolean;
 }
 

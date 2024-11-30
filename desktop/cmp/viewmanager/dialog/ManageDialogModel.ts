@@ -9,11 +9,10 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, lookup, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {lengthIs, required} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
-import {ViewInfo, ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {startCase} from 'lodash';
 
 /**
@@ -192,12 +191,7 @@ export class ManageDialogModel extends HoistModel {
             if (!confirmed) return;
         }
 
-        await XH.jsonBlobService.updateAsync(token, {
-            name,
-            description,
-            acl: isGlobal ? '*' : null
-        });
-
+        await parent.updateViewAsync(token, name, description, isGlobal);
         await parent.refreshAsync();
     }
 
@@ -231,8 +225,7 @@ export class ManageDialogModel extends HoistModel {
         if (!confirmed) return;
 
         for (const token of selectedIds) {
-            parent.removeFavorite(token);
-            await XH.jsonBlobService.archiveAsync(token);
+            await parent.deleteViewAsync(token);
         }
 
         await parent.refreshAsync();
@@ -306,11 +299,7 @@ export class ManageDialogModel extends HoistModel {
             fields: [
                 {
                     name: 'name',
-                    rules: [
-                        required,
-                        lengthIs({max: ViewInfo.NAME_MAX_LENGTH}),
-                        ({value}) => this.parent.validateViewNameAsync(value)
-                    ]
+                    rules: [({value}) => this.parent.validateViewNameAsync(value, this.selectedId)]
                 },
                 {name: 'description'},
                 {name: 'isGlobal', displayName: 'Global'},

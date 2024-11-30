@@ -6,9 +6,7 @@
  */
 
 import {FormModel} from '@xh/hoist/cmp/form';
-import {ViewInfo} from '@xh/hoist/cmp/viewmanager/ViewInfo';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {lengthIs, required} from '@xh/hoist/data';
 import {makeObservable, action, observable} from '@xh/hoist/mobx';
 import {View} from './View';
 import {ViewManagerModel} from './ViewManagerModel';
@@ -68,11 +66,7 @@ export class SaveAsDialogModel extends HoistModel {
             fields: [
                 {
                     name: 'name',
-                    rules: [
-                        required,
-                        lengthIs({max: ViewInfo.NAME_MAX_LENGTH}),
-                        ({value}) => this.parent.validateViewNameAsync(value)
-                    ]
+                    rules: [({value}) => this.parent.validateViewNameAsync(value)]
                 },
                 {name: 'description'}
             ]
@@ -80,21 +74,16 @@ export class SaveAsDialogModel extends HoistModel {
     }
 
     private async doSaveAsAsync() {
-        const {formModel, parent, type} = this,
+        const {formModel, parent} = this,
             {name, description} = formModel.getData(),
             isValid = await formModel.validateAsync();
 
         if (!isValid) return;
 
         try {
-            const blob = await XH.jsonBlobService.createAsync({
-                type,
-                name,
-                description,
-                value: parent.getValue()
-            });
+            const ret = await this.parent.createViewAsync(name, description, parent.getValue());
             this.close();
-            this.resolveOpen(View.fromBlob(blob, this.parent));
+            this.resolveOpen(ret);
         } catch (e) {
             XH.handleException(e);
         }

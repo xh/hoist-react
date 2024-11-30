@@ -407,12 +407,53 @@ export class ViewManagerModel<T = PlainObject>
         this.manageDialogOpen = false;
     }
 
-    async validateViewNameAsync(name: string): Promise<string> {
-        // TODO: Consider going to server.
-        if (this.views.some(view => view.name === name?.trim())) {
+    async validateViewNameAsync(name: string, token: string = null): Promise<string> {
+        const maxLength = 50;
+        name = name?.trim();
+        if (!name) return 'Name is required';
+        if (name.length > maxLength) {
+            return `Name cannot be longer than ${maxLength} characters`;
+        }
+        if (this.views.some(view => view.name === name && view.token != token)) {
             return `A ${this.typeDisplayName} with name '${name}' already exists`;
         }
+
         return null;
+    }
+
+    async deleteViewAsync(token: string) {
+        try {
+            await XH.jsonBlobService.archiveAsync(token);
+            this.removeFavorite(token);
+        } catch (e) {
+            throw XH.exception({message: `Unable to delete ${this.typeDisplayName}`, cause: e});
+        }
+    }
+
+    async updateViewAsync(token: string, name: string, description: string, isGlobal: boolean) {
+        try {
+            await XH.jsonBlobService.updateAsync(token, {
+                name: name.trim(),
+                description: description?.trim(),
+                acl: isGlobal ? '*' : null
+            });
+        } catch (e) {
+            throw XH.exception({message: `Unable to update ${this.typeDisplayName}`, cause: e});
+        }
+    }
+
+    async createViewAsync(name: string, description: string, value: PlainObject): Promise<View> {
+        try {
+            const blob = await XH.jsonBlobService.createAsync({
+                type: this.viewType,
+                name: name.trim(),
+                description: description?.trim(),
+                value
+            });
+            return View.fromBlob(blob, this);
+        } catch (e) {
+            throw XH.exception({message: `Unable to create ${this.typeDisplayName}`, cause: e});
+        }
     }
 
     //------------------
@@ -434,10 +475,7 @@ export class ViewManagerModel<T = PlainObject>
             const blob = await XH.jsonBlobService.getAsync(info.token);
             return View.fromBlob(blob, this);
         } catch (e) {
-            throw XH.exception({
-                message: `Unable to fetch ${this.typeDisplayName} '${info.name}'`,
-                cause: e
-            });
+            throw XH.exception({message: `Unable to fetch ${info.typedName}`, cause: e});
         }
     }
 

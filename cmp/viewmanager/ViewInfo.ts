@@ -6,8 +6,6 @@ import {JsonBlob} from '@xh/hoist/svc';
  * Metadata describing {@link View} managed by {@link ViewManagerModel}.
  */
 export class ViewInfo {
-    static NAME_MAX_LENGTH = 50;
-
     /** Unique Id */
     readonly token: string;
 
