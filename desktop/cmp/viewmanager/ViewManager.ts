@@ -80,10 +80,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                 className,
                 items: buttonSide == 'left' ? [revert, save, menu] : [menu, save, revert]
             }),
-            manageDialog({
-                omit: !model.manageDialogOpen,
-                onClose: () => model.closeManageDialog()
-            }),
+            manageDialog({omit: !model.manageDialogOpen}),
             saveAsDialog()
         );
     }

@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {fragment, li, p, ul} from '@xh/hoist/cmp/layout';
+import {fragment, strong, p, span} from '@xh/hoist/cmp/layout';
 import {
     ExceptionHandlerOptions,
     HoistModel,
@@ -35,6 +35,7 @@ import {
     lowerCase,
     without
 } from 'lodash';
+import {ReactNode} from 'react';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
@@ -382,38 +383,38 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.manageDialogOpen = false;
     }
 
-    async validateViewNameAsync(name: string, token: string = null): Promise<string> {
+    async validateViewNameAsync(name: string, existing: ViewInfo = null): Promise<string> {
         const maxLength = 50;
         name = name?.trim();
         if (!name) return 'Name is required';
         if (name.length > maxLength) {
             return `Name cannot be longer than ${maxLength} characters`;
         }
-        if (this.views.some(view => view.name === name && view.token != token)) {
+        if (this.views.some(view => view.name === name && view.token != existing?.token)) {
             return `A ${this.typeDisplayName} with name '${name}' already exists`;
         }
 
         return null;
     }
 
-    async deleteViewAsync(token: string) {
+    async deleteViewAsync(view: ViewInfo) {
         try {
-            await XH.jsonBlobService.archiveAsync(token);
-            this.removeFavorite(token);
+            await XH.jsonBlobService.archiveAsync(view.token);
+            this.removeFavorite(view.token);
         } catch (e) {
-            throw XH.exception({message: `Unable to delete ${this.typeDisplayName}`, cause: e});
+            throw XH.exception({message: `Unable to delete ${view.typedName}`, cause: e});
         }
     }
 
-    async updateViewAsync(token: string, name: string, description: string, isGlobal: boolean) {
+    async updateViewAsync(view: ViewInfo, name: string, description: string, isGlobal: boolean) {
         try {
-            await XH.jsonBlobService.updateAsync(token, {
+            await XH.jsonBlobService.updateAsync(view.token, {
                 name: name.trim(),
                 description: description?.trim(),
                 acl: isGlobal ? '*' : null
             });
         } catch (e) {
-            throw XH.exception({message: `Unable to update ${this.typeDisplayName}`, cause: e});
+            throw XH.exception({message: `Unable to update ${view.typedName}`, cause: e});
         }
     }
 
@@ -492,7 +493,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     private async confirmDiscardChangesAsync() {
-        // TODO - offer save option here as well
         return XH.confirm({
             message: `You have unsaved changes. Discard them and continue to switch ${pluralize(this.typeDisplayName)}?`,
             confirmProps: {
@@ -515,22 +515,26 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
         const latestInfo = latest.info,
             {typeDisplayName, globalDisplayName} = this,
-            messages = [];
+            msgs: ReactNode[] = [`Save ${info.typedName}?`];
         if (isGlobal) {
-            messages.push(
-                `This is a ${globalDisplayName} ${typeDisplayName}. ` +
-                    `Changes will be visible to ALL users.`
+            msgs.push(
+                span(
+                    `This is a ${globalDisplayName} ${typeDisplayName}.`,
+                    strong('Changes will be visible to ALL users.')
+                )
             );
         }
         if (isStale) {
-            messages.push(
-                `This ${typeDisplayName} was updated by ${latestInfo.lastUpdatedBy} on ` +
-                    `${fmtDateTime(latestInfo.lastUpdated)}.  Your change may override those changes.`
+            msgs.push(
+                span(
+                    `This ${typeDisplayName} was updated by ${latestInfo.lastUpdatedBy} on ${fmtDateTime(latestInfo.lastUpdated)}.`,
+                    strong('Your change may override those changes.')
+                )
             );
         }
 
         return XH.confirm({
-            message: fragment(p(`Save ${info.typedName}?`), ul(messages.map(it => li(it)))),
+            message: fragment(msgs.map(m => p(m))),
             confirmProps: {
                 text: 'Yes, save changes',
                 intent: 'primary',

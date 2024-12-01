@@ -5,83 +5,81 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {FormModel} from '@xh/hoist/cmp/form';
-import {GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
-import {fragment, p} from '@xh/hoist/cmp/layout';
-import {HoistModel, lookup, managed, TaskObserver, XH} from '@xh/hoist/core';
+import {grid, GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
+import {fragment, p, strong} from '@xh/hoist/cmp/layout';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {HoistModel, LoadSpec, lookup, managed, TaskObserver, XH} from '@xh/hoist/core';
+import {FilterTestFn} from '@xh/hoist/data';
+import {computed} from 'mobx';
+import {ReactNode} from 'react';
+import {EditFormModel} from './EditFormModel';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable} from '@xh/hoist/mobx';
-import {pluralize, throwIf} from '@xh/hoist/utils/js';
-import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
-import {startCase} from 'lodash';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {pluralize} from '@xh/hoist/utils/js';
+import {ViewInfo, ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import {find, some, startCase} from 'lodash';
 
 /**
- * Backing model for default Management Dialog for Desktop ViewManager
+ * Backing model for ManageDialog
  */
 export class ManageDialogModel extends HoistModel {
     @lookup(() => ViewManagerModel)
-    private parent: ViewManagerModel;
+    viewManagerModel: ViewManagerModel;
 
-    @managed gridModel: GridModel;
-    @managed formModel: FormModel;
+    @managed privateGridModel: GridModel;
+    @managed globalGridModel: GridModel;
+    @managed editFormModel: EditFormModel;
+    @managed tabContainerModel: TabContainerModel;
 
-    readonly saveTask = TaskObserver.trackLast();
-    readonly deleteTask = TaskObserver.trackLast();
+    @bindable filter: FilterTestFn;
+
+    readonly updateTask = TaskObserver.trackLast();
 
     get loadTask(): TaskObserver {
-        return this.parent.loadModel;
+        return this.viewManagerModel.loadModel;
     }
 
-    get selectedId(): string {
-        return this.gridModel.selectedId as string;
+    get gridModel(): GridModel {
+        return this.tabContainerModel.activeTabId == 'global'
+            ? this.globalGridModel
+            : this.privateGridModel;
     }
 
-    get selectedIds(): string[] {
-        return this.gridModel.selectedIds as string[];
+    @computed
+    get selectedView(): ViewInfo {
+        return this.gridModel.selectedRecord?.data.info;
     }
 
-    get hasMultiSelection(): boolean {
-        return this.selectedIds.length > 1;
-    }
-
-    get selIsGlobal(): boolean {
-        return this.gridModel.selectedRecords.some(rec => rec.data.isGlobal);
+    @computed
+    get selectedViews(): ViewInfo[] {
+        return this.gridModel.selectedRecords.map(it => it.data.info) as ViewInfo[];
     }
 
     get canDelete(): boolean {
-        const {parent, selIsGlobal, manageGlobal, selectedIds} = this,
-            {views, enableDefault} = parent;
+        const {viewManagerModel, manageGlobal, selectedViews} = this,
+            {views, enableDefault} = viewManagerModel;
 
-        // Can't delete  global views without role.
-        if (selIsGlobal && !manageGlobal) return false;
+        // Can't delete global views without role.
+        if (!manageGlobal && selectedViews.some(v => v.isGlobal)) return false;
 
         // Can't delete all the views, unless default mode is enabled.
-        return enableDefault || views.length - selectedIds.length > 0;
-    }
-
-    get canEdit(): boolean {
-        return this.manageGlobal || !this.selIsGlobal;
+        return enableDefault || views.length - selectedViews.length > 0;
     }
 
     get manageGlobal(): boolean {
-        return this.parent.manageGlobal;
-    }
-
-    get showSaveButton(): boolean {
-        const {formModel, parent} = this;
-        return formModel.isDirty && !formModel.readonly && !parent.loadModel.isPending;
+        return this.viewManagerModel.manageGlobal;
     }
 
     get typeDisplayName(): string {
-        return this.parent.typeDisplayName;
+        return this.viewManagerModel.typeDisplayName;
     }
 
     get globalDisplayName(): string {
-        return this.parent.globalDisplayName;
+        return this.viewManagerModel.globalDisplayName;
     }
 
     get enableFavorites(): boolean {
-        return this.parent.enableFavorites;
+        return this.viewManagerModel.enableFavorites;
     }
 
     constructor() {
@@ -89,162 +87,135 @@ export class ManageDialogModel extends HoistModel {
         makeObservable(this);
     }
 
+    close() {
+        this.viewManagerModel.closeManageDialog();
+    }
+
     override onLinked() {
         super.onLinked();
 
-        this.gridModel = this.createGridModel();
-        this.formModel = this.createFormModel();
+        this.privateGridModel = this.createGridModel('personal');
+        this.globalGridModel = this.createGridModel(this.globalDisplayName);
+        this.tabContainerModel = this.createTabContainerModel();
+        this.editFormModel = new EditFormModel(this);
 
+        const {privateGridModel, globalGridModel, editFormModel} = this;
         this.addReaction(
             {
-                track: () => this.parent.views,
-                run: () => this.refreshAsync()
+                track: () => this.selectedView,
+                run: r => editFormModel.setView(r)
             },
             {
-                track: () => this.gridModel.selectedRecord,
-                run: record => {
-                    if (record) {
-                        this.formModel.readonly = !this.canEdit;
-                        this.formModel.init(record.data);
-                    }
+                track: () => this.filter,
+                run: f => {
+                    privateGridModel.store.setFilter(f);
+                    globalGridModel.store.setFilter(f);
+                },
+                fireImmediately: true
+            },
+            {
+                track: () => privateGridModel.selectedRecords,
+                run: recs => {
+                    if (recs.length) globalGridModel.clearSelection();
+                }
+            },
+            {
+                track: () => globalGridModel.selectedRecords,
+                run: recs => {
+                    if (recs.length) privateGridModel.clearSelection();
                 }
             }
         );
     }
 
-    override async doLoadAsync() {
-        const {parent, typeDisplayName, globalDisplayName} = this,
-            pluralType = startCase(pluralize(typeDisplayName)),
-            global = startCase(globalDisplayName),
-            data = parent.views.map(v => ({
-                ...v,
-                group: v.isGlobal ? `${global} ${pluralType}` : `My ${pluralType}`
-            }));
-        this.gridModel.loadData(data);
-        await this.ensureGridHasSelection();
+    override async doLoadAsync(loadSpec: LoadSpec) {
+        const {viewManagerModel} = this;
+        this.globalGridModel.loadData(viewManagerModel.globalViews);
+        this.privateGridModel.loadData(viewManagerModel.privateViews);
+        if (!loadSpec.isRefresh) {
+            await this.selectViewAsync(viewManagerModel.view.info);
+        }
     }
 
-    async saveAsync() {
-        return this.doSaveAsync().linkTo(this.saveTask).catchDefault();
+    async deleteAsync(views: ViewInfo[]) {
+        return this.doDeleteAsync(views).linkTo(this.updateTask).catchDefault();
     }
 
-    async deleteAsync() {
-        return this.doDeleteAsync().linkTo(this.deleteTask).catchDefault();
+    async updateAsync(view: ViewInfo, name: string, description: string, isGlobal: boolean) {
+        return this.doUpdateAsync(view, name, description, isGlobal)
+            .linkTo(this.updateTask)
+            .catchDefault();
     }
 
     //------------------------
     // Implementation
     //------------------------
-    private async doSaveAsync() {
-        const {
-                formModel,
-                parent,
-                manageGlobal,
-                selectedId,
-                gridModel,
-                typeDisplayName,
-                globalDisplayName
-            } = this,
-            {isDirty} = formModel,
-            {name, description, isGlobal} = formModel.getData(),
-            isValid = await formModel.validateAsync(),
-            {token, owner} = gridModel.selectedRecord.data,
-            isOwnView = owner === XH.getUsername();
+    private async doUpdateAsync(
+        view: ViewInfo,
+        name: string,
+        description: string,
+        isGlobal: boolean
+    ) {
+        const {viewManagerModel} = this;
 
-        if (!isValid || !selectedId || !isDirty) return;
+        await viewManagerModel.updateViewAsync(view, name, description, isGlobal);
+        await viewManagerModel.refreshAsync();
+        await this.refreshAsync();
 
-        // Additional sanity-check before POSTing an update - non-admins should never be modifying global views.
-        throwIf(
-            isGlobal && !manageGlobal,
-            `Cannot save changes to ${globalDisplayName} ${typeDisplayName} - missing required permission.`
-        );
-
-        if (formModel.getField('isGlobal').isDirty) {
-            const confirmMsgs = [];
-            if (isGlobal) {
-                confirmMsgs.push(
-                    `This ${typeDisplayName} will become visible to all other ${XH.appName} users.`
-                );
-            } else if (isOwnView) {
-                confirmMsgs.push(
-                    `The selected ${typeDisplayName} will revert to being private to you. It will no longer be available to other users.`
-                );
-            } else {
-                confirmMsgs.push(
-                    `The selected ${typeDisplayName} will revert to being private to its owner (${owner}).`,
-                    `Note that you will no longer have access to this view, meaning you will not be able to undo this change.`
-                );
-            }
-
-            confirmMsgs.push('Are you sure you want to proceed?');
-
-            const confirmed = await XH.confirm({
-                message: fragment(confirmMsgs.map(msg => p(msg))),
-                confirmProps: {
-                    text: 'Yes, update visibility',
-                    outlined: true,
-                    autoFocus: false,
-                    intent: 'primary'
-                }
-            });
-
-            if (!confirmed) return;
-        }
-
-        await parent.updateViewAsync(token, name, description, isGlobal);
-        await parent.refreshAsync();
+        // reselect the updated copy of this view -- it may have moved.
+        await this.selectViewAsync(find(viewManagerModel.views, {token: view.token}));
     }
 
-    private async doDeleteAsync() {
-        const {parent, gridModel, typeDisplayName, selectedIds, hasMultiSelection} = this,
-            count = selectedIds.length;
-
-        // TODO - should be validating this on server in case another user deleted remaining views
-        if (parent.views.length === count && !parent.enableDefault) {
-            XH.alert({
-                title: 'Cannot delete all views',
-                message: `You cannot delete all ${pluralize(typeDisplayName)}.`
-            });
-            return;
-        }
+    private async doDeleteAsync(views: ViewInfo[]) {
+        const {viewManagerModel, typeDisplayName} = this,
+            {enableDefault} = viewManagerModel,
+            count = views.length;
 
         if (!count) return;
 
-        const confirmStr = hasMultiSelection
-                ? pluralize(typeDisplayName, count, true)
-                : `"${gridModel.selectedRecord.data.name}"`,
-            confirmed = await XH.confirm({
-                message: `Are you sure you want to delete ${confirmStr}?`,
-                confirmProps: {
-                    text: `Yes, delete ${pluralize(typeDisplayName, count)}`,
-                    outlined: true,
-                    autoFocus: false,
-                    intent: 'danger'
-                }
+        if (viewManagerModel.views.length === count && !enableDefault) {
+            throw XH.exception({
+                message: `You cannot delete all ${pluralize(typeDisplayName)}.`,
+                isRoutine: true
             });
+        }
+
+        const confirmStr = count > 1 ? pluralize(typeDisplayName, count, true) : views[0].typedName;
+        const msgs: ReactNode[] = [`Are you sure you want to delete ${confirmStr}?`];
+        if (some(views, 'isGlobal')) {
+            count > 1
+                ? msgs.push(strong('These global views will no longer be available to ALL users.'))
+                : msgs.push(strong('This global view will no longer be available to ALL users.'));
+        }
+
+        const confirmed = await XH.confirm({
+            message: fragment(msgs.map(m => p(m))),
+            confirmProps: {
+                text: `Yes, delete ${pluralize(typeDisplayName, count)}`,
+                outlined: true,
+                autoFocus: false,
+                intent: 'danger'
+            }
+        });
         if (!confirmed) return;
 
-        for (const token of selectedIds) {
-            await parent.deleteViewAsync(token);
+        for (const view of views) {
+            await viewManagerModel.deleteViewAsync(view);
         }
 
-        await parent.refreshAsync();
+        await viewManagerModel.refreshAsync();
+        await this.refreshAsync();
     }
 
-    private async ensureGridHasSelection() {
-        const {gridModel, parent} = this,
-            {token} = parent.view;
-
-        if (!gridModel.hasSelection) {
-            await (token ? gridModel.selectAsync(token) : gridModel.preSelectFirstAsync());
-        }
+    async selectViewAsync(view: ViewInfo) {
+        this.tabContainerModel.activateTab(view.isGlobal ? 'global' : 'private');
+        await this.gridModel.selectAsync(view.token);
     }
 
-    private createGridModel(): GridModel {
+    private createGridModel(name: string): GridModel {
         return new GridModel({
-            emptyText: `No saved ${pluralize(this.typeDisplayName)} found...`,
+            emptyText: `No ${name} ${pluralize(this.typeDisplayName)} found...`,
             sortBy: 'name',
-            groupBy: 'group',
             hideHeaders: true,
             showGroupRowCounts: false,
             selModel: 'multiple',
@@ -252,61 +223,56 @@ export class ManageDialogModel extends HoistModel {
             sizingMode: 'standard',
             store: {
                 idSpec: 'token',
+                processRawData: v => ({name: v.name, isFavorite: v.isFavorite, info: v}),
                 fields: [
-                    {name: 'token', type: 'string'},
                     {name: 'name', type: 'string'},
-                    {name: 'description', type: 'string'},
-                    {name: 'isGlobal', type: 'bool'},
                     {name: 'isFavorite', type: 'bool'},
-                    {name: 'acl', type: 'json'},
-                    {name: 'meta', type: 'json'},
-                    {name: 'dateCreated', type: 'date'},
-                    {name: 'createdBy', type: 'string'},
-                    {name: 'owner', type: 'string'},
-                    {name: 'lastUpdatedBy', type: 'string'},
-                    {name: 'lastUpdated', type: 'date'}
+                    {name: 'info', type: 'auto'}
                 ]
             },
             autosizeOptions: {mode: GridAutosizeMode.DISABLED},
             columns: [
                 {field: 'name', flex: true},
                 {
-                    field: 'isFavorite',
+                    colId: 'isFavorite',
+                    field: 'info',
                     omit: !this.enableFavorites,
                     width: 40,
                     align: 'center',
                     headerName: Icon.favorite(),
                     highlightOnChange: true,
                     renderer: v => {
+                        const {isFavorite} = v;
                         return Icon.favorite({
-                            prefix: v ? 'fas' : 'fal',
-                            className: v ? 'xh-yellow' : 'xh-text-color-muted'
+                            prefix: isFavorite ? 'fas' : 'fal',
+                            className: isFavorite ? 'xh-yellow' : 'xh-text-color-muted'
                         });
                     }
-                },
-                {field: 'group', hidden: true}
+                }
             ],
-            onCellClicked: ({colDef, data: record}) => {
+            onCellClicked: ({colDef, data: record, api}) => {
                 if (colDef.colId === 'isFavorite') {
-                    this.parent.toggleFavorite(record.id);
+                    this.viewManagerModel.toggleFavorite(record.id);
+                    api.redrawRows();
                 }
             }
         });
     }
 
-    private createFormModel(): FormModel {
-        return new FormModel({
-            fields: [
+    private createTabContainerModel(): TabContainerModel {
+        const pluralType = startCase(pluralize(this.typeDisplayName));
+        return new TabContainerModel({
+            tabs: [
                 {
-                    name: 'name',
-                    rules: [({value}) => this.parent.validateViewNameAsync(value, this.selectedId)]
+                    id: 'private',
+                    title: `My ${pluralType}`,
+                    content: grid({model: this.privateGridModel})
                 },
-                {name: 'description'},
-                {name: 'isGlobal', displayName: 'Global'},
-                {name: 'owner', readonly: true},
-                {name: 'dateCreated', displayName: 'Created', readonly: true},
-                {name: 'lastUpdated', displayName: 'Updated', readonly: true},
-                {name: 'lastUpdatedBy', displayName: 'Updated By', readonly: true}
+                {
+                    id: 'global',
+                    title: `${startCase(this.globalDisplayName)} ${pluralType}`,
+                    content: grid({model: this.globalGridModel})
+                }
             ]
         });
     }

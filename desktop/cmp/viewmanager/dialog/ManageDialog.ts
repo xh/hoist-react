@@ -5,37 +5,31 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {form} from '@xh/hoist/cmp/form';
-import {grid} from '@xh/hoist/cmp/grid';
-import {div, filler, hbox, hframe, hspacer, placeholder, span, vframe} from '@xh/hoist/cmp/layout';
+import {tabContainer} from '@xh/hoist/cmp/tab';
+import {filler, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {creates, hoistCmp, HoistProps, XH} from '@xh/hoist/core';
+import {creates, hoistCmp} from '@xh/hoist/core';
+import {editForm} from './EditForm';
 import {ManageDialogModel} from './ManageDialogModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {formField} from '@xh/hoist/desktop/cmp/form';
-import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {fmtCompactDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
-import {capitalize, startCase} from 'lodash';
-
-export interface ManageDialogProps extends HoistProps<ManageDialogModel> {
-    onClose: () => void;
-}
+import {capitalize} from 'lodash';
 
 /**
- * Default Management Dialog for Desktop ViewManager
+ * Default management dialog for ViewManager
  */
-export const manageDialog = hoistCmp.factory<ManageDialogProps>({
+export const manageDialog = hoistCmp.factory({
     displayName: 'ManageDialog',
     className: 'xh-view-manager__manage-dialog',
     model: creates(ManageDialogModel),
 
-    render({model, className, onClose}) {
-        const {typeDisplayName, saveTask, deleteTask, loadTask} = model;
+    render({model, className}) {
+        const {typeDisplayName, updateTask, loadTask, selectedViews} = model;
+        const count = selectedViews.length;
         return dialog({
             title: `Manage ${capitalize(pluralize(typeDisplayName))}`,
             icon: Icon.gear(),
@@ -43,155 +37,64 @@ export const manageDialog = hoistCmp.factory<ManageDialogProps>({
             isOpen: true,
             style: {width: '800px', maxWidth: '90vm', minHeight: '430px'},
             canOutsideClickClose: false,
-            onClose,
+            onClose: () => model.close(),
             item: panel({
-                item: hframe(gridPanel(), formPanel({onClose})),
-                mask: [saveTask, deleteTask, loadTask]
+                item: hframe(
+                    viewPanel(),
+                    count == 0 ? placeholderPanel() : count > 1 ? multiSelectionPanel() : editForm()
+                ),
+                mask: [updateTask, loadTask]
             })
         });
     }
 });
 
-const gridPanel = hoistCmp.factory({
-    render() {
+const viewPanel = hoistCmp.factory<ManageDialogModel>({
+    render({model}) {
         return panel({
             modelConfig: {defaultSize: 350, side: 'left', collapsible: false},
-            item: grid(),
-            bbar: [storeFilterField()]
-        });
-    }
-});
-
-const formPanel = hoistCmp.factory<ManageDialogProps>({
-    render({model, onClose}) {
-        const {typeDisplayName, globalDisplayName, formModel} = model,
-            {values} = formModel,
-            {lastUpdated, lastUpdatedBy, owner} = values,
-            isOwnView = owner === XH.getUsername();
-
-        if (model.hasMultiSelection) {
-            return multiSelectionPanel({onClose});
-        }
-
-        if (!model.selectedId)
-            return panel({
-                item: placeholder(Icon.gears(), `Select a ${typeDisplayName}`),
-                bbar: bbar({onClose})
-            });
-
-        return panel({
-            item: form({
-                fieldDefaults: {
-                    commitOnChange: true
-                },
-                item: vframe({
-                    className: 'xh-view-manager__manage-dialog__form',
-                    items: [
-                        formField({
-                            field: 'name',
-                            item: textInput()
-                        }),
-                        formField({
-                            field: 'description',
-                            item: textArea({
-                                selectOnFocus: true,
-                                height: 70
-                            }),
-                            readonlyRenderer: v =>
-                                v
-                                    ? v
-                                    : span({
-                                          item: 'None provided',
-                                          className: 'xh-text-color-muted'
-                                      })
-                        }),
-                        formField({
-                            field: 'isGlobal',
-                            label: 'Visibility',
-                            item: select({
-                                options: [
-                                    {value: true, label: startCase(globalDisplayName)},
-                                    {
-                                        value: false,
-                                        label: `Private to ${isOwnView ? 'me' : values.owner}`
-                                    }
-                                ],
-                                enableFilter: false
-                            }),
-                            omit: !model.manageGlobal
-                        }),
-                        hbox({
-                            omit: !model.showSaveButton,
-                            style: {margin: '10px 20px'},
-                            items: [
-                                button({
-                                    text: 'Save Changes',
-                                    icon: Icon.check(),
-                                    intent: 'success',
-                                    minimal: false,
-                                    disabled: !formModel.isValid,
-                                    flex: 1,
-                                    onClick: () => model.saveAsync()
-                                }),
-                                hspacer(),
-                                button({
-                                    icon: Icon.reset(),
-                                    tooltip: 'Revert changes',
-                                    minimal: false,
-                                    onClick: () => formModel.reset()
-                                })
-                            ]
-                        }),
-                        filler(),
-                        div({
-                            className: 'xh-view-manager__manage-dialog__metadata',
-                            item: `Last Updated: ${fmtCompactDate(lastUpdated)} (${lastUpdatedBy === XH.getUsername() ? 'you' : lastUpdatedBy})`
-                        })
-                    ]
+            item: tabContainer(),
+            bbar: [
+                storeFilterField({
+                    autoApply: false,
+                    includeFields: ['name'],
+                    onFilterChange: f => (model.filter = f)
                 })
-            }),
-            bbar: bbar({onClose})
+            ]
         });
     }
 });
 
-const multiSelectionPanel = hoistCmp.factory<ManageDialogProps>({
-    render({model, onClose}) {
-        const {selectedIds} = model;
+const placeholderPanel = hoistCmp.factory<ManageDialogModel>({
+    render({model}) {
+        return panel({
+            item: placeholder(Icon.gears(), `Select a ${model.typeDisplayName}`),
+            bbar: bbar()
+        });
+    }
+});
+
+const multiSelectionPanel = hoistCmp.factory<ManageDialogModel>({
+    render({model}) {
+        const {selectedViews} = model;
         return panel({
             item: vframe({
                 alignItems: 'center',
                 justifyContent: 'center',
                 item: button({
-                    text: `Delete ${selectedIds.length} ${pluralize(model.typeDisplayName)}`,
+                    text: `Delete ${selectedViews.length} ${pluralize(model.typeDisplayName)}`,
                     icon: Icon.delete(),
                     intent: 'danger',
                     outlined: true,
                     disabled: !model.canDelete,
-                    onClick: () => model.deleteAsync()
+                    onClick: () => model.deleteAsync(selectedViews)
                 })
             }),
-            bbar: bbar({onClose})
+            bbar: bbar()
         });
     }
 });
 
-const bbar = hoistCmp.factory<ManageDialogProps>({
-    render({model, onClose}) {
-        return toolbar(
-            button({
-                text: 'Delete',
-                icon: Icon.delete(),
-                intent: 'danger',
-                disabled: !model.canDelete,
-                omit: model.hasMultiSelection,
-                onClick: () => model.deleteAsync()
-            }),
-            filler(),
-            button({
-                text: 'Close',
-                onClick: onClose
-            })
-        );
-    }
+const bbar = hoistCmp.factory<ManageDialogModel>(({model}) => {
+    return toolbar(filler(), button({text: 'Close', onClick: () => model.close()}));
 });
