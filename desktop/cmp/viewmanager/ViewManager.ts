@@ -133,5 +133,7 @@ const revertButton = hoistCmp.factory<ViewManagerModel>({
 });
 
 function hideStateButton(model: ViewManagerModel, mode: ViewManagerStateButtonMode): boolean {
-    return mode === 'never' || (mode === 'whenDirty' && !model.isValueDirty);
+    return (
+        mode === 'never' || (mode === 'whenDirty' && !model.isValueDirty) || model.isViewAutoSavable
+    );
 }

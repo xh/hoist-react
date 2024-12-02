@@ -8,6 +8,7 @@
 import {div, filler, fragment, hbox, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {ViewManagerModel, ViewInfo} from '@xh/hoist/cmp/viewmanager';
+import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {consumeEvent, pluralize} from '@xh/hoist/utils/js';
@@ -21,6 +22,9 @@ import {ViewManagerProps} from './ViewManager';
 export const viewMenu = hoistCmp.factory<ViewManagerProps>({
     render({model, showPrivateViewsInSubMenu, showGlobalViewsInSubMenu}) {
         const {
+            enableAutoSave,
+            autoSaveUnavailableReason,
+            autoSave,
             enableDefault,
             isViewSavable,
             view,
@@ -112,6 +116,19 @@ export const viewMenu = hoistCmp.factory<ViewManagerProps>({
                     text: `Revert`,
                     disabled: !isValueDirty,
                     onClick: () => model.resetAsync()
+                }),
+                menuDivider({omit: !enableAutoSave}),
+                menuItem({
+                    omit: !enableAutoSave,
+                    text: switchInput({
+                        label: 'Auto Save',
+                        value: !autoSaveUnavailableReason && autoSave,
+                        disabled: !!autoSaveUnavailableReason,
+                        onChange: v => (model.autoSave = v),
+                        inline: true
+                    }),
+                    title: autoSaveUnavailableReason,
+                    shouldDismissPopover: false
                 }),
                 menuDivider(),
                 menuItem({
