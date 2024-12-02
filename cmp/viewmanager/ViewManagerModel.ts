@@ -23,8 +23,9 @@ import type {ViewManagerProvider} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
 import {action, bindable, makeObservable, observable, runInAction, when} from '@xh/hoist/mobx';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
-import {find, isEqual, isNil, isObject, lowerCase, without} from 'lodash';
+import {find, findIndex, isEqual, isNil, isObject, lowerCase, without} from 'lodash';
 import {ReactNode} from 'react';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
 import {ViewInfo} from './ViewInfo';
@@ -283,6 +284,12 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
             this.handleException(e, {showAlert: false, logOnServer: true});
         }
+
+        this.addReaction({
+            track: () => [this.pendingValue, this.autoSave],
+            run: () => this.maybeAutoSaveAsync(),
+            debounce: 2 * SECONDS
+        });
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
@@ -331,25 +338,23 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 .updateAsync(info.token, {value: pendingValue.value})
                 .linkTo(this.saveTask);
 
-            this.setAsClean(View.fromBlob(update, this));
+            this.setAsView(View.fromBlob(update, this));
             this.noteSuccess(`Saved ${info.typedName}`);
         } catch (e) {
             this.handleException(e, {
                 message: `Failed to save ${info.typedName}.  If this persists consider \`Save As...\`.`
             });
-            return;
         }
-
-        this.refreshAsync();
+        await this.refreshAsync();
     }
 
     async saveAsAsync(): Promise<void> {
         const view = (await this.saveAsDialogModel.openAsync()) as View<T>;
         if (view) {
-            this.setAsClean(view);
+            this.setAsView(view);
             this.noteSuccess(`Saved ${view.info.typedName}`);
         }
-        this.refreshAsync();
+        await this.refreshAsync();
     }
 
     async resetAsync(): Promise<void> {
@@ -505,8 +510,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         const {pendingValue, isViewAutoSavable, view} = this;
         if (isViewAutoSavable && pendingValue) {
             try {
-                await XH.jsonBlobService.updateAsync(view.token, {value: pendingValue.value});
-                this.setAsClean(view);
+                const raw = await XH.jsonBlobService
+                    .updateAsync(view.token, {value: pendingValue.value})
+                    .linkTo(this.saveTask);
+                this.setAsView(View.fromBlob(raw, this));
             } catch (e) {
                 // TODO: How to alert but avoid for flaky or spam when user editing a deleted view
                 // Keep count and alert server and user once at count n?
@@ -520,9 +527,14 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     @action
-    private setAsClean(view: View<T>) {
+    private setAsView(view: View<T>, pendingValue: PendingValue<T> = null) {
         this.view = view;
-        this.pendingValue = null;
+        this.pendingValue = pendingValue;
+        const {views} = this;
+        if (!view.isDefault) {
+            const index = findIndex(views, {token: view.token});
+            if (index >= 0) views[index] = view.info;
+        }
     }
 
     private handleException(e, opts: ExceptionHandlerOptions = {}) {
