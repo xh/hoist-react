@@ -24,17 +24,7 @@ import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
 import {action, bindable, makeObservable, observable, runInAction, when} from '@xh/hoist/mobx';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
-import {
-    find,
-    first,
-    isEmpty,
-    isEqual,
-    isNil,
-    isObject,
-    isUndefined,
-    lowerCase,
-    without
-} from 'lodash';
+import {find, isEqual, isNil, isObject, lowerCase, without} from 'lodash';
 import {ReactNode} from 'react';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
 import {ViewInfo} from './ViewInfo';
@@ -55,6 +45,17 @@ export interface ViewManagerConfig {
 
     /** True (default) to allow user to mark views as favorites. Requires `persistWith`. */
     enableFavorites?: boolean;
+
+    /**
+     * Function to determine the initial view for a user, when no view has already been persisted.
+     * Will be passed a reference to the otherwise initialized copy of this object -
+     * implementations should typically choose from the objects loaded views.  Implementations
+     * where enableDefault is set false should typically return some view, if any views are
+     * available.  If no view is returned, the control will be forced to fall back on the default.
+     *
+     * Must be set when enableDefault is false.
+     */
+    initialViewSpec?: (me: ViewManagerModel) => ViewInfo;
 
     /**
      * True to allow the user to publish or edit the global views. Apps are expected to
@@ -136,9 +137,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly enableDefault: boolean;
     readonly enableFavorites: boolean;
     readonly manageGlobal: boolean;
+    readonly initialViewSpec: (m: ViewManagerModel) => ViewInfo;
 
     /** Current view. Will not include uncommitted changes */
-    @observable.ref view: View<T> = View.createDefault();
+    @observable.ref view: View<T> = null;
     /** Loaded saved view library - both private and global */
     @observable.ref views: ViewInfo[] = [];
     /** List of tokens for the user's favorite views. */
@@ -168,12 +170,12 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     @observable.ref
     private pendingValue: PendingValue<T> = null;
 
-    private initPendingValue: PendingValue<T> = undefined;
-
     /**
-     * @internal array of {@link ViewManagerProvider} instances bound to this model. Providers will
+     * Array of {@link ViewManagerProvider} instances bound to this model. Providers will
      * push themselves onto this array when constructed with a reference to this model. Used to
      * proactively push state to the target components when the model's selected `value` changes.
+     *
+     * @internal
      */
     providers: ViewManagerProvider<any>[] = [];
 
@@ -231,12 +233,17 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         manageGlobal = false,
         enableAutoSave = true,
         enableDefault = true,
-        enableFavorites = true
+        enableFavorites = true,
+        initialViewSpec = null
     }: ViewManagerConfig) {
         super();
         makeObservable(this);
 
-        throwIf(!viewType, 'Missing required viewType in ViewManagerModel config.');
+        throwIf(
+            !enableDefault && !initialViewSpec,
+            "ViewManagerModel requires 'initialViewSpec' if `enableDefault` is false."
+        );
+
         this.viewType = viewType;
         this.typeDisplayName = lowerCase(typeDisplayName ?? genDisplayName(viewType));
         this.globalDisplayName = globalDisplayName;
@@ -246,6 +253,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.enableAutoSave = enableAutoSave;
         this.enableFavorites = enableFavorites;
         this.saveAsDialogModel = new SaveAsDialogModel(this);
+        this.initialViewSpec = initialViewSpec;
 
         this.selectTask = TaskObserver.trackLast({
             message: `Updating ${this.typeDisplayName}...`
@@ -258,7 +266,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private async initAsync() {
         try {
             const views = await this.fetchViewInfosAsync();
-
             runInAction(() => (this.views = views));
 
             if (this.persistWith) {
@@ -266,15 +273,14 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 await when(() => !this.selectTask.isPending);
             }
 
-            if (this.view.isDefault && !this.enableDefault && !isEmpty(views)) {
-                await this.loadViewAsync(first(views));
+            // If the initial view not initialized from persistence, assign it.
+            if (!this.view) {
+                await this.loadViewAsync(this.initialViewSpec?.(this), this.pendingValue);
             }
-
-            this.addReaction({
-                track: () => [this.pendingValue, this.autoSave],
-                run: () => this.maybeAutoSaveAsync()
-            });
         } catch (e) {
+            // Always ensure at least default view is installed.
+            if (!this.view) this.loadViewAsync(null, this.pendingValue);
+
             this.handleException(e, {showAlert: false, logOnServer: true});
         }
     }
@@ -289,8 +295,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             // 2) Update active view if needed.
             const {view} = this;
             if (!view.isDefault) {
+                // Reload view if can be fast-forwarded. Otherwise, leave as is for save/saveAs.
                 const latestInfo = find(views, {token: view.token});
-                // If no longer present, leave as is for saveAs recovery.
                 if (latestInfo && latestInfo.lastUpdated > view.lastUpdated) {
                     this.loadViewAsync(latestInfo, this.pendingValue);
                 }
@@ -464,7 +470,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         return this.fetchViewAsync(info)
             .thenAction(latest => {
                 this.view = latest;
-                this.pendingValue = pendingValue;
+                this.pendingValue = pendingValue?.token == info?.token ? pendingValue : null;
                 this.providers.forEach(it => it.pushStateToTarget());
             })
             .linkTo(this.selectTask);
@@ -635,11 +641,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             PersistenceProvider.create({
                 persistOptions: {path: `${path}.pendingValue`, ...opts},
                 target: {
-                    getPersistableState: () => {
-                        return new PersistableState(this.initPendingValue ?? this.pendingValue);
-                    },
+                    getPersistableState: () => new PersistableState(this.pendingValue),
                     setPersistableState: ({value}) => {
-                        if (isUndefined(this.initPendingValue)) this.initPendingValue = value;
+                        // Only accept this during initialization!
+                        if (!this.view) this.pendingValue = value;
                     }
                 },
                 owner: this
@@ -650,18 +655,14 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         PersistenceProvider.create({
             persistOptions: {path: `${path}.view`, ...rootPersistWith},
             target: {
-                getPersistableState: () => new PersistableState(this.view.token),
+                // View could be null, just before initialization.
+                getPersistableState: () => new PersistableState(this.view?.token),
                 setPersistableState: async ({value: token}) => {
-                    // Requesting default or available view -- load it with any init pending val.
+                    // Requesting available view -- load it with any init pending val.
                     const viewInfo = token ? find(this.views, {token}) : null;
-                    if (viewInfo || token == null) {
+                    if (viewInfo || !token) {
                         try {
-                            let {initPendingValue} = this;
-                            if (initPendingValue?.token != viewInfo?.token) {
-                                initPendingValue = null;
-                            }
-                            this.initPendingValue = null;
-                            return await this.loadViewAsync(viewInfo, initPendingValue);
+                            await this.loadViewAsync(viewInfo, this.pendingValue);
                         } catch (e) {
                             this.logError('Failure loading persisted view', e);
                         }
