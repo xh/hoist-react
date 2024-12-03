@@ -23,9 +23,9 @@ import type {ViewManagerProvider} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
 import {action, bindable, makeObservable, observable, runInAction, when} from '@xh/hoist/mobx';
-import {SECONDS} from '@xh/hoist/utils/datetime';
+import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
-import {find, findIndex, isEqual, isNil, isObject, lowerCase, without} from 'lodash';
+import {find, isEqual, isNil, isObject, lowerCase, without} from 'lodash';
 import {ReactNode} from 'react';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
 import {ViewInfo} from './ViewInfo';
@@ -49,14 +49,22 @@ export interface ViewManagerConfig {
 
     /**
      * Function to determine the initial view for a user, when no view has already been persisted.
-     * Will be passed a reference to the otherwise initialized copy of this object -
-     * implementations should typically choose from the objects loaded views.  Implementations
-     * where enableDefault is set false should typically return some view, if any views are
+     * Will be passed a list of views available to the current user.  Implementations where
+     * enableDefault is set false should typically return some view, if any views are
      * available.  If no view is returned, the control will be forced to fall back on the default.
      *
      * Must be set when enableDefault is false.
      */
-    initialViewSpec?: (me: ViewManagerModel) => ViewInfo;
+    initialViewSpec?: (views: ViewInfo[]) => ViewInfo;
+
+    /**
+     * Delay after state has been set on associated components before they will be observed for
+     * any further state changes.  Larger values may be useful when providing state to complex
+     * components such as dashboards or grids that may create dirty state immediately after load.
+     *
+     * Specified in milliseconds.  Default is 250.
+     */
+    settleTime?: number;
 
     /**
      * True to allow the user to publish or edit the global views. Apps are expected to
@@ -138,7 +146,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly enableDefault: boolean;
     readonly enableFavorites: boolean;
     readonly manageGlobal: boolean;
-    readonly initialViewSpec: (m: ViewManagerModel) => ViewInfo;
+    readonly settleTime: number;
+    readonly initialViewSpec: (views: ViewInfo[]) => ViewInfo;
 
     /** Current view. Will not include uncommitted changes */
     @observable.ref view: View<T> = null;
@@ -168,8 +177,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     @managed readonly saveAsDialogModel: SaveAsDialogModel;
 
     // Unsaved changes on the current view.
-    @observable.ref
-    private pendingValue: PendingValue<T> = null;
+    @observable.ref private pendingValue: PendingValue<T> = null;
+
+    // Last time changes were pushed to linked persistence providers
+    private lastPushed: number = null;
 
     /**
      * Array of {@link ViewManagerProvider} instances bound to this model. Providers will
@@ -234,6 +245,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         manageGlobal = false,
         enableAutoSave = true,
         enableDefault = true,
+        settleTime = 250,
         enableFavorites = true,
         initialViewSpec = null
     }: ViewManagerConfig) {
@@ -253,6 +265,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.enableDefault = enableDefault;
         this.enableAutoSave = enableAutoSave;
         this.enableFavorites = enableFavorites;
+        this.settleTime = settleTime;
         this.saveAsDialogModel = new SaveAsDialogModel(this);
         this.initialViewSpec = initialViewSpec;
 
@@ -276,7 +289,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
             // If the initial view not initialized from persistence, assign it.
             if (!this.view) {
-                await this.loadViewAsync(this.initialViewSpec?.(this), this.pendingValue);
+                await this.loadViewAsync(this.initialViewSpec?.(views), this.pendingValue);
             }
         } catch (e) {
             // Always ensure at least default view is installed.
@@ -288,7 +301,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.addReaction({
             track: () => [this.pendingValue, this.autoSave],
             run: () => this.maybeAutoSaveAsync(),
-            debounce: 2 * SECONDS
+            debounce: 5 * SECONDS
         });
     }
 
@@ -345,7 +358,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 message: `Failed to save ${info.typedName}.  If this persists consider \`Save As...\`.`
             });
         }
-        await this.refreshAsync();
+        this.refreshAsync();
     }
 
     async saveAsAsync(): Promise<void> {
@@ -354,7 +367,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             this.setAsView(view);
             this.noteSuccess(`Saved ${view.info.typedName}`);
         }
-        await this.refreshAsync();
+        this.refreshAsync();
     }
 
     async resetAsync(): Promise<void> {
@@ -370,9 +383,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     @action
     setValue(value: Partial<T>) {
-        const {view, pendingValue} = this;
-        value = this.cleanState(value);
+        const {view, pendingValue, lastPushed, settleTime} = this;
 
+        if (!pendingValue && settleTime && !olderThan(lastPushed, settleTime)) {
+            return;
+        }
+
+        value = this.cleanState(value);
         if (!isEqual(value, view.value)) {
             this.pendingValue = {
                 token: pendingValue ? pendingValue.token : view.token,
@@ -429,7 +446,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         if (this.views.some(view => view.name === name && view.token != existing?.token)) {
             return `A ${this.typeDisplayName} with name '${name}' already exists`;
         }
-
         return null;
     }
 
@@ -474,9 +490,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private loadViewAsync(info: ViewInfo, pendingValue: PendingValue<T> = null): Promise<void> {
         return this.fetchViewAsync(info)
             .thenAction(latest => {
-                this.view = latest;
-                this.pendingValue = pendingValue?.token == info?.token ? pendingValue : null;
+                this.setAsView(latest, pendingValue?.token == info?.token ? pendingValue : null);
                 this.providers.forEach(it => it.pushStateToTarget());
+                this.lastPushed = Date.now();
             })
             .linkTo(this.selectTask);
     }
@@ -530,10 +546,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private setAsView(view: View<T>, pendingValue: PendingValue<T> = null) {
         this.view = view;
         this.pendingValue = pendingValue;
-        const {views} = this;
+        // Ensure we update meta-data as well.
         if (!view.isDefault) {
-            const index = findIndex(views, {token: view.token});
-            if (index >= 0) views[index] = view.info;
+            this.views = this.views.map(v => (v.token === view.token ? view.info : v));
         }
     }
 
@@ -626,7 +641,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 persistOptions: {path: `${path}.favorites`, ...opts},
                 target: {
                     getPersistableState: () => new PersistableState(this.favorites),
-                    setPersistableState: async ({value}) => {
+                    setPersistableState: ({value}) => {
                         this.favorites = value.filter(tkn => this.views.some(v => v.token === tkn));
                     }
                 },
