@@ -6,7 +6,7 @@
  */
 
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import {filler, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
+import {filler, hframe, placeholder} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {editForm} from './EditForm';
@@ -69,7 +69,7 @@ const placeholderPanel = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
         return panel({
             item: placeholder(Icon.gears(), `Select a ${model.typeDisplayName}`),
-            bbar: bbar()
+            bbar: toolbar(filler(), button({text: 'Close', onClick: () => model.close()}))
         });
     }
 });
@@ -78,23 +78,21 @@ const multiSelectionPanel = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
         const {selectedViews} = model;
         return panel({
-            item: vframe({
-                alignItems: 'center',
-                justifyContent: 'center',
-                item: button({
-                    text: `Delete ${selectedViews.length} ${pluralize(model.typeDisplayName)}`,
+            item: placeholder(
+                Icon.gears(),
+                `${selectedViews.length} selected ${pluralize(model.typeDisplayName)}`
+            ),
+            bbar: toolbar(
+                button({
+                    text: 'Delete',
                     icon: Icon.delete(),
                     intent: 'danger',
-                    outlined: true,
                     disabled: !model.canDelete,
                     onClick: () => model.deleteAsync(selectedViews)
-                })
-            }),
-            bbar: bbar()
+                }),
+                filler(),
+                button({text: 'Close', onClick: () => model.close()})
+            )
         });
     }
-});
-
-const bbar = hoistCmp.factory<ManageDialogModel>(({model}) => {
-    return toolbar(filler(), button({text: 'Close', onClick: () => model.close()}));
 });

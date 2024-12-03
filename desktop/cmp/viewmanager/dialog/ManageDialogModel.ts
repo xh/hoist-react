@@ -129,11 +129,11 @@ export class ManageDialogModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {viewManagerModel} = this;
-        this.globalGridModel.loadData(viewManagerModel.globalViews);
-        this.privateGridModel.loadData(viewManagerModel.privateViews);
-        if (!loadSpec.isRefresh) {
-            await this.selectViewAsync(viewManagerModel.view.info);
+        const {view, globalViews, privateViews} = this.viewManagerModel;
+        this.globalGridModel.loadData(globalViews);
+        this.privateGridModel.loadData(privateViews);
+        if (!loadSpec.isRefresh && !view.isDefault) {
+            await this.selectViewAsync(view.info);
         }
     }
 
