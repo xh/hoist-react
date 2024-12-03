@@ -328,7 +328,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     async selectViewAsync(info: ViewInfo): Promise<void> {
-        if (this.isValueDirty && !(await this.confirmDiscardChangesAsync())) return;
+        if (this.isValueDirty) {
+            if (this.isViewAutoSavable) await this.maybeAutoSaveAsync();
+            if (this.isValueDirty && !(await this.confirmDiscardChangesAsync())) return;
+        }
 
         await this.loadViewAsync(info).catch(e => this.handleException(e));
     }
@@ -384,7 +387,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     @action
     setValue(value: Partial<T>) {
         const {view, pendingValue, lastPushed, settleTime} = this;
-
         if (!pendingValue && settleTime && !olderThan(lastPushed, settleTime)) {
             return;
         }
