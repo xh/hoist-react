@@ -4,9 +4,11 @@
 
 ### 🎁 New Features
 
-* Improvements to ViewManager API and functionality.
-  * More customization options.
+* Major Improvements to ViewManager component
+  * Support for persisting pending value.
   * Handle delete and update collisions more gracefully.
+  * Support for `settleTime`,
+  * Improved management UI Dialog.
 * New `SessionStorageService` and associated persistence provider provides support for saving
   tab local data across reloads.
 
