@@ -22,6 +22,7 @@ import {
     CustomProvider,
     DashViewProvider,
     LocalStorageProvider,
+    SessionStorageProvider,
     PersistOptions,
     PrefProvider,
     ViewManagerProvider
@@ -91,6 +92,7 @@ export abstract class PersistenceProvider<S> {
             if (!type) {
                 if (rest.prefKey) type = 'pref';
                 if (rest.localStorageKey) type = 'localStorage';
+                if (rest.sessionStorageKey) type = 'sessionStorage';
                 if (rest.dashViewModel) type = 'dashView';
                 if (rest.viewManagerModel) type = 'viewManager';
                 if (rest.getData || rest.setData) type = 'custom';
@@ -102,6 +104,9 @@ export abstract class PersistenceProvider<S> {
                     break;
                 case 'localStorage':
                     ret = new LocalStorageProvider(cfg);
+                    break;
+                case 'sessionStorage':
+                    ret = new SessionStorageProvider(cfg);
                     break;
                 case `dashView`:
                     ret = new DashViewProvider(cfg);

@@ -7,7 +7,7 @@
 
 import {DebounceSpec} from '../';
 import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash'; // Import type only
-import type {ViewManagerModel} from '@xh/hoist/core/persist/viewmanager'; // Import type only
+import type {ViewManagerModel} from '@xh/hoist/cmp/viewmanager'; // Import type only
 
 export interface PersistOptions {
     /** Dot delimited path to store state. */
@@ -27,6 +27,9 @@ export interface PersistOptions {
 
     /** Browser local storage key used to store state. */
     localStorageKey?: string;
+
+    /** Session (tab-specific) storage key used to store state. */
+    sessionStorageKey?: string;
 
     /** DashViewModel used to read / write view state. */
     dashViewModel?: DashViewModel;

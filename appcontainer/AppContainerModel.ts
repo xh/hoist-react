@@ -36,6 +36,7 @@ import {
     JsonBlobService,
     LocalStorageService,
     PrefService,
+    SessionStorageService,
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
@@ -217,7 +218,7 @@ export class AppContainerModel extends HoistModel {
             }
 
             // Complete initialization process
-            await installServicesAsync([ConfigService, LocalStorageService]);
+            await installServicesAsync([ConfigService, LocalStorageService, SessionStorageService]);
             await installServicesAsync(TrackService);
             await installServicesAsync([EnvironmentService, PrefService, JsonBlobService]);
 

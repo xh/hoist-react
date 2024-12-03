@@ -2,9 +2,15 @@
 
 ## v71.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
 
-### ⚙️ Technical
-* Misc. Improvements to ViewManager
+* Major Improvements to ViewManager component
+  * Support for persisting pending value.
+  * Handle delete and update collisions more gracefully.
+  * Support for `settleTime`,
+  * Improved management UI Dialog.
+* New `SessionStorageService` and associated persistence provider provides support for saving
+  tab local data across reloads.
 
 
 ## v70.0.0 - 2024-11-15
