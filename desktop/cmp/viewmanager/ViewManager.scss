@@ -1,15 +1,6 @@
 .xh-view-manager {
   align-items: center;
 
-  /**
-  When combined with .fa-spin, override @media (prefers-reduced-motion: reduce) to allow animation
-  */
-  &__allow-spin {
-    animation-delay: var(--fa-animation-delay, 0s);
-    animation-duration: var(--fa-animation-duration, 2s);
-    animation-iteration-count: var(--fa-animation-iteration-count, infinite);
-  }
-
   &__menu-item {
     &:hover {
       .xh-view-manager__menu-item__fave-toggle {

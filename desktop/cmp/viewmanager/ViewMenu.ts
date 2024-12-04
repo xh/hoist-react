@@ -5,7 +5,8 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {div, filler, fragment, hbox, span} from '@xh/hoist/cmp/layout';
+import {box, div, filler, fragment, hbox, span} from '@xh/hoist/cmp/layout';
+import {spinner} from '@xh/hoist/cmp/spinner';
 import {hoistCmp} from '@xh/hoist/core';
 import {ViewManagerModel, ViewInfo} from '@xh/hoist/cmp/viewmanager';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
@@ -142,7 +143,10 @@ export const viewMenu = hoistCmp.factory<ViewManagerProps>({
                 menuItem({
                     icon: !loadModel.isPending
                         ? Icon.refresh()
-                        : Icon.spinner({className: 'xh-view-manager__allow-spin fa-spin'}),
+                        : box({
+                              height: 20,
+                              item: spinner({width: 16.25, height: 16.25})
+                          }),
                     disabled: loadModel.isPending,
                     text: `Refresh ${pluralName}`,
                     onClick: e => {
