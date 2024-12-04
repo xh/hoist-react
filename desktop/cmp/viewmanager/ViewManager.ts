@@ -5,7 +5,8 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {fragment, hbox} from '@xh/hoist/cmp/layout';
+import {box, fragment, hbox} from '@xh/hoist/cmp/layout';
+import {spinner} from '@xh/hoist/cmp/spinner';
 import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
@@ -92,7 +93,12 @@ const menuButton = hoistCmp.factory<ViewManagerModel>({
         return button({
             className: 'xh-view-manager__menu-button',
             text: view.info?.name ?? `Default ${startCase(typeDisplayName)}`,
-            icon: !isLoading ? Icon.bookmark() : Icon.spinner({className: 'fa-spin'}),
+            icon: !isLoading
+                ? Icon.bookmark()
+                : box({
+                      item: spinner({width: 13, height: 13, style: {margin: 'auto'}}),
+                      width: 16.25
+                  }),
             rightIcon: Icon.chevronDown(),
             outlined: true,
             ...rest
