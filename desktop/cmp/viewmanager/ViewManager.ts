@@ -92,7 +92,7 @@ const menuButton = hoistCmp.factory<ViewManagerModel>({
         const {view, typeDisplayName, isLoading} = model;
         return button({
             className: 'xh-view-manager__menu-button',
-            text: view.info?.name ?? `Default ${startCase(typeDisplayName)}`,
+            text: view.isDefault ? `Default ${startCase(typeDisplayName)}` : view.name,
             icon: !isLoading
                 ? Icon.bookmark()
                 : box({

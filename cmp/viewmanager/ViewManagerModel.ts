@@ -82,11 +82,11 @@ export interface ViewManagerConfig {
      * different viewManagers to be added to your app in the future - e.g. `portfolioGridView` or
      * `tradeBlotterDashboard`.
      */
-    viewType: string;
+    type: string;
 
     /**
      * Optional user-facing display name for the view type, displayed in the ViewManager menu
-     * and associated management dialogs and prompts. Defaulted from `viewType` if not provided.
+     * and associated management dialogs and prompts. Defaulted from `type` if not provided.
      */
     typeDisplayName?: string;
 
@@ -141,7 +141,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     /** Immutable configuration for this model. */
     declare persistWith: ViewManagerPersistOptions;
-    readonly viewType: string;
+    readonly type: string;
     readonly typeDisplayName: string;
     readonly globalDisplayName: string;
     readonly enableAutoSave: boolean;
@@ -250,7 +250,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
      * initial load before binding to persistable components.
      */
     private constructor({
-        viewType,
+        type,
         persistWith,
         typeDisplayName,
         globalDisplayName = 'global',
@@ -269,8 +269,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             "ViewManagerModel requires 'initialViewSpec' if `enableDefault` is false."
         );
 
-        this.viewType = viewType;
-        this.typeDisplayName = lowerCase(typeDisplayName ?? genDisplayName(viewType));
+        this.type = type;
+        this.typeDisplayName = lowerCase(typeDisplayName ?? genDisplayName(type));
         this.globalDisplayName = globalDisplayName;
         this.persistWith = persistWith;
         this.manageGlobal = executeIfFunction(manageGlobal) ?? false;
@@ -332,7 +332,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         }
         const {pendingValue, view, api} = this;
         try {
-            if (!(await this.maybeConfirmSaveAsync(view.info, pendingValue))) {
+            if (!(await this.maybeConfirmSaveAsync(view, pendingValue))) {
                 return;
             }
             const updated = await api
@@ -340,10 +340,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 .linkTo(this.saveTask);
 
             this.setAsView(updated);
-            this.noteSuccess(`Saved ${view.info.typedName}`);
+            this.noteSuccess(`Saved ${view.typedName}`);
         } catch (e) {
             this.handleException(e, {
-                message: `Failed to save ${view.info.typedName}.  If this persists consider \`Save As...\`.`
+                message: `Failed to save ${view.typedName}.  If this persists consider \`Save As...\`.`
             });
         }
         this.refreshAsync();
@@ -353,7 +353,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         const view = (await this.saveAsDialogModel.openAsync()) as View<T>;
         if (view) {
             this.setAsView(view);
-            this.noteSuccess(`Saved ${view.info.typedName}`);
+            this.noteSuccess(`Saved ${view.typedName}`);
         }
         this.refreshAsync();
     }
@@ -542,16 +542,16 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         });
     }
 
-    private async maybeConfirmSaveAsync(info: ViewInfo, pendingValue: PendingValue<T>) {
+    private async maybeConfirmSaveAsync(view: View, pendingValue: PendingValue<T>) {
         // Get latest from server for reference
-        const latest = await this.api.fetchViewAsync(info),
+        const latest = await this.api.fetchViewAsync(view.info),
             isGlobal = latest.isGlobal,
             isStale = latest.lastUpdated > pendingValue.baseUpdated;
         if (!isStale && !isGlobal) return true;
 
         const latestInfo = latest.info,
             {typeDisplayName, globalDisplayName} = this,
-            msgs: ReactNode[] = [`Save ${info.typedName}?`];
+            msgs: ReactNode[] = [`Save ${view.typedName}?`];
         if (isGlobal) {
             msgs.push(
                 span(
