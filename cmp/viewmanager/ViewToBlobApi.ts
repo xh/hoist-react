@@ -70,15 +70,33 @@ export class ViewToBlobApi<T> {
         }
     }
 
-    async updateViewAsync(view: ViewInfo, name: string, description: string, isGlobal: boolean) {
+    async updateViewInfoAsync(
+        view: ViewInfo,
+        name: string,
+        description: string,
+        isGlobal: boolean
+    ): Promise<View<T>> {
         try {
-            await XH.jsonBlobService.updateAsync(view.token, {
+            const blob = await XH.jsonBlobService.updateAsync(view.token, {
                 name: name.trim(),
                 description: description?.trim(),
                 acl: isGlobal ? '*' : null
             });
+            return View.fromBlob(blob, this.owner);
         } catch (e) {
             throw XH.exception({message: `Unable to update ${view.typedName}`, cause: e});
+        }
+    }
+
+    async updateViewValueAsync(view: View<T>, value: Partial<T>): Promise<View<T>> {
+        try {
+            const blob = await XH.jsonBlobService.updateAsync(view.token, {value});
+            return View.fromBlob(blob, this.owner);
+        } catch (e) {
+            throw XH.exception({
+                message: `Unable to update value for ${view.info.typedName}`,
+                cause: e
+            });
         }
     }
 

@@ -291,34 +291,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.api = new ViewToBlobApi(this);
     }
 
-    private async initAsync() {
-        try {
-            const views = await this.api.fetchViewInfosAsync();
-            runInAction(() => (this.views = views));
-
-            if (this.persistWith) {
-                this.initPersist(this.persistWith);
-                await when(() => !this.selectTask.isPending);
-            }
-
-            // If the initial view not initialized from persistence, assign it.
-            if (!this.view) {
-                await this.loadViewAsync(this.initialViewSpec?.(views), this.pendingValue);
-            }
-        } catch (e) {
-            // Always ensure at least default view is installed.
-            if (!this.view) this.loadViewAsync(null, this.pendingValue);
-
-            this.handleException(e, {showAlert: false, logOnServer: true});
-        }
-
-        this.addReaction({
-            track: () => [this.pendingValue, this.autoSave],
-            run: () => this.maybeAutoSaveAsync(),
-            debounce: 5 * SECONDS
-        });
-    }
-
     override async doLoadAsync(loadSpec: LoadSpec) {
         try {
             // 1) Update all view info
@@ -358,21 +330,20 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             this.logError('Unexpected conditions for call to save, skipping');
             return;
         }
-        const {pendingValue} = this,
-            {info} = this.view;
+        const {pendingValue, view, api} = this;
         try {
-            if (!(await this.maybeConfirmSaveAsync(info, pendingValue))) {
+            if (!(await this.maybeConfirmSaveAsync(view.info, pendingValue))) {
                 return;
             }
-            const update = await XH.jsonBlobService
-                .updateAsync(info.token, {value: pendingValue.value})
+            const updated = await api
+                .updateViewValueAsync(view, pendingValue.value)
                 .linkTo(this.saveTask);
 
-            this.setAsView(View.fromBlob(update, this));
-            this.noteSuccess(`Saved ${info.typedName}`);
+            this.setAsView(updated);
+            this.noteSuccess(`Saved ${view.info.typedName}`);
         } catch (e) {
             this.handleException(e, {
-                message: `Failed to save ${info.typedName}.  If this persists consider \`Save As...\`.`
+                message: `Failed to save ${view.info.typedName}.  If this persists consider \`Save As...\`.`
             });
         }
         this.refreshAsync();
@@ -468,6 +439,34 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     //------------------
     // Implementation
     //------------------
+    private async initAsync() {
+        try {
+            const views = await this.api.fetchViewInfosAsync();
+            runInAction(() => (this.views = views));
+
+            if (this.persistWith) {
+                this.initPersist(this.persistWith);
+                await when(() => !this.selectTask.isPending);
+            }
+
+            // If the initial view not initialized from persistence, assign it.
+            if (!this.view) {
+                await this.loadViewAsync(this.initialViewSpec?.(views), this.pendingValue);
+            }
+        } catch (e) {
+            // Always ensure at least default view is installed.
+            if (!this.view) this.loadViewAsync(null, this.pendingValue);
+
+            this.handleException(e, {showAlert: false, logOnServer: true});
+        }
+
+        this.addReaction({
+            track: () => [this.pendingValue, this.autoSave],
+            run: () => this.maybeAutoSaveAsync(),
+            debounce: 5 * SECONDS
+        });
+    }
+
     private async loadViewAsync(
         info: ViewInfo,
         pendingValue: PendingValue<T> = null
@@ -483,18 +482,19 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     private async maybeAutoSaveAsync() {
-        const {pendingValue, isViewAutoSavable, view} = this;
+        const {pendingValue, isViewAutoSavable, view, api} = this;
         if (isViewAutoSavable && pendingValue) {
             try {
-                const raw = await XH.jsonBlobService
-                    .updateAsync(view.token, {value: pendingValue.value})
+                const updated = await api
+                    .updateViewValueAsync(view, pendingValue.value)
                     .linkTo(this.saveTask);
-                this.setAsView(View.fromBlob(raw, this));
+
+                this.setAsView(updated);
             } catch (e) {
                 // TODO: How to alert but avoid for flaky or spam when user editing a deleted view
                 // Keep count and alert server and user once at count n?
                 XH.handleException(e, {
-                    message: `Failing AutoSave for ${this.view.info.typedName}`,
+                    message: `Failing AutoSave for ${view.info.typedName}`,
                     showAlert: false,
                     logOnServer: false
                 });
