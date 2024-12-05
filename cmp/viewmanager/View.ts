@@ -21,6 +21,20 @@ export class View<T extends PlainObject = PlainObject> {
      */
     readonly value: Partial<T> = null;
 
+    private readonly model: ViewManagerModel;
+
+    get name(): string {
+        return this.info?.name ?? 'Default';
+    }
+
+    get token(): string {
+        return this.info?.token ?? null;
+    }
+
+    get type(): string {
+        return this.model.viewType;
+    }
+
     get isDefault(): boolean {
         return !this.info;
     }
@@ -33,24 +47,25 @@ export class View<T extends PlainObject = PlainObject> {
         return this.info?.lastUpdated ?? null;
     }
 
-    get token(): string {
-        return this.info?.token ?? null;
+    get typedName(): string {
+        return `${this.model.typeDisplayName} '${this.name}'`;
     }
 
     static fromBlob<T>(blob: JsonBlob, model: ViewManagerModel): View<T> {
-        return new View(new ViewInfo(blob, model), blob.value);
+        return new View(new ViewInfo(blob, model), blob.value, model);
     }
 
-    static createDefault<T>(): View<T> {
-        return new View(null, {});
+    static createDefault<T>(model: ViewManagerModel): View<T> {
+        return new View(null, {}, model);
     }
 
     withUpdatedValue(value: Partial<T>): View<T> {
-        return new View(this.info, value);
+        return new View(this.info, value, this.model);
     }
 
-    constructor(info: ViewInfo, value: Partial<T>) {
+    constructor(info: ViewInfo, value: Partial<T>, model: ViewManagerModel) {
         this.info = info;
         this.value = value;
+        this.model = model;
     }
 }

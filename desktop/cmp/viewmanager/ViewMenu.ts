@@ -50,7 +50,7 @@ export const viewMenu = hoistCmp.factory<ViewManagerProps>({
                 ...favoriteViews.map(info => {
                     return menuItem({
                         key: `${info.token}-favorite`,
-                        icon: view.info?.token === info.token ? Icon.check() : Icon.placeholder(),
+                        icon: view.token === info.token ? Icon.check() : Icon.placeholder(),
                         text: textAndFaveToggle({info}),
                         onClick: () => model.selectViewAsync(info),
                         title: info.description

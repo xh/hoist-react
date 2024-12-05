@@ -43,7 +43,7 @@ export class ViewToBlobApi<T> {
     }
 
     async fetchViewAsync(info: ViewInfo): Promise<View<T>> {
-        if (!info) return View.createDefault();
+        if (!info) return View.createDefault(this.owner);
         try {
             const blob = await XH.jsonBlobService.getAsync(info.token);
             return View.fromBlob(blob, this.owner);
@@ -64,7 +64,9 @@ export class ViewToBlobApi<T> {
                 description: description?.trim(),
                 value
             });
-            return View.fromBlob(blob, owner);
+            const ret = View.fromBlob(blob, owner);
+            this.trackChange('Created View', ret);
+            return ret;
         } catch (e) {
             throw XH.exception({message: `Unable to create ${owner.typeDisplayName}`, cause: e});
         }
@@ -82,7 +84,9 @@ export class ViewToBlobApi<T> {
                 description: description?.trim(),
                 acl: isGlobal ? '*' : null
             });
-            return View.fromBlob(blob, this.owner);
+            const ret = View.fromBlob(blob, this.owner);
+            this.trackChange('Updated View Info', ret);
+            return ret;
         } catch (e) {
             throw XH.exception({message: `Unable to update ${view.typedName}`, cause: e});
         }
@@ -91,10 +95,14 @@ export class ViewToBlobApi<T> {
     async updateViewValueAsync(view: View<T>, value: Partial<T>): Promise<View<T>> {
         try {
             const blob = await XH.jsonBlobService.updateAsync(view.token, {value});
-            return View.fromBlob(blob, this.owner);
+            const ret = View.fromBlob(blob, this.owner);
+            if (ret.isGlobal) {
+                this.trackChange('Updated Global View definition', ret);
+            }
+            return ret;
         } catch (e) {
             throw XH.exception({
-                message: `Unable to update value for ${view.info.typedName}`,
+                message: `Unable to update value for ${view.typedName}`,
                 cause: e
             });
         }
@@ -103,8 +111,17 @@ export class ViewToBlobApi<T> {
     async deleteViewAsync(view: ViewInfo) {
         try {
             await XH.jsonBlobService.archiveAsync(view.token);
+            this.trackChange('Deleted View', view);
         } catch (e) {
             throw XH.exception({message: `Unable to delete ${view.typedName}`, cause: e});
         }
+    }
+
+    private trackChange(message: string, v: View | ViewInfo) {
+        XH.track({
+            message,
+            category: 'Views',
+            data: {name: v.name, token: v.token, isGlobal: v.isGlobal, type: v.type}
+        });
     }
 }
