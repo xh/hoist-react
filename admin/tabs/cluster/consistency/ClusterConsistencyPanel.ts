@@ -5,11 +5,11 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, hframe, placeholder} from '@xh/hoist/cmp/layout';
+import {filler, hframe, placeholder, table, td, th, tr} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, uses} from '@xh/hoist/core';
-import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
-import {jsonInput, select} from '@xh/hoist/desktop/cmp/input';
+import {exportButton} from '@xh/hoist/desktop/cmp/button';
+import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -23,7 +23,7 @@ export const clusterConsistencyPanel = hoistCmp.factory({
         return panel({
             item: hframe(
                 panel({
-                    item: grid(),
+                    item: grid({model: model.gridModel}),
                     bbar: bbar()
                 }),
                 detailsPanel()
@@ -37,25 +37,33 @@ export const clusterConsistencyPanel = hoistCmp.factory({
 const detailsPanel = hoistCmp.factory({
     model: uses(ClusterConsistencyModel),
     render({model}) {
-        const record = model.gridModel.selectedRecord;
+        const record = model.gridModel.selectedRecord,
+            checks = record?.data.checks,
+            fieldNames = (checks ? Object.keys(checks) : null) as string[],
+            instanceNames = model.parent.gridModel.store.records.map(r => r.data.name) as string[];
+        console.log(fieldNames, instanceNames);
         return panel({
-            title: record ? `Stats: ${record.data.displayName}` : 'Stats',
+            title: record ? `Check: ${record.data.name}` : 'Check',
             icon: Icon.info(),
             compactHeader: true,
             modelConfig: {
                 side: 'right',
                 defaultSize: 450
             },
-            item: record
+            item: checks
                 ? panel({
-                      item: jsonInput({
-                          readonly: true,
-                          width: '100%',
-                          height: '100%',
-                          showFullscreenButton: false,
-                          editorProps: {lineNumbers: false},
-                          value: model.fmtStats(record.raw)
-                      })
+                      // TODO: Use gridModel here
+                      item: table(
+                          tr(th('instance'), ...fieldNames.map(fieldName => th(fieldName))),
+                          ...instanceNames.map(instanceName =>
+                              tr(
+                                  td(instanceName),
+                                  ...fieldNames.map(fieldName =>
+                                      td(checks[fieldName]?.[instanceName])
+                                  )
+                              )
+                          )
+                      )
                   })
                 : placeholder(Icon.grip(), 'Select an object')
         });
@@ -65,18 +73,14 @@ const detailsPanel = hoistCmp.factory({
 const bbar = hoistCmp.factory<ClusterConsistencyModel>({
     render({model}) {
         return toolbar(
-            button({
-                text: 'Run consistency check',
-                icon: Icon.play(),
-                intent: 'primary',
-                onClick: () => model.runChecks()
-            }),
             filler(),
             gridCountLabel({unit: 'objects'}),
             '-',
             select({
                 options: [
+                    {label: 'By Owner', value: 'owner'},
                     {label: 'By Type', value: 'type'},
+                    {label: 'By Inconsistency', value: 'inconsistencyState'},
                     {label: 'Ungrouped', value: null}
                 ],
                 width: 125,
