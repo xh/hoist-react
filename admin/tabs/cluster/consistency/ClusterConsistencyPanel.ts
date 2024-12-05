@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, hframe, placeholder, table, td, th, tr} from '@xh/hoist/cmp/layout';
+import {filler, hframe, placeholder} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, uses} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
@@ -37,11 +37,7 @@ export const clusterConsistencyPanel = hoistCmp.factory({
 const detailsPanel = hoistCmp.factory({
     model: uses(ClusterConsistencyModel),
     render({model}) {
-        const record = model.gridModel.selectedRecord,
-            checks = record?.data.checks,
-            fieldNames = (checks ? Object.keys(checks) : null) as string[],
-            instanceNames = model.parent.gridModel.store.records.map(r => r.data.name) as string[];
-        console.log(fieldNames, instanceNames);
+        const record = model.gridModel.selectedRecord;
         return panel({
             title: record ? `Check: ${record.data.name}` : 'Check',
             icon: Icon.info(),
@@ -50,28 +46,15 @@ const detailsPanel = hoistCmp.factory({
                 side: 'right',
                 defaultSize: 450
             },
-            item: checks
-                ? panel({
-                      // TODO: Use gridModel here
-                      item: table(
-                          tr(th('instance'), ...fieldNames.map(fieldName => th(fieldName))),
-                          ...instanceNames.map(instanceName =>
-                              tr(
-                                  td(instanceName),
-                                  ...fieldNames.map(fieldName =>
-                                      td(checks[fieldName]?.[instanceName])
-                                  )
-                              )
-                          )
-                      )
-                  })
+            item: record
+                ? grid({model: model.detailGridModel})
                 : placeholder(Icon.grip(), 'Select an object')
         });
     }
 });
 
 const bbar = hoistCmp.factory<ClusterConsistencyModel>({
-    render({model}) {
+    render() {
         return toolbar(
             filler(),
             gridCountLabel({unit: 'objects'}),

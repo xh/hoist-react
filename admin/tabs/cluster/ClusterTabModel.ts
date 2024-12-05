@@ -58,6 +58,10 @@ export class ClusterTabModel extends HoistModel {
         return this.gridModel.store.allCount > 1;
     }
 
+    get instanceNames(): string[] {
+        return this.gridModel.store.records.map(r => r.data.name);
+    }
+
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {gridModel} = this;
 
