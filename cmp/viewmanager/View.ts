@@ -32,7 +32,7 @@ export class View<T extends PlainObject = PlainObject> {
     }
 
     get type(): string {
-        return this.model.viewType;
+        return this.model.type;
     }
 
     get isDefault(): boolean {

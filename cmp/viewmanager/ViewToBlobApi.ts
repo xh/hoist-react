@@ -30,7 +30,7 @@ export class ViewToBlobApi<T> {
         const {owner} = this;
         try {
             const blobs = await XH.jsonBlobService.listAsync({
-                type: owner.viewType,
+                type: owner.type,
                 includeValue: false
             });
             return blobs.map(b => new ViewInfo(b, owner));
@@ -59,7 +59,7 @@ export class ViewToBlobApi<T> {
         const {owner} = this;
         try {
             const blob = await XH.jsonBlobService.createAsync({
-                type: owner.viewType,
+                type: owner.type,
                 name: name.trim(),
                 description: description?.trim(),
                 value

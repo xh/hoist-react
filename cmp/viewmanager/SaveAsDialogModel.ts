@@ -23,7 +23,7 @@ export class SaveAsDialogModel extends HoistModel {
     private resolveOpen: (value: View) => void;
 
     get type(): string {
-        return this.parent.viewType;
+        return this.parent.type;
     }
 
     get typeDisplayName(): string {

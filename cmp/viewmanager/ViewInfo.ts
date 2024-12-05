@@ -9,7 +9,7 @@ export class ViewInfo {
     /** Unique Id */
     readonly token: string;
 
-    /** App-defined type discriminator, as per {@link ViewManagerConfig.viewType}. */
+    /** App-defined type discriminator, as per {@link ViewManagerConfig.type}. */
     readonly type: string;
 
     /** User-supplied descriptive name. */
