@@ -15,7 +15,7 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {fmtCompactDate} from '@xh/hoist/format';
+import {fmtDateTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {startCase} from 'lodash';
 
@@ -98,7 +98,7 @@ export const editForm = hoistCmp.factory({
                         filler(),
                         div({
                             className: 'xh-view-manager__manage-dialog__metadata',
-                            item: `Last Updated: ${fmtCompactDate(lastUpdated)} (${lastUpdatedBy === XH.getUsername() ? 'you' : lastUpdatedBy})`
+                            item: `Last Updated: ${fmtDateTime(lastUpdated)} by ${lastUpdatedBy === XH.getUsername() ? 'you' : lastUpdatedBy}`
                         })
                     ]
                 })

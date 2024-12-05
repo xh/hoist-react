@@ -30,6 +30,7 @@ import {ReactNode} from 'react';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
+import {ViewToBlobApi} from './ViewToBlobApi';
 
 export interface ViewManagerConfig {
     /**
@@ -139,6 +140,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     /** Immutable configuration for this model. */
+    declare persistWith: ViewManagerPersistOptions;
     readonly viewType: string;
     readonly typeDisplayName: string;
     readonly globalDisplayName: string;
@@ -174,25 +176,35 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     saveTask: TaskObserver;
 
     @observable manageDialogOpen = false;
-    @managed readonly saveAsDialogModel: SaveAsDialogModel;
+    @managed saveAsDialogModel: SaveAsDialogModel;
 
-    // Unsaved changes on the current view.
-    @observable.ref private pendingValue: PendingValue<T> = null;
-
-    // Last time changes were pushed to linked persistence providers
-    private lastPushed: number = null;
+    //-----------------------
+    // Private, internal state.
+    //-------------------------
+    /** Unsaved changes on the current view.*/
+    @observable.ref
+    private pendingValue: PendingValue<T> = null;
 
     /**
      * Array of {@link ViewManagerProvider} instances bound to this model. Providers will
      * push themselves onto this array when constructed with a reference to this model. Used to
      * proactively push state to the target components when the model's selected `value` changes.
-     *
      * @internal
      */
     providers: ViewManagerProvider<any>[] = [];
 
-    declare persistWith: ViewManagerPersistOptions;
+    /**
+     * Data access for persisting views
+     * @internal
+     */
+    api: ViewToBlobApi<T>;
 
+    // Last time changes were pushed to linked persistence providers
+    private lastPushed: number = null;
+
+    //---------------
+    // Getters
+    //---------------
     get isValueDirty(): boolean {
         return !!this.pendingValue;
     }
@@ -266,7 +278,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.enableAutoSave = enableAutoSave;
         this.enableFavorites = enableFavorites;
         this.settleTime = settleTime;
-        this.saveAsDialogModel = new SaveAsDialogModel(this);
         this.initialViewSpec = initialViewSpec;
 
         this.selectTask = TaskObserver.trackLast({
@@ -275,11 +286,14 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.saveTask = TaskObserver.trackLast({
             message: `Saving ${this.typeDisplayName}...`
         });
+
+        this.saveAsDialogModel = new SaveAsDialogModel(this);
+        this.api = new ViewToBlobApi(this);
     }
 
     private async initAsync() {
         try {
-            const views = await this.fetchViewInfosAsync();
+            const views = await this.api.fetchViewInfosAsync();
             runInAction(() => (this.views = views));
 
             if (this.persistWith) {
@@ -308,7 +322,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         try {
             // 1) Update all view info
-            const views = await this.fetchViewInfosAsync();
+            const views = await this.api.fetchViewInfosAsync();
             if (loadSpec.isStale) return;
             runInAction(() => (this.views = views));
 
@@ -451,77 +465,21 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         return null;
     }
 
-    async deleteViewAsync(view: ViewInfo) {
-        try {
-            await XH.jsonBlobService.archiveAsync(view.token);
-            this.removeFavorite(view.token);
-        } catch (e) {
-            throw XH.exception({message: `Unable to delete ${view.typedName}`, cause: e});
-        }
-    }
-
-    async updateViewAsync(view: ViewInfo, name: string, description: string, isGlobal: boolean) {
-        try {
-            await XH.jsonBlobService.updateAsync(view.token, {
-                name: name.trim(),
-                description: description?.trim(),
-                acl: isGlobal ? '*' : null
-            });
-        } catch (e) {
-            throw XH.exception({message: `Unable to update ${view.typedName}`, cause: e});
-        }
-    }
-
-    async createViewAsync(name: string, description: string, value: PlainObject): Promise<View> {
-        try {
-            const blob = await XH.jsonBlobService.createAsync({
-                type: this.viewType,
-                name: name.trim(),
-                description: description?.trim(),
-                value
-            });
-            return View.fromBlob(blob, this);
-        } catch (e) {
-            throw XH.exception({message: `Unable to create ${this.typeDisplayName}`, cause: e});
-        }
-    }
-
     //------------------
     // Implementation
     //------------------
-    private loadViewAsync(info: ViewInfo, pendingValue: PendingValue<T> = null): Promise<void> {
-        return this.fetchViewAsync(info)
+    private async loadViewAsync(
+        info: ViewInfo,
+        pendingValue: PendingValue<T> = null
+    ): Promise<void> {
+        return this.api
+            .fetchViewAsync(info)
             .thenAction(latest => {
                 this.setAsView(latest, pendingValue?.token == info?.token ? pendingValue : null);
                 this.providers.forEach(it => it.pushStateToTarget());
                 this.lastPushed = Date.now();
             })
             .linkTo(this.selectTask);
-    }
-
-    private async fetchViewAsync(info: ViewInfo): Promise<View<T>> {
-        if (!info) return View.createDefault();
-        try {
-            const blob = await XH.jsonBlobService.getAsync(info.token);
-            return View.fromBlob(blob, this);
-        } catch (e) {
-            throw XH.exception({message: `Unable to fetch ${info.typedName}`, cause: e});
-        }
-    }
-
-    private async fetchViewInfosAsync(): Promise<ViewInfo[]> {
-        try {
-            const blobs = await XH.jsonBlobService.listAsync({
-                type: this.viewType,
-                includeValue: false
-            });
-            return blobs.map(b => new ViewInfo(b, this));
-        } catch (e) {
-            throw XH.exception({
-                message: `Unable to fetch ${pluralize(this.typeDisplayName)}`,
-                cause: e
-            });
-        }
     }
 
     private async maybeAutoSaveAsync() {
@@ -586,7 +544,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     private async maybeConfirmSaveAsync(info: ViewInfo, pendingValue: PendingValue<T>) {
         // Get latest from server for reference
-        const latest = await this.fetchViewAsync(info),
+        const latest = await this.api.fetchViewAsync(info),
             isGlobal = latest.isGlobal,
             isStale = latest.lastUpdated > pendingValue.baseUpdated;
         if (!isStale && !isGlobal) return true;

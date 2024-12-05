@@ -158,7 +158,7 @@ export class ManageDialogModel extends HoistModel {
     ) {
         const {viewManagerModel} = this;
 
-        await viewManagerModel.updateViewAsync(view, name, description, isGlobal);
+        await viewManagerModel.api.updateViewAsync(view, name, description, isGlobal);
         await viewManagerModel.refreshAsync();
         await this.refreshAsync();
 
@@ -200,7 +200,7 @@ export class ManageDialogModel extends HoistModel {
         if (!confirmed) return;
 
         for (const view of views) {
-            await viewManagerModel.deleteViewAsync(view);
+            await viewManagerModel.api.deleteViewAsync(view);
         }
 
         await viewManagerModel.refreshAsync();

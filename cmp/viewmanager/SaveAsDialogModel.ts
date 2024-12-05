@@ -81,7 +81,7 @@ export class SaveAsDialogModel extends HoistModel {
         if (!isValid) return;
 
         try {
-            const ret = await this.parent.createViewAsync(name, description, parent.getValue());
+            const ret = await this.parent.api.createViewAsync(name, description, parent.getValue());
             this.close();
             this.resolveOpen(ret);
         } catch (e) {
