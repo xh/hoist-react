@@ -5,11 +5,11 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, hframe, placeholder} from '@xh/hoist/cmp/layout';
+import {filler, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, uses} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
-import {select} from '@xh/hoist/desktop/cmp/input';
+import {jsonInput, select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -47,7 +47,27 @@ const detailsPanel = hoistCmp.factory({
                 defaultSize: 450
             },
             item: record
-                ? grid({model: model.detailGridModel})
+                ? vframe(
+                      grid({model: model.detailGridModel, flex: 1}),
+                      panel({
+                          title: model.detailGridModel.selectedId
+                              ? `Stats: ${model.detailGridModel.selectedId}`
+                              : 'Stats',
+                          omit: !model.detailGridModel.selectedId,
+                          compactHeader: true,
+                          item: jsonInput({
+                              readonly: true,
+                              flex: 1,
+                              width: '100%',
+                              height: '100%',
+                              showFullscreenButton: false,
+                              editorProps: {lineNumbers: false},
+                              value: model.fmtStats(
+                                  record.data.adminStatsbyInstance[model.detailGridModel.selectedId]
+                              )
+                          })
+                      })
+                  )
                 : placeholder(Icon.grip(), 'Select an object')
         });
     }
