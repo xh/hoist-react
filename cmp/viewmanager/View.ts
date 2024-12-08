@@ -27,6 +27,10 @@ export class View<T extends PlainObject = PlainObject> {
         return this.info?.name ?? 'Default';
     }
 
+    get group(): string {
+        return this.info?.group;
+    }
+
     get token(): string {
         return this.info?.token ?? null;
     }
@@ -41,6 +45,14 @@ export class View<T extends PlainObject = PlainObject> {
 
     get isGlobal(): boolean {
         return this.info?.isGlobal ?? false;
+    }
+
+    get isShared(): boolean {
+        return this.info?.isShared ?? false;
+    }
+
+    get isOwned(): boolean {
+        return this.info?.isOwned ?? false;
     }
 
     get lastUpdated(): number {

@@ -6,16 +6,16 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {filler, vframe} from '@xh/hoist/cmp/layout';
+import {filler, hbox, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {SaveAsDialogModel} from '@xh/hoist/cmp/viewmanager/';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {textArea, textInput} from '@xh/hoist/desktop/cmp/input';
+import {checkbox, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {startCase} from 'lodash';
+import {SaveAsDialogModel} from './SaveAsDialogModel';
 
 /**
  * Default Save As dialog used by ViewManager.
@@ -34,7 +34,7 @@ export const saveAsDialog = hoistCmp.factory<SaveAsDialogModel>({
             isOpen: true,
             style: {width: 500},
             canOutsideClickClose: false,
-            onClose: () => model.cancel(),
+            onClose: () => model.close(),
             item: formPanel()
         });
     }
@@ -61,12 +61,30 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                             })
                         }),
                         formField({
+                            field: 'group',
+                            item: textInput({selectOnFocus: true})
+                        }),
+                        formField({
                             field: 'description',
                             item: textArea({
                                 selectOnFocus: true,
                                 height: 90
                             })
-                        })
+                        }),
+                        hbox(
+                            formField({
+                                field: 'isShared',
+                                inline: true,
+                                omit: !model.parent.enableSharing,
+                                item: checkbox()
+                            }),
+                            formField({
+                                field: 'isPinned',
+                                inline: true,
+                                info: 'Show this view on menu?',
+                                item: checkbox()
+                            })
+                        )
                     ]
                 })
             }),
@@ -83,7 +101,7 @@ const bbar = hoistCmp.factory<SaveAsDialogModel>({
             filler(),
             button({
                 text: 'Cancel',
-                onClick: () => model.cancel()
+                onClick: () => model.close()
             }),
             button({
                 text: `Save as new ${startCase(typeDisplayName)}`,

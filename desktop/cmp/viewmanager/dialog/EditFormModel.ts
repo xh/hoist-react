@@ -13,6 +13,7 @@ import {makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
 import {action, observable} from 'mobx';
+import {ReactNode} from 'react';
 
 /**
  * Backing model for EditForm
@@ -51,7 +52,7 @@ export class EditFormModel extends HoistModel {
     async saveAsync() {
         const {parent, view, formModel} = this,
             {manageGlobal, typeDisplayName, globalDisplayName} = parent,
-            {name, description, isGlobal} = formModel.getData(),
+            {name, group, description, isGlobal, isDefaultPinned, isShared} = formModel.getData(),
             isValid = await formModel.validateAsync(),
             isDirty = formModel.isDirty;
 
@@ -62,28 +63,14 @@ export class EditFormModel extends HoistModel {
             `Cannot save changes to ${globalDisplayName} ${typeDisplayName} - missing required permission.`
         );
 
-        if (isGlobal != view.isGlobal) {
-            const msgs = [];
-            if (isGlobal) {
-                msgs.push(
-                    `This ${typeDisplayName} will become visible to all other ${XH.appName} users.`
-                );
-            } else {
-                msgs.push(
-                    span(
-                        `The selected ${typeDisplayName} will revert to being private `,
-                        strong('It will no longer be available to ALL users.')
-                    )
-                );
-                if (view.owner != XH.getUsername()) {
-                    msgs.push(
-                        `The selected ${typeDisplayName} will revert to being private to its owner (${view.owner}).`,
-                        `Note that you will no longer have access to this ${typeDisplayName} and will not be able to undo this change.`
-                    );
-                }
-            }
-
-            msgs.push('Are you sure you want to proceed?');
+        if ((isShared || isGlobal) != view.isShared) {
+            const msg: ReactNode = view.isShared
+                ? span(
+                      `The selected ${typeDisplayName} will revert to being private to you `,
+                      strong('It will no longer be available to ALL users.')
+                  )
+                : `This ${typeDisplayName} will become visible to all other ${XH.appName} users.`;
+            const msgs = [msg, 'Are you sure you want to proceed?'];
 
             const confirmed = await XH.confirm({
                 message: fragment(msgs.map(m => p(m))),
@@ -97,7 +84,14 @@ export class EditFormModel extends HoistModel {
             if (!confirmed) return;
         }
 
-        await parent.updateAsync(view, name, description, isGlobal);
+        await parent.updateAsync(view, {
+            name,
+            group,
+            description,
+            isGlobal,
+            isShared,
+            isDefaultPinned
+        });
     }
 
     //------------------------
@@ -117,8 +111,11 @@ export class EditFormModel extends HoistModel {
                         }
                     ]
                 },
+                {name: 'group'},
                 {name: 'description'},
-                {name: 'isGlobal', displayName: 'Global'}
+                {name: 'isShared'},
+                {name: 'isGlobal'},
+                {name: 'isDefaultPinned'}
             ]
         });
     }

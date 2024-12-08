@@ -1,6 +1,7 @@
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {ViewManagerModel} from './ViewManagerModel';
 import {JsonBlob} from '@xh/hoist/svc';
+import {PlainObject, XH} from '@xh/hoist/core';
 
 /**
  * Metadata describing {@link View} managed by {@link ViewManagerModel}.
@@ -9,7 +10,7 @@ export class ViewInfo {
     /** Unique Id */
     readonly token: string;
 
-    /** App-defined type discriminator, as per {@link ViewManagerConfig.type}. */
+    /** App-defined type discriminator. */
     readonly type: string;
 
     /** User-supplied descriptive name. */
@@ -18,11 +19,26 @@ export class ViewInfo {
     /** Description of the view. **/
     readonly description: string;
 
+    /**
+     * User that can write this view.  Typically, the original creator.
+     * Null if the view is global.
+     */
+    readonly owner: string;
+
+    /** Is the owner making this view accessible to others? Always true for global views. */
+    readonly isShared: boolean;
+
     /** True if this view is global and visible to all users. */
     readonly isGlobal: boolean;
 
-    /** Original creator of the view, and the only user with access to it if not global. */
-    readonly owner: string;
+    /** Optional group name used for bucketing this view in display. */
+    readonly group: string;
+
+    /**
+     * Should this view be pinned by users by default?
+     * This value is intended to be used for global views only.
+     */
+    readonly isDefaultPinned: boolean;
 
     dateCreated: number;
     lastUpdated: number;
@@ -36,7 +52,13 @@ export class ViewInfo {
         this.owner = blob.owner;
         this.name = blob.name;
         this.description = blob.description;
-        this.isGlobal = blob.acl === '*';
+
+        const meta = (blob.meta ?? {}) as PlainObject;
+        this.group = meta.group ?? null;
+        this.isGlobal = !!meta.isGlobal;
+        this.isDefaultPinned = !!(this.isGlobal && meta.defaultPinned);
+        this.isShared = !!(this.isGlobal || meta.isShared);
+
         // Round to seconds.  See: https://github.com/xh/hoist-core/issues/423
         this.dateCreated = Math.round(blob.dateCreated / SECONDS) * SECONDS;
         this.lastUpdated = Math.round(blob.lastUpdated / SECONDS) * SECONDS;
@@ -45,11 +67,24 @@ export class ViewInfo {
     }
 
     /**
-     * True if user has tagged this view as a favorite. Note that a user's list of favorite views
-     * is persisted via `ViewManagerModel.persistWith` and *not* stored in the blob itself.
+     * True if this view should appear on the users easy access menu.
+     *
+     * This value is computed with the user persisted state along with the View's
+     * `defaultPinned` property.
      */
-    get isFavorite(): boolean {
-        return this.model.isFavorite(this.token);
+    get isPinned(): boolean {
+        return this.isUserPinned ?? this.isDefaultPinned;
+    }
+
+    /**
+     * The user indicated pin state for this view, or null if user has not indicated a preference.
+     */
+    get isUserPinned(): boolean | null {
+        return this.model.isUserPinned(this);
+    }
+
+    get isOwned(): boolean {
+        return this.owner === XH.getUsername();
     }
 
     get typedName(): string {

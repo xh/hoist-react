@@ -8,7 +8,7 @@
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {filler, hframe, placeholder} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {creates, hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {editForm} from './EditForm';
 import {ManageDialogModel} from './ManageDialogModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -25,9 +25,10 @@ import {capitalize} from 'lodash';
 export const manageDialog = hoistCmp.factory({
     displayName: 'ManageDialog',
     className: 'xh-view-manager__manage-dialog',
-    model: creates(ManageDialogModel),
+    model: uses(ManageDialogModel),
 
     render({model, className}) {
+        if (!model.isOpen) return null;
         const {typeDisplayName, updateTask, loadTask, selectedViews} = model;
         const count = selectedViews.length;
         return dialog({
@@ -57,7 +58,7 @@ const viewPanel = hoistCmp.factory<ManageDialogModel>({
             bbar: [
                 storeFilterField({
                     autoApply: false,
-                    includeFields: ['name'],
+                    includeFields: ['name', 'group'],
                     onFilterChange: f => (model.filter = f)
                 })
             ]

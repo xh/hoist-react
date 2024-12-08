@@ -8,26 +8,28 @@
 import {grid, GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistModel, LoadSpec, lookup, managed, TaskObserver, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {FilterTestFn} from '@xh/hoist/data';
-import {computed} from 'mobx';
 import {ReactNode} from 'react';
 import {EditFormModel} from './EditFormModel';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable, makeObservable, computed, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {ViewInfo, ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {find, some, startCase} from 'lodash';
+import {ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager/ViewToBlobApi';
+import {action} from 'mobx';
 
 /**
  * Backing model for ManageDialog
  */
 export class ManageDialogModel extends HoistModel {
-    @lookup(() => ViewManagerModel)
     viewManagerModel: ViewManagerModel;
 
-    @managed privateGridModel: GridModel;
-    @managed globalGridModel: GridModel;
+    @observable isOpen: boolean = true;
+
+    @managed ownedGridModel: GridModel;
+    @managed sharedGridModel: GridModel;
     @managed editFormModel: EditFormModel;
     @managed tabContainerModel: TabContainerModel;
 
@@ -40,9 +42,9 @@ export class ManageDialogModel extends HoistModel {
     }
 
     get gridModel(): GridModel {
-        return this.tabContainerModel.activeTabId == 'global'
-            ? this.globalGridModel
-            : this.privateGridModel;
+        return this.tabContainerModel.activeTabId == 'shared'
+            ? this.sharedGridModel
+            : this.ownedGridModel;
     }
 
     @computed
@@ -78,60 +80,32 @@ export class ManageDialogModel extends HoistModel {
         return this.viewManagerModel.globalDisplayName;
     }
 
-    get enableFavorites(): boolean {
-        return this.viewManagerModel.enableFavorites;
+    get enableSharing(): boolean {
+        return this.viewManagerModel.enableSharing;
     }
 
-    constructor() {
+    constructor(viewManagerModel: ViewManagerModel) {
         super();
         makeObservable(this);
+        this.viewManagerModel = viewManagerModel;
     }
 
+    @action
+    open() {
+        if (!this.tabContainerModel) this.init();
+        this.loadAsync();
+        this.isOpen = true;
+    }
+
+    @action
     close() {
-        this.viewManagerModel.closeManageDialog();
-    }
-
-    override onLinked() {
-        super.onLinked();
-
-        this.privateGridModel = this.createGridModel('personal');
-        this.globalGridModel = this.createGridModel(this.globalDisplayName);
-        this.tabContainerModel = this.createTabContainerModel();
-        this.editFormModel = new EditFormModel(this);
-
-        const {privateGridModel, globalGridModel, editFormModel} = this;
-        this.addReaction(
-            {
-                track: () => this.selectedView,
-                run: r => editFormModel.setView(r)
-            },
-            {
-                track: () => this.filter,
-                run: f => {
-                    privateGridModel.store.setFilter(f);
-                    globalGridModel.store.setFilter(f);
-                },
-                fireImmediately: true
-            },
-            {
-                track: () => privateGridModel.selectedRecords,
-                run: recs => {
-                    if (recs.length) globalGridModel.clearSelection();
-                }
-            },
-            {
-                track: () => globalGridModel.selectedRecords,
-                run: recs => {
-                    if (recs.length) privateGridModel.clearSelection();
-                }
-            }
-        );
+        this.isOpen = false;
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {view, globalViews, privateViews} = this.viewManagerModel;
-        this.globalGridModel.loadData(globalViews);
-        this.privateGridModel.loadData(privateViews);
+        const {view, ownedViews, sharedViews} = this.viewManagerModel;
+        this.ownedGridModel.loadData(ownedViews);
+        this.sharedGridModel.loadData(sharedViews);
         if (!loadSpec.isRefresh && !view.isDefault) {
             await this.selectViewAsync(view.info);
         }
@@ -141,24 +115,52 @@ export class ManageDialogModel extends HoistModel {
         return this.doDeleteAsync(views).linkTo(this.updateTask).catchDefault();
     }
 
-    async updateAsync(view: ViewInfo, name: string, description: string, isGlobal: boolean) {
-        return this.doUpdateAsync(view, name, description, isGlobal)
-            .linkTo(this.updateTask)
-            .catchDefault();
+    async updateAsync(view: ViewInfo, update: ViewUpdateSpec) {
+        return this.doUpdateAsync(view, update).linkTo(this.updateTask).catchDefault();
     }
 
     //------------------------
     // Implementation
     //------------------------
-    private async doUpdateAsync(
-        view: ViewInfo,
-        name: string,
-        description: string,
-        isGlobal: boolean
-    ) {
+    private init() {
+        this.ownedGridModel = this.createGridModel('personal');
+        this.sharedGridModel = this.createGridModel('shared');
+        this.tabContainerModel = this.createTabContainerModel();
+        this.editFormModel = new EditFormModel(this);
+
+        const {ownedGridModel, sharedGridModel, editFormModel} = this;
+        this.addReaction(
+            {
+                track: () => this.selectedView,
+                run: r => editFormModel.setView(r)
+            },
+            {
+                track: () => this.filter,
+                run: f => {
+                    ownedGridModel.store.setFilter(f);
+                    sharedGridModel.store.setFilter(f);
+                },
+                fireImmediately: true
+            },
+            {
+                track: () => sharedGridModel.selectedRecords,
+                run: recs => {
+                    if (recs.length) ownedGridModel.clearSelection();
+                }
+            },
+            {
+                track: () => sharedGridModel.selectedRecords,
+                run: recs => {
+                    if (recs.length) ownedGridModel.clearSelection();
+                }
+            }
+        );
+    }
+
+    private async doUpdateAsync(view: ViewInfo, update: ViewUpdateSpec) {
         const {viewManagerModel} = this;
 
-        await viewManagerModel.api.updateViewInfoAsync(view, name, description, isGlobal);
+        await viewManagerModel.api.updateViewInfoAsync(view, update);
         await viewManagerModel.refreshAsync();
         await this.refreshAsync();
 
@@ -182,10 +184,10 @@ export class ManageDialogModel extends HoistModel {
 
         const confirmStr = count > 1 ? pluralize(typeDisplayName, count, true) : views[0].typedName;
         const msgs: ReactNode[] = [`Are you sure you want to delete ${confirmStr}?`];
-        if (some(views, 'isGlobal')) {
+        if (some(views, 'isShared')) {
             count > 1
-                ? msgs.push(strong('These global views will no longer be available to ALL users.'))
-                : msgs.push(strong('This global view will no longer be available to ALL users.'));
+                ? msgs.push(strong('These shared views will no longer be available to ALL users.'))
+                : msgs.push(strong('This shared view will no longer be available to ALL users.'));
         }
 
         const confirmed = await XH.confirm({
@@ -208,13 +210,14 @@ export class ManageDialogModel extends HoistModel {
     }
 
     async selectViewAsync(view: ViewInfo) {
-        this.tabContainerModel.activateTab(view.isGlobal ? 'global' : 'private');
+        this.tabContainerModel.activateTab(view.isOwned ? 'owned' : 'shared');
         await this.gridModel.selectAsync(view.token);
     }
 
     private createGridModel(name: string): GridModel {
+        const {typeDisplayName, viewManagerModel} = this;
         return new GridModel({
-            emptyText: `No ${name} ${pluralize(this.typeDisplayName)} found...`,
+            emptyText: `No ${name} ${pluralize(typeDisplayName)} found...`,
             sortBy: 'name',
             hideHeaders: true,
             showGroupRowCounts: false,
@@ -223,36 +226,43 @@ export class ManageDialogModel extends HoistModel {
             sizingMode: 'standard',
             store: {
                 idSpec: 'token',
-                processRawData: v => ({name: v.name, isFavorite: v.isFavorite, info: v}),
+                processRawData: v => ({
+                    name: v.name,
+                    group: v.group,
+                    isPinned: v.isPinned,
+                    info: v
+                }),
                 fields: [
                     {name: 'name', type: 'string'},
-                    {name: 'isFavorite', type: 'bool'},
+                    {name: 'owner', type: 'string'},
                     {name: 'info', type: 'auto'}
                 ]
             },
             autosizeOptions: {mode: GridAutosizeMode.DISABLED},
             columns: [
                 {field: 'name', flex: true},
+                {field: 'group', hidden: true},
+                {field: 'owner'},
                 {
-                    colId: 'isFavorite',
+                    colId: 'isPinned',
                     field: 'info',
-                    omit: !this.enableFavorites,
                     width: 40,
                     align: 'center',
-                    headerName: Icon.favorite(),
+                    headerName: Icon.pin(),
                     highlightOnChange: true,
                     renderer: v => {
-                        const {isFavorite} = v;
-                        return Icon.favorite({
-                            prefix: isFavorite ? 'fas' : 'fal',
-                            className: isFavorite ? 'xh-yellow' : 'xh-text-color-muted'
+                        const {isUserPinned, isPinned} = v;
+                        if (!isPinned) return Icon.placeholder();
+                        return Icon.pin({
+                            prefix: isUserPinned ? 'fas' : 'fal',
+                            className: isUserPinned ? 'xh-green' : 'xh-text-color-muted'
                         });
                     }
                 }
             ],
             onCellClicked: ({colDef, data: record, api}) => {
-                if (colDef.colId === 'isFavorite') {
-                    this.viewManagerModel.toggleFavorite(record.id);
+                if (colDef.colId === 'isPinned') {
+                    viewManagerModel.togglePinned(record.data.info);
                     api.redrawRows();
                 }
             }
@@ -266,12 +276,12 @@ export class ManageDialogModel extends HoistModel {
                 {
                     id: 'private',
                     title: `My ${pluralType}`,
-                    content: grid({model: this.privateGridModel})
+                    content: grid({model: this.ownedGridModel})
                 },
                 {
-                    id: 'global',
-                    title: `${startCase(this.globalDisplayName)} ${pluralType}`,
-                    content: grid({model: this.globalGridModel})
+                    id: 'shared',
+                    title: `Shared ${pluralType}`,
+                    content: grid({model: this.sharedGridModel})
                 }
             ]
         });
