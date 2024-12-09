@@ -14,6 +14,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {ClusterConsistencyModel} from './ClusterConsistencyModel';
+import './ClusterConsistency.scss';
 
 export const clusterConsistencyPanel = hoistCmp.factory({
     displayName: 'ClusterConsistencyPanel',
@@ -37,23 +38,21 @@ export const clusterConsistencyPanel = hoistCmp.factory({
 const detailsPanel = hoistCmp.factory({
     model: uses(ClusterConsistencyModel),
     render({model}) {
-        const record = model.gridModel.selectedRecord;
+        const {selectedRecordName, detailGridModel, instanceName, selectedAdminStats} = model;
         return panel({
-            title: record ? `Check: ${record.data.name}` : 'Check',
+            title: selectedRecordName ? `Check: ${selectedRecordName}` : 'Check',
             icon: Icon.info(),
             compactHeader: true,
             modelConfig: {
                 side: 'right',
                 defaultSize: 450
             },
-            item: record
+            item: selectedRecordName
                 ? vframe(
-                      grid({model: model.detailGridModel, flex: 1}),
+                      grid({model: detailGridModel, flex: 1}),
                       panel({
-                          title: model.detailGridModel.selectedId
-                              ? `Stats: ${model.detailGridModel.selectedId}`
-                              : 'Stats',
-                          omit: !model.detailGridModel.selectedId,
+                          title: instanceName ? `Stats: ${instanceName}` : 'Stats',
+                          omit: !selectedAdminStats,
                           compactHeader: true,
                           item: jsonInput({
                               readonly: true,
@@ -62,9 +61,7 @@ const detailsPanel = hoistCmp.factory({
                               height: '100%',
                               showFullscreenButton: false,
                               editorProps: {lineNumbers: false},
-                              value: model.fmtStats(
-                                  record.data.adminStatsbyInstance[model.detailGridModel.selectedId]
-                              )
+                              value: model.fmtStats(selectedAdminStats)
                           })
                       })
                   )
@@ -83,7 +80,6 @@ const bbar = hoistCmp.factory<ClusterConsistencyModel>({
                 options: [
                     {label: 'By Owner', value: 'owner'},
                     {label: 'By Type', value: 'type'},
-                    {label: 'By Inconsistency', value: 'inconsistencyState'},
                     {label: 'Ungrouped', value: null}
                 ],
                 width: 125,

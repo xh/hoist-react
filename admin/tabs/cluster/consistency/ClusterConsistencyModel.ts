@@ -12,12 +12,10 @@ import {StoreRecord} from '@xh/hoist/data';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {groupBy, isEmpty, isEqual, map} from 'lodash';
+import {groupBy, isEmpty, isEqual, isNil, map} from 'lodash';
 import {action, observable} from 'mobx';
 
 export class ClusterConsistencyModel extends BaseInstanceModel {
-    @bindable groupBy: 'type' | 'owner' | 'inconsistencyState' = 'inconsistencyState';
-
     @managed detailPanelModel = new PanelModel({
         side: 'right',
         defaultSize: 450
@@ -27,11 +25,11 @@ export class ClusterConsistencyModel extends BaseInstanceModel {
 
     @managed gridModel = new GridModel({
         selModel: 'multiple',
-        enableExport: true,
+        treeMode: true,
         autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
+        enableExport: true,
         exportOptions: {filename: exportFilenameWithDate('consistency-check'), columns: 'ALL'},
-        sortBy: 'displayName',
-        groupBy: this.groupBy,
+        sortBy: ['hasBreaks', 'name'],
         store: {
             fields: [
                 {name: 'name', type: 'string'},
@@ -42,6 +40,9 @@ export class ClusterConsistencyModel extends BaseInstanceModel {
                 {name: 'adminStatsbyInstance', type: 'auto'}
             ]
         },
+        rowClassRules: {
+            'xh-cluster-consistency-row-has-break': ({data: record}) => record?.data.hasBreaks
+        },
         columns: [
             {
                 field: 'hasBreaks',
@@ -50,7 +51,12 @@ export class ClusterConsistencyModel extends BaseInstanceModel {
                 resizable: false,
                 headerName: Icon.warning(),
                 headerTooltip: 'Has Breaks',
-                renderer: v => (v ? Icon.warning({prefix: 'fas', intent: 'danger'}) : null)
+                renderer: v =>
+                    isNil(v)
+                        ? null
+                        : v
+                          ? Icon.warning({prefix: 'fas', intent: 'danger'})
+                          : Icon.check({prefix: 'fas', intent: 'success'})
             },
             {field: 'name'},
             {field: 'type'},
@@ -69,20 +75,34 @@ export class ClusterConsistencyModel extends BaseInstanceModel {
         return this.parent.instanceNames;
     }
 
+    get selectedRecord(): StoreRecord {
+        return this.gridModel.selectedRecord;
+    }
+
+    get selectedRecordName(): string {
+        return this.selectedRecord?.data.name ?? null;
+    }
+
+    get selectedDetailRecord(): StoreRecord {
+        return this.detailGridModel.selectedRecord;
+    }
+
+    override get instanceName(): string {
+        return (this.selectedDetailRecord?.id as string) ?? this.parent.instanceName;
+    }
+
+    get selectedAdminStats() {
+        return this.selectedRecord?.data.adminStatsbyInstance[this.instanceName];
+    }
+
     constructor() {
         super();
         makeObservable(this);
-        this.addReaction(
-            {
-                track: () => this.groupBy,
-                run: v => this.gridModel.setGroupBy(v)
-            },
-            {
-                track: () => [this.gridModel.selectedRecord, this.instanceNames] as const,
-                run: ([record, instanceNames], [oldRecord]) =>
-                    this.updateDetailGridModel(record, instanceNames, oldRecord)
-            }
-        );
+        this.addReaction({
+            track: () => [this.gridModel.selectedRecord, this.instanceNames] as const,
+            run: ([record, instanceNames], [oldRecord]) =>
+                this.updateDetailGridModel(record, instanceNames, oldRecord)
+        });
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
@@ -91,7 +111,7 @@ export class ClusterConsistencyModel extends BaseInstanceModel {
                 url: 'clusterConsistencyAdmin/getDistributedObjectsReport'
             });
 
-            this.gridModel.loadData(this.processRawData(report.info));
+            this.gridModel.loadData(this.processReport(report));
         } catch (e) {
             this.handleLoadException(e, loadSpec);
         }
@@ -108,13 +128,11 @@ export class ClusterConsistencyModel extends BaseInstanceModel {
             return;
         }
 
-        const {adminStatsbyInstance, comparisonFields} = record.data;
+        const {adminStatsbyInstance, comparisonFields} = record.data,
+            {selectedId} = this.detailGridModel ?? {};
 
         // Only re-create grid model if columns are different.
-        if (
-            !oldRecord ||
-            !isEqual(Object.keys(oldRecord.data.comparisonFields), comparisonFields)
-        ) {
+        if (!oldRecord || !isEqual(oldRecord.data.comparisonFields, comparisonFields)) {
             XH.safeDestroy(this.detailGridModel);
             this.detailGridModel = this.createDetailGridModel(
                 comparisonFields.map(fieldName => ({
@@ -132,6 +150,9 @@ export class ClusterConsistencyModel extends BaseInstanceModel {
                 return row;
             })
         );
+
+        // Attempt to preserve selection across updates, or default to the globally-selected instance.
+        this.detailGridModel.selectAsync(selectedId ?? this.instanceName);
     }
 
     createDetailGridModel(columns = []) {
@@ -158,21 +179,48 @@ export class ClusterConsistencyModel extends BaseInstanceModel {
     //----------------------
     // Implementation
     //----------------------
-    private processRawData(rawData: PlainObject[]): PlainObject[] {
-        const byId = groupBy(rawData, 'id');
+    private processReport({
+        info,
+        breaks
+    }: {
+        info: PlainObject[];
+        breaks: Record<string, [string, string]>;
+    }): PlainObject[] {
+        const byId = groupBy(info, 'id');
         return map(byId, objs => {
             const {id, name, type, owner, comparisonFields} = objs[0],
-                adminStatsbyInstance = Object.fromEntries(
+                adminStatsbyInstance: PlainObject = Object.fromEntries(
                     objs.map(obj => [obj.instanceName, obj.adminStats])
                 );
             return {
                 id,
                 name,
                 type,
-                owner,
-                comparisonFields,
+                owner: owner ?? this.deriveOwner(name),
+                hasBreaks:
+                    isEmpty(comparisonFields) || objs.length < 2 ? null : !isEmpty(breaks[id]),
+                comparisonFields: comparisonFields ?? [],
                 adminStatsbyInstance
             };
         });
+    }
+
+    private deriveOwner(name: string): string {
+        // Hz ringbuffer that implements a CachedValue
+        if (name.startsWith('_hz_rb_xhcachedvalue.')) {
+            return name.substring(21);
+        }
+        // Hz ITopic that implements a CachedValue
+        if (name.startsWith('xhcachedvalue.')) {
+            return name.substring(14);
+        }
+        // Any object that utilizes `svc.hzName()`
+        if (name.indexOf('[') !== -1) {
+            return name.substring(0, name.indexOf('['));
+        }
+        if (name.startsWith('xh')) {
+            return 'Hoist';
+        }
+        return name;
     }
 }
