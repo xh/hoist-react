@@ -63,16 +63,12 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
         showRevertButton = 'never',
         buttonSide = 'right'
     }: ViewManagerProps) {
-        const localModel = useLocalModel(() => new ViewManagerLocalModel(model)),
-            save = saveButton({model: localModel, mode: showSaveButton, ...saveButtonProps}),
-            revert = revertButton({
-                model: localModel,
-                mode: showRevertButton,
-                ...revertButtonProps
-            }),
+        const locModel = useLocalModel(() => new ViewManagerLocalModel(model)),
+            save = saveButton({model: locModel, mode: showSaveButton, ...saveButtonProps}),
+            revert = revertButton({model: locModel, mode: showRevertButton, ...revertButtonProps}),
             menu = popover({
-                item: menuButton(menuButtonProps),
-                content: viewMenu({model: localModel}),
+                item: menuButton({model: locModel, ...menuButtonProps}),
+                content: viewMenu({model: locModel}),
                 placement: 'bottom-start',
                 popoverClassName: 'xh-view-manager__popover'
             });
@@ -81,8 +77,8 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                 className,
                 items: buttonSide == 'left' ? [revert, save, menu] : [menu, save, revert]
             }),
-            manageDialog({model: !localModel.manageDialogModel}),
-            saveAsDialog({model: !localModel.saveAsDialogModel})
+            manageDialog({model: locModel.manageDialogModel}),
+            saveAsDialog({model: locModel.saveAsDialogModel})
         );
     }
 });

@@ -44,7 +44,7 @@ export class ViewInfo {
     lastUpdated: number;
     lastUpdatedBy: string;
 
-    private readonly model: ViewManagerModel;
+    readonly model: ViewManagerModel;
 
     constructor(blob: JsonBlob, model: ViewManagerModel) {
         this.token = blob.token;
@@ -89,5 +89,9 @@ export class ViewInfo {
 
     get typedName(): string {
         return `${this.model.typeDisplayName} '${this.name}'`;
+    }
+
+    get isCurrentView(): boolean {
+        return this.token === this.model.view.token;
     }
 }

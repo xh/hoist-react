@@ -332,6 +332,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     async saveAsAsync(spec: ViewCreateSpec): Promise<void> {
         const view = await this.api.createViewAsync({...spec, value: this.getValue()});
         this.noteSuccess(`Created ${view.typedName}`);
+        this.userPin(view.info);
+        this.setAsView(view);
         this.refreshAsync();
     }
 

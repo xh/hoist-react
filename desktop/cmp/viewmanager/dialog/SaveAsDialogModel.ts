@@ -40,7 +40,14 @@ export class SaveAsDialogModel extends HoistModel {
 
     @action
     open() {
-        this.formModel.init(this.parent.view?.info ?? {});
+        const src = this.parent.view,
+            name = !src.name.startsWith('Copy of') ? `Copy of ${src.name}` : src.name;
+        this.formModel.init({
+            name,
+            group: src.group,
+            description: null,
+            isShared: false
+        });
         this.isOpen = true;
     }
 
@@ -70,15 +77,14 @@ export class SaveAsDialogModel extends HoistModel {
                 },
                 {name: 'group'},
                 {name: 'description'},
-                {name: 'isShared'},
-                {name: 'isPinned'}
+                {name: 'isShared'}
             ]
         });
     }
 
     private async doSaveAsAsync() {
         let {formModel, parent} = this,
-            {name, group, description, isShared, isPinned} = formModel.getData(),
+            {name, group, description, isShared} = formModel.getData(),
             isValid = await formModel.validateAsync();
 
         if (!isValid) return;
@@ -87,8 +93,7 @@ export class SaveAsDialogModel extends HoistModel {
             name: name.trim(),
             group: group?.trim(),
             description: description?.trim(),
-            isShared,
-            isPinned
+            isShared
         });
     }
 }

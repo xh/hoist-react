@@ -16,7 +16,7 @@ import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable, computed, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {ViewInfo, ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
-import {find, some, startCase} from 'lodash';
+import {find, isEmpty, some, startCase} from 'lodash';
 import {ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager/ViewToBlobApi';
 import {action} from 'mobx';
 
@@ -26,7 +26,7 @@ import {action} from 'mobx';
 export class ManageDialogModel extends HoistModel {
     viewManagerModel: ViewManagerModel;
 
-    @observable isOpen: boolean = true;
+    @observable isOpen: boolean = false;
 
     @managed ownedGridModel: GridModel;
     @managed sharedGridModel: GridModel;
@@ -123,7 +123,7 @@ export class ManageDialogModel extends HoistModel {
     // Implementation
     //------------------------
     private init() {
-        this.ownedGridModel = this.createGridModel('personal');
+        this.ownedGridModel = this.createGridModel('owned');
         this.sharedGridModel = this.createGridModel('shared');
         this.tabContainerModel = this.createTabContainerModel();
         this.editFormModel = new EditFormModel(this);
@@ -132,7 +132,8 @@ export class ManageDialogModel extends HoistModel {
         this.addReaction(
             {
                 track: () => this.selectedView,
-                run: r => editFormModel.setView(r)
+                run: r => editFormModel.setView(r),
+                fireImmediately: true
             },
             {
                 track: () => this.filter,
@@ -214,11 +215,17 @@ export class ManageDialogModel extends HoistModel {
         await this.gridModel.selectAsync(view.token);
     }
 
-    private createGridModel(name: string): GridModel {
+    private createGridModel(type: 'owned' | 'shared'): GridModel {
         const {typeDisplayName, viewManagerModel} = this;
+        const emptyText =
+            type == 'owned'
+                ? `No private ${pluralize(typeDisplayName)} found...`
+                : `No shared ${pluralize(typeDisplayName)} found...`;
+
         return new GridModel({
-            emptyText: `No ${name} ${pluralize(typeDisplayName)} found...`,
+            emptyText,
             sortBy: 'name',
+            groupBy: 'group',
             hideHeaders: true,
             showGroupRowCounts: false,
             selModel: 'multiple',
@@ -260,6 +267,7 @@ export class ManageDialogModel extends HoistModel {
                     }
                 }
             ],
+            groupRowRenderer: ({value}) => (isEmpty(value) ? '*Ungrouped*' : value),
             onCellClicked: ({colDef, data: record, api}) => {
                 if (colDef.colId === 'isPinned') {
                     viewManagerModel.togglePinned(record.data.info);

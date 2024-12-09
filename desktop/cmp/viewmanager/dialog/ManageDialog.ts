@@ -36,7 +36,7 @@ export const manageDialog = hoistCmp.factory({
             icon: Icon.gear(),
             className,
             isOpen: true,
-            style: {width: '800px', maxWidth: '90vm', minHeight: '430px'},
+            style: {width: '800px', maxWidth: '90vm', minHeight: '500px'},
             canOutsideClickClose: false,
             onClose: () => model.close(),
             item: panel({

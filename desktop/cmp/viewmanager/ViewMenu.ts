@@ -175,16 +175,9 @@ function getGroupedMenuItems(views: ViewInfo[], model: ViewManagerModel): ReactN
 }
 
 function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
-    const icon =
-        view.token == model.view.token
-            ? Icon.check()
-            : view.isGlobal
-              ? Icon.globe()
-              : view.isShared
-                ? Icon.user()
-                : Icon.placeholder();
+    const icon = view.isCurrentView ? Icon.check() : Icon.placeholder(),
+        title = [];
 
-    const title = [];
     if (view.isShared) title.push(view.owner);
     if (view.description) title.push(view.description);
 

@@ -55,6 +55,10 @@ export class View<T extends PlainObject = PlainObject> {
         return this.info?.isOwned ?? false;
     }
 
+    get isCurrentView(): boolean {
+        return this.token === this.model.view.token;
+    }
+
     get lastUpdated(): number {
         return this.info?.lastUpdated ?? null;
     }

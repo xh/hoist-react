@@ -10,9 +10,10 @@ import {filler, hbox, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {checkbox, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
+import {checkbox, select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {getGroupOptions} from './Utils';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {startCase} from 'lodash';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
@@ -45,7 +46,9 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
         return panel({
             item: form({
                 fieldDefaults: {
-                    commitOnChange: true
+                    commitOnChange: true,
+                    inline: true,
+                    minimal: true
                 },
                 item: vframe({
                     className: 'xh-view-manager__save-dialog__form',
@@ -62,7 +65,12 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                         }),
                         formField({
                             field: 'group',
-                            item: textInput({selectOnFocus: true})
+                            item: select({
+                                enableCreate: true,
+                                enableClear: true,
+                                placeholder: 'Select optional group....',
+                                options: getGroupOptions(model.parent, 'owned')
+                            })
                         }),
                         formField({
                             field: 'description',
@@ -74,14 +82,9 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                         hbox(
                             formField({
                                 field: 'isShared',
-                                inline: true,
+                                label: 'Share?',
+                                labelTextAlign: 'left',
                                 omit: !model.parent.enableSharing,
-                                item: checkbox()
-                            }),
-                            formField({
-                                field: 'isPinned',
-                                inline: true,
-                                info: 'Show this view on menu?',
                                 item: checkbox()
                             })
                         )

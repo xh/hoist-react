@@ -15,6 +15,7 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {getGroupOptions} from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
 import {fmtDateTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {startCase} from 'lodash';
@@ -28,9 +29,9 @@ export const editForm = hoistCmp.factory({
         const {formModel, view, parent} = model;
         if (!view) return null;
 
-        const {manageGlobal, globalDisplayName} = parent,
-            {lastUpdated, lastUpdatedBy, owner} = view,
-            isOwnView = owner === XH.getUsername();
+        const {viewManagerModel} = parent,
+            {manageGlobal, globalDisplayName} = viewManagerModel,
+            {lastUpdated, lastUpdatedBy, owner, isOwned} = view;
 
         return panel({
             item: form({
@@ -43,6 +44,18 @@ export const editForm = hoistCmp.factory({
                         formField({
                             field: 'name',
                             item: textInput()
+                        }),
+                        formField({
+                            field: 'group',
+                            item: select({
+                                enableCreate: true,
+                                enableClear: true,
+                                placeholder: 'Select optional group....',
+                                options: getGroupOptions(
+                                    model.parent.viewManagerModel,
+                                    view.isOwned ? 'owned' : 'global'
+                                )
+                            })
                         }),
                         formField({
                             field: 'description',
@@ -66,7 +79,7 @@ export const editForm = hoistCmp.factory({
                                     {value: true, label: startCase(globalDisplayName)},
                                     {
                                         value: false,
-                                        label: `Private to ${isOwnView ? 'me' : owner}`
+                                        label: `Private to ${isOwned ? 'me' : owner}`
                                     }
                                 ],
                                 enableFilter: false
