@@ -5,16 +5,75 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed} from '@xh/hoist/core';
+import {HoistModel, managed, ReactionSpec, Some, XH} from '@xh/hoist/core';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {apiDeprecated} from '@xh/hoist/utils/js';
+import {apiDeprecated, pluralize} from '@xh/hoist/utils/js';
 import filesize from 'filesize';
-import {find, isEmpty, uniqBy, without} from 'lodash';
+import {castArray, concat, find, isEmpty, uniqBy, without} from 'lodash';
+import mime from 'mime';
+import {ReactNode} from 'react';
+import {FileRejection} from 'react-dropzone';
+
+export interface FileChooserConf {
+    /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
+    accept?: Some<string>;
+
+    /** True (default) to allow multiple files in a single upload. */
+    enableMulti?: boolean;
+
+    /**
+     * True to allow user to drop multiple files into the dropzone at once.  True also allows
+     * for selection of multiple files within the OS pop-up window.  Defaults to enableMulti.
+     */
+    enableAddMulti?: boolean;
+
+    /** Maximum number of accepted files accepted in one drop. */
+    maxFiles?: number;
+
+    /** Maximum accepted file size in bytes. */
+    maxSize?: number;
+
+    /** Minimum accepted file size in bytes. */
+    minSize?: number;
+
+    /**
+     * True (default) to display the selected file(s) in a grid alongside the dropzone. Note
+     * that, if false, the component will not provide any built-in indication of its selection.
+     */
+    showFileGrid?: boolean;
+
+    /** Intro/help text to display within the dropzone target. */
+    targetText?: ReactNode | ((draggedCount: number) => ReactNode);
+
+    /** Text to display on file reject within the dropzone target */
+    rejectText?: ReactNode | ((rejectedFiles: FileRejection[]) => ReactNode);
+
+    /** Show a toast with rejection message */
+    toastOnReject?: boolean;
+
+    // onFilesAdded: (files: File[]) => void;
+}
 
 export class FileChooserModel extends HoistModel {
+    accept: Some<string>;
+    enableMulti: boolean;
+    enableAddMulti: boolean;
+    maxFiles: number;
+    maxSize: number;
+    minSize: number;
+    showFileGrid: boolean;
+    displayText: ReactNode;
+
+    @observable
+    rejectDisplay: ReactNode;
+
+    toastOnReject: boolean;
+
+    private rejectText: ReactNode | ((rejectedFiles: FileRejection[]) => ReactNode);
+
     @observable.ref
     files: File[] = [];
 
@@ -22,21 +81,39 @@ export class FileChooserModel extends HoistModel {
     lastRejectedCount: number;
 
     @observable
-    draggedCount: number;
+    draggedCount = 0;
 
     @managed
     gridModel: GridModel;
 
-    constructor() {
+    private targetText: ReactNode | ((draggedCount: number) => ReactNode);
+
+    constructor(params: FileChooserConf) {
         super();
         makeObservable(this);
 
+        this.accept = params.accept;
+        this.enableMulti = params.enableMulti ?? true;
+        this.enableAddMulti = params.enableAddMulti ?? this.enableMulti;
+        this.maxFiles = params.maxFiles;
+        this.maxSize = params.maxSize;
+        this.minSize = params.minSize;
+        this.showFileGrid = params.showFileGrid;
+        this.targetText = params.targetText;
+        this.rejectText = params.rejectText ?? 'Rejected better luck next time';
         this.gridModel = this.createGridModel();
+        this.toastOnReject = params.toastOnReject ?? false;
 
-        this.addReaction({
-            track: () => this.files,
-            run: files => this.onFilesChange(files)
+        this.addReaction(this.fileReaction(), this.draggedCountReaction());
+    }
+
+    getMimesByExt(extensions: Some<string>): Record<string, string[]> {
+        extensions = castArray(extensions);
+        let ret = {};
+        extensions.forEach(ext => {
+            ret[mime.getType(ext)] = [ext];
         });
+        return ret;
     }
 
     /**
@@ -45,13 +122,8 @@ export class FileChooserModel extends HoistModel {
      * existing file with the same name.
      */
     @action
-    addFiles(filesToAdd: File[]) {
-        this.files = uniqBy([...filesToAdd, ...this.files], 'name');
-    }
-
-    @action
-    setSingleFile(file: File) {
-        this.files = [file];
+    addFiles(filesToAdd: Some<File>) {
+        this.files = uniqBy(concat(filesToAdd, this.files), 'name');
     }
 
     /** Remove a single file from the current selection. */
@@ -65,12 +137,42 @@ export class FileChooserModel extends HoistModel {
     @action
     clear() {
         this.files = [];
+        this.rejectDisplay = '';
     }
 
     /** @deprecated use clear() instead */
     removeAllFiles() {
         apiDeprecated('FileChooserModel.removeAllFiles()', {msg: 'Use clear() instead'});
         this.clear();
+    }
+
+    //------------------------
+    // Event Handlers
+    //------------------------
+    @action
+    onDragEnter(event) {
+        this.draggedCount = event.dataTransfer.items.length;
+    }
+
+    @action
+    onDragLeave(event) {
+        this.draggedCount = 0;
+    }
+
+    @action
+    onDrop(accepted: File[], rejected: FileRejection[]) {
+        const {enableMulti, rejectText} = this;
+
+        this.rejectDisplay = null;
+        this.draggedCount = 0;
+
+        if (!isEmpty(accepted)) this.addFiles(enableMulti ? accepted : accepted[0]);
+
+        if (rejected.length) {
+            this.rejectDisplay = rejectText instanceof Function ? rejectText(rejected) : rejectText;
+        }
+
+        if (this.toastOnReject) XH.toast({message: this.rejectDisplay, intent: 'danger'});
     }
 
     //------------------------
@@ -119,31 +221,34 @@ export class FileChooserModel extends HoistModel {
         });
     }
 
-    @action
-    onDragEnter(event) {
-        this.draggedCount = event.dataTransfer.items.length;
-    }
-
-    @action
-    onDragLeave(event) {
-        this.draggedCount = null;
-    }
-
-    @action
-    onDrop(accepted, rejected, enableMulti) {
-        if (!isEmpty(accepted)) {
-            if (!enableMulti) {
-                this.setSingleFile(accepted[0]);
-            } else {
-                this.addFiles(accepted);
-            }
-        }
-        this.draggedCount = null;
-        this.lastRejectedCount = rejected.length;
-    }
-
-    onFilesChange(files) {
-        const fileData = files.map(file => ({name: file.name, size: file.size}));
+    private loadFileGrid(files: File[]) {
+        const fileData = files.map(({name, size}) => ({name, size}));
         this.gridModel.loadData(fileData);
+    }
+
+    private fileReaction(): ReactionSpec {
+        return {
+            track: () => this.files,
+            run: files => this.loadFileGrid(files)
+        };
+    }
+
+    private draggedCountReaction(): ReactionSpec {
+        return {
+            track: () => this.draggedCount,
+            run: draggedCount => {
+                const {targetText} = this;
+                if (targetText) {
+                    targetText instanceof Function
+                        ? (this.displayText = targetText(draggedCount))
+                        : (this.displayText = targetText);
+                } else {
+                    this.displayText = draggedCount
+                        ? `Drop to add ${draggedCount} ${pluralize('file', draggedCount)}.`
+                        : 'Drag and drop files here, or click to browse...';
+                }
+            },
+            fireImmediately: true
+        };
     }
 }

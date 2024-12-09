@@ -10,40 +10,11 @@ import {BoxProps, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
 import classNames from 'classnames';
-import {ReactNode} from 'react';
 import './FileChooser.scss';
+import {FileRejection} from 'react-dropzone';
 import {FileChooserModel} from './FileChooserModel';
 
-export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps {
-    /** Map of MIME type to file extensions to accept
-     * (e.g. `{'image/png': ['.png'], 'text/html': ['.html', '.htm']}`).
-     */
-    accept?: {[key: string]: readonly string[]};
-
-    /** True (default) to allow multiple files in a single upload. */
-    enableMulti?: boolean;
-
-    /**
-     * True to allow user to drop multiple files into the dropzone at once.  True also allows
-     * for selection of multiple files within the OS pop-up window.  Defaults to enableMulti.
-     */
-    enableAddMulti?: boolean;
-
-    /** Maximum accepted file size in bytes. */
-    maxSize?: number;
-
-    /** Minimum accepted file size in bytes. */
-    minSize?: number;
-
-    /**
-     * True (default) to display the selected file(s) in a grid alongside the dropzone. Note
-     * that, if false, the component will not provide any built-in indication of its selection.
-     */
-    showFileGrid?: boolean;
-
-    /** Intro/help text to display within the dropzone target. */
-    targetText?: ReactNode;
-}
+export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps {}
 
 /**
  * A component to select one or more files from the local filesystem. Wraps the third-party
@@ -64,48 +35,27 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
     model: uses(FileChooserModel),
     className: 'xh-file-chooser',
 
-    render(
-        {
-            model,
-            accept,
-            maxSize,
-            minSize,
-            targetText = 'Drag and drop files here, or click to browse...',
-            enableMulti = true,
-            enableAddMulti = enableMulti,
-            showFileGrid = true,
-            ...props
-        },
-        ref
-    ) {
-        const {lastRejectedCount} = model,
-            fileNoun = count => `${count} ${count === 1 ? 'file' : 'files'}`;
+    render({model, ...props}, ref) {
+        const {accept, enableAddMulti, maxFiles, maxSize, minSize, showFileGrid} = model;
 
         return hbox({
             ref,
             ...props,
             items: [
                 dropzone({
-                    accept,
+                    accept: model.getMimesByExt(accept),
+                    maxFiles,
                     maxSize,
                     minSize,
                     multiple: enableAddMulti,
                     children: ({getRootProps, getInputProps, isDragActive}) => {
-                        const targetTxt = isDragActive
-                                ? `Drop to add ${fileNoun(model.draggedCount)}.`
-                                : targetText,
-                            rejectTxt =
-                                lastRejectedCount && !isDragActive
-                                    ? `Unable to accept ${fileNoun(lastRejectedCount)} for upload.`
-                                    : '';
-
                         return div({
                             ...getRootProps(),
                             items: [
-                                targetTxt,
+                                model.displayText,
                                 div({
                                     className: 'xh-file-chooser__reject-warning',
-                                    item: rejectTxt
+                                    item: model.rejectDisplay
                                 }),
                                 input({...getInputProps()})
                             ],
@@ -118,7 +68,8 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                     },
                     onDragEnter: e => model.onDragEnter(e),
                     onDragLeave: e => model.onDragLeave(e),
-                    onDrop: (accepted, rejected) => model.onDrop(accepted, rejected, enableMulti)
+                    onDrop: (accepted: File[], rejected: FileRejection[]) =>
+                        model.onDrop(accepted, rejected)
                 }),
                 grid({
                     flex: 1,
