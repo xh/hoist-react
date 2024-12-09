@@ -12,6 +12,9 @@
 * New `SessionStorageService` and associated persistence provider provides support for saving
   tab local data across reloads.
 
+### ⚙️ Technical
+
+* Added explicit `devDependencies` and `resolutions` blocks for `@types/react[-dom]` at v18.x.
 
 ## v70.0.0 - 2024-11-15
 
