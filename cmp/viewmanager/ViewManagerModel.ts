@@ -239,10 +239,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         return this.views.filter(it => it.isGlobal);
     }
 
-    get sharedViews(): ViewInfo[] {
-        return this.views.filter(it => it.isShared);
-    }
-
     get ownedViews(): ViewInfo[] {
         return this.views.filter(it => it.isOwned);
     }

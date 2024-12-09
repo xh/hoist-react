@@ -16,7 +16,7 @@ import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable, computed, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {ViewInfo, ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
-import {find, isEmpty, some, startCase} from 'lodash';
+import {find, isEmpty, partition, some, startCase} from 'lodash';
 import {ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager/ViewToBlobApi';
 import {action} from 'mobx';
 
@@ -29,7 +29,7 @@ export class ManageDialogModel extends HoistModel {
     @observable isOpen: boolean = false;
 
     @managed ownedGridModel: GridModel;
-    @managed sharedGridModel: GridModel;
+    @managed otherGridModel: GridModel;
     @managed editFormModel: EditFormModel;
     @managed tabContainerModel: TabContainerModel;
 
@@ -42,8 +42,8 @@ export class ManageDialogModel extends HoistModel {
     }
 
     get gridModel(): GridModel {
-        return this.tabContainerModel.activeTabId == 'shared'
-            ? this.sharedGridModel
+        return this.tabContainerModel.activeTabId == 'other'
+            ? this.otherGridModel
             : this.ownedGridModel;
     }
 
@@ -103,9 +103,10 @@ export class ManageDialogModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {view, ownedViews, sharedViews} = this.viewManagerModel;
+        const {view, views} = this.viewManagerModel,
+            [ownedViews, otherViews] = partition(views, 'isOwned');
         this.ownedGridModel.loadData(ownedViews);
-        this.sharedGridModel.loadData(sharedViews);
+        this.otherGridModel.loadData(otherViews);
         if (!loadSpec.isRefresh && !view.isDefault) {
             await this.selectViewAsync(view.info);
         }
@@ -124,11 +125,11 @@ export class ManageDialogModel extends HoistModel {
     //------------------------
     private init() {
         this.ownedGridModel = this.createGridModel('owned');
-        this.sharedGridModel = this.createGridModel('shared');
+        this.otherGridModel = this.createGridModel('other');
         this.tabContainerModel = this.createTabContainerModel();
         this.editFormModel = new EditFormModel(this);
 
-        const {ownedGridModel, sharedGridModel, editFormModel} = this;
+        const {ownedGridModel, otherGridModel, editFormModel} = this;
         this.addReaction(
             {
                 track: () => this.selectedView,
@@ -139,20 +140,20 @@ export class ManageDialogModel extends HoistModel {
                 track: () => this.filter,
                 run: f => {
                     ownedGridModel.store.setFilter(f);
-                    sharedGridModel.store.setFilter(f);
+                    otherGridModel.store.setFilter(f);
                 },
                 fireImmediately: true
             },
             {
-                track: () => sharedGridModel.selectedRecords,
+                track: () => otherGridModel.selectedRecords,
                 run: recs => {
                     if (recs.length) ownedGridModel.clearSelection();
                 }
             },
             {
-                track: () => sharedGridModel.selectedRecords,
+                track: () => ownedGridModel.selectedRecords,
                 run: recs => {
-                    if (recs.length) ownedGridModel.clearSelection();
+                    if (recs.length) otherGridModel.clearSelection();
                 }
             }
         );
@@ -185,10 +186,10 @@ export class ManageDialogModel extends HoistModel {
 
         const confirmStr = count > 1 ? pluralize(typeDisplayName, count, true) : views[0].typedName;
         const msgs: ReactNode[] = [`Are you sure you want to delete ${confirmStr}?`];
-        if (some(views, 'isShared')) {
+        if (some(views, v => v.isGlobal || v.isShared)) {
             count > 1
-                ? msgs.push(strong('These shared views will no longer be available to ALL users.'))
-                : msgs.push(strong('This shared view will no longer be available to ALL users.'));
+                ? msgs.push(strong('Some public views will no longer be available to ALL users.'))
+                : msgs.push(strong('This public view will no longer be available to ALL users.'));
         }
 
         const confirmed = await XH.confirm({
@@ -211,16 +212,16 @@ export class ManageDialogModel extends HoistModel {
     }
 
     async selectViewAsync(view: ViewInfo) {
-        this.tabContainerModel.activateTab(view.isOwned ? 'owned' : 'shared');
+        this.tabContainerModel.activateTab(view.isOwned ? 'owned' : 'other');
         await this.gridModel.selectAsync(view.token);
     }
 
-    private createGridModel(type: 'owned' | 'shared'): GridModel {
+    private createGridModel(type: 'owned' | 'other'): GridModel {
         const {typeDisplayName, viewManagerModel} = this;
         const emptyText =
             type == 'owned'
-                ? `No private ${pluralize(typeDisplayName)} found...`
-                : `No shared ${pluralize(typeDisplayName)} found...`;
+                ? `No personal ${pluralize(typeDisplayName)} found...`
+                : `No public ${pluralize(typeDisplayName)} found...`;
 
         return new GridModel({
             emptyText,
@@ -282,14 +283,14 @@ export class ManageDialogModel extends HoistModel {
         return new TabContainerModel({
             tabs: [
                 {
-                    id: 'private',
+                    id: 'owned',
                     title: `My ${pluralType}`,
                     content: grid({model: this.ownedGridModel})
                 },
                 {
-                    id: 'shared',
-                    title: `Shared ${pluralType}`,
-                    content: grid({model: this.sharedGridModel})
+                    id: 'other',
+                    title: `Public ${pluralType}`,
+                    content: grid({model: this.otherGridModel})
                 }
             ]
         });

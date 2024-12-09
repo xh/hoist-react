@@ -103,9 +103,9 @@ export class ViewToBlobApi<T> {
                 blob = await XH.jsonBlobService.updateAsync(view.token, {
                     name: name.trim(),
                     description: description?.trim(),
+                    owner: isGlobal ? null : XH.getUsername(),
                     acl: isGlobal || isShared ? '*' : null,
-                    owner: isGlobal ? null : view.owner,
-                    meta: isGlobal ? {group, isGlobal: true, isDefaultPinned} : {group, isShared}
+                    meta: isGlobal ? {group, isDefaultPinned} : {group, isShared}
                 });
             const ret = View.fromBlob(blob, this.model);
             this.trackChange('Updated View Info', ret);

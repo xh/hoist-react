@@ -49,21 +49,33 @@ export class ViewInfo {
     constructor(blob: JsonBlob, model: ViewManagerModel) {
         this.token = blob.token;
         this.type = blob.type;
-        this.owner = blob.owner;
         this.name = blob.name;
         this.description = blob.description;
+        this.owner = blob.owner;
+        this.isGlobal = !this.owner;
 
         const meta = (blob.meta ?? {}) as PlainObject;
         this.group = meta.group ?? null;
-        this.isGlobal = !!meta.isGlobal;
         this.isDefaultPinned = !!(this.isGlobal && meta.defaultPinned);
-        this.isShared = !!(this.isGlobal || meta.isShared);
+        this.isShared = !!(!this.isGlobal && meta.isShared);
 
         // Round to seconds.  See: https://github.com/xh/hoist-core/issues/423
         this.dateCreated = Math.round(blob.dateCreated / SECONDS) * SECONDS;
         this.lastUpdated = Math.round(blob.lastUpdated / SECONDS) * SECONDS;
         this.lastUpdatedBy = blob.lastUpdatedBy;
         this.model = model;
+    }
+
+    get isOwned(): boolean {
+        return this.owner === XH.getUsername();
+    }
+
+    get isEditable(): boolean {
+        return this.isOwned || (this.isGlobal && this.model.manageGlobal);
+    }
+
+    get isCurrentView(): boolean {
+        return this.token === this.model.view.token;
     }
 
     /**
@@ -83,15 +95,7 @@ export class ViewInfo {
         return this.model.isUserPinned(this);
     }
 
-    get isOwned(): boolean {
-        return this.owner === XH.getUsername();
-    }
-
     get typedName(): string {
         return `${this.model.typeDisplayName} '${this.name}'`;
-    }
-
-    get isCurrentView(): boolean {
-        return this.token === this.model.view.token;
     }
 }

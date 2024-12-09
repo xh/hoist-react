@@ -26,11 +26,12 @@ export class EditFormModel extends HoistModel {
 
     @action
     setView(view: ViewInfo) {
-        const {formModel, parent} = this;
+        const {formModel} = this;
         this.view = view;
-        if (!view) return null;
-        formModel.init(view);
-        formModel.readonly = view.isGlobal && !parent.manageGlobal;
+        if (view) {
+            formModel.init(view);
+            formModel.readonly = !view.isEditable;
+        }
     }
 
     get loadTask(): TaskObserver {
@@ -62,12 +63,14 @@ export class EditFormModel extends HoistModel {
             (view.isGlobal || isGlobal) && !manageGlobal,
             `Cannot save changes to ${globalDisplayName} ${typeDisplayName} - missing required permission.`
         );
+        const oldIsPublic = view.isShared || view.isGlobal,
+            newIsPublic = isShared || isGlobal;
 
-        if ((isShared || isGlobal) != view.isShared) {
-            const msg: ReactNode = view.isShared
+        if (oldIsPublic != newIsPublic) {
+            const msg: ReactNode = !newIsPublic
                 ? span(
                       `The selected ${typeDisplayName} will revert to being private to you `,
-                      strong('It will no longer be available to ALL users.')
+                      strong('It will no longer be available to other users.')
                   )
                 : `This ${typeDisplayName} will become visible to all other ${XH.appName} users.`;
             const msgs = [msg, 'Are you sure you want to proceed?'];

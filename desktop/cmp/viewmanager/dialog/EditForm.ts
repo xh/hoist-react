@@ -12,7 +12,7 @@ import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {EditFormModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/EditFormModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
+import {checkbox, select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {getGroupOptions} from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
@@ -30,13 +30,15 @@ export const editForm = hoistCmp.factory({
         if (!view) return null;
 
         const {viewManagerModel} = parent,
-            {manageGlobal, globalDisplayName} = viewManagerModel,
-            {lastUpdated, lastUpdatedBy, owner, isOwned} = view;
+            {globalDisplayName} = viewManagerModel,
+            {lastUpdated, lastUpdatedBy} = view;
 
         return panel({
             item: form({
                 fieldDefaults: {
-                    commitOnChange: true
+                    commitOnChange: true,
+                    inline: true,
+                    minimal: true
                 },
                 item: vframe({
                     className: 'xh-view-manager__manage-dialog__form',
@@ -72,24 +74,32 @@ export const editForm = hoistCmp.factory({
                                       })
                         }),
                         formField({
+                            field: 'isShared',
+                            label: 'Shared?',
+                            item: checkbox(),
+                            omit: formModel.values.isGlobal
+                        }),
+                        formField({
+                            field: 'isDefaultPinned',
+                            label: 'Default Pin?',
+                            item: checkbox(),
+                            omit: !formModel.values.isGlobal
+                        }),
+                        formField({
                             field: 'isGlobal',
-                            label: 'Visibility',
+                            label: 'Ownership',
                             item: select({
                                 options: [
-                                    {value: true, label: startCase(globalDisplayName)},
-                                    {
-                                        value: false,
-                                        label: `Private to ${isOwned ? 'me' : owner}`
-                                    }
+                                    {value: false, label: 'Owned by you'},
+                                    {value: true, label: startCase(globalDisplayName)}
                                 ],
                                 enableFilter: false
-                            }),
-                            omit: !manageGlobal
+                            })
                         }),
                         hbox({
                             omit: !model.showSaveButton,
-                            style: {margin: '10px 20px'},
                             items: [
+                                filler(),
                                 button({
                                     text: 'Save Changes',
                                     icon: Icon.check(),
@@ -105,7 +115,8 @@ export const editForm = hoistCmp.factory({
                                     tooltip: 'Revert changes',
                                     minimal: false,
                                     onClick: () => formModel.reset()
-                                })
+                                }),
+                                filler()
                             ]
                         }),
                         filler(),

@@ -36,7 +36,7 @@ export const manageDialog = hoistCmp.factory({
             icon: Icon.gear(),
             className,
             isOpen: true,
-            style: {width: '800px', maxWidth: '90vm', minHeight: '500px'},
+            style: {width: '900px', maxWidth: '90vm', minHeight: '500px'},
             canOutsideClickClose: false,
             onClose: () => model.close(),
             item: panel({
@@ -53,7 +53,7 @@ export const manageDialog = hoistCmp.factory({
 const viewPanel = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
         return panel({
-            modelConfig: {defaultSize: 350, side: 'left', collapsible: false},
+            modelConfig: {defaultSize: 400, side: 'left', collapsible: false},
             item: tabContainer(),
             bbar: [
                 storeFilterField({
