@@ -96,8 +96,8 @@ export class FileChooserModel extends HoistModel {
         this.showFileGrid = params.showFileGrid;
         this.enableMulti = withDefault(params.enableMulti, true);
         this.enableAddMulti = withDefault(params.enableAddMulti, this.enableMulti);
-        this.targetText = withDefault(params.targetText, this.defaultTarget);
-        this.rejectText = withDefault(params.rejectText, this.defaultRejection);
+        this.targetText = withDefault(params.targetText, this.defaultTargetText);
+        this.rejectText = withDefault(params.rejectText, this.defaultRejectionText);
         this.gridModel = this.createGridModel();
 
         this.addReaction(this.fileReaction(), this.draggedCountReaction());
@@ -168,13 +168,13 @@ export class FileChooserModel extends HoistModel {
         return ret;
     }
 
-    private defaultTarget(draggedCount: number) {
+    private defaultTargetText(draggedCount: number): ReactNode {
         return draggedCount
             ? `Drop to add ${draggedCount} ${pluralize('file', draggedCount)}.`
             : 'Drag and drop files here, or click to browse...';
     }
 
-    private defaultRejection = (rejections: FileRejection[]): ReactElement => {
+    private defaultRejectionText(rejections: FileRejection[]): ReactElement {
         // 1) Create map of rejected files to list of error messages
         const errorsByFile = {};
         rejections.forEach(({file, errors}) => {
@@ -208,7 +208,7 @@ export class FileChooserModel extends HoistModel {
             }),
             filler()
         );
-    };
+    }
 
     private createGridModel(): GridModel {
         return new GridModel({
