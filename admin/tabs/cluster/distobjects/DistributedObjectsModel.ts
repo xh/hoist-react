@@ -14,7 +14,8 @@ import {RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
-import {groupBy, isEmpty, isEqual, isNil, map} from 'lodash';
+import {pluralize} from '@xh/hoist/utils/js';
+import {forIn, groupBy, isEmpty, isEqual, isNil, mapValues} from 'lodash';
 import {action, observable} from 'mobx';
 
 export class DistributedObjectsModel extends BaseInstanceModel {
@@ -30,6 +31,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         actionFn: () => this.clearAsync(),
         displayFn: ({selectedRecords}) => ({
             hidden: AppModel.readonly,
+            text: 'Clear ' + pluralize('Object', selectedRecords?.length, true),
             disabled:
                 isEmpty(selectedRecords) || selectedRecords.every(r => r.data.objectType == 'Topic')
         }),
@@ -42,16 +44,18 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
         enableExport: true,
         exportOptions: {filename: exportFilenameWithDate('distributed-objects'), columns: 'ALL'},
-        sortBy: ['hasBreaks', 'name'],
+        sortBy: ['hasBreaks|desc', 'name'],
         store: {
             fields: [
                 {name: 'name', type: 'string'},
                 {name: 'type', type: 'string'},
-                {name: 'owner', type: 'string'},
+                {name: 'parentName', type: 'string'},
+                {name: 'provider', type: 'string'},
                 {name: 'hasBreaks', type: 'bool'},
                 {name: 'comparisonFields', type: 'auto'},
                 {name: 'adminStatsbyInstance', type: 'auto'}
-            ]
+            ],
+            idSpec: 'name'
         },
         rowClassRules: {
             'xh-distributed-objects-row-has-break': ({data: record}) => record?.data.hasBreaks
@@ -71,13 +75,14 @@ export class DistributedObjectsModel extends BaseInstanceModel {
                           ? Icon.warning({prefix: 'fas', intent: 'danger'})
                           : Icon.check({prefix: 'fas', intent: 'success'})
             },
+            {field: 'displayName', isTreeColumn: true},
             {field: 'name'},
             {field: 'type'},
-            {field: 'owner'},
             {
                 field: 'comparisonFields',
                 renderer: v => (!isEmpty(v) ? tagsRenderer(v) : null)
-            }
+            },
+            {field: 'parentName', hidden: true}
         ],
         contextMenu: [this.clearAction, '-', ...GridModel.defaultContextMenu]
     });
@@ -193,7 +198,8 @@ export class DistributedObjectsModel extends BaseInstanceModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         try {
             const report = await XH.fetchJson({
-                url: 'clusterConsistencyAdmin/getDistributedObjectsReport'
+                url: 'distributedObjectAdmin/getDistributedObjectsReport',
+                params: {instance: this.instanceName}
             });
 
             this.gridModel.loadData(this.processReport(report));
@@ -275,27 +281,55 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         info: PlainObject[];
         breaks: Record<string, [string, string]>;
     }): PlainObject[] {
-        const byId = groupBy(info, 'id');
-        return map(byId, objs => {
-            const {id, name, type, owner, comparisonFields} = objs[0],
-                adminStatsbyInstance: PlainObject = Object.fromEntries(
-                    objs.map(obj => [obj.instanceName, obj.adminStats])
-                );
-            return {
-                id,
-                name,
-                type,
-                owner: owner ?? this.deriveOwner(name),
-                hasBreaks:
-                    isEmpty(comparisonFields) || objs.length < 2 ? null : !isEmpty(breaks[id]),
-                comparisonFields: comparisonFields ?? [],
-                adminStatsbyInstance
-            };
+        const byName = groupBy(info, 'name'),
+            recordsByName = mapValues(byName, objs => {
+                const {name, type, parentName, comparisonFields} = objs[0],
+                    adminStatsbyInstance: PlainObject = Object.fromEntries(
+                        objs.map(obj => [obj.instanceName, obj.adminStats])
+                    );
+                return {
+                    name,
+                    displayName: this.deriveDisplayName(name),
+                    type,
+                    parentName: parentName ?? this.deriveParent(name),
+                    hasBreaks:
+                        isEmpty(comparisonFields) || objs.length < 2
+                            ? null
+                            : !isEmpty(breaks[name]),
+                    comparisonFields: comparisonFields ?? [],
+                    adminStatsbyInstance,
+                    children: []
+                };
+            });
+
+        forIn(recordsByName, record => {
+            const parentName = record.parentName;
+            if (parentName) {
+                // Create missing parents
+                if (!recordsByName[parentName]) {
+                    recordsByName[parentName] = {
+                        name: parentName,
+                        displayName: this.deriveDisplayName(parentName),
+                        type: 'Unknown',
+                        parentName: this.deriveParent(parentName),
+                        hasBreaks: null,
+                        comparisonFields: [],
+                        adminStatsbyInstance: {},
+                        children: []
+                    };
+                }
+                // Place under parent
+                recordsByName[parentName].children.push(record);
+            }
         });
+
+        const ret = Object.values(recordsByName).filter(record => !record.parentName);
+        console.log(ret);
+        return ret;
     }
 
-    private deriveOwner(name: string): string {
-        // Hz ringbuffer that implements a CachedValue
+    private deriveParent(name: string): string {
+        // Hz Ringbuffer that implements a CachedValue
         if (name.startsWith('_hz_rb_xhcachedvalue.')) {
             return name.substring(21);
         }
@@ -307,9 +341,35 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         if (name.indexOf('[') !== -1) {
             return name.substring(0, name.indexOf('['));
         }
-        if (name.startsWith('xh')) {
+        // XH Services and impl objects
+        if (name.startsWith('xh') || name.startsWith('io.xh.hoist')) {
             return 'Hoist';
         }
+        // Everything else belongs in the 'App' group
+        if (name !== 'App') {
+            return 'App';
+        }
+        return null;
+    }
+
+    private deriveDisplayName(name: string): string {
+        // Hz Ringbuffer that implements a CachedValue
+        if (name.startsWith('_hz_rb_xhcachedvalue.')) {
+            return 'Ringbuffer';
+        }
+        // Hz ITopic that implements a CachedValue
+        if (name.startsWith('xhcachedvalue.')) {
+            return 'ITopic';
+        }
+        // Any object that utilizes `svc.hzName()`
+        if (name.indexOf('[') !== -1) {
+            return name.substring(name.indexOf('[') + 1, name.indexOf(']'));
+        }
+        // Any object that utilizes `class.getName()`
+        if (name.lastIndexOf('.') !== -1) {
+            return name.substring(name.lastIndexOf('.') + 1);
+        }
+        // Other groupings, Services, impl objects, etc.
         return name;
     }
 }
