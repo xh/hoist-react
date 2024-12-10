@@ -7,7 +7,7 @@
 import {elementFactory} from '@xh/hoist/core';
 import {SingleDatePicker} from 'react-dates';
 import 'react-dates/initialize';
-import 'react-dates/lib/css/_datepicker.css';
+import './datepicker.css'; // See comment at top of file - this is a copy of the library's (problematic) CSS
 
 export {SingleDatePicker};
 

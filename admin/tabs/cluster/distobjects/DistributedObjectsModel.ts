@@ -186,7 +186,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
             ? className
             : className.startsWith('xh')
               ? 'Hoist'
-              : obj.type == 'Cache'
+              : obj.type == 'Hibernate Cache'
                 ? 'Hibernate'
                 : 'Other';
 

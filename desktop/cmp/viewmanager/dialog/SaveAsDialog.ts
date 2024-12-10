@@ -1,26 +1,35 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2024 Extremely Heavy Industries Inc.
+ */
+
 import {form} from '@xh/hoist/cmp/form';
 import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {SaveDialogModel} from '@xh/hoist/core/persist/viewmanager/impl/SaveDialogModel';
+import {SaveAsDialogModel} from '@xh/hoist/cmp/viewmanager/';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
+import {startCase} from 'lodash';
 
-export const saveDialog = hoistCmp.factory<SaveDialogModel>({
+/**
+ * Default Save As dialog used by ViewManager.
+ */
+export const saveAsDialog = hoistCmp.factory<SaveAsDialogModel>({
     displayName: 'SaveDialog',
     className: 'xh-view-manager__save-dialog',
-    model: uses(SaveDialogModel),
+    model: uses(SaveAsDialogModel),
 
     render({model, className}) {
         if (!model.isOpen) return null;
 
         return dialog({
             title: `Save as...`,
-            icon: Icon.copy(),
             className,
             isOpen: true,
             style: {width: 500},
@@ -31,7 +40,7 @@ export const saveDialog = hoistCmp.factory<SaveDialogModel>({
     }
 });
 
-const formPanel = hoistCmp.factory<SaveDialogModel>({
+const formPanel = hoistCmp.factory<SaveAsDialogModel>({
     render({model}) {
         return panel({
             item: form({
@@ -62,14 +71,14 @@ const formPanel = hoistCmp.factory<SaveDialogModel>({
                 })
             }),
             bbar: bbar(),
-            mask: model.saveTask
+            mask: model.parent.saveTask
         });
     }
 });
 
-const bbar = hoistCmp.factory<SaveDialogModel>({
+const bbar = hoistCmp.factory<SaveAsDialogModel>({
     render({model}) {
-        const {formModel, DisplayName} = model;
+        const {typeDisplayName} = model;
         return toolbar(
             filler(),
             button({
@@ -77,11 +86,10 @@ const bbar = hoistCmp.factory<SaveDialogModel>({
                 onClick: () => model.cancel()
             }),
             button({
-                text: `Save as new ${DisplayName}`,
-                icon: Icon.copy(),
+                text: `Save as new ${startCase(typeDisplayName)}`,
                 outlined: true,
                 intent: 'success',
-                disabled: !formModel.isValid,
+                disabled: !model.formModel.isValid,
                 onClick: () => model.saveAsAsync()
             })
         );

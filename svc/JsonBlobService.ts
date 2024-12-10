@@ -9,7 +9,7 @@ import {pickBy} from 'lodash';
 
 export interface JsonBlob {
     /** Either null for private blobs or special token "*" for globally shared blobs. */
-    acl: string;
+    acl: '*';
     /** True if this blob has been archived (soft-deleted). */
     archived: boolean;
     /** Timestamp indicating when this blob was archived, or special value `0` if not archived. */

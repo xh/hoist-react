@@ -2,23 +2,21 @@
 
 ## v71.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - `FileChooser` props)
+### 🎁 New Features
 
-* Upgraded `FileChooser` now requires the accepted file types `accept` prop to be an object
-  mapping MIME type to list of file extensions, e.g.
-```
-    accept: {
-        'image/png': ['.png'],
-        'text/html': ['.html', '.htm']
-    }
-```
+* Major Improvements to ViewManager component
+  * Support for persisting pending value.
+  * Handle delete and update collisions more gracefully.
+  * Support for `settleTime`,
+  * Improved management UI Dialog.
+* New `SessionStorageService` and associated persistence provider provides support for saving
+  tab local data across reloads.
 
 ### ⚙️ Technical
-* Misc. Improvements to ViewManager
 
-### 📚 Libraries
-
-* react-dropzone `10.2.2 → 14.3.5`
+* Added explicit `devDependencies` and `resolutions` blocks for `@types/react[-dom]` at v18.x.
+* Added workaround for problematic use of SASS-syntax-in-CSS shipped by `react-dates`. This began
+  throwing "This function isn't allowed in plain CSS" with latest version of sass/sass-loader.
 
 ## v70.0.0 - 2024-11-15
 

@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, XH, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, XH} from '@xh/hoist/core';
 import {Button, buttonGroup, ButtonGroupProps, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
@@ -101,8 +101,9 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props
             throw XH.exception('ButtonGroupInput child must be a Button.');
         }
 
-        const {value} = button.props,
-            btnDisabled = disabled || button.props.disabled;
+        const props = button.props as ButtonProps,
+            {value} = props,
+            btnDisabled = disabled || props.disabled;
 
         throwIf(value == null, 'ButtonGroupInput child must declare a non-null value');
 

@@ -101,7 +101,7 @@ export class LogViewerModel extends BaseInstanceModel {
             store.loadData(files);
             if (selModel.isEmpty) {
                 const latestAppLog = store.records.find(
-                    rec => rec.data.filename === `${XH.appCode}-${instanceName}.log`
+                    rec => rec.data.filename === `${XH.appCode}-${instanceName}-app.log`
                 );
                 if (latestAppLog) {
                     selModel.select(latestAppLog);
