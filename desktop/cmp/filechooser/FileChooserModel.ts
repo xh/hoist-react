@@ -5,16 +5,18 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
+import {filler, hbox, li, ul, vbox} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, ReactionSpec, Some, XH} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {apiDeprecated, pluralize} from '@xh/hoist/utils/js';
+import {pluralize, withDefault} from '@xh/hoist/utils/js';
 import filesize from 'filesize';
-import {castArray, concat, find, isEmpty, uniqBy, without} from 'lodash';
+import {castArray, concat, find, isEmpty, isFunction, map, uniqBy, without} from 'lodash';
 import mime from 'mime';
-import {ReactNode} from 'react';
+import {ReactElement, ReactNode} from 'react';
 import {FileRejection} from 'react-dropzone';
 
 export interface FileChooserConf {
@@ -45,40 +47,26 @@ export interface FileChooserConf {
      */
     showFileGrid?: boolean;
 
-    /** Intro/help text to display within the dropzone target. */
+    /** Content to display within the dropzone target. */
     targetText?: ReactNode | ((draggedCount: number) => ReactNode);
 
-    /** Text to display on file reject within the dropzone target */
+    /**
+     * Content to display on file reject within the dropzone target.
+     * Defaults to a button that shows an alert with a list of reject files with reasons for
+     * rejection.
+     */
     rejectText?: ReactNode | ((rejectedFiles: FileRejection[]) => ReactNode);
-
-    /** Show a toast with rejection message */
-    toastOnReject?: boolean;
-
-    // onFilesAdded: (files: File[]) => void;
 }
 
 export class FileChooserModel extends HoistModel {
-    accept: Some<string>;
-    enableMulti: boolean;
-    enableAddMulti: boolean;
-    maxFiles: number;
-    maxSize: number;
-    minSize: number;
-    showFileGrid: boolean;
-    displayText: ReactNode;
-
-    @observable
-    rejectDisplay: ReactNode;
-
-    toastOnReject: boolean;
-
-    private rejectText: ReactNode | ((rejectedFiles: FileRejection[]) => ReactNode);
-
     @observable.ref
     files: File[] = [];
 
     @observable
-    lastRejectedCount: number;
+    targetDisplay: ReactNode;
+
+    @observable
+    rejectDisplay: ReactNode;
 
     @observable
     draggedCount = 0;
@@ -86,34 +74,33 @@ export class FileChooserModel extends HoistModel {
     @managed
     gridModel: GridModel;
 
+    accept: Record<string, string[]>;
+    enableMulti: boolean;
+    enableAddMulti: boolean;
+    maxFiles: number;
+    maxSize: number;
+    minSize: number;
+    showFileGrid: boolean;
+
     private targetText: ReactNode | ((draggedCount: number) => ReactNode);
+    private rejectText: ReactNode | ((rejectedFiles: FileRejection[]) => ReactNode);
 
     constructor(params: FileChooserConf) {
         super();
         makeObservable(this);
 
-        this.accept = params.accept;
-        this.enableMulti = params.enableMulti ?? true;
-        this.enableAddMulti = params.enableAddMulti ?? this.enableMulti;
+        this.accept = this.getMimesByExt(params.accept);
         this.maxFiles = params.maxFiles;
         this.maxSize = params.maxSize;
         this.minSize = params.minSize;
         this.showFileGrid = params.showFileGrid;
-        this.targetText = params.targetText;
-        this.rejectText = params.rejectText ?? 'Rejected better luck next time';
+        this.enableMulti = withDefault(params.enableMulti, true);
+        this.enableAddMulti = withDefault(params.enableAddMulti, this.enableMulti);
+        this.targetText = withDefault(params.targetText, this.defaultTarget);
+        this.rejectText = withDefault(params.rejectText, this.defaultRejection);
         this.gridModel = this.createGridModel();
-        this.toastOnReject = params.toastOnReject ?? false;
 
         this.addReaction(this.fileReaction(), this.draggedCountReaction());
-    }
-
-    getMimesByExt(extensions: Some<string>): Record<string, string[]> {
-        extensions = castArray(extensions);
-        let ret = {};
-        extensions.forEach(ext => {
-            ret[mime.getType(ext)] = [ext];
-        });
-        return ret;
     }
 
     /**
@@ -137,13 +124,7 @@ export class FileChooserModel extends HoistModel {
     @action
     clear() {
         this.files = [];
-        this.rejectDisplay = '';
-    }
-
-    /** @deprecated use clear() instead */
-    removeAllFiles() {
-        apiDeprecated('FileChooserModel.removeAllFiles()', {msg: 'Use clear() instead'});
-        this.clear();
+        this.rejectDisplay = null;
     }
 
     //------------------------
@@ -161,23 +142,74 @@ export class FileChooserModel extends HoistModel {
 
     @action
     onDrop(accepted: File[], rejected: FileRejection[]) {
-        const {enableMulti, rejectText} = this;
+        const {enableAddMulti, rejectText} = this;
 
         this.rejectDisplay = null;
         this.draggedCount = 0;
 
-        if (!isEmpty(accepted)) this.addFiles(enableMulti ? accepted : accepted[0]);
+        if (!isEmpty(accepted)) this.addFiles(enableAddMulti ? accepted : accepted[0]);
 
         if (rejected.length) {
-            this.rejectDisplay = rejectText instanceof Function ? rejectText(rejected) : rejectText;
+            this.rejectDisplay = isFunction(rejectText) ? rejectText(rejected) : rejectText;
         }
-
-        if (this.toastOnReject) XH.toast({message: this.rejectDisplay, intent: 'danger'});
     }
 
     //------------------------
     // Implementation
     //------------------------
+    private getMimesByExt(extensions: Some<string>): Record<string, string[]> {
+        if (isEmpty(extensions)) return null;
+
+        extensions = castArray(extensions);
+        let ret = {};
+        extensions.forEach(ext => {
+            ret[mime.getType(ext)] = [ext];
+        });
+        return ret;
+    }
+
+    private defaultTarget(draggedCount: number) {
+        return draggedCount
+            ? `Drop to add ${draggedCount} ${pluralize('file', draggedCount)}.`
+            : 'Drag and drop files here, or click to browse...';
+    }
+
+    private defaultRejection = (rejections: FileRejection[]): ReactElement => {
+        // 1) Create map of rejected files to list of error messages
+        const errorsByFile = {};
+        rejections.forEach(({file, errors}) => {
+            const {name} = file.handle;
+            errorsByFile[name] = map(errors, 'message');
+        });
+
+        // 2) Create list of files with bulleted rejection messages
+        const rejectItems = [];
+        for (const file in errorsByFile) {
+            const errorsMsgs = errorsByFile[file];
+            rejectItems.push(
+                `${file} rejected for the following ${pluralize('reason', errorsMsgs.length)}:`,
+                ul(errorsMsgs.map(it => li(it)))
+            );
+        }
+
+        return hbox(
+            filler(),
+            button({
+                outlined: true,
+                icon: Icon.warning({className: 'xh-red'}),
+                text: `${rejections.length} ${pluralize('File', rejections.length)} Rejected`,
+                onClick: event => {
+                    event.stopPropagation();
+                    XH.alert({
+                        title: `${rejections.length} ${pluralize('Files', rejections.length)} Rejected`,
+                        message: vbox(rejectItems)
+                    });
+                }
+            }),
+            filler()
+        );
+    };
+
     private createGridModel(): GridModel {
         return new GridModel({
             hideHeaders: true,
@@ -238,15 +270,7 @@ export class FileChooserModel extends HoistModel {
             track: () => this.draggedCount,
             run: draggedCount => {
                 const {targetText} = this;
-                if (targetText) {
-                    targetText instanceof Function
-                        ? (this.displayText = targetText(draggedCount))
-                        : (this.displayText = targetText);
-                } else {
-                    this.displayText = draggedCount
-                        ? `Drop to add ${draggedCount} ${pluralize('file', draggedCount)}.`
-                        : 'Drag and drop files here, or click to browse...';
-                }
+                this.targetDisplay = isFunction(targetText) ? targetText(draggedCount) : targetText;
             },
             fireImmediately: true
         };

@@ -43,7 +43,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
             ...props,
             items: [
                 dropzone({
-                    accept: model.getMimesByExt(accept),
+                    accept,
                     maxFiles,
                     maxSize,
                     minSize,
@@ -52,11 +52,8 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                         return div({
                             ...getRootProps(),
                             items: [
-                                model.displayText,
-                                div({
-                                    className: 'xh-file-chooser__reject-warning',
-                                    item: model.rejectDisplay
-                                }),
+                                model.targetDisplay,
+                                model.rejectDisplay,
                                 input({...getInputProps()})
                             ],
                             className: classNames(
