@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {IconName} from '@fortawesome/fontawesome-svg-core';
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {markdown} from '@xh/hoist/cmp/markdown';
 import {BannerSpec, HoistService, Intent, XH} from '@xh/hoist/core';
@@ -47,7 +48,7 @@ export class AlertBannerService extends HoistService {
     genBannerSpec(
         message: string,
         intent: Intent,
-        iconName: string,
+        iconName: IconName,
         enableClose: boolean
     ): BannerSpec {
         const icon = iconName ? Icon.icon({iconName, size: 'lg'}) : null,
@@ -90,19 +91,26 @@ export class AlertBannerService extends HoistService {
     }
 }
 
-/**
- * @internal
- */
+/** @internal */
 export interface AlertBannerSpec {
     active: boolean;
     expires: number;
     publishDate: number;
     message: string;
     intent: Intent;
-    iconName: string;
+    iconName: AlertBannerIconName;
     enableClose: boolean;
     clientApps: string[];
     created: number;
     updated: number;
     updatedBy: string;
 }
+
+/** @internal */
+export type AlertBannerIconName =
+    | 'bullhorn'
+    | 'check-circle'
+    | 'exclamation-triangle'
+    | 'times-circle'
+    | 'info-circle'
+    | 'question-circle';

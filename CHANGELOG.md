@@ -16,6 +16,11 @@
 
 * Added explicit `devDependencies` and `resolutions` blocks for `@types/react[-dom]` at v18.x.
 
+### ⚙️ Typescript API Adjustments
+
+* Improved accuracy of `IconProps` interface, with use of the `IconName` and `IconPrefix` types
+  provided by FontAwesome.
+
 ## v70.0.0 - 2024-11-15
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - changes to advanced persistence APIs)
