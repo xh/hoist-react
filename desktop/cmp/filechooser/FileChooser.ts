@@ -36,17 +36,19 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
     className: 'xh-file-chooser',
 
     render({model, ...props}, ref) {
-        const {accept, enableAddMulti, maxFiles, maxSize, minSize, showFileGrid} = model;
+        const {accept, enableAddMulti, maxFiles, maxSize, minSize, showFileGrid, noClick} = model;
 
         return hbox({
             ref,
             ...props,
             items: [
                 dropzone({
+                    ref: model.dropzoneRef,
                     accept,
                     maxFiles,
                     maxSize,
                     minSize,
+                    noClick,
                     multiple: enableAddMulti,
                     children: ({getRootProps, getInputProps, isDragActive}) => {
                         return div({
@@ -59,7 +61,8 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                             className: classNames(
                                 'xh-file-chooser__target',
                                 isDragActive ? 'xh-file-chooser__target--active' : null,
-                                showFileGrid ? 'xh-file-chooser__target--withGrid' : null
+                                showFileGrid ? 'xh-file-chooser__target--withGrid' : null,
+                                !noClick ? 'xh-file-chooser__target--pointer' : null
                             )
                         });
                     },

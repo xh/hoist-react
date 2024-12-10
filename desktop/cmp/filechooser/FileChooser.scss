@@ -10,7 +10,6 @@
     margin: var(--xh-pad-px);
     padding: var(--xh-pad-px);
     border: var(--xh-border-dotted);
-    cursor: pointer;
     flex: auto;
 
     &--withGrid {
@@ -21,11 +20,10 @@
     &--active {
       border-color: var(--xh-green);
     }
-  }
 
-  &__reject-warning {
-    color: var(--xh-red);
-    margin-top: var(--xh-pad-double-px);
+    &--pointer {
+      cursor: pointer;
+    }
   }
 
   &__grid {

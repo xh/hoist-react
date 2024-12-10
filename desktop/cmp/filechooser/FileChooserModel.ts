@@ -13,11 +13,12 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {pluralize, withDefault} from '@xh/hoist/utils/js';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import filesize from 'filesize';
 import {castArray, concat, find, isEmpty, isFunction, map, uniqBy, without} from 'lodash';
 import mime from 'mime';
 import {ReactElement, ReactNode} from 'react';
-import {FileRejection} from 'react-dropzone';
+import {DropzoneRef, FileRejection} from 'react-dropzone';
 
 export interface FileChooserConf {
     /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
@@ -28,7 +29,7 @@ export interface FileChooserConf {
 
     /**
      * True to allow user to drop multiple files into the dropzone at once.  True also allows
-     * for selection of multiple files within the OS pop-up window.  Defaults to enableMulti.
+     * for selection of multiple files within the OS pop-up window. Defaults to enableMulti.
      */
     enableAddMulti?: boolean;
 
@@ -56,11 +57,16 @@ export interface FileChooserConf {
      * rejection.
      */
     rejectText?: ReactNode | ((rejectedFiles: FileRejection[]) => ReactNode);
+
+    /** True to disable clicking on the dropzone to open the file browser. Defaults to false */
+    noClick?: boolean;
 }
 
 export class FileChooserModel extends HoistModel {
     @observable.ref
     files: File[] = [];
+
+    dropzoneRef = createObservableRef<DropzoneRef>();
 
     @observable
     targetDisplay: ReactNode;
@@ -81,6 +87,7 @@ export class FileChooserModel extends HoistModel {
     maxSize: number;
     minSize: number;
     showFileGrid: boolean;
+    noClick: boolean;
 
     private targetText: ReactNode | ((draggedCount: number) => ReactNode);
     private rejectText: ReactNode | ((rejectedFiles: FileRejection[]) => ReactNode);
@@ -98,9 +105,15 @@ export class FileChooserModel extends HoistModel {
         this.enableAddMulti = withDefault(params.enableAddMulti, this.enableMulti);
         this.targetText = withDefault(params.targetText, this.defaultTargetText);
         this.rejectText = withDefault(params.rejectText, this.defaultRejectionText);
+        this.noClick = withDefault(params.noClick, false);
         this.gridModel = this.createGridModel();
 
         this.addReaction(this.fileReaction(), this.draggedCountReaction());
+    }
+
+    /** Open the file browser. Typically used in a button's onClick callback.*/
+    openFileBrowser() {
+        this.dropzoneRef.current?.open();
     }
 
     /**
