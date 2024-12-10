@@ -6,7 +6,7 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {div, filler, hbox, hspacer, span, vframe} from '@xh/hoist/cmp/layout';
+import {div, filler, hbox, hspacer, span, vframe, vspacer} from '@xh/hoist/cmp/layout';
 
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {EditFormModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/EditFormModel';
@@ -18,7 +18,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {getGroupOptions} from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
 import {fmtDateTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {startCase} from 'lodash';
+import {capitalize} from 'lodash';
 
 /**
  * Default Edit Form for ViewManager
@@ -26,18 +26,15 @@ import {startCase} from 'lodash';
 export const editForm = hoistCmp.factory({
     model: uses(EditFormModel),
     render({model}) {
-        const {formModel, view, parent} = model;
+        const {formModel, view} = model;
         if (!view) return null;
 
-        const {viewManagerModel} = parent,
-            {globalDisplayName} = viewManagerModel,
-            {lastUpdated, lastUpdatedBy} = view;
+        const {isGlobal, lastUpdated, lastUpdatedBy} = view;
 
         return panel({
             item: form({
                 fieldDefaults: {
                     commitOnChange: true,
-                    inline: true,
                     minimal: true
                 },
                 item: vframe({
@@ -63,7 +60,7 @@ export const editForm = hoistCmp.factory({
                             field: 'description',
                             item: textArea({
                                 selectOnFocus: true,
-                                height: 70
+                                height: 90
                             }),
                             readonlyRenderer: v =>
                                 v
@@ -76,26 +73,18 @@ export const editForm = hoistCmp.factory({
                         formField({
                             field: 'isShared',
                             label: 'Shared?',
+                            inline: true,
                             item: checkbox(),
-                            omit: formModel.values.isGlobal
+                            omit: isGlobal
                         }),
                         formField({
                             field: 'isDefaultPinned',
-                            label: 'Default Pin?',
+                            label: 'Default pinned?',
+                            inline: true,
                             item: checkbox(),
-                            omit: !formModel.values.isGlobal
+                            omit: !isGlobal
                         }),
-                        formField({
-                            field: 'isGlobal',
-                            label: 'Ownership',
-                            item: select({
-                                options: [
-                                    {value: false, label: 'Owned by you'},
-                                    {value: true, label: startCase(globalDisplayName)}
-                                ],
-                                enableFilter: false
-                            })
-                        }),
+                        vspacer(20),
                         hbox({
                             omit: !model.showSaveButton,
                             items: [
@@ -106,7 +95,6 @@ export const editForm = hoistCmp.factory({
                                     intent: 'success',
                                     minimal: false,
                                     disabled: !formModel.isValid,
-                                    flex: 1,
                                     onClick: () => model.saveAsync()
                                 }),
                                 hspacer(),
@@ -134,14 +122,26 @@ export const editForm = hoistCmp.factory({
 
 const bbar = hoistCmp.factory<EditFormModel>({
     render({model}) {
-        const {parent} = model;
+        const {parent, view} = model;
         return toolbar(
             button({
                 text: 'Delete',
                 icon: Icon.delete(),
                 intent: 'danger',
-                disabled: !parent.canDelete,
-                onClick: () => parent.deleteAsync([model.view])
+                omit: !view.isEditable,
+                onClick: () => parent.deleteAsync([view])
+            }),
+            button({
+                text: `Make ${capitalize(parent.globalDisplayName)}`,
+                icon: Icon.globe(),
+                omit: !view.isEditable || view.isGlobal || !parent.manageGlobal,
+                onClick: () => parent.toggleGlobalAsync(view)
+            }),
+            button({
+                text: `Make personal`,
+                icon: Icon.user(),
+                omit: !view.isEditable || !view.isGlobal,
+                onClick: () => parent.toggleGlobalAsync(view)
             }),
             filler(),
             button({text: 'Close', onClick: () => parent.close()})

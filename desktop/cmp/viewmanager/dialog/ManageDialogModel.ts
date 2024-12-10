@@ -5,20 +5,21 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {grid, GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
-import {fragment, p, strong} from '@xh/hoist/cmp/layout';
+import {badge} from '@xh/hoist/cmp/badge';
+import {compactDateCol, GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
+import {fragment, hbox, p, strong} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, LoadSpec, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {FilterTestFn} from '@xh/hoist/data';
+import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
 import {ReactNode} from 'react';
 import {EditFormModel} from './EditFormModel';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable, computed, observable} from '@xh/hoist/mobx';
+import {bindable, makeObservable, computed, observable, action} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {ViewInfo, ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
-import {find, isEmpty, partition, some, startCase} from 'lodash';
-import {ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager/ViewToBlobApi';
-import {action} from 'mobx';
+import {ViewInfo, ViewManagerModel, ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager';
+import {isEmpty, partition, some, startCase} from 'lodash';
+import {button} from '@xh/hoist/desktop/cmp/button';
 
 /**
  * Backing model for ManageDialog
@@ -33,7 +34,8 @@ export class ManageDialogModel extends HoistModel {
     @managed editFormModel: EditFormModel;
     @managed tabContainerModel: TabContainerModel;
 
-    @bindable filter: FilterTestFn;
+    @bindable.ref filter: FilterTestFn;
+    @bindable.ref showInGroups: boolean;
 
     readonly updateTask = TaskObserver.trackLast();
 
@@ -49,20 +51,19 @@ export class ManageDialogModel extends HoistModel {
 
     @computed
     get selectedView(): ViewInfo {
-        return this.gridModel.selectedRecord?.data.info;
+        return this.gridModel.selectedRecord?.data.view;
     }
 
     @computed
     get selectedViews(): ViewInfo[] {
-        return this.gridModel.selectedRecords.map(it => it.data.info) as ViewInfo[];
+        return this.gridModel.selectedRecords.map(it => it.data.view) as ViewInfo[];
     }
 
     get canDelete(): boolean {
-        const {viewManagerModel, manageGlobal, selectedViews} = this,
+        const {viewManagerModel, selectedViews} = this,
             {views, enableDefault} = viewManagerModel;
 
-        // Can't delete global views without role.
-        if (!manageGlobal && selectedViews.some(v => v.isGlobal)) return false;
+        if (!selectedViews.every(v => v.isEditable)) return false;
 
         // Can't delete all the views, unless default mode is enabled.
         return enableDefault || views.length - selectedViews.length > 0;
@@ -103,10 +104,13 @@ export class ManageDialogModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {view, views} = this.viewManagerModel,
+        const {tabContainerModel} = this,
+            {view, views} = this.viewManagerModel,
             [ownedViews, otherViews] = partition(views, 'isOwned');
         this.ownedGridModel.loadData(ownedViews);
         this.otherGridModel.loadData(otherViews);
+        tabContainerModel.setTabTitle('owned', this.ownedTabTitle);
+        tabContainerModel.setTabTitle('other', this.otherTabTitle);
         if (!loadSpec.isRefresh && !view.isDefault) {
             await this.selectViewAsync(view.info);
         }
@@ -118,6 +122,10 @@ export class ManageDialogModel extends HoistModel {
 
     async updateAsync(view: ViewInfo, update: ViewUpdateSpec) {
         return this.doUpdateAsync(view, update).linkTo(this.updateTask).catchDefault();
+    }
+
+    async toggleGlobalAsync(view: ViewInfo) {
+        return this.doToggleGlobalAsync(view).linkTo(this.updateTask).catchDefault();
     }
 
     //------------------------
@@ -145,6 +153,15 @@ export class ManageDialogModel extends HoistModel {
                 fireImmediately: true
             },
             {
+                track: () => this.showInGroups,
+                run: showInGroups => {
+                    const groupBy = showInGroups ? ['group'] : null;
+                    this.ownedGridModel.groupBy = groupBy;
+                    this.otherGridModel.groupBy = groupBy;
+                },
+                fireImmediately: true
+            },
+            {
                 track: () => otherGridModel.selectedRecords,
                 run: recs => {
                     if (recs.length) ownedGridModel.clearSelection();
@@ -161,28 +178,16 @@ export class ManageDialogModel extends HoistModel {
 
     private async doUpdateAsync(view: ViewInfo, update: ViewUpdateSpec) {
         const {viewManagerModel} = this;
-
         await viewManagerModel.api.updateViewInfoAsync(view, update);
         await viewManagerModel.refreshAsync();
         await this.refreshAsync();
-
-        // reselect the updated copy of this view -- it may have moved.
-        await this.selectViewAsync(find(viewManagerModel.views, {token: view.token}));
     }
 
     private async doDeleteAsync(views: ViewInfo[]) {
         const {viewManagerModel, typeDisplayName} = this,
-            {enableDefault} = viewManagerModel,
             count = views.length;
 
         if (!count) return;
-
-        if (viewManagerModel.views.length === count && !enableDefault) {
-            throw XH.exception({
-                message: `You cannot delete all ${pluralize(typeDisplayName)}.`,
-                isRoutine: true
-            });
-        }
 
         const confirmStr = count > 1 ? pluralize(typeDisplayName, count, true) : views[0].typedName;
         const msgs: ReactNode[] = [`Are you sure you want to delete ${confirmStr}?`];
@@ -211,23 +216,47 @@ export class ManageDialogModel extends HoistModel {
         await this.refreshAsync();
     }
 
-    async selectViewAsync(view: ViewInfo) {
+    private async doToggleGlobalAsync(view: ViewInfo) {
+        const {globalDisplayName, typeDisplayName} = this.viewManagerModel,
+            {typedName} = view;
+        const msg: ReactNode = view.isGlobal
+            ? `The ${typedName} will become a personal ${typeDisplayName} and will no longer be visible to ALL other ${XH.appName} users.`
+            : `The ${typedName} will become a ${globalDisplayName} ${typeDisplayName} visible to ALL other ${XH.appName} users.`;
+        const msgs = [msg, strong('Are you sure you want to proceed?')];
+
+        const confirmed = await XH.confirm({
+            message: fragment(msgs.map(m => p(m))),
+            confirmProps: {
+                text: `Yes, change visibility`,
+                outlined: true,
+                autoFocus: false,
+                intent: 'danger'
+            }
+        });
+        if (!confirmed) return;
+
+        const {viewManagerModel} = this;
+        const updated = await viewManagerModel.api.toggleViewIsGlobalAsync(view);
+        await viewManagerModel.refreshAsync();
+        await this.refreshAsync();
+        await this.selectViewAsync(updated.info); // reselect -- will have moved tabs!
+    }
+
+    private async selectViewAsync(view: ViewInfo) {
         this.tabContainerModel.activateTab(view.isOwned ? 'owned' : 'other');
         await this.gridModel.selectAsync(view.token);
     }
 
     private createGridModel(type: 'owned' | 'other'): GridModel {
-        const {typeDisplayName, viewManagerModel} = this;
-        const emptyText =
-            type == 'owned'
-                ? `No personal ${pluralize(typeDisplayName)} found...`
-                : `No public ${pluralize(typeDisplayName)} found...`;
+        const {typeDisplayName, globalDisplayName, viewManagerModel} = this;
+        const isOwned = type == 'owned';
+        const emptyText = isOwned
+            ? `No personal ${pluralize(typeDisplayName)} found...`
+            : `No public ${pluralize(typeDisplayName)} found...`;
 
         return new GridModel({
             emptyText,
             sortBy: 'name',
-            groupBy: 'group',
-            hideHeaders: true,
             showGroupRowCounts: false,
             selModel: 'multiple',
             contextMenu: null,
@@ -236,63 +265,78 @@ export class ManageDialogModel extends HoistModel {
                 idSpec: 'token',
                 processRawData: v => ({
                     name: v.name,
-                    group: v.group,
-                    isPinned: v.isPinned,
-                    info: v
+                    group: v.isGlobal || v.isOwned ? v.group : v.owner,
+                    owner: v.owner ?? globalDisplayName,
+                    lastUpdated: v.lastUpdated,
+                    view: v
                 }),
                 fields: [
                     {name: 'name', type: 'string'},
+                    {name: 'group', type: 'string'},
                     {name: 'owner', type: 'string'},
-                    {name: 'info', type: 'auto'}
+                    {name: 'lastUpdated', type: 'date'},
+                    {name: 'view', type: 'auto'}
                 ]
             },
             autosizeOptions: {mode: GridAutosizeMode.DISABLED},
             columns: [
-                {field: 'name', flex: true},
-                {field: 'group', hidden: true},
-                {field: 'owner'},
                 {
                     colId: 'isPinned',
-                    field: 'info',
+                    field: 'view',
                     width: 40,
                     align: 'center',
                     headerName: Icon.pin(),
-                    highlightOnChange: true,
-                    renderer: v => {
-                        const {isUserPinned, isPinned} = v;
-                        if (!isPinned) return Icon.placeholder();
-                        return Icon.pin({
-                            prefix: isUserPinned ? 'fas' : 'fal',
-                            className: isUserPinned ? 'xh-green' : 'xh-text-color-muted'
+                    headerTooltip: 'Pin to menu',
+                    renderer: (v, {gridModel}) => {
+                        const {isPinned} = v;
+                        return button({
+                            icon: Icon.pin({
+                                prefix: isPinned ? 'fas' : 'fal',
+                                className: isPinned ? 'xh-yellow' : 'xh-text-color-muted'
+                            }),
+                            tooltip: isPinned ? 'Unpin from menu' : 'Pin to menu',
+                            onClick: () => {
+                                viewManagerModel.togglePinned(v);
+                                gridModel.agApi.redrawRows();
+                            }
                         });
                     }
-                }
+                },
+                {field: 'name', flex: true},
+                {field: 'owner', hidden: isOwned, width: 150},
+                {field: 'group', hidden: true},
+                {field: 'lastUpdated', ...compactDateCol, hidden: !isOwned, width: 150}
             ],
-            groupRowRenderer: ({value}) => (isEmpty(value) ? '*Ungrouped*' : value),
-            onCellClicked: ({colDef, data: record, api}) => {
-                if (colDef.colId === 'isPinned') {
-                    viewManagerModel.togglePinned(record.data.info);
-                    api.redrawRows();
-                }
-            }
+            groupRowRenderer: ({value}) => (isEmpty(value) ? '*Ungrouped*' : value)
         });
     }
 
     private createTabContainerModel(): TabContainerModel {
-        const pluralType = startCase(pluralize(this.typeDisplayName));
         return new TabContainerModel({
             tabs: [
                 {
                     id: 'owned',
-                    title: `My ${pluralType}`,
-                    content: grid({model: this.ownedGridModel})
+                    title: this.ownedTabTitle,
+                    content: viewsGrid({model: this.ownedGridModel})
                 },
                 {
                     id: 'other',
-                    title: `Public ${pluralType}`,
-                    content: grid({model: this.otherGridModel})
+                    title: this.otherTabTitle,
+                    content: viewsGrid({model: this.otherGridModel})
                 }
             ]
         });
+    }
+
+    private get ownedTabTitle(): ReactNode {
+        const title = `My ${startCase(pluralize(this.typeDisplayName))}`,
+            store = this.ownedGridModel.store;
+        return !store.empty ? hbox(title, badge(store.allCount)) : title;
+    }
+
+    private get otherTabTitle(): ReactNode {
+        const title = `Public ${startCase(pluralize(this.typeDisplayName))}`,
+            store = this.otherGridModel.store;
+        return !store.empty ? hbox(title, badge(store.allCount)) : title;
     }
 }

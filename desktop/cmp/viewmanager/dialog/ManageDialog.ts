@@ -5,10 +5,12 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
+import {grid, GridModel} from '@xh/hoist/cmp/grid';
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import {filler, hframe, placeholder} from '@xh/hoist/cmp/layout';
+import {filler, frame, hframe, placeholder} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, uses} from '@xh/hoist/core';
+import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {editForm} from './EditForm';
 import {ManageDialogModel} from './ManageDialogModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -25,7 +27,7 @@ import {capitalize} from 'lodash';
 export const manageDialog = hoistCmp.factory({
     displayName: 'ManageDialog',
     className: 'xh-view-manager__manage-dialog',
-    model: uses(ManageDialogModel),
+    model: uses(() => ManageDialogModel),
 
     render({model, className}) {
         if (!model.isOpen) return null;
@@ -36,7 +38,7 @@ export const manageDialog = hoistCmp.factory({
             icon: Icon.gear(),
             className,
             isOpen: true,
-            style: {width: '900px', maxWidth: '90vm', minHeight: '500px'},
+            style: {width: '1000px', maxWidth: '90vm', minHeight: '500px'},
             canOutsideClickClose: false,
             onClose: () => model.close(),
             item: panel({
@@ -53,15 +55,33 @@ export const manageDialog = hoistCmp.factory({
 const viewPanel = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
         return panel({
-            modelConfig: {defaultSize: 400, side: 'left', collapsible: false},
+            modelConfig: {defaultSize: 650, side: 'left', collapsible: false},
             item: tabContainer(),
             bbar: [
                 storeFilterField({
                     autoApply: false,
                     includeFields: ['name', 'group'],
                     onFilterChange: f => (model.filter = f)
+                }),
+                switchInput({
+                    bind: 'showInGroups',
+                    label: 'Show in Groups?'
                 })
             ]
+        });
+    }
+});
+
+export const viewsGrid = hoistCmp.factory<GridModel>({
+    render({model}) {
+        return frame({
+            paddingTop: 5,
+            item: grid({
+                model,
+                agOptions: {
+                    suppressMakeColumnVisibleAfterUnGroup: true
+                }
+            })
         });
     }
 });

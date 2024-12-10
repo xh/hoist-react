@@ -1,32 +1,6 @@
 .xh-view-manager {
   align-items: center;
 
-  &__menu-item {
-    &:hover {
-      .xh-view-manager__menu-item__fave-toggle {
-        opacity: 1;
-        color: var(--xh-yellow);
-      }
-    }
-
-    &__fave-toggle {
-      opacity: 0;
-
-      &:hover {
-        color: var(--xh-yellow-light) !important;
-      }
-
-      &--active {
-        opacity: 1;
-        color: var(--xh-yellow);
-      }
-
-      &--active:hover {
-        color: var(--xh-yellow-light) !important;
-      }
-    }
-  }
-
   //------------------------
   // Dialogs
   //------------------------

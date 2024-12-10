@@ -46,7 +46,7 @@ function getNavMenuItems(model: ViewManagerModel): ReactNode[] {
     if (!isEmpty(global)) {
         ret.push(
             menuDivider({title: `${startCase(globalDisplayName)}  ${pluralName}`}),
-            ...getGroupedMenuItems(owned, model)
+            ...getGroupedMenuItems(global, model)
         );
     }
     if (!isEmpty(other)) {
@@ -178,14 +178,14 @@ function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
     const icon = view.isCurrentView ? Icon.check() : Icon.placeholder(),
         title = [];
 
-    if (view.isShared) title.push(view.owner);
+    if (!view.isOwned && view.owner) title.push(view.owner);
     if (view.description) title.push(view.description);
 
     return menuItem({
         className: 'xh-view-manager__menu-item',
         key: view.token,
         text: view.name,
-        title: title.join('|'),
+        title: title.join(' | '),
         icon,
         onClick: () => model.selectViewAsync(view)
     });

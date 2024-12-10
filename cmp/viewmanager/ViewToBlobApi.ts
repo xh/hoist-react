@@ -6,7 +6,8 @@
  */
 
 import {PlainObject, XH} from '@xh/hoist/core';
-import {pluralize} from '@xh/hoist/utils/js';
+import {pluralize, throwIf} from '@xh/hoist/utils/js';
+import {omit} from 'lodash';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
 import {ViewManagerModel} from './ViewManagerModel';
@@ -23,9 +24,8 @@ export interface ViewUpdateSpec {
     name: string;
     group: string;
     description: string;
-    isShared: boolean;
-    isGlobal: boolean;
-    isDefaultPinned: boolean;
+    isShared?: boolean;
+    isDefaultPinned?: boolean;
 }
 
 /**
@@ -77,7 +77,7 @@ export class ViewToBlobApi<T> {
     //-----------------
     // Crud
     //-----------------
-    /** Create a new private view, owned by the current user.*/
+    /** Create a new view, owned by the current user.*/
     async createViewAsync(spec: ViewCreateSpec): Promise<View<T>> {
         const {model} = this;
         try {
@@ -85,6 +85,7 @@ export class ViewToBlobApi<T> {
                 type: model.type,
                 name: spec.name,
                 description: spec.description,
+                acl: spec.isShared ? '*' : null,
                 meta: {group: spec.group, isShared: spec.isShared},
                 value: spec.value
             });
@@ -99,13 +100,34 @@ export class ViewToBlobApi<T> {
     /** Update all aspects of a views metadata.*/
     async updateViewInfoAsync(view: ViewInfo, updates: ViewUpdateSpec): Promise<View<T>> {
         try {
-            const {name, group, description, isShared, isGlobal, isDefaultPinned} = updates,
+            this.ensureEditable(view);
+            const {isGlobal} = view,
+                {name, group, description, isShared, isDefaultPinned} = updates,
+                meta = {...view.meta, group},
                 blob = await XH.jsonBlobService.updateAsync(view.token, {
                     name: name.trim(),
                     description: description?.trim(),
-                    owner: isGlobal ? null : XH.getUsername(),
                     acl: isGlobal || isShared ? '*' : null,
-                    meta: isGlobal ? {group, isDefaultPinned} : {group, isShared}
+                    meta: isGlobal ? {...meta, isDefaultPinned} : {...meta, isShared}
+                });
+            const ret = View.fromBlob(blob, this.model);
+            this.trackChange('Updated View Info', ret);
+            return ret;
+        } catch (e) {
+            throw XH.exception({message: `Unable to update ${view.typedName}`, cause: e});
+        }
+    }
+
+    /** Promote/demote a view from global visibility/ownership status. */
+    async toggleViewIsGlobalAsync(view: ViewInfo): Promise<View<T>> {
+        try {
+            this.ensureEditable(view);
+            const meta = view.meta,
+                isGlobal = !view.isGlobal,
+                blob = await XH.jsonBlobService.updateAsync(view.token, {
+                    owner: isGlobal ? null : XH.getUsername(),
+                    acl: isGlobal ? '*' : null,
+                    meta: omit(meta, ['isShared', 'isDefaultPinned'])
                 });
             const ret = View.fromBlob(blob, this.model);
             this.trackChange('Updated View Info', ret);
@@ -118,6 +140,7 @@ export class ViewToBlobApi<T> {
     /** Update a view's value. */
     async updateViewValueAsync(view: View<T>, value: Partial<T>): Promise<View<T>> {
         try {
+            this.ensureEditable(view.info);
             const blob = await XH.jsonBlobService.updateAsync(view.token, {value});
             const ret = View.fromBlob(blob, this.model);
             if (ret.isGlobal) {
@@ -135,6 +158,7 @@ export class ViewToBlobApi<T> {
     /** Delete a view. */
     async deleteViewAsync(view: ViewInfo) {
         try {
+            this.ensureEditable(view);
             await XH.jsonBlobService.archiveAsync(view.token);
             this.trackChange('Deleted View', view);
         } catch (e) {
@@ -142,11 +166,22 @@ export class ViewToBlobApi<T> {
         }
     }
 
+    //------------------
+    // Implementation
+    //------------------
     private trackChange(message: string, v: View | ViewInfo) {
         XH.track({
             message,
             category: 'Views',
             data: {name: v.name, token: v.token, isGlobal: v.isGlobal, type: v.type}
         });
+    }
+
+    private ensureEditable(view: ViewInfo) {
+        const {model} = this;
+        throwIf(
+            !view.isEditable,
+            `Cannot save changes to ${model.globalDisplayName} ${model.typeDisplayName} - missing required permission.`
+        );
     }
 }

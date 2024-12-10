@@ -40,6 +40,12 @@ export class ViewInfo {
      */
     readonly isDefaultPinned: boolean;
 
+    /**
+     * Original meta-data on views associated JsonBlob.
+     * Not typically used by applications;
+     */
+    readonly meta: PlainObject;
+
     dateCreated: number;
     lastUpdated: number;
     lastUpdatedBy: string;
@@ -52,12 +58,12 @@ export class ViewInfo {
         this.name = blob.name;
         this.description = blob.description;
         this.owner = blob.owner;
+        this.meta = (blob.meta as PlainObject) ?? {};
         this.isGlobal = !this.owner;
 
-        const meta = (blob.meta ?? {}) as PlainObject;
-        this.group = meta.group ?? null;
-        this.isDefaultPinned = !!(this.isGlobal && meta.defaultPinned);
-        this.isShared = !!(!this.isGlobal && meta.isShared);
+        this.group = this.meta.group ?? null;
+        this.isDefaultPinned = !!(this.isGlobal && this.meta.isDefaultPinned);
+        this.isShared = !!(!this.isGlobal && this.meta.isShared);
 
         // Round to seconds.  See: https://github.com/xh/hoist-core/issues/423
         this.dateCreated = Math.round(blob.dateCreated / SECONDS) * SECONDS;
