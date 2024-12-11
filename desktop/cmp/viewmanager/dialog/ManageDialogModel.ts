@@ -9,17 +9,17 @@ import {badge} from '@xh/hoist/cmp/badge';
 import {dateTimeCol, GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {fragment, hbox, p, strong} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {ViewInfo, ViewManagerModel, ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, LoadSpec, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {FilterTestFn} from '@xh/hoist/data';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
+import {Icon} from '@xh/hoist/icon';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {pluralize} from '@xh/hoist/utils/js';
+import {capitalize, isEmpty, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewPanelModel} from './ViewPanelModel';
-import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable, computed, observable, action} from '@xh/hoist/mobx';
-import {pluralize} from '@xh/hoist/utils/js';
-import {ViewInfo, ViewManagerModel, ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager';
-import {isEmpty, some, startCase} from 'lodash';
-import {button} from '@xh/hoist/desktop/cmp/button';
 
 /**
  * Backing model for ManageDialog
@@ -151,10 +151,10 @@ export class ManageDialogModel extends HoistModel {
         });
         gridModels.forEach(gm => {
             this.addReaction({
-                track: () => gm.selectedRecords,
-                run: recs => {
+                track: () => gm.hasSelection,
+                run: hasSelection => {
                     gridModels.forEach(it => {
-                        if (it != gm && recs.length) it.clearSelection();
+                        if (it != gm && hasSelection) it.clearSelection();
                     });
                 }
             });
@@ -304,22 +304,48 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private createTabContainerModel(): TabContainerModel {
+        const view = this.typeDisplayName,
+            views = pluralize(view),
+            globalViews = `${this.globalDisplayName} ${views}`,
+            {enableSharing} = this.viewManagerModel;
+
         return new TabContainerModel({
             tabs: [
                 {
                     id: 'owned',
                     title: this.ownedTabTitle,
-                    content: viewsGrid({model: this.ownedGridModel})
+                    content: viewsGrid({
+                        model: this.ownedGridModel,
+                        helpText: fragment(
+                            Icon.user(),
+                            `This tab shows ${views} you have created. Pinned ${views} are shown in your menu for quick access. Set a group on ${views} to show them together in a sub-menu. `,
+                            enableSharing
+                                ? `Opt-in to sharing any of your ${views} to make them discoverable by other users.`
+                                : ''
+                        )
+                    })
                 },
                 {
                     id: 'global',
                     title: this.globalTabTitle,
-                    content: viewsGrid({model: this.globalGridModel})
+                    content: viewsGrid({
+                        model: this.globalGridModel,
+                        helpText: fragment(
+                            Icon.globe(),
+                            `This tab shows ${globalViews} available to everyone. ${capitalize(globalViews)} can be pinned by default so they appear automatically in everyone's menu, but you can choose which ${views} you would like to see by pinning/unpinning them at any time.`
+                        )
+                    })
                 },
                 {
                     id: 'shared',
                     title: this.sharedTabTitle,
-                    content: viewsGrid({model: this.sharedGridModel})
+                    content: viewsGrid({
+                        model: this.sharedGridModel,
+                        helpText: fragment(
+                            Icon.users(),
+                            `This tab shows ${views} shared by other ${XH.appName} users. You can pin these ${views} to add them to your menu and access them directly. Only the owner will be able to save changes to a shared ${view}, but you can save as a copy to make it your own.`
+                        )
+                    })
                 }
             ]
         });

@@ -6,11 +6,10 @@
  */
 
 import {grid, GridModel} from '@xh/hoist/cmp/grid';
-import {tabContainer} from '@xh/hoist/cmp/tab';
-import {filler, frame, hframe, placeholder} from '@xh/hoist/cmp/layout';
+import {div, filler, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
+import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {ManageDialogModel} from './ManageDialogModel';
 import {button, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -18,6 +17,7 @@ import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize} from 'lodash';
+import {ManageDialogModel} from './ManageDialogModel';
 import {viewMultiPanel} from './ViewMultiPanel';
 import {viewPanel} from './ViewPanel';
 
@@ -84,15 +84,22 @@ const selectorPanel = hoistCmp.factory<ManageDialogModel>({
 });
 
 export const viewsGrid = hoistCmp.factory<GridModel>({
-    render({model}) {
-        return frame({
+    render({model, helpText}) {
+        return vframe({
             paddingTop: 5,
-            item: grid({
-                model,
-                agOptions: {
-                    suppressMakeColumnVisibleAfterUnGroup: true
-                }
-            })
+            items: [
+                grid({
+                    model,
+                    agOptions: {
+                        suppressMakeColumnVisibleAfterUnGroup: true
+                    }
+                }),
+                div({
+                    item: helpText,
+                    omit: !helpText,
+                    className: 'xh-view-manager__manage-dialog__help-text'
+                })
+            ]
         });
     }
 });

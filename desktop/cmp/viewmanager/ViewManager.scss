@@ -36,5 +36,20 @@
       color: var(--xh-text-color-muted);
       font-size: var(--xh-font-size-small-px);
     }
+
+    &__help-text {
+      display: flex;
+      align-items: center;
+      gap: var(--xh-pad-px);
+      margin: var(--xh-pad-px);
+      padding: var(--xh-pad-px);
+      border: var(--xh-border-solid);
+      border-radius: var(--xh-border-radius-px);
+      background-color: var(--xh-bg-alt);
+
+      .xh-icon {
+        font-size: 1.2em;
+      }
+    }
   }
 }
