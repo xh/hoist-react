@@ -10,10 +10,9 @@ import {tabContainer} from '@xh/hoist/cmp/tab';
 import {filler, frame, hframe, placeholder} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {editForm} from './EditForm';
 import {ManageDialogModel} from './ManageDialogModel';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -63,10 +62,8 @@ const viewPanel = hoistCmp.factory<ManageDialogModel>({
                     includeFields: ['name', 'group'],
                     onFilterChange: f => (model.filter = f)
                 }),
-                switchInput({
-                    bind: 'showInGroups',
-                    label: 'Show in Groups?'
-                })
+                filler(),
+                refreshButton({onClick: () => model.refreshAsync()})
             ]
         });
     }

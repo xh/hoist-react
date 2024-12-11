@@ -235,12 +235,19 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         return this.views.filter(it => it.isPinned);
     }
 
-    get globalViews(): ViewInfo[] {
-        return this.views.filter(it => it.isGlobal);
-    }
-
+    /** Views owned by me */
     get ownedViews(): ViewInfo[] {
         return this.views.filter(it => it.isOwned);
+    }
+
+    /** Views shared *with* me */
+    get sharedViews(): ViewInfo[] {
+        return this.views.filter(it => it.isShared && !it.isOwned);
+    }
+
+    /** Global views */
+    get globalViews(): ViewInfo[] {
+        return this.views.filter(it => it.isGlobal);
     }
 
     /** True if any async tasks are pending. */

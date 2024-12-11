@@ -14,7 +14,8 @@ import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {consumeEvent, pluralize} from '@xh/hoist/utils/js';
-import {each, groupBy, isEmpty, orderBy, some, startCase} from 'lodash';
+import {Dictionary} from 'express-serve-static-core';
+import {each, filter, groupBy, isEmpty, orderBy, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewManagerLocalModel} from './ViewManagerLocalModel';
 
@@ -31,31 +32,31 @@ export const viewMenu = hoistCmp.factory<ViewManagerLocalModel>({
 });
 
 function getNavMenuItems(model: ViewManagerModel): ReactNode[] {
-    const {enableDefault, view, typeDisplayName, globalDisplayName, pinnedViews} = model,
-        {owned, global, other} = groupBy(pinnedViews, v =>
-            v.isOwned ? 'owned' : v.isGlobal ? 'global' : 'other'
-        ),
+    const {enableDefault, view, typeDisplayName, globalDisplayName} = model,
+        ownedViews = groupBy(filter(model.ownedViews, 'isPinned'), 'group'),
+        globalViews = groupBy(filter(model.ownedViews, 'isPinned'), 'group'),
+        sharedViews = groupBy(filter(model.sharedViews, 'isPinned'), 'owner'),
         pluralName = pluralize(startCase(typeDisplayName)),
         ret = [];
 
     // Main Views items by type
     // TODO -- be smart?  If more than, say n for any cat, start nesting them in submenus?
-    if (!isEmpty(owned)) {
-        ret.push(menuDivider({title: `My  ${pluralName}`}), ...getGroupedMenuItems(owned, model));
-    }
-    if (!isEmpty(global)) {
+    if (!isEmpty(ownedViews)) {
         ret.push(
-            menuDivider({title: `${startCase(globalDisplayName)}  ${pluralName}`}),
-            ...getGroupedMenuItems(global, model)
+            menuDivider({title: `My ${pluralName}`}),
+            ...getGroupedMenuItems(ownedViews, model)
         );
     }
-    if (!isEmpty(other)) {
+    if (!isEmpty(globalViews)) {
         ret.push(
-            menuDivider({title: `Other ${pluralName}`}),
-            ...orderBy(
-                other.map(v => viewMenuItem(v, model)),
-                ['name', 'owner']
-            )
+            menuDivider({title: `${startCase(globalDisplayName)}  ${pluralName}`}),
+            ...getGroupedMenuItems(globalViews, model)
+        );
+    }
+    if (!isEmpty(sharedViews)) {
+        ret.push(
+            menuDivider({title: `Shared ${pluralName}`}),
+            ...getGroupedMenuItems(sharedViews, model)
         );
     }
 
@@ -145,14 +146,16 @@ function getOtherMenuItems(model: ViewManagerLocalModel): ReactNode[] {
     ];
 }
 
-function getGroupedMenuItems(views: ViewInfo[], model: ViewManagerModel): ReactNode[] {
+function getGroupedMenuItems(
+    byGroup: Dictionary<ViewInfo[]>,
+    model: ViewManagerModel
+): ReactNode[] {
     // Create grouped tree...
     let nodes: (ViewInfo | {name: string; groupViews: ViewInfo[]; isSelected: boolean})[] = [],
-        selectedToken = model.view.token,
-        byGroup = groupBy(views, v => v.group ?? 'ungrouped');
+        selectedToken = model.view.token;
 
     each(byGroup, (groupViews, name) => {
-        if (name != 'ungrouped') {
+        if (name != 'null') {
             nodes.push({name, groupViews, isSelected: some(groupViews, {token: selectedToken})});
         } else {
             nodes.push(...groupViews);

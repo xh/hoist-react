@@ -6,7 +6,7 @@
  */
 
 import {badge} from '@xh/hoist/cmp/badge';
-import {compactDateCol, GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
+import {dateTimeCol, GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {fragment, hbox, p, strong} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, LoadSpec, managed, TaskObserver, XH} from '@xh/hoist/core';
@@ -18,7 +18,7 @@ import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable, computed, observable, action} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {ViewInfo, ViewManagerModel, ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager';
-import {isEmpty, partition, some, startCase} from 'lodash';
+import {isEmpty, some, startCase} from 'lodash';
 import {button} from '@xh/hoist/desktop/cmp/button';
 
 /**
@@ -30,12 +30,13 @@ export class ManageDialogModel extends HoistModel {
     @observable isOpen: boolean = false;
 
     @managed ownedGridModel: GridModel;
-    @managed otherGridModel: GridModel;
+    @managed globalGridModel: GridModel;
+    @managed sharedGridModel: GridModel;
+
     @managed editFormModel: EditFormModel;
     @managed tabContainerModel: TabContainerModel;
 
     @bindable.ref filter: FilterTestFn;
-    @bindable.ref showInGroups: boolean;
 
     readonly updateTask = TaskObserver.trackLast();
 
@@ -44,9 +45,15 @@ export class ManageDialogModel extends HoistModel {
     }
 
     get gridModel(): GridModel {
-        return this.tabContainerModel.activeTabId == 'other'
-            ? this.otherGridModel
-            : this.ownedGridModel;
+        switch (this.tabContainerModel.activeTabId) {
+            case 'global':
+                return this.globalGridModel;
+            case 'shared':
+                return this.sharedGridModel;
+            case 'owned':
+            default:
+                return this.ownedGridModel;
+        }
     }
 
     @computed
@@ -105,12 +112,14 @@ export class ManageDialogModel extends HoistModel {
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {tabContainerModel} = this,
-            {view, views} = this.viewManagerModel,
-            [ownedViews, otherViews] = partition(views, 'isOwned');
+            {view, ownedViews, globalViews, sharedViews} = this.viewManagerModel;
+
         this.ownedGridModel.loadData(ownedViews);
-        this.otherGridModel.loadData(otherViews);
+        this.globalGridModel.loadData(globalViews);
+        this.sharedGridModel.loadData(sharedViews);
         tabContainerModel.setTabTitle('owned', this.ownedTabTitle);
-        tabContainerModel.setTabTitle('other', this.otherTabTitle);
+        tabContainerModel.setTabTitle('global', this.globalTabTitle);
+        tabContainerModel.setTabTitle('shared', this.sharedTabTitle);
         if (!loadSpec.isRefresh && !view.isDefault) {
             await this.selectViewAsync(view.info);
         }
@@ -133,47 +142,34 @@ export class ManageDialogModel extends HoistModel {
     //------------------------
     private init() {
         this.ownedGridModel = this.createGridModel('owned');
-        this.otherGridModel = this.createGridModel('other');
+        this.globalGridModel = this.createGridModel('global');
+        this.sharedGridModel = this.createGridModel('shared');
         this.tabContainerModel = this.createTabContainerModel();
         this.editFormModel = new EditFormModel(this);
 
-        const {ownedGridModel, otherGridModel, editFormModel} = this;
+        const gridModels = [this.ownedGridModel, this.globalGridModel, this.sharedGridModel];
         this.addReaction(
             {
                 track: () => this.selectedView,
-                run: r => editFormModel.setView(r),
+                run: r => this.editFormModel.setView(r),
                 fireImmediately: true
             },
             {
                 track: () => this.filter,
-                run: f => {
-                    ownedGridModel.store.setFilter(f);
-                    otherGridModel.store.setFilter(f);
-                },
+                run: f => gridModels.forEach(m => m.store.setFilter(f)),
                 fireImmediately: true
-            },
-            {
-                track: () => this.showInGroups,
-                run: showInGroups => {
-                    const groupBy = showInGroups ? ['group'] : null;
-                    this.ownedGridModel.groupBy = groupBy;
-                    this.otherGridModel.groupBy = groupBy;
-                },
-                fireImmediately: true
-            },
-            {
-                track: () => otherGridModel.selectedRecords,
-                run: recs => {
-                    if (recs.length) ownedGridModel.clearSelection();
-                }
-            },
-            {
-                track: () => ownedGridModel.selectedRecords,
-                run: recs => {
-                    if (recs.length) otherGridModel.clearSelection();
-                }
             }
         );
+        gridModels.forEach(gm => {
+            this.addReaction({
+                track: () => gm.selectedRecords,
+                run: recs => {
+                    gridModels.forEach(it => {
+                        if (it != gm && recs.length) it.clearSelection();
+                    });
+                }
+            });
+        });
     }
 
     private async doUpdateAsync(view: ViewInfo, update: ViewUpdateSpec) {
@@ -243,30 +239,33 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private async selectViewAsync(view: ViewInfo) {
-        this.tabContainerModel.activateTab(view.isOwned ? 'owned' : 'other');
+        this.tabContainerModel.activateTab(
+            view.isOwned ? 'owned' : view.isGlobal ? 'global' : 'shared'
+        );
         await this.gridModel.selectAsync(view.token);
     }
 
-    private createGridModel(type: 'owned' | 'other'): GridModel {
+    private createGridModel(type: 'owned' | 'global' | 'shared'): GridModel {
         const {typeDisplayName, globalDisplayName, viewManagerModel} = this;
-        const isOwned = type == 'owned';
-        const emptyText = isOwned
-            ? `No personal ${pluralize(typeDisplayName)} found...`
-            : `No public ${pluralize(typeDisplayName)} found...`;
+
+        const modifier =
+            type == 'owned' ? `personal` : type == 'global' ? globalDisplayName : 'shared';
 
         return new GridModel({
-            emptyText,
+            emptyText: `No ${modifier} ${pluralize(typeDisplayName)} found...`,
             sortBy: 'name',
             showGroupRowCounts: false,
+            groupBy: ['group'],
             selModel: 'multiple',
             contextMenu: null,
             sizingMode: 'standard',
+            hideHeaders: true,
             store: {
                 idSpec: 'token',
                 processRawData: v => ({
                     name: v.name,
                     group: v.isGlobal || v.isOwned ? v.group : v.owner,
-                    owner: v.owner ?? globalDisplayName,
+                    owner: v.owner,
                     lastUpdated: v.lastUpdated,
                     view: v
                 }),
@@ -278,8 +277,12 @@ export class ManageDialogModel extends HoistModel {
                     {name: 'view', type: 'auto'}
                 ]
             },
-            autosizeOptions: {mode: GridAutosizeMode.DISABLED},
+            autosizeOptions: {mode: GridAutosizeMode.MANAGED},
             columns: [
+                {field: 'name', flex: true},
+                {field: 'group', hidden: true},
+                {field: 'owner', hidden: true},
+                {field: 'lastUpdated', ...dateTimeCol},
                 {
                     colId: 'isPinned',
                     field: 'view',
@@ -301,13 +304,9 @@ export class ManageDialogModel extends HoistModel {
                             }
                         });
                     }
-                },
-                {field: 'name', flex: true},
-                {field: 'owner', hidden: isOwned, width: 150},
-                {field: 'group', hidden: true},
-                {field: 'lastUpdated', ...compactDateCol, hidden: !isOwned, width: 150}
+                }
             ],
-            groupRowRenderer: ({value}) => (isEmpty(value) ? '*Ungrouped*' : value)
+            groupRowRenderer: ({value}) => (isEmpty(value) ? 'Ungrouped' : value)
         });
     }
 
@@ -320,9 +319,14 @@ export class ManageDialogModel extends HoistModel {
                     content: viewsGrid({model: this.ownedGridModel})
                 },
                 {
-                    id: 'other',
-                    title: this.otherTabTitle,
-                    content: viewsGrid({model: this.otherGridModel})
+                    id: 'global',
+                    title: this.globalTabTitle,
+                    content: viewsGrid({model: this.globalGridModel})
+                },
+                {
+                    id: 'shared',
+                    title: this.sharedTabTitle,
+                    content: viewsGrid({model: this.sharedGridModel})
                 }
             ]
         });
@@ -331,12 +335,18 @@ export class ManageDialogModel extends HoistModel {
     private get ownedTabTitle(): ReactNode {
         const title = `My ${startCase(pluralize(this.typeDisplayName))}`,
             store = this.ownedGridModel.store;
-        return !store.empty ? hbox(title, badge(store.allCount)) : title;
+        return hbox(title, badge({item: store.allCount, omit: store.empty}));
     }
 
-    private get otherTabTitle(): ReactNode {
-        const title = `Public ${startCase(pluralize(this.typeDisplayName))}`,
-            store = this.otherGridModel.store;
-        return !store.empty ? hbox(title, badge(store.allCount)) : title;
+    private get globalTabTitle(): ReactNode {
+        const title = `${startCase(this.globalDisplayName)} ${startCase(pluralize(this.typeDisplayName))}`,
+            store = this.globalGridModel.store;
+        return hbox(title, badge({item: store.allCount, omit: store.empty}));
+    }
+
+    private get sharedTabTitle(): ReactNode {
+        const title = `Shared ${startCase(pluralize(this.typeDisplayName))}`,
+            store = this.sharedGridModel.store;
+        return hbox(title, badge({item: store.allCount, omit: store.empty}));
     }
 }
