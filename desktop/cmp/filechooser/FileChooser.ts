@@ -14,7 +14,10 @@ import './FileChooser.scss';
 import {FileRejection} from 'react-dropzone';
 import {FileChooserModel} from './FileChooserModel';
 
-export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps {}
+export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps {
+    /** True to disable the file chooser. */
+    disabled?: boolean;
+}
 
 /**
  * A component to select one or more files from the local filesystem. Wraps the third-party
@@ -35,18 +38,9 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
     model: uses(FileChooserModel),
     className: 'xh-file-chooser',
 
-    render({model, ...props}, ref) {
-        const {
-            accept,
-            enableAddMulti,
-            maxFiles,
-            maxSize,
-            minSize,
-            showFileGrid,
-            noClick,
-            targetDisplay,
-            rejectDisplay
-        } = model;
+    render({model, disabled, ...props}, ref) {
+        const {accept, maxSize, minSize, showFileGrid, noClick, targetDisplay, rejectDisplay} =
+            model;
         return hbox({
             ref,
             ...props,
@@ -54,11 +48,10 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                 dropzone({
                     ref: model.dropzoneRef,
                     accept,
-                    maxFiles,
                     maxSize,
                     minSize,
                     noClick,
-                    multiple: enableAddMulti,
+                    disabled,
                     children: ({getRootProps, getInputProps, isDragActive}) =>
                         div({
                             ...getRootProps(),
@@ -67,7 +60,8 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                                 'xh-file-chooser__target',
                                 isDragActive ? 'xh-file-chooser__target--active' : null,
                                 showFileGrid ? 'xh-file-chooser__target--withGrid' : null,
-                                !noClick ? 'xh-file-chooser__target--pointer' : null
+                                !noClick && !disabled ? 'xh-file-chooser__target--pointer' : null,
+                                disabled ? 'xh-file-chooser__target--disabled' : null
                             )
                         }),
                     onDragEnter: e => model.onDragEnter(e),

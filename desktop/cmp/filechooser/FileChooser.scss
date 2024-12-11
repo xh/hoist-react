@@ -24,6 +24,10 @@
     &--pointer {
       cursor: pointer;
     }
+
+    &--disabled {
+      color: var(--xh-gray);
+    }
   }
 
   &__grid {

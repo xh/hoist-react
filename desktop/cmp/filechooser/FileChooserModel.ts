@@ -15,7 +15,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {pluralize, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import filesize from 'filesize';
-import {castArray, concat, find, isEmpty, isFunction, map, uniqBy, without} from 'lodash';
+import {castArray, concat, find, isEmpty, isFunction, map, uniqBy, without, take} from 'lodash';
 import mime from 'mime';
 import {ReactElement, ReactNode} from 'react';
 import {DropzoneRef, FileRejection} from 'react-dropzone';
@@ -24,17 +24,14 @@ export interface FileChooserConf {
     /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
     accept?: Some<string>;
 
-    /** True (default) to allow multiple files in a single upload. */
-    enableMulti?: boolean;
-
-    /**
-     * True to allow user to drop multiple files into the dropzone at once.  True also allows
-     * for selection of multiple files within the OS pop-up window. Defaults to enableMulti.
-     */
+    /** True to allow user to drop multiple files into the dropzone at once. */
     enableAddMulti?: boolean;
 
-    /** Maximum number of accepted files accepted in one drop. */
+    /** Maximum number of overall files that can be added. */
     maxFiles?: number;
+
+    /** Maximum number of accepted files accepted in one drop. */
+    maxAdd?: number;
 
     /** Maximum accepted file size in bytes. */
     maxSize?: number;
@@ -66,8 +63,6 @@ export class FileChooserModel extends HoistModel {
     @observable.ref
     files: File[] = [];
 
-    dropzoneRef = createObservableRef<DropzoneRef>();
-
     @observable
     targetDisplay: ReactNode;
 
@@ -77,13 +72,16 @@ export class FileChooserModel extends HoistModel {
     @observable
     draggedCount = 0;
 
+    dropzoneRef = createObservableRef<DropzoneRef>();
+
     @managed
     gridModel: GridModel;
 
     accept: Record<string, string[]>;
     enableMulti: boolean;
-    enableAddMulti: boolean;
+    acceptMulti: boolean;
     maxFiles: number;
+    maxAdd: number;
     maxSize: number;
     minSize: number;
     showFileGrid: boolean;
@@ -96,22 +94,23 @@ export class FileChooserModel extends HoistModel {
         super();
         makeObservable(this);
 
-        this.accept = this.getMimesByExt(params.accept);
+        this.gridModel = this.createGridModel();
+
         this.maxFiles = params.maxFiles;
+        this.maxAdd = params.maxAdd;
         this.maxSize = params.maxSize;
         this.minSize = params.minSize;
         this.showFileGrid = params.showFileGrid;
-        this.enableMulti = withDefault(params.enableMulti, true);
-        this.enableAddMulti = withDefault(params.enableAddMulti, this.enableMulti);
+        this.accept = this.getMimesByExt(params.accept);
+        this.acceptMulti = withDefault(params.enableAddMulti, true);
         this.targetText = withDefault(params.targetText, this.defaultTargetText);
         this.rejectText = withDefault(params.rejectText, this.defaultRejectionText);
         this.noClick = withDefault(params.noClick, false);
-        this.gridModel = this.createGridModel();
 
         this.addReaction(this.fileReaction(), this.draggedCountReaction());
     }
 
-    /** Open the file browser. Typically used in a button's onClick callback.*/
+    /** Open the file browser programmatically. Typically used in a button's onClick callback.*/
     openFileBrowser() {
         this.dropzoneRef.current?.open();
     }
@@ -155,14 +154,42 @@ export class FileChooserModel extends HoistModel {
 
     @action
     onDrop(accepted: File[], rejected: FileRejection[]) {
-        const {enableAddMulti, rejectText} = this;
-
         this.rejectDisplay = null;
         this.draggedCount = 0;
 
-        if (!isEmpty(accepted)) this.addFiles(enableAddMulti ? accepted : accepted[0]);
+        const {files, maxFiles, maxAdd, acceptMulti, rejectText} = this,
+            currFileCount = files.length,
+            acceptCount = accepted.length,
+            rejectCount = rejected.length;
 
-        if (rejected.length) {
+        if (currFileCount + acceptCount > maxFiles) {
+            XH.warningToast(
+                `${maxFiles} file limit exceeded. ${maxFiles - acceptCount} additional files may be added`
+            );
+            return;
+        }
+
+        if (acceptCount) {
+            if (!acceptMulti) {
+                if (acceptCount > 1) {
+                    const droppedCount = acceptCount - 1;
+                    XH.warningToast(
+                        `Multi file adding disabled. ${droppedCount} ${pluralize('file', droppedCount)} not added.`
+                    );
+                }
+                this.addFiles(accepted[0]);
+            } else if (acceptCount > maxAdd) {
+                const droppedCount = acceptCount - maxAdd;
+                XH.warningToast(
+                    `Max ${maxAdd} files per add. ${droppedCount} ${pluralize('file', droppedCount)} not added.`
+                );
+                this.addFiles(take(accepted, maxAdd));
+            } else {
+                this.addFiles(accepted);
+            }
+        }
+
+        if (rejectCount) {
             this.rejectDisplay = isFunction(rejectText) ? rejectText(rejected) : rejectText;
         }
     }
@@ -175,9 +202,7 @@ export class FileChooserModel extends HoistModel {
 
         extensions = castArray(extensions);
         let ret = {};
-        extensions.forEach(ext => {
-            ret[mime.getType(ext)] = [ext];
-        });
+        extensions.forEach(ext => (ret[mime.getType(ext)] = [ext]));
         return ret;
     }
 
@@ -188,22 +213,22 @@ export class FileChooserModel extends HoistModel {
     }
 
     private defaultRejectionText(rejections: FileRejection[]): ReactElement {
-        // 1) Create map of rejected files to list of error messages
+        // 1) Map rejected files to error messages
         const errorsByFile = {};
         rejections.forEach(({file, errors}) => {
             const {name} = file.handle;
             errorsByFile[name] = map(errors, 'message');
         });
 
-        // 2) Create list of files with bulleted rejection messages
-        const rejectItems = [];
-        for (const file in errorsByFile) {
-            const errorsMsgs = errorsByFile[file];
-            rejectItems.push(
-                `${file} rejected for the following ${pluralize('reason', errorsMsgs.length)}:`,
-                ul(errorsMsgs.map(it => li(it)))
-            );
-        }
+        // 2) List files with bulleted error messages
+        const files = Object.keys(errorsByFile),
+            rejectItems = files.flatMap(file => {
+                const messages = errorsByFile[file];
+                return [
+                    `${file} rejected for the following ${pluralize('reason', messages.length)}:`,
+                    ul(messages.map(it => li(it)))
+                ];
+            });
 
         return hbox(
             filler(),
@@ -267,8 +292,7 @@ export class FileChooserModel extends HoistModel {
     }
 
     private loadFileGrid(files: File[]) {
-        const fileData = files.map(({name, size}) => ({name, size}));
-        this.gridModel.loadData(fileData);
+        this.gridModel.loadData(files);
     }
 
     private fileReaction(): ReactionSpec {
