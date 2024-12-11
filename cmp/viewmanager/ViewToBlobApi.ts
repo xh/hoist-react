@@ -29,12 +29,11 @@ export interface ViewUpdateSpec {
 }
 
 /**
- * Class for accessing and updating views using JSON Blobs Service.
- *
+ * Class for accessing and updating views using {@link JsonBlobService}.
  * @internal
  */
 export class ViewToBlobApi<T> {
-    private model: ViewManagerModel<T>;
+    private readonly model: ViewManagerModel<T>;
 
     constructor(model: ViewManagerModel<T>) {
         this.model = model;
@@ -43,9 +42,7 @@ export class ViewToBlobApi<T> {
     //---------------
     // Load/search.
     //---------------
-    /**
-     * Fetch metadata for all views that this user has access to.
-     */
+    /** Fetch metadata for all views accessible by current user. */
     async fetchViewInfosAsync(): Promise<ViewInfo[]> {
         const {model} = this;
         try {
@@ -75,7 +72,7 @@ export class ViewToBlobApi<T> {
     }
 
     //-----------------
-    // Crud
+    // CRUD
     //-----------------
     /** Create a new view, owned by the current user.*/
     async createViewAsync(spec: ViewCreateSpec): Promise<View<T>> {
@@ -97,7 +94,7 @@ export class ViewToBlobApi<T> {
         }
     }
 
-    /** Update all aspects of a views metadata.*/
+    /** Update all aspects of a view's metadata.*/
     async updateViewInfoAsync(view: ViewInfo, updates: ViewUpdateSpec): Promise<View<T>> {
         try {
             this.ensureEditable(view);
