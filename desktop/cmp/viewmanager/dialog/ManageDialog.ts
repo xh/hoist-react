@@ -22,7 +22,7 @@ import {viewMultiPanel} from './ViewMultiPanel';
 import {viewPanel} from './ViewPanel';
 
 /**
- * Default management dialog for ViewManager
+ * Default management dialog for ViewManager.
  */
 export const manageDialog = hoistCmp.factory({
     displayName: 'ManageDialog',

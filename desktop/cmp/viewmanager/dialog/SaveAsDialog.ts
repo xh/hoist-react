@@ -10,13 +10,13 @@ import {filler, hbox, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {checkbox, select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
+import {select, switchInput, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {getGroupOptions} from './Utils';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {startCase} from 'lodash';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
+import {getGroupOptions} from './Utils';
 
 /**
  * Default Save As dialog used by ViewManager.
@@ -76,7 +76,7 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                             field: 'description',
                             item: textArea({
                                 selectOnFocus: true,
-                                height: 90
+                                height: 70
                             })
                         }),
                         hbox(
@@ -85,7 +85,7 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                                 label: 'Share?',
                                 labelTextAlign: 'left',
                                 omit: !model.parent.enableSharing,
-                                item: checkbox()
+                                item: switchInput()
                             })
                         )
                     ]
