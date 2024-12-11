@@ -9,27 +9,20 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {ManageDialogModel} from './ManageDialogModel';
-import {makeObservable, action, observable} from '@xh/hoist/mobx';
+import {makeObservable} from '@xh/hoist/mobx';
 import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
 import {ReactNode} from 'react';
 
 /**
  * Backing model for EditForm
  */
-export class EditFormModel extends HoistModel {
+export class ViewPanelModel extends HoistModel {
     parent: ManageDialogModel;
 
     @managed formModel: FormModel;
-    @observable.ref view: ViewInfo;
 
-    @action
-    setView(view: ViewInfo) {
-        const {formModel} = this;
-        this.view = view;
-        if (view) {
-            formModel.init(view);
-            formModel.readonly = !view.isEditable;
-        }
+    get view(): ViewInfo {
+        return this.parent.selectedView;
     }
 
     get loadTask(): TaskObserver {
@@ -39,8 +32,17 @@ export class EditFormModel extends HoistModel {
     constructor(parent: ManageDialogModel) {
         super();
         makeObservable(this);
-        this.formModel = this.createFormModel();
         this.parent = parent;
+        const formModel = (this.formModel = this.createFormModel());
+        this.addReaction({
+            track: () => this.view,
+            run: view => {
+                if (view) {
+                    formModel.init(view);
+                    formModel.readonly = !view.isEditable;
+                }
+            }
+        });
     }
 
     async saveAsync() {

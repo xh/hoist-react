@@ -40,7 +40,6 @@ function getNavMenuItems(model: ViewManagerModel): ReactNode[] {
         ret = [];
 
     // Main Views items by type
-    // TODO -- be smart?  If more than, say n for any cat, start nesting them in submenus?
     if (!isEmpty(ownedViews)) {
         ret.push(
             menuDivider({title: `My ${pluralName}`}),

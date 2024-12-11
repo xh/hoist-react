@@ -12,8 +12,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, switchInput, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {EditFormModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/EditFormModel';
+import {ViewPanelModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ViewPanelModel';
 import {getGroupOptions} from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
 import {fmtDateTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -22,8 +21,8 @@ import {capitalize} from 'lodash';
 /**
  * Form to edit or view details on a single saved view within the ViewManager manage dialog.
  */
-export const editForm = hoistCmp.factory({
-    model: uses(EditFormModel),
+export const viewPanel = hoistCmp.factory({
+    model: uses(ViewPanelModel),
     render({model}) {
         const {view} = model;
         if (!view) return null;
@@ -91,13 +90,12 @@ export const editForm = hoistCmp.factory({
                         })
                     ]
                 })
-            }),
-            bbar: bbar()
+            })
         });
     }
 });
 
-const formButtons = hoistCmp.factory<EditFormModel>({
+const formButtons = hoistCmp.factory<ViewPanelModel>({
     render({model}) {
         const {formModel, parent, view} = model,
             {readonly} = formModel,
@@ -135,7 +133,7 @@ const formButtons = hoistCmp.factory<EditFormModel>({
                           }),
                           width: 200,
                           outlined: true,
-                          onClick: () => parent.togglePinned(view)
+                          onClick: () => parent.togglePinned([view])
                       }),
                       button({
                           text: `Promote to ${capitalize(parent.globalDisplayName)} ${parent.typeDisplayName}`,
@@ -156,12 +154,5 @@ const formButtons = hoistCmp.factory<EditFormModel>({
                       })
                   ]
               });
-    }
-});
-
-const bbar = hoistCmp.factory<EditFormModel>({
-    render({model}) {
-        const {parent} = model;
-        return toolbar(filler(), button({text: 'Close', onClick: () => parent.close()}));
     }
 });

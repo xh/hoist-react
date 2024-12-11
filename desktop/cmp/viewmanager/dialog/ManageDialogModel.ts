@@ -13,7 +13,7 @@ import {HoistModel, LoadSpec, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {FilterTestFn} from '@xh/hoist/data';
 import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
 import {ReactNode} from 'react';
-import {EditFormModel} from './EditFormModel';
+import {ViewPanelModel} from './ViewPanelModel';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable, computed, observable, action} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
@@ -33,7 +33,8 @@ export class ManageDialogModel extends HoistModel {
     @managed globalGridModel: GridModel;
     @managed sharedGridModel: GridModel;
 
-    @managed editFormModel: EditFormModel;
+    @managed viewPanelModel: ViewPanelModel;
+
     @managed tabContainerModel: TabContainerModel;
 
     @bindable.ref filter: FilterTestFn;
@@ -64,16 +65,6 @@ export class ManageDialogModel extends HoistModel {
     @computed
     get selectedViews(): ViewInfo[] {
         return this.gridModel.selectedRecords.map(it => it.data.view) as ViewInfo[];
-    }
-
-    get canDelete(): boolean {
-        const {viewManagerModel, selectedViews} = this,
-            {views, enableDefault} = viewManagerModel;
-
-        if (!selectedViews.every(v => v.isEditable)) return false;
-
-        // Can't delete all the views, unless default mode is enabled.
-        return enableDefault || views.length - selectedViews.length > 0;
     }
 
     get manageGlobal(): boolean {
@@ -137,8 +128,9 @@ export class ManageDialogModel extends HoistModel {
         return this.doMakeGlobalAsync(view).linkTo(this.updateTask).catchDefault();
     }
 
-    togglePinned(view: ViewInfo) {
-        this.viewManagerModel.togglePinned(view);
+    @action
+    togglePinned(views: ViewInfo[]) {
+        views.forEach(v => this.viewManagerModel.togglePinned(v));
         this.refreshAsync();
     }
 
@@ -150,21 +142,13 @@ export class ManageDialogModel extends HoistModel {
         this.globalGridModel = this.createGridModel('global');
         this.sharedGridModel = this.createGridModel('shared');
         this.tabContainerModel = this.createTabContainerModel();
-        this.editFormModel = new EditFormModel(this);
-
+        this.viewPanelModel = new ViewPanelModel(this);
         const gridModels = [this.ownedGridModel, this.globalGridModel, this.sharedGridModel];
-        this.addReaction(
-            {
-                track: () => this.selectedView,
-                run: r => this.editFormModel.setView(r),
-                fireImmediately: true
-            },
-            {
-                track: () => this.filter,
-                run: f => gridModels.forEach(m => m.store.setFilter(f)),
-                fireImmediately: true
-            }
-        );
+        this.addReaction({
+            track: () => this.filter,
+            run: f => gridModels.forEach(m => m.store.setFilter(f)),
+            fireImmediately: true
+        });
         gridModels.forEach(gm => {
             this.addReaction({
                 track: () => gm.selectedRecords,
@@ -309,7 +293,7 @@ export class ManageDialogModel extends HoistModel {
                             }),
                             tooltip: isPinned ? 'Unpin from menu' : 'Pin to menu',
                             onClick: () => {
-                                this.togglePinned(record.data.view);
+                                this.togglePinned([record.data.view]);
                             }
                         });
                     }

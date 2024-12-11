@@ -10,7 +10,6 @@ import {tabContainer} from '@xh/hoist/cmp/tab';
 import {filler, frame, hframe, placeholder} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {editForm} from './EditForm';
 import {ManageDialogModel} from './ManageDialogModel';
 import {button, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -19,6 +18,8 @@ import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize} from 'lodash';
+import {viewMultiPanel} from './ViewMultiPanel';
+import {viewPanel} from './ViewPanel';
 
 /**
  * Default management dialog for ViewManager
@@ -44,8 +45,19 @@ export const manageDialog = hoistCmp.factory({
             onClose: () => model.close(),
             item: panel({
                 item: hframe(
-                    viewPanel(),
-                    count == 0 ? placeholderPanel() : count > 1 ? multiSelectionPanel() : editForm()
+                    selectorPanel(),
+                    panel({
+                        item:
+                            count == 0
+                                ? placeholderPanel()
+                                : count > 1
+                                  ? viewMultiPanel()
+                                  : viewPanel(),
+                        bbar: toolbar(
+                            filler(),
+                            button({text: 'Close', onClick: () => model.close()})
+                        )
+                    })
                 ),
                 mask: [updateTask, loadTask]
             })
@@ -53,7 +65,7 @@ export const manageDialog = hoistCmp.factory({
     }
 });
 
-const viewPanel = hoistCmp.factory<ManageDialogModel>({
+const selectorPanel = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
         return panel({
             modelConfig: {defaultSize: 650, side: 'left', collapsible: false},
@@ -87,32 +99,6 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
 
 const placeholderPanel = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
-        return panel({
-            item: placeholder(Icon.gears(), `Select a ${model.typeDisplayName}`),
-            bbar: toolbar(filler(), button({text: 'Close', onClick: () => model.close()}))
-        });
-    }
-});
-
-const multiSelectionPanel = hoistCmp.factory<ManageDialogModel>({
-    render({model}) {
-        const {selectedViews} = model;
-        return panel({
-            item: placeholder(
-                Icon.gears(),
-                `${selectedViews.length} selected ${pluralize(model.typeDisplayName)}`
-            ),
-            bbar: toolbar(
-                button({
-                    text: 'Delete',
-                    icon: Icon.delete(),
-                    intent: 'danger',
-                    disabled: !model.canDelete,
-                    onClick: () => model.deleteAsync(selectedViews)
-                }),
-                filler(),
-                button({text: 'Close', onClick: () => model.close()})
-            )
-        });
+        return placeholder(Icon.gears(), `Select a ${model.typeDisplayName}`);
     }
 });
