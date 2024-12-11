@@ -67,6 +67,10 @@ export class ManageDialogModel extends HoistModel {
         return this.gridModel.selectedRecords.map(it => it.data.view) as ViewInfo[];
     }
 
+    get selectedViewIsActive(): boolean {
+        return this.selectedView?.token === this.viewManagerModel.view?.token;
+    }
+
     get manageGlobal(): boolean {
         return this.viewManagerModel.manageGlobal;
     }
@@ -99,6 +103,11 @@ export class ManageDialogModel extends HoistModel {
     @action
     close() {
         this.isOpen = false;
+    }
+
+    activateSelectedViewAndClose() {
+        this.viewManagerModel.selectViewAsync(this.selectedView);
+        this.close();
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {

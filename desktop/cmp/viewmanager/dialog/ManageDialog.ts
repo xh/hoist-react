@@ -12,7 +12,7 @@ import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
@@ -32,7 +32,14 @@ export const manageDialog = hoistCmp.factory({
     render({model, className}) {
         if (!model.isOpen) return null;
 
-        const {typeDisplayName, updateTask, loadTask, selectedViews} = model,
+        const {
+                typeDisplayName,
+                updateTask,
+                loadTask,
+                selectedViews,
+                selectedView,
+                selectedViewIsActive
+            } = model,
             count = selectedViews.length;
 
         return dialog({
@@ -55,6 +62,15 @@ export const manageDialog = hoistCmp.factory({
                                   : viewPanel(),
                         bbar: toolbar(
                             filler(),
+                            button({
+                                text: selectedViewIsActive
+                                    ? 'Currently Active'
+                                    : 'Activate + Close',
+                                onClick: () => model.activateSelectedViewAndClose(),
+                                disabled: selectedViewIsActive,
+                                omit: !selectedView
+                            }),
+                            toolbarSep({omit: !selectedView}),
                             button({text: 'Close', onClick: () => model.close()})
                         )
                     })
