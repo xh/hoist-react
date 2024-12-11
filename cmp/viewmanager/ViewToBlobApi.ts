@@ -118,16 +118,15 @@ export class ViewToBlobApi<T> {
         }
     }
 
-    /** Promote/demote a view from global visibility/ownership status. */
-    async toggleViewIsGlobalAsync(view: ViewInfo): Promise<View<T>> {
+    /** Promote a view to global visibility/ownership status. */
+    async makeViewGlobalAsync(view: ViewInfo): Promise<View<T>> {
         try {
             this.ensureEditable(view);
             const meta = view.meta,
-                isGlobal = !view.isGlobal,
                 blob = await XH.jsonBlobService.updateAsync(view.token, {
-                    owner: isGlobal ? null : XH.getUsername(),
-                    acl: isGlobal ? '*' : null,
-                    meta: omit(meta, ['isShared', 'isDefaultPinned'])
+                    owner: null,
+                    acl: '*',
+                    meta: omit(meta, ['isShared'])
                 });
             const ret = View.fromBlob(blob, this.model);
             this.trackChange('Updated View Info', ret);

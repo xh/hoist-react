@@ -133,8 +133,8 @@ export class ManageDialogModel extends HoistModel {
         return this.doUpdateAsync(view, update).linkTo(this.updateTask).catchDefault();
     }
 
-    async toggleGlobalAsync(view: ViewInfo) {
-        return this.doToggleGlobalAsync(view).linkTo(this.updateTask).catchDefault();
+    async makeGlobalAsync(view: ViewInfo) {
+        return this.doMakeGlobalAsync(view).linkTo(this.updateTask).catchDefault();
     }
 
     //------------------------
@@ -212,13 +212,13 @@ export class ManageDialogModel extends HoistModel {
         await this.refreshAsync();
     }
 
-    private async doToggleGlobalAsync(view: ViewInfo) {
+    private async doMakeGlobalAsync(view: ViewInfo) {
         const {globalDisplayName, typeDisplayName} = this.viewManagerModel,
-            {typedName} = view;
-        const msg: ReactNode = view.isGlobal
-            ? `The ${typedName} will become a personal ${typeDisplayName} and will no longer be visible to ALL other ${XH.appName} users.`
-            : `The ${typedName} will become a ${globalDisplayName} ${typeDisplayName} visible to ALL other ${XH.appName} users.`;
-        const msgs = [msg, strong('Are you sure you want to proceed?')];
+            {typedName} = view,
+            msgs = [
+                `The ${typedName} will become a ${globalDisplayName} ${typeDisplayName} visible to ALL other ${XH.appName} users.`,
+                strong('Are you sure you want to proceed?')
+            ];
 
         const confirmed = await XH.confirm({
             message: fragment(msgs.map(m => p(m))),
@@ -232,7 +232,7 @@ export class ManageDialogModel extends HoistModel {
         if (!confirmed) return;
 
         const {viewManagerModel} = this;
-        const updated = await viewManagerModel.api.toggleViewIsGlobalAsync(view);
+        const updated = await viewManagerModel.api.makeViewGlobalAsync(view);
         await viewManagerModel.refreshAsync();
         await this.refreshAsync();
         await this.selectViewAsync(updated.info); // reselect -- will have moved tabs!

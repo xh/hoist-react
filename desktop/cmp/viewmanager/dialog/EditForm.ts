@@ -135,13 +135,7 @@ const bbar = hoistCmp.factory<EditFormModel>({
                 text: `Make ${capitalize(parent.globalDisplayName)}`,
                 icon: Icon.globe(),
                 omit: !view.isEditable || view.isGlobal || !parent.manageGlobal,
-                onClick: () => parent.toggleGlobalAsync(view)
-            }),
-            button({
-                text: `Make personal`,
-                icon: Icon.user(),
-                omit: !view.isEditable || !view.isGlobal,
-                onClick: () => parent.toggleGlobalAsync(view)
+                onClick: () => parent.makeGlobalAsync(view)
             }),
             filler(),
             button({text: 'Close', onClick: () => parent.close()})
