@@ -12,6 +12,11 @@
 * New `SessionStorageService` and associated persistence provider provides support for saving
   tab local data across reloads.
 
+### ⚙️ Technical
+
+* Added explicit `devDependencies` and `resolutions` blocks for `@types/react[-dom]` at v18.x.
+* Added workaround for problematic use of SASS-syntax-in-CSS shipped by `react-dates`. This began
+  throwing "This function isn't allowed in plain CSS" with latest version of sass/sass-loader.
 
 ## v70.0.0 - 2024-11-15
 
