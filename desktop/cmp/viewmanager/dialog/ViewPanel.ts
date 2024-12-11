@@ -47,7 +47,6 @@ export const viewPanel = hoistCmp.factory({
                             item: select({
                                 enableCreate: true,
                                 enableClear: true,
-                                placeholder: 'Select optional group....',
                                 options: getGroupOptions(
                                     model.parent.viewManagerModel,
                                     view.isOwned ? 'owned' : 'global'
