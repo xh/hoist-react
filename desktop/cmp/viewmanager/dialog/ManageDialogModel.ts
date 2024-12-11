@@ -361,20 +361,23 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private get ownedTabTitle(): ReactNode {
-        const title = `My ${startCase(pluralize(this.typeDisplayName))}`,
-            store = this.ownedGridModel.store;
-        return hbox(title, badge({item: store.allCount, omit: store.empty}));
+        return hbox(
+            `My ${startCase(pluralize(this.typeDisplayName))}`,
+            badge(this.ownedGridModel.store.allCount)
+        );
     }
 
     private get globalTabTitle(): ReactNode {
-        const title = `${startCase(this.globalDisplayName)} ${startCase(pluralize(this.typeDisplayName))}`,
-            store = this.globalGridModel.store;
-        return hbox(title, badge({item: store.allCount, omit: store.empty}));
+        return hbox(
+            `${startCase(this.globalDisplayName)} ${startCase(pluralize(this.typeDisplayName))}`,
+            badge(this.globalGridModel.store.allCount)
+        );
     }
 
     private get sharedTabTitle(): ReactNode {
-        const title = `Shared ${startCase(pluralize(this.typeDisplayName))}`,
-            store = this.sharedGridModel.store;
-        return hbox(title, badge({item: store.allCount, omit: store.empty}));
+        return hbox(
+            `Shared ${startCase(pluralize(this.typeDisplayName))}`,
+            badge(this.sharedGridModel.store.allCount)
+        );
     }
 }
