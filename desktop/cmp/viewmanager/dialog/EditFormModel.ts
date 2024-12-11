@@ -53,8 +53,8 @@ export class EditFormModel extends HoistModel {
 
         if (view.isOwned && view.isShared != isShared) {
             const msg: ReactNode = !isShared
-                ? `Your ${view.typedName} will no longer be visible to ALL other ${XH.appName} users.`
-                : `Your ${view.typedName} will become visible to ALL other ${XH.appName} users.`;
+                ? `Your ${view.typedName} will no longer be visible to all other ${XH.appName} users.`
+                : `Your ${view.typedName} will become visible to all other ${XH.appName} users.`;
             const msgs = [msg, strong('Are you sure you want to proceed?')];
 
             const confirmed = await XH.confirm({

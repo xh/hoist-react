@@ -554,7 +554,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             msgs.push(
                 span(
                     `This is a ${globalDisplayName} ${typeDisplayName}.`,
-                    strong('Changes will be visible to ALL users.')
+                    strong('Changes will be visible to all users.')
                 )
             );
         }

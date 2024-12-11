@@ -9,8 +9,16 @@
     &__form {
       padding: var(--xh-pad-px);
 
-      .xh-form-field.xh-form-field-readonly .xh-form-field-readonly-display {
-        padding: 0;
+      .xh-form-field.xh-form-field-readonly {
+        &:not(.xh-form-field-inline) {
+          .xh-form-field-label {
+            border-bottom: var(--xh-border-solid);
+          }
+        }
+
+        .xh-form-field-readonly-display {
+          padding: 0;
+        }
       }
 
       .xh-form-field .xh-form-field-info {

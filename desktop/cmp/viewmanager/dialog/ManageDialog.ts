@@ -30,14 +30,16 @@ export const manageDialog = hoistCmp.factory({
 
     render({model, className}) {
         if (!model.isOpen) return null;
-        const {typeDisplayName, updateTask, loadTask, selectedViews} = model;
-        const count = selectedViews.length;
+
+        const {typeDisplayName, updateTask, loadTask, selectedViews} = model,
+            count = selectedViews.length;
+
         return dialog({
             title: `Manage ${capitalize(pluralize(typeDisplayName))}`,
             icon: Icon.gear(),
             className,
             isOpen: true,
-            style: {width: '1000px', maxWidth: '90vm', minHeight: '500px'},
+            style: {width: '1000px', maxWidth: '90vm', minHeight: '550px'},
             canOutsideClickClose: false,
             onClose: () => model.close(),
             item: panel({

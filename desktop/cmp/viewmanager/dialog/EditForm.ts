@@ -6,30 +6,29 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {div, filler, hbox, hspacer, span, vframe, vspacer} from '@xh/hoist/cmp/layout';
-
+import {div, filler, hbox, hspacer, span, vbox, vframe, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
-import {EditFormModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/EditFormModel';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {checkbox, select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
+import {select, switchInput, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {EditFormModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/EditFormModel';
 import {getGroupOptions} from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
 import {fmtDateTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {capitalize} from 'lodash';
 
 /**
- * Default Edit Form for ViewManager
+ * Form to edit or view details on a single saved view within the ViewManager manage dialog.
  */
 export const editForm = hoistCmp.factory({
     model: uses(EditFormModel),
     render({model}) {
-        const {formModel, view} = model;
+        const {view} = model;
         if (!view) return null;
 
-        const {isGlobal, lastUpdated, lastUpdatedBy} = view;
+        const {isGlobal, lastUpdated, lastUpdatedBy, isEditable} = view;
 
         return panel({
             item: form({
@@ -54,38 +53,37 @@ export const editForm = hoistCmp.factory({
                                     model.parent.viewManagerModel,
                                     view.isOwned ? 'owned' : 'global'
                                 )
-                            })
+                            }),
+                            readonlyRenderer: v =>
+                                v || span({item: 'None provided', className: 'xh-text-color-muted'})
                         }),
                         formField({
                             field: 'description',
                             item: textArea({
                                 selectOnFocus: true,
-                                height: 90
+                                height: 70
                             }),
                             readonlyRenderer: v =>
-                                v
-                                    ? v
-                                    : span({
-                                          item: 'None provided',
-                                          className: 'xh-text-color-muted'
-                                      })
+                                v || span({item: 'None provided', className: 'xh-text-color-muted'})
                         }),
                         formField({
                             field: 'isShared',
                             label: 'Shared?',
                             inline: true,
-                            item: checkbox(),
+                            item: switchInput(),
+                            readonlyRenderer: v => (v ? 'Yes' : 'No'),
                             omit: isGlobal
                         }),
                         formField({
                             field: 'isDefaultPinned',
-                            label: 'Default pinned?',
+                            label: 'Pin by default?',
+                            labelWidth: 110,
                             inline: true,
-                            item: checkbox(),
-                            omit: !isGlobal
+                            item: switchInput(),
+                            omit: !isGlobal || !isEditable
                         }),
-                        vspacer(20),
-                        formButtons({omit: formModel.readonly}),
+                        vspacer(),
+                        formButtons(),
                         filler(),
                         div({
                             className: 'xh-view-manager__manage-dialog__metadata',
@@ -101,43 +99,63 @@ export const editForm = hoistCmp.factory({
 
 const formButtons = hoistCmp.factory<EditFormModel>({
     render({model}) {
-        const {formModel, parent, view} = model;
+        const {formModel, parent, view} = model,
+            {readonly} = formModel,
+            {isPinned} = view;
+
         return formModel.isDirty
-            ? hbox(
-                  filler(),
-                  button({
-                      text: 'Save Changes',
-                      icon: Icon.check(),
-                      intent: 'success',
-                      minimal: false,
-                      disabled: !formModel.isValid,
-                      onClick: () => model.saveAsync()
-                  }),
-                  hspacer(),
-                  button({
-                      icon: Icon.reset(),
-                      tooltip: 'Revert changes',
-                      minimal: false,
-                      onClick: () => formModel.reset()
-                  }),
-                  filler()
-              )
-            : hbox(
-                  filler(),
-                  button({
-                      text: `Make ${capitalize(parent.globalDisplayName)}`,
-                      icon: Icon.globe(),
-                      omit: !view.isEditable || view.isGlobal || !parent.manageGlobal,
-                      onClick: () => parent.makeGlobalAsync(view)
-                  }),
-                  button({
-                      text: 'Delete',
-                      icon: Icon.delete(),
-                      intent: 'danger',
-                      onClick: () => parent.deleteAsync([view])
-                  }),
-                  filler()
-              );
+            ? hbox({
+                  justifyContent: 'center',
+                  items: [
+                      button({
+                          text: 'Save Changes',
+                          icon: Icon.check(),
+                          intent: 'success',
+                          minimal: false,
+                          disabled: !formModel.isValid,
+                          onClick: () => model.saveAsync()
+                      }),
+                      hspacer(),
+                      button({
+                          icon: Icon.reset(),
+                          tooltip: 'Revert changes',
+                          minimal: false,
+                          onClick: () => formModel.reset()
+                      })
+                  ]
+              })
+            : vbox({
+                  style: {gap: 10, alignItems: 'center'},
+                  items: [
+                      button({
+                          text: isPinned ? 'Unpin from your Menu' : 'Pin to your Menu',
+                          icon: Icon.pin({
+                              prefix: isPinned ? 'fas' : 'far',
+                              className: isPinned ? 'xh-yellow' : 'xh-text-color-muted'
+                          }),
+                          width: 200,
+                          outlined: true,
+                          onClick: () => parent.togglePinned(view)
+                      }),
+                      button({
+                          text: `Promote to ${capitalize(parent.globalDisplayName)} ${parent.typeDisplayName}`,
+                          icon: Icon.globe(),
+                          width: 200,
+                          outlined: true,
+                          omit: readonly || view.isGlobal || !parent.manageGlobal,
+                          onClick: () => parent.makeGlobalAsync(view)
+                      }),
+                      button({
+                          text: 'Delete',
+                          icon: Icon.delete(),
+                          width: 200,
+                          outlined: true,
+                          intent: 'danger',
+                          omit: readonly,
+                          onClick: () => parent.deleteAsync([view])
+                      })
+                  ]
+              });
     }
 });
 

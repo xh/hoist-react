@@ -137,6 +137,11 @@ export class ManageDialogModel extends HoistModel {
         return this.doMakeGlobalAsync(view).linkTo(this.updateTask).catchDefault();
     }
 
+    togglePinned(view: ViewInfo) {
+        this.viewManagerModel.togglePinned(view);
+        this.refreshAsync();
+    }
+
     //------------------------
     // Implementation
     //------------------------
@@ -216,7 +221,7 @@ export class ManageDialogModel extends HoistModel {
         const {globalDisplayName, typeDisplayName} = this.viewManagerModel,
             {typedName} = view,
             msgs = [
-                `The ${typedName} will become a ${globalDisplayName} ${typeDisplayName} visible to ALL other ${XH.appName} users.`,
+                `The ${typedName} will become a ${globalDisplayName} ${typeDisplayName} visible to all other ${XH.appName} users.`,
                 strong('Are you sure you want to proceed?')
             ];
 
@@ -226,7 +231,7 @@ export class ManageDialogModel extends HoistModel {
                 text: `Yes, change visibility`,
                 outlined: true,
                 autoFocus: false,
-                intent: 'danger'
+                intent: 'primary'
             }
         });
         if (!confirmed) return;
@@ -246,7 +251,7 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private createGridModel(type: 'owned' | 'global' | 'shared'): GridModel {
-        const {typeDisplayName, globalDisplayName, viewManagerModel} = this;
+        const {typeDisplayName, globalDisplayName} = this;
 
         const modifier =
             type == 'owned' ? `personal` : type == 'global' ? globalDisplayName : 'shared';
@@ -272,6 +277,7 @@ export class ManageDialogModel extends HoistModel {
                     group: v.isGlobal || v.isOwned ? v.group : v.owner,
                     owner: v.owner,
                     lastUpdated: v.lastUpdated,
+                    isPinned: v.isPinned,
                     view: v
                 }),
                 fields: [
@@ -279,6 +285,7 @@ export class ManageDialogModel extends HoistModel {
                     {name: 'group', type: 'string'},
                     {name: 'owner', type: 'string'},
                     {name: 'lastUpdated', type: 'date'},
+                    {name: 'isPinned', type: 'bool'},
                     {name: 'view', type: 'auto'}
                 ]
             },
@@ -289,14 +296,12 @@ export class ManageDialogModel extends HoistModel {
                 {field: 'owner', hidden: true},
                 {field: 'lastUpdated', ...dateTimeCol},
                 {
-                    colId: 'isPinned',
-                    field: 'view',
+                    field: 'isPinned',
                     width: 40,
                     align: 'center',
                     headerName: Icon.pin(),
                     headerTooltip: 'Pin to menu',
-                    renderer: (v, {gridModel}) => {
-                        const {isPinned} = v;
+                    renderer: (isPinned, {record}) => {
                         return button({
                             icon: Icon.pin({
                                 prefix: isPinned ? 'fas' : 'fal',
@@ -304,8 +309,7 @@ export class ManageDialogModel extends HoistModel {
                             }),
                             tooltip: isPinned ? 'Unpin from menu' : 'Pin to menu',
                             onClick: () => {
-                                viewManagerModel.togglePinned(v);
-                                gridModel.agApi.redrawRows();
+                                this.togglePinned(record.data.view);
                             }
                         });
                     }
