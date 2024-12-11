@@ -36,8 +36,17 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
     className: 'xh-file-chooser',
 
     render({model, ...props}, ref) {
-        const {accept, enableAddMulti, maxFiles, maxSize, minSize, showFileGrid, noClick} = model;
-
+        const {
+            accept,
+            enableAddMulti,
+            maxFiles,
+            maxSize,
+            minSize,
+            showFileGrid,
+            noClick,
+            targetDisplay,
+            rejectDisplay
+        } = model;
         return hbox({
             ref,
             ...props,
@@ -50,22 +59,17 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                     minSize,
                     noClick,
                     multiple: enableAddMulti,
-                    children: ({getRootProps, getInputProps, isDragActive}) => {
-                        return div({
+                    children: ({getRootProps, getInputProps, isDragActive}) =>
+                        div({
                             ...getRootProps(),
-                            items: [
-                                model.targetDisplay,
-                                model.rejectDisplay,
-                                input({...getInputProps()})
-                            ],
+                            items: [targetDisplay, rejectDisplay, input({...getInputProps()})],
                             className: classNames(
                                 'xh-file-chooser__target',
                                 isDragActive ? 'xh-file-chooser__target--active' : null,
                                 showFileGrid ? 'xh-file-chooser__target--withGrid' : null,
                                 !noClick ? 'xh-file-chooser__target--pointer' : null
                             )
-                        });
-                    },
+                        }),
                     onDragEnter: e => model.onDragEnter(e),
                     onDragLeave: e => model.onDragLeave(e),
                     onDrop: (accepted: File[], rejected: FileRejection[]) =>
