@@ -8,6 +8,7 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import {capitalize} from 'lodash';
 import {ManageDialogModel} from './ManageDialogModel';
 import {makeObservable} from '@xh/hoist/mobx';
 import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
@@ -40,7 +41,10 @@ export class ViewPanelModel extends HoistModel {
             track: () => this.view,
             run: view => {
                 if (view) {
-                    formModel.init(view);
+                    formModel.init({
+                        ...view,
+                        owner: view.owner ?? capitalize(parent.globalDisplayName)
+                    });
                     formModel.readonly = !view.isEditable;
                 }
             },
@@ -100,6 +104,7 @@ export class ViewPanelModel extends HoistModel {
                         }
                     ]
                 },
+                {name: 'owner'},
                 {name: 'group'},
                 {name: 'description'},
                 {name: 'isShared'},

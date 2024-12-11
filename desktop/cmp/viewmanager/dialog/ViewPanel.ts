@@ -43,6 +43,10 @@ export const viewPanel = hoistCmp.factory({
                             item: textInput()
                         }),
                         formField({
+                            field: 'owner',
+                            omit: isEditable
+                        }),
+                        formField({
                             field: 'group',
                             item: select({
                                 enableCreate: true,
@@ -70,7 +74,7 @@ export const viewPanel = hoistCmp.factory({
                             inline: true,
                             item: switchInput(),
                             readonlyRenderer: v => (v ? 'Yes' : 'No'),
-                            omit: isGlobal
+                            omit: isGlobal || !isEditable
                         }),
                         formField({
                             field: 'isDefaultPinned',
