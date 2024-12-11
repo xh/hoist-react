@@ -85,28 +85,7 @@ export const editForm = hoistCmp.factory({
                             omit: !isGlobal
                         }),
                         vspacer(20),
-                        hbox({
-                            omit: !model.showSaveButton,
-                            items: [
-                                filler(),
-                                button({
-                                    text: 'Save Changes',
-                                    icon: Icon.check(),
-                                    intent: 'success',
-                                    minimal: false,
-                                    disabled: !formModel.isValid,
-                                    onClick: () => model.saveAsync()
-                                }),
-                                hspacer(),
-                                button({
-                                    icon: Icon.reset(),
-                                    tooltip: 'Revert changes',
-                                    minimal: false,
-                                    onClick: () => formModel.reset()
-                                }),
-                                filler()
-                            ]
-                        }),
+                        formButtons({omit: formModel.readonly}),
                         filler(),
                         div({
                             className: 'xh-view-manager__manage-dialog__metadata',
@@ -120,25 +99,51 @@ export const editForm = hoistCmp.factory({
     }
 });
 
+const formButtons = hoistCmp.factory<EditFormModel>({
+    render({model}) {
+        const {formModel, parent, view} = model;
+        return formModel.isDirty
+            ? hbox(
+                  filler(),
+                  button({
+                      text: 'Save Changes',
+                      icon: Icon.check(),
+                      intent: 'success',
+                      minimal: false,
+                      disabled: !formModel.isValid,
+                      onClick: () => model.saveAsync()
+                  }),
+                  hspacer(),
+                  button({
+                      icon: Icon.reset(),
+                      tooltip: 'Revert changes',
+                      minimal: false,
+                      onClick: () => formModel.reset()
+                  }),
+                  filler()
+              )
+            : hbox(
+                  filler(),
+                  button({
+                      text: `Make ${capitalize(parent.globalDisplayName)}`,
+                      icon: Icon.globe(),
+                      omit: !view.isEditable || view.isGlobal || !parent.manageGlobal,
+                      onClick: () => parent.makeGlobalAsync(view)
+                  }),
+                  button({
+                      text: 'Delete',
+                      icon: Icon.delete(),
+                      intent: 'danger',
+                      onClick: () => parent.deleteAsync([view])
+                  }),
+                  filler()
+              );
+    }
+});
+
 const bbar = hoistCmp.factory<EditFormModel>({
     render({model}) {
-        const {parent, view} = model;
-        return toolbar(
-            button({
-                text: 'Delete',
-                icon: Icon.delete(),
-                intent: 'danger',
-                omit: !view.isEditable,
-                onClick: () => parent.deleteAsync([view])
-            }),
-            button({
-                text: `Make ${capitalize(parent.globalDisplayName)}`,
-                icon: Icon.globe(),
-                omit: !view.isEditable || view.isGlobal || !parent.manageGlobal,
-                onClick: () => parent.makeGlobalAsync(view)
-            }),
-            filler(),
-            button({text: 'Close', onClick: () => parent.close()})
-        );
+        const {parent} = model;
+        return toolbar(filler(), button({text: 'Close', onClick: () => parent.close()}));
     }
 });

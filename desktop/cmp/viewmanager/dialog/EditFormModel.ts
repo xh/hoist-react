@@ -36,11 +36,6 @@ export class EditFormModel extends HoistModel {
         return this.parent.loadModel;
     }
 
-    get showSaveButton(): boolean {
-        const {formModel, parent} = this;
-        return formModel.isDirty && !formModel.readonly && !parent.loadModel.isPending;
-    }
-
     constructor(parent: ManageDialogModel) {
         super();
         makeObservable(this);
