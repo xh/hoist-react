@@ -59,11 +59,10 @@ export interface ViewManagerConfig {
     initialViewSpec?: (views: ViewInfo[]) => ViewInfo;
 
     /**
-     * Delay after state has been set on associated components before they will be observed for
-     * any further state changes.  Larger values may be useful when providing state to complex
-     * components such as dashboards or grids that may create dirty state immediately after load.
-     *
-     * Specified in milliseconds.  Default is 250.
+     * Delay (in ms) to wait after state has been set on associated components before listening for
+     * further state changes. The long default wait 1000ms is intended to avoid a false positive
+     * dirty indicator when linking to complex components such as dashboards or grids that can
+     * report immediate changes to state due to internal processing or rendering.
      */
     settleTime?: number;
 
@@ -176,9 +175,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
      */
     selectTask: TaskObserver;
 
-    /**
-     * TaskObserver linked to {@link saveAsync}.
-     */
+    /** TaskObserver linked to {@link saveAsync}. */
     saveTask: TaskObserver;
 
     //-----------------------
@@ -197,7 +194,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     providers: ViewManagerProvider<any>[] = [];
 
     /**
-     * Data access for persisting views
+     * Data access for persisting views.
      * @internal
      */
     api: ViewToBlobApi<T>;
@@ -269,7 +266,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         enableAutoSave = true,
         enableDefault = true,
         enableSharing = true,
-        settleTime = 250,
+        settleTime = 1000,
         initialViewSpec = null
     }: ViewManagerConfig) {
         super();
