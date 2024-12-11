@@ -291,6 +291,7 @@ export class ManageDialogModel extends HoistModel {
                 {
                     colId: 'isPinned',
                     field: 'view',
+                    autosizable: false,
                     width: 40,
                     align: 'center',
                     headerName: Icon.pin(),
