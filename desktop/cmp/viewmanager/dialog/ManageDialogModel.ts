@@ -282,7 +282,7 @@ export class ManageDialogModel extends HoistModel {
                     {name: 'view', type: 'auto'}
                 ]
             },
-            autosizeOptions: {mode: GridAutosizeMode.MANAGED},
+            autosizeOptions: {mode: GridAutosizeMode.DISABLED},
             columns: [
                 {field: 'name', flex: true},
                 {field: 'group', hidden: true},
@@ -291,7 +291,6 @@ export class ManageDialogModel extends HoistModel {
                 {
                     colId: 'isPinned',
                     field: 'view',
-                    autosizable: false,
                     width: 40,
                     align: 'center',
                     headerName: Icon.pin(),
