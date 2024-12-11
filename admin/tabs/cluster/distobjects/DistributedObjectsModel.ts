@@ -289,7 +289,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
                     );
                 return {
                     name,
-                    displayName: this.deriveDisplayName(name),
+                    displayName: this.deriveDisplayName(name, type),
                     type,
                     parentName: parentName ?? this.deriveParent(name),
                     hasBreaks:
@@ -309,8 +309,8 @@ export class DistributedObjectsModel extends BaseInstanceModel {
                 if (!recordsByName[parentName]) {
                     recordsByName[parentName] = {
                         name: parentName,
-                        displayName: this.deriveDisplayName(parentName),
-                        type: 'Unknown',
+                        displayName: this.deriveDisplayName(parentName, null),
+                        type: null,
                         parentName: this.deriveParent(parentName),
                         hasBreaks: null,
                         comparisonFields: [],
@@ -337,6 +337,10 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         if (name.startsWith('xhcachedvalue.')) {
             return name.substring(14);
         }
+        // Hz ReplicatedMap that implements a Cache
+        if (name.startsWith('xhcache.')) {
+            return name.substring(8);
+        }
         // Any object that utilizes `svc.hzName()`
         if (name.indexOf('[') !== -1) {
             return name.substring(0, name.indexOf('['));
@@ -346,20 +350,24 @@ export class DistributedObjectsModel extends BaseInstanceModel {
             return 'Hoist';
         }
         // Everything else belongs in the 'App' group
-        if (name !== 'App') {
+        if (name !== 'App' && name !== 'Hoist') {
             return 'App';
         }
         return null;
     }
 
-    private deriveDisplayName(name: string): string {
+    private deriveDisplayName(name: string, type: string): string {
         // Hz Ringbuffer that implements a CachedValue
         if (name.startsWith('_hz_rb_xhcachedvalue.')) {
-            return 'Ringbuffer';
+            return type;
         }
         // Hz ITopic that implements a CachedValue
         if (name.startsWith('xhcachedvalue.')) {
-            return 'ITopic';
+            return type;
+        }
+        // Hz ReplicatedMap that implements a Cache
+        if (name.startsWith('xhcache.')) {
+            return type;
         }
         // Any object that utilizes `svc.hzName()`
         if (name.indexOf('[') !== -1) {
