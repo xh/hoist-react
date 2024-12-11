@@ -256,6 +256,11 @@ export class ManageDialogModel extends HoistModel {
             sortBy: 'name',
             showGroupRowCounts: false,
             groupBy: ['group'],
+            groupSortFn: (a, b) => {
+                if (a == '') return 1;
+                if (b == '') return -1;
+                return a.localeCompare(b);
+            },
             selModel: 'multiple',
             contextMenu: null,
             sizingMode: 'standard',
