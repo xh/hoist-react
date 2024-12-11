@@ -216,7 +216,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     get isViewAutoSavable(): boolean {
         const {enableAutoSave, autoSave, view} = this;
-        return enableAutoSave && autoSave && !view.isShared && !view.isDefault;
+        return (
+            enableAutoSave &&
+            autoSave &&
+            !view.isShared &&
+            !view.isDefault &&
+            !XH.identityService.isImpersonating
+        );
     }
 
     get autoSaveUnavailableReason(): string {
@@ -225,6 +231,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         if (view.isGlobal) return `Cannot auto-save ${globalDisplayName} ${typeDisplayName}.`;
         if (view.isShared) return `Cannot auto-save shared ${typeDisplayName}.`;
         if (view.isDefault) return `Cannot auto-save default ${typeDisplayName}.`;
+        if (XH.identityService.isImpersonating) return `Auto-save disabled during impersonation.`;
         return null;
     }
 
