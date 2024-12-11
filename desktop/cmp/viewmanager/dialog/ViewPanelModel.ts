@@ -32,8 +32,10 @@ export class ViewPanelModel extends HoistModel {
     constructor(parent: ManageDialogModel) {
         super();
         makeObservable(this);
+
         this.parent = parent;
         const formModel = (this.formModel = this.createFormModel());
+
         this.addReaction({
             track: () => this.view,
             run: view => {
@@ -41,7 +43,8 @@ export class ViewPanelModel extends HoistModel {
                     formModel.init(view);
                     formModel.readonly = !view.isEditable;
                 }
-            }
+            },
+            fireImmediately: true
         });
     }
 
