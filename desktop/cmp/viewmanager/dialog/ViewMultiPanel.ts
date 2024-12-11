@@ -50,7 +50,7 @@ const buttons = hoistCmp.factory<ManageDialogModel>({
                     text: allPinned ? 'Unpin from your Menu' : 'Pin to your Menu',
                     icon: Icon.pin({
                         prefix: allPinned ? 'fas' : 'far',
-                        className: allPinned ? 'xh-yellow' : 'xh-text-color-muted'
+                        className: allPinned ? 'xh-yellow' : ''
                     }),
                     width: 200,
                     outlined: true,

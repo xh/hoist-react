@@ -128,7 +128,7 @@ const formButtons = hoistCmp.factory<ViewPanelModel>({
                           text: isPinned ? 'Unpin from your Menu' : 'Pin to your Menu',
                           icon: Icon.pin({
                               prefix: isPinned ? 'fas' : 'far',
-                              className: isPinned ? 'xh-yellow' : 'xh-text-color-muted'
+                              className: isPinned ? 'xh-yellow' : null
                           }),
                           width: 200,
                           outlined: true,
