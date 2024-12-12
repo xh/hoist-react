@@ -22,7 +22,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
     @observable.ref startTimestamp: Date = null;
     @observable runDurationMs: number = 0;
 
-    @bindable.ref showTypes = ['failed', 'passed', 'inactive'];
+    @bindable.ref shownCompareState = ['failed', 'passed', 'inactive'];
 
     @managed detailPanelModel = new PanelModel({
         side: 'right',
@@ -56,7 +56,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
                 {name: 'type', type: 'string'},
                 {name: 'parentName', type: 'string'},
                 {name: 'provider', type: 'string'},
-                {name: 'hasBreaks', type: 'string'},
+                {name: 'compareState', type: 'string'},
                 {name: 'comparisonFields', type: 'auto'},
                 {name: 'adminStatsbyInstance', type: 'auto'}
             ],
@@ -64,11 +64,11 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         },
         rowClassRules: {
             'xh-distributed-objects-row-has-break': ({data: record}) =>
-                record?.data.hasBreaks === 'failed'
+                record?.data.compareState === 'failed'
         },
         columns: [
             {
-                field: 'hasBreaks',
+                field: 'compareState',
                 width: 34,
                 align: 'center',
                 resizable: false,
@@ -123,8 +123,8 @@ export class DistributedObjectsModel extends BaseInstanceModel {
     get counts() {
         const ret = {passed: 0, failed: 0, inactive: 0};
         this.gridModel.store.allRecords.forEach(record => {
-            const {hasBreaks} = record.data;
-            ret[hasBreaks]++;
+            const {compareState} = record.data;
+            ret[compareState]++;
         });
         return ret;
     }
@@ -139,14 +139,14 @@ export class DistributedObjectsModel extends BaseInstanceModel {
                     this.updateDetailGridModel(record, instanceNames, oldRecord)
             },
             {
-                track: () => this.showTypes,
-                run: showTypes =>
-                    isEmpty(showTypes)
+                track: () => this.shownCompareState,
+                run: shownCompareState =>
+                    isEmpty(shownCompareState)
                         ? this.gridModel.store.clearFilter()
                         : this.gridModel.store.setFilter({
                               op: 'OR',
-                              filters: showTypes.map(it => ({
-                                  field: 'hasBreaks',
+                              filters: shownCompareState.map(it => ({
+                                  field: 'compareState',
                                   op: '=',
                                   value: it
                               }))
@@ -337,7 +337,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
                     displayName: this.deriveDisplayName(name, type),
                     type,
                     parentName: this.deriveParent(name, type),
-                    hasBreaks:
+                    compareState:
                         isEmpty(comparisonFields) || objs.length < 2
                             ? 'inactive'
                             : !isEmpty(breaks[name])
@@ -356,7 +356,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
             displayName: 'App',
             type: 'Provider',
             parentName: null,
-            hasBreaks: 'inactive',
+            compareState: 'inactive',
             comparisonFields: [],
             adminStatsbyInstance: {},
             children: []
@@ -366,7 +366,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
             displayName: 'Hoist',
             type: 'Provider',
             parentName: null,
-            hasBreaks: 'inactive',
+            compareState: 'inactive',
             comparisonFields: [],
             adminStatsbyInstance: {},
             children: []
@@ -376,7 +376,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
             displayName: 'Hibernate',
             type: 'Hibernate',
             parentName: 'Hoist',
-            hasBreaks: 'inactive',
+            compareState: 'inactive',
             comparisonFields: [],
             adminStatsbyInstance: {},
             children: []
@@ -386,7 +386,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
             displayName: 'Hibernate',
             type: 'Hibernate',
             parentName: 'App',
-            hasBreaks: 'inactive',
+            compareState: 'inactive',
             comparisonFields: [],
             adminStatsbyInstance: {},
             children: []
@@ -404,7 +404,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
                         displayName: this.deriveDisplayName(parentName, null),
                         type: null,
                         parentName: this.deriveParent(parentName, null),
-                        hasBreaks: 'inactive',
+                        compareState: 'inactive',
                         comparisonFields: [],
                         adminStatsbyInstance: {},
                         children: []

@@ -48,7 +48,7 @@ const tbar = hoistCmp.factory<DistributedObjectsModel>(({model}) => {
     return toolbar({
         items: [
             buttonGroupInput({
-                bind: 'showTypes',
+                bind: 'shownCompareState',
                 enableMulti: true,
                 outlined: true,
                 items: ['failed', 'passed', 'inactive'].map(it =>
