@@ -2,10 +2,17 @@
 
 ## v71.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist core update)
+
+* Requires `hoist-core >= 27` to support enhanced Distributed Objects page.
+
+### 🎁 New Features
+
+* Admin `DistributedObjectModel` now compares certain `adminState` fields of distributed objects
+  between instances.
 
 ### ⚙️ Technical
 * Misc. Improvements to ViewManager
-
 
 ## v70.0.0 - 2024-11-15
 
