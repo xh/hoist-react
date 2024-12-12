@@ -13,12 +13,17 @@ import {LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {forIn, groupBy, isEmpty, isEqual, isNil, mapValues} from 'lodash';
-import {action, observable} from 'mobx';
+import {capitalize, cloneDeep, forIn, groupBy, isEmpty, isEqual, mapValues} from 'lodash';
+import {action, computed, observable, runInAction} from 'mobx';
 
 export class DistributedObjectsModel extends BaseInstanceModel {
+    @observable.ref startTimestamp: Date = null;
+    @observable runDurationMs: number = 0;
+
+    @bindable.ref showTypes = ['failed', 'passed', 'inactive'];
+
     @managed detailPanelModel = new PanelModel({
         side: 'right',
         defaultSize: 450
@@ -44,21 +49,22 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
         enableExport: true,
         exportOptions: {filename: exportFilenameWithDate('distributed-objects'), columns: 'ALL'},
-        sortBy: ['hasBreaks|desc', 'name'],
+        sortBy: ['displayName'],
         store: {
             fields: [
                 {name: 'name', type: 'string'},
                 {name: 'type', type: 'string'},
                 {name: 'parentName', type: 'string'},
                 {name: 'provider', type: 'string'},
-                {name: 'hasBreaks', type: 'bool'},
+                {name: 'hasBreaks', type: 'string'},
                 {name: 'comparisonFields', type: 'auto'},
                 {name: 'adminStatsbyInstance', type: 'auto'}
             ],
             idSpec: 'name'
         },
         rowClassRules: {
-            'xh-distributed-objects-row-has-break': ({data: record}) => record?.data.hasBreaks
+            'xh-distributed-objects-row-has-break': ({data: record}) =>
+                record?.data.hasBreaks === 'failed'
         },
         columns: [
             {
@@ -69,19 +75,19 @@ export class DistributedObjectsModel extends BaseInstanceModel {
                 headerName: Icon.warning(),
                 headerTooltip: 'Has Breaks',
                 renderer: v =>
-                    isNil(v)
-                        ? null
-                        : v
-                          ? Icon.warning({prefix: 'fas', intent: 'danger'})
-                          : Icon.check({prefix: 'fas', intent: 'success'})
+                    v === 'failed'
+                        ? Icon.warning({prefix: 'fas', intent: 'danger'})
+                        : v === 'passed'
+                          ? Icon.check({prefix: 'fas', intent: 'success'})
+                          : null
             },
             {field: 'displayName', isTreeColumn: true},
-            {field: 'name'},
             {field: 'type'},
             {
                 field: 'comparisonFields',
                 renderer: v => (!isEmpty(v) ? tagsRenderer(v) : null)
             },
+            {field: 'name', headerName: 'Full Name'},
             {field: 'parentName', hidden: true}
         ],
         contextMenu: [this.clearAction, '-', ...GridModel.defaultContextMenu]
@@ -113,16 +119,43 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         return this.selectedRecord?.data.adminStatsbyInstance[this.instanceName];
     }
 
+    @computed
+    get counts() {
+        const ret = {passed: 0, failed: 0, inactive: 0};
+        this.gridModel.store.allRecords.forEach(record => {
+            const {hasBreaks} = record.data;
+            ret[hasBreaks]++;
+        });
+        return ret;
+    }
+
     constructor() {
         super();
         makeObservable(this);
-        this.addReaction({
-            track: () => [this.gridModel.selectedRecord, this.instanceNames] as const,
-            run: ([record, instanceNames], [oldRecord]) =>
-                this.updateDetailGridModel(record, instanceNames, oldRecord)
-        });
+        this.addReaction(
+            {
+                track: () => [this.gridModel.selectedRecord, this.instanceNames] as const,
+                run: ([record, instanceNames], [oldRecord]) =>
+                    this.updateDetailGridModel(record, instanceNames, oldRecord)
+            },
+            {
+                track: () => this.showTypes,
+                run: showTypes =>
+                    isEmpty(showTypes)
+                        ? this.gridModel.store.clearFilter()
+                        : this.gridModel.store.setFilter({
+                              op: 'OR',
+                              filters: showTypes.map(it => ({
+                                  field: 'hasBreaks',
+                                  op: '=',
+                                  value: it
+                              }))
+                          }),
+                fireImmediately: true
+            }
+        );
     }
-
+    //
     async clearAsync() {
         const {gridModel} = this;
         if (
@@ -203,6 +236,15 @@ export class DistributedObjectsModel extends BaseInstanceModel {
             });
 
             this.gridModel.loadData(this.processReport(report));
+            runInAction(() => {
+                this.startTimestamp = report.startTimestamp
+                    ? new Date(report.startTimestamp)
+                    : null;
+                this.runDurationMs =
+                    report.endTimestamp && report.startTimestamp
+                        ? report.endTimestamp - report.startTimestamp
+                        : null;
+            });
         } catch (e) {
             this.handleLoadException(e, loadSpec);
         }
@@ -241,9 +283,11 @@ export class DistributedObjectsModel extends BaseInstanceModel {
 
         this.detailGridModel.loadData(
             instanceNames.map(instanceName => {
-                const row = {instanceName};
+                const row = {instanceName},
+                    data = cloneDeep(adminStatsbyInstance[instanceName] ?? {});
+                this.processTimestamps(data);
                 comparisonFields.forEach(fieldName => {
-                    row[fieldName] = adminStatsbyInstance[instanceName][fieldName];
+                    row[fieldName] = data?.[fieldName];
                 });
                 return row;
             })
@@ -264,9 +308,10 @@ export class DistributedObjectsModel extends BaseInstanceModel {
                 ...columns.map(col => ({
                     ...col,
                     cellClassRules: {
-                        'xh-bg-intent-warning': ({value, data: record, colDef: {colId}}) =>
+                        'xh-distributed-objects-cell-has-break': ({value, data: record, colDef}) =>
+                            !colDef ||
                             this.detailGridModel.store.records.some(
-                                rec => rec.id !== record.id && rec.data[colId] != value
+                                rec => rec.id !== record.id && rec.data[colDef.colId] != value
                             )
                     }
                 }))
@@ -283,7 +328,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
     }): PlainObject[] {
         const byName = groupBy(info, 'name'),
             recordsByName = mapValues(byName, objs => {
-                const {name, type, parentName, comparisonFields} = objs[0],
+                const {name, type, comparisonFields} = objs[0],
                     adminStatsbyInstance: PlainObject = Object.fromEntries(
                         objs.map(obj => [obj.instanceName, obj.adminStats])
                     );
@@ -291,28 +336,75 @@ export class DistributedObjectsModel extends BaseInstanceModel {
                     name,
                     displayName: this.deriveDisplayName(name, type),
                     type,
-                    parentName: parentName ?? this.deriveParent(name),
+                    parentName: this.deriveParent(name, type),
                     hasBreaks:
                         isEmpty(comparisonFields) || objs.length < 2
-                            ? null
-                            : !isEmpty(breaks[name]),
+                            ? 'inactive'
+                            : !isEmpty(breaks[name])
+                              ? 'failed'
+                              : 'passed',
                     comparisonFields: comparisonFields ?? [],
                     adminStatsbyInstance,
                     children: []
                 };
             });
 
+        // Create known parent/grouping records.
+        // We leave children empty for now, as we'll populate them in the next step.
+        recordsByName['App'] = {
+            name: 'App',
+            displayName: 'App',
+            type: 'Provider',
+            parentName: null,
+            hasBreaks: 'inactive',
+            comparisonFields: [],
+            adminStatsbyInstance: {},
+            children: []
+        };
+        recordsByName['Hoist'] = {
+            name: 'Hoist',
+            displayName: 'Hoist',
+            type: 'Provider',
+            parentName: null,
+            hasBreaks: 'inactive',
+            comparisonFields: [],
+            adminStatsbyInstance: {},
+            children: []
+        };
+        recordsByName['Hibernate (Hoist)'] = {
+            name: 'Hibernate (Hoist)',
+            displayName: 'Hibernate',
+            type: 'Hibernate',
+            parentName: 'Hoist',
+            hasBreaks: 'inactive',
+            comparisonFields: [],
+            adminStatsbyInstance: {},
+            children: []
+        };
+        recordsByName['Hibernate (App)'] = {
+            name: 'Hibernate (App)',
+            displayName: 'Hibernate',
+            type: 'Hibernate',
+            parentName: 'App',
+            hasBreaks: 'inactive',
+            comparisonFields: [],
+            adminStatsbyInstance: {},
+            children: []
+        };
+
+        // Place child records into the children of their parent record.
         forIn(recordsByName, record => {
             const parentName = record.parentName;
             if (parentName) {
-                // Create missing parents
+                // Create any unknown/missing parent records
+                // FIXME: Adding to a map while iterating over its values
                 if (!recordsByName[parentName]) {
                     recordsByName[parentName] = {
                         name: parentName,
                         displayName: this.deriveDisplayName(parentName, null),
                         type: null,
-                        parentName: this.deriveParent(parentName),
-                        hasBreaks: null,
+                        parentName: this.deriveParent(parentName, null),
+                        hasBreaks: 'inactive',
                         comparisonFields: [],
                         adminStatsbyInstance: {},
                         children: []
@@ -323,33 +415,47 @@ export class DistributedObjectsModel extends BaseInstanceModel {
             }
         });
 
-        const ret = Object.values(recordsByName).filter(record => !record.parentName);
-        console.log(ret);
-        return ret;
+        return Object.values(recordsByName).filter(record => !record.parentName);
     }
 
-    private deriveParent(name: string): string {
-        // Hz Ringbuffer that implements a CachedValue
+    private deriveParent(name: string, type: string): string {
+        // Group collection caches under their parent object.
+        if (type === 'Hibernate Cache') {
+            const lastDotIdx = name.lastIndexOf('.');
+            if (lastDotIdx != -1) {
+                const last = name.substring(lastDotIdx + 1),
+                    rest = name.substring(0, lastDotIdx);
+                // Identify collection caches by lowercase name after last dot.
+                if (last !== capitalize(last)) return rest;
+            }
+            // Otherwise, group under the correct hibernate group record.
+            return name.startsWith('io.xh.hoist') ||
+                name === 'default-query-results-region' ||
+                name == 'default-update-timestamps-region'
+                ? 'Hibernate (Hoist)'
+                : 'Hibernate (App)';
+        }
+        // Hz Ringbuffer that implements a CachedValue.
         if (name.startsWith('_hz_rb_xhcachedvalue.')) {
             return name.substring(21);
         }
-        // Hz ITopic that implements a CachedValue
+        // Hz ITopic that implements a CachedValue.
         if (name.startsWith('xhcachedvalue.')) {
             return name.substring(14);
         }
-        // Hz ReplicatedMap that implements a Cache
+        // Hz ReplicatedMap that implements a Cache.
         if (name.startsWith('xhcache.')) {
             return name.substring(8);
         }
-        // Any object that utilizes `svc.hzName()`
-        if (name.indexOf('[') !== -1) {
-            return name.substring(0, name.indexOf('['));
+        // Any object that utilizes `svc.hzName()`.
+        if (name.lastIndexOf('[') !== -1) {
+            return name.substring(0, name.lastIndexOf('['));
         }
-        // XH Services and impl objects
+        // XH Services and impl objects.
         if (name.startsWith('xh') || name.startsWith('io.xh.hoist')) {
             return 'Hoist';
         }
-        // Everything else belongs in the 'App' group
+        // Everything else belongs in the 'App' group.
         if (name !== 'App' && name !== 'Hoist') {
             return 'App';
         }
@@ -357,23 +463,23 @@ export class DistributedObjectsModel extends BaseInstanceModel {
     }
 
     private deriveDisplayName(name: string, type: string): string {
-        // Hz Ringbuffer that implements a CachedValue
+        // Hz Ringbuffer that implements a CachedValue.
         if (name.startsWith('_hz_rb_xhcachedvalue.')) {
             return type;
         }
-        // Hz ITopic that implements a CachedValue
+        // Hz ITopic that implements a CachedValue.
         if (name.startsWith('xhcachedvalue.')) {
             return type;
         }
-        // Hz ReplicatedMap that implements a Cache
+        // Hz ReplicatedMap that implements a Cache.
         if (name.startsWith('xhcache.')) {
             return type;
         }
-        // Any object that utilizes `svc.hzName()`
-        if (name.indexOf('[') !== -1) {
-            return name.substring(name.indexOf('[') + 1, name.indexOf(']'));
+        // Any object that utilizes `svc.hzName()`.
+        if (name.lastIndexOf('[') !== -1) {
+            return name.substring(name.lastIndexOf('[') + 1, name.lastIndexOf(']'));
         }
-        // Any object that utilizes `class.getName()`
+        // Any object that utilizes `class.getName()`.
         if (name.lastIndexOf('.') !== -1) {
             return name.substring(name.lastIndexOf('.') + 1);
         }

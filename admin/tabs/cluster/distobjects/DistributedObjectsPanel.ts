@@ -6,14 +6,17 @@
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
+import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, uses} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
-import {jsonInput} from '@xh/hoist/desktop/cmp/input';
+import {buttonGroupInput, jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+import {pluralize} from '@xh/hoist/utils/js';
 import {DistributedObjectsModel} from './DistributedObjectsModel';
 import './DistributedObjects.scss';
 
@@ -23,9 +26,13 @@ export const distributedObjectsPanel = hoistCmp.factory({
 
     render({model}) {
         return panel({
+            tbar: tbar(),
             item: hframe(
                 panel({
-                    item: grid({model: model.gridModel}),
+                    item: grid({
+                        model: model.gridModel,
+                        agOptions: {groupDefaultExpanded: -1}
+                    }),
                     bbar: bbar()
                 }),
                 detailsPanel()
@@ -34,6 +41,37 @@ export const distributedObjectsPanel = hoistCmp.factory({
             ref: model.viewRef
         });
     }
+});
+
+const tbar = hoistCmp.factory<DistributedObjectsModel>(({model}) => {
+    const {counts} = model;
+    return toolbar({
+        items: [
+            buttonGroupInput({
+                bind: 'showTypes',
+                enableMulti: true,
+                outlined: true,
+                items: ['failed', 'passed', 'inactive'].map(it =>
+                    button({
+                        text: pluralize(`${it} comparison`, counts[it], true),
+                        value: it,
+                        icon:
+                            it === 'failed'
+                                ? Icon.error({prefix: 'fas', className: 'xh-red'})
+                                : it === 'passed'
+                                  ? Icon.checkCircle({prefix: 'fas', className: 'xh-green'})
+                                  : Icon.disabled({prefix: 'fas', className: 'xh-gray'})
+                    })
+                )
+            }),
+            filler(),
+            'As of',
+            relativeTimestamp({bind: 'startTimestamp'}),
+            toolbarSep(),
+            'Took ',
+            fmtNumber(model.runDurationMs, {label: 'ms'})
+        ]
+    });
 });
 
 const detailsPanel = hoistCmp.factory({

@@ -50,7 +50,7 @@ export class BaseInstanceModel extends HoistModel {
         return e['name'] == 'InstanceNotFoundException';
     }
 
-    private processTimestamps(stats: PlainObject) {
+    protected processTimestamps(stats: PlainObject) {
         forOwn(stats, (v, k) => {
             // Convert numbers that look like recent timestamps to date values.
             if (
