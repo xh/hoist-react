@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
 import {filler, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {storeFilterField} from '@xh/hoist/cmp/store';
@@ -118,16 +118,18 @@ const bbar = hoistCmp.factory<DistributedObjectsModel>({
             }),
             '-',
             button({
-                text: 'Clear Hibernate Caches',
+                text: 'Clear All Hibernate Caches',
                 icon: Icon.reset(),
                 intent: 'warning',
                 tooltip: 'Clear the Hibernate caches using the native Hibernate API',
                 onClick: () => model.clearHibernateCachesAsync()
             }),
             filler(),
-            gridCountLabel({unit: 'objects'}),
-            '-',
-            storeFilterField({matchMode: 'any'}),
+            storeFilterField({
+                matchMode: 'any',
+                autoApply: false,
+                onFilterChange: f => (model.textFilter = f)
+            }),
             exportButton()
         );
     }

@@ -10,7 +10,7 @@ import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel'
 import {GridModel, tagsRenderer} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
-import {RecordActionSpec, StoreRecord} from '@xh/hoist/data';
+import {FilterLike, FilterTestFn, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
@@ -22,7 +22,8 @@ export class DistributedObjectsModel extends BaseInstanceModel {
     @observable.ref startTimestamp: Date = null;
     @observable runDurationMs: number = 0;
 
-    @bindable.ref shownCompareState = ['failed', 'passed', 'inactive'];
+    @bindable.ref shownCompareState: CompareState[] = ['failed', 'passed', 'inactive'];
+    @bindable.ref textFilter: FilterTestFn = null;
 
     @managed detailPanelModel = new PanelModel({
         side: 'right',
@@ -34,12 +35,16 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         icon: Icon.reset(),
         intent: 'warning',
         actionFn: () => this.clearAsync(),
-        displayFn: ({selectedRecords}) => ({
-            hidden: AppModel.readonly,
-            text: 'Clear ' + pluralize('Object', selectedRecords?.length, true),
-            disabled:
-                isEmpty(selectedRecords) || selectedRecords.every(r => r.data.objectType == 'Topic')
-        }),
+        displayFn: ({selectedRecords}) => {
+            const {clearableSelectedRecords} = this,
+                clearableCount = clearableSelectedRecords.length,
+                totalCount = selectedRecords.length;
+            return {
+                hidden: AppModel.readonly,
+                text: `Clear ${clearableCount}/${pluralize('Object', totalCount, true)}`,
+                disabled: isEmpty(clearableSelectedRecords)
+            };
+        },
         recordsRequired: true
     };
 
@@ -123,8 +128,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
     get counts() {
         const ret = {passed: 0, failed: 0, inactive: 0};
         this.gridModel.store.allRecords.forEach(record => {
-            const {compareState} = record.data;
-            ret[compareState]++;
+            ret[record.data.compareState]++;
         });
         return ret;
     }
@@ -139,38 +143,35 @@ export class DistributedObjectsModel extends BaseInstanceModel {
                     this.updateDetailGridModel(record, instanceNames, oldRecord)
             },
             {
-                track: () => this.shownCompareState,
-                run: shownCompareState =>
-                    isEmpty(shownCompareState)
-                        ? this.gridModel.store.clearFilter()
-                        : this.gridModel.store.setFilter({
-                              op: 'OR',
-                              filters: shownCompareState.map(it => ({
-                                  field: 'compareState',
-                                  op: '=',
-                                  value: it
-                              }))
-                          }),
+                track: () => [this.textFilter, this.shownCompareState],
+                run: this.applyFilters,
                 fireImmediately: true
             }
         );
     }
-    //
+
+    /** Keep in sync with backend clear logic - `DistributedObjectAdminService.clearObjects()`. */
+    private readonly clearableTypes = new Set(['ReplicatedMap', 'IMap', 'Hibernate Cache', 'ISet']);
+
+    get clearableSelectedRecords() {
+        const {clearableTypes} = this;
+        return this.gridModel.selectedRecords.filter(it => clearableTypes.has(it.data.type));
+    }
+
     async clearAsync() {
-        const {gridModel} = this;
+        const {clearableSelectedRecords, gridModel} = this,
+            clearableCount = clearableSelectedRecords.length,
+            totalCount = gridModel.selectedRecords.length;
         if (
-            gridModel.selectedRecords.some(
-                it => it.data.type != 'Cache' && !it.data.name.startsWith('cache')
-            ) &&
             !(await XH.confirm({
                 message: fragment(
-                    'Your selection contains objects that may not be caches and may not be designed to be cleared.',
+                    `This will clear the distributed state for ${clearableCount !== totalCount ? clearableCount + ' out of the ' : ''}${pluralize('selected object', totalCount, true)}.`,
                     br(),
                     br(),
                     `Please ensure you understand the impact of this operation on the running application before proceeding.`
                 ),
                 confirmProps: {
-                    text: 'Clear Objects',
+                    text: `Clear ${clearableCount} Objects`,
                     icon: Icon.reset(),
                     intent: 'warning',
                     outlined: true,
@@ -186,7 +187,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
                 url: 'distributedObjectAdmin/clearObjects',
                 params: {
                     instance: this.instanceName,
-                    names: this.gridModel.selectedIds
+                    names: clearableSelectedRecords.map(it => it.id)
                 }
             }).linkTo(this.loadModel);
 
@@ -206,7 +207,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
                 `This can resolve issues with data modifications made directly to the database not appearing in a running application, but should be used with care as it can have a temporary performance impact.`
             ),
             confirmProps: {
-                text: 'Clear Hibernate Caches',
+                text: 'Clear All Hibernate Caches',
                 icon: Icon.reset(),
                 intent: 'warning',
                 outlined: true,
@@ -319,15 +320,33 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         });
     }
 
+    private applyFilters() {
+        const {shownCompareState, textFilter} = this,
+            filters: FilterLike[] = [textFilter];
+
+        if (!isEmpty(shownCompareState)) {
+            filters.push({
+                op: 'OR',
+                filters: shownCompareState.map(it => ({
+                    field: 'compareState',
+                    op: '=',
+                    value: it
+                }))
+            });
+        }
+
+        this.gridModel.store.setFilter(filters);
+    }
+
     private processReport({
         info,
         breaks
     }: {
         info: PlainObject[];
         breaks: Record<string, [string, string]>;
-    }): PlainObject[] {
+    }): DistributedObjectRecord[] {
         const byName = groupBy(info, 'name'),
-            recordsByName = mapValues(byName, objs => {
+            recordsByName: Record<string, DistributedObjectRecord> = mapValues(byName, objs => {
                 const {name, type, comparisonFields} = objs[0],
                     adminStatsbyInstance: PlainObject = Object.fromEntries(
                         objs.map(obj => [obj.instanceName, obj.adminStats])
@@ -337,12 +356,11 @@ export class DistributedObjectsModel extends BaseInstanceModel {
                     displayName: this.deriveDisplayName(name, type),
                     type,
                     parentName: this.deriveParent(name, type),
-                    compareState:
-                        isEmpty(comparisonFields) || objs.length < 2
-                            ? 'inactive'
-                            : !isEmpty(breaks[name])
-                              ? 'failed'
-                              : 'passed',
+                    compareState: (isEmpty(comparisonFields) || objs.length < 2
+                        ? 'inactive'
+                        : !isEmpty(breaks[name])
+                          ? 'failed'
+                          : 'passed') as CompareState,
                     comparisonFields: comparisonFields ?? [],
                     adminStatsbyInstance,
                     children: []
@@ -351,46 +369,30 @@ export class DistributedObjectsModel extends BaseInstanceModel {
 
         // Create known parent/grouping records.
         // We leave children empty for now, as we'll populate them in the next step.
-        recordsByName['App'] = {
+        recordsByName['App'] = this.createParentRecord({
             name: 'App',
             displayName: 'App',
             type: 'Provider',
-            parentName: null,
-            compareState: 'inactive',
-            comparisonFields: [],
-            adminStatsbyInstance: {},
-            children: []
-        };
-        recordsByName['Hoist'] = {
+            parentName: null
+        });
+        recordsByName['Hoist'] = this.createParentRecord({
             name: 'Hoist',
             displayName: 'Hoist',
             type: 'Provider',
-            parentName: null,
-            compareState: 'inactive',
-            comparisonFields: [],
-            adminStatsbyInstance: {},
-            children: []
-        };
-        recordsByName['Hibernate (Hoist)'] = {
+            parentName: null
+        });
+        recordsByName['Hibernate (Hoist)'] = this.createParentRecord({
             name: 'Hibernate (Hoist)',
             displayName: 'Hibernate',
             type: 'Hibernate',
-            parentName: 'Hoist',
-            compareState: 'inactive',
-            comparisonFields: [],
-            adminStatsbyInstance: {},
-            children: []
-        };
-        recordsByName['Hibernate (App)'] = {
+            parentName: 'Hoist'
+        });
+        recordsByName['Hibernate (App)'] = this.createParentRecord({
             name: 'Hibernate (App)',
             displayName: 'Hibernate',
             type: 'Hibernate',
-            parentName: 'App',
-            compareState: 'inactive',
-            comparisonFields: [],
-            adminStatsbyInstance: {},
-            children: []
-        };
+            parentName: 'App'
+        });
 
         // Place child records into the children of their parent record.
         forIn(recordsByName, record => {
@@ -416,6 +418,21 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         });
 
         return Object.values(recordsByName).filter(record => !record.parentName);
+    }
+
+    private createParentRecord(args: {
+        name: string;
+        type: string;
+        parentName: string;
+        displayName: string;
+    }): DistributedObjectRecord {
+        return {
+            ...args,
+            compareState: 'inactive',
+            comparisonFields: [],
+            adminStatsbyInstance: {},
+            children: []
+        };
     }
 
     private deriveParent(name: string, type: string): string {
@@ -486,4 +503,17 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         // Other groupings, Services, impl objects, etc.
         return name;
     }
+}
+
+type CompareState = 'failed' | 'passed' | 'inactive';
+
+interface DistributedObjectRecord {
+    name: string;
+    displayName: string;
+    type: string;
+    parentName?: string;
+    compareState: CompareState;
+    comparisonFields: string[];
+    adminStatsbyInstance: Record<string, PlainObject>;
+    children: DistributedObjectRecord[];
 }

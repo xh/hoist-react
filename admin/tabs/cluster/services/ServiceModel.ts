@@ -25,7 +25,7 @@ export class ServiceModel extends BaseInstanceModel {
     textFilter: FilterTestFn = null;
 
     clearCachesAction: RecordActionSpec = {
-        text: 'Clear Caches',
+        text: 'Clear Service Caches',
         icon: Icon.reset(),
         intent: 'warning',
         actionFn: () => this.clearCachesAsync(false),
@@ -37,7 +37,7 @@ export class ServiceModel extends BaseInstanceModel {
     };
 
     clearClusterCachesAction: RecordActionSpec = {
-        text: 'Clear Caches (entire cluster)',
+        text: 'Clear Service Caches (entire cluster)',
         icon: Icon.reset(),
         intent: 'warning',
         actionFn: () => this.clearCachesAsync(true),
