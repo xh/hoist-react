@@ -187,8 +187,16 @@ export class ManageDialogModel extends HoistModel {
         const msgs: ReactNode[] = [`Are you sure you want to delete ${confirmStr}?`];
         if (some(views, v => v.isGlobal || v.isShared)) {
             count > 1
-                ? msgs.push(strong('Some public views will no longer be available to ALL users.'))
-                : msgs.push(strong('This public view will no longer be available to ALL users.'));
+                ? msgs.push(
+                      strong(
+                          `This includes at least one public ${typeDisplayName}, which will be removed for all users.`
+                      )
+                  )
+                : msgs.push(
+                      strong(
+                          `This is a public ${typeDisplayName} and will be removed for all users.`
+                      )
+                  );
         }
 
         const confirmed = await XH.confirm({

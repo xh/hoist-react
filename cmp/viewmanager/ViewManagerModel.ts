@@ -557,7 +557,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         if (isGlobal) {
             msgs.push(
                 span(
-                    `This is a ${globalDisplayName} ${typeDisplayName}.`,
+                    `This is a ${globalDisplayName} ${typeDisplayName}. `,
                     strong('Changes will be visible to all users.')
                 )
             );
@@ -565,7 +565,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         if (isStale) {
             msgs.push(
                 span(
-                    `This ${typeDisplayName} was updated by ${latestInfo.lastUpdatedBy} on ${fmtDateTime(latestInfo.lastUpdated)}.`,
+                    `This ${typeDisplayName} was updated by ${latestInfo.lastUpdatedBy} on ${fmtDateTime(latestInfo.lastUpdated)}. `,
                     strong('Your change may override those changes.')
                 )
             );
@@ -576,11 +576,11 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             confirmProps: {
                 text: 'Yes, save changes',
                 intent: 'primary',
-                outlined: true
+                outlined: true,
+                autoFocus: false
             },
             cancelProps: {
-                text: 'Cancel',
-                autoFocus: true
+                text: 'Cancel'
             }
         });
     }

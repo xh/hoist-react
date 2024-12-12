@@ -102,6 +102,6 @@ export class ViewInfo {
     }
 
     get typedName(): string {
-        return `${this.model.typeDisplayName} '${this.name}'`;
+        return `${this.model.typeDisplayName} "${this.name}"`;
     }
 }
