@@ -23,14 +23,12 @@ export const viewMultiPanel = hoistCmp.factory({
         return panel({
             item: vframe({
                 className: 'xh-view-manager__manage-dialog__form',
-                items: [
-                    placeholder(
-                        Icon.gears(),
-                        `${views.length} selected ${pluralize(model.typeDisplayName)}`
-                    ),
+                item: placeholder(
+                    Icon.gears(),
+                    `${views.length} selected ${pluralize(model.typeDisplayName)}`,
                     vspacer(),
                     buttons()
-                ]
+                )
             })
         });
     }

@@ -189,12 +189,12 @@ export class ManageDialogModel extends HoistModel {
             count > 1
                 ? msgs.push(
                       strong(
-                          `This includes at least one public ${typeDisplayName}, which will be removed for all users.`
+                          `This includes at least one public ${typeDisplayName}, to be deleted for all users.`
                       )
                   )
                 : msgs.push(
                       strong(
-                          `This is a public ${typeDisplayName} and will be removed for all users.`
+                          `This is a public ${typeDisplayName} and will be deleted for all users.`
                       )
                   );
         }
