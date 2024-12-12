@@ -64,7 +64,7 @@ export class View<T extends PlainObject = PlainObject> {
     }
 
     get typedName(): string {
-        return `${this.model.typeDisplayName} '${this.name}'`;
+        return `${this.model.typeDisplayName} "${this.name}"`;
     }
 
     static fromBlob<T>(blob: JsonBlob, model: ViewManagerModel): View<T> {
