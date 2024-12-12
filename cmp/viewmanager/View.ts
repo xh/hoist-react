@@ -31,6 +31,10 @@ export class View<T extends PlainObject = PlainObject> {
         return this.info?.group;
     }
 
+    get description(): string {
+        return this.info?.description;
+    }
+
     get token(): string {
         return this.info?.token ?? null;
     }

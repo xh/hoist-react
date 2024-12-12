@@ -40,14 +40,19 @@ export class SaveAsDialogModel extends HoistModel {
 
     @action
     open() {
-        const src = this.parent.view,
-            name = !src.name.startsWith('Copy of') ? `Copy of ${src.name}` : src.name;
-        this.formModel.init({
+        const {parent, formModel} = this,
+            src = parent.view,
+            name = parent.ownedViews.some(it => it.name === src.name)
+                ? `Copy of ${src.name}`
+                : src.name;
+
+        formModel.init({
             name,
             group: src.group,
-            description: null,
+            description: src.description,
             isShared: false
         });
+
         this.isOpen = true;
     }
 
