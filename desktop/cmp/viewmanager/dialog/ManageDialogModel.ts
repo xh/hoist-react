@@ -15,7 +15,7 @@ import {FilterTestFn} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, isEmpty, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
@@ -67,10 +67,6 @@ export class ManageDialogModel extends HoistModel {
         return this.gridModel.selectedRecords.map(it => it.data.view) as ViewInfo[];
     }
 
-    get selectedViewIsActive(): boolean {
-        return this.selectedView?.token === this.viewManagerModel.view?.token;
-    }
-
     get manageGlobal(): boolean {
         return this.viewManagerModel.manageGlobal;
     }
@@ -114,12 +110,14 @@ export class ManageDialogModel extends HoistModel {
         const {tabContainerModel} = this,
             {view, ownedViews, globalViews, sharedViews} = this.viewManagerModel;
 
-        this.ownedGridModel.loadData(ownedViews);
-        this.globalGridModel.loadData(globalViews);
-        this.sharedGridModel.loadData(sharedViews);
-        tabContainerModel.setTabTitle('owned', this.ownedTabTitle);
-        tabContainerModel.setTabTitle('global', this.globalTabTitle);
-        tabContainerModel.setTabTitle('shared', this.sharedTabTitle);
+        runInAction(() => {
+            this.ownedGridModel.loadData(ownedViews);
+            this.globalGridModel.loadData(globalViews);
+            this.sharedGridModel.loadData(sharedViews);
+            tabContainerModel.setTabTitle('owned', this.ownedTabTitle);
+            tabContainerModel.setTabTitle('global', this.globalTabTitle);
+            tabContainerModel.setTabTitle('shared', this.sharedTabTitle);
+        });
         if (!loadSpec.isRefresh && !view.isDefault) {
             await this.selectViewAsync(view.info);
         }
@@ -263,6 +261,7 @@ export class ManageDialogModel extends HoistModel {
             showGroupRowCounts: false,
             groupBy: ['group'],
             groupSortFn: (a, b) => {
+                // Place ungrouped items at bottom.
                 if (a == '') return 1;
                 if (b == '') return -1;
                 return a.localeCompare(b);

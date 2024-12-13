@@ -433,7 +433,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             return `Name cannot be longer than ${maxLength} characters`;
         }
         if (this.ownedViews.some(view => view.name === name && view.token != existing?.token)) {
-            return `A ${this.typeDisplayName} with name '${name}' already exists`;
+            return `A ${this.typeDisplayName} with name '${name}' already exists.`;
         }
         return null;
     }

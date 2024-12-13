@@ -19,10 +19,7 @@ export class ViewInfo {
     /** Description of the view. **/
     readonly description: string;
 
-    /**
-     * User that can write this view.  Typically, the original creator.
-     * Null if the view is global.
-     */
+    /** User owning this view. Null if the view is global.*/
     readonly owner: string;
 
     /** Is the owner making this view accessible to others? Always true for global views. */
@@ -42,7 +39,8 @@ export class ViewInfo {
 
     /**
      * Original meta-data on views associated JsonBlob.
-     * Not typically used by applications;
+     * Not typically used by applications.
+     * @internal
      */
     readonly meta: PlainObject;
 

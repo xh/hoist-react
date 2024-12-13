@@ -7,7 +7,7 @@
 
 import {PlainObject, XH} from '@xh/hoist/core';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
-import {omit} from 'lodash';
+import {omit, pick} from 'lodash';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
 import {ViewManagerModel} from './ViewManagerModel';
@@ -126,7 +126,7 @@ export class ViewToBlobApi<T> {
                     meta: omit(meta, ['isShared'])
                 });
             const ret = View.fromBlob(blob, this.model);
-            this.trackChange('Updated View Info', ret);
+            this.trackChange('Made View Global', ret);
             return ret;
         } catch (e) {
             throw XH.exception({message: `Unable to update ${view.typedName}`, cause: e});
@@ -169,7 +169,7 @@ export class ViewToBlobApi<T> {
         XH.track({
             message,
             category: 'Views',
-            data: {name: v.name, token: v.token, isGlobal: v.isGlobal, type: v.type}
+            data: pick(v, ['name', 'token', 'isGlobal', 'type'])
         });
     }
 

@@ -32,14 +32,7 @@ export const manageDialog = hoistCmp.factory({
     render({model, className}) {
         if (!model.isOpen) return null;
 
-        const {
-                typeDisplayName,
-                updateTask,
-                loadTask,
-                selectedViews,
-                selectedView,
-                selectedViewIsActive
-            } = model,
+        const {typeDisplayName, updateTask, loadTask, selectedViews} = model,
             count = selectedViews.length;
 
         return dialog({
@@ -47,7 +40,7 @@ export const manageDialog = hoistCmp.factory({
             icon: Icon.gear(),
             className,
             isOpen: true,
-            style: {width: '1000px', maxWidth: '90vm', minHeight: '550px'},
+            style: {width: '1000px', maxWidth: '90vw', minHeight: '550px'},
             canOutsideClickClose: false,
             onClose: () => model.close(),
             item: panel({
@@ -60,19 +53,7 @@ export const manageDialog = hoistCmp.factory({
                                 : count > 1
                                   ? viewMultiPanel()
                                   : viewPanel(),
-                        bbar: toolbar(
-                            filler(),
-                            button({
-                                text: selectedViewIsActive
-                                    ? 'Currently Active'
-                                    : 'Activate + Close',
-                                onClick: () => model.activateSelectedViewAndClose(),
-                                disabled: selectedViewIsActive,
-                                omit: !selectedView
-                            }),
-                            toolbarSep({omit: !selectedView}),
-                            button({text: 'Close', onClick: () => model.close()})
-                        )
+                        bbar: bbar()
                     })
                 ),
                 mask: [updateTask, loadTask]
@@ -93,7 +74,7 @@ const selectorPanel = hoistCmp.factory<ManageDialogModel>({
                     onFilterChange: f => (model.filter = f)
                 }),
                 filler(),
-                refreshButton({onClick: () => model.refreshAsync()})
+                refreshButton({model})
             ]
         });
     }
@@ -123,5 +104,22 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
 const placeholderPanel = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
         return placeholder(Icon.gears(), `Select a ${model.typeDisplayName}`);
+    }
+});
+
+const bbar = hoistCmp.factory<ManageDialogModel>({
+    render({model}) {
+        const {selectedView} = model;
+        return toolbar(
+            filler(),
+            button({
+                text: selectedView?.isCurrentView ? 'Currently Active' : 'Activate + Close',
+                onClick: () => model.activateSelectedViewAndClose(),
+                disabled: selectedView?.isCurrentView,
+                omit: !selectedView
+            }),
+            toolbarSep({omit: !selectedView}),
+            button({text: 'Close', onClick: () => model.close()})
+        );
     }
 });

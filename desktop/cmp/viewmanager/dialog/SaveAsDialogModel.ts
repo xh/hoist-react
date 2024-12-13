@@ -19,18 +19,6 @@ export class SaveAsDialogModel extends HoistModel {
     @managed readonly formModel: FormModel;
     @observable isOpen: boolean = false;
 
-    get type(): string {
-        return this.parent.type;
-    }
-
-    get typeDisplayName(): string {
-        return this.parent.typeDisplayName;
-    }
-
-    get globalDisplayName(): string {
-        return this.parent.globalDisplayName;
-    }
-
     constructor(parent: ViewManagerModel) {
         super();
         makeObservable(this);

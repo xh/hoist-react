@@ -35,12 +35,13 @@ export class ViewPanelModel extends HoistModel {
         makeObservable(this);
 
         this.parent = parent;
-        const formModel = (this.formModel = this.createFormModel());
+        this.formModel = this.createFormModel();
 
         this.addReaction({
             track: () => this.view,
             run: view => {
                 if (view) {
+                    const {formModel} = this;
                     formModel.init({
                         ...view,
                         owner: view.owner ?? capitalize(parent.globalDisplayName)

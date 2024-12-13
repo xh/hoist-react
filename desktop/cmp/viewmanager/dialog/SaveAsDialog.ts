@@ -99,7 +99,7 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
 
 const bbar = hoistCmp.factory<SaveAsDialogModel>({
     render({model}) {
-        const {typeDisplayName} = model;
+        const {typeDisplayName} = model.parent;
         return toolbar(
             filler(),
             button({

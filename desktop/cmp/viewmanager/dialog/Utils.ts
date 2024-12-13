@@ -11,11 +11,8 @@ import {map, uniq} from 'lodash';
 
 export function getGroupOptions(model: ViewManagerModel, type: 'owned' | 'global'): SelectOption[] {
     const views = type == 'owned' ? model.ownedViews : model.globalViews;
-    const ret: SelectOption[] = [];
-    uniq(map(views, 'group'))
+    return uniq(map(views, 'group'))
         .sort()
-        .forEach(g => {
-            if (g != null) ret.push({label: g, value: g});
-        });
-    return ret;
+        .filter(g => g != null)
+        .map(g => ({label: g, value: g}));
 }
