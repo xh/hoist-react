@@ -59,7 +59,7 @@ export abstract class BaseStorageService extends HoistService {
     }
 
     clear() {
-        this.storeInstance().clear();
+        this.storeInstance.clear();
     }
 
     keys(): string[] {

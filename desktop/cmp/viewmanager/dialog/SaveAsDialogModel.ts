@@ -8,8 +8,7 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {makeObservable, action, observable} from '@xh/hoist/mobx';
-import {View} from './View';
-import {ViewManagerModel} from './ViewManagerModel';
+import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 
 /**
  * Backing model for ViewManagerModel's SaveAs
@@ -20,20 +19,6 @@ export class SaveAsDialogModel extends HoistModel {
     @managed readonly formModel: FormModel;
     @observable isOpen: boolean = false;
 
-    private resolveOpen: (value: View) => void;
-
-    get type(): string {
-        return this.parent.type;
-    }
-
-    get typeDisplayName(): string {
-        return this.parent.typeDisplayName;
-    }
-
-    get globalDisplayName(): string {
-        return this.parent.globalDisplayName;
-    }
-
     constructor(parent: ViewManagerModel) {
         super();
         makeObservable(this);
@@ -42,20 +27,35 @@ export class SaveAsDialogModel extends HoistModel {
     }
 
     @action
-    openAsync(): Promise<View> {
-        this.formModel.init(this.parent.view.info ?? {});
-        this.isOpen = true;
+    open() {
+        const {parent, formModel} = this,
+            src = parent.view,
+            name = parent.ownedViews.some(it => it.name === src.name)
+                ? `Copy of ${src.name}`
+                : src.name;
 
-        return new Promise(resolve => (this.resolveOpen = resolve));
+        formModel.init({
+            name,
+            group: src.group,
+            description: src.description,
+            isShared: false
+        });
+
+        this.isOpen = true;
     }
 
-    cancel() {
-        this.close();
-        this.resolveOpen(null);
+    @action
+    close() {
+        this.isOpen = false;
     }
 
     async saveAsAsync() {
-        return this.doSaveAsAsync().linkTo(this.parent.saveTask);
+        try {
+            await this.doSaveAsAsync().linkTo(this.parent.saveTask);
+            this.close();
+        } catch (e) {
+            XH.handleException(e);
+        }
     }
 
     //------------------------
@@ -68,30 +68,25 @@ export class SaveAsDialogModel extends HoistModel {
                     name: 'name',
                     rules: [({value}) => this.parent.validateViewNameAsync(value)]
                 },
-                {name: 'description'}
+                {name: 'group'},
+                {name: 'description'},
+                {name: 'isShared'}
             ]
         });
     }
 
     private async doSaveAsAsync() {
-        const {formModel, parent} = this,
-            {name, description} = formModel.getData(),
+        let {formModel, parent} = this,
+            {name, group, description, isShared} = formModel.getData(),
             isValid = await formModel.validateAsync();
 
         if (!isValid) return;
 
-        try {
-            const ret = await this.parent.api.createViewAsync(name, description, parent.getValue());
-            this.close();
-            this.resolveOpen(ret);
-        } catch (e) {
-            XH.handleException(e);
-        }
-    }
-
-    @action
-    private close() {
-        this.isOpen = false;
-        this.formModel.init();
+        return parent.saveAsAsync({
+            name: name.trim(),
+            group: group?.trim(),
+            description: description?.trim(),
+            isShared
+        });
     }
 }

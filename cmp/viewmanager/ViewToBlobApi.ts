@@ -6,85 +6,108 @@
  */
 
 import {PlainObject, XH} from '@xh/hoist/core';
-import {pluralize} from '@xh/hoist/utils/js';
+import {pluralize, throwIf} from '@xh/hoist/utils/js';
+import {omit, pick} from 'lodash';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
 import {ViewManagerModel} from './ViewManagerModel';
 
+export interface ViewCreateSpec {
+    name: string;
+    group: string;
+    description: string;
+    isShared: boolean;
+    value?: PlainObject;
+}
+
+export interface ViewUpdateSpec {
+    name: string;
+    group: string;
+    description: string;
+    isShared?: boolean;
+    isDefaultPinned?: boolean;
+}
+
 /**
- * Class for accessing and updating views using JSON Blobs Service.
- *
+ * Class for accessing and updating views using {@link JsonBlobService}.
  * @internal
  */
 export class ViewToBlobApi<T> {
-    private owner: ViewManagerModel<T>;
+    private readonly model: ViewManagerModel<T>;
 
-    constructor(owner: ViewManagerModel<T>) {
-        this.owner = owner;
+    constructor(model: ViewManagerModel<T>) {
+        this.model = model;
     }
 
     //---------------
     // Load/search.
     //---------------
+    /** Fetch metadata for all views accessible by current user. */
     async fetchViewInfosAsync(): Promise<ViewInfo[]> {
-        const {owner} = this;
+        const {model} = this;
         try {
             const blobs = await XH.jsonBlobService.listAsync({
-                type: owner.type,
+                type: model.type,
                 includeValue: false
             });
-            return blobs.map(b => new ViewInfo(b, owner));
+            return blobs.map(b => new ViewInfo(b, model));
         } catch (e) {
             throw XH.exception({
-                message: `Unable to fetch ${pluralize(owner.typeDisplayName)}`,
+                message: `Unable to fetch ${pluralize(model.typeDisplayName)}`,
                 cause: e
             });
         }
     }
 
+    /** Fetch the latest version of a view. */
     async fetchViewAsync(info: ViewInfo): Promise<View<T>> {
-        if (!info) return View.createDefault(this.owner);
+        const {model} = this;
+        if (!info) return View.createDefault(model);
         try {
             const blob = await XH.jsonBlobService.getAsync(info.token);
-            return View.fromBlob(blob, this.owner);
+            return View.fromBlob(blob, model);
         } catch (e) {
             throw XH.exception({message: `Unable to fetch ${info.typedName}`, cause: e});
         }
     }
 
     //-----------------
-    // Crud
+    // CRUD
     //-----------------
-    async createViewAsync(name: string, description: string, value: PlainObject): Promise<View<T>> {
-        const {owner} = this;
+    /** Create a new view, owned by the current user.*/
+    async createViewAsync(spec: ViewCreateSpec): Promise<View<T>> {
+        const {model} = this;
         try {
             const blob = await XH.jsonBlobService.createAsync({
-                type: owner.type,
-                name: name.trim(),
-                description: description?.trim(),
-                value
+                type: model.type,
+                name: spec.name,
+                description: spec.description,
+                acl: spec.isShared ? '*' : null,
+                meta: {group: spec.group, isShared: spec.isShared},
+                value: spec.value
             });
-            const ret = View.fromBlob(blob, owner);
+            const ret = View.fromBlob(blob, model);
             this.trackChange('Created View', ret);
             return ret;
         } catch (e) {
-            throw XH.exception({message: `Unable to create ${owner.typeDisplayName}`, cause: e});
+            throw XH.exception({message: `Unable to create ${model.typeDisplayName}`, cause: e});
         }
     }
 
-    async updateViewInfoAsync(
-        view: ViewInfo,
-        name: string,
-        description: string,
-        isGlobal: boolean
-    ): Promise<View<T>> {
+    /** Update all aspects of a view's metadata.*/
+    async updateViewInfoAsync(view: ViewInfo, updates: ViewUpdateSpec): Promise<View<T>> {
         try {
-            const blob = await XH.jsonBlobService.updateAsync(view.token, {
-                name: name.trim(),
-                description: description?.trim(),
-                acl: isGlobal ? '*' : null
-            });
-            const ret = View.fromBlob(blob, this.owner);
+            this.ensureEditable(view);
+            const {isGlobal} = view,
+                {name, group, description, isShared, isDefaultPinned} = updates,
+                meta = {...view.meta, group},
+                blob = await XH.jsonBlobService.updateAsync(view.token, {
+                    name: name.trim(),
+                    description: description?.trim(),
+                    acl: isGlobal || isShared ? '*' : null,
+                    meta: isGlobal ? {...meta, isDefaultPinned} : {...meta, isShared}
+                });
+            const ret = View.fromBlob(blob, this.model);
             this.trackChange('Updated View Info', ret);
             return ret;
         } catch (e) {
@@ -92,10 +115,30 @@ export class ViewToBlobApi<T> {
         }
     }
 
+    /** Promote a view to global visibility/ownership status. */
+    async makeViewGlobalAsync(view: ViewInfo): Promise<View<T>> {
+        try {
+            this.ensureEditable(view);
+            const meta = view.meta,
+                blob = await XH.jsonBlobService.updateAsync(view.token, {
+                    owner: null,
+                    acl: '*',
+                    meta: omit(meta, ['isShared'])
+                });
+            const ret = View.fromBlob(blob, this.model);
+            this.trackChange('Made View Global', ret);
+            return ret;
+        } catch (e) {
+            throw XH.exception({message: `Unable to update ${view.typedName}`, cause: e});
+        }
+    }
+
+    /** Update a view's value. */
     async updateViewValueAsync(view: View<T>, value: Partial<T>): Promise<View<T>> {
         try {
+            this.ensureEditable(view.info);
             const blob = await XH.jsonBlobService.updateAsync(view.token, {value});
-            const ret = View.fromBlob(blob, this.owner);
+            const ret = View.fromBlob(blob, this.model);
             if (ret.isGlobal) {
                 this.trackChange('Updated Global View definition', ret);
             }
@@ -108,8 +151,10 @@ export class ViewToBlobApi<T> {
         }
     }
 
+    /** Delete a view. */
     async deleteViewAsync(view: ViewInfo) {
         try {
+            this.ensureEditable(view);
             await XH.jsonBlobService.archiveAsync(view.token);
             this.trackChange('Deleted View', view);
         } catch (e) {
@@ -117,11 +162,22 @@ export class ViewToBlobApi<T> {
         }
     }
 
+    //------------------
+    // Implementation
+    //------------------
     private trackChange(message: string, v: View | ViewInfo) {
         XH.track({
             message,
             category: 'Views',
-            data: {name: v.name, token: v.token, isGlobal: v.isGlobal, type: v.type}
+            data: pick(v, ['name', 'token', 'isGlobal', 'type'])
         });
+    }
+
+    private ensureEditable(view: ViewInfo) {
+        const {model} = this;
+        throwIf(
+            !view.isEditable,
+            `Cannot save changes to ${model.globalDisplayName} ${model.typeDisplayName} - missing required permission.`
+        );
     }
 }

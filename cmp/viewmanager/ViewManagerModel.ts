@@ -10,7 +10,6 @@ import {
     ExceptionHandlerOptions,
     HoistModel,
     LoadSpec,
-    managed,
     PersistableState,
     PersistenceProvider,
     PersistOptions,
@@ -25,12 +24,11 @@ import {fmtDateTime} from '@xh/hoist/format';
 import {action, bindable, makeObservable, observable, runInAction, when} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
-import {find, isEqual, isNil, isObject, lowerCase, without} from 'lodash';
+import {find, isEmpty, isEqual, isNil, isObject, lowerCase, pickBy} from 'lodash';
 import {ReactNode} from 'react';
-import {SaveAsDialogModel} from './SaveAsDialogModel';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
-import {ViewToBlobApi} from './ViewToBlobApi';
+import {ViewToBlobApi, ViewCreateSpec} from './ViewToBlobApi';
 
 export interface ViewManagerConfig {
     /**
@@ -45,8 +43,10 @@ export interface ViewManagerConfig {
      */
     enableDefault?: boolean;
 
-    /** True (default) to allow user to mark views as favorites. Requires `persistWith`. */
-    enableFavorites?: boolean;
+    /**
+     * True (default) to allow users to share their views with other users.
+     */
+    enableSharing?: boolean;
 
     /**
      * Function to determine the initial view for a user, when no view has already been persisted.
@@ -59,11 +59,10 @@ export interface ViewManagerConfig {
     initialViewSpec?: (views: ViewInfo[]) => ViewInfo;
 
     /**
-     * Delay after state has been set on associated components before they will be observed for
-     * any further state changes.  Larger values may be useful when providing state to complex
-     * components such as dashboards or grids that may create dirty state immediately after load.
-     *
-     * Specified in milliseconds.  Default is 250.
+     * Delay (in ms) to wait after state has been set on associated components before listening for
+     * further state changes. The long default wait 1000ms is intended to avoid a false positive
+     * dirty indicator when linking to complex components such as dashboards or grids that can
+     * report immediate changes to state due to internal processing or rendering.
      */
     settleTime?: number;
 
@@ -97,8 +96,8 @@ export interface ViewManagerConfig {
 }
 
 export interface ViewManagerPersistOptions extends PersistOptions {
-    /** True to persist favorites or provide specific PersistOptions. (Default true) */
-    persistFavorites?: boolean | PersistOptions;
+    /** True to persist pinning preferences or provide specific PersistOptions. (Default true) */
+    persistPinning?: boolean | PersistOptions;
 
     /** True to include pending value or provide specific PersistOptions. (Default false) */
     persistPendingValue?: boolean | PersistOptions;
@@ -112,8 +111,8 @@ export interface ViewManagerPersistOptions extends PersistOptions {
  *    models can be bound to a single ViewManagerModel, allowing a single view to capture the state
  *    of multiple components - e.g. grouping and filtering options along with grid state.
  *  - Views are persisted back to the server as JsonBlob objects.
- *  - Views can be private to their owner, or optionally enabled for global use by (all) other users.
- *  - Views can be marked as favorites for quick access.
+ *  - Views can be private to their owner, or optionally enabled for sharing to (all) other users.
+ *  - Views can be marked as pinned for quick access.
  *  - See the desktop {@link ViewManager} component - the initial Hoist UI for this model.
  */
 export class ViewManagerModel<T = PlainObject> extends HoistModel {
@@ -146,7 +145,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly globalDisplayName: string;
     readonly enableAutoSave: boolean;
     readonly enableDefault: boolean;
-    readonly enableFavorites: boolean;
+    readonly enableSharing: boolean;
     readonly manageGlobal: boolean;
     readonly settleTime: number;
     readonly initialViewSpec: (views: ViewInfo[]) => ViewInfo;
@@ -155,8 +154,14 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     @observable.ref view: View<T> = null;
     /** Loaded saved view library - both private and global */
     @observable.ref views: ViewInfo[] = [];
-    /** List of tokens for the user's favorite views. */
-    @observable.ref favorites: string[] = [];
+
+    /**
+     * Map of user's preferred pinned state for views.
+     *
+     * Note that the actual pinned state for the views is determined by this value, layered
+     * over the default state of the views themselves.
+     */
+    @observable.ref userPinned: Record<string, boolean> = {};
 
     /**
      * True if user has opted-in to automatically saving changes to personal views (if auto-save
@@ -170,13 +175,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
      */
     selectTask: TaskObserver;
 
-    /**
-     * TaskObserver linked to {@link saveAsync}.
-     */
+    /** TaskObserver linked to {@link saveAsync}. */
     saveTask: TaskObserver;
-
-    @observable manageDialogOpen = false;
-    @managed saveAsDialogModel: SaveAsDialogModel;
 
     //-----------------------
     // Private, internal state.
@@ -194,7 +194,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     providers: ViewManagerProvider<any>[] = [];
 
     /**
-     * Data access for persisting views
+     * Data access for persisting views.
      * @internal
      */
     api: ViewToBlobApi<T>;
@@ -211,32 +211,47 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     get isViewSavable(): boolean {
         const {view, manageGlobal} = this;
-        return !view.isDefault && (manageGlobal || !view.isGlobal);
+        return view.isOwned || (view.isGlobal && manageGlobal);
     }
 
     get isViewAutoSavable(): boolean {
         const {enableAutoSave, autoSave, view} = this;
-        return enableAutoSave && autoSave && !view.isGlobal && !view.isDefault;
+        return (
+            enableAutoSave &&
+            autoSave &&
+            !view.isShared &&
+            !view.isDefault &&
+            !XH.identityService.isImpersonating
+        );
     }
 
     get autoSaveUnavailableReason(): string {
         const {view, isViewAutoSavable, typeDisplayName, globalDisplayName} = this;
         if (isViewAutoSavable) return null;
         if (view.isGlobal) return `Cannot auto-save ${globalDisplayName} ${typeDisplayName}.`;
+        if (view.isShared) return `Cannot auto-save shared ${typeDisplayName}.`;
         if (view.isDefault) return `Cannot auto-save default ${typeDisplayName}.`;
+        if (XH.identityService.isImpersonating) return `Auto-save disabled during impersonation.`;
         return null;
     }
 
-    get favoriteViews(): ViewInfo[] {
-        return this.views.filter(it => it.isFavorite);
+    get pinnedViews(): ViewInfo[] {
+        return this.views.filter(it => it.isPinned);
     }
 
+    /** Views owned by me */
+    get ownedViews(): ViewInfo[] {
+        return this.views.filter(it => it.isOwned);
+    }
+
+    /** Views shared *with* me */
+    get sharedViews(): ViewInfo[] {
+        return this.views.filter(it => it.isShared && !it.isOwned);
+    }
+
+    /** Global views */
     get globalViews(): ViewInfo[] {
         return this.views.filter(it => it.isGlobal);
-    }
-
-    get privateViews(): ViewInfo[] {
-        return this.views.filter(it => !it.isGlobal);
     }
 
     /** True if any async tasks are pending. */
@@ -257,8 +272,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         manageGlobal = false,
         enableAutoSave = true,
         enableDefault = true,
-        settleTime = 250,
-        enableFavorites = true,
+        enableSharing = true,
+        settleTime = 1000,
         initialViewSpec = null
     }: ViewManagerConfig) {
         super();
@@ -275,8 +290,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.persistWith = persistWith;
         this.manageGlobal = executeIfFunction(manageGlobal) ?? false;
         this.enableDefault = enableDefault;
+        this.enableSharing = enableSharing;
         this.enableAutoSave = enableAutoSave;
-        this.enableFavorites = enableFavorites;
         this.settleTime = settleTime;
         this.initialViewSpec = initialViewSpec;
 
@@ -287,7 +302,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             message: `Saving ${this.typeDisplayName}...`
         });
 
-        this.saveAsDialogModel = new SaveAsDialogModel(this);
         this.api = new ViewToBlobApi(this);
     }
 
@@ -322,6 +336,14 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         await this.loadViewAsync(info).catch(e => this.handleException(e));
     }
 
+    async saveAsAsync(spec: ViewCreateSpec): Promise<void> {
+        const view = await this.api.createViewAsync({...spec, value: this.getValue()});
+        this.noteSuccess(`Created ${view.typedName}`);
+        this.userPin(view.info);
+        this.setAsView(view);
+        this.refreshAsync();
+    }
+
     //------------------------
     // Saving/resetting
     //------------------------
@@ -345,15 +367,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             this.handleException(e, {
                 message: `Failed to save ${view.typedName}.  If this persists consider \`Save As...\`.`
             });
-        }
-        this.refreshAsync();
-    }
-
-    async saveAsAsync(): Promise<void> {
-        const view = (await this.saveAsDialogModel.openAsync()) as View<T>;
-        if (view) {
-            this.setAsView(view);
-            this.noteSuccess(`Saved ${view.typedName}`);
         }
         this.refreshAsync();
     }
@@ -389,40 +402,29 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     //------------------
-    // Favorites
+    // Pinning
     //------------------
-    toggleFavorite(token: string) {
-        this.isFavorite(token) ? this.removeFavorite(token) : this.addFavorite(token);
+    togglePinned(view: ViewInfo) {
+        view.isPinned ? this.userUnpin(view) : this.userPin(view);
     }
 
     @action
-    addFavorite(token: string) {
-        this.favorites = [...this.favorites, token];
+    userPin(view: ViewInfo) {
+        this.userPinned = {...this.userPinned, [view.token]: true};
     }
 
     @action
-    removeFavorite(token: string) {
-        this.favorites = without(this.favorites, token);
+    userUnpin(view: ViewInfo) {
+        this.userPinned = {...this.userPinned, [view.token]: false};
     }
 
-    isFavorite(token: string) {
-        return this.favorites.includes(token);
+    isUserPinned(view: ViewInfo): boolean | null {
+        return this.userPinned[view.token];
     }
 
     //-----------------
     // Management
     //-----------------
-    @action
-    openManageDialog() {
-        this.manageDialogOpen = true;
-        this.refreshAsync();
-    }
-
-    @action
-    closeManageDialog() {
-        this.manageDialogOpen = false;
-    }
-
     async validateViewNameAsync(name: string, existing: ViewInfo = null): Promise<string> {
         const maxLength = 50;
         name = name?.trim();
@@ -430,8 +432,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         if (name.length > maxLength) {
             return `Name cannot be longer than ${maxLength} characters`;
         }
-        if (this.views.some(view => view.name === name && view.token != existing?.token)) {
-            return `A ${this.typeDisplayName} with name '${name}' already exists`;
+        if (this.ownedViews.some(view => view.name === name && view.token != existing?.token)) {
+            return `A ${this.typeDisplayName} with name '${name}' already exists.`;
         }
         return null;
     }
@@ -555,15 +557,15 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         if (isGlobal) {
             msgs.push(
                 span(
-                    `This is a ${globalDisplayName} ${typeDisplayName}.`,
-                    strong('Changes will be visible to ALL users.')
+                    `This is a ${globalDisplayName} ${typeDisplayName}. `,
+                    strong('Changes will be visible to all users.')
                 )
             );
         }
         if (isStale) {
             msgs.push(
                 span(
-                    `This ${typeDisplayName} was updated by ${latestInfo.lastUpdatedBy} on ${fmtDateTime(latestInfo.lastUpdated)}.`,
+                    `This ${typeDisplayName} was updated by ${latestInfo.lastUpdatedBy} on ${fmtDateTime(latestInfo.lastUpdated)}. `,
                     strong('Your change may override those changes.')
                 )
             );
@@ -574,11 +576,11 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             confirmProps: {
                 text: 'Yes, save changes',
                 intent: 'primary',
-                outlined: true
+                outlined: true,
+                autoFocus: false
             },
             cancelProps: {
-                text: 'Cancel',
-                autoFocus: true
+                text: 'Cancel'
             }
         });
     }
@@ -588,21 +590,24 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     //------------------
     private initPersist(options: ViewManagerPersistOptions) {
         const {
-            persistFavorites = true,
+            persistPinning = true,
             persistPendingValue = false,
             path = 'viewManager',
             ...rootPersistWith
         } = options;
 
-        // Favorites, potentially in dedicated location
-        if (this.enableFavorites && persistFavorites) {
-            const opts = isObject(persistFavorites) ? persistFavorites : rootPersistWith;
+        // Pinning potentially in dedicated location
+        if (persistPinning) {
+            const opts = isObject(persistPinning) ? persistPinning : rootPersistWith;
             PersistenceProvider.create({
-                persistOptions: {path: `${path}.favorites`, ...opts},
+                persistOptions: {path: `${path}.pinning`, ...opts},
                 target: {
-                    getPersistableState: () => new PersistableState(this.favorites),
+                    getPersistableState: () => new PersistableState(this.userPinned),
                     setPersistableState: ({value}) => {
-                        this.favorites = value.filter(tkn => this.views.some(v => v.token === tkn));
+                        const {views} = this;
+                        this.userPinned = !isEmpty(views) // Clean state iff views loaded!
+                            ? pickBy(value, (_, tkn) => views.some(v => v.token === tkn))
+                            : value;
                     }
                 },
                 owner: this
