@@ -24,7 +24,7 @@ import {capitalize} from 'lodash';
 export const viewPanel = hoistCmp.factory({
     model: uses(ViewPanelModel),
     render({model}) {
-        const {view} = model;
+        const {view, parent} = model;
         if (!view) return null;
 
         const {isGlobal, lastUpdated, lastUpdatedBy, isEditable} = view;
@@ -74,7 +74,7 @@ export const viewPanel = hoistCmp.factory({
                             inline: true,
                             item: switchInput(),
                             readonlyRenderer: v => (v ? 'Yes' : 'No'),
-                            omit: isGlobal || !isEditable
+                            omit: !parent.enableSharing || isGlobal || !isEditable
                         }),
                         formField({
                             field: 'isDefaultPinned',

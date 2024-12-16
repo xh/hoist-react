@@ -353,6 +353,7 @@ export class ManageDialogModel extends HoistModel {
                     })
                 },
                 {
+                    omit: !this.enableSharing,
                     id: 'shared',
                     title: this.sharedTabTitle,
                     content: viewsGrid({
