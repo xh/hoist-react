@@ -90,9 +90,10 @@ export class DistributedObjectsModel extends BaseInstanceModel {
             {field: 'type'},
             {
                 field: 'comparisonFields',
-                renderer: v => (!isEmpty(v) ? tagsRenderer(v) : null)
+                renderer: v => (!isEmpty(v) ? tagsRenderer(v) : null),
+                hidden: true
             },
-            {field: 'name', headerName: 'Full Name'},
+            {field: 'name', headerName: 'Full Name', hidden: true},
             {field: 'parentName', hidden: true}
         ],
         contextMenu: [this.clearAction, '-', ...GridModel.defaultContextMenu]
@@ -277,7 +278,12 @@ export class DistributedObjectsModel extends BaseInstanceModel {
             XH.safeDestroy(this.detailGridModel);
             this.detailGridModel = this.createDetailGridModel(
                 comparisonFields.map(fieldName => ({
-                    field: {name: fieldName, displayName: fieldName}
+                    field: {
+                        name: fieldName,
+                        displayName: fieldName
+                    },
+                    renderer: v => (typeof v === 'object' ? JSON.stringify(v) : v),
+                    autosizeMaxWidth: 100
                 }))
             );
         }
@@ -312,7 +318,8 @@ export class DistributedObjectsModel extends BaseInstanceModel {
                         'xh-distributed-objects-cell-has-break': ({value, data: record, colDef}) =>
                             !colDef ||
                             this.detailGridModel.store.records.some(
-                                rec => rec.id !== record.id && rec.data[colDef.colId] != value
+                                rec =>
+                                    rec.id !== record.id && !isEqual(rec.data[colDef.colId], value)
                             )
                     }
                 }))
