@@ -29,10 +29,13 @@ export const distributedObjectsPanel = hoistCmp.factory({
             tbar: tbar(),
             item: hframe(
                 panel({
-                    item: grid({
-                        model: model.gridModel,
-                        agOptions: {groupDefaultExpanded: 2}
-                    }),
+                    item: vframe(
+                        grid({
+                            model: model.gridModel,
+                            agOptions: {groupDefaultExpanded: 2}
+                        }),
+                        detailsGridPanel()
+                    ),
                     bbar: bbar()
                 }),
                 detailsPanel()
@@ -77,33 +80,45 @@ const tbar = hoistCmp.factory<DistributedObjectsModel>(({model}) => {
 const detailsPanel = hoistCmp.factory({
     model: uses(DistributedObjectsModel),
     render({model}) {
-        const {selectedRecordName, detailGridModel, instanceName, selectedAdminStats} = model;
+        const {selectedRecordName, instanceName, selectedAdminStats} = model;
+        return selectedRecordName
+            ? panel({
+                  title: instanceName ? `Stats: ${instanceName}` : 'Stats',
+                  omit: !selectedAdminStats,
+                  compactHeader: true,
+                  modelConfig: {
+                      side: 'right',
+                      defaultSize: 450
+                  },
+                  item: jsonInput({
+                      readonly: true,
+                      flex: 1,
+                      width: '100%',
+                      height: '100%',
+                      showFullscreenButton: false,
+                      editorProps: {lineNumbers: false},
+                      value: model.fmtStats(selectedAdminStats)
+                  })
+              })
+            : placeholder(Icon.grip(), 'Select an object');
+    }
+});
+
+const detailsGridPanel = hoistCmp.factory({
+    model: uses(DistributedObjectsModel),
+    render({model}) {
+        const {selectedRecordName, detailGridModel} = model;
         return panel({
             title: selectedRecordName ? `Check: ${selectedRecordName}` : 'Check',
+            omit: !detailGridModel,
             icon: Icon.info(),
             compactHeader: true,
             modelConfig: {
-                side: 'right',
-                defaultSize: 450
+                side: 'bottom',
+                defaultSize: 150
             },
             item: selectedRecordName
-                ? vframe(
-                      grid({model: detailGridModel, flex: 1}),
-                      panel({
-                          title: instanceName ? `Stats: ${instanceName}` : 'Stats',
-                          omit: !selectedAdminStats,
-                          compactHeader: true,
-                          item: jsonInput({
-                              readonly: true,
-                              flex: 1,
-                              width: '100%',
-                              height: '100%',
-                              showFullscreenButton: false,
-                              editorProps: {lineNumbers: false},
-                              value: model.fmtStats(selectedAdminStats)
-                          })
-                      })
-                  )
+                ? grid({model: detailGridModel, flex: 1})
                 : placeholder(Icon.grip(), 'Select an object')
         });
     }

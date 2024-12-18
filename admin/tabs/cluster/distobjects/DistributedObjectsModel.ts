@@ -27,7 +27,8 @@ import {
     isEqual,
     isNumber,
     isPlainObject,
-    mapValues
+    mapValues,
+    without
 } from 'lodash';
 import {action, computed, observable, runInAction} from 'mobx';
 import {createRef} from 'react';
@@ -163,7 +164,7 @@ export class DistributedObjectsModel extends HoistModel {
     }
 
     /** Keep in sync with backend clear logic - `DistributedObjectAdminService.clearObjects()`. */
-    private readonly clearableTypes = new Set(['ReplicatedMap', 'IMap', 'Hibernate Cache', 'ISet']);
+    private readonly clearableTypes = new Set(['Hibernate Cache']);
 
     get clearableSelectedRecords() {
         const {clearableTypes} = this;
@@ -284,40 +285,43 @@ export class DistributedObjectsModel extends HoistModel {
 
         const {adminStatsbyInstance, comparisonFields} = record.data,
             instanceNames = Object.keys(adminStatsbyInstance),
+            nonComparisonFields = without(
+                Object.keys(adminStatsbyInstance[instanceNames[0]]),
+                ...comparisonFields
+            ),
             {selectedId} = this.detailGridModel ?? {};
 
         // Only re-create grid model if columns are different.
         if (!oldRecord || !isEqual(oldRecord.data.comparisonFields, comparisonFields)) {
             XH.safeDestroy(this.detailGridModel);
+            const createColumnForField = fieldName => ({
+                field: {name: fieldName, displayName: fieldName},
+                renderer: v => (typeof v === 'object' ? JSON.stringify(v) : v),
+                autosizeMaxWidth: 100
+            });
             this.detailGridModel = this.createDetailGridModel(
-                comparisonFields.map(fieldName => ({
-                    field: {
-                        name: fieldName,
-                        displayName: fieldName
-                    },
-                    renderer: v => (typeof v === 'object' ? JSON.stringify(v) : v),
-                    autosizeMaxWidth: 100
-                }))
+                comparisonFields.map(createColumnForField),
+                nonComparisonFields.map(createColumnForField)
             );
         }
 
         this.detailGridModel.loadData(
             instanceNames.map(instanceName => {
-                const row = {instanceName},
-                    data = cloneDeep(adminStatsbyInstance[instanceName] ?? {});
+                const data = cloneDeep(adminStatsbyInstance[instanceName] ?? {});
                 this.processTimestamps(data);
-                comparisonFields.forEach(fieldName => {
-                    row[fieldName] = data?.[fieldName];
-                });
-                return row;
+                return {instanceName, ...data};
             })
         );
 
-        // Attempt to preserve selection across updates, or default to the globally-selected instance.
-        this.detailGridModel.selectAsync(selectedId ?? this.instanceName);
+        // Attempt to preserve selection across updates, or default.
+        if (selectedId) {
+            this.detailGridModel.selectAsync(selectedId);
+        } else {
+            this.detailGridModel.selectFirstAsync();
+        }
     }
 
-    private createDetailGridModel(columns = []) {
+    private createDetailGridModel(comparedCols = [], notComparedCols = []) {
         return new GridModel({
             autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
             store: {idSpec: 'instanceName'},
@@ -325,17 +329,45 @@ export class DistributedObjectsModel extends HoistModel {
                 {
                     field: {name: 'instanceName', type: 'string', displayName: 'Instance'}
                 },
-                ...columns.map(col => ({
-                    ...col,
-                    cellClassRules: {
-                        'xh-distributed-objects-cell-has-break': ({value, data: record, colDef}) =>
-                            !colDef ||
-                            this.detailGridModel.store.records.some(
-                                rec =>
-                                    rec.id !== record.id && !isEqual(rec.data[colDef.colId], value)
-                            )
-                    }
-                }))
+                {
+                    groupId: 'comparisonFields',
+                    headerName: 'Comparison Fields',
+                    children: comparedCols.map(col => ({
+                        ...col,
+                        cellClassRules: {
+                            'xh-distributed-objects-cell-danger': ({value, colDef}) =>
+                                !colDef ||
+                                this.detailGridModel.store.records.some(
+                                    rec => !isEqual(rec.data[colDef.colId], value)
+                                ),
+                            'xh-distributed-objects-cell-success': ({value, colDef}) =>
+                                colDef &&
+                                this.detailGridModel.store.records.every(rec =>
+                                    isEqual(rec.data[colDef.colId], value)
+                                )
+                        }
+                    }))
+                },
+                {
+                    groupId: 'otherFields',
+                    headerName: 'Non-Comparison Fields',
+                    children: notComparedCols.map(col => ({
+                        ...col,
+                        cellClassRules: {
+                            'xh-distributed-objects-cell-warning': ({
+                                value,
+                                data: record,
+                                colDef
+                            }) =>
+                                !colDef ||
+                                this.detailGridModel.store.records.some(
+                                    rec =>
+                                        rec.id !== record.id &&
+                                        !isEqual(rec.data[colDef.colId], value)
+                                )
+                        }
+                    }))
+                }
             ]
         });
     }
