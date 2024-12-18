@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {logLevelDialog} from '@xh/hoist/admin/tabs/cluster/logs/levels/LogLevelDialog';
+import {logLevelDialog} from '@xh/hoist/admin/tabs/cluster/instances/logs/levels/LogLevelDialog';
 import {grid} from '@xh/hoist/cmp/grid';
 import {hframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';

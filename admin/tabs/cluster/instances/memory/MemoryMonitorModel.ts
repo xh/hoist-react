@@ -6,7 +6,7 @@
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
-import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
+import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/instances/BaseInstanceModel';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';

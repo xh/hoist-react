@@ -31,7 +31,7 @@ export const distributedObjectsPanel = hoistCmp.factory({
                 panel({
                     item: grid({
                         model: model.gridModel,
-                        agOptions: {groupDefaultExpanded: -1}
+                        agOptions: {groupDefaultExpanded: 2}
                     }),
                     bbar: bbar()
                 }),

@@ -7,7 +7,7 @@
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
-import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
+import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/instances/BaseInstanceModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';

@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
-import {ConnPoolMonitorModel} from '@xh/hoist/admin/tabs/cluster/connpool/ConnPoolMonitorModel';
+import {ConnPoolMonitorModel} from '@xh/hoist/admin/tabs/cluster/instances/connpool/ConnPoolMonitorModel';
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, hframe, vframe} from '@xh/hoist/cmp/layout';

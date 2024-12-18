@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {ServerEnvModel} from '@xh/hoist/admin/tabs/cluster/environment/ServerEnvModel';
+import {ServerEnvModel} from '@xh/hoist/admin/tabs/cluster/instances/environment/ServerEnvModel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';

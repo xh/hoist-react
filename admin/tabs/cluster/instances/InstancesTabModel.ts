@@ -6,14 +6,16 @@
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
-import {connPoolMonitorPanel} from '@xh/hoist/admin/tabs/cluster/connpool/ConnPoolMonitorPanel';
-import {distributedObjectsPanel} from '@xh/hoist/admin/tabs/cluster/distobjects/DistributedObjectsPanel';
-import {serverEnvPanel} from '@xh/hoist/admin/tabs/cluster/environment/ServerEnvPanel';
-import {logViewer} from '@xh/hoist/admin/tabs/cluster/logs/LogViewer';
-import {usedHeapMb, usedPctMax} from '@xh/hoist/admin/tabs/cluster/memory/MemoryMonitorModel';
-import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/cluster/memory/MemoryMonitorPanel';
-import {servicePanel} from '@xh/hoist/admin/tabs/cluster/services/ServicePanel';
-import {webSocketPanel} from '@xh/hoist/admin/tabs/cluster/websocket/WebSocketPanel';
+import {connPoolMonitorPanel} from '@xh/hoist/admin/tabs/cluster/instances/connpool/ConnPoolMonitorPanel';
+import {serverEnvPanel} from '@xh/hoist/admin/tabs/cluster/instances/environment/ServerEnvPanel';
+import {logViewer} from '@xh/hoist/admin/tabs/cluster/instances/logs/LogViewer';
+import {
+    usedHeapMb,
+    usedPctMax
+} from '@xh/hoist/admin/tabs/cluster/instances/memory/MemoryMonitorModel';
+import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/cluster/instances/memory/MemoryMonitorPanel';
+import {servicePanel} from '@xh/hoist/admin/tabs/cluster/instances/services/ServicePanel';
+import {webSocketPanel} from '@xh/hoist/admin/tabs/cluster/instances/websocket/WebSocketPanel';
 import {badge} from '@xh/hoist/cmp/badge';
 import {GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {hbox} from '@xh/hoist/cmp/layout';
@@ -27,7 +29,7 @@ import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {ReactNode} from 'react';
 
-export class ClusterTabModel extends HoistModel {
+export class InstancesTabModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminClusterTabState'};
 
     @lookup(TabModel) private tabModel: TabModel;
@@ -186,7 +188,7 @@ export class ClusterTabModel extends HoistModel {
 
     private createTabContainerModel() {
         return new TabContainerModel({
-            route: 'default.cluster',
+            route: 'default.cluster.instances',
             switcher: false,
             tabs: [
                 {id: 'logs', icon: Icon.fileText(), content: logViewer},
@@ -199,12 +201,6 @@ export class ClusterTabModel extends HoistModel {
                 },
                 {id: 'environment', icon: Icon.globe(), content: serverEnvPanel},
                 {id: 'services', icon: Icon.gears(), content: servicePanel},
-                {
-                    id: 'objects',
-                    title: 'Distributed Objects',
-                    icon: Icon.grip(),
-                    content: distributedObjectsPanel
-                },
                 {id: 'webSockets', title: 'WebSockets', icon: Icon.bolt(), content: webSocketPanel}
             ]
         });

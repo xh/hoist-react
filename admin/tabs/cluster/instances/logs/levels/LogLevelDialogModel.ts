@@ -7,7 +7,7 @@
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns/Rest';
-import {LogViewerModel} from '@xh/hoist/admin/tabs/cluster/logs/LogViewerModel';
+import {LogViewerModel} from '@xh/hoist/admin/tabs/cluster/instances/logs/LogViewerModel';
 import {HoistModel, managed, lookup, LoadSpec} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
 import {textInput} from '@xh/hoist/desktop/cmp/input';

@@ -6,19 +6,35 @@
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
-import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
 import {GridModel, tagsRenderer} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {FilterLike, FilterTestFn, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
+import {fmtDateTimeSec, fmtJson} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
-import {pluralize} from '@xh/hoist/utils/js';
-import {capitalize, cloneDeep, forIn, groupBy, isEmpty, isEqual, mapValues} from 'lodash';
+import {DAYS} from '@xh/hoist/utils/datetime';
+import {isDisplayed, pluralize} from '@xh/hoist/utils/js';
+import {
+    capitalize,
+    cloneDeep,
+    forIn,
+    forOwn,
+    groupBy,
+    isArray,
+    isEmpty,
+    isEqual,
+    isNumber,
+    isPlainObject,
+    mapValues
+} from 'lodash';
 import {action, computed, observable, runInAction} from 'mobx';
+import {createRef} from 'react';
 
-export class DistributedObjectsModel extends BaseInstanceModel {
+export class DistributedObjectsModel extends HoistModel {
+    viewRef = createRef<HTMLElement>();
+
     @observable.ref startTimestamp: Date = null;
     @observable runDurationMs: number = 0;
 
@@ -101,10 +117,6 @@ export class DistributedObjectsModel extends BaseInstanceModel {
 
     @managed @observable.ref detailGridModel = this.createDetailGridModel();
 
-    get instanceNames(): string[] {
-        return this.parent.instanceNames;
-    }
-
     get selectedRecord(): StoreRecord {
         return this.gridModel.selectedRecord;
     }
@@ -117,8 +129,8 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         return this.detailGridModel.selectedRecord;
     }
 
-    override get instanceName(): string {
-        return (this.selectedDetailRecord?.id as string) ?? this.parent.instanceName;
+    get instanceName(): string {
+        return this.selectedDetailRecord?.id as string;
     }
 
     get selectedAdminStats() {
@@ -139,9 +151,8 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         makeObservable(this);
         this.addReaction(
             {
-                track: () => [this.gridModel.selectedRecord, this.instanceNames] as const,
-                run: ([record, instanceNames], [oldRecord]) =>
-                    this.updateDetailGridModel(record, instanceNames, oldRecord)
+                track: () => this.gridModel.selectedRecord,
+                run: (record, oldRecord) => this.updateDetailGridModel(record, oldRecord)
             },
             {
                 track: () => [this.textFilter, this.shownCompareState],
@@ -184,10 +195,9 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         }
 
         try {
-            await XH.fetchJson({
+            await XH.postJson({
                 url: 'distributedObjectAdmin/clearObjects',
-                params: {
-                    instance: this.instanceName,
+                body: {
                     names: clearableSelectedRecords.map(it => it.id)
                 }
             }).linkTo(this.loadModel);
@@ -219,8 +229,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
 
         try {
             await XH.fetchJson({
-                url: 'distributedObjectAdmin/clearHibernateCaches',
-                params: {instance: this.instanceName}
+                url: 'distributedObjectAdmin/clearHibernateCaches'
             }).linkTo(this.loadModel);
 
             await this.refreshAsync();
@@ -233,8 +242,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         try {
             const report = await XH.fetchJson({
-                url: 'distributedObjectAdmin/getDistributedObjectsReport',
-                params: {instance: this.instanceName}
+                url: 'distributedObjectAdmin/getDistributedObjectsReport'
             });
 
             this.gridModel.loadData(this.processReport(report));
@@ -248,19 +256,23 @@ export class DistributedObjectsModel extends BaseInstanceModel {
                         : null;
             });
         } catch (e) {
-            this.handleLoadException(e, loadSpec);
+            XH.handleException(e, {
+                alertType: 'toast',
+                showAlert: this.isVisible && !loadSpec.isAutoRefresh,
+                logOnServer: this.isVisible && !loadSpec.isAutoRefresh
+            });
         }
+    }
+
+    get isVisible() {
+        return isDisplayed(this.viewRef.current);
     }
 
     //----------------------
     // Implementation
     //----------------------
     @action
-    private updateDetailGridModel(
-        record: StoreRecord,
-        instanceNames: string[],
-        oldRecord: StoreRecord
-    ) {
+    private updateDetailGridModel(record: StoreRecord, oldRecord: StoreRecord) {
         if (isEmpty(record)) {
             // Only re-create grid model if columns are different.
             if (!isEmpty(oldRecord)) {
@@ -271,6 +283,7 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         }
 
         const {adminStatsbyInstance, comparisonFields} = record.data,
+            instanceNames = Object.keys(adminStatsbyInstance),
             {selectedId} = this.detailGridModel ?? {};
 
         // Only re-create grid model if columns are different.
@@ -509,6 +522,31 @@ export class DistributedObjectsModel extends BaseInstanceModel {
         }
         // Other groupings, Services, impl objects, etc.
         return name;
+    }
+
+    fmtStats(stats: PlainObject): string {
+        stats = cloneDeep(stats);
+        this.processTimestamps(stats);
+        return fmtJson(JSON.stringify(stats));
+    }
+
+    private processTimestamps(stats: PlainObject) {
+        forOwn(stats, (v, k) => {
+            // Convert numbers that look like recent timestamps to date values.
+            if (
+                (k.endsWith('Time') ||
+                    k.endsWith('Date') ||
+                    k.endsWith('Timestamp') ||
+                    k == 'timestamp') &&
+                isNumber(v) &&
+                v > Date.now() - 365 * DAYS
+            ) {
+                stats[k] = v ? fmtDateTimeSec(v, {fmt: 'MMM DD HH:mm:ss.SSS'}) : null;
+            }
+            if (isPlainObject(v) || isArray(v)) {
+                this.processTimestamps(v);
+            }
+        });
     }
 }
 

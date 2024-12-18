@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {DetailsModel} from '@xh/hoist/admin/tabs/cluster/services/DetailsModel';
+import {DetailsModel} from '@xh/hoist/admin/tabs/cluster/instances/services/DetailsModel';
 import {placeholder} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/desktop/cmp/error';
