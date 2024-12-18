@@ -12,6 +12,7 @@ import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
+import {useOnVisibleChange} from '@xh/hoist/utils/react';
 import {startCase} from 'lodash';
 import {viewMenu} from './ViewMenu';
 import {ViewManagerLocalModel} from './ViewManagerLocalModel';
@@ -67,6 +68,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
             save = saveButton({model: locModel, mode: showSaveButton, ...saveButtonProps}),
             revert = revertButton({model: locModel, mode: showRevertButton, ...revertButtonProps}),
             menu = popover({
+                disabled: !locModel.isVisible, // Prevent orphaned popover menu
                 item: menuButton({model: locModel, ...menuButtonProps}),
                 content: viewMenu({model: locModel}),
                 placement: 'bottom-start',
@@ -75,7 +77,8 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
         return fragment(
             hbox({
                 className,
-                items: buttonSide == 'left' ? [revert, save, menu] : [menu, save, revert]
+                items: buttonSide == 'left' ? [revert, save, menu] : [menu, save, revert],
+                ref: useOnVisibleChange(isVisible => (locModel.isVisible = isVisible))
             }),
             manageDialog({model: locModel.manageDialogModel}),
             saveAsDialog({model: locModel.saveAsDialogModel})
