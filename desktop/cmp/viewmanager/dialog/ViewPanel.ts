@@ -27,7 +27,8 @@ export const viewPanel = hoistCmp.factory({
         const {view} = model;
         if (!view) return null;
 
-        const {isGlobal, lastUpdated, lastUpdatedBy, isEditable} = view;
+        const {isGlobal, lastUpdated, lastUpdatedBy, isEditable} = view,
+            {enableSharing} = model.parent.viewManagerModel;
 
         return panel({
             item: form({
@@ -74,7 +75,7 @@ export const viewPanel = hoistCmp.factory({
                             inline: true,
                             item: switchInput(),
                             readonlyRenderer: v => (v ? 'Yes' : 'No'),
-                            omit: isGlobal || !isEditable
+                            omit: !enableSharing || isGlobal || !isEditable
                         }),
                         formField({
                             field: 'isDefaultPinned',

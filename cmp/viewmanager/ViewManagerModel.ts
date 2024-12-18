@@ -504,7 +504,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     @action
     private setViews(views: ViewInfo[]) {
-        this.views = this.enableGlobal ? views : views.filter(view => !view.isGlobal);
+        this.views = views.filter(
+            view => (this.enableGlobal || !view.isGlobal) && (this.enableSharing || !view.isShared)
+        );
     }
 
     private async loadViewAsync(

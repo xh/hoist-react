@@ -344,7 +344,8 @@ export class ManageDialogModel extends HoistModel {
                             Icon.users(),
                             `This tab shows ${views} shared by other ${XH.appName} users. You can pin these ${views} to add them to your menu and access them directly. Only the owner will be able to save changes to a shared ${view}, but you can save as a copy to make it your own.`
                         )
-                    })
+                    }),
+                    omit: !enableSharing
                 }
             ]
         });
