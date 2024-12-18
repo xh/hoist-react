@@ -7,7 +7,7 @@
 
 import {PlainObject, XH} from '@xh/hoist/core';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
-import {omit, pick} from 'lodash';
+import {isEmpty, omit, pick} from 'lodash';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
 import {ViewManagerModel} from './ViewManagerModel';
@@ -50,7 +50,13 @@ export class ViewToBlobApi<T> {
                 type: model.type,
                 includeValue: false
             });
-            return blobs.map(b => new ViewInfo(b, model));
+            return blobs
+                .map(b => new ViewInfo(b, model))
+                .filter(
+                    view =>
+                        (model.enableGlobal || !view.isGlobal) &&
+                        (model.enableSharing || !view.isShared)
+                );
         } catch (e) {
             throw XH.exception({
                 message: `Unable to fetch ${pluralize(model.typeDisplayName)}`,
@@ -151,21 +157,31 @@ export class ViewToBlobApi<T> {
         }
     }
 
-    /** Delete a view. */
-    async deleteViewAsync(view: ViewInfo) {
-        try {
-            this.ensureEditable(view);
-            await XH.jsonBlobService.archiveAsync(view.token);
-            this.trackChange('Deleted View', view);
-        } catch (e) {
-            throw XH.exception({message: `Unable to delete ${view.typedName}`, cause: e});
+    async deleteViewsAsync(views: ViewInfo[]) {
+        views.forEach(v => this.ensureEditable(v));
+        const results = await Promise.allSettled(
+                views.map(v => XH.jsonBlobService.archiveAsync(v.token))
+            ),
+            outcome = results.map((result, idx) => ({result, view: views[idx]})),
+            failed = outcome.filter(({result}) => result.status === 'rejected') as Array<{
+                result: PromiseRejectedResult;
+                view: ViewInfo;
+            }>;
+
+        this.trackChange(`Deleted ${pluralize('View', views.length - failed.length, true)}`);
+
+        if (!isEmpty(failed)) {
+            throw XH.exception({
+                message: `Failed to delete ${pluralize(this.model.typeDisplayName, failed.length, true)}: ${failed.map(({view}) => view.name).join(', ')}`,
+                cause: failed.map(({result}) => result.reason)
+            });
         }
     }
 
     //------------------
     // Implementation
     //------------------
-    private trackChange(message: string, v: View | ViewInfo) {
+    private trackChange(message: string, v?: View | ViewInfo) {
         XH.track({
             message,
             category: 'Views',

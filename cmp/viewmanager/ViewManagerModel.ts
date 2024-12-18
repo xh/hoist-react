@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {fragment, strong, p, span, div, ul, li} from '@xh/hoist/cmp/layout';
+import {fragment, strong, p, span} from '@xh/hoist/cmp/layout';
 import {
     ExceptionHandlerOptions,
     HoistModel,
@@ -24,7 +24,8 @@ import {fmtDateTime} from '@xh/hoist/format';
 import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
-import {find, isEmpty, isEqual, isNil, isObject, lowerCase, partition, pickBy} from 'lodash';
+import {find, isEmpty, isEqual, isNil, isObject, lowerCase, pickBy} from 'lodash';
+import {runInAction} from 'mobx';
 import {ReactNode} from 'react';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
@@ -44,7 +45,8 @@ export interface ViewManagerConfig {
     enableDefault?: boolean;
 
     /**
-     * True (default) to enable "global" views - i.e. views that are not owned by a user and are available to all.
+     * True (default) to enable "global" views - i.e. views that are not owned by a user and are
+     * available to all.
      */
     enableGlobal?: boolean;
 
@@ -222,14 +224,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     get isViewAutoSavable(): boolean {
         const {enableAutoSave, autoSave, view} = this;
-        return (
-            enableAutoSave &&
-            autoSave &&
-            !view.isGlobal &&
-            !view.isShared &&
-            !view.isDefault &&
-            !XH.identityService.isImpersonating
-        );
+        return enableAutoSave && autoSave && view.isOwned && !XH.identityService.isImpersonating;
     }
 
     get autoSaveUnavailableReason(): string {
@@ -319,7 +314,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             // 1) Update all view info
             const views = await this.api.fetchViewInfosAsync();
             if (loadSpec.isStale) return;
-            this.setViews(views);
+            runInAction(() => (this.views = views));
 
             // 2) Update active view if needed.
             const {view} = this;
@@ -447,28 +442,22 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         return null;
     }
 
-    async deleteViewsAsync(views: ViewInfo[]): Promise<void> {
-        const results = await Promise.allSettled(views.map(v => this.api.deleteViewAsync(v))),
-            outcome = results.map((result, idx) => ({result, view: views[idx]})),
-            [succeeded, failed] = partition(outcome, ({result}) => result.status === 'fulfilled');
-
-        if (!isEmpty(failed)) {
-            XH.handleException(
-                {errors: failed.map(({result}) => result.status === 'rejected' && result.reason)},
-                {
-                    message: div(
-                        `Failed to delete ${pluralize(this.typeDisplayName, failed.length, true)}:`,
-                        ul(failed.map(({view}) => li(view.name)))
-                    )
-                }
-            );
+    async deleteViewsAsync(toDelete: ViewInfo[]): Promise<void> {
+        let exception;
+        try {
+            await this.api.deleteViewsAsync(toDelete);
+        } catch (e) {
+            exception = e;
         }
 
         await this.refreshAsync();
+        const {views} = this;
 
-        if (succeeded.some(({view}) => view.token === this.view?.token)) {
-            await this.loadViewAsync(this.initialViewSpec?.(this.views));
+        if (toDelete.some(view => view.isCurrentView) && !views.some(view => view.isCurrentView)) {
+            await this.loadViewAsync(this.initialViewSpec?.(views));
         }
+
+        if (exception) throw exception;
     }
 
     //------------------
@@ -477,7 +466,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private async initAsync() {
         try {
             const views = await this.api.fetchViewInfosAsync();
-            this.setViews(views);
+            runInAction(() => (this.views = views));
 
             if (this.persistWith) {
                 this.initPersist(this.persistWith);
@@ -500,13 +489,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             run: () => this.maybeAutoSaveAsync(),
             debounce: 5 * SECONDS
         });
-    }
-
-    @action
-    private setViews(views: ViewInfo[]) {
-        this.views = views.filter(
-            view => (this.enableGlobal || !view.isGlobal) && (this.enableSharing || !view.isShared)
-        );
     }
 
     private async loadViewAsync(
@@ -550,7 +532,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.pendingValue = pendingValue;
         // Ensure we update meta-data as well.
         if (!view.isDefault) {
-            this.setViews(this.views.map(v => (v.token === view.token ? view.info : v)));
+            this.views = this.views.map(v => (v.token === view.token ? view.info : v));
         }
     }
 

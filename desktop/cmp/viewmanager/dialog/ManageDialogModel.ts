@@ -17,7 +17,7 @@ import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {capitalize, isEmpty, some, startCase} from 'lodash';
+import {capitalize, compact, isEmpty, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewPanelModel} from './ViewPanelModel';
 
@@ -92,15 +92,22 @@ export class ManageDialogModel extends HoistModel {
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {tabContainerModel} = this,
-            {view, ownedViews, globalViews, sharedViews} = this.viewManagerModel;
+            {enableGlobal, enableSharing, view, ownedViews, globalViews, sharedViews} =
+                this.viewManagerModel;
 
         runInAction(() => {
             this.ownedGridModel.loadData(ownedViews);
-            this.globalGridModel.loadData(globalViews);
-            this.sharedGridModel.loadData(sharedViews);
             tabContainerModel.setTabTitle('owned', this.ownedTabTitle);
-            tabContainerModel.setTabTitle('global', this.globalTabTitle);
-            tabContainerModel.setTabTitle('shared', this.sharedTabTitle);
+
+            if (enableGlobal) {
+                this.globalGridModel.loadData(globalViews);
+                tabContainerModel.setTabTitle('global', this.globalTabTitle);
+            }
+
+            if (enableSharing) {
+                this.sharedGridModel.loadData(sharedViews);
+                tabContainerModel.setTabTitle('shared', this.sharedTabTitle);
+            }
         });
         if (!loadSpec.isRefresh && !view.isDefault) {
             await this.selectViewAsync(view.info);
@@ -129,27 +136,39 @@ export class ManageDialogModel extends HoistModel {
     // Implementation
     //------------------------
     private init() {
+        const {enableGlobal, enableSharing} = this.viewManagerModel;
+
         this.ownedGridModel = this.createGridModel('owned');
-        this.globalGridModel = this.createGridModel('global');
-        this.sharedGridModel = this.createGridModel('shared');
+        if (enableGlobal) this.globalGridModel = this.createGridModel('global');
+        if (enableSharing) this.sharedGridModel = this.createGridModel('shared');
+        const gridModels = compact([
+            this.ownedGridModel,
+            this.globalGridModel,
+            this.sharedGridModel
+        ]);
+
         this.tabContainerModel = this.createTabContainerModel();
         this.viewPanelModel = new ViewPanelModel(this);
-        const gridModels = [this.ownedGridModel, this.globalGridModel, this.sharedGridModel];
+
         this.addReaction({
             track: () => this.filter,
             run: f => gridModels.forEach(m => m.store.setFilter(f)),
             fireImmediately: true
         });
-        gridModels.forEach(gm => {
-            this.addReaction({
-                track: () => gm.hasSelection,
-                run: hasSelection => {
-                    gridModels.forEach(it => {
-                        if (it != gm && hasSelection) it.clearSelection();
-                    });
-                }
+
+        // Only allow one selection at a time across all grids
+        if (gridModels.length > 1) {
+            gridModels.forEach(gm => {
+                this.addReaction({
+                    track: () => gm.hasSelection,
+                    run: hasSelection => {
+                        gridModels.forEach(it => {
+                            if (it != gm && hasSelection) it.clearSelection();
+                        });
+                    }
+                });
             });
-        });
+        }
     }
 
     private async doUpdateAsync(view: ViewInfo, update: ViewUpdateSpec) {
@@ -193,8 +212,7 @@ export class ManageDialogModel extends HoistModel {
         });
         if (!confirmed) return;
 
-        await viewManagerModel.deleteViewsAsync(views);
-        await this.refreshAsync();
+        return viewManagerModel.deleteViewsAsync(views).finally(() => this.refreshAsync());
     }
 
     private async doMakeGlobalAsync(view: ViewInfo) {
@@ -301,14 +319,12 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private createTabContainerModel(): TabContainerModel {
-        const {globalDisplayName, typeDisplayName} = this.viewManagerModel,
+        const {enableGlobal, enableSharing, globalDisplayName, typeDisplayName} =
+                this.viewManagerModel,
             view = typeDisplayName,
             views = pluralize(view),
             globalViews = `${globalDisplayName} ${views}`,
-            {enableGlobal, enableSharing} = this.viewManagerModel;
-
-        return new TabContainerModel({
-            tabs: [
+            tabs = [
                 {
                     id: 'owned',
                     title: this.ownedTabTitle,
@@ -322,33 +338,38 @@ export class ManageDialogModel extends HoistModel {
                                 : ''
                         )
                     })
-                },
-                {
-                    id: 'global',
-                    title: this.globalTabTitle,
-                    content: viewsGrid({
-                        model: this.globalGridModel,
-                        helpText: fragment(
-                            Icon.globe(),
-                            `This tab shows ${globalViews} available to everyone. ${capitalize(globalViews)} can be pinned by default so they appear automatically in everyone's menu, but you can choose which ${views} you would like to see by pinning/unpinning them at any time.`
-                        )
-                    }),
-                    omit: !enableGlobal
-                },
-                {
-                    id: 'shared',
-                    title: this.sharedTabTitle,
-                    content: viewsGrid({
-                        model: this.sharedGridModel,
-                        helpText: fragment(
-                            Icon.users(),
-                            `This tab shows ${views} shared by other ${XH.appName} users. You can pin these ${views} to add them to your menu and access them directly. Only the owner will be able to save changes to a shared ${view}, but you can save as a copy to make it your own.`
-                        )
-                    }),
-                    omit: !enableSharing
                 }
-            ]
-        });
+            ];
+
+        if (enableGlobal) {
+            tabs.push({
+                id: 'global',
+                title: this.globalTabTitle,
+                content: viewsGrid({
+                    model: this.globalGridModel,
+                    helpText: fragment(
+                        Icon.globe(),
+                        `This tab shows ${globalViews} available to everyone. ${capitalize(globalViews)} can be pinned by default so they appear automatically in everyone's menu, but you can choose which ${views} you would like to see by pinning/unpinning them at any time.`
+                    )
+                })
+            });
+        }
+
+        if (enableSharing) {
+            tabs.push({
+                id: 'shared',
+                title: this.sharedTabTitle,
+                content: viewsGrid({
+                    model: this.sharedGridModel,
+                    helpText: fragment(
+                        Icon.users(),
+                        `This tab shows ${views} shared by other ${XH.appName} users. You can pin these ${views} to add them to your menu and access them directly. Only the owner will be able to save changes to a shared ${view}, but you can save as a copy to make it your own.`
+                    )
+                })
+            });
+        }
+
+        return new TabContainerModel({tabs});
     }
 
     private get ownedTabTitle(): ReactNode {

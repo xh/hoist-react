@@ -6,7 +6,7 @@
  */
 
 import {placeholder, vbox, vframe, vspacer} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses, UsesSpec} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
@@ -14,8 +14,8 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {every, isEmpty, some} from 'lodash';
 import {ManageDialogModel} from './ManageDialogModel';
 
-export const viewMultiPanel = hoistCmp.factory({
-    model: uses(() => ManageDialogModel) as UsesSpec<ManageDialogModel>,
+export const viewMultiPanel = hoistCmp.factory<ManageDialogModel>({
+    model: uses(() => ManageDialogModel),
     render({model}) {
         const views = model.selectedViews;
         if (isEmpty(views)) return null;
