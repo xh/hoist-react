@@ -5,15 +5,12 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {box} from '@xh/hoist/cmp/layout';
-import {spinner} from '@xh/hoist/cmp/spinner';
 import {hoistCmp} from '@xh/hoist/core';
 import {ViewManagerModel, ViewInfo} from '@xh/hoist/cmp/viewmanager';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
-import {wait} from '@xh/hoist/promise';
-import {consumeEvent, pluralize} from '@xh/hoist/utils/js';
+import {pluralize} from '@xh/hoist/utils/js';
 import {Dictionary} from 'express-serve-static-core';
 import {each, filter, groupBy, isEmpty, orderBy, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
@@ -83,7 +80,6 @@ function getOtherMenuItems(model: ViewManagerLocalModel): ReactNode[] {
         isViewSavable,
         views,
         isValueDirty,
-        loadModel,
         typeDisplayName
     } = parent;
 
@@ -126,21 +122,6 @@ function getOtherMenuItems(model: ViewManagerLocalModel): ReactNode[] {
             disabled: isEmpty(views),
             text: `Manage ${pluralName}...`,
             onClick: () => model.manageDialogModel.open()
-        }),
-        menuItem({
-            icon: !loadModel.isPending
-                ? Icon.refresh()
-                : box({
-                      height: 20,
-                      item: spinner({width: 16.25, height: 16.25})
-                  }),
-            disabled: loadModel.isPending,
-            text: `Refresh ${pluralName}`,
-            onClick: e => {
-                // Ensure at least 100ms delay to render spinner
-                Promise.all([wait(100), parent.refreshAsync()]).linkTo(loadModel);
-                consumeEvent(e);
-            }
         })
     ];
 }

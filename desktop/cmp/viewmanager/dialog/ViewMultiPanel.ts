@@ -11,7 +11,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
-import {every, isEmpty, some} from 'lodash';
+import {every, isEmpty} from 'lodash';
 import {ManageDialogModel} from './ManageDialogModel';
 
 export const viewMultiPanel = hoistCmp.factory<ManageDialogModel>({
@@ -38,8 +38,7 @@ const buttons = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
         const views = model.selectedViews,
             allEditable = every(views, 'isEditable'),
-            allPinned = every(views, 'isPinned'),
-            allUnpinned = !some(views, 'isPinned');
+            allPinned = every(views, 'isPinned');
 
         return vbox({
             style: {gap: 10, alignItems: 'center'},
@@ -52,7 +51,6 @@ const buttons = hoistCmp.factory<ManageDialogModel>({
                     }),
                     width: 200,
                     outlined: true,
-                    omit: !(allPinned || allUnpinned),
                     onClick: () => model.togglePinned(views)
                 }),
                 button({
