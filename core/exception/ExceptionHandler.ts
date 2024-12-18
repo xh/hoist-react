@@ -4,6 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {ReactNode} from 'react';
 import {Exception} from './Exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
 import {logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
@@ -13,7 +14,7 @@ import {HoistException, PlainObject, XH} from '../';
 
 export interface ExceptionHandlerOptions {
     /** Text (ideally user-friendly) describing the error. */
-    message?: string;
+    message?: ReactNode;
 
     /** Title for an alert dialog, if shown. */
     title?: string;

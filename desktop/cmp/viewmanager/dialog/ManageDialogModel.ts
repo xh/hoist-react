@@ -193,11 +193,7 @@ export class ManageDialogModel extends HoistModel {
         });
         if (!confirmed) return;
 
-        for (const view of views) {
-            await viewManagerModel.api.deleteViewAsync(view);
-        }
-
-        await viewManagerModel.refreshAsync();
+        await viewManagerModel.deleteViewsAsync(views);
         await this.refreshAsync();
     }
 

@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {fragment, strong, p, span} from '@xh/hoist/cmp/layout';
+import {fragment, strong, p, span, div, ul, li} from '@xh/hoist/cmp/layout';
 import {
     ExceptionHandlerOptions,
     HoistModel,
@@ -24,7 +24,7 @@ import {fmtDateTime} from '@xh/hoist/format';
 import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
-import {find, isEmpty, isEqual, isNil, isObject, lowerCase, pickBy} from 'lodash';
+import {find, isEmpty, isEqual, isNil, isObject, lowerCase, partition, pickBy} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
@@ -444,6 +444,30 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             return `A ${this.typeDisplayName} with name '${name}' already exists.`;
         }
         return null;
+    }
+
+    async deleteViewsAsync(views: ViewInfo[]): Promise<void> {
+        const results = await Promise.allSettled(views.map(v => this.api.deleteViewAsync(v))),
+            outcome = results.map((result, idx) => ({result, view: views[idx]})),
+            [succeeded, failed] = partition(outcome, ({result}) => result.status === 'fulfilled');
+
+        if (!isEmpty(failed)) {
+            XH.handleException(
+                {errors: failed.map(({result}) => result.status === 'rejected' && result.reason)},
+                {
+                    message: div(
+                        `Failed to delete ${pluralize(this.typeDisplayName, failed.length, true)}:`,
+                        ul(failed.map(({view}) => li(view.name)))
+                    )
+                }
+            );
+        }
+
+        await this.refreshAsync();
+
+        if (succeeded.some(({view}) => view.token === this.view?.token)) {
+            await this.loadViewAsync(this.initialViewSpec?.(this.views));
+        }
     }
 
     //------------------
