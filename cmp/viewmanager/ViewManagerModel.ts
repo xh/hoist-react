@@ -225,6 +225,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         return (
             enableAutoSave &&
             autoSave &&
+            !view.isGlobal &&
             !view.isShared &&
             !view.isDefault &&
             !XH.identityService.isImpersonating
