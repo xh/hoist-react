@@ -21,10 +21,11 @@ import {
 import type {ViewManagerProvider} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
-import {action, bindable, makeObservable, observable, runInAction, when} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {find, isEmpty, isEqual, isNil, isObject, lowerCase, pickBy} from 'lodash';
+import {runInAction} from 'mobx';
 import {ReactNode} from 'react';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
@@ -42,6 +43,12 @@ export interface ViewManagerConfig {
      * in advance, so that there is a clear initial selection for users without any private views.
      */
     enableDefault?: boolean;
+
+    /**
+     * True (default) to enable "global" views - i.e. views that are not owned by a user and are
+     * available to all.
+     */
+    enableGlobal?: boolean;
 
     /**
      * True (default) to allow users to share their views with other users.
@@ -145,6 +152,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly globalDisplayName: string;
     readonly enableAutoSave: boolean;
     readonly enableDefault: boolean;
+    readonly enableGlobal: boolean;
     readonly enableSharing: boolean;
     readonly manageGlobal: boolean;
     readonly settleTime: number;
@@ -216,13 +224,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     get isViewAutoSavable(): boolean {
         const {enableAutoSave, autoSave, view} = this;
-        return (
-            enableAutoSave &&
-            autoSave &&
-            !view.isShared &&
-            !view.isDefault &&
-            !XH.identityService.isImpersonating
-        );
+        return enableAutoSave && autoSave && view.isOwned && !XH.identityService.isImpersonating;
     }
 
     get autoSaveUnavailableReason(): string {
@@ -272,6 +274,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         manageGlobal = false,
         enableAutoSave = true,
         enableDefault = true,
+        enableGlobal = true,
         enableSharing = true,
         settleTime = 1000,
         initialViewSpec = null
@@ -290,6 +293,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.persistWith = persistWith;
         this.manageGlobal = executeIfFunction(manageGlobal) ?? false;
         this.enableDefault = enableDefault;
+        this.enableGlobal = enableGlobal;
         this.enableSharing = enableSharing;
         this.enableAutoSave = enableAutoSave;
         this.settleTime = settleTime;
@@ -436,6 +440,24 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             return `A ${this.typeDisplayName} with name '${name}' already exists.`;
         }
         return null;
+    }
+
+    async deleteViewsAsync(toDelete: ViewInfo[]): Promise<void> {
+        let exception;
+        try {
+            await this.api.deleteViewsAsync(toDelete);
+        } catch (e) {
+            exception = e;
+        }
+
+        await this.refreshAsync();
+        const {views} = this;
+
+        if (toDelete.some(view => view.isCurrentView) && !views.some(view => view.isCurrentView)) {
+            await this.loadViewAsync(this.initialViewSpec?.(views));
+        }
+
+        if (exception) throw exception;
     }
 
     //------------------

@@ -14,7 +14,7 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {every, isEmpty, some} from 'lodash';
 import {ManageDialogModel} from './ManageDialogModel';
 
-export const viewMultiPanel = hoistCmp.factory({
+export const viewMultiPanel = hoistCmp.factory<ManageDialogModel>({
     model: uses(() => ManageDialogModel),
     render({model}) {
         const views = model.selectedViews;
@@ -25,7 +25,7 @@ export const viewMultiPanel = hoistCmp.factory({
                 className: 'xh-view-manager__manage-dialog__form',
                 item: placeholder(
                     Icon.gears(),
-                    `${views.length} selected ${pluralize(model.typeDisplayName)}`,
+                    `${views.length} selected ${pluralize(model.viewManagerModel.typeDisplayName)}`,
                     vspacer(),
                     buttons()
                 )

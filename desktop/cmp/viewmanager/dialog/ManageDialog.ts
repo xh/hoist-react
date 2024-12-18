@@ -24,7 +24,7 @@ import {viewPanel} from './ViewPanel';
 /**
  * Default management dialog for ViewManager.
  */
-export const manageDialog = hoistCmp.factory({
+export const manageDialog = hoistCmp.factory<ManageDialogModel>({
     displayName: 'ManageDialog',
     className: 'xh-view-manager__manage-dialog',
     model: uses(() => ManageDialogModel),
@@ -32,11 +32,11 @@ export const manageDialog = hoistCmp.factory({
     render({model, className}) {
         if (!model.isOpen) return null;
 
-        const {typeDisplayName, updateTask, loadTask, selectedViews} = model,
+        const {updateTask, loadTask, selectedViews, viewManagerModel} = model,
             count = selectedViews.length;
 
         return dialog({
-            title: `Manage ${capitalize(pluralize(typeDisplayName))}`,
+            title: `Manage ${capitalize(pluralize(viewManagerModel.typeDisplayName))}`,
             icon: Icon.gear(),
             className,
             isOpen: true,
@@ -103,7 +103,7 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
 
 const placeholderPanel = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
-        return placeholder(Icon.gears(), `Select a ${model.typeDisplayName}`);
+        return placeholder(Icon.gears(), `Select a ${model.viewManagerModel.typeDisplayName}`);
     }
 });
 

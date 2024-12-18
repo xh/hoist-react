@@ -27,7 +27,8 @@ export const viewPanel = hoistCmp.factory({
         const {view} = model;
         if (!view) return null;
 
-        const {isGlobal, lastUpdated, lastUpdatedBy, isEditable} = view;
+        const {isGlobal, lastUpdated, lastUpdatedBy, isEditable} = view,
+            {enableSharing} = model.parent.viewManagerModel;
 
         return panel({
             item: form({
@@ -74,7 +75,7 @@ export const viewPanel = hoistCmp.factory({
                             inline: true,
                             item: switchInput(),
                             readonlyRenderer: v => (v ? 'Yes' : 'No'),
-                            omit: isGlobal || !isEditable
+                            omit: !enableSharing || isGlobal || !isEditable
                         }),
                         formField({
                             field: 'isDefaultPinned',
@@ -104,58 +105,62 @@ const formButtons = hoistCmp.factory<ViewPanelModel>({
             {readonly} = formModel,
             {isPinned} = view;
 
-        return formModel.isDirty
-            ? hbox({
-                  justifyContent: 'center',
-                  items: [
-                      button({
-                          text: 'Save Changes',
-                          icon: Icon.check(),
-                          intent: 'success',
-                          minimal: false,
-                          disabled: !formModel.isValid,
-                          onClick: () => model.saveAsync()
-                      }),
-                      hspacer(),
-                      button({
-                          icon: Icon.reset(),
-                          tooltip: 'Revert changes',
-                          minimal: false,
-                          onClick: () => formModel.reset()
-                      })
-                  ]
-              })
-            : vbox({
-                  style: {gap: 10, alignItems: 'center'},
-                  items: [
-                      button({
-                          text: isPinned ? 'Unpin from your Menu' : 'Pin to your Menu',
-                          icon: Icon.pin({
-                              prefix: isPinned ? 'fas' : 'far',
-                              className: isPinned ? 'xh-yellow' : null
-                          }),
-                          width: 200,
-                          outlined: true,
-                          onClick: () => parent.togglePinned([view])
-                      }),
-                      button({
-                          text: `Promote to ${capitalize(parent.globalDisplayName)} ${parent.typeDisplayName}`,
-                          icon: Icon.globe(),
-                          width: 200,
-                          outlined: true,
-                          omit: readonly || view.isGlobal || !parent.manageGlobal,
-                          onClick: () => parent.makeGlobalAsync(view)
-                      }),
-                      button({
-                          text: 'Delete',
-                          icon: Icon.delete(),
-                          width: 200,
-                          outlined: true,
-                          intent: 'danger',
-                          omit: readonly,
-                          onClick: () => parent.deleteAsync([view])
-                      })
-                  ]
-              });
+        if (formModel.isDirty) {
+            return hbox({
+                justifyContent: 'center',
+                items: [
+                    button({
+                        text: 'Save Changes',
+                        icon: Icon.check(),
+                        intent: 'success',
+                        minimal: false,
+                        disabled: !formModel.isValid,
+                        onClick: () => model.saveAsync()
+                    }),
+                    hspacer(),
+                    button({
+                        icon: Icon.reset(),
+                        tooltip: 'Revert changes',
+                        minimal: false,
+                        onClick: () => formModel.reset()
+                    })
+                ]
+            });
+        }
+
+        const {enableGlobal, globalDisplayName, manageGlobal, typeDisplayName} =
+            parent.viewManagerModel;
+        return vbox({
+            style: {gap: 10, alignItems: 'center'},
+            items: [
+                button({
+                    text: isPinned ? 'Unpin from your Menu' : 'Pin to your Menu',
+                    icon: Icon.pin({
+                        prefix: isPinned ? 'fas' : 'far',
+                        className: isPinned ? 'xh-yellow' : null
+                    }),
+                    width: 200,
+                    outlined: true,
+                    onClick: () => parent.togglePinned([view])
+                }),
+                button({
+                    text: `Promote to ${capitalize(globalDisplayName)} ${typeDisplayName}`,
+                    icon: Icon.globe(),
+                    width: 200,
+                    outlined: true,
+                    omit: readonly || view.isGlobal || !enableGlobal || !manageGlobal,
+                    onClick: () => parent.makeGlobalAsync(view)
+                }),
+                button({
+                    text: 'Delete',
+                    icon: Icon.delete(),
+                    width: 200,
+                    outlined: true,
+                    intent: 'danger',
+                    omit: readonly,
+                    onClick: () => parent.deleteAsync([view])
+                })
+            ]
+        });
     }
 });
