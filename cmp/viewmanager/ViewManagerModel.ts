@@ -29,7 +29,7 @@ import {runInAction} from 'mobx';
 import {ReactNode} from 'react';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
-import {ViewToBlobApi, ViewCreateSpec} from './ViewToBlobApi';
+import {ViewToBlobApi, ViewCreateSpec, ViewUpdateSpec} from './ViewToBlobApi';
 
 export interface ViewManagerConfig {
     /**
@@ -201,13 +201,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
      */
     providers: ViewManagerProvider<any>[] = [];
 
-    /**
-     * Data access for persisting views.
-     * @internal
-     */
-    api: ViewToBlobApi<T>;
+    /** Data access for persisting views. */
+    private api: ViewToBlobApi<T>;
 
-    // Last time changes were pushed to linked persistence providers
+    /** Last time changes were pushed to linked persistence providers */
     private lastPushed: number = null;
 
     //---------------
@@ -440,6 +437,16 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             return `A ${this.typeDisplayName} with name '${name}' already exists.`;
         }
         return null;
+    }
+
+    /** Update all aspects of a view's metadata.*/
+    async updateViewInfoAsync(view: ViewInfo, updates: ViewUpdateSpec): Promise<View<T>> {
+        return this.api.updateViewInfoAsync(view, updates);
+    }
+
+    /** Promote a view to global visibility/ownership status. */
+    async makeViewGlobalAsync(view: ViewInfo): Promise<View<T>> {
+        return this.api.makeViewGlobalAsync(view);
     }
 
     async deleteViewsAsync(toDelete: ViewInfo[]): Promise<void> {

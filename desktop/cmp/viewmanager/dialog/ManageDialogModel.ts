@@ -173,7 +173,7 @@ export class ManageDialogModel extends HoistModel {
 
     private async doUpdateAsync(view: ViewInfo, update: ViewUpdateSpec) {
         const {viewManagerModel} = this;
-        await viewManagerModel.api.updateViewInfoAsync(view, update);
+        await viewManagerModel.updateViewInfoAsync(view, update);
         await viewManagerModel.refreshAsync();
         await this.refreshAsync();
     }
@@ -235,7 +235,7 @@ export class ManageDialogModel extends HoistModel {
         if (!confirmed) return;
 
         const {viewManagerModel} = this;
-        const updated = await viewManagerModel.api.makeViewGlobalAsync(view);
+        const updated = await viewManagerModel.makeViewGlobalAsync(view);
         await viewManagerModel.refreshAsync();
         await this.refreshAsync();
         await this.selectViewAsync(updated.info); // reselect -- will have moved tabs!
