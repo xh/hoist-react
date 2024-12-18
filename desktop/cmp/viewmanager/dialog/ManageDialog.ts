@@ -9,7 +9,7 @@ import {grid, GridModel} from '@xh/hoist/cmp/grid';
 import {div, filler, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, uses, UsesSpec} from '@xh/hoist/core';
 import {button, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
@@ -27,16 +27,16 @@ import {viewPanel} from './ViewPanel';
 export const manageDialog = hoistCmp.factory({
     displayName: 'ManageDialog',
     className: 'xh-view-manager__manage-dialog',
-    model: uses(() => ManageDialogModel),
+    model: uses(() => ManageDialogModel) as UsesSpec<ManageDialogModel>,
 
     render({model, className}) {
         if (!model.isOpen) return null;
 
-        const {typeDisplayName, updateTask, loadTask, selectedViews} = model,
+        const {updateTask, loadTask, selectedViews, viewManagerModel} = model,
             count = selectedViews.length;
 
         return dialog({
-            title: `Manage ${capitalize(pluralize(typeDisplayName))}`,
+            title: `Manage ${capitalize(pluralize(viewManagerModel.typeDisplayName))}`,
             icon: Icon.gear(),
             className,
             isOpen: true,
@@ -103,7 +103,7 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
 
 const placeholderPanel = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
-        return placeholder(Icon.gears(), `Select a ${model.typeDisplayName}`);
+        return placeholder(Icon.gears(), `Select a ${model.viewManagerModel.typeDisplayName}`);
     }
 });
 

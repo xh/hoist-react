@@ -67,22 +67,6 @@ export class ManageDialogModel extends HoistModel {
         return this.gridModel.selectedRecords.map(it => it.data.view) as ViewInfo[];
     }
 
-    get manageGlobal(): boolean {
-        return this.viewManagerModel.manageGlobal;
-    }
-
-    get typeDisplayName(): string {
-        return this.viewManagerModel.typeDisplayName;
-    }
-
-    get globalDisplayName(): string {
-        return this.viewManagerModel.globalDisplayName;
-    }
-
-    get enableSharing(): boolean {
-        return this.viewManagerModel.enableSharing;
-    }
-
     constructor(viewManagerModel: ViewManagerModel) {
         super();
         makeObservable(this);
@@ -176,7 +160,8 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private async doDeleteAsync(views: ViewInfo[]) {
-        const {viewManagerModel, typeDisplayName} = this,
+        const {viewManagerModel} = this,
+            {typeDisplayName} = viewManagerModel,
             count = views.length;
 
         if (!count) return;
@@ -250,7 +235,7 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private createGridModel(type: 'owned' | 'global' | 'shared'): GridModel {
-        const {typeDisplayName, globalDisplayName} = this;
+        const {typeDisplayName, globalDisplayName} = this.viewManagerModel;
 
         const modifier =
             type == 'owned' ? `personal` : type == 'global' ? globalDisplayName : 'shared';
@@ -320,10 +305,11 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private createTabContainerModel(): TabContainerModel {
-        const view = this.typeDisplayName,
+        const {globalDisplayName, typeDisplayName} = this.viewManagerModel,
+            view = typeDisplayName,
             views = pluralize(view),
-            globalViews = `${this.globalDisplayName} ${views}`,
-            {enableSharing} = this.viewManagerModel;
+            globalViews = `${globalDisplayName} ${views}`,
+            {enableGlobal, enableSharing} = this.viewManagerModel;
 
         return new TabContainerModel({
             tabs: [
@@ -350,7 +336,8 @@ export class ManageDialogModel extends HoistModel {
                             Icon.globe(),
                             `This tab shows ${globalViews} available to everyone. ${capitalize(globalViews)} can be pinned by default so they appear automatically in everyone's menu, but you can choose which ${views} you would like to see by pinning/unpinning them at any time.`
                         )
-                    })
+                    }),
+                    omit: !enableGlobal
                 },
                 {
                     id: 'shared',
@@ -369,21 +356,22 @@ export class ManageDialogModel extends HoistModel {
 
     private get ownedTabTitle(): ReactNode {
         return hbox(
-            `My ${startCase(pluralize(this.typeDisplayName))}`,
+            `My ${startCase(pluralize(this.viewManagerModel.typeDisplayName))}`,
             badge(this.ownedGridModel.store.allCount)
         );
     }
 
     private get globalTabTitle(): ReactNode {
+        const {globalDisplayName, typeDisplayName} = this.viewManagerModel;
         return hbox(
-            `${startCase(this.globalDisplayName)} ${startCase(pluralize(this.typeDisplayName))}`,
+            `${startCase(globalDisplayName)} ${startCase(pluralize(typeDisplayName))}`,
             badge(this.globalGridModel.store.allCount)
         );
     }
 
     private get sharedTabTitle(): ReactNode {
         return hbox(
-            `Shared ${startCase(pluralize(this.typeDisplayName))}`,
+            `Shared ${startCase(pluralize(this.viewManagerModel.typeDisplayName))}`,
             badge(this.sharedGridModel.store.allCount)
         );
     }

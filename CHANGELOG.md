@@ -9,6 +9,7 @@
   * Handle delete and update collisions more gracefully.
   * Support for `settleTime`,
   * Improved management UI Dialog.
+  * Support for "global" views.
 * New `SessionStorageService` and associated persistence provider provides support for saving
   tab local data across reloads.
 

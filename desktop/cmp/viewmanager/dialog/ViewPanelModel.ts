@@ -44,7 +44,7 @@ export class ViewPanelModel extends HoistModel {
                     const {formModel} = this;
                     formModel.init({
                         ...view,
-                        owner: view.owner ?? capitalize(parent.globalDisplayName)
+                        owner: view.owner ?? capitalize(parent.viewManagerModel.globalDisplayName)
                     });
                     formModel.readonly = !view.isEditable;
                 }

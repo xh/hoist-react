@@ -21,7 +21,7 @@ import {
 import type {ViewManagerProvider} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
-import {action, bindable, makeObservable, observable, runInAction, when} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {find, isEmpty, isEqual, isNil, isObject, lowerCase, pickBy} from 'lodash';
@@ -42,6 +42,11 @@ export interface ViewManagerConfig {
      * in advance, so that there is a clear initial selection for users without any private views.
      */
     enableDefault?: boolean;
+
+    /**
+     * True (default) to enable "global" views - i.e. views that are not owned by a user and are available to all.
+     */
+    enableGlobal?: boolean;
 
     /**
      * True (default) to allow users to share their views with other users.
@@ -145,6 +150,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly globalDisplayName: string;
     readonly enableAutoSave: boolean;
     readonly enableDefault: boolean;
+    readonly enableGlobal: boolean;
     readonly enableSharing: boolean;
     readonly manageGlobal: boolean;
     readonly settleTime: number;
@@ -272,6 +278,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         manageGlobal = false,
         enableAutoSave = true,
         enableDefault = true,
+        enableGlobal = true,
         enableSharing = true,
         settleTime = 1000,
         initialViewSpec = null
@@ -290,6 +297,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.persistWith = persistWith;
         this.manageGlobal = executeIfFunction(manageGlobal) ?? false;
         this.enableDefault = enableDefault;
+        this.enableGlobal = enableGlobal;
         this.enableSharing = enableSharing;
         this.enableAutoSave = enableAutoSave;
         this.settleTime = settleTime;
@@ -310,7 +318,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             // 1) Update all view info
             const views = await this.api.fetchViewInfosAsync();
             if (loadSpec.isStale) return;
-            runInAction(() => (this.views = views));
+            this.setViews(views);
 
             // 2) Update active view if needed.
             const {view} = this;
@@ -444,7 +452,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private async initAsync() {
         try {
             const views = await this.api.fetchViewInfosAsync();
-            runInAction(() => (this.views = views));
+            this.setViews(views);
 
             if (this.persistWith) {
                 this.initPersist(this.persistWith);
@@ -467,6 +475,11 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             run: () => this.maybeAutoSaveAsync(),
             debounce: 5 * SECONDS
         });
+    }
+
+    @action
+    private setViews(views: ViewInfo[]) {
+        this.views = this.enableGlobal ? views : views.filter(view => !view.isGlobal);
     }
 
     private async loadViewAsync(
@@ -510,7 +523,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.pendingValue = pendingValue;
         // Ensure we update meta-data as well.
         if (!view.isDefault) {
-            this.views = this.views.map(v => (v.token === view.token ? view.info : v));
+            this.setViews(this.views.map(v => (v.token === view.token ? view.info : v)));
         }
     }
 
