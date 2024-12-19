@@ -7,7 +7,7 @@
 
 import {PlainObject, XH} from '@xh/hoist/core';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
-import {isEmpty, omit, pick} from 'lodash';
+import {isEmpty, omit, pick, pickBy, isEqual} from 'lodash';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
 import {ViewManagerModel} from './ViewManagerModel';
@@ -27,6 +27,14 @@ export interface ViewUpdateSpec {
     isShared?: boolean;
     isDefaultPinned?: boolean;
 }
+
+export interface ViewUserState {
+    currentView?: string;
+    userPinned?: Record<string, boolean>;
+    autoSave?: boolean;
+}
+
+const STATE_BLOB_NAME = 'xhUserState';
 
 /**
  * Class for accessing and updating views using {@link JsonBlobService}.
@@ -51,6 +59,7 @@ export class ViewToBlobApi<T> {
                 includeValue: false
             });
             return blobs
+                .filter(b => b.name != STATE_BLOB_NAME)
                 .map(b => new ViewInfo(b, model))
                 .filter(
                     view =>
@@ -178,9 +187,43 @@ export class ViewToBlobApi<T> {
         }
     }
 
+    //--------------------------
+    // State related changes
+    //--------------------------
+    async getStateAsync(): Promise<ViewUserState> {
+        const raw = await this.getRawState();
+        return {
+            currentView: raw.currentViews?.[this.model.instance],
+            userPinned: raw.userPinned,
+            autoSave: raw.autoSave
+        };
+    }
+
+    async updateStateAsync() {
+        let {views, autoSave, view, userPinned, instance, type} = this.model;
+        userPinned = !isEmpty(views) // Clean state iff views loaded!
+            ? pickBy(userPinned, (_, tkn) => views.some(v => v.token === tkn))
+            : userPinned;
+        const raw = await this.getRawState(),
+            newRaw = {
+                currentViews: {...raw.currentViews, [instance]: view.token},
+                userPinned,
+                autoSave
+            };
+
+        if (!isEqual(raw, newRaw)) {
+            await XH.jsonBlobService.createOrUpdateAsync(type, STATE_BLOB_NAME, {value: newRaw});
+        }
+    }
+
     //------------------
     // Implementation
     //------------------
+    private async getRawState(): Promise<PlainObject> {
+        const ret = await XH.jsonBlobService.findAsync(this.model.type, STATE_BLOB_NAME);
+        return ret ? ret.value : {autoSave: false, userPinned: {}, currentViews: {}};
+    }
+
     private trackChange(message: string, v?: View | ViewInfo) {
         XH.track({
             message,

@@ -96,10 +96,28 @@ export class JsonBlobService extends HoistService {
         const update = omitBy({acl, description, meta, name, owner, value}, isUndefined);
         return XH.fetchJson({
             url: 'xh/updateJsonBlob',
-            params: {
-                token,
-                update: JSON.stringify(update)
-            }
+            params: {token, update: JSON.stringify(update)}
+        });
+    }
+
+    /** Create or update a blob for a user with the existing type and name. */
+    async createOrUpdateAsync(
+        type: string,
+        name: string,
+        {acl, description, meta, value}: Partial<JsonBlob>
+    ): Promise<JsonBlob> {
+        const update = omitBy({acl, description, meta, name, value}, isUndefined);
+        return XH.fetchJson({
+            url: 'xh/createOrUpdateJsonBlob',
+            params: {type, name, update: JSON.stringify(update)}
+        });
+    }
+
+    /** Find a blob owned by this user with a specific type and name.  If none exists, return null.  */
+    async findAsync(type: string, name: string): Promise<JsonBlob> {
+        return XH.fetchJson({
+            url: 'xh/findJsonBlob',
+            params: {type, name}
         });
     }
 
