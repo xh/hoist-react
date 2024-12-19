@@ -17,7 +17,7 @@ import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {capitalize, compact, isEmpty, some, startCase} from 'lodash';
+import {capitalize, compact, every, isEmpty, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewPanelModel} from './ViewPanelModel';
 
@@ -128,7 +128,11 @@ export class ManageDialogModel extends HoistModel {
 
     @action
     togglePinned(views: ViewInfo[]) {
-        views.forEach(v => this.viewManagerModel.togglePinned(v));
+        const allPinned = every(views, 'isPinned'),
+            {viewManagerModel} = this;
+        views.forEach(v =>
+            allPinned ? viewManagerModel.userUnpin(v) : viewManagerModel.userPin(v)
+        );
         this.refreshAsync();
     }
 
@@ -293,7 +297,7 @@ export class ManageDialogModel extends HoistModel {
                 {field: 'name', flex: true},
                 {field: 'group', hidden: true},
                 {field: 'owner', hidden: true},
-                {field: 'lastUpdated', ...dateTimeCol},
+                {field: 'lastUpdated', ...dateTimeCol, hidden: true},
                 {
                     field: 'isPinned',
                     width: 40,

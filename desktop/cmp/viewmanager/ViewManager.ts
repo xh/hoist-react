@@ -64,14 +64,24 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
         showRevertButton = 'never',
         buttonSide = 'right'
     }: ViewManagerProps) {
-        const locModel = useLocalModel(() => new ViewManagerLocalModel(model)),
+        const {loadModel} = model,
+            locModel = useLocalModel(() => new ViewManagerLocalModel(model)),
             save = saveButton({model: locModel, mode: showSaveButton, ...saveButtonProps}),
             revert = revertButton({model: locModel, mode: showRevertButton, ...revertButtonProps}),
             menu = popover({
                 disabled: !locModel.isVisible, // Prevent orphaned popover menu
                 item: menuButton({model: locModel, ...menuButtonProps}),
-                content: viewMenu({model: locModel}),
-                placement: 'bottom-start',
+                content: loadModel.isPending
+                    ? box({
+                          item: spinner({compact: true}),
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          height: 30,
+                          width: 30
+                      })
+                    : viewMenu({model: locModel}),
+                onOpening: () => model.refreshAsync(),
+                placement: 'bottom',
                 popoverClassName: 'xh-view-manager__popover'
             });
         return fragment(
