@@ -28,6 +28,7 @@ import {
     isNumber,
     isPlainObject,
     mapValues,
+    size,
     without
 } from 'lodash';
 import {action, computed, observable, runInAction} from 'mobx';
@@ -39,7 +40,7 @@ export class DistributedObjectsModel extends HoistModel {
     @observable.ref startTimestamp: Date = null;
     @observable runDurationMs: number = 0;
 
-    @bindable.ref shownCompareState: CompareState[] = ['failed', 'passed', 'inactive'];
+    @bindable showInactive: boolean = true;
     @bindable.ref textFilter: FilterTestFn = null;
 
     @managed detailPanelModel = new PanelModel({
@@ -58,7 +59,7 @@ export class DistributedObjectsModel extends HoistModel {
                 totalCount = selectedRecords.length;
             return {
                 hidden: AppModel.readonly,
-                text: `Clear ${clearableCount}/${pluralize('Object', totalCount, true)}`,
+                text: `Clear ${clearableCount}/${pluralize('Hibernate Cache', totalCount, true)}`,
                 disabled: isEmpty(clearableSelectedRecords)
             };
         },
@@ -91,11 +92,11 @@ export class DistributedObjectsModel extends HoistModel {
         columns: [
             {
                 field: 'compareState',
-                width: 34,
+                width: 38,
                 align: 'center',
                 resizable: false,
                 headerName: Icon.warning(),
-                headerTooltip: 'Has Breaks',
+                headerTooltip: 'Compare State',
                 renderer: v =>
                     v === 'failed'
                         ? Icon.warning({prefix: 'fas', intent: 'danger'})
@@ -138,6 +139,12 @@ export class DistributedObjectsModel extends HoistModel {
         return this.selectedRecord?.data.adminStatsbyInstance[this.instanceName];
     }
 
+    get isSingleInstance() {
+        return this.gridModel.store.allRecords.every(
+            rec => size(rec.data?.adminStatsbyInstance) <= 1
+        );
+    }
+
     @computed
     get counts() {
         const ret = {passed: 0, failed: 0, inactive: 0};
@@ -156,7 +163,7 @@ export class DistributedObjectsModel extends HoistModel {
                 run: (record, oldRecord) => this.updateDetailGridModel(record, oldRecord)
             },
             {
-                track: () => [this.textFilter, this.shownCompareState],
+                track: () => [this.textFilter, this.showInactive],
                 run: this.applyFilters,
                 fireImmediately: true
             }
@@ -178,13 +185,13 @@ export class DistributedObjectsModel extends HoistModel {
         if (
             !(await XH.confirm({
                 message: fragment(
-                    `This will clear the distributed state for ${clearableCount !== totalCount ? clearableCount + ' out of the ' : ''}${pluralize('selected object', totalCount, true)}.`,
+                    `This will clear the hibernate cache state for ${clearableCount !== totalCount ? clearableCount + ' out of the ' : ''}${pluralize('selected records', totalCount, true)}.`,
                     br(),
                     br(),
                     `Please ensure you understand the impact of this operation on the running application before proceeding.`
                 ),
                 confirmProps: {
-                    text: `Clear ${clearableCount} Objects`,
+                    text: `Clear ${pluralize('Hibernate Cache', clearableCount, true)}`,
                     icon: Icon.reset(),
                     intent: 'warning',
                     outlined: true,
@@ -297,7 +304,7 @@ export class DistributedObjectsModel extends HoistModel {
             const createColumnForField = fieldName => ({
                 field: {name: fieldName, displayName: fieldName},
                 renderer: v => (typeof v === 'object' ? JSON.stringify(v) : v),
-                autosizeMaxWidth: 100
+                autosizeMaxWidth: 200
             });
             this.detailGridModel = this.createDetailGridModel(
                 comparisonFields.map(createColumnForField),
@@ -373,17 +380,14 @@ export class DistributedObjectsModel extends HoistModel {
     }
 
     private applyFilters() {
-        const {shownCompareState, textFilter} = this,
+        const {showInactive, textFilter, isSingleInstance} = this,
             filters: FilterLike[] = [textFilter];
 
-        if (!isEmpty(shownCompareState)) {
+        if (!showInactive && !isSingleInstance) {
             filters.push({
-                op: 'OR',
-                filters: shownCompareState.map(it => ({
-                    field: 'compareState',
-                    op: '=',
-                    value: it
-                }))
+                field: 'compareState',
+                op: '!=',
+                value: 'inactive'
             });
         }
 
@@ -464,8 +468,19 @@ export class DistributedObjectsModel extends HoistModel {
                         children: []
                     };
                 }
+
                 // Place under parent
                 recordsByName[parentName].children.push(record);
+
+                // Aggregate parent compareState
+                const state = record.compareState,
+                    parentState = recordsByName[parentName].compareState;
+                recordsByName[parentName].compareState =
+                    state === 'failed' || parentState === 'failed'
+                        ? 'failed'
+                        : state === 'passed' || parentState === 'passed'
+                          ? 'passed'
+                          : 'inactive';
             }
         });
 
