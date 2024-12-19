@@ -309,7 +309,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             // 2) Update active view if needed.
             const {view} = this;
             if (!view.isDefault) {
-                // Reload view if can be fast-forwarded. Otherwise, leave as is for save/saveAs.
+                // Reload view if it can be fast-forwarded. Otherwise, leave as is for save/saveAs.
                 const latestInfo = find(views, {token: view.token});
                 if (latestInfo && latestInfo.lastUpdated > view.lastUpdated) {
                     this.loadViewAsync(latestInfo, this.pendingValue);
@@ -322,9 +322,14 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     async selectViewAsync(info: ViewInfo): Promise<void> {
-        if (this.isValueDirty) {
-            if (this.isViewAutoSavable) await this.maybeAutoSaveAsync();
-            if (this.isValueDirty && !(await this.confirmDiscardChangesAsync())) return;
+        // ensure any pending auto-save gets completed
+        if (this.isValueDirty && this.isViewAutoSavable) {
+            await this.maybeAutoSaveAsync();
+        }
+
+        // if still dirty, require confirm
+        if (this.isValueDirty && this.view.isOwned && !(await this.confirmDiscardChangesAsync())) {
+            return;
         }
 
         await this.loadViewAsync(info).catch(e => this.handleException(e));
