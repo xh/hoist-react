@@ -8,7 +8,7 @@
 import {grid} from '@xh/hoist/cmp/grid';
 import {fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, PlainObject, Some, uses} from '@xh/hoist/core';
-import {MaskProps} from '@xh/hoist/desktop/cmp/mask';
+import {MaskProps} from '@xh/hoist/cmp/mask';
 import {panel, PanelProps} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
 import {getTestId} from '@xh/hoist/utils/js';

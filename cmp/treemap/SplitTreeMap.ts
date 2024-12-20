@@ -4,14 +4,13 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {box, div, fragment, hbox, hframe, placeholder, vbox, vframe} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
-import {splitTreeMapImpl as desktopSplitTreeMapImpl} from '@xh/hoist/dynamics/desktop';
-import {splitTreeMapImpl as mobileSplitTreeMapImpl} from '@xh/hoist/dynamics/mobile';
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
-import {compact, uniq} from 'lodash';
-import {ReactNode} from 'react';
+import {box, div, fragment, hbox, hframe, p, placeholder, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {BoxProps, hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
+import {errorMessage} from '@xh/hoist/cmp/error';
+import {mask} from '@xh/hoist/cmp/mask';
 import classNames from 'classnames';
+import {compact, uniq} from 'lodash';
 import './SplitTreeMap.scss';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
 import {treeMap} from './TreeMap';
@@ -25,27 +24,33 @@ export const [SplitTreeMap, splitTreeMap] = hoistCmp.withFactory<SplitTreeMapPro
     displayName: 'SplitTreeMap',
     model: uses(SplitTreeMapModel),
     className: 'xh-split-treemap',
+
     render({model, className, testId, ...props}, ref) {
-        const container = model.orientation === 'horizontal' ? hframe : vframe,
-            childMaps = getChildMaps(model);
+        const {primaryMapModel, secondaryMapModel, orientation} = model,
+            errors = uniq(compact([primaryMapModel.error, secondaryMapModel.error])),
+            container = orientation === 'horizontal' ? hframe : vframe;
 
         return container({
             testId,
             ref,
             className,
-            item: XH.isMobileApp
-                ? mobileSplitTreeMapImpl(model, childMaps)
-                : desktopSplitTreeMapImpl(model, childMaps),
+            items: errors.length ? errorPanel({errors}) : childMaps(),
             ...props
         });
     }
 });
 
-function getChildMaps(model: SplitTreeMapModel): ReactNode {
-    const {primaryMapModel, secondaryMapModel, empty, emptyText, mapTitleFn, showSplitter} = model,
-        errors = uniq(compact([primaryMapModel.error, secondaryMapModel.error]));
-
-    if (empty || errors.length) return placeholder(emptyText);
+const childMaps = hoistCmp.factory<SplitTreeMapModel>(({model}) => {
+    const {
+        primaryMapModel,
+        secondaryMapModel,
+        empty,
+        emptyText,
+        isMasking,
+        mapTitleFn,
+        showSplitter
+    } = model;
+    if (empty) return placeholder(emptyText);
 
     const pTotal = primaryMapModel.total,
         sTotal = secondaryMapModel.total;
@@ -81,9 +86,16 @@ function getChildMaps(model: SplitTreeMapModel): ReactNode {
             flex: sFlex,
             className: 'xh-split-treemap__map-holder',
             item: treeMap({model: secondaryMapModel})
+        }),
+
+        // Mask
+        div({
+            omit: !isMasking,
+            className: 'xh-split-treemap__mask-holder',
+            item: mask({isDisplayed: true, spinner: true})
         })
     ]);
-}
+});
 
 const mapTitle = hoistCmp.factory<SplitTreeMapModel>(({model, isPrimary}) => {
     const {mapTitleFn, orientation} = model,
@@ -120,3 +132,7 @@ const splitter = hoistCmp.factory<SplitTreeMapModel>(({model}) => {
         className: `xh-split-treemap__splitter xh-split-treemap__splitter--${vertical ? 'vertical' : 'horizontal'}`
     });
 });
+
+const errorPanel = hoistCmp.factory(({errors}) =>
+    errorMessage({error: errors.join(' '), message: fragment(errors.map(e => p(e)))})
+);

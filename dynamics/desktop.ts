@@ -22,14 +22,13 @@ export let colChooser = null;
 export let zoneMapper = null;
 export let columnHeaderFilter = null;
 export let dockContainerImpl = null;
-export let errorMessage = null;
 export let gridFilterDialog = null;
 export let pinPadImpl = null;
 export let storeFilterFieldImpl = null;
 export let tabContainerImpl = null;
 export let useContextMenu = null;
-export let treeMapImpl = null;
-export let splitTreeMapImpl = null;
+export let errorMessageImpl = null;
+export let maskImpl = null;
 
 /**
  * Provide implementations of functions and classes exported in this file.
@@ -44,12 +43,11 @@ export function installDesktopImpls(impls) {
     zoneMapper = impls.zoneMapper;
     columnHeaderFilter = impls.columnHeaderFilter;
     dockContainerImpl = impls.dockContainerImpl;
-    errorMessage = impls.errorMessage;
     gridFilterDialog = impls.gridFilterDialog;
     pinPadImpl = impls.pinPadImpl;
     storeFilterFieldImpl = impls.storeFilterFieldImpl;
     tabContainerImpl = impls.tabContainerImpl;
     useContextMenu = impls.useContextMenu;
-    treeMapImpl = impls.treeMapImpl;
-    splitTreeMapImpl = impls.splitTreeMapImpl;
+    errorMessageImpl = impls.errorMessageImpl;
+    maskImpl = impls.maskImpl;
 }

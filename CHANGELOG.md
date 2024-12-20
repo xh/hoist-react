@@ -4,6 +4,13 @@
 
 ### 💥 Breaking Changes
 
+* `ErrorMessage` is now cross-platform. Its import paths has changed from `@xh/hoist/desktop/cmp/error`
+  and `@xh/hoist/mobile/cmp/error` to `@xh/hoist/cmp/error`.
+* `Mask` is now cross-platform. Its import paths has changed from `@xh/hoist/desktop/cmp/mask`
+  and `@xh/hoist/mobile/cmp/mask` to `@xh/hoist/cmp/mask`.
+* `LoadingIndicator` is now cross-platform. Its import paths has changed from
+  `@xh/hoist/desktop/cmp/loadingindicator` and `@xh/hoist/mobile/cmp/loadingindicator` to
+  `@xh/hoist/cmp/loadingindicator`.
 * `TreeMap` and `SplitTreeMap` are now cross-platform and can be used in mobile applications.
   Their import paths have changed from `@xh/hoist/desktop/cmp/treemap` to `@xh/hoist/cmp/treemap`.
 

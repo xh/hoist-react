@@ -18,12 +18,11 @@
 export let ColChooserModel = null;
 export let colChooser = null;
 export let zoneMapper = null;
-export let errorMessage = null;
 export let pinPadImpl = null;
 export let storeFilterFieldImpl = null;
 export let tabContainerImpl = null;
-export let treeMapImpl = null;
-export let splitTreeMapImpl = null;
+export let errorMessageImpl = null;
+export let maskImpl = null;
 
 /**
  * Provide implementations of functions and classes exported in this file.
@@ -34,10 +33,9 @@ export function installMobileImpls(impls) {
     ColChooserModel = impls.ColChooserModel;
     colChooser = impls.colChooser;
     zoneMapper = impls.zoneMapper;
-    errorMessage = impls.errorMessage;
     pinPadImpl = impls.pinPadImpl;
     storeFilterFieldImpl = impls.storeFilterFieldImpl;
     tabContainerImpl = impls.tabContainerImpl;
-    treeMapImpl = impls.treeMapImpl;
-    splitTreeMapImpl = impls.splitTreeMapImpl;
+    errorMessageImpl = impls.errorMessageImpl;
+    maskImpl = impls.maskImpl;
 }

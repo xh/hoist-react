@@ -4,6 +4,8 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import composeRefs from '@seznam/compose-react-refs';
+import {box, div, placeholder} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
     HoistModel,
@@ -15,13 +17,18 @@ import {
     uses,
     XH
 } from '@xh/hoist/core';
-import {treeMapImpl as desktopTreeMapImpl} from '@xh/hoist/dynamics/desktop';
-import {treeMapImpl as mobileTreeMapImpl} from '@xh/hoist/dynamics/mobile';
+import {errorMessage} from '@xh/hoist/cmp/error';
+import {mask} from '@xh/hoist/cmp/mask';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {wait} from '@xh/hoist/promise';
 import {logError, logWithDebug} from '@xh/hoist/utils/js';
-import {createObservableRef, useOnResize, useOnVisibleChange} from '@xh/hoist/utils/react';
-import composeRefs from '@seznam/compose-react-refs';
+import {
+    createObservableRef,
+    getLayoutProps,
+    useOnResize,
+    useOnVisibleChange
+} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
 import equal from 'fast-deep-equal';
 import {assign, cloneDeep, debounce, isFunction, omit} from 'lodash';
 import {mergeDeep} from '@xh/hoist/utils/js';
@@ -44,7 +51,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
     model: uses(TreeMapModel),
     className: 'xh-treemap',
 
-    render(props, ref) {
+    render({model, className, testId, ...props}, ref) {
         if (!Highcharts) {
             logError(
                 'Highcharts has not been imported in to this application. Please import and ' +
@@ -54,21 +61,53 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
             return 'Highcharts not available';
         }
 
-        const localModel = useLocalModel(TreeMapLocalModel);
+        const impl = useLocalModel(TreeMapLocalModel);
         ref = composeRefs(
             ref,
-            useOnResize(localModel.startResize),
-            useOnResize(localModel.onResizeAsync, {debounce: 100}),
-            useOnVisibleChange(localModel.onVisibleChange)
+            useOnResize(impl.startResize),
+            useOnResize(impl.onResizeAsync, {debounce: 100}),
+            useOnVisibleChange(impl.onVisibleChange)
         );
 
-        return XH.isMobileApp
-            ? mobileTreeMapImpl({localModel, ...props}, ref)
-            : desktopTreeMapImpl({localModel, ...props}, ref);
+        // Default flex = 1 (flex: 1 1 0) if no dimensions / flex specified, i.e. do not consult child for dimensions;
+        const layoutProps = getLayoutProps(props);
+        if (layoutProps.width == null && layoutProps.height == null && layoutProps.flex == null) {
+            layoutProps.flex = 1;
+        }
+
+        // Render child item - note this will NOT render the actual HighCharts viz - only a shell
+        // div to hold one. The chart itself will be rendered once the shell's ref resolves.
+        const {error, empty, emptyText, isMasking} = model;
+        let items;
+        if (error) {
+            items = errorMessage({error});
+        } else if (empty) {
+            items = placeholder(emptyText);
+        } else {
+            items = [
+                div({
+                    className: 'xh-treemap__chart-holder',
+                    ref: impl.chartRef
+                }),
+                div({
+                    omit: !isMasking,
+                    className: 'xh-treemap__mask-holder',
+                    item: mask({isDisplayed: true, spinner: true})
+                })
+            ];
+        }
+
+        return box({
+            ...layoutProps,
+            className: classNames(className, `xh-treemap--${impl.theme}`),
+            ref,
+            testId,
+            items
+        });
     }
 });
 
-export class TreeMapLocalModel extends HoistModel {
+class TreeMapLocalModel extends HoistModel {
     override xhImpl = true;
 
     @lookup(TreeMapModel) model: TreeMapModel;
