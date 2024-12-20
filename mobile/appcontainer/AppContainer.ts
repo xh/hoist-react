@@ -8,6 +8,8 @@ import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
+import {splitTreeMapImpl} from '@xh/hoist/mobile/cmp/treemap/impl/SplitTreeMap';
+import {treeMapImpl} from '@xh/hoist/mobile/cmp/treemap/impl/TreeMap';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 import {colChooser} from '@xh/hoist/mobile/cmp/grid/impl/ColChooser';
 import {ColChooserModel} from '@xh/hoist/mobile/cmp/grid/impl/ColChooserModel';
@@ -40,7 +42,9 @@ installMobileImpls({
     colChooser,
     ColChooserModel,
     zoneMapper,
-    errorMessage
+    errorMessage,
+    treeMapImpl,
+    splitTreeMapImpl
 });
 
 /**

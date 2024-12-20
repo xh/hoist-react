@@ -22,6 +22,8 @@ export let errorMessage = null;
 export let pinPadImpl = null;
 export let storeFilterFieldImpl = null;
 export let tabContainerImpl = null;
+export let treeMapImpl = null;
+export let splitTreeMapImpl = null;
 
 /**
  * Provide implementations of functions and classes exported in this file.
@@ -36,4 +38,6 @@ export function installMobileImpls(impls) {
     pinPadImpl = impls.pinPadImpl;
     storeFilterFieldImpl = impls.storeFilterFieldImpl;
     tabContainerImpl = impls.tabContainerImpl;
+    treeMapImpl = impls.treeMapImpl;
+    splitTreeMapImpl = impls.splitTreeMapImpl;
 }

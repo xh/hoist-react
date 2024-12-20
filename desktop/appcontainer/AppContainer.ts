@@ -26,6 +26,8 @@ import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {inspectorPanel} from '@xh/hoist/inspector/InspectorPanel';
 import {blueprintProvider} from '@xh/hoist/kit/blueprint';
+import {splitTreeMapImpl} from '@xh/hoist/desktop/cmp/treemap/impl/SplitTreeMap';
+import {treeMapImpl} from '@xh/hoist/desktop/cmp/treemap/impl/TreeMap';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import {aboutDialog} from './AboutDialog';
@@ -56,7 +58,9 @@ installDesktopImpls({
     ColumnHeaderFilterModel,
     useContextMenu,
     ModalSupportModel,
-    errorMessage
+    errorMessage,
+    treeMapImpl,
+    splitTreeMapImpl
 });
 /**
  * Top-level wrapper for Desktop applications.

@@ -2,6 +2,11 @@
 
 ## v71.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* `TreeMap` and `SplitTreeMap` are now cross-platform and can be used in mobile applications.
+  Their import paths have changed from `@xh/hoist/desktop/cmp/treemap` to `@xh/hoist/cmp/treemap`.
+
 ### 🎁 New Features
 
 * Major Improvements to ViewManager component

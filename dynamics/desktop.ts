@@ -28,6 +28,8 @@ export let pinPadImpl = null;
 export let storeFilterFieldImpl = null;
 export let tabContainerImpl = null;
 export let useContextMenu = null;
+export let treeMapImpl = null;
+export let splitTreeMapImpl = null;
 
 /**
  * Provide implementations of functions and classes exported in this file.
@@ -48,4 +50,6 @@ export function installDesktopImpls(impls) {
     storeFilterFieldImpl = impls.storeFilterFieldImpl;
     tabContainerImpl = impls.tabContainerImpl;
     useContextMenu = impls.useContextMenu;
+    treeMapImpl = impls.treeMapImpl;
+    splitTreeMapImpl = impls.splitTreeMapImpl;
 }
