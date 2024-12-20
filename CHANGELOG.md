@@ -307,6 +307,7 @@
 * Updated mobile `TabContainer` to flex properly within flexbox containers.
 * Fixed timing issue with missing validation for records added immediately to a new `Store`.
 * Fixed CSS bug in which date picker dates wrapped when `dateEditor` used in a grid in a dialog.
+* Fixed several issues with the grid column filter when used on a "tags" field.
 
 ## 65.0.0 - 2024-06-26
 
@@ -514,6 +515,7 @@ for more details.
 
 * `Store` now supports multiple `summaryRecords`, displayed if so configured as multiple pinned
   rows within a bound grid.
+
 
 ## 63.0.3 - 2024-04-16
 

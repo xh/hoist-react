@@ -14,6 +14,7 @@ import {
     escapeRegExp,
     first,
     isArray,
+    isEmpty,
     isEqual,
     isNil,
     isString,
@@ -114,10 +115,11 @@ export class FieldFilter extends Filter {
             const storeField = store.getField(field);
             if (!storeField) return () => true; // Ignore (do not filter out) if field not in store
 
-            const fieldType = storeField.type === 'tags' ? 'string' : storeField.type;
-            value = isArray(value)
-                ? value.map(v => parseFieldValue(v, fieldType))
-                : parseFieldValue(value, fieldType);
+            const fieldType = storeField.type;
+            value =
+                isArray(value) && storeField.type !== 'tags'
+                    ? value.map(v => parseFieldValue(v, fieldType))
+                    : parseFieldValue(value, fieldType);
         }
 
         if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
@@ -128,14 +130,14 @@ export class FieldFilter extends Filter {
         switch (op) {
             case '=':
                 opFn = v => {
-                    if (isNil(v) || v === '') v = null;
-                    return value.some(it => isEqual(v, it));
+                    if (isNil(v) || v === '' || (isArray(v) && isEmpty(v))) v = null;
+                    return (v == null && isEmpty(value)) || value.some(it => isEqual(v, it));
                 };
                 break;
             case '!=':
                 opFn = v => {
-                    if (isNil(v) || v === '') v = null;
-                    return !value.some(it => isEqual(v, it));
+                    if (isNil(v) || v === '' || (isArray(v) && isEmpty(v))) v = null;
+                    return (v != null || !isEmpty(value)) && !value.some(it => isEqual(v, it));
                 };
                 break;
             case '>':
