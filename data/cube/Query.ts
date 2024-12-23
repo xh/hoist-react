@@ -52,6 +52,9 @@ export interface QueryConfig {
     /** True to include leaf nodes in return.*/
     includeLeaves?: boolean;
 
+    /** True (default) to flatten single-child hierarchies into parents. */
+    flattenRedundantChildren?: boolean;
+
     /**
      * Optional function to be called for each aggregate node to determine if it should be "locked",
      * preventing drill-down into its children.  Defaults to Cube.lockFn.
@@ -79,6 +82,7 @@ export class Query {
     readonly filter: Filter;
     readonly includeRoot: boolean;
     readonly includeLeaves: boolean;
+    readonly flattenRedundantChildren: boolean;
     readonly cube: Cube;
     readonly lockFn: LockFn;
     readonly bucketSpecFn: BucketSpecFn;
@@ -93,6 +97,7 @@ export class Query {
         filter = null,
         includeRoot = false,
         includeLeaves = false,
+        flattenRedundantChildren = true,
         lockFn = cube.lockFn,
         bucketSpecFn = cube.bucketSpecFn,
         omitFn = cube.omitFn
@@ -102,6 +107,7 @@ export class Query {
         this.dimensions = this.parseDimensions(dimensions);
         this.includeRoot = includeRoot;
         this.includeLeaves = includeLeaves;
+        this.flattenRedundantChildren = flattenRedundantChildren;
         this.filter = parseFilter(filter);
         this.lockFn = lockFn;
         this.bucketSpecFn = bucketSpecFn;
@@ -117,6 +123,7 @@ export class Query {
             filter: this.filter,
             includeRoot: this.includeRoot,
             includeLeaves: this.includeLeaves,
+            flattenRedundantChildren: this.flattenRedundantChildren,
             lockFn: this.lockFn,
             bucketSpecFn: this.bucketSpecFn,
             omitFn: this.omitFn,
@@ -153,6 +160,7 @@ export class Query {
             this.cube === other.cube &&
             this.includeRoot === other.includeRoot &&
             this.includeLeaves === other.includeLeaves &&
+            this.flattenRedundantChildren === other.flattenRedundantChildren &&
             this.bucketSpecFn == other.bucketSpecFn &&
             this.omitFn == other.omitFn &&
             this.lockFn == other.lockFn
