@@ -59,10 +59,6 @@ export interface FunctionFilterSpec {
  */
 export type FilterTestFn = (candidate: PlainObject | StoreRecord) => boolean;
 
-export type FilterLike =
-    | Filter
-    | CompoundFilterSpec
-    | FieldFilterSpec
-    | FunctionFilterSpec
-    | FilterTestFn
-    | FilterLike[];
+export type FilterSpec = FieldFilterSpec | FunctionFilterSpec | CompoundFilterSpec;
+
+export type FilterLike = Filter | FilterSpec | FilterTestFn | FilterLike[];
