@@ -4,28 +4,28 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {div, filler, frame, hbox, p} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
-import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
-import '@xh/hoist/mobile/register';
+import {BoxProps, hoistCmp, HoistProps, XH} from '@xh/hoist/core';
+import {frame} from '@xh/hoist/cmp/layout';
+import {errorMessageImpl as desktopErrorMessageImpl} from '@xh/hoist/dynamics/desktop';
+import {errorMessageImpl as mobileErrorMessageImpl} from '@xh/hoist/dynamics/mobile';
+import type {ButtonProps as DesktopButtonProps} from '@xh/hoist/desktop/cmp/button';
+import type {ButtonProps as MobileButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {isNil, isString} from 'lodash';
-import {isValidElement, ReactNode, MouseEvent} from 'react';
-
+import {ReactNode} from 'react';
 import './ErrorMessage.scss';
-import {Icon} from '@xh/hoist/icon';
 
-export interface ErrorMessageProps extends HoistProps {
+export interface ErrorMessageProps extends HoistProps, Omit<BoxProps, 'title'> {
     /**
      * If provided, will render a "Retry" button that calls this function.
      * Use `actionButtonProps` for further control over this button.
      */
-    actionFn?: (e: MouseEvent) => void;
+    actionFn?: (error: unknown) => void;
 
     /**
      * If provided, component will render an inline action button - prompting to user to take some
      * action that might resolve the error, such as retrying a failed data load.
      */
-    actionButtonProps?: ButtonProps;
+    actionButtonProps?: DesktopButtonProps | MobileButtonProps;
 
     /**
      * If provided, will render a "Details" button that calls this function.
@@ -36,7 +36,7 @@ export interface ErrorMessageProps extends HoistProps {
     /**
      * If provided, component will render an inline details button.
      */
-    detailsButtonProps?: ButtonProps;
+    detailsButtonProps?: DesktopButtonProps | MobileButtonProps;
 
     /**
      * Error to display. If undefined, this component will look for an error property on its model.
@@ -69,7 +69,8 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
             actionFn,
             actionButtonProps,
             detailsFn,
-            detailsButtonProps
+            detailsButtonProps,
+            ...rest
         } = props;
 
         if (isNil(error)) return null;
@@ -90,51 +91,25 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
             detailsButtonProps = {...detailsButtonProps, onClick: () => detailsFn(error)};
         }
 
-        let buttons = [],
-            buttonBar = null;
-        if (detailsButtonProps) buttons.push(detailsButton(detailsButtonProps));
-        if (actionButtonProps) buttons.push(actionButton(actionButtonProps));
-        if (buttons.length == 1) {
-            buttonBar = buttons[0];
-        } else if (buttons.length == 2) {
-            buttonBar = hbox(buttons[0], filler(), buttons[1]);
-        }
-
         return frame({
             ref,
             className,
-            item: div({
-                className: 'xh-error-message__inner',
-                items: [titleCmp({title}), messageCmp({message, error}), buttonBar]
-            })
+            ...rest,
+            item: XH.isMobileApp
+                ? mobileErrorMessageImpl({
+                      error,
+                      message,
+                      title,
+                      actionButtonProps,
+                      detailsButtonProps
+                  })
+                : desktopErrorMessageImpl({
+                      error,
+                      message,
+                      title,
+                      actionButtonProps,
+                      detailsButtonProps
+                  })
         });
     }
-});
-
-const titleCmp = hoistCmp.factory(({title}) => {
-    if (isValidElement(title)) return title;
-    if (isString(title)) return div({className: 'xh-error-message__title', item: title});
-    return null;
-});
-
-const messageCmp = hoistCmp.factory(({message}) => {
-    if (isValidElement(message)) return message;
-    if (isString(message)) return p(message);
-    return null;
-});
-
-const actionButton = hoistCmp.factory<ButtonProps>(props => {
-    return button({
-        text: 'Retry',
-        icon: Icon.refresh(),
-        ...props
-    });
-});
-
-const detailsButton = hoistCmp.factory<ButtonProps>(props => {
-    return button({
-        text: 'Show Details',
-        icon: Icon.detail(),
-        ...props
-    });
 });

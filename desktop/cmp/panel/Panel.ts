@@ -17,8 +17,8 @@ import {
     useContextModel,
     uses
 } from '@xh/hoist/core';
-import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {loadingIndicator} from '@xh/hoist/cmp/loadingindicator';
+import {mask} from '@xh/hoist/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import '@xh/hoist/desktop/register';

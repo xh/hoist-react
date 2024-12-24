@@ -7,13 +7,10 @@
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {box, div, fragment, hbox, hframe, p, placeholder, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {BoxProps, hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
-import {errorMessage} from '@xh/hoist/desktop/cmp/error';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
-import '@xh/hoist/desktop/register';
+import {errorMessage} from '@xh/hoist/cmp/error';
+import {mask} from '@xh/hoist/cmp/mask';
 import classNames from 'classnames';
 import {compact, uniq} from 'lodash';
-import {splitter} from './impl/Splitter';
-
 import './SplitTreeMap.scss';
 import {SplitTreeMapModel} from './SplitTreeMapModel';
 import {treeMap} from './TreeMap';
@@ -110,7 +107,8 @@ const mapTitle = hoistCmp.factory<SplitTreeMapModel>(({model, isPrimary}) => {
 
     const container = titleOrientation === 'horizontal' ? hbox : vbox,
         dim = titleOrientation === 'horizontal' ? 'height' : 'width',
-        size = (AgGrid as any).getHeaderHeightForSizingMode(XH.sizingMode);
+        sizingMode = XH.isMobileApp ? 'tiny' : XH.sizingMode,
+        size = (AgGrid as any).getHeaderHeightForSizingMode(sizingMode);
 
     return container({
         style: {[dim]: `${size}px`},
@@ -122,6 +120,16 @@ const mapTitle = hoistCmp.factory<SplitTreeMapModel>(({model, isPrimary}) => {
             className: 'xh-split-treemap__header__title',
             item: mapTitleFn(treeMapModel, isPrimary)
         })
+    });
+});
+
+const splitter = hoistCmp.factory<SplitTreeMapModel>(({model}) => {
+    const {orientation} = model,
+        vertical = orientation === 'vertical',
+        cmp = vertical ? hbox : vbox;
+
+    return cmp({
+        className: `xh-split-treemap__splitter xh-split-treemap__splitter--${vertical ? 'vertical' : 'horizontal'}`
     });
 });
 

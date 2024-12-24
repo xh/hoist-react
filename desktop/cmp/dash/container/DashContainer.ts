@@ -14,7 +14,7 @@ import {
     TestSupportProps,
     uses
 } from '@xh/hoist/core';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {mask} from '@xh/hoist/cmp/mask';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {useOnMount, useOnResize} from '@xh/hoist/utils/react';
 import {useContext} from 'react';

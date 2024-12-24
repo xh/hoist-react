@@ -5,7 +5,6 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, PlainObject, Theme} from '@xh/hoist/core';
-import '@xh/hoist/desktop/register';
 import {action, observable, computed, makeObservable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
