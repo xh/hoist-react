@@ -4,7 +4,8 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {Auth0Client, Auth0ClientOptions} from '@auth0/auth0-spa-js';
+import type {Auth0ClientOptions, AuthorizationParams} from '@auth0/auth0-spa-js';
+import {Auth0Client} from '@auth0/auth0-spa-js';
 import {XH} from '@xh/hoist/core';
 import {never, wait} from '@xh/hoist/promise';
 import {Token, TokenMap} from '@xh/hoist/security/Token';
@@ -14,8 +15,22 @@ import {flatMap, union} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 
 export interface AuthZeroClientConfig extends BaseOAuthClientConfig<AuthZeroTokenSpec> {
-    /** Domain of your app registered with Auth0 */
+    /** Domain of your app registered with Auth0.  */
     domain: string;
+
+    /**
+     * Audience to pass to interactive login and ID token requests.
+     *
+     * If you are also requesting an *access* token for a single audience, pass that value here to
+     * ensure that the initial login/token request returns a ready-to-use access token (and refresh
+     * token) with a single request to the Auth0 API, instead of requiring two.
+     *
+     * This also avoids issues with browsers that block third party cookies when running on
+     * localhost or with an Auth0 domain that does not match the app's own domain. In those cases,
+     * Auth0 must use refresh tokens to obtain access tokens, and a single audience allows that
+     * exchange to work without extra user interaction that this class does not currently support.
+     */
+    audience?: string;
 
     /**
      * Additional options for the Auth0Client ctor. Will be deep merged with defaults, with options
@@ -31,9 +46,7 @@ export interface AuthZeroTokenSpec {
 
     /**
      * Audience (i.e. API) identifier for AccessToken.  Must be registered with Auth0.
-     *
-     * Note that this is required to ensure that issued token is a JWT and not
-     * an opaque string.
+     * Note that this is required to ensure that issued token is a JWT and not an opaque string.
      */
     audience: string;
 }
@@ -88,14 +101,16 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         const appState = this.captureRedirectState();
         await this.client.loginWithRedirect({
             appState,
-            authorizationParams: {scope: this.loginScope}
+            authorizationParams: this.buildAuthParams({scope: this.loginScope})
         });
         await never();
     }
 
     protected override async doLoginPopupAsync(): Promise<void> {
         try {
-            await this.client.loginWithPopup({authorizationParams: {scope: this.loginScope}});
+            await this.client.loginWithPopup({
+                authorizationParams: this.buildAuthParams({scope: this.loginScope})
+            });
             await this.noteUserAuthenticatedAsync();
         } catch (e) {
             const msg = e.message?.toLowerCase();
@@ -132,7 +147,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
 
     protected override async fetchIdTokenAsync(useCache: boolean = true): Promise<Token> {
         const response = await this.client.getTokenSilently({
-            authorizationParams: {scope: this.idScopes.join(' ')},
+            authorizationParams: this.buildAuthParams({scope: this.idScopes.join(' ')}),
             cacheMode: useCache ? 'on' : 'off',
             detailedResponse: true
         });
@@ -144,7 +159,10 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         useCache: boolean = true
     ): Promise<Token> {
         const value = await this.client.getTokenSilently({
-            authorizationParams: {scope: spec.scopes.join(' '), audience: spec.audience},
+            authorizationParams: this.buildAuthParams({
+                scope: spec.scopes.join(' '),
+                audience: spec.audience
+            }),
             cacheMode: useCache ? 'on' : 'off'
         });
         return new Token(value);
@@ -177,15 +195,20 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
                     domain,
                     useRefreshTokens: true,
                     useRefreshTokensFallback: true,
-                    authorizationParams: {
+                    authorizationParams: this.buildAuthParams({
                         scope: this.loginScope,
                         redirect_uri: this.redirectUrl
-                    },
+                    }),
                     cacheLocation: 'localstorage'
                 },
                 authZeroClientOptions
             )
         );
+    }
+
+    private buildAuthParams(params: Partial<AuthorizationParams>): AuthorizationParams {
+        const {audience} = this.config;
+        return audience && !params.audience ? {...params, audience} : params;
     }
 
     private get loginScope(): string {
