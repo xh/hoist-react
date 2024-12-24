@@ -4,7 +4,7 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import type {Auth0ClientOptions, AuthorizationParams} from '@auth0/auth0-spa-js';
+import type {Auth0ClientOptions} from '@auth0/auth0-spa-js';
 import {Auth0Client} from '@auth0/auth0-spa-js';
 import {XH} from '@xh/hoist/core';
 import {never, wait} from '@xh/hoist/promise';
@@ -101,7 +101,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         const appState = this.captureRedirectState();
         await this.client.loginWithRedirect({
             appState,
-            authorizationParams: this.buildAuthParams({scope: this.loginScope})
+            authorizationParams: {scope: this.loginScope}
         });
         await never();
     }
@@ -109,7 +109,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
     protected override async doLoginPopupAsync(): Promise<void> {
         try {
             await this.client.loginWithPopup({
-                authorizationParams: this.buildAuthParams({scope: this.loginScope})
+                authorizationParams: {scope: this.loginScope}
             });
             await this.noteUserAuthenticatedAsync();
         } catch (e) {
@@ -147,7 +147,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
 
     protected override async fetchIdTokenAsync(useCache: boolean = true): Promise<Token> {
         const response = await this.client.getTokenSilently({
-            authorizationParams: this.buildAuthParams({scope: this.idScopes.join(' ')}),
+            authorizationParams: {scope: this.idScopes.join(' ')},
             cacheMode: useCache ? 'on' : 'off',
             detailedResponse: true
         });
@@ -159,10 +159,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         useCache: boolean = true
     ): Promise<Token> {
         const value = await this.client.getTokenSilently({
-            authorizationParams: this.buildAuthParams({
-                scope: spec.scopes.join(' '),
-                audience: spec.audience
-            }),
+            authorizationParams: {scope: spec.scopes.join(' '), audience: spec.audience},
             cacheMode: useCache ? 'on' : 'off'
         });
         return new Token(value);
@@ -185,30 +182,27 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
     // Private implementation
     //------------------------
     private createClient(): Auth0Client {
-        const {clientId, domain, authZeroClientOptions} = this.config;
+        const {clientId, domain, audience, authZeroClientOptions} = this.config;
         throwIf(!domain, 'Missing Auth0 "domain". Please review your config.');
 
-        return new Auth0Client(
-            mergeDeep(
-                {
-                    clientId,
-                    domain,
-                    useRefreshTokens: true,
-                    useRefreshTokensFallback: true,
-                    authorizationParams: this.buildAuthParams({
-                        scope: this.loginScope,
-                        redirect_uri: this.redirectUrl
-                    }),
-                    cacheLocation: 'localstorage'
+        const mergedConfig = mergeDeep(
+            {
+                clientId,
+                domain,
+                useRefreshTokens: true,
+                useRefreshTokensFallback: true,
+                authorizationParams: {
+                    scope: this.loginScope,
+                    redirect_uri: this.redirectUrl,
+                    audience
                 },
-                authZeroClientOptions
-            )
+                cacheLocation: 'localstorage'
+            },
+            authZeroClientOptions
         );
-    }
 
-    private buildAuthParams(params: Partial<AuthorizationParams>): AuthorizationParams {
-        const {audience} = this.config;
-        return audience && !params.audience ? {...params, audience} : params;
+        this.logDebug(`Creating Auth0Client with merged config`, mergedConfig);
+        return new Auth0Client(mergedConfig);
     }
 
     private get loginScope(): string {
