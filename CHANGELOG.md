@@ -12,6 +12,8 @@
   * Support for "global" views.
 * New `SessionStorageService` and associated persistence provider provides support for saving
   tab local data across reloads.
+* Added support for `AuthZeroClientConfig.audience` to support improved configuration of Auth0 OAuth
+  clients requesting access tokens, covering cases when third-party cookies are blocked.
 
 ### ⚙️ Technical
 
