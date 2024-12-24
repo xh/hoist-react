@@ -7,7 +7,7 @@
 import {grid} from '@xh/hoist/cmp/grid';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {creates, hoistCmp} from '@xh/hoist/core';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {mask} from '@xh/hoist/cmp/mask';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
 import {box, div, hspacer, p, placeholder, vframe} from '@xh/hoist/cmp/layout';

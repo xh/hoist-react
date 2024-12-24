@@ -15,8 +15,8 @@ import {
     hoistCmp,
     HoistModel
 } from '@xh/hoist/core';
-import {loadingIndicator} from '@xh/hoist/mobile/cmp/loadingindicator';
-import {mask} from '@xh/hoist/mobile/cmp/mask';
+import {loadingIndicator} from '@xh/hoist/cmp/loadingindicator';
+import {mask} from '@xh/hoist/cmp/mask';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';

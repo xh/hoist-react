@@ -26,6 +26,7 @@ import {
     JsonBlobService,
     LocalStorageService,
     PrefService,
+    SessionStorageService,
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
@@ -140,6 +141,7 @@ export class XHApi {
     jsonBlobService: JsonBlobService;
     localStorageService: LocalStorageService;
     prefService: PrefService;
+    sessionStorageService: SessionStorageService;
     trackService: TrackService;
     webSocketService: WebSocketService;
 

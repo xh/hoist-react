@@ -17,7 +17,7 @@ import {zoneMapperDialog as zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/imp
 import {columnHeaderFilter} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilter';
 import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
 import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilterDialog';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {mask} from '@xh/hoist/cmp/mask';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport';
 import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
@@ -26,6 +26,8 @@ import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {inspectorPanel} from '@xh/hoist/inspector/InspectorPanel';
 import {blueprintProvider} from '@xh/hoist/kit/blueprint';
+import {errorMessageImpl} from '@xh/hoist/desktop/cmp/error/impl/ErrorMessage';
+import {maskImpl} from '@xh/hoist/desktop/cmp/mask/impl/Mask';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import {aboutDialog} from './AboutDialog';
@@ -41,7 +43,6 @@ import {optionsDialog} from './OptionsDialog';
 import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
 import {ReactElement} from 'react';
-import {errorMessage} from '../cmp/error/ErrorMessage';
 
 installDesktopImpls({
     tabContainerImpl,
@@ -56,7 +57,8 @@ installDesktopImpls({
     ColumnHeaderFilterModel,
     useContextMenu,
     ModalSupportModel,
-    errorMessage
+    errorMessageImpl,
+    maskImpl
 });
 /**
  * Top-level wrapper for Desktop applications.

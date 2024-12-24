@@ -46,13 +46,6 @@ export class CompoundFilter extends Filter {
         Object.freeze(this);
     }
 
-    toJSON() {
-        return {
-            filters: this.filters.map((f: any) => f.toJSON()),
-            op: this.op
-        };
-    }
-
     //-----------------
     // Overrides
     //-----------------
@@ -73,5 +66,12 @@ export class CompoundFilter extends Filter {
                 a.isFilter && b.isFilter ? a.equals(b) : undefined
             )
         );
+    }
+
+    override toJSON(): CompoundFilterSpec {
+        return {
+            filters: this.filters.map(f => f.toJSON()),
+            op: this.op
+        };
     }
 }

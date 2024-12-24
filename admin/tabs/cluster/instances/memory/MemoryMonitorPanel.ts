@@ -11,7 +11,7 @@ import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {code, filler, fragment, hbox, hspacer, span, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
-import {errorMessage} from '@xh/hoist/desktop/cmp/error';
+import {errorMessage} from '@xh/hoist/cmp/error';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSeparator} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtDate} from '@xh/hoist/format';

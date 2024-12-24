@@ -7,8 +7,7 @@
 import {XH} from '@xh/hoist/core';
 
 /**
- * Copy the chart in it's current state to the clipboard.
- * Works only on webkit based browsers.
+ * Copy the chart in its current state to the clipboard - supported for webkit based browsers only.
  * @internal
  */
 export function installCopyToClipboard(Highcharts) {

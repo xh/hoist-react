@@ -2,17 +2,39 @@
 
 ## v71.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist core update)
+### 💥 Breaking Changes (upgrade 🟢 Medium - Hoist core update, adjust imports)
+* Requires `hoist-core >= 27` to support views, and enhanced support for DistributedObjects
 
-* Requires `hoist-core >= 27` to support enhanced Distributed Objects page.
+* `ErrorMessage` is now cross-platform. Its import paths has changed from `@xh/hoist/desktop/cmp/error`
+  and `@xh/hoist/mobile/cmp/error` to `@xh/hoist/cmp/error`.
+* `Mask` is now cross-platform. Its import paths has changed from `@xh/hoist/desktop/cmp/mask`
+  and `@xh/hoist/mobile/cmp/mask` to `@xh/hoist/cmp/mask`.
+* `LoadingIndicator` is now cross-platform. Its import paths has changed from
+  `@xh/hoist/desktop/cmp/loadingindicator` and `@xh/hoist/mobile/cmp/loadingindicator` to
+  `@xh/hoist/cmp/loadingindicator`.
+* `TreeMap` and `SplitTreeMap` are now cross-platform and can be used in mobile applications.
+  Their import paths have changed from `@xh/hoist/desktop/cmp/treemap` to `@xh/hoist/cmp/treemap`.
 
 ### 🎁 New Features
 
+* Major Improvements to ViewManager component
+  * Support for persisting pending value.
+  * Handle delete and update collisions more gracefully.
+  * Support for `settleTime`,
+  * Improved management UI Dialog.
+  * Support for "shared" and "global" views.
+* New `SessionStorageService` and associated persistence provider provides support for saving
+  tab local data across reloads.
+* Added support for `AuthZeroClientConfig.audience` to support improved configuration of Auth0 OAuth
+  clients requesting access tokens, covering cases when third-party cookies are blocked.
 * Admin `DistributedObjectModel` now compares certain `adminState` fields of distributed objects
   between instances.
 
 ### ⚙️ Technical
-* Misc. Improvements to ViewManager
+
+* Added explicit `devDependencies` and `resolutions` blocks for `@types/react[-dom]` at v18.x.
+* Added workaround for problematic use of SASS-syntax-in-CSS shipped by `react-dates`. This began
+  throwing "This function isn't allowed in plain CSS" with latest version of sass/sass-loader.
 
 ## v70.0.0 - 2024-11-15
 

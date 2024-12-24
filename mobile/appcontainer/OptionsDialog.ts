@@ -11,7 +11,7 @@ import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, restoreDefaultsButton} from '@xh/hoist/mobile/cmp/button';
 import {formField} from '@xh/hoist/mobile/cmp/form';
-import {mask} from '@xh/hoist/mobile/cmp/mask';
+import {mask} from '@xh/hoist/cmp/mask';
 import './OptionsDialog.scss';
 import {dialogPanel} from '@xh/hoist/mobile/cmp/panel';
 
