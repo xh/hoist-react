@@ -52,8 +52,11 @@ export interface QueryConfig {
     /** True to include leaf nodes in return.*/
     includeLeaves?: boolean;
 
-    /** True (default) to flatten single-child hierarchies into parents. */
-    flattenRedundantChildren?: boolean;
+    /**
+     * True (default) to recursively omit single-child parents in the hierarchy.
+     * Apps can implement further omit logic using `omitFn`.
+     */
+    omitRedundantNodes?: boolean;
 
     /**
      * Optional function to be called for each aggregate node to determine if it should be "locked",
@@ -82,7 +85,7 @@ export class Query {
     readonly filter: Filter;
     readonly includeRoot: boolean;
     readonly includeLeaves: boolean;
-    readonly flattenRedundantChildren: boolean;
+    readonly omitRedundantNodes: boolean;
     readonly cube: Cube;
     readonly lockFn: LockFn;
     readonly bucketSpecFn: BucketSpecFn;
@@ -97,7 +100,7 @@ export class Query {
         filter = null,
         includeRoot = false,
         includeLeaves = false,
-        flattenRedundantChildren = true,
+        omitRedundantNodes = true,
         lockFn = cube.lockFn,
         bucketSpecFn = cube.bucketSpecFn,
         omitFn = cube.omitFn
@@ -107,7 +110,7 @@ export class Query {
         this.dimensions = this.parseDimensions(dimensions);
         this.includeRoot = includeRoot;
         this.includeLeaves = includeLeaves;
-        this.flattenRedundantChildren = flattenRedundantChildren;
+        this.omitRedundantNodes = omitRedundantNodes;
         this.filter = parseFilter(filter);
         this.lockFn = lockFn;
         this.bucketSpecFn = bucketSpecFn;
@@ -123,7 +126,7 @@ export class Query {
             filter: this.filter,
             includeRoot: this.includeRoot,
             includeLeaves: this.includeLeaves,
-            flattenRedundantChildren: this.flattenRedundantChildren,
+            omitRedundantNodes: this.omitRedundantNodes,
             lockFn: this.lockFn,
             bucketSpecFn: this.bucketSpecFn,
             omitFn: this.omitFn,
@@ -160,7 +163,7 @@ export class Query {
             this.cube === other.cube &&
             this.includeRoot === other.includeRoot &&
             this.includeLeaves === other.includeLeaves &&
-            this.flattenRedundantChildren === other.flattenRedundantChildren &&
+            this.omitRedundantNodes === other.omitRedundantNodes &&
             this.bucketSpecFn == other.bucketSpecFn &&
             this.omitFn == other.omitFn &&
             this.lockFn == other.lockFn
