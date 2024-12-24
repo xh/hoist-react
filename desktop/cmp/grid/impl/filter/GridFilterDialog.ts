@@ -8,13 +8,7 @@ import {form, FormModel} from '@xh/hoist/cmp/form';
 import {GridFilterModel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses} from '@xh/hoist/core';
-import {
-    CompoundFilter,
-    FieldFilter,
-    parseFilter,
-    required,
-    withFilterByTypes
-} from '@xh/hoist/data';
+import {parseFilter, required, withFilterByTypes} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
@@ -151,9 +145,7 @@ class GridFilterDialogLocalModel extends HoistModel {
     }
 
     loadForm() {
-        const filter = withFilterByTypes(this.model.filter, null, 'FunctionFilter') as
-            | CompoundFilter
-            | FieldFilter;
+        const filter = withFilterByTypes(this.model.filter, null, 'FunctionFilter');
         this.formModel.init({
             filter: JSON.stringify(filter?.toJSON() ?? null, undefined, 2)
         });

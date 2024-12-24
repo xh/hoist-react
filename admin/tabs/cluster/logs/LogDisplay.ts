@@ -11,7 +11,7 @@ import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button, modalToggleButton} from '@xh/hoist/desktop/cmp/button';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
-import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
+import {loadingIndicator} from '@xh/hoist/cmp/loadingindicator';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';

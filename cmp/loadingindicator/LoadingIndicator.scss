@@ -4,7 +4,6 @@
 
   position: absolute;
   padding: var(--xh-pad-half-px);
-  font-size: var(--xh-font-size-small-px);
   background-color: var(--xh-loading-indicator-bg);
   color: var(--xh-loading-indicator-color);
   border-color: var(--xh-loading-indicator-border-color);
@@ -79,4 +78,8 @@
     align-items: center;
     white-space: nowrap;
   }
+}
+
+.xh-desktop .xh-loading-indicator {
+  font-size: var(--xh-font-size-small-px);
 }

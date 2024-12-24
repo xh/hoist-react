@@ -8,7 +8,6 @@ import {HoistModel, PlainObject, Theme} from '@xh/hoist/core';
 import {Store, StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {FilterLike} from '@xh/hoist/data/filter/Types';
-import '@xh/hoist/desktop/register';
 import {numberRenderer} from '@xh/hoist/format';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
