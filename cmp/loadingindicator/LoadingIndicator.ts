@@ -21,7 +21,6 @@ import classNames from 'classnames';
 import {truncate} from 'lodash';
 import './LoadingIndicator.scss';
 
-// Todo: Move to cmp, delete mobile, update imports, add CHANGELOG
 export interface LoadingIndicatorProps extends HoistProps {
     /** TaskObserver(s) that should be monitored to determine if the Indicator should be displayed. */
     bind?: Some<TaskObserver>;

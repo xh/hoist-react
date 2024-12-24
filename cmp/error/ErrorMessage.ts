@@ -6,9 +6,10 @@
  */
 import {BoxProps, hoistCmp, HoistProps, XH} from '@xh/hoist/core';
 import {frame} from '@xh/hoist/cmp/layout';
-import {ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {errorMessageImpl as desktopErrorMessageImpl} from '@xh/hoist/dynamics/desktop';
 import {errorMessageImpl as mobileErrorMessageImpl} from '@xh/hoist/dynamics/mobile';
+import type {ButtonProps as DesktopButtonProps} from '@xh/hoist/desktop/cmp/button';
+import type {ButtonProps as MobileButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {isNil, isString} from 'lodash';
 import {ReactNode} from 'react';
 import './ErrorMessage.scss';
@@ -24,7 +25,7 @@ export interface ErrorMessageProps extends HoistProps, Omit<BoxProps, 'title'> {
      * If provided, component will render an inline action button - prompting to user to take some
      * action that might resolve the error, such as retrying a failed data load.
      */
-    actionButtonProps?: ButtonProps;
+    actionButtonProps?: DesktopButtonProps | MobileButtonProps;
 
     /**
      * If provided, will render a "Details" button that calls this function.
@@ -35,7 +36,7 @@ export interface ErrorMessageProps extends HoistProps, Omit<BoxProps, 'title'> {
     /**
      * If provided, component will render an inline details button.
      */
-    detailsButtonProps?: ButtonProps;
+    detailsButtonProps?: DesktopButtonProps | MobileButtonProps;
 
     /**
      * Error to display. If undefined, this component will look for an error property on its model.

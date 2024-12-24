@@ -21,8 +21,8 @@ export const errorMessageImpl = hoistCmp.factory<ErrorMessageProps>({
     render({error, message, title, actionButtonProps, detailsButtonProps}) {
         let buttons = [],
             buttonBar = null;
-        if (detailsButtonProps) buttons.push(detailsButton(detailsButtonProps));
-        if (actionButtonProps) buttons.push(actionButton(actionButtonProps));
+        if (detailsButtonProps) buttons.push(detailsButton(detailsButtonProps as ButtonProps));
+        if (actionButtonProps) buttons.push(actionButton(actionButtonProps as ButtonProps));
         if (buttons.length == 1) {
             buttonBar = buttons[0];
         } else if (buttons.length == 2) {
