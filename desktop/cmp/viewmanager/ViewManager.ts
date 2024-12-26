@@ -7,13 +7,15 @@
 
 import {box, fragment, hbox} from '@xh/hoist/cmp/layout';
 import {spinner} from '@xh/hoist/cmp/spinner';
-import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, useLocalModel, uses} from '@xh/hoist/core';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
+import {useOnVisibleChange} from '@xh/hoist/utils/react';
 import {startCase} from 'lodash';
 import {viewMenu} from './ViewMenu';
+import {ViewManagerLocalModel} from './ViewManagerLocalModel';
 import {manageDialog} from './dialog/ManageDialog';
 import {saveAsDialog} from './dialog/SaveAsDialog';
 
@@ -39,10 +41,6 @@ export interface ViewManagerProps extends HoistProps<ViewManagerModel> {
     showRevertButton?: ViewManagerStateButtonMode;
     /** Side the save and revert buttons should appear on (default 'right') */
     buttonSide?: 'left' | 'right';
-    /** True to render private views in sub-menu (Default false) */
-    showPrivateViewsInSubMenu?: boolean;
-    /** True to render global views in sub-menu (Default false) */
-    showGlobalViewsInSubMenu?: boolean;
 }
 
 /**
@@ -64,32 +62,43 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
         revertButtonProps,
         showSaveButton = 'whenDirty',
         showRevertButton = 'never',
-        buttonSide = 'right',
-        showPrivateViewsInSubMenu = false,
-        showGlobalViewsInSubMenu = false
+        buttonSide = 'right'
     }: ViewManagerProps) {
-        const save = saveButton({mode: showSaveButton, ...saveButtonProps}),
-            revert = revertButton({mode: showRevertButton, ...revertButtonProps}),
+        const {loadModel} = model,
+            locModel = useLocalModel(() => new ViewManagerLocalModel(model)),
+            save = saveButton({model: locModel, mode: showSaveButton, ...saveButtonProps}),
+            revert = revertButton({model: locModel, mode: showRevertButton, ...revertButtonProps}),
             menu = popover({
-                item: menuButton(menuButtonProps),
-                content: viewMenu({showPrivateViewsInSubMenu, showGlobalViewsInSubMenu}),
-                placement: 'bottom-start',
+                disabled: !locModel.isVisible, // Prevent orphaned popover menu
+                item: menuButton({model: locModel, ...menuButtonProps}),
+                content: loadModel.isPending
+                    ? box({
+                          item: spinner({compact: true}),
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          height: 30,
+                          width: 30
+                      })
+                    : viewMenu({model: locModel}),
+                onOpening: () => model.refreshAsync(),
+                placement: 'bottom',
                 popoverClassName: 'xh-view-manager__popover'
             });
         return fragment(
             hbox({
                 className,
-                items: buttonSide == 'left' ? [revert, save, menu] : [menu, save, revert]
+                items: buttonSide == 'left' ? [revert, save, menu] : [menu, save, revert],
+                ref: useOnVisibleChange(isVisible => (locModel.isVisible = isVisible))
             }),
-            manageDialog({omit: !model.manageDialogOpen}),
-            saveAsDialog()
+            manageDialog({model: locModel.manageDialogModel}),
+            saveAsDialog({model: locModel.saveAsDialogModel})
         );
     }
 });
 
-const menuButton = hoistCmp.factory<ViewManagerModel>({
+const menuButton = hoistCmp.factory<ViewManagerLocalModel>({
     render({model, ...rest}) {
-        const {view, typeDisplayName, isLoading} = model;
+        const {view, typeDisplayName, isLoading} = model.parent;
         return button({
             className: 'xh-view-manager__menu-button',
             text: view.isDefault ? `Default ${startCase(typeDisplayName)}` : view.name,
@@ -106,40 +115,46 @@ const menuButton = hoistCmp.factory<ViewManagerModel>({
     }
 });
 
-const saveButton = hoistCmp.factory<ViewManagerModel>({
+const saveButton = hoistCmp.factory<ViewManagerLocalModel>({
     render({model, mode, ...rest}) {
         if (hideStateButton(model, mode)) return null;
+        const {parent, saveAsDialogModel} = model,
+            {typeDisplayName, isLoading, isValueDirty} = parent;
         return button({
             className: 'xh-view-manager__save-button',
             icon: Icon.save(),
-            tooltip: `Save changes to this ${model.typeDisplayName}`,
+            tooltip: `Save changes to this ${typeDisplayName}`,
             intent: 'primary',
-            disabled: !model.isValueDirty || model.isLoading,
+            disabled: !isValueDirty || isLoading,
             onClick: () => {
-                model.isViewSavable ? model.saveAsync() : model.saveAsAsync();
+                parent.isViewSavable ? parent.saveAsync() : saveAsDialogModel.open();
             },
             ...rest
         });
     }
 });
 
-const revertButton = hoistCmp.factory<ViewManagerModel>({
+const revertButton = hoistCmp.factory<ViewManagerLocalModel>({
     render({model, mode, ...rest}) {
         if (hideStateButton(model, mode)) return null;
+        const {typeDisplayName, isLoading, isValueDirty} = model.parent;
         return button({
             className: 'xh-view-manager__revert-button',
             icon: Icon.reset(),
-            tooltip: `Revert changes to this ${model.typeDisplayName}`,
+            tooltip: `Revert changes to this ${typeDisplayName}`,
             intent: 'danger',
-            disabled: !model.isValueDirty || model.isLoading,
-            onClick: () => model.resetAsync(),
+            disabled: !isValueDirty || isLoading,
+            onClick: () => model.parent.resetAsync(),
             ...rest
         });
     }
 });
 
-function hideStateButton(model: ViewManagerModel, mode: ViewManagerStateButtonMode): boolean {
+function hideStateButton(model: ViewManagerLocalModel, mode: ViewManagerStateButtonMode): boolean {
+    const {parent} = model;
     return (
-        mode === 'never' || (mode === 'whenDirty' && !model.isValueDirty) || model.isViewAutoSavable
+        mode === 'never' ||
+        (mode === 'whenDirty' && !parent.isValueDirty) ||
+        parent.isViewAutoSavable
     );
 }

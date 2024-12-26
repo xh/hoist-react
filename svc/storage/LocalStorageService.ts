@@ -12,7 +12,7 @@ import store, {StoreType} from 'store2';
  * Service to provide simple key/value access to browser local storage, appropriately namespaced
  * by application code and username.
  *
- * Relied upon by Hoist persistence mechanisms when using key 'localStorageKey`
+ * Relied upon by Hoist persistence mechanisms when using key 'localStorageKey'.
  */
 export class LocalStorageService extends BaseStorageService {
     static instance: LocalStorageService;

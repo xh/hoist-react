@@ -4,20 +4,24 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {hoistCmp, HoistModel, HoistProps, Some, TaskObserver, useLocalModel} from '@xh/hoist/core';
-import '@xh/hoist/desktop/register';
-import {Classes, overlay} from '@xh/hoist/kit/blueprint';
+import {
+    hoistCmp,
+    HoistModel,
+    HoistProps,
+    Some,
+    TaskObserver,
+    useLocalModel,
+    XH
+} from '@xh/hoist/core';
+import {maskImpl as desktopMaskImpl} from '@xh/hoist/dynamics/desktop';
+import {maskImpl as mobileMaskImpl} from '@xh/hoist/dynamics/mobile';
 import {withDefault} from '@xh/hoist/utils/js';
 import {ReactNode, MouseEvent} from 'react';
-import classNames from 'classnames';
-import './Mask.scss';
 
 export interface MaskProps extends HoistProps {
     /** Task(s) that should be monitored to determine if the mask should be displayed. */
     bind?: Some<TaskObserver>;
-    /** True (default) to contain mask within its parent, false to fill the viewport. */
+    /** True (default) to contain mask within its parent, false to fill the viewport. Desktop only. */
     inline?: boolean;
     /** True to display mask. */
     isDisplayed?: boolean;
@@ -41,29 +45,16 @@ export const [Mask, mask] = hoistCmp.withFactory<MaskProps>({
     displayName: 'Mask',
     className: 'xh-mask',
 
-    render({isDisplayed, message, inline = true, spinner = false, className}) {
+    render({isDisplayed, message, onClick, inline = true, spinner = false, className}) {
         const impl = useLocalModel(MaskLocalModel);
 
         isDisplayed = withDefault(isDisplayed, impl.task?.isPending);
         message = withDefault(message, impl.task?.message);
 
         if (!isDisplayed) return null;
-        return overlay({
-            className: classNames(className, Classes.OVERLAY_SCROLL_CONTAINER),
-            autoFocus: false,
-            isOpen: true,
-            canEscapeKeyClose: false,
-            usePortal: !inline,
-            enforceFocus: !inline,
-            item: vbox({
-                className: 'xh-mask-body',
-                items: [
-                    spinner ? spinnerCmp() : null,
-                    spinner ? vspacer(10) : null,
-                    message ? box({className: 'xh-mask-text', item: message}) : null
-                ]
-            })
-        });
+        return XH.isMobileApp
+            ? mobileMaskImpl({message, onClick, spinner, className})
+            : desktopMaskImpl({message, onClick, inline, spinner, className});
     }
 });
 

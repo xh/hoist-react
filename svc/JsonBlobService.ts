@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistService, LoadSpec, PlainObject, XH} from '@xh/hoist/core';
-import {pickBy} from 'lodash';
+import {isUndefined, omitBy} from 'lodash';
 
 export interface JsonBlob {
     /** Either null for private blobs or special token "*" for globally shared blobs. */
@@ -91,9 +91,9 @@ export class JsonBlobService extends HoistService {
     /** Modify mutable properties of an existing JSONBlob, as identified by its unique token. */
     async updateAsync(
         token: string,
-        {acl, description, meta, name, value}: Partial<JsonBlob>
+        {acl, description, meta, name, owner, value}: Partial<JsonBlob>
     ): Promise<JsonBlob> {
-        const update = pickBy({acl, description, meta, name, value}, (v, k) => v !== undefined);
+        const update = omitBy({acl, description, meta, name, owner, value}, isUndefined);
         return XH.fetchJson({
             url: 'xh/updateJsonBlob',
             params: {

@@ -12,7 +12,7 @@ import store, {StoreType} from 'store2';
  * Service to provide simple key/value access to browser session storage, appropriately namespaced
  * by application code and username.
  *
- * Relied upon by Hoist persistence mechanisms when using key 'sessionStorageKey`
+ * Relied upon by Hoist persistence mechanisms when using key 'sessionStorageKey'.
  */
 export class SessionStorageService extends BaseStorageService {
     static instance: SessionStorageService;

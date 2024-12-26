@@ -9,7 +9,7 @@ import {grid} from '@xh/hoist/cmp/grid';
 import {fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {errorMessage} from '@xh/hoist/desktop/cmp/error';
+import {errorMessage} from '@xh/hoist/cmp/error';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';

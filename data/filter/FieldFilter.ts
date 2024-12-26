@@ -98,11 +98,6 @@ export class FieldFilter extends Filter {
         Object.freeze(this);
     }
 
-    toJSON() {
-        const {field, op, value, serializedValueType} = this;
-        return {field, op, value, ...(serializedValueType ? {valueType: serializedValueType} : {})};
-    }
-
     //-----------------
     // Overrides
     //-----------------
@@ -202,6 +197,11 @@ export class FieldFilter extends Filter {
                   difference(other.value, this.value).length === 0
                 : other.value === this.value)
         );
+    }
+
+    override toJSON(): FieldFilterSpec {
+        const {field, op, value, serializedValueType} = this;
+        return {field, op, value, ...(serializedValueType ? {valueType: serializedValueType} : {})};
     }
 
     //-----------------

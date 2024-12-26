@@ -24,7 +24,17 @@ import {wait} from '@xh/hoist/promise';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {cloneDeep, defaultsDeep, find, isFinite, isNil, last, reject, startCase} from 'lodash';
+import {
+    cloneDeep,
+    defaultsDeep,
+    find,
+    isEqual,
+    isFinite,
+    isNil,
+    last,
+    reject,
+    startCase
+} from 'lodash';
 import {createRoot} from 'react-dom/client';
 import {DashConfig, DashModel} from '../';
 import {DashViewModel, DashViewState} from '../DashViewModel';
@@ -371,13 +381,15 @@ export class DashContainerModel
         this.publishState();
     }
 
-    @debounced(1000)
+    @debounced(100)
     private publishState() {
         const {goldenLayout} = this;
         if (!goldenLayout) return;
-        runInAction(() => {
-            this.state = convertGLToState(goldenLayout, this);
-        });
+
+        const newState = convertGLToState(goldenLayout, this);
+        if (!isEqual(this.state, newState)) {
+            runInAction(() => (this.state = newState));
+        }
     }
 
     private onItemDestroyed(item) {
