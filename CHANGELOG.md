@@ -13,7 +13,7 @@
   `@xh/hoist/cmp/loadingindicator`.
 * `TreeMap` and `SplitTreeMap` are now cross-platform and can be used in mobile applications.
   Their import paths have changed from `@xh/hoist/desktop/cmp/treemap` to `@xh/hoist/cmp/treemap`.
-
+* The `RefreshButton` `model` prop has been renamed `target` for clarity and consistency.
 ### 🎁 New Features
 
 * Major Improvements to ViewManager component
