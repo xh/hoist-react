@@ -5,8 +5,8 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
-import {li, ul, vbox} from '@xh/hoist/cmp/layout';
-import {HoistModel, managed, ReactionSpec, Some, XH} from '@xh/hoist/core';
+import {li, span, ul, vbox} from '@xh/hoist/cmp/layout';
+import {elementFactory, HoistModel, managed, ReactionSpec, Some, XH} from '@xh/hoist/core';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -14,10 +14,12 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {pluralize, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import filesize from 'filesize';
-import {castArray, concat, find, isEmpty, isFunction, map, uniqBy, without, take} from 'lodash';
+import {castArray, concat, find, isEmpty, isFunction, map, uniqBy, without} from 'lodash';
 import mime from 'mime';
 import {ReactElement, ReactNode} from 'react';
 import {DropzoneRef, FileRejection} from 'react-dropzone';
+
+const em = elementFactory('em');
 
 export interface FileChooserConf {
     /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
@@ -44,8 +46,8 @@ export interface FileChooserConf {
      */
     rejectMessage?: ReactNode | ((rejectedFiles: FileRejection[]) => ReactNode);
 
-    /** True to disable clicking on the dropzone to open the file browser. Defaults to true */
-    noClick?: boolean;
+    /** Mask the dropzone when dragging. Defaults to true. */
+    maskOnDrag?: boolean;
 }
 
 export class FileChooserModel extends HoistModel {
@@ -62,13 +64,11 @@ export class FileChooserModel extends HoistModel {
     gridModel: GridModel;
 
     accept: Record<string, string[]>;
-    enableMulti: boolean;
     acceptMulti: boolean;
     maxFiles: number;
-    maxAdd: number;
     maxSize: number;
     minSize: number;
-    noClick: boolean;
+    maskOnDrag: boolean;
 
     dropzoneRef = createObservableRef<DropzoneRef>();
 
@@ -81,11 +81,11 @@ export class FileChooserModel extends HoistModel {
         this.maxFiles = params.maxFiles;
         this.maxSize = params.maxSize;
         this.minSize = params.minSize;
+        this.emptyDisplay = params.emptyDisplay;
         this.accept = this.getMimesByExt(params.accept);
         this.acceptMulti = withDefault(params.enableAddMulti, true);
         this.rejectMessage = withDefault(params.rejectMessage, this.defaultRejectionMessage);
-        this.emptyDisplay = params.emptyDisplay;
-        this.noClick = withDefault(params.noClick, true);
+        this.maskOnDrag = withDefault(params.maskOnDrag, true);
 
         this.addReaction(this.fileReaction());
     }
@@ -123,10 +123,15 @@ export class FileChooserModel extends HoistModel {
     //------------------------
     @action
     onDrop(accepted: File[], rejected: FileRejection[]) {
-        const {files, maxFiles, maxAdd, acceptMulti, rejectMessage} = this,
+        const {files, maxFiles, acceptMulti, rejectMessage} = this,
             currFileCount = files.length,
             acceptCount = accepted.length,
             rejectCount = rejected.length;
+
+        if (!acceptMulti && (acceptCount || rejectCount)) {
+            XH.warningToast('Multiple file drop not allowed.');
+            return;
+        }
 
         if (currFileCount + acceptCount > maxFiles) {
             XH.warningToast(
@@ -135,29 +140,11 @@ export class FileChooserModel extends HoistModel {
             return;
         }
 
-        if (acceptCount) {
-            if (!acceptMulti) {
-                if (acceptCount > 1) {
-                    const droppedCount = acceptCount - 1;
-                    XH.warningToast(
-                        `Multi file adding disabled. ${droppedCount} ${pluralize('file', droppedCount)} not added.`
-                    );
-                }
-                this.addFiles(accepted[0]);
-            } else if (acceptCount > maxAdd) {
-                const droppedCount = acceptCount - maxAdd;
-                XH.warningToast(
-                    `Max ${maxAdd} files per add. ${droppedCount} ${pluralize('file', droppedCount)} not added.`
-                );
-                this.addFiles(take(accepted, maxAdd));
-            } else {
-                this.addFiles(accepted);
-            }
-        }
+        this.addFiles(accepted);
 
         if (rejectCount) {
             const message = isFunction(rejectMessage) ? rejectMessage(rejected) : rejectMessage;
-            XH.toast({intent: 'danger', message});
+            XH.toast({intent: 'danger', timeout: 10000, message});
         }
     }
 
@@ -186,7 +173,10 @@ export class FileChooserModel extends HoistModel {
             rejectItems = files.flatMap(file => {
                 const messages = errorsByFile[file];
                 return [
-                    `${file} rejected for the following ${pluralize('reason', messages.length)}:`,
+                    span(
+                        em(file),
+                        ` rejected for the following ${pluralize('reason', messages.length)}:`
+                    ),
                     ul(messages.map(it => li(it)))
                 ];
             });
@@ -213,9 +203,9 @@ export class FileChooserModel extends HoistModel {
                 {field: 'name', flex: 1},
                 {
                     field: 'size',
-                    width: 90,
                     align: 'right',
-                    renderer: v => filesize(v)
+                    renderer: v => filesize(v),
+                    flex: 1
                 },
                 {
                     ...actionCol,

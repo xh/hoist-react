@@ -10,12 +10,12 @@ import {BoxProps, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
-import './FileChooser.scss';
-import {executeIfFunction} from '@xh/hoist/utils/js';
 import {FileRejection} from 'react-dropzone';
 import {FileChooserModel} from './FileChooserModel';
 import {Children} from 'react';
-import {castArray} from 'lodash';
+import {isEmpty, isFunction} from 'lodash';
+import {mask} from '../mask';
+import classNames from 'classnames';
 
 export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps {
     /** True to disable the file chooser. */
@@ -45,35 +45,37 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
     className: 'xh-file-chooser',
 
     render({model, disabled, children, ...props}) {
-        const {
-            accept,
-            maxSize,
-            minSize,
-            noClick,
-            gridModel,
-            emptyDisplay = defaultEmptyDisplay
-        } = model;
+        const {accept, maxSize, minSize, maskOnDrag, emptyDisplay = defaultEmptyDisplay} = model;
+
+        let dropzoneItems = isEmpty(model.files)
+            ? isFunction(emptyDisplay)
+                ? emptyDisplay({disabled})
+                : emptyDisplay
+            : children
+              ? Children.toArray(children)
+              : grid({className: 'xh-file-chooser__target--active'});
 
         return dropzone({
             ref: model.dropzoneRef,
+            noClick: true,
             accept,
             maxSize,
             minSize,
-            noClick,
             disabled,
-            children: ({getRootProps, getInputProps}) => {
-                let items = children
-                    ? Children.toArray(children)
-                    : gridModel.empty
-                      ? executeIfFunction(emptyDisplay)
-                      : grid();
-
-                items = castArray(items);
-
+            children: ({getRootProps, getInputProps, isDragActive}) => {
                 return box({
                     ...getRootProps(),
-                    items: [...items, input({...getInputProps()})],
-                    ...props
+                    items: [
+                        mask({isDisplayed: isDragActive, omit: !maskOnDrag}),
+                        dropzoneItems,
+                        input({...getInputProps()})
+                    ],
+                    ...props,
+                    className: classNames(
+                        'xh-file-chooser__target',
+                        isDragActive ? 'xh-file-chooser__target--active' : null,
+                        props.className
+                    )
                 });
             },
             onDrop: (accepted: File[], rejected: FileRejection[]) =>
@@ -84,16 +86,17 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
 
 const defaultEmptyDisplay = hoistCmp.factory({
     model: uses(FileChooserModel),
-    render({model}) {
+    render({model, disabled}) {
         return vframe(
             placeholder(
-                'Drag And Drop Files Here',
+                'Drag and drop files here',
                 vspacer(),
                 button({
                     text: 'Browse',
                     onClick: () => model.openFileBrowser(),
                     intent: 'primary',
-                    outlined: true
+                    outlined: true,
+                    disabled
                 })
             )
         );
