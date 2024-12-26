@@ -1772,9 +1772,9 @@ export class GridModel extends HoistModel {
 
     defaultGroupSortFn = (a, b) => {
         // Place ungrouped items at bottom.
-        if (a == b) return 0;
-        if (a == '') return 1;
-        if (b == '') return -1;
+        if (a === b) return 0;
+        if (a === '') return 1;
+        if (b === '') return -1;
         return a.localeCompare(b);
     };
 
