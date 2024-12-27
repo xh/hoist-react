@@ -113,6 +113,11 @@
             border-radius: 0 0 var(--xh-button-border-radius-px) var(--xh-button-border-radius-px);
           }
         }
+
+        // Outlined buttons should avoid doubled-up inner borders.
+        &.xh-button--outlined:not(:last-child) {
+          border-bottom: none;
+        }
       }
     }
   }
