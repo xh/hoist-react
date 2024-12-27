@@ -11,6 +11,7 @@ import {DefaultHoistProps, HoistBase, LoadSpecConfig, managed, PlainObject} from
 import {instanceManager} from '../impl/InstanceManager';
 import {Loadable, LoadSpec, LoadSupport} from '../load';
 import {ModelSelector} from './';
+import {Class} from 'type-fest';
 
 /**
  * Core superclass for stateful Models in Hoist. Models are used throughout the toolkit and
@@ -221,6 +222,4 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     }
 }
 
-export interface HoistModelClass<T extends HoistModel> {
-    new (...args: any[]): T;
-}
+export type HoistModelClass<T extends HoistModel> = Class<T>;
