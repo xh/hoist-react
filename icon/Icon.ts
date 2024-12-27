@@ -14,6 +14,7 @@ import {last, pickBy, split, toLower} from 'lodash';
 import {ReactElement} from 'react';
 import {iconCmp} from './impl/IconCmp';
 import {enhanceFaClasses, iconHtml} from './impl/IconHtml';
+import {SetRequired} from 'type-fest';
 
 export interface IconProps extends HoistProps, Partial<Omit<FontAwesomeIconProps, 'ref'>> {
     /** Name of the icon in FontAwesome. */
@@ -96,7 +97,7 @@ export const Icon = {
      * ```
      * and then pass its string name to this factory: `icon({iconName: 'dream-icon'})`
      */
-    icon(opts: IconProps & {iconName: IconName}): any {
+    icon(opts: SetRequired<IconProps, 'iconName'>): any {
         let {
             iconName,
             prefix = 'far',
