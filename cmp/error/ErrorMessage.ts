@@ -97,14 +97,12 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
             ...rest,
             item: XH.isMobileApp
                 ? mobileErrorMessageImpl({
-                      error,
                       message,
                       title,
                       actionButtonProps,
                       detailsButtonProps
                   })
                 : desktopErrorMessageImpl({
-                      error,
                       message,
                       title,
                       actionButtonProps,
