@@ -14,7 +14,7 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {every, isEmpty} from 'lodash';
 import {ManageDialogModel} from './ManageDialogModel';
 
-export const viewMultiPanel = hoistCmp.factory<ManageDialogModel>({
+export const viewMultiPanel = hoistCmp.factory({
     model: uses(() => ManageDialogModel),
     render({model}) {
         const views = model.selectedViews;

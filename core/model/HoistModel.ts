@@ -222,4 +222,4 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     }
 }
 
-export type HoistModelClass<T extends HoistModel> = Class<T>;
+export type HoistModelClass<T extends HoistModel> = Class<T> | {prototype: Pick<T, keyof T>};

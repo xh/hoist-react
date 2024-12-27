@@ -255,7 +255,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
      * Use the static {@link createAsync} factory to create an instance of this model and await its
      * initial load before binding to persistable components.
      */
-    constructor({
+    private constructor({
         type,
         instance = 'default',
         typeDisplayName,
