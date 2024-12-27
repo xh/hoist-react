@@ -11,7 +11,7 @@ import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, Intent, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {dateIs, required} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {AlertBannerSpec} from '@xh/hoist/svc';
+import {AlertBannerIconName, AlertBannerSpec} from '@xh/hoist/svc';
 import {isEqual, isMatch, sortBy, without} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
@@ -61,7 +61,7 @@ export class AlertBannerModel extends HoistModel {
         return ['primary', 'success', 'warning', 'danger'];
     }
 
-    get iconOptions() {
+    get iconOptions(): AlertBannerIconName[] {
         return [
             'bullhorn',
             'check-circle',
