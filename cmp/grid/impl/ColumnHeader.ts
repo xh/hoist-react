@@ -199,10 +199,7 @@ class ColumnHeaderModel extends HoistModel {
         this.availableSorts = this.parseAvailableSorts();
 
         if (!XH.isMobileApp && xhColumn?.filterable && filterModel?.getFieldSpec(xhColumn.field)) {
-            this.columnHeaderFilterModel = new ColumnHeaderFilterModel({
-                filterModel,
-                column: xhColumn
-            });
+            this.columnHeaderFilterModel = new ColumnHeaderFilterModel(filterModel, xhColumn);
             this.enableFilter = true;
         } else {
             this.isAgFiltered = agColumn.isFilterActive();

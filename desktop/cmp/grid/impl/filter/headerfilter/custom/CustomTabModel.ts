@@ -8,14 +8,14 @@ import {HoistModel, XH} from '@xh/hoist/core';
 import {CompoundFilterOperator, FilterLike} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {compact, isEmpty} from 'lodash';
-import {ColumnHeaderFilterModel} from '../ColumnHeaderFilterModel';
+import {HeaderFilterModel} from '../HeaderFilterModel';
 
 import {CustomRowModel} from './CustomRowModel';
 
 export class CustomTabModel extends HoistModel {
     override xhImpl = true;
 
-    headerFilterModel: ColumnHeaderFilterModel;
+    headerFilterModel: HeaderFilterModel;
 
     @bindable op: CompoundFilterOperator = 'AND';
     @observable.ref rowModels: CustomRowModel[] = [];
@@ -42,7 +42,7 @@ export class CustomTabModel extends HoistModel {
         return this.headerFilterModel.columnFilters;
     }
 
-    constructor(headerFilterModel: ColumnHeaderFilterModel) {
+    constructor(headerFilterModel: HeaderFilterModel) {
         super();
         makeObservable(this);
         this.headerFilterModel = headerFilterModel;

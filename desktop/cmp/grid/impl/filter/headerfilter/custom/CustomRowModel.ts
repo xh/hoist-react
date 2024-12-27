@@ -6,7 +6,7 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
-import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
+import {HeaderFilterModel} from '../HeaderFilterModel';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {isArray, isNil} from 'lodash';
 import {CustomTabModel} from './CustomTabModel';
@@ -20,7 +20,7 @@ export class CustomRowModel extends HoistModel {
     override xhImpl = true;
 
     parentModel: CustomTabModel;
-    headerFilterModel: ColumnHeaderFilterModel;
+    headerFilterModel: HeaderFilterModel;
 
     @bindable op: OperatorOptionValue;
     @bindable inputVal: any;
