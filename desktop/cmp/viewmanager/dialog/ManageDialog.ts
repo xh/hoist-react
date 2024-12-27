@@ -24,7 +24,7 @@ import {viewPanel} from './ViewPanel';
 /**
  * Default management dialog for ViewManager.
  */
-export const manageDialog = hoistCmp.factory<ManageDialogModel>({
+export const manageDialog = hoistCmp.factory({
     displayName: 'ManageDialog',
     className: 'xh-view-manager__manage-dialog',
     model: uses(() => ManageDialogModel),
