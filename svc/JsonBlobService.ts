@@ -5,7 +5,7 @@
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistService, LoadSpec, PlainObject, XH} from '@xh/hoist/core';
-import {isUndefined, omitBy} from 'lodash';
+import {pick} from 'lodash';
 
 export interface JsonBlob {
     /** Either null for private blobs or special token "*" for globally shared blobs. */
@@ -89,17 +89,32 @@ export class JsonBlobService extends HoistService {
     }
 
     /** Modify mutable properties of an existing JSONBlob, as identified by its unique token. */
-    async updateAsync(
-        token: string,
-        {acl, description, meta, name, owner, value}: Partial<JsonBlob>
-    ): Promise<JsonBlob> {
-        const update = omitBy({acl, description, meta, name, owner, value}, isUndefined);
+    async updateAsync(token: string, update: Partial<JsonBlob>): Promise<JsonBlob> {
+        update = pick(update, ['acl', 'description', 'meta', 'name', 'owner', 'value']);
         return XH.fetchJson({
             url: 'xh/updateJsonBlob',
-            params: {
-                token,
-                update: JSON.stringify(update)
-            }
+            params: {token, update: JSON.stringify(update)}
+        });
+    }
+
+    /** Create or update a blob for a user with the existing type and name. */
+    async createOrUpdateAsync(
+        type: string,
+        name: string,
+        data: Partial<JsonBlob>
+    ): Promise<JsonBlob> {
+        const update = pick(data, ['acl', 'description', 'meta', 'value']);
+        return XH.fetchJson({
+            url: 'xh/createOrUpdateJsonBlob',
+            params: {type, name, update: JSON.stringify(update)}
+        });
+    }
+
+    /** Find a blob owned by this user with a specific type and name.  If none exists, return null.  */
+    async findAsync(type: string, name: string): Promise<JsonBlob> {
+        return XH.fetchJson({
+            url: 'xh/findJsonBlob',
+            params: {type, name}
         });
     }
 

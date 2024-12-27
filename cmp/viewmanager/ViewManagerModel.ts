@@ -10,26 +10,22 @@ import {
     ExceptionHandlerOptions,
     HoistModel,
     LoadSpec,
-    PersistableState,
-    PersistenceProvider,
-    PersistOptions,
     PlainObject,
     TaskObserver,
     Thunkable,
     XH
 } from '@xh/hoist/core';
-import type {ViewManagerProvider} from '@xh/hoist/core';
+import type {ViewManagerProvider, ReactionSpec} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
-import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable, comparer, runInAction} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
-import {find, isEmpty, isEqual, isNil, isObject, lowerCase, pickBy} from 'lodash';
-import {runInAction} from 'mobx';
+import {find, isEqual, isNil, isNull, isUndefined, lowerCase} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
-import {ViewToBlobApi, ViewCreateSpec, ViewUpdateSpec} from './ViewToBlobApi';
+import {DataAccess, ViewCreateSpec, ViewUpdateSpec, ViewUserState} from './DataAccess';
 
 export interface ViewManagerConfig {
     /**
@@ -79,9 +75,6 @@ export interface ViewManagerConfig {
      */
     manageGlobal?: Thunkable<boolean>;
 
-    /** Used to persist the user's state. */
-    persistWith?: ViewManagerPersistOptions;
-
     /**
      * Required discriminator for the particular class of views to be loaded and managed by this
      * model. Set to something descriptive and specific enough to be identifiable and allow for
@@ -89,6 +82,13 @@ export interface ViewManagerConfig {
      * `tradeBlotterDashboard`.
      */
     type: string;
+
+    /**
+     * Optional sub-discriminator for the particular location in your app this instance of the
+     * view manager appears in. A particular currentView and pendingValue will be maintained by
+     * instance, but all other options, and the available library of views will be shared by type.
+     */
+    instance?: string;
 
     /**
      * Optional user-facing display name for the view type, displayed in the ViewManager menu
@@ -100,14 +100,6 @@ export interface ViewManagerConfig {
      * Optional user-facing display name for describing global views. Defaults to 'global'
      */
     globalDisplayName?: string;
-}
-
-export interface ViewManagerPersistOptions extends PersistOptions {
-    /** True to persist pinning preferences or provide specific PersistOptions. (Default true) */
-    persistPinning?: boolean | PersistOptions;
-
-    /** True to include pending value or provide specific PersistOptions. (Default false) */
-    persistPendingValue?: boolean | PersistOptions;
 }
 
 /**
@@ -146,8 +138,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     /** Immutable configuration for this model. */
-    declare persistWith: ViewManagerPersistOptions;
     readonly type: string;
+    readonly instance: string;
     readonly typeDisplayName: string;
     readonly globalDisplayName: string;
     readonly enableAutoSave: boolean;
@@ -175,7 +167,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
      * True if user has opted-in to automatically saving changes to personal views (if auto-save
      * generally available as per `enableAutoSave`).
      */
-    @bindable autoSave = true;
+    @bindable autoSave = false;
 
     /**
      * TaskObserver linked to {@link selectViewAsync}. If a change to the active view is likely to
@@ -202,7 +194,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     providers: ViewManagerProvider<any>[] = [];
 
     /** Data access for persisting views. */
-    private api: ViewToBlobApi<T>;
+    private dataAccess: DataAccess<T>;
 
     /** Last time changes were pushed to linked persistence providers */
     private lastPushed: number = null;
@@ -265,7 +257,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
      */
     private constructor({
         type,
-        persistWith,
+        instance = 'default',
         typeDisplayName,
         globalDisplayName = 'global',
         manageGlobal = false,
@@ -285,9 +277,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         );
 
         this.type = type;
+        this.instance = instance;
         this.typeDisplayName = lowerCase(typeDisplayName ?? genDisplayName(type));
         this.globalDisplayName = globalDisplayName;
-        this.persistWith = persistWith;
         this.manageGlobal = executeIfFunction(manageGlobal) ?? false;
         this.enableDefault = enableDefault;
         this.enableGlobal = enableGlobal;
@@ -303,20 +295,23 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             message: `Saving ${this.typeDisplayName}...`
         });
 
-        this.api = new ViewToBlobApi(this);
+        this.dataAccess = new DataAccess(this);
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
+        const {dataAccess, view} = this;
         try {
-            // 1) Update all view info
-            const views = await this.api.fetchViewInfosAsync();
+            // 1) Update views and related state
+            const {views, state} = await dataAccess.fetchDataAsync();
             if (loadSpec.isStale) return;
-            runInAction(() => (this.views = views));
+            runInAction(() => {
+                this.views = views;
+                this.userPinned = state.userPinned;
+                this.autoSave = state.autoSave;
+            });
 
-            // 2) Update active view if needed.
-            const {view} = this;
+            // potentially fast-forward current view.
             if (!view.isDefault) {
-                // Reload view if can be fast-forwarded. Otherwise, leave as is for save/saveAs.
                 const latestInfo = find(views, {token: view.token});
                 if (latestInfo && latestInfo.lastUpdated > view.lastUpdated) {
                     this.loadViewAsync(latestInfo, this.pendingValue);
@@ -329,20 +324,24 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     async selectViewAsync(info: ViewInfo): Promise<void> {
-        if (this.isValueDirty) {
-            if (this.isViewAutoSavable) await this.maybeAutoSaveAsync();
-            if (this.isValueDirty && !(await this.confirmDiscardChangesAsync())) return;
+        // ensure any pending auto-save gets completed
+        if (this.isValueDirty && this.isViewAutoSavable) {
+            await this.maybeAutoSaveAsync();
+        }
+
+        // if still dirty, require confirm
+        if (this.isValueDirty && this.view.isOwned && !(await this.confirmDiscardChangesAsync())) {
+            return;
         }
 
         await this.loadViewAsync(info).catch(e => this.handleException(e));
     }
 
     async saveAsAsync(spec: ViewCreateSpec): Promise<void> {
-        const view = await this.api.createViewAsync({...spec, value: this.getValue()});
+        const view = await this.dataAccess.createViewAsync({...spec, value: this.getValue()});
         this.noteSuccess(`Created ${view.typedName}`);
         this.userPin(view.info);
         this.setAsView(view);
-        this.refreshAsync();
     }
 
     //------------------------
@@ -353,12 +352,12 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             this.logError('Unexpected conditions for call to save, skipping');
             return;
         }
-        const {pendingValue, view, api} = this;
+        const {pendingValue, view, dataAccess} = this;
         try {
             if (!(await this.maybeConfirmSaveAsync(view, pendingValue))) {
                 return;
             }
-            const updated = await api
+            const updated = await dataAccess
                 .updateViewValueAsync(view, pendingValue.value)
                 .linkTo(this.saveTask);
 
@@ -441,18 +440,18 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     /** Update all aspects of a view's metadata.*/
     async updateViewInfoAsync(view: ViewInfo, updates: ViewUpdateSpec): Promise<View<T>> {
-        return this.api.updateViewInfoAsync(view, updates);
+        return this.dataAccess.updateViewInfoAsync(view, updates);
     }
 
     /** Promote a view to global visibility/ownership status. */
     async makeViewGlobalAsync(view: ViewInfo): Promise<View<T>> {
-        return this.api.makeViewGlobalAsync(view);
+        return this.dataAccess.makeViewGlobalAsync(view);
     }
 
     async deleteViewsAsync(toDelete: ViewInfo[]): Promise<void> {
         let exception;
         try {
-            await this.api.deleteViewsAsync(toDelete);
+            await this.dataAccess.deleteViewsAsync(toDelete);
         } catch (e) {
             exception = e;
         }
@@ -471,38 +470,86 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     // Implementation
     //------------------
     private async initAsync() {
+        let {dataAccess, pendingValueStorageKey} = this,
+            initialState;
+
         try {
-            const views = await this.api.fetchViewInfosAsync();
-            runInAction(() => (this.views = views));
+            // 1) Initialize views and related state
+            const {views, state} = await dataAccess.fetchDataAsync();
+            initialState = state;
+            runInAction(() => {
+                this.views = views;
+                this.userPinned = state.userPinned;
+                this.autoSave = state.autoSave;
+                this.pendingValue = XH.sessionStorageService.get(pendingValueStorageKey);
+            });
 
-            if (this.persistWith) {
-                this.initPersist(this.persistWith);
-                await when(() => !this.selectTask.isPending);
+            // 2) Initialize/choose initial view.  Null is ok, and will yield default.
+            let initialView,
+                initialTkn = initialState.currentView;
+            if (isUndefined(initialTkn)) {
+                initialView = this.initialViewSpec?.(views);
+            } else if (!isNull(initialTkn)) {
+                initialView = find(views, {token: initialTkn}) ?? this.initialViewSpec?.(views);
+            } else {
+                initialView = null;
             }
 
-            // If the initial view not initialized from persistence, assign it.
-            if (!this.view) {
-                await this.loadViewAsync(this.initialViewSpec?.(views), this.pendingValue);
-            }
+            await this.loadViewAsync(initialView, this.pendingValue);
         } catch (e) {
-            // Always ensure at least default view is installed.
-            if (!this.view) this.loadViewAsync(null, this.pendingValue);
-
+            // Always ensure at least default view is installed (other state defaults are fine)
+            this.loadViewAsync(null, this.pendingValue);
             this.handleException(e, {showAlert: false, logOnServer: true});
         }
 
-        this.addReaction({
+        this.addReaction(
+            this.pendingValueReaction(),
+            this.autoSaveReaction(),
+            ...this.stateReactions(initialState)
+        );
+    }
+
+    private pendingValueReaction(): ReactionSpec {
+        return {
+            track: () => this.pendingValue,
+            run: v => XH.sessionStorageService.set(this.pendingValueStorageKey, v)
+        };
+    }
+
+    private autoSaveReaction(): ReactionSpec {
+        return {
             track: () => [this.pendingValue, this.autoSave],
             run: () => this.maybeAutoSaveAsync(),
-            debounce: 5 * SECONDS
-        });
+            debounce: 2 * SECONDS
+        };
+    }
+
+    private stateReactions(initialState: ViewUserState): ReactionSpec[] {
+        const {dataAccess} = this;
+        return [
+            {
+                track: () => this.userPinned,
+                run: userPinned => dataAccess.updateStateAsync({userPinned}),
+                equals: comparer.structural,
+                debounce: 2 * SECONDS
+            },
+            {
+                track: () => this.autoSave,
+                run: autoSave => dataAccess.updateStateAsync({autoSave})
+            },
+            {
+                track: () => this.view?.token,
+                run: tkn => dataAccess.updateStateAsync({currentView: tkn}),
+                fireImmediately: this.view?.token !== initialState.currentView
+            }
+        ];
     }
 
     private async loadViewAsync(
         info: ViewInfo,
         pendingValue: PendingValue<T> = null
     ): Promise<void> {
-        return this.api
+        return this.dataAccess
             .fetchViewAsync(info)
             .thenAction(latest => {
                 this.setAsView(latest, pendingValue?.token == info?.token ? pendingValue : null);
@@ -513,10 +560,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     private async maybeAutoSaveAsync() {
-        const {pendingValue, isViewAutoSavable, view, api} = this;
+        const {pendingValue, isViewAutoSavable, view, dataAccess} = this;
         if (isViewAutoSavable && pendingValue) {
             try {
-                const updated = await api
+                const updated = await dataAccess
                     .updateViewValueAsync(view, pendingValue.value)
                     .linkTo(this.saveTask);
 
@@ -551,6 +598,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         XH.successToast(msg);
     }
 
+    private get pendingValueStorageKey(): string {
+        return `${this.type}_${this.instance}`;
+    }
+
     /**
      * Stringify and parse to ensure that any value set here is valid, serializable JSON.
      */
@@ -575,7 +626,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     private async maybeConfirmSaveAsync(view: View, pendingValue: PendingValue<T>) {
         // Get latest from server for reference
-        const latest = await this.api.fetchViewAsync(view.info),
+        const latest = await this.dataAccess.fetchViewAsync(view.info),
             isGlobal = latest.isGlobal,
             isStale = latest.lastUpdated > pendingValue.baseUpdated;
         if (!isStale && !isGlobal) return true;
@@ -611,86 +662,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             cancelProps: {
                 text: 'Cancel'
             }
-        });
-    }
-
-    //------------------
-    // Persistence
-    //------------------
-    private initPersist(options: ViewManagerPersistOptions) {
-        const {
-            persistPinning = true,
-            persistPendingValue = false,
-            path = 'viewManager',
-            ...rootPersistWith
-        } = options;
-
-        // Pinning potentially in dedicated location
-        if (persistPinning) {
-            const opts = isObject(persistPinning) ? persistPinning : rootPersistWith;
-            PersistenceProvider.create({
-                persistOptions: {path: `${path}.pinning`, ...opts},
-                target: {
-                    getPersistableState: () => new PersistableState(this.userPinned),
-                    setPersistableState: ({value}) => {
-                        const {views} = this;
-                        this.userPinned = !isEmpty(views) // Clean state iff views loaded!
-                            ? pickBy(value, (_, tkn) => views.some(v => v.token === tkn))
-                            : value;
-                    }
-                },
-                owner: this
-            });
-        }
-
-        // AutoSave, potentially in core location.
-        if (this.enableAutoSave) {
-            PersistenceProvider.create({
-                persistOptions: {path: `${path}.autoSave`, ...rootPersistWith},
-                target: {
-                    getPersistableState: () => new PersistableState(this.autoSave),
-                    setPersistableState: ({value}) => (this.autoSave = value)
-                },
-                owner: this
-            });
-        }
-
-        // Pending Value, potentially in dedicated location
-        // On hydration, stash away for one time use when hydrating view itself below
-        if (persistPendingValue) {
-            const opts = isObject(persistPendingValue) ? persistPendingValue : rootPersistWith;
-            PersistenceProvider.create({
-                persistOptions: {path: `${path}.pendingValue`, ...opts},
-                target: {
-                    getPersistableState: () => new PersistableState(this.pendingValue),
-                    setPersistableState: ({value}) => {
-                        // Only accept this during initialization!
-                        if (!this.view) this.pendingValue = value;
-                    }
-                },
-                owner: this
-            });
-        }
-
-        // View, in core location
-        PersistenceProvider.create({
-            persistOptions: {path: `${path}.view`, ...rootPersistWith},
-            target: {
-                // View could be null, just before initialization.
-                getPersistableState: () => new PersistableState(this.view?.token),
-                setPersistableState: async ({value: token}) => {
-                    // Requesting available view -- load it with any init pending val.
-                    const viewInfo = token ? find(this.views, {token}) : null;
-                    if (viewInfo || !token) {
-                        try {
-                            await this.loadViewAsync(viewInfo, this.pendingValue);
-                        } catch (e) {
-                            this.logError('Failure loading persisted view', e);
-                        }
-                    }
-                }
-            },
-            owner: this
         });
     }
 }
