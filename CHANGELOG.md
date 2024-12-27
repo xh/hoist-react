@@ -40,6 +40,11 @@
 * Added workaround for problematic use of SASS-syntax-in-CSS shipped by `react-dates`. This began
   throwing "This function isn't allowed in plain CSS" with latest version of sass/sass-loader.
 
+### ⚙️ Typescript API Adjustments
+
+* Improved accuracy of `IconProps` interface, with use of the `IconName` and `IconPrefix` types
+  provided by FontAwesome.
+
 ## v70.0.0 - 2024-11-15
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - changes to advanced persistence APIs)

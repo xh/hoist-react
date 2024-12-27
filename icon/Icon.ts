@@ -4,29 +4,23 @@
  *
  * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {IconName} from '@fortawesome/fontawesome-svg-core';
 import {FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
 import {div} from '@xh/hoist/cmp/layout';
+import {HoistProps, Intent, Thunkable} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {last, pickBy, split, toLower} from 'lodash';
+import {ReactElement} from 'react';
 import {iconCmp} from './impl/IconCmp';
 import {enhanceFaClasses, iconHtml} from './impl/IconHtml';
-import {ReactElement} from 'react';
-import {HoistProps, Intent, Thunkable} from '@xh/hoist/core';
 
 export interface IconProps extends HoistProps, Partial<Omit<FontAwesomeIconProps, 'ref'>> {
     /** Name of the icon in FontAwesome. */
-    iconName?: string;
+    iconName?: IconName;
 
-    /**
-     * Prefix / weight of the icon (or "fab" if your app has imported the free-brand-icons pkg).
-     *   - far - Regular
-     *   - fas - Solid
-     *   - fal - Light
-     *   - fat - Thin (yes, unfortunate)
-     *   - fab - Brand (requires optional import, see Toolbox)
-     */
-    prefix?: 'far' | 'fas' | 'fal' | 'fat' | 'fab';
+    /** Weight / family style of the icon. */
+    prefix?: HoistIconPrefix;
 
     intent?: Intent;
 
@@ -60,26 +54,49 @@ export interface IconProps extends HoistProps, Partial<Omit<FontAwesomeIconProps
 }
 
 /**
+ * Icon props after defaults applied by Hoist factory methods.
+ * @internal
+ */
+export interface ResolvedIconProps extends IconProps {
+    iconName: IconName;
+    prefix: HoistIconPrefix;
+}
+
+/** Supported FA prefixes, used to request a family-specific variant of an icon. */
+export type HoistIconPrefix =
+    | 'far' // regular
+    | 'fas' // solid
+    | 'fal' // light
+    | 'fat' // thin
+    | 'fab'; // brands (requires optional import, see Toolbox)
+
+/**
  * Singleton class to provide factories for creating standard FontAwesome-based icons.
  *
- * Currently we are importing the licensed "pro" library with additional icons - note this requires
- * fetching the FA npm package via a registry URL w/license token.
+ * Hoist imports the licensed "pro" library with additional icons - note this requires fetching the
+ * FA npm package via a registry URL w/license token.
  *
  * See https://fontawesome.com/pro#license.
  */
 export const Icon = {
     /**
-     * Return a standard Hoist FontAwesome-based icon.
+     * Return a Hoist element wrapper around a FontAwesome-based icon.
      *
-     * Note that in order to use an icon with this factory, its definition must have been already
-     * imported and registered with FontAwesome via a call to library.add().
+     * Note that for an app to use an icon with this factory, its definition must have been already
+     * imported and registered with FontAwesome. Apps will find many/most of the icons they need
+     * pre-registered and enumerated by the Hoist factories below. Favor those ready-made factories
+     * wherever possible for consistency across and within apps.
      *
-     * Applications will often not need to use this factory directly when creating specific
-     * icons enumerated by Hoist.  In that case use the supplied factories on the Icon class
-     * directly (e.g. Icon.add(), Icon.book(), etc.) These factories will delegate to this method,
-     * with the name of a pre-imported icon preset.
+     * If the FA icon of your dreams is not available, however, you can do a one-time import within
+     * your app bootstrap code, eg:
+     * ```
+     *   import {library} from '@fortawesome/fontawesome-svg-core';
+     *   import {faDreamIcon} from '@fortawesome/pro-regular-svg-icons';
+     *   library.add(faDreamIcon);
+     * ```
+     * and then pass its string name to this factory: `icon({iconName: 'dream-icon'})`
      */
-    icon(opts?: IconProps): any {
+    icon(opts: IconProps & {iconName: IconName}): any {
         let {
             iconName,
             prefix = 'far',
@@ -908,30 +925,30 @@ export const Icon = {
 };
 
 /**
- * Translate an icon into an html <svg/> tag.
+ * Translate an icon into an HTML `<svg>` tag.
  *
- * Not typically used by applications.  Applications that need html for an icon, e.g.
- * for a grid column renderer should use the 'asHtml' flag on the Icon factory functions
- * instead.
+ * Not typically used by applications. Applications that need HTML for an icon should use the
+ * {@link IconProps.asHtml} flag on the Icon factory functions instead.
  *
- * @param iconElem - react element representing a Hoist Icon component.
- *      This must be element created by Hoist's built-in Icon factories.
- * @returns  html of the <svg> tag representing the icon.
+ * @param iconElem - React element representing a Hoist Icon component.
+ *      Must be created by Hoist's built-in Icon factories.
+ * @returns HTML string for the icon's `<svg>` tag.
+ * @internal
  */
 export function convertIconToHtml(iconElem: ReactElement): string {
     throwIf(
         !(iconElem?.type as any)?.isHoistComponent,
         'Icon not provided, or not created by a Hoist Icon factory - cannot convert to HTML/SVG.'
     );
-    return iconHtml(iconElem.props);
+    return iconHtml(iconElem.props as ResolvedIconProps);
 }
 
 /**
- * Serialize an icon into a form that can be persisted.
+ * Serialize an icon into a JSON format with relevant props for persistence.
  *
- * @param iconElem - react element representing a icon component.
- *      This must be an element created by Hoist's built-in Icon factories.
- * @returns json representation of icon.
+ * @param iconElem - React element representing a Hoist Icon component.
+ *      Must be created by Hoist's built-in Icon factories.
+ * @returns JSON representation of icon.
  */
 export function serializeIcon(iconElem: ReactElement): any {
     throwIf(
@@ -939,16 +956,14 @@ export function serializeIcon(iconElem: ReactElement): any {
         'Icon not provided, or not created by a Hoist Icon factory - cannot serialize.'
     );
 
-    return pickBy(iconElem.props);
+    return pickBy(iconElem.props as ResolvedIconProps);
 }
 
 /**
- * Deserialize an icon.
+ * Deserialize an icon - the inverse operation of {@link serializeIcon}.
  *
- * This is the inverse operation of serializeIcon().
- *
- * @param iconDef - json representation of icon, produced by serializeIcon.
- * @returns react element representing a FontAwesome icon component.
+ * @param iconDef - JSON  representation of icon, produced by serializeIcon.
+ * @returns React element representing a Hoist Icon component.
  *      This is the form of element created by Hoist's built-in Icon class factories.
  */
 export function deserializeIcon(iconDef: any): ReactElement | string {
