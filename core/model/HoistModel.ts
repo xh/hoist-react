@@ -221,6 +221,6 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     }
 }
 
-export interface HoistModelClass<T extends HoistModel> extends Function {
-    prototype: T;
+export interface HoistModelClass<T extends HoistModel> {
+    new (...args: any[]): T;
 }

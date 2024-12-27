@@ -30,7 +30,7 @@ import {
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, isEmpty, isFinite} from 'lodash';
-import {CSSProperties, ReactElement} from 'react';
+import {CSSProperties, ReactElement, KeyboardEvent} from 'react';
 
 /**
  * Component to indicate and control the active tab of a TabContainer.
