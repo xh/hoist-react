@@ -55,7 +55,7 @@ export const restGridToolbar = hoistCmp.factory({
                 omit: !model.gridModel.enableExport
             }),
             refreshButton({
-                model,
+                target: model,
                 omit: !model.showRefreshButton
             })
         );

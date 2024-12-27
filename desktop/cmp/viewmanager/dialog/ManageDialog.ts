@@ -74,7 +74,7 @@ const selectorPanel = hoistCmp.factory<ManageDialogModel>({
                     onFilterChange: f => (model.filter = f)
                 }),
                 filler(),
-                refreshButton({model})
+                refreshButton({target: model})
             ]
         });
     }
