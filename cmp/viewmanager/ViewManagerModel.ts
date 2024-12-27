@@ -84,9 +84,9 @@ export interface ViewManagerConfig {
     type: string;
 
     /**
-     * Optional sub-discriminator for the particular location in your app this instance of the view
-     * manager appears. A particular currentView and pendingValue will be maintained by instance,
-     * but all other options, and library state will be shared by type.
+     * Optional sub-discriminator for the particular location in your app this instance of the
+     * view manager appears in. A particular currentView and pendingValue will be maintained by
+     * instance, but all other options, and the available library of views will be shared by type.
      */
     instance?: string;
 
@@ -484,7 +484,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 this.pendingValue = XH.sessionStorageService.get(pendingValueStorageKey);
             });
 
-            // 2 Initialize/choose initial view.  Null is ok, and will yield default.
+            // 2) Initialize/choose initial view.  Null is ok, and will yield default.
             let initialView,
                 initialTkn = initialState.currentView;
             if (isUndefined(initialTkn)) {
