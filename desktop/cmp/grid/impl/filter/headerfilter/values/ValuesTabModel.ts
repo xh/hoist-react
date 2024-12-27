@@ -101,7 +101,6 @@ export class ValuesTabModel extends HoistModel {
     @action
     setRecsChecked(isChecked: boolean, values: any[]) {
         values = castArray(values);
-        console.log(values);
         this.pendingValues = isChecked
             ? uniq([...this.pendingValues, ...values])
             : without(this.pendingValues, ...values);
@@ -226,10 +225,7 @@ export class ValuesTabModel extends HoistModel {
                             disabled: gridModel.store.empty,
                             displayUnsetState: true,
                             value: this.allVisibleRecsChecked,
-                            onChange: () => {
-                                console.log('somebody calling me');
-                                this.toggleAllRecsChecked();
-                            }
+                            onChange: () => this.toggleAllRecsChecked()
                         });
                     },
                     width: 28,

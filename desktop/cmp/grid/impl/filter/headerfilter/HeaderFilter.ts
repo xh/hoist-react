@@ -13,7 +13,6 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {stopPropagation} from '@xh/hoist/utils/js';
-import './ColumnHeaderFilter.scss';
 import {HeaderFilterModel} from './HeaderFilterModel';
 
 /**
