@@ -72,7 +72,8 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
         className,
         ...props
     }) {
-        const {accept, disabled, maxCount, maxFileSize, minFileSize, maskOnDrag} = model,
+        const {accept, disabled, maxCount, maxFileSize, minFileSize, maskOnDrag, maskOnDisabled} =
+                model,
             dropzoneItem =
                 isEmpty(model.files) && emptyDisplay != null
                     ? elementFromContent(emptyDisplay)
@@ -96,7 +97,10 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                     ),
                     items: [
                         dropzoneItem,
-                        mask({isDisplayed: isDragActive, omit: !maskOnDrag}),
+                        mask({
+                            isDisplayed:
+                                (isDragActive && maskOnDrag) || (disabled && maskOnDisabled)
+                        }),
                         input({...getInputProps()})
                     ],
                     ...getRootProps(),
@@ -119,16 +123,14 @@ const defaultFileDisplay = hoistCmp.factory({
 const defaultEmptyDisplay = hoistCmp.factory({
     model: uses(FileChooserModel),
     render({model}) {
+        const {placeholderText, browseButtonConfig, placeholderBrowseButton} = model;
         return vframe(
             placeholder(
-                model.placeholderText,
+                placeholderText,
                 vspacer(),
                 button({
-                    text: 'Browse',
-                    onClick: () => model.openFileBrowser(),
-                    intent: 'primary',
-                    outlined: true,
-                    disabled: model.disabled
+                    ...browseButtonConfig,
+                    omit: !placeholderBrowseButton
                 })
             )
         );

@@ -38,6 +38,9 @@ export interface FileChooserConf {
     /** Mask the dropzone when dragging. Defaults to true. */
     maskOnDrag?: boolean;
 
+    /** Mask the dropzone when disabled. Defaults to true. */
+    maskOnDisabled?: boolean;
+
     /**
      * Config to change file rejection toast behavior. Primarily used to change timeout,
      * intent, and icon. Toast message is controlled by the `rejectMessage` property.
@@ -45,7 +48,10 @@ export interface FileChooserConf {
     rejectToastConf?: Partial<ToastSpec>;
 
     /** Text to display in the default empty display. */
-    placeholderText?: string;
+    placeholderText?: ReactNode;
+
+    /** Include a button to open the file browser in the empty placeholder. Defaults to true. */
+    placeholderBrowseButton?: boolean;
 
     /** Config for the browse button in the default empty display. */
     browseButtonConfig?: ButtonProps;
@@ -63,7 +69,9 @@ export class FileChooserModel extends HoistModel {
     readonly maxFileSize: number;
     readonly minFileSize: number;
     readonly maskOnDrag: boolean;
-    readonly placeholderText: string;
+    readonly maskOnDisabled: boolean;
+    readonly placeholderText: ReactNode;
+    readonly placeholderBrowseButton: boolean;
     readonly browseButtonConfig: Partial<ButtonProps>;
 
     dropzoneRef = createObservableRef<DropzoneRef>();
@@ -81,7 +89,9 @@ export class FileChooserModel extends HoistModel {
         this.accept = this.getMimesByExt(params.accept);
         this.rejectMessage = withDefault(params.rejectMessage, this.defaultRejectMessage);
         this.maskOnDrag = withDefault(params.maskOnDrag, true);
+        this.maskOnDisabled = withDefault(params.maskOnDisabled, true);
         this.placeholderText = withDefault(params.placeholderText, 'Drag and drop files here');
+        this.placeholderBrowseButton = withDefault(params.placeholderBrowseButton, true);
         this.browseButtonConfig = {
             text: 'Browse',
             intent: 'primary',
