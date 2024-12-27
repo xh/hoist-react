@@ -32,6 +32,7 @@
 
 * Fixed sizing and position of mobile `TabContainer` switcher, particularly when the switcher is
   positioned with `top` orientation.
+* Fixed styling of `ButtonGroup` in vertical orientations.
 
 ### ⚙️ Technical
 

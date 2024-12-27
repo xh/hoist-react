@@ -56,31 +56,10 @@
         padding: var(--xh-pad-half-px) var(--xh-pad-px);
       }
 
-      // Standard and outlined have borders - remove standard radius in between adjacent buttons so
-      // they seamlessly combine their inner borders.
-      border-radius: 0;
-      &.xh-button--standard,
-      &.xh-button--outlined {
-        &:first-child {
-          border-bottom-left-radius: var(--xh-button-border-radius-px);
-          border-top-left-radius: var(--xh-button-border-radius-px);
-        }
-
-        &:last-child {
-          border-bottom-right-radius: var(--xh-button-border-radius-px);
-          border-top-right-radius: var(--xh-button-border-radius-px);
-        }
-      }
-
       // Minimal has no borders - radius is made visible by background shading when hovered or
       // pressed, and looks more natural without any radius.
       &.xh-button--minimal {
         border-radius: 0;
-      }
-
-      // Outlined buttons should avoid doubled-up inner borders.
-      &.xh-button--outlined:not(:last-child) {
-        border-right: none;
       }
 
       &.xh-button--enabled {
@@ -90,6 +69,54 @@
         &:focus {
           outline: var(--xh-focus-outline) !important;
           outline-offset: var(--xh-focus-outline-offset-px) !important;
+        }
+      }
+    }
+
+    // Horizontal mode only styles
+    &:not(.bp5-vertical) {
+      .xh-button.bp5-button {
+        // Standard and outlined have borders - remove standard radius in between adjacent buttons so
+        // they seamlessly combine their inner borders.
+        border-radius: 0;
+        &.xh-button--standard,
+        &.xh-button--outlined {
+          &:first-child {
+            border-radius: var(--xh-button-border-radius-px) 0 0 var(--xh-button-border-radius-px);
+          }
+
+          &:last-child {
+            border-radius: 0 var(--xh-button-border-radius-px) var(--xh-button-border-radius-px) 0;
+          }
+        }
+
+        // Outlined buttons should avoid doubled-up inner borders.
+        &.xh-button--outlined:not(:last-child) {
+          border-right: none;
+        }
+      }
+    }
+
+    // Vertical mode only styles
+    &.bp5-vertical {
+      .xh-button.bp5-button {
+        // Standard and outlined have borders - remove standard radius in between adjacent buttons so
+        // they seamlessly combine their inner borders.
+        border-radius: 0;
+        &.xh-button--standard,
+        &.xh-button--outlined {
+          &:first-child {
+            border-radius: var(--xh-button-border-radius-px) var(--xh-button-border-radius-px) 0 0;
+          }
+
+          &:last-child {
+            border-radius: 0 0 var(--xh-button-border-radius-px) var(--xh-button-border-radius-px);
+          }
+        }
+
+        // Outlined buttons should avoid doubled-up inner borders.
+        &.xh-button--outlined:not(:last-child) {
+          border-bottom: none;
         }
       }
     }
