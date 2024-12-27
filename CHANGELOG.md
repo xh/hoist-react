@@ -14,6 +14,7 @@
 * `TreeMap` and `SplitTreeMap` are now cross-platform and can be used in mobile applications.
   Their import paths have changed from `@xh/hoist/desktop/cmp/treemap` to `@xh/hoist/cmp/treemap`.
 * The `RefreshButton` `model` prop has been renamed `target` for clarity and consistency.
+
 ### 🎁 New Features
 
 * Major Improvements to ViewManager component
@@ -26,6 +27,11 @@
   tab local data across reloads.
 * Added support for `AuthZeroClientConfig.audience` to support improved configuration of Auth0 OAuth
   clients requesting access tokens, covering cases when third-party cookies are blocked.
+
+### 🐞 Bug Fixes
+
+* Fixed sizing and position of mobile `TabContainer` switcher, particularly when the switcher is
+  positioned with `top` orientation.
 
 ### ⚙️ Technical
 

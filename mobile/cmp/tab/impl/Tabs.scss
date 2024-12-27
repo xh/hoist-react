@@ -26,6 +26,9 @@
 }
 
 .xh-tab-container {
+  // Override Onsen's tabbar height CSS var
+  --tabbar-height: var(--xh-tbar-min-size-px);
+
   position: relative;
   flex: auto;
 
@@ -48,10 +51,6 @@
       height: var(--xh-tbar-min-size-px);
       line-height: var(--xh-tbar-min-size-px);
       color: var(--xh-text-color);
-    }
-
-    &__content {
-      bottom: var(--xh-tbar-min-size-px);
     }
   }
 
