@@ -540,7 +540,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             {
                 track: () => this.view?.token,
                 run: tkn => dataAccess.updateStateAsync({currentView: tkn}),
-                fireImmediately: this.view?.token !== initialState.currentView
+                fireImmediately: this.view?.token !== initialState?.currentView
             }
         ];
     }
