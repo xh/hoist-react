@@ -18,9 +18,10 @@ export interface PersistOptions {
 
     /**
      * Type of PersistenceProvider to create. If not provided, defaulted based
-     * on the presence of `prefKey`, `localStorageKey`, `dashViewModel`, `getData` and `setData`.
+     * on the presence of `prefKey`, `localStorageKey`, `dashViewModel`, 'viewManagerModel',
+     * `getData` and `setData`.
      */
-    type?: string;
+    type?: 'pref' | 'localStorage' | 'sessionStorage' | 'dashView' | 'viewManager' | 'custom';
 
     /** Predefined Hoist application Preference key used to store state. */
     prefKey?: string;
