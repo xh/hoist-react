@@ -29,23 +29,29 @@ export interface FileChooserConf {
     /** Minimum accepted file size in bytes. Defaults to null (no limit). */
     minFileSize?: number;
 
+    /**
+     * Callback executed on drop event. Used for additional file validation outside of file type
+     * and size prior to updating the model's file state.
+     */
+    validateFilesAsync?: (accepted: File[]) => File[];
+
     /** Callback executed on drop event, invoked when files are accepted. */
-    onDropAccepted?: (accepted: File[]) => void;
+    onFileAccepted?: (accepted: File[]) => void;
 
     /** Callback executed on drop event, invoked when files are rejected. */
-    onDropRejected?: (rejected: FileRejection[]) => void;
-
-    /**
-     * Content to display on file rejection within a toast.
-     * Defaults to a list of rejected files with reasons for rejection.
-     */
-    rejectMessage?: (rejectedFiles: FileRejection[]) => ReactNode;
+    onFileRejected?: (rejected: FileRejection[]) => void;
 
     /**
      * Config for file rejection toast. Primarily used to change timeout, intent, and icon. Toast
      * message is controlled by the `rejectMessage` property.
      */
-    rejectToastConf?: Partial<ToastSpec>;
+    rejectToastSpec?: Partial<ToastSpec>;
+
+    /**
+     * Content to display on file rejection within a toast.
+     * Defaults to a list of rejected files with reasons for rejection.
+     */
+    rejectToastMessage?: (rejectedFiles: FileRejection[]) => ReactNode;
 
     /** Mask the dropzone when dragging. Defaults to true. */
     maskOnDrag?: boolean;
@@ -54,13 +60,13 @@ export interface FileChooserConf {
     maskOnDisabled?: boolean;
 
     /** Text to display in the default empty display. */
-    placeholderText?: ReactNode;
+    emptyDisplayText?: ReactNode;
 
-    /** Include a button to open the file browser in the empty placeholder. Defaults to true. */
-    placeholderBrowseButton?: boolean;
-
-    /** Config for the browse button in the default empty display. */
-    browseButtonConf?: ButtonProps;
+    /**
+     *  Config for the browse button in the default empty display. Set false to omit browse
+     *  button from default empty display.
+     */
+    emptyDisplayBrowseButton?: ButtonProps | boolean;
 }
 
 export class FileChooserModel extends HoistModel {
@@ -74,18 +80,18 @@ export class FileChooserModel extends HoistModel {
     readonly maxCount: number;
     readonly maxFileSize: number;
     readonly minFileSize: number;
-    readonly onDropAccepted: (accepted: File[]) => void;
-    readonly onDropRejected: (rejected: FileRejection[]) => void;
     readonly maskOnDrag: boolean;
     readonly maskOnDisabled: boolean;
-    readonly placeholderText: ReactNode;
-    readonly placeholderBrowseButton: boolean;
-    readonly browseButtonConf: Partial<ButtonProps>;
+    readonly emptyDisplayText: ReactNode;
+    readonly emptyDisplayBrowseButton: ButtonProps;
 
     dropzoneRef = createObservableRef<DropzoneRef>();
 
-    private readonly rejectMessage: (rejectedFiles: FileRejection[]) => ReactNode;
-    private readonly rejectToastConf: Partial<ToastSpec>;
+    private readonly validateFilesAsync: (accepted: File[]) => File[];
+    private readonly onFileAccepted: (accepted: File[]) => void;
+    private readonly onFileRejected: (rejected: FileRejection[]) => void;
+    private readonly rejectToastMessage: (rejectedFiles: FileRejection[]) => ReactNode;
+    private readonly rejectToastSpec: Partial<ToastSpec>;
 
     constructor(params: FileChooserConf) {
         super();
@@ -95,15 +101,17 @@ export class FileChooserModel extends HoistModel {
         this.maxCount = params.maxCount;
         this.maxFileSize = params.maxFileSize;
         this.minFileSize = params.minFileSize;
-        this.onDropAccepted = params.onDropAccepted;
-        this.onDropRejected = params.onDropRejected;
-        this.rejectMessage = withDefault(params.rejectMessage, this.defaultRejectMessage);
-        this.rejectToastConf = this.getRejectToastConf(params.rejectToastConf);
+        this.validateFilesAsync = params.validateFilesAsync;
+        this.onFileAccepted = params.onFileAccepted;
+        this.onFileRejected = params.onFileRejected;
+        this.rejectToastMessage = withDefault(params.rejectToastMessage, this.defaultRejectMessage);
+        this.rejectToastSpec = this.getRejectToastSpec(params.rejectToastSpec);
         this.maskOnDrag = withDefault(params.maskOnDrag, true);
         this.maskOnDisabled = withDefault(params.maskOnDisabled, true);
-        this.placeholderText = withDefault(params.placeholderText, 'Drag and drop files here');
-        this.placeholderBrowseButton = withDefault(params.placeholderBrowseButton, true);
-        this.browseButtonConf = this.getBrowseButtonConf(params.browseButtonConf);
+        this.emptyDisplayText = withDefault(params.emptyDisplayText, 'Drag and drop files here');
+        this.emptyDisplayBrowseButton = this.getEmptyDisplayBrowseButtonProps(
+            params.emptyDisplayBrowseButton
+        );
     }
 
     /** Open the file browser programmatically. Typically used in a button's onClick callback.*/
@@ -137,7 +145,7 @@ export class FileChooserModel extends HoistModel {
     //------------------------
     @action
     onDrop(accepted: File[], rejected: FileRejection[]) {
-        const {files, maxCount, rejectMessage} = this,
+        const {files, maxCount, rejectToastMessage} = this,
             currFileCount = files.length,
             acceptCount = accepted.length,
             rejectCount = rejected.length;
@@ -151,11 +159,16 @@ export class FileChooserModel extends HoistModel {
             return;
         }
 
+        accepted = this.validateFilesAsync?.(accepted) ?? accepted;
+
         this.addFiles(accepted);
 
-        if (rejectCount) {
-            XH.toast({...this.rejectToastConf, message: rejectMessage(rejected)});
+        if (rejectCount && this.rejectToastSpec) {
+            XH.toast({...this.rejectToastSpec, message: rejectToastMessage(rejected)});
         }
+
+        this.onFileAccepted(accepted);
+        this.onFileRejected(rejected);
     }
 
     //------------------------
@@ -190,7 +203,10 @@ export class FileChooserModel extends HoistModel {
         return vbox(rejectItems);
     }
 
-    private getRejectToastConf(params: Partial<ToastSpec>): Partial<ToastSpec> {
+    private getRejectToastSpec(params: Partial<ToastSpec> | boolean): Partial<ToastSpec> {
+        if (params == false) return null;
+
+        if (params == true) params = {};
         return {
             intent: 'danger',
             timeout: 10000,
@@ -198,14 +214,17 @@ export class FileChooserModel extends HoistModel {
         };
     }
 
-    private getBrowseButtonConf(params: Partial<ButtonProps>): ButtonProps {
+    private getEmptyDisplayBrowseButtonProps(params: Partial<ButtonProps> | boolean): ButtonProps {
+        if (params == false) return null;
+
+        if (params == true) params = {};
         return {
             text: 'Browse',
             intent: 'primary',
             outlined: true,
             disabled: this.disabled,
-            ...params,
-            onClick: () => this.openFileBrowser()
+            onClick: () => this.openFileBrowser(),
+            ...params
         };
     }
 }

@@ -4,33 +4,18 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {fileExtCol, grid, GridModel} from '@xh/hoist/cmp/grid';
-import {frame, input, placeholder, vframe, vspacer} from '@xh/hoist/cmp/layout';
+import {frame, input} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/cmp/mask';
-import {
-    BoxProps,
-    Content,
-    creates,
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    lookup,
-    managed,
-    ReactionSpec,
-    uses
-} from '@xh/hoist/core';
+import {BoxProps, Content, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
-import {Icon} from '@xh/hoist/icon';
+import {defaultEmptyDisplay} from '@xh/hoist/desktop/cmp/filechooser/impl/DefaultEmptyDisplay';
+import {defaultFileDisplay} from '@xh/hoist/desktop/cmp/filechooser/impl/DefaultFileDisplay';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
 import {elementFromContent, getLayoutProps} from '@xh/hoist/utils/react';
-import filesize from 'filesize';
 import {FileRejection} from 'react-dropzone';
 import {FileChooserModel} from './FileChooserModel';
 import {isEmpty} from 'lodash';
 import classNames from 'classnames';
-import {makeObservable} from '@xh/hoist/mobx';
 
 export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps {
     /**
@@ -108,108 +93,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                 });
             },
             onDrop: (accepted: File[], rejected: FileRejection[]) =>
-                model.onDrop(accepted, rejected),
-            onDropAccepted: (accepted: File[]) => model.onDropAccepted(accepted),
-            onDropRejected: (rejected: FileRejection[]) => model.onDropRejected(rejected)
+                model.onDrop(accepted, rejected)
         });
     }
 });
-
-const defaultFileDisplay = hoistCmp.factory({
-    model: creates(() => FileDisplayModel),
-    render() {
-        return grid();
-    }
-});
-
-const defaultEmptyDisplay = hoistCmp.factory({
-    model: uses(FileChooserModel),
-    render({model}) {
-        const {placeholderText, browseButtonConf, placeholderBrowseButton} = model;
-        return vframe(
-            placeholder(
-                placeholderText,
-                vspacer(),
-                button({
-                    ...browseButtonConf,
-                    omit: !placeholderBrowseButton
-                })
-            )
-        );
-    }
-});
-
-class FileDisplayModel extends HoistModel {
-    @lookup(FileChooserModel)
-    chooserModel: FileChooserModel;
-
-    @managed
-    gridModel: GridModel;
-
-    override onLinked() {
-        super.onLinked();
-        this.addReaction(this.fileReaction());
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
-        this.gridModel = this.createGridModel();
-    }
-
-    private createGridModel(): GridModel {
-        return new GridModel({
-            hideHeaders: true,
-            store: {
-                data: [],
-                idSpec: 'name',
-                fields: [
-                    {name: 'name', type: 'string'},
-                    {name: 'size', type: 'number'}
-                ]
-            },
-            columns: [
-                {
-                    colId: 'icon',
-                    field: 'name',
-                    ...fileExtCol
-                },
-                {field: 'name', flex: 1},
-                {
-                    field: 'size',
-                    align: 'right',
-                    renderer: v => filesize(v),
-                    flex: 1
-                },
-                {
-                    ...actionCol,
-                    width: calcActionColWidth(1),
-                    actions: [
-                        {
-                            icon: Icon.delete(),
-                            tooltip: 'Remove file',
-                            intent: 'danger',
-                            actionFn: ({record}) => {
-                                this.chooserModel.removeFileByName(record.data.name);
-                            }
-                        }
-                    ]
-                }
-            ],
-            emptyText: 'No files selected.',
-            xhImpl: true
-        });
-    }
-
-    private loadFileGrid(files: File[]) {
-        this.gridModel.loadData(files);
-    }
-
-    private fileReaction(): ReactionSpec {
-        return {
-            track: () => this.chooserModel.files,
-            run: files => this.loadFileGrid(files),
-            fireImmediately: true
-        };
-    }
-}
