@@ -156,3 +156,8 @@ from your TS upgrade:
 -   _Utils_ - shared, app specific utility functions are good candidates for typing, with callers
     benefiting from typed parameters and return signatures.
 -   _Models & Components_ - the bulk of your client-side codebase...
+
+------------------------------------------
+
+📫☎️🌎 info@xh.io | https://xh.io/contact
+Copyright © 2025 Extremely Heavy Industries Inc. - all rights reserved
