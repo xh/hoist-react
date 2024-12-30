@@ -97,7 +97,6 @@ export class DashCanvasModel
     @observable.ref layout: any[] = [];
     ref = createObservableRef<HTMLElement>();
     isResizing: boolean;
-    private scrollbarVisible: boolean;
     private isLoadingState: boolean;
 
     get rglLayout() {
@@ -194,19 +193,10 @@ export class DashCanvasModel
             });
         }
 
-        this.addReaction(
-            {
-                track: () => this.viewState,
-                run: () => (this.state = this.buildState())
-            },
-            {
-                when: () => !!this.ref.current,
-                run: () => {
-                    const {current: node} = this.ref;
-                    this.scrollbarVisible = node.offsetWidth > node.clientWidth;
-                }
-            }
-        );
+        this.addReaction({
+            track: () => this.viewState,
+            run: () => (this.state = this.buildState())
+        });
     }
 
     /** Removes all views from the canvas */
@@ -385,12 +375,6 @@ export class DashCanvasModel
         return model;
     }
 
-    // Trigger window resize event when component becomes visible to ensure layout adjusted to
-    // current window size - fixes https://github.com/xh/hoist-react/issues/3215
-    onVisibleChange(visible: boolean) {
-        if (visible) this.fireWindowResizeEvent();
-    }
-
     onRglLayoutChange(rglLayout) {
         rglLayout = rglLayout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
         this.setLayout(rglLayout);
@@ -404,15 +388,6 @@ export class DashCanvasModel
 
         this.layout = layout;
         if (!this.isLoadingState) this.state = this.buildState();
-
-        // Check if scrollbar visibility has changed, and force resize event if so
-        const node = this.ref.current;
-        if (!node) return;
-        const scrollbarVisible = node.offsetWidth > node.clientWidth;
-        if (scrollbarVisible !== this.scrollbarVisible) {
-            this.fireWindowResizeEvent();
-            this.scrollbarVisible = scrollbarVisible;
-        }
     }
 
     @action
@@ -529,9 +504,5 @@ export class DashCanvasModel
         }
 
         return {x: defaultX, y: endY ?? rows};
-    }
-
-    private fireWindowResizeEvent() {
-        window.dispatchEvent(new Event('resize'));
     }
 }

@@ -19,7 +19,6 @@ import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAd
 import '@xh/hoist/desktop/register';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {TEST_ID} from '@xh/hoist/utils/js';
-import {useOnVisibleChange} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
 import {DashCanvasModel} from './DashCanvasModel';
@@ -52,12 +51,6 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
             isResizable = !model.layoutLocked,
             [padX, padY] = model.containerPadding ?? [10, 10];
 
-        ref = composeRefs(
-            ref,
-            model.ref,
-            useOnVisibleChange(viz => model.onVisibleChange(viz))
-        );
-
         return refreshContextView({
             model: model.refreshContextModel,
             item: div({
@@ -67,7 +60,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                     isResizable ? `${className}--resizable` : null
                 ),
                 style: {padding: `${padY}px ${padX}px`},
-                ref,
+                ref: composeRefs(ref, model.ref),
                 onContextMenu: e => onContextMenu(e, model),
                 items: [
                     reactGridLayout({
