@@ -44,6 +44,7 @@
 
 * Improved accuracy of `IconProps` interface, with use of the `IconName` and `IconPrefix` types
   provided by FontAwesome.
+* Improved accuracy of `PersistOptions.type` enum.
 
 ## v70.0.0 - 2024-11-15
 
